@@ -140,6 +140,8 @@ int test_drp2_runtime_reuses_submitted_transient_ids(TstContext* suite, const Ts
 
 int test_drp2_runtime_registers_external_buffer_semantic(TstContext* suite, const TstCase* item);
 
+int test_drp2_runtime_external_buffer_timeline_semantic(TstContext* suite, const TstCase* item);
+
 int test_drp2_runtime_validate_compute_storage_bind_group(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_validate_destroy_unused_bind_group(TstContext* suite, const TstCase* item);
@@ -209,6 +211,9 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
 int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_vklite_external_buffer_timeline_copy(
+    TstContext* suite, const TstCase* item);
 
 #if DVZ_HAS_CUDA
 int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(

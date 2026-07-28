@@ -88,6 +88,8 @@ int test_device_build_requires_destroy(TstContext* suite, const TstCase* tstitem
 
 int test_memory_1(TstContext* suite, const TstCase* tstitem);
 
+int test_memory_interop_buffer_timeline(TstContext* suite, const TstCase* tstitem);
+
 int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem);
 
 int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem);

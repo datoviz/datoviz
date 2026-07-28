@@ -194,6 +194,24 @@ void _scene_release_field_bindings(DvzSampledField* field)
 
 
 
+uint32_t _scene_field_binding_count(const DvzSampledField* field)
+{
+    if (field == NULL || field->scene == NULL)
+        return 0;
+    uint32_t count = 0;
+    const DvzScene* scene = field->scene;
+    for (uint32_t i = 0; i < scene->visual_count; i++)
+    {
+        const DvzVisual* visual = &scene->visuals[i];
+        const DvzVisualFamilyState* state = _visual_family_state(visual);
+        if (visual->scene == scene && state != NULL && state->field == field)
+            count++;
+    }
+    return count;
+}
+
+
+
 /**
  * Bind a retained sampled field to a texture-backed visual.
  *
@@ -282,6 +300,21 @@ DvzResult dvz_visual_set_field(
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind sampled field"))
         return DVZ_ERROR;
+
+    if (bound_field != NULL && bound_field->buffer != NULL &&
+        _visual_family_state(visual)->field != bound_field)
+    {
+        for (uint32_t i = 0; i < visual->scene->visual_count; i++)
+        {
+            const DvzVisual* other = &visual->scene->visuals[i];
+            if (other != visual && other->scene == visual->scene &&
+                _visual_family_state(other)->field == bound_field)
+            {
+                log_error("an externally backed sampled field may bind only one visual");
+                return DVZ_ERROR;
+            }
+        }
+    }
 
     if (_visual_family_state(visual)->field != bound_field)
         _scene_release_visual_field(visual);

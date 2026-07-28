@@ -38,15 +38,18 @@ typedef struct DvzFramePlanCopyDesc
 {
     uint32_t struct_size;
     uint32_t flags;
+    DvzFramePlanCopyDirection direction;
     const char* src_resource_id;
     const char* dst_resource_id;
     uint32_t src_attachment_index;
     uint32_t src_origin[3];
+    uint64_t src_offset;
     uint32_t extent[3];
     DvzFormat format;
     uint32_t bytes_per_texel;
     uint64_t bytes_per_row;
     uint32_t rows_per_image;
+    uint32_t dst_origin[3];
     uint64_t dst_offset;
     uint64_t byte_size;
     uint64_t request_id;
@@ -396,7 +399,11 @@ DVZ_EXPORT bool dvz_frame_plan_copy(
 
 
 /**
- * Append an explicit texture-to-buffer copy node.
+ * Append an explicit texture-to-buffer or buffer-to-texture copy node.
+ *
+ * `direction` controls which offset and origin fields apply. Texture-to-buffer copies use
+ * `src_attachment_index`, `src_origin`, and `dst_offset`. Buffer-to-texture copies use
+ * `src_offset` and `dst_origin`.
  *
  * @param plan the FramePlan
  * @param desc the copy descriptor

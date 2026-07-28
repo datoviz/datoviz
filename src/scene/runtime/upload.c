@@ -249,9 +249,10 @@ bool _emitter_emit_upload(
     if (node->u.upload.topology != UINT32_MAX)
         resource->topology = node->u.upload.topology;
     uint64_t id = resource->id;
-    uint32_t usage = node->u.upload.buffer_usage != 0
-                         ? node->u.upload.buffer_usage
-                         : (DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX);
+    uint32_t usage =
+        node->u.upload.buffer_usage != 0
+            ? node->u.upload.buffer_usage
+            : (DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX);
     if (emitter->resources.first_vertex_buffer_id == 0)
         emitter->resources.first_vertex_buffer_id = id;
     *out_id = id;
@@ -280,6 +281,62 @@ bool _emitter_emit_upload(
         dvz_free(zero_data);
         return ok;
     }
+}
+
+
+
+/**
+ * Create or reuse a persistent texture and copy an uploaded buffer into it.
+ *
+ * The active DRP2 helper exposes a 2D zero-origin copy. Non-zero texture origins and 3D copies
+ * remain represented by FramePlan but are rejected until the DRP2 stream helper grows that form.
+ */
+bool _emitter_emit_buffer_to_texture_copy(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* copy)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(copy);
+    if (copy->u.copy.dst_origin[0] != 0 || copy->u.copy.dst_origin[1] != 0 ||
+        copy->u.copy.dst_origin[2] != 0 || copy->u.copy.extent[2] != 1)
+        return false;
+
+    ResourceId* src = _resource_find(&emitter->resources, copy->u.copy.src_resource_id);
+    bool is_new = false;
+    ResourceId* dst =
+        _resource_entry(&emitter->resources, copy->u.copy.dst_resource_id, &is_new);
+    if (src == NULL || dst == NULL || src->id == 0 || dst->id == 0)
+        return false;
+    if (!_resource_ensure_texture(
+            &emitter->resources, dst, copy->u.copy.extent[0], copy->u.copy.extent[1], 1,
+            copy->u.copy.format, &is_new))
+        return false;
+
+    if (is_new)
+    {
+        DvzDrp2TextureDesc desc = dvz_drp2_texture_desc();
+        desc.id = dst->id;
+        desc.width = copy->u.copy.extent[0];
+        desc.height = copy->u.copy.extent[1];
+        desc.depth = 1;
+        desc.format = (DvzFormat)copy->u.copy.format;
+        desc.usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
+        if (!dvz_drp2_stream_create_texture(stream, &desc))
+            return false;
+    }
+    if (emitter->resources.first_texture_id == 0)
+        emitter->resources.first_texture_id = dst->id;
+
+    uint64_t encoder_id = _emitter_next_transient_id(emitter);
+    uint64_t command_buffer_id = _emitter_next_transient_id(emitter);
+    uint64_t submission_id = _emitter_next_transient_id(emitter);
+    return dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+           dvz_drp2_stream_copy_buffer_to_texture(
+               stream, encoder_id, src->id, copy->u.copy.src_offset, dst->id,
+               copy->u.copy.extent[0], copy->u.copy.extent[1],
+               (uint32_t)copy->u.copy.bytes_per_row, copy->u.copy.rows_per_image) &&
+           dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id) &&
+           dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
 }
 
 

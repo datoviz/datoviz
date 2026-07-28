@@ -100,6 +100,8 @@ void _scene_release_visual_field(DvzVisual* visual);
 
 void _scene_release_field_bindings(DvzSampledField* field);
 
+uint32_t _scene_field_binding_count(const DvzSampledField* field);
+
 DvzResult _scene_visual_set_texture_rgba8(
     DvzVisual* visual, const uint8_t* rgba, uint32_t width, uint32_t height,
     DvzSize size_bytes);

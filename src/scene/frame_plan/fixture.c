@@ -149,7 +149,9 @@ _emit_upload(ConverterState* state, DvzDrp2CommandStream* stream, const DvzFrame
     }
     if (buffer_size < DRP2_FIXTURE_TRIANGLE_VERTEX_BYTES)
         buffer_size = DRP2_FIXTURE_TRIANGLE_VERTEX_BYTES;
-    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
+    uint32_t usage = node->u.upload.buffer_usage != 0
+                         ? node->u.upload.buffer_usage
+                         : (DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX);
     bool ok = dvz_drp2_stream_create_buffer(stream, id, buffer_size, usage) &&
               dvz_drp2_stream_write_buffer_base64(
                   stream, id, node->u.upload.byte_offset, node->u.upload.byte_size, data);
@@ -257,6 +259,42 @@ static bool _emit_readback_buffer(DvzDrp2CommandStream* stream, const DvzFramePl
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ;
     return dvz_drp2_stream_create_buffer(
         stream, DRP2_ID_READBACK_BUFFER, node->u.copy.byte_size, usage);
+}
+
+
+
+/**
+ * Create a texture and copy an uploaded buffer into it before rendering.
+ */
+static bool _emit_buffer_to_texture(
+    ConverterState* state, DvzDrp2CommandStream* stream, const DvzFramePlanNode* copy)
+{
+    ANN(state);
+    ANN(stream);
+    ANN(copy);
+    if (copy->u.copy.dst_origin[0] != 0 || copy->u.copy.dst_origin[1] != 0 ||
+        copy->u.copy.dst_origin[2] != 0 || copy->u.copy.extent[2] != 1)
+        return false;
+
+    uint64_t src_id = _resource_lookup_id(state, copy->u.copy.src_resource_id);
+    uint64_t dst_id = _resource_id(state, copy->u.copy.dst_resource_id);
+    if (src_id == 0 || dst_id == 0)
+        return false;
+    state->first_texture_id = dst_id;
+    uint32_t usage = DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING | DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
+    uint64_t encoder_id = state->next_id++;
+    uint64_t command_buffer_id = state->next_id++;
+    uint64_t submission_id = state->next_id++;
+    return dvz_drp2_stream_create_texture_2d_format_usage(
+               stream, dst_id, copy->u.copy.extent[0], copy->u.copy.extent[1],
+               (DvzFormat)copy->u.copy.format, usage) &&
+           dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
+           dvz_drp2_stream_copy_buffer_to_texture(
+               stream, encoder_id, src_id, copy->u.copy.src_offset, dst_id,
+               copy->u.copy.extent[0], copy->u.copy.extent[1],
+               (uint32_t)copy->u.copy.bytes_per_row, copy->u.copy.rows_per_image) &&
+           dvz_drp2_stream_finish_command_encoder(stream, encoder_id, command_buffer_id) &&
+           dvz_drp2_stream_queue_submit(stream, command_buffer_id, submission_id);
 }
 
 
@@ -541,15 +579,27 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
     const DvzFramePlanNode* compute = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     const DvzFramePlanNode* clear = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
-    const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
+    const DvzFramePlanNode* readback_copy = NULL;
+    bool buffer_to_texture = false;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        if (plan->nodes[i].type != DVZ_FRAME_PLAN_NODE_COPY)
+            continue;
+        if (plan->nodes[i].u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE)
+            buffer_to_texture = true;
+        else if (
+            readback_copy == NULL &&
+            plan->nodes[i].u.copy.direction == DVZ_FRAME_PLAN_COPY_TEXTURE_TO_BUFFER)
+            readback_copy = &plan->nodes[i];
+    }
     bool clear_only = upload == NULL && compute == NULL && clear != NULL;
     if ((!clear_only && upload == NULL) || (clear_only ? clear == NULL : render == NULL))
     {
         _diagnostic(report, "fixture converter requires upload+render");
         return NULL;
     }
-    if (readback != NULL && copy == NULL)
+    if (readback != NULL && readback_copy == NULL)
     {
         _diagnostic(report, "fixture converter requires copy before readback");
         return NULL;
@@ -575,11 +625,18 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
     {
         if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_UPLOAD)
         {
-            ok = texture_render ? _emit_texture_upload(&state, stream, &plan->nodes[i])
+            ok = texture_render && !buffer_to_texture
+                     ? _emit_texture_upload(&state, stream, &plan->nodes[i])
                                 : _emit_upload(&state, stream, &plan->nodes[i]);
         }
     }
-    ok = ok && (copy == NULL || _emit_readback_buffer(stream, copy)) &&
+    for (uint32_t i = 0; ok && i < plan->count; i++)
+    {
+        if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_COPY &&
+            plan->nodes[i].u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE)
+            ok = _emit_buffer_to_texture(&state, stream, &plan->nodes[i]);
+    }
+    ok = ok && (readback_copy == NULL || _emit_readback_buffer(stream, readback_copy)) &&
          (clear_only ? _emit_clear_only(stream, cfg)
                      : (compute_render
                             ? _emit_compute_assisted_render(stream, compute, render, &state, cfg)
@@ -587,12 +644,13 @@ DvzDrp2CommandStream* dvz_frame_plan_emit_drp2_ex(
                                    ? _emit_texture_render(stream, render, state.first_texture_id, cfg)
                                    : _emit_render(
                                          stream, render, state.first_vertex_buffer_id, cfg)))) &&
-         (copy == NULL || readback == NULL || _emit_readback(stream, copy, readback)) &&
+         (readback_copy == NULL || readback == NULL ||
+          _emit_readback(stream, readback_copy, readback)) &&
          dvz_drp2_stream_finish_command_encoder(stream, DRP2_ID_ENCODER, DRP2_ID_COMMAND_BUFFER) &&
          (readback != NULL
               ? dvz_drp2_stream_queue_submit_readback(
                     stream, DRP2_ID_COMMAND_BUFFER, DRP2_ID_SUBMISSION, DRP2_ID_READBACK_BUFFER,
-                    0, copy->u.copy.byte_size)
+                    0, readback_copy->u.copy.byte_size)
               : dvz_drp2_stream_queue_submit(
                     stream, DRP2_ID_COMMAND_BUFFER, DRP2_ID_SUBMISSION));
     if (!ok)

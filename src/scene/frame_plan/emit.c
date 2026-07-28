@@ -309,8 +309,19 @@ bool _validate_capabilities(
             has_compute = true;
             break;
         case DVZ_FRAME_PLAN_NODE_COPY:
-            if (node->u.copy.byte_size > max_readback_size)
+            if (node->u.copy.direction == DVZ_FRAME_PLAN_COPY_TEXTURE_TO_BUFFER &&
+                node->u.copy.byte_size > max_readback_size)
                 max_readback_size = node->u.copy.byte_size;
+            if (node->u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE)
+            {
+                uint32_t copy_extent = node->u.copy.extent[0];
+                if (node->u.copy.extent[1] > copy_extent)
+                    copy_extent = node->u.copy.extent[1];
+                if (node->u.copy.extent[2] > copy_extent)
+                    copy_extent = node->u.copy.extent[2];
+                if (copy_extent > max_texture_extent)
+                    max_texture_extent = copy_extent;
+            }
             break;
         case DVZ_FRAME_PLAN_NODE_RENDER:
             has_texture_render = has_texture_render || _render_uses_texture(node);

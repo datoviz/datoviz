@@ -22,6 +22,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "domain/buffer_internal.h"
 #include "domain/field_internal.h"
 #include "scene_emit/internal.h"
 #include "_scene_resource_key.h"
@@ -70,6 +71,63 @@ static bool _scene_emit_texture_upload_ex(
 
 
 /**
+ * Emit an external scene-buffer to sampled-texture copy.
+ *
+ * @param plan the destination frame plan
+ * @param resource_id the canonical destination texture resource id
+ * @param field the externally backed field
+ * @return whether the source registration and copy were emitted
+ */
+static bool _scene_emit_external_sampled_field_texture_copy(
+    DvzFramePlan* plan, const char* resource_id, DvzSampledField* field)
+{
+    ANN(plan);
+    ANN(resource_id);
+    ANN(field);
+    DvzSceneBuffer* buffer = field->buffer;
+    if (buffer == NULL || buffer->scene != field->scene)
+        return false;
+
+    uint32_t buffer_index = _scene_buffer_index(field->scene, buffer);
+    char buffer_resource_id[128];
+    uint32_t texture_format = 0;
+    if (buffer_index == UINT32_MAX ||
+        !_scene_resource_key_buffer(buffer_index, buffer_resource_id, sizeof(buffer_resource_id)) ||
+        !_field_format_texture_format(field->desc.format, &texture_format))
+    {
+        return false;
+    }
+
+    if (!dvz_frame_plan_upload_bytes(
+            plan, buffer_resource_id, 0, buffer->desc.byte_size, "field.external", NULL))
+    {
+        return false;
+    }
+    DvzFramePlanNode* upload = &plan->nodes[plan->count - 1];
+    upload->u.upload.external = true;
+    upload->u.upload.buffer_usage = _scene_buffer_drp2_usage(buffer->desc.usage);
+    upload->u.upload.item_stride = buffer->desc.stride;
+    upload->u.upload.metadata.kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER;
+    upload->u.upload.metadata.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE;
+    upload->u.upload.metadata.buffer_index = buffer_index;
+
+    DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
+    copy.direction = DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE;
+    copy.src_resource_id = buffer_resource_id;
+    copy.dst_resource_id = resource_id;
+    copy.extent[0] = field->desc.width;
+    copy.extent[1] = field->desc.height;
+    copy.extent[2] = 1;
+    copy.format = (DvzFormat)texture_format;
+    copy.bytes_per_texel = 4;
+    copy.bytes_per_row = (uint64_t)field->desc.width * 4;
+    copy.rows_per_image = field->desc.height;
+    copy.byte_size = buffer->desc.byte_size;
+    return dvz_frame_plan_copy_ex(plan, &copy);
+}
+
+
+/**
  * Emit one sampled field as a texture upload node.
  *
  * @param plan the destination frame plan
@@ -83,6 +141,9 @@ bool _scene_emit_sampled_field_texture_upload(
     ANN(plan);
     ANN(resource_id);
     ANN(field);
+
+    if (field->buffer != NULL)
+        return _scene_emit_external_sampled_field_texture_copy(plan, resource_id, field);
 
     DvzSampledFieldTextureUploadPayload payload = {0};
     if (!_scene_sampled_field_texture_upload_payload(field, &payload))
@@ -168,6 +229,25 @@ static void _scene_emit_image_like_texture_upload(
     ANN(figure);
     ANN(plan);
     ANN(visual);
+
+    DvzSampledField* field = _visual_family_state(visual)->field;
+    if (field != NULL && field->buffer != NULL)
+    {
+        if (!_visual_family_state(visual)->texture.dirty && !field->dirty)
+            return;
+        char tex_resource_id[128];
+        if (!_scene_visual_texture_resource_key(
+                figure, visual, visual_index, tex_resource_id, sizeof(tex_resource_id)))
+        {
+            return;
+        }
+        if (_scene_emit_sampled_field_texture_upload(plan, tex_resource_id, field))
+        {
+            _visual_family_state(visual)->texture.width = field->desc.width;
+            _visual_family_state(visual)->texture.height = field->desc.height;
+        }
+        return;
+    }
 
     if (visual->ops != NULL && visual->ops->sampled_field_texture_upload)
     {

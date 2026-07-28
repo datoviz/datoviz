@@ -136,6 +136,7 @@ int test_vk(TstSuite* suite)
 
 
     TST_VK_CASE(test_memory_1);
+    TST_VK_CASE(test_memory_interop_buffer_timeline);
     TST_VK_CASE(test_memory_interop_buffer_export);
 
 #if DVZ_HAS_CUDA && !DVZ_ENABLE_ASAN_IN_DEBUG && !DVZ_USING_MSAN && !DVZ_USING_TSAN

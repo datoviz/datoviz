@@ -397,22 +397,66 @@ int dvz_interop_buffer_export_from_buffer(
 
 
 /**
- * Wait on a timeline semaphore before Vulkan reads an interop buffer as vertex input.
+ * Resolve synchronization2 destination scopes for an interop-buffer consumer.
+ *
+ * @param consumer declared Vulkan consumer
+ * @param[out] stage destination pipeline stage
+ * @param[out] access destination access mask
+ * @return true when the consumer is supported
+ */
+static bool _interop_buffer_consumer_sync(
+    DvzInteropBufferConsumer consumer, VkPipelineStageFlags2* stage, VkAccessFlags2* access,
+    VkBufferUsageFlags* usage)
+{
+    ANN(stage);
+    ANN(access);
+    ANN(usage);
+
+    switch (consumer)
+    {
+    case DVZ_INTEROP_BUFFER_CONSUMER_VERTEX_ATTRIBUTE_READ:
+        *stage = VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT;
+        *access = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
+        *usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        return true;
+    case DVZ_INTEROP_BUFFER_CONSUMER_TRANSFER_READ:
+        *stage = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        *access = VK_ACCESS_2_TRANSFER_READ_BIT;
+        *usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        return true;
+    default:
+        log_error("unknown interop buffer consumer (%d)", consumer);
+        return false;
+    }
+}
+
+
+
+/**
+ * Wait on a timeline semaphore before Vulkan consumes externally written interop-buffer data.
  *
  * @param device logical device owning the main Vulkan queue
  * @param buffer buffer whose contents were written externally
  * @param size byte size of the synchronized buffer range
  * @param semaphore timeline semaphore signaled by the external API
  * @param value timeline value to wait on
+ * @param consumer declared Vulkan consumer
  * @return true on success
  */
-bool dvz_interop_buffer_wait_timeline(
-    DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value)
+bool dvz_interop_buffer_wait_timeline_for_consumer(
+    DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value,
+    DvzInteropBufferConsumer consumer)
 {
     ANN(device);
     ANN(buffer);
     ANN(semaphore);
     ASSERT(size > 0);
+
+    VkPipelineStageFlags2 dst_stage = VK_PIPELINE_STAGE_2_NONE;
+    VkAccessFlags2 dst_access = VK_ACCESS_2_NONE;
+    VkBufferUsageFlags required_usage = 0;
+    if (!_interop_buffer_consumer_sync(consumer, &dst_stage, &dst_access, &required_usage))
+        return false;
 
     VkSemaphore vk_semaphore = dvz_semaphore_handle(semaphore);
     if (vk_semaphore == VK_NULL_HANDLE)
@@ -423,6 +467,11 @@ bool dvz_interop_buffer_wait_timeline(
     if (!dvz_obj_is_created(&buffer->obj) || buffer->vk_buffer == VK_NULL_HANDLE)
     {
         log_error("cannot synchronize an uncreated interop buffer");
+        return false;
+    }
+    if ((buffer->req_usage & required_usage) == 0)
+    {
+        log_error("interop buffer lacks usage required by declared consumer");
         return false;
     }
 
@@ -450,10 +499,8 @@ bool dvz_interop_buffer_wait_timeline(
         dvz_barriers(&barriers);
         DvzBarrierBuffer* bbuf =
             dvz_barriers_buffer(&barriers, dvz_buffer_handle(buffer), 0, (VkDeviceSize)size);
-        dvz_barrier_buffer_stage(
-            bbuf, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT);
-        dvz_barrier_buffer_access(
-            bbuf, VK_ACCESS_2_MEMORY_WRITE_BIT, VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT);
+        dvz_barrier_buffer_stage(bbuf, VK_PIPELINE_STAGE_2_NONE, dst_stage);
+        dvz_barrier_buffer_access(bbuf, VK_ACCESS_2_NONE, dst_access);
         dvz_cmd_barriers(cmds, &barriers);
 
         if (dvz_cmd_end_result(cmds) == 0)
@@ -461,8 +508,7 @@ bool dvz_interop_buffer_wait_timeline(
             DvzSubmit* submit = dvz_submit_create_wrapper();
             ANN(submit);
             dvz_submit(submit);
-            dvz_submit_wait(
-                submit, vk_semaphore, value, VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT);
+            dvz_submit_wait(submit, vk_semaphore, value, dst_stage);
             dvz_submit_command(submit, dvz_commands_handle(cmds));
             VkResult res = (VkResult)dvz_submit_send(
                 submit, dvz_queue_handle(queue), VK_NULL_HANDLE);
@@ -474,6 +520,118 @@ bool dvz_interop_buffer_wait_timeline(
             else
             {
                 log_error("Vulkan interop buffer wait submit failed (%d)", res);
+            }
+            dvz_submit_free(submit);
+        }
+    }
+
+    dvz_commands_destroy(cmds);
+    dvz_commands_free(cmds);
+    return ok;
+}
+
+
+
+/**
+ * Preserve the vertex-input-only interop wait compatibility helper.
+ *
+ * @param device logical device owning the main Vulkan queue
+ * @param buffer buffer whose contents were written externally
+ * @param size byte size of the synchronized buffer range
+ * @param semaphore timeline semaphore signaled by the external API
+ * @param value timeline value to wait on
+ * @return true on success
+ */
+bool dvz_interop_buffer_wait_timeline(
+    DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value)
+{
+    return dvz_interop_buffer_wait_timeline_for_consumer(
+        device, buffer, size, semaphore, value,
+        DVZ_INTEROP_BUFFER_CONSUMER_VERTEX_ATTRIBUTE_READ);
+}
+
+
+
+/**
+ * Signal an interop timeline semaphore from the main queue after transfer reads.
+ *
+ * @param device logical device owning the main Vulkan queue
+ * @param buffer buffer whose transfer reads have completed in main-queue order
+ * @param size byte size of the synchronized buffer range
+ * @param semaphore timeline semaphore to signal from the GPU queue
+ * @param value monotonically increasing timeline value to signal
+ * @return true on success
+ */
+bool dvz_interop_buffer_signal_timeline_after_transfer(
+    DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value)
+{
+    ANN(device);
+    ANN(buffer);
+    ANN(semaphore);
+    ASSERT(size > 0);
+
+    VkSemaphore vk_semaphore = dvz_semaphore_handle(semaphore);
+    if (vk_semaphore == VK_NULL_HANDLE)
+    {
+        log_error("cannot signal an uncreated interop semaphore");
+        return false;
+    }
+    if (!dvz_obj_is_created(&buffer->obj) || buffer->vk_buffer == VK_NULL_HANDLE)
+    {
+        log_error("cannot synchronize an uncreated interop buffer");
+        return false;
+    }
+    if ((buffer->req_usage & VK_BUFFER_USAGE_TRANSFER_SRC_BIT) == 0)
+    {
+        log_error("interop buffer lacks transfer-source usage for release signal");
+        return false;
+    }
+
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
+    if (queue == NULL)
+    {
+        log_error("main Vulkan queue unavailable for interop buffer signal");
+        return false;
+    }
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands(device, queue, 1, cmds);
+    if (dvz_commands_count(cmds) == 0)
+    {
+        log_error("failed to allocate command buffer for interop buffer signal");
+        dvz_commands_free(cmds);
+        return false;
+    }
+
+    bool ok = false;
+    if (dvz_cmd_begin_result(cmds) == 0)
+    {
+        DvzBarriers barriers = {0};
+        dvz_barriers(&barriers);
+        DvzBarrierBuffer* bbuf =
+            dvz_barriers_buffer(&barriers, dvz_buffer_handle(buffer), 0, (VkDeviceSize)size);
+        dvz_barrier_buffer_stage(bbuf, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_PIPELINE_STAGE_2_NONE);
+        dvz_barrier_buffer_access(bbuf, VK_ACCESS_2_TRANSFER_READ_BIT, VK_ACCESS_2_NONE);
+        dvz_cmd_barriers(cmds, &barriers);
+
+        if (dvz_cmd_end_result(cmds) == 0)
+        {
+            DvzSubmit* submit = dvz_submit_create_wrapper();
+            ANN(submit);
+            dvz_submit(submit);
+            dvz_submit_command(submit, dvz_commands_handle(cmds));
+            dvz_submit_signal(submit, vk_semaphore, value, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+            VkResult res = (VkResult)dvz_submit_send(
+                submit, dvz_queue_handle(queue), VK_NULL_HANDLE);
+            if (res == VK_SUCCESS)
+            {
+                dvz_queue_wait(queue);
+                ok = true;
+            }
+            else
+            {
+                log_error("Vulkan interop buffer signal submit failed (%d)", res);
             }
             dvz_submit_free(submit);
         }

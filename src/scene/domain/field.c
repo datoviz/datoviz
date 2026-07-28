@@ -22,6 +22,7 @@
 #include "_log.h"
 #include "_scene.h"
 #include "_visual_internal.h"
+#include "buffer_internal.h"
 #include "field_internal.h"
 #include "datoviz/ffi.h"
 
@@ -320,6 +321,83 @@ void dvz_sampled_field_destroy(DvzSampledField* field)
         return;
     _scene_release_field_bindings(field);
     _scene_field_reset(field);
+}
+
+
+/**
+ * Attach a borrowed external scene buffer to a sampled field.
+ *
+ * @param field the sampled field
+ * @param buffer the borrowed scene buffer
+ * @return whether the buffer satisfies the initial external-image contract
+ */
+DvzResult dvz_sampled_field_set_buffer(DvzSampledField* field, DvzSceneBuffer* buffer)
+{
+    ANN(field);
+    ANN(buffer);
+    if (!_scene_visual_mutation_allowed(field->scene, "attach sampled field buffer"))
+        return DVZ_ERROR;
+    if (field->scene != buffer->scene || _scene_buffer_index(field->scene, buffer) == UINT32_MAX)
+    {
+        log_error("sampled field and external buffer must belong to the same scene");
+        return DVZ_ERROR;
+    }
+    if (field->desc.dim != DVZ_FIELD_DIM_2D || field->desc.format != DVZ_FIELD_FORMAT_RGBA8_UNORM ||
+        buffer->desc.stride != 4 || buffer->desc.byte_size != field->data_size ||
+        (buffer->desc.usage & DVZ_SCENE_BUFFER_USAGE_COPY_SRC) == 0)
+    {
+        log_error("external sampled fields require a tightly packed RGBA8 2D COPY_SRC buffer");
+        return DVZ_ERROR;
+    }
+    for (uint32_t i = 0; i < field->scene->field_count; i++)
+    {
+        DvzSampledField* other = &field->scene->fields[i];
+        if (other != field && other->scene == field->scene && other->buffer == buffer)
+        {
+            log_error("an external scene buffer may back only one sampled field");
+            return DVZ_ERROR;
+        }
+    }
+    if (_scene_field_binding_count(field) > 1)
+    {
+        log_error("an externally backed sampled field may bind only one visual");
+        return DVZ_ERROR;
+    }
+    if (field->data != NULL)
+    {
+        dvz_free(field->data);
+        field->data = NULL;
+    }
+    if (field->upload != NULL)
+    {
+        dvz_free(field->upload);
+        field->upload = NULL;
+        field->upload_size = 0;
+    }
+    field->buffer = buffer;
+    _scene_mark_field_region_dirty(field, _field_full_region(&field->desc), true);
+    return DVZ_OK;
+}
+
+
+/**
+ * Invalidate the complete pixel payload borrowed by a sampled field.
+ *
+ * @param field the sampled field
+ * @return whether the field has external backing
+ */
+DvzResult dvz_sampled_field_invalidate(DvzSampledField* field)
+{
+    ANN(field);
+    if (!_scene_visual_mutation_allowed(field->scene, "invalidate sampled field buffer"))
+        return DVZ_ERROR;
+    if (field->buffer == NULL)
+    {
+        log_error("sampled field has no external buffer to invalidate");
+        return DVZ_ERROR;
+    }
+    _scene_mark_field_region_dirty(field, _field_full_region(&field->desc), true);
+    return DVZ_OK;
 }
 
 

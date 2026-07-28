@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "core/_scene_resource_key.h"
 #include "_visual_internal.h"
 #include "annotation/colormap_internal.h"
 #include "annotation/prepare_internal.h"
@@ -48,6 +49,8 @@ int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase*
 int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const TstCase* item);
 int test_scene_figure_reserve_resolves_content_layout(TstContext* suite, const TstCase* item);
 int test_scene_field_slot_sampling_state(TstContext* suite, const TstCase* item);
+int test_scene_external_sampled_field_contract(TstContext* suite, const TstCase* item);
+int test_scene_external_sampled_field_frame_plan(TstContext* suite, const TstCase* item);
 
 
 /**
@@ -2022,6 +2025,249 @@ int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCas
     DvzSampledFieldDesc label_desc = {0};
     AT(dvz_sampled_field_info(label, &label_desc));
     AT(label_desc.color_role == DVZ_COLOR_ROLE_DATA);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_external_sampled_field_contract(TstContext* suite, const TstCase* item)
+{
+    tst_log_capture_begin(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzScene* foreign_scene = dvz_scene();
+    ANN(scene);
+    ANN(foreign_scene);
+    DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+    desc.width = 2;
+    desc.height = 2;
+    DvzSampledField* field = dvz_sampled_field(scene, &desc);
+    ANN(field);
+    DvzSceneBuffer* foreign = dvz_scene_buffer(
+        foreign_scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                           .usage = DVZ_SCENE_BUFFER_USAGE_COPY_SRC,
+                           .stride = 4,
+                           .byte_size = 16});
+    DvzSceneBuffer* wrong_usage = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX,
+                   .stride = 4,
+                   .byte_size = 16});
+    DvzSceneBuffer* wrong_stride = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_COPY_SRC,
+                   .stride = 8,
+                   .byte_size = 16});
+    DvzSceneBuffer* wrong_size = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_COPY_SRC,
+                   .stride = 4,
+                   .byte_size = 12});
+    DvzSceneBuffer* buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_COPY_SRC,
+                   .stride = 4,
+                   .byte_size = 16});
+    ANN(foreign);
+    ANN(wrong_usage);
+    ANN(wrong_stride);
+    ANN(wrong_size);
+    ANN(buffer);
+
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field_set_buffer(field, foreign) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field_set_buffer(field, wrong_usage) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field_set_buffer(field, wrong_stride) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field_set_buffer(field, wrong_size) == DVZ_ERROR);
+    AT(dvz_sampled_field_set_buffer(field, buffer) == DVZ_OK);
+
+    DvzVisual* image0 = dvz_image(scene, 0);
+    DvzVisual* image1 = dvz_image(scene, 0);
+    ANN(image0);
+    ANN(image1);
+    AT(dvz_visual_set_field(image0, "field", field) == DVZ_OK);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_field(image1, "field", field) == DVZ_ERROR);
+
+    DvzSampledField* second = dvz_sampled_field(scene, &desc);
+    ANN(second);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field_set_buffer(second, buffer) == DVZ_ERROR);
+    uint8_t pixels[16] = {0};
+    DvzFieldDataView view = {DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = pixels};
+    DvzFieldRegion region = {.width = 1, .height = 1, .depth = 1};
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field_set_data(field, &view) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field_resize(field, 2, 2, 1, &view) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_sampled_field_update_region(field, region, &view) == DVZ_ERROR);
+    AT(dvz_sampled_field_invalidate(field) == DVZ_OK);
+
+    dvz_sampled_field_destroy(field);
+    DvzSceneBufferDesc buffer_desc = {0};
+    AT(dvz_scene_buffer_info(buffer, &buffer_desc));
+    dvz_scene_buffer_destroy(buffer);
+
+    DvzSampledField* attached = dvz_sampled_field(scene, &desc);
+    DvzSceneBuffer* attached_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_COPY_SRC,
+                   .stride = 4,
+                   .byte_size = 16});
+    ANN(attached);
+    ANN(attached_buffer);
+    AT(dvz_sampled_field_set_buffer(attached, attached_buffer) == DVZ_OK);
+    dvz_scene_buffer_destroy(attached_buffer);
+    AT(attached->buffer == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_sampled_field_invalidate(attached) == DVZ_ERROR);
+
+    dvz_scene_destroy(foreign_scene);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_external_sampled_field_frame_plan(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    DvzVisual* image = dvz_image(scene, 0);
+    DvzSampledFieldDesc desc = dvz_sampled_field_desc();
+    desc.width = 2;
+    desc.height = 2;
+    DvzSampledField* field = dvz_sampled_field(scene, &desc);
+    DvzSceneBuffer* buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_COPY_SRC,
+                   .stride = 4,
+                   .byte_size = 16});
+    ANN(figure);
+    ANN(panel);
+    ANN(image);
+    ANN(field);
+    ANN(buffer);
+    AT(dvz_panel_add_visual(panel, image, NULL) == DVZ_OK);
+    AT(dvz_sampled_field_set_buffer(field, buffer) == DVZ_OK);
+    AT(dvz_visual_set_field(image, "field", field) == DVZ_OK);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.external_field", 0);
+    ANN(plan);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    _scene_emit_visual_uploads(figure, plan, &report);
+    char buffer_resource_id[128];
+    char texture_resource_id[128];
+    uint32_t visual_index = UINT32_MAX;
+    AT(dvz_scene_buffer_resource_key(buffer, buffer_resource_id, sizeof(buffer_resource_id)));
+    AT(_figure_visual_index(figure, image, &visual_index));
+    AT(_scene_visual_texture_resource_key(
+        figure, image, visual_index, texture_resource_id, sizeof(texture_resource_id)));
+    uint32_t external_upload_count = 0;
+    uint32_t buffer_to_texture_count = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        const DvzFramePlanNode* node = &plan->nodes[i];
+        if (node->type == DVZ_FRAME_PLAN_NODE_UPLOAD && node->u.upload.external)
+        {
+            external_upload_count++;
+            AT(node->u.upload.data == NULL);
+            AT((node->u.upload.buffer_usage & DVZ_DRP2_BUFFER_USAGE_COPY_SRC) != 0);
+        }
+        if (node->type == DVZ_FRAME_PLAN_NODE_COPY &&
+            node->u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE)
+        {
+            buffer_to_texture_count++;
+            AT(strcmp(node->u.copy.src_resource_id, buffer_resource_id) == 0);
+            AT(strcmp(node->u.copy.dst_resource_id, texture_resource_id) == 0);
+            AT(node->u.copy.extent[0] == 2 && node->u.copy.extent[1] == 2);
+        }
+    }
+    AT(external_upload_count == 1);
+    AT(buffer_to_texture_count == 1);
+
+    AT(_field_runtime_render_fixture(plan, "buf.fixture.position"));
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    uint64_t source_id = dvz_drp2_stream_label_id(stream, buffer_resource_id);
+    uint64_t texture_id = dvz_drp2_stream_label_id(stream, texture_resource_id);
+    AT(source_id != 0);
+    AT(texture_id != 0);
+    bool copied = false;
+    bool wrote_texture = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE)
+        {
+            copied = true;
+            AT(cmd->u.copy_buffer_to_texture.src_buffer_id == source_id);
+            AT(cmd->u.copy_buffer_to_texture.dst_texture_id == texture_id);
+            AT(cmd->u.copy_buffer_to_texture.width == 2);
+            AT(cmd->u.copy_buffer_to_texture.height == 2);
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == texture_id)
+        {
+            wrote_texture = true;
+        }
+    }
+    AT(copied);
+    AT(!wrote_texture);
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDrp2ExternalBufferDesc external = {
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2ExternalBufferDesc),
+        .size = 16,
+        .usage = DVZ_DRP2_BUFFER_USAGE_COPY_SRC,
+    };
+    AT(dvz_drp2_runtime_register_external_buffer(runtime, source_id, &external));
+    AT(dvz_drp2_runtime_execute(runtime, stream).ok);
+    dvz_drp2_runtime_destroy(runtime);
+    _test_scene_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+
+    _scene_visual_texture_mark_clean(image);
+    _scene_refresh_field_dirty_state(scene, field);
+    plan = dvz_frame_plan("figure.external_field", 1);
+    ANN(plan);
+    _scene_emit_visual_uploads(figure, plan, &report);
+    for (uint32_t i = 0; i < plan->count; i++)
+        AT(plan->nodes[i].type != DVZ_FRAME_PLAN_NODE_COPY ||
+           plan->nodes[i].u.copy.direction != DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE);
+    AT(_field_runtime_render_fixture(plan, "buf.fixture.position"));
+    dvz_diagnostic_report_init(&report);
+    stream = dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+        AT(dvz_drp2_stream_get(stream, i)->type != DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE);
+    _test_scene_stream_destroy(stream);
+    dvz_frame_plan_destroy(plan);
+
+    AT(dvz_sampled_field_invalidate(field) == DVZ_OK);
+    plan = dvz_frame_plan("figure.external_field", 2);
+    ANN(plan);
+    _scene_emit_visual_uploads(figure, plan, &report);
+    buffer_to_texture_count = 0;
+    for (uint32_t i = 0; i < plan->count; i++)
+        if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_COPY &&
+            plan->nodes[i].u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE)
+            buffer_to_texture_count++;
+    AT(buffer_to_texture_count == 1);
+    dvz_frame_plan_destroy(plan);
+    dvz_frame_plan_emitter_destroy(emitter);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -4936,6 +5182,8 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_colorbar_rejects_cross_scene_scale);
     TST_CASE(test_scene_image_visual_binds_colormap_scale);
     TST_CASE(test_scene_sampled_field_color_role_defaults);
+    TST_CASE(test_scene_external_sampled_field_contract);
+    TST_CASE(test_scene_external_sampled_field_frame_plan);
     TST_CASE(test_scene_sampled_field_color_role_rejects_invalid_semantics);
     TST_CASE(test_scene_sampled_fields_set_explicit_color_roles);
     TST_CASE(test_scene_labels_visual_binds_categorical_scale);

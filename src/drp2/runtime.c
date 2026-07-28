@@ -159,6 +159,7 @@ bool _drp2_frame_target_valid(uint64_t texture_id, const DvzStreamFrame* frame)
 
 #define DVZ_DRP2_RUNTIME_CONFIG_KNOWN_FLAGS 0u
 #define DVZ_DRP2_EXTERNAL_BUFFER_DESC_KNOWN_FLAGS 0u
+#define DVZ_DRP2_EXTERNAL_BUFFER_TIMELINE_DESC_KNOWN_FLAGS 0u
 
 
 
@@ -191,6 +192,28 @@ static bool _drp2_external_buffer_desc_validate(const DvzDrp2ExternalBufferDesc*
 
 
 
+static bool _drp2_external_buffer_timeline_desc_validate(
+    const DvzDrp2ExternalBufferTimelineDesc* desc)
+{
+    if (desc == NULL)
+        return false;
+    if (!DVZ_STRUCT_VALID(
+            desc, DvzDrp2ExternalBufferTimelineDesc,
+            DVZ_DRP2_EXTERNAL_BUFFER_TIMELINE_DESC_KNOWN_FLAGS))
+    {
+        log_error("invalid DvzDrp2ExternalBufferTimelineDesc ABI prologue");
+        return false;
+    }
+    if (desc->wait_value == 0 || desc->signal_value <= desc->wait_value)
+    {
+        log_error("external buffer timeline values must be strictly increasing and non-zero");
+        return false;
+    }
+    return true;
+}
+
+
+
 /**
  * Return a DRP2 runtime configuration for a vklite-backed runtime.
  *
@@ -212,6 +235,15 @@ DvzDrp2ExternalBufferDesc dvz_drp2_external_buffer_desc(void)
 {
     return (DvzDrp2ExternalBufferDesc){
         DVZ_STRUCT_INIT_FIELDS(DvzDrp2ExternalBufferDesc),
+    };
+}
+
+
+
+DvzDrp2ExternalBufferTimelineDesc dvz_drp2_external_buffer_timeline_desc(void)
+{
+    return (DvzDrp2ExternalBufferTimelineDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzDrp2ExternalBufferTimelineDesc),
     };
 }
 
@@ -381,6 +413,72 @@ bool dvz_drp2_runtime_register_external_buffer(
     }
 #endif
     return true;
+}
+
+
+
+bool dvz_drp2_runtime_arm_external_buffer_timeline(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id,
+    const DvzDrp2ExternalBufferTimelineDesc* desc)
+{
+    if (runtime == NULL || !_drp2_external_buffer_timeline_desc_validate(desc) ||
+        runtime->semantic_state == NULL)
+    {
+        return false;
+    }
+
+    Drp2Object* semantic = _drp2_find_any_object(runtime->semantic_state, buffer_id);
+    if (semantic == NULL || semantic->destroyed || semantic->kind != DRP2_OBJECT_BUFFER ||
+        (semantic->usage & DVZ_DRP2_BUFFER_USAGE_COPY_SRC) == 0 ||
+        semantic->external_timeline_pending ||
+        desc->wait_value <= semantic->external_timeline_last_signal_value)
+    {
+        return false;
+    }
+
+#if DVZ_DRP2_HAS_VKLITE
+    if (!runtime->semantic_only)
+    {
+        if (desc->semaphore == NULL || runtime->vklite_state == NULL)
+            return false;
+        Drp2VkliteObject* object = _vklite_find(runtime->vklite_state, buffer_id);
+        if (object == NULL || object->buffer == NULL || object->external_timeline_pending ||
+            dvz_semaphore_handle(desc->semaphore) == VK_NULL_HANDLE)
+        {
+            return false;
+        }
+        uint64_t timeline_value = 0;
+        if (vkGetSemaphoreCounterValue(
+                dvz_device_handle(runtime->device), dvz_semaphore_handle(desc->semaphore),
+                &timeline_value) != VK_SUCCESS)
+        {
+            log_error("external buffer handoff requires a timeline semaphore");
+            return false;
+        }
+        object->external_timeline_semaphore = desc->semaphore;
+        object->external_timeline_pending = true;
+    }
+#else
+    if (!runtime->semantic_only)
+        return false;
+#endif
+
+    semantic->external_timeline_pending = true;
+    semantic->external_timeline_wait_value = desc->wait_value;
+    semantic->external_timeline_signal_value = desc->signal_value;
+    return true;
+}
+
+
+
+bool dvz_drp2_runtime_external_buffer_timeline_pending(
+    const DvzDrp2Runtime* runtime, uint64_t buffer_id)
+{
+    if (runtime == NULL || runtime->semantic_state == NULL || buffer_id == 0)
+        return false;
+    Drp2Object* semantic = _drp2_find_any_object(runtime->semantic_state, buffer_id);
+    return semantic != NULL && !semantic->destroyed && semantic->kind == DRP2_OBJECT_BUFFER &&
+           semantic->external_timeline_pending;
 }
 
 

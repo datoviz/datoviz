@@ -264,11 +264,40 @@ DVZ_EXPORT void dvz_sampled_field_destroy(DvzSampledField* field);
 
 
 /**
+ * Attach a borrowed external pixel buffer to a sampled field.
+ *
+ * The initial contract accepts exactly one same-scene buffer with COPY_SRC usage, stride 4, and
+ * a tightly packed RGBA8_UNORM payload matching the 2D field extent. The buffer remains owned by
+ * the caller. One buffer may back only one field, and an externally backed field may bind only one
+ * visual. CPU data mutation is unavailable while attached; call dvz_sampled_field_invalidate() after
+ * every external full-image write.
+ *
+ * @param field the sampled field
+ * @param buffer the borrowed scene buffer
+ * @return DVZ_OK on success, DVZ_ERROR on error
+ */
+DVZ_EXPORT DvzResult
+dvz_sampled_field_set_buffer(DvzSampledField* field, DvzSceneBuffer* buffer);
+
+
+/**
+ * Mark a borrowed external sampled-field buffer as changed.
+ *
+ * The next frame copies the complete tightly packed pixel buffer into the field texture. This does
+ * not synchronize an external producer; the caller must establish the producer/Datoviz ordering.
+ *
+ * @param field the externally backed sampled field
+ * @return DVZ_OK on success, DVZ_ERROR when the field has no attached external buffer
+ */
+DVZ_EXPORT DvzResult dvz_sampled_field_invalidate(DvzSampledField* field);
+
+
+/**
  * Replace the entire field payload.
  *
  * `view->data` must cover the full field extent. Payload bytes are copied into scene-owned storage
  * before return and may be released by the caller after this function returns. Passing NULL or an
- * empty view is rejected.
+ * empty view is rejected. This operation is unavailable while the field borrows an external buffer.
  *
  * @param field the sampled field
  * @param view the uploaded data view
@@ -284,7 +313,8 @@ DVZ_EXPORT DvzResult dvz_sampled_field_set_data(
  * The field format, semantic, dimensionality, and visual bindings are preserved. Bound image
  * visuals receive a full dirty mark so the next scene emission reallocates the texture if needed.
  * `width`, `height`, and `depth` must describe a non-empty extent. `view->data` must cover that
- * extent and is copied before return.
+ * extent and is copied before return. This operation is unavailable while the field borrows an
+ * external buffer.
  *
  * @param field the sampled field
  * @param width new field width in samples
@@ -302,7 +332,8 @@ DVZ_EXPORT DvzResult dvz_sampled_field_resize(
  * Update a field subregion in sample coordinates.
  *
  * `region` must be non-empty and fully inside the current field extent. `view->data` must cover the
- * subregion and is copied before return.
+ * subregion and is copied before return. This operation is unavailable while the field borrows an
+ * external buffer.
  *
  * @param field the sampled field
  * @param region the updated sample-space region

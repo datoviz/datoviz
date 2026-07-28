@@ -485,25 +485,100 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
         command->u.copy_buffer_to_texture.dst_origin_y,
         command->u.copy_buffer_to_texture.dst_origin_z);
 
+    bool timeline_handoff = src->external_timeline_pending;
+    DvzSemaphore* timeline_semaphore = src->external_timeline_semaphore;
+    Drp2Object* semantic_src = _drp2_find_any_object(
+        state->runtime->semantic_state, command->u.copy_buffer_to_texture.src_buffer_id);
+    if (timeline_handoff &&
+        (timeline_semaphore == NULL || semantic_src == NULL ||
+         !semantic_src->external_timeline_pending))
+    {
+        _vklite_owned_commands_destroy(cmds);
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+
     if (dvz_cmd_begin_result(cmds) != 0)
     {
         _vklite_owned_commands_destroy(cmds);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    if (timeline_handoff)
+    {
+        DvzBarriers acquire = {0};
+        dvz_barriers(&acquire);
+        DvzBarrierBuffer* buffer_barrier = dvz_barriers_buffer(
+            &acquire, dvz_buffer_handle(src->buffer), 0, (VkDeviceSize)semantic_src->size);
+        dvz_barrier_buffer_stage(
+            buffer_barrier, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+        dvz_barrier_buffer_access(
+            buffer_barrier, VK_ACCESS_2_NONE, VK_ACCESS_2_TRANSFER_READ_BIT);
+        dvz_cmd_barriers(cmds, &acquire);
     }
     _vklite_transition_image_access(cmds, dst, DRP2_TEXTURE_ACCESS_TRANSFER_WRITE);
     dvz_cmd_copy_buffer_to_image(
         cmds, dvz_buffer_handle(src->buffer), command->u.copy_buffer_to_texture.src_offset,
         dvz_image_handle(dst->images, 0),
         _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_WRITE), &region);
-    DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
-    if (!result.ok)
+
+    if (timeline_handoff)
     {
-        _vklite_owned_commands_destroy(cmds);
-        return result;
+        DvzBarriers release = {0};
+        dvz_barriers(&release);
+        DvzBarrierBuffer* buffer_barrier = dvz_barriers_buffer(
+            &release, dvz_buffer_handle(src->buffer), 0, (VkDeviceSize)semantic_src->size);
+        dvz_barrier_buffer_stage(
+            buffer_barrier, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_PIPELINE_STAGE_2_NONE);
+        dvz_barrier_buffer_access(
+            buffer_barrier, VK_ACCESS_2_TRANSFER_READ_BIT, VK_ACCESS_2_NONE);
+        dvz_cmd_barriers(cmds, &release);
     }
 
+    DvzDrp2ValidationResult result = _drp2_ok();
+    if (timeline_handoff)
+    {
+        if (dvz_cmd_end_result(cmds) != 0)
+        {
+            result = _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
+        else
+        {
+            DvzQueue* queue = dvz_device_queue(state->runtime->device, DVZ_QUEUE_MAIN);
+            DvzSubmit* submit = queue != NULL ? dvz_submit_create_wrapper() : NULL;
+            if (submit == NULL)
+            {
+                result = _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+            }
+            else
+            {
+                dvz_submit(submit);
+                dvz_submit_wait(
+                    submit, dvz_semaphore_handle(timeline_semaphore),
+                    semantic_src->external_timeline_wait_value, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+                dvz_submit_command(submit, dvz_commands_handle(cmds));
+                dvz_submit_signal(
+                    submit, dvz_semaphore_handle(timeline_semaphore),
+                    semantic_src->external_timeline_signal_value, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+                if (dvz_submit_send(submit, dvz_queue_handle(queue), VK_NULL_HANDLE) != VK_SUCCESS)
+                    result = _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+                else
+                    dvz_queue_wait(queue);
+                dvz_submit_free(submit);
+            }
+        }
+    }
+    else
+    {
+        result = _vklite_owned_commands_end_submit(cmds, command_index);
+    }
+
+    if (result.ok && timeline_handoff)
+    {
+        src->external_timeline_pending = false;
+        src->external_timeline_semaphore = NULL;
+        semantic_src->external_timeline_pending = false;
+    }
     _vklite_owned_commands_destroy(cmds);
-    return _drp2_ok();
+    return result;
 }
 
 

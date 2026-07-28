@@ -56,6 +56,7 @@ bool dvz_frame_plan_copy(
 DvzFramePlanCopyDesc dvz_frame_plan_copy_desc(void)
 {
     DvzFramePlanCopyDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzFramePlanCopyDesc)};
+    desc.direction = DVZ_FRAME_PLAN_COPY_TEXTURE_TO_BUFFER;
     return desc;
 }
 
@@ -72,6 +73,9 @@ bool dvz_frame_plan_copy_ex(DvzFramePlan* plan, const DvzFramePlanCopyDesc* desc
 {
     if (desc == NULL || !DVZ_STRUCT_VALID(desc, DvzFramePlanCopyDesc, 0))
         return false;
+    if (desc->direction != DVZ_FRAME_PLAN_COPY_TEXTURE_TO_BUFFER &&
+        desc->direction != DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE)
+        return false;
     DvzFramePlanNode* node = _frame_plan_append_node(plan, DVZ_FRAME_PLAN_NODE_COPY);
     if (node == NULL)
         return false;
@@ -81,10 +85,12 @@ bool dvz_frame_plan_copy_ex(DvzFramePlan* plan, const DvzFramePlanCopyDesc* desc
     _frame_plan_copy_label(
         node->u.copy.dst_resource_id, DVZ_SCENE_LABEL_SIZE,
         desc->dst_resource_id ? desc->dst_resource_id : "");
+    node->u.copy.direction = desc->direction;
     node->u.copy.src_attachment_index = desc->src_attachment_index;
     node->u.copy.src_origin[0] = desc->src_origin[0];
     node->u.copy.src_origin[1] = desc->src_origin[1];
     node->u.copy.src_origin[2] = desc->src_origin[2];
+    node->u.copy.src_offset = desc->src_offset;
     node->u.copy.extent[0] = desc->extent[0] != 0 ? desc->extent[0] : 1;
     node->u.copy.extent[1] = desc->extent[1] != 0 ? desc->extent[1] : 1;
     node->u.copy.extent[2] = desc->extent[2] != 0 ? desc->extent[2] : 1;
@@ -93,6 +99,9 @@ bool dvz_frame_plan_copy_ex(DvzFramePlan* plan, const DvzFramePlanCopyDesc* desc
     node->u.copy.bytes_per_row =
         desc->bytes_per_row != 0 ? desc->bytes_per_row : desc->byte_size;
     node->u.copy.rows_per_image = desc->rows_per_image != 0 ? desc->rows_per_image : 1;
+    node->u.copy.dst_origin[0] = desc->dst_origin[0];
+    node->u.copy.dst_origin[1] = desc->dst_origin[1];
+    node->u.copy.dst_origin[2] = desc->dst_origin[2];
     node->u.copy.dst_offset = desc->dst_offset;
     node->u.copy.byte_size = desc->byte_size;
     node->u.copy.request_id = desc->request_id;

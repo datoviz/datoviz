@@ -218,6 +218,8 @@ bool _scene_ssao_params_resource_key(const char* panel_id, char* out_key, size_t
 uint32_t _scene_buffer_drp2_usage(uint32_t usage)
 {
     uint32_t out = DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    if ((usage & DVZ_SCENE_BUFFER_USAGE_COPY_SRC) != 0)
+        out |= DVZ_DRP2_BUFFER_USAGE_COPY_SRC;
     if ((usage & DVZ_SCENE_BUFFER_USAGE_VERTEX) != 0)
         out |= DVZ_DRP2_BUFFER_USAGE_VERTEX;
     if ((usage & DVZ_SCENE_BUFFER_USAGE_INDEX) != 0)

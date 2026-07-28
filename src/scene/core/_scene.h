@@ -1411,6 +1411,7 @@ struct DvzSampledField
     uint64_t data_size;
     void* upload;
     uint64_t upload_size;
+    DvzSceneBuffer* buffer;
     bool dirty;
     bool dirty_full;
     DvzFieldRegion dirty_region;

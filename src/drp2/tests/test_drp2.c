@@ -159,6 +159,7 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_runtime_validate_recreate_bind_group_resources);
     TST_CASE(test_drp2_runtime_reuses_submitted_transient_ids);
     TST_CASE(test_drp2_runtime_registers_external_buffer_semantic);
+    TST_CASE(test_drp2_runtime_external_buffer_timeline_semantic);
     TST_CASE(test_drp2_runtime_validate_compute_storage_bind_group);
     TST_CASE(test_drp2_runtime_validate_destroy_unused_bind_group);
     TST_CASE(test_drp2_runtime_rejects_destroy_bind_group_layout_used_by_live_group);
@@ -195,6 +196,7 @@ int test_drp2(TstSuite* suite)
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_uses_external_buffer);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_external_buffer_timeline_copy);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_texture_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_to_texture);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_texture_to_texture);

@@ -138,6 +138,10 @@ struct Drp2Object
     bool referenced_by_work;
     bool open;
     bool submitted;
+    bool external_timeline_pending;
+    uint64_t external_timeline_wait_value;
+    uint64_t external_timeline_signal_value;
+    uint64_t external_timeline_last_signal_value;
     uint64_t encoder_id;
     uint64_t pipeline_id;
     uint32_t bound_vertex_mask;
@@ -247,6 +251,8 @@ struct Drp2VkliteObject
     bool borrowed_buffer;
     bool borrowed_commands;
     bool borrowed_frame_target;
+    DvzSemaphore* external_timeline_semaphore;
+    bool external_timeline_pending;
     bool destroyed;
 };
 

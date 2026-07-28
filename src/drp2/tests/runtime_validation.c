@@ -1321,6 +1321,67 @@ int test_drp2_runtime_registers_external_buffer_semantic(TstContext* suite, cons
 
 
 
+int test_drp2_runtime_external_buffer_timeline_semantic(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        setup, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_runtime_execute(runtime, setup).ok);
+
+    DvzDrp2ExternalBufferDesc buffer = dvz_drp2_external_buffer_desc();
+    buffer.size = 16;
+    buffer.usage = DVZ_DRP2_BUFFER_USAGE_COPY_SRC;
+    AT(dvz_drp2_runtime_register_external_buffer(runtime, 1, &buffer));
+
+    DvzDrp2ExternalBufferTimelineDesc timeline =
+        dvz_drp2_external_buffer_timeline_desc();
+    timeline.wait_value = 4;
+    timeline.signal_value = 5;
+    DvzDrp2ExternalBufferTimelineDesc invalid = timeline;
+    invalid.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_drp2_runtime_arm_external_buffer_timeline(runtime, 1, &invalid));
+    invalid = timeline;
+    invalid.signal_value = invalid.wait_value;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !dvz_drp2_runtime_arm_external_buffer_timeline(runtime, 1, &invalid));
+    AT(dvz_drp2_runtime_arm_external_buffer_timeline(runtime, 1, &timeline));
+    AT(dvz_drp2_runtime_external_buffer_timeline_pending(runtime, 1));
+    AT(!dvz_drp2_runtime_arm_external_buffer_timeline(runtime, 1, &timeline));
+
+    DvzDrp2CommandStream* frame = dvz_drp2_stream();
+    ANN(frame);
+    AT(dvz_drp2_stream_begin_command_encoder(frame, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_texture(frame, 3, 1, 0, 2, 2, 1, 8, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(frame, 3, 4));
+    AT(dvz_drp2_stream_queue_submit(frame, 4, 5));
+    AT(dvz_drp2_runtime_execute(runtime, frame).ok);
+    AT(!dvz_drp2_runtime_external_buffer_timeline_pending(runtime, 1));
+
+    AT(!dvz_drp2_runtime_arm_external_buffer_timeline(runtime, 1, &timeline));
+    timeline.wait_value = 6;
+    timeline.signal_value = 7;
+    AT(dvz_drp2_runtime_arm_external_buffer_timeline(runtime, 1, &timeline));
+
+    dvz_drp2_stream_destroy(frame);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_validate_compute_storage_bind_group(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

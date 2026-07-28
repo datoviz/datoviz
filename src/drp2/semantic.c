@@ -2140,6 +2140,12 @@ static DvzDrp2ValidationResult _validate_copy_buffer_to_texture(
         command->u.copy_buffer_to_texture.rows_per_image);
     if (_drp2_range_overflows(command->u.copy_buffer_to_texture.src_offset, size, buffer->size))
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    /* A live external handoff is consumed exactly by this next source-buffer copy. */
+    if (buffer->external_timeline_pending)
+    {
+        buffer->external_timeline_last_signal_value = buffer->external_timeline_signal_value;
+        buffer->external_timeline_pending = false;
+    }
     _mark_referenced(state, command->u.copy_buffer_to_texture.src_buffer_id);
     _mark_referenced(state, command->u.copy_buffer_to_texture.dst_texture_id);
     return _drp2_ok();

@@ -84,9 +84,18 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
     const DvzFramePlanNode* compute = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COMPUTE);
     const DvzFramePlanNode* render = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     const DvzFramePlanNode* clear = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_CLEAR);
-    const DvzFramePlanNode* copy = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_COPY);
     const DvzFramePlanNode* readback = _first_node_of_type(plan, DVZ_FRAME_PLAN_NODE_READBACK);
     bool scene_compute = compute != NULL && compute->u.compute.binding_count > 0;
+    const DvzFramePlanNode* readback_copy = NULL;
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_COPY &&
+            plan->nodes[i].u.copy.direction == DVZ_FRAME_PLAN_COPY_TEXTURE_TO_BUFFER)
+        {
+            readback_copy = &plan->nodes[i];
+            break;
+        }
+    }
     bool clear_only = compute == NULL && clear != NULL && render == NULL;
     bool retained_render =
         upload == NULL && (compute == NULL || scene_compute) && render != NULL &&
@@ -105,7 +114,7 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
             return NULL;
         }
     }
-    if (readback != NULL && copy == NULL)
+    if (readback != NULL && readback_copy == NULL)
     {
         _diagnostic(report, "runtime converter requires copy before readback");
         return NULL;
@@ -148,16 +157,23 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         }
     }
 
+    for (uint32_t i = 0; ok && i < plan->count; i++)
+    {
+        if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_COPY &&
+            plan->nodes[i].u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE)
+            ok = _emitter_emit_buffer_to_texture_copy(emitter, stream, &plan->nodes[i]);
+    }
+
     if (ok && scene_compute)
         ok = _emitter_emit_compute_passes(emitter, stream, plan, cfg, report);
 
     ok = ok &&
-         (clear_only ? _emitter_emit_clear_only(emitter, stream, clear, copy, true, cfg)
+         (clear_only ? _emitter_emit_clear_only(emitter, stream, clear, readback_copy, true, cfg)
           : compute != NULL && !scene_compute
-              ? _emitter_emit_compute_assisted_render(emitter, stream, compute, copy, cfg)
+              ? _emitter_emit_compute_assisted_render(emitter, stream, compute, readback_copy, cfg)
               : _emitter_emit_plain_renders(
                     emitter, stream, plan, fallback_vertex_buffer_ids, fallback_vertex_buffer_count,
-                    copy, cfg, report));
+                    readback_copy, cfg, report));
     if (!ok)
     {
         _diagnostic(report, "failed to emit runtime DRP2 stream");

@@ -469,7 +469,6 @@ int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCa
     if (runtime == NULL)
         return 0;
     ANN(ctx);
-
     DvzBuffer* external = dvz_buffer_create_wrapper();
     ANN(external);
     dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), external);
@@ -518,6 +517,97 @@ int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCa
     dvz_buffer_destroy(external);
     dvz_buffer_free(external);
     return 0;
+}
+
+
+
+int test_drp2_runtime_vklite_external_buffer_timeline_copy(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .timelineSemaphore = true,
+    };
+    dvz_gpu_ctx_config_features12(&cfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "Vulkan timeline semaphore or synchronization2 context unavailable");
+        return 0;
+    }
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    if (runtime == NULL)
+    {
+        dvz_gpu_ctx_destroy(ctx);
+        tst_skip(suite, "DRP2 vklite runtime unavailable for timeline context");
+        return 0;
+    }
+
+    DvzBuffer* external = dvz_buffer_create_wrapper();
+    ANN(external);
+    dvz_buffer(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), external);
+    dvz_buffer_size(external, 16);
+    dvz_buffer_usage(external, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    dvz_buffer_flags(external, DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+    AT(dvz_buffer_create(external) == 0);
+    const uint8_t source[] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    dvz_buffer_upload(external, 0, sizeof(source), source);
+
+    DvzDrp2ExternalBufferDesc buffer = dvz_drp2_external_buffer_desc();
+    buffer.buffer = external;
+    buffer.size = sizeof(source);
+    buffer.usage = DVZ_DRP2_BUFFER_USAGE_COPY_SRC;
+    AT(dvz_drp2_runtime_register_external_buffer(runtime, 1, &buffer));
+
+    DvzSemaphore* semaphore = dvz_semaphore_create_wrapper();
+    ANN(semaphore);
+    dvz_semaphore_timeline(dvz_gpu_ctx_device(ctx), 0, semaphore, 0);
+    dvz_semaphore_signal(semaphore, 4);
+    DvzDrp2ExternalBufferTimelineDesc timeline =
+        dvz_drp2_external_buffer_timeline_desc();
+    timeline.semaphore = semaphore;
+    timeline.wait_value = 4;
+    timeline.signal_value = 5;
+    AT(dvz_drp2_runtime_arm_external_buffer_timeline(runtime, 1, &timeline));
+    AT(dvz_drp2_runtime_external_buffer_timeline_pending(runtime, 1));
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        stream, 2, 2, 2, DVZ_DRP2_TEXTURE_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_texture(stream, 3, 1, 0, 2, 2, 1, 8, 1));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 3, 4));
+    AT(dvz_drp2_stream_queue_submit(stream, 4, 5));
+    AT(dvz_drp2_runtime_execute(runtime, stream).ok);
+    dvz_semaphore_wait(semaphore, 5);
+    AT(dvz_semaphore_query(semaphore) >= 5);
+    AT(!dvz_drp2_runtime_external_buffer_timeline_pending(runtime, 1));
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
+
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_semaphore_destroy(semaphore);
+    dvz_semaphore_free(semaphore);
+    dvz_buffer_destroy(external);
+    dvz_buffer_free(external);
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+    return err_count > 0;
 }
 
 

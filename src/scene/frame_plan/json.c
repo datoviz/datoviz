@@ -645,18 +645,23 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append_escaped_string(builder, node->u.copy.dst_resource_id);
         _json_append(
             builder,
-            ", \"src_attachment_index\": %" PRIu32
+            ", \"direction\": \"%s\", \"src_attachment_index\": %" PRIu32
             ", \"src_origin\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32
-            ", \"z\": %" PRIu32 " }, \"extent\": { \"width\": %" PRIu32
+            ", \"z\": %" PRIu32 " }, \"src_offset\": %" PRIu64
+            ", \"extent\": { \"width\": %" PRIu32
             ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32 " }, \"format\": %" PRIu32
             ", \"bytes_per_texel\": %" PRIu32 ", \"bytes_per_row\": %" PRIu64
-            ", \"rows_per_image\": %" PRIu32 ", \"dst_offset\": %" PRIu64
+            ", \"rows_per_image\": %" PRIu32 ", \"dst_origin\": { \"x\": %" PRIu32
+            ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }, \"dst_offset\": %" PRIu64
             ", \"byte_size\": %" PRIu64 ", \"request_id\": %" PRIu64 " }",
+            node->u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE ? "buffer_to_texture" :
+                                                                         "texture_to_buffer",
             node->u.copy.src_attachment_index, node->u.copy.src_origin[0],
-            node->u.copy.src_origin[1], node->u.copy.src_origin[2], node->u.copy.extent[0],
-            node->u.copy.extent[1], node->u.copy.extent[2], node->u.copy.format,
+            node->u.copy.src_origin[1], node->u.copy.src_origin[2], node->u.copy.src_offset,
+            node->u.copy.extent[0], node->u.copy.extent[1], node->u.copy.extent[2], node->u.copy.format,
             node->u.copy.bytes_per_texel, node->u.copy.bytes_per_row,
-            node->u.copy.rows_per_image, node->u.copy.dst_offset, node->u.copy.byte_size,
+            node->u.copy.rows_per_image, node->u.copy.dst_origin[0], node->u.copy.dst_origin[1],
+            node->u.copy.dst_origin[2], node->u.copy.dst_offset, node->u.copy.byte_size,
             node->u.copy.request_id);
         break;
     case DVZ_FRAME_PLAN_NODE_READBACK:

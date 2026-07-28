@@ -304,6 +304,8 @@ int test_frame_plan_readbacks(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_buffer_to_texture_copy(TstContext* suite, const TstCase* item);
+
 int test_frame_plan_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* item);
@@ -700,6 +702,10 @@ int test_scene_colorbar_rejects_cross_scene_scale(TstContext* suite, const TstCa
 int test_scene_image_visual_binds_colormap_scale(TstContext* suite, const TstCase* item);
 
 int test_scene_sampled_field_color_role_defaults(TstContext* suite, const TstCase* item);
+
+int test_scene_external_sampled_field_contract(TstContext* suite, const TstCase* item);
+
+int test_scene_external_sampled_field_frame_plan(TstContext* suite, const TstCase* item);
 
 int test_scene_sampled_field_color_role_rejects_invalid_semantics(
     TstContext* suite, const TstCase* item);

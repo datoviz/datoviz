@@ -28,6 +28,7 @@
 #include "core/scene_notify_internal.h"
 #include "core/_scene_resource_key.h"
 #include "buffer_internal.h"
+#include "field_internal.h"
 #include "visuals/bindings_internal.h"
 #include "_visual_internal.h"
 
@@ -175,6 +176,20 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
     DvzScene* scene = buffer->scene;
     if (scene != NULL)
     {
+        for (uint32_t i = 0; i < scene->field_count; i++)
+        {
+            DvzSampledField* field = &scene->fields[i];
+            if (field->scene != scene || field->buffer != buffer)
+                continue;
+            field->buffer = NULL;
+            for (uint32_t vi = 0; vi < scene->visual_count; vi++)
+            {
+                DvzVisual* visual = &scene->visuals[vi];
+                if (visual->scene == scene && _visual_family_state(visual)->field == field)
+                    _scene_notify_visual_changed(visual);
+            }
+            _scene_release_field_bindings(field);
+        }
         for (uint32_t i = 0; i < scene->visual_count; i++)
         {
             DvzVisual* visual = &scene->visuals[i];

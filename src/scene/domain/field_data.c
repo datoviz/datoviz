@@ -184,6 +184,11 @@ DvzResult dvz_sampled_field_set_data(DvzSampledField* field, const DvzFieldDataV
         return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(field->scene, "replace sampled field data"))
         return DVZ_ERROR;
+    if (field->buffer != NULL)
+    {
+        log_error("cannot replace data on an externally backed sampled field");
+        return DVZ_ERROR;
+    }
 
     DvzFieldRegion full = _field_full_region(&field->desc);
     if (!_field_data_view_valid(&field->desc, view, &full))
@@ -226,6 +231,11 @@ DvzResult dvz_sampled_field_resize(
         return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(field->scene, "resize sampled field"))
         return DVZ_ERROR;
+    if (field->buffer != NULL)
+    {
+        log_error("cannot resize an externally backed sampled field");
+        return DVZ_ERROR;
+    }
     if (width == 0 || height == 0 || depth == 0)
     {
         log_error("sampled field dimensions must be non-zero");
@@ -289,6 +299,11 @@ DvzResult dvz_sampled_field_update_region(
         return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(field->scene, "update sampled field data"))
         return DVZ_ERROR;
+    if (field->buffer != NULL)
+    {
+        log_error("cannot update an externally backed sampled field");
+        return DVZ_ERROR;
+    }
     if (field->data == NULL)
     {
         log_error("sampled field range update requires prior full allocation");

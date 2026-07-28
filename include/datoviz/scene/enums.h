@@ -31,6 +31,15 @@ typedef enum
 
 
 
+/** Direction of a FramePlan copy node. */
+typedef enum
+{
+    DVZ_FRAME_PLAN_COPY_TEXTURE_TO_BUFFER = 0,
+    DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE,
+} DvzFramePlanCopyDirection;
+
+
+
 typedef enum
 {
     DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE = 0,
@@ -90,6 +99,7 @@ typedef enum
     DVZ_SCENE_BUFFER_USAGE_INDEX = 0x02u,
     DVZ_SCENE_BUFFER_USAGE_UNIFORM = 0x04u,
     DVZ_SCENE_BUFFER_USAGE_STORAGE = 0x08u,
+    DVZ_SCENE_BUFFER_USAGE_COPY_SRC = 0x10u,
 } DvzSceneBufferUsage;
 
 

@@ -34,10 +34,12 @@ EXTERN_C_ON
 typedef struct DvzDrp2ValidationResult DvzDrp2ValidationResult;
 typedef struct DvzDrp2RuntimeConfig DvzDrp2RuntimeConfig;
 typedef struct DvzDrp2ExternalBufferDesc DvzDrp2ExternalBufferDesc;
+typedef struct DvzDrp2ExternalBufferTimelineDesc DvzDrp2ExternalBufferTimelineDesc;
 typedef struct DvzDevice DvzDevice;
 typedef struct DvzStreamFrame DvzStreamFrame;
 typedef struct DvzVma DvzVma;
 typedef struct DvzBuffer DvzBuffer;
+typedef struct DvzSemaphore DvzSemaphore;
 
 struct DvzDrp2ValidationResult
 {
@@ -68,6 +70,16 @@ struct DvzDrp2ExternalBufferDesc
 };
 
 
+struct DvzDrp2ExternalBufferTimelineDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzSemaphore* semaphore;
+    uint64_t wait_value;
+    uint64_t signal_value;
+};
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                    */
@@ -90,6 +102,14 @@ dvz_drp2_runtime_vklite_config(DvzDevice* device, DvzVma* allocator);
  * @return zeroed descriptor with a valid ABI prologue
  */
 DVZ_EXPORT DvzDrp2ExternalBufferDesc dvz_drp2_external_buffer_desc(void);
+
+
+/**
+ * Return a default one-shot external-buffer timeline-handoff descriptor.
+ *
+ * @return zeroed descriptor with a valid ABI prologue
+ */
+DVZ_EXPORT DvzDrp2ExternalBufferTimelineDesc dvz_drp2_external_buffer_timeline_desc(void);
 
 
 
@@ -154,6 +174,36 @@ DVZ_EXPORT void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime);
  */
 DVZ_EXPORT bool dvz_drp2_runtime_register_external_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, const DvzDrp2ExternalBufferDesc* desc);
+
+
+/**
+ * Arm one externally-written buffer handoff for the next BufferToTexture copy from this buffer.
+ *
+ * The runtime borrows `desc->semaphore`. A vklite-backed runtime waits for `wait_value` at the
+ * transfer stage, acquires the source buffer for transfer reads, copies it, releases transfer-read
+ * access, and signals `signal_value` from that same submission. A second arm is rejected until the
+ * pending handoff is consumed. Semantic-only runtimes validate the one-shot state without requiring
+ * a semaphore wrapper.
+ *
+ * @param runtime the runtime
+ * @param buffer_id registered external buffer id
+ * @param desc timeline handoff values and borrowed semaphore
+ * @return true when the handoff was armed
+ */
+DVZ_EXPORT bool dvz_drp2_runtime_arm_external_buffer_timeline(
+    DvzDrp2Runtime* runtime, uint64_t buffer_id,
+    const DvzDrp2ExternalBufferTimelineDesc* desc);
+
+
+/**
+ * Return whether an external buffer has an armed handoff awaiting its next BufferToTexture copy.
+ *
+ * @param runtime the runtime
+ * @param buffer_id registered external buffer id
+ * @return true when one handoff is pending
+ */
+DVZ_EXPORT bool dvz_drp2_runtime_external_buffer_timeline_pending(
+    const DvzDrp2Runtime* runtime, uint64_t buffer_id);
 
 
 

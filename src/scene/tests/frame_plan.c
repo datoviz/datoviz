@@ -1304,6 +1304,74 @@ int test_frame_plan_query_readback_copy_metadata(TstContext* suite, const TstCas
 }
 
 
+
+int test_frame_plan_buffer_to_texture_copy(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.buffer_to_texture", 11);
+    ANN(plan);
+    AT(dvz_frame_plan_upload(plan, "buf.cuda.shared", 0, 36, "cuda.shared"));
+    plan->nodes[plan->count - 1].u.upload.buffer_usage =
+        DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
+    copy.direction = DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE;
+    copy.src_resource_id = "buf.cuda.shared";
+    copy.dst_resource_id = "tex.cuda.normal";
+    copy.src_offset = 8;
+    copy.extent[0] = 2;
+    copy.extent[1] = 2;
+    copy.extent[2] = 1;
+    copy.format = DVZ_FORMAT_R8G8B8A8_UNORM;
+    copy.bytes_per_texel = 4;
+    copy.bytes_per_row = 8;
+    copy.rows_per_image = 2;
+    copy.byte_size = 16;
+    AT(dvz_frame_plan_copy_ex(plan, &copy));
+    AT(dvz_frame_plan_upload(plan, "buf.cuda.shared.second", 0, 16, "cuda.shared.second"));
+    plan->nodes[plan->count - 1].u.upload.buffer_usage =
+        DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    copy.src_resource_id = "buf.cuda.shared.second";
+    copy.dst_resource_id = "tex.cuda.normal.second";
+    copy.src_offset = 0;
+    AT(dvz_frame_plan_copy_ex(plan, &copy));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.image.0"));
+
+    char* plan_json = dvz_frame_plan_json(plan);
+    ANN(plan_json);
+    AT(strstr(plan_json, "\"direction\": \"buffer_to_texture\"") != NULL);
+    AT(strstr(plan_json, "\"src_offset\": 8") != NULL);
+    AT(strstr(plan_json, "\"dst_origin\": { \"x\": 0, \"y\": 0, \"z\": 0 }") != NULL);
+    dvz_frame_plan_json_destroy(plan_json);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = dvz_frame_plan_emit_drp2(plan, &caps, &report);
+    ANN(stream);
+    char* stream_json = dvz_drp2_stream_json(stream, "scene_buffer_to_texture_from_c");
+    ANN(stream_json);
+    AT(strstr(stream_json, "\"cmd\": \"CreateTexture\"") != NULL);
+    AT(strstr(stream_json, "\"cmd\": \"CopyBufferToTexture\"") != NULL);
+    AT(strstr(stream_json, "\"src_offset\": 8") != NULL);
+    uint32_t copy_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        if (dvz_drp2_stream_get(stream, i)->type == DVZ_DRP2_COMMAND_COPY_BUFFER_TO_TEXTURE)
+            copy_count++;
+    }
+    AT(copy_count == 2);
+    AT(dvz_drp2_validate_stream(stream).ok);
+    dvz_drp2_stream_json_destroy(stream_json);
+    dvz_drp2_stream_destroy(stream);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
 int test_frame_plan_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2526,6 +2594,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_texture_upload_json_includes_color_role);
     TST_CASE(test_frame_plan_readbacks);
     TST_CASE(test_frame_plan_query_readback_copy_metadata);
+    TST_CASE(test_frame_plan_buffer_to_texture_copy);
     TST_CASE(test_frame_plan_abi_rejects_invalid_structs);
     TST_CASE(test_frame_plan_graph_static_multipass);
     TST_CASE(test_frame_plan_graph_ascii);

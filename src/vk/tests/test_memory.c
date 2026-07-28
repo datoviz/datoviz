@@ -285,6 +285,72 @@ int test_memory_1(TstContext* suite, const TstCase* tstitem)
 
 
 /**
+ * Verify Vulkan-only timeline handoff for transfer reads without external-FD support.
+ *
+ * @param suite the test suite
+ * @param tstitem the test item
+ * @return 0 on success
+ */
+int test_memory_interop_buffer_timeline(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .timelineSemaphore = true,
+    };
+    dvz_gpu_ctx_config_features12(&cfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "Vulkan timeline semaphores unavailable");
+        return 0;
+    }
+
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    DvzVma* allocator = dvz_gpu_ctx_alloc(ctx);
+    DvzBuffer* buffer = dvz_buffer_create_wrapper();
+    DvzSemaphore* semaphore = dvz_semaphore_create_wrapper();
+    ANN(device);
+    ANN(allocator);
+    ANN(buffer);
+    ANN(semaphore);
+
+    dvz_buffer(device, allocator, buffer);
+    dvz_buffer_size(buffer, 256);
+    dvz_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    AT(dvz_buffer_create(buffer) == 0);
+    dvz_semaphore_timeline(device, 0, semaphore, 0);
+
+    dvz_semaphore_signal(semaphore, 1);
+    AT(dvz_interop_buffer_wait_timeline_for_consumer(
+        device, buffer, 256, semaphore, 1, DVZ_INTEROP_BUFFER_CONSUMER_TRANSFER_READ));
+    AT(dvz_interop_buffer_signal_timeline_after_transfer(device, buffer, 256, semaphore, 2));
+    AT(dvz_semaphore_query(semaphore) == 2);
+
+    dvz_semaphore_signal(semaphore, 3);
+    AT(dvz_interop_buffer_wait_timeline(device, buffer, 256, semaphore, 3));
+
+    dvz_semaphore_destroy(semaphore);
+    dvz_semaphore_free(semaphore);
+    dvz_buffer_destroy(buffer);
+    dvz_buffer_free(buffer);
+
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+    return err_count > 0;
+}
+
+
+
+/**
  * Verify the low-level exported buffer metadata package for CUDA/CuPy interop.
  *
  * @param suite the test suite
@@ -427,7 +493,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     dvz_buffer_size(buffer, 256);
     dvz_buffer_usage(
         buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-                    VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     dvz_buffer_flags(buffer, DVZ_ALLOC_DEDICATED_MEMORY);
     AT(dvz_buffer_create(buffer) == 0);
 
@@ -469,7 +535,12 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     AT(export_desc.semaphore_value == 9);
 
     dvz_semaphore_signal(semaphore, 11);
-    AT(dvz_interop_buffer_wait_timeline(device, buffer, export_desc.size, semaphore, 11));
+    AT(dvz_interop_buffer_wait_timeline_for_consumer(
+        device, buffer, export_desc.size, semaphore, 11,
+        DVZ_INTEROP_BUFFER_CONSUMER_TRANSFER_READ));
+    AT(dvz_interop_buffer_signal_timeline_after_transfer(
+        device, buffer, export_desc.size, semaphore, 12));
+    AT(dvz_semaphore_query(semaphore) == 12);
 
     interop_ctx = dvz_interop_gpu_ctx(0, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
     AT(interop_ctx != NULL);

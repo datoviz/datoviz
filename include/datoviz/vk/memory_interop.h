@@ -34,6 +34,18 @@ typedef struct DvzSemaphore DvzSemaphore;
 typedef struct DvzInteropBufferExport DvzInteropBufferExport;
 typedef struct DvzInteropBufferExportConfig DvzInteropBufferExportConfig;
 
+/**
+ * Vulkan buffer access that consumes externally written interop data.
+ *
+ * Each value selects the exact synchronization2 destination stage and access mask used by
+ * dvz_interop_buffer_wait_timeline_for_consumer().
+ */
+typedef enum DvzInteropBufferConsumer
+{
+    DVZ_INTEROP_BUFFER_CONSUMER_VERTEX_ATTRIBUTE_READ,
+    DVZ_INTEROP_BUFFER_CONSUMER_TRANSFER_READ,
+} DvzInteropBufferConsumer;
+
 
 
 /*************************************************************************************************/
@@ -237,6 +249,29 @@ DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
 
 
 /**
+ * Wait on a timeline semaphore before Vulkan consumes externally written interop-buffer data.
+ *
+ * This helper is the explicit Vulkan-side synchronization point for CUDA/CuPy writes into a
+ * Vulkan-owned exported buffer. It submits a short barrier command on the main queue that waits for
+ * `semaphore` to reach `value`, then makes external writes visible to the declared `consumer`.
+ * `buffer` remains caller-owned; this function borrows it and only records/submits its own command
+ * buffer on the device main queue.
+ *
+ * @param device logical device owning the main Vulkan queue
+ * @param buffer buffer whose contents were written externally
+ * @param size byte size of the synchronized buffer range
+ * @param semaphore timeline semaphore signaled by the external API
+ * @param value timeline value to wait on
+ * @param consumer declared Vulkan consumer of the externally written data
+ * @return true on success
+ */
+DVZ_EXPORT bool dvz_interop_buffer_wait_timeline_for_consumer(
+    DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value,
+    DvzInteropBufferConsumer consumer);
+
+
+
+/**
  * Wait on a timeline semaphore before Vulkan reads an interop buffer as vertex input.
  *
  * This helper is the explicit Vulkan-side synchronization point for CUDA/CuPy writes into a
@@ -251,6 +286,26 @@ DVZ_EXPORT int dvz_interop_buffer_export_from_buffer(
  * @return true on success
  */
 DVZ_EXPORT bool dvz_interop_buffer_wait_timeline(
+    DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value);
+
+
+
+/**
+ * Signal a timeline semaphore from the main Vulkan queue after ordered transfer reads.
+ *
+ * This helper submits an owned barrier command and signals `semaphore` from that GPU queue; it
+ * never performs a CPU semaphore signal. Call it only after the declared transfer reads were
+ * submitted to the same main queue, so queue order releases the buffer to the external writer.
+ * `buffer` remains caller-owned and this helper does not alter its ownership or lifetime.
+ *
+ * @param device logical device owning the main Vulkan queue
+ * @param buffer buffer whose transfer reads have completed in main-queue order
+ * @param size byte size of the synchronized buffer range
+ * @param semaphore timeline semaphore to signal from the GPU queue
+ * @param value monotonically increasing timeline value to signal
+ * @return true on success
+ */
+DVZ_EXPORT bool dvz_interop_buffer_signal_timeline_after_transfer(
     DvzDevice* device, DvzBuffer* buffer, uint64_t size, DvzSemaphore* semaphore, uint64_t value);
 
 
