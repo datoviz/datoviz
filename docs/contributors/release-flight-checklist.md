@@ -110,6 +110,11 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Confirm `import datoviz.raw` works from an installed wheel.
 - [ ] Confirm `python -m datoviz.cli --cflags --libs --cmake-dir` behavior.
 - [ ] Confirm the CMake consumer smoke builds and runs.
+- [ ] Run `just vulkan-course-wheel-smoke <version>`: it installs the published wheel into a
+      throwaway venv and builds the Vulkan course step programs against it, exactly as the course's
+      chapter 1 instructs. `datoviz==0.4.0rc2` fails this check because it predates the
+      tutorial-enabling API. When it first passes, remove the version warning from
+      `docs/advanced/vulkan/01-setup.md` and make the package path the primary one again.
 
 
 ## 7. Qt And PyQt

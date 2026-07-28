@@ -69,8 +69,12 @@ def _runtime_environment(prefix: Path | None, runtime_dirs: list[Path]) -> dict[
     return env
 
 
-def _installed_build(prefix: Path, temporary: Path) -> Path:
-    """Configure and build the step programs as a standalone consumer of an installed package."""
+def _installed_build(temporary: Path, discovery: list[str]) -> Path:
+    """Configure and build the step programs as a standalone consumer of an installed package.
+
+    `discovery` holds the CMake arguments that point at the package, mirroring what the course's
+    chapter 1 tells the reader to pass.
+    """
     project = temporary / "project"
     project.mkdir()
     (project / "CMakeLists.txt").write_text(
@@ -84,9 +88,36 @@ def _installed_build(prefix: Path, temporary: Path) -> Path:
         )
     )
     build = temporary / "build"
-    _run(["cmake", "-S", str(project), "-B", str(build), f"-DCMAKE_PREFIX_PATH={prefix}"])
+    _run(["cmake", "-S", str(project), "-B", str(build), *discovery])
     _run(["cmake", "--build", str(build)])
     return build
+
+
+def _wheel_install(spec: str, temporary: Path) -> tuple[Path, list[str]]:
+    """Install a published datoviz wheel into a throwaway venv.
+
+    Returns the package directory holding the runtime payload, and the CMake discovery arguments
+    from `datoviz-config --cmake-dir` — the exact command the course documents.
+    """
+    venv = temporary / "venv"
+    _run([sys.executable, "-m", "venv", str(venv)])
+    python = venv / ("Scripts/python.exe" if platform.system() == "Windows" else "bin/python")
+    # PIP_USER is set in some developer environments and is incompatible with a venv install.
+    env = os.environ.copy()
+    env["PIP_USER"] = "false"
+    _run([str(python), "-m", "pip", "install", "--quiet", "--upgrade", "pip"], env=env)
+    _run([str(python), "-m", "pip", "install", "--quiet", "--pre", spec], env=env)
+
+    config = venv / ("Scripts/datoviz-config" if platform.system() == "Windows" else "bin/datoviz-config")
+    if not config.is_file():
+        raise RuntimeError(f"the installed wheel provides no datoviz-config: {config}")
+    cmake_dir = _run([str(config), "--cmake-dir"], env=env).strip()
+    if not cmake_dir:
+        raise RuntimeError("datoviz-config --cmake-dir returned nothing")
+    # <package>/lib/cmake/datoviz -> <package>
+    package_dir = Path(cmake_dir).resolve().parents[2]
+    print(f"installed {spec} into {venv}")
+    return package_dir, [f"-Ddatoviz_DIR={cmake_dir}"]
 
 
 def _validate_capture(step: Step, png: Path) -> None:
@@ -106,17 +137,31 @@ def main() -> int:
         "--executables-dir", type=Path, default=ROOT / "build" / "examples" / "c" / "vulkan"
     )
     parser.add_argument("--installed-prefix", type=Path)
+    parser.add_argument(
+        "--wheel",
+        metavar="SPEC",
+        help="pip-install this datoviz spec (e.g. datoviz==0.4.0) into a throwaway venv and build "
+        "the steps against it, exactly as the course's chapter 1 instructs",
+    )
     parser.add_argument("--runtime-dir", action="append", type=Path, default=[])
     args = parser.parse_args()
+    if args.installed_prefix is not None and args.wheel is not None:
+        parser.error("--installed-prefix and --wheel are mutually exclusive")
 
     with tempfile.TemporaryDirectory(prefix="datoviz-vulkan-course-") as scratch:
         temporary = Path(scratch)
         executables = args.executables_dir
         prefix = None
-        if args.installed_prefix is not None:
+        runtime_dirs = list(args.runtime_dir)
+        if args.wheel is not None:
+            package_dir, discovery = _wheel_install(args.wheel, temporary)
+            # A wheel carries its library and Vulkan loader in the package directory itself.
+            runtime_dirs.append(package_dir)
+            executables = _installed_build(temporary, discovery)
+        elif args.installed_prefix is not None:
             prefix = args.installed_prefix.resolve()
-            executables = _installed_build(prefix, temporary)
-        env = _runtime_environment(prefix, args.runtime_dir)
+            executables = _installed_build(temporary, [f"-DCMAKE_PREFIX_PATH={prefix}"])
+        env = _runtime_environment(prefix, runtime_dirs)
 
         for step in STEPS:
             executable = executables / step.name

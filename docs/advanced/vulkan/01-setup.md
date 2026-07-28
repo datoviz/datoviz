@@ -26,8 +26,9 @@ discovered in chapter 12 is much harder to read than the same problem discovered
     ```
 
     That prefix contains the public headers, the library, and the CMake package this chapter uses.
-    Note that a source install does not bring a Vulkan runtime with it: on macOS you need the Vulkan
-    SDK's loader discoverable at run time, which is what the SDK's own setup script arranges.
+    A source install brings no Vulkan runtime of its own, so it falls back to the Vulkan SDK you
+    built against — nothing to configure, as long as the SDK is installed and `VULKAN_SDK` is
+    exported in your shell.
 
 === "From a package (once published)"
 
@@ -147,9 +148,11 @@ The exact version string is whatever you installed; what matters is that it prin
 
 A Vulkan driver is not needed yet — this program never touches the GPU. If your driver is missing,
 you will find out in chapter 2, and the error message will say so clearly. One symptom worth knowing
-in advance, because it looks alarming and is not: `cannot create Vulkan instance because Volk
-initialization failed` means the Vulkan *loader* was not found at run time. Package installs bundle
-one; source installs expect the Vulkan SDK's loader to be discoverable.
+in advance: `no Vulkan loader could be loaded` means Datoviz could not find the Vulkan *loader* at
+run time. Package installs bundle one and source installs fall back to the SDK, so this usually
+means `VULKAN_SDK` is not exported —
+[No Vulkan loader found](../../how-to/diagnose-platform.md#no-vulkan-loader-found) lists every
+location Datoviz checks.
 
 ## Checkpoint
 

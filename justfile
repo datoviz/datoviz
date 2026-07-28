@@ -41,6 +41,10 @@ vulkan-course-check:
 vulkan-course-smoke: build
     python3 tools/run_vulkan_course.py
 
+# Build the Vulkan course steps against a published wheel, as chapter 1 tells readers to.
+vulkan-course-wheel-smoke version:
+    python3 tools/run_vulkan_course.py --wheel "datoviz=={{version}}"
+
 # Build the Vulkan course steps against an installed prefix as a standalone consumer would.
 vulkan-course-installed-smoke prefix runtime_dir="":
     #!/usr/bin/env bash
