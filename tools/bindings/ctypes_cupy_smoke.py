@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 import ctypes
 
-import cupy_interop_runtime as ci
+from datoviz.experimental import _cuda_runtime as ci
 
 
 DVZ_DRP2_BUFFER_USAGE_COPY_DST = 0x0002

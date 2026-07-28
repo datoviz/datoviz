@@ -42,7 +42,7 @@ package-data = {"datoviz" = [
     "include/*.h",
     "include/**/*.h",
     "lib/cmake/datoviz/*.cmake",
-]}
+], "datoviz.experimental" = ["_cuda_interop_bridge.c"]}
 
 [project.scripts]
 datoviz-config = "datoviz.cli:main"

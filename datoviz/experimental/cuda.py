@@ -4,19 +4,11 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import ctypes
-import sys
-from pathlib import Path
 from typing import Iterator
 
 from datoviz import raw as dvz
 
-
-ROOT_DIR = Path(__file__).resolve().parents[2]
-TOOLS_DIR = ROOT_DIR / 'tools' / 'bindings'
-if str(TOOLS_DIR) not in sys.path:
-    sys.path.insert(0, str(TOOLS_DIR))
-
-import cupy_interop_runtime as _runtime  # noqa: E402
+from . import _cuda_runtime as _runtime
 
 
 _SCENE_USAGE_BITS = {

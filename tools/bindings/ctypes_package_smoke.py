@@ -20,11 +20,14 @@ from pathlib import Path
 import numpy as np
 import datoviz as dvz
 import datoviz.raw as raw
+import datoviz.experimental.cuda as cuda
 import datoviz._ctypes as impl
 import datoviz._array_facade as facade_impl
 
 assert hasattr(dvz, "dvz_scene")
 assert hasattr(raw, "dvz_scene")
+assert callable(cuda.scene_session)
+assert callable(cuda.scene_buffer)
 assert dvz.dvz_visual_set_data is facade_impl.dvz_visual_set_data
 assert Path(impl.dvz._name).exists(), impl.dvz._name
 t0 = dvz.dvz_time_monotonic_ns()
@@ -73,7 +76,7 @@ def _create_venv(path: Path) -> Path:
 
 def _install_runtime_python_deps(python: Path) -> None:
     _run(
-        [str(python), '-m', 'pip', 'install', '--isolated', 'numpy'],
+        [str(python), '-m', 'pip', 'install', '--isolated', 'numpy', 'platformdirs'],
         env=_isolated_env(),
     )
 
@@ -131,6 +134,10 @@ def _copy_package_root(path: Path) -> None:
     for source in (ROOT_DIR / 'datoviz').glob('*.py'):
         shutil.copy2(source, package_dir / source.name)
     shutil.copytree(ROOT_DIR / 'datoviz' / 'experimental', package_dir / 'experimental')
+    shutil.copytree(
+        ROOT_DIR / 'tools' / 'datoviz_build_backend',
+        path / 'tools' / 'datoviz_build_backend',
+    )
     if not (package_dir / '_ctypes.py').exists():
         raise RuntimeError('datoviz/_ctypes.py is missing; run `just ctypes` first')
     if not (package_dir / '_array_facade.py').exists():

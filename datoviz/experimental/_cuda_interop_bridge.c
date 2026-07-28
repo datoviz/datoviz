@@ -1,5 +1,5 @@
 /*
- * Advanced CUDA external-memory bridge for the raw CuPy smoke.
+ * Advanced CUDA external-memory bridge for experimental Datoviz scene buffers.
  *
  * This helper is intentionally tiny and optional. It owns CUDA Runtime external-memory and
  * external-semaphore imports created from Datoviz/Vulkan-exported opaque FDs, and exposes only the

@@ -354,6 +354,10 @@ def _pip_install(python: Path, cwd: Path, args: list[str]) -> None:
 def _python_smokes(python: Path, work: Path, *, require_precompiled_shaders: bool = False) -> None:
     _run([str(python), "-c", "import datoviz; print(datoviz.__file__)"], cwd=work)
     _run([str(python), "-c", "import datoviz.raw as dvz; print(dvz.__file__)"], cwd=work)
+    _run(
+        [str(python), "-c", "import datoviz.experimental.cuda as cuda; print(cuda.__file__)"],
+        cwd=work,
+    )
     _builtin_shader_resource_smoke(
         python, work, require_precompiled_shaders=require_precompiled_shaders
     )

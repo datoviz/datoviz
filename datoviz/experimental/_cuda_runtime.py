@@ -1,4 +1,4 @@
-"""Internal CuPy/CUDA interop owner used by raw smoke tests.
+"""Private CuPy/CUDA interop owner for experimental Datoviz scene buffers.
 
 This is not a public Datoviz API. It wraps the current Linux/NVIDIA proof path:
 Datoviz/Vulkan-owned buffer -> CUDA import -> CuPy array -> explicit timeline sync -> DRP2
@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import ctypes
+import hashlib
+from importlib import resources
 import os
 import platform
 import shutil
@@ -17,11 +19,7 @@ import sys
 from pathlib import Path
 from typing import NoReturn
 
-
-ROOT_DIR = Path(__file__).resolve().parents[2]
-BRIDGE_SOURCE = ROOT_DIR / 'tools' / 'bindings' / 'cuda_interop_bridge.c'
-BRIDGE_BUILD_DIR = ROOT_DIR / 'build' / 'bindings'
-BRIDGE_LIBRARY = BRIDGE_BUILD_DIR / 'libdatoviz_cuda_interop_bridge.so'
+from platformdirs import user_cache_dir
 
 VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT = 0x00000001
 VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT = 0x00000001
@@ -160,7 +158,11 @@ def _cuda_toolkit_paths() -> tuple[Path, Path] | None:
         value = os.environ.get(name)
         if value:
             roots.append(Path(value))
-    roots.extend([Path('/usr/local/cuda'), Path('/usr/local/cuda-12.8')])
+    nvcc = shutil.which('nvcc')
+    if nvcc is not None:
+        roots.append(Path(nvcc).resolve().parent.parent)
+    roots.append(Path('/usr/local/cuda'))
+    roots.extend(sorted(Path('/usr/local').glob('cuda-*'), reverse=True))
 
     for root in roots:
         include_candidates = [root / 'include', root / 'targets' / 'x86_64-linux' / 'include']
@@ -174,6 +176,17 @@ def _cuda_toolkit_paths() -> tuple[Path, Path] | None:
     return None
 
 
+def _bridge_cache_path(source: Path, lib_dir: Path) -> Path:
+    digest = hashlib.sha256()
+    digest.update(source.read_bytes())
+    digest.update(os.fsencode(os.fspath(lib_dir.resolve())))
+    digest.update(os.fsencode(platform.machine()))
+    cache_dir = (
+        Path(user_cache_dir('datoviz', 'datoviz')) / 'cuda-interop' / digest.hexdigest()[:20]
+    )
+    return cache_dir / 'libdatoviz_cuda_interop_bridge.so'
+
+
 def build_bridge() -> Path:
     require_linux()
     paths = _cuda_toolkit_paths()
@@ -184,34 +197,38 @@ def build_bridge() -> Path:
     if cc is None:
         skip('C compiler not found for CUDA bridge')
 
-    BRIDGE_BUILD_DIR.mkdir(parents=True, exist_ok=True)
-    if BRIDGE_LIBRARY.exists() and BRIDGE_LIBRARY.stat().st_mtime >= BRIDGE_SOURCE.stat().st_mtime:
-        return BRIDGE_LIBRARY
-
-    cmd = [
-        cc,
-        '-Wall',
-        '-Wextra',
-        '-Werror',
-        '-fPIC',
-        '-shared',
-        str(BRIDGE_SOURCE),
-        '-o',
-        str(BRIDGE_LIBRARY),
-        f'-I{include_dir}',
-        f'-L{lib_dir}',
-        '-lcudart',
-        f'-Wl,-rpath,{lib_dir}',
-    ]
-    try:
-        subprocess.run(
-            cmd, cwd=ROOT_DIR, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-    except subprocess.CalledProcessError as exc:
-        detail = exc.stderr.decode(errors='replace').splitlines()[:1]
-        suffix = f': {detail[0]}' if detail else ''
-        skip(f'CUDA bridge build failed{suffix}')
-    return BRIDGE_LIBRARY
+    source_resource = resources.files(__package__).joinpath('_cuda_interop_bridge.c')
+    with resources.as_file(source_resource) as source:
+        bridge = _bridge_cache_path(source, lib_dir)
+        if bridge.exists():
+            return bridge
+        bridge.parent.mkdir(parents=True, exist_ok=True)
+        temporary = bridge.with_suffix(f'.tmp.{os.getpid()}.so')
+        cmd = [
+            cc,
+            '-Wall',
+            '-Wextra',
+            '-Werror',
+            '-fPIC',
+            '-shared',
+            str(source),
+            '-o',
+            str(temporary),
+            f'-I{include_dir}',
+            f'-L{lib_dir}',
+            '-lcudart',
+            f'-Wl,-rpath,{lib_dir}',
+        ]
+        try:
+            subprocess.run(cmd, cwd=bridge.parent, check=True, capture_output=True)  # noqa: S603
+            os.replace(temporary, bridge)
+        except (OSError, subprocess.CalledProcessError) as exc:
+            temporary.unlink(missing_ok=True)
+            stderr = exc.stderr if isinstance(exc, subprocess.CalledProcessError) else b''
+            detail = stderr.decode(errors='replace').splitlines()[:1]
+            suffix = f': {detail[0]}' if detail else ''
+            skip(f'CUDA bridge build failed{suffix}')
+    return bridge
 
 
 def load_bridge():
@@ -342,7 +359,6 @@ def scene_setup_caps(dvz):
 
 
 def require_raw_surface():
-    sys.path.insert(0, str(ROOT_DIR))
     try:
         import datoviz.raw as dvz  # noqa: PLC0415
     except Exception as exc:  # pragma: no cover - environment gate
