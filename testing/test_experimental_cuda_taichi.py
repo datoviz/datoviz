@@ -69,3 +69,28 @@ def test_taichi_requires_the_cuda_backend(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(cuda.importlib, 'import_module', lambda _name: taichi)
     with pytest.raises(cuda.CudaInteropUnavailable, match='ti.init'):
         cuda._require_taichi()
+
+
+def test_image_taichi_write_reuses_the_same_ordering_adapter(monkeypatch: pytest.MonkeyPatch):
+    """The image wrapper keeps Taichi's conservative stream boundary unchanged."""
+
+    stream = _FakeStream()
+    taichi = _FakeTaichi()
+
+    class _Image:
+        _shared = object()
+
+        def _require_open(self):
+            return None
+
+        @contextmanager
+        def torch_write(self, selected_stream):
+            assert selected_stream is stream
+            yield 'image-tensor'
+
+    monkeypatch.setattr(cuda, '_require_torch', lambda: _FakeTorch(stream))
+    monkeypatch.setattr(cuda, '_require_taichi', lambda: taichi)
+    with cuda.CudaSceneImageBuffer.taichi_write(_Image()) as tensor:
+        assert tensor == 'image-tensor'
+    assert stream.synchronized == 1
+    assert taichi.synchronized == 1

@@ -2,22 +2,23 @@
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 import ctypes
 import importlib
+from contextlib import contextmanager
 from typing import Iterator
 
 from datoviz import raw as dvz
 
 from . import _cuda_runtime as _runtime
 
-
 _SCENE_USAGE_BITS = {
     'vertex': _runtime.DVZ_SCENE_BUFFER_USAGE_VERTEX,
     'storage': _runtime.DVZ_SCENE_BUFFER_USAGE_STORAGE,
+    'copy_src': _runtime.DVZ_SCENE_BUFFER_USAGE_COPY_SRC,
 }
 
 _RUNTIME_USAGE_BITS = {
+    'copy_src': _runtime.DVZ_DRP2_BUFFER_USAGE_COPY_SRC,
     'vertex': _runtime.DVZ_DRP2_BUFFER_USAGE_VERTEX,
     'storage': _runtime.DVZ_DRP2_BUFFER_USAGE_STORAGE,
 }
@@ -46,6 +47,30 @@ def _normalize_shape(shape) -> tuple[int, int]:
     if dims[0] <= 0 or dims[1] <= 0:
         raise ValueError('shape dimensions must be positive')
     return dims
+
+
+def _normalize_image_shape(shape) -> tuple[int, int, int]:
+    try:
+        dims = tuple(int(v) for v in shape)
+    except TypeError as exc:
+        raise ValueError('image shape must be a three-item iterable `(height, width, 4)`') from exc
+    if len(dims) != 3 or dims[2] != 4 or dims[0] <= 0 or dims[1] <= 0:
+        raise ValueError('image shape must be `(height, width, 4)` with positive dimensions')
+    if dims[0] > 0xFFFFFFFF or dims[1] > 0xFFFFFFFF // 4:
+        raise ValueError('image dimensions exceed the supported tightly packed RGBA8 range')
+    return dims
+
+
+def _normalize_image_dtype(dtype) -> str:
+    if dtype in ('uint8', 'u1') or getattr(dtype, 'name', None) == 'uint8':
+        return 'uint8'
+    raise ValueError('only uint8 RGBA8 CUDA image buffers are supported by this experimental API')
+
+
+def _normalize_image_format(format) -> str:
+    if str(format).lower() == 'rgba8_unorm':
+        return 'rgba8_unorm'
+    raise ValueError('only rgba8_unorm CUDA image buffers are supported by this experimental API')
 
 
 def _usage_bits(usage, table: dict[str, int], kind: str) -> int:
@@ -242,7 +267,9 @@ class CudaSceneBuffer:
                     self._bridge = None
         return False
 
-    def bind_attr(self, visual, attr: bytes | str, first: int = 0, count: int | None = None) -> None:
+    def bind_attr(
+        self, visual, attr: bytes | str, first: int = 0, count: int | None = None
+    ) -> None:
         """Bind this buffer to one visual attribute."""
 
         self._require_open()
@@ -291,15 +318,15 @@ class CudaSceneBuffer:
                 f'PyTorch stream device {torch_device} does not match CuPy device {cupy_device}'
             )
 
-        cupy_stream = self._cp.cuda.ExternalStream(
-            torch_stream.cuda_stream, device_id=cupy_device
-        )
+        cupy_stream = self._cp.cuda.ExternalStream(torch_stream.cuda_stream, device_id=cupy_device)
         try:
             with self._shared.cupy_write(cupy_stream) as array:
                 with torch.cuda.stream(torch_stream):
                     tensor = torch.from_dlpack(array)
                     if int(tensor.data_ptr()) != int(array.data.ptr):
-                        raise RuntimeError('PyTorch DLPack import did not preserve the CUDA pointer')
+                        raise RuntimeError(
+                            'PyTorch DLPack import did not preserve the CUDA pointer'
+                        )
                     yield tensor
         finally:
             self._shared.wait_for_cuda_writes()
@@ -326,6 +353,130 @@ class CudaSceneBuffer:
                 taichi.sync()
 
 
+class CudaSceneImageBuffer(CudaSceneBuffer):
+    """A CUDA-written RGBA8 image buffer copied into one retained sampled field."""
+
+    def __init__(
+        self, scene, *, shape, dtype='uint8', format='rgba8_unorm', present: bool = False
+    ):
+        self.image_shape = _normalize_image_shape(shape)
+        self.image_dtype = _normalize_image_dtype(dtype)
+        self.format = _normalize_image_format(format)
+        super().__init__(
+            scene,
+            shape=(self.image_shape[0] * self.image_shape[1], 4),
+            dtype='float32',
+            usage=('copy_src',),
+            runtime_usage=('copy_src',),
+            present=present,
+        )
+        self.dtype = self.image_dtype
+        self.shape = self.image_shape
+
+    @property
+    def count(self) -> int:
+        return self.image_shape[0] * self.image_shape[1]
+
+    @property
+    def components(self) -> int:
+        return self.image_shape[2]
+
+    @property
+    def height(self) -> int:
+        return self.image_shape[0]
+
+    @property
+    def width(self) -> int:
+        return self.image_shape[1]
+
+    @property
+    def channels(self) -> int:
+        return self.image_shape[2]
+
+    @property
+    def field(self):
+        self._require_open()
+        return self._shared.field
+
+    @property
+    def array(self):
+        self._require_open()
+        return self._shared.array
+
+    def _open_with(
+        self, raw_surface, cp, bridge, clear_runtime_on_close: bool, session_runtime=None
+    ) -> None:
+        if self._shared is not None:
+            raise RuntimeError('CUDA image buffer is already open')
+        self._raw_surface = raw_surface
+        self._cp = cp
+        self._bridge = bridge
+        self._clear_runtime_on_close = clear_runtime_on_close
+        if session_runtime is None:
+            self._owns_shared = True
+            self._shared = _runtime.CudaImageBufferRuntime(
+                raw_surface, cp, bridge, self.scene, shape=self.image_shape, present=self.present
+            )
+            self._shared.__enter__()
+        else:
+            self._owns_shared = False
+            self._shared = session_runtime.image_buffer(shape=self.image_shape)
+
+    @contextmanager
+    def cupy_write(self, stream=None) -> Iterator:
+        self._require_open()
+        with self._shared.cupy_write(stream) as array:
+            yield array
+
+    @contextmanager
+    def torch_write(self, stream=None) -> Iterator:
+        self._require_open()
+        torch = _require_torch()
+        torch_stream = torch.cuda.current_stream() if stream is None else stream
+        if not hasattr(torch_stream, 'cuda_stream'):
+            raise CudaInteropUnavailable('torch_write() requires a torch.cuda.Stream')
+        torch_device = _torch_stream_device_index(torch, torch_stream)
+        cupy_device = int(self._cp.cuda.runtime.getDevice())
+        if torch_device != cupy_device:
+            raise CudaInteropUnavailable(
+                f'PyTorch stream device {torch_device} does not match CuPy device {cupy_device}'
+            )
+        cupy_stream = self._cp.cuda.ExternalStream(torch_stream.cuda_stream, device_id=cupy_device)
+        with self._shared.cupy_write(cupy_stream) as array:
+            with torch.cuda.stream(torch_stream):
+                tensor = torch.from_dlpack(array)
+                if int(tensor.data_ptr()) != int(array.data.ptr):
+                    raise RuntimeError('PyTorch DLPack import did not preserve the CUDA pointer')
+                yield tensor
+
+    @contextmanager
+    def taichi_write(self, stream=None) -> Iterator:
+        self._require_open()
+        taichi = _require_taichi()
+        torch = _require_torch()
+        torch_stream = torch.cuda.current_stream() if stream is None else stream
+        with self.torch_write(torch_stream) as tensor:
+            torch_stream.synchronize()
+            try:
+                yield tensor
+            finally:
+                taichi.sync()
+
+    def bind_field(self, visual, slot: bytes | str = 'field') -> None:
+        """Bind this image's retained sampled field to one visual slot."""
+
+        self._require_open()
+        slot_bytes = slot if isinstance(slot, bytes) else slot.encode()
+        if self._raw_surface.dvz_visual_set_field(visual, slot_bytes, self.field) != 0:
+            raise RuntimeError(f'dvz_visual_set_field({slot!r}) failed')
+
+    def wait_for_writes(self) -> None:
+        """Reject the ordinary-buffer wait operation, which is not an image transfer."""
+
+        self._require_open()
+        raise RuntimeError('CUDA image writes are consumed by the next Datoviz render')
+
+
 def scene_buffer(
     scene,
     *,
@@ -345,6 +496,14 @@ def scene_buffer(
         runtime_usage=runtime_usage,
         present=present,
     )
+
+
+def image_buffer(
+    scene, *, shape, dtype='uint8', format='rgba8_unorm', present: bool = False
+) -> CudaSceneImageBuffer:
+    """Create an experimental CUDA-backed tightly packed RGBA8 sampled image."""
+
+    return CudaSceneImageBuffer(scene, shape=shape, dtype=dtype, format=format, present=present)
 
 
 class CudaSceneSession:
@@ -428,6 +587,27 @@ class CudaSceneSession:
         self._buffers.append(buffer)
         return buffer
 
+    def image_buffer(self, *, shape, dtype='uint8', format='rgba8_unorm') -> CudaSceneImageBuffer:
+        """Create and open one CUDA-backed RGBA8 image in this session."""
+
+        self._require_open()
+        buffer = CudaSceneImageBuffer(
+            self.scene,
+            shape=shape,
+            dtype=dtype,
+            format=format,
+            present=self.present,
+        )
+        buffer._open_with(
+            self._raw_surface,
+            self._cp,
+            self._bridge,
+            clear_runtime_on_close=False,
+            session_runtime=self._session,
+        )
+        self._buffers.append(buffer)
+        return buffer
+
     def app_resources(self, figure):
         """Return app resources using all CUDA-backed scene buffers in this session."""
 
@@ -455,9 +635,7 @@ class CudaSceneSession:
         config.enable_canvas_extensions = False
         config.enable_glfw_extensions = False
         config.schedule_mode = dvz.DvzAppScheduleMode.DVZ_APP_SCHEDULE_CONTINUOUS
-        app = dvz.dvz_app_with_resources(
-            self.scene, ctypes.byref(config), ctypes.byref(resources)
-        )
+        app = dvz.dvz_app_with_resources(self.scene, ctypes.byref(config), ctypes.byref(resources))
         if not app:
             raise CudaInteropUnavailable('dvz_app_with_resources() failed')
         title_bytes = title if isinstance(title, bytes) else title.encode()
@@ -465,6 +643,26 @@ class CudaSceneSession:
         if not view:
             dvz.dvz_app_destroy(app)
             raise CudaInteropUnavailable('dvz_view_glfw() failed')
+        return app, view
+
+    def offscreen_app(self, figure, width: int, height: int, after_resources=None):
+        """Create an offscreen app/view pair using this session's interop runtime resources."""
+
+        resources = self.app_resources(figure)
+        if after_resources is not None:
+            after_resources()
+        config = dvz.dvz_app_config()
+        config.instance_extension_count = 0
+        config.instance_extensions = None
+        config.enable_canvas_extensions = False
+        config.enable_glfw_extensions = False
+        app = dvz.dvz_app_with_resources(self.scene, ctypes.byref(config), ctypes.byref(resources))
+        if not app:
+            raise CudaInteropUnavailable('dvz_app_with_resources() failed')
+        view = dvz.dvz_view_offscreen(app, figure, width, height)
+        if not view:
+            dvz.dvz_app_destroy(app)
+            raise CudaInteropUnavailable('dvz_view_offscreen() failed')
         return app, view
 
 

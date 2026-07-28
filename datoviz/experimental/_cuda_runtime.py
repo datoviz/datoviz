@@ -7,15 +7,15 @@ external-buffer registration.
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 import ctypes
 import hashlib
-from importlib import resources
 import os
 import platform
 import shutil
 import subprocess
 import sys
+from contextlib import contextmanager
+from importlib import resources
 from pathlib import Path
 from typing import NoReturn
 
@@ -31,6 +31,8 @@ DVZ_ALLOC_DEDICATED_MEMORY = 0x00000001
 DVZ_SCENE_SHADER_FORMAT_GLSL = 1
 DVZ_SCENE_BUFFER_USAGE_VERTEX = 0x0001
 DVZ_SCENE_BUFFER_USAGE_STORAGE = 0x0008
+DVZ_SCENE_BUFFER_USAGE_COPY_SRC = 0x0010
+DVZ_DRP2_BUFFER_USAGE_COPY_SRC = 0x0001
 DVZ_DRP2_BUFFER_USAGE_VERTEX = 0x0010
 DVZ_DRP2_BUFFER_USAGE_STORAGE = 0x0080
 DRP2_ID_COLOR_TARGET = 1
@@ -75,6 +77,7 @@ REQUIRED_RAW_SYMBOLS = (
     'DvzInteropBufferExportConfig',
     'dvz_interop_buffer_export_from_buffer',
     'dvz_interop_buffer_wait_timeline',
+    'DvzDrp2ExternalBufferTimelineDesc',
     'dvz_interop_gpu_ctx',
     'dvz_interop_gpu_ctx_ex',
     'dvz_gpu_ctx_alloc',
@@ -100,6 +103,9 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_drp2_runtime_vklite_config',
     'dvz_drp2_runtime_vklite',
     'dvz_drp2_runtime_register_external_buffer',
+    'dvz_drp2_external_buffer_timeline_desc',
+    'dvz_drp2_runtime_arm_external_buffer_timeline',
+    'dvz_drp2_runtime_external_buffer_timeline_pending',
     'dvz_drp2_runtime_execute',
     'dvz_drp2_runtime_download_buffer',
     'dvz_drp2_runtime_destroy',
@@ -130,6 +136,12 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_window_host_required_extension_count',
     'dvz_window_host_required_extensions',
     'dvz_scene_buffer_resource_key',
+    'dvz_sampled_field',
+    'dvz_sampled_field_desc',
+    'dvz_sampled_field_destroy',
+    'dvz_sampled_field_set_buffer',
+    'dvz_sampled_field_invalidate',
+    'dvz_visual_set_field',
     'dvz_drp2_stream_label_id',
 )
 
@@ -256,11 +268,15 @@ def load_bridge():
     bridge.dvz_cuda_bridge_size.argtypes = [DvzCudaInteropBridgePtr]
     bridge.dvz_cuda_bridge_size.restype = ctypes.c_uint64
     bridge.dvz_cuda_bridge_wait.argtypes = [
-        DvzCudaInteropBridgePtr, ctypes.c_uint64, ctypes.c_uint64
+        DvzCudaInteropBridgePtr,
+        ctypes.c_uint64,
+        ctypes.c_uint64,
     ]
     bridge.dvz_cuda_bridge_wait.restype = ctypes.c_int
     bridge.dvz_cuda_bridge_signal.argtypes = [
-        DvzCudaInteropBridgePtr, ctypes.c_uint64, ctypes.c_uint64
+        DvzCudaInteropBridgePtr,
+        ctypes.c_uint64,
+        ctypes.c_uint64,
     ]
     bridge.dvz_cuda_bridge_signal.restype = ctypes.c_int
     bridge.dvz_cuda_bridge_destroy.argtypes = [DvzCudaInteropBridgePtr]
@@ -312,6 +328,45 @@ def validate_raw_surface(dvz) -> None:
     wait_fn = dvz.dvz_interop_buffer_wait_timeline
     if wait_fn.argtypes != wait_args or wait_fn.restype is not ctypes.c_bool:
         raise RuntimeError('dvz_interop_buffer_wait_timeline ctypes signature is stale')
+
+    timeline_fields = ('struct_size', 'flags', 'semaphore', 'wait_value', 'signal_value')
+    if field_names(dvz.DvzDrp2ExternalBufferTimelineDesc) != timeline_fields:
+        raise RuntimeError('DvzDrp2ExternalBufferTimelineDesc ctypes layout is stale')
+    arm_fn = dvz.dvz_drp2_runtime_arm_external_buffer_timeline
+    arm_args = [
+        ctypes.POINTER(dvz.DvzDrp2Runtime),
+        ctypes.c_uint64,
+        ctypes.POINTER(dvz.DvzDrp2ExternalBufferTimelineDesc),
+    ]
+    if arm_fn.argtypes != arm_args or arm_fn.restype is not ctypes.c_bool:
+        raise RuntimeError(
+            'dvz_drp2_runtime_arm_external_buffer_timeline ctypes signature is stale'
+        )
+    default_fn = dvz.dvz_drp2_external_buffer_timeline_desc
+    if (
+        default_fn.argtypes != []
+        or default_fn.restype is not dvz.DvzDrp2ExternalBufferTimelineDesc
+    ):
+        raise RuntimeError('dvz_drp2_external_buffer_timeline_desc ctypes signature is stale')
+    pending_fn = dvz.dvz_drp2_runtime_external_buffer_timeline_pending
+    pending_args = [ctypes.POINTER(dvz.DvzDrp2Runtime), ctypes.c_uint64]
+    if pending_fn.argtypes != pending_args or pending_fn.restype is not ctypes.c_bool:
+        raise RuntimeError(
+            'dvz_drp2_runtime_external_buffer_timeline_pending ctypes signature is stale'
+        )
+    if (
+        dvz.dvz_sampled_field_set_buffer.argtypes
+        != [
+            ctypes.POINTER(dvz.DvzSampledField),
+            ctypes.POINTER(dvz.DvzSceneBuffer),
+        ]
+        or dvz.dvz_sampled_field_set_buffer.restype is not ctypes.c_int
+    ):
+        raise RuntimeError('dvz_sampled_field_set_buffer ctypes signature is stale')
+    if dvz.dvz_sampled_field_invalidate.argtypes != [ctypes.POINTER(dvz.DvzSampledField)] or (
+        dvz.dvz_sampled_field_invalidate.restype is not ctypes.c_int
+    ):
+        raise RuntimeError('dvz_sampled_field_invalidate ctypes signature is stale')
 
 
 def interop_buffer_export_config(dvz, semaphore, drp2_usage: int):
@@ -450,6 +505,7 @@ class ExportedDatovizBuffer:
         dvz,
         count: int,
         components: int = POSITION_COMPONENTS,
+        byte_size: int | None = None,
         present: bool = False,
         context=None,
         drp2_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE,
@@ -457,7 +513,11 @@ class ExportedDatovizBuffer:
         self.dvz = dvz
         self.count = count
         self.components = components
-        self.size = count * components * POSITION_DTYPE_SIZE
+        self.size = (
+            count * components * POSITION_DTYPE_SIZE if byte_size is None else int(byte_size)
+        )
+        if self.size <= 0:
+            raise ValueError('byte_size must be positive')
         self.present = present
         self.context = context
         self._owned_context = None
@@ -516,9 +576,12 @@ class ExportedDatovizBuffer:
         )
 
         cfg = interop_buffer_export_config(dvz, self.semaphore, self.drp2_usage)
-        if dvz.dvz_interop_buffer_export_from_buffer(
-            self.buffer, ctypes.byref(cfg), ctypes.byref(self.desc)
-        ) != 0:
+        if (
+            dvz.dvz_interop_buffer_export_from_buffer(
+                self.buffer, ctypes.byref(cfg), ctypes.byref(self.desc)
+            )
+            != 0
+        ):
             raise RuntimeError('dvz_interop_buffer_export_from_buffer() failed')
         if self.desc.memory_handle < 0 or self.desc.semaphore_handle < 0:
             raise RuntimeError('interop export did not return memory and semaphore handles')
@@ -639,6 +702,9 @@ class CudaMappedDatovizBuffer:
         bridge,
         count: int,
         components: int = POSITION_COMPONENTS,
+        shape: tuple[int, ...] | None = None,
+        dtype=None,
+        byte_size: int | None = None,
         present: bool = False,
         context=None,
         drp2_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE,
@@ -650,12 +716,15 @@ class CudaMappedDatovizBuffer:
             dvz,
             count=count,
             components=components,
+            byte_size=byte_size,
             present=present,
             context=context,
             drp2_usage=drp2_usage,
         )
         self.owner: CudaMappedBufferOwner | None = None
         self.array = None
+        self.shape = (count, components) if shape is None else tuple(shape)
+        self.dtype = cp.float32 if dtype is None else dtype
         self.cuda_ready_value = 0
         self.vulkan_ready_value = 0
         self._next_value = 1
@@ -695,9 +764,7 @@ class CudaMappedDatovizBuffer:
         device_id = self.cp.cuda.runtime.getDevice()
         unowned = self.cp.cuda.UnownedMemory(ptr, size, self.owner, device_id=device_id)
         memptr = self.cp.cuda.MemoryPointer(unowned, 0)
-        self.array = self.cp.ndarray(
-            (self.exported.count, self.exported.components), dtype=self.cp.float32, memptr=memptr
-        )
+        self.array = self.cp.ndarray(self.shape, dtype=self.dtype, memptr=memptr)
         return self
 
     @contextmanager
@@ -746,6 +813,25 @@ class CudaMappedDatovizBuffer:
         self.register_external_buffer(runtime, buffer_id, usage=usage)
         return buffer_id
 
+    def arm_timeline(self, runtime, buffer_id: int) -> bool:
+        """Arm the next BufferToTexture consumption of the latest CUDA write."""
+
+        if self.cuda_ready_value == 0:
+            return False
+        if self.dvz.dvz_drp2_runtime_external_buffer_timeline_pending(runtime, buffer_id):
+            raise RuntimeError('the previous CUDA image write has not been consumed by Datoviz')
+        desc = self.dvz.dvz_drp2_external_buffer_timeline_desc()
+        desc.semaphore = self.semaphore
+        desc.wait_value = self.cuda_ready_value
+        desc.signal_value = self._next_value
+        if not self.dvz.dvz_drp2_runtime_arm_external_buffer_timeline(
+            runtime, buffer_id, ctypes.byref(desc)
+        ):
+            raise RuntimeError('dvz_drp2_runtime_arm_external_buffer_timeline() failed')
+        self._next_value += 1
+        self.vulkan_ready_value = desc.signal_value
+        return True
+
     def __exit__(self, exc_type, exc, tb):
         if self.owner is not None:
             self.owner.close()
@@ -770,6 +856,10 @@ class CudaSceneBufferRuntime:
         scene,
         count: int,
         components: int = POSITION_COMPONENTS,
+        array_shape: tuple[int, ...] | None = None,
+        array_dtype=None,
+        byte_size: int | None = None,
+        stride: int | None = None,
         scene_usage: int = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
         runtime_usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX,
         present: bool = False,
@@ -781,6 +871,10 @@ class CudaSceneBufferRuntime:
         self.scene = scene
         self.count = count
         self.components = components
+        self.array_shape = (count, components) if array_shape is None else tuple(array_shape)
+        self.array_dtype = cp.float32 if array_dtype is None else array_dtype
+        self.byte_size = byte_size
+        self.stride = components * POSITION_DTYPE_SIZE if stride is None else int(stride)
         self.scene_usage = scene_usage
         self.runtime_usage = runtime_usage
         self.shared = CudaMappedDatovizBuffer(
@@ -789,6 +883,9 @@ class CudaSceneBufferRuntime:
             bridge,
             count=count,
             components=components,
+            shape=self.array_shape,
+            dtype=self.array_dtype,
+            byte_size=byte_size,
             present=present,
             context=context,
             drp2_usage=runtime_usage,
@@ -818,7 +915,7 @@ class CudaSceneBufferRuntime:
         try:
             desc = self.dvz.DvzSceneBufferDesc()
             desc.usage = self.scene_usage
-            desc.stride = self.components * POSITION_DTYPE_SIZE
+            desc.stride = self.stride
             desc.byte_size = self.shared.size
             self.scene_buffer = self.dvz.dvz_scene_buffer(self.scene, ctypes.byref(desc))
             if not self.scene_buffer:
@@ -834,9 +931,12 @@ class CudaSceneBufferRuntime:
         if self.scene_buffer is None:
             raise RuntimeError('CUDA scene buffer runtime is not open')
         count = self.count if count is None else count
-        if self.dvz.dvz_visual_set_attr_buffer(
-            visual, _as_bytes(attr), self.scene_buffer, first, count
-        ) != 0:
+        if (
+            self.dvz.dvz_visual_set_attr_buffer(
+                visual, _as_bytes(attr), self.scene_buffer, first, count
+            )
+            != 0
+        ):
             raise RuntimeError(f'dvz_visual_set_attr_buffer({attr!r}) failed')
 
     def _emit_setup_stream(self, figure):
@@ -870,6 +970,7 @@ class CudaSceneBufferRuntime:
     def create_app_resources(self, figure):
         if self.runtime is not None:
             return self._resources
+        self._validate_app_resources()
         cfg = self.dvz.dvz_drp2_runtime_vklite_config(self.device, self.allocator)
         self.runtime = self.dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
         if not self.runtime:
@@ -878,12 +979,19 @@ class CudaSceneBufferRuntime:
         try:
             artifact, stream, buffer_id = self._emit_setup_stream(figure)
             self.shared.register_external_buffer(self.runtime, buffer_id, usage=self.runtime_usage)
+            self._runtime_registered(self.runtime, buffer_id)
             result = self.dvz.dvz_drp2_runtime_execute(self.runtime, stream)
             if not result.ok:
                 raise RuntimeError(
                     f'DRP2 setup execution failed: code={result.code}, '
                     f'command={result.command_index}'
                 )
+        except Exception:
+            failed_runtime = self.runtime
+            self._runtime_unregistered()
+            self.dvz.dvz_drp2_runtime_destroy(failed_runtime)
+            self.runtime = None
+            raise
         finally:
             if artifact is not None:
                 self.dvz.dvz_scene_frame_artifact_destroy(artifact)
@@ -921,6 +1029,15 @@ class CudaSceneBufferRuntime:
     def wait_for_cuda_writes(self) -> None:
         self.shared.wait_for_cuda_writes()
 
+    def _runtime_registered(self, runtime, buffer_id: int) -> None:
+        """Record the runtime registration; ordinary buffers have no one-shot handoff."""
+
+    def _runtime_unregistered(self) -> None:
+        """Forget a failed or destroyed runtime registration."""
+
+    def _validate_app_resources(self) -> None:
+        """Validate buffer state before creating runtime resources."""
+
     def __exit__(self, exc_type, exc, tb):
         if self.runtime is not None:
             self.dvz.dvz_drp2_runtime_destroy(self.runtime)
@@ -928,6 +1045,104 @@ class CudaSceneBufferRuntime:
         self._resources = None
         self.scene_buffer = None
         return self.shared.__exit__(exc_type, exc, tb)
+
+
+class CudaImageBufferRuntime(CudaSceneBufferRuntime):
+    """CUDA-mapped RGBA8 pixel buffer retained by one scene sampled field."""
+
+    def __init__(self, dvz, cp, bridge, scene, *, shape, present=False, context=None):
+        height, width, channels = shape
+        super().__init__(
+            dvz,
+            cp,
+            bridge,
+            scene,
+            count=height * width,
+            components=channels,
+            array_shape=shape,
+            array_dtype=cp.uint8,
+            byte_size=height * width * channels,
+            stride=channels,
+            scene_usage=DVZ_SCENE_BUFFER_USAGE_COPY_SRC,
+            runtime_usage=DVZ_DRP2_BUFFER_USAGE_COPY_SRC,
+            present=present,
+            context=context,
+        )
+        self.height = height
+        self.width = width
+        self.field = None
+        self.handoff_runtime = None
+        self.buffer_id = 0
+
+    def __enter__(self):
+        super().__enter__()
+        try:
+            desc = self.dvz.dvz_sampled_field_desc()
+            desc.dim = self.dvz.DVZ_FIELD_DIM_2D
+            desc.format = self.dvz.DVZ_FIELD_FORMAT_RGBA8_UNORM
+            desc.semantic = self.dvz.DVZ_FIELD_SEMANTIC_COLOR
+            desc.color_role = self.dvz.DVZ_COLOR_ROLE_SRGB_COLOR
+            desc.width = self.width
+            desc.height = self.height
+            desc.depth = 1
+            self.field = self.dvz.dvz_sampled_field(self.scene, ctypes.byref(desc))
+            if not self.field:
+                raise RuntimeError('dvz_sampled_field(CUDA image buffer) failed')
+            if self.dvz.dvz_sampled_field_set_buffer(self.field, self.scene_buffer) != 0:
+                raise RuntimeError('dvz_sampled_field_set_buffer() failed')
+        except Exception:
+            if self.field is not None:
+                self.dvz.dvz_sampled_field_destroy(self.field)
+                self.field = None
+            super().__exit__(*sys.exc_info())
+            raise
+        return self
+
+    def _validate_app_resources(self) -> None:
+        if self.shared.cuda_ready_value == 0:
+            raise RuntimeError('write the CUDA image before creating app resources')
+
+    def _runtime_registered(self, runtime, buffer_id: int) -> None:
+        if not self.shared.arm_timeline(runtime, buffer_id):
+            raise RuntimeError('write the CUDA image before creating app resources')
+        self.handoff_runtime = runtime
+        self.buffer_id = buffer_id
+
+    def _runtime_unregistered(self) -> None:
+        self.handoff_runtime = None
+        self.buffer_id = 0
+
+    def cupy_write(self, stream=None):
+        if (
+            self.handoff_runtime is not None
+            and self.buffer_id
+            and self.dvz.dvz_drp2_runtime_external_buffer_timeline_pending(
+                self.handoff_runtime, self.buffer_id
+            )
+        ):
+            raise RuntimeError('the previous CUDA image write has not been consumed by Datoviz')
+        return self._image_cupy_write(stream)
+
+    @contextmanager
+    def _image_cupy_write(self, stream=None):
+        previous_cuda_ready_value = self.shared.cuda_ready_value
+        try:
+            with self.shared.cupy_write(stream) as array:
+                yield array
+        finally:
+            if self.shared.cuda_ready_value != previous_cuda_ready_value:
+                if self.dvz.dvz_sampled_field_invalidate(self.field) != 0:
+                    raise RuntimeError('dvz_sampled_field_invalidate() failed')
+                if self.handoff_runtime is not None and self.buffer_id:
+                    self.shared.arm_timeline(self.handoff_runtime, self.buffer_id)
+
+    def __exit__(self, exc_type, exc, tb):
+        if self.field is not None:
+            self.dvz.dvz_sampled_field_destroy(self.field)
+        self.field = None
+        self.handoff_runtime = None
+        self.buffer_id = 0
+        return super().__exit__(exc_type, exc, tb)
 
 
 class CudaSceneSessionRuntime:
@@ -982,6 +1197,22 @@ class CudaSceneSessionRuntime:
         self.buffers.append(buffer)
         return buffer
 
+    def image_buffer(self, *, shape: tuple[int, int, int]) -> CudaImageBufferRuntime:
+        if self.runtime is not None:
+            raise RuntimeError('create CUDA image buffers before creating app resources')
+        buffer = CudaImageBufferRuntime(
+            self.dvz,
+            self.cp,
+            self.bridge,
+            self.scene,
+            shape=shape,
+            present=self.present,
+            context=self.context,
+        )
+        buffer.__enter__()
+        self.buffers.append(buffer)
+        return buffer
+
     def _emit_setup_stream(self, figure):
         if not self.buffers:
             raise RuntimeError('create at least one CUDA scene buffer before app resources')
@@ -1003,6 +1234,8 @@ class CudaSceneSessionRuntime:
     def create_app_resources(self, figure):
         if self.runtime is not None:
             return self._resources
+        for buffer in self.buffers:
+            buffer._validate_app_resources()
         cfg = self.dvz.dvz_drp2_runtime_vklite_config(self.device, self.allocator)
         self.runtime = self.dvz.dvz_drp2_runtime_vklite(ctypes.byref(cfg))
         if not self.runtime:
@@ -1011,15 +1244,22 @@ class CudaSceneSessionRuntime:
         try:
             artifact, stream = self._emit_setup_stream(figure)
             for buffer in self.buffers:
-                buffer.shared.register_scene_buffer(
+                buffer_id = buffer.shared.register_scene_buffer(
                     self.runtime, stream, buffer.scene_buffer, usage=buffer.runtime_usage
                 )
+                buffer._runtime_registered(self.runtime, buffer_id)
             result = self.dvz.dvz_drp2_runtime_execute(self.runtime, stream)
             if not result.ok:
                 raise RuntimeError(
                     f'DRP2 setup execution failed: code={result.code}, '
                     f'command={result.command_index}'
                 )
+        except Exception:
+            for buffer in self.buffers:
+                buffer._runtime_unregistered()
+            self.dvz.dvz_drp2_runtime_destroy(self.runtime)
+            self.runtime = None
+            raise
         finally:
             if artifact is not None:
                 self.dvz.dvz_scene_frame_artifact_destroy(artifact)

@@ -105,6 +105,24 @@ def test_torch_write_rejects_a_different_cuda_device(monkeypatch: pytest.MonkeyP
             pass
 
 
+def test_image_torch_write_reuses_the_zero_copy_stream_adapter(monkeypatch: pytest.MonkeyPatch):
+    """Image writers use the same DLPack and selected-stream path as ordinary buffers."""
+
+    stream = _FakeTorchStream()
+    torch = _FakeTorch(stream)
+    shared = _FakeShared()
+    image = cuda.CudaSceneImageBuffer.__new__(cuda.CudaSceneImageBuffer)
+    image._shared = shared
+    image._cp = _buffer(shared)._cp
+    monkeypatch.setattr(cuda, '_require_torch', lambda: torch)
+
+    with image.torch_write() as tensor:
+        assert tensor.data_ptr() == 1234
+
+    assert shared.stream.ptr == stream.cuda_stream
+    assert shared.waited == 0
+
+
 def test_torch_write_reports_missing_pytorch(monkeypatch: pytest.MonkeyPatch):
     """A missing optional PyTorch dependency is a public availability error."""
 
