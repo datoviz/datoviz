@@ -2,7 +2,7 @@
 
 **Your program at the end of this chapter: 9 lines.**
 
-Nothing is drawn in this chapter. The goal is narrower and more important: a project directory, a
+Nothing is drawn in this chapter; the goal is narrower and more important: a project directory, a
 build you can run with one command, and proof that your compiler, the Datoviz headers, and the
 Datoviz library agree with each other. Every later chapter assumes this works, and a build problem
 discovered in chapter 12 is much harder to read than the same problem discovered now.
@@ -133,8 +133,8 @@ The exact version string is whatever you installed; what matters is that it prin
     cc main.c $(datoviz-config --cflags --libs) -o vkcourse && ./vkcourse
     ```
 
-    Convenient while iterating. It is not available for MSVC on Windows, which is why CMake is the
-    course's default.
+    This is convenient while iterating, but it is not available for MSVC on Windows, which is why
+    CMake is the course's default.
 
 ## When it goes wrong
 

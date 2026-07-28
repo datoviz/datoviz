@@ -69,8 +69,8 @@ frames go: presented to the screen, or kept in memory for you to read back.
     DvzWindowHost* host = dvz_window_host();
 ```
 
-One host per program. It owns the connection to the platform's windowing system and the event queue
-you will pump in the render loop.
+Your program needs exactly one of these. It owns the connection to the platform's windowing system
+and the event queue you will pump in the render loop.
 
 ## The GPU context
 
@@ -310,16 +310,16 @@ validation errors: 0
     A raw Vulkan program reaching this same dark blue window writes, roughly:
 
     - `vkCreateInstance` with the right extensions for your platform, plus the debug-messenger
-      plumbing that makes validation errors readable — about 80 lines.
+      plumbing that makes validation errors readable (about 80 lines).
     - `vkEnumeratePhysicalDevices`, then scoring each candidate for the extensions, features, and
-      queue families you need — about 150 lines.
-    - `vkCreateDevice`, requesting queues and chaining several feature structs — about 80 lines.
+      queue families you need (about 150 lines).
+    - `vkCreateDevice`, requesting queues and chaining several feature structs (about 80 lines).
     - A platform surface, then swapchain creation: querying supported formats and present modes,
       choosing one, picking an image count, creating the swapchain, retrieving its images, and
-      creating a view for each — about 250 lines.
-    - A command pool, command buffers, and per-frame semaphores and fences — about 100 lines.
+      creating a view for each (about 250 lines).
+    - A command pool, command buffers, and per-frame semaphores and fences (about 100 lines).
     - An acquire/record/submit/present sequence with correct wait stages, plus detecting
-      `VK_ERROR_OUT_OF_DATE_KHR` and rebuilding the entire swapchain on resize — about 200 lines.
+      `VK_ERROR_OUT_OF_DATE_KHR` and rebuilding the entire swapchain on resize (about 200 lines).
 
     That is the roughly 900 lines the canvas replaced. Not one of them is about graphics, which is
     why this course does not spend three chapters on them. But you now know what they are, and

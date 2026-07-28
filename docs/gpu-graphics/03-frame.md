@@ -22,8 +22,8 @@ lag is the reason Vulkan needs so much synchronization, and the reason the canva
 
 Two consequences deserve attention now, because both are common sources of confusion:
 
-- **Recording is not drawing.** When `draw` returns, nothing has happened on the GPU yet. Nothing
-  happens until `dvz_canvas_submit`.
+- **Recording happens on the CPU; drawing happens later, on the GPU.** When `draw` returns, nothing
+  has happened on the GPU yet, and nothing will until `dvz_canvas_submit`.
 - **Anything the recorded commands point at must still exist when the GPU gets there.** A buffer you
   free at the end of your callback is a buffer the GPU may read after it is gone. Ownership, in this
   course, is not bookkeeping pedantry; it is the difference between a picture and a crash.
@@ -35,7 +35,7 @@ Your callback receives a `DvzStreamFrame*`. Three of its fields matter for now:
 | Field | What it is |
 | --- | --- |
 | `frame->command_buffer` | A command buffer the canvas has already opened for recording. You write into it. |
-| `frame->image_view` | The image this frame renders into — one of the swapchain images in live mode. |
+| `frame->image_view` | The image this frame renders into (one of the swapchain images in live mode). |
 | `frame->extent` | Its current size in pixels. This changes when the window is resized. |
 
 All three are **borrowed**. They are valid for the duration of this one call and no longer. Do not
@@ -92,16 +92,16 @@ chapter 10 you will add a depth attachment to the description before beginning t
     dvz_cmd_rendering_end(renderer->commands);
 ```
 
-Closes the pass. Every draw call in this course goes between these two lines. Right now there are
-none, so the frame consists of just the clear.
+This closes the pass. Every draw call in this course goes between these two lines. Right now there
+are none, so the frame consists of just the clear.
 
 ```c
     dvz_commands_unwrap(renderer->commands);
 ```
 
-Detaches your typed wrapper from the borrowed buffer. It does not end, reset, submit, or destroy the
-command buffer; the canvas does all four. Skipping this leaves your `DvzCommands` pointing at a
-handle that is about to become someone else's.
+This detaches your typed wrapper from the borrowed buffer. It does not end, reset, submit, or
+destroy the command buffer; the canvas does all four. Skipping this leaves your `DvzCommands`
+pointing at a handle that is about to become someone else's.
 
 Who owns what, for this chapter:
 
