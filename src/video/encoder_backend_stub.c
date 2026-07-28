@@ -18,7 +18,7 @@
 /*  NVENC video backend stubs                                                                    */
 /*************************************************************************************************/
 
-#if !DVZ_HAS_CUDA
+#if !DVZ_HAS_NVENC
 
 
 
@@ -41,7 +41,7 @@ static int nvenc_init(DvzVideoEncoder* enc)
 static int nvenc_start(DvzVideoEncoder* enc)
 {
     (void)enc;
-    log_warn("NVENC backend unavailable; rebuild with DVZ_HAS_CUDA=ON");
+    log_warn("NVENC backend unavailable; rebuild with NVENC support enabled");
     return -1;
 }
 

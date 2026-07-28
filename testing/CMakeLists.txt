@@ -108,7 +108,7 @@ set(TEST_SOURCES
     "dvztest.c"
 )
 
-if(NOT DVZ_HAS_CUDA)
+if(NOT DVZ_HAS_NVENC)
     list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_nvenc\\.c.*")
     list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_nvenc\\.c.*")
 endif()
@@ -1051,7 +1051,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         target_link_libraries(dvztest_integration PRIVATE CUDA::cudart CUDA::cuda_driver)
         target_link_libraries(dvztest_integration PRIVATE cuda)
 
-        if(DVZ_NVENC_LIB_DIR)
+        if(DVZ_HAS_NVENC AND DVZ_NVENC_LIB_DIR)
             target_link_directories(dvztest PRIVATE "${DVZ_NVENC_LIB_DIR}")
             target_link_directories(dvztest_integration PRIVATE "${DVZ_NVENC_LIB_DIR}")
             # Ensure the loader picks NVENC straight from the repo tree when running tests.
@@ -1059,12 +1059,10 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
             set_property(TARGET dvztest_integration APPEND PROPERTY BUILD_RPATH "${DVZ_NVENC_LIB_DIR}")
         endif()
 
-        if(DVZ_NVENC_LIB)
+        if(DVZ_HAS_NVENC AND DVZ_NVENC_LIB)
             message(STATUS "Linking NVENC library: ${DVZ_NVENC_LIB}")
             target_link_libraries(dvztest PRIVATE ${DVZ_NVENC_LIB})
             target_link_libraries(dvztest_integration PRIVATE ${DVZ_NVENC_LIB})
-        else()
-            message(STATUS "DVZ_HAS_CUDA is ON but DVZ_NVENC_LIB is unset; NVENC tests will rely on runtime availability checks.")
         endif()
 
         # Optional: explicitly add the CUDA kernel file if it exists

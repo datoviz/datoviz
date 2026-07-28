@@ -37,7 +37,7 @@ int test_video_offline_headless_encode(TstContext* suite, const TstCase* tstitem
     AT(sink_cfg.encoder.height == 0);
     AT(sink_cfg.encoder.fps == 0);
 
-#if !(defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ) && !(defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA)
+#if !(defined(DVZ_HAS_KVZ) && DVZ_HAS_KVZ) && !(defined(DVZ_HAS_NVENC) && DVZ_HAS_NVENC)
     tst_skip(suite, "no video backend enabled");
 #endif
 

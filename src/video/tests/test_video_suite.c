@@ -20,7 +20,7 @@ int test_video_1(TstContext* suite, const TstCase* item)
     return 0;
 }
 
-#if !(defined(DVZ_HAS_CUDA) && DVZ_HAS_CUDA)
+#if !(defined(DVZ_HAS_NVENC) && DVZ_HAS_NVENC)
 int test_video_nvenc(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

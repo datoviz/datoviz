@@ -14,7 +14,7 @@ if(DVZ_HAS_KVZ)
     list(APPEND VIDEO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_kvazaar.c)
 endif()
 
-if(DVZ_HAS_CUDA)
+if(DVZ_HAS_NVENC)
     list(APPEND VIDEO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/encoder_backend_nvenc.c)
 endif()
 
@@ -47,9 +47,9 @@ if(WIN32)
     target_compile_definitions(datoviz_video PRIVATE DVZ_SHARED)
 endif()
 
-if(DVZ_HAS_CUDA)
+if(DVZ_HAS_NVENC)
     if(NOT CUDAToolkit_FOUND)
-        message(FATAL_ERROR "DVZ_HAS_CUDA is ON but CUDAToolkit was not propagated to src/video.")
+        message(FATAL_ERROR "DVZ_HAS_NVENC is ON but CUDAToolkit was not propagated to src/video.")
     endif()
 
     target_include_directories(datoviz_video
@@ -69,6 +69,6 @@ if(DVZ_HAS_CUDA)
     if(DVZ_NVENC_LIB)
         message(STATUS "NVENC library found at: ${DVZ_NVENC_LIB} (loaded lazily at runtime)")
     else()
-        message(STATUS "DVZ_HAS_CUDA is ON but DVZ_NVENC_LIB is unset — NVENC will be unavailable at runtime.")
+        message(FATAL_ERROR "DVZ_HAS_NVENC is ON but DVZ_NVENC_LIB is unset.")
     endif()
 endif()
