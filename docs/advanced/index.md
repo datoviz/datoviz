@@ -11,6 +11,10 @@ contracts.
     **advanced/unstable**; WebGPU/WASM and compute-to-render paths are **experimental**.
 
 <div class="dvz-section-grid">
+  <a class="dvz-section-card" href="vulkan/">
+    <strong>Learn GPU graphics</strong>
+    <span>Write a Vulkan renderer from an empty file, up to a textured and lit 3D mesh.</span>
+  </a>
   <a class="dvz-section-card" href="../explanation/architecture/">
     <strong>Understand the engine</strong>
     <span>Learn the object model, architecture, frame lifecycle, and retained-resource model.</span>
@@ -78,6 +82,11 @@ produces presentation, capture, or readback output.
 - [Invalidation and caching](../explanation/invalidation-and-caching.md)
 - [Frame lifecycle](../explanation/frame-lifecycle.md)
 - [GPU resource ownership](../explanation/gpu-resource-ownership.md)
+
+## Learn GPU graphics
+
+- [Modern GPU Graphics in Vulkan](vulkan/index.md) — a course that builds a renderer from an empty
+  C file up to an interactive textured and lit 3D mesh, using `vklite` and the canvas.
 
 ## Runtime and portability
 

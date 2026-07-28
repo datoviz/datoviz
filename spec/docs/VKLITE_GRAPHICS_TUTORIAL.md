@@ -1,6 +1,27 @@
 # Modern GPU Graphics in Vulkan
 
-Status: required final-v0.4 tutorial; RC3 owns the enabling API and three-chapter pilot, and RC4 owns the complete course and installed-artifact proof.
+Status: required final-v0.4 tutorial, under deliberate rewrite as of 2026-07-28. The RC3 three-chapter pilot is withdrawn; the enabling API it validated is kept.
+
+
+## Rewrite Direction (2026-07-28)
+
+The RC3 pilot was withdrawn by maintainer decision: it explained a supplied program instead of teaching the reader to write one. The working structure lives in [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md); this section records only what the rewrite changes in this durable contract. Everything not listed here still holds.
+
+Changed:
+
+1. **The reader writes the program.** Chapter 1 starts from an empty C file and a build the reader creates, and verifies only that Datoviz links. No chapter asks the reader to run a supplied binary, and no chapter directs them into this repository. This supersedes "may begin from supplied working infrastructure" in the Teaching Contract, and the first-result-speed goal is now met by the first *window*, not the first triangle.
+2. **Section and audience placement.** The course belongs to the `Advanced` documentation section, not `Tutorials`. The `Tutorials` section is removed.
+3. **Shader delivery is staged.** Inline GLSL string literals through the first triangle chapter, then a dedicated chapter that moves shaders into files, compiles them at startup, and adds live reload. Hot reload is a taught feature, not a deferred option. This supersedes "each lesson should use external shader files".
+4. **One growing program, one verified step file per chapter.** `examples/c/vulkan/stepNN.c` is the reader's file at the end of chapter NN — a real program with no configuration macros. `tools/check_vulkan_course.py` requires every C excerpt in a chapter to appear verbatim in its step file; `tools/run_vulkan_course.py` requires every step to render a reproducible capture with zero validation errors. This satisfies the Validation Direction requirement for a synchronization mechanism.
+5. **Chapter count and order.** Fifteen chapters in four parts plus an epilogue, replacing the twelve-chapter Proposed Learning Path. Parts 1-3 of the plan add setup, window, and frame-anatomy chapters before the triangle, and merge the former chapters 4 and 5 into finer steps.
+
+Also decided on 2026-07-28:
+
+6. **Hidden machinery is taught by asides, not chapters.** Queue submission, synchronization, swapchains, and presentation are covered by one "Under the hood" aside per chapter — naming the raw Vulkan required at that exact point and its rough line cost — plus the closing chapter. The reader never writes acquire, submit, present, or fence code. This supersedes Proposed Learning Path chapters 9 and 10; every chapter must end in a visible result.
+7. **The final mesh is generated geometry.** Chapter 15 uses `dvz_geometry_sphere`/`torus`, with `dvz_geometry_obj` shown as "now load your own model". The texture is a procedurally generated checkerboard. No committed binary asset, no provenance review, and nothing between the reader and the result. This supersedes "Suzanne and Texture Assets" and Resolved Decision 8; Suzanne may return as a polish pass before v0.4 final only if it does not become a reader prerequisite.
+8. **Compute moves to the epilogue.** The course ends at the lit textured mesh; compute pipelines, workgroups, dispatch, and compute-to-graphics synchronization are named in the closing chapter's further-reading list. This supersedes Proposed Learning Path chapter 11.
+
+Resolved Decisions 4, 5, 8, and 11 and the Pilot section below are therefore historical rather than active.
 
 
 ## Purpose
@@ -293,6 +314,8 @@ RC3 must use executable chapter spikes to design, implement, and validate genera
 Exact APIs must not be invented in this specification. Each public change requires a narrow chapter spike, ownership review, focused tests, generated binding refresh where applicable, installed-consumer proof, and documentation before it is accepted. Prefer improving an existing subsystem boundary over adding tutorial-local helpers.
 
 The accepted first-result profile consists of `dvz_canvas_configure_gpu_ctx()`, `dvz_canvas_frame_format()`, `dvz_commands_wrap_borrowed_recording()` followed by `dvz_commands_unwrap()`, `dvz_cmd_set_viewport()`, `dvz_cmd_set_scissor()`, and `dvz_cmd_set_viewport_scissor()`. GPU configuration augments caller policy instead of replacing it. A present Canvas without an explicit color format reports `VK_FORMAT_UNDEFINED` until swapchain creation resolves the actual format. Unwrapping detaches only borrowed-recording wrappers and never ends, resets, submits, frees, or otherwise touches the Vulkan command buffer. The combined dynamic-state helper means full-frame zero-origin viewport and scissor state; the separate helpers remain available for non-default rectangles.
+
+The accepted render-target initialization profile is that the canvas clears every target it owns to opaque black once, when that target is created or recreated, before any draw callback sees it. Vulkan leaves the contents of a fresh image undefined, so without this a callback that records no rendering, or one that uses a load operation instead of clearing, reads driver-dependent data — opaque magenta on MoltenVK — and offscreen captures are not reproducible across implementations. The clear costs one empty rendering pass per creation or resize and does not affect per-frame contents, which remain governed by the renderer's own load operation. Colour and depth targets are both covered. Regression coverage is `canvas/new_target_cleared`.
 
 The accepted depth profile uses `DvzCanvasConfig.depth_format`: `VK_FORMAT_UNDEFINED` disables depth, while a depth or depth-stencil format requests one Canvas-owned attachment per frame resource set. `DvzStreamFrame.depth_image`, `depth_view`, `depth_format`, `depth_layout`, `depth_image_borrowed`, `depth_view_borrowed`, and `depth_valid` describe the callback-duration attachment. Canvas creates, transitions, recreates, and destroys it with the matching color resource; `resource_generation`, `handles_dirty`, format, and extent describe the coupled resource set. The callback may attach the reported view in the reported layout but must not destroy, transition, or retain the borrowed handles.
 

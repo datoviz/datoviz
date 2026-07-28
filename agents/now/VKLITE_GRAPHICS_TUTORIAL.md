@@ -1,8 +1,35 @@
 # Modern GPU Graphics Tutorial Execution Plan
 
-Status: required RC3 API-and-pilot work followed by required RC4 course completion. Updated: 2026-07-25.
+Status: **rewrite in progress.** The RC3 three-chapter pilot is withdrawn and deleted; the enabling API it validated is kept and is sufficient for the whole course. Updated: 2026-07-28.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable educational, abstraction, asset, versioning, and validation contract and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for the agreed build-time, runtime, API, packaging, target-profile, and validation design. This file owns execution order, checkpoints, and agent handoff from RC3 through final v0.4.0.
+
+## Rewrite State (2026-07-28)
+
+The working structure is [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md); the durable-contract deltas and the three open maintainer decisions are in the spec's "Rewrite Direction" section. Read both before continuing.
+
+Landed:
+
+- `docs/advanced/vulkan/` — course overview plus chapters 1-3 (setup, first window, how a frame works), navigated under `Advanced`.
+- `examples/c/vulkan/step01.c` … `step03.c` — one verified program per chapter, built in-tree as `example_c_vulkan_stepNN`.
+- `tools/check_vulkan_course.py` (`just vulkan-course-check`) — every C excerpt in a chapter must appear verbatim in its step program.
+- `tools/run_vulkan_course.py` (`just vulkan-course-smoke`, `just vulkan-course-installed-smoke`) — every step renders a reproducible capture with zero Vulkan validation errors; the installed path builds the steps as a standalone `find_package(datoviz)` consumer.
+- **Canvas render targets now start from defined contents.** `dvz_canvas_cmd_clear_new_target()` clears each canvas-owned colour and depth target to opaque black once, when it is created or recreated, in both the offscreen and swapchain paths. Before this, a callback that recorded no rendering — or one using a load operation — read undefined memory, which is opaque magenta on MoltenVK, and offscreen captures were not reproducible across implementations. Covered by `canvas/new_target_cleared` and documented on `dvz_canvas_set_draw_callback()`.
+
+Deleted: `docs/tutorials/`, `examples/c/tutorial/` including the unused `*_spike` targets and orphan shader directories, `tools/check_vulkan_tutorial.py`, `tools/run_vulkan_tutorial.py`, and the `vulkan-tutorial-*` recipes.
+
+Next, in order:
+
+1. Chapters 4-7 (triangle, external shaders with hot reload, vertex buffers, index buffers). Chapter 5 needs a verified key-press path through `dvz_canvas_input()` and `dvz_input_subscribe_keyboard()`.
+2. Chapters 8-11 (push constants, matrices, depth and culling, arcball), then 12-15 (texture upload, sampling, lighting, real mesh).
+3. Chapter preview media. **Every chapter gets an image** (maintainer decision, 2026-07-28), generated into `build/` from the step programs at docs-build time rather than committed to the `data` submodule, so previews cannot drift from code and no submodule staging is needed. Three kinds:
+
+    - chapter 1: a terminal card rendered with Pillow from the program's captured stdout;
+    - flat-result chapters: the framebuffer capture, validated against an **exact expected RGBA** rather than `png_is_nonblank` — stronger, since it also catches a wrong clear colour;
+    - chapter 3: an animated WebP assembled from captures at fixed times, which needs a `--time SECONDS` flag on the step program and reuses the gallery pipeline's existing `animated-webp` kind and still-fallback machinery;
+    - chapters 4-15: ordinary captures, with the non-flat check applied.
+
+    Do not relax `png_is_nonblank`: it guards ~104 gallery images and "not flat" is the correct check there. `tools/build_tutorial_media.py` still generates the three withdrawn pilot previews into unreferenced site assets; retarget it as part of this work.
 
 ## Objective
 

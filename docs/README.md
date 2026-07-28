@@ -5,11 +5,11 @@ This directory is the public MkDocs source tree for the Datoviz v0.4 documentati
 The active v0.4 public documentation lives in:
 
 - `start/`
-- `tutorials/`
 - `examples/`
 - `how-to/`
 - `reference/`
 - `explanation/`
+- `advanced/` — including the `advanced/vulkan/` GPU graphics course
 - `releases/`
 - `contributors/`
 

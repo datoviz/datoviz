@@ -33,23 +33,23 @@ check-howto-snippets:
     python3 -m unittest tools/tests/test_check_howto_snippets.py
     python3 tools/check_howto_snippets.py
 
-# Check compiled Vulkan tutorial chapter, shader, build, and documentation synchronization.
-vulkan-tutorial-check:
-    python3 tools/check_vulkan_tutorial.py
+# Check that every code excerpt in the Vulkan course chapters matches its step program.
+vulkan-course-check:
+    python3 tools/check_vulkan_course.py
 
-# Run all compiled tutorial chapters and enabling spikes offscreen and validate their captures.
-vulkan-tutorial-smoke: build
-    python3 tools/run_vulkan_tutorial.py
+# Run every Vulkan course step program offscreen and validate its capture.
+vulkan-course-smoke: build
+    python3 tools/run_vulkan_course.py
 
-# Build all tutorial chapters and enabling spikes against an installed prefix, then validate them.
-vulkan-tutorial-installed-smoke prefix runtime_dir="":
+# Build the Vulkan course steps against an installed prefix as a standalone consumer would.
+vulkan-course-installed-smoke prefix runtime_dir="":
     #!/usr/bin/env bash
     set -euo pipefail
     args=(--installed-prefix "{{prefix}}")
     if [[ -n "{{runtime_dir}}" ]]; then
         args+=(--runtime-dir "{{runtime_dir}}")
     fi
-    python3 tools/run_vulkan_tutorial.py "${args[@]}"
+    python3 tools/run_vulkan_course.py "${args[@]}"
 
 # Check mechanically derived public status facts for drift.
 docs-status-check:
@@ -59,4 +59,4 @@ docs-status-check:
 check-docs-status: docs-status-check
 
 # Also compile/run Quickstart fixtures and validate generated API/status facts.
-check-doc-snippets: check-howto-snippets vulkan-tutorial-check quickstart-check docs-api-check docs-status-check
+check-doc-snippets: check-howto-snippets vulkan-course-check quickstart-check docs-api-check docs-status-check
