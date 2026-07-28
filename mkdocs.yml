@@ -227,11 +227,6 @@ nav:
     - Citation: 'reference/citation.md'
   - Advanced:
     - Overview: 'advanced/index.md'
-    - Modern GPU Graphics in Vulkan:
-      - Overview: 'advanced/vulkan/index.md'
-      - 1. Setup: 'advanced/vulkan/01-setup.md'
-      - 2. Your first window: 'advanced/vulkan/02-window.md'
-      - 3. How a frame works: 'advanced/vulkan/03-frame.md'
     - Concepts:
       - Figure, panel, and visual model: 'explanation/figure-panel-visual-model.md'
       - Coordinate systems: 'explanation/coordinate-systems.md'
@@ -263,6 +258,11 @@ nav:
       - Physical release validation: 'contributors/release-physical-validation.md'
       - Agent release checklist: 'contributors/agent-release-checklist.md'
       - Validation gallery: 'examples/validation-gallery.md'
+  - GPU Graphics:
+    - Course overview: 'advanced/vulkan/index.md'
+    - 1. Setup: 'advanced/vulkan/01-setup.md'
+    - 2. Your first window: 'advanced/vulkan/02-window.md'
+    - 3. How a frame works: 'advanced/vulkan/03-frame.md'
   - News: 'blog/index.md'
 not_in_nav: |
   _old/*
