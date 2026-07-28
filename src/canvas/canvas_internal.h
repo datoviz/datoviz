@@ -209,6 +209,10 @@ VkImageAspectFlags dvz_canvas_depth_aspect(VkFormat format);
 
 VkImageLayout dvz_canvas_depth_layout(VkFormat format);
 
+void dvz_canvas_cmd_clear_new_target(
+    DvzCanvas* canvas, VkCommandBuffer cmd, VkImageView view, VkExtent2D extent,
+    VkImageView depth_view, VkFormat depth_format);
+
 int dvz_canvas_depth_create(
     DvzCanvas* canvas, VkExtent2D extent, DvzImages** images, DvzImageViews** views,
     VkImage* image, VkImageView* view);

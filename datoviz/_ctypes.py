@@ -10470,6 +10470,12 @@ else:
  * canvas is destroyed. The callback receives a borrowed frame whose Vulkan handles are valid only
  * for that invocation and must not be destroyed, reset, submitted, transitioned, or retained.
  *
+ * The canvas clears every render target it owns to opaque black once, when that target is created
+ * or recreated, before any callback sees it. A callback that records no rendering, or one that uses
+ * a load operation instead of clearing, therefore reads defined contents rather than whatever the
+ * driver left in a fresh image. Contents from the second frame onward are governed entirely by the
+ * callback's own load operation.
+ *
  * @param canvas target canvas
  * @param callback draw callback (NULL removes the callback)
  * @param user_data borrowed opaque pointer supplied to the callback on every invocation

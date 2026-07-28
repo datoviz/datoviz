@@ -1008,6 +1008,120 @@ glfw_recreate_cleanup:
 }
 
 /**
+ * Validate that a canvas-owned render target starts from defined contents.
+ *
+ * A frame submitted with no draw callback must read back as opaque black rather than whatever the
+ * driver left in a fresh image, so captures are reproducible on every implementation.
+ *
+ * This guards the contract rather than reproducing the defect: whether an unwritten image reads as
+ * garbage is implementation-defined, and inside this harness process the memory happens to arrive
+ * zeroed on macOS. A standalone first-allocation reproducer on MoltenVK returns opaque magenta
+ * without the creation-time clear. The assertion below therefore fails on any implementation that
+ * does not zero fresh images, and on all of them if the clear is removed and something else fills
+ * the target.
+ */
+static int test_canvas_new_target_cleared(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const char* skip_reason = NULL;
+    DvzGpuCtx* gpu = NULL;
+    DvzDevice* device = NULL;
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+
+    host = dvz_window_host();
+    ANN(host);
+
+    // Use the public GPU-context path rather than a hand-built device: it is what applications and
+    // the Vulkan course use, and it is where uninitialized target memory is observable.
+    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    if (dvz_canvas_configure_gpu_ctx(
+            host, DVZ_BACKEND_OFFSCREEN, DVZ_CANVAS_RENDER_MODE_OFFSCREEN, &gpu_cfg) != DVZ_OK)
+    {
+        skip_reason = "offscreen GPU context configuration failed";
+        goto cleared_cleanup;
+    }
+    gpu = dvz_gpu_ctx(&gpu_cfg);
+    if (gpu == NULL)
+    {
+        skip_reason = "no usable Vulkan device";
+        goto cleared_cleanup;
+    }
+    device = dvz_gpu_ctx_device(gpu);
+    ANN(device);
+
+    DvzWindowConfig window_cfg = dvz_window_config();
+    window_cfg.title = "canvas-new-target-cleared";
+    window_cfg.width = 64;
+    window_cfg.height = 48;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
+    {
+        skip_reason = "headless window creation failed";
+        goto cleared_cleanup;
+    }
+
+    DvzCanvasConfig cfg = dvz_canvas_config();
+    cfg.window = window;
+    cfg.device = device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+
+    // Deliberately no draw callback: the canvas alone is responsible for the contents of the target
+    // it just created. Without the creation-time clear, this capture reads whatever the driver left
+    // in a fresh image, which on MoltenVK is opaque magenta.
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
+    ANN(rgba);
+    AT(width == 64);
+    AT(height == 48);
+    bool all_opaque_black = true;
+    for (size_t i = 0; i < (size_t)width * (size_t)height; ++i)
+    {
+        if (rgba[4 * i] != 0 || rgba[4 * i + 1] != 0 || rgba[4 * i + 2] != 0 ||
+            rgba[4 * i + 3] != 255)
+        {
+            all_opaque_black = false;
+            break;
+        }
+    }
+    AT(all_opaque_black);
+    dvz_free(rgba);
+
+cleared_cleanup:
+    if (skip_reason != NULL)
+    {
+        tst_skip(suite, skip_reason);
+    }
+    if (canvas != NULL)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    if (window != NULL)
+    {
+        dvz_window_destroy(window);
+    }
+    if (host != NULL)
+    {
+        dvz_window_host_destroy(host);
+    }
+    if (gpu != NULL)
+    {
+        dvz_gpu_ctx_destroy(gpu);
+    }
+    return 0;
+}
+
+/**
  * Validate first-class offscreen mode frame/submit flow on a headless window backend.
  */
 static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase* item)
@@ -2112,6 +2226,7 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(
         test_canvas_offscreen_depth_attachment, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(test_canvas_glfw_destroy_recreate, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(test_canvas_new_target_cleared, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(test_canvas_offscreen_mode_headless, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_offscreen_video_sink_cpu_readback,

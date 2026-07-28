@@ -34,6 +34,7 @@
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/images.h"
+#include "datoviz/vklite/rendering.h"
 #include "datoviz/window/backend.h"
 
 
@@ -410,6 +411,61 @@ static void canvas_cmd_transition_image(
 
 
 
+/**
+ * Clear a render target that the canvas has just created, before any renderer sees it.
+ *
+ * Vulkan leaves the contents of a fresh image undefined, so a draw callback that records no
+ * rendering, or one that loads instead of clearing, would otherwise read whatever the driver left
+ * behind: black on some implementations, magenta on others, arbitrary data in principle. Clearing
+ * once here makes every canvas-owned target start from a defined state on every platform, at the
+ * cost of one empty rendering pass per image creation or resize. Per-frame contents remain entirely
+ * governed by the renderer's own load operation.
+ *
+ * The color image must already be in VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, and the depth image,
+ * when present, in its expected depth layout.
+ *
+ * @param canvas the canvas owning the target
+ * @param cmd recording command buffer
+ * @param view color image view to clear
+ * @param extent target size
+ * @param depth_view optional depth image view to clear, or VK_NULL_HANDLE
+ * @param depth_format depth format, or VK_FORMAT_UNDEFINED when there is no depth attachment
+ */
+void dvz_canvas_cmd_clear_new_target(
+    DvzCanvas* canvas, VkCommandBuffer cmd, VkImageView view, VkExtent2D extent,
+    VkImageView depth_view, VkFormat depth_format)
+{
+    ANN(canvas);
+    if (cmd == VK_NULL_HANDLE || view == VK_NULL_HANDLE || extent.width == 0 || extent.height == 0)
+    {
+        return;
+    }
+
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(canvas->device, cmd, cmds);
+
+    DvzRendering* rendering = dvz_rendering_create_wrapper();
+    ANN(rendering);
+    VkClearValue clear = {.color.float32 = {0.0f, 0.0f, 0.0f, 1.0f}};
+    dvz_cmd_rendering_default(cmds, view, extent.width, extent.height, clear, rendering);
+    if (depth_view != VK_NULL_HANDLE && depth_format != VK_FORMAT_UNDEFINED)
+    {
+        DvzAttachment* depth = dvz_rendering_depth(rendering);
+        dvz_attachment_image(depth, depth_view, dvz_canvas_depth_layout(depth_format));
+        dvz_attachment_ops(depth, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        dvz_attachment_clear(depth, (VkClearValue){.depthStencil = {1.0f, 0}});
+    }
+    dvz_cmd_rendering_begin(cmds, rendering);
+    dvz_cmd_rendering_end(cmds);
+
+    dvz_rendering_free(rendering);
+    dvz_commands_free(cmds);
+    log_trace("cleared new canvas render target %ux%u", extent.width, extent.height);
+}
+
+
+
 static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
 {
     if (!canvas)
@@ -703,6 +759,9 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     dvz_commands_wrap(canvas->device, canvas->offscreen_command_buffer, cmds);
     dvz_cmd_reset(cmds);
     dvz_cmd_begin(cmds);
+    // An UNDEFINED layout means this image has not been used since it was created or recreated, so
+    // its contents are undefined until the canvas defines them below.
+    bool target_is_new = canvas->offscreen_layout == VK_IMAGE_LAYOUT_UNDEFINED;
     canvas_cmd_transition_image(
         canvas, canvas->offscreen_command_buffer, canvas->offscreen_image, canvas->offscreen_layout,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -714,6 +773,12 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
             canvas->offscreen_depth_layout, dvz_canvas_depth_layout(canvas->cfg.depth_format),
             dvz_canvas_depth_aspect(canvas->cfg.depth_format));
         canvas->offscreen_depth_layout = dvz_canvas_depth_layout(canvas->cfg.depth_format);
+    }
+    if (target_is_new)
+    {
+        dvz_canvas_cmd_clear_new_target(
+            canvas, canvas->offscreen_command_buffer, canvas->offscreen_view,
+            canvas->offscreen_extent, canvas->offscreen_depth_view, canvas->cfg.depth_format);
     }
 
     canvas_init_offscreen_frame(canvas, frame);

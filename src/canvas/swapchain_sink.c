@@ -476,6 +476,9 @@ static int canvas_slot_begin_recording(DvzCanvasSwapchain* swapchain, DvzCanvasS
     dvz_commands_wrap(swapchain->canvas->device, cmd, cmds);
     dvz_cmd_reset(cmds);
     dvz_cmd_begin(cmds);
+    // An UNDEFINED layout means this slot image has not been used since it was created or
+    // recreated, so its contents are undefined until the canvas defines them below.
+    bool target_is_new = slot->offscreen_layout == VK_IMAGE_LAYOUT_UNDEFINED;
     canvas_cmd_transition(
         swapchain->canvas, cmd, slot->offscreen_image, slot->offscreen_layout,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -486,6 +489,12 @@ static int canvas_slot_begin_recording(DvzCanvasSwapchain* swapchain, DvzCanvasS
             swapchain->canvas, cmd, slot->depth_image, slot->depth_layout,
             dvz_canvas_depth_layout(swapchain->canvas->cfg.depth_format));
         slot->depth_layout = dvz_canvas_depth_layout(swapchain->canvas->cfg.depth_format);
+    }
+    if (target_is_new)
+    {
+        dvz_canvas_cmd_clear_new_target(
+            swapchain->canvas, cmd, slot->offscreen_view, slot->offscreen_extent, slot->depth_view,
+            swapchain->canvas->cfg.depth_format);
     }
     slot->commands_recording = true;
     dvz_commands_free(cmds);
