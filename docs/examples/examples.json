@@ -2,9 +2,9 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 114,
+  "count": 115,
   "categories": {
-    "advanced": 4,
+    "advanced": 5,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
@@ -14,7 +14,7 @@
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 16,
+    "experimental": 17,
     "prototype": 1,
     "supported": 96
   },
@@ -6067,6 +6067,56 @@
           "vklite"
         ],
         "reason": "hand-written DRP2 native execution is a low-level runtime example"
+      }
+    },
+    {
+      "id": "advanced_cuda_external_buffer",
+      "title": "CUDA External Buffer",
+      "category": "advanced",
+      "lane": "advanced",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/advanced/cuda_external_buffer.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/cuda_external_buffer.c",
+      "page": "gallery/advanced/advanced_cuda_external_buffer.md",
+      "summary": "This example shares a Datoviz-owned Vulkan vertex buffer with CUDA.",
+      "validation": "linux-nvidia-smoke",
+      "build_command": "just example-c advanced/cuda_external_buffer",
+      "smoke_command": "./build/examples/c/advanced/cuda_external_buffer",
+      "tags": [
+        "advanced",
+        "cuda",
+        "external-memory",
+        "zero-copy"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/advanced/advanced_cuda_external_buffer.png",
+          "site_asset": "/assets/gallery/v0.4/advanced/advanced_cuda_external_buffer.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
+      "webgpu_requirements": [
+        "cuda",
+        "external-memory",
+        "timeline-semaphore"
+      ],
+      "webgpu_reason": "CUDA opaque-FD external memory and semaphore interop is Linux/NVIDIA-specific",
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "cuda",
+          "external-memory",
+          "timeline-semaphore"
+        ],
+        "reason": "CUDA opaque-FD external memory and semaphore interop is Linux/NVIDIA-specific"
       }
     },
     {

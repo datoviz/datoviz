@@ -358,7 +358,7 @@ This example queries and selects individual instances of one mesh visual.
 Some examples focus on how Datoviz runs rather than on a particular visual result.
 
 - **[Runtime & Capture](runtime.md)** — open windows, render offscreen, capture, record, replay, and export. [Show all 5 runtime examples →](runtime.md)
-- **[Advanced](advanced.md)** — host integration and lower-level DRP2 or vklite workflows. [Show all 4 advanced examples →](advanced.md)
+- **[Advanced](advanced.md)** — host integration and lower-level DRP2 or vklite workflows. [Show all 5 advanced examples →](advanced.md)
 
 ## Choose By Goal
 
@@ -369,7 +369,7 @@ Some examples focus on how Datoviz runs rather than on a particular visual resul
 | Add axes, interaction, layout, animation, or techniques | [2D Axes](gallery/features/features_axes_2d.md) | [68 focused features](features.md) |
 | Open windows, render offscreen, capture, record, or export | [Offscreen Capture](gallery/runtime/runtime_offscreen_capture.md) | [5 runtime examples](runtime.md) |
 | Study complete scientific visualization compositions | [Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md) | [18 showcases](showcases.md) |
-| Integrate a host or use lower-level rendering APIs | [Advanced examples](advanced.md) | [4 advanced examples](advanced.md) |
+| Integrate a host or use lower-level rendering APIs | [Advanced examples](advanced.md) | [5 advanced examples](advanced.md) |
 
 ## Before You Copy An Example
 

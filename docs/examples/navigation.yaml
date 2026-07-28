@@ -244,7 +244,11 @@ sections:
         examples:
           - advanced_external_surface_glfw
           - advanced_qt_hosting
+      - title: GPU Interoperability
+        examples:
+          - advanced_cuda_external_buffer
     examples:
+      - advanced_cuda_external_buffer
       - advanced_external_surface_glfw
       - advanced_qt_hosting
       - advanced_raw_triangle_drp2

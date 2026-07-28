@@ -297,6 +297,14 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(lab text_msdf_lab lab/text_msdf_lab.c)
 endif()
 
+if(DVZ_HAS_CUDA AND CMAKE_SYSTEM_NAME STREQUAL "Linux" AND TARGET datoviz_vklite)
+    dvz_add_example(advanced cuda_external_buffer advanced/cuda_external_buffer.c)
+    target_include_directories(
+        example_c_advanced_cuda_external_buffer PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+    target_link_libraries(
+        example_c_advanced_cuda_external_buffer PRIVATE CUDA::cudart)
+endif()
+
 if(TARGET datoviz_vklite AND TARGET datoviz_canvas AND DVZ_HAS_GLFW)
     dvz_add_example(tutorial vklite_triangle_spike tutorial/triangle.c)
     target_compile_definitions(

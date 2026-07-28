@@ -3,9 +3,9 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 114,
+  "example_count": 115,
   "categories": {
-    "advanced": 4,
+    "advanced": 5,
     "composite": 2,
     "feature": 68,
     "runtime": 5,
@@ -15,7 +15,7 @@
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 16,
+    "experimental": 17,
     "prototype": 1,
     "supported": 96
   },
@@ -166,7 +166,7 @@
         ]
       },
       "synthetic": {
-        "count": 102,
+        "count": 103,
         "examples": [
           {
             "id": "features_basic_scene",
@@ -959,6 +959,14 @@
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_drp2.c",
             "page": "gallery/advanced/advanced_raw_triangle_drp2.md"
+          },
+          {
+            "id": "advanced_cuda_external_buffer",
+            "title": "CUDA External Buffer",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/cuda_external_buffer.c",
+            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
           },
           {
             "id": "advanced_external_surface_glfw",
@@ -1981,7 +1989,7 @@
         ]
       },
       "advanced": {
-        "count": 4,
+        "count": 5,
         "examples": [
           {
             "id": "advanced_raw_triangle_vklite",
@@ -1998,6 +2006,14 @@
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_drp2.c",
             "page": "gallery/advanced/advanced_raw_triangle_drp2.md"
+          },
+          {
+            "id": "advanced_cuda_external_buffer",
+            "title": "CUDA External Buffer",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/cuda_external_buffer.c",
+            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
           },
           {
             "id": "advanced_external_surface_glfw",
@@ -2682,6 +2698,19 @@
           }
         ]
       },
+      "cuda": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "advanced_cuda_external_buffer",
+            "title": "CUDA External Buffer",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/cuda_external_buffer.c",
+            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
+          }
+        ]
+      },
       "daq": {
         "count": 1,
         "examples": [
@@ -2796,6 +2825,19 @@
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
             "page": "gallery/showcases/showcases_cortical_activity.md"
+          }
+        ]
+      },
+      "external-memory": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "advanced_cuda_external_buffer",
+            "title": "CUDA External Buffer",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/cuda_external_buffer.c",
+            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
           }
         ]
       },
@@ -4823,6 +4865,19 @@
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
             "page": "gallery/showcases/showcases_scalebar_measurement.md"
+          }
+        ]
+      },
+      "zero-copy": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "advanced_cuda_external_buffer",
+            "title": "CUDA External Buffer",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/cuda_external_buffer.c",
+            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
           }
         ]
       }

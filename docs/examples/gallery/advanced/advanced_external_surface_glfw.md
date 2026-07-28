@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_cuda_external_buffer/">← Previous: CUDA External Buffer</a></span>
 <span class="dvz-example-nav__next"><a href="../advanced_qt_hosting/">Next: Qt Hosting →</a></span>
 </div>
 </nav>
@@ -75,7 +75,7 @@ This workflow is useful when a scientific application already owns its native ev
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_cuda_external_buffer/">← Previous: CUDA External Buffer</a></span>
 <span class="dvz-example-nav__next"><a href="../advanced_qt_hosting/">Next: Qt Hosting →</a></span>
 </div>
 </nav>

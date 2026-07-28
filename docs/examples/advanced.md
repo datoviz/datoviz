@@ -10,6 +10,18 @@ Browse advanced runtime and host-integration examples. These are useful after yo
 
 <div class="card" markdown="1">
 
+### [CUDA External Buffer](gallery/advanced/advanced_cuda_external_buffer.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for CUDA External Buffer"><span>No screenshot</span></div>
+
+`experimental` `advanced`<br><span>`advanced`, `cuda`, `external-memory`, `zero-copy`</span>
+
+This example shares a Datoviz-owned Vulkan vertex buffer with CUDA.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [External Surface GLFW](gallery/advanced/advanced_external_surface_glfw.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for External Surface GLFW"><span>No screenshot</span></div>

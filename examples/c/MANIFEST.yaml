@@ -279,6 +279,7 @@ batches:
 
   review-22-advanced-runtime:
     - advanced_raw_triangle_vklite
+    - advanced_cuda_external_buffer
     - advanced_external_surface_glfw
     - advanced_qt_hosting
 
@@ -3974,6 +3975,31 @@ examples:
       - drp2
       - vklite
       - low-level
+
+  - id: advanced_cuda_external_buffer
+    title: CUDA External Buffer
+    stage: v0.4_experimental
+    category: advanced
+    lane: advanced
+    source: examples/c/advanced/cuda_external_buffer.c
+    validation: linux-nvidia-smoke
+    smoke_command: ./build/examples/c/advanced/cuda_external_buffer
+    data:
+      kind: synthetic
+    portability: linux-nvidia-only
+    webgpu:
+      status: native-only
+      requirements:
+        - cuda
+        - external-memory
+        - timeline-semaphore
+      reason: CUDA opaque-FD external memory and semaphore interop is Linux/NVIDIA-specific
+    agent_copy_safe: false
+    tags:
+      - advanced
+      - cuda
+      - external-memory
+      - zero-copy
 
   - id: advanced_external_surface_glfw
     title: External Surface GLFW
