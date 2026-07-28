@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import ctypes
 
+from datoviz.experimental import cuda as dvz_cuda
 from datoviz.experimental import _cuda_runtime as ci
 
 
@@ -161,6 +162,60 @@ def _run_cupy_write_smoke(dvz, cp, bridge) -> tuple[int, int, int, int]:
         return _render_drp2_external_buffer(dvz, shared)
 
 
+def _run_torch_write_smoke(dvz) -> tuple[int, int, int, int]:
+    torch = dvz_cuda._require_torch()
+    scene = dvz.dvz_scene()
+    if not scene:
+        raise RuntimeError('dvz_scene() failed')
+    try:
+        with dvz_cuda.scene_buffer(scene, shape=(PARTICLE_COUNT, 3)) as shared:
+            with shared.torch_write() as tensor:
+                if int(tensor.data_ptr()) != int(shared.array.data.ptr):
+                    raise RuntimeError('PyTorch tensor does not share the Datoviz CUDA pointer')
+                tensor[:3] = torch.tensor(
+                    [[-0.8, -0.8, 0.0], [0.8, -0.8, 0.0], [0.0, 0.8, 0.0]],
+                    device=tensor.device,
+                    dtype=tensor.dtype,
+                )
+            return _render_drp2_external_buffer(dvz, shared._shared.shared)
+    finally:
+        dvz.dvz_scene_destroy(scene)
+
+
+def _run_taichi_write_smoke(dvz) -> tuple[int, int, int, int]:
+    try:
+        import taichi as ti  # noqa: PLC0415
+    except Exception as exc:
+        raise dvz_cuda.CudaInteropUnavailable(f'Taichi unavailable: {exc}') from exc
+
+    ti.init(arch=ti.cuda)
+
+    @ti.kernel
+    def write_triangle(array: ti.types.ndarray(dtype=ti.f32, ndim=2)):
+        array[0, 0] = -0.8
+        array[0, 1] = -0.8
+        array[0, 2] = 0.0
+        array[1, 0] = 0.8
+        array[1, 1] = -0.8
+        array[1, 2] = 0.0
+        array[2, 0] = 0.0
+        array[2, 1] = 0.8
+        array[2, 2] = 0.0
+
+    scene = dvz.dvz_scene()
+    if not scene:
+        ti.reset()
+        raise RuntimeError('dvz_scene() failed')
+    try:
+        with dvz_cuda.scene_buffer(scene, shape=(PARTICLE_COUNT, 3)) as shared:
+            with shared.taichi_write() as tensor:
+                write_triangle(tensor)
+            return _render_drp2_external_buffer(dvz, shared._shared.shared)
+    finally:
+        dvz.dvz_scene_destroy(scene)
+        ti.reset()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -174,13 +229,19 @@ def main() -> int:
     parser.add_argument(
         '--export-only', action='store_true', help='create and export a Datoviz buffer only'
     )
+    parser.add_argument(
+        '--torch', action='store_true', help='run the optional zero-copy PyTorch write smoke'
+    )
+    parser.add_argument(
+        '--taichi', action='store_true', help='run the optional zero-copy Taichi write smoke'
+    )
     args = parser.parse_args()
 
     ci.require_linux()
     bridge = ci.load_bridge() if args.bridge_only else None
     if args.bridge_only:
         assert bridge is not None
-        print(f'ctypes CuPy interop bridge: OK ({ci.BRIDGE_LIBRARY})')
+        print('ctypes CuPy interop bridge: OK')
         return 0
 
     dvz = ci.require_raw_surface()
@@ -197,6 +258,16 @@ def main() -> int:
             )
         return 0
 
+    if args.torch:
+        rgba = _run_torch_write_smoke(dvz)
+        print(f'ctypes PyTorch interop smoke: READY (zero-copy write+render, pixel={rgba})')
+        return 0
+
+    if args.taichi:
+        rgba = _run_taichi_write_smoke(dvz)
+        print(f'ctypes Taichi interop smoke: READY (zero-copy write+render, pixel={rgba})')
+        return 0
+
     cp = ci.require_cupy()
     bridge = ci.load_bridge()
     assert bridge is not None
@@ -211,6 +282,6 @@ def main() -> int:
 if __name__ == '__main__':
     try:
         raise SystemExit(main())
-    except ci.InteropSkip as exc:
+    except (ci.InteropSkip, dvz_cuda.CudaInteropUnavailable) as exc:
         print(f'ctypes CuPy interop smoke: SKIP ({exc})')
         raise SystemExit(0)

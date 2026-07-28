@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import ctypes
+import importlib
 from typing import Iterator
 
 from datoviz import raw as dvz
@@ -82,6 +83,35 @@ def _require_runtime():
     except _runtime.InteropSkip as exc:
         raise CudaInteropUnavailable(str(exc)) from exc
     return raw_surface, cp, bridge
+
+
+def _require_torch():
+    try:
+        torch = importlib.import_module('torch')
+    except Exception as exc:  # pragma: no cover - environment gate
+        raise CudaInteropUnavailable(f'PyTorch unavailable: {exc}') from exc
+    if not torch.cuda.is_available():
+        raise CudaInteropUnavailable('PyTorch CUDA runtime is unavailable')
+    return torch
+
+
+def _require_taichi():
+    try:
+        taichi = importlib.import_module('taichi')
+    except Exception as exc:  # pragma: no cover - environment gate
+        raise CudaInteropUnavailable(f'Taichi unavailable: {exc}') from exc
+    config = getattr(taichi, 'cfg', None)
+    if config is None or getattr(config, 'arch', None) != getattr(taichi, 'cuda', None):
+        raise CudaInteropUnavailable('Taichi must be initialized with ti.init(arch=ti.cuda)')
+    return taichi
+
+
+def _torch_stream_device_index(torch, stream) -> int:
+    device = getattr(stream, 'device', None)
+    index = getattr(device, 'index', None)
+    if index is None:
+        index = torch.cuda.current_device()
+    return int(index)
 
 
 class CudaSceneBuffer:
@@ -239,6 +269,61 @@ class CudaSceneBuffer:
 
         self._require_open()
         self._shared.wait_for_cuda_writes()
+
+    @contextmanager
+    def torch_write(self, stream=None) -> Iterator:
+        """Yield a borrowed zero-copy PyTorch tensor on one CUDA stream.
+
+        The selected stream, or PyTorch's current CUDA stream when omitted, is also wrapped as a
+        CuPy external stream. Datoviz queues its external-semaphore wait and signal on that same
+        stream, so PyTorch writes inside this scope complete before the next Datoviz use.
+        """
+
+        self._require_open()
+        torch = _require_torch()
+        torch_stream = torch.cuda.current_stream() if stream is None else stream
+        if not hasattr(torch_stream, 'cuda_stream'):
+            raise CudaInteropUnavailable('torch_write() requires a torch.cuda.Stream')
+        torch_device = _torch_stream_device_index(torch, torch_stream)
+        cupy_device = int(self._cp.cuda.runtime.getDevice())
+        if torch_device != cupy_device:
+            raise CudaInteropUnavailable(
+                f'PyTorch stream device {torch_device} does not match CuPy device {cupy_device}'
+            )
+
+        cupy_stream = self._cp.cuda.ExternalStream(
+            torch_stream.cuda_stream, device_id=cupy_device
+        )
+        try:
+            with self._shared.cupy_write(cupy_stream) as array:
+                with torch.cuda.stream(torch_stream):
+                    tensor = torch.from_dlpack(array)
+                    if int(tensor.data_ptr()) != int(array.data.ptr):
+                        raise RuntimeError('PyTorch DLPack import did not preserve the CUDA pointer')
+                    yield tensor
+        finally:
+            self._shared.wait_for_cuda_writes()
+
+    @contextmanager
+    def taichi_write(self, stream=None) -> Iterator:
+        """Yield a borrowed PyTorch tensor for a synchronized Taichi CUDA kernel.
+
+        Taichi does not expose its internal CUDA stream through this contract. This adapter
+        therefore synchronizes the incoming PyTorch stream before yielding and calls `ti.sync()`
+        before signaling Vulkan. The memory remains zero-copy, but the handoff is intentionally
+        CPU-blocking until a native stream-integration proof exists.
+        """
+
+        self._require_open()
+        taichi = _require_taichi()
+        torch = _require_torch()
+        torch_stream = torch.cuda.current_stream() if stream is None else stream
+        with self.torch_write(torch_stream) as tensor:
+            torch_stream.synchronize()
+            try:
+                yield tensor
+            finally:
+                taichi.sync()
 
 
 def scene_buffer(
