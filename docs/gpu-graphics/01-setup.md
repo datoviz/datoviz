@@ -12,7 +12,7 @@ discovered in chapter 12 is much harder to read than the same problem discovered
 !!! warning "This course needs a build newer than v0.4.0rc2"
 
     The course uses five functions that were added to the low-level layers after the RC2 package was
-    published — among them `dvz_canvas_configure_gpu_ctx`, `dvz_commands_unwrap`, and
+    published, including `dvz_canvas_configure_gpu_ctx`, `dvz_commands_unwrap`, and
     `dvz_cmd_set_viewport_scissor`. Chapter 2 will not compile against `datoviz==0.4.0rc2`. Until the
     next package is out, build from source.
 
@@ -27,13 +27,13 @@ discovered in chapter 12 is much harder to read than the same problem discovered
 
     That prefix contains the public headers, the library, and the CMake package this chapter uses.
     A source install brings no Vulkan runtime of its own, so it falls back to the Vulkan SDK you
-    built against — nothing to configure, as long as the SDK is installed and `VULKAN_SDK` is
-    exported in your shell.
+    built against. There is nothing to configure, as long as the SDK is installed and `VULKAN_SDK`
+    is exported in your shell.
 
 === "From a package (once published)"
 
     When a package newer than RC2 is available, this is the shorter road, and it carries its own
-    Vulkan loader, MoltenVK on macOS, and shader compiler — nothing else to install:
+    Vulkan loader, MoltenVK on macOS, and shader compiler. Nothing else to install:
 
     ```sh
     python -m venv .venv
@@ -73,8 +73,8 @@ int main(void)
 }
 ```
 
-`<datoviz.h>` is the umbrella header. Later chapters include narrower headers alongside it —
-`<datoviz/canvas.h>`, `<datoviz/vklite.h>` — as they need them. Include only headers under
+`<datoviz.h>` is the umbrella header. Later chapters include narrower headers alongside it, such as
+`<datoviz/canvas.h>` and `<datoviz/vklite.h>`, as they need them. Include only headers under
 `datoviz/`; anything from Datoviz's own `src/` directory is private and may change.
 
 ## Write the build file
@@ -93,8 +93,8 @@ target_link_libraries(vkcourse PRIVATE datoviz::datoviz)
 ```
 
 Those six lines are the whole build, for all fifteen chapters. `datoviz::datoviz` carries the
-include paths, the library, and its dependencies — including the Vulkan headers you will start using
-in chapter 2 — so you never add them by hand.
+include paths, the library, and its dependencies, including the Vulkan headers you will start using
+in chapter 2, so you never add them by hand.
 
 Configure once, pointing CMake at wherever you installed Datoviz:
 
@@ -112,7 +112,7 @@ Configure once, pointing CMake at wherever you installed Datoviz:
 
 If Datoviz is installed system-wide, `cmake -S . -B build` on its own is enough.
 
-Then build and run — this is the loop you will repeat for the rest of the course:
+Then build and run. This is the loop you will repeat for the rest of the course:
 
 ```sh
 cmake --build build
@@ -140,19 +140,18 @@ The exact version string is whatever you installed; what matters is that it prin
 
 | Symptom | Cause and fix |
 | --- | --- |
-| `fatal error: 'datoviz.h' file not found` | The compiler has no include path. With CMake, `find_package` failed to locate the package — check your `CMAKE_PREFIX_PATH` or `datoviz_DIR`. |
+| `fatal error: 'datoviz.h' file not found` | The compiler has no include path. With CMake, `find_package` failed to locate the package; check your `CMAKE_PREFIX_PATH` or `datoviz_DIR`. |
 | `Could not find a package configuration file provided by "datoviz"` | Same cause, seen at configure time. CMake wants the directory containing `DatovizConfig.cmake`; `datoviz-config --cmake-dir` prints it for a package install. |
-| `call to undeclared function 'dvz_canvas_configure_gpu_ctx'` in chapter 2 | Your Datoviz is older than the course — see the version warning at the top of this chapter. |
+| `call to undeclared function 'dvz_canvas_configure_gpu_ctx'` in chapter 2 | Your Datoviz is older than the course; see the version warning at the top of this chapter. |
 | Links fine, then `error while loading shared libraries` or `image not found` at startup | The dynamic loader cannot find the library at run time. Keep the environment activated; on Windows, ensure the package's DLL directory is on `PATH`. |
 | `command not found: datoviz-config` | Either the environment is not activated, you built from source (where the helper is not installed), or you are on MSVC. Use `CMAKE_PREFIX_PATH`. |
 
-A Vulkan driver is not needed yet — this program never touches the GPU. If your driver is missing,
-you will find out in chapter 2, and the error message will say so clearly. One symptom worth knowing
+A Vulkan driver is not needed yet: this program never touches the GPU. If your driver is missing,
+you will find out in chapter 2, and the error message will say so clearly. One symptom to know about
 in advance: `no Vulkan loader could be loaded` means Datoviz could not find the Vulkan *loader* at
 run time. Package installs bundle one and source installs fall back to the SDK, so this usually
-means `VULKAN_SDK` is not exported —
-[No Vulkan loader found](../how-to/diagnose-platform.md#no-vulkan-loader-found) lists every
-location Datoviz checks.
+means `VULKAN_SDK` is not exported. [No Vulkan loader found](../how-to/diagnose-platform.md#no-vulkan-loader-found)
+lists every location Datoviz checks.
 
 ## Checkpoint
 

@@ -17,10 +17,10 @@ The CPU decides *what* to draw and writes it down: use this pipeline, draw these
 clear to this color. It does not draw anything. That written-down list is a **command buffer**.
 
 The GPU reads the command buffer afterwards and executes it. By then your callback has long since
-returned — the CPU is already working on the next frame while the GPU chews on the last one. This
+returned. The CPU is already working on the next frame while the GPU chews on the last one. This
 lag is the reason Vulkan needs so much synchronization, and the reason the canvas earns its keep.
 
-Two consequences worth internalizing now, because both are common sources of confusion:
+Two consequences deserve attention now, because both are common sources of confusion:
 
 - **Recording is not drawing.** When `draw` returns, nothing has happened on the GPU yet. Nothing
   happens until `dvz_canvas_submit`.
@@ -39,7 +39,7 @@ Your callback receives a `DvzStreamFrame*`. Three of its fields matter for now:
 | `frame->extent` | Its current size in pixels. This changes when the window is resized. |
 
 All three are **borrowed**. They are valid for the duration of this one call and no longer. Do not
-store them in `Renderer`, do not free them, and do not submit the command buffer yourself — the
+store them in `Renderer`, do not free them, and do not submit the command buffer yourself. The
 canvas owns all of that. Each frame it may hand you a different image, and after a resize it will
 hand you differently sized ones.
 
@@ -54,7 +54,7 @@ frame every time.
 
 The rest of the `vklite` API records through a typed `DvzCommands` object, and what the canvas gives
 you is a raw Vulkan handle. This wraps the handle in the `DvzCommands` you allocated once at startup.
-It creates nothing and owns nothing — think of it as pointing your recording tool at the canvas's
+It creates nothing and owns nothing. Think of it as pointing your recording tool at the canvas's
 buffer. `_borrowed_recording` names both facts: borrowed, and already recording.
 
 ```c
@@ -64,7 +64,7 @@ buffer. `_borrowed_recording` names both facts: borrowed, and already recording.
 ```
 
 This describes *where* the next commands will draw. Despite the `dvz_cmd_` prefix it records nothing
-at all — it fills in the `DvzRendering` description with: the render area, one color **attachment**
+at all. It fills in the `DvzRendering` description with the render area, one color **attachment**
 pointing at `frame->image_view`, a load operation of "clear", a store operation of "store", and the
 clear value.
 
@@ -72,7 +72,7 @@ Those two operations deserve a moment, because they are how a GPU thinks about i
 
 - The **load op** says what happens to the attachment's existing contents when the pass begins.
   `CLEAR` overwrites everything with the clear value; `LOAD` keeps what was already there. Clearing
-  is not a command you issue — it is a property of *starting to render*, which is why there is no
+  is a property of *starting to render*, not a command you issue, which is why there is no
   `dvz_cmd_clear` in the sequence.
 - The **store op** says whether the results are written back to memory when the pass ends. `STORE`
   keeps them, which is what you want for an image you intend to display.
@@ -85,7 +85,7 @@ to overwrite them all anyway" is dramatically cheaper than reading them back in.
 ```
 
 *Now* something is recorded. This opens the rendering pass described above: from here on, draw
-commands target that attachment. The split between describing and beginning is not ceremony — in
+commands target that attachment. The split between describing and beginning is deliberate: in
 chapter 10 you will add a depth attachment to the description before beginning the pass.
 
 ```c
@@ -157,12 +157,12 @@ In the callback, compute the color before recording:
 
 and pass that local `clear` to `dvz_cmd_rendering_default` in place of `renderer->clear`.
 
-Two details in those seven lines are worth more than they look.
+Two details in those seven lines matter more than they look.
 
 **Animate from a clock, not a frame counter.** `dvz_time_monotonic_ns` is a monotonic nanosecond
 timer. Deriving motion from elapsed seconds means the animation runs at the same speed on a 30 Hz
 laptop and a 144 Hz monitor, whereas `frame_index * 0.01f` would run five times faster on the
-latter. Everything that moves in this course — the spinning cube, the arcball's inertia — takes its
+latter. Everything that moves in this course (the spinning cube, the arcball's inertia) takes its
 time from here.
 
 **Offscreen renders use a fixed time.** A wall clock would make every `--png` capture different, so
@@ -188,7 +188,7 @@ cmake --build build
 ./build/vkcourse
 ```
 
-The window now breathes slowly through blues and greys. Drag its edge while it does — the animation
+The window now breathes slowly through blues and greys. Drag its edge while it does. The animation
 keeps going, because resizing changes only the `extent` your callback reads each frame.
 
 ```sh
@@ -208,7 +208,7 @@ Both files are identical.
     3. Reset the command buffer and `vkBeginCommandBuffer`.
     4. A pipeline barrier transitioning the acquired image from `UNDEFINED` (or `PRESENT_SRC_KHR`) to
        `COLOR_ATTACHMENT_OPTIMAL`, with the right source and destination stage masks.
-    5. Your recording — the only part this course asks you to write.
+    5. Your recording (the only part this course asks you to write).
     6. A second barrier back to `PRESENT_SRC_KHR`.
     7. `vkEndCommandBuffer`, then `vkQueueSubmit` with the acquire semaphore as a wait, a render
        semaphore as a signal, and the fence.
@@ -231,10 +231,10 @@ Both files are identical.
 
         Nothing overwrites the image now, so what you see is whatever was already in it. A `--png`
         run shows the canvas's own initial clear: opaque black. Live, you see stale frames, because
-        each image still holds what was last drawn into it — a useful reminder that "the screen" is
-        several images taking turns, not one.
+        each image still holds what was last drawn into it. That is a useful reminder that "the
+        screen" is several images taking turns, not one.
 
-        Worth knowing what you are relying on here. Vulkan does not define the contents of a fresh
+        Know what you are relying on here: Vulkan does not define the contents of a fresh
         image; loading one is only meaningful because the canvas clears every target it creates
         before handing it over. Do the same for any image you create yourself in later chapters:
         write it before you read it.

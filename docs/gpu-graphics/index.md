@@ -17,7 +17,7 @@ its images in views, allocate a command pool, and set up a semaphore and fence f
 flight. That is around 1000 lines, and none of it is about triangles.
 
 This course skips none of those concepts and asks you to write none of that code. Datoviz's
-low-level layers — `vklite` and its canvas — own the platform machinery, so from chapter 2 onward
+low-level layers (`vklite` and its canvas) own the platform machinery, so from chapter 2 onward
 you are working on the part that teaches you something: shaders, pipelines, buffers, textures,
 matrices, and light.
 
