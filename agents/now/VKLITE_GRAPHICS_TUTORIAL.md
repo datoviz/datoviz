@@ -18,6 +18,13 @@ Landed:
 
 Deleted: `docs/tutorials/`, `examples/c/tutorial/` including the unused `*_spike` targets and orphan shader directories, `tools/check_vulkan_tutorial.py`, `tools/run_vulkan_tutorial.py`, and the `vulkan-tutorial-*` recipes.
 
+Verified on 2026-07-28, macOS arm64:
+
+- Full suite `just test`: 1047/1056 passed, 0 failed, 9 platform skips, all 17 modules — clears the canvas render-target change across drp2, vklite, scene, gui, and video.
+- `just vulkan-course-installed-smoke` against a source install prefix: all three step programs configure and build as a standalone `find_package(datoviz CONFIG REQUIRED)` consumer and render reproducible captures with zero validation errors. The chapter's CMake instructions are proven.
+- **The published `datoviz==0.4.0rc2` wheel cannot build the course.** Its bundled headers lack `dvz_canvas_configure_gpu_ctx`, `dvz_canvas_frame_format`, `dvz_commands_unwrap`, `dvz_cmd_set_viewport_scissor`, and `dvz_cmd_push_constants` — the RC3 tutorial-enabling additions. Chapter 2 fails to compile against it. Chapter 1 now leads with the source-install path and gates the package path on a build newer than RC2; revisit that section the moment the next package ships, and re-run the installed smoke against it.
+- A source install carries no Vulkan runtime: the smoke needs `--runtime-dir <VulkanSDK>/lib` on macOS or Volk fails to initialize. Wheels bundle `libvulkan.1.dylib`, `libMoltenVK.dylib`, and `libshaderc_shared.1.dylib`, so the package path has no such requirement. Chapter 1 documents both.
+
 Next, in order:
 
 1. Chapters 4-7 (triangle, external shaders with hot reload, vertex buffers, index buffers). Chapter 5 needs a verified key-press path through `dvz_canvas_input()` and `dvz_input_subscribe_keyboard()`.
