@@ -254,6 +254,8 @@ just ctypes
 - Callback and host-helper ergonomics remain low-level: keep `CFUNCTYPE` objects and user-data
   storage alive until explicit unregistration or owner destruction.
 
+The optional `datoviz.experimental.cuda` module is packaged alongside the generated binding but is not part of its supported API contract. It loads CUDA lazily and reports unavailable platform/toolkit/provider conditions without making base `datoviz` imports depend on CUDA. See [GPU array interoperability](gpu-array-interop.md).
+
 
 ## Validation
 

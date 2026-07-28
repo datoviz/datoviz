@@ -163,6 +163,7 @@ nav:
       - Use from Python: 'how-to/use-python.md'
       - Use from terminal IPython: 'how-to/use-ipython.md'
       - Use raw ctypes: 'how-to/use-raw-ctypes.md'
+      - Update a Datoviz buffer from CUDA Python: 'how-to/cupy-interop.md'
       - Choose window size: 'how-to/window-size.md'
       - Embed in Qt: 'how-to/embed-in-qt.md'
       - Deploy WebGPU examples to the browser: 'how-to/deploy-to-web.md'
@@ -229,6 +230,7 @@ nav:
     - Backends:
       - WebGPU subset: 'reference/webgpu-subset.md'
       - Compute and graphics: 'reference/compute-graphics.md'
+      - GPU array interoperability: 'reference/gpu-array-interop.md'
     - Citation: 'reference/citation.md'
   - Advanced:
     - Overview: 'advanced/index.md'
@@ -248,6 +250,7 @@ nav:
     - Runtime layers:
       - Runtime internals: 'advanced/runtime-internals.md'
       - DRP2 command streams: 'advanced/drp2-command-streams.md'
+      - CUDA external-memory buffers: 'advanced/cuda-external-memory.md'
     - Contributors:
       - Architecture map: 'contributors/architecture-map.md'
       - Add a DRP2 command: 'contributors/adding-a-drp2-command.md'

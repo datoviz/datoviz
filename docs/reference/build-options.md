@@ -28,7 +28,7 @@ inconsistent combinations instead of silently building a partial API.
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `DVZ_ENABLE_CUDA` | platform-dependent | Enable CUDA interop hooks and tests when the toolkit is available. |
+| `DVZ_ENABLE_CUDA` | platform-dependent | Enable CUDA external-memory hooks, examples, and tests when the toolkit is available. This is independent of NVENC availability. |
 | `DVZ_ENABLE_KVAZAAR` | `ON` | Enable the optional Kvazaar software HEVC backend. |
 | `DVZ_WITH_GLFW` | `ON` | Enable the GLFW window backend. |
 | `DVZ_WITH_ZLIB` | `ON` | Enable zlib support for gzip-compressed data files. |
@@ -75,6 +75,8 @@ dependency across supported distributions.
 `DVZ_VALIDATE_SPIRV=ON` discovers `spirv-val` through `DVZ_SPIRV_VAL_EXECUTABLE`, `DVZ_SPIRV_VAL`, the Vulkan SDK, or `PATH` and validates each generated file against its profile environment. CI and release builds enable both validation and required precompilation. `glslangValidator` is optional and is not used by the normal native scene, Canvas, or fixture build.
 
 Runtime shaderc remains independent: `DVZ_ENABLE_SHADERC=AUTO` enables runtime GLSL compilation when shaderc headers and a loadable provider are found, while `ON` makes their absence a configuration error. Release-wheel builds require and package shaderc so installed external-shader consumers do not depend on a developer-machine provider.
+
+CUDA discovery is also independent from video encoding. A Linux system with the CUDA toolkit but no NVENC SDK can build the [CUDA external-memory path](../advanced/cuda-external-memory.md); only the NVENC backend is disabled.
 
 ## Package Smoke Presets
 

@@ -37,7 +37,7 @@ separately in smoke output or compatibility notes.
 | Qt/PyQt hosting | Implemented; source-build-only in RC2 | Needs a source-built `datoviz_qtbridge`, compatible Qt runtime, PyQt6 Vulkan binding surface, and platform WSI support. A packaged provider is planned for RC3. |
 | PySide6 hosting | Not a v0.4 target by default | Only viable if a binding exposes the same required Vulkan surface and pointer-unwrapping support. |
 | Shaderc runtime compilation | Optional | Enabled when headers/library are found or required by `DVZ_ENABLE_SHADERC=ON`; otherwise precompiled shaders are required. |
-| CUDA/CuPy interop | Advanced/unstable | Native/provider-style work only; not portable WebGPU support. |
+| CUDA external-memory interop | Experimental, Linux/NVIDIA only | C buffer sharing and CuPy are implemented through opaque-FD external memory and timeline semaphores. PyTorch and Taichi adapters await physical GPU proof. See the [framework matrix](gpu-array-interop.md). |
 | Video encoders | Optional/backend-dependent | Software or hardware encoders depend on build options and installed libraries. |
 
 The base `libdatoviz` build and base Python wheel do not link Qt. RC2 wheels include the
@@ -75,4 +75,5 @@ selected by its own CMake configuration.
 - [Build options](build-options.md)
 - [WebGPU subset](webgpu-subset.md)
 - [Compute and graphics](compute-graphics.md)
+- [GPU array interoperability](gpu-array-interop.md)
 - [Diagnose platform issues](../how-to/diagnose-platform.md)

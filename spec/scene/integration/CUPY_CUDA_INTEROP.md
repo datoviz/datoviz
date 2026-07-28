@@ -507,11 +507,7 @@ Start with narrow tests before adding Python examples:
 3. add the Python CuPy wrapper lifetime test,
 4. add a live example that updates positions at a fixed rate without CPU upload.
 
-The current raw smoke is intentionally below the public API: it proves Vulkan-owned buffer ->
-CUDA/CuPy import -> explicit timeline wait -> DRP2 render/readback. The scene external-buffer hook
-now exists. `examples/python/features/cupy_particles.py` should use retained scene resources through
-the internal scene-level helper: CuPy runs the particle update logic, and Datoviz renders the shared
-position buffer as a point visual without exposing the resource-key/label-id registration path.
+The raw smoke remains below the public API and proves Vulkan-owned buffer -> CUDA/CuPy import -> explicit timeline wait -> DRP2 render/readback. The experimental `datoviz.experimental.cuda` layer now exposes this route through `scene_session()`, `buffer()`, and `cupy_write()`. `examples/python/features/cupy_particles.py` uses retained scene resources through that layer: CuPy runs the particle update logic, and Datoviz renders the shared position buffer as a point visual without exposing the resource-key/label-id registration path.
 
 The existing CUDA import/export tests in `src/vk/tests/test_memory.c` are the right low-level
 starting point, but the public example should only be added after the synchronization path is tested

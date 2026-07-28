@@ -12,8 +12,7 @@ scene buffer with STORAGE | VERTEX usage
   -> normal render pass consumes the same buffer as vertex input
 ```
 
-This is not a general custom render-shader API, a general compute framework, or a CUDA/CuPy Python
-interop contract.
+This is not a general custom render-shader API, a general compute framework, or the CUDA external-memory contract. CUDA/CuPy/PyTorch/Taichi sharing is a separate Linux/NVIDIA-only path documented in [GPU array interoperability](gpu-array-interop.md).
 
 The scene-compute constructors are an experimental authoring surface; emitted frame-plan and DRP2
 objects are advanced/unstable runtime contracts. Applications should not couple ordinary visual
@@ -35,8 +34,8 @@ code to the lower packet representation.
 - automatic multi-pass compute scheduling;
 - compute-written textures as the public v0.4 path;
 - reductions, atomics-heavy algorithms, and deterministic reduction policy;
-- CUDA external-memory interop as a supported portable feature;
-- CuPy/Python interop;
+- portable or WebGPU CUDA external-memory interop;
+- integration of external CUDA writers into the scene-compute scheduler;
 - custom render shaders for built-in visuals.
 
 ## Validation
@@ -74,3 +73,5 @@ not a general compute framework.
 For exact current signatures, see the generated [scene API](c-api/scene.md),
 [frame-plan API](c-api/frame-plan.md), and [DRP2 API](c-api/drp2.md). The first is the authoring
 surface; the latter two are contributor/runtime surfaces.
+
+For the separate native external-object contract, see [Share Datoviz buffers with CUDA](../advanced/cuda-external-memory.md). For Python consumers, see [Update a Datoviz buffer from CUDA Python](../how-to/cupy-interop.md).
