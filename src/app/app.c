@@ -6103,10 +6103,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
                 _app_host_poll(app);
 
             if (_app_should_exit(app))
-            {
-                _app_reap_closed_views(app);
                 break;
-            }
             _app_reap_closed_views(app);
             if (_app_should_exit(app))
                 break;

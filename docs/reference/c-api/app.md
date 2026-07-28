@@ -437,7 +437,9 @@ Run the frame loop.
 Finite runs render the requested number of frames. Interactive runs (`frame_count == 0`) use
 the app scheduler: on-demand mode waits for resize/input/request-frame invalidation, while
 continuous mode renders active windows until the configured exit policy or dvz_app_stop() stops
-the loop.
+the loop. Runtime resources for a view whose close request causes the loop to return remain valid
+until `dvz_app_reap_closed_views()` or `dvz_app_destroy()`, so callers may unsubscribe input
+callbacks after `dvz_app_run()` returns.
 
 ```c
 void dvz_app_run(
