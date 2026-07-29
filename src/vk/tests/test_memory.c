@@ -532,7 +532,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
     AT(export_desc.size == 224);
     AT(export_desc.usage ==
        (VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-        VK_BUFFER_USAGE_TRANSFER_DST_BIT));
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT));
     AT(export_desc.vk_usage == export_desc.usage);
     AT(export_desc.drp2_usage ==
        (DVZ_DRP2_BUFFER_USAGE_VERTEX | DVZ_DRP2_BUFFER_USAGE_STORAGE));
