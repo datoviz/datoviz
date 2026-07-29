@@ -359,6 +359,10 @@ if(DVZ_ENABLE_CUDA)
 
         if(_dvz_nvenc_lib)
             set(DVZ_HAS_NVENC 1)
+            # Set normal variables for this configure pass because the empty defaults above shadow
+            # same-named cache entries.
+            set(DVZ_NVENC_LIB "${_dvz_nvenc_lib}")
+            set(DVZ_NVENC_LIB_DIR "${_dvz_nvenc_lib_dir}")
             set(DVZ_NVENC_LIB "${_dvz_nvenc_lib}" CACHE FILEPATH "NVENC library resolved by CMake" FORCE)
             set(DVZ_NVENC_LIB_DIR "${_dvz_nvenc_lib_dir}" CACHE PATH "Directory searched for NVENC" FORCE)
         else()

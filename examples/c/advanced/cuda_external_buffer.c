@@ -29,6 +29,7 @@
 #include <cuda_runtime_api.h>
 #include <vulkan/vulkan_core.h>
 
+#include "_compat.h"
 #include "datoviz/common/functions.h"
 #include "datoviz/drp2.h"
 #include "datoviz/vk/gpu_ctx.h"
