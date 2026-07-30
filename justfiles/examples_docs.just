@@ -129,6 +129,12 @@ gallery-capture *args: build
     @just capture-gallery "$@"
 
 
+# Generate two isolated Linux reference screenshot candidate sets and a review report.
+[positional-arguments]
+gallery-reference-candidates *args: build
+    @python3 tools/capture_gallery_reference.py "$@"
+
+
 # Refresh v0.4 gallery screenshots and generated docs with cached native captures.
 [positional-arguments]
 gallery-refresh *args: build
