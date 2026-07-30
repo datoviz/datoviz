@@ -6,6 +6,7 @@ import time
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 
 TOOLS_DIR = Path(__file__).resolve().parents[1]
@@ -112,6 +113,29 @@ def test_probe_canonical_synthetic_mp4(tmp_path: Path) -> None:
     assert probe.fps == 30
     assert probe.frames == 6
     assert probe.duration == pytest.approx(0.2, abs=0.02)
+
+
+@pytest.mark.skipif(
+    shutil.which("ffprobe") is None,
+    reason="ffprobe is unavailable",
+)
+def test_probe_animated_webp_falls_back_when_ffprobe_omits_dimensions(tmp_path: Path) -> None:
+    output = tmp_path / "synthetic.webp"
+    frames = [
+        Image.new("RGB", (1280, 720), color)
+        for color in ("black", "white")
+    ]
+    frames[0].save(
+        output,
+        save_all=True,
+        append_images=frames[1:],
+        duration=100,
+        loop=0,
+    )
+
+    probe = media.probe_media(output)
+
+    assert (probe.width, probe.height) == (1280, 720)
 
 
 def test_parse_jobs_caps_automatic_workers(monkeypatch) -> None:

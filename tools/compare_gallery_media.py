@@ -511,9 +511,20 @@ def probe_media(path: Path) -> MediaProbe:
     frames_raw = stream.get("nb_frames")
     frames = int(frames_raw) if str(frames_raw).isdigit() else 0
     duration = float((payload.get("format") or {}).get("duration") or 0.0)
+    width = int(stream.get("width", 0))
+    height = int(stream.get("height", 0))
+    if path.suffix.lower() == ".webp" and (width <= 0 or height <= 0):
+        try:
+            from PIL import Image
+        except ImportError as exc:
+            raise RuntimeError(
+                f"{path}: Pillow is required when ffprobe cannot read animated WebP dimensions"
+            ) from exc
+        with Image.open(path) as image:
+            width, height = image.size
     return MediaProbe(
-        width=int(stream.get("width", 0)),
-        height=int(stream.get("height", 0)),
+        width=width,
+        height=height,
         fps=fps,
         frames=frames,
         duration=duration,
