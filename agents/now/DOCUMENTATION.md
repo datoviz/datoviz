@@ -4,6 +4,8 @@ Status: active RC3 documentation, gallery, and tutorial-pilot gate followed by R
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for current blockers, [../../spec/docs/](../../spec/docs/) for durable information architecture and documentation decisions, and [../../spec/release/](../../spec/release/) for readiness, communication, and attribution policy.
 
+The checkpoint-by-checkpoint completion record and PR #132 disposition are in [RC3_DOCUMENTATION_INVENTORY.md](RC3_DOCUMENTATION_INVENTORY.md).
+
 ## Current Position
 
 The public v0.4 site is deployed with RC2 installation guidance, release notes, generated examples, a broad native and WebGPU gallery, generated C-reference infrastructure, Python binding guidance, and the preserved v0.3 site under `/v0.3/`.
@@ -33,6 +35,7 @@ Do not modify or stage the `data` submodule without explicit approval for the ex
 - The visual-system pilot specified in [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) is implemented on the four approved pages and passes strict build plus software-rendered desktop/mobile inspection. Obtain maintainer review before broader rollout.
 - Source-screenshot reconciliation has classified eight current and 96 materially different recaptures. Review the isolated difference set and obtain exact approval before replacing or staging any canonical PNG or the `data` gitlink.
 - Dataset attribution/provenance and the branch-wide feature/known-limitations audit are complete and mechanically validated; keep exact release-note issues synchronized when an RC3 artifact is drafted.
+- PR #132 has been triaged read-only against current `v0.4-dev`; most bundled changes are superseded, and the remaining embedding/build cleanups should return only as focused successors after exact maintainer approval.
 - Branch-specific public links and clone instructions must change atomically with [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md), not before the branch transition.
 - The modern GPU graphics tutorial execution and validation plan is [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md). RC3 owns its enabling API and three-chapter pilot; do not publish uncompiled prose sketches or duplicate the advanced raw-triangle example as a beginner chapter.
 
