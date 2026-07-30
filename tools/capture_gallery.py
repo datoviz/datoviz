@@ -11,6 +11,7 @@ import os
 import platform
 import subprocess
 import sys
+import tempfile
 import time
 import zlib
 from dataclasses import dataclass
@@ -27,6 +28,8 @@ DEFAULT_MANIFEST = gallery_media.DEFAULT_MANIFEST
 DEFAULT_BUILD_DIR = ROOT / "build"
 DEFAULT_IMAGE_DIR = ROOT / "data/gallery/v0.4"
 DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/native"
+VERIFY_MAX_CHANNEL_DELTA = 8
+VERIFY_MAX_CHANGED_COMPONENT_FRACTION = 0.001
 PUBLIC_LANES = gallery_media.DOC_LANES
 GLOBAL_FINGERPRINT_PATHS = (
     ROOT / "CMakeLists.txt",
@@ -36,6 +39,8 @@ GLOBAL_FINGERPRINT_PATHS = (
     ROOT / "include",
     ROOT / "src",
     ROOT / "shaders",
+    ROOT / "tools/capture_gallery.py",
+    ROOT / "tools/gallery_media.py",
 )
 SHARED_EXAMPLE_PATHS = (
     ROOT / "examples/c/example_common.c",
@@ -146,6 +151,14 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def child_path(path: Path) -> str:
+    """Return a repository-relative path when possible."""
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def cache_path(example: CaptureExample, cache_dir: Path) -> Path:
     return cache_dir / example.lane / f"{example.id}.json"
 
@@ -252,6 +265,11 @@ def parse_args() -> argparse.Namespace:
         "--force",
         action="store_true",
         help="recapture even when the cache says the image is current",
+    )
+    parser.add_argument(
+        "--verify-existing",
+        action="store_true",
+        help="capture into an isolated temporary tree and cache only exact or tightly pixel-equivalent existing PNGs",
     )
     parser.add_argument(
         "--prune-stale",
@@ -645,8 +663,7 @@ def capture_one(
 
     cmd = command_for(example, args.build_dir)
     if args.dry_run:
-        rel_png = png.relative_to(ROOT)
-        return True, "dry-run", f"dry-run: {' '.join(cmd)} -> {rel_png}"
+        return True, "dry-run", f"dry-run: {' '.join(cmd)} -> {child_path(png)}"
 
     previous_png_hash = None
     if png.exists():
@@ -678,22 +695,127 @@ def capture_one(
         status = "unchanged" if previous_png_hash == png_hash else "changed"
 
     if args.cache and input_hash is not None:
-        payload = {
-            "example_id": example.id,
-            "lane": example.lane,
-            "source": example.source,
-            "command": command_for(example, args.build_dir),
-            "output": str(png.relative_to(ROOT)),
-            "capture_mode": example.capture_mode,
-            "capture_size": f"{example.expected_width}x{example.expected_height}",
-            "input_hash": input_hash,
-            "png_hash": png_hash,
-            "previous_png_hash": previous_png_hash,
-            "status": status,
-            "timestamp": int(time.time()),
-        }
-        write_cache(cache_path(example, args.cache_dir), payload)
+        write_capture_cache(
+            example, args, input_hash, png_hash, previous_png_hash, status
+        )
     return True, status, detail
+
+
+def write_capture_cache(
+    example: CaptureExample,
+    args: argparse.Namespace,
+    input_hash: str,
+    png_hash: str,
+    previous_png_hash: str | None,
+    status: str,
+) -> None:
+    """Write one local screenshot cache record."""
+    png = output_path(example, args.image_dir)
+    payload = {
+        "example_id": example.id,
+        "lane": example.lane,
+        "source": example.source,
+        "command": command_for(example, args.build_dir),
+        "output": child_path(png),
+        "capture_mode": example.capture_mode,
+        "capture_size": f"{example.expected_width}x{example.expected_height}",
+        "input_hash": input_hash,
+        "png_hash": png_hash,
+        "previous_png_hash": previous_png_hash,
+        "status": status,
+        "timestamp": int(time.time()),
+    }
+    write_cache(cache_path(example, args.cache_dir), payload)
+
+
+def verify_existing_capture(
+    example: CaptureExample,
+    args: argparse.Namespace,
+    input_hash: str,
+) -> tuple[bool, str, str]:
+    """Recapture outside data and cache only an exact or tightly pixel-equivalent PNG."""
+    canonical = output_path(example, args.image_dir)
+    if not canonical.is_file():
+        return False, "missing", f"missing canonical PNG: {child_path(canonical)}"
+
+    capture_values = vars(args).copy()
+    capture_values.update(
+        image_dir=Path(args.verification_dir),
+        cache=False,
+        force=True,
+        verify_existing=False,
+    )
+    capture_args = argparse.Namespace(**capture_values)
+    ok, status, detail = capture_one(example, capture_args, None)
+    if args.dry_run:
+        return ok, status, detail
+    if not ok:
+        return ok, status, detail
+
+    candidate = output_path(example, capture_args.image_dir)
+    canonical_hash = file_sha256(canonical)
+    candidate_hash = file_sha256(candidate)
+    verification_status = "verified"
+    verification_detail = f"byte-identical {detail}"
+    if candidate_hash != canonical_hash:
+        try:
+            max_delta, changed_fraction = png_pixel_difference(candidate, canonical)
+        except (OSError, RuntimeError, ValueError) as exc:
+            return False, "different", f"unable to compare decoded pixels: {exc}"
+        if (
+            max_delta > VERIFY_MAX_CHANNEL_DELTA
+            or changed_fraction > VERIFY_MAX_CHANGED_COMPONENT_FRACTION
+        ):
+            return (
+                False,
+                "different",
+                f"isolated capture differs from {child_path(canonical)} "
+                f"(max_delta={max_delta}, changed_components={changed_fraction:.4%})",
+            )
+        verification_status = "verified-pixels"
+        verification_detail = (
+            f"pixel-equivalent {detail} "
+            f"(max_delta={max_delta}, changed_components={changed_fraction:.4%})"
+        )
+
+    write_capture_cache(
+        example,
+        args,
+        input_hash,
+        canonical_hash,
+        canonical_hash,
+        verification_status,
+    )
+    return True, verification_status, verification_detail
+
+
+def png_pixel_difference(candidate: Path, canonical: Path) -> tuple[int, float]:
+    """Return maximum channel delta and changed-component fraction for two PNGs."""
+    try:
+        from PIL import Image, ImageChops
+    except ImportError as exc:
+        raise RuntimeError("Pillow is required for --verify-existing") from exc
+    with Image.open(candidate) as candidate_image, Image.open(canonical) as canonical_image:
+        candidate_rgba = candidate_image.convert("RGBA")
+        canonical_rgba = canonical_image.convert("RGBA")
+        if candidate_rgba.size != canonical_rgba.size:
+            raise ValueError(
+                f"capture sizes differ: {candidate_rgba.size} != {canonical_rgba.size}"
+            )
+        difference = ImageChops.difference(candidate_rgba, canonical_rgba)
+        histograms = difference.histogram()
+    pixels = candidate_rgba.width * candidate_rgba.height
+    component_count = pixels * 4
+    changed_components = 0
+    max_delta = 0
+    for channel in range(4):
+        histogram = histograms[channel * 256 : (channel + 1) * 256]
+        changed_components += sum(histogram[1:])
+        for value in range(255, 0, -1):
+            if histogram[value]:
+                max_delta = max(max_delta, value)
+                break
+    return max_delta, changed_components / component_count
 
 
 def print_examples(examples: list[CaptureExample], args: argparse.Namespace) -> None:
@@ -707,7 +829,10 @@ def print_examples(examples: list[CaptureExample], args: argparse.Namespace) -> 
 
 def capture_task(payload: tuple[int, CaptureExample, argparse.Namespace, str | None]):
     index, example, args, input_hash = payload
-    ok, status, detail = capture_one(example, args, input_hash)
+    if args.verify_existing:
+        ok, status, detail = verify_existing_capture(example, args, str(input_hash))
+    else:
+        ok, status, detail = capture_one(example, args, input_hash)
     return index, example, ok, status, detail
 
 
@@ -743,6 +868,10 @@ def main() -> int:
         print(str(exc), file=sys.stderr)
         return 2
 
+    if args.verify_existing and not args.cache:
+        print("--verify-existing requires --cache", file=sys.stderr)
+        return 2
+
     global_hash = ""
     input_hashes: dict[str, str] = {}
     if args.cache:
@@ -753,16 +882,27 @@ def main() -> int:
 
     failures = 0
     counts: dict[str, int] = {}
-    tasks = [
-        (index, example, args, input_hashes.get(example.id))
-        for index, example in enumerate(selected, 1)
-    ]
-    if jobs == 1 or len(tasks) == 1:
-        results = [capture_task(task) for task in tasks]
-    else:
-        with concurrent.futures.ProcessPoolExecutor(max_workers=jobs) as executor:
-            results = list(executor.map(capture_task, tasks))
-        results.sort(key=lambda item: item[0])
+    verification_tmp = (
+        tempfile.TemporaryDirectory(prefix="dvz-gallery-verify-")
+        if args.verify_existing
+        else None
+    )
+    try:
+        if verification_tmp is not None:
+            args.verification_dir = Path(verification_tmp.name)
+        tasks = [
+            (index, example, args, input_hashes.get(example.id))
+            for index, example in enumerate(selected, 1)
+        ]
+        if jobs == 1 or len(tasks) == 1:
+            results = [capture_task(task) for task in tasks]
+        else:
+            with concurrent.futures.ProcessPoolExecutor(max_workers=jobs) as executor:
+                results = list(executor.map(capture_task, tasks))
+            results.sort(key=lambda item: item[0])
+    finally:
+        if verification_tmp is not None:
+            verification_tmp.cleanup()
 
     for index, example, ok, status, detail in results:
         counts[status] = counts.get(status, 0) + 1

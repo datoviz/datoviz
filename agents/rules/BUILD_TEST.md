@@ -91,6 +91,8 @@ convert static WebPs, regenerate animated WebPs, rebuild generated gallery docs/
 gallery media checks, and run `git diff --check`. Use `just check-gallery-media-pipeline` after
 changing gallery media tooling or manifest preview metadata.
 
+When canonical PNGs exist but the local screenshot cache is absent, use `python3 tools/capture_gallery.py --all-screenshot --cache --verify-existing --jobs auto`. Verification captures into an isolated temporary tree, leaves `data` untouched, and writes a local cache record only when the normalized recapture is byte-identical or differs by no more than eight channel levels across at most 0.1% of RGBA components. Larger differences remain failures requiring explicit review and approval before any `data` change.
+
 Animated gallery captures, animated WebP previews, MP4 cards, and posters use canonical `1280x720` frames end to end. The media comparison pipeline consumes the canonical frame cache directly and must not add a per-frame resize stage.
 
 Animated gallery previews use manifest metadata:

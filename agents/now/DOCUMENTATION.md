@@ -8,7 +8,7 @@ Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for current 
 
 The public v0.4 site is deployed with RC2 installation guidance, release notes, generated examples, a broad native and WebGPU gallery, generated C-reference infrastructure, Python binding guidance, and the preserved v0.3 site under `/v0.3/`.
 
-Published animated media freshness is current for 38 animations and 29 video cards. The separate source-screenshot checker no longer reports invalid gallery dimensions or a missing datetime-axis screenshot; it currently reports four stale and 100 uncached screenshots. These are source-cache reconciliation tasks, not evidence that the deployed gallery assets are absent.
+Published animated media freshness is current for 38 animations and 29 video cards. On 2026-07-30, isolated source-screenshot verification recaptured all 104 reviewed PNGs without touching `data`: one was byte-identical, seven stayed within the strict pixel-equivalence tolerance, and 96 differed materially enough to require visual review before any replacement. The local checker now reports `ok=8, uncached=96`; no PNG is missing or dimensionally invalid, and the deployed gallery remains present.
 
 Do not modify or stage the `data` submodule without explicit approval for the exact change. Generated build-local comparison media remains ignored and uncommitted.
 
@@ -29,7 +29,7 @@ Do not modify or stage the `data` submodule without explicit approval for the ex
 
 - The gallery resolution, encoding, freshness, and bounded-parallelism implementation is specified in [GALLERY_MEDIA_SINGLE_RESOLUTION.md](GALLERY_MEDIA_SINGLE_RESOLUTION.md) and remains a two-checkpoint engineering task.
 - The visual-system pilot is specified in [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md). Apply it first to the approved pilot pages, render locally, and request maintainer review before broader rollout.
-- Source-screenshot reconciliation must distinguish stale fingerprints from uncached but dimensionally valid images and must not update the `data` gitlink without exact approval.
+- Source-screenshot reconciliation has classified eight current and 96 materially different recaptures. Review the isolated difference set and obtain exact approval before replacing or staging any canonical PNG or the `data` gitlink.
 - Branch-specific public links and clone instructions must change atomically with [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md), not before the branch transition.
 - The modern GPU graphics tutorial execution and validation plan is [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md). RC3 owns its enabling API and three-chapter pilot; do not publish uncompiled prose sketches or duplicate the advanced raw-triangle example as a beginner chapter.
 
