@@ -17,6 +17,31 @@ same binding.
   <span>Runtime layers unstable</span>
 </div>
 
+<div class="dvz-entry-map" aria-label="Datoviz integration layer decision map">
+  <div class="dvz-entry-map__item dvz-entry-map__item--external">
+    <span class="dvz-status-label dvz-status-label--external">external / work in progress</span>
+    <strong>High-level plotting · GSP / VisPy2</strong>
+    <span>Choose this layer when you need plotting semantics above the Datoviz engine.</span>
+  </div>
+  <div class="dvz-entry-map__item dvz-entry-map__item--primary">
+    <span class="dvz-status-label dvz-status-label--supported">recommended · supported by feature</span>
+    <strong>Scene API · Python with NumPy or native C/C++</strong>
+    <span>Start here for retained scenes, visuals, controllers, windows, and offscreen output.</span>
+  </div>
+  <div class="dvz-entry-map__branches">
+    <div class="dvz-entry-map__item dvz-entry-map__item--experimental">
+      <span class="dvz-status-label dvz-status-label--experimental">experimental subset</span>
+      <strong>Browser WebGPU</strong>
+      <span>Use only manifest-promoted live example routes.</span>
+    </div>
+    <div class="dvz-entry-map__item dvz-entry-map__item--advanced">
+      <span class="dvz-status-label dvz-status-label--advanced">advanced / unstable</span>
+      <strong>App · canvas · stream · DRP2 · vklite</strong>
+      <span>Use for hosting, runtime, backend, replay, or engine work—not as an ordinary application entry point.</span>
+    </div>
+  </div>
+</div>
+
 | Need | Use | Status |
 | --- | --- | --- |
 | Explore scientific arrays from Python | [`import datoviz as dvz`](../reference/ctypes.md#numpy-adapted-calls) | supported for documented calls |

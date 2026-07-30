@@ -10,28 +10,30 @@ contracts.
     The scene API is the primary user surface. DRP2 and lower runtime layers are
     **advanced/unstable**; WebGPU/WASM and compute-to-render paths are **experimental**.
 
-<div class="dvz-section-grid">
-  <a class="dvz-section-card" href="../gpu-graphics/">
-    <strong>Learn GPU graphics</strong>
-    <span>Write a Vulkan renderer from an empty file, up to a textured and lit 3D mesh.</span>
-  </a>
-  <a class="dvz-section-card" href="../explanation/architecture/">
+<div class="dvz-audience-grid">
+  <a class="dvz-audience-card" href="../explanation/architecture/">
+    <span class="dvz-audience-card__label">Understand</span>
     <strong>Understand the engine</strong>
     <span>Learn the object model, architecture, frame lifecycle, and retained-resource model.</span>
   </a>
-  <a class="dvz-section-card" href="runtime-internals/">
+  <a class="dvz-audience-card" href="runtime-internals/">
+    <span class="dvz-audience-card__label">Build</span>
     <strong>Work on runtime and backends</strong>
     <span>Follow scene output through DRP2 to native Vulkan or browser WebGPU execution.</span>
   </a>
-  <a class="dvz-section-card" href="../contributors/architecture-map/">
+  <a class="dvz-audience-card" href="../contributors/architecture-map/">
+    <span class="dvz-audience-card__label">Contribute</span>
     <strong>Contribute</strong>
     <span>Find subsystem owners, source-of-truth specifications, and validation workflows.</span>
   </a>
-  <a class="dvz-section-card" href="../contributors/release-process/">
+  <a class="dvz-audience-card" href="../contributors/release-process/">
+    <span class="dvz-audience-card__label">Release</span>
     <strong>Prepare a release</strong>
     <span>Use the maintainer process, flight checklist, artifact checks, and release evidence.</span>
   </a>
 </div>
+
+To learn the GPU foundations hands-on, follow [Modern GPU Graphics in Vulkan](../gpu-graphics/index.md), which builds a renderer from an empty C file.
 
 ## From scene to output
 
@@ -57,8 +59,8 @@ produces presentation, capture, or readback output.
     <span>Command stream</span>
   </div>
   <div class="dvz-layer-diagram__step" role="listitem">
-    <strong>Backend</strong>
-    <span>Vulkan or WebGPU</span>
+    <strong>Runtime</strong>
+    <span class="dvz-layer-diagram__branches"><span>Native Vulkan</span><span>Browser WebGPU</span></span>
   </div>
   <div class="dvz-layer-diagram__step" role="listitem">
     <strong>Output</strong>

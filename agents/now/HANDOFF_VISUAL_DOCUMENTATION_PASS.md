@@ -1,8 +1,8 @@
 # Public Documentation Visual Pass Handoff
 
-Status: approved direction; implementation has not started. Updated: 2026-07-16.
+Status: four-page pilot implemented and awaiting maintainer review; broad rollout has not started. Updated: 2026-07-30.
 
-This handoff defines the next public-documentation visual pass. Implement the pilot checkpoint first, render it locally, and ask for maintainer review before applying the system broadly.
+This handoff defines the next public-documentation visual pass. The pilot checkpoint is implemented and has been rendered locally at desktop and mobile widths; obtain maintainer review before applying the system broadly.
 
 ## Mission
 

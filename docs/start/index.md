@@ -1,10 +1,20 @@
 # Get started
 
-<div class="dvz-section-intro" markdown="1">
-
-Datoviz turns scientific arrays into interactive 2D and 3D GPU visualizations. Start with Python
-and NumPy or build directly with C; both paths use the same scene, visual, and data contracts.
-
+<div class="dvz-doc-hero">
+  <div class="dvz-doc-hero__content">
+    <p class="dvz-doc-hero__eyebrow">Python + NumPy · C/C++ · Vulkan</p>
+    <p>Datoviz turns scientific arrays into interactive 2D and 3D GPU visualizations. Start with Python and NumPy or build directly with C; both paths use the same scene, visual, and data contracts.</p>
+    <div class="dvz-doc-actions">
+      <a class="md-button md-button--primary" href="quickstart/">Python Quickstart</a>
+      <a class="md-button" href="first-c-program/">First C Program</a>
+    </div>
+  </div>
+  <figure class="dvz-output-example">
+    <a href="quickstart/">
+      <img src="../assets/gallery/v0.4/start/start_scatter.webp" alt="Ten thousand colored points rendered in a Datoviz window" loading="lazy">
+    </a>
+    <figcaption><strong>Quickstart result.</strong> The same retained scene and array contracts are available from Python and C. <a href="quickstart/">Open the canonical example and source.</a></figcaption>
+  </figure>
 </div>
 
 <div class="dvz-section-grid">
@@ -36,12 +46,30 @@ and NumPy or build directly with C; both paths use the same scene, visual, and d
 
 ## Recommended first path
 
-1. [Install Datoviz](install.md) using the path available for the current release stage.
-2. **Python and NumPy:** run the complete [Quickstart](quickstart.md).
-3. **C or C++:** run the complete [First C Program](first-c-program.md), then integrate it with
-   [CMake or `datoviz-config`](../how-to/c-integration.md).
-4. Read [Core concepts](core-concepts.md) once you have seen the first window. It defines the object
-   and array model shared by both languages.
+<div class="dvz-step-flow" role="list" aria-label="Recommended first Datoviz workflow">
+  <a class="dvz-step-flow__step" href="install/" role="listitem">
+    <span class="dvz-step-flow__number">01</span>
+    <strong>Install</strong>
+    <span>Choose a package or source build.</span>
+  </a>
+  <a class="dvz-step-flow__step" href="core-concepts/" role="listitem">
+    <span class="dvz-step-flow__number">02</span>
+    <strong>Create a scene</strong>
+    <span>Add a figure, panel, and visual.</span>
+  </a>
+  <a class="dvz-step-flow__step" href="quickstart/" role="listitem">
+    <span class="dvz-step-flow__number">03</span>
+    <strong>Add data</strong>
+    <span>Upload arrays to named attributes.</span>
+  </a>
+  <a class="dvz-step-flow__step" href="../how-to/" role="listitem">
+    <span class="dvz-step-flow__number">04</span>
+    <strong>Interact or capture</strong>
+    <span>Open a view or render offscreen.</span>
+  </a>
+</div>
+
+Python users should run the complete [Quickstart](quickstart.md). C or C++ users should run the complete [First C Program](first-c-program.md), then integrate it with [CMake or `datoviz-config`](../how-to/c-integration.md). Read [Core concepts](core-concepts.md) once you have seen the first window.
 
 If your target is a browser, Qt application, offscreen service, or lower runtime layer, use
 [Choose your layer](choose-your-layer.md) before writing code. If a coding assistant will write the

@@ -30,7 +30,7 @@ Do not modify or stage the `data` submodule without explicit approval for the ex
 ## Active Documentation Work
 
 - The gallery resolution, encoding, freshness, and bounded-parallelism implementation is specified in [GALLERY_MEDIA_SINGLE_RESOLUTION.md](GALLERY_MEDIA_SINGLE_RESOLUTION.md) and remains a two-checkpoint engineering task.
-- The visual-system pilot is specified in [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md). Apply it first to the approved pilot pages, render locally, and request maintainer review before broader rollout.
+- The visual-system pilot specified in [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) is implemented on the four approved pages and passes strict build plus software-rendered desktop/mobile inspection. Obtain maintainer review before broader rollout.
 - Source-screenshot reconciliation has classified eight current and 96 materially different recaptures. Review the isolated difference set and obtain exact approval before replacing or staging any canonical PNG or the `data` gitlink.
 - Dataset attribution/provenance and the branch-wide feature/known-limitations audit are complete and mechanically validated; keep exact release-note issues synchronized when an RC3 artifact is drafted.
 - Branch-specific public links and clone instructions must change atomically with [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md), not before the branch transition.

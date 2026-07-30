@@ -14,15 +14,28 @@ reference.
 
 ## The object model
 
-```text
-scene
-└── figure                         output image area
-    ├── panel                      drawing region and view state
-    │   ├── visual                 one renderable collection
-    │   │   └── named data arrays  position, color, size, pixels, ...
-    │   └── controller             panzoom or 3D navigation
-    └── panel                      another view, when needed
-```
+<div class="dvz-object-diagram" role="group" aria-label="A scene contains a figure; the figure contains one or more panels; a panel contains visuals and a controller; each visual receives named data arrays">
+  <div class="dvz-object-diagram__scene">
+    <span class="dvz-object-diagram__label">Scene</span>
+    <div class="dvz-object-diagram__figure">
+      <span class="dvz-object-diagram__label">Figure · complete output</span>
+      <div class="dvz-object-diagram__panels">
+        <div class="dvz-object-diagram__panel">
+          <span class="dvz-object-diagram__label">Panel · drawing region</span>
+          <span class="dvz-object-diagram__controller">Controller · panzoom or 3D navigation</span>
+          <div class="dvz-object-diagram__visual">
+            <span class="dvz-object-diagram__label">Visual · one renderable collection</span>
+            <div class="dvz-object-diagram__data">Named data arrays · position · color · size · pixels</div>
+          </div>
+        </div>
+        <div class="dvz-object-diagram__panel dvz-object-diagram__panel--secondary">
+          <span class="dvz-object-diagram__label">Another panel</span>
+          <span>Optional second view</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 | Object | Think of it as | Typical choice |
 | --- | --- | --- |
