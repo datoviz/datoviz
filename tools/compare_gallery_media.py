@@ -9,16 +9,19 @@ do not commit the generated media until the gallery media policy is settled.
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import html
 import json
 import os
 import shutil
 import subprocess
+import sys
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from fractions import Fraction
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Callable
+from typing import TypeVar, cast
 
 import gallery_frames
 import gallery_media
@@ -54,6 +57,10 @@ BUDGETS = {
     "video_card": 1_000_000,
     "poster": 500_000,
 }
+MAX_AUTO_JOBS = 4
+
+T = TypeVar("T")
+R = TypeVar("R")
 
 
 @dataclass(frozen=True)
@@ -96,6 +103,7 @@ class MediaComparison:
     encoded_crf: int = 0
     source_duration: float = 0.0
     encoded_duration: float = 0.0
+    notes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -144,6 +152,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true", help="list selected inputs without encoding")
     parser.add_argument("--force", action="store_true", help="replace existing comparison outputs")
     parser.add_argument(
+        "--jobs",
+        default="auto",
+        help="parallel encoding jobs, 'auto' for a CPU-bounded default, or 1 for serial",
+    )
+    parser.add_argument(
+        "--capture-jobs",
+        default="1" if sys.platform == "darwin" else "auto",
+        help="parallel capture jobs; defaults to 1 on macOS and CPU-bounded elsewhere",
+    )
+    parser.add_argument(
         "--write-site-assets",
         action="store_true",
         help="copy preferred MP4 candidates and posters into the build-local gallery asset tree",
@@ -171,6 +189,97 @@ def require_tool(name: str) -> str:
 
 def run(cmd: list[str]) -> None:
     subprocess.run(cmd, cwd=ROOT, check=True)
+
+
+def parse_jobs(value: str) -> int:
+    """Parse a worker count with an automatic CPU-bounded default."""
+    if value == "auto":
+        return max(1, min(MAX_AUTO_JOBS, os.cpu_count() or 1))
+    try:
+        jobs = int(value)
+    except ValueError as exc:
+        raise ValueError(f"invalid worker count: {value!r}") from exc
+    if jobs < 1:
+        raise ValueError("worker count must be at least 1")
+    return jobs
+
+
+def bounded_parallel_map(
+    items: list[T],
+    worker: Callable[[T], R],
+    jobs: int,
+    label: Callable[[T], str] = str,
+) -> list[R]:
+    """Run bounded work, preserve input order, and stop scheduling after failure."""
+    if jobs < 1:
+        raise ValueError("jobs must be at least 1")
+    if jobs == 1 or len(items) <= 1:
+        results = []
+        for item in items:
+            try:
+                results.append(worker(item))
+            except Exception as exc:
+                raise RuntimeError(
+                    f"gallery media worker failed: {label(item)}: {exc}"
+                ) from exc
+        return results
+
+    results: list[R | None] = [None] * len(items)
+    failures: list[tuple[int, Exception]] = []
+    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as executor:
+        next_index = 0
+        active: dict[concurrent.futures.Future[R], int] = {}
+
+        def submit_one() -> None:
+            nonlocal next_index
+            if next_index >= len(items):
+                return
+            index = next_index
+            next_index += 1
+            active[executor.submit(worker, items[index])] = index
+
+        for _ in range(min(jobs, len(items))):
+            submit_one()
+
+        while active and not failures:
+            done, _ = concurrent.futures.wait(
+                active, return_when=concurrent.futures.FIRST_COMPLETED
+            )
+            for future in sorted(done, key=active.__getitem__):
+                index = active.pop(future)
+                try:
+                    results[index] = future.result()
+                except Exception as exc:
+                    failures.append((index, exc))
+            if failures:
+                for future in active:
+                    future.cancel()
+                concurrent.futures.wait(active)
+                for future, index in active.items():
+                    if future.cancelled():
+                        continue
+                    try:
+                        results[index] = future.result()
+                    except Exception as exc:
+                        failures.append((index, exc))
+                break
+            for _ in range(len(done)):
+                submit_one()
+
+    if failures:
+        details = "; ".join(
+            f"{label(items[index])}: {exc}" for index, exc in sorted(failures)
+        )
+        raise RuntimeError(f"gallery media workers failed: {details}")
+    if any(result is None for result in results):
+        raise RuntimeError("gallery media workers returned an incomplete output set")
+    return [cast(R, result) for result in results]
+
+
+def media_workspace(example_id: str) -> TemporaryDirectory[str]:
+    """Create an isolated workspace for one media worker."""
+    safe_id = "".join(character if character.isalnum() else "-" for character in example_id)
+    return TemporaryDirectory(prefix=f"dvz-gallery-media-{safe_id}-")
 
 
 def source_webp_path(preview: object, input_dir: Path) -> Path:
@@ -499,7 +608,11 @@ def video_html_snippet(preview: object) -> str:
     )
 
 
-def compare_preview(preview: object, args: argparse.Namespace) -> MediaComparison | None:
+def compare_preview(
+    preview: object,
+    args: argparse.Namespace,
+    frame_sequence: gallery_frames.FrameSequence | None = None,
+) -> MediaComparison | None:
     source = source_webp_path(preview, args.input_dir)
     profile = profile_for(preview, args)
     base = output_base(preview, args.output_dir)
@@ -534,13 +647,13 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         )
         return None
 
-    frame_sequence = gallery_frames.ensure_frames(
-        preview, args.manifest, args.frame_dir, args.frame_cache_dir, force=args.force
-    )
-    if frame_sequence.generated:
-        print(f"captured frames: {getattr(preview, 'id')} -> {child_path(frame_sequence.frame_dir)}")
+    if frame_sequence is None:
+        frame_sequence = gallery_frames.ensure_frames(
+            preview, args.manifest, args.frame_dir, args.frame_cache_dir, force=args.force
+        )
 
-    with TemporaryDirectory(prefix="dvz-gallery-media-") as tmp:
+    notes: list[str] = []
+    with media_workspace(getattr(preview, "id")) as tmp:
         frame_root = Path(tmp)
         frames = cached_frames(preview, frame_sequence.frame_dir)
         selected = select_frames(frames, profile.step)
@@ -569,7 +682,7 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
             selected_step = selected_attempt.sample_step
             selected_crf = selected_attempt.crf
             if selected_attempt != attempts[0]:
-                print(
+                notes.append(
                     f"{getattr(preview, 'id')}: earlier MP4 attempts exceeded the video budget; "
                     f"using {out_fps} fps at CRF {selected_crf}"
                 )
@@ -605,11 +718,14 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         encoded_crf=selected_crf,
         source_duration=getattr(preview, "frames") / getattr(preview, "fps"),
         encoded_duration=encoded_frames / out_fps,
+        notes=tuple(notes),
     )
 
 
 def print_report(comparisons: list[MediaComparison]) -> None:
     for item in comparisons:
+        for note in item.notes:
+            print(note)
         print(
             f"{item.id}: source={item.source_bytes / 1024:.1f}KB "
             f"frames={item.source_frames} size={item.source_size} -> "
@@ -975,6 +1091,8 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
 def main() -> int:
     args = parse_args()
     try:
+        jobs = parse_jobs(args.jobs)
+        capture_jobs = parse_jobs(args.capture_jobs)
         if args.step <= 0:
             raise ValueError("--step must be positive")
         for value, label in (
@@ -994,14 +1112,46 @@ def main() -> int:
             print("No matching animated previews.")
             return 1
 
-        comparisons = []
-        for preview in previews:
-            comparison = compare_preview(preview, args)
-            if comparison is not None:
-                comparisons.append(comparison)
         if args.dry_run:
+            for preview in previews:
+                compare_preview(preview, args)
             print(f"gallery media compare: selected={len(previews)}")
             return 0
+
+        frame_sequences = bounded_parallel_map(
+            previews,
+            lambda preview: gallery_frames.ensure_frames(
+                preview,
+                args.manifest,
+                args.frame_dir,
+                args.frame_cache_dir,
+                force=args.force,
+            ),
+            capture_jobs,
+            lambda preview: getattr(preview, "id"),
+        )
+        for sequence in frame_sequences:
+            if sequence.generated:
+                print(
+                    f"captured frames: {sequence.preview.id} -> "
+                    f"{child_path(sequence.frame_dir)}"
+                )
+
+        sequences_by_key = {
+            (sequence.preview.lane, sequence.preview.id): sequence
+            for sequence in frame_sequences
+        }
+        comparisons = bounded_parallel_map(
+            previews,
+            lambda preview: compare_preview(
+                preview,
+                args,
+                sequences_by_key[(getattr(preview, "lane"), getattr(preview, "id"))],
+            ),
+            jobs,
+            lambda preview: getattr(preview, "id"),
+        )
+        comparisons = [item for item in comparisons if item is not None]
 
         report_comparisons = comparisons
         if should_merge_report(args):
@@ -1021,6 +1171,7 @@ def main() -> int:
         )
         print(
             f"gallery media compare: compared={len(comparisons)} "
+            f"jobs={jobs} capture_jobs={capture_jobs} "
             f"over_budget={over_budget} report={child_path(args.report)} "
             f"html={child_path(args.html_report)} site_assets={copied}"
         )

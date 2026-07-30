@@ -1,6 +1,6 @@
 # Gallery Media Single-Resolution and Parallelism Plan
 
-Status: approved planning record; implementation requires separate approval and no implementation changes are included in this checkpoint.
+Status: implemented locally in two checkpoints; publication and build-local media refresh remain separate actions.
 
 ## Goal
 
@@ -56,6 +56,10 @@ Required focused cases are a 60 fps encode that fits, fallback from 60 to 30 fps
 Run narrow tests first, followed by the complete gallery-media tooling suite, manifest validation, gallery pipeline and freshness checks, strict documentation validation when recipes or documentation change, and `git diff --check`.
 
 The expected validation commands include `python3 -m pytest` for focused test files, `python3 -m pytest tools/tests`, `just check-gallery-media-pipeline`, `just check-gallery-media-freshness`, `just check-example-manifests`, `just docs-build-check`, and `just docs-status-check`; adapt only when repository recipes establish a more precise equivalent.
+
+## Parallel Benchmark
+
+On 2026-07-30, a synthetic representative workload encoded four independent 60-frame, 60 fps, `1280x720` `testsrc2` sequences through the real MP4 and poster pipeline on Linux `7.0.0-28-generic` with an Intel Core i9-14900K and 32 online CPUs. The same in-memory source sequence and fresh isolated output directories took 1.206 seconds with `--jobs 1`, 0.729 seconds with two workers, and 0.482 seconds with four workers. The result supports the automatic four-worker cap while keeping explicit serial mode and the separate conservative capture-worker policy.
 
 ## Commit and Publication Boundaries
 

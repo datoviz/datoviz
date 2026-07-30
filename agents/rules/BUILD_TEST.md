@@ -105,6 +105,8 @@ media:
 
 MP4 gallery cards preserve their explicit native capture rate and are never upsampled. A capture at 60 fps first encodes at 60 fps with the configured base CRF; if it exceeds the 1 MB budget, the pipeline samples consistently to 30 fps while preserving duration. At 30 fps or a lower native rate, an oversized result advances through a bounded CRF ladder in increments of four through CRF 40. The command fails if the CRF 40 result remains oversized; it never silently reduces spatial resolution. Keep `preview.fps` equal to `card.fps * card.sample_step` so encoding never changes the preview duration.
 
+`tools/compare_gallery_media.py` accepts `--jobs N` for independent encoding work and `--capture-jobs N` for independent captures. Automatic worker counts are CPU-bounded and capped at four; capture defaults to one worker on macOS. Use `--jobs 1 --capture-jobs 1` for explicit serial execution. Attempts for one MP4 remain sequential, each example uses an isolated temporary workspace, and reports retain manifest order regardless of worker completion order.
+
 Generate selected previews with:
 
 ```sh

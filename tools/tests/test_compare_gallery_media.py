@@ -1,7 +1,9 @@
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+import threading
+import time
+from pathlib import Path
 
 import pytest
 
@@ -110,3 +112,86 @@ def test_probe_canonical_synthetic_mp4(tmp_path: Path) -> None:
     assert probe.fps == 30
     assert probe.frames == 6
     assert probe.duration == pytest.approx(0.2, abs=0.02)
+
+
+def test_parse_jobs_caps_automatic_workers(monkeypatch) -> None:
+    monkeypatch.setattr(media.os, "cpu_count", lambda: 64)
+
+    assert media.parse_jobs("auto") == 4
+    assert media.parse_jobs("1") == 1
+
+
+def test_bounded_parallel_map_preserves_order_and_worker_bound() -> None:
+    lock = threading.Lock()
+    active = 0
+    max_active = 0
+
+    def worker(value: int) -> int:
+        nonlocal active, max_active
+        with lock:
+            active += 1
+            max_active = max(max_active, active)
+        time.sleep(0.01 * (4 - value))
+        with lock:
+            active -= 1
+        return value * 10
+
+    results = media.bounded_parallel_map([1, 2, 3], worker, jobs=2)
+
+    assert results == [10, 20, 30]
+    assert max_active == 2
+
+
+def test_bounded_parallel_map_explicit_serial_mode() -> None:
+    visited = []
+
+    results = media.bounded_parallel_map(
+        [3, 1, 2],
+        lambda value: visited.append(value) or value * 10,
+        jobs=1,
+    )
+
+    assert visited == [3, 1, 2]
+    assert results == [30, 10, 20]
+
+
+def test_bounded_parallel_map_stops_scheduling_after_failure() -> None:
+    second_started = threading.Event()
+    started = []
+    lock = threading.Lock()
+
+    def worker(value: int) -> int:
+        with lock:
+            started.append(value)
+        if value == 0:
+            assert second_started.wait(timeout=1)
+            raise ValueError("broken")
+        second_started.set()
+        time.sleep(0.05)
+        return value
+
+    with pytest.raises(RuntimeError, match="item-0: broken"):
+        media.bounded_parallel_map(
+            list(range(8)),
+            worker,
+            jobs=2,
+            label=lambda value: f"item-{value}",
+        )
+
+    assert sorted(started) == [0, 1]
+
+
+def test_parallel_media_workspaces_are_isolated() -> None:
+    barrier = threading.Barrier(2)
+
+    def worker(example_id: str) -> str:
+        with media.media_workspace(example_id) as workspace:
+            barrier.wait()
+            path = Path(workspace)
+            (path / "sentinel").write_text(example_id, encoding="utf8")
+            return str(path)
+
+    workspaces = media.bounded_parallel_map(["a", "b"], worker, jobs=2)
+
+    assert len(set(workspaces)) == 2
+    assert all(not Path(path).exists() for path in workspaces)
