@@ -1,0 +1,542 @@
+{
+  "approval": {
+    "approved_candidate_count": 54,
+    "materially_different_count": 8,
+    "pixel_equivalent_count": 46,
+    "reference_fingerprint": "56f87a3df7cfb30b10b7eb6b1df8dbceb8a884e6ea556772680d26648f2f3796"
+  },
+  "canonical_replacements": [
+    {
+      "comparison_to_previous": "different",
+      "id": "advanced_qt_hosting",
+      "lane": "advanced",
+      "path": "data/gallery/v0.4/advanced/advanced_qt_hosting.png",
+      "sha256": "c5cc72a3be8ffb3834abebbe4e42a4c3d227f08b96ea88a39d6a2a1fd6a86cfe"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_animation_tracks",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_animation_tracks.png",
+      "sha256": "23cb3b946f03909571da08274d1683dc38f789b48e440f6a049129cfe968f715"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_bars_bands",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_bars_bands.png",
+      "sha256": "8d5aa14dfd3cd09645563696f09383638face6d0d73583ce92613778e3bc3d60"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_bounds_overlay",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_bounds_overlay.png",
+      "sha256": "7270e6d4fc5546db47f779b559ffcd3d1d50ae697e74614c23b5ea09b2f579a4"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_camera_manual",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_camera_manual.png",
+      "sha256": "1f8329d32c8aae2629b96da84595b18e80ca602bf201081c9c04b5e838c6ce4f"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_colormap_scale",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_colormap_scale.png",
+      "sha256": "f771b0ebd81e0f5076586ac4cc93cdcda974f98fd695d98ccc1d82cffdb3656d"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_compute_buffer_animation",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_compute_buffer_animation.png",
+      "sha256": "e5afe36abb2b984423f8bf348cb1920e7cb3e636e305b8fb9969b9414588d82d"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_controller_arcball",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_controller_arcball.png",
+      "sha256": "a75024c3ba6949794f5e99438ca5b062d4c3d92ef0bd04f0439962346d1ee331"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_controller_fly",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_controller_fly.png",
+      "sha256": "b96815438b8c423abd148a4e8d355cf11e677ef2eeefeabe4c4b8a8561282d30"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_controller_turntable",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_controller_turntable.png",
+      "sha256": "05e07eb05ab8386373d10987f4fe5e6774535aff4e828b6cce910703819d3f86"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_coordinate_system",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_coordinate_system.png",
+      "sha256": "69f760324588faec63bd7eddd5cf8e8677b3214c0cf654636d69e7b73af1623b"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_gui_cimgui",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_gui_cimgui.png",
+      "sha256": "6a873f071baa4ac7ff36a0c58407e0b881cddc78bb9ac3c7e4ca3d9c3d215cb7"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_gui_controls",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_gui_controls.png",
+      "sha256": "24f4d354508cbd3464838dd0512800f3e9a99e4c486647e4dfaaf45122aa4d58"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_gui_viewport",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_gui_viewport.png",
+      "sha256": "e495fe6677f4e2be2181362ddc27720ddafca5e2b87deb5a6b126e2c606774d1"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_guide_lines",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_guide_lines.png",
+      "sha256": "4ea1e1e53407af20918867c40964640c10a65bcfe86bf2e0dd50f1cd42b85a2d"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_guide_spans",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_guide_spans.png",
+      "sha256": "851cfea44f3089f01962213d369a2352e670accf73854bc1a85a24842c47aa44"
+    },
+    {
+      "comparison_to_previous": "different",
+      "id": "features_image_probe",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_image_probe.png",
+      "sha256": "94a4d38248dc1d2aae9c256fc205520a1a611c8db8eb926018112fdfe175d7fb"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_isolines",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_isolines.png",
+      "sha256": "2c9a6c76695cc433c856f009a813d73a22cf307d261520573c642edb7a8a3922"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_legend_categorical",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_legend_categorical.png",
+      "sha256": "e512653341bd0a4aaa5625f2be97bc469cd78a1d067ea07395cc74abd1bdca7d"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_lighting",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_lighting.png",
+      "sha256": "d44995368e2c51568383f3d24a6dc66015f8f51cf325dcca44fc5325a74df0fd"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_marker_symbols",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_marker_symbols.png",
+      "sha256": "60accb7311d77e51e3cde6f95fcd255ef41f78c17cbeb3c320b4da9d74f1cc18"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_orientation_gizmo",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_orientation_gizmo.png",
+      "sha256": "49e04839c6d606697cf9218b87bf8df8abff95f02c722f79aad2936f1690d95b"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_panel_linked",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_panel_linked.png",
+      "sha256": "c88f89f9c114cc77fb6a8200c2a0debb506bd3e5fafc690c3cc9bc00b772c70c"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_panel_multi",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_panel_multi.png",
+      "sha256": "9c62b6a3098097ef8229a49f25ae1ed613b8256181751d3216aef632b8c094a2"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_panel_single",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_panel_single.png",
+      "sha256": "050d0d41a2404ce61724ec18e484b5121215a70bff376a749d41cb583e811601"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_panzoom",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_panzoom.png",
+      "sha256": "cfce61f51a512d72b4bad641d73ff91ec967e5fbcbe43c449fb66622bd5cd294"
+    },
+    {
+      "comparison_to_previous": "different",
+      "id": "features_path_join",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_path_join.png",
+      "sha256": "d919575c57d724d0f692d4a090961525515dfc3cb5f52c5b60f3f29d1d2edb3e"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_reference_grid",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_reference_grid.png",
+      "sha256": "9eb6bc5724ca6a6b3dfb741bd026f9341a82b918b541c5c4ad731974e3fe7b37"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_scalebar",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_scalebar.png",
+      "sha256": "babcb0e4ae3aa205bb78a77057e9614c5ecffe8a8601c68f3b08d63d4c8d86af"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_scalebar_units",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_scalebar_units.png",
+      "sha256": "e641302a160dca5da5ac1105465e01ff5f82742c0a605b321904036a914d301e"
+    },
+    {
+      "comparison_to_previous": "different",
+      "id": "features_technique_depth_test",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_technique_depth_test.png",
+      "sha256": "2e4553bab0b5e7b462b136f677bb1b2df35cb6aebd9adc5f735d6c1b95c08a51"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_technique_ssao",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_technique_ssao.png",
+      "sha256": "975da0e2dfc083a44eeea589300000b70682194817dcceb2867bebd40bcd7c58"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_technique_transparency",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_technique_transparency.png",
+      "sha256": "b8ffb521bdea72b2948483360564b823eb2639506186fdb6ba87b3b2c655623f"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_text_block",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_text_block.png",
+      "sha256": "2078cd3ee45288e1c69bc5dce11bbf8eeea699b583f3bfbe84af5c1335339309"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_timer_animation",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_timer_animation.png",
+      "sha256": "59bc3c37324e13d714c8a10fd32997f3f7156f2f910da7a5eeadc6c18e8425fd"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_user_scale",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_user_scale.png",
+      "sha256": "8c7395d1709308108f7a1fa3474e94064e918cdaf76f679544e50e3fc0938347"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "features_visual_transform",
+      "lane": "features",
+      "path": "data/gallery/v0.4/features/features_visual_transform.png",
+      "sha256": "5ad611800691d3803985415a1fde24327af3fddf3734a7a30c1f8de6d8388941"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "showcases_choropleth",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_choropleth.png",
+      "sha256": "30c60207358c118d6818a6dccf83997cf2e3fd508a3979e05db8bfa25dbb5b24"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "showcases_galaxy",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_galaxy.png",
+      "sha256": "c7a34329f68ccf73aec564a23f402636c1d18c3b2381123ddea5a76e2082c365"
+    },
+    {
+      "comparison_to_previous": "different",
+      "id": "showcases_gpu_particle_smoke",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_gpu_particle_smoke.png",
+      "sha256": "fabcb6a5e01b562f1809446f7ba22a5e8d7af692b4aee4b54edaf6554709e9b9"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "showcases_linked_probe_colorbar",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_linked_probe_colorbar.png",
+      "sha256": "17cb06a4fb098be9823794579449857900e794526ddd966d163fcbd0c57197c4"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "showcases_panel_linked_axes",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_panel_linked_axes.png",
+      "sha256": "a09ce8261da8a34625ca803f7ae7bf373524dd09c06a66b502e38584d00343d2"
+    },
+    {
+      "comparison_to_previous": "different",
+      "id": "showcases_protein",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_protein.png",
+      "sha256": "4a0f71f6abafa12274157158423e30870f3dc43fb6ae913a00cd23bdd9b06ae3"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "showcases_scalebar_measurement",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_scalebar_measurement.png",
+      "sha256": "d1fb5a6f97461d935c7d3f00d7656182139915b22ecd806d6b4bb671f72f9873"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "showcases_scientific_plotting",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_scientific_plotting.png",
+      "sha256": "1d49f5468c9ae7793da0bf10936c86867f1893fe9ac7353edb464b3ea8471dfc"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "showcases_surface_grid",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_surface_grid.png",
+      "sha256": "ae1c26b826a863f9e4a6c2573ec3e02a44632cba4f1f391b0313cddae109345f"
+    },
+    {
+      "comparison_to_previous": "different",
+      "id": "showcases_textured_planet",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_textured_planet.png",
+      "sha256": "7290d467c3c96e8e1f77a07c5877c8fc564abd9e63433a608a85d1cee0e87d54"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "showcases_wind_field",
+      "lane": "showcases",
+      "path": "data/gallery/v0.4/showcases/showcases_wind_field.png",
+      "sha256": "75c1ca4c91ea4e59e2663ed6a4b3aefd20aa6e647d0bb4e3194d70c4f644d5d0"
+    },
+    {
+      "comparison_to_previous": "different",
+      "id": "start_scatter",
+      "lane": "start",
+      "path": "data/gallery/v0.4/start/start_scatter.png",
+      "sha256": "adda07beb9c23acd705b9fd82cbd188497114e910ded17454f0fa3eb5b3f9548"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "visuals_path",
+      "lane": "visuals",
+      "path": "data/gallery/v0.4/visuals/visuals_path.png",
+      "sha256": "75d5e6c2766a97fb4278a947043da97c34b86df6d6b23535fe298358c8155a95"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "visuals_point",
+      "lane": "visuals",
+      "path": "data/gallery/v0.4/visuals/visuals_point.png",
+      "sha256": "450652c6ed3e23f69f11e76d2fc542c9b8c3d548d69a48fa6db88ecdcb43f1a3"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "visuals_text",
+      "lane": "visuals",
+      "path": "data/gallery/v0.4/visuals/visuals_text.png",
+      "sha256": "61d9877560b3abbd9ff7f9590401b6274d2ab6801db39d09446530cac0d2785c"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "visuals_vector",
+      "lane": "visuals",
+      "path": "data/gallery/v0.4/visuals/visuals_vector.png",
+      "sha256": "b0fde78ddee269df022122915d45d195152da895ae49f48bf5bbecefa17ba670"
+    },
+    {
+      "comparison_to_previous": "pixel-equivalent",
+      "id": "visuals_volume",
+      "lane": "visuals",
+      "path": "data/gallery/v0.4/visuals/visuals_volume.png",
+      "sha256": "791343eb1eb323840d4ed483595b87751c93f1946a9dd8ad8699744a3c5c10e0"
+    }
+  ],
+  "capture_provenance": {
+    "capture": {
+      "commands": [
+        [
+          "/usr/bin/python3",
+          "/home/cyrille/GIT/Viz/datoviz/tools/capture_gallery.py",
+          "--manifest",
+          "/home/cyrille/GIT/Viz/datoviz/examples/c/MANIFEST.yaml",
+          "--build-dir",
+          "/home/cyrille/GIT/Viz/datoviz/build",
+          "--image-dir",
+          "/home/cyrille/GIT/Viz/datoviz/build/gallery-reference/candidates",
+          "--all-screenshot",
+          "--force",
+          "--jobs",
+          "1"
+        ],
+        [
+          "/usr/bin/python3",
+          "/home/cyrille/GIT/Viz/datoviz/tools/capture_gallery.py",
+          "--manifest",
+          "/home/cyrille/GIT/Viz/datoviz/examples/c/MANIFEST.yaml",
+          "--build-dir",
+          "/home/cyrille/GIT/Viz/datoviz/build",
+          "--image-dir",
+          "/home/cyrille/GIT/Viz/datoviz/build/gallery-reference/repeat",
+          "--all-screenshot",
+          "--force",
+          "--jobs",
+          "1"
+        ]
+      ],
+      "jobs": "1",
+      "runs": [
+        "candidates",
+        "repeat"
+      ]
+    },
+    "generated_at": "2026-07-30T11:05:08.015871+00:00",
+    "policy": "linux-reference-host",
+    "reference_fingerprint": "56f87a3df7cfb30b10b7eb6b1df8dbceb8a884e6ea556772680d26648f2f3796",
+    "schema_version": 1,
+    "source": {
+      "capture_engine_sha256": "06ee8a4c51c00febc13e8174628a027dd62134a588f2ed053b6086ac14fd35cb",
+      "capture_tool_sha256": "6c860bf477c000a66602a1bd6cc8ff8de8167542fb0a9f3c03f0e1a47bed2915",
+      "clean": true,
+      "commit": "c5fcaeb3a17af4ce719d3359f99574079c5c1d0f",
+      "data_clean": true,
+      "data_commit": "63a0ba4453812ce4fe9ec9c47e9ae180025b23d0",
+      "data_status": "",
+      "gallery_media_sha256": "495c0e87e183ffcb59b3a2fe6ae975a7b3c9b49b365e13a912307a19f7daa861",
+      "status": ""
+    },
+    "system": {
+      "host_id": "fractal",
+      "hostname": "fractal",
+      "kernel_release": "7.0.0-28-generic",
+      "kernel_version": "#28~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Wed Jul  1 15:50:57 UTC 2",
+      "machine": "x86_64",
+      "os_release": {
+        "BUG_REPORT_URL": "https://bugs.launchpad.net/ubuntu/",
+        "HOME_URL": "https://www.ubuntu.com/",
+        "ID": "ubuntu",
+        "ID_LIKE": "debian",
+        "LOGO": "ubuntu-logo",
+        "NAME": "Ubuntu",
+        "PRETTY_NAME": "Ubuntu 24.04.4 LTS",
+        "PRIVACY_POLICY_URL": "https://www.ubuntu.com/legal/terms-and-policies/privacy-policy",
+        "SUPPORT_URL": "https://help.ubuntu.com/",
+        "UBUNTU_CODENAME": "noble",
+        "VERSION": "24.04.4 LTS (Noble Numbat)",
+        "VERSION_CODENAME": "noble",
+        "VERSION_ID": "24.04"
+      }
+    },
+    "vulkan": {
+      "devices": [
+        {
+          "apiVersion": "1.4.329",
+          "conformanceVersion": "1.4.3.3",
+          "deviceID": "0x2b85",
+          "deviceName": "NVIDIA GeForce RTX 5090",
+          "deviceType": "PHYSICAL_DEVICE_TYPE_DISCRETE_GPU",
+          "deviceUUID": "8c7c13a8-dbf8-ed5b-9280-0368180e8298",
+          "driverID": "DRIVER_ID_NVIDIA_PROPRIETARY",
+          "driverInfo": "595.84",
+          "driverName": "NVIDIA",
+          "driverUUID": "027cbdd1-c478-513e-af69-ebc9eaa7de87",
+          "driverVersion": "595.84.0.0",
+          "index": "0",
+          "vendorID": "0x10de"
+        },
+        {
+          "apiVersion": "1.4.318",
+          "conformanceVersion": "1.4.0.0",
+          "deviceID": "0xa780",
+          "deviceName": "Intel(R) Graphics (RPL-S)",
+          "deviceType": "PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU",
+          "deviceUUID": "868080a7-0400-0000-0002-000000000000",
+          "driverID": "DRIVER_ID_INTEL_OPEN_SOURCE_MESA",
+          "driverInfo": "Mesa 25.2.8-0ubuntu0.24.04.2",
+          "driverName": "Intel open-source Mesa driver",
+          "driverUUID": "ee99561e-45e1-e718-c612-1d36d8345582",
+          "driverVersion": "25.2.8",
+          "index": "1",
+          "vendorID": "0x8086"
+        },
+        {
+          "apiVersion": "1.4.318",
+          "conformanceVersion": "1.3.1.1",
+          "deviceID": "0x0000",
+          "deviceName": "llvmpipe (LLVM 20.1.2, 256 bits)",
+          "deviceType": "PHYSICAL_DEVICE_TYPE_CPU",
+          "deviceUUID": "6d657361-3235-2e32-2e38-2d3075627500",
+          "driverID": "DRIVER_ID_MESA_LLVMPIPE",
+          "driverInfo": "Mesa 25.2.8-0ubuntu0.24.04.2 (LLVM 20.1.2)",
+          "driverName": "llvmpipe",
+          "driverUUID": "6c6c766d-7069-7065-5555-494400000000",
+          "driverVersion": "25.2.8",
+          "index": "2",
+          "vendorID": "0x10005"
+        }
+      ],
+      "environment": {
+        "VK_LAYER_PATH": "/home/cyrille/Vulkan/1.4.328.1/x86_64/share/vulkan/explicit_layer.d"
+      },
+      "selected_gpu": {
+        "apiVersion": "1.4.329",
+        "conformanceVersion": "1.4.3.3",
+        "deviceID": "0x2b85",
+        "deviceName": "NVIDIA GeForce RTX 5090",
+        "deviceType": "PHYSICAL_DEVICE_TYPE_DISCRETE_GPU",
+        "deviceUUID": "8c7c13a8-dbf8-ed5b-9280-0368180e8298",
+        "driverID": "DRIVER_ID_NVIDIA_PROPRIETARY",
+        "driverInfo": "595.84",
+        "driverName": "NVIDIA",
+        "driverUUID": "027cbdd1-c478-513e-af69-ebc9eaa7de87",
+        "driverVersion": "595.84.0.0",
+        "index": "0",
+        "vendorID": "0x10de"
+      },
+      "selected_gpu_index": 0,
+      "summary": "==========\nVULKANINFO\n==========\n\nVulkan Instance Version: 1.4.328\n\n\nInstance Extensions: count = 26\n-------------------------------\nVK_EXT_acquire_drm_display             : extension revision 1\nVK_EXT_acquire_xlib_display            : extension revision 1\nVK_EXT_debug_report                    : extension revision 10\nVK_EXT_debug_utils                     : extension revision 2\nVK_EXT_direct_mode_display             : extension revision 1\nVK_EXT_display_surface_counter         : extension revision 1\nVK_EXT_headless_surface                : extension revision 1\nVK_EXT_surface_maintenance1            : extension revision 1\nVK_EXT_swapchain_colorspace            : extension revision 5\nVK_KHR_device_group_creation           : extension revision 1\nVK_KHR_display                         : extension revision 23\nVK_KHR_external_fence_capabilities     : extension revision 1\nVK_KHR_external_memory_capabilities    : extension revision 1\nVK_KHR_external_semaphore_capabilities : extension revision 1\nVK_KHR_get_display_properties2         : extension revision 1\nVK_KHR_get_physical_device_properties2 : extension revision 2\nVK_KHR_get_surface_capabilities2       : extension revision 1\nVK_KHR_portability_enumeration         : extension revision 1\nVK_KHR_surface                         : extension revision 25\nVK_KHR_surface_maintenance1            : extension revision 1\nVK_KHR_surface_protected_capabilities  : extension revision 1\nVK_KHR_wayland_surface                 : extension revision 6\nVK_KHR_xcb_surface                     : extension revision 6\nVK_KHR_xlib_surface                    : extension revision 6\nVK_LUNARG_direct_driver_loading        : extension revision 1\nVK_NV_display_stereo                   : extension revision 1\n\nInstance Layers: count = 16\n---------------------------\nVK_LAYER_KHRONOS_profiles         Khronos Profiles layer                                                                                            1.4.328  version 1\nVK_LAYER_KHRONOS_shader_object    Khronos Shader object layer                                                                                       1.4.328  version 1\nVK_LAYER_KHRONOS_synchronization2 Khronos Synchronization2 layer                                                                                    1.4.328  version 1\nVK_LAYER_KHRONOS_validation       Khronos Validation Layer                                                                                          1.4.328  version 1\nVK_LAYER_LUNARG_api_dump          LunarG API dump layer                                                                                             1.4.328  version 2\nVK_LAYER_LUNARG_crash_diagnostic  Crash Diagnostic Layer is a crash/hang debugging tool that helps determines GPU progress in a Vulkan application. 1.4.328  version 1\nVK_LAYER_LUNARG_gfxreconstruct    GFXReconstruct Capture Layer Version 1.0.5                                                                        1.4.328  version 4194309\nVK_LAYER_LUNARG_monitor           Execution Monitoring Layer                                                                                        1.4.328  version 1\nVK_LAYER_LUNARG_screenshot        LunarG image capture layer                                                                                        1.4.328  version 1\nVK_LAYER_MESA_device_select       Linux device selection layer                                                                                      1.4.303  version 1\nVK_LAYER_NV_optimus               NVIDIA Optimus layer                                                                                              1.4.329  version 1\nVK_LAYER_NV_present               NVIDIA Presentation Layer                                                                                         1.4.329  version 1\nVK_LAYER_VALVE_steam_fossilize_32 Steam Pipeline Caching Layer                                                                                      1.3.207  version 1\nVK_LAYER_VALVE_steam_fossilize_64 Steam Pipeline Caching Layer                                                                                      1.3.207  version 1\nVK_LAYER_VALVE_steam_overlay_32   Steam Overlay Layer                                                                                               1.3.207  version 1\nVK_LAYER_VALVE_steam_overlay_64   Steam Overlay Layer                                                                                               1.3.207  version 1\n\nDevices:\n========\nGPU0:\n\tapiVersion         = 1.4.329\n\tdriverVersion      = 595.84.0.0\n\tvendorID           = 0x10de\n\tdeviceID           = 0x2b85\n\tdeviceType         = PHYSICAL_DEVICE_TYPE_DISCRETE_GPU\n\tdeviceName         = NVIDIA GeForce RTX 5090\n\tdriverID           = DRIVER_ID_NVIDIA_PROPRIETARY\n\tdriverName         = NVIDIA\n\tdriverInfo         = 595.84\n\tconformanceVersion = 1.4.3.3\n\tdeviceUUID         = 8c7c13a8-dbf8-ed5b-9280-0368180e8298\n\tdriverUUID         = 027cbdd1-c478-513e-af69-ebc9eaa7de87\nGPU1:\n\tapiVersion         = 1.4.318\n\tdriverVersion      = 25.2.8\n\tvendorID           = 0x8086\n\tdeviceID           = 0xa780\n\tdeviceType         = PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU\n\tdeviceName         = Intel(R) Graphics (RPL-S)\n\tdriverID           = DRIVER_ID_INTEL_OPEN_SOURCE_MESA\n\tdriverName         = Intel open-source Mesa driver\n\tdriverInfo         = Mesa 25.2.8-0ubuntu0.24.04.2\n\tconformanceVersion = 1.4.0.0\n\tdeviceUUID         = 868080a7-0400-0000-0002-000000000000\n\tdriverUUID         = ee99561e-45e1-e718-c612-1d36d8345582\nGPU2:\n\tapiVersion         = 1.4.318\n\tdriverVersion      = 25.2.8\n\tvendorID           = 0x10005\n\tdeviceID           = 0x0000\n\tdeviceType         = PHYSICAL_DEVICE_TYPE_CPU\n\tdeviceName         = llvmpipe (LLVM 20.1.2, 256 bits)\n\tdriverID           = DRIVER_ID_MESA_LLVMPIPE\n\tdriverName         = llvmpipe\n\tdriverInfo         = Mesa 25.2.8-0ubuntu0.24.04.2 (LLVM 20.1.2)\n\tconformanceVersion = 1.3.1.1\n\tdeviceUUID         = 6d657361-3235-2e32-2e38-2d3075627500\n\tdriverUUID         = 6c6c766d-7069-7065-5555-494400000000",
+      "summary_sha256": "0e9cdcb66ee7a8a9be3edfbb0d3f78d3e8ee8f807c000720d1c0df71a85c5c80"
+    }
+  },
+  "kind": "linux-gallery-reference-promotion",
+  "promotion": {
+    "data_commit": "d72c72c3bb6d85f543058202731e3df1d2ecf224",
+    "main_gitlink_commit": "264517633",
+    "previous_data_commit": "63a0ba4453812ce4fe9ec9c47e9ae180025b23d0",
+    "pushed": false
+  },
+  "schema_version": 1
+}

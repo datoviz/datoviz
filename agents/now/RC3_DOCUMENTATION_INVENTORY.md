@@ -15,7 +15,7 @@ Use [DOCUMENTATION.md](DOCUMENTATION.md) for release sequencing and [STATUS.md](
 | Dataset attribution and provenance | complete | All 12 real/prepared dataset entries provide name, source link, license, citation guidance, preprocessing, and provenance; the manifest checker enforces the record. |
 | Gallery generation policy | implemented | Canonical `1280x720` animation frames, bounded FPS/CRF fallback, output validation, deterministic parallel work, and capture-worker limits are committed. |
 | Animation/card candidates | build-local candidates current | All 38 animations regenerated at canonical `1280x720`; the comparison selects 29 MP4 cards and nine animated WebPs, every poster and card is within budget, and the full freshness gate passes. Generated candidates remain ignored and uncommitted; publication requires exact approval. |
-| Canonical source screenshots | deterministic Linux candidates ready; review required | The designated physical Linux host captured all 104 reviewed screenshots twice from source commit `c5fcaeb3a`; every repeat is byte-identical. Against committed PNGs, 50 are byte-identical, 46 are tightly pixel-equivalent, and eight exceed the strict tolerance. No canonical image or `data` state changed; review and exact approval of the 54 byte-different replacements plus provenance remain required. |
+| Canonical source screenshots | reviewed Linux baseline promoted | The designated physical Linux host captured all 104 reviewed screenshots twice from source commit `c5fcaeb3a`; every repeat is byte-identical. Against the previous PNGs, 50 were byte-identical, 46 were tightly pixel-equivalent, and eight exceeded the strict tolerance. The maintainer explicitly approved the 54 byte-different replacements under fingerprint `56f87a3d`; `data` commit `d72c72c`, parent gitlink commit `264517633`, and committed machine-readable evidence record the promotion. |
 | Four-page visual-system pilot | awaiting maintainer review | Get Started, Core concepts, Choose your layer, and Advanced pass strict build and software-rendered desktop/mobile inspection. Do not begin broad rollout until visual density, colors, diagram language, and media choices are approved. |
 | Three-chapter Vulkan tutorial pilot | implemented; feedback remains | Compiled source, external GLSL, installed-package path, captures, reference synchronization, and focused checks are present. Maintainer voice/API-profile review and hosted/physical platform proof remain separate release gates. |
 | External outreach | not started | No dataset-author message or public GitHub follow-up was posted. Exact content and publication action still require approval. |
@@ -41,7 +41,7 @@ Recommended maintainer action: ask the author to close PR #132 as superseded and
 ## Remaining RC3 Decisions
 
 1. Review the four-page visual pilot before broad documentation rollout.
-2. Review the complete 104-image Linux reference index and approve the exact 54 byte-different replacements plus provenance, if accepted, before touching `data`.
+2. Keep future canonical screenshot replacements behind the designated Linux-host, byte-repeatability, visual-review, provenance, and exact-approval boundary.
 3. Review the build-local animation/card candidates and approve exact publication assets, if desired.
 4. Review the three-chapter tutorial voice/API profile.
 5. Decide whether to request focused successor PRs for the residual PR #132 topics.
