@@ -13,6 +13,7 @@ from urllib.parse import parse_qs, urlparse
 import build_capabilities
 import build_examples_manifest
 import build_gallery
+import gallery_media
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -87,6 +88,9 @@ def _live_js_entries(path: Path) -> list[dict[str, str]]:
 def _check_manifest_semantics(manifest_path: Path) -> bool:
     manifest = build_gallery.load_manifest(manifest_path)
     ok = True
+    for error in gallery_media.manifest_media_policy_errors(manifest):
+        print(error)
+        ok = False
     entries = manifest["examples"]
     sources = {str(entry.get("source")) for entry in entries if entry.get("source")}
     extra_sources = {

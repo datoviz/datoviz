@@ -15,8 +15,10 @@ import os
 import shutil
 import subprocess
 from dataclasses import asdict, dataclass
+from fractions import Fraction
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Callable
 
 import gallery_frames
 import gallery_media
@@ -28,7 +30,6 @@ DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-media-compare/v0.4"
 DEFAULT_SITE_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_FRAME_DIR = gallery_frames.DEFAULT_FRAME_DIR
 DEFAULT_FRAME_CACHE_DIR = gallery_frames.DEFAULT_CACHE_DIR
-DEFAULT_SIZE = gallery_media.CARD_MEDIA_SIZE
 DEFAULT_STEP = 2
 DEFAULT_WEBP_QUALITY = 40
 DEFAULT_MP4_CRF = 32
@@ -58,13 +59,11 @@ BUDGETS = {
 @dataclass(frozen=True)
 class EncodingProfile:
     preferred_kind: str
-    size: str
     step: int
     webp_quality: int
     mp4_crf: int
     webm_crf: int
     fps: int = 0
-    fallback_fps: int = 0
     compare: bool = False
 
 
@@ -93,12 +92,32 @@ class MediaComparison:
     variants: list[MediaVariant]
     webp_html_snippet: str
     video_html_snippet: str
+    sample_step: int = 1
+    encoded_crf: int = 0
+    source_duration: float = 0.0
+    encoded_duration: float = 0.0
 
 
 @dataclass(frozen=True)
 class FrameItem:
     path: Path
     delay_ms: int
+
+
+@dataclass(frozen=True)
+class Mp4Attempt:
+    fps: int
+    sample_step: int
+    crf: int
+
+
+@dataclass(frozen=True)
+class MediaProbe:
+    width: int
+    height: int
+    fps: float = 0.0
+    frames: int = 0
+    duration: float = 0.0
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,7 +132,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--html-report", type=Path, default=DEFAULT_HTML_REPORT)
     parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
     parser.add_argument("--lane", action="append", default=[], help="gallery lane")
-    parser.add_argument("--size", default=DEFAULT_SIZE, help="card media size, for example 640x360")
     parser.add_argument("--step", type=int, default=DEFAULT_STEP, help="keep every Nth source frame")
     parser.add_argument("--webp-quality", type=int, default=DEFAULT_WEBP_QUALITY)
     parser.add_argument("--mp4-crf", type=int, default=DEFAULT_MP4_CRF)
@@ -151,14 +169,6 @@ def require_tool(name: str) -> str:
     return path
 
 
-def require_image_magick() -> str:
-    for name in ("magick", "convert"):
-        path = shutil.which(name)
-        if path is not None:
-            return path
-    raise RuntimeError("ImageMagick not found (expected `magick` or `convert`)")
-
-
 def run(cmd: list[str]) -> None:
     subprocess.run(cmd, cwd=ROOT, check=True)
 
@@ -171,56 +181,42 @@ def output_base(preview: object, output_dir: Path) -> Path:
     return output_dir / getattr(preview, "lane") / getattr(preview, "id")
 
 
-def preview_card_metadata(preview: object, manifest_path: Path) -> dict:
-    manifest = gallery_media.load_manifest(manifest_path)
-    preview_key = (getattr(preview, "lane"), getattr(preview, "id"))
-    for entry in manifest.get("examples", []):
-        if gallery_media.entry_key(entry) != preview_key:
-            continue
-        metadata = gallery_media.preview_metadata(entry)
-        card = metadata.get("card") or {}
-        return card if isinstance(card, dict) else {}
-    return {}
-
-
 def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
     fields = {
         "preferred_kind": args.preferred_kind,
-        "size": args.size,
         "step": args.step,
         "webp_quality": args.webp_quality,
         "mp4_crf": args.mp4_crf,
         "webm_crf": args.webm_crf,
         "fps": args.fps,
-        "fallback_fps": 0,
         "compare": False,
     }
     if not args.no_manifest_card:
-        card = preview_card_metadata(preview, args.manifest)
+        manifest = gallery_media.load_manifest(args.manifest)
+        preview_key = (getattr(preview, "lane"), getattr(preview, "id"))
+        entry = next(
+            (
+                item
+                for item in manifest.get("examples", [])
+                if gallery_media.entry_key(item) == preview_key
+            ),
+            None,
+        )
+        if entry is None:
+            raise ValueError(f"{getattr(preview, 'id')}: missing manifest entry")
+        gallery_media.validate_animation_media_policy(entry)
+        card = gallery_media.preview_metadata(entry).get("card") or {}
         fields.update(
             {
                 "preferred_kind": str(card.get("preferred", fields["preferred_kind"])),
-                "size": str(card.get("size", fields["size"])),
                 "step": int(card.get("sample_step", card.get("step", fields["step"]))),
                 "webp_quality": int(card.get("webp_quality", fields["webp_quality"])),
                 "mp4_crf": int(card.get("mp4_crf", fields["mp4_crf"])),
                 "webm_crf": int(card.get("webm_crf", fields["webm_crf"])),
                 "fps": int(card.get("fps", fields["fps"])),
-                "fallback_fps": int(card.get("fallback_fps", fields["fallback_fps"])),
                 "compare": bool(card.get("compare", fields["compare"])),
             }
         )
-    if fields["size"] != gallery_media.CARD_MEDIA_SIZE:
-        raise ValueError(
-            f"{getattr(preview, 'id')}: gallery card media must use "
-            f"{gallery_media.CARD_MEDIA_SIZE}, got {fields['size']}"
-        )
-    if fields["fallback_fps"] < 0:
-        raise ValueError(f"{getattr(preview, 'id')}: fallback_fps must not be negative")
-    if fields["fallback_fps"] >= fields["fps"] > 0:
-        raise ValueError(f"{getattr(preview, 'id')}: fallback_fps must be lower than fps")
-    if fields["fallback_fps"] > 0 and fields["fps"] % fields["fallback_fps"] != 0:
-        raise ValueError(f"{getattr(preview, 'id')}: fps must be divisible by fallback_fps")
     preview_fps = int(getattr(preview, "fps"))
     if fields["preferred_kind"] == "video-mp4" and fields["fps"] > 0:
         expected_source_fps = fields["fps"] * fields["step"]
@@ -254,18 +250,15 @@ def selected_previews(args: argparse.Namespace) -> list[object]:
     return selected
 
 
-def resize_cached_frames(
-    preview: object, source_dir: Path, frame_dir: Path, size: str) -> list[FrameItem]:
-    frame_dir.mkdir(parents=True, exist_ok=True)
+def cached_frames(preview: object, source_dir: Path) -> list[FrameItem]:
+    """Return canonical cached frames without a resize or conversion stage."""
     delay_ms = max(1, int(round(1000.0 / max(1, getattr(preview, "fps")))))
     frames = []
     for index in range(getattr(preview, "frames")):
         source = gallery_frames.frame_path(source_dir, index)
         if not source.exists():
             raise FileNotFoundError(source)
-        resized = frame_dir / f"frame_{index:04d}.png"
-        run([require_image_magick(), str(source), "-resize", size, str(resized)])
-        frames.append(FrameItem(path=resized, delay_ms=delay_ms))
+        frames.append(FrameItem(path=source, delay_ms=delay_ms))
     return frames
 
 
@@ -322,6 +315,99 @@ def encode_mp4(frame_pattern: str, output: Path, fps: int, crf: int) -> None:
             "+faststart",
             str(output),
         ]
+    )
+
+
+def mp4_attempt_plan(source_fps: int, initial_step: int, base_crf: int) -> list[Mp4Attempt]:
+    """Plan the deterministic FPS and CRF fallback ladder for one MP4 card."""
+    if source_fps <= 0:
+        raise ValueError("source fps must be positive")
+    if initial_step <= 0 or source_fps % initial_step != 0:
+        raise ValueError("source fps must be divisible by the initial sample step")
+    if not 0 <= base_crf <= gallery_media.MP4_MAX_CRF:
+        raise ValueError(
+            f"base MP4 CRF must be between 0 and {gallery_media.MP4_MAX_CRF}"
+        )
+
+    initial_fps = source_fps // initial_step
+    if initial_fps > 60:
+        if initial_fps % 60 != 0:
+            raise ValueError("capture rates above 60 fps must be divisible by 60")
+        initial_step *= initial_fps // 60
+        initial_fps = 60
+
+    attempts = [Mp4Attempt(initial_fps, initial_step, base_crf)]
+    fallback_fps = initial_fps
+    fallback_step = initial_step
+    if initial_fps == 60:
+        fallback_fps = 30
+        fallback_step = initial_step * 2
+        attempts.append(Mp4Attempt(fallback_fps, fallback_step, base_crf))
+
+    crf = base_crf
+    while crf < gallery_media.MP4_MAX_CRF:
+        crf = min(crf + 4, gallery_media.MP4_MAX_CRF)
+        attempt = Mp4Attempt(fallback_fps, fallback_step, crf)
+        if attempt != attempts[-1]:
+            attempts.append(attempt)
+    return attempts
+
+
+def execute_mp4_attempts(
+    attempts: list[Mp4Attempt],
+    encode: Callable[[Mp4Attempt], int],
+    budget: int = BUDGETS["video_card"],
+) -> Mp4Attempt:
+    """Execute attempts in order and return the first one within the byte budget."""
+    if not attempts:
+        raise ValueError("MP4 attempt plan must not be empty")
+    for attempt in attempts:
+        if encode(attempt) <= budget:
+            return attempt
+    last = attempts[-1]
+    raise RuntimeError(
+        f"MP4 remains over the {budget}-byte budget at "
+        f"{last.fps} fps and CRF {last.crf}"
+    )
+
+
+def probe_media(path: Path) -> MediaProbe:
+    """Read encoded dimensions, timing, and frame metadata with ffprobe."""
+    ffprobe = require_tool("ffprobe")
+    result = subprocess.run(
+        [
+            ffprobe,
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=width,height,avg_frame_rate,nb_frames:format=duration",
+            "-of",
+            "json",
+            str(path),
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    payload = json.loads(result.stdout)
+    streams = payload.get("streams") or []
+    if not streams:
+        raise ValueError(f"{path}: no video/image stream")
+    stream = streams[0]
+    rate = str(stream.get("avg_frame_rate", "0/1"))
+    fps = float(Fraction(rate)) if rate not in {"", "0/0"} else 0.0
+    frames_raw = stream.get("nb_frames")
+    frames = int(frames_raw) if str(frames_raw).isdigit() else 0
+    duration = float((payload.get("format") or {}).get("duration") or 0.0)
+    return MediaProbe(
+        width=int(stream.get("width", 0)),
+        height=int(stream.get("height", 0)),
+        fps=fps,
+        frames=frames,
+        duration=duration,
     )
 
 
@@ -442,7 +528,7 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         print(
             f"would compare: {getattr(preview, 'id')} "
             f"frames={child_path(args.frame_dir / getattr(preview, 'lane') / getattr(preview, 'id'))} "
-            f"size={profile.size} "
+            f"size={gallery_media.CANONICAL_ANIMATION_SIZE} "
             f"step={profile.step} fps={out_fps} preferred={profile.preferred_kind} "
             f"compare={profile.compare} variants={variants}"
         )
@@ -456,25 +542,36 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
 
     with TemporaryDirectory(prefix="dvz-gallery-media-") as tmp:
         frame_root = Path(tmp)
-        frames = resize_cached_frames(
-            preview, frame_sequence.frame_dir, frame_root / "frames", profile.size
-        )
+        frames = cached_frames(preview, frame_sequence.frame_dir)
         selected = select_frames(frames, profile.step)
         selected_dir = frame_root / "selected"
         write_selected_frames(frames, selected_dir, profile.step)
         selected_pattern = str(selected_dir / "frame_%04d.png")
+        selected_step = profile.step
+        selected_crf = 0
         if "animated-webp-card" in generated_kinds:
             encode_webp(selected, animated_webp, profile.webp_quality)
         if "mp4-card" in generated_kinds:
-            encode_mp4(selected_pattern, mp4, out_fps, profile.mp4_crf)
-            if profile.fallback_fps > 0 and mp4.stat().st_size > BUDGETS["video_card"]:
-                fallback_step = profile.step * (out_fps // profile.fallback_fps)
-                encoded_frames = write_selected_frames(frames, selected_dir, fallback_step)
-                out_fps = profile.fallback_fps
-                encode_mp4(selected_pattern, mp4, out_fps, profile.mp4_crf)
+            attempts = mp4_attempt_plan(
+                int(getattr(preview, "fps")), profile.step, profile.mp4_crf
+            )
+
+            def encode_attempt(attempt: Mp4Attempt) -> int:
+                nonlocal encoded_frames
+                encoded_frames = write_selected_frames(
+                    frames, selected_dir, attempt.sample_step
+                )
+                encode_mp4(selected_pattern, mp4, attempt.fps, attempt.crf)
+                return mp4.stat().st_size
+
+            selected_attempt = execute_mp4_attempts(attempts, encode_attempt)
+            out_fps = selected_attempt.fps
+            selected_step = selected_attempt.sample_step
+            selected_crf = selected_attempt.crf
+            if selected_attempt != attempts[0]:
                 print(
-                    f"{getattr(preview, 'id')}: {preferred_fps} fps exceeded the video budget; "
-                    f"using {out_fps} fps"
+                    f"{getattr(preview, 'id')}: earlier MP4 attempts exceeded the video budget; "
+                    f"using {out_fps} fps at CRF {selected_crf}"
                 )
         if "webm-card" in generated_kinds:
             encode_webm(selected_pattern, webm, out_fps, profile.webm_crf)
@@ -497,13 +594,17 @@ def compare_preview(preview: object, args: argparse.Namespace) -> MediaCompariso
         source_bytes=source.stat().st_size if source.exists() else 0,
         source_frames=getattr(preview, "frames"),
         source_size=getattr(preview, "size"),
-        encoded_size=profile.size,
+        encoded_size=gallery_media.CANONICAL_ANIMATION_SIZE,
         encoded_frames=encoded_frames,
         encoded_fps=out_fps,
         preferred_kind=profile.preferred_kind,
         variants=variants,
         webp_html_snippet=webp_html_snippet(preview),
         video_html_snippet=video_html_snippet(preview),
+        sample_step=selected_step,
+        encoded_crf=selected_crf,
+        source_duration=getattr(preview, "frames") / getattr(preview, "fps"),
+        encoded_duration=encoded_frames / out_fps,
     )
 
 
@@ -883,10 +984,10 @@ def main() -> int:
         ):
             if not 0 <= value <= 100:
                 raise ValueError(f"{label} must be between 0 and 100")
-        require_image_magick()
         require_tool("img2webp")
         require_tool("cwebp")
         require_tool("ffmpeg")
+        require_tool("ffprobe")
 
         previews = selected_previews(args)
         if not previews:

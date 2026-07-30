@@ -91,6 +91,8 @@ convert static WebPs, regenerate animated WebPs, rebuild generated gallery docs/
 gallery media checks, and run `git diff --check`. Use `just check-gallery-media-pipeline` after
 changing gallery media tooling or manifest preview metadata.
 
+Animated gallery captures, animated WebP previews, MP4 cards, and posters use canonical `1280x720` frames end to end. The media comparison pipeline consumes the canonical frame cache directly and must not add a per-frame resize stage.
+
 Animated gallery previews use manifest metadata:
 
 ```yaml
@@ -101,10 +103,7 @@ media:
     fps: 30
 ```
 
-MP4 gallery cards use `30` fps by default. High-motion cards may capture and request `60` fps with
-`card.fallback_fps: 30`; the media pipeline keeps the 60 fps encode only when it fits the 1 MB video
-budget, otherwise it re-encodes the same-duration sequence at 30 fps. Keep `preview.fps` equal to
-`card.fps * card.sample_step` so encoding never changes the preview duration.
+MP4 gallery cards preserve their explicit native capture rate and are never upsampled. A capture at 60 fps first encodes at 60 fps with the configured base CRF; if it exceeds the 1 MB budget, the pipeline samples consistently to 30 fps while preserving duration. At 30 fps or a lower native rate, an oversized result advances through a bounded CRF ladder in increments of four through CRF 40. The command fails if the CRF 40 result remains oversized; it never silently reduces spatial resolution. Keep `preview.fps` equal to `card.fps * card.sample_step` so encoding never changes the preview duration.
 
 Generate selected previews with:
 

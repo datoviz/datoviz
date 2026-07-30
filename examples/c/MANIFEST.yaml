@@ -559,7 +559,6 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 60
-          fallback_fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -701,7 +700,6 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 60
-          fallback_fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -733,7 +731,6 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 60
-          fallback_fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -763,7 +760,6 @@ examples:
         fps: 30
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 30
           webp_quality: 55
@@ -958,10 +954,8 @@ examples:
         sample_stride: 1
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           webp_quality: 50
           mp4_crf: 24
           webm_crf: 30
@@ -1027,7 +1021,6 @@ examples:
         fps: 30
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 30
           webp_quality: 15
@@ -1589,7 +1582,6 @@ examples:
         card:
           preferred: video-mp4
           fps: 60
-          fallback_fps: 30
           sample_step: 1
           mp4_crf: 24
     data:
@@ -1977,7 +1969,6 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 60
-          fallback_fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -2997,10 +2988,8 @@ examples:
         sample_stride: 4
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           webp_quality: 50
           mp4_crf: 29
           webm_crf: 34
@@ -3065,10 +3054,8 @@ examples:
         fps: 60
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           webp_quality: 40
           mp4_crf: 20
           webm_crf: 38
@@ -3122,7 +3109,6 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           webp_quality: 60
           mp4_crf: 26
           webm_crf: 34
@@ -3260,10 +3246,8 @@ examples:
         sample_stride: 2
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           webp_quality: 60
           mp4_crf: 28
           webm_crf: 34
@@ -3431,7 +3415,6 @@ examples:
         sample_stride: 1
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 30
           webp_quality: 65
@@ -3603,7 +3586,6 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           mp4_crf: 24
     data:
       kind: prepared
@@ -3697,7 +3679,6 @@ examples:
           preferred: video-mp4
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           mp4_crf: 24
     data:
       kind: prepared
@@ -3751,10 +3732,8 @@ examples:
         sample_stride: 2
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           webp_quality: 1
           mp4_crf: 38
           webm_crf: 50
@@ -3831,10 +3810,8 @@ examples:
         time_scale: 8.0
         card:
           preferred: video-mp4
-          size: 1024x576
           sample_step: 1
           fps: 60
-          fallback_fps: 30
           webp_quality: 70
           mp4_crf: 26
           webm_crf: 28

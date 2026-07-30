@@ -18,7 +18,7 @@ ROOT = gallery_media.ROOT
 DEFAULT_FRAME_DIR = ROOT / "build/gallery-frames/v0.4"
 DEFAULT_BUILD_EXAMPLES_DIR = ROOT / "build/examples/c"
 DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/frames"
-DEFAULT_SIZE = "1280x720"
+DEFAULT_SIZE = gallery_media.CANONICAL_ANIMATION_SIZE
 DEFAULT_FRAMES = 16
 DEFAULT_FPS = 12
 

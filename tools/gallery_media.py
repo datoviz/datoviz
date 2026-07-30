@@ -26,7 +26,8 @@ CATEGORY_TO_LANE = {
 LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items()}
 
 ANIMATED_WEBP_KIND = "animated-webp"
-CARD_MEDIA_SIZE = "1024x576"
+CANONICAL_ANIMATION_SIZE = "1280x720"
+MP4_MAX_CRF = 40
 
 
 def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict:
@@ -85,6 +86,69 @@ def preview_metadata(entry: dict) -> dict:
     if not isinstance(preview, dict):
         return {}
     return preview
+
+
+def animation_media_policy_errors(entry: dict) -> list[str]:
+    """Return violations of the canonical animated-gallery media policy."""
+    preview = preview_metadata(entry)
+    if preview.get("kind") != ANIMATED_WEBP_KIND:
+        return []
+
+    entry_id = str(entry.get("id", "<missing>"))
+    errors: list[str] = []
+    size = str(preview.get("size", entry.get("capture", {}).get("size", CANONICAL_ANIMATION_SIZE)))
+    if size != CANONICAL_ANIMATION_SIZE:
+        errors.append(
+            f"{entry_id}: animated preview size must be {CANONICAL_ANIMATION_SIZE}, got {size}"
+        )
+
+    card = preview.get("card") or {}
+    if not isinstance(card, dict):
+        return [*errors, f"{entry_id}: media.preview.card must be a mapping"]
+    if "size" in card:
+        errors.append(f"{entry_id}: media.preview.card.size is redundant and must be removed")
+    if "fallback_fps" in card:
+        errors.append(
+            f"{entry_id}: media.preview.card.fallback_fps is implicit and must be removed"
+        )
+
+    if card.get("preferred") != "video-mp4":
+        return errors
+
+    preview_fps = int(preview.get("fps", 0))
+    card_fps = int(card.get("fps", preview_fps))
+    sample_step = int(card.get("sample_step", card.get("step", 1)))
+    base_crf = int(card.get("mp4_crf", 32))
+    if preview_fps <= 0 or card_fps <= 0:
+        errors.append(f"{entry_id}: preview and MP4 card fps must be positive")
+    if sample_step <= 0:
+        errors.append(f"{entry_id}: MP4 card sample_step must be positive")
+    elif preview_fps != card_fps * sample_step:
+        errors.append(
+            f"{entry_id}: preview fps {preview_fps} must equal card fps "
+            f"{card_fps} * sample_step {sample_step}"
+        )
+    if not 0 <= base_crf <= MP4_MAX_CRF:
+        errors.append(
+            f"{entry_id}: media.preview.card.mp4_crf must be between 0 and {MP4_MAX_CRF}"
+        )
+    return errors
+
+
+def validate_animation_media_policy(entry: dict) -> None:
+    """Raise when one manifest entry violates the animated-gallery media policy."""
+    errors = animation_media_policy_errors(entry)
+    if errors:
+        raise ValueError("; ".join(errors))
+
+
+def manifest_media_policy_errors(manifest: dict) -> list[str]:
+    """Return animated-gallery media policy violations for a loaded manifest."""
+    return [
+        error
+        for entry in manifest.get("examples", [])
+        for error in animation_media_policy_errors(entry)
+    ]
 
 
 def is_animated_preview(entry: dict) -> bool:

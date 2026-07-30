@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import math
 from pathlib import Path
 
 import build_gallery_animations
@@ -43,6 +44,31 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def validate_canonical_dimensions(path: Path, label: str) -> list[str]:
+    """Validate one encoded animation or poster against the canonical size."""
+    try:
+        probe = compare_gallery_media.probe_media(path)
+    except (OSError, RuntimeError, ValueError) as exc:
+        return [f"{label}: unable to inspect encoded dimensions: {exc}"]
+    return canonical_dimension_errors(probe, label)
+
+
+def canonical_dimension_errors(
+    probe: compare_gallery_media.MediaProbe, label: str
+) -> list[str]:
+    """Validate already-probed dimensions against the canonical size."""
+    expected_width, expected_height = (
+        int(value)
+        for value in gallery_media.CANONICAL_ANIMATION_SIZE.split("x", maxsplit=1)
+    )
+    if (probe.width, probe.height) == (expected_width, expected_height):
+        return []
+    return [
+        f"{label}: encoded dimensions are {probe.width}x{probe.height}, "
+        f"expected {gallery_media.CANONICAL_ANIMATION_SIZE}"
+    ]
+
+
 def validate_video_card(
     preview: gallery_frames.AnimatedPreview,
     frame_cache_path: Path,
@@ -56,6 +82,24 @@ def validate_video_card(
         return [f"{label}: missing gallery media comparison report entry"]
     if item.preferred_kind != "video-mp4":
         return [f"{label}: comparison report preferred kind is {item.preferred_kind!r}, expected 'video-mp4'"]
+    if item.encoded_size != gallery_media.CANONICAL_ANIMATION_SIZE:
+        errors.append(
+            f"{label}: encoded size is {item.encoded_size}, "
+            f"expected {gallery_media.CANONICAL_ANIMATION_SIZE}"
+        )
+    if item.sample_step <= 0 or item.encoded_fps * item.sample_step != preview.fps:
+        errors.append(f"{label}: report FPS and sample_step do not preserve the source rate")
+    expected_frames = math.ceil(preview.frames / max(1, item.sample_step))
+    if item.encoded_frames != expected_frames:
+        errors.append(
+            f"{label}: report has {item.encoded_frames} encoded frames, "
+            f"expected {expected_frames}"
+        )
+    expected_duration = preview.frames / preview.fps
+    if not math.isclose(item.source_duration, expected_duration, abs_tol=1e-6):
+        errors.append(f"{label}: report source duration is inconsistent")
+    if not math.isclose(item.encoded_duration, expected_duration, abs_tol=1e-6):
+        errors.append(f"{label}: report encoded duration does not preserve source duration")
 
     variants = {variant.kind: variant for variant in item.variants}
     targets = {
@@ -82,8 +126,34 @@ def validate_video_card(
             continue
         if candidate.stat().st_size != variant.bytes:
             errors.append(f"{label}: generated {kind} differs from its comparison report")
+        if variant.status != "ok" or variant.bytes > variant.budget_bytes:
+            errors.append(f"{label}: generated {kind} exceeds its declared budget")
         if candidate.stat().st_mtime_ns < cache_mtime:
             errors.append(f"{label}: generated {kind} predates the current frame cache")
+        try:
+            probe = compare_gallery_media.probe_media(candidate)
+        except (OSError, RuntimeError, ValueError) as exc:
+            errors.append(f"{label}: unable to inspect generated {kind}: {exc}")
+            probe = None
+        if probe is not None:
+            errors.extend(canonical_dimension_errors(probe, f"{label}: generated {kind}"))
+        if probe is not None and kind == "mp4-card":
+            if not math.isclose(probe.fps, item.encoded_fps, abs_tol=0.01):
+                errors.append(
+                    f"{label}: generated MP4 is {probe.fps:g} fps, "
+                    f"report says {item.encoded_fps} fps"
+                )
+            if probe.frames and probe.frames != item.encoded_frames:
+                errors.append(
+                    f"{label}: generated MP4 has {probe.frames} frames, "
+                    f"report says {item.encoded_frames}"
+                )
+            tolerance = 1.0 / max(1, item.encoded_fps) + 0.02
+            if not math.isclose(probe.duration, expected_duration, abs_tol=tolerance):
+                errors.append(
+                    f"{label}: generated MP4 duration {probe.duration:g}s "
+                    f"does not preserve {expected_duration:g}s"
+                )
         if not target.is_file():
             errors.append(f"{label}: missing site {kind}: {target}")
         elif file_sha256(candidate) != file_sha256(target):
@@ -134,7 +204,7 @@ def validate_preview(
     )
     if not animation_hit:
         return [f"{label}: animated preview is not current ({animation_reason})"]
-    return []
+    return validate_canonical_dimensions(animation_path, f"{label}: animated preview")
 
 
 def main() -> int:
@@ -143,6 +213,14 @@ def main() -> int:
         previews = gallery_frames.collect_previews(
             args.manifest, args.build_examples_dir, set(), set()
         )
+        policy_errors = gallery_media.manifest_media_policy_errors(
+            gallery_media.load_manifest(args.manifest)
+        )
+        if policy_errors:
+            print("gallery media freshness failed:")
+            for error in policy_errors:
+                print(f"  {error}")
+            return 1
         reports = {
             (item.lane, item.id): item
             for item in compare_gallery_media.read_report(args.report)
