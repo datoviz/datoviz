@@ -217,6 +217,7 @@ nav:
     - Status:
       - Project status: 'reference/project-status.md'
       - Feature status: 'reference/feature-status.md'
+      - Known limitations: 'reference/known-limitations.md'
       - v0.3 visible parity: 'reference/v03-visible-parity.md'
       - Platform support: 'reference/platform-support.md'
       - Build options: 'reference/build-options.md'

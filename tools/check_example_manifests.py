@@ -31,6 +31,15 @@ PUBLIC_C_DIRS = (
     ROOT / "examples/c/advanced",
 )
 DATA_KINDS = {"synthetic", "simulated", "generated", "real", "prepared"}
+REQUIRED_DATASET_FIELDS = {
+    "name",
+    "source",
+    "source_url",
+    "license",
+    "citation",
+    "preprocessing",
+    "provenance",
+}
 WEBGPU_EFFECT_STATUSES = {"supported", "limited", "unavailable"}
 WEBGPU_RENDERING_EFFECT_PATTERNS = {
     "ssao": re.compile(r"\b(?:dvz_panel_set_ssao|example_tuner_ssao)\b"),
@@ -111,6 +120,17 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
         if data_kind is not None and str(data_kind) not in DATA_KINDS:
             print(f"{entry_id}: unknown data.kind {data_kind!r}")
             ok = False
+        if data_kind in {"real", "prepared"}:
+            dataset = entry.get("dataset") or {}
+            missing_fields = sorted(
+                field for field in REQUIRED_DATASET_FIELDS if not str(dataset.get(field, "")).strip()
+            )
+            if missing_fields:
+                print(
+                    f"{entry_id}: {data_kind} data requires complete dataset attribution; "
+                    f"missing={missing_fields}"
+                )
+                ok = False
 
         webgpu = entry.get("webgpu") or {}
         rendering_effects = webgpu.get("rendering_effects") or []

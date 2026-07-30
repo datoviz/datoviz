@@ -70,9 +70,12 @@ selected by its own CMake configuration.
 - Passing hosted wheel CI does not mean an RC or final package has been published; release notes are
   authoritative for installable versions and artifact URLs.
 
+See [Known limitations](known-limitations.md) for the consolidated release-candidate, scene, compatibility, and browser boundaries.
+
 ## See Also
 
 - [Build options](build-options.md)
+- [Known limitations](known-limitations.md)
 - [WebGPU subset](webgpu-subset.md)
 - [Compute and graphics](compute-graphics.md)
 - [GPU array interoperability](gpu-array-interop.md)

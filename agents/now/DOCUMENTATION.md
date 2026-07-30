@@ -10,6 +10,8 @@ The public v0.4 site is deployed with RC2 installation guidance, release notes, 
 
 Published animated media freshness is current for 38 animations and 29 video cards. On 2026-07-30, isolated source-screenshot verification recaptured all 104 reviewed PNGs without touching `data`: one was byte-identical, seven stayed within the strict pixel-equivalence tolerance, and 96 differed materially enough to require visual review before any replacement. The local checker now reports `ok=8, uncached=96`; no PNG is missing or dimensionally invalid, and the deployed gallery remains present.
 
+The dataset audit now enforces name, source link, license, citation guidance, preprocessing, and provenance for every real or prepared manifest entry. All 12 dataset-bearing showcases pass, and the RESEPI point-cloud page now exposes its previously missing citation and preparation record. Cross-cutting v0.4 constraints are consolidated in the public Known limitations page while exact published-candidate issues remain in their release notes.
+
 Do not modify or stage the `data` submodule without explicit approval for the exact change. Generated build-local comparison media remains ignored and uncommitted.
 
 ## Required for RC3
@@ -30,6 +32,7 @@ Do not modify or stage the `data` submodule without explicit approval for the ex
 - The gallery resolution, encoding, freshness, and bounded-parallelism implementation is specified in [GALLERY_MEDIA_SINGLE_RESOLUTION.md](GALLERY_MEDIA_SINGLE_RESOLUTION.md) and remains a two-checkpoint engineering task.
 - The visual-system pilot is specified in [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md). Apply it first to the approved pilot pages, render locally, and request maintainer review before broader rollout.
 - Source-screenshot reconciliation has classified eight current and 96 materially different recaptures. Review the isolated difference set and obtain exact approval before replacing or staging any canonical PNG or the `data` gitlink.
+- Dataset attribution/provenance and the branch-wide feature/known-limitations audit are complete and mechanically validated; keep exact release-note issues synchronized when an RC3 artifact is drafted.
 - Branch-specific public links and clone instructions must change atomically with [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md), not before the branch transition.
 - The modern GPU graphics tutorial execution and validation plan is [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md). RC3 owns its enabling API and three-chapter pilot; do not publish uncompiled prose sketches or duplicate the advanced raw-triangle example as a beginner chapter.
 

@@ -42,3 +42,5 @@ See [Feature status](feature-status.md) for the detailed table.
 DRP2 and lower runtime layers are documented for backend authors and contributors under
 [Runtime internals](../advanced/runtime-internals.md). Most users should start with the scene/app API
 or the Python NumPy-array interface.
+
+See [Known limitations](known-limitations.md) for the cross-cutting release-candidate, runtime, provider, scene, and browser boundaries that apply alongside this status table.

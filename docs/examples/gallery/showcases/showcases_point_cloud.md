@@ -130,9 +130,12 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
     | --- | --- |
     | `name` | RESEPI GENM2X colorized benchmark point cloud |
     | `source` | [https://lidarpayload.com/sample-data/](https://lidarpayload.com/sample-data/) |
+    | `source_url` | [https://lidarpayload.com/sample-data/](https://lidarpayload.com/sample-data/) |
     | `license` | Public RESEPI sample data; usage follows the source site's terms |
+    | `citation` | Credit Inertial Labs RESEPI sample data and link to the public sample-data page; no formal citation is supplied by the source. |
     | `preprocessing` | `python tools/data/prepare_point_cloud.py --force` |
     | `cache_prepared_path` | .cache/datoviz/examples/point_cloud/prepared |
+    | `provenance` | The preparation tool downloads the named RGB LAZ source through its public Stitch3D viewer, deterministically samples up to six million points with seed 12345, centers and aligns the scan while preserving metric aspect ratio, retains the measured RGB variation with documented display grading, and writes cache-only native and browser records. Prepared payloads are not redistributed. |
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
