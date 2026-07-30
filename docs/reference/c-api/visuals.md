@@ -777,7 +777,7 @@ DvzBezierTessellationDesc dvz_bezier_tessellation_desc(void);
 | --- | --- | --- |
 | return | [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) | initialized Bezier tessellation descriptor |
 
-_Declared in `include/datoviz/geom.h`:428._
+_Declared in `include/datoviz/geom.h`:429._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -961,7 +961,7 @@ _Declared in `include/datoviz/scene.h`:2515._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:385._
+    _Declared in `include/datoviz/scene/enums.h`:395._
 
 <a id="type-dvzdepthcuemetric"></a>
 
@@ -975,7 +975,7 @@ _Declared in `include/datoviz/scene.h`:2515._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:377._
+    _Declared in `include/datoviz/scene/enums.h`:387._
 
 <a id="type-dvzdepthcuemode"></a>
 
@@ -990,7 +990,7 @@ _Declared in `include/datoviz/scene.h`:2515._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:368._
+    _Declared in `include/datoviz/scene/enums.h`:378._
 
 ## Geometry { #geometry }
 
@@ -1330,8 +1330,9 @@ _Declared in `include/datoviz/geom.h`:113._
 
 Load a Wavefront OBJ mesh as indexed geometry.
 
-The first loader slice supports `v`, `vn`, and polygonal `f` records. Faces are triangulated as
-fans and texture coordinates/materials are ignored.
+Supports `v`, `vt`, `vn`, and polygonal `f` records, including independent and negative face
+indices. Faces are triangulated as fans. Missing texture coordinates default to `(0, 0)` and
+missing normals are computed. Materials, objects, groups, and smoothing records are ignored.
 
 ```c
 DvzGeometry * dvz_geometry_obj(
@@ -1346,7 +1347,7 @@ DvzGeometry * dvz_geometry_obj(
 | `filename` | `const` `char` * | OBJ file path; must not be NULL |
 | `desc` | `const` [`DvzGeometryObjDesc`](visuals.md#type-dvzgeometryobjdesc) * | optional borrowed loader descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:403._
+_Declared in `include/datoviz/geom.h`:404._
 
 #### `dvz_geometry_obj_desc()` { #dvz_geometry_obj_desc .dvz-api-function }
 
@@ -2474,7 +2475,7 @@ _Declared in `include/datoviz/scene.h`:3104._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:290._
+    _Declared in `include/datoviz/scene/enums.h`:300._
 
 <a id="type-dvzgraphedgestyle"></a>
 
@@ -2562,7 +2563,7 @@ _Declared in `include/datoviz/scene.h`:3638._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:392._
+    _Declared in `include/datoviz/scene/enums.h`:402._
 
 ## Labels { #labels }
 
@@ -2977,7 +2978,7 @@ _Declared in `include/datoviz/scene.h`:2694._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:298._
+    _Declared in `include/datoviz/scene/enums.h`:308._
 
 <a id="type-dvzmarkerstyle"></a>
 
@@ -3127,7 +3128,7 @@ _Declared in `include/datoviz/scene.h`:2492._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:240._
+    _Declared in `include/datoviz/scene/enums.h`:250._
 
 <a id="type-dvzphongmaterial"></a>
 
@@ -3324,7 +3325,7 @@ _Declared in `include/datoviz/scene.h`:3606._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:282._
+    _Declared in `include/datoviz/scene/enums.h`:292._
 
 ## Pixel { #pixel }
 
@@ -3498,7 +3499,7 @@ DvzPolygonDesc dvz_polygon_desc(void);
 
 Related: [`dvz_polygon()`](#dvz_polygon).
 
-_Declared in `include/datoviz/geom.h`:412._
+_Declared in `include/datoviz/geom.h`:413._
 
 #### `dvz_polygon_destroy()` { #dvz_polygon_destroy .dvz-api-function }
 
@@ -4290,7 +4291,7 @@ _Declared in `include/datoviz/scene.h`:2833._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:263._
+    _Declared in `include/datoviz/scene/enums.h`:273._
 
 ## Sphere { #sphere }
 
@@ -4355,7 +4356,7 @@ _Declared in `include/datoviz/scene.h`:2803._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:249._
+    _Declared in `include/datoviz/scene/enums.h`:259._
 
 <a id="type-dvzspheremode"></a>
 
@@ -4368,7 +4369,7 @@ _Declared in `include/datoviz/scene.h`:2803._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:256._
+    _Declared in `include/datoviz/scene/enums.h`:266._
 
 ## Splat { #splat }
 
@@ -4617,7 +4618,7 @@ _Declared in `include/datoviz/scene.h`:2654._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:324._
+    _Declared in `include/datoviz/scene/enums.h`:334._
 
 <a id="type-dvzsymbolid"></a>
 
@@ -4668,7 +4669,7 @@ _Declared in `include/datoviz/scene.h`:2654._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:350._
+    _Declared in `include/datoviz/scene/enums.h`:360._
 
 ## Tessellate { #tessellate }
 
@@ -4697,7 +4698,7 @@ DvzTessellatedPath * dvz_tessellate_cubic_bezier(
 | `p3` | `const` [`dvec3`](runtime-math.md#type-dvec3) | second endpoint |
 | `desc` | `const` [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) * | optional borrowed tessellation descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:469._
+_Declared in `include/datoviz/geom.h`:470._
 
 #### `dvz_tessellate_quadratic_bezier()` { #dvz_tessellate_quadratic_bezier .dvz-api-function }
 
@@ -4720,7 +4721,7 @@ DvzTessellatedPath * dvz_tessellate_quadratic_bezier(
 | `p2` | `const` [`dvec3`](runtime-math.md#type-dvec3) | second endpoint |
 | `desc` | `const` [`DvzBezierTessellationDesc`](visuals.md#type-dvzbeziertessellationdesc) * | optional borrowed tessellation descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:454._
+_Declared in `include/datoviz/geom.h`:455._
 
 ## Tessellated { #tessellated }
 
@@ -4740,7 +4741,7 @@ void dvz_tessellated_path_destroy(
 | --- | --- | --- |
 | `path` | [`DvzTessellatedPath`](visuals.md#type-dvztessellatedpath) * | owned tessellated path to destroy; may be NULL |
 
-_Declared in `include/datoviz/geom.h`:479._
+_Declared in `include/datoviz/geom.h`:480._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -4778,7 +4779,7 @@ DvzGeometry * dvz_triangulate_polygon(
 | `polygon` | `const` [`DvzPolygonDesc`](visuals.md#type-dvzpolygondesc) * | borrowed polygon descriptor; must not be NULL and its arrays must remain valid for the duration of the call |
 | `desc` | `const` [`DvzTriangulationDesc`](visuals.md#type-dvztriangulationdesc) * | optional borrowed triangulation descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/geom.h`:441._
+_Declared in `include/datoviz/geom.h`:442._
 
 ## Triangulation { #triangulation }
 
@@ -4796,7 +4797,7 @@ DvzTriangulationDesc dvz_triangulation_desc(void);
 | --- | --- | --- |
 | return | [`DvzTriangulationDesc`](visuals.md#type-dvztriangulationdesc) | initialized triangulation descriptor |
 
-_Declared in `include/datoviz/geom.h`:420._
+_Declared in `include/datoviz/geom.h`:421._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -4934,7 +4935,7 @@ _Declared in `include/datoviz/scene.h`:2844._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:274._
+    _Declared in `include/datoviz/scene/enums.h`:284._
 
 <a id="type-dvzvectorstyle"></a>
 
@@ -5692,7 +5693,7 @@ DvzResult dvz_visual_set_field(
 | `slot_name` | `const` `char` * | the semantic slot name |
 | `field` | `const` [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the field, or NULL to clear the binding |
 
-_Declared in `include/datoviz/scene/field.h`:357._
+_Declared in `include/datoviz/scene/field.h`:388._
 
 #### `dvz_visual_set_field_sampling()` { #dvz_visual_set_field_sampling .dvz-api-function }
 
@@ -5719,7 +5720,7 @@ DvzResult dvz_visual_set_field_sampling(
 | `slot_name` | `const` `char` * | the semantic slot name |
 | `desc` | `const` [`DvzFieldSamplingDesc`](scene.md#type-dvzfieldsamplingdesc) * | the sampling descriptor, or NULL to restore the default |
 
-_Declared in `include/datoviz/scene/field.h`:375._
+_Declared in `include/datoviz/scene/field.h`:406._
 
 #### `dvz_visual_set_index_data()` { #dvz_visual_set_index_data .dvz-api-function }
 
@@ -6029,7 +6030,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:223._
+    _Declared in `include/datoviz/scene/enums.h`:233._
 
 <a id="type-dvzscenevisualfamily"></a>
 
@@ -6056,7 +6057,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:444._
+    _Declared in `include/datoviz/scene/enums.h`:454._
 
 <a id="type-dvzshapeaspect"></a>
 
@@ -6070,7 +6071,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:360._
+    _Declared in `include/datoviz/scene/enums.h`:370._
 
 <a id="type-dvzvisual"></a>
 
@@ -6112,7 +6113,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:545._
+    _Declared in `include/datoviz/scene/enums.h`:555._
 
 <a id="type-dvzvisualattrinfo"></a>
 
@@ -6142,7 +6143,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:107._
+    _Declared in `include/datoviz/scene/enums.h`:117._
 
 <a id="type-dvzvisualattrsource"></a>
 
@@ -6157,7 +6158,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:97._
+    _Declared in `include/datoviz/scene/enums.h`:107._
 
 <a id="type-dvzvisualcliprect"></a>
 
@@ -6171,7 +6172,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:143._
+    _Declared in `include/datoviz/scene/enums.h`:153._
 
 <a id="type-dvzvisualcoordspace"></a>
 
@@ -6186,7 +6187,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:133._
+    _Declared in `include/datoviz/scene/enums.h`:143._
 
 <a id="type-dvzvisualdataupdate"></a>
 
@@ -6255,7 +6256,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:173._
+    _Declared in `include/datoviz/scene/enums.h`:183._
 
 <a id="type-dvzvisualshadersource"></a>
 
@@ -6270,7 +6271,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:181._
+    _Declared in `include/datoviz/scene/enums.h`:191._
 
 <a id="type-dvzvisualtransformdesc"></a>
 
@@ -6304,7 +6305,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:115._
+    _Declared in `include/datoviz/scene/enums.h`:125._
 
 <a id="type-dvzvisualtransformspace"></a>
 
@@ -6318,7 +6319,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:124._
+    _Declared in `include/datoviz/scene/enums.h`:134._
 
 <a id="type-dvzvisualviewportrect"></a>
 
@@ -6333,7 +6334,7 @@ _Declared in `include/datoviz/scene.h`:1759._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:152._
+    _Declared in `include/datoviz/scene/enums.h`:162._
 
 ## Volume { #volume }
 
@@ -6692,7 +6693,7 @@ _Declared in `include/datoviz/scene.h`:3967._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:415._
+    _Declared in `include/datoviz/scene/enums.h`:425._
 
 <a id="type-dvzvolumerendermode"></a>
 
@@ -6706,7 +6707,7 @@ _Declared in `include/datoviz/scene.h`:3967._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:406._
+    _Declared in `include/datoviz/scene/enums.h`:416._
 
 <a id="type-dvzvolumesamplingmode"></a>
 
@@ -6719,7 +6720,7 @@ _Declared in `include/datoviz/scene.h`:3967._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:399._
+    _Declared in `include/datoviz/scene/enums.h`:409._
 
 <a id="type-dvzvolumestate"></a>
 

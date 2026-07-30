@@ -139,6 +139,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) | typedef | DRP2 API | `include/datoviz/drp2/types.h` |
 | [`DvzDrp2CommandType`](drp2.md#type-dvzdrp2commandtype) | enum | DRP2 API | `include/datoviz/drp2/enums.h` |
 | [`DvzDrp2ExternalBufferDesc`](drp2.md#type-dvzdrp2externalbufferdesc) | record | DRP2 API | `include/datoviz/drp2/runtime.h` |
+| [`DvzDrp2ExternalBufferTimelineDesc`](drp2.md#type-dvzdrp2externalbuffertimelinedesc) | record | DRP2 API | `include/datoviz/drp2/runtime.h` |
 | [`DvzDrp2FilterMode`](drp2.md#type-dvzdrp2filtermode) | enum | DRP2 API | `include/datoviz/drp2/enums.h` |
 | [`DvzDrp2PacketInfo`](drp2.md#type-dvzdrp2packetinfo) | record | DRP2 API | `include/datoviz/drp2/packet.h` |
 | [`DvzDrp2PacketKind`](drp2.md#type-dvzdrp2packetkind) | enum | DRP2 API | `include/datoviz/drp2/packet.h` |
@@ -184,6 +185,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzFormatDesc`](scene.md#type-dvzformatdesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzFramePlan`](frame-plan.md#type-dvzframeplan) | typedef | FramePlan And Packet API | `include/datoviz/scene/types.h` |
 | [`DvzFramePlanCopyDesc`](frame-plan.md#type-dvzframeplancopydesc) | record | FramePlan And Packet API | `include/datoviz/scene/frame_plan.h` |
+| [`DvzFramePlanCopyDirection`](frame-plan.md#type-dvzframeplancopydirection) | enum | FramePlan And Packet API | `include/datoviz/scene/enums.h` |
 | [`DvzFramePlanEmitConfig`](frame-plan.md#type-dvzframeplanemitconfig) | record | FramePlan And Packet API | `include/datoviz/scene/types.h` |
 | [`DvzFramePlanEmitter`](frame-plan.md#type-dvzframeplanemitter) | typedef | FramePlan And Packet API | `include/datoviz/scene/types.h` |
 | [`DvzFramePlanNode`](frame-plan.md#type-dvzframeplannode) | typedef | FramePlan And Packet API | `include/datoviz/scene/types.h` |
@@ -268,6 +270,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzInstanceConfig`](runtime-vulkan.md#type-dvzinstanceconfig) | record | Vulkan Foundation API | `include/datoviz/vk/instance.h` |
 | [`DvzInstanceFlags`](runtime-vulkan.md#type-dvzinstanceflags) | enum | Vulkan Foundation API | `include/datoviz/vk/instance.h` |
 | [`DvzInteractionPolicy`](scene.md#type-dvzinteractionpolicy) | typedef | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzInteropBufferConsumer`](runtime-vulkan.md#type-dvzinteropbufferconsumer) | enum | Vulkan Foundation API | `include/datoviz/vk/memory_interop.h` |
 | [`DvzInteropBufferExport`](runtime-vulkan.md#type-dvzinteropbufferexport) | record | Vulkan Foundation API | `include/datoviz/vk/memory_interop.h` |
 | [`DvzInteropBufferExportConfig`](runtime-vulkan.md#type-dvzinteropbufferexportconfig) | record | Vulkan Foundation API | `include/datoviz/vk/memory_interop.h` |
 | [`DvzItemInteraction`](scene.md#type-dvziteminteraction) | typedef | Scene API | `include/datoviz/scene/types.h` |

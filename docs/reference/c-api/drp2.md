@@ -18,8 +18,8 @@ Common workflows:
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [DRP2 command streams](../../advanced/drp2-command-streams.md)
 
-Functions: 133
-Types: 42
+Functions: 136
+Types: 43
 
 ## Symbol Groups
 
@@ -28,7 +28,7 @@ Types: 42
 | [Command Streams](#command-streams) | 102 | 30 | 5 headers |
 | [Packets](#packets) | 5 | 2 | `include/datoviz/drp2/packet.h` |
 | [Recording And Replay](#recording-and-replay) | 15 | 4 | `include/datoviz/drp2/recording.h` |
-| [Runtime Integration](#runtime-integration) | 11 | 6 | 3 headers |
+| [Runtime Integration](#runtime-integration) | 14 | 7 | 3 headers |
 
 ??? info "Grouped function index"
 
@@ -174,11 +174,14 @@ Types: 42
     | Function | Header |
     | --- | --- |
     | [`dvz_drp2_external_buffer_desc()`](#dvz_drp2_external_buffer_desc) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_external_buffer_timeline_desc()`](#dvz_drp2_external_buffer_timeline_desc) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_arm_external_buffer_timeline()`](#dvz_drp2_runtime_arm_external_buffer_timeline) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_attach_frame_target()`](#dvz_drp2_runtime_attach_frame_target) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_copy_texture_to_frame()`](#dvz_drp2_runtime_copy_texture_to_frame) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_destroy()`](#dvz_drp2_runtime_destroy) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_download_buffer()`](#dvz_drp2_runtime_download_buffer) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_execute()`](#dvz_drp2_runtime_execute) | `include/datoviz/drp2/runtime.h` |
+    | [`dvz_drp2_runtime_external_buffer_timeline_pending()`](#dvz_drp2_runtime_external_buffer_timeline_pending) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_get_config()`](#dvz_drp2_runtime_get_config) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_register_external_buffer()`](#dvz_drp2_runtime_register_external_buffer) | `include/datoviz/drp2/runtime.h` |
     | [`dvz_drp2_runtime_reset()`](#dvz_drp2_runtime_reset) | `include/datoviz/drp2/runtime.h` |
@@ -2591,7 +2594,7 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(
 | return | [`DvzDrp2ValidationResult`](drp2.md#type-dvzdrp2validationresult) | the validation result |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 
-_Declared in `include/datoviz/drp2/runtime.h`:167._
+_Declared in `include/datoviz/drp2/runtime.h`:217._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3713,7 +3716,48 @@ DvzDrp2ExternalBufferDesc dvz_drp2_external_buffer_desc(void);
 | --- | --- | --- |
 | return | [`DvzDrp2ExternalBufferDesc`](drp2.md#type-dvzdrp2externalbufferdesc) | zeroed descriptor with a valid ABI prologue |
 
-_Declared in `include/datoviz/drp2/runtime.h`:92._
+_Declared in `include/datoviz/drp2/runtime.h`:104._
+
+#### `dvz_drp2_external_buffer_timeline_desc()` { #dvz_drp2_external_buffer_timeline_desc .dvz-api-function }
+
+Return a default one-shot external-buffer timeline-handoff descriptor.
+
+```c
+DvzDrp2ExternalBufferTimelineDesc dvz_drp2_external_buffer_timeline_desc(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzDrp2ExternalBufferTimelineDesc`](drp2.md#type-dvzdrp2externalbuffertimelinedesc) | zeroed descriptor with a valid ABI prologue |
+
+_Declared in `include/datoviz/drp2/runtime.h`:112._
+
+#### `dvz_drp2_runtime_arm_external_buffer_timeline()` { #dvz_drp2_runtime_arm_external_buffer_timeline .dvz-api-function }
+
+Arm one externally-written buffer handoff for the next BufferToTexture copy from this buffer.
+
+The runtime borrows `desc->semaphore`. A vklite-backed runtime waits for `wait_value` at the
+transfer stage, acquires the source buffer for transfer reads, copies it, releases transfer-read
+access, and signals `signal_value` from that same submission. A second arm is rejected until the
+pending handoff is consumed. Semantic-only runtimes validate the one-shot state without requiring
+a semaphore wrapper.
+
+```c
+_Bool dvz_drp2_runtime_arm_external_buffer_timeline(
+    DvzDrp2Runtime * runtime,
+    uint64_t buffer_id,
+    const DvzDrp2ExternalBufferTimelineDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when the handoff was armed |
+| `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
+| `buffer_id` | `uint64_t` | registered external buffer id |
+| `desc` | `const` [`DvzDrp2ExternalBufferTimelineDesc`](drp2.md#type-dvzdrp2externalbuffertimelinedesc) * | timeline handoff values and borrowed semaphore |
+
+_Declared in `include/datoviz/drp2/runtime.h`:193._
 
 #### `dvz_drp2_runtime_attach_frame_target()` { #dvz_drp2_runtime_attach_frame_target .dvz-api-function }
 
@@ -3739,7 +3783,7 @@ _Bool dvz_drp2_runtime_attach_frame_target(
 | `texture_id` | `uint64_t` | the DRP2 texture id to expose for render passes |
 | `frame` | `const` [`DvzStreamFrame`](app.md#type-dvzstreamframe) * | the borrowed stream frame whose command buffer is currently recording |
 
-_Declared in `include/datoviz/drp2/runtime.h`:196._
+_Declared in `include/datoviz/drp2/runtime.h`:246._
 
 #### `dvz_drp2_runtime_copy_texture_to_frame()` { #dvz_drp2_runtime_copy_texture_to_frame .dvz-api-function }
 
@@ -3764,7 +3808,7 @@ _Bool dvz_drp2_runtime_copy_texture_to_frame(
 | `texture_id` | `uint64_t` | the DRP2 texture id to copy from |
 | `frame` | `const` [`DvzStreamFrame`](app.md#type-dvzstreamframe) * | the borrowed stream frame whose command buffer is currently recording |
 
-_Declared in `include/datoviz/drp2/runtime.h`:212._
+_Declared in `include/datoviz/drp2/runtime.h`:262._
 
 #### `dvz_drp2_runtime_destroy()` { #dvz_drp2_runtime_destroy .dvz-api-function }
 
@@ -3782,7 +3826,7 @@ void dvz_drp2_runtime_destroy(
 | --- | --- | --- |
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 
-_Declared in `include/datoviz/drp2/runtime.h`:127._
+_Declared in `include/datoviz/drp2/runtime.h`:147._
 
 #### `dvz_drp2_runtime_download_buffer()` { #dvz_drp2_runtime_download_buffer .dvz-api-function }
 
@@ -3810,7 +3854,7 @@ _Bool dvz_drp2_runtime_download_buffer(
 | `size` | `uint64_t` | number of bytes to read |
 | `dst` | `void` * | destination CPU buffer (caller-allocated, at least size bytes) |
 
-_Declared in `include/datoviz/drp2/runtime.h`:229._
+_Declared in `include/datoviz/drp2/runtime.h`:279._
 
 #### `dvz_drp2_runtime_execute()` { #dvz_drp2_runtime_execute .dvz-api-function }
 
@@ -3829,7 +3873,26 @@ DvzDrp2ValidationResult dvz_drp2_runtime_execute(
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 
-_Declared in `include/datoviz/drp2/runtime.h`:180._
+_Declared in `include/datoviz/drp2/runtime.h`:230._
+
+#### `dvz_drp2_runtime_external_buffer_timeline_pending()` { #dvz_drp2_runtime_external_buffer_timeline_pending .dvz-api-function }
+
+Return whether an external buffer has an armed handoff awaiting its next BufferToTexture copy.
+
+```c
+_Bool dvz_drp2_runtime_external_buffer_timeline_pending(
+    const DvzDrp2Runtime * runtime,
+    uint64_t buffer_id
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when one handoff is pending |
+| `runtime` | `const` [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
+| `buffer_id` | `uint64_t` | registered external buffer id |
+
+_Declared in `include/datoviz/drp2/runtime.h`:205._
 
 #### `dvz_drp2_runtime_get_config()` { #dvz_drp2_runtime_get_config .dvz-api-function }
 
@@ -3846,7 +3909,7 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_get_config(
 | return | [`DvzDrp2RuntimeConfig`](drp2.md#type-dvzdrp2runtimeconfig) | the runtime configuration, or zero-initialized fields when runtime is NULL |
 | `runtime` | `const` [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime, or NULL |
 
-_Declared in `include/datoviz/drp2/runtime.h`:116._
+_Declared in `include/datoviz/drp2/runtime.h`:136._
 
 #### `dvz_drp2_runtime_register_external_buffer()` { #dvz_drp2_runtime_register_external_buffer .dvz-api-function }
 
@@ -3871,7 +3934,7 @@ _Bool dvz_drp2_runtime_register_external_buffer(
 | `buffer_id` | `uint64_t` | the DRP2 buffer id to register |
 | `desc` | `const` [`DvzDrp2ExternalBufferDesc`](drp2.md#type-dvzdrp2externalbufferdesc) * | the external buffer descriptor |
 
-_Declared in `include/datoviz/drp2/runtime.h`:155._
+_Declared in `include/datoviz/drp2/runtime.h`:175._
 
 #### `dvz_drp2_runtime_reset()` { #dvz_drp2_runtime_reset .dvz-api-function }
 
@@ -3891,7 +3954,7 @@ void dvz_drp2_runtime_reset(
 | --- | --- | --- |
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 
-_Declared in `include/datoviz/drp2/runtime.h`:140._
+_Declared in `include/datoviz/drp2/runtime.h`:160._
 
 #### `dvz_drp2_runtime_vklite()` { #dvz_drp2_runtime_vklite .dvz-api-function }
 
@@ -3912,7 +3975,7 @@ DvzDrp2Runtime * dvz_drp2_runtime_vklite(
 | return | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | a newly allocated runtime, or NULL on invalid configuration or allocation failure |
 | `cfg` | `const` [`DvzDrp2RuntimeConfig`](drp2.md#type-dvzdrp2runtimeconfig) * | required runtime configuration |
 
-_Declared in `include/datoviz/drp2/runtime.h`:106._
+_Declared in `include/datoviz/drp2/runtime.h`:126._
 
 #### `dvz_drp2_runtime_vklite_config()` { #dvz_drp2_runtime_vklite_config .dvz-api-function }
 
@@ -3931,7 +3994,7 @@ DvzDrp2RuntimeConfig dvz_drp2_runtime_vklite_config(
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | the borrowed Vulkan device wrapper |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the borrowed Vulkan allocator wrapper |
 
-_Declared in `include/datoviz/drp2/runtime.h`:84._
+_Declared in `include/datoviz/drp2/runtime.h`:96._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3949,7 +4012,23 @@ _Declared in `include/datoviz/drp2/runtime.h`:84._
     };
     ```
 
-    _Declared in `include/datoviz/drp2/runtime.h`:61._
+    _Declared in `include/datoviz/drp2/runtime.h`:63._
+
+<a id="type-dvzdrp2externalbuffertimelinedesc"></a>
+
+??? abstract "`DvzDrp2ExternalBufferTimelineDesc` · record"
+
+    ```c
+    struct DvzDrp2ExternalBufferTimelineDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        DvzSemaphore * semaphore;
+        uint64_t wait_value;
+        uint64_t signal_value;
+    };
+    ```
+
+    _Declared in `include/datoviz/drp2/runtime.h`:73._
 
 <a id="type-dvzdrp2runtime"></a>
 
@@ -3975,7 +4054,7 @@ _Declared in `include/datoviz/drp2/runtime.h`:84._
     };
     ```
 
-    _Declared in `include/datoviz/drp2/runtime.h`:51._
+    _Declared in `include/datoviz/drp2/runtime.h`:53._
 
 <a id="type-dvzdrp2validationcode"></a>
 
@@ -4005,7 +4084,7 @@ _Declared in `include/datoviz/drp2/runtime.h`:84._
     };
     ```
 
-    _Declared in `include/datoviz/drp2/runtime.h`:42._
+    _Declared in `include/datoviz/drp2/runtime.h`:44._
 
 <a id="type-dvzvma"></a>
 
@@ -4015,4 +4094,4 @@ _Declared in `include/datoviz/drp2/runtime.h`:84._
     typedef struct DvzVma DvzVma;
     ```
 
-    _Declared in `include/datoviz/drp2/runtime.h`:39._
+    _Declared in `include/datoviz/drp2/runtime.h`:40._

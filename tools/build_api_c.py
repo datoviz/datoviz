@@ -7,8 +7,9 @@ import argparse
 import fnmatch
 import json
 import re
+import tempfile
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from textwrap import dedent
 
@@ -799,6 +800,53 @@ def write_summary(
     path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf8")
 
 
+def check_generated_outputs(
+    pages: list[PagePolicy],
+    types_policy: dict,
+    functions: dict,
+    types_by_page: dict,
+    type_targets: dict[str, str],
+) -> list[str]:
+    """Render to a temporary tree and return missing or stale committed outputs."""
+    errors: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="datoviz-c-api-docs-") as tmp:
+        generated_root = Path(tmp)
+        generated_pages = [
+            replace(page, output=generated_root / page.output.name) for page in pages
+        ]
+        generated_by_key = {page.key: page for page in generated_pages}
+        for page in generated_pages:
+            render_page(
+                page,
+                sorted(functions.get(page.key, []), key=lambda item: item["name"]),
+                sorted(types_by_page.get(page.key, []), key=lambda item: item["name"]),
+                type_targets,
+            )
+
+        generated_types_policy = dict(types_policy)
+        committed_types = ROOT / str(types_policy["output"])
+        generated_types = generated_root / committed_types.name
+        generated_types_policy["output"] = str(generated_types)
+        render_types_index(generated_types_policy, generated_pages, types_by_page)
+
+        committed_by_key = {page.key: page.output for page in pages}
+        pairs = [
+            (generated_by_key[key].output, committed)
+            for key, committed in committed_by_key.items()
+        ]
+        pairs.append((generated_types, committed_types))
+        for generated, committed in pairs:
+            try:
+                label = committed.relative_to(ROOT).as_posix()
+            except ValueError:
+                label = committed.as_posix()
+            if not committed.is_file():
+                errors.append(f"missing generated C API reference: {label}")
+            elif generated.read_bytes() != committed.read_bytes():
+                errors.append(f"generated C API reference drift: {label}")
+    return errors
+
+
 def main() -> int:
     args = parse_args()
     api = load_json(args.api)
@@ -842,7 +890,15 @@ def main() -> int:
                 print("    ...")
         return 1
 
-    if not args.check:
+    if args.check:
+        drift = check_generated_outputs(
+            pages, types_policy, functions, types_by_page, type_targets
+        )
+        if drift:
+            print("\n".join(drift))
+            print("regenerate with: just docs-api")
+            return 1
+    else:
         for page in pages:
             render_page(
                 page,

@@ -19,7 +19,7 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick items](../../how-to/pick-items.md)
 
-Functions: 363
+Functions: 365
 Types: 195
 
 ## Symbol Groups
@@ -71,7 +71,7 @@ Types: 195
 | [Rect](#rect) | 0 | 1 | `include/datoviz/scene/types.h` |
 | [Reference Grid](#reference-grid) | 4 | 3 | 3 headers |
 | [Rendered](#rendered) | 0 | 2 | `include/datoviz/scene/types.h` |
-| [Sampled Field](#sampled-field) | 9 | 13 | `include/datoviz/scene/field.h`, `include/datoviz/scene/types.h` |
+| [Sampled Field](#sampled-field) | 11 | 13 | `include/datoviz/scene/field.h`, `include/datoviz/scene/types.h` |
 | [Scale](#scale) | 15 | 4 | 3 headers |
 | [Scale Bar](#scale-bar) | 9 | 4 | 3 headers |
 | [Scene](#scene) | 34 | 13 | 5 headers |
@@ -502,7 +502,9 @@ Types: 195
     | [`dvz_sampled_field_destroy()`](#dvz_sampled_field_destroy) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_id()`](#dvz_sampled_field_id) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_info()`](#dvz_sampled_field_info) | `include/datoviz/scene/field.h` |
+    | [`dvz_sampled_field_invalidate()`](#dvz_sampled_field_invalidate) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_resize()`](#dvz_sampled_field_resize) | `include/datoviz/scene/field.h` |
+    | [`dvz_sampled_field_set_buffer()`](#dvz_sampled_field_set_buffer) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_set_data()`](#dvz_sampled_field_set_data) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_set_geometry()`](#dvz_sampled_field_set_geometry) | `include/datoviz/scene/field.h` |
     | [`dvz_sampled_field_update_region()`](#dvz_sampled_field_update_region) | `include/datoviz/scene/field.h` |
@@ -1230,7 +1232,7 @@ _Declared in `include/datoviz/scene/annotation.h`:91._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:688._
+    _Declared in `include/datoviz/scene/enums.h`:698._
 
 ## Arcball { #arcball }
 
@@ -1616,7 +1618,7 @@ _Declared in `include/datoviz/scene.h`:1534._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:233._
+    _Declared in `include/datoviz/scene/enums.h`:243._
 
 ## Bounds { #bounds }
 
@@ -1731,7 +1733,7 @@ _Declared in `include/datoviz/scene/animation.h`:422._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:62._
+    _Declared in `include/datoviz/scene/enums.h`:71._
 
 ## Colorbar { #colorbar }
 
@@ -2011,7 +2013,7 @@ _Declared in `include/datoviz/scene/scale.h`:501._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:584._
+    _Declared in `include/datoviz/scene/enums.h`:594._
 
 <a id="type-dvzcolorbarplacementmode"></a>
 
@@ -2024,7 +2026,7 @@ _Declared in `include/datoviz/scene/scale.h`:501._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:591._
+    _Declared in `include/datoviz/scene/enums.h`:601._
 
 <a id="type-dvzcolorbarticks"></a>
 
@@ -2266,7 +2268,7 @@ _Declared in `include/datoviz/scene/scale.h`:467._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:570._
+    _Declared in `include/datoviz/scene/enums.h`:580._
 
 <a id="type-dvzcolormap"></a>
 
@@ -2306,7 +2308,7 @@ _Declared in `include/datoviz/scene/scale.h`:467._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:562._
+    _Declared in `include/datoviz/scene/enums.h`:572._
 
 <a id="type-dvzcolormapstop"></a>
 
@@ -2529,7 +2531,7 @@ _Declared in `include/datoviz/scene.h`:387._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:202._
+    _Declared in `include/datoviz/scene/enums.h`:212._
 
 <a id="type-dvzcontrollerlinkmode"></a>
 
@@ -2542,7 +2544,7 @@ _Declared in `include/datoviz/scene.h`:387._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:214._
+    _Declared in `include/datoviz/scene/enums.h`:224._
 
 <a id="type-dvzcontrollermode"></a>
 
@@ -2557,7 +2559,7 @@ _Declared in `include/datoviz/scene.h`:387._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:192._
+    _Declared in `include/datoviz/scene/enums.h`:202._
 
 <a id="type-dvzcontrollertype"></a>
 
@@ -3605,7 +3607,7 @@ _Declared in `include/datoviz/scene.h`:330._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:69._
+    _Declared in `include/datoviz/scene/enums.h`:78._
 
 ## Guide { #guide }
 
@@ -3984,7 +3986,7 @@ _Declared in `include/datoviz/scene/plot.h`:115._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:614._
+    _Declared in `include/datoviz/scene/enums.h`:624._
 
 ## Hover { #hover }
 
@@ -4453,7 +4455,7 @@ _Declared in `include/datoviz/scene/interaction.h`:178._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:524._
+    _Declared in `include/datoviz/scene/enums.h`:534._
 
 <a id="type-dvzitemstatevisualflag"></a>
 
@@ -4468,7 +4470,7 @@ _Declared in `include/datoviz/scene/interaction.h`:178._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:536._
+    _Declared in `include/datoviz/scene/enums.h`:546._
 
 <a id="type-dvzitemstatevisualstyle"></a>
 
@@ -4744,7 +4746,7 @@ _Declared in `include/datoviz/scene/scale.h`:674._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:598._
+    _Declared in `include/datoviz/scene/enums.h`:608._
 
 ## Link { #link }
 
@@ -6663,7 +6665,7 @@ _Declared in `include/datoviz/scene.h`:2150._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:162._
+    _Declared in `include/datoviz/scene/enums.h`:172._
 
 <a id="type-dvzpaneldesc"></a>
 
@@ -7079,7 +7081,7 @@ _Declared in `include/datoviz/scene.h`:938._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:606._
+    _Declared in `include/datoviz/scene/enums.h`:616._
 
 ## Plot { #plot }
 
@@ -7136,7 +7138,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:714._
+    _Declared in `include/datoviz/scene/enums.h`:724._
 
 <a id="type-dvzqueryhitpolicy"></a>
 
@@ -7150,7 +7152,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:466._
+    _Declared in `include/datoviz/scene/enums.h`:476._
 
 <a id="type-dvzqueryprofile"></a>
 
@@ -7165,7 +7167,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:474._
+    _Declared in `include/datoviz/scene/enums.h`:484._
 
 <a id="type-dvzqueryrequest"></a>
 
@@ -7266,7 +7268,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:483._
+    _Declared in `include/datoviz/scene/enums.h`:493._
 
 <a id="type-dvzqueryvaluekind"></a>
 
@@ -7285,7 +7287,7 @@ _Declared in `include/datoviz/scene/interaction.h`:389._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:501._
+    _Declared in `include/datoviz/scene/enums.h`:511._
 
 ## Rect { #rect }
 
@@ -7437,7 +7439,7 @@ _Declared in `include/datoviz/scene.h`:1027._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:76._
+    _Declared in `include/datoviz/scene/enums.h`:85._
 
 ## Rendered { #rendered }
 
@@ -7572,7 +7574,27 @@ _Bool dvz_sampled_field_info(
 | `field` | `const` [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
 | `out` | [`DvzSampledFieldDesc`](scene.md#type-dvzsampledfielddesc) * | output field descriptor |
 
-_Declared in `include/datoviz/scene/field.h`:336._
+_Declared in `include/datoviz/scene/field.h`:367._
+
+#### `dvz_sampled_field_invalidate()` { #dvz_sampled_field_invalidate .dvz-api-function }
+
+Mark a borrowed external sampled-field buffer as changed.
+
+The next frame copies the complete tightly packed pixel buffer into the field texture. This does
+not synchronize an external producer; the caller must establish the producer/Datoviz ordering.
+
+```c
+DvzResult dvz_sampled_field_invalidate(
+    DvzSampledField * field
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR when the field has no attached external buffer |
+| `field` | [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the externally backed sampled field |
+
+_Declared in `include/datoviz/scene/field.h`:292._
 
 #### `dvz_sampled_field_resize()` { #dvz_sampled_field_resize .dvz-api-function }
 
@@ -7581,7 +7603,8 @@ Change the field extent and replace the entire payload.
 The field format, semantic, dimensionality, and visual bindings are preserved. Bound image
 visuals receive a full dirty mark so the next scene emission reallocates the texture if needed.
 `width`, `height`, and `depth` must describe a non-empty extent. `view->data` must cover that
-extent and is copied before return.
+extent and is copied before return. This operation is unavailable while the field borrows an
+external buffer.
 
 ```c
 DvzResult dvz_sampled_field_resize(
@@ -7602,7 +7625,32 @@ DvzResult dvz_sampled_field_resize(
 | `depth` | `uint32_t` | new field depth in samples (must be 1 for 2D fields) |
 | `view` | `const` [`DvzFieldDataView`](scene.md#type-dvzfielddataview) * | the uploaded data view for the new extent |
 
-_Declared in `include/datoviz/scene/field.h`:296._
+_Declared in `include/datoviz/scene/field.h`:326._
+
+#### `dvz_sampled_field_set_buffer()` { #dvz_sampled_field_set_buffer .dvz-api-function }
+
+Attach a borrowed external pixel buffer to a sampled field.
+
+The initial contract accepts exactly one same-scene buffer with COPY_SRC usage, stride 4, and
+a tightly packed RGBA8_UNORM payload matching the 2D field extent. The buffer remains owned by
+the caller. One buffer may back only one field, and an externally backed field may bind only one
+visual. CPU data mutation is unavailable while attached; call dvz_sampled_field_invalidate() after
+every external full-image write.
+
+```c
+DvzResult dvz_sampled_field_set_buffer(
+    DvzSampledField * field,
+    DvzSceneBuffer * buffer
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on error |
+| `field` | [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
+| `buffer` | [`DvzSceneBuffer`](scene.md#type-dvzscenebuffer) * | the borrowed scene buffer |
+
+_Declared in `include/datoviz/scene/field.h`:280._
 
 #### `dvz_sampled_field_set_data()` { #dvz_sampled_field_set_data .dvz-api-function }
 
@@ -7610,7 +7658,7 @@ Replace the entire field payload.
 
 `view->data` must cover the full field extent. Payload bytes are copied into scene-owned storage
 before return and may be released by the caller after this function returns. Passing NULL or an
-empty view is rejected.
+empty view is rejected. This operation is unavailable while the field borrows an external buffer.
 
 ```c
 DvzResult dvz_sampled_field_set_data(
@@ -7625,7 +7673,7 @@ DvzResult dvz_sampled_field_set_data(
 | `field` | [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
 | `view` | `const` [`DvzFieldDataView`](scene.md#type-dvzfielddataview) * | the uploaded data view |
 
-_Declared in `include/datoviz/scene/field.h`:277._
+_Declared in `include/datoviz/scene/field.h`:306._
 
 #### `dvz_sampled_field_set_geometry()` { #dvz_sampled_field_set_geometry .dvz-api-function }
 
@@ -7644,14 +7692,15 @@ DvzResult dvz_sampled_field_set_geometry(
 | `field` | [`DvzSampledField`](scene.md#type-dvzsampledfield) * | the sampled field |
 | `geometry` | `const` [`DvzFieldGeometry`](scene.md#type-dvzfieldgeometry) * | the geometry descriptor |
 
-_Declared in `include/datoviz/scene/field.h`:323._
+_Declared in `include/datoviz/scene/field.h`:354._
 
 #### `dvz_sampled_field_update_region()` { #dvz_sampled_field_update_region .dvz-api-function }
 
 Update a field subregion in sample coordinates.
 
 `region` must be non-empty and fully inside the current field extent. `view->data` must cover the
-subregion and is copied before return.
+subregion and is copied before return. This operation is unavailable while the field borrows an
+external buffer.
 
 ```c
 DvzResult dvz_sampled_field_update_region(
@@ -7668,7 +7717,7 @@ DvzResult dvz_sampled_field_update_region(
 | `region` | [`DvzFieldRegion`](scene.md#type-dvzfieldregion) | the updated sample-space region |
 | `view` | `const` [`DvzFieldDataView`](scene.md#type-dvzfielddataview) * | the uploaded data view |
 
-_Declared in `include/datoviz/scene/field.h`:312._
+_Declared in `include/datoviz/scene/field.h`:343._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -8273,7 +8322,7 @@ _Declared in `include/datoviz/scene/scale.h`:275._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:554._
+    _Declared in `include/datoviz/scene/enums.h`:564._
 
 ## Scale Bar { #scale-bar }
 
@@ -8503,7 +8552,7 @@ _Declared in `include/datoviz/scene/annotation.h`:146._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:698._
+    _Declared in `include/datoviz/scene/enums.h`:708._
 
 <a id="type-dvzscalebarreferencemode"></a>
 
@@ -8517,7 +8566,7 @@ _Declared in `include/datoviz/scene/annotation.h`:146._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:705._
+    _Declared in `include/datoviz/scene/enums.h`:715._
 
 ## Scene { #scene }
 
@@ -9235,7 +9284,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:632._
+    _Declared in `include/datoviz/scene/enums.h`:642._
 
 <a id="type-dvzscenebuffer"></a>
 
@@ -9274,10 +9323,11 @@ _Declared in `include/datoviz/scene/animation.h`:312._
         DVZ_SCENE_BUFFER_USAGE_INDEX = 2,
         DVZ_SCENE_BUFFER_USAGE_UNIFORM = 4,
         DVZ_SCENE_BUFFER_USAGE_STORAGE = 8,
+        DVZ_SCENE_BUFFER_USAGE_COPY_SRC = 16,
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:86._
+    _Declared in `include/datoviz/scene/enums.h`:95._
 
 <a id="type-dvzsceneclockmode"></a>
 
@@ -9368,7 +9418,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:55._
+    _Declared in `include/datoviz/scene/enums.h`:64._
 
 <a id="type-dvzscenetargetkind"></a>
 
@@ -9393,7 +9443,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:424._
+    _Declared in `include/datoviz/scene/enums.h`:434._
 
 ## Select { #select }
 
@@ -9412,7 +9462,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:515._
+    _Declared in `include/datoviz/scene/enums.h`:525._
 
 ## Selection { #selection }
 
@@ -10083,7 +10133,7 @@ _Declared in `include/datoviz/scene/text.h`:39._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:679._
+    _Declared in `include/datoviz/scene/enums.h`:689._
 
 <a id="type-dvztextitem"></a>
 
@@ -10155,7 +10205,7 @@ _Declared in `include/datoviz/scene/text.h`:39._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:660._
+    _Declared in `include/datoviz/scene/enums.h`:670._
 
 <a id="type-dvztextrenderer"></a>
 
@@ -10171,7 +10221,7 @@ _Declared in `include/datoviz/scene/text.h`:39._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:669._
+    _Declared in `include/datoviz/scene/enums.h`:679._
 
 <a id="type-dvztextstyle"></a>
 
@@ -11219,4 +11269,4 @@ _Declared in `include/datoviz/scene/scale.h`:115._
     };
     ```
 
-    _Declared in `include/datoviz/scene/enums.h`:623._
+    _Declared in `include/datoviz/scene/enums.h`:633._

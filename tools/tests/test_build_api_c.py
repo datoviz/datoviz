@@ -184,5 +184,39 @@ class LinkValidationTests(unittest.TestCase):
             self.assertEqual(link_check.validate(docs), ["one.md: missing anchor two.md#missing"])
 
 
+class GeneratedOutputCheckTests(unittest.TestCase):
+    def test_detects_committed_reference_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            policy = replace(page("scene", "scene.h"), output=root / "scene.md")
+            function = item(
+                "dvz_thing",
+                "scene.h",
+                result={"qualtype": "void"},
+                parameters=[],
+            )
+            functions = {"scene": [function]}
+            types_by_page = {}
+            types_policy = {"output": str(root / "types.md"), "title": "Types"}
+
+            api_docs.render_page(policy, [function], [], {})
+            api_docs.render_types_index(types_policy, [policy], types_by_page)
+            self.assertEqual(
+                api_docs.check_generated_outputs(
+                    [policy], types_policy, functions, types_by_page, {}
+                ),
+                [],
+            )
+
+            policy.output.write_text("stale\n", encoding="utf8")
+            errors = api_docs.check_generated_outputs(
+                [policy], types_policy, functions, types_by_page, {}
+            )
+            self.assertEqual(
+                errors,
+                [f"generated C API reference drift: {policy.output}"],
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

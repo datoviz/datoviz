@@ -17,8 +17,8 @@ Common workflows:
 - [Runtime internals](../../advanced/runtime-internals.md)
 - [Profile performance](../../how-to/profile-performance.md)
 
-Functions: 95
-Types: 26
+Functions: 97
+Types: 27
 
 ## Symbol Groups
 
@@ -27,7 +27,7 @@ Types: 26
 | [Devices And Queues](#devices-and-queues) | 28 | 8 | 4 headers |
 | [GPU Context](#gpu-context) | 18 | 3 | `include/datoviz/vk/gpu.h`, `include/datoviz/vk/gpu_ctx.h` |
 | [Instances](#instances) | 17 | 3 | 3 headers |
-| [Memory And Interop](#memory-and-interop) | 32 | 4 | `include/datoviz/vk/memory.h`, `include/datoviz/vk/memory_interop.h` |
+| [Memory And Interop](#memory-and-interop) | 34 | 5 | `include/datoviz/vk/memory.h`, `include/datoviz/vk/memory_interop.h` |
 | [Shared Render Types](#shared-render-types) | 0 | 8 | `include/datoviz/vk/enums.h` |
 
 ??? info "Grouped function index"
@@ -143,7 +143,9 @@ Types: 26
     | [`dvz_interop_buffer_export()`](#dvz_interop_buffer_export) | `include/datoviz/vk/memory_interop.h` |
     | [`dvz_interop_buffer_export_config()`](#dvz_interop_buffer_export_config) | `include/datoviz/vk/memory_interop.h` |
     | [`dvz_interop_buffer_export_from_buffer()`](#dvz_interop_buffer_export_from_buffer) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_interop_buffer_signal_timeline_after_transfer()`](#dvz_interop_buffer_signal_timeline_after_transfer) | `include/datoviz/vk/memory_interop.h` |
     | [`dvz_interop_buffer_wait_timeline()`](#dvz_interop_buffer_wait_timeline) | `include/datoviz/vk/memory_interop.h` |
+    | [`dvz_interop_buffer_wait_timeline_for_consumer()`](#dvz_interop_buffer_wait_timeline_for_consumer) | `include/datoviz/vk/memory_interop.h` |
     | [`dvz_interop_gpu_ctx()`](#dvz_interop_gpu_ctx) | `include/datoviz/vk/memory_interop.h` |
     | [`dvz_interop_gpu_ctx_ex()`](#dvz_interop_gpu_ctx_ex) | `include/datoviz/vk/memory_interop.h` |
 
@@ -818,7 +820,7 @@ DvzGpuCtx * dvz_gpu_ctx(
 | return | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | allocated GPU context, or NULL on failure |
 | `cfg` | `const` [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:173._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:174._
 
 #### `dvz_gpu_ctx_alloc()` { #dvz_gpu_ctx_alloc .dvz-api-function }
 
@@ -835,7 +837,7 @@ DvzVma * dvz_gpu_ctx_alloc(
 | return | [`DvzVma`](drp2.md#type-dvzvma) * | borrowed allocator |
 | `ctx` | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | the GPU context |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:224._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:225._
 
 #### `dvz_gpu_ctx_config()` { #dvz_gpu_ctx_config .dvz-api-function }
 
@@ -849,7 +851,7 @@ DvzGpuCtxConfig dvz_gpu_ctx_config(void);
 | --- | --- | --- |
 | return | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) | the default configuration |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:76._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:77._
 
 #### `dvz_gpu_ctx_config_add_instance_extension()` { #dvz_gpu_ctx_config_add_instance_extension .dvz-api-function }
 
@@ -867,7 +869,7 @@ void dvz_gpu_ctx_config_add_instance_extension(
 | `cfg` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 | `extension` | `const` `char` * | null-terminated extension name (must outlive the config) |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:151._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:152._
 
 #### `dvz_gpu_ctx_config_alloc()` { #dvz_gpu_ctx_config_alloc .dvz-api-function }
 
@@ -885,7 +887,7 @@ void dvz_gpu_ctx_config_alloc(
 | `cfg` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 | `export_handle_type` | `VkExternalMemoryHandleTypeFlagsKHR` | external memory export flags |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:108._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:109._
 
 #### `dvz_gpu_ctx_config_enable_canvas_extensions()` { #dvz_gpu_ctx_config_enable_canvas_extensions .dvz-api-function }
 
@@ -905,7 +907,7 @@ void dvz_gpu_ctx_config_enable_canvas_extensions(
 | `cfg` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 | `enable` | `_Bool` | whether canvas extensions should be enabled on the device |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:163._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:164._
 
 #### `dvz_gpu_ctx_config_features10()` { #dvz_gpu_ctx_config_features10 .dvz-api-function }
 
@@ -923,7 +925,7 @@ void dvz_gpu_ctx_config_features10(
 | `cfg` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 | `features` | `const` `VkPhysicalDeviceFeatures` * | the Vulkan 1.0 feature struct |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:119._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:120._
 
 #### `dvz_gpu_ctx_config_features12()` { #dvz_gpu_ctx_config_features12 .dvz-api-function }
 
@@ -941,7 +943,7 @@ void dvz_gpu_ctx_config_features12(
 | `cfg` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 | `features` | `const` `VkPhysicalDeviceVulkan12Features` * | the Vulkan 1.2 feature struct |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:128._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:129._
 
 #### `dvz_gpu_ctx_config_features13()` { #dvz_gpu_ctx_config_features13 .dvz-api-function }
 
@@ -959,7 +961,7 @@ void dvz_gpu_ctx_config_features13(
 | `cfg` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 | `features` | `const` `VkPhysicalDeviceVulkan13Features` * | the Vulkan 1.3 feature struct |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:139._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:140._
 
 #### `dvz_gpu_ctx_config_gpu()` { #dvz_gpu_ctx_config_gpu .dvz-api-function }
 
@@ -977,7 +979,7 @@ void dvz_gpu_ctx_config_gpu(
 | `cfg` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 | `gpu_index` | `uint32_t` | the selected GPU index |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:97._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:98._
 
 #### `dvz_gpu_ctx_config_validation()` { #dvz_gpu_ctx_config_validation .dvz-api-function }
 
@@ -995,7 +997,7 @@ void dvz_gpu_ctx_config_validation(
 | `cfg` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | the GPU-context configuration |
 | `enable_validation` | `_Bool` | whether validation should be enabled |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:87._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:88._
 
 #### `dvz_gpu_ctx_destroy()` { #dvz_gpu_ctx_destroy .dvz-api-function }
 
@@ -1011,7 +1013,7 @@ void dvz_gpu_ctx_destroy(
 | --- | --- | --- |
 | `ctx` | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | the GPU context |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:254._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:255._
 
 #### `dvz_gpu_ctx_device()` { #dvz_gpu_ctx_device .dvz-api-function }
 
@@ -1028,7 +1030,7 @@ DvzDevice * dvz_gpu_ctx_device(
 | return | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | borrowed device |
 | `ctx` | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | the GPU context |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:214._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:215._
 
 #### `dvz_gpu_ctx_error_count()` { #dvz_gpu_ctx_error_count .dvz-api-function }
 
@@ -1045,7 +1047,7 @@ uint32_t dvz_gpu_ctx_error_count(
 | return | `uint32_t` | the validation error count |
 | `ctx` | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | the GPU context |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:245._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:246._
 
 #### `dvz_gpu_ctx_gpu_index()` { #dvz_gpu_ctx_gpu_index .dvz-api-function }
 
@@ -1062,7 +1064,7 @@ uint32_t dvz_gpu_ctx_gpu_index(
 | return | `uint32_t` | the selected GPU index, or UINT32_MAX when unavailable |
 | `ctx` | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | the GPU context |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:193._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:194._
 
 #### `dvz_gpu_ctx_gpu_info()` { #dvz_gpu_ctx_gpu_info .dvz-api-function }
 
@@ -1081,7 +1083,7 @@ _Bool dvz_gpu_ctx_gpu_info(
 | `ctx` | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | the GPU context |
 | `out_info` | [`DvzGpuInfo`](runtime-vulkan.md#type-dvzgpuinfo) * |  |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:204._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:205._
 
 #### `dvz_gpu_ctx_instance()` { #dvz_gpu_ctx_instance .dvz-api-function }
 
@@ -1098,7 +1100,7 @@ DvzInstance * dvz_gpu_ctx_instance(
 | return | [`DvzInstance`](runtime-vulkan.md#type-dvzinstance) * | borrowed instance |
 | `ctx` | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | the GPU context |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:183._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:184._
 
 #### `dvz_gpu_ctx_queue()` { #dvz_gpu_ctx_queue .dvz-api-function }
 
@@ -1117,7 +1119,7 @@ DvzQueue * dvz_gpu_ctx_queue(
 | `ctx` | [`DvzGpuCtx`](runtime-vulkan.md#type-dvzgpuctx) * | the GPU context |
 | `role` | [`DvzQueueRole`](runtime-vulkan.md#type-dvzqueuerole) | the requested queue role |
 
-_Declared in `include/datoviz/vk/gpu_ctx.h`:235._
+_Declared in `include/datoviz/vk/gpu_ctx.h`:236._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -1154,7 +1156,7 @@ _Declared in `include/datoviz/vk/gpu_ctx.h`:235._
     };
     ```
 
-    _Declared in `include/datoviz/vk/gpu_ctx.h`:45._
+    _Declared in `include/datoviz/vk/gpu_ctx.h`:46._
 
 <a id="type-dvzgpuinfo"></a>
 
@@ -1660,7 +1662,7 @@ VkDeviceMemory dvz_allocation_memory(
 | return | `VkDeviceMemory` | borrowed Vulkan device-memory handle, or `VK_NULL_HANDLE` when unavailable |
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the allocation |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:268._
+_Declared in `include/datoviz/vk/memory_interop.h`:323._
 
 #### `dvz_allocation_set_flags()` { #dvz_allocation_set_flags .dvz-api-function }
 
@@ -1892,7 +1894,7 @@ int dvz_allocator_export(
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * | the allocation |
 | `handle` | `int` * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:191._
+_Declared in `include/datoviz/vk/memory_interop.h`:203._
 
 #### `dvz_allocator_external()` { #dvz_allocator_external .dvz-api-function }
 
@@ -1912,7 +1914,7 @@ VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(
 | return | `VkExternalMemoryHandleTypeFlagsKHR` | external memory handle type flags (0 when disabled) |
 | `allocator` | [`DvzVma`](drp2.md#type-dvzvma) * | the allocator |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:176._
+_Declared in `include/datoviz/vk/memory_interop.h`:188._
 
 #### `dvz_allocator_flush()` { #dvz_allocator_flush .dvz-api-function }
 
@@ -2019,7 +2021,7 @@ int dvz_allocator_import_buffer(
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * |  |
 | `vk_buffer` | `VkBuffer` * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:296._
+_Declared in `include/datoviz/vk/memory_interop.h`:351._
 
 #### `dvz_allocator_import_image()` { #dvz_allocator_import_image .dvz-api-function }
 
@@ -2053,7 +2055,7 @@ int dvz_allocator_import_image(
 | `alloc` | [`DvzAllocation`](runtime-vulkan.md#type-dvzallocation) * |  |
 | `vk_image` | `VkImage` * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:320._
+_Declared in `include/datoviz/vk/memory_interop.h`:375._
 
 #### `dvz_allocator_invalidate()` { #dvz_allocator_invalidate .dvz-api-function }
 
@@ -2150,7 +2152,7 @@ int dvz_interop_buffer_export(
 | `semaphore_value` | `uint64_t` | timeline semaphore value associated with the export |
 | `out` | [`DvzInteropBufferExport`](runtime-vulkan.md#type-dvzinteropbufferexport) * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:212._
+_Declared in `include/datoviz/vk/memory_interop.h`:224._
 
 #### `dvz_interop_buffer_export_config()` { #dvz_interop_buffer_export_config .dvz-api-function }
 
@@ -2164,7 +2166,7 @@ DvzInteropBufferExportConfig dvz_interop_buffer_export_config(void);
 | --- | --- | --- |
 | return | [`DvzInteropBufferExportConfig`](runtime-vulkan.md#type-dvzinteropbufferexportconfig) | default export configuration |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:104._
+_Declared in `include/datoviz/vk/memory_interop.h`:116._
 
 #### `dvz_interop_buffer_export_from_buffer()` { #dvz_interop_buffer_export_from_buffer .dvz-api-function }
 
@@ -2191,7 +2193,37 @@ int dvz_interop_buffer_export_from_buffer(
 | `config` | `const` [`DvzInteropBufferExportConfig`](runtime-vulkan.md#type-dvzinteropbufferexportconfig) * | logical export range and optional timeline semaphore metadata |
 | `out` | [`DvzInteropBufferExport`](runtime-vulkan.md#type-dvzinteropbufferexport) * |  |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:233._
+_Declared in `include/datoviz/vk/memory_interop.h`:245._
+
+#### `dvz_interop_buffer_signal_timeline_after_transfer()` { #dvz_interop_buffer_signal_timeline_after_transfer .dvz-api-function }
+
+Signal a timeline semaphore from the main Vulkan queue after ordered transfer reads.
+
+This helper submits an owned barrier command and signals `semaphore` from that GPU queue; it
+never performs a CPU semaphore signal. Call it only after the declared transfer reads were
+submitted to the same main queue, so queue order releases the buffer to the external writer.
+`buffer` remains caller-owned and this helper does not alter its ownership or lifetime.
+
+```c
+_Bool dvz_interop_buffer_signal_timeline_after_transfer(
+    DvzDevice * device,
+    DvzBuffer * buffer,
+    uint64_t size,
+    DvzSemaphore * semaphore,
+    uint64_t value
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true on success |
+| `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | logical device owning the main Vulkan queue |
+| `buffer` | [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) * | buffer whose transfer reads have completed in main-queue order |
+| `size` | `uint64_t` | byte size of the synchronized buffer range |
+| `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | timeline semaphore to signal from the GPU queue |
+| `value` | `uint64_t` | monotonically increasing timeline value to signal |
+
+_Declared in `include/datoviz/vk/memory_interop.h`:308._
 
 #### `dvz_interop_buffer_wait_timeline()` { #dvz_interop_buffer_wait_timeline .dvz-api-function }
 
@@ -2220,7 +2252,40 @@ _Bool dvz_interop_buffer_wait_timeline(
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | timeline semaphore signaled by the external API |
 | `value` | `uint64_t` | timeline value to wait on |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:253._
+_Declared in `include/datoviz/vk/memory_interop.h`:288._
+
+#### `dvz_interop_buffer_wait_timeline_for_consumer()` { #dvz_interop_buffer_wait_timeline_for_consumer .dvz-api-function }
+
+Wait on a timeline semaphore before Vulkan consumes externally written interop-buffer data.
+
+This helper is the explicit Vulkan-side synchronization point for CUDA/CuPy writes into a
+Vulkan-owned exported buffer. It submits a short barrier command on the main queue that waits for
+`semaphore` to reach `value`, then makes external writes visible to the declared `consumer`.
+`buffer` remains caller-owned; this function borrows it and only records/submits its own command
+buffer on the device main queue.
+
+```c
+_Bool dvz_interop_buffer_wait_timeline_for_consumer(
+    DvzDevice * device,
+    DvzBuffer * buffer,
+    uint64_t size,
+    DvzSemaphore * semaphore,
+    uint64_t value,
+    DvzInteropBufferConsumer consumer
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true on success |
+| `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | logical device owning the main Vulkan queue |
+| `buffer` | [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) * | buffer whose contents were written externally |
+| `size` | `uint64_t` | byte size of the synchronized buffer range |
+| `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | timeline semaphore signaled by the external API |
+| `value` | `uint64_t` | timeline value to wait on |
+| `consumer` | [`DvzInteropBufferConsumer`](runtime-vulkan.md#type-dvzinteropbufferconsumer) | declared Vulkan consumer of the externally written data |
+
+_Declared in `include/datoviz/vk/memory_interop.h`:268._
 
 #### `dvz_interop_gpu_ctx()` { #dvz_interop_gpu_ctx .dvz-api-function }
 
@@ -2244,7 +2309,7 @@ DvzGpuCtx * dvz_interop_gpu_ctx(
 | `gpu_index` | `uint32_t` | Vulkan physical-device index to use |
 | `memory_handle_type` | `VkExternalMemoryHandleTypeFlagsKHR` | external memory handle type for exported allocations |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:141._
+_Declared in `include/datoviz/vk/memory_interop.h`:153._
 
 #### `dvz_interop_gpu_ctx_ex()` { #dvz_interop_gpu_ctx_ex .dvz-api-function }
 
@@ -2274,7 +2339,7 @@ DvzGpuCtx * dvz_interop_gpu_ctx_ex(
 | `instance_extensions` | `const` `char` *`const` * | extension-name array, or NULL when count is zero |
 | `enable_canvas_extensions` | `_Bool` | whether swapchain/surface device extensions should be requested |
 
-_Declared in `include/datoviz/vk/memory_interop.h`:160._
+_Declared in `include/datoviz/vk/memory_interop.h`:172._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -2297,6 +2362,19 @@ _Declared in `include/datoviz/vk/memory_interop.h`:160._
     ```
 
     _Declared in `include/datoviz/vk/memory.h`:34._
+
+<a id="type-dvzinteropbufferconsumer"></a>
+
+??? abstract "`DvzInteropBufferConsumer` · enum"
+
+    ```c
+    enum DvzInteropBufferConsumer {
+        DVZ_INTEROP_BUFFER_CONSUMER_VERTEX_ATTRIBUTE_READ = 0,
+        DVZ_INTEROP_BUFFER_CONSUMER_TRANSFER_READ = 1,
+    };
+    ```
+
+    _Declared in `include/datoviz/vk/memory_interop.h`:43._
 
 <a id="type-dvzinteropbufferexport"></a>
 
@@ -2322,7 +2400,7 @@ _Declared in `include/datoviz/vk/memory_interop.h`:160._
     };
     ```
 
-    _Declared in `include/datoviz/vk/memory_interop.h`:51._
+    _Declared in `include/datoviz/vk/memory_interop.h`:63._
 
 <a id="type-dvzinteropbufferexportconfig"></a>
 
@@ -2342,7 +2420,7 @@ _Declared in `include/datoviz/vk/memory_interop.h`:160._
     };
     ```
 
-    _Declared in `include/datoviz/vk/memory_interop.h`:72._
+    _Declared in `include/datoviz/vk/memory_interop.h`:84._
 
 ## Shared Render Types { #shared-render-types }
 

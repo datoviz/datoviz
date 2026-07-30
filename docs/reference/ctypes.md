@@ -81,6 +81,21 @@ unannotated calls may still require exact C-shaped arguments.
 Adaptation does not validate every visual-family semantic. Check each call's `DvzResult`, and use
 the visual-family reference for required dtype, shape, attribute name, and cardinality.
 
+### Adapted Function Inventory
+
+The generated top-level facade currently adapts these policy-declared calls. Other exported `dvz_*` functions remain available at the top level as passthroughs with their exact `datoviz.raw` argument shape.
+
+| Workflow | NumPy-adapted calls |
+| --- | --- |
+| Dense visual data | `dvz_visual_set_data()`, `dvz_visual_set_data_many()`, `dvz_visual_set_data_range()`, `dvz_visual_set_index_data()` |
+| Scene buffers | `dvz_scene_buffer_set_data()` |
+| Bands and bars | `dvz_band_set_bounds()`, `dvz_band_set_center()`, `dvz_bars_set_intervals()` |
+| Axis and colorbar ticks | `dvz_axis_set_ticks()`, `dvz_colorbar_set_ticks()` |
+| Text arrays | `dvz_text_set_items()`, `dvz_text_set_positions()`, `dvz_text_set_offsets()`, `dvz_text_set_anchors()`, `dvz_text_set_sizes()`, `dvz_text_set_colors()`, `dvz_text_set_angles()` |
+| Window strings | `dvz_view_window()` |
+
+The facade also provides `dvz_view_capture_rgba()`, `dvz_sampled_field_from_array()`, and `dvz_sampled_field_update_from_array()` as generated Python helpers for output allocation and packed sampled-field layouts. These helpers preserve explicit Datoviz ownership and format contracts; they are not plotting abstractions.
+
 The facade has two explicit sampled-field helpers for common packed layouts:
 
 ```python
