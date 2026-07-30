@@ -22,13 +22,13 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDir>
+#include <QFile>
 #include <QFont>
 #include <QHBoxLayout>
 #include <QImage>
 #include <QLabel>
-#include <QPixmap>
+#include <QPainter>
 #include <QPushButton>
-#include <QScreen>
 #include <QSlider>
 #include <QString>
 #include <QTimer>
@@ -40,12 +40,16 @@
 #include <cstdlib>
 #include <vector>
 
+#include "datoviz/canvas.h"
+
 
 
 namespace
 {
 constexpr int EXAMPLE_WINDOW_WIDTH = 1280;
 constexpr int EXAMPLE_WINDOW_HEIGHT = 720;
+constexpr int EXAMPLE_CONTROLS_WIDTH = 256;
+constexpr int EXAMPLE_SCENE_WIDTH = EXAMPLE_WINDOW_WIDTH - EXAMPLE_CONTROLS_WIDTH;
 } // namespace
 
 
@@ -64,20 +68,38 @@ static QString _capture_path()
 
 
 
-static bool _capture_window(QWidget* widget)
+static bool _capture_window(DvzApp* app, DvzFigure* figure, QWidget* controls)
 {
-    QScreen* screen = widget->screen();
-    if (screen == nullptr)
+    const QString output_path = _capture_path();
+    const QString scene_path = output_path + QStringLiteral(".scene.png");
+    DvzView* capture_view =
+        dvz_view_offscreen(app, figure, EXAMPLE_SCENE_WIDTH, EXAMPLE_WINDOW_HEIGHT);
+    if (capture_view == nullptr ||
+        dvz_view_render_once(capture_view) != DVZ_CANVAS_FRAME_READY ||
+        dvz_view_capture_png(capture_view, scene_path.toUtf8().constData()) != 0)
         return false;
 
-    const QPixmap pixmap = screen->grabWindow(widget->winId());
-    if (pixmap.isNull())
+    QImage scene(scene_path);
+    QFile::remove(scene_path);
+    if (scene.isNull() || scene.size() != QSize(EXAMPLE_SCENE_WIDTH, EXAMPLE_WINDOW_HEIGHT))
         return false;
 
-    const QImage image = pixmap.toImage().scaled(
-        EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT, Qt::IgnoreAspectRatio,
-        Qt::SmoothTransformation);
-    return image.save(_capture_path(), "PNG");
+    controls->setFixedSize(EXAMPLE_CONTROLS_WIDTH, EXAMPLE_WINDOW_HEIGHT);
+    if (controls->layout() != nullptr)
+        controls->layout()->activate();
+    QImage controls_image(
+        EXAMPLE_CONTROLS_WIDTH, EXAMPLE_WINDOW_HEIGHT, QImage::Format_RGBA8888);
+    controls_image.fill(controls->palette().window().color());
+    QPainter controls_painter(&controls_image);
+    controls->render(&controls_painter);
+    controls_painter.end();
+
+    QImage composed(EXAMPLE_WINDOW_WIDTH, EXAMPLE_WINDOW_HEIGHT, QImage::Format_RGBA8888);
+    QPainter painter(&composed);
+    painter.drawImage(0, 0, scene);
+    painter.drawImage(EXAMPLE_SCENE_WIDTH, 0, controls_image);
+    painter.end();
+    return composed.save(output_path, "PNG");
 }
 
 
@@ -406,8 +428,8 @@ int main(int argc, char** argv)
         QTimer::singleShot(smoke_ms, &qt_app, &QCoreApplication::quit);
     if (capture_png)
     {
-        QTimer::singleShot(1000, &qt_app, [&main_widget, &capture_failed]() {
-            if (!_capture_window(&main_widget))
+        QTimer::singleShot(1000, &qt_app, [app, &scene_state, controls, &capture_failed]() {
+            if (!_capture_window(app, scene_state.figure, controls))
             {
                 std::fprintf(stderr, "qt_hosting: failed to capture the Qt window\n");
                 capture_failed = true;
