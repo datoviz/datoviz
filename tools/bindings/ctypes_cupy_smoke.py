@@ -7,8 +7,6 @@ surface before gating on local CuPy/CUDA availability. ``--image`` additionally 
 CUDA-written RGBA8 image-buffer -> Datoviz texture transfer path with two offscreen captures.
 """
 
-from __future__ import annotations
-
 import argparse
 import ctypes
 
@@ -257,14 +255,59 @@ def _validate_image_capture(
 
 
 def _run_cupy_image_smoke(
-    dvz, frame_count: int = IMAGE_STRESS_FRAMES
+    dvz, frame_count: int = IMAGE_STRESS_FRAMES, framework: str = 'cupy'
 ) -> tuple[tuple[int, ...], tuple[int, ...]]:
     """Render repeated CUDA-written frames through the external buffer-to-texture path."""
 
     if frame_count < 2:
         raise ValueError('image smoke requires at least two frames')
+    if framework not in ('cupy', 'torch', 'taichi'):
+        raise ValueError(f'unknown image writer framework {framework!r}')
+
+    taichi = None
+    taichi_write_color = None
+    if framework == 'taichi':
+        try:
+            import taichi as ti  # noqa: PLC0415
+        except Exception as exc:
+            raise dvz_cuda.CudaInteropUnavailable(f'Taichi unavailable: {exc}') from exc
+        taichi = ti
+        taichi.init(arch=taichi.cuda)
+
+        @taichi.kernel
+        def write_color(
+            array: taichi.types.ndarray(dtype=taichi.u8, ndim=3),
+            red: taichi.u8,
+            green: taichi.u8,
+            blue: taichi.u8,
+            alpha: taichi.u8,
+        ):
+            for y, x in taichi.ndrange(array.shape[0], array.shape[1]):
+                array[y, x, 0] = red
+                array[y, x, 1] = green
+                array[y, x, 2] = blue
+                array[y, x, 3] = alpha
+
+        taichi_write_color = write_color
+
+    def write_image(image, session, color, stream) -> None:
+        if framework == 'cupy':
+            with stream:
+                with image.cupy_write(stream) as pixels:
+                    pixels[...] = session.cupy.asarray(color, dtype=session.cupy.uint8)
+        elif framework == 'torch':
+            torch = dvz_cuda._require_torch()
+            with image.torch_write(stream) as pixels:
+                pixels[...] = torch.tensor(color, device=pixels.device, dtype=pixels.dtype)
+        else:
+            assert taichi_write_color is not None
+            with image.taichi_write(stream) as pixels:
+                taichi_write_color(pixels, *color)
+
     scene = dvz.dvz_scene()
     if not scene:
+        if taichi is not None:
+            taichi.reset()
         raise RuntimeError('dvz_scene() failed')
 
     try:
@@ -294,9 +337,12 @@ def _run_cupy_image_smoke(
         with dvz_cuda.scene_session(scene) as session:
             app = None
             try:
+                if framework == 'cupy':
+                    writer_stream = session.cupy.cuda.Stream(non_blocking=True)
+                else:
+                    writer_stream = dvz_cuda._require_torch().cuda.Stream()
                 image = session.image_buffer(shape=(8, 8, 4), dtype='uint8')
-                with image.cupy_write() as pixels:
-                    pixels[...] = session.cupy.asarray((255, 0, 0, 255), dtype=session.cupy.uint8)
+                write_image(image, session, (255, 0, 0, 255), writer_stream)
                 image.bind_field(visual)
 
                 app, view = session.offscreen_app(figure, 64, 64)
@@ -307,8 +353,7 @@ def _run_cupy_image_smoke(
                 after = None
                 for frame_idx in range(1, frame_count):
                     color = (0, 255, 0, 255) if frame_idx % 2 else (255, 0, 0, 255)
-                    with image.cupy_write() as pixels:
-                        pixels[...] = session.cupy.asarray(color, dtype=session.cupy.uint8)
+                    write_image(image, session, color, writer_stream)
                     if dvz.dvz_view_render_once(view) < 0:
                         raise RuntimeError(
                             f'image dvz_view_render_once() failed at frame {frame_idx}'
@@ -323,6 +368,8 @@ def _run_cupy_image_smoke(
                     dvz.dvz_app_destroy(app)
     finally:
         dvz.dvz_scene_destroy(scene)
+        if taichi is not None:
+            taichi.reset()
 
 
 def main() -> int:
@@ -350,6 +397,8 @@ def main() -> int:
         help='run the CUDA RGBA8 image-buffer to Datoviz texture smoke',
     )
     args = parser.parse_args()
+    if args.torch and args.taichi:
+        parser.error('--torch and --taichi are mutually exclusive')
 
     ci.require_linux()
     bridge = ci.load_bridge() if args.bridge_only else None
@@ -373,16 +422,18 @@ def main() -> int:
         return 0
 
     if args.image:
-        first_red, first_green = _run_cupy_image_smoke(dvz)
-        second_red, second_green = _run_cupy_image_smoke(dvz)
+        framework = 'taichi' if args.taichi else 'torch' if args.torch else 'cupy'
+        first_red, first_green = _run_cupy_image_smoke(dvz, framework=framework)
+        second_red, second_green = _run_cupy_image_smoke(dvz, framework=framework)
         cp = ci.require_cupy()
         device = cp.cuda.runtime.getDeviceProperties(cp.cuda.runtime.getDevice())
         device_name = device['name']
         if isinstance(device_name, bytes):
             device_name = device_name.decode(errors='replace')
         datoviz_version = dvz.dvz_version().decode()
+        framework_name = {'cupy': 'CuPy', 'torch': 'PyTorch', 'taichi': 'Taichi'}[framework]
         print(
-            'ctypes CuPy image interop smoke: READY '
+            f'ctypes {framework_name} image interop smoke: READY '
             f'(runs=2, frames_per_run={IMAGE_STRESS_FRAMES}, '
             f'red={first_red}/{second_red}, green={first_green}/{second_green}, '
             f'GPU={device_name}, CUDA driver={cp.cuda.runtime.driverGetVersion()}, '

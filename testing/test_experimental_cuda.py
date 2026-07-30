@@ -52,6 +52,114 @@ def test_cuda_export_config_initializes_abi_prologue() -> None:
     assert cfg.drp2_usage == runtime.DVZ_DRP2_BUFFER_USAGE_VERTEX
 
 
+def test_cuda_scene_setup_emit_config_initializes_abi_prologue() -> None:
+    """Scene setup emission starts from the native default configuration."""
+
+    from datoviz import raw as dvz
+
+    cfg = runtime.scene_setup_emit_config(dvz)
+    assert cfg.struct_size == ctypes.sizeof(dvz.DvzFramePlanEmitConfig)
+    assert cfg.flags == 0
+    assert cfg.shader_format == runtime.DVZ_SCENE_SHADER_FORMAT_GLSL
+    assert cfg.color_target_id == runtime.DRP2_ID_COLOR_TARGET
+
+
+def test_cuda_borrowed_app_resources_initializes_abi_prologue() -> None:
+    """Borrowed app resources start from the native default descriptor."""
+
+    from datoviz import raw as dvz
+
+    resources = runtime.borrowed_app_resources(dvz, None, None)
+    assert resources.struct_size == ctypes.sizeof(dvz.DvzAppResources)
+    assert resources.flags == 0
+    assert not resources.gpu_ctx
+    assert not resources.runtime
+    assert not resources.window_host
+
+
+def test_cuda_external_buffer_registration_initializes_abi_prologue() -> None:
+    """External buffer registration starts from the native default descriptor."""
+
+    class _Desc(ctypes.Structure):
+        _fields_ = [
+            ('struct_size', ctypes.c_uint32),
+            ('flags', ctypes.c_uint32),
+            ('buffer', ctypes.c_void_p),
+            ('size', ctypes.c_uint64),
+            ('usage', ctypes.c_uint32),
+        ]
+
+    class _Dvz:
+        @staticmethod
+        def dvz_drp2_external_buffer_desc():
+            return _Desc(struct_size=ctypes.sizeof(_Desc))
+
+        @staticmethod
+        def dvz_drp2_runtime_register_external_buffer(_runtime, buffer_id, desc):
+            registered = ctypes.cast(desc, ctypes.POINTER(_Desc)).contents
+            assert buffer_id == 7
+            assert registered.struct_size == ctypes.sizeof(_Desc)
+            assert registered.flags == 0
+            assert registered.buffer == 123
+            assert registered.size == 4096
+            assert registered.usage == runtime.DVZ_DRP2_BUFFER_USAGE_VERTEX
+            return True
+
+    mapped = runtime.CudaMappedDatovizBuffer.__new__(runtime.CudaMappedDatovizBuffer)
+    mapped.dvz = _Dvz()
+    mapped.exported = type('_Exported', (), {'buffer': ctypes.c_void_p(123), 'size': 4096})()
+    mapped.register_external_buffer('runtime', 7)
+
+
+def test_cuda_scene_buffer_creation_initializes_abi_prologue() -> None:
+    """Scene buffer creation starts from the native default descriptor."""
+
+    class _Desc(ctypes.Structure):
+        _fields_ = [
+            ('struct_size', ctypes.c_uint32),
+            ('flags', ctypes.c_uint32),
+            ('usage', ctypes.c_uint32),
+            ('stride', ctypes.c_uint32),
+            ('byte_size', ctypes.c_uint64),
+        ]
+
+    class _Dvz:
+        @staticmethod
+        def dvz_scene_buffer_desc():
+            return _Desc(struct_size=ctypes.sizeof(_Desc))
+
+        @staticmethod
+        def dvz_scene_buffer(_scene, desc):
+            created = ctypes.cast(desc, ctypes.POINTER(_Desc)).contents
+            assert created.struct_size == ctypes.sizeof(_Desc)
+            assert created.flags == 0
+            assert created.usage == runtime.DVZ_SCENE_BUFFER_USAGE_COPY_SRC
+            assert created.stride == 4
+            assert created.byte_size == 4096
+            return 'scene-buffer'
+
+    class _Shared:
+        size = 4096
+
+        @staticmethod
+        def __enter__():
+            return None
+
+        @staticmethod
+        def __exit__(_exc_type, _exc, _tb):
+            return None
+
+    mapped = runtime.CudaSceneBufferRuntime.__new__(runtime.CudaSceneBufferRuntime)
+    mapped.dvz = _Dvz()
+    mapped.shared = _Shared()
+    mapped.scene = 'scene'
+    mapped.scene_usage = runtime.DVZ_SCENE_BUFFER_USAGE_COPY_SRC
+    mapped.stride = 4
+    mapped.scene_buffer = None
+    assert mapped.__enter__() is mapped
+    assert mapped.scene_buffer == 'scene-buffer'
+
+
 def test_cuda_session_translates_optional_runtime_skip(monkeypatch: pytest.MonkeyPatch) -> None:
     """Unavailable optional prerequisites are reported through the public exception."""
 

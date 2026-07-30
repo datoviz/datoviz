@@ -75,6 +75,8 @@ CONFIG_FIELDS = (
 REQUIRED_RAW_SYMBOLS = (
     'DvzInteropBufferExport',
     'DvzInteropBufferExportConfig',
+    'DvzAppResources',
+    'dvz_app_resources',
     'dvz_interop_buffer_export_from_buffer',
     'dvz_interop_buffer_wait_timeline',
     'DvzDrp2ExternalBufferTimelineDesc',
@@ -102,6 +104,7 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_capability_snapshot',
     'dvz_drp2_runtime_vklite_config',
     'dvz_drp2_runtime_vklite',
+    'dvz_drp2_external_buffer_desc',
     'dvz_drp2_runtime_register_external_buffer',
     'dvz_drp2_external_buffer_timeline_desc',
     'dvz_drp2_runtime_arm_external_buffer_timeline',
@@ -109,6 +112,7 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_drp2_runtime_execute',
     'dvz_drp2_runtime_download_buffer',
     'dvz_drp2_runtime_destroy',
+    'dvz_frame_plan_emit_config',
     'dvz_drp2_stream',
     'dvz_drp2_stream_destroy',
     'dvz_drp2_stream_hello_renderer',
@@ -143,6 +147,7 @@ REQUIRED_RAW_SYMBOLS = (
     'dvz_sampled_field_invalidate',
     'dvz_visual_set_field',
     'dvz_drp2_stream_label_id',
+    'dvz_scene_buffer_desc',
 )
 
 
@@ -329,6 +334,16 @@ def validate_raw_surface(dvz) -> None:
     if wait_fn.argtypes != wait_args or wait_fn.restype is not ctypes.c_bool:
         raise RuntimeError('dvz_interop_buffer_wait_timeline ctypes signature is stale')
 
+    buffer_fields = ('struct_size', 'flags', 'buffer', 'size', 'usage')
+    if field_names(dvz.DvzDrp2ExternalBufferDesc) != buffer_fields:
+        raise RuntimeError('DvzDrp2ExternalBufferDesc ctypes layout is stale')
+    buffer_default_fn = dvz.dvz_drp2_external_buffer_desc
+    if (
+        buffer_default_fn.argtypes != []
+        or buffer_default_fn.restype is not dvz.DvzDrp2ExternalBufferDesc
+    ):
+        raise RuntimeError('dvz_drp2_external_buffer_desc ctypes signature is stale')
+
     timeline_fields = ('struct_size', 'flags', 'semaphore', 'wait_value', 'signal_value')
     if field_names(dvz.DvzDrp2ExternalBufferTimelineDesc) != timeline_fields:
         raise RuntimeError('DvzDrp2ExternalBufferTimelineDesc ctypes layout is stale')
@@ -367,6 +382,50 @@ def validate_raw_surface(dvz) -> None:
         dvz.dvz_sampled_field_invalidate.restype is not ctypes.c_int
     ):
         raise RuntimeError('dvz_sampled_field_invalidate ctypes signature is stale')
+    scene_buffer_fields = ('struct_size', 'flags', 'usage', 'stride', 'byte_size')
+    if field_names(dvz.DvzSceneBufferDesc) != scene_buffer_fields:
+        raise RuntimeError('DvzSceneBufferDesc ctypes layout is stale')
+    scene_buffer_default_fn = dvz.dvz_scene_buffer_desc
+    if (
+        scene_buffer_default_fn.argtypes != []
+        or scene_buffer_default_fn.restype is not dvz.DvzSceneBufferDesc
+    ):
+        raise RuntimeError('dvz_scene_buffer_desc ctypes signature is stale')
+    emit_config_fields = (
+        'struct_size',
+        'flags',
+        'shader_format',
+        'color_pipeline',
+        'external_color_target',
+        'color_target_id',
+        'color_target_format',
+        'target_width',
+        'target_height',
+        'device_scale_x',
+        'device_scale_y',
+        'render_scale',
+        'user_scale',
+        'fullscreen_triangle',
+        'runtime_resource_scope_id',
+        'clear_color',
+    )
+    if field_names(dvz.DvzFramePlanEmitConfig) != emit_config_fields:
+        raise RuntimeError('DvzFramePlanEmitConfig ctypes layout is stale')
+    emit_config_default_fn = dvz.dvz_frame_plan_emit_config
+    if (
+        emit_config_default_fn.argtypes != []
+        or emit_config_default_fn.restype is not dvz.DvzFramePlanEmitConfig
+    ):
+        raise RuntimeError('dvz_frame_plan_emit_config ctypes signature is stale')
+    app_resources_fields = ('struct_size', 'flags', 'gpu_ctx', 'runtime', 'window_host')
+    if field_names(dvz.DvzAppResources) != app_resources_fields:
+        raise RuntimeError('DvzAppResources ctypes layout is stale')
+    app_resources_default_fn = dvz.dvz_app_resources
+    if (
+        app_resources_default_fn.argtypes != []
+        or app_resources_default_fn.restype is not dvz.DvzAppResources
+    ):
+        raise RuntimeError('dvz_app_resources ctypes signature is stale')
 
 
 def interop_buffer_export_config(dvz, semaphore, drp2_usage: int):
@@ -384,30 +443,8 @@ def interop_buffer_export_config(dvz, semaphore, drp2_usage: int):
     return cfg
 
 
-def ensure_frame_plan_emit_config_layout(dvz) -> None:
-    """Install the small skipped ctypes layout needed by this internal helper."""
-    if getattr(dvz.DvzFramePlanEmitConfig, '_fields_', None) is not None:
-        return
-    dvz.DvzFramePlanEmitConfig._fields_ = [
-        ('shader_format', ctypes.c_int),
-        ('external_color_target', ctypes.c_bool),
-        ('color_target_id', ctypes.c_uint64),
-        ('color_target_format', ctypes.c_uint32),
-        ('target_width', ctypes.c_uint32),
-        ('target_height', ctypes.c_uint32),
-        ('device_scale_x', ctypes.c_float),
-        ('device_scale_y', ctypes.c_float),
-        ('render_scale', ctypes.c_float),
-        ('user_scale', ctypes.c_float),
-        ('fullscreen_triangle', ctypes.c_bool),
-        ('runtime_resource_scope_id', ctypes.c_uint64),
-        ('clear_color', ctypes.c_float * 4),
-    ]
-
-
 def scene_setup_emit_config(dvz):
-    ensure_frame_plan_emit_config_layout(dvz)
-    cfg = dvz.DvzFramePlanEmitConfig()
+    cfg = dvz.dvz_frame_plan_emit_config()
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL
     cfg.external_color_target = False
     cfg.color_target_id = DRP2_ID_COLOR_TARGET
@@ -430,6 +467,14 @@ def scene_setup_caps(dvz):
     caps.supports_render_target_sampling = True
     caps.supports_color_blending = True
     return caps
+
+
+def borrowed_app_resources(dvz, gpu_ctx, runtime):
+    """Return ABI-initialized app resources borrowing one CUDA-capable runtime."""
+    resources = dvz.dvz_app_resources()
+    resources.gpu_ctx = gpu_ctx
+    resources.runtime = runtime
+    return resources
 
 
 def require_raw_surface():
@@ -792,7 +837,7 @@ class CudaMappedDatovizBuffer:
     def register_external_buffer(
         self, runtime, buffer_id: int, usage: int = DVZ_DRP2_BUFFER_USAGE_VERTEX
     ) -> None:
-        desc = self.dvz.DvzDrp2ExternalBufferDesc()
+        desc = self.dvz.dvz_drp2_external_buffer_desc()
         desc.buffer = self.buffer
         desc.size = self.size
         desc.usage = usage
@@ -913,7 +958,7 @@ class CudaSceneBufferRuntime:
     def __enter__(self):
         self.shared.__enter__()
         try:
-            desc = self.dvz.DvzSceneBufferDesc()
+            desc = self.dvz.dvz_scene_buffer_desc()
             desc.usage = self.scene_usage
             desc.stride = self.stride
             desc.byte_size = self.shared.size
@@ -995,9 +1040,7 @@ class CudaSceneBufferRuntime:
         finally:
             if artifact is not None:
                 self.dvz.dvz_scene_frame_artifact_destroy(artifact)
-        resources = self.dvz.DvzAppResources()
-        resources.gpu_ctx = self.shared.exported.ctx
-        resources.runtime = self.runtime
+        resources = borrowed_app_resources(self.dvz, self.shared.exported.ctx, self.runtime)
         self._resources = resources
         return resources
 
@@ -1263,9 +1306,7 @@ class CudaSceneSessionRuntime:
         finally:
             if artifact is not None:
                 self.dvz.dvz_scene_frame_artifact_destroy(artifact)
-        resources = self.dvz.DvzAppResources()
-        resources.gpu_ctx = self.context.ctx
-        resources.runtime = self.runtime
+        resources = borrowed_app_resources(self.dvz, self.context.ctx, self.runtime)
         self._resources = resources
         return resources
 
