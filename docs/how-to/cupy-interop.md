@@ -1,6 +1,6 @@
 # Update Datoviz buffers and images from CUDA Python
 
-Status: experimental and Linux/NVIDIA-only. The CuPy vertex-buffer route has physical render/readback evidence. The image-buffer route and the PyTorch and Taichi adapters are implemented but still require physical Linux/NVIDIA image evidence; none of these APIs is part of the supported portable Python or WebGPU surface.
+Status: experimental and Linux/NVIDIA-only. CuPy, PyTorch, and Taichi vertex and image-buffer routes have physical render/readback evidence on an NVIDIA GeForce RTX 5090 with CUDA 12.8; none of these APIs is part of the supported portable Python or WebGPU surface.
 
 ## What is shared
 
@@ -95,6 +95,8 @@ Run the physical image gate on a compatible Linux/NVIDIA machine:
 
 ```sh
 python tools/bindings/ctypes_cupy_smoke.py --image
+python tools/bindings/ctypes_cupy_smoke.py --image --torch
+python tools/bindings/ctypes_cupy_smoke.py --image --taichi
 ```
 
 An unavailable platform, CUDA runtime, matching device, or external-memory capability is a skip, not evidence that image interop passed.
@@ -110,7 +112,7 @@ with positions.torch_write() as tensor:
     tensor[:, 2] = z
 ```
 
-The tensor is borrowed under the same lifetime rules as the CuPy array. The PyTorch stream must be on the CUDA device matched to Vulkan. The adapter and its ordering contract have local unit coverage, but physical Linux/NVIDIA image render/readback has not yet been recorded.
+The tensor is borrowed under the same lifetime rules as the CuPy array. The PyTorch stream must be on the CUDA device matched to Vulkan. The adapter and its ordering contract have unit coverage and repeated-frame physical Linux/NVIDIA vertex and image render/readback evidence.
 
 ## Taichi compute
 
@@ -121,7 +123,7 @@ with positions.taichi_write() as tensor:
     update_positions(tensor)
 ```
 
-This adapter requires both PyTorch and Taichi, and it still needs physical Linux/NVIDIA image render/readback validation. Use it only when the blocking synchronization is acceptable.
+This adapter requires both PyTorch and Taichi. Its blocking ordering contract has unit coverage and repeated-frame physical Linux/NVIDIA vertex and image render/readback evidence. Use it only when the blocking synchronization is acceptable.
 
 Taichi GGUI is a separate renderer, not an array adapter for Datoviz. A Taichi field rendered by GGUI is managed by Taichi's presentation path; this contract instead lets a Taichi CUDA kernel update a Datoviz-owned buffer that Datoviz renders.
 

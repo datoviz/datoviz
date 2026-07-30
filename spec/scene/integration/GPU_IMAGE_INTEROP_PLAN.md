@@ -1,6 +1,6 @@
 # GPU Image Interop Implementation Plan
 
-Status: Lane 1 is implemented behind the experimental Linux/NVIDIA CUDA surface, with native and CPU-only lifecycle validation. Its physical `--image` CuPy render/readback gate is implemented but has not been run on compatible hardware. Lane 2 remains proposed.
+Status: Lane 1 is implemented behind the experimental Linux/NVIDIA CUDA surface. Its CuPy, PyTorch, and Taichi vertex and image gates passed repeated physical render/readback on an NVIDIA GeForce RTX 5090 with CUDA 12.8, including non-default-stream ordering, teardown, recreation, and the debug build's Vulkan validation path. Lane 2 remains proposed.
 
 This plan extends the experimental Linux/NVIDIA CUDA interop work from vertex buffers to image visuals and sampled fields without introducing a parallel renderer, frame stream, Vulkan wrapper, or backend-specific scene semantic.
 
@@ -33,16 +33,15 @@ The repository now has:
 10. One-shot DRP2 timeline handoffs that wait, acquire, copy, release, and signal on the exact buffer-to-texture submission.
 11. External sampled fields with strict RGBA8 ownership, lifetime, invalidation, and one-visual binding rules.
 12. A hardware-gated two-frame CuPy image smoke and an experimental source example.
+13. Physical CuPy, PyTorch, and Taichi vertex and image render/readback evidence, with two independent 100-frame image runs per framework.
 
 The repository does not yet have:
 
-1. A recorded physical Linux/NVIDIA Lane 1 image run; macOS and unavailable-provider skips are not proof.
-2. Export-capable image creation in `dvz_allocator_image()`; unlike buffer creation, it does not append `VkExternalMemoryImageCreateInfo`.
-3. A public image-export descriptor or `DvzImages` export helper.
-4. CUDA bridge support for `cudaExternalMemoryGetMappedMipmappedArray()`, CUDA array levels, and CUDA surface objects.
-5. Explicit Vulkan-to-CUDA image release and CUDA-to-Vulkan image acquire helpers.
-6. DRP2 live-runtime external-texture registration.
-7. Physical Linux/NVIDIA proof for PyTorch or Taichi image updates.
+1. Export-capable image creation in `dvz_allocator_image()`; unlike buffer creation, it does not append `VkExternalMemoryImageCreateInfo`.
+2. A public image-export descriptor or `DvzImages` export helper.
+3. CUDA bridge support for `cudaExternalMemoryGetMappedMipmappedArray()`, CUDA array levels, and CUDA surface objects.
+4. Explicit Vulkan-to-CUDA image release and CUDA-to-Vulkan image acquire helpers.
+5. DRP2 live-runtime external-texture registration.
 
 
 ## Goals
