@@ -1,6 +1,6 @@
 # RC3 Documentation Inventory
 
-Status: implementation inventory complete; maintainer review and GPU-dependent media gates remain. Updated: 2026-07-30.
+Status: implementation inventory and GPU-dependent media gates complete; maintainer review remains. Updated: 2026-07-30.
 
 Use [DOCUMENTATION.md](DOCUMENTATION.md) for release sequencing and [STATUS.md](STATUS.md) for repo-wide blockers.
 
@@ -14,8 +14,8 @@ Use [DOCUMENTATION.md](DOCUMENTATION.md) for release sequencing and [STATUS.md](
 | Feature status and known limitations | complete | Public status vocabulary is mechanically checked; the consolidated Known limitations page links exact platform, browser, compatibility, and provider boundaries. |
 | Dataset attribution and provenance | complete | All 12 real/prepared dataset entries provide name, source link, license, citation guidance, preprocessing, and provenance; the manifest checker enforces the record. |
 | Gallery generation policy | implemented | Canonical `1280x720` animation frames, bounded FPS/CRF fallback, output validation, deterministic parallel work, and capture-worker limits are committed. |
-| Published animation/card freshness | regeneration required | Existing build-local output predates the new encoder fingerprint. Regenerate and inspect after the GPU driver is restored; do not commit media without exact approval. |
-| Canonical source screenshots | revalidation and review required | Isolated comparison found one byte-identical and seven tightly pixel-equivalent candidates, but their cache records are stale under the finalized fingerprint. Ninety-six materially different recaptures require visual review and exact approval before any `data` change. The current gate is `stale=8, uncached=96`. |
+| Animation/card candidates | build-local candidates current | All 38 animations regenerated at canonical `1280x720`; the comparison selects 29 MP4 cards and nine animated WebPs, every poster and card is within budget, and the full freshness gate passes. Generated candidates remain ignored and uncommitted; publication requires exact approval. |
+| Canonical source screenshots | eight current; review required | Isolated revalidation found four byte-identical and four tightly pixel-equivalent candidates under the finalized fingerprint. Ninety-six materially different recaptures require visual review and exact approval before any `data` change. The current gate is `ok=8, uncached=96`. |
 | Four-page visual-system pilot | awaiting maintainer review | Get Started, Core concepts, Choose your layer, and Advanced pass strict build and software-rendered desktop/mobile inspection. Do not begin broad rollout until visual density, colors, diagram language, and media choices are approved. |
 | Three-chapter Vulkan tutorial pilot | implemented; feedback remains | Compiled source, external GLSL, installed-package path, captures, reference synchronization, and focused checks are present. Maintainer voice/API-profile review and hosted/physical platform proof remain separate release gates. |
 | External outreach | not started | No dataset-author message or public GitHub follow-up was posted. Exact content and publication action still require approval. |
@@ -41,8 +41,8 @@ Recommended maintainer action: ask the author to close PR #132 as superseded and
 ## Remaining RC3 Decisions
 
 1. Review the four-page visual pilot before broad documentation rollout.
-2. Reboot or repair the GPU driver, then regenerate and validate animation/card media under the new pipeline.
-3. Review the 96 isolated screenshot differences and approve exact canonical replacements, if any, before touching `data`.
+2. Review the 96 isolated screenshot differences and approve exact canonical replacements, if any, before touching `data`.
+3. Review the build-local animation/card candidates and approve exact publication assets, if desired.
 4. Review the three-chapter tutorial voice/API profile.
 5. Decide whether to request focused successor PRs for the residual PR #132 topics.
 6. Draft exact RC3 release notes and validation evidence only when the release artifact scope is fixed.
