@@ -91,5 +91,29 @@ class ProvenancePolicyTest(unittest.TestCase):
             )
 
 
+class ReviewHtmlTest(unittest.TestCase):
+    def test_stages_committed_images_inside_review_directory(self) -> None:
+        with tempfile.TemporaryDirectory(dir=reference.ROOT / "build") as tmp:
+            output_dir = Path(tmp)
+            source = output_dir / "source.png"
+            Image.new("RGBA", (32, 32), (10, 20, 30, 255)).save(source)
+            report = {
+                "entries": [
+                    {
+                        "id": "example",
+                        "lane": "features",
+                        "canonical": {
+                            "path": source.relative_to(reference.ROOT).as_posix()
+                        },
+                    }
+                ]
+            }
+
+            staged = reference.stage_committed_review_images(report, output_dir)
+
+            self.assertEqual(staged["example"], "committed/features/example.png")
+            self.assertTrue((output_dir / staged["example"]).is_file())
+
+
 if __name__ == "__main__":
     unittest.main()

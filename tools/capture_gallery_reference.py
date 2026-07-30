@@ -358,10 +358,25 @@ def relative_from_report(path: str, output_dir: Path) -> str:
     return os.path.relpath(ROOT / path, output_dir).replace(os.sep, "/")
 
 
+def stage_committed_review_images(report: dict, output_dir: Path) -> dict[str, str]:
+    review_dir = output_dir / "committed"
+    if review_dir.exists():
+        shutil.rmtree(review_dir)
+    staged: dict[str, str] = {}
+    for entry in report["entries"]:
+        source = ROOT / entry["canonical"]["path"]
+        target = review_dir / entry["lane"] / f"{entry['id']}.png"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+        staged[entry["id"]] = target.relative_to(output_dir).as_posix()
+    return staged
+
+
 def write_html(report: dict, output_dir: Path) -> None:
     summary = report["summary"]
     provenance = report["provenance"]
     selected_gpu = provenance["vulkan"]["selected_gpu"]
+    committed_review_images = stage_committed_review_images(report, output_dir)
     cards: list[str] = []
     order = {"different": 0, "pixel-equivalent": 1, "identical": 2}
     for entry in sorted(
@@ -373,7 +388,7 @@ def write_html(report: dict, output_dir: Path) -> None:
         ),
     ):
         comparison = entry["comparison"]
-        canonical = relative_from_report(entry["canonical"]["path"], output_dir)
+        canonical = committed_review_images[entry["id"]]
         candidate = relative_from_report(entry["candidate"]["path"], output_dir)
         diff_path = comparison["enhanced_diff"]
         diff = (
