@@ -11,6 +11,7 @@ making v0.4 implementation depend on speculative public APIs.
    for future scientific data models and pressure tests.
 3. [FIGURE_GUIDES.md](FIGURE_GUIDES.md): coordinate-reference, span, and guide-mark model for
    future cross-panel annotations linked to panel domains and controllers.
+4. [INTEROPERABILITY_ARCHITECTURE.md](INTEROPERABILITY_ARCHITECTURE.md): post-v0.4 architecture, ecosystem and platform pressure map, prioritized milestones, and promotion gates for external frames, data, targets, hosts, queries, remote sources, scene interchange, and optional providers.
 
 
 ## Semantic Resources

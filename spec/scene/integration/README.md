@@ -32,3 +32,4 @@ Use these files when scene behavior crosses into application-owned state, UI fra
 
 1. [../proposals/promoted/UI_BACKEND_INTEGRATION.md](../proposals/promoted/UI_BACKEND_INTEGRATION.md)
 2. [../proposals/active/ASYNC_CALLBACKS.md](../proposals/active/ASYNC_CALLBACKS.md)
+3. [../proposals/future/INTEROPERABILITY_ARCHITECTURE.md](../proposals/future/INTEROPERABILITY_ARCHITECTURE.md): post-v0.4 interoperability direction and evidence gates; it is not an active v0.4 implementation commitment.

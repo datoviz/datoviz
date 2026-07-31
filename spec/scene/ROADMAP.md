@@ -144,6 +144,19 @@ Do not let these delay `v0.4.0` unless they fix a release blocker:
 7. avoid mixing broad mechanical refactors with new visual families or API expansion.
 
 
+## Post-v0.4 Interoperability
+
+The future interoperability architecture is [proposals/future/INTEROPERABILITY_ARCHITECTURE.md](proposals/future/INTEROPERABILITY_ARCHITECTURE.md). It preserves external-frame and external-data inputs, transparent output targets, hosted applications, remote and timed sources, semantic scene interchange, integrated queries, provider transports, application ecosystems, and mobile/XR/console/TV pressure without making them v0.4 requirements.
+
+Use this priority order after v0.4.0 unless a concrete user task changes it:
+
+1. Audit the implemented camera, viewport, render-thread handoff, request-frame, image-update, resize-generation, transparent-capture, visibility, lifecycle, and diagnostic primitives.
+2. Prove a deterministic asynchronous copied-CPU frame presenter, one copied-array processing recipe, and one transparent CPU compositor without a new public ABI.
+3. Stabilize only the camera, request, frame, ownership, scheduling, color, identity, and lifecycle concepts shared by multiple proofs.
+4. Add depth, IDs, provider-assisted queries, GPU transports, media, remote operation, and semantic export only through separately promoted evidence gates.
+5. Define provider discovery, packaging conventions, and conformance only after independently maintained providers exist.
+
+
 ## Long-Horizon Rendering
 
 Future unified ray rendering should remain compatible with the active scene -> FramePlan -> DRP2
