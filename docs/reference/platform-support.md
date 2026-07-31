@@ -11,6 +11,7 @@ classification.
 | Linux | Supported target | Requires a working Vulkan loader/ICD for native rendering. GLFW is the normal native window backend when available. |
 | macOS | Supported target through Vulkan compatibility stack | Release wheels target macOS 15 on arm64 and Intel. Requires the packaged or system Vulkan/MoltenVK runtime path used by the build/install. |
 | Windows | Supported native wheel and source-build target | Validated wheel lanes cover AMD64 and ARM64. Native source development uses MSVC, Vulkan SDK, and vcpkg; WSL is a separate Linux environment. |
+| FreeBSD 14 amd64 | Provisional community source-build target | Initial [source-build instructions](../start/build-from-source.md#freebsd-14-amd64) await community verification. No binaries or wheels are published, and FreeBSD is not part of the release validation matrix. |
 | Headless/offscreen | Supported feature | Still requires a graphics-capable Vulkan runtime unless the specific test/example is CPU-only. |
 
 ## Browser/WebGPU

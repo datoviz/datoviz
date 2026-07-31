@@ -4,7 +4,7 @@ Use the source path for the current development branch, C/C++ integration before
 
 <div class="dvz-context-strip">
   <span>Development checkout</span>
-  <span>macOS, Linux, Windows</span>
+  <span>macOS, Linux, Windows, provisional FreeBSD</span>
   <span>Vulkan toolchain</span>
   <span>About 15–30 minutes</span>
 </div>
@@ -56,6 +56,20 @@ curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 
 Install a Vulkan SDK or distribution packages providing the loader, headers, and `glslc` for precompiled shaders. `glslang-tools` supplies `glslangValidator`. Desktop examples need a Vulkan-capable GPU and working drivers.
 
+### FreeBSD 14 amd64
+
+FreeBSD is an initial, unverified community source-build target. Datoviz does not publish FreeBSD binaries or include FreeBSD in its release validation matrix. These conservative instructions deliberately disable unverified optional integrations; report successful builds or complete failure logs in [issue #65](https://github.com/datoviz/datoviz/issues/65).
+
+As root, install the native compiler and system dependencies:
+
+```sh
+pkg install git cmake ninja pkgconf python3 \
+  vulkan-headers vulkan-loader vulkan-tools shaderc \
+  glfw cglm mimalloc freetype2
+```
+
+Install and configure a Vulkan driver appropriate for the machine before attempting GPU or window tests. The [FreeBSD graphics documentation](https://docs.freebsd.org/en/books/handbook/x11/#x-config) describes the Intel, AMD, and NVIDIA driver paths. Follow the clone step below, then use the dedicated FreeBSD configuration instead of `just build`.
+
 ### Native Windows
 
 A published native wheel is the primary Python release path. Source builds are for native development and C/C++ integration. Use Visual Studio 2022, the Vulkan SDK, CMake, Ninja, and vcpkg:
@@ -82,12 +96,64 @@ Clone the active branch and initialize its recorded submodule revisions:
 git clone --branch v0.4-dev https://github.com/datoviz/datoviz.git
 cd datoviz
 git submodule update --init --recursive
+```
+
+On macOS, Linux, and Windows, run the normal repository build:
+
+```sh
 just build
 ```
 
 If the first build stops after generating assets, run `just build` once more.
 
-To use the generated Python binding from the checkout:
+### Initial FreeBSD build
+
+On FreeBSD, start with the native library and system dependencies while the broader feature surface remains unverified:
+
+```sh
+cmake -S . -B build-freebsd -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX="$PWD/build-freebsd/install" \
+  -DDVZ_VENDORED_DEPS=OFF \
+  -DDVZ_CGLM_SOURCE=SYSTEM \
+  -DDVZ_MIMALLOC_SOURCE=SYSTEM \
+  -DDVZ_ENABLE_KVAZAAR=OFF \
+  -DDVZ_BUILD_GUI=OFF \
+  -DDVZ_WITH_MSDF_ATLAS=OFF \
+  -DDVZ_WITH_MSDF_SVG=OFF \
+  -DDVZ_ENABLE_CUDA=OFF \
+  -DDVZ_ENABLE_QT_BRIDGE=OFF \
+  -DDVZ_ENABLE_SHADERC=AUTO \
+  -DDVZ_BUILD_TESTING=OFF \
+  -DDVZ_BUILD_EXAMPLES=OFF
+
+cmake --build build-freebsd --parallel
+cmake --build build-freebsd --target install
+```
+
+This first pass covers the native core, Vulkan, vklite, Canvas, DRP2, scene, app, GLFW, FreeType, installation metadata, and runtime shaderc discovery. It does not claim support for ImGui, MSDF text, Kvazaar, CUDA/NVENC, Qt, Python bindings, examples, or the test suite. After the native build succeeds, enable tests in the same build directory and report the complete result:
+
+```sh
+cmake -S . -B build-freebsd \
+  -DDVZ_BUILD_TESTING=ON
+cmake --build build-freebsd --parallel
+./build-freebsd/testing/dvztest
+```
+
+Include the following diagnostics with a FreeBSD report:
+
+```sh
+freebsd-version -ku
+uname -m
+clang --version
+cmake --version
+pkg info
+vulkaninfo --summary
+```
+
+Use [platform diagnostics](../how-to/diagnose-platform.md) for loader, device, window, and shader failures, and [Build options](../reference/build-options.md) before enabling additional dependencies. Python installation remains pending until the native library and generated ctypes path have been verified on FreeBSD.
+
+On the currently validated macOS, Linux, and Windows source-build paths, use the generated Python binding from the checkout with:
 
 ```sh
 python -m pip install -e .
