@@ -30,6 +30,7 @@ Datoviz v0.4-dev is a deep rewrite of v0.3 and is now the active v0.4 release-ca
    pull requests, releases, pushes to other branches, messages, uploads, and posts. Prepare drafts
    only until that approval is given; ambiguous instructions such as "do it" do not authorize
    publication.
+   Use the GitHub connector for read-only repository, issue, and pull-request inspection. Use the authenticated `gh` CLI for approved GitHub mutations so public actions appear directly under the maintainer's identity without connector attribution. If `gh` is unavailable, stop and obtain explicit approval before using the connector for a mutation.
 9. Never hard-wrap Markdown prose, including list items. Keep each paragraph or list item on one source line; use line breaks only where Markdown structure requires them, such as headings, blank paragraph separators, separate list or table rows, blockquotes, and fenced code blocks.
 
 More detail: [agents/rules/REPO_HYGIENE.md](agents/rules/REPO_HYGIENE.md).
