@@ -27,6 +27,8 @@ jobs:
       DVZ_CMAKE_ARGS: >-
         -DDVZ_ENABLE_SHADERC=ON
         -DDVZ_SHADERC_RUNTIME_LIBRARY=libshaderc.so.1
+        -DDVZ_VALIDATE_SPIRV=ON
+        -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON
     steps:
       - uses: actions/checkout@v7
         with:
@@ -54,7 +56,7 @@ jobs:
           just docs-check-generated
           just docs-build-check
       - name: Build
-        run: DVZ_CMAKE_ARGS="-DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON" just build
+        run: just build
       - name: Test Python tooling
         run: |
           PYTHON=python just ctypes-check
