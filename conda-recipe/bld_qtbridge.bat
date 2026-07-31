@@ -1,0 +1,35 @@
+cmake -S "%SRC_DIR%" -B build-conda-qtbridge -G Ninja ^
+    -DCMAKE_BUILD_TYPE=Release ^
+    -DDVZ_BUILD_CORE=OFF ^
+    -DDVZ_BUILD_CONTROLLER=OFF ^
+    -DDVZ_BUILD_VK=OFF ^
+    -DDVZ_BUILD_CANVAS=OFF ^
+    -DDVZ_BUILD_DRP2=OFF ^
+    -DDVZ_BUILD_WEBGPU=OFF ^
+    -DDVZ_BUILD_SCENE=OFF ^
+    -DDVZ_BUILD_APP=OFF ^
+    -DDVZ_BUILD_GUI=OFF ^
+    -DDVZ_BUILD_TESTING=OFF ^
+    -DDVZ_BUILD_EXAMPLES=OFF ^
+    -DDVZ_INSTALL=OFF ^
+    -DDVZ_VENDORED_DEPS=OFF ^
+    -DDVZ_CGLM_SOURCE=SYSTEM ^
+    -DDVZ_MIMALLOC_SOURCE=OFF ^
+    -DDVZ_KVAZAAR_SOURCE=OFF ^
+    -DDVZ_ENABLE_KVAZAAR=OFF ^
+    -DDVZ_WITH_GLFW=OFF ^
+    -DDVZ_WITH_ZLIB=OFF ^
+    -DDVZ_WITH_FREETYPE=OFF ^
+    -DDVZ_WITH_MSDF_ATLAS=OFF ^
+    -DDVZ_WITH_MSDF_SVG=OFF ^
+    -DDVZ_ENABLE_CUDA=OFF ^
+    -DDVZ_ENABLE_SHADERC=OFF ^
+    -DDVZ_ENABLE_QT_BRIDGE=ON
+if errorlevel 1 exit 1
+
+cmake --build build-conda-qtbridge --target datoviz_qtbridge
+if errorlevel 1 exit 1
+
+if not exist "%SP_DIR%\datoviz" mkdir "%SP_DIR%\datoviz"
+copy /Y "build-conda-qtbridge\qtbridge\datoviz_qtbridge.dll" "%SP_DIR%\datoviz\datoviz_qtbridge.dll"
+if errorlevel 1 exit 1

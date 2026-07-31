@@ -72,6 +72,33 @@ outputs:
       commands:
         - python -c "import datoviz.raw as raw; scene = raw.dvz_scene(); raw.dvz_scene_destroy(scene)"
 
+  - name: datoviz-qtbridge
+    script: build_qtbridge.sh  # [unix]
+    script: bld_qtbridge.bat  # [win]
+    requirements:
+      build:
+        - {{ compiler("c") }}
+        - {{ compiler("cxx") }}
+        - cmake
+        - ninja
+        - pkg-config  # [unix]
+      host:
+        - cglm
+        - python
+        - qt6-main
+        - vulkan-headers
+      run:
+        - python
+        - pyqt6
+        - qt6-main
+        - {{ pin_subpackage("datoviz", exact=True) }}
+    test:
+      commands:
+        - test -f "$SP_DIR/datoviz/libdatoviz_qtbridge${SHLIB_EXT}"  # [unix]
+        - if not exist "%SP_DIR%\datoviz\datoviz_qtbridge.dll" exit 1  # [win]
+        - python -c "from PyQt6.QtGui import QVulkanInstance, QWindow; assert hasattr(QWindow, 'setVulkanInstance')"
+        - python -m datoviz.qt
+
 about:
   home: https://datoviz.org
   license: MIT
