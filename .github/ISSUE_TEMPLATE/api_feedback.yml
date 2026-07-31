@@ -1,7 +1,7 @@
 name: API feedback
 description: Share feedback about C API, raw ctypes, ownership, lifetimes, or documentation clarity.
 title: "[api] "
-labels: ["api-feedback", "v0.4-rc1"]
+labels: ["area:api"]
 body:
   - type: dropdown
     id: area
@@ -34,7 +34,7 @@ body:
     id: datoviz-version
     attributes:
       label: Datoviz version or commit
-      placeholder: "0.4.0rc1, wheel filename, or git commit"
+      placeholder: "Release version, wheel filename, or git commit"
   - type: textarea
     id: proposal
     attributes:

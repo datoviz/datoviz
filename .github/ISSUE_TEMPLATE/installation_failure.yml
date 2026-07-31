@@ -1,7 +1,7 @@
 name: Installation failure
 description: Report a Datoviz install, import, wheel, or source-build failure.
 title: "[install] "
-labels: ["install", "v0.4-rc1"]
+labels: ["kind:bug", "area:packaging"]
 body:
   - type: textarea
     id: summary
@@ -14,7 +14,7 @@ body:
     id: datoviz-version
     attributes:
       label: Datoviz version or commit
-      placeholder: "0.4.0rc1, wheel filename, or git commit"
+      placeholder: "Release version, wheel filename, or git commit"
     validations:
       required: true
   - type: input

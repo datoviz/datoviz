@@ -1,7 +1,7 @@
 name: Example failure
 description: Report a Datoviz example, gallery page, data, or capture failure.
 title: "[example] "
-labels: ["examples", "v0.4-rc1"]
+labels: ["kind:bug", "area:examples"]
 body:
   - type: input
     id: example
@@ -21,7 +21,7 @@ body:
     id: datoviz-version
     attributes:
       label: Datoviz version or commit
-      placeholder: "0.4.0rc1, wheel filename, or git commit"
+      placeholder: "Release version, wheel filename, or git commit"
     validations:
       required: true
   - type: input
