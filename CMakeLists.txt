@@ -183,7 +183,14 @@ include(cmake/dependencies/source_modes.cmake)
 set(DVZ_GLFW_DIR "${PROJECT_SOURCE_DIR}/external/glfw")
 
 if(DVZ_WITH_GLFW)
-    if(DVZ_VENDORED_DEPS)
+    if(TARGET glfw::glfw)
+        # An embedding project already owns the canonical GLFW target.
+        set(DVZ_HAS_GLFW 1)
+    elseif(TARGET glfw)
+        # Reuse a parent-owned GLFW target before selecting a dependency source.
+        set(DVZ_HAS_GLFW 1)
+        add_library(glfw::glfw ALIAS glfw)
+    elseif(DVZ_VENDORED_DEPS)
         if(EXISTS "${DVZ_GLFW_DIR}/CMakeLists.txt")
             set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
             set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)

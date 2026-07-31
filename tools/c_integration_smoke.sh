@@ -6,6 +6,7 @@ WORKDIR=${TMPDIR:-/tmp}/datoviz-c-integration-smoke
 PREFIX="$WORKDIR/prefix"
 PACKAGE_BUILD="$WORKDIR/cmake-package-build"
 FETCH_BUILD="$WORKDIR/fetchcontent-build"
+FETCH_PREEXISTING_GLFW_BUILD="$WORKDIR/fetchcontent-preexisting-glfw-build"
 DATOVIZ_BUILD="$WORKDIR/datoviz-build"
 
 rm -rf "$WORKDIR"
@@ -44,5 +45,20 @@ cmake --build "$FETCH_BUILD" --target datoviz_fetchcontent_example >/dev/null
 LD_LIBRARY_PATH="$FETCH_BUILD/_deps/datoviz-build/src:${LD_LIBRARY_PATH:-}" \
 DYLD_LIBRARY_PATH="$FETCH_BUILD/_deps/datoviz-build/src:${DYLD_LIBRARY_PATH:-}" \
     "$FETCH_BUILD/datoviz_fetchcontent_example"
+
+echo "Building FetchContent CMake consumer with parent-owned GLFW..."
+cmake -S "$ROOT/examples/c/integration/fetchcontent" -B "$FETCH_PREEXISTING_GLFW_BUILD" -GNinja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DDATOVIZ_FETCHCONTENT_SOURCE_DIR="$ROOT" \
+    -DDATOVIZ_FETCHCONTENT_PRELOAD_GLFW=ON \
+    -DDVZ_BUILD_GUI=OFF \
+    -DDVZ_ENABLE_QT_BRIDGE=OFF \
+    -DDVZ_ENABLE_CUDA=OFF >/dev/null
+cmake --build "$FETCH_PREEXISTING_GLFW_BUILD" \
+    --target datoviz_fetchcontent_example >/dev/null
+
+LD_LIBRARY_PATH="$FETCH_PREEXISTING_GLFW_BUILD/_deps/datoviz-build/src:${LD_LIBRARY_PATH:-}" \
+DYLD_LIBRARY_PATH="$FETCH_PREEXISTING_GLFW_BUILD/_deps/datoviz-build/src:${DYLD_LIBRARY_PATH:-}" \
+    "$FETCH_PREEXISTING_GLFW_BUILD/datoviz_fetchcontent_example"
 
 echo "C integration smoke passed: $WORKDIR"
