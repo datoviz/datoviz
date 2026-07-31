@@ -21,7 +21,9 @@
 #include "datoviz/common/macros.h"
 
 #if OS_WINDOWS
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 #elif OS_MACOS
 #include <mach/mach_time.h>
