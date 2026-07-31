@@ -251,15 +251,13 @@ def fake_facade(monkeypatch):
     ]
 
     monkeypatch.setitem(sys.modules, 'datoviz.raw', raw)
-    sys.modules.pop('datoviz._array_facade', None)
+    monkeypatch.delitem(sys.modules, 'datoviz._array_facade', raising=False)
     import datoviz
 
-    datoviz.raw = raw
-    if '_array_facade' in datoviz.__dict__:
-        delattr(datoviz, '_array_facade')
+    monkeypatch.setattr(datoviz, 'raw', raw, raising=False)
+    monkeypatch.delattr(datoviz, '_array_facade', raising=False)
     facade = importlib.import_module('datoviz._array_facade')
     yield raw, facade
-    sys.modules.pop('datoviz._array_facade', None)
 
 
 def test_array_facade_exports_raw_names_and_passthrough(fake_facade):

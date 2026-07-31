@@ -56,7 +56,9 @@ jobs:
       - name: Build
         run: DVZ_CMAKE_ARGS="-DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON" just build
       - name: Test Python tooling
-        run: python -m pytest testing tools/tests -q
+        run: |
+          just ctypes-check
+          python -m pytest testing tools/tests -q
       - name: Check shaderc runtime
         run: just shaderc-smoke
       - name: Test quickstart fixtures
