@@ -61,6 +61,18 @@ case ":${PATH}:" in
 esac
 
 if [ "${_dvz_uname}" = "Darwin" ]; then
+    if [ "${DVZ_VULKAN_SANITIZE_ENV:-0}" = "1" ]; then
+        unset VK_ICD_FILENAMES
+        unset VK_DRIVER_FILES
+        unset VK_ADD_DRIVER_FILES
+        unset VK_LOADER_DRIVERS_SELECT
+        unset VK_LOADER_DRIVERS_DISABLE
+        unset VK_ROOT
+        unset DYLD_LIBRARY_PATH
+        unset DYLD_FALLBACK_LIBRARY_PATH
+        echo "datoviz: sanitizing conflicting macOS Vulkan environment" >&2
+    fi
+
     _dvz_icd_path="${VULKAN_SDK}/share/vulkan/icd.d/MoltenVK_icd.json"
 
     if [ ! -f "${_dvz_icd_path}" ]; then
@@ -69,23 +81,28 @@ if [ "${_dvz_uname}" = "Darwin" ]; then
 
     export VK_ICD_FILENAMES="${_dvz_icd_path}"
 
-    if [ -n "${DYLD_LIBRARY_PATH:-}" ]; then
-        case ":${DYLD_LIBRARY_PATH}:" in
-            *:"${VULKAN_SDK}/lib":*) ;;
-            *) export DYLD_LIBRARY_PATH="${VULKAN_SDK}/lib:${DYLD_LIBRARY_PATH}" ;;
-        esac
-    else
-        export DYLD_LIBRARY_PATH="${VULKAN_SDK}/lib"
-    fi
-
-    # Keep a fallback search path as some launch contexts may ignore DYLD_LIBRARY_PATH.
-    if [ -n "${DYLD_FALLBACK_LIBRARY_PATH:-}" ]; then
-        case ":${DYLD_FALLBACK_LIBRARY_PATH}:" in
-            *:"${VULKAN_SDK}/lib":*) ;;
-            *) export DYLD_FALLBACK_LIBRARY_PATH="${VULKAN_SDK}/lib:${DYLD_FALLBACK_LIBRARY_PATH}" ;;
-        esac
-    else
+    if [ "${DVZ_VULKAN_SANITIZE_ENV:-0}" = "1" ]; then
+        # Keep validation-layer discovery on the loader path rather than loading MoltenVK directly.
         export DYLD_FALLBACK_LIBRARY_PATH="${VULKAN_SDK}/lib"
+    else
+        if [ -n "${DYLD_LIBRARY_PATH:-}" ]; then
+            case ":${DYLD_LIBRARY_PATH}:" in
+                *:"${VULKAN_SDK}/lib":*) ;;
+                *) export DYLD_LIBRARY_PATH="${VULKAN_SDK}/lib:${DYLD_LIBRARY_PATH}" ;;
+            esac
+        else
+            export DYLD_LIBRARY_PATH="${VULKAN_SDK}/lib"
+        fi
+
+        # Keep a fallback search path as some launch contexts may ignore DYLD_LIBRARY_PATH.
+        if [ -n "${DYLD_FALLBACK_LIBRARY_PATH:-}" ]; then
+            case ":${DYLD_FALLBACK_LIBRARY_PATH}:" in
+                *:"${VULKAN_SDK}/lib":*) ;;
+                *) export DYLD_FALLBACK_LIBRARY_PATH="${VULKAN_SDK}/lib:${DYLD_FALLBACK_LIBRARY_PATH}" ;;
+            esac
+        else
+            export DYLD_FALLBACK_LIBRARY_PATH="${VULKAN_SDK}/lib"
+        fi
     fi
 else
     if [ -n "${LD_LIBRARY_PATH:-}" ]; then
