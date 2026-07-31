@@ -18,7 +18,8 @@ Current preflight:
   first recipe unless a conda-forge package lands.
 - The Python build scripts set `PIP_USER=false`; this is required in environments where pip config
   would otherwise force a user install, which conda-build forbids.
-- On 2026-07-31 Linux x86_64, the split `datoviz-qtbridge` output configured and linked against conda-forge `qt6-main` after adding `vulkan-headers`, but its package test correctly failed because conda-forge `pyqt6` 6.11.0 does not export `QVulkanInstance` or `QWindow.setVulkanInstance`; the PyPI PyQt6 6.11.0 wheel exports both, and the conda-forge PyQt recipe lacks `vulkan-headers` in its host requirements, so the next upstream proof is a PyQt rebuild with that dependency and an explicit Vulkan-binding test.
+- On 2026-07-31 Linux x86_64, the stock conda-forge `pyqt6` 6.11.0 package did not export `QVulkanInstance` or `QWindow.setVulkanInstance`, but a local rebuild of the same feedstock with `vulkan-headers` added to its host requirements exported both and passed the full PyQt package tests.
+- Using that locally rebuilt PyQt6 package, all three Datoviz split outputs built and passed their package tests; a fresh-prefix `python -m datoviz.qt` loaded the packaged bridge with ABI 1 and Qt 6.11.1, and `examples/python/qt/hosted_pyqt.py --smoke-ms 1500` rendered and exited successfully on Linux x86_64. A separate base-only environment imported `datoviz` and `datoviz.raw` without installing PyQt6 or the bridge.
 
 Before submitting:
 
