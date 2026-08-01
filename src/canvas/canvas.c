@@ -27,6 +27,7 @@
 #include "_log.h"
 #include "_time_utils.h"
 #include "../vklite/_images.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/video.h"
 #include "datoviz/vk/enums.h"
@@ -505,13 +506,11 @@ static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
         dvz_command_buffer_free(canvas->device, canvas->offscreen_queue_family, canvas->offscreen_command_buffer);
         canvas->offscreen_command_buffer = VK_NULL_HANDLE;
     }
-#if OS_UNIX
-    if (canvas->offscreen_memory_fd >= 0)
+    if (canvas->offscreen_memory_fd != DVZ_EXTERNAL_HANDLE_INVALID)
     {
-        close(canvas->offscreen_memory_fd);
-        canvas->offscreen_memory_fd = -1;
+        dvz_external_handle_close(canvas->offscreen_memory_fd);
+        canvas->offscreen_memory_fd = DVZ_EXTERNAL_HANDLE_INVALID;
     }
-#endif
     canvas->offscreen_view = VK_NULL_HANDLE;
     canvas->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     canvas->offscreen_depth_layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -564,13 +563,11 @@ static void canvas_offscreen_destroy_retired_resources(DvzCanvas* canvas)
             canvas->retired_offscreen_command_buffer);
         canvas->retired_offscreen_command_buffer = VK_NULL_HANDLE;
     }
-#if OS_UNIX
-    if (canvas->retired_offscreen_memory_fd >= 0)
+    if (canvas->retired_offscreen_memory_fd != DVZ_EXTERNAL_HANDLE_INVALID)
     {
-        close(canvas->retired_offscreen_memory_fd);
-        canvas->retired_offscreen_memory_fd = -1;
+        dvz_external_handle_close(canvas->retired_offscreen_memory_fd);
+        canvas->retired_offscreen_memory_fd = DVZ_EXTERNAL_HANDLE_INVALID;
     }
-#endif
 }
 
 
@@ -669,9 +666,10 @@ static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D exten
 
     canvas->offscreen_alloc = dvz_allocation_create();
     ANN(canvas->offscreen_alloc);
+    DvzAllocationFlags alloc_flags = use_external ? DVZ_ALLOC_DEDICATED_MEMORY : 0;
     if (dvz_allocator_image(
-            canvas->allocator, &img_info, 0, canvas->offscreen_alloc, &canvas->offscreen_image) !=
-        0)
+            canvas->allocator, &img_info, alloc_flags, canvas->offscreen_alloc,
+            &canvas->offscreen_image) != 0)
     {
         dvz_allocation_free(canvas->offscreen_alloc);
         canvas->offscreen_alloc = NULL;
@@ -809,8 +807,11 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
         frame->depth_format != VK_FORMAT_UNDEFINED && frame->depth_image != VK_NULL_HANDLE &&
         frame->depth_view != VK_NULL_HANDLE &&
         frame->depth_layout == dvz_canvas_depth_layout(frame->depth_format);
-    frame->memory = VK_NULL_HANDLE;
-    frame->memory_size = 0;
+    frame->memory =
+        canvas->offscreen_alloc != NULL ? dvz_allocation_memory(canvas->offscreen_alloc)
+                                        : VK_NULL_HANDLE;
+    frame->memory_size =
+        canvas->offscreen_alloc != NULL ? dvz_allocation_size(canvas->offscreen_alloc) : 0;
     frame->memory_fd = canvas->offscreen_memory_fd;
     frame->handles_dirty = resource_recreated;
     dvz_commands_free(cmds);
@@ -975,21 +976,25 @@ static int canvas_create_timeline(DvzCanvas* canvas)
         ANN(canvas->timeline_semaphore);
     }
     dvz_semaphore_timeline(canvas->device, 0, canvas->timeline_semaphore, handle_type);
-#if OS_UNIX
     if (handle_type != 0)
     {
-        int probe_fd = dvz_semaphore_export_fd(canvas->timeline_semaphore, handle_type);
-        if (probe_fd >= 0)
+#if OS_UNIX
+        DvzExternalHandle probe_fd = dvz_semaphore_export(canvas->timeline_semaphore, handle_type);
+        if (probe_fd != DVZ_EXTERNAL_HANDLE_INVALID)
         {
-            close(probe_fd);
+            dvz_external_handle_close(probe_fd);
         }
         else
         {
             log_warn("canvas timeline semaphore export probe failed; disabling external semaphore path");
             canvas->supports_external_semaphore = false;
         }
-    }
+#elif OS_WINDOWS
+        // Keep the first OPAQUE_WIN32 export for the actual CUDA consumer. On NVIDIA Windows,
+        // exporting and closing a disposable probe handle first can make a later CUDA timeline
+        // semaphore import fail even though both Win32 handles are valid.
 #endif
+    }
 
 
     canvas->timeline_ready = true;
@@ -1014,19 +1019,18 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
         return -1;
     }
 
-#if OS_UNIX
     VkExternalSemaphoreHandleTypeFlags handle_type = dvz_canvas_timeline_handle_type();
-    int fd = -1;
+    DvzExternalHandle fd = DVZ_EXTERNAL_HANDLE_INVALID;
     if (!canvas->test_force_wait_semaphore_export_failure)
     {
-        fd = dvz_semaphore_export_fd(canvas->timeline_semaphore, handle_type);
+        fd = dvz_semaphore_export(canvas->timeline_semaphore, handle_type);
     }
-    if (frame->wait_semaphore_fd >= 0)
+    if (frame->wait_semaphore_fd != DVZ_EXTERNAL_HANDLE_INVALID)
     {
-        close(frame->wait_semaphore_fd);
-        frame->wait_semaphore_fd = -1;
+        dvz_external_handle_close(frame->wait_semaphore_fd);
+        frame->wait_semaphore_fd = DVZ_EXTERNAL_HANDLE_INVALID;
     }
-    if (fd < 0)
+    if (fd == DVZ_EXTERNAL_HANDLE_INVALID)
     {
         if (!canvas->test_force_wait_semaphore_export_failure)
         {
@@ -1036,10 +1040,6 @@ static int canvas_prepare_video_wait_semaphore_fd(DvzCanvas* canvas, DvzStreamFr
     }
     frame->wait_semaphore_fd = fd;
     return 0;
-#else
-    log_error("video sink timeline export unsupported on this platform");
-    return -1;
-#endif
 }
 
 
@@ -1122,16 +1122,14 @@ void dvz_canvas_frame_pool_release(DvzCanvasFramePool* pool)
     }
     if (pool->frames)
     {
-#if OS_UNIX
         for (uint32_t i = 0; i < pool->frame_count; i++)
         {
-            if (pool->frames[i].wait_semaphore_fd >= 0)
+            if (pool->frames[i].wait_semaphore_fd != DVZ_EXTERNAL_HANDLE_INVALID)
             {
-                close(pool->frames[i].wait_semaphore_fd);
-                pool->frames[i].wait_semaphore_fd = -1;
+                dvz_external_handle_close(pool->frames[i].wait_semaphore_fd);
+                pool->frames[i].wait_semaphore_fd = DVZ_EXTERNAL_HANDLE_INVALID;
             }
         }
-#endif
         dvz_free(pool->frames);
         pool->frames = NULL;
     }

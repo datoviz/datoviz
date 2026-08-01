@@ -29,6 +29,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "obj.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/memory.h"
@@ -80,16 +81,9 @@ DvzInteropBufferExportConfig dvz_interop_buffer_export_config(void)
  *
  * @param handle exported handle, or -1 when absent
  */
-static void _interop_close_exported_handle(int handle)
+static void _interop_close_exported_handle(DvzExternalHandle handle)
 {
-#if OS_UNIX
-    if (handle >= 0)
-    {
-        close(handle);
-    }
-#else
-    (void)handle;
-#endif
+    dvz_external_handle_close(handle);
 }
 
 
@@ -358,7 +352,7 @@ int dvz_interop_buffer_export_from_buffer(
         return -1;
     }
 
-    int semaphore_handle = -1;
+    DvzExternalHandle semaphore_handle = DVZ_EXTERNAL_HANDLE_INVALID;
     uint32_t semaphore_handle_type = 0;
     uint64_t semaphore_value = 0;
     uint32_t drp2_usage = 0;
@@ -376,8 +370,8 @@ int dvz_interop_buffer_export_from_buffer(
                 return -1;
             }
             semaphore_handle_type = config->semaphore_handle_type;
-            semaphore_handle = dvz_semaphore_export_fd(config->semaphore, semaphore_handle_type);
-            if (semaphore_handle < 0)
+            semaphore_handle = dvz_semaphore_export(config->semaphore, semaphore_handle_type);
+            if (semaphore_handle == DVZ_EXTERNAL_HANDLE_INVALID)
             {
                 log_error("failed to export interop semaphore handle");
                 return -1;

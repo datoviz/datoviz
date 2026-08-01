@@ -71,6 +71,19 @@ DVZ_EXPORT DvzResult dvz_error_set_callback(DvzErrorCallback cb, void* user_data
 DVZ_EXPORT void dvz_memory_free(void* pointer);
 
 
+
+/**
+ * Close an owned platform external handle.
+ *
+ * On Unix the value is treated as a file descriptor. On Windows it is treated as a native
+ * `HANDLE` without exposing `windows.h` in the public API. Passing
+ * `DVZ_EXTERNAL_HANDLE_INVALID` is allowed.
+ *
+ * @param handle owned platform external handle
+ */
+DVZ_EXPORT void dvz_external_handle_close(DvzExternalHandle handle);
+
+
 /**
  * Return a monotonic timestamp in nanoseconds.
  *

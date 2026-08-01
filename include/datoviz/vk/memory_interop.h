@@ -52,7 +52,7 @@ typedef enum DvzInteropBufferConsumer
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_INTEROP_BUFFER_EXPORT_VERSION 1
+#define DVZ_INTEROP_BUFFER_EXPORT_VERSION 2
 
 
 
@@ -63,7 +63,7 @@ typedef enum DvzInteropBufferConsumer
 struct DvzInteropBufferExport
 {
     uint32_t version;
-    int memory_handle;
+    DvzExternalHandle memory_handle;
     uint32_t memory_handle_type;
     uint64_t allocation_size;
     uint64_t offset;
@@ -74,7 +74,7 @@ struct DvzInteropBufferExport
     uint32_t flags;
     uint32_t device_uuid_valid;
     uint8_t device_uuid[VK_UUID_SIZE];
-    int semaphore_handle;
+    DvzExternalHandle semaphore_handle;
     uint32_t semaphore_handle_type;
     uint64_t semaphore_value;
 };
@@ -200,7 +200,8 @@ DVZ_EXPORT VkExternalMemoryHandleTypeFlagsKHR dvz_allocator_external(DvzVma* all
  * @param[out] handle the exported handle pointing to that allocation
  * @return 0 on success, non-zero on unsupported interop or Vulkan failure
  */
-DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle);
+DVZ_EXPORT int
+dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, DvzExternalHandle* handle);
 
 
 /**
@@ -223,7 +224,7 @@ DVZ_EXPORT int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int
  */
 DVZ_EXPORT int dvz_interop_buffer_export(
     DvzVma* allocator, DvzAllocation* alloc, uint64_t offset, uint64_t size, uint32_t usage,
-    int semaphore_handle, uint32_t semaphore_handle_type, uint64_t semaphore_value,
+    DvzExternalHandle semaphore_handle, uint32_t semaphore_handle_type, uint64_t semaphore_value,
     DvzInteropBufferExport* out);
 
 
@@ -349,7 +350,8 @@ DVZ_EXPORT VkDeviceMemory dvz_allocation_memory(DvzAllocation* alloc);
  * @return 0 on success, -1 on failure
  */
 DVZ_EXPORT int dvz_allocator_import_buffer(
-    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, int handle,
+    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags,
+    DvzExternalHandle handle,
     DvzAllocation* alloc, VkBuffer* vk_buffer);
 
 
@@ -373,7 +375,8 @@ DVZ_EXPORT int dvz_allocator_import_buffer(
  * @return 0 on success, -1 on failure
  */
 DVZ_EXPORT int dvz_allocator_import_image(
-    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, int handle,
+    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags,
+    DvzExternalHandle handle,
     DvzAllocation* alloc, VkImage* vk_image);
 
 

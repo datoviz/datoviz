@@ -1268,13 +1268,13 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
 
     DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
     DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
-    sink_cfg.encoder.backend = "auto";
+    sink_cfg.encoder.backend = "nvenc";
     sink_cfg.encoder.width = surface.extent.width ? surface.extent.width : 640;
     sink_cfg.encoder.height = surface.extent.height ? surface.extent.height : 480;
     sink_cfg.encoder.fps = 30;
     sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
-    sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_video_sink_test.mp4";
-    sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_video_sink_test.h26x";
+    sink_cfg.encoder.mp4_path = "dvz_canvas_video_sink_test.mp4";
+    sink_cfg.encoder.raw_path = "dvz_canvas_video_sink_test.h26x";
     if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
     {
         skip_reason = "sink could not be enabled";
@@ -1304,8 +1304,8 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
 
         DvzStreamFrame* frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
         AT(frame != NULL);
-        AT(frame->memory_fd >= 0);
-        AT(frame->wait_semaphore_fd >= 0);
+        AT(frame->memory_fd != DVZ_EXTERNAL_HANDLE_INVALID);
+        AT(frame->wait_semaphore_fd != DVZ_EXTERNAL_HANDLE_INVALID);
         AT(dvz_canvas_submit(canvas) == 0);
         submitted = true;
         break;
@@ -1381,13 +1381,13 @@ int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* ite
 
     DvzCanvasSurfaceInfo surface = dvz_canvas_window_surface_info(canvas);
     DvzVideoSinkConfig sink_cfg = dvz_video_sink_config();
-    sink_cfg.encoder.backend = "auto";
+    sink_cfg.encoder.backend = "nvenc";
     sink_cfg.encoder.width = surface.extent.width ? surface.extent.width : 640;
     sink_cfg.encoder.height = surface.extent.height ? surface.extent.height : 480;
     sink_cfg.encoder.fps = 30;
     sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
-    sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_video_disable_test.mp4";
-    sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_video_disable_test.h26x";
+    sink_cfg.encoder.mp4_path = "dvz_canvas_video_disable_test.mp4";
+    sink_cfg.encoder.raw_path = "dvz_canvas_video_disable_test.h26x";
     if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
     {
         skip_reason = "sink could not be enabled";

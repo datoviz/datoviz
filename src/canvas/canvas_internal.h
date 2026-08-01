@@ -123,13 +123,13 @@ struct DvzCanvas
     VkImage retired_offscreen_depth_image;
     VkImageView retired_offscreen_depth_view;
     VkCommandBuffer retired_offscreen_command_buffer;
-    int retired_offscreen_memory_fd;
+    DvzExternalHandle retired_offscreen_memory_fd;
     VkQueue offscreen_queue;
     uint32_t offscreen_queue_family;
     VkExtent2D offscreen_extent;
     VkFormat offscreen_format;
     uint64_t offscreen_resource_generation;
-    int offscreen_memory_fd;
+    DvzExternalHandle offscreen_memory_fd;
     bool offscreen_ready;
     DvzCanvasOffscreenRuntimeState offscreen_runtime_state;
     DvzCanvasSwapchain* swapchain;

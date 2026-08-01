@@ -194,7 +194,7 @@ DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncod
 
 int dvz_video_encoder_start(
     DvzVideoEncoder* enc, VkImage image, VkDeviceMemory memory, VkDeviceSize memory_size,
-    int memory_fd, int wait_semaphore_fd, FILE* bitstream_out)
+    DvzExternalHandle memory_fd, DvzExternalHandle wait_semaphore_fd, FILE* bitstream_out)
 {
     ANN(enc);
     if (enc->started)
