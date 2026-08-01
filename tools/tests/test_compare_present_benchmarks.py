@@ -67,6 +67,31 @@ benchmark: scene_points=1
         )
         self.assertAlmostEqual(metrics.ms_per_frame, 2.0)
 
+    def test_parse_interaction_latency(self) -> None:
+        output = (
+            "scenario_benchmark_points: 10000\n"
+            "scenario_benchmark_workload: interaction-v1\n"
+            "app_interaction_latency: view=0 frames=60 samples=59 "
+            "input_to_render_start_p95_ms=12.5000 input_to_submit_p95_ms=18.7500 "
+            "slot_wait_p95_ms=4.0000 acquire_wait_p95_ms=0.2500\n"
+            "scenario_benchmark: scenario=start_scatter frames=60 warmup=6 "
+            "elapsed=1.000000s fps=60.00\n"
+        )
+        metrics = compare.parse_benchmark_output("scatter-interaction", output, "")
+        self.assertIsNotNone(metrics.latency_ms)
+        self.assertEqual(metrics.latency_ms["input_to_submit_p95_ms"], 18.75)
+
+    def test_parse_interaction_requires_samples(self) -> None:
+        output = (
+            "scenario_benchmark_points: 10000\n"
+            "scenario_benchmark_workload: interaction-v1\n"
+            "app_interaction_latency: view=0 frames=60 samples=0 input_to_submit_p95_ms=0.0000\n"
+            "scenario_benchmark: scenario=start_scatter frames=60 warmup=6 "
+            "elapsed=1.000000s fps=60.00\n"
+        )
+        with self.assertRaisesRegex(compare.CompareError, "incomplete interaction latency"):
+            compare.parse_benchmark_output("scatter-interaction", output, "")
+
     def test_paired_summary_classifies_regression(self) -> None:
         summary = compare.summarize_pairs(
             "scatter", [1.0] * 9, [1.10] * 9, threshold_pct=3.0, seed=1,
@@ -99,6 +124,12 @@ benchmark: scene_points=1
         self.assertEqual(env["DVZ_PRESENT_MODE"], "immediate")
         self.assertEqual(env["DVZ_APP_SCHEDULE"], "continuous")
         self.assertEqual(env["DVZ_SCATTER_BENCHMARK"], "panzoom-v1")
+        interaction_command, interaction_env = compare.workload_command(
+            revision, "scatter-interaction", 120
+        )
+        self.assertEqual(interaction_command[-2:], ["--benchmark", "120"])
+        self.assertEqual(interaction_env["DVZ_PRESENT_MODE"], "fifo")
+        self.assertEqual(interaction_env["DVZ_SCATTER_BENCHMARK"], "interaction-v1")
 
     def test_workload_commands_cover_attribution_ladder(self) -> None:
         revision = compare.Revision(

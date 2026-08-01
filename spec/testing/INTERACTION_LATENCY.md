@@ -56,6 +56,8 @@ The experiment must preserve binary semaphore reuse rules, resize/recreate behav
 
 Extend `tools/compare_present_benchmarks.py` with a latency workload while preserving the existing paired, randomized, same-machine methodology. Store raw samples and aggregate metrics in the JSON report. Compare latency using paired p95 deltas with an independently configurable threshold; do not combine latency and throughput into one scalar score.
 
+Run a same-machine comparison with `just compare-interaction <reference> [candidate]`. The workload uses ordinary FIFO intentionally so queued stale-frame regressions remain visible; use `--latency-threshold-pct` to change the default 10% practical threshold.
+
 A valid comparison requires matching machine fingerprints, resolved present mode, display configuration, workload parameters, and frame-slot configuration. The Markdown report should show throughput and latency verdicts separately. Historical reference JSON may be retained per machine, but a two-worktree comparison remains the preferred check because it reduces environmental drift.
 
 

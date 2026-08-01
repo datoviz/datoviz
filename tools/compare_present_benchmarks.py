@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DEFAULT_WORKLOADS = (
     "blank",
     "scene-drp2",
@@ -33,6 +33,7 @@ DEFAULT_WORKLOADS = (
     "scatter",
     "scatter-panzoom",
 )
+AVAILABLE_WORKLOADS = (*DEFAULT_WORKLOADS, "scatter-interaction")
 EXTERNAL_SUBMODULES = (
     "external/cglm",
     "external/cimgui",
@@ -58,6 +59,9 @@ SCENARIO_SUMMARY_RE = re.compile(
     r"warmup=(?P<warmup>\d+) elapsed=(?P<elapsed>[0-9.]+)s fps=(?P<fps>[0-9.]+)"
 )
 APP_FRAME_TIMING_RE = re.compile(r"^app_frame_timing: (?P<fields>.+)$", re.MULTILINE)
+APP_INTERACTION_LATENCY_RE = re.compile(
+    r"^app_interaction_latency: (?P<fields>.+)$", re.MULTILINE
+)
 
 
 class CompareError(RuntimeError):
@@ -79,6 +83,7 @@ class BenchmarkMetrics:
     recreate_total: int | None = None
     recreate_steady: int | None = None
     phase_ms: dict[str, float] | None = None
+    latency_ms: dict[str, float] | None = None
 
 
 @dataclass(frozen=True)
@@ -99,6 +104,7 @@ class RunResult:
 @dataclass(frozen=True)
 class WorkloadSummary:
     workload: str
+    metric: str
     pairs: int
     base_median_ms: float
     candidate_median_ms: float
@@ -213,6 +219,8 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
         raise CompareError(f"{workload}: unexpected scenario '{summary.group('scenario')}'")
     if workload == "scatter-panzoom" and "scenario_benchmark_workload: panzoom-v1" not in combined:
         raise CompareError("scatter-panzoom: commit does not implement panzoom-v1")
+    if workload == "scatter-interaction" and "scenario_benchmark_workload: interaction-v1" not in combined:
+        raise CompareError("scatter-interaction: commit does not implement interaction-v1")
     expected_points = 1 if workload == "scatter-1" else 10_000
     if f"scenario_benchmark_points: {expected_points}" not in combined:
         raise CompareError(f"{workload}: expected {expected_points} scatter points")
@@ -224,6 +232,24 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
             key, separator, value = field.partition("=")
             if separator and key not in {"view", "frames"}:
                 phase_ms[key] = float(value)
+    latency_ms = None
+    if workload == "scatter-interaction":
+        latency_matches = list(APP_INTERACTION_LATENCY_RE.finditer(combined))
+        if not latency_matches:
+            raise CompareError("scatter-interaction: missing interaction latency output")
+        latency_fields: dict[str, float] = {}
+        input_samples = 0
+        for field in latency_matches[-1].group("fields").split():
+            key, separator, value = field.partition("=")
+            if not separator:
+                continue
+            if key == "samples":
+                input_samples = int(value)
+            elif key.endswith("_ms"):
+                latency_fields[key] = float(value)
+        if input_samples < 1 or "input_to_submit_p95_ms" not in latency_fields:
+            raise CompareError("scatter-interaction: incomplete interaction latency samples")
+        latency_ms = latency_fields
     return BenchmarkMetrics(
         frames=frames,
         warmup=int(summary.group("warmup")),
@@ -232,6 +258,7 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
         fps=float(summary.group("fps")),
         ms_per_frame=1000.0 * elapsed_s / frames,
         phase_ms=phase_ms,
+        latency_ms=latency_ms,
     )
 
 
@@ -270,6 +297,7 @@ def summarize_pairs(
     *,
     threshold_pct: float,
     seed: int,
+    metric: str = "frame_ms",
     bootstrap_samples: int = 10_000,
 ) -> WorkloadSummary:
     if len(base_ms) != len(candidate_ms) or not base_ms:
@@ -289,6 +317,7 @@ def summarize_pairs(
         verdict = "inconclusive"
     return WorkloadSummary(
         workload=workload,
+        metric=metric,
         pairs=len(base_ms),
         base_median_ms=statistics.median(base_ms),
         candidate_median_ms=statistics.median(candidate_ms),
@@ -321,7 +350,7 @@ def workload_command(revision: Revision, workload: str, frames: int) -> tuple[li
             command.extend(["--scene-path", "cached-stream"])
         elif workload == "scene-drp2-10k":
             command.extend(["--scene-points", "10000"])
-    elif workload in ("scatter-1", "scatter", "scatter-panzoom"):
+    elif workload in ("scatter-1", "scatter", "scatter-panzoom", "scatter-interaction"):
         env["DVZ_APP_FRAME_TIMING"] = "1"
         command = [
             str(revision.build_dir / "examples" / "c" / "start" / "scatter"),
@@ -330,6 +359,9 @@ def workload_command(revision: Revision, workload: str, frames: int) -> tuple[li
         ]
         if workload == "scatter-panzoom":
             env["DVZ_SCATTER_BENCHMARK"] = "panzoom-v1"
+        elif workload == "scatter-interaction":
+            env["DVZ_PRESENT_MODE"] = "fifo"
+            env["DVZ_SCATTER_BENCHMARK"] = "interaction-v1"
         else:
             env.pop("DVZ_SCATTER_BENCHMARK", None)
         if workload == "scatter-1":
@@ -517,17 +549,17 @@ def _report_markdown(report: dict[str, Any]) -> str:
         "",
         f"Candidate: `{report['invocation']['candidate_ref']}` (`{report['invocation']['candidate_commit'][:12]}`)",
         "",
-        "| Workload | Base ms/frame | Candidate ms/frame | Paired delta | 95% CI | Verdict |",
-        "| --- | ---: | ---: | ---: | ---: | --- |",
+        "| Workload | Metric | Base ms | Candidate ms | Paired delta | 95% CI | Verdict |",
+        "| --- | --- | ---: | ---: | ---: | ---: | --- |",
     ]
     for summary in report["summaries"]:
         ci = summary["ci95_pct"]
         lines.append(
-            f"| {summary['workload']} | {summary['base_median_ms']:.4f} | "
+            f"| {summary['workload']} | {summary['metric']} | {summary['base_median_ms']:.4f} | "
             f"{summary['candidate_median_ms']:.4f} | {summary['paired_delta_pct_median']:+.2f}% | "
             f"[{ci[0]:+.2f}%, {ci[1]:+.2f}%] | {summary['verdict']} |"
         )
-    lines.extend(["", "The verdict uses paired frame-time deltas; positive values are slower.", ""])
+    lines.extend(["", "The verdict uses paired metric deltas; positive values are slower.", ""])
     return "\n".join(lines)
 
 
@@ -538,10 +570,14 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--runs", type=int, default=9, help="paired measured runs per workload")
     parser.add_argument("--frames", type=int, default=1200, help="measured frames per run")
     parser.add_argument("--threshold-pct", type=float, default=3.0, help="practical regression threshold")
+    parser.add_argument(
+        "--latency-threshold-pct", type=float, default=10.0,
+        help="practical regression threshold for interaction latency",
+    )
     parser.add_argument("--seed", type=int, default=20260801, help="order/bootstrap random seed")
     parser.add_argument("--bootstrap-samples", type=int, default=10_000)
     parser.add_argument("--jobs", type=int, default=max(1, os.cpu_count() or 1))
-    parser.add_argument("--workload", action="append", choices=DEFAULT_WORKLOADS, dest="workloads")
+    parser.add_argument("--workload", action="append", choices=AVAILABLE_WORKLOADS, dest="workloads")
     parser.add_argument("--cmake-arg", action="append", default=[])
     parser.add_argument("--output", type=Path, help="report directory")
     parser.add_argument("--fail-on-regression", action="store_true")
@@ -557,6 +593,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise CompareError("--frames must be at least two")
     if args.threshold_pct < 0 or not math.isfinite(args.threshold_pct):
         raise CompareError("--threshold-pct must be finite and non-negative")
+    if args.latency_threshold_pct < 0 or not math.isfinite(args.latency_threshold_pct):
+        raise CompareError("--latency-threshold-pct must be finite and non-negative")
     if args.bootstrap_samples < 100:
         raise CompareError("--bootstrap-samples must be at least 100")
     if args.jobs < 1:
@@ -586,6 +624,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "candidate_ref": args.candidate, "candidate_commit": candidate_commit,
             "seed": args.seed, "runs": args.runs, "frames": args.frames,
             "threshold_pct": args.threshold_pct, "bootstrap_samples": args.bootstrap_samples,
+            "latency_threshold_pct": args.latency_threshold_pct,
             "workloads": list(workloads), "cmake_args": list(args.cmake_arg),
         },
         "machine": machine_fingerprint(repo),
@@ -628,12 +667,27 @@ def main(argv: Sequence[str] | None = None) -> int:
                         report["runs"].append(asdict(result))
                     pairs.append(pair_results)
 
+                latency_workload = workload == "scatter-interaction"
+                metric = "input_to_submit_p95_ms" if latency_workload else "frame_ms"
+                base_values = [
+                    pair["base"].metrics.latency_ms[metric]
+                    if latency_workload and pair["base"].metrics.latency_ms is not None
+                    else pair["base"].metrics.ms_per_frame
+                    for pair in pairs
+                ]
+                candidate_values = [
+                    pair["candidate"].metrics.latency_ms[metric]
+                    if latency_workload and pair["candidate"].metrics.latency_ms is not None
+                    else pair["candidate"].metrics.ms_per_frame
+                    for pair in pairs
+                ]
                 summary = summarize_pairs(
-                    workload,
-                    [pair["base"].metrics.ms_per_frame for pair in pairs],
-                    [pair["candidate"].metrics.ms_per_frame for pair in pairs],
-                    threshold_pct=args.threshold_pct,
+                    workload, base_values, candidate_values,
+                    threshold_pct=(
+                        args.latency_threshold_pct if latency_workload else args.threshold_pct
+                    ),
                     seed=args.seed + 1000 + workload_index,
+                    metric=metric,
                     bootstrap_samples=args.bootstrap_samples,
                 )
                 report["summaries"].append(asdict(summary))
