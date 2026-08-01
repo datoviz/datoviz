@@ -83,4 +83,10 @@ run_case scatter env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
     "$scenario_bin" --benchmark "$frames"
 grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " "$report_dir/scatter.log"
 
-echo "present_check: blank=pass scene-drp2=pass scatter=pass frames=$frames"
+run_case scatter-panzoom env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
+    DVZ_SCATTER_BENCHMARK=panzoom-v1 "$scenario_bin" --benchmark "$frames"
+grep -Eq 'scenario_benchmark_workload: panzoom-v1' "$report_dir/scatter-panzoom.log"
+grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " \
+    "$report_dir/scatter-panzoom.log"
+
+echo "present_check: blank=pass scene-drp2=pass scatter=pass scatter-panzoom=pass frames=$frames"

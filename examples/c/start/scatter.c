@@ -21,7 +21,11 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <math.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -40,6 +44,8 @@
 #define HEIGHT EXAMPLE_WINDOW_HEIGHT
 #define POINT_COUNT 10000u
 #define SEED        12345u
+#define PANZOOM_PERIOD_FRAMES 240u
+#define PANZOOM_WORKLOAD      "panzoom-v1"
 
 
 
@@ -54,6 +60,12 @@ DvzScenarioSpec dvz_start_scatter_scenario(void);
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+typedef struct ScatterState
+{
+    DvzPanzoom* panzoom;
+    bool panzoom_benchmark;
+} ScatterState;
 
 static void _fill_scatter(
     vec3* positions, DvzColor* colors, float* diameters)
@@ -140,10 +152,9 @@ cleanup:
 
 static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 {
-    if (ctx == NULL)
+    if (ctx == NULL || out_user == NULL)
         return false;
-    if (out_user != NULL)
-        *out_user = NULL;
+    *out_user = NULL;
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
@@ -157,10 +168,59 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_add_points(ctx->scene, panel))
         return false;
 
-    if (dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY) == NULL)
+    DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
+    if (panzoom == NULL)
         return false;
 
+    ScatterState* state = (ScatterState*)dvz_calloc(1, sizeof(ScatterState));
+    if (state == NULL)
+        return false;
+    state->panzoom = panzoom;
+
+    const char* workload = getenv("DVZ_SCATTER_BENCHMARK");
+    if (workload != NULL && workload[0] != '\0' && strcmp(workload, "static") != 0)
+    {
+        if (strcmp(workload, PANZOOM_WORKLOAD) != 0)
+        {
+            fprintf(stderr, "scatter: unsupported benchmark workload '%s'\n", workload);
+            dvz_free(state);
+            return false;
+        }
+        state->panzoom_benchmark = true;
+        fprintf(stdout, "scenario_benchmark_workload: %s\n", PANZOOM_WORKLOAD);
+    }
+
+    *out_user = state;
+
     return true;
+}
+
+
+
+static void _scenario_frame(DvzScenarioContext* ctx, void* user_data)
+{
+    ScatterState* state = (ScatterState*)user_data;
+    if (ctx == NULL || state == NULL || !state->panzoom_benchmark)
+        return;
+
+    const double tau = 6.28318530717958647692;
+    const double phase =
+        tau * (double)(ctx->frame_index % PANZOOM_PERIOD_FRAMES) / (double)PANZOOM_PERIOD_FRAMES;
+    vec2 pan = {(float)(0.30 * sin(phase)), (float)(0.20 * cos(phase))};
+    vec2 zoom = {
+        (float)(1.55 + 0.35 * sin(phase + 0.35)),
+        (float)(1.45 + 0.30 * cos(phase + 0.20)),
+    };
+    (void)dvz_panzoom_pan(state->panzoom, pan);
+    (void)dvz_panzoom_zoom(state->panzoom, zoom);
+}
+
+
+
+static void _scenario_destroy(DvzScenarioContext* ctx, void* user_data)
+{
+    (void)ctx;
+    dvz_free(user_data);
 }
 
 DvzScenarioSpec dvz_start_scatter_scenario(void)
@@ -174,6 +234,8 @@ DvzScenarioSpec dvz_start_scatter_scenario(void)
         .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
                         DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
+        .frame = _scenario_frame,
+        .destroy = _scenario_destroy,
     };
 }
 
