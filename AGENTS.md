@@ -58,8 +58,7 @@ prefer reusable subsystem boundaries over one-off helpers.
 
 Active modules built into `libdatoviz` by default:
 
-`common`, `ds`, `fileio`, `geom`, `math`, `thread`, `shader`, `input`, `window`, `canvas`, `stream`,
-`video`, `vk`, `vklite`, `drp2`, `scene`, and `app`.
+`common`, `fileio`, `geom`, `math`, `thread`, `shader`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, `scene`, and `app`.
 
 The active runtime path is:
 

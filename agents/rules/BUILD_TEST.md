@@ -7,7 +7,7 @@ These rules cover the build system, include boundaries, module activation, and v
 
 Active modules currently linked into `libdatoviz` by default are:
 
-`common`, `ds`, `fileio`, `geom`, `math`, `thread`, `shader`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, `scene`, and `app`.
+`common`, `fileio`, `geom`, `math`, `thread`, `shader`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, `scene`, and `app`.
 
 Modules such as `color`, `wasm`, richer text/gui layers, and broader renderer/client layers remain
 scaffolding. Keep them untouched unless a task explicitly activates them.
