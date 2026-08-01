@@ -1243,6 +1243,8 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
     (void)item;
 
     const char* skip_reason = NULL;
+    FILE* bitstream = NULL;
+    bool submitted = false;
     if (_canvas_glfw_skip_without_exportable_timeline(suite, "video sink integration test"))
     {
         return 0;
@@ -1275,6 +1277,13 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
     sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
     sink_cfg.encoder.mp4_path = "dvz_canvas_video_sink_test.mp4";
     sink_cfg.encoder.raw_path = "dvz_canvas_video_sink_test.h26x";
+    bitstream = tmpfile();
+    if (bitstream == NULL)
+    {
+        skip_reason = "temporary bitstream unavailable";
+        goto cleanup;
+    }
+    sink_cfg.bitstream = bitstream;
     if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
     {
         skip_reason = "sink could not be enabled";
@@ -1287,7 +1296,6 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
     };
     dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
 
-    bool submitted = false;
     for (uint32_t i = 0; i < 24; i++)
     {
         dvz_window_host_poll(fixture.host);
@@ -1321,6 +1329,16 @@ cleanup:
     {
         AT(dvz_canvas_configure_video_sink(fixture.canvas, false, NULL) == 0);
     }
+    if (bitstream != NULL)
+    {
+        AT(fflush(bitstream) == 0);
+        AT(fseek(bitstream, 0, SEEK_END) == 0);
+        if (submitted && skip_reason == NULL)
+        {
+            AT(ftell(bitstream) > 0);
+        }
+        fclose(bitstream);
+    }
     if (skip_reason != NULL)
     {
         log_debug("canvas video sink integration skipped (%s)", skip_reason);
@@ -1350,6 +1368,7 @@ int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* ite
 
     const char* skip_reason = NULL;
     bool resumed = false;
+    FILE* bitstream = NULL;
     if (_canvas_glfw_skip_without_exportable_timeline(suite, "video sink disable test"))
     {
         return 0;
@@ -1388,6 +1407,13 @@ int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* ite
     sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
     sink_cfg.encoder.mp4_path = "dvz_canvas_video_disable_test.mp4";
     sink_cfg.encoder.raw_path = "dvz_canvas_video_disable_test.h26x";
+    bitstream = tmpfile();
+    if (bitstream == NULL)
+    {
+        skip_reason = "temporary bitstream unavailable";
+        goto cleanup;
+    }
+    sink_cfg.bitstream = bitstream;
     if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
     {
         skip_reason = "sink could not be enabled";
@@ -1427,6 +1453,9 @@ int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* ite
     AT(dvz_canvas_configure_video_sink(canvas, false, NULL) == 0);
     AT(!canvas->video_sink_enabled);
     AT(!canvas->stream_started);
+    AT(fflush(bitstream) == 0);
+    AT(fseek(bitstream, 0, SEEK_END) == 0);
+    AT(ftell(bitstream) > 0);
 
     for (uint32_t i = 0; i < 24; i++)
     {
@@ -1463,6 +1492,10 @@ cleanup:
     else
     {
         AT(resumed);
+    }
+    if (bitstream != NULL)
+    {
+        fclose(bitstream);
     }
     canvas_glfw_fixture_destroy(&fixture);
     return 0;
