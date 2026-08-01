@@ -51,6 +51,9 @@ struct DvzGpu
     VkPhysicalDeviceVulkan11Features features11;
     VkPhysicalDeviceVulkan12Features features12;
     VkPhysicalDeviceVulkan13Features features13;
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR present_mode_fifo_latest_ready;
+#endif
 
     uint32_t extension_count;
     char** extensions;

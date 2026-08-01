@@ -1,8 +1,10 @@
 # Frame Demand And Interaction Pacing Handoff
 
-Status: planned, approved architecture; implementation not started. Updated: 2026-08-02.
+Status: implemented and physically validated on Linux/X11. Updated: 2026-08-02.
 
-This handoff defines the next implementation slice for responsive on-demand interaction. It is intentionally concrete enough for a lower-reasoning implementation agent to execute without reopening the architecture question.
+This handoff records the approved architecture and implementation contract for responsive on-demand interaction. It remains concrete enough for a lower-reasoning agent to maintain or extend without reopening the architecture question.
+
+Implementation checkpoints are `0f413c3fb` (`scene: add figure frame demand`) and `5930352c1` (`app: pace active interactions continuously`). The scene now exposes per-figure interaction demand and the app schedules only the affected view continuously until release.
 
 ## Read First
 
@@ -118,7 +120,7 @@ Prefer real controller event dispatch in tests over directly assigning `interact
 
 ## Manual Acceptance Matrix
 
-Build the profile target, then run normal FIFO scatter:
+Build the profile target, then run normal FIFO scatter to verify demand transitions independently of presentation latency:
 
 ```sh
 DVZ_PRESENT_MODE=fifo ./build-profile/examples/c/start/scatter
@@ -132,6 +134,14 @@ Verify one condition at a time:
 4. Motion feels as smooth as `DVZ_APP_SCHEDULE=continuous`.
 5. Releasing the drag displays the final position and returns to idle.
 6. Wheel remains a correct one-shot update for now.
+
+Physical testing on the NVIDIA RTX 5090 X11 system established that ordinary FIFO sustains 60 presented FPS and receives approximately 130 controller drag events/s but still feels sluggish because queued FIFO images display stale controller states. Immediate mode is responsive. Mailbox is unsupported on this surface and falls back to FIFO. The surface instead advertises `VK_KHR_present_mode_fifo_latest_ready`, which is smooth and tear-free when paired with a scheduler cap:
+
+```sh
+DVZ_PRESENT_MODE=fifo-latest-ready DVZ_FPS_CAP=60 ./build-profile/examples/c/start/scatter
+```
+
+The FPS cap is intentional: FIFO latest-ready otherwise permits thousands of submitted frames/s while displaying only the newest ready frame at vblank. Use a cap matching the target display refresh rate. The Vulkan device must enable the optional FIFO-latest-ready extension and feature bit; validation layers reject merely passing the enum without both.
 
 Run the deterministic benchmark workload to ensure it still owns explicit continuous frames:
 

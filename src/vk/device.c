@@ -858,6 +858,33 @@ bool dvz_device_request_extension(DvzDevice* device, const char* extension)
         return false;
     }
 
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    const bool fifo_latest_ready =
+        strcmp(extension, VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME) == 0 ||
+        strcmp(extension, VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME) == 0;
+    if (fifo_latest_ready)
+    {
+        if (device->gpu->features.sType == 0)
+            dvz_gpu_probe_features(device->gpu);
+        if (!device->gpu->present_mode_fifo_latest_ready.presentModeFifoLatestReady)
+        {
+            log_trace("skip device extension %s because its feature is unsupported", extension);
+            return false;
+        }
+        if (device->present_mode_fifo_latest_ready.sType == 0)
+        {
+            device->present_mode_fifo_latest_ready =
+                (VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR){
+                    .sType =
+                        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR,
+                    .pNext = device->features.pNext,
+                    .presentModeFifoLatestReady = VK_TRUE,
+                };
+            device->features.pNext = &device->present_mode_fifo_latest_ready;
+        }
+    }
+#endif
+
     log_trace("request device extensions %s", extension);
 
     if (!dvz_strings_contains(device->req_extension_count, device->req_extensions, extension))
@@ -889,6 +916,20 @@ void dvz_device_request_canvas_extensions(DvzDevice* device)
     ANN(device);
 
     dvz_device_request_extension(device, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    if (dvz_gpu_has_extension(device->gpu, VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME))
+    {
+        dvz_device_request_extension(
+            device, VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME);
+    }
+    else if (
+        dvz_gpu_has_extension(device->gpu, VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME))
+    {
+        dvz_device_request_extension(
+            device, VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME);
+    }
+#endif
 
     // NOTE: already core in Vulkan 1.3, so not needed.
     dvz_device_request_extension(device, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);

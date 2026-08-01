@@ -42,6 +42,9 @@ struct DvzDevice
     VkPhysicalDeviceVulkan11Features features11;
     VkPhysicalDeviceVulkan12Features features12;
     VkPhysicalDeviceVulkan13Features features13;
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR present_mode_fifo_latest_ready;
+#endif
 
     VkDevice vk_device;
     VkCommandPool cpools[DVZ_MAX_QUEUE_FAMILIES];

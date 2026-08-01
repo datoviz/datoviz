@@ -199,8 +199,9 @@ static VkPresentModeKHR _swapchain_resolve_present_mode(const DvzSwapchain* swap
         return requested;
     }
 
-    log_debug("requested present mode %d unsupported; using preferred mode", requested);
-    return dvz_surface_preferred_present_mode(swapchain->surface);
+    VkPresentModeKHR fallback = dvz_surface_preferred_present_mode(swapchain->surface);
+    log_warn("requested present mode %d unsupported; using present mode %d", requested, fallback);
+    return fallback;
 }
 
 

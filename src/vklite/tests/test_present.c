@@ -856,6 +856,90 @@ int test_vklite_swapchain_config_present_mode_immediate(TstContext* suite, const
 
 
 
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+/**
+ * Verify FIFO latest-ready is enabled on the device and accepted by swapchain recreation.
+ *
+ * @param suite test suite
+ * @param tstitem current test item
+ * @return 0 on success
+ */
+int test_vklite_swapchain_present_mode_fifo_latest_ready(
+    TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzVklitePresentFixture fixture = {0};
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
+    {
+        tst_skip(suite, "vklite present fixture unavailable");
+        _present_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    DvzSurface* surface = dvz_surface_create_wrapper();
+    DvzSwapchain* swapchain = dvz_swapchain_create_wrapper();
+    ANN(surface);
+    ANN(swapchain);
+
+    const DvzWindowSurface* window_surface = dvz_window_surface(fixture.window);
+    if (window_surface == NULL || window_surface->surface == VK_NULL_HANDLE)
+    {
+        tst_skip(suite, "native surface unavailable");
+        goto cleanup;
+    }
+
+    AT(dvz_surface_init_from_device(surface, fixture.device, fixture.queue_family));
+    AT(dvz_surface_wrap_native(surface, window_surface->surface, &window_surface->extent));
+
+    const bool device_enabled =
+        dvz_device_has_extension(
+            fixture.device, VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME) ||
+        dvz_device_has_extension(
+            fixture.device, VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME);
+    if (
+        !device_enabled ||
+        !dvz_surface_has_present_mode(surface, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR))
+    {
+        tst_skip(suite, "FIFO latest-ready present mode unavailable");
+        goto cleanup;
+    }
+
+    AT(dvz_swapchain_init_from_device(swapchain, fixture.device, surface));
+    VkSurfaceFormatKHR preferred_format = dvz_surface_preferred_format(surface);
+    DvzSwapchainConfig cfg = {
+        .image_format = preferred_format.format,
+        .color_space = preferred_format.colorSpace,
+        .present_mode = VK_PRESENT_MODE_FIFO_LATEST_READY_KHR,
+        .image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        .composite_alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+        .clipped = true,
+    };
+    AT(dvz_swapchain_config(swapchain, cfg));
+
+    uvec2 size = {window_surface->extent.width, window_surface->extent.height};
+    DvzPresentStatus status = dvz_swapchain_recreate(swapchain, size);
+    if (status == DVZ_PRESENT_STATUS_SKIP_ZERO_EXTENT)
+    {
+        tst_skip(suite, "window extent is zero");
+        goto cleanup;
+    }
+    AT(status == DVZ_PRESENT_STATUS_OK);
+    AT(dvz_swapchain_present_mode(swapchain) == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR);
+
+cleanup:
+    dvz_swapchain_destroy(swapchain);
+    dvz_surface_destroy(surface);
+    dvz_swapchain_free(swapchain);
+    dvz_surface_free(surface);
+    _present_fixture_destroy(&fixture);
+    return 0;
+}
+#endif
+
+
+
 /**
  * Verify partial swapchain config keeps deterministic defaults for unspecified fields.
  *

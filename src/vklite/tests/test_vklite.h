@@ -128,6 +128,11 @@ int test_vklite_surface_swapchain_destroy_idempotent(TstContext* suite, const Ts
 
 int test_vklite_swapchain_config_present_mode_immediate(TstContext* suite, const TstCase* tstitem);
 
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+int test_vklite_swapchain_present_mode_fifo_latest_ready(
+    TstContext* suite, const TstCase* tstitem);
+#endif
+
 int test_vklite_swapchain_config_defaults_partial(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_swapchain_present_invalid_index(TstContext* suite, const TstCase* tstitem);

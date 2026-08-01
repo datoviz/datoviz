@@ -345,9 +345,22 @@ void dvz_gpu_probe_features(DvzGpu* gpu)
         .pNext = &gpu->features12,
     };
 
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    gpu->present_mode_fifo_latest_ready =
+        (VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR){
+            .sType =
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_MODE_FIFO_LATEST_READY_FEATURES_KHR,
+            .pNext = &gpu->features13,
+        };
+#endif
+
     gpu->features = (VkPhysicalDeviceFeatures2){
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2,
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+        .pNext = &gpu->present_mode_fifo_latest_ready,
+#else
         .pNext = &gpu->features13,
+#endif
     };
 
     log_trace("probing physical device features...");

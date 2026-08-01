@@ -103,6 +103,9 @@ int test_vklite(TstSuite* suite)
     TST_VKLITE_CASE(test_vklite_swapchain_recreate);
     TST_VKLITE_CASE(test_vklite_surface_swapchain_destroy_idempotent);
     TST_VKLITE_CASE(test_vklite_swapchain_config_present_mode_immediate);
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    TST_VKLITE_CASE(test_vklite_swapchain_present_mode_fifo_latest_ready);
+#endif
     TST_VKLITE_CASE(test_vklite_swapchain_config_defaults_partial);
     TST_VKLITE_CASE(test_vklite_swapchain_present_invalid_index);
     TST_VKLITE_CASE(test_vklite_swapchain_recreate_resolved_state);

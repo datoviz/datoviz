@@ -263,6 +263,18 @@ static VkFormat canvas_frame_format(const DvzCanvas* canvas)
 static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
 {
     ANN(canvas);
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    if (
+        canvas->cfg.present_mode == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR &&
+        !dvz_device_has_extension(
+            canvas->device, VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME) &&
+        !dvz_device_has_extension(
+            canvas->device, VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME))
+    {
+        log_warn("FIFO latest-ready present mode unavailable; falling back to FIFO");
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+#endif
     return canvas->cfg.present_mode;
 }
 

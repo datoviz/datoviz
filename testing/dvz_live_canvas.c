@@ -305,6 +305,10 @@ static const char* _dvz_canvas_present_mode_name(VkPresentModeKHR mode)
         return "fifo";
     case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
         return "fifo-relaxed";
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    case VK_PRESENT_MODE_FIFO_LATEST_READY_KHR:
+        return "fifo-latest-ready";
+#endif
     default:
         return "unknown";
     }
@@ -680,7 +684,7 @@ static void _dvz_canvas_usage(void)
         "                  [--draw clear|scene-drp2]\n"
         "                  [--scene-path full|cached-plan|cached-stream]\n"
         "                  [--scene-points N]\n"
-        "                  [--present fifo|immediate] [--duration seconds]\n"
+        "                  [--present fifo|fifo-latest-ready|immediate] [--duration seconds]\n"
         "                  [--record path.mp4] [--record-mode auto|external|cpu]\n"
         "                  [--start-recording] [--screenshots base] [--benchmark] [--gpu index]\n"
         "Environment: DVZ_TEST_GPU selects an index when --gpu is absent.\n"
@@ -898,6 +902,12 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
             {
                 options->present_mode = VK_PRESENT_MODE_FIFO_KHR;
             }
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+            else if (strcmp(value, "fifo-latest-ready") == 0)
+            {
+                options->present_mode = VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
+            }
+#endif
             else
             {
                 dvz_fprintf(stderr, "invalid present mode: %s\\n", value);
