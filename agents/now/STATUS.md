@@ -2,65 +2,47 @@
 
 Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-01.
 
-Keep this file current and short. Durable behavior belongs in `spec/`; completed implementation and campaign detail belongs in Git history, release assets, and tagged documentation.
+Keep this file current and short. Durable behavior belongs in `spec/`; completed campaign detail belongs in Git history, release assets, and tagged documentation.
 
 ## Current Position
 
-RC2 is published and closed. Tag `v0.4.0rc2` resolves to release commit `8a3bd7509`; the GitHub prerelease has 11 verified assets; all six canonical wheels are on PyPI; production package-index verification run `29703021322` passed every clean-install lane and the aggregate gate; and post-publication source Test run `29703704413` passed Linux, macOS, and Windows.
+RC2 is published and closed at tag `v0.4.0rc2`, release commit `8a3bd7509`. Its six canonical wheels, hosted conformance, package-index verification, physical MacBook M3 intake, documentation, artifacts, and exclusions are immutable release evidence.
 
-The canonical RC2 evidence is immutable: Wheels run `29695746332`, exact-artifact hosted conformance run `29696169890`, physical MacBook M3 intake run `29697580837`, TestPyPI verification run `29698900673`, and artifact-neutral source Test run `29696633533` all passed their declared gates. Physical Linux and Windows machines were unavailable for the replacement campaign and remain explicit exclusions, not passes.
+The GitHub default and active development branch remain `v0.4-dev`; old v0.3 remains at `main`. The branch cutover has not been executed.
 
-Website commit `5e9e6a4` deploys the refreshed gallery media produced from source commit `04225a00b`, preserves `/v0.3/`, and matches the audited local media hashes. The immutable RC2 PyPI-description limitation is recorded in the RC2 release notes.
+The reusable tutorial API, typed shader compiler, shared `glslc` path, Canvas depth, OBJ UVs, explicit image upload, push constants, direct camera/arcball path, and rewritten course chapters 1-3 are implemented. The deleted pilot and its Suzanne/binary-asset plan are not current release work.
 
-The GitHub default and active development branch remain `v0.4-dev`. The old v0.3 line remains at `main` until the branch cutover in [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md) is explicitly approved and executed.
+The documentation inventory, generated C reference, Python binding guidance, dataset attribution, known-limitations audit, four-page visual pilot, gallery-media tooling, regenerated animation candidates, and approved canonical Linux screenshots are implemented. Publication and maintainer-review gates remain separate.
 
-The optional Qt bridge implementation, split conda recipe, native macOS ARM64 packages, Vulkan instance and Cocoa surface proof, and downstream hosted Datoviz smoke are complete locally. The required RC3 provider lane is now externally blocked on conda-forge maintainer merge and publication of [qt-main-feedstock PR #406](https://github.com/conda-forge/qt-main-feedstock/pull/406), then a green rebuild and publication of [pyqt-feedstock PR #186](https://github.com/conda-forge/pyqt-feedstock/pull/186). This is a current RC3 blocker because the packaged provider is a required deliverable, but it is not the only remaining RC3 gate.
+The optional Qt bridge and local Apple Silicon split-package proof are complete. The required RC3 provider lane remains externally blocked on conda-forge publication of Vulkan-enabled Qt followed by compatible PyQt and exact Datoviz provider artifacts.
 
-## Post-RC2 Execution Order
+## Remaining RC3 Gates
 
-1. Preserve old `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, and update live branch-specific automation and guidance without merging the incompatible histories or rewriting commits.
-2. Implement the two gallery-media checkpoints in [GALLERY_MEDIA_SINGLE_RESOLUTION.md](GALLERY_MEDIA_SINGLE_RESOLUTION.md): first the single-resolution encoding/freshness policy, then bounded parallel generation.
-3. Execute the RC3 tutorial checkpoints in [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md): prove and improve the tutorial-facing Canvas, vklite, shader-file, depth, OBJ-UV, image-upload, and arcball boundaries, then publish the three-chapter pilot through an installed CMake consumer.
-4. Freeze the non-tutorial RC3 documentation and gallery surface, complete generated C and Python reference coverage, finish data attribution and provenance, and triage remaining feedback including PR #132.
-5. Complete the conda-first `datoviz_qtbridge` provider gate without adding Qt to the base wheel contract: land and publish Vulkan-enabled Qt, rebuild and publish compatible PyQt Vulkan bindings, then validate exact split Datoviz artifacts on the supported hosted platforms.
-6. Cut RC3 after its required API, pilot, packaging, documentation, and quality gates pass; then complete and freeze the full tutorial in RC4 before final v0.4.0.
-7. Reassess optional candidates only after the required RC3 and RC4 release work is on track.
-
-## Active Gates
-
-| Lane | Current state | Next decision or proof |
+| Lane | Current state | Remaining gate |
 | --- | --- | --- |
-| Branch cutover | Pending; GitHub defaults to `v0.4-dev`, old v0.3 remains `main`, and `v0.3-maintenance` does not yet exist. | Audit settings and live references, approve the exact external operations, execute the cutover, then verify branches, protections, workflows, links, and fresh clones. |
-| Gallery media pipeline | Commits `2f0a9365a`, `c6ed19a50`, and `b84b3d00b` implement canonical `1280x720` media, the bounded FPS/CRF ladder, reliable encoded-media validation, isolated workspaces, deterministic bounded parallelism, and separate capture-worker limits. GPU regeneration completed for all 38 animations; the fresh comparison selects 29 MP4 cards and nine animated WebPs with zero budget violations, and the full freshness gate passes. | Review the build-local comparison report and obtain exact approval before any canonical media, published asset, or `data` update. |
-| Tutorial API and pilot | Spike `0be0fe350` and API commits `f17e965f5`, `2e3627525`, `596f294af`, and `37e615627` close the four first-result API gaps. Shader commits `f46ac75bd`, `3544a520a`, `06aad322d`, and `86bedc74c` consolidate native compilation and validation on one `glslc` helper, isolate the thread-safe runtime adapter, provide typed availability, diagnostics, file, profile, and ownership contracts, and move the triangle to restart-loaded external shaders. Pilot commits `1a748def3`, `3b567370a`, `b5a5b989f`, and `c77448188` publish three compiled chapters, installed-package consumption, synchronized prose, repeatable captures, and website previews. Depth commits `f618ab9a7` and `f3270f56d` add optional Canvas-owned per-frame depth attachments and prove indexed depth rendering through source, installed, offscreen, and live validated paths. OBJ commit `5488cc434` preserves `vt` data through independent positive or negative face indices, hardens bounds and malformed-input handling, and verifies every generated geometry array. Image-upload commit `c1dfcde82` proves that existing vklite staging, image, view, sampler, descriptor, barrier, copy, and owned-command boundaries are sufficiently explicit and need no new public convenience API. Push-constant commit `3639b9661`, controller commit `0e756d6c4`, and direct-arcball spike `cff9c9c0e` close the final local RC3 API outcome with validated range and stage checks, routed resize and drag coverage, and a source and installed Canvas example that combines standalone camera and arcball transforms without the scene layer. Present frame-slot generation remains identity rather than recreation chronology. The automated macOS live-resize test remains an explicit skip because the requested external resize was not delivered. | Obtain maintainer feedback on the pilot voice and API profile before broad RC4 prose; complete official packaged-provider and Linux/Windows hosted proof; close live resize where delivered. |
-| Documentation and gallery freeze | The RC3 inventory is complete: generated C reference covers all 1,578 exported functions across 13 pages; Python guidance inventories all 18 adapted calls plus three generated helpers; all 12 real/prepared dataset showcases pass complete attribution/provenance checks; and a consolidated Known limitations page matches the public status vocabulary. The four-page visual-system pilot passes strict build and software-rendered desktop/mobile inspection. PR #132 is triaged read-only, with five topics integrated/superseded and four narrow successor candidates. The designated Linux host produced two byte-identical runs for all 104 native screenshots; the maintainer approved the 54 byte-different candidates, now promoted by `data` commit `d72c72c` and parent gitlink commit `264517633` with committed evidence. All build-local animation/card freshness checks pass. | Review the visual pilot, animation/card publication candidates, and tutorial voice; reserve full-course chapters and asset freeze for RC4. |
-| Qt/PyQt provider | Local macOS ARM64 proof is green for Vulkan-enabled Qt 6.11.1 build 2, PyQt6 6.11.0 build 3, all three Datoviz split outputs, packaged bridge ABI/runtime matching, MoltenVK instance and Cocoa surface creation, and hosted rendering. Qt PR #406 at `70aa3faa6cae09715c65811eb0b5b45a2342f7cb` is fully green and ready for maintainer review. PyQt PR #186 at `c8d45d0ff21f6a18824e16a1abfb46dffaa027b4` passes all Windows jobs but its macOS jobs use the currently published non-Vulkan Qt artifact and fail as expected: native x86-64 lacks `QVulkanInstance` at package-test time and cross-built ARM64 lacks `qvulkaninstance.h` in the target Qt package. | Maintainers merge Qt PR #406 and conda-forge publishes build 2 for both macOS architectures; then update the stale PyQt PR text, restart PR #186 CI, require a green macOS matrix, publish the compatible PyQt package, and run exact-artifact `datoviz-qtbridge` hosted proof. Until those upstream packages exist, the RC3 provider gate remains externally blocked. |
-| Linux and Windows physical proof | Hosted build, packaging, clean-install, rendering, and consumer evidence is current; fresh physical machines are unavailable to the maintainer. | Hosted proof is mandatory for RC3. Attempt exact-artifact physical proof when suitable machines are available; final release requires either that proof or an explicit maintainer-approved exception. |
-| Runtime and experimental paths | Native runtime, retained visuals, broad query paths, WebGPU/WASM subset, and narrow compute-to-render interop have recorded proof. | Fix concrete lifetime, resize, descriptor, repeated-frame, recovery, or parity blockers; keep WebGPU and compute scope honest and do not broaden v0.4 into a general compute or browser-parity project. |
+| Branch cutover | GitHub still defaults to `v0.4-dev`; old v0.3 remains `main`. | Approve and execute [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md), then verify refs, protections, automation, links, and fresh clones. |
+| Rewritten course | Chapters 1-3, canonical programs, source synchronization, deterministic source-install smoke, and enabling API are implemented. RC2 cannot compile the course because it predates the new API. | Retarget preview generation from the deleted pilot to chapters 1-3; verify the key input path needed by chapter 5; pass the course against the first official package newer than RC2; obtain supported hosted proof and record live-resize behavior. |
+| Documentation and gallery | Generated reference, Python guidance, attribution, known limitations, gallery tooling, regenerated candidates, canonical screenshots, and the visual pilot are complete. | Review the visual pilot and rewritten course voice; approve exact animation/card publication if desired; decide PR #132 successors; draft RC3 notes and evidence after artifact scope freezes. |
+| Qt/PyQt provider | Local Qt 6.11.1 build 2, PyQt6 6.11.0 build 3, split Datoviz packages, Vulkan instance, Cocoa surface, and hosted rendering proof are green. | Merge and publish Qt build 2, rerun and publish compatible PyQt, then build and validate exact split Datoviz artifacts on supported hosted platforms. |
+| Distribution | RC2 wheel and package-index campaigns are complete; reusable source, wheel, conda, and vcpkg tooling exists. | Validate final RC3 source/wheel/provider artifacts, Windows vcpkg overlay, conda layouts, third-party notices, and checksum/signing decisions. |
+| Release quality | Native, hosted, WebGPU, query, compute, documentation, gallery, and GPU-selection evidence exists. | Run the exact RC3 static-analysis, sanitizer where practical, Vulkan, long-loop, docs, gallery, example, source-archive, wheel, and installed-consumer gates; record limitations explicitly. |
 
-## Required RC4 Gate
+Hosted Linux and Windows exact-artifact proof is mandatory for RC3. Physical Linux and Windows proof should be restored when hardware is available; final v0.4.0 requires that proof or an explicit maintainer-approved exception.
 
-RC4 completes the installed "Modern GPU Graphics in Vulkan" course through textured, lit, mouse-rotatable Suzanne; freezes the tutorial-facing API profile; ships reviewed OBJ and texture assets outside the `data` submodule; and proves every chapter from exact installed packages on supported hosted platforms. Follow [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md); do not move first-time public API design, asset provenance, or source-tree-only assumptions into the final release gate.
+## RC4 Gate
 
-## Optional RC3 Candidates
+RC4 completes rewritten course chapters 4-15 through an interactive textured and lit generated mesh, generates every chapter preview, freezes the tutorial-facing API profile, and proves every chapter from exact installed packages on supported hosted platforms. Generated geometry and a procedural texture are the required path; Suzanne and committed binary tutorial assets are optional polish, not blockers.
 
-- Reassess the GSP Texture2D mesh integration only if stabilization leaves room for the complete public sampling API, deterministic fixtures, conversion-free linear RGBA behavior, and native/WebGPU validation.
-- Reassess the multi-light Klein-bottle slice only if the complete scene-owned light API, fixed-capacity panel-local sets, two-sided lighting, shared example preset, and native/WebGPU validation can land without delaying RC3.
-- Improve hosted documentation preview and exact-byte promotion when practical before final, but do not delay RC3 solely for that infrastructure.
-- Treat wind-globe, prompt-widget, Pyodide-playground, hero-composition, and broad visual-polish work as optional unless the maintainer explicitly promotes an item into the required release gate.
+## Final Gate
 
-## Locked Decisions
+Final v0.4.0 resolves or records RC4 feedback, regenerates final media, passes reproducible artifact and documentation gates, records physical-validation proof or exceptions, completes Zenodo/citation metadata, submits or defers JOSS, publishes the release, and resets the active queue.
 
-- Git history cleanup is deferred beyond v0.4; do not rewrite RC or final-release refs.
-- The v0.4.0 screenshot/export contract is sRGB RGBA8; explicit linear `f16`/`f32` export/readback is deferred.
-- v0.3 source and ABI compatibility must not constrain v0.4 architecture.
-- High-level object-oriented plotting and publication vector export remain external GSP/VisPy2 scope.
-- Point-cloud public WebGPU redistribution remains delisted because the source dataset is not licensed for redistribution; native capture and localhost-only development proof may remain.
-- The modern GPU graphics tutorial is required for final v0.4. RC3 owns enabling API and the three-chapter pilot; RC4 owns full-course completion and freeze; final owns feedback fixes and publication.
-- Runtime GLSL compilation is a first-class supported v0.4 capability for external user and tutorial shaders. RC3 must unify native build-time compilation on `glslc`, keep SPIR-V as the runtime contract, package the lazy shaderc provider in official artifacts, and remove normal-build dependence on `glslangValidator`.
+## Optional Candidates
+
+- GSP Texture2D mesh integration and scene-owned multi-light support remain optional unless explicitly promoted.
+- Hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, and broad visual polish must not delay required release gates.
+- Point-cloud public WebGPU redistribution remains delisted without redistribution permission.
 
 ## Validation Defaults
 
-Documentation-only work requires `git diff --check`, the relevant documentation/status checks, and an inspected `git status --short`.
-
-Scene, DRP2, or runtime code normally requires the narrow focused loop followed by `just build`, the relevant `just test` scope, and `just spec-check`; add bounded Vulkan, GLFW, offscreen, or browser smoke when the changed ownership or presentation path requires it.
+Documentation-only work requires `git diff --check`, relevant documentation/status checks, and inspection of `git status --short`. Runtime work normally requires the focused loop followed by `just build`, relevant tests, and `just spec-check`, with Vulkan, GLFW, offscreen, or browser smoke where ownership or presentation changes require it.

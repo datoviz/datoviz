@@ -1,243 +1,53 @@
-# Modern GPU Graphics Tutorial Execution Plan
+# Modern GPU Graphics In Vulkan Course Execution
 
-Status: **rewrite in progress.** The RC3 three-chapter pilot is withdrawn and deleted; the enabling API it validated is kept and is sufficient for the whole course. Updated: 2026-07-28.
+Status: rewritten chapters 1-3 and enabling API implemented; replacement previews and exact post-RC2 package proof remain for RC3; chapters 4-15 remain for RC4. Updated: 2026-08-01.
 
-Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable educational, abstraction, asset, versioning, and validation contract and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for the agreed build-time, runtime, API, packaging, target-profile, and validation design. This file owns execution order, checkpoints, and agent handoff from RC3 through final v0.4.0.
+Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
-## Rewrite State (2026-07-28)
+## Implemented Foundation
 
-The working structure is [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md); the durable-contract deltas and the three open maintainer decisions are in the spec's "Rewrite Direction" section. Read both before continuing.
+- `docs/gpu-graphics/` contains the course overview and chapters 1-3: setup, first window, and recording commands.
+- `examples/c/vulkan/step01.c` through `step03.c` are the canonical programs and build as `example_c_vulkan_stepNN`.
+- `just vulkan-course-check` verifies that every chapter C excerpt occurs in its canonical program.
+- `just vulkan-course-smoke` and `just vulkan-course-installed-smoke` build and run every current step with deterministic captures and Vulkan validation.
+- Canvas-owned targets start with defined contents, making empty or load-based first frames reproducible.
+- Installed loader discovery reports explicit search routes and works from a source install without manual runtime-directory arguments.
+- `just vulkan-course-wheel-smoke <version>` tests the exact package-first instructions. It correctly reports that `0.4.0rc2` lacks the post-RC2 tutorial API.
 
-Landed:
+The deleted `docs/tutorials/`, `examples/c/tutorial/`, `vulkan-tutorial-*` recipes, and old pilot previews are historical. Do not restore or reference them as current course content.
 
-- `docs/gpu-graphics/` — course overview plus chapters 1-3 (setup, first window, how a frame works), navigated under the top-level `GPU Graphics` tab.
-- `examples/c/vulkan/step01.c` … `step03.c` — one verified program per chapter, built in-tree as `example_c_vulkan_stepNN`.
-- `tools/check_vulkan_course.py` (`just vulkan-course-check`) — every C excerpt in a chapter must appear verbatim in its step program.
-- `tools/run_vulkan_course.py` (`just vulkan-course-smoke`, `just vulkan-course-installed-smoke`) — every step renders a reproducible capture with zero Vulkan validation errors; the installed path builds the steps as a standalone `find_package(datoviz)` consumer.
-- **Canvas render targets now start from defined contents.** `dvz_canvas_cmd_clear_new_target()` clears each canvas-owned colour and depth target to opaque black once, when it is created or recreated, in both the offscreen and swapchain paths. Before this, a callback that recorded no rendering — or one using a load operation — read undefined memory, which is opaque magenta on MoltenVK, and offscreen captures were not reproducible across implementations. Covered by `canvas/new_target_cleared` and documented on `dvz_canvas_set_draw_callback()`.
+## Implemented Tutorial API
 
-Deleted: `docs/tutorials/`, `examples/c/tutorial/` including the unused `*_spike` targets and orphan shader directories, `tools/check_vulkan_tutorial.py`, `tools/run_vulkan_tutorial.py`, and the `vulkan-tutorial-*` recipes.
+The reusable API work is complete: Canvas GPU-context augmentation and resolved frame format; borrowed command unwrap/detach; dynamic viewport and scissor helpers; shared build-time `glslc`; thread-safe runtime shaderc with typed status, diagnostics, profiles, file input, and owned results; optional Canvas depth; OBJ `vt` preservation; explicit image upload and sampling primitives; validated push constants; Canvas input routing; and direct camera/arcball composition.
 
-Verified on 2026-07-28, macOS arm64:
+Official-package shaderc proof on supported platforms, package installation proof for the rewritten course, and platform-delivered live resize remain release evidence rather than new API design work.
 
-- Full suite `just test`: 1047/1056 passed, 0 failed, 9 platform skips, all 17 modules — clears the canvas render-target change across drp2, vklite, scene, gui, and video.
-- `just vulkan-course-installed-smoke` against a source install prefix: all three step programs configure and build as a standalone `find_package(datoviz CONFIG REQUIRED)` consumer and render reproducible captures with zero validation errors. The chapter's CMake instructions are proven.
-- **The published `datoviz==0.4.0rc2` wheel cannot build the course.** Its bundled headers lack `dvz_canvas_configure_gpu_ctx`, `dvz_canvas_frame_format`, `dvz_commands_unwrap`, `dvz_cmd_set_viewport_scissor`, and `dvz_cmd_push_constants` — the RC3 tutorial-enabling additions. Chapter 2 fails to compile against it. Chapter 1 now leads with the source-install path and gates the package path on a build newer than RC2; revisit that section the moment the next package ships, and re-run the installed smoke against it.
-- A source install carries no Vulkan runtime, which used to make Volk initialization fail with no usable diagnostic. **Fixed**: `src/vk/instance.c` now tries `DVZ_VULKAN_LOADER_LIBRARY`, then `DVZ_WHEEL_RUNTIME_DIRS`, then a loader beside the Datoviz library, then `$VULKAN_SDK/lib`, before the platform default, and on failure names every option instead of reporting a bare `ERROR_INITIALIZATION_FAILED`. This follows the pattern `src/shader/shader.c` already used for shaderc. The installed smoke now passes with no `--runtime-dir` and no environment fiddling; all four discovery routes were verified individually. Documented in `docs/how-to/diagnose-platform.md`.
-- **The RC2 finding is now a repeatable gate**: `just vulkan-course-wheel-smoke <version>` installs the published wheel into a throwaway venv and builds the steps against it using `datoviz-config --cmake-dir`, the exact command chapter 1 documents. It currently fails against `0.4.0rc2`, naming the missing symbols. A release-flight-checklist item ties retiring chapter 1's version warning to this check first passing.
+## RC3 Next Steps
 
-Next, in order:
+1. Replace the old `tools/build_tutorial_media.py` pilot inputs with generated previews for chapters 1-3.
+2. Generate chapter 1’s terminal card from captured stdout, validate chapter 2 against exact expected RGBA, and add deterministic fixed-time capture plus animated WebP for chapter 3.
+3. Verify the Canvas keyboard subscription path needed by chapter 5 and record the smallest safe pipeline-reload shape; do not add a watcher or general hot-reload subsystem.
+4. Run the rewritten chapters through source-install, exact official package newer than RC2, and supported hosted-platform smokes with validation.
+5. Record any platform-delivered live resize limitation without redesigning the API around an unavailable event.
+6. Obtain maintainer review of chapters 1-3 voice, pacing, ownership explanations, package instructions, and generated previews before broad RC4 prose.
 
-1. Chapters 4-7 (triangle, external shaders with hot reload, vertex buffers, index buffers). Chapter 5 needs a verified key-press path through `dvz_canvas_input()` and `dvz_input_subscribe_keyboard()`.
-2. Chapters 8-11 (push constants, matrices, depth and culling, arcball), then 12-15 (texture upload, sampling, lighting, real mesh).
-3. Chapter preview media. **Every chapter gets an image** (maintainer decision, 2026-07-28), generated into `build/` from the step programs at docs-build time rather than committed to the `data` submodule, so previews cannot drift from code and no submodule staging is needed. Three kinds:
+## RC4 Chapter Queue
 
-    - chapter 1: a terminal card rendered with Pillow from the program's captured stdout;
-    - flat-result chapters: the framebuffer capture, validated against an **exact expected RGBA** rather than `png_is_nonblank` — stronger, since it also catches a wrong clear colour;
-    - chapter 3: an animated WebP assembled from captures at fixed times, which needs a `--time SECONDS` flag on the step program and reuses the gallery pipeline's existing `animated-webp` kind and still-fallback machinery;
-    - chapters 4-15: ordinary captures, with the non-flat check applied.
+Implement one canonical program, synchronized chapter, generated preview, source-install smoke, and installed exact-artifact smoke per checkpoint:
 
-    Do not relax `png_is_nonblank`: it guards ~104 gallery images and "not flat" is the correct check there. `tools/build_tutorial_media.py` still generates the three withdrawn pilot previews into unreferenced site assets; retarget it as part of this work.
+1. Chapters 4-7: first triangle, external shaders and explicit reload, vertex buffers, and index buffers.
+2. Chapters 8-11: push constants, matrices and perspective, depth and culling, and mouse control.
+3. Chapters 12-15: texture upload, texture sampling, lighting, and a generated sphere or torus as the real mesh.
+4. Epilogue: explain the hidden instance/device, swapchain, acquisition/presentation, synchronization, render-target, memory, and Datoviz runtime machinery.
 
-## Objective
+Use generated geometry and a procedural asymmetric checkerboard. No committed Suzanne OBJ, PNG, `data` update, Blender recipe, or binary-asset approval is required for the course. Optional external-mesh polish may be considered only after the required course is complete.
 
-Deliver a beginner-oriented "Modern GPU Graphics in Vulkan" course that gives a programmer new to graphics a live Vulkan-backed result quickly, then progresses through explicit GPU resources and commands to a textured, lit, mouse-rotatable Suzanne mesh. Use Datoviz Canvas and vklite to remove platform boilerplate without hiding Vulkan terminology, ownership, command recording, resource state, or synchronization.
+## RC4 Freeze
 
-The tutorial is also an API quality gate. Chapter spikes must improve generally reusable Canvas, vklite, file-I/O, geometry, and controller boundaries when current ceremony obscures the graphics concept. Do not create a tutorial-only runtime, renderer, frame stream, wrapper layer, or ownership model.
+Build and run every chapter from exact candidate source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`. Require packaged runtime shaderc, deterministic previews, bounded GLFW resize/input/depth/repeated-frame/shutdown smoke, Vulkan validation, source synchronization, links, navigation, generated reference and binding checks, supported hosted-platform proof, and explicit physical exclusions.
 
-## Milestone Boundary
-
-RC3 owns the enabling public API and the three-chapter pilot. RC4 owns the complete course, tutorial assets, installed exact-artifact proof, and API freeze. Final v0.4.0 owns feedback fixes, regenerated final captures, release notes, and publication; it must not become a new tutorial API design phase.
-
-## Execution Rules
-
-1. Begin each public API change with the narrowest executable chapter spike that demonstrates the actual friction.
-2. Before broadening an existing subsystem, state the general user benefit and keep the change inside the active runtime path.
-3. Make owned, borrowed, callback-duration, frame-duration, and resource-generation lifetimes explicit in headers, examples, tests, and prose.
-4. Do not destroy, reset, submit, transition, or retain a Canvas-borrowed command buffer, frame image, image view, depth view, device, or allocator unless a new reviewed contract explicitly grants ownership.
-5. After public header, exported API, binding policy, or binding-generator changes, run `just ctypes` and `just ctypes-check` before Python, GSP, packaging, or installed-consumer validation.
-6. Keep tutorial assets in the main repository only after exact-file approval, provenance, license review, and package/install-path design. Do not modify or stage the `data` submodule for this tutorial.
-7. Keep one canonical rendering implementation shared by live GLFW and deterministic offscreen execution.
-8. Keep Markdown prose unwrapped and run `git diff --check` at every checkpoint.
-
-## RC3 Checkpoint 1: First-Result Spike
-
-Create a source-tree-only spike that renders a shader-generated triangle in a live resizable GLFW Canvas and through the offscreen path. Measure source size, setup steps, first-result commands, ownership explanations, resize behavior, and shutdown behavior before accepting API changes.
-
-The spike must expose only the early frame concepts needed by chapter one: a borrowed frame command buffer and image view, begin rendering, bind the pipeline, set viewport and scissor, draw three vertices, and end rendering. Device selection, surface creation, acquisition, submission, presentation, and swapchain recreation may remain in supplied infrastructure but must be named accurately.
-
-Use the spike to resolve:
-
-- a general GPU-context configuration path for a selected Canvas backend, including backend-required instance extensions and the standard Canvas Vulkan features;
-- the smallest honest live-loop and cleanup shape for installed C consumers;
-- coherent dynamic viewport and scissor handling;
-- command recording into a borrowed Canvas frame without repeated accidental wrapper allocation;
-- error paths for absent GLFW, Vulkan, shaderc, or a suitable device.
-
-Acceptance requires focused unit or integration tests for every new contract, a successful resizable live smoke where available, deterministic offscreen capture, clean Vulkan validation, explicit ownership documentation, and no parallel runtime path.
-
-Evidence commit `0be0fe350` adds the `597`-line source-tree spike at `examples/c/tutorial/vklite_triangle_spike.c`. One renderer submitted and drew all 30 validated offscreen frames into an inspected nonblank `800x600` capture and all 114 validated live GLFW frames before attended window closure, with no frame-contract, format, or Vulkan-validation errors. The full Canvas selection passed 26 tests with seven declared platform or capability skips; the external GLFW resize test skipped because macOS did not deliver the requested resize, so the live-resize gate remains open.
-
-The spike demonstrated four general API needs: augment a caller-owned GPU-context configuration with the selected Canvas backend requirements; resolve the actual Canvas render-target format before ordinary pipeline creation; reuse an opaque borrowed-recording command wrapper without invoking owned-command lifecycle operations; and emit frame-sized dynamic viewport and scissor commands through the installed vklite surface rather than raw loader symbols. It also confirmed the separate typed shader-compilation requirement already owned by Checkpoint 2.
-
-The four first-result outcomes are implemented by commits `f17e965f5`, `2e3627525`, `596f294af`, and `37e615627`. The accepted public surface is `dvz_canvas_configure_gpu_ctx()`, `dvz_canvas_frame_format()`, `dvz_commands_unwrap()`, `dvz_cmd_set_viewport()`, `dvz_cmd_set_scissor()`, and `dvz_cmd_set_viewport_scissor()`. Canvas GPU configuration is additive and atomic on failure; automatic present formats remain unresolved until swapchain creation; borrowed-command detach touches no Vulkan object and rejects owned wrappers without mutation; and the full-frame dynamic-state helper emits a zero-origin viewport and scissor with depth range `[0, 1]`.
-
-The completed API slice passes the full build, Canvas selection with 28/35 passing and seven declared capability/platform skips, vklite/DRP2 selection with 80/80 passing, generated ctypes and C reference validation, raw ctypes smoke, the complete specification check, validated 10-frame offscreen and 60-frame live spike runs, the existing advanced raw-triangle run, and standalone installed-package plus FetchContent C consumers that link every accepted symbol. The remaining automated macOS live-resize skip is a pilot validation gate, not an API-slice blocker.
-
-`DvzStreamFrame.resource_generation` is a frame-resource identity, not a global recreation epoch. Present mode rotates among independently allocated slots with distinct generations, so consecutive generation differences may be ordinary slot rotation. Equality confirms the same resource handles; refresh logic must consider `handles_dirty`, extent, format, and generation together. The tutorial and tests must distinguish slot rotation from resize, swapchain recreation, and depth-resource recreation.
-
-## RC3 Checkpoint 2: External Shader Contract
-
-Move vertex and fragment GLSL into external files and compile them at application startup. Shader edits must require only an example restart, not a C rebuild.
-
-Execute this checkpoint in four reviewable slices:
-
-1. Consolidate native build-time compilation behind one reusable `glslc` CMake helper for scene, Canvas, tests, and applicable examples; remove the normal Canvas `glslangValidator` requirement, preserve named graphics and compute profiles, and validate generated SPIR-V with `spirv-val` in CI and release lanes.
-2. Move runtime shaderc discovery, loading, target selection, compilation, diagnostics, and ownership out of DRP2 pipeline code into a focused thread-safe shader-compilation module.
-3. Implement a generally useful typed public API with explicit source size, source filename, entry point, stage, target profile, availability, status, diagnostics, and `dvz_memory_free()`-owned SPIR-V, plus a compile-file convenience or null-terminated text reader.
-4. Prove source-build enabled and disabled configurations, packaged-provider discovery, installed CMake consumers, external vertex and fragment files, and supported-platform behavior.
-
-Slices 1 through 3 are implemented by commits `f46ac75bd`, `3544a520a`, and `06aad322d`. Native scene, Canvas, and test shaders share the named-profile `glslc` helper with optional `spirv-val`; CI and release configurations require both precompilation and validation; Canvas no longer requires `glslangValidator`; and the runtime adapter now lives in `src/shader` with once-only provider initialization. The public `shader.h` contract provides typed stages, fixed graphics and compute profiles, explicit source sizes and names, stable availability and failure statuses, owned diagnostics and SPIR-V, idempotent cleanup, generated C and ctypes reference coverage, and compatibility access to the legacy narrow wrapper. The public text reader preserves byte size while adding null termination for compiler input.
-
-Slice 3 proof covers successful vertex, fragment, and compute compilation; Vulkan 1.0/SPIR-V 1.0 graphics and Vulkan 1.3/SPIR-V 1.6 compute targets; malformed source with filename-bearing diagnostics; empty source and invalid stage/profile rejection; repeated cleanup; concurrent compilation; enabled and disabled adapters; missing and incompatible providers; core-only symbol export without DRP2; source and installed C consumers; bindings; generated reference docs; and full specification validation.
-
-Commit `86bedc74c` implements the local external-file portion of slice 4. The same renderer reads vertex and fragment files through `dvz_read_text()`, compiles through the typed API, accepts an explicit shader directory, has no private-header dependency, and builds as both a repository target and a standalone `find_package(datoviz CONFIG REQUIRED)` consumer. Source-tree and installed-package macOS runs produced visually inspected nonblank `800x600` captures after three validated offscreen frames; a copied malformed fragment required no C rebuild and reported its real path and line. Official wheel-provider and Linux/Windows hosted proof remain open.
-
-The implementation must distinguish build-time `glslc`, runtime shaderc, `spirv-val`, and optional `glslangValidator`; report malformed stages, empty source, missing files, compilation errors, absent or incompatible providers, and successful vertex, fragment, and compute compilation; and work from source builds and installed wheel/package layouts on Linux, macOS, and Windows.
-
-Audit existing `dvz_compile_glsl()` callers during this checkpoint. Correct allocator mismatches and misleading hardcoded diagnostic names without preserving an inferior v0.3-era contract.
-
-Runtime GLSL is a supported v0.4 user capability, not only a fallback for built-in scene shaders. Official packages must guarantee the runtime provider, while custom source builds may disable it and use precompiled SPIR-V.
-
-## RC3 Checkpoint 3: Three-Chapter Pilot
-
-Publish and validate:
-
-1. First live triangle with shader-generated positions and colors.
-2. External shaders and the graphics pipeline, ending with a visually rewarding shader experiment.
-3. C vertex data and an explicit GPU vertex buffer.
-
-Each chapter requires a preview, one principal concept, complete runnable source, external shaders, focused C guidance, a visible experiment, a deliberate failure or diagnostic exercise where appropriate, a checkpoint, an exercise, live GLFW execution, deterministic offscreen execution, and a validation command.
-
-The public path must be a standalone CMake consumer using `find_package(datoviz CONFIG REQUIRED)`. Repository targets may provide contributor convenience but are not the reader prerequisite.
-
-Commits `1a748def3`, `3b567370a`, and `b5a5b989f` implement and publish the pilot. `first_triangle`, `shaders_and_pipeline`, and `vertex_buffers` compile one canonical `examples/c/tutorial/triangle.c` renderer with chapter-specific defaults; chapter two uses a visibly distinct external shader pair, and chapter three uploads interleaved C positions and colors into an owned mapped vertex buffer while frame commands remain borrowed. Repository and standalone installed-package CMake builds each ran three validated offscreen frames at `800x600`; all captures were nonblank, chapter two differed from chapter one, and the source and installed smoke paths are repeatable through `just vulkan-tutorial-smoke` and `just vulkan-tutorial-installed-smoke`.
-
-The public tutorial pages provide commands, one principal concept, complete-source and shader links, focused C and ownership guidance, visible experiments, deliberate failures, checkpoints, and exercises. `tools/check_vulkan_tutorial.py` keeps target names, shader mappings, required APIs, prose commands, preview references, and legacy-API exclusions synchronized. Approved data commit `63a0ba44` records the three canonical `800x600` PNGs, exact hashes, generation commit, commands, and license; main commit `c77448188` generates build-only WebP derivatives, includes them in MkDocs output, and rejects missing deployment media. The pilot passes the 80-test vklite selection, 98-page/113-C-block snippet validation, strict MkDocs link and build validation, real deployment staging, Git LFS integrity, the full specification check, Python syntax validation for its checkers, and `git diff --check`. Official packaged-provider and Linux/Windows hosted proof and a platform-delivered live-resize smoke remain open.
-
-Depth commits `f618ab9a7` and `f3270f56d` close the optional Canvas attachment outcome without a tutorial-only allocator. `DvzCanvasConfig.depth_format` requests one Canvas-owned depth resource per offscreen resource or present slot; `DvzStreamFrame` reports borrowed image/view handles, resolved format and layout, validity, and ownership flags as part of the existing extent/format/generation resource set. Canvas validates depth-capable formats, uses depth-only or depth-stencil aspects and layouts as appropriate, transitions before the draw callback, retains the prior offscreen generation through replacement publication, and destroys depth with its coupled color resource. Focused tests cover defaults, invalid formats, aspect/layout selection, repeated frames, borrowed metadata, rendering clear, resize recreation, generation, and cleanup.
-
-The compiled `indexed_depth_spike` uses the same canonical renderer with chapter-specific vertex and index data, external shaders, `dvz_graphics_attachment_depth()`, fixed depth compare/write state, a borrowed Canvas depth view, an explicit index buffer, and `dvz_cmd_draw_indexed()`. Three validated offscreen frames produce an inspected nonblank overlap where the nearer first-drawn triangle occludes the farther second-drawn triangle; 60 validated live frames and all four source and locally installed standalone-CMake captures pass with zero frame-contract, format, creation, or Vulkan-validation errors. The final Canvas selection passes 30/37 with seven declared platform/capability skips, vklite passes 80/80, ctypes generation and ABI validation pass, and the complete specification check passes. This is an enabling spike rather than published chapter five: model-view-projection teaching, a small 3D mesh, live resize delivery, minimized-window recovery, culling experiments, and polished prose remain RC4 work.
-
-OBJ commit `5488cc434` closes the geometry-import outcome without changing the public function shape or `DvzGeometry` ownership model. The loader now parses and preserves `vt` coordinates, resolves independent `v`/`vt`/`vn` combinations and negative indices at each face, triangulates polygon fans into expanded indexed geometry, defaults absent UVs to zero, and computes normals when needed. It rejects zero, malformed, missing, out-of-range, overlong, and oversized-face input while releasing all temporary arrays and partial geometry. Focused tests verify positive and negative forms, independent attribute permutations, comments and flexible whitespace, triangulation, positions, normals, colors, texcoords, indices, fallback attributes, bounds, and repeatable failure cleanup; the build, geometry selection, ctypes generation and ABI validation, specification check, documentation build check, and `git diff --check` pass.
-
-Image-upload commit `c1dfcde82` closes the sampled-image clarity outcome without adding an opaque upload helper. The compiled `texture_upload_spike` creates procedural asymmetric RGBA bytes, an owned mapped staging buffer, an sRGB sampled image, image view, nearest sampler, combined-image-sampler slot, and descriptors; records explicit stage, access, and layout barriers around `dvz_cmd_copy_buffer_to_image()`; submits the one-time owned upload command synchronously; releases staging only after completion; and binds the persistent descriptors while recording borrowed Canvas frame commands. Source, 60-frame live, and installed standalone-CMake validated paths render the expected UV-oriented texture with no validation or frame-contract errors, all five captures are nonblank and distinct, the 80-test vklite selection and specification suite pass, and the macOS installed runner now augments `DYLD_FALLBACK_LIBRARY_PATH` and `DVZ_WHEEL_RUNTIME_DIRS` without overriding Vulkan library resolution.
-
-Push-constant commit `3639b9661`, controller commit `0e756d6c4`, and direct-arcball spike `cff9c9c0e` close the direct-controller outcome. `dvz_cmd_push_constants()` validates the declared `DvzSlots` range, four-byte alignment, stage visibility, command handle, and pipeline layout before recording. Focused controller tests route cached resize and drag events through `DvzInputRouter`, verify camera-plus-arcball model-view-projection state, reject invalid sizes without mutation, and cover disconnect cleanup. The compiled `arcball_spike` obtains the borrowed Canvas router, connects owned standalone camera and arcball objects, renders a depth-tested indexed cube, refreshes projection from each framebuffer extent, and sends the combined transform through push constants without using retained scene APIs. Source and installed standalone-CMake paths pass validated deterministic smoke, an inspected nonblank capture, and a 60-frame live run with zero frame-contract, creation, or Vulkan-validation errors. This closes every locally actionable RC3 tutorial API outcome; packaged-provider and hosted-platform proof, externally delivered live resize, and maintainer feedback remain open gates.
-
-RC3 exit evidence must include:
-
-- source-tree and installed-package builds;
-- packaged runtime shaderc compilation;
-- deterministic nonblank or reference captures;
-- bounded GLFW resize and shutdown smoke;
-- generated C reference and binding refresh for public changes;
-- strict docs, links, source-snippet synchronization, and example checks;
-- Linux, macOS, and Windows hosted proof consistent with the release validation matrix;
-- recorded feedback questions covering first-result latency, assumed C knowledge, ownership clarity, shader diagnostics, API ceremony, and abstraction honesty.
-
-Do not begin broad RC4 chapter production until the pilot voice, API profile, installed consumer, and validation workflow have maintainer approval.
-
-## RC3 API Outcome Inventory
-
-RC3 must either deliver each outcome below or record a maintainer-approved reason that the existing API already satisfies it:
-
-| Outcome | Required proof |
-| --- | --- |
-| Canvas-aware GPU configuration | GLFW and offscreen examples configure the required instance extensions, device features, and Canvas extensions without copied backend bootstrap code. |
-| Unified native shader build | Scene, Canvas, tests, and examples use one `glslc` helper; normal builds no longer require `glslangValidator`; release products carry validated precompiled SPIR-V. |
-| External shader compilation | A focused thread-safe module and typed public API report availability, status, real filenames, diagnostics, target profiles, and ownership in successful and failing installed-consumer paths. |
-| Runtime shaderc packaging | Official installed packages guarantee the provider on Linux, macOS, and Windows; disabled source builds retain precompiled-SPIR-V rendering with an honest unavailable-capability result. |
-| Borrowed frame commands | Tutorial code records without destroying, resetting, submitting, transitioning, or retaining the frame command buffer. |
-| Dynamic viewport and scissor | Resizing preserves correct output and requires no unexplained raw/wrapper state duplication. |
-| Resolved Canvas frame format | Pipelines use the actual Canvas render-target format before first drawing; requested, resolved, and per-frame formats are distinguished; later format changes are detected without assuming RGBA/BGRA ordering or invalidating in-flight resources. |
-| Optional depth attachment | Format, borrowed handles, resize recreation, generation, layout, clear, and lifetime contracts are public and tested. |
-| OBJ UV support | `v`, `vt`, `vn`, independent and negative indices, triangulation, malformed input, cleanup, and generated geometry arrays are tested. |
-| Image upload clarity | Texture upload, layouts, views, samplers, descriptors, and barriers remain explicit while repeated accidental ceremony is reduced where justified. |
-| Direct arcball use | A low-level arcball connects to the Canvas input router and supplies resize-aware model-view-projection state without the retained scene layer. |
-
-Optional depth and OBJ UV support must land in RC3 even though their teaching chapters are in RC4, because RC4 is the consumer and freeze candidate rather than the first public API exposure.
-
-## RC4 Checkpoint 1: 3D Foundation
-
-Implement chapters four and five:
-
-4. Per-frame state and transforms.
-5. Indexed 3D geometry and depth.
-
-Begin with a comprehensible small mesh before Suzanne. Teach model-view-projection state, perspective, index buffers, indexed drawing, depth attachment ownership, depth testing, culling, coordinate conventions, and resize recreation through visible experiments. Do not combine texture or lighting into the first 3D checkpoint.
-
-Validate repeated frames, resizing, minimized-window recovery, frame-slot identity, resource-set refresh, depth recreation, index bounds, cleanup order, and Vulkan attachment-layout correctness.
-
-## RC4 Checkpoint 2: Texture And Suzanne
-
-Implement chapter six with a small triangulated, UV-unwrapped, smooth-normal Suzanne OBJ and deterministic Datoviz-owned UV diagnostic texture.
-
-Before committing assets:
-
-1. record the Blender version and export, triangulation, unwrap, smoothing, coordinate, and scaling recipe;
-2. verify redistribution and choose explicit asset licenses;
-3. record vertex, normal, texture-coordinate, face, triangle, and index counts plus deterministic hashes;
-4. include the texture-generation source or script and deterministic output record;
-5. obtain exact approval for the generated PNG or other binary asset;
-6. define install paths and runtime discovery for source-tree and installed-package consumers;
-7. keep the assets out of the `data` submodule.
-
-Teach image allocation, upload, layout transitions, image views, samplers, descriptor binding, UV coordinates, filtering, and sRGB albedo sampling. Readers must be able to replace the supplied texture without changing the rendering architecture.
-
-## RC4 Checkpoint 3: Interaction And Lighting
-
-Implement:
-
-7. Mouse-driven arcball.
-8. Normals and basic lighting.
-
-Use the public CPU-side arcball and Canvas input router rather than deriving trackball mathematics. Teach resize-aware model-view-projection updates and the distinction between CPU controller state and GPU uniform or push-constant state.
-
-The lighting chapter must show normal visualization before lighting, then explain normalization, interpolation, the dot product, object and world space, the inverse-transpose normal matrix, Lambert diffuse lighting, ambient fill, and linear-space lighting of an sRGB texture. A short Blinn-Phong specular extension may be optional. Do not broaden the course into general PBR, materials, or BRDF theory.
-
-Keep the directional light fixed in world or view space while Suzanne rotates so incorrect coordinate spaces and normal transforms are visibly diagnosable.
-
-## RC4 Checkpoint 4: Full-Course Freeze
-
-Complete cross-chapter editing, navigation, diagrams, screenshots, exercises, source synchronization, compatibility labels, API links, ownership tables, and troubleshooting. Validate every chapter from exact RC4 source archives and installed wheels rather than only the development tree.
-
-Required RC4 proof:
-
-- all tutorial CMake consumers build from clean directories against installed Datoviz;
-- external shaders and assets resolve without source-tree assumptions;
-- runtime shaderc succeeds from exact packaged artifacts;
-- deterministic offscreen captures are current and inspected;
-- bounded GLFW interaction covers resize, depth recreation, arcball, repeated frames, and shutdown;
-- Vulkan validation is clean or every limitation is explicitly recorded;
-- Linux, macOS, and Windows hosted lanes pass, and unavailable physical hardware remains an exclusion rather than a pass;
-- every asset has known provenance and license;
-- public tutorial APIs and the release-pinned tutorial profile are frozen except for blockers;
-- strict documentation, example, package, source-archive, license, known-issue, and release-note gates pass.
-
-RC4 feedback must ask readers to complete the tutorial from the installed package and report platform, GPU, driver, time-to-first-result, chapter completion, compiler diagnostics, asset discovery, interaction, conceptual confusion, and any ownership or cleanup mistakes induced by the text.
+Collect feedback on setup time, code progression, diagnostics, GPU and driver behavior, interaction, concepts, ownership, and cleanup. Freeze the tutorial-facing API except for recorded blockers.
 
 ## Final v0.4.0
 
-Resolve or explicitly record RC4 feedback. Regenerate final screenshots and any short tutorial clip from the exact final source and assets. Publish the release-pinned compatibility statement, known limitations, checksums, provenance, licenses, release notes, and documentation.
-
-Do not redesign tutorial-facing public API, replace the tutorial runtime boundary, add a second shader language track, introduce custom course tooling, or expand into PBR, model loading formats beyond the required OBJ slice, raw Vulkan bootstrap, or full WebGPU parity during the final gate.
-
-## Deferred
-
-- Live shader hot-reload unless the completed course demonstrates a small, safe addition.
-- A standalone tutorial repository or commit-by-commit progression tool.
-- A complete raw Vulkan implementation track.
-- Full WebGPU lesson parity.
-- General asset pipelines, glTF, PBR, multiple lights, shadows, and advanced materials.
-- Comprehensive Vulkan synchronization, presentation, and compute coverage before the textured-lit-Suzanne course is complete; later chapters may follow after the final-v0.4 core tutorial gate if they do not destabilize the release.
+Resolve or record RC4 feedback, regenerate all course media from exact final code, publish the release-pinned compatibility statement and known limitations, and include the course in final release documentation. Do not introduce a new API, runtime path, shader language, asset pipeline, or course structure during the final gate.
