@@ -19,6 +19,7 @@
 #include "../atomic_internal.h"
 #include "../thread_internal.h"
 #include "_assertions.h"
+#include "_log.h"
 #include "_time_utils.h"
 #include "mutex_internal.h"
 #include "test_thread.h"
@@ -119,6 +120,46 @@ int test_atomic_1(TstContext* suite, const TstCase* tstitem)
 
 
 
+static void* _log_callback(void* user_data)
+{
+    ANN(user_data);
+    const uint32_t thread_idx = *(const uint32_t*)user_data;
+    for (uint32_t i = 0; i < 128; i++)
+        log_info("concurrent log test thread=%u message=%u", thread_idx, i);
+    return NULL;
+}
+
+
+
+int test_thread_log_concurrent(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    enum
+    {
+        THREAD_COUNT = 8,
+    };
+    DvzThread* threads[THREAD_COUNT] = {0};
+    uint32_t thread_indices[THREAD_COUNT] = {0};
+
+    log_set_level(LOG_INFO);
+    log_set_quiet(1);
+    for (uint32_t i = 0; i < THREAD_COUNT; i++)
+    {
+        thread_indices[i] = i;
+        threads[i] = dvz_thread(_log_callback, &thread_indices[i]);
+        ANN(threads[i]);
+    }
+    for (uint32_t i = 0; i < THREAD_COUNT; i++)
+        dvz_thread_join(threads[i]);
+    log_set_quiet(0);
+    log_set_level(DVZ_DEFAULT_LOG_LEVEL);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -135,6 +176,7 @@ int test_thread(TstSuite* suite)
     TST_CASE(test_mutex_1);
     TST_CASE(test_cond_1);
     TST_CASE(test_atomic_1);
+    TST_CASE(test_thread_log_concurrent);
 
     return 0;
 }

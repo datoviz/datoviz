@@ -32,6 +32,8 @@ int test_cond_1(TstContext* suite, const TstCase* tstitem);
 
 int test_atomic_1(TstContext* suite, const TstCase* tstitem);
 
+int test_thread_log_concurrent(TstContext* suite, const TstCase* tstitem);
+
 
 
 int test_thread(TstSuite* suite);

@@ -173,6 +173,32 @@ static bool _log_color_enabled(void)
     return true;
 }
 
+
+
+/**
+ * Resolve local wall-clock time without using shared static storage.
+ *
+ * @param value the wall-clock timestamp
+ * @param out destination calendar time
+ * @return whether conversion succeeded
+ */
+static bool _log_localtime(time_t value, struct tm* out)
+{
+    if (out == NULL)
+        return false;
+#if OS_WINDOWS
+    return localtime_s(out, &value) == 0;
+#elif OS_LINUX || OS_MACOS
+    return localtime_r(&value, out) != NULL;
+#else
+    struct tm* resolved = localtime(&value);
+    if (resolved == NULL)
+        return false;
+    *out = *resolved;
+    return true;
+#endif
+}
+
 static void lock(void)
 {
     if (L.lock)
@@ -251,7 +277,8 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
 
     /* Get current time */
     time_t t = time(NULL);
-    struct tm* lt = localtime(&t);
+    struct tm lt = {0};
+    const bool has_local_time = _log_localtime(t, &lt);
     uint32_t tid = get_thread_idx() % 1000;
 
     char msg[2048] = {0};
@@ -273,7 +300,10 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     {
         char buf[24] = {0};
         clock_t uptime = (clock() / (CLOCKS_PER_SEC / 1000)) % 1000;
-        buf[strftime(buf, sizeof(buf), "%H:%M:%S.    ", lt)] = '\0';
+        if (has_local_time)
+            buf[strftime(buf, sizeof(buf), "%H:%M:%S.    ", &lt)] = '\0';
+        else
+            dvz_snprintf(buf, sizeof(buf), "--:--:--.    ");
         // HH:MM:SS.MMS(thread_id)
         dvz_snprintf(&buf[9], 12, "%03d T%01u", (int)uptime, tid);
 
@@ -299,7 +329,10 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     if (L.fp && !suppress_output)
     {
         char buf[32] = {0};
-        buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
+        if (has_local_time)
+            buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", &lt)] = '\0';
+        else
+            dvz_snprintf(buf, sizeof(buf), "0000-00-00 00:00:00");
         dvz_fprintf(L.fp, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
         dvz_fprintf(L.fp, "%s", msg);
         dvz_fprintf(L.fp, "\n");
