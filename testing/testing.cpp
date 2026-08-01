@@ -20,6 +20,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <fstream>
 #include <map>
@@ -50,6 +51,7 @@
 
 #define TST_RESULT_NAME_WIDTH 80
 #define TST_RESULT_TIME_WIDTH 10
+#define TST_RUN_JSON_MAX 4096
 #define TST_RESULT_SEPARATOR_WIDTH                                                               \
     (4 + 2 + TST_RESULT_NAME_WIDTH + 1 + TST_RESULT_TIME_WIDTH)
 
@@ -1117,7 +1119,7 @@ static bool _tst_parent_only_option(const char* arg)
 
 
 
-static void _tst_print_usage(void)
+static void _tst_print_usage(const TstSuite* suite)
 {
     dvz_fprintf(
         stdout,
@@ -1130,6 +1132,10 @@ static void _tst_print_usage(void)
         "               [--slow-groups count] [--timeout ms]\n"
         "               [--jobs count] [--shard-index index --shard-count count]\n"
         "               [--child-json path] [--parent-json path]\n");
+    if (suite != NULL && suite->run_adapter.print_usage != NULL)
+    {
+        suite->run_adapter.print_usage(suite->run_adapter.state);
+    }
 }
 
 
@@ -1177,8 +1183,9 @@ static int _tst_load_case_list(TstOptions* options)
 
 
 
-static int _tst_parse_options(int argc, char** argv, TstOptions* options)
+static int _tst_parse_options(TstSuite* suite, int argc, char** argv, TstOptions* options)
 {
+    ANN(suite);
     ANN(options);
     for (int i = 1; i < argc; ++i)
     {
@@ -1189,7 +1196,7 @@ static int _tst_parse_options(int argc, char** argv, TstOptions* options)
         }
         if (_tst_streq(arg, "--help") || _tst_streq(arg, "-h"))
         {
-            _tst_print_usage();
+            _tst_print_usage(suite);
             return 1;
         }
         if (_tst_streq(arg, "--module") && i + 1 < argc)
@@ -1255,10 +1262,26 @@ static int _tst_parse_options(int argc, char** argv, TstOptions* options)
             options->shuffle = true;
         else if (_tst_streq(arg, "--process-child"))
             options->process_child = true;
-        else if (arg[0] != '-' && options->positional_filter == NULL)
-            options->positional_filter = arg;
         else
         {
+            if (suite->run_adapter.parse_option != NULL)
+            {
+                int custom = suite->run_adapter.parse_option(
+                    suite->run_adapter.state, argc, argv, &i);
+                if (custom < 0)
+                {
+                    return -1;
+                }
+                if (custom > 0)
+                {
+                    continue;
+                }
+            }
+            if (arg[0] != '-' && options->positional_filter == NULL)
+            {
+                options->positional_filter = arg;
+                continue;
+            }
             dvz_fprintf(stderr, "unrecognized test option: %s\n", arg);
             return -1;
         }
@@ -1318,8 +1341,7 @@ static bool _tst_case_matches(const TstCase* test, const TstOptions* options)
 
 
 static int _tst_select_cases(
-    TstSuite* suite, const TstOptions* options, bool child_mode, TstShardPolicy shard_policy,
-    std::vector<TstSelectedCase>* selected)
+    TstSuite* suite, const TstOptions* options, std::vector<TstSelectedCase>* selected)
 {
     ANN(suite);
     ANN(options);
@@ -1347,6 +1369,19 @@ static int _tst_select_cases(
     {
         (*selected)[i].order_index = i;
     }
+    return 0;
+}
+
+
+
+static int _tst_filter_child_cases(
+    const TstSuite* suite, const TstOptions* options, bool child_mode, TstShardPolicy shard_policy,
+    std::vector<TstSelectedCase>* selected)
+{
+    ANN(suite);
+    ANN(options);
+    ANN(selected);
+
     if (child_mode)
     {
         selected->erase(
@@ -1379,6 +1414,37 @@ static int _tst_select_cases(
                     return item.order_index != options->selected_order_index;
                 }),
             selected->end());
+    }
+    return 0;
+}
+
+
+
+static int _tst_prepare_run_adapter(
+    TstSuite* suite, const std::vector<TstSelectedCase>& selected, bool child_process)
+{
+    ANN(suite);
+    if (suite->run_adapter.prepare == NULL)
+    {
+        return 0;
+    }
+
+    std::vector<const TstCase*> cases;
+    cases.reserve(selected.size());
+    for (const TstSelectedCase& item : selected)
+    {
+        cases.push_back(item.test);
+    }
+    const TstCase* const* case_ptr = cases.empty() ? NULL : cases.data();
+    int result = suite->run_adapter.prepare(
+        suite->run_adapter.state, (uint32_t)cases.size(), case_ptr, child_process);
+    if (result != 0)
+    {
+        return result;
+    }
+    if (!child_process && suite->run_adapter.report != NULL)
+    {
+        suite->run_adapter.report(suite->run_adapter.state);
     }
     return 0;
 }
@@ -1710,9 +1776,41 @@ _tst_print_slow_groups(
 
 
 
-static int _tst_write_json(
-    const char* path, const TstRunSummary* summary, const std::vector<TstCase>& results)
+static int _tst_run_json(const TstSuite* suite, std::string* json)
 {
+    ANN(suite);
+    ANN(json);
+    *json = "{}";
+    if (suite->run_adapter.write_json == NULL)
+    {
+        return 0;
+    }
+
+    char buffer[TST_RUN_JSON_MAX] = {0};
+    int result = suite->run_adapter.write_json(
+        suite->run_adapter.state, buffer, sizeof(buffer));
+    if (result != 0 || buffer[0] != '{')
+    {
+        dvz_fprintf(stderr, "run adapter produced invalid JSON metadata\n");
+        return 1;
+    }
+    const size_t length = strlen(buffer);
+    if (length < 2 || buffer[length - 1] != '}')
+    {
+        dvz_fprintf(stderr, "run adapter metadata must be one JSON object\n");
+        return 1;
+    }
+    *json = buffer;
+    return 0;
+}
+
+
+
+static int _tst_write_json(
+    const TstSuite* suite, const char* path, const TstRunSummary* summary,
+    const std::vector<TstCase>& results)
+{
+    ANN(suite);
     if (path == NULL)
     {
         return 0;
@@ -1724,8 +1822,15 @@ static int _tst_write_json(
         return 1;
     }
 
+    std::string run_json;
+    if (_tst_run_json(suite, &run_json) != 0)
+    {
+        return 1;
+    }
+
     out << "{\n";
-    out << "  \"schema_version\": 2,\n";
+    out << "  \"schema_version\": 3,\n";
+    out << "  \"run\": " << run_json << ",\n";
     out << "  \"summary\": {\n";
     out << "    \"selected\": " << summary->selected_count << ",\n";
     out << "    \"passed\": " << summary->passed_count << ",\n";
@@ -1769,6 +1874,70 @@ static int _tst_write_json(
     out << "  ]\n";
     out << "}\n";
     return 0;
+}
+
+
+
+static int _tst_read_json_run(const char* path, std::string* run_json)
+{
+    ANN(path);
+    ANN(run_json);
+    std::ifstream input(path);
+    if (!input)
+    {
+        dvz_fprintf(stderr, "could not read JSON test results from %s\n", path);
+        return 1;
+    }
+
+    std::string line;
+    while (std::getline(input, line))
+    {
+        if (line.find("\"run\"") == std::string::npos)
+        {
+            continue;
+        }
+        const size_t colon = line.find(':');
+        if (colon == std::string::npos)
+        {
+            break;
+        }
+        std::string value = _tst_trim(line.substr(colon + 1));
+        if (!value.empty() && value.back() == ',')
+        {
+            value.pop_back();
+        }
+        if (value.size() < 2 || value.front() != '{' || value.back() != '}')
+        {
+            break;
+        }
+        *run_json = value;
+        return 0;
+    }
+    dvz_fprintf(stderr, "missing run metadata in JSON test results from %s\n", path);
+    return 1;
+}
+
+
+
+static int _tst_compare_json_run(
+    const TstSuite* suite, const char* path, const char* child_description)
+{
+    ANN(suite);
+    ANN(path);
+    std::string expected;
+    std::string actual;
+    if (_tst_run_json(suite, &expected) != 0 || _tst_read_json_run(path, &actual) != 0)
+    {
+        return 1;
+    }
+    if (expected == actual)
+    {
+        return 0;
+    }
+    dvz_fprintf(
+        stderr, "%s run metadata mismatch\n  expected: %s\n  actual:   %s\n",
+        child_description != NULL ? child_description : "child", expected.c_str(), actual.c_str());
+    return 1;
 }
 
 
@@ -2174,8 +2343,10 @@ static int _tst_wait_child(TstChildProc* child)
 
 
 static int _tst_run_process_child_case(
-    int argc, char** argv, uint64_t order_index, uint64_t repeat_index, TstOwnedResult* result)
+    const TstSuite* suite, int argc, char** argv, uint64_t order_index, uint64_t repeat_index,
+    TstOwnedResult* result)
 {
+    ANN(suite);
     ANN(result);
 
     const std::string json_path = _tst_child_json_path((uint32_t)(order_index & UINT32_MAX));
@@ -2198,8 +2369,16 @@ static int _tst_run_process_child_case(
             status);
     }
 
+    char child_description[128] = {0};
+    dvz_snprintf(
+        child_description, sizeof(child_description), "process-isolated case %" PRIu64,
+        order_index);
+    int read_res = _tst_compare_json_run(suite, json_path.c_str(), child_description);
     std::vector<TstOwnedResult> owned;
-    int read_res = _tst_read_json_results(json_path.c_str(), &owned);
+    if (read_res == 0)
+    {
+        read_res = _tst_read_json_results(json_path.c_str(), &owned);
+    }
     std::remove(json_path.c_str());
     if (read_res != 0)
     {
@@ -2291,20 +2470,29 @@ static void _tst_print_shard_progress(
 
 
 static int _tst_collect_child_json(
-    const TstChildProc* child, std::vector<TstOwnedResult>* owned, TstShardProgress* progress,
-    bool final)
+    const TstSuite* suite, const TstChildProc* child, std::vector<TstOwnedResult>* owned,
+    TstShardProgress* progress, bool final)
 {
+    ANN(suite);
     ANN(child);
     ANN(owned);
     ANN(progress);
 
     int res = 0;
+    char child_description[128] = {0};
+    dvz_snprintf(
+        child_description, sizeof(child_description), "%s shard %u",
+        _tst_shard_policy_name(child->policy), child->shard_index);
+    if (_tst_compare_json_run(suite, child->json_path.c_str(), child_description) != 0)
+    {
+        res = 1;
+    }
     TstRunSummary child_summary = {};
     if (_tst_read_json_summary(child->json_path.c_str(), &child_summary) != 0)
     {
         res = 1;
     }
-    if (_tst_read_json_results(child->json_path.c_str(), owned) != 0)
+    if (res == 0 && _tst_read_json_results(child->json_path.c_str(), owned) != 0)
     {
         res = 1;
     }
@@ -2401,7 +2589,7 @@ static int _tst_run_parent_shards(
             }
 
             if (_tst_collect_child_json(
-                    &child, &owned, &progress,
+                    suite, &child, &owned, &progress,
                     progress.completed_shards + 1 == progress.total_shards) != 0)
             {
                 child_failure = 1;
@@ -2431,7 +2619,7 @@ static int _tst_run_parent_shards(
         }
 
         if (_tst_collect_child_json(
-                &child, &owned, &progress,
+                suite, &child, &owned, &progress,
                 progress.completed_shards + 1 == progress.total_shards) != 0)
         {
             child_failure = 1;
@@ -2471,7 +2659,7 @@ static int _tst_run_parent_shards(
 
     const char* json_path = options->parent_json_path != NULL ? options->parent_json_path
                                                               : options->json_path;
-    if (_tst_write_json(json_path, &summary, results) != 0)
+    if (_tst_write_json(suite, json_path, &summary, results) != 0)
     {
         return 1;
     }
@@ -2634,6 +2822,57 @@ void tst_suite_set_log_adapter(TstSuite* suite, const TstLogAdapter* adapter)
 
 
 
+/**
+ * Install an optional run-lifecycle adapter on a test suite.
+ *
+ * @param suite test suite
+ * @param adapter adapter callbacks and owned state, or NULL to clear
+ */
+void tst_suite_set_run_adapter(TstSuite* suite, const TstRunAdapter* adapter)
+{
+    ANN(suite);
+    if (suite->run_adapter.destroy != NULL && suite->run_adapter.state != NULL)
+    {
+        suite->run_adapter.destroy(suite->run_adapter.state);
+    }
+    dvz_memset(
+        &suite->run_adapter, sizeof(suite->run_adapter), 0, sizeof(suite->run_adapter));
+    if (adapter != NULL)
+    {
+        suite->run_adapter = *adapter;
+    }
+}
+
+
+
+/**
+ * Return the immutable adapter state for a test suite run.
+ *
+ * @param suite test suite
+ * @return adapter state, or NULL when no adapter is installed
+ */
+const void* tst_suite_run_state(const TstSuite* suite)
+{
+    ANN(suite);
+    return suite->run_adapter.state;
+}
+
+
+
+/**
+ * Return the immutable adapter state attached to a test context.
+ *
+ * @param ctx test context
+ * @return adapter state, or NULL when no adapter is installed
+ */
+const void* tst_context_run_state(const TstContext* ctx)
+{
+    ANN(ctx);
+    return ctx->run_state;
+}
+
+
+
 void tst_suite_register_fixture(
     TstSuite* suite, const char* name, TstFixtureScope scope, TstFixtureCreate create,
     TstFixtureDestroy destroy)
@@ -2671,10 +2910,27 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     ANN(suite->cases);
 
     TstOptions options = _tst_options_default();
-    int parsed = _tst_parse_options(argc, argv, &options);
+    int parsed = _tst_parse_options(suite, argc, argv, &options);
     if (parsed != 0)
     {
         return parsed > 0 ? 0 : 1;
+    }
+
+    const bool child_process = options.child_json_path != NULL;
+    if (suite->run_adapter.configure != NULL &&
+        suite->run_adapter.configure(
+            suite->run_adapter.state, argc, argv, options.list, options.list_groups,
+            child_process) != 0)
+    {
+        return 1;
+    }
+    if (suite->run_adapter.early_action != NULL)
+    {
+        int early = suite->run_adapter.early_action(suite->run_adapter.state);
+        if (early != 0)
+        {
+            return early > 0 ? 0 : 1;
+        }
     }
 
     if (options.list)
@@ -2690,10 +2946,6 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
 
     const bool child_mode = options.shard_count > 0;
     const TstShardPolicy shard_policy = _tst_shard_policy_from_name(options.shard_policy);
-    if (options.jobs > 1 && !child_mode)
-    {
-        return _tst_run_parent_shards(suite, argc, argv, &options, _tst_now_ns());
-    }
     if (child_mode && options.shard_index >= options.shard_count)
     {
         dvz_fprintf(stderr, "invalid shard index %u for shard count %u\n", options.shard_index,
@@ -2702,7 +2954,19 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     }
 
     std::vector<TstSelectedCase> selected;
-    if (_tst_select_cases(suite, &options, child_mode, shard_policy, &selected) != 0)
+    if (_tst_select_cases(suite, &options, &selected) != 0)
+    {
+        return 1;
+    }
+    if (_tst_prepare_run_adapter(suite, selected, child_process) != 0)
+    {
+        return 1;
+    }
+    if (options.jobs > 1 && !child_mode)
+    {
+        return _tst_run_parent_shards(suite, argc, argv, &options, _tst_now_ns());
+    }
+    if (_tst_filter_child_cases(suite, &options, child_mode, shard_policy, &selected) != 0)
     {
         return 1;
     }
@@ -2743,7 +3007,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
                 TstOwnedResult child_result = {};
                 const uint64_t start_ns = _tst_now_ns();
                 int child_res = _tst_run_process_child_case(
-                    argc, argv, selected_case.order_index, result.repeat_index, &child_result);
+                    suite, argc, argv, selected_case.order_index, result.repeat_index, &child_result);
                 if (child_result.test.name != NULL)
                 {
                     process_owned.push_back(child_result);
@@ -2781,6 +3045,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
             ctx.strict_unexpected_errors = suite->strict_unexpected_errors;
             ctx.worker_index = fixture_state.worker_index;
             ctx.fixture_state = &fixture_state;
+            ctx.run_state = suite->run_adapter.state;
 
             result.start_ns = _tst_now_ns();
 
@@ -2869,7 +3134,7 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
     }
 
     const char* json_path = options.child_json_path != NULL ? options.child_json_path : options.json_path;
-    if (_tst_write_json(json_path, &summary, results) != 0)
+    if (_tst_write_json(suite, json_path, &summary, results) != 0)
     {
         return 1;
     }
@@ -3063,6 +3328,12 @@ void tst_suite_destroy(TstSuite* suite)
         delete registry;
         suite->fixture_registry = NULL;
     }
+    if (suite->run_adapter.destroy != NULL && suite->run_adapter.state != NULL)
+    {
+        suite->run_adapter.destroy(suite->run_adapter.state);
+    }
+    dvz_memset(
+        &suite->run_adapter, sizeof(suite->run_adapter), 0, sizeof(suite->run_adapter));
     suite->n_cases = 0;
     suite->capacity = 0;
     dvz_free_ptr((void**)&suite->cases);

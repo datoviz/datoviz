@@ -204,6 +204,7 @@ typedef struct TstCaseDesc TstCaseDesc;
 typedef struct TstContext TstContext;
 typedef struct TstLogAdapter TstLogAdapter;
 typedef struct TstLogRecord TstLogRecord;
+typedef struct TstRunAdapter TstRunAdapter;
 typedef struct TstRunSummary TstRunSummary;
 typedef struct TstSuite TstSuite;
 
@@ -213,6 +214,16 @@ typedef void (*TstLogInstall)(TstContext* ctx, void* user_data);
 typedef void (*TstLogUninstall)(void* user_data);
 typedef void* (*TstFixtureCreate)(TstSuite* suite, uint32_t worker_index);
 typedef void (*TstFixtureDestroy)(void* fixture);
+typedef int (*TstRunParseOption)(void* state, int argc, char** argv, int* index);
+typedef int (*TstRunConfigure)(
+    void* state, int argc, char** argv, bool list, bool list_groups, bool child_process);
+typedef int (*TstRunEarlyAction)(void* state);
+typedef int (*TstRunPrepare)(
+    void* state, uint32_t case_count, const TstCase* const* cases, bool child_process);
+typedef int (*TstRunWriteJson)(const void* state, char* json, size_t size);
+typedef void (*TstRunReport)(const void* state);
+typedef void (*TstRunPrintUsage)(const void* state);
+typedef void (*TstRunDestroy)(void* state);
 
 
 
@@ -291,6 +302,21 @@ struct TstLogAdapter
 
 
 
+struct TstRunAdapter
+{
+    TstRunParseOption parse_option;
+    TstRunConfigure configure;
+    TstRunEarlyAction early_action;
+    TstRunPrepare prepare;
+    TstRunWriteJson write_json;
+    TstRunReport report;
+    TstRunPrintUsage print_usage;
+    TstRunDestroy destroy;
+    void* state;
+};
+
+
+
 struct TstContext
 {
     TstSuite* suite;
@@ -311,6 +337,7 @@ struct TstContext
     uint32_t worker_index;
     uint64_t fixture_setup_ns;
     void* fixture_state;
+    const void* run_state;
 };
 
 
@@ -337,6 +364,7 @@ struct TstSuite
     const char* current_group;
     bool strict_unexpected_errors;
     TstLogAdapter log_adapter;
+    TstRunAdapter run_adapter;
     TstRunSummary last_summary;
     void* fixture_registry;
 };
@@ -358,6 +386,12 @@ void tst_suite_group(TstSuite* suite, const char* group);
 void tst_suite_add_case(TstSuite* suite, TstCaseDesc desc);
 
 void tst_suite_set_log_adapter(TstSuite* suite, const TstLogAdapter* adapter);
+
+void tst_suite_set_run_adapter(TstSuite* suite, const TstRunAdapter* adapter);
+
+const void* tst_suite_run_state(const TstSuite* suite);
+
+const void* tst_context_run_state(const TstContext* ctx);
 
 void tst_suite_register_fixture(
     TstSuite* suite, const char* name, TstFixtureScope scope, TstFixtureCreate create,

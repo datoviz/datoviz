@@ -35,6 +35,20 @@ def _run_scheduler(
     )
 
 
+def _run_scheduler_failure(
+    args: list[str], env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [str(_runner_path()), *args],
+        cwd=ROOT_DIR,
+        env=env,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+
 def _load_json(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as stream:
         return json.load(stream)
@@ -237,3 +251,127 @@ def test_dvztest_scheduler_case_list_filters_by_display_id(tmp_path: Path) -> No
 
     assert data["summary"]["selected"] == 1
     assert data["cases"][0]["case_id"] == "scheduler/policy/serial-log-capture"
+
+
+def test_dvztest_scheduler_adapter_token_reaches_context_fixture_and_json(
+    tmp_path: Path,
+) -> None:
+    json_path = tmp_path / "scheduler-adapter.json"
+
+    _run_scheduler(
+        [
+            "--case",
+            "parallel-process-fixture",
+            "--scheduler-token",
+            "amber",
+            "--json",
+            str(json_path),
+        ]
+    )
+    data = _load_json(json_path)
+
+    assert data["schema_version"] == 3
+    assert data["run"] == {"scheduler_token": "amber", "selected_count": 1}
+    assert data["summary"]["selected"] == 1
+    assert data["cases"][0]["name"] == "parallel-process-fixture"
+
+
+def test_dvztest_scheduler_adapter_prepare_follows_case_filter(tmp_path: Path) -> None:
+    json_path = tmp_path / "scheduler-adapter-filter.json"
+
+    _run_scheduler(
+        [
+            "--case",
+            "parallel-cpu-a",
+            "--scheduler-token",
+            "filtered",
+            "--json",
+            str(json_path),
+        ]
+    )
+    data = _load_json(json_path)
+
+    assert data["run"] == {"scheduler_token": "filtered", "selected_count": 1}
+    assert data["summary"]["selected"] == 1
+    assert [case["name"] for case in data["cases"]] == ["parallel-cpu-a"]
+
+
+def test_dvztest_scheduler_adapter_token_is_forwarded_to_shards(tmp_path: Path) -> None:
+    json_path = tmp_path / "scheduler-adapter-shards.json"
+
+    completed = _run_scheduler(
+        ["--jobs", "3", "--scheduler-token", "sharded", "--parent-json", str(json_path)]
+    )
+    data = _load_json(json_path)
+
+    assert "8/8 tests passed" in completed.stdout
+    assert data["run"] == {"scheduler_token": "sharded", "selected_count": 8}
+    assert data["summary"]["selected"] == 8
+    assert data["summary"]["passed"] == 8
+
+
+def test_dvztest_scheduler_adapter_rejects_shard_metadata_mismatch(tmp_path: Path) -> None:
+    json_path = tmp_path / "scheduler-adapter-shard-mismatch.json"
+
+    completed = _run_scheduler_failure(
+        [
+            "--jobs",
+            "2",
+            "--scheduler-token",
+            "root",
+            "--scheduler-child-metadata-mismatch",
+            "--parent-json",
+            str(json_path),
+        ]
+    )
+
+    assert completed.returncode != 0
+    assert "run metadata mismatch" in completed.stderr
+    assert "scheduler_token" in completed.stderr
+    assert json_path.exists()
+
+
+def test_dvztest_scheduler_adapter_token_is_forwarded_to_process_child(tmp_path: Path) -> None:
+    json_path = tmp_path / "scheduler-adapter-process.json"
+    env = os.environ.copy()
+    env["DVZTEST_SCHEDULER_REQUIRE_CHILD"] = "1"
+
+    _run_scheduler(
+        [
+            "--case",
+            "process-isolated-child",
+            "--scheduler-token",
+            "process",
+            "--json",
+            str(json_path),
+        ],
+        env=env,
+    )
+    data = _load_json(json_path)
+
+    assert data["run"] == {"scheduler_token": "process", "selected_count": 1}
+    assert data["summary"]["selected"] == 1
+    assert data["cases"][0]["status"] == "PASS"
+
+
+def test_dvztest_scheduler_adapter_rejects_process_child_metadata_mismatch(
+    tmp_path: Path,
+) -> None:
+    json_path = tmp_path / "scheduler-adapter-process-mismatch.json"
+
+    completed = _run_scheduler_failure(
+        [
+            "--case",
+            "process-isolated-child",
+            "--scheduler-token",
+            "root",
+            "--scheduler-child-metadata-mismatch",
+            "--json",
+            str(json_path),
+        ]
+    )
+
+    assert completed.returncode != 0
+    assert "process-isolated case 0 run metadata mismatch" in completed.stderr
+    assert "scheduler_token" in completed.stderr
+    assert json_path.exists()

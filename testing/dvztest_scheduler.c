@@ -22,6 +22,7 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if defined(_WIN32)
 #include <process.h>
@@ -42,11 +43,24 @@ typedef struct SchedulerFixture
 
 
 
+typedef struct SchedulerRunState
+{
+    char token[64];
+    uint32_t selected_count;
+    bool child_process;
+    bool child_metadata_mismatch;
+    bool prepared;
+} SchedulerRunState;
+
+
+
 /*************************************************************************************************/
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
 
 static uint64_t _scheduler_pid(void);
+static bool _scheduler_has_run_state(const TstContext* ctx);
+static bool _scheduler_suite_has_run_state(const TstSuite* suite);
 
 
 
@@ -89,6 +103,151 @@ static void _scheduler_init_root_pid(void)
 #endif
 }
 
+
+
+/**
+ * Verify that a test context observes the immutable adapter state.
+ *
+ * @param ctx test context
+ * @return whether the context aliases prepared suite run state
+ */
+static bool _scheduler_has_run_state(const TstContext* ctx)
+{
+    ANN(ctx);
+
+    const SchedulerRunState* state = (const SchedulerRunState*)tst_context_run_state(ctx);
+    ANN(state);
+    return state->prepared && state->token[0] != '\0' && state == tst_suite_run_state(ctx->suite);
+}
+
+
+
+/**
+ * Verify that a fixture constructor observes the immutable adapter state.
+ *
+ * @param suite test suite
+ * @return whether the suite has prepared run state
+ */
+static bool _scheduler_suite_has_run_state(const TstSuite* suite)
+{
+    ANN(suite);
+
+    const SchedulerRunState* state = (const SchedulerRunState*)tst_suite_run_state(suite);
+    ANN(state);
+    return state->prepared && state->token[0] != '\0';
+}
+
+
+
+/**
+ * Parse synthetic scheduler run-adapter options.
+ *
+ * @param state adapter state
+ * @param argc command-line argument count
+ * @param argv command-line arguments
+ * @param index current option index
+ * @return positive when handled, zero when unhandled, negative on error
+ */
+static int _scheduler_parse_option(void* state, int argc, char** argv, int* index)
+{
+    ANN(state);
+    ANN(argv);
+    ANN(index);
+
+    SchedulerRunState* run = (SchedulerRunState*)state;
+    const char* arg = argv[*index];
+    if (arg != NULL && strcmp(arg, "--scheduler-token") == 0)
+    {
+        if (*index + 1 >= argc || argv[*index + 1] == NULL)
+        {
+            dvz_fprintf(stderr, "--scheduler-token requires a value\n");
+            return -1;
+        }
+        dvz_snprintf(run->token, sizeof(run->token), "%s", argv[++*index]);
+        return 1;
+    }
+    if (arg != NULL && strcmp(arg, "--scheduler-child-metadata-mismatch") == 0)
+    {
+        run->child_metadata_mismatch = true;
+        return 1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Record child-process state for synthetic metadata checks.
+ *
+ * @param state adapter state
+ * @param argc command-line argument count
+ * @param argv command-line arguments
+ * @param list whether list mode was requested
+ * @param list_groups whether group-list mode was requested
+ * @param child_process whether this process writes a child report
+ * @return zero on success
+ */
+static int _scheduler_configure_run(
+    void* state, int argc, char** argv, bool list, bool list_groups, bool child_process)
+{
+    (void)argc;
+    (void)argv;
+    (void)list;
+    (void)list_groups;
+
+    SchedulerRunState* run = (SchedulerRunState*)state;
+    ANN(run);
+    run->child_process = child_process;
+    return 0;
+}
+
+
+
+/**
+ * Mark the synthetic run state ready after runner case selection.
+ *
+ * @param state adapter state
+ * @param case_count selected case count
+ * @param cases selected cases
+ * @param child_process whether this process writes a child report
+ * @return zero on success
+ */
+static int _scheduler_prepare_run(
+    void* state, uint32_t case_count, const TstCase* const* cases, bool child_process)
+{
+    (void)cases;
+
+    SchedulerRunState* run = (SchedulerRunState*)state;
+    ANN(run);
+    AT(run->child_process == child_process);
+    run->selected_count = case_count;
+    run->prepared = true;
+    return 0;
+}
+
+
+
+/**
+ * Write synthetic run metadata for adapter aggregation checks.
+ *
+ * @param state adapter state
+ * @param json output JSON buffer
+ * @param size output JSON buffer size
+ * @return zero on success
+ */
+static int _scheduler_write_run_json(const void* state, char* json, size_t size)
+{
+    ANN(state);
+    ANN(json);
+
+    const SchedulerRunState* run = (const SchedulerRunState*)state;
+    const char* suffix = run->child_process && run->child_metadata_mismatch ? "-child" : "";
+    int written = dvz_snprintf(
+        json, size, "{\"scheduler_token\":\"%s%s\",\"selected_count\":%u}", run->token,
+        suffix, run->selected_count);
+    return written < 0 || (size_t)written >= size ? 1 : 0;
+}
+
 /**
  * Create a synthetic fixture for scheduler tests.
  *
@@ -98,7 +257,7 @@ static void _scheduler_init_root_pid(void)
  */
 static void* _scheduler_fixture_create(TstSuite* suite, uint32_t worker_index)
 {
-    (void)suite;
+    ASSERT(_scheduler_suite_has_run_state(suite));
 
     SchedulerFixture* fixture = (SchedulerFixture*)dvz_calloc(1, sizeof(SchedulerFixture));
     ANN(fixture);
@@ -132,6 +291,7 @@ static int _scheduler_plain_case(TstContext* ctx, const TstCase* item)
 {
     ANN(ctx);
     ANN(item);
+    AT(_scheduler_has_run_state(ctx));
     AT(item->name != NULL);
     return 0;
 }
@@ -149,6 +309,7 @@ static int _scheduler_process_case(TstContext* ctx, const TstCase* item)
 {
     ANN(ctx);
     ANN(item);
+    AT(_scheduler_has_run_state(ctx));
 
     const char* require_child = getenv("DVZTEST_SCHEDULER_REQUIRE_CHILD");
     if (require_child == NULL || require_child[0] == '\0' || require_child[0] == '0')
@@ -281,6 +442,15 @@ int main(int argc, char** argv)
     _scheduler_init_root_pid();
 
     TstSuite suite = tst_suite();
+    SchedulerRunState run_state = {0};
+    dvz_snprintf(run_state.token, sizeof(run_state.token), "default");
+    TstRunAdapter adapter = {0};
+    adapter.parse_option = _scheduler_parse_option;
+    adapter.configure = _scheduler_configure_run;
+    adapter.prepare = _scheduler_prepare_run;
+    adapter.write_json = _scheduler_write_run_json;
+    adapter.state = &run_state;
+    tst_suite_set_run_adapter(&suite, &adapter);
     _scheduler_register(&suite);
 
     int res = tst_suite_run(&suite, argc, argv);
