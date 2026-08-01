@@ -33384,7 +33384,7 @@ else:
  * @param mode standard `fopen()` mode, typically `"wb"` or `"ab"`; must not be NULL
  * @param size number of bytes to write
  * @param bytes source buffer containing at least @p size bytes; must not be NULL when size is nonzero
- * @return zero if the file was opened, nonzero otherwise; write errors are not reported
+ * @return zero on success, nonzero for invalid arguments or an open/write failure
  */"""
     dvz_write_bytes.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint64, ctypes.POINTER(ctypes.c_uint8)]
     dvz_write_bytes.restype = ctypes.c_int

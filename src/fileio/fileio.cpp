@@ -299,47 +299,51 @@ void* dvz_parse_npy(const void* bytes, DvzSize size_bytes)
 
 char* dvz_read_gz(const char* filename, DvzSize* size)
 {
+    if (size != NULL)
+        *size = 0;
 
 #if DVZ_HAS_ZLIB
-    if (!filename || !size)
+    if (filename == NULL || size == NULL)
     {
-        dvz_fprintf(stderr, "Error: Invalid arguments.\n");
+        log_error("invalid gzip file arguments");
         return NULL;
     }
-    ANN(filename);
-    ANN(size);
 
     // Open the gzip file for reading
     gzFile gz_file = gzopen(filename, "rb");
     if (gz_file == NULL)
     {
-        perror("Failed to open gzip file");
+        log_error("unable to open gzip file %s", filename);
         return NULL;
     }
 
-    // Allocate an initial buffer to decompress the file into memory
-    size_t buffer_size = 1024 * 1024; // Start with 1 MB
+    const size_t chunk_size = 4096;
+    size_t buffer_size = 64 * 1024;
+    size_t buffer_used = 0;
     char* buffer = (char*)dvz_malloc(buffer_size);
     if (buffer == NULL)
     {
-        perror("Failed to allocate memory");
         gzclose(gz_file);
         return NULL;
     }
-
-    size_t buffer_used = 0;
 
     // Read and decompress the gzip file into the buffer
     while (1)
     {
         // Expand the buffer if necessary
-        if (buffer_used + 4096 > buffer_size)
+        if (buffer_size - buffer_used < chunk_size)
         {
+            if (buffer_size > SIZE_MAX / 2)
+            {
+                log_error("decompressed gzip file is too large: %s", filename);
+                dvz_free(buffer);
+                gzclose(gz_file);
+                return NULL;
+            }
             buffer_size *= 2;
             char* new_buffer = (char*)dvz_realloc(buffer, buffer_size);
             if (new_buffer == NULL)
             {
-                perror("Failed to reallocate memory");
                 dvz_free(buffer);
                 gzclose(gz_file);
                 return NULL;
@@ -348,10 +352,14 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
         }
 
         // Read data from the gzip file
-        int bytes_read = gzread(gz_file, buffer + buffer_used, 4096);
+        const int bytes_read = gzread(gz_file, buffer + buffer_used, (unsigned int)chunk_size);
         if (bytes_read < 0)
         {
-            dvz_fprintf(stderr, "Decompression error: %s\n", gzerror(gz_file, NULL));
+            int error_code = Z_OK;
+            const char* error = gzerror(gz_file, &error_code);
+            log_error(
+                "unable to decompress gzip file %s: %s (%d)", filename,
+                error != NULL ? error : "unknown error", error_code);
             dvz_free(buffer);
             gzclose(gz_file);
             return NULL;
@@ -366,14 +374,14 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
         buffer_used += (size_t)bytes_read;
     }
 
-    gzclose(gz_file);
-
-    // Set the size of the decompressed data
-    if (size != NULL)
+    if (gzclose(gz_file) != Z_OK)
     {
-        *size = (DvzSize)buffer_used;
+        log_error("unable to finish reading gzip file %s", filename);
+        dvz_free(buffer);
+        return NULL;
     }
 
+    *size = (DvzSize)buffer_used;
     return buffer;
 
 #else
@@ -390,13 +398,17 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
 
 int dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes)
 {
-    FILE* fp;
-    fp = fopen(filename, mode);
+    if (
+        filename == NULL || mode == NULL || size > SIZE_MAX || (size > 0 && bytes == NULL))
+        return 1;
+
+    FILE* fp = fopen(filename, mode);
     if (fp == NULL)
         return 1;
-    fwrite(bytes, size, 1, fp);
-    fclose(fp);
-    return 0;
+
+    bool success = size == 0 || fwrite(bytes, 1, (size_t)size, fp) == (size_t)size;
+    success = fclose(fp) == 0 && success;
+    return success ? 0 : 1;
 }
 
 

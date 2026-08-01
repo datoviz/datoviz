@@ -118,7 +118,7 @@ DVZ_EXPORT char* dvz_read_gz(const char* filename, DvzSize* size);
  * @param mode standard `fopen()` mode, typically `"wb"` or `"ab"`; must not be NULL
  * @param size number of bytes to write
  * @param bytes source buffer containing at least @p size bytes; must not be NULL when size is nonzero
- * @return zero if the file was opened, nonzero otherwise; write errors are not reported
+ * @return zero on success, nonzero for invalid arguments or an open/write failure
  */
 DVZ_EXPORT int
 dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes);

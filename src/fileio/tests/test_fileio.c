@@ -88,7 +88,8 @@ int test_png_1(TstContext* suite, const TstCase* tstitem)
 
     DvzSize size = 0;
     void* out = NULL;
-    AT(dvz_make_png((uint32_t)width, (uint32_t)height, rgb, &size, &out) == 0);
+    int rc = dvz_make_png((uint32_t)width, (uint32_t)height, rgb, &size, &out);
+    AT(rc == 0);
     AT(size > 0);
     AT(out != NULL);
 
@@ -99,7 +100,8 @@ int test_png_1(TstContext* suite, const TstCase* tstitem)
     AT(decoded_width == (uint32_t)width);
     AT(decoded_height == (uint32_t)height);
     const size_t pixel_size = (size_t)width * (size_t)height * 3;
-    AT(memcmp(decoded, rgb, pixel_size) == 0);
+    const int pixel_compare = memcmp(decoded, rgb, pixel_size);
+    AT(pixel_compare == 0);
     dvz_free(decoded);
 
     decoded_width = 42;
@@ -135,7 +137,8 @@ int test_ppm_io(TstContext* suite, const TstCase* tstitem)
     dvz_snprintf(filename, sizeof(filename), "dvztest-fileio-%p.ppm", (void*)suite);
 
     const uint8_t source[] = {1, 2, 3, 4, 5, 6};
-    AT(dvz_write_ppm(filename, 2, 1, source) == 0);
+    int rc = dvz_write_ppm(filename, 2, 1, source);
+    AT(rc == 0);
 
     uint32_t width = 0;
     uint32_t height = 0;
@@ -143,11 +146,13 @@ int test_ppm_io(TstContext* suite, const TstCase* tstitem)
     AT(image != NULL);
     AT(width == 2);
     AT(height == 1);
-    AT(memcmp(image, source, sizeof(source)) == 0);
+    const int pixel_compare = memcmp(image, source, sizeof(source));
+    AT(pixel_compare == 0);
     dvz_free(image);
 
     const uint8_t truncated[] = "P6\n# unterminated comment";
-    AT(dvz_write_bytes(filename, "wb", sizeof(truncated) - 1, truncated) == 0);
+    rc = dvz_write_bytes(filename, "wb", sizeof(truncated) - 1, truncated);
+    AT(rc == 0);
     width = 42;
     height = 42;
     image = dvz_read_ppm(filename, &width, &height);
@@ -155,7 +160,80 @@ int test_ppm_io(TstContext* suite, const TstCase* tstitem)
     AT(width == 0);
     AT(height == 0);
 
-    AT(remove(filename) == 0);
+    rc = remove(filename);
+    AT(rc == 0);
+    return 0;
+}
+
+
+
+int test_gzip_io(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+#if DVZ_HAS_ZLIB
+    char filename[128] = {0};
+    dvz_snprintf(filename, sizeof(filename), "dvztest-fileio-%p.gz", (void*)suite);
+
+    // One gzip member that expands to 4096 'A' bytes. Concatenating 300 members exercises growth
+    // beyond the initial 64 KiB allocation without carrying a large fixture.
+    uint8_t member[] = {
+        0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x03, 0xed, 0xc1, 0x01, 0x0d,
+        0x00, 0x00, 0x00, 0xc2, 0xa0, 0x6c, 0xef, 0x5f, 0xca, 0x1e, 0x0e, 0x28, 0x00, 0x00,
+        0x00, 0xe0, 0xdd, 0x00, 0x40, 0x34, 0xa6, 0xfe, 0x00, 0x10, 0x00, 0x00,
+    };
+
+    int rc = 0;
+    for (uint32_t i = 0; i < 300; i++)
+    {
+        rc = dvz_write_bytes(filename, i == 0 ? "wb" : "ab", sizeof(member), member);
+        AT(rc == 0);
+    }
+
+    DvzSize size = 0;
+    char* raw = dvz_read_gz(filename, &size);
+    AT(raw != NULL);
+    AT(size == 300 * 4096);
+    AT(raw[0] == 'A');
+    AT(raw[1024 * 1024] == 'A');
+    AT(raw[size - 1] == 'A');
+    dvz_free(raw);
+
+    // Corrupt the compressed payload and ensure failures reset the output size.
+    member[20] ^= 0xff;
+    rc = dvz_write_bytes(filename, "wb", sizeof(member), member);
+    AT(rc == 0);
+    size = 42;
+    raw = dvz_read_gz(filename, &size);
+    AT(raw == NULL);
+    AT(size == 0);
+
+    rc = remove(filename);
+    AT(rc == 0);
+#else
+    tst_skip(suite, "zlib support disabled");
+#endif
+    return 0;
+}
+
+
+
+int test_write_bytes(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    const uint8_t byte = 42;
+    int rc = dvz_write_bytes(NULL, "wb", 1, &byte);
+    AT(rc != 0);
+    rc = dvz_write_bytes("unused", NULL, 1, &byte);
+    AT(rc != 0);
+    rc = dvz_write_bytes("unused", "wb", 1, NULL);
+    AT(rc != 0);
+
+#if OS_LINUX
+    rc = dvz_write_bytes("/dev/full", "wb", 1, &byte);
+    AT(rc != 0);
+#endif
     return 0;
 }
 
@@ -334,6 +412,12 @@ int test_fileio(TstSuite* suite)
 
     TST_GROUP("text");
     TST_CASE(test_read_text);
+
+    TST_GROUP("bytes");
+    TST_CASE(test_write_bytes);
+
+    TST_GROUP("gzip");
+    TST_CASE(test_gzip_io);
 
     TST_GROUP("jpeg");
     TST_CASE(test_jpeg_bytes_earth);
