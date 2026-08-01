@@ -65,6 +65,27 @@ int test_alloc_basic(TstContext* suite, const TstCase* tstitem)
     dvz_free_ptr((void**)&temp);
     AT(temp == NULL);
 
+    // String helpers preserve long values and tolerate sparse string arrays.
+    char long_string[DVZ_MAX_STRING_LENGTH + 257] = {0};
+    dvz_memset(long_string, sizeof(long_string), 'x', sizeof(long_string) - 1);
+    char* duplicate = dvz_strdup(long_string);
+    AT(duplicate != NULL);
+    AT(strlen(duplicate) == sizeof(long_string) - 1);
+    AT(strcmp(duplicate, long_string) == 0);
+    dvz_free(duplicate);
+
+    const char* source_strings[3] = {"short", NULL, long_string};
+    char* copied_strings[3] = {0};
+    dvz_copy_strings(3, source_strings, copied_strings);
+    AT(copied_strings[0] != NULL);
+    AT(copied_strings[1] == NULL);
+    AT(copied_strings[2] != NULL);
+    AT(strcmp(copied_strings[2], long_string) == 0);
+    AT(dvz_strings_contains(3, copied_strings, long_string));
+    AT(!dvz_strings_contains(3, copied_strings, "missing"));
+    AT(!dvz_strings_contains(3, copied_strings, NULL));
+    dvz_free_strings(3, copied_strings);
+
     return 0;
 }
 
@@ -81,6 +102,10 @@ int test_alloc_aligned(TstContext* suite, const TstCase* tstitem)
     AT(((uintptr_t)aligned % alignment) == 0);
     dvz_memset(aligned, (size_t)size, 0xAB, (size_t)size);
     dvz_aligned_free(aligned);
+
+    AT(dvz_alignment_get(16, 64) == 64);
+    AT(dvz_alignment_get(80, 64) == 128);
+    AT(dvz_alignment_get(16, 48) == 64);
 
     // Verify dvz_aligned_repeat duplicates data correctly.
     uint8_t pattern[16];
@@ -101,6 +126,13 @@ int test_alloc_aligned(TstContext* suite, const TstCase* tstitem)
 
     dvz_pointer_reset(&repeated);
     AT(repeated.pointer == NULL);
+
+    DvzPointer empty = dvz_aligned_repeat(0, pattern, 4, alignment);
+    AT(empty.pointer == NULL);
+    log_set_quiet(1);
+    DvzPointer overflow = dvz_aligned_repeat(UINT64_MAX / 2u + 1u, pattern, 2, 0);
+    log_set_quiet(0);
+    AT(overflow.pointer == NULL);
 
     return 0;
 }

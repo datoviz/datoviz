@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
+#include "_overflow.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/math/arithm.h"
 #include "datoviz/math/types.h"
@@ -163,6 +164,11 @@ static inline void* dvz_malloc(DvzSize size)
     /* Never pass 0 down to custom allocators; several implementations treat it as undefined. */
     if (size == 0)
         size = 1;
+    if (size > SIZE_MAX)
+    {
+        log_error("allocation size exceeds the platform limit");
+        return NULL;
+    }
     const DvzAllocator* allocator = dvz_active_allocator();
     ANN(allocator->malloc_fn);
     return allocator->malloc_fn(size);
@@ -178,6 +184,12 @@ static inline void* dvz_calloc(DvzSize count, DvzSize size)
         count = count == 0 ? 1 : count;
         size = size == 0 ? 1 : size;
     }
+    uint64_t total_size = 0;
+    if (_dvz_mul_u64_overflows(count, size, &total_size) || total_size > SIZE_MAX)
+    {
+        log_error("allocation size multiplication overflow");
+        return NULL;
+    }
     const DvzAllocator* allocator = dvz_active_allocator();
     ANN(allocator->calloc_fn);
     return allocator->calloc_fn(count, size);
@@ -191,6 +203,11 @@ static inline void* dvz_realloc(void* pointer, DvzSize size)
      * where size zero means "keep one byte alive" so callers do not trigger unexpected frees. */
     if (size == 0)
         size = 1;
+    if (size > SIZE_MAX)
+    {
+        log_error("reallocation size exceeds the platform limit");
+        return NULL;
+    }
     const DvzAllocator* allocator = dvz_active_allocator();
     ANN(allocator->realloc_fn);
     return allocator->realloc_fn(pointer, size);
@@ -215,6 +232,11 @@ static inline void* dvz_aligned_alloc(DvzSize alignment, DvzSize size)
         return dvz_malloc(size);
     if (size == 0)
         size = 1;
+    if (alignment > SIZE_MAX || size > SIZE_MAX)
+    {
+        log_error("aligned allocation exceeds the platform limit");
+        return NULL;
+    }
     const DvzAllocator* allocator = dvz_active_allocator();
     if (allocator->aligned_alloc_fn == NULL)
     {
@@ -284,17 +306,16 @@ static inline void dvz_copy_strings(uint32_t count, const char** src, char** dst
         const char* s = src[i];
         if (s)
         {
-            size_t len = strnlen(s, DVZ_MAX_STRING_LENGTH); // safe upper bound
-            if (len >= DVZ_MAX_STRING_LENGTH - 1)
+            const size_t len = strlen(s);
+            if (len == SIZE_MAX)
             {
-                log_warn("maximum string limit reached");
+                log_error("string length overflow");
                 continue;
             }
             char* copy = (char*)dvz_calloc(len + 1, sizeof(char));
             if (copy)
             {
-                dvz_memcpy(copy, len + 1, s, len);
-                copy[len] = '\0';
+                dvz_memcpy(copy, len + 1, s, len + 1);
                 dst[i] = copy;
             }
         }
@@ -311,22 +332,15 @@ static inline bool dvz_strings_contains(uint32_t count, char** strings, const ch
 {
     if (count == 0)
         return false;
-    if (strings == NULL)
+    if (strings == NULL || string == NULL)
         return false;
     ASSERT(count > 0);
     ANN(strings);
-    ANN(string);
 
     for (uint32_t i = 0; i < count; i++)
     {
-        if (strnlen(strings[i], DVZ_MAX_STRING_LENGTH) >= DVZ_MAX_STRING_LENGTH - 1)
-        {
-            log_warn("strings #%d too long", i);
-        }
-        else if (strncmp(strings[i], string, DVZ_MAX_STRING_LENGTH) == 0)
-        {
+        if (strings[i] != NULL && strcmp(strings[i], string) == 0)
             return true;
-        }
     }
     return false;
 }
@@ -338,7 +352,7 @@ static inline void dvz_strings_show(uint32_t count, char** strings)
     ANN(strings);
     for (uint32_t i = 0; i < count; i++)
     {
-        log_info("  - %s", strings[i]);
+        log_info("  - %s", strings[i] != NULL ? strings[i] : "(null)");
     }
 }
 
@@ -378,7 +392,7 @@ static inline void dvz_free_strings(uint32_t count, char** strings)
 
 static inline void* dvz_memdup(DvzSize size, const void* data)
 {
-    if (data == NULL || size == 0)
+    if (data == NULL || size == 0 || size > SIZE_MAX)
         return NULL;
     /* Replacement for the old _cpy() helper: copies arbitrary memory with the active allocator. */
     void* copy = dvz_malloc(size);
@@ -394,10 +408,12 @@ static inline char* dvz_strdup(const char* s)
     if (s == NULL)
         return NULL;
 
-    size_t len = strnlen(s, DVZ_MAX_STRING_LENGTH);
-    char* copy = (char*)dvz_memdup(len + 1, s);
-    if (copy)
-        copy[len] = '\0';
+    const size_t len = strlen(s);
+    if (len == SIZE_MAX)
+        return NULL;
+    char* copy = (char*)dvz_malloc(len + 1);
+    if (copy != NULL)
+        dvz_memcpy(copy, len + 1, s, len + 1);
     return copy;
 }
 
@@ -405,13 +421,15 @@ static inline char* dvz_strdup(const char* s)
 
 static inline DvzSize dvz_alignment_get(DvzSize alignment, DvzSize min_alignment)
 {
-    if (alignment == 0)
-        return min_alignment == 0 ? 0 : dvz_next_pow2(min_alignment);
-    if (min_alignment > 0)
-        alignment = (alignment + min_alignment - 1) & ~(min_alignment - 1);
-    alignment = dvz_next_pow2(alignment);
-    ASSERT(alignment >= min_alignment);
-    return alignment;
+    const DvzSize requested = alignment > min_alignment ? alignment : min_alignment;
+    if (requested == 0)
+        return 0;
+    if (requested > (UINT64_C(1) << 63u))
+    {
+        log_error("alignment exceeds the supported power-of-two range");
+        return 0;
+    }
+    return dvz_next_pow2(requested);
 }
 
 
@@ -434,7 +452,13 @@ static inline DvzSize dvz_aligned_size(DvzSize size, DvzSize alignment)
     DvzSize remainder = size % alignment;
     if (remainder == 0)
         return size;
-    return size + (alignment - remainder);
+    DvzSize aligned_size = 0;
+    if (_dvz_add_u64_overflows(size, alignment - remainder, &aligned_size))
+    {
+        log_error("aligned size overflow");
+        return 0;
+    }
+    return aligned_size;
 }
 
 
@@ -442,12 +466,23 @@ static inline DvzSize dvz_aligned_size(DvzSize size, DvzSize alignment)
 static inline DvzPointer
 dvz_aligned_repeat(DvzSize size, const void* data, uint32_t count, DvzSize alignment)
 {
+    INIT(DvzPointer, out);
+    if (size == 0 || data == NULL || count == 0)
+        return out;
     DvzSize item_size = alignment > 0 ? dvz_alignment_get(size, alignment) : size;
-    DvzSize total_size = item_size * count;
+    if (item_size == 0)
+        return out;
+    uint64_t total_size = 0;
+    if (_dvz_mul_u64_overflows(item_size, count, &total_size) || total_size > SIZE_MAX)
+    {
+        log_error("aligned repeat size overflow");
+        return out;
+    }
     /* Back-port of aligned_repeat(): duplicate a small pattern in an aligned heap buffer. */
     void* repeated =
         alignment > 0 ? dvz_aligned_alloc(alignment, total_size) : dvz_malloc(total_size);
-    ANN(repeated);
+    if (repeated == NULL)
+        return out;
     dvz_memset(repeated, (size_t)total_size, 0, (size_t)total_size);
     for (uint32_t i = 0; i < count; i++)
     {
@@ -457,7 +492,6 @@ dvz_aligned_repeat(DvzSize size, const void* data, uint32_t count, DvzSize align
     }
     /* WARNING: the returned pointer carries the aligned flag so callers free it correctly on all
      * platforms (Windows requires _aligned_free for true aligned blocks). */
-    INIT(DvzPointer, out);
     out.pointer = repeated;
     out.aligned = alignment > 0;
     return out;

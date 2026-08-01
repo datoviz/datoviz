@@ -62,7 +62,11 @@ static void* dvz_system_realloc(void* pointer, DvzSize size)
 static void* dvz_system_aligned_alloc(DvzSize alignment, DvzSize size)
 {
     alignment = dvz_alignment_get(alignment, sizeof(void*));
+    if (alignment == 0)
+        return NULL;
     DvzSize aligned_size = dvz_aligned_size(size, alignment);
+    if (aligned_size == 0)
+        return NULL;
 
 #if OS_WINDOWS
     void* data = _aligned_malloc((size_t)aligned_size, (size_t)alignment);
@@ -178,7 +182,11 @@ static void* dvz_mimalloc_realloc(void* pointer, DvzSize size)
 static void* dvz_mimalloc_aligned_alloc(DvzSize alignment, DvzSize size)
 {
     alignment = dvz_alignment_get(alignment, sizeof(void*));
+    if (alignment == 0)
+        return NULL;
     DvzSize aligned_size = dvz_aligned_size(size, alignment);
+    if (aligned_size == 0)
+        return NULL;
     void* data = mi_malloc_aligned((size_t)aligned_size, (size_t)alignment);
     if (data == NULL)
         log_error(
