@@ -1039,7 +1039,9 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
     endif()
 
     if(DVZ_HAS_CUDA)
-        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wno-unknown-warning-option")
+        if(CMAKE_CUDA_HOST_COMPILER_ID MATCHES "Clang")
+            set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler -Wno-unknown-warning-option")
+        endif()
 
         target_include_directories(dvztest PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
         target_include_directories(dvztest PRIVATE ${PROJECT_SOURCE_DIR}/external)
