@@ -19,6 +19,7 @@
 EXTERN_C_ON
 
 bool _dvz_view_scheduler_should_render(DvzView* view, bool continuous, uint64_t now);
+bool _dvz_view_has_continuous_work(DvzView* view);
 bool _dvz_app_has_continuous_work(DvzApp* app);
 
 EXTERN_C_OFF

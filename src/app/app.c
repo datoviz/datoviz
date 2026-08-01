@@ -38,6 +38,7 @@
 #include "../drp2/_stream.h"
 #include "mutex_internal.h"
 #include "_scene.h"
+#include "core/frame_demand_internal.h"
 #include "core/scene_notify_internal.h"
 #include "core/figure_emit_internal.h"
 #include "interaction/animation_internal.h"
@@ -2061,6 +2062,37 @@ static bool _app_reap_closed_views(DvzApp* app)
 
 
 /**
+ * Return whether one view has active continuous rendering work.
+ *
+ * @param win view to inspect
+ * @return whether continuous scheduling should be active for the view
+ */
+static bool _view_has_continuous_work(DvzView* win)
+{
+    ANN(win);
+    DvzApp* app = win->app;
+    if (app == NULL || !win->render_enabled || _view_close_requested(win))
+        return false;
+    if (app->config.schedule_mode == DVZ_APP_SCHEDULE_CONTINUOUS)
+        return true;
+    if (app->scene != NULL && dvz_scene_has_active_animations(app->scene))
+        return true;
+    if (win->frame_callback != NULL)
+        return true;
+    if (win->replay_recording != NULL)
+    {
+        uint32_t frame_count = dvz_drp2_recording_frame_count(win->replay_recording);
+        if (frame_count > 0 && (win->replay_loop || win->replay_frame_index < frame_count))
+            return true;
+    }
+    if (win->figure != NULL && _scene_figure_frame_demand(win->figure) != DVZ_FRAME_DEMAND_NONE)
+        return true;
+    return false;
+}
+
+
+
+/**
  * Return whether the app has active continuous rendering work.
  *
  * @param app app to inspect
@@ -2069,21 +2101,9 @@ static bool _app_reap_closed_views(DvzApp* app)
 static bool _app_has_continuous_work(DvzApp* app)
 {
     ANN(app);
-    if (app->config.schedule_mode == DVZ_APP_SCHEDULE_CONTINUOUS)
-        return true;
-    if (app->scene != NULL && dvz_scene_has_active_animations(app->scene))
-        return true;
     for (uint32_t i = 0; i < app->view_count; i++)
     {
-        DvzView* win = &app->views[i];
-        if (_view_close_requested(win))
-            continue;
-        if (win->render_enabled && win->frame_callback != NULL)
-            return true;
-        if (!win->render_enabled || win->replay_recording == NULL)
-            continue;
-        uint32_t frame_count = dvz_drp2_recording_frame_count(win->replay_recording);
-        if (frame_count > 0 && (win->replay_loop || win->replay_frame_index < frame_count))
+        if (_view_has_continuous_work(&app->views[i]))
             return true;
     }
     return false;
@@ -2166,7 +2186,7 @@ static uint64_t _app_next_continuous_deadline(DvzApp* app)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
-        if (!win->render_enabled || win->next_frame_ns == 0)
+        if (!_view_has_continuous_work(win) || win->next_frame_ns == 0)
             continue;
         if (_view_close_requested(win))
             continue;
@@ -2225,6 +2245,19 @@ static bool _view_should_render(DvzView* win, bool continuous, uint64_t now)
 bool _dvz_view_scheduler_should_render(DvzView* win, bool continuous, uint64_t now)
 {
     return _view_should_render(win, continuous, now);
+}
+
+
+
+/**
+ * Return whether one view has active continuous rendering work.
+ *
+ * @param win view to inspect
+ * @return whether continuous scheduling should be active for the view
+ */
+bool _dvz_view_has_continuous_work(DvzView* win)
+{
+    return _view_has_continuous_work(win);
 }
 
 
@@ -6434,15 +6467,19 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             if (_app_should_exit(app))
                 break;
 
-            continuous = _app_has_continuous_work(app);
             uint64_t now = _app_scheduler_now_ns();
             for (uint32_t i = 0; i < app->view_count; i++)
             {
                 DvzView* win = &app->views[i];
-                if (!_view_should_render(win, continuous, now))
+                bool view_continuous = _view_has_continuous_work(win);
+                if (!view_continuous)
+                    win->next_frame_ns = 0;
+                if (!_view_should_render(win, view_continuous, now))
                     continue;
                 int rc = dvz_view_render_once(win);
-                if (continuous && app->config.fps_cap > 0 && rc == DVZ_CANVAS_FRAME_READY)
+                if (
+                    view_continuous && app->config.fps_cap > 0 &&
+                    rc == DVZ_CANVAS_FRAME_READY)
                     _view_update_deadline(win, _app_scheduler_now_ns(), app->config.fps_cap);
                 if (rc == DVZ_CANVAS_FRAME_READY && fps_enabled)
                     fps_window_frames++;

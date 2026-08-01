@@ -489,6 +489,9 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
 int test_app_offscreen_frame_callback_enables_continuous_scheduler(
     TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_interaction_demand_is_view_scoped(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_query_requests_notify_hosted_callback(
     TstContext* suite, const TstCase* item);
 

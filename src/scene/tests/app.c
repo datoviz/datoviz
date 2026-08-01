@@ -1853,15 +1853,87 @@ int test_app_offscreen_frame_callback_enables_continuous_scheduler(
     AT(win != NULL);
 
     AT(!_dvz_app_has_continuous_work(app));
+    AT(!_dvz_view_has_continuous_work(win));
     AT(dvz_view_set_frame_callback(win, _app_empty_frame_callback, NULL) == DVZ_OK);
     AT(_dvz_app_has_continuous_work(app));
+    AT(_dvz_view_has_continuous_work(win));
     AT(dvz_view_set_frame_callback(win, NULL, NULL) == DVZ_OK);
     AT(!_dvz_app_has_continuous_work(app));
+    AT(!_dvz_view_has_continuous_work(win));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+
+/**
+ * Ensure interaction demand schedules only the view that owns the active figure.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_interaction_demand_is_view_scoped(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure0 = dvz_figure(scene, 64, 64, 0);
+    DvzFigure* figure1 = dvz_figure(scene, 64, 64, 0);
+    AT(figure0 != NULL);
+    AT(figure1 != NULL);
+    DvzPanel* panel0 = dvz_panel_full(figure0);
+    DvzPanel* panel1 = dvz_panel_full(figure1);
+    AT(panel0 != NULL);
+    AT(panel1 != NULL);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_interaction_demand_is_view_scoped skipped: GPU context failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win0 = dvz_view_offscreen(app, figure0, 64, 64);
+    DvzView* win1 = dvz_view_offscreen(app, figure1, 64, 64);
+    AT(win0 != NULL);
+    AT(win1 != NULL);
+    DvzPanzoom* panzoom0 = dvz_view_panzoom(win0, panel0, NULL);
+    AT(panzoom0 != NULL);
+
+    AT(dvz_view_render_once(win0) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_once(win1) == DVZ_CANVAS_FRAME_READY);
+    if (_dvz_view_scheduler_should_render(win0, false, 0))
+        AT(dvz_view_render_once(win0) == DVZ_CANVAS_FRAME_READY);
+    if (_dvz_view_scheduler_should_render(win1, false, 0))
+        AT(dvz_view_render_once(win1) == DVZ_CANVAS_FRAME_READY);
+    AT(!_dvz_view_scheduler_should_render(win1, false, 0));
+    AT(!_dvz_app_has_continuous_work(app));
+
+    panzoom0->interacting = true;
+    AT(_dvz_app_has_continuous_work(app));
+    AT(_dvz_view_has_continuous_work(win0));
+    AT(!_dvz_view_has_continuous_work(win1));
+    AT(_dvz_view_scheduler_should_render(win0, _dvz_view_has_continuous_work(win0), 0));
+    AT(!_dvz_view_scheduler_should_render(win1, _dvz_view_has_continuous_work(win1), 0));
+
+    panzoom0->interacting = false;
+    AT(!_dvz_app_has_continuous_work(app));
+    AT(!_dvz_view_has_continuous_work(win0));
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 
 /**
@@ -8768,6 +8840,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_small_view_clamps_layout);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scheduler_sees_scene_dirty_without_request);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_frame_callback_enables_continuous_scheduler);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_interaction_demand_is_view_scoped);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_requests_notify_hosted_callback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_shared_scene_request_frame_subscribers);
     TST_SCENE_APP_CASE(
