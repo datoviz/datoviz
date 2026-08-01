@@ -16,6 +16,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from fractions import Fraction
@@ -1100,6 +1101,7 @@ def write_html_report(path: Path, comparisons: list[MediaComparison]) -> None:
 
 
 def main() -> int:
+    started_at = time.perf_counter()
     args = parse_args()
     try:
         jobs = parse_jobs(args.jobs)
@@ -1129,6 +1131,7 @@ def main() -> int:
             print(f"gallery media compare: selected={len(previews)}")
             return 0
 
+        capture_started_at = time.perf_counter()
         frame_sequences = bounded_parallel_map(
             previews,
             lambda preview: gallery_frames.ensure_frames(
@@ -1141,6 +1144,7 @@ def main() -> int:
             capture_jobs,
             lambda preview: getattr(preview, "id"),
         )
+        capture_seconds = time.perf_counter() - capture_started_at
         for sequence in frame_sequences:
             if sequence.generated:
                 print(
@@ -1152,6 +1156,7 @@ def main() -> int:
             (sequence.preview.lane, sequence.preview.id): sequence
             for sequence in frame_sequences
         }
+        encode_started_at = time.perf_counter()
         comparisons = bounded_parallel_map(
             previews,
             lambda preview: compare_preview(
@@ -1163,7 +1168,9 @@ def main() -> int:
             lambda preview: getattr(preview, "id"),
         )
         comparisons = [item for item in comparisons if item is not None]
+        encode_seconds = time.perf_counter() - encode_started_at
 
+        publish_started_at = time.perf_counter()
         report_comparisons = comparisons
         if should_merge_report(args):
             report_comparisons = merge_comparisons(read_report(args.report), comparisons)
@@ -1174,6 +1181,7 @@ def main() -> int:
         copied = 0
         if args.write_site_assets:
             copied = write_site_assets(args.site_output_dir, comparisons, args.manifest)
+        publish_seconds = time.perf_counter() - publish_started_at
         over_budget = sum(
             1
             for item in comparisons
@@ -1185,6 +1193,14 @@ def main() -> int:
             f"jobs={jobs} capture_jobs={capture_jobs} "
             f"over_budget={over_budget} report={child_path(args.report)} "
             f"html={child_path(args.html_report)} site_assets={copied}"
+        )
+        frame_cache_misses = sum(sequence.generated for sequence in frame_sequences)
+        print(
+            "gallery media timing: "
+            f"capture={capture_seconds:.3f}s encode={encode_seconds:.3f}s "
+            f"publish={publish_seconds:.3f}s total={time.perf_counter() - started_at:.3f}s "
+            f"frame_cache_hits={len(frame_sequences) - frame_cache_misses} "
+            f"frame_cache_misses={frame_cache_misses}"
         )
         return 1 if over_budget else 0
     except (OSError, RuntimeError, ValueError, subprocess.CalledProcessError) as exc:
