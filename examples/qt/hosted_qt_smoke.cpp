@@ -21,6 +21,7 @@
 #include <QGuiApplication>
 #include <QSize>
 #include <QString>
+#include <QTimer>
 
 #include <cstdio>
 #include <cstdlib>
@@ -58,6 +59,9 @@ class HostedQtSmokeWindow : public DvzQtHostedWindow
   protected:
     void frame_rendered(int frame_status) override
     {
+        if (_quit_requested)
+            return;
+
         if (frame_status == DVZ_CANVAS_FRAME_READY)
             _frame_count++;
 
@@ -66,7 +70,8 @@ class HostedQtSmokeWindow : public DvzQtHostedWindow
             std::printf(
                 "hosted_qt_smoke: rendered %u frame(s), %u request(s)\n", _frame_count,
                 request_count());
-            QCoreApplication::quit();
+            _quit_requested = true;
+            QTimer::singleShot(0, &QCoreApplication::quit);
         }
         else if (_max_frames != 0)
         {
@@ -77,6 +82,7 @@ class HostedQtSmokeWindow : public DvzQtHostedWindow
   private:
     uint32_t _max_frames = 0;
     uint32_t _frame_count = 0;
+    bool _quit_requested = false;
 };
 
 
@@ -192,6 +198,7 @@ int main(int argc, char** argv)
     HostedQtSmokeWindow* window =
         new HostedQtSmokeWindow(app, figure, panel, &qt_instance, max_frames);
     window->show();
+    window->schedule_frame();
     const int rc = qt_app.exec();
     window->release_surface();
     delete window;
