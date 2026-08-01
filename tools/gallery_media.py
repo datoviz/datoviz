@@ -155,6 +155,24 @@ def is_animated_preview(entry: dict) -> bool:
     return preview_metadata(entry).get("kind") == ANIMATED_WEBP_KIND
 
 
+def preferred_preview_kind(entry: dict) -> str:
+    """Return the preferred public card kind for one manifest entry."""
+    preview = preview_metadata(entry)
+    card = preview.get("card") or {}
+    if isinstance(card, dict) and card.get("preferred"):
+        return str(card["preferred"])
+    return str(preview.get("kind", ""))
+
+
+def video_preview_keys(manifest: dict) -> set[tuple[str, str]]:
+    """Return animated preview keys whose public card is MP4-owned."""
+    return {
+        entry_key(entry)
+        for entry in manifest.get("examples", [])
+        if is_animated_preview(entry) and preferred_preview_kind(entry) == "video-mp4"
+    }
+
+
 def animated_preview_keys(manifest: dict, lanes: Iterable[str] = MEDIA_LANES) -> set[tuple[str, str]]:
     allowed_lanes = set(lanes)
     keys: set[tuple[str, str]] = set()

@@ -66,11 +66,29 @@ def parse_args() -> argparse.Namespace:
         default="1" if sys.platform == "darwin" else "auto",
         help="parallel capture jobs; defaults to 1 on macOS and CPU-bounded elsewhere",
     )
+    parser.add_argument(
+        "--include-video-previews",
+        action="store_true",
+        help="also build animated WebPs for entries whose public card is MP4-owned",
+    )
     return parser.parse_args()
 
 
 def split_values(values: list[str]) -> set[str]:
     return gallery_media.split_values(values)
+
+
+def select_owned_previews(
+    previews: list[AnimatedPreview],
+    manifest: dict,
+    explicit_ids: set[str],
+    include_video_previews: bool,
+) -> list[AnimatedPreview]:
+    """Select WebP-owned previews while honoring explicit comparison requests."""
+    if include_video_previews or explicit_ids:
+        return previews
+    video_keys = gallery_media.video_preview_keys(manifest)
+    return [preview for preview in previews if (preview.lane, preview.id) not in video_keys]
 
 
 def child_path(path: Path) -> str:
@@ -255,7 +273,11 @@ def main() -> int:
     ids = split_values(args.id)
     lanes = split_values(args.lane)
     try:
+        manifest = gallery_media.load_manifest(args.manifest)
         previews = collect_previews(args.manifest, args.build_examples_dir, ids, lanes)
+        previews = select_owned_previews(
+            previews, manifest, ids, args.include_video_previews
+        )
         if not 0 <= args.quality <= 100:
             raise ValueError("--quality must be between 0 and 100")
         if not previews:

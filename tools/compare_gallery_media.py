@@ -918,14 +918,7 @@ def budgeted_variants(item: MediaComparison) -> list[MediaVariant]:
 
 
 def site_video_keys(manifest_path: Path) -> set[tuple[str, str]]:
-    keys: set[tuple[str, str]] = set()
-    for entry in gallery_media.load_manifest(manifest_path).get("examples", []):
-        preview = gallery_media.preview_metadata(entry)
-        card = preview.get("card") or {}
-        if not isinstance(card, dict) or card.get("preferred") != "video-mp4":
-            continue
-        keys.add(gallery_media.entry_key(entry))
-    return keys
+    return gallery_media.video_preview_keys(gallery_media.load_manifest(manifest_path))
 
 
 def write_site_assets(

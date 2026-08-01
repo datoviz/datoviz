@@ -43,6 +43,7 @@ def test_main_uses_separate_worker_limits_and_preserves_output_order(
         force=False,
         jobs="3",
         capture_jobs="2",
+        include_video_previews=False,
     )
     worker_counts = []
 
@@ -65,6 +66,7 @@ def test_main_uses_separate_worker_limits_and_preserves_output_order(
 
     monkeypatch.setattr(animations, "parse_args", lambda: args)
     monkeypatch.setattr(animations, "collect_previews", lambda *unused: previews)
+    monkeypatch.setattr(animations.gallery_media, "load_manifest", lambda *unused: {"examples": []})
     monkeypatch.setattr(animations.gallery_workers, "bounded_parallel_map", bounded)
     monkeypatch.setattr(animations.gallery_frames, "ensure_frames", ensure_frames)
     monkeypatch.setattr(animations, "encode_preview", encode_preview)
@@ -95,9 +97,11 @@ def test_dry_run_does_not_start_workers(tmp_path: Path, monkeypatch) -> None:
         force=False,
         jobs="3",
         capture_jobs="2",
+        include_video_previews=False,
     )
     monkeypatch.setattr(animations, "parse_args", lambda: args)
     monkeypatch.setattr(animations, "collect_previews", lambda *unused: [preview])
+    monkeypatch.setattr(animations.gallery_media, "load_manifest", lambda *unused: {"examples": []})
     monkeypatch.setattr(animations, "dry_run_preview", lambda *unused: None)
     monkeypatch.setattr(
         animations.gallery_workers,
@@ -106,3 +110,37 @@ def test_dry_run_does_not_start_workers(tmp_path: Path, monkeypatch) -> None:
     )
 
     assert animations.main() == 0
+
+
+def test_default_selection_skips_mp4_owned_previews(tmp_path: Path) -> None:
+    webp = _preview(tmp_path, "webp")
+    video = _preview(tmp_path, "video")
+    manifest = {
+        "examples": [
+            {
+                "id": "webp",
+                "category": "feature",
+                "media": {"preview": {"kind": "animated-webp"}},
+            },
+            {
+                "id": "video",
+                "category": "feature",
+                "media": {
+                    "preview": {
+                        "kind": "animated-webp",
+                        "card": {"preferred": "video-mp4"},
+                    }
+                },
+            },
+        ]
+    }
+
+    assert animations.select_owned_previews(
+        [webp, video], manifest, set(), False
+    ) == [webp]
+    assert animations.select_owned_previews(
+        [webp, video], manifest, {"video"}, False
+    ) == [webp, video]
+    assert animations.select_owned_previews(
+        [webp, video], manifest, set(), True
+    ) == [webp, video]
