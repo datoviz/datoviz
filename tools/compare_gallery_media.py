@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import hashlib
 import html
 import json
 import os
@@ -34,6 +35,7 @@ DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-media-compare/v0.4"
 DEFAULT_SITE_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
 DEFAULT_FRAME_DIR = gallery_frames.DEFAULT_FRAME_DIR
 DEFAULT_FRAME_CACHE_DIR = gallery_frames.DEFAULT_CACHE_DIR
+DEFAULT_MEDIA_CACHE_DIR = ROOT / "build/gallery-cache/cards"
 DEFAULT_STEP = 2
 DEFAULT_WEBP_QUALITY = 40
 DEFAULT_MP4_CRF = 32
@@ -129,6 +131,12 @@ class MediaProbe:
     duration: float = 0.0
 
 
+@dataclass(frozen=True)
+class ComparisonOutcome:
+    comparison: MediaComparison
+    cached: bool
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
@@ -137,6 +145,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--site-output-dir", type=Path, default=DEFAULT_SITE_OUTPUT_DIR)
     parser.add_argument("--frame-dir", type=Path, default=DEFAULT_FRAME_DIR)
     parser.add_argument("--frame-cache-dir", type=Path, default=DEFAULT_FRAME_CACHE_DIR)
+    parser.add_argument("--cache-dir", type=Path, default=DEFAULT_MEDIA_CACHE_DIR)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--html-report", type=Path, default=DEFAULT_HTML_REPORT)
     parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
@@ -151,7 +160,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--all-animated", action="store_true", help="compare every animated preview")
     parser.add_argument("--no-manifest-card", action="store_true", help="ignore media.preview.card")
     parser.add_argument("--dry-run", action="store_true", help="list selected inputs without encoding")
-    parser.add_argument("--force", action="store_true", help="replace existing comparison outputs")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="bypass the media cache and replace existing comparison outputs",
+    )
     parser.add_argument(
         "--jobs",
         default="auto",
@@ -186,6 +199,14 @@ def require_tool(name: str) -> str:
     if path is None:
         raise RuntimeError(f"{name} not found")
     return path
+
+
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def run(cmd: list[str]) -> None:
@@ -291,7 +312,11 @@ def output_base(preview: object, output_dir: Path) -> Path:
     return output_dir / getattr(preview, "lane") / getattr(preview, "id")
 
 
-def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
+def profile_for(
+    preview: object,
+    args: argparse.Namespace,
+    manifest_entries: dict[tuple[str, str], dict] | None = None,
+) -> EncodingProfile:
     fields = {
         "preferred_kind": args.preferred_kind,
         "step": args.step,
@@ -302,16 +327,14 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
         "compare": False,
     }
     if not args.no_manifest_card:
-        manifest = gallery_media.load_manifest(args.manifest)
         preview_key = (getattr(preview, "lane"), getattr(preview, "id"))
-        entry = next(
-            (
-                item
+        if manifest_entries is None:
+            manifest = gallery_media.load_manifest(args.manifest)
+            manifest_entries = {
+                gallery_media.entry_key(item): item
                 for item in manifest.get("examples", [])
-                if gallery_media.entry_key(item) == preview_key
-            ),
-            None,
-        )
+            }
+        entry = manifest_entries.get(preview_key)
         if entry is None:
             raise ValueError(f"{getattr(preview, 'id')}: missing manifest entry")
         gallery_media.validate_animation_media_policy(entry)
@@ -336,6 +359,122 @@ def profile_for(preview: object, args: argparse.Namespace) -> EncodingProfile:
                 f"{fields['fps']} * sample_step {fields['step']} to preserve duration"
             )
     return EncodingProfile(**fields)
+
+
+def toolchain_fingerprint() -> str:
+    """Fingerprint encoder identities and gallery implementation inputs once per run."""
+    digest = hashlib.sha256()
+    for name in ("img2webp", "cwebp", "ffmpeg"):
+        executable = require_tool(name)
+        version_flag = "-version"
+        result = subprocess.run(
+            [executable, version_flag],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        digest.update(name.encode("utf8"))
+        digest.update(b"\0")
+        digest.update(result.stdout.encode("utf8"))
+        digest.update(result.stderr.encode("utf8"))
+        digest.update(b"\0")
+    for path in (
+        ROOT / "tools/compare_gallery_media.py",
+        ROOT / "tools/gallery_frames.py",
+        ROOT / "tools/gallery_media.py",
+    ):
+        digest.update(path.relative_to(ROOT).as_posix().encode("utf8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def comparison_input_hash(
+    preview: object,
+    frame_sequence: gallery_frames.FrameSequence,
+    profile: EncodingProfile,
+    args: argparse.Namespace,
+    encoder_fingerprint: str,
+) -> str:
+    """Return the content fingerprint for one card/poster output set."""
+    payload = {
+        "id": getattr(preview, "id"),
+        "lane": getattr(preview, "lane"),
+        "frame_input_hash": frame_sequence.input_hash,
+        "frames_hash": frame_sequence.frames_hash,
+        "profile": asdict(profile),
+        "generated_kinds": sorted(generated_variant_kinds(profile, args.webm)),
+        "output_dir": str(args.output_dir.resolve()),
+        "encoder_fingerprint": encoder_fingerprint,
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf8")
+    ).hexdigest()
+
+
+def comparison_cache_path(preview: object, cache_dir: Path) -> Path:
+    return cache_dir / getattr(preview, "lane") / f"{getattr(preview, 'id')}.json"
+
+
+def comparison_from_dict(item: dict) -> MediaComparison:
+    fields = dict(item)
+    fields["variants"] = [
+        MediaVariant(**variant)
+        for variant in fields.get("variants", [])
+        if isinstance(variant, dict)
+    ]
+    if isinstance(fields.get("notes"), list):
+        fields["notes"] = tuple(fields["notes"])
+    return MediaComparison(**fields)
+
+
+def current_comparison_cache(
+    preview: object,
+    cache_dir: Path,
+    input_hash: str,
+) -> MediaComparison | None:
+    path = comparison_cache_path(preview, cache_dir)
+    try:
+        payload = json.loads(path.read_text(encoding="utf8"))
+        if payload.get("input_hash") != input_hash:
+            return None
+        comparison = comparison_from_dict(payload["comparison"])
+        variant_hashes = payload["variant_hashes"]
+    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+    if set(variant_hashes) != {variant.kind for variant in comparison.variants}:
+        return None
+    for variant_item in comparison.variants:
+        output = ROOT / variant_item.path
+        try:
+            if output.stat().st_size != variant_item.bytes:
+                return None
+            if file_sha256(output) != variant_hashes[variant_item.kind]:
+                return None
+        except OSError:
+            return None
+    return comparison
+
+
+def write_comparison_cache(
+    preview: object,
+    cache_dir: Path,
+    input_hash: str,
+    comparison: MediaComparison,
+) -> None:
+    path = comparison_cache_path(preview, cache_dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "input_hash": input_hash,
+        "comparison": asdict(comparison),
+        "variant_hashes": {
+            variant_item.kind: file_sha256(ROOT / variant_item.path)
+            for variant_item in comparison.variants
+        },
+    }
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf8")
 
 
 def output_fps(preview: object, profile: EncodingProfile) -> int:
@@ -624,9 +763,10 @@ def compare_preview(
     preview: object,
     args: argparse.Namespace,
     frame_sequence: gallery_frames.FrameSequence | None = None,
+    profile: EncodingProfile | None = None,
 ) -> MediaComparison | None:
     source = source_webp_path(preview, args.input_dir)
-    profile = profile_for(preview, args)
+    profile = profile or profile_for(preview, args)
     base = output_base(preview, args.output_dir)
     if args.force and base.exists():
         shutil.rmtree(base)
@@ -734,6 +874,28 @@ def compare_preview(
     )
 
 
+def compare_preview_cached(
+    preview: object,
+    args: argparse.Namespace,
+    frame_sequence: gallery_frames.FrameSequence,
+    profile: EncodingProfile,
+    encoder_fingerprint: str,
+) -> ComparisonOutcome:
+    """Return one comparison, reusing verified encoded outputs when possible."""
+    input_hash = comparison_input_hash(
+        preview, frame_sequence, profile, args, encoder_fingerprint
+    )
+    if not args.force:
+        cached = current_comparison_cache(preview, args.cache_dir, input_hash)
+        if cached is not None:
+            return ComparisonOutcome(cached, True)
+    comparison = compare_preview(preview, args, frame_sequence, profile)
+    if comparison is None:
+        raise RuntimeError(f"{getattr(preview, 'id')}: comparison produced no result")
+    write_comparison_cache(preview, args.cache_dir, input_hash, comparison)
+    return ComparisonOutcome(comparison, False)
+
+
 def print_report(comparisons: list[MediaComparison]) -> None:
     for item in comparisons:
         for note in item.notes:
@@ -771,14 +933,7 @@ def read_report(path: Path) -> list[MediaComparison]:
     for item in items:
         if not isinstance(item, dict):
             continue
-        variants = [
-            MediaVariant(**variant)
-            for variant in item.get("variants", [])
-            if isinstance(variant, dict)
-        ]
-        fields = dict(item)
-        fields["variants"] = variants
-        comparisons.append(MediaComparison(**fields))
+        comparisons.append(comparison_from_dict(item))
     return comparisons
 
 
@@ -1124,12 +1279,29 @@ def main() -> int:
         if not previews:
             print("No matching animated previews.")
             return 1
+        manifest = gallery_media.load_manifest(args.manifest)
+        manifest_entries = {
+            gallery_media.entry_key(item): item
+            for item in manifest.get("examples", [])
+        }
+        profiles = {
+            (getattr(preview, "lane"), getattr(preview, "id")): profile_for(
+                preview, args, manifest_entries
+            )
+            for preview in previews
+        }
 
         if args.dry_run:
             for preview in previews:
-                compare_preview(preview, args)
+                compare_preview(
+                    preview,
+                    args,
+                    profile=profiles[(getattr(preview, "lane"), getattr(preview, "id"))],
+                )
             print(f"gallery media compare: selected={len(previews)}")
             return 0
+
+        encoder_fingerprint = toolchain_fingerprint()
 
         capture_started_at = time.perf_counter()
         frame_sequences = bounded_parallel_map(
@@ -1157,17 +1329,19 @@ def main() -> int:
             for sequence in frame_sequences
         }
         encode_started_at = time.perf_counter()
-        comparisons = bounded_parallel_map(
+        outcomes = bounded_parallel_map(
             previews,
-            lambda preview: compare_preview(
+            lambda preview: compare_preview_cached(
                 preview,
                 args,
                 sequences_by_key[(getattr(preview, "lane"), getattr(preview, "id"))],
+                profiles[(getattr(preview, "lane"), getattr(preview, "id"))],
+                encoder_fingerprint,
             ),
             jobs,
             lambda preview: getattr(preview, "id"),
         )
-        comparisons = [item for item in comparisons if item is not None]
+        comparisons = [outcome.comparison for outcome in outcomes]
         encode_seconds = time.perf_counter() - encode_started_at
 
         publish_started_at = time.perf_counter()
@@ -1195,12 +1369,15 @@ def main() -> int:
             f"html={child_path(args.html_report)} site_assets={copied}"
         )
         frame_cache_misses = sum(sequence.generated for sequence in frame_sequences)
+        media_cache_hits = sum(outcome.cached for outcome in outcomes)
         print(
             "gallery media timing: "
             f"capture={capture_seconds:.3f}s encode={encode_seconds:.3f}s "
             f"publish={publish_seconds:.3f}s total={time.perf_counter() - started_at:.3f}s "
             f"frame_cache_hits={len(frame_sequences) - frame_cache_misses} "
-            f"frame_cache_misses={frame_cache_misses}"
+            f"frame_cache_misses={frame_cache_misses} "
+            f"media_cache_hits={media_cache_hits} "
+            f"media_cache_misses={len(outcomes) - media_cache_hits}"
         )
         return 1 if over_budget else 0
     except (OSError, RuntimeError, ValueError, subprocess.CalledProcessError) as exc:

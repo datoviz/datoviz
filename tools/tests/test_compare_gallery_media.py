@@ -3,6 +3,7 @@ import subprocess
 import sys
 import threading
 import time
+from argparse import Namespace
 from pathlib import Path
 
 import pytest
@@ -219,3 +220,98 @@ def test_parallel_media_workspaces_are_isolated() -> None:
 
     assert len(set(workspaces)) == 2
     assert all(not Path(path).exists() for path in workspaces)
+
+
+def test_comparison_cache_reuses_verified_outputs(tmp_path: Path, monkeypatch) -> None:
+    class Preview:
+        id = "example"
+        lane = "showcases"
+
+    output = tmp_path / "cards" / "example.poster.webp"
+    output.parent.mkdir(parents=True)
+    output.write_bytes(b"poster")
+    comparison = media.MediaComparison(
+        id="example",
+        lane="showcases",
+        title="Example",
+        source_webp="source.webp",
+        source_bytes=0,
+        source_frames=1,
+        source_size="1280x720",
+        encoded_size="1280x720",
+        encoded_frames=1,
+        encoded_fps=30,
+        preferred_kind="animated-webp",
+        variants=[media.variant("poster", output, media.BUDGETS["poster"])],
+        webp_html_snippet="",
+        video_html_snippet="",
+    )
+    monkeypatch.setattr(media, "ROOT", tmp_path)
+
+    media.write_comparison_cache(Preview(), tmp_path / "cache", "input", comparison)
+
+    assert media.current_comparison_cache(
+        Preview(), tmp_path / "cache", "input"
+    ) == comparison
+
+
+def test_comparison_cache_rejects_changed_output(tmp_path: Path, monkeypatch) -> None:
+    class Preview:
+        id = "example"
+        lane = "showcases"
+
+    output = tmp_path / "cards" / "example.poster.webp"
+    output.parent.mkdir(parents=True)
+    output.write_bytes(b"poster")
+    comparison = media.MediaComparison(
+        id="example",
+        lane="showcases",
+        title="Example",
+        source_webp="source.webp",
+        source_bytes=0,
+        source_frames=1,
+        source_size="1280x720",
+        encoded_size="1280x720",
+        encoded_frames=1,
+        encoded_fps=30,
+        preferred_kind="animated-webp",
+        variants=[media.variant("poster", output, media.BUDGETS["poster"])],
+        webp_html_snippet="",
+        video_html_snippet="",
+    )
+    monkeypatch.setattr(media, "ROOT", tmp_path)
+    cache_dir = tmp_path / "cache"
+    media.write_comparison_cache(Preview(), cache_dir, "input", comparison)
+    output.write_bytes(b"changed")
+
+    assert media.current_comparison_cache(Preview(), cache_dir, "input") is None
+
+
+def test_comparison_input_hash_tracks_profile_and_frames(tmp_path: Path) -> None:
+    class Preview:
+        id = "example"
+        lane = "showcases"
+
+    sequence = media.gallery_frames.FrameSequence(
+        preview=Preview(),
+        frame_dir=tmp_path,
+        input_hash="frame-input",
+        frames_hash="frames-a",
+        generated=False,
+        reason="current",
+    )
+    profile = media.EncodingProfile("video-mp4", 1, 40, 32, 38, 30)
+    args = Namespace(webm=False, output_dir=tmp_path / "output")
+    first = media.comparison_input_hash(Preview(), sequence, profile, args, "tools")
+    changed_profile = media.EncodingProfile("video-mp4", 1, 40, 36, 38, 30)
+    second = media.comparison_input_hash(
+        Preview(), sequence, changed_profile, args, "tools"
+    )
+    changed_frames = media.gallery_frames.FrameSequence(
+        **{**sequence.__dict__, "frames_hash": "frames-b"}
+    )
+    third = media.comparison_input_hash(
+        Preview(), changed_frames, profile, args, "tools"
+    )
+
+    assert len({first, second, third}) == 3

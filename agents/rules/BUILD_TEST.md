@@ -111,6 +111,8 @@ MP4 gallery cards preserve their explicit native capture rate and are never upsa
 
 `tools/compare_gallery_media.py` accepts `--jobs N` for independent encoding work and `--capture-jobs N` for independent captures. Automatic worker counts are CPU-bounded and capped at four; capture defaults to one worker on macOS. Use `--jobs 1 --capture-jobs 1` for explicit serial execution. Attempts for one MP4 remain sequential, each example uses an isolated temporary workspace, and reports retain manifest order regardless of worker completion order.
 
+Gallery card and poster encodes use content-addressed cache records under `build/gallery-cache/cards/`. Cache keys cover canonical frame content, the encoding profile, generated variants, implementation inputs, and encoder identities; cache hits also verify every output hash. Use `--force` only when intentionally rebuilding verified current outputs.
+
 Generate selected previews with:
 
 ```sh
