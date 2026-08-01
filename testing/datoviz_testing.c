@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdlib.h>
+
 #include "_log.h"
 #include "datoviz_testing.h"
 
@@ -53,6 +55,10 @@ static void _dvz_testing_log_uninstall(void* user_data)
 
 void dvz_testing_install_log_adapter(TstSuite* suite)
 {
+    // Release builds are silent by default, but strict negative tests must observe expected logs.
+    if (getenv("DVZ_LOG_LEVEL") == NULL)
+        log_set_level(LOG_INFO);
+
     TstLogAdapter adapter = {0};
     adapter.install = _dvz_testing_log_install;
     adapter.uninstall = _dvz_testing_log_uninstall;
