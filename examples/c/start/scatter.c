@@ -68,6 +68,20 @@ typedef struct ScatterState
     bool panzoom_benchmark;
 } ScatterState;
 
+
+/**
+ * Return whether the deterministic pan/zoom benchmark workload is requested.
+ *
+ * @return true when the pan/zoom frame callback is required
+ */
+static bool _panzoom_benchmark_requested(void)
+{
+    const char* workload = getenv("DVZ_SCATTER_BENCHMARK");
+    return workload != NULL && strcmp(workload, PANZOOM_WORKLOAD) == 0;
+}
+
+
+
 static void
 _fill_scatter(uint32_t point_count, vec3* positions, DvzColor* colors, float* diameters)
 {
@@ -205,7 +219,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
             dvz_free(state);
             return false;
         }
-        state->panzoom_benchmark = true;
+        state->panzoom_benchmark = _panzoom_benchmark_requested();
         fprintf(stdout, "scenario_benchmark_workload: %s\n", PANZOOM_WORKLOAD);
     }
 
@@ -253,7 +267,7 @@ DvzScenarioSpec dvz_start_scatter_scenario(void)
         .requirements =
             DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
-        .frame = _scenario_frame,
+        .frame = _panzoom_benchmark_requested() ? _scenario_frame : NULL,
         .destroy = _scenario_destroy,
     };
 }
