@@ -3053,10 +3053,11 @@ int tst_suite_run(TstSuite* suite, int argc, char** argv)
                     result.result = 1;
                     result.status = TST_STATUS_FAIL;
                 }
-                if (child_res != 0 && result.status == TST_STATUS_PASS)
+                if (child_res != 0)
                 {
                     result.result = 1;
                     result.status = TST_STATUS_FAIL;
+                    result.skip_reason = NULL;
                 }
 
                 _tst_record_result(

@@ -215,6 +215,43 @@ def test_dvztest_scheduler_process_isolation_preserves_repeat_order(
     assert all(case["status"] == "PASS" for case in process_cases)
 
 
+def test_dvztest_scheduler_process_child_exit_overrides_skip(tmp_path: Path) -> None:
+    json_path = tmp_path / "scheduler-process-child-failure.json"
+    env = os.environ.copy()
+    env["DVZTEST_SCHEDULER_CHILD_SKIP_THEN_FAIL"] = "1"
+
+    completed = _run_scheduler_failure(
+        ["--case", "process-isolated-child", "--json", str(json_path)], env=env
+    )
+    data = _load_json(json_path)
+
+    assert completed.returncode != 0
+    assert "process-isolated case 0 failed with exit code 7" in completed.stderr
+    assert data["summary"]["selected"] == 1
+    assert data["summary"]["failed"] == 1
+    assert data["summary"]["skipped"] == 0
+    assert data["cases"][0]["status"] == "FAIL"
+    assert data["cases"][0]["skip_reason"] is None
+
+
+def test_dvztest_scheduler_process_child_preserves_successful_skip(tmp_path: Path) -> None:
+    json_path = tmp_path / "scheduler-process-child-skip.json"
+    env = os.environ.copy()
+    env["DVZTEST_SCHEDULER_CHILD_SKIP"] = "1"
+
+    completed = _run_scheduler(
+        ["--case", "process-isolated-child", "--json", str(json_path)], env=env
+    )
+    data = _load_json(json_path)
+
+    assert "SKIP  scheduler/policy/process-isolated-child" in completed.stdout
+    assert data["summary"]["selected"] == 1
+    assert data["summary"]["failed"] == 0
+    assert data["summary"]["skipped"] == 1
+    assert data["cases"][0]["status"] == "SKIP"
+    assert data["cases"][0]["skip_reason"] == "synthetic child skip"
+
+
 def test_dvztest_scheduler_case_list_filters_by_case_id(tmp_path: Path) -> None:
     case_list = tmp_path / "cases.txt"
     json_path = tmp_path / "scheduler-case-list.json"

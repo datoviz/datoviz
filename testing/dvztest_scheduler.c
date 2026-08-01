@@ -311,6 +311,17 @@ static int _scheduler_process_case(TstContext* ctx, const TstCase* item)
     ANN(item);
     AT(_scheduler_has_run_state(ctx));
 
+    const char* skip = getenv("DVZTEST_SCHEDULER_CHILD_SKIP");
+    const char* skip_then_fail = getenv("DVZTEST_SCHEDULER_CHILD_SKIP_THEN_FAIL");
+    const bool should_skip =
+        (skip != NULL && skip[0] != '\0' && skip[0] != '0') ||
+        (skip_then_fail != NULL && skip_then_fail[0] != '\0' && skip_then_fail[0] != '0');
+    if (should_skip)
+    {
+        tst_skip(ctx, "synthetic child skip");
+        return 0;
+    }
+
     const char* require_child = getenv("DVZTEST_SCHEDULER_REQUIRE_CHILD");
     if (require_child == NULL || require_child[0] == '\0' || require_child[0] == '0')
     {
@@ -454,6 +465,10 @@ int main(int argc, char** argv)
     _scheduler_register(&suite);
 
     int res = tst_suite_run(&suite, argc, argv);
+    const char* fail_after_report_env = getenv("DVZTEST_SCHEDULER_CHILD_SKIP_THEN_FAIL");
+    const bool fail_after_report =
+        run_state.child_process && fail_after_report_env != NULL && fail_after_report_env[0] != '\0' &&
+        fail_after_report_env[0] != '0';
     tst_suite_destroy(&suite);
-    return res;
+    return fail_after_report ? 7 : res;
 }
