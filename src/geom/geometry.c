@@ -622,6 +622,29 @@ static bool _geom_sphere_counts(
 
 
 /**
+ * Validate topology counts before narrowing them to the public 32-bit representation.
+ *
+ * @param vertex_count computed vertex count
+ * @param index_count computed index count
+ * @param out_vertices output vertex count
+ * @param out_indices output index count
+ * @return whether both counts fit
+ */
+static bool _geom_counts_u32(
+    uint64_t vertex_count, uint64_t index_count, uint32_t* out_vertices, uint32_t* out_indices)
+{
+    ANN(out_vertices);
+    ANN(out_indices);
+    if (vertex_count > UINT32_MAX || index_count > UINT32_MAX)
+        return false;
+    *out_vertices = (uint32_t)vertex_count;
+    *out_indices = (uint32_t)index_count;
+    return true;
+}
+
+
+
+/**
  * Fill surface-grid descriptor defaults.
  *
  * @param desc optional source descriptor
@@ -1960,7 +1983,15 @@ DvzGeometry* dvz_geometry_disc(const DvzGeometryDiscDesc* desc)
     DvzColor color = {0};
     _geom_color_or_default(cfg.color, &color);
 
-    DvzGeometry* geometry = dvz_geometry(cfg.segments + 1u, 3u * cfg.segments);
+    uint32_t vertex_count = 0;
+    uint32_t index_count = 0;
+    if (!_geom_counts_u32(
+            (uint64_t)cfg.segments + 1u, 3u * (uint64_t)cfg.segments, &vertex_count,
+            &index_count))
+    {
+        return NULL;
+    }
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
     if (geometry == NULL)
         return NULL;
     geometry->type = DVZ_GEOMETRY_PLANE;
@@ -2010,7 +2041,15 @@ DvzGeometry* dvz_geometry_sector(const DvzGeometrySectorDesc* desc)
     DvzColor color = {0};
     _geom_color_or_default(cfg.color, &color);
 
-    DvzGeometry* geometry = dvz_geometry(cfg.segments + 2u, 3u * cfg.segments);
+    uint32_t vertex_count = 0;
+    uint32_t index_count = 0;
+    if (!_geom_counts_u32(
+            (uint64_t)cfg.segments + 2u, 3u * (uint64_t)cfg.segments, &vertex_count,
+            &index_count))
+    {
+        return NULL;
+    }
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
     if (geometry == NULL)
         return NULL;
     geometry->type = DVZ_GEOMETRY_PLANE;
@@ -2106,7 +2145,15 @@ DvzGeometry* dvz_geometry_star(const DvzGeometryStarDesc* desc)
     _geom_color_or_default(cfg.color, &color);
 
     const uint32_t outer_count = 2u * cfg.points;
-    DvzGeometry* geometry = dvz_geometry(outer_count + 1u, 3u * outer_count);
+    uint32_t vertex_count = 0;
+    uint32_t index_count = 0;
+    if (!_geom_counts_u32(
+            (uint64_t)outer_count + 1u, 3u * (uint64_t)outer_count, &vertex_count,
+            &index_count))
+    {
+        return NULL;
+    }
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
     if (geometry == NULL)
         return NULL;
     geometry->type = DVZ_GEOMETRY_PLANE;
@@ -2155,10 +2202,16 @@ DvzGeometry* dvz_geometry_cylinder(const DvzGeometryCylinderDesc* desc)
     DvzColor color = {0};
     _geom_color_or_default(cfg.color, &color);
 
+    uint32_t vertex_count = 0;
+    uint32_t index_count = 0;
+    if (!_geom_counts_u32(
+            4u * (uint64_t)cfg.sectors + 6u, 12u * (uint64_t)cfg.sectors, &vertex_count,
+            &index_count))
+    {
+        return NULL;
+    }
     const uint32_t side_vertices = 2u * (cfg.sectors + 1u);
     const uint32_t cap_vertices = cfg.sectors + 2u;
-    const uint32_t vertex_count = side_vertices + 2u * cap_vertices;
-    const uint32_t index_count = 12u * cfg.sectors;
     DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
     if (geometry == NULL)
         return NULL;
@@ -2260,8 +2313,15 @@ DvzGeometry* dvz_geometry_cone(const DvzGeometryConeDesc* desc)
     _geom_color_or_default(cfg.color, &color);
 
     const uint32_t side_vertices = 3u * cfg.sectors;
-    const uint32_t cap_vertices = cfg.sectors + 2u;
-    DvzGeometry* geometry = dvz_geometry(side_vertices + cap_vertices, 6u * cfg.sectors);
+    uint32_t vertex_count = 0;
+    uint32_t index_count = 0;
+    if (!_geom_counts_u32(
+            4u * (uint64_t)cfg.sectors + 2u, 6u * (uint64_t)cfg.sectors, &vertex_count,
+            &index_count))
+    {
+        return NULL;
+    }
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
     if (geometry == NULL)
         return NULL;
     geometry->type = DVZ_GEOMETRY_CONE;
@@ -2335,8 +2395,23 @@ DvzGeometry* dvz_geometry_torus(const DvzGeometryTorusDesc* desc)
     if (cfg.major_radius <= 0.0 || cfg.minor_radius <= 0.0 || cfg.rings < 3u || cfg.sectors < 3u)
         return NULL;
 
+    uint64_t vertex_count_u64 = 0;
+    uint64_t quad_count = 0;
+    uint64_t index_count_u64 = 0;
+    if (_dvz_mul_u64_overflows(
+            (uint64_t)cfg.rings + 1u, (uint64_t)cfg.sectors + 1u, &vertex_count_u64) ||
+        _dvz_mul_u64_overflows((uint64_t)cfg.rings, cfg.sectors, &quad_count) ||
+        _dvz_mul_u64_overflows(quad_count, 6u, &index_count_u64))
+    {
+        return NULL;
+    }
+    uint32_t vertex_count = 0;
+    uint32_t index_count = 0;
+    if (!_geom_counts_u32(vertex_count_u64, index_count_u64, &vertex_count, &index_count))
+        return NULL;
+
     const uint32_t cols = cfg.sectors + 1u;
-    DvzGeometry* geometry = dvz_geometry((cfg.rings + 1u) * cols, 6u * cfg.rings * cfg.sectors);
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
     if (geometry == NULL)
         return NULL;
     geometry->type = DVZ_GEOMETRY_TORUS;

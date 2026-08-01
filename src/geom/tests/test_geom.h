@@ -40,6 +40,8 @@ int test_geometry_sphere(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem);
 
+int test_geometry_count_overflow(TstContext* suite, const TstCase* tstitem);
+
 int test_geometry_obj_loader(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_transform(TstContext* suite, const TstCase* tstitem);

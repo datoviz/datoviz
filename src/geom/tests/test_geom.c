@@ -450,6 +450,51 @@ int test_geometry_builtin_shapes(TstContext* suite, const TstCase* tstitem)
 
 
 
+int test_geometry_count_overflow(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+
+    DvzGeometryDiscDesc disc = dvz_geometry_disc_desc();
+    disc.segments = UINT32_MAX;
+    DvzGeometry* geometry = dvz_geometry_disc(&disc);
+    AT(geometry == NULL);
+
+    DvzGeometrySectorDesc sector = dvz_geometry_sector_desc();
+    sector.segments = UINT32_MAX;
+    geometry = dvz_geometry_sector(&sector);
+    AT(geometry == NULL);
+
+    DvzGeometryStarDesc star = dvz_geometry_star_desc();
+    star.points = UINT32_MAX / 2u;
+    geometry = dvz_geometry_star(&star);
+    AT(geometry == NULL);
+
+    DvzGeometryCylinderDesc cylinder = dvz_geometry_cylinder_desc();
+    cylinder.sectors = UINT32_MAX;
+    geometry = dvz_geometry_cylinder(&cylinder);
+    AT(geometry == NULL);
+
+    DvzGeometryConeDesc cone = dvz_geometry_cone_desc();
+    cone.sectors = UINT32_MAX;
+    geometry = dvz_geometry_cone(&cone);
+    AT(geometry == NULL);
+
+    DvzGeometryTorusDesc torus = dvz_geometry_torus_desc();
+    torus.rings = UINT32_MAX;
+    torus.sectors = UINT32_MAX;
+    geometry = dvz_geometry_torus(&torus);
+    AT(geometry == NULL);
+
+    DvzGeometryArrowDesc arrow = dvz_geometry_arrow_desc();
+    arrow.sectors = UINT32_MAX;
+    geometry = dvz_geometry_arrow(&arrow);
+    AT(geometry == NULL);
+    return 0;
+}
+
+
+
 static bool _write_obj_test_file(const char* path, const char* contents)
 {
     ANN(path);
@@ -964,6 +1009,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_surface_grid_update);
     TST_CASE(test_geometry_sphere);
     TST_CASE(test_geometry_builtin_shapes);
+    TST_CASE(test_geometry_count_overflow);
     TST_CASE(test_geometry_obj_loader);
     TST_CASE(test_geometry_transform);
     TST_CASE(test_geometry_merge);
