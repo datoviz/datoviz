@@ -29,6 +29,7 @@
 #include "_overflow.h"
 #include "_runtime.h"
 #include "_stream.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/vk/gpu_ctx.h"
 
 #if DVZ_DRP2_HAS_VKLITE
@@ -566,8 +567,16 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
     if (stream == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
 
+    if (runtime->timing_enabled)
+        dvz_memset(
+            &runtime->last_timing, sizeof(DvzDrp2RuntimeTiming), 0,
+            sizeof(DvzDrp2RuntimeTiming));
+
+    uint64_t start_ns = runtime->timing_enabled ? dvz_time_monotonic_ns() : 0;
     Drp2RuntimeState next_state = {0};
     DvzDrp2ValidationResult result = _drp2_runtime_validate_stream(runtime, stream, &next_state);
+    if (runtime->timing_enabled)
+        runtime->last_timing.semantic_validation_ns = dvz_time_monotonic_ns() - start_ns;
     if (!result.ok)
     {
         _drp2_runtime_state_cleanup(&next_state);
@@ -591,22 +600,51 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
     }
 
 #if DVZ_DRP2_HAS_VKLITE
+    start_ns = runtime->timing_enabled ? dvz_time_monotonic_ns() : 0;
     DvzDrp2ValidationResult backend_result = _vklite_execute(runtime, stream);
+    if (runtime->timing_enabled)
+        runtime->last_timing.backend_ns = dvz_time_monotonic_ns() - start_ns;
     if (!backend_result.ok)
     {
         _drp2_runtime_state_cleanup(&next_state);
         return backend_result;
     }
+    start_ns = runtime->timing_enabled ? dvz_time_monotonic_ns() : 0;
     if (!_drp2_runtime_state_commit(runtime, &next_state))
     {
         _drp2_runtime_state_cleanup(&next_state);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
     }
+    if (runtime->timing_enabled)
+        runtime->last_timing.semantic_commit_ns = dvz_time_monotonic_ns() - start_ns;
     return backend_result;
 #else
     _drp2_runtime_state_cleanup(&next_state);
     return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
 #endif
+}
+
+
+
+void _dvz_drp2_runtime_timing_enable(DvzDrp2Runtime* runtime, bool enabled)
+{
+    if (runtime == NULL)
+        return;
+    runtime->timing_enabled = enabled;
+    dvz_memset(
+        &runtime->last_timing, sizeof(DvzDrp2RuntimeTiming), 0,
+        sizeof(DvzDrp2RuntimeTiming));
+}
+
+
+
+bool _dvz_drp2_runtime_timing_get(
+    const DvzDrp2Runtime* runtime, DvzDrp2RuntimeTiming* timing)
+{
+    if (runtime == NULL || timing == NULL || !runtime->timing_enabled)
+        return false;
+    *timing = runtime->last_timing;
+    return true;
 }
 
 

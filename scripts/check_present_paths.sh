@@ -79,6 +79,16 @@ run_case scene-drp2 env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
 grep -Eq 'scene-drp2: rendering into canvas target' "$report_dir/scene-drp2.log"
 grep -Eq 'benchmark: swapchain recreates total=[0-9]+ steady=0' "$report_dir/scene-drp2.log"
 
+for scene_path in cached-plan cached-stream; do
+    run_case "scene-drp2-$scene_path" env DVZ_PRESENT_MODE=immediate \
+        DVZ_APP_SCHEDULE=continuous "$live_bin" --benchmark --frames "$frames" \
+        --draw scene-drp2 --scene-path "$scene_path" --present immediate
+    grep -Eq "benchmark: scene_path=$scene_path " \
+        "$report_dir/scene-drp2-$scene_path.log"
+    grep -Eq 'benchmark: swapchain recreates total=[0-9]+ steady=0' \
+        "$report_dir/scene-drp2-$scene_path.log"
+done
+
 run_case scatter env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
     "$scenario_bin" --benchmark "$frames"
 grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " "$report_dir/scatter.log"
@@ -89,4 +99,4 @@ grep -Eq 'scenario_benchmark_workload: panzoom-v1' "$report_dir/scatter-panzoom.
 grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " \
     "$report_dir/scatter-panzoom.log"
 
-echo "present_check: blank=pass scene-drp2=pass scatter=pass scatter-panzoom=pass frames=$frames"
+echo "present_check: blank=pass scene-drp2=pass scene-controls=pass scatter=pass scatter-panzoom=pass frames=$frames"

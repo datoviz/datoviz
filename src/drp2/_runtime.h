@@ -100,16 +100,32 @@ typedef struct Drp2VkliteObject Drp2VkliteObject;
 typedef struct Drp2VkliteState Drp2VkliteState;
 #endif
 
+
+typedef struct DvzDrp2RuntimeTiming
+{
+    uint64_t semantic_validation_ns;
+    uint64_t backend_ns;
+    uint64_t semantic_commit_ns;
+} DvzDrp2RuntimeTiming;
+
 struct DvzDrp2Runtime
 {
     DvzDevice* device;
     DvzVma* allocator;
     bool semantic_only;
+    bool timing_enabled;
+    DvzDrp2RuntimeTiming last_timing;
     Drp2RuntimeState* semantic_state;
 #if DVZ_DRP2_HAS_VKLITE
     Drp2VkliteState* vklite_state;
 #endif
 };
+
+
+void _dvz_drp2_runtime_timing_enable(DvzDrp2Runtime* runtime, bool enabled);
+
+bool _dvz_drp2_runtime_timing_get(
+    const DvzDrp2Runtime* runtime, DvzDrp2RuntimeTiming* timing);
 
 
 struct Drp2Object

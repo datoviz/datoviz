@@ -1042,6 +1042,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/src/common
         ${PROJECT_SOURCE_DIR}/src/canvas
+        ${PROJECT_SOURCE_DIR}/src/drp2
         ${PROJECT_SOURCE_DIR}/external/volk
     )
 

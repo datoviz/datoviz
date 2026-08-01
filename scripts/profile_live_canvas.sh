@@ -16,7 +16,8 @@ usage() {
     cat <<'EOF'
 usage: scripts/profile_live_canvas.sh [options]
 
-Profile dvz_live_canvas clear vs scene-drp2 and save a report directory.
+Profile dvz_live_canvas clear vs scene-drp2 and save a report directory. Plain benchmark logs also
+include cached-plan and cached-stream scene controls to isolate plan and stream construction costs.
 
 Options:
   --frames N       Frames per benchmark/profile run (default: 50000)
@@ -196,6 +197,20 @@ for mode in clear scene-drp2; do
             echo "===== $mode benchmark run $run/$bench_runs ====="
             record_command "$bin" --benchmark --frames "$frames" --draw "$mode"
             run_case "$mode"
+            echo
+        } 2>&1 | tee -a "$log"
+    done
+done
+
+for scene_path in cached-plan cached-stream; do
+    log="$out_dir/benchmark-scene-drp2-$scene_path.log"
+    : >"$log"
+    for run in $(seq 1 "$bench_runs"); do
+        {
+            echo "===== scene-drp2 $scene_path benchmark run $run/$bench_runs ====="
+            record_command "$bin" --benchmark --frames "$frames" --draw scene-drp2 \
+                --scene-path "$scene_path"
+            run_case scene-drp2 --scene-path "$scene_path"
             echo
         } 2>&1 | tee -a "$log"
     done
