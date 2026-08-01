@@ -49,8 +49,6 @@ int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase*
 int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const TstCase* item);
 int test_scene_figure_reserve_resolves_content_layout(TstContext* suite, const TstCase* item);
 int test_scene_field_slot_sampling_state(TstContext* suite, const TstCase* item);
-int test_scene_external_sampled_field_contract(TstContext* suite, const TstCase* item);
-int test_scene_external_sampled_field_frame_plan(TstContext* suite, const TstCase* item);
 
 
 /**
