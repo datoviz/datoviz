@@ -8,10 +8,14 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
+import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import gallery_frames
 import gallery_media
+import gallery_workers
 
 
 ROOT = gallery_media.ROOT
@@ -26,6 +30,12 @@ AnimatedPreview = gallery_frames.AnimatedPreview
 collect_previews = gallery_frames.collect_previews
 frame_path = gallery_frames.frame_path
 capture_sequence = gallery_frames.capture_sequence
+
+
+@dataclass(frozen=True)
+class AnimationResult:
+    generated: bool
+    messages: tuple[str, ...]
 
 
 def parse_args() -> argparse.Namespace:
@@ -46,6 +56,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY, help="lossy WebP quality")
     parser.add_argument("--force", action="store_true", help="regenerate even when the cache is current")
+    parser.add_argument(
+        "--jobs",
+        default="auto",
+        help="parallel encoding jobs, 'auto' for a CPU-bounded default, or 1 for serial",
+    )
+    parser.add_argument(
+        "--capture-jobs",
+        default="1" if sys.platform == "darwin" else "auto",
+        help="parallel capture jobs; defaults to 1 on macOS and CPU-bounded elsewhere",
+    )
     return parser.parse_args()
 
 
@@ -155,7 +175,7 @@ def encode_webp(
             raise FileNotFoundError(png)
         cmd.extend(["-d", str(delay_ms), "-lossy", "-q", str(quality), str(png)])
     cmd.extend(["-o", str(output_path)])
-    subprocess.run(cmd, cwd=ROOT, check=True)
+    subprocess.run(cmd, cwd=ROOT, check=True, capture_output=True)
 
 
 def dry_run_preview(
@@ -193,37 +213,27 @@ def dry_run_preview(
     )
 
 
-def generate_preview(
+def encode_preview(
     preview: AnimatedPreview,
-    manifest_path: Path,
-    frame_root: Path,
-    frame_cache_dir: Path,
+    frames: gallery_frames.FrameSequence,
     output_root: Path,
     cache_dir: Path,
-    dry_run: bool,
     quality: int,
     force: bool,
-) -> bool:
+) -> AnimationResult:
     quality = preview.webp_quality or quality
     output_path = output_root / preview.lane / f"{preview.id}.webp"
     rel_out = output_path.relative_to(ROOT) if output_path.is_relative_to(ROOT) else output_path
-    if dry_run:
-        dry_run_preview(preview, manifest_path, frame_root, frame_cache_dir, output_path, force)
-        return True
-
-    frames = gallery_frames.ensure_frames(
-        preview, manifest_path, frame_root, frame_cache_dir, force=force
-    )
     input_hash = input_hash_for(preview, frames, output_root, quality)
     cache_hit, cache_reason = current_cache_hit(preview, output_path, cache_dir, input_hash)
     if cache_hit and not force:
-        print(f"cached animated webp: {preview.id} -> {rel_out}")
-        return False
+        return AnimationResult(False, (f"cached animated webp: {preview.id} -> {rel_out}",))
 
+    messages = []
     if frames.generated:
-        print(f"captured frames: {preview.id} -> {child_path(frames.frame_dir)}")
+        messages.append(f"captured frames: {preview.id} -> {child_path(frames.frame_dir)}")
     elif cache_reason != "current":
-        print(f"animated webp cache stale: {preview.id} ({cache_reason})")
+        messages.append(f"animated webp cache stale: {preview.id} ({cache_reason})")
     encode_webp(preview, frames.frame_dir, output_path, quality)
     write_cache(
         cache_path(preview, cache_dir),
@@ -235,11 +245,12 @@ def generate_preview(
             "frames_hash": frames.frames_hash,
         },
     )
-    print(f"animated webp: {preview.id} -> {rel_out}")
-    return True
+    messages.append(f"animated webp: {preview.id} -> {rel_out}")
+    return AnimationResult(True, tuple(messages))
 
 
 def main() -> int:
+    started_at = time.perf_counter()
     args = parse_args()
     ids = split_values(args.id)
     lanes = split_values(args.lane)
@@ -250,23 +261,75 @@ def main() -> int:
         if not previews:
             print("No matching animated WebP previews.")
             return 1
+        jobs = gallery_workers.parse_jobs(args.jobs)
+        capture_jobs = gallery_workers.parse_jobs(args.capture_jobs)
 
-        generated = 0
-        for preview in previews:
-            if generate_preview(
+        if args.dry_run:
+            for preview in previews:
+                output_path = args.output_dir / preview.lane / f"{preview.id}.webp"
+                dry_run_preview(
+                    preview,
+                    args.manifest,
+                    args.frame_dir,
+                    args.frame_cache_dir,
+                    output_path,
+                    args.force,
+                )
+            print(f"gallery animations: would_generate={len(previews)} selected={len(previews)}")
+            return 0
+
+        capture_started_at = time.perf_counter()
+        frame_sequences = gallery_workers.bounded_parallel_map(
+            previews,
+            lambda preview: gallery_frames.ensure_frames(
                 preview,
                 args.manifest,
                 args.frame_dir,
                 args.frame_cache_dir,
+                force=args.force,
+            ),
+            capture_jobs,
+            lambda preview: preview.id,
+        )
+        capture_seconds = time.perf_counter() - capture_started_at
+        frames_by_key = {
+            (sequence.preview.lane, sequence.preview.id): sequence
+            for sequence in frame_sequences
+        }
+
+        encode_started_at = time.perf_counter()
+        results = gallery_workers.bounded_parallel_map(
+            previews,
+            lambda preview: encode_preview(
+                preview,
+                frames_by_key[(preview.lane, preview.id)],
                 args.output_dir,
                 args.cache_dir,
-                args.dry_run,
                 args.quality,
                 args.force,
-            ):
-                generated += 1
-        action = "would_generate" if args.dry_run else "generated"
-        print(f"gallery animations: {action}={generated} selected={len(previews)}")
+            ),
+            jobs,
+            lambda preview: preview.id,
+        )
+        encode_seconds = time.perf_counter() - encode_started_at
+        for result in results:
+            for message in result.messages:
+                print(message)
+        generated = sum(result.generated for result in results)
+        frame_cache_misses = sum(sequence.generated for sequence in frame_sequences)
+        print(
+            f"gallery animations: generated={generated} selected={len(previews)} "
+            f"jobs={jobs} capture_jobs={capture_jobs}"
+        )
+        print(
+            "gallery animation timing: "
+            f"capture={capture_seconds:.3f}s encode={encode_seconds:.3f}s "
+            f"total={time.perf_counter() - started_at:.3f}s "
+            f"frame_cache_hits={len(frame_sequences) - frame_cache_misses} "
+            f"frame_cache_misses={frame_cache_misses} "
+            f"animation_cache_hits={len(results) - generated} "
+            f"animation_cache_misses={generated}"
+        )
         return 0
     except (FileNotFoundError, RuntimeError, ValueError, subprocess.CalledProcessError) as e:
         print(f"gallery animations: {e}")
