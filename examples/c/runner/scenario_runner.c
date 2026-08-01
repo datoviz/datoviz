@@ -829,6 +829,8 @@ static void _run_paced(DvzApp* app, uint32_t frame_count, double fps)
         }
 
         dvz_app_run(app, 1);
+        if (dvz_app_should_exit(app))
+            break;
 
         const uint64_t after = dvz_time_monotonic_ns();
         next_ns += period_ns;
@@ -1249,6 +1251,12 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         if (capture_view == NULL)
         {
             fprintf(stderr, "scenario_runner: offscreen capture view creation failed\n");
+            goto cleanup;
+        }
+        /* The new offscreen view connects shared panels to its router; restore GLFW input. */
+        if (_connect_controller_bindings(&ctx, view) != 0)
+        {
+            fprintf(stderr, "scenario_runner: controller input reconnection failed\n");
             goto cleanup;
         }
         fprintf(stdout, "scenario_runner: showing GLFW view and recording offscreen view\n");
