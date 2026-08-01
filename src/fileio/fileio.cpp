@@ -2,11 +2,16 @@
 /*  File I/O utilities                                                                           */
 /*************************************************************************************************/
 
+#include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <limits.h>
 #include <vector>
+
+#if !defined(_WIN32) && !defined(_MSC_VER)
+#include <sys/types.h>
+#endif
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -26,8 +31,74 @@
 /*  Generic file I/O utils                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Seek within a file using a 64-bit offset.
+ *
+ * @param file open file
+ * @param offset byte offset
+ * @param origin seek origin
+ * @return zero on success, nonzero on failure
+ */
+static int _file_seek(FILE* file, int64_t offset, int origin)
+{
+#if defined(_WIN32) || defined(_MSC_VER)
+    return _fseeki64(file, offset, origin);
+#else
+    return fseeko(file, (off_t)offset, origin);
+#endif
+}
+
+
+
+/**
+ * Return the current 64-bit file position.
+ *
+ * @param file open file
+ * @return current byte position, or a negative value on failure
+ */
+static int64_t _file_tell(FILE* file)
+{
+#if defined(_WIN32) || defined(_MSC_VER)
+    return _ftelli64(file);
+#else
+    return (int64_t)ftello(file);
+#endif
+}
+
+
+
+/**
+ * Validate an NPY v1 prefix and return its payload offset.
+ *
+ * @param bytes NPY prefix containing at least ten bytes
+ * @param size_bytes total NPY file size
+ * @param offset destination receiving the payload offset
+ * @return whether the prefix and payload offset are valid
+ */
+static bool _npy_payload_offset(const uint8_t* bytes, DvzSize size_bytes, DvzSize* offset)
+{
+    ANN(bytes);
+    ANN(offset);
+
+    if (size_bytes < 10 || memcmp(bytes, "\x93NUMPY", 6) != 0)
+        return false;
+    if (bytes[6] != 1 || bytes[7] != 0)
+        return false;
+
+    const uint16_t header_len = (uint16_t)bytes[8] | ((uint16_t)bytes[9] << 8);
+    const DvzSize data_offset = 10 + (DvzSize)header_len;
+    if (header_len == 0 || data_offset > size_bytes)
+        return false;
+
+    *offset = data_offset;
+    return true;
+}
+
 DvzSize dvz_file_size(const char* filename)
 {
+    if (filename == NULL)
+        return 0;
+
     FILE* file = fopen(filename, "rb"); // Open the file in binary mode
     if (file == NULL)
     {
@@ -35,11 +106,15 @@ DvzSize dvz_file_size(const char* filename)
         return 0;
     }
 
-    fseek(file, 0, SEEK_END); // Move to the end of the file
-    long size = ftell(file);  // Get the current position in bytes (i.e., the file size)
-    fclose(file);             // Close the file
+    if (_file_seek(file, 0, SEEK_END) != 0)
+    {
+        fclose(file);
+        return 0;
+    }
+    const int64_t size = _file_tell(file);
+    fclose(file);
 
-    return (DvzSize)size;
+    return size >= 0 ? (DvzSize)size : 0;
 }
 
 
@@ -47,8 +122,15 @@ DvzSize dvz_file_size(const char* filename)
 void* dvz_read_file(const char* filename, DvzSize* size)
 {
     /* The returned pointer must be freed by the caller. */
+    int64_t file_size = -1;
+    size_t length = 0;
     void* buffer = NULL;
-    DvzSize length = 0;
+
+    if (size != NULL)
+        *size = 0;
+    if (filename == NULL)
+        return NULL;
+
     FILE* f = fopen(filename, "rb");
 
     if (!f)
@@ -56,17 +138,33 @@ void* dvz_read_file(const char* filename, DvzSize* size)
         log_error("Could not find %s.", filename);
         return NULL;
     }
-    fseek(f, 0, SEEK_END);
-    length = (DvzSize)ftell(f);
-    if (size != NULL)
-        *size = length;
-    fseek(f, 0, SEEK_SET);
-    buffer = dvz_malloc((size_t)length);
-    ANN(buffer);
-    fread(buffer, 1, (size_t)length, f);
+    if (_file_seek(f, 0, SEEK_END) != 0)
+        goto error;
+    file_size = _file_tell(f);
+    if (file_size < 0 || (uint64_t)file_size > SIZE_MAX)
+        goto error;
+    if (_file_seek(f, 0, SEEK_SET) != 0)
+        goto error;
+
+    length = (size_t)file_size;
+    buffer = dvz_malloc(length > 0 ? length : 1);
+    if (buffer == NULL)
+        goto error;
+    if (length > 0 && fread(buffer, 1, length, f) != length)
+    {
+        dvz_free(buffer);
+        goto error;
+    }
     fclose(f);
 
+    if (size != NULL)
+        *size = (DvzSize)length;
     return buffer;
+
+error:
+    log_error("unable to read file %s", filename);
+    fclose(f);
+    return NULL;
 }
 
 
@@ -100,9 +198,16 @@ void* dvz_read_npy(const char* filename, DvzSize* size)
     /* Tiny NPY reader that requires the user to know in advance the data type of the file. */
 
     /* The returned pointer must be freed by the caller. */
+    if (size != NULL)
+        *size = 0;
+    if (filename == NULL)
+        return NULL;
+
     char* buffer = NULL;
-    DvzSize length = 0;
-    int nread = 0, err = 0;
+    int64_t file_size = -1;
+    DvzSize data_offset = 0;
+    size_t length = 0;
+    uint8_t prefix[10] = {0};
 
     FILE* f = fopen(filename, "rb");
     if (!f)
@@ -111,54 +216,38 @@ void* dvz_read_npy(const char* filename, DvzSize* size)
         return NULL;
     }
 
-    // Determine the total file size.
-    fseek(f, 0, SEEK_END);
-    length = (DvzSize)ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    // const uint32_t MAGIC_SIZE = 6;
-    // char magic[MAGIC_SIZE];
-
-    // // Read NPY header.
-    // nread = fread(magic, sizeof(char), MAGIC_SIZE, f);
-    // if (!nread)
-    //     goto error;
-
-    // TODO: check the magic
-    // TODO: check the version numbers
-
-    // Determine the header size.
-    uint16_t header_len = 0;
-    err = fseek(f, 8, SEEK_SET);
-    if (err)
+    if (_file_seek(f, 0, SEEK_END) != 0)
         goto error;
-    nread = fread(&header_len, sizeof(uint16_t), 1, f);
-    if (!nread)
+    file_size = _file_tell(f);
+    if (file_size < 0 || (uint64_t)file_size > SIZE_MAX)
         goto error;
-    log_trace("npy file header size is %d bytes", header_len);
-    ASSERT(header_len > 0);
-    header_len += 10; // NOTE: the header len does NOT include the 10 bytes with the magic string,
-                      // the version, the header length
-
-    // Jump to the beginning of the data buffer.
-    fseek(f, 0, header_len);
-    length -= header_len;
-    if (size != NULL)
-        *size = length;
-    err = fseek(f, header_len, SEEK_SET);
-    if (err)
+    if (_file_seek(f, 0, SEEK_SET) != 0)
         goto error;
 
-    // Read the data buffer.
-    buffer = (char*)dvz_calloc((size_t)length, 1);
-    ANN(buffer);
-    fread(buffer, 1, (size_t)length, f);
+    if (fread(prefix, 1, sizeof(prefix), f) != sizeof(prefix))
+        goto error;
+
+    if (!_npy_payload_offset(prefix, (DvzSize)file_size, &data_offset))
+        goto error;
+    if (_file_seek(f, (int64_t)data_offset, SEEK_SET) != 0)
+        goto error;
+
+    length = (size_t)((DvzSize)file_size - data_offset);
+    buffer = (char*)dvz_malloc(length > 0 ? length : 1);
+    if (buffer == NULL)
+        goto error;
+    if (length > 0 && fread(buffer, 1, length, f) != length)
+        goto error;
     fclose(f);
 
+    if (size != NULL)
+        *size = (DvzSize)length;
     return buffer;
 
 error:
     log_error("unable to read the NPY file %s", filename);
+    dvz_free(buffer);
+    fclose(f);
     return NULL;
 }
 
@@ -166,46 +255,23 @@ error:
 
 void* dvz_parse_npy(const void* bytes, DvzSize size_bytes)
 {
-    // Ensure the buffer is valid
-    if (size_bytes < 10 || bytes == NULL)
-    {
+    if (bytes == NULL)
         return NULL;
-    }
 
     const uint8_t* npy_bytes = (const uint8_t*)bytes;
-
-    // Check the .npy magic string
-    if (memcmp(npy_bytes, "\x93NUMPY", 6) != 0)
-    {
+    DvzSize data_offset = 0;
+    if (!_npy_payload_offset(npy_bytes, size_bytes, &data_offset))
         return NULL;
-    }
-
-    // Extract the header length (at byte 8 and 9 for v1.0/1.1)
-    uint16_t header_len = 0;
-    dvz_memcpy(&header_len, sizeof(header_len), npy_bytes + 8, sizeof(header_len));
-
-    // Calculate the offset of the array data
-    DvzSize data_offset = 10 + header_len;
-
-    // Ensure the offset is within bounds
-    if (data_offset > size_bytes)
-    {
+    if (size_bytes - data_offset > SIZE_MAX)
         return NULL;
-    }
 
-    // Calculate the size of the array data
-    DvzSize array_data_size = size_bytes - data_offset;
-
-    // Allocate memory for the output buffer
-    char* array_data = (char*)dvz_malloc(array_data_size);
+    const size_t array_data_size = (size_t)(size_bytes - data_offset);
+    char* array_data = (char*)dvz_malloc(array_data_size > 0 ? array_data_size : 1);
     if (array_data == NULL)
-    {
         return NULL;
-    }
 
-    // Copy the array data to the output buffer
-    dvz_memcpy(
-        array_data, (size_t)array_data_size, npy_bytes + data_offset, (size_t)array_data_size);
+    if (array_data_size > 0)
+        dvz_memcpy(array_data, array_data_size, npy_bytes + data_offset, array_data_size);
 
     return array_data;
 }

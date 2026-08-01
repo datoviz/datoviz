@@ -34,6 +34,7 @@
 /*************************************************************************************************/
 
 #define EARTH_TEXTURE_PATH "data/assets/textures/world.200412.3x5400x2700.jpg"
+#define NPY_FIXTURE_PATH "data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy"
 
 
 
@@ -160,7 +161,49 @@ int test_parse_npy(TstContext* suite, const TstCase* tstitem)
     AC(parsed_value, value, EPS);
 
     dvz_free(parsed);
+
+    // Reject a truncated header before subtracting its declared size from the input size.
+    parsed = dvz_parse_npy(buffer, (DvzSize)(10 + header_padded_len - 1));
+    AT(parsed == NULL);
+
+    // This minimal parser intentionally accepts only the documented NPY v1 format.
+    buffer[6] = 2;
+    parsed = dvz_parse_npy(buffer, (DvzSize)total_size);
+    AT(parsed == NULL);
+    buffer[6] = 1;
+
+    buffer[0] = 0;
+    parsed = dvz_parse_npy(buffer, (DvzSize)total_size);
+    AT(parsed == NULL);
+    buffer[0] = 0x93;
+
+    // File-based failures must reset the size output and close the opened file.
+    DvzSize invalid_size = 42;
+    parsed = dvz_read_npy(__FILE__, &invalid_size);
+    AT(parsed == NULL);
+    AT(invalid_size == 0);
+
     dvz_free(buffer);
+    return 0;
+}
+
+
+
+int test_read_npy(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    if (!_file_exists(NPY_FIXTURE_PATH))
+    {
+        tst_skip(suite, "NPY fixture missing");
+        return 0;
+    }
+
+    DvzSize size = 0;
+    void* payload = dvz_read_npy(NPY_FIXTURE_PATH, &size);
+    AT(payload != NULL);
+    AT(size == 420196);
+    dvz_free(payload);
     return 0;
 }
 
@@ -244,6 +287,7 @@ int test_fileio(TstSuite* suite)
 
     TST_GROUP("npy");
     TST_CASE(test_parse_npy);
+    TST_CASE(test_read_npy);
 
     return 0;
 }
