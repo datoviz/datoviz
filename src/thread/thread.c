@@ -45,8 +45,13 @@ DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data)
     DvzThread* thread = (DvzThread*)dvz_calloc(1, sizeof(DvzThread));
     ANN(thread);
     // log_trace("creating thread");
-    if (pthread_create(&thread->thread, NULL, callback, user_data))
-        log_error("thread creation failed");
+    const int result = pthread_create(&thread->thread, NULL, callback, user_data);
+    if (result != 0)
+    {
+        log_error("thread creation failed with error %d", result);
+        dvz_free(thread);
+        return NULL;
+    }
     dvz_obj_created(&thread->obj);
     return thread;
 }

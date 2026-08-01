@@ -108,11 +108,22 @@ int test_cond_1(TstContext* suite, const TstCase* tstitem)
 
 
 
+static void* _atomic_callback(void* user_data)
+{
+    ANN(user_data);
+    dvz_atomic_set((DvzAtomic)user_data, 42);
+    return NULL;
+}
+
+
+
 int test_atomic_1(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
     DvzAtomic atomic = dvz_atomic();
-    dvz_atomic_set(atomic, 42);
+    DvzThread* thread = dvz_thread(_atomic_callback, atomic);
+    ANN(thread);
+    dvz_thread_join(thread);
     AT(dvz_atomic_get(atomic) == 42)
     dvz_atomic_destroy(atomic);
     return 0;
