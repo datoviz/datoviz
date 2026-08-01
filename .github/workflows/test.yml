@@ -57,6 +57,11 @@ jobs:
           just docs-build-check
       - name: Build
         run: just build
+      - name: Check present paths
+        run: >-
+          xvfb-run --auto-servernum
+          --server-args="-screen 0 1024x768x24 -extension MIT-SHM"
+          just present-check --frames 30
       - name: Test Python tooling
         run: |
           PYTHON=python just ctypes-check

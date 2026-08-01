@@ -104,6 +104,12 @@ canvas *args:
 #
 
 [linux]
+present-check *args:
+    cmake --build build --target dvz_live_canvas scatter
+    scripts/check_present_paths.sh {{args}}
+#
+
+[linux]
 profile-canvas *args:
     just build-profile
     scripts/profile_live_canvas.sh --bin ./build-profile/testing/dvz_live_canvas {{args}}
