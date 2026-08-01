@@ -123,8 +123,4 @@ Scholarly citation:
 3. JOSS submission status is recorded in release notes, but acceptance is not a blocker for
    publishing `v0.4.0`.
 
-Current macOS arm64 evidence, recorded 2026-06-18: vendored package install, system-auto package
-install, strict Homebrew-style source install, install-prefix audit, installed CMake consumer,
-installed pkg-config consumer, host-native wheel build/inspect/check, and wheel CMake consumer
-passed locally. Remaining packaging proof that cannot be completed on this Mac: hosted macOS 15
-wheel repair/tag validation and Windows wheel/runtime consumer validation.
+Current evidence boundary, updated 2026-08-01: RC2 is closed with six canonical wheels, hosted exact-artifact conformance, package-index clean-install verification, source validation, strict documentation output, and physical MacBook M3 intake. Physical Linux and Windows were unavailable and remain exclusions. Post-RC2 source and local package proof covers the rewritten course foundation, runtime shaderc, Qt bridge, split conda artifacts, and Apple Silicon Vulkan/Cocoa hosting. RC3 still requires exact candidate source/wheel/provider proof on supported hosted platforms, Windows vcpkg validation, the published Qt/PyQt provider chain, and the quality gates listed above. Current run identifiers and artifact state belong in `agents/now/STATUS.md` and immutable release evidence rather than this durable checklist.

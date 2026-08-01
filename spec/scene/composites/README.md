@@ -1,6 +1,6 @@
 # Scene Composites
 
-Status: v0.4 implementation plan. Updated: 2026-06-02.
+Status: implemented v0.4 composite architecture and extension boundary. Updated: 2026-08-01.
 
 Composites are retained semantic scene objects that lower to coordinated built-in visuals. They are
 not visual families and must not introduce parallel renderers, presentation paths, or Vulkan

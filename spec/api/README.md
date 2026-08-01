@@ -14,8 +14,7 @@ This directory owns durable public API and API-positioning policy for v0.4.
    boundary and capability-extension model.
 5. [GSP_BACKEND_READINESS.md](GSP_BACKEND_READINESS.md): RC-lane readiness checklist for Datoviz
    as a stable GSP/Matplotlib rendering target.
-6. [NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md](NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md): refactor
-   plan for making `NULL for defaults` equivalent to explicit public default initializer records.
+6. [NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md](NULL_DEFAULT_INVARIANT_REFACTOR_PLAN.md): implemented contract making `NULL for defaults` equivalent to explicit public default initializer records.
 
 
 ## Boundary
