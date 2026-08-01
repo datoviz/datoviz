@@ -27,7 +27,8 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 7. Use [QT_MACOS_VULKAN_HANDOFF.md](QT_MACOS_VULKAN_HANDOFF.md) for the externally blocked Qt/PyQt provider sequence.
 8. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) for the implemented visual pilot; obtain maintainer review before broad rollout.
 9. Use [HANDOFF_GPU_SELECTION.md](HANDOFF_GPU_SELECTION.md) for the implemented GPU-selection contract and remaining physical Windows matrix.
-10. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
+10. Use [HANDOFF_FRAME_DEMAND.md](HANDOFF_FRAME_DEMAND.md) for the approved interaction-pacing and extensible frame-demand implementation plan.
+11. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
 
 ## Guardrails
 
