@@ -1,10 +1,10 @@
 # Frame Demand And Interaction Pacing Handoff
 
-Status: implemented and physically validated on Linux/X11. Updated: 2026-08-02.
+Status: frame demand implemented; low-latency presentation validated on Linux/X11 and Windows; frames-in-flight experiment is next. Updated: 2026-08-02.
 
 This handoff records the approved architecture and implementation contract for responsive on-demand interaction. It remains concrete enough for a lower-reasoning agent to maintain or extend without reopening the architecture question.
 
-Implementation checkpoints are `0f413c3fb` (`scene: add figure frame demand`) and `5930352c1` (`app: pace active interactions continuously`). The scene now exposes per-figure interaction demand and the app schedules only the affected view continuously until release.
+Frame-demand implementation checkpoints are `0f413c3fb` (`scene: add figure frame demand`) and `5930352c1` (`app: pace active interactions continuously`). FIFO-latest-ready support is `427f00ae6`, the durable latency benchmark contract is `8781de956`, runtime telemetry is `c49e98e1a`, refreshed bindings are `e5d72e2e5`, and same-machine comparison tooling is `f29a538c2`.
 
 ## Read First
 
@@ -143,6 +143,8 @@ DVZ_PRESENT_MODE=fifo-latest-ready DVZ_FPS_CAP=60 ./build-profile/examples/c/sta
 
 The FPS cap is intentional: FIFO latest-ready otherwise permits thousands of submitted frames/s while displaying only the newest ready frame at vblank. Use a cap matching the target display refresh rate. The Vulkan device must enable the optional FIFO-latest-ready extension and feature bit; validation layers reject merely passing the enum without both.
 
+Physical Windows testing also found `fifo-latest-ready` with `DVZ_FPS_CAP=60` smooth and responsive. This is useful cross-platform evidence, but it is not sufficient reason to make 60 FPS an unconditional default because the actual display may run at 75, 120, 144, or another refresh rate.
+
 Run the deterministic benchmark workload to ensure it still owns explicit continuous frames:
 
 ```sh
@@ -170,6 +172,46 @@ A wheel event should update a controller-owned target and activate `DVZ_FRAME_DE
 
 The motion integrator belongs to the controller. The scheduler should know only that motion remains active and that another frame is required.
 
+## Immediate Next Task: Frames In Flight
+
+Read [../../spec/testing/INTERACTION_LATENCY.md](../../spec/testing/INTERACTION_LATENCY.md) before implementation. The next task is an opt-in frames-in-flight experiment, not a default-policy change.
+
+The current `DvzCanvasSwapchain.image_count` in `src/canvas/swapchain_sink.c` controls both the number of swapchain images and the number of reusable frame slots. `canvas_select_acquire_slot()` rotates modulo `image_count`, and swapchain setup initializes the canvas frame pool with the same count. A four-image FIFO swapchain can therefore accumulate several stale interaction frames.
+
+Implement the experiment in this order:
+
+1. Add a cached experimental `DVZ_MAX_FRAMES_IN_FLIGHT=1|2|auto` override; absence or `auto` must preserve current behavior exactly.
+2. Add an explicit `slot_count` to `DvzCanvasSwapchain` and resolve it to `min(requested, image_count)`, rejecting zero and malformed explicit values with a clear warning and current-behavior fallback.
+3. Allocate command buffers, acquire semaphores, in-flight fences, offscreen/depth resources, and canvas stream-frame slots per `slot_count`.
+4. Keep swapchain image handles, image layouts, and `render_finished` binary semaphores per `image_count`. Do not move `render_finished` ownership to frame slots; Vulkan permits safe re-signal only after the corresponding swapchain image is reacquired.
+5. Rotate `frame_index` modulo `slot_count`. Track the actual active slot index explicitly instead of deriving `last_presented_slot_index` with image-count arithmetic, because capture and live-sink paths use the last presented slot.
+6. Audit initialization failure, partial cleanup, resize/recreate, device-loss, capture, and exported-handle generation loops so each iterates the correct count.
+7. Extend the interaction report with resolved present mode, image count, and slot count so comparison reports prove matching configurations.
+8. Keep all new behavior behind the override until physical data and Vulkan validation support a default.
+
+Do not add device-idle or queue-idle waits, extra fences, a second swapchain path, or a special scatter renderer. Do not change the default present mode or bake in a 60 FPS cap during this experiment.
+
+Required automated coverage:
+
+1. slot-count resolution for `auto`, one, two, a value above image count, zero, and malformed input;
+2. actual acquire/submit/present cycles with one and two slots under validation layers;
+3. resize/recreate with a slot count smaller than image count;
+4. last-presented capture and live-sink bookkeeping after slot/image indices diverge;
+5. existing canvas, vklite present, app scheduling, capture, and binding checks;
+6. `just build`, `just present-check --frames 120`, and `git diff --check`.
+
+Measure ordinary FIFO at one, two, and `auto` slots on Linux and Windows. Use at least five paired runs and 300 frames for a quick development comparison. The current instrumentation baseline must be `c49e98e1a` or later:
+
+```sh
+DVZ_MAX_FRAMES_IN_FLIGHT=1 just compare-interaction c49e98e1a HEAD --runs 5 --frames 300
+DVZ_MAX_FRAMES_IN_FLIGHT=2 just compare-interaction c49e98e1a HEAD --runs 5 --frames 300
+just compare-interaction c49e98e1a HEAD --runs 5 --frames 300
+```
+
+The comparison tool currently forces ordinary FIFO for `scatter-interaction`. Inspect p95 input-to-submit, slot-wait, and acquire-wait values in the JSON logs; these are CPU submission/queue-pressure proxies, not input-to-photon latency.
+
+After the experiment, make a separate policy decision from the evidence. The expected direction is capped FIFO-latest-ready when supported, a bounded-frames-in-flight FIFO fallback, explicit environment overrides, and eventually refresh-aware pacing instead of an unconditional 60 FPS cap.
+
 ## Completion Criteria
 
-This slice is complete when normal interactive views are idle without input, active controller drags render at presentation cadence, release returns to idle, unrelated views remain idle, existing continuous sources retain their behavior, automated tests pass, physical FIFO interaction feels smooth, and the implementation introduces no new public API or Vulkan ownership change.
+The frame-demand slice is complete: normal interactive views idle without input, active controller drags render continuously, release returns to idle, unrelated views remain idle, and existing continuous sources retain their behavior. Ordinary multi-slot FIFO may still feel sluggish because presentation can queue stale frames; that remaining presentation issue is the frames-in-flight task above.
