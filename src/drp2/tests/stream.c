@@ -823,16 +823,26 @@ int test_drp2_render_pipeline_raster_state(TstContext* suite, const TstCase* ite
         .backend_hint = "semantic",
     };
     DvzDrp2RecordingInfo invalid_abi = info;
+    char bad_abi_path[TST_PATH_MAX] = {0};
+    char unknown_flags_path[TST_PATH_MAX] = {0};
+    char path[TST_PATH_MAX] = {0};
+    int path_rc = tst_tmp_path(
+        "dvz_drp2_recording_bad_abi.dvzr", bad_abi_path, sizeof(bad_abi_path));
+    AT(path_rc == 0);
+    path_rc = tst_tmp_path(
+        "dvz_drp2_recording_unknown_flags.dvzr", unknown_flags_path,
+        sizeof(unknown_flags_path));
+    AT(path_rc == 0);
+    path_rc = tst_tmp_path(
+        "dvz_drp2_recording_raster_state.dvzr", path, sizeof(path));
+    AT(path_rc == 0);
     invalid_abi.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(
-        suite, !dvz_drp2_recording_write_stream(
-                   "/tmp/dvz_drp2_recording_bad_abi.dvzr", stream, &invalid_abi));
+        suite, !dvz_drp2_recording_write_stream(bad_abi_path, stream, &invalid_abi));
     invalid_abi = info;
     invalid_abi.flags = 1;
     AT_EXPECTED_ERROR_STRICT(
-        suite, !dvz_drp2_recording_write_stream(
-                   "/tmp/dvz_drp2_recording_unknown_flags.dvzr", stream, &invalid_abi));
-    const char* path = "/tmp/dvz_drp2_recording_raster_state.dvzr";
+        suite, !dvz_drp2_recording_write_stream(unknown_flags_path, stream, &invalid_abi));
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
     DvzDrp2CommandStream* replay = dvz_drp2_recording_read_stream(path);
     ANN(replay);

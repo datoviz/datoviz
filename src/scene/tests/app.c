@@ -3847,7 +3847,12 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
-    const char* path = "/tmp/dvz_app_offscreen_recording.dvzr";
+    char path[TST_PATH_MAX] = {0};
+    char stream_path[TST_PATH_MAX] = {0};
+    int path_rc = tst_tmp_path("dvz_app_offscreen_recording.dvzr", path, sizeof(path));
+    AT(path_rc == 0);
+    path_rc = dvz_snprintf(stream_path, sizeof(stream_path), "%s/stream.jsonl", path);
+    AT(path_rc >= 0 && path_rc < (int)sizeof(stream_path));
     const char* old_record_fps = getenv("DVZ_DRP2_RECORD_FPS");
     bool had_record_fps = old_record_fps != NULL;
     char saved_record_fps[64] = {0};
@@ -3864,7 +3869,7 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_view_record_stop(win) == 0);
 
-    FILE* stream_file = fopen("/tmp/dvz_app_offscreen_recording.dvzr/stream.jsonl", "rb");
+    FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
     bool has_raw_fallback = false;
     char line[4096] = {0};
@@ -6430,7 +6435,10 @@ int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* i
     DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(dvz_view_capture_png(win, "/tmp/dvz_gsp_first_slice_smoke.png") == 0);
+    char png_path[TST_PATH_MAX] = {0};
+    int path_rc = tst_tmp_path("dvz_gsp_first_slice_smoke.png", png_path, sizeof(png_path));
+    AT(path_rc == 0);
+    AT(dvz_view_capture_png(win, png_path) == 0);
 
     DvzQueryRequest point_request = dvz_query_request();
     point_request.request_id = 1001;
@@ -6585,7 +6593,11 @@ int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
     DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(dvz_view_capture_png(win, "/tmp/dvz_gsp_image_nearest_point_no_stroke_smoke.png") == 0);
+    char png_path[TST_PATH_MAX] = {0};
+    int path_rc = tst_tmp_path(
+        "dvz_gsp_image_nearest_point_no_stroke_smoke.png", png_path, sizeof(png_path));
+    AT(path_rc == 0);
+    AT(dvz_view_capture_png(win, png_path) == 0);
 
     DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);

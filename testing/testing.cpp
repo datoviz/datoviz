@@ -2200,7 +2200,12 @@ static void _tst_rebuild_summary(
 
 
 
-static std::string _tst_child_json_path(uint32_t shard_index)
+/**
+ * Return the platform temporary directory used by test artifacts.
+ *
+ * @return Temporary directory path.
+ */
+static const char* _tst_temp_directory(void)
 {
     const char* tmp = std::getenv("TMPDIR");
 #if defined(_WIN32)
@@ -2221,8 +2226,33 @@ static std::string _tst_child_json_path(uint32_t shard_index)
         tmp = "/tmp";
 #endif
     }
+    return tmp;
+}
+
+
+
+/**
+ * Build a path below the platform temporary directory.
+ *
+ * @param name Relative file or directory name.
+ * @param path Output path buffer.
+ * @param path_size Output path buffer size.
+ * @return Zero on success, or -1 when the arguments are invalid or the path is truncated.
+ */
+int tst_tmp_path(const char* name, char* path, size_t path_size)
+{
+    if (name == NULL || name[0] == '\0' || path == NULL || path_size == 0)
+        return -1;
+    int rc = dvz_snprintf(path, path_size, "%s/%s", _tst_temp_directory(), name);
+    return rc >= 0 && (size_t)rc < path_size ? 0 : -1;
+}
+
+
+
+static std::string _tst_child_json_path(uint32_t shard_index)
+{
     std::ostringstream ss;
-    ss << tmp << "/dvztest-shard-";
+    ss << _tst_temp_directory() << "/dvztest-shard-";
 #if defined(_WIN32)
     ss << _getpid();
 #else

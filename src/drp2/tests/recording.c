@@ -19,12 +19,37 @@
 #include <string.h>
 
 #include "_assertions.h"
+#include "_compat.h"
 #include "../_stream.h"
 #include "datoviz/drp2.h"
 #include "test_drp2.h"
 #include "test_drp2_helpers.h"
 #include "testing.h"
 #include "vulkan_core.h"
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Build portable recording and stream paths for one test artifact.
+ *
+ * @param name Recording directory name.
+ * @param path Output recording path.
+ * @param stream_path Output stream JSONL path.
+ * @return Zero on success, or -1 when either path is truncated.
+ */
+static int _recording_test_paths(
+    const char* name, char path[TST_PATH_MAX], char stream_path[TST_PATH_MAX])
+{
+    int rc = tst_tmp_path(name, path, TST_PATH_MAX);
+    if (rc != 0)
+        return -1;
+    rc = dvz_snprintf(stream_path, TST_PATH_MAX, "%s/stream.jsonl", path);
+    return rc >= 0 && rc < TST_PATH_MAX ? 0 : -1;
+}
 
 
 
@@ -64,10 +89,14 @@ int test_drp2_recording_preserves_attachment_ops(TstContext* suite, const TstCas
         .t_present = 0.0,
         .backend_hint = "semantic",
     };
-    const char* path = "/tmp/dvz_drp2_recording_attachment_ops.dvzr";
+    char path[TST_PATH_MAX] = {0};
+    char stream_path[TST_PATH_MAX] = {0};
+    int path_rc = _recording_test_paths(
+        "dvz_drp2_recording_attachment_ops.dvzr", path, stream_path);
+    AT(path_rc == 0);
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
 
-    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_attachment_ops.dvzr/stream.jsonl", "rb");
+    FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
     char stream_jsonl[8192] = {0};
     size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
@@ -132,10 +161,14 @@ int test_drp2_recording_preserves_named_depth(TstContext* suite, const TstCase* 
         .t_present = 0.0,
         .backend_hint = "semantic",
     };
-    const char* path = "/tmp/dvz_drp2_recording_named_depth.dvzr";
+    char path[TST_PATH_MAX] = {0};
+    char stream_path[TST_PATH_MAX] = {0};
+    int path_rc =
+        _recording_test_paths("dvz_drp2_recording_named_depth.dvzr", path, stream_path);
+    AT(path_rc == 0);
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
 
-    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_named_depth.dvzr/stream.jsonl", "rb");
+    FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
     char stream_jsonl[8192] = {0};
     size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
@@ -232,14 +265,17 @@ int test_drp2_recording_linear_roundtrip(TstContext* suite, const TstCase* item)
         .t_present = 0.016,
         .backend_hint = "semantic",
     };
-    const char* path = "/tmp/dvz_drp2_recording_linear.dvzr";
+    char path[TST_PATH_MAX] = {0};
+    char stream_path[TST_PATH_MAX] = {0};
+    int path_rc = _recording_test_paths("dvz_drp2_recording_linear.dvzr", path, stream_path);
+    AT(path_rc == 0);
     DvzDrp2Recorder* recorder = dvz_drp2_recorder_open(path, &info);
     ANN(recorder);
     AT(dvz_drp2_recorder_write_stream(recorder, 0.0, setup_stream));
     AT(dvz_drp2_recorder_write_stream(recorder, 0.016, update_stream));
     AT(dvz_drp2_recorder_close(recorder));
 
-    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_linear.dvzr/stream.jsonl", "rb");
+    FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
     char stream_jsonl[4096] = {0};
     size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
@@ -394,10 +430,14 @@ int test_drp2_recording_render_jsonl_no_raw_fallback(TstContext* suite, const Ts
         .t_present = 0.0,
         .backend_hint = "semantic",
     };
-    const char* path = "/tmp/dvz_drp2_recording_render_jsonl.dvzr";
+    char path[TST_PATH_MAX] = {0};
+    char stream_path[TST_PATH_MAX] = {0};
+    int path_rc =
+        _recording_test_paths("dvz_drp2_recording_render_jsonl.dvzr", path, stream_path);
+    AT(path_rc == 0);
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
 
-    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_render_jsonl.dvzr/stream.jsonl", "rb");
+    FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
     char stream_jsonl[16384] = {0};
     size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
@@ -454,7 +494,9 @@ int test_drp2_recording_render_jsonl_no_raw_fallback(TstContext* suite, const Ts
     AT(dvz_drp2_stream_create_shader_module_spirv(
         spirv_stream, 20, "vertex", (const unsigned char*)spirv_words, sizeof(spirv_words)));
 
-    const char* spirv_path = "/tmp/dvz_drp2_recording_spirv_payload.dvzr";
+    char spirv_path[TST_PATH_MAX] = {0};
+    path_rc = tst_tmp_path("dvz_drp2_recording_spirv_payload.dvzr", spirv_path, sizeof(spirv_path));
+    AT(path_rc == 0);
     AT(dvz_drp2_recording_write_stream(spirv_path, spirv_stream, &info));
 
     DvzDrp2CommandStream* spirv_replay = dvz_drp2_recording_read_stream(spirv_path);
@@ -544,10 +586,14 @@ int test_drp2_recording_compute_copy_jsonl_no_raw_fallback(TstContext* suite, co
         .t_present = 0.0,
         .backend_hint = "semantic",
     };
-    const char* path = "/tmp/dvz_drp2_recording_compute_copy_jsonl.dvzr";
+    char path[TST_PATH_MAX] = {0};
+    char stream_path[TST_PATH_MAX] = {0};
+    int path_rc = _recording_test_paths(
+        "dvz_drp2_recording_compute_copy_jsonl.dvzr", path, stream_path);
+    AT(path_rc == 0);
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
 
-    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_compute_copy_jsonl.dvzr/stream.jsonl", "rb");
+    FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
     char stream_jsonl[32768] = {0};
     size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);
@@ -613,10 +659,14 @@ int test_drp2_recording_reports_raw_fallback_command(TstContext* suite, const Ts
         .t_present = 0.0,
         .backend_hint = "semantic",
     };
-    const char* path = "/tmp/dvz_drp2_recording_raw_blob.dvzr";
+    char path[TST_PATH_MAX] = {0};
+    char stream_path[TST_PATH_MAX] = {0};
+    int path_rc =
+        _recording_test_paths("dvz_drp2_recording_raw_blob.dvzr", path, stream_path);
+    AT(path_rc == 0);
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
 
-    FILE* stream_file = fopen("/tmp/dvz_drp2_recording_raw_blob.dvzr/stream.jsonl", "rb");
+    FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
     char stream_jsonl[8192] = {0};
     size_t stream_jsonl_size = fread(stream_jsonl, 1, sizeof(stream_jsonl) - 1, stream_file);

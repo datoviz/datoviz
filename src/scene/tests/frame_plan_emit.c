@@ -1401,12 +1401,17 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
         .t_present = 0.0,
         .backend_hint = "semantic",
     };
-    char path[256] = {0};
-    dvz_snprintf(path, sizeof(path), "/tmp/dvz_scene_%s_emit_portable.dvzr", suffix);
+    char name[256] = {0};
+    int path_rc = dvz_snprintf(name, sizeof(name), "dvz_scene_%s_emit_portable.dvzr", suffix);
+    AT(path_rc >= 0 && path_rc < (int)sizeof(name));
+    char path[TST_PATH_MAX] = {0};
+    path_rc = tst_tmp_path(name, path, sizeof(path));
+    AT(path_rc == 0);
     AT(dvz_drp2_recording_write_stream(path, stream, &info));
 
-    char stream_path[256] = {0};
-    dvz_snprintf(stream_path, sizeof(stream_path), "%s/stream.jsonl", path);
+    char stream_path[TST_PATH_MAX] = {0};
+    path_rc = dvz_snprintf(stream_path, sizeof(stream_path), "%s/stream.jsonl", path);
+    AT(path_rc >= 0 && path_rc < (int)sizeof(stream_path));
     FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
     char jsonl[131072] = {0};

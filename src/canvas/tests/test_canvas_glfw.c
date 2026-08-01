@@ -1581,17 +1581,15 @@ int test_canvas_capture_api(TstContext* suite, const TstCase* item)
     AT(rgba[0] + rgba[1] + rgba[2] + rgba[3] > 0);
     dvz_free(rgba);
 
-    const char* png_path = "/tmp/dvz_canvas_capture_api.png";
-#if OS_UNIX
-    unlink(png_path);
-#endif
+    char png_path[TST_PATH_MAX] = {0};
+    int path_rc = tst_tmp_path("dvz_canvas_capture_api.png", png_path, sizeof(png_path));
+    AT(path_rc == 0);
+    (void)remove(png_path);
     AT(dvz_canvas_capture_png(canvas, png_path) == 0);
     struct stat st = {0};
     AT(stat(png_path, &st) == 0);
     AT(st.st_size > 0);
-#if OS_UNIX
-    unlink(png_path);
-#endif
+    (void)remove(png_path);
 
     canvas_glfw_fixture_destroy(&fixture);
     return 0;

@@ -1322,8 +1322,14 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstContext* suite, cons
     sink_cfg.capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
     sink_cfg.encoder.backend = "auto";
     sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
-    sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_offscreen_video_test.mp4";
-    sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_offscreen_video_test.h26x";
+    char mp4_path[TST_PATH_MAX] = {0};
+    char raw_path[TST_PATH_MAX] = {0};
+    int path_rc = tst_tmp_path("dvz_canvas_offscreen_video_test.mp4", mp4_path, sizeof(mp4_path));
+    AT(path_rc == 0);
+    path_rc = tst_tmp_path("dvz_canvas_offscreen_video_test.h26x", raw_path, sizeof(raw_path));
+    AT(path_rc == 0);
+    sink_cfg.encoder.mp4_path = mp4_path;
+    sink_cfg.encoder.raw_path = raw_path;
     if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
     {
         skip_reason = "video backend unavailable";
@@ -2048,8 +2054,16 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstContext*
     sink_cfg.capture_mode = DVZ_VIDEO_CAPTURE_CPU_READBACK;
     sink_cfg.encoder.backend = "auto";
     sink_cfg.encoder.mux = DVZ_VIDEO_MUX_NONE;
-    sink_cfg.encoder.mp4_path = "/tmp/dvz_canvas_offscreen_video_wait_test.mp4";
-    sink_cfg.encoder.raw_path = "/tmp/dvz_canvas_offscreen_video_wait_test.h26x";
+    char mp4_path[TST_PATH_MAX] = {0};
+    char raw_path[TST_PATH_MAX] = {0};
+    int path_rc =
+        tst_tmp_path("dvz_canvas_offscreen_video_wait_test.mp4", mp4_path, sizeof(mp4_path));
+    AT(path_rc == 0);
+    path_rc =
+        tst_tmp_path("dvz_canvas_offscreen_video_wait_test.h26x", raw_path, sizeof(raw_path));
+    AT(path_rc == 0);
+    sink_cfg.encoder.mp4_path = mp4_path;
+    sink_cfg.encoder.raw_path = raw_path;
     if (dvz_canvas_configure_video_sink(canvas, true, &sink_cfg) != 0)
     {
         skip_reason = "video backend unavailable";

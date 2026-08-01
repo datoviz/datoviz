@@ -34,6 +34,7 @@ EXTERN_C_ON
 
 #define TST_DEFAULT_CAPACITY 32
 #define TST_LOG_CAPTURE_DEFAULT_CAPACITY 16
+#define TST_PATH_MAX 4096
 
 
 
@@ -87,6 +88,18 @@ static inline int tst_unsetenv(const char* name)
     return unsetenv(name);
 #endif
 }
+
+
+
+/**
+ * Build a path below the platform temporary directory.
+ *
+ * @param name Relative file or directory name.
+ * @param path Output path buffer.
+ * @param path_size Output path buffer size.
+ * @return Zero on success, or -1 when the arguments are invalid or the path is truncated.
+ */
+int tst_tmp_path(const char* name, char* path, size_t path_size);
 
 
 
