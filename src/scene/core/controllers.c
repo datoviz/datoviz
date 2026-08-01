@@ -24,6 +24,7 @@
 #include "controller_internal.h"
 #include "datoviz/math/_cglm.h"
 #include "_scene.h"
+#include "frame_demand_internal.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
 #include "interaction/internal.h"
@@ -107,22 +108,6 @@ void _scene_controller_destroy(DvzController* controller)
     controller->scene = NULL;
     controller->type = DVZ_CONTROLLER_TYPE_NONE;
     controller->active = false;
-}
-
-
-
-/**
- * Return whether one fly controller still needs frame updates.
- *
- * @param fly the fly payload
- * @return whether the fly payload is active
- */
-static bool _scene_fly_active(const DvzFly* fly)
-{
-    if (fly == NULL)
-        return false;
-    return fly->key_forward || fly->key_backward || fly->key_left || fly->key_right ||
-           fly->key_up || fly->key_down || fly->interacting || fly->pivot_marker_time_left > 0.0;
 }
 
 

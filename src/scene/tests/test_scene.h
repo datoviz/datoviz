@@ -28,6 +28,14 @@
 
 int test_scene_panzoom_arcball(TstSuite* suite);
 
+int test_scene_frame_demand(TstSuite* suite);
+
+int test_figure_frame_demand_panzoom(TstContext* suite, const TstCase* item);
+
+int test_figure_frame_demand_controller_families(TstContext* suite, const TstCase* item);
+
+int test_figure_frame_demand_ignores_unbound_controller(TstContext* suite, const TstCase* item);
+
 int test_scene_axis(TstSuite* suite);
 
 int test_axis_domain_and_ticks(TstContext* suite, const TstCase* item);
