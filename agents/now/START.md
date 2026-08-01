@@ -27,9 +27,10 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 7. Use [QT_MACOS_VULKAN_HANDOFF.md](QT_MACOS_VULKAN_HANDOFF.md) for the externally blocked Qt/PyQt provider sequence.
 8. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) for the implemented visual pilot; obtain maintainer review before broad rollout.
 9. Use [HANDOFF_GPU_SELECTION.md](HANDOFF_GPU_SELECTION.md) for the implemented GPU-selection contract and remaining physical Windows matrix.
-10. Use [HANDOFF_FRAME_DEMAND.md](HANDOFF_FRAME_DEMAND.md) for the implemented interaction-pacing contract, physical validation findings, and future motion extension.
-11. Use [QA_SOURCE_AUDIT.md](QA_SOURCE_AUDIT.md) to continue the incremental static-analysis, sanitizer, lifetime, bounds, and corruption-prevention pass.
-12. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
+10. Use [HANDOFF_WINDOWS_VALIDATION.md](HANDOFF_WINDOWS_VALIDATION.md) for the physical Windows machine baseline, remaining AMD/NVIDIA and Qt/vcpkg work, and exact-candidate proof boundary.
+11. Use [HANDOFF_FRAME_DEMAND.md](HANDOFF_FRAME_DEMAND.md) for the implemented interaction-pacing contract, physical validation findings, and future motion extension.
+12. Use [QA_SOURCE_AUDIT.md](QA_SOURCE_AUDIT.md) to continue the incremental static-analysis, sanitizer, lifetime, bounds, and corruption-prevention pass.
+13. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
 
 ## Guardrails
 
