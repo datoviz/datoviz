@@ -67,6 +67,20 @@ benchmark: scene_points=1
         )
         self.assertAlmostEqual(metrics.ms_per_frame, 2.0)
 
+    def test_parse_static_cache_requires_steady_hits(self) -> None:
+        output = (
+            "scenario_benchmark_points: 10000\n"
+            "app_artifact_cache: view=0 mode=static hits=60 misses=0\n"
+            "scenario_benchmark: scenario=start_scatter frames=60 warmup=6 "
+            "elapsed=0.120000s fps=500.00\n"
+        )
+        metrics = compare.parse_benchmark_output("scatter-static-cache", output, "")
+        self.assertAlmostEqual(metrics.ms_per_frame, 2.0)
+        with self.assertRaisesRegex(compare.CompareError, "not all cache hits"):
+            compare.parse_benchmark_output(
+                "scatter-static-cache", output.replace("hits=60", "hits=59"), ""
+            )
+
     def test_paired_summary_classifies_regression(self) -> None:
         summary = compare.summarize_pairs(
             "scatter", [1.0] * 9, [1.10] * 9, threshold_pct=3.0, seed=1,
@@ -109,10 +123,12 @@ benchmark: scene_points=1
         cached_stream, _ = compare.workload_command(revision, "scene-drp2-cached-stream", 120)
         scene_10k, _ = compare.workload_command(revision, "scene-drp2-10k", 120)
         _, scatter_1_env = compare.workload_command(revision, "scatter-1", 120)
+        _, scatter_cache_env = compare.workload_command(revision, "scatter-static-cache", 120)
         self.assertEqual(cached_plan[-2:], ["--scene-path", "cached-plan"])
         self.assertEqual(cached_stream[-2:], ["--scene-path", "cached-stream"])
         self.assertEqual(scene_10k[-2:], ["--scene-points", "10000"])
         self.assertEqual(scatter_1_env["DVZ_SCATTER_POINT_COUNT"], "1")
+        self.assertEqual(scatter_cache_env["DVZ_APP_BENCHMARK_ARTIFACT_CACHE"], "static")
 
     def test_parse_attribution_point_counts(self) -> None:
         live = """
