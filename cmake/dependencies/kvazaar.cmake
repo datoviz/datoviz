@@ -113,6 +113,13 @@ if(DVZ_ENABLE_KVAZAAR AND NOT DVZ_KVAZAAR_SOURCE STREQUAL "OFF")
                             "${_dvz_kvz_dir}/src/threadwrapper/src/semaphore.cpp"
                             DIRECTORY "${_dvz_kvz_dir}"
                             PROPERTIES HEADER_FILE_ONLY ON)
+                        # Kvazaar leaves pthread_attr_t uninitialized on MSVC because its bundled
+                        # shim ignores that argument. PThreads4W does not, so force its default
+                        # attributes while keeping one pthread implementation in the process.
+                        target_compile_options(
+                            kvazaar
+                            PRIVATE
+                                "/FI${CMAKE_CURRENT_LIST_DIR}/../compat/kvazaar_pthreads4w.h")
                         target_link_libraries(kvazaar PUBLIC PThreads4W::PThreads4W)
 
                         unset(_dvz_kvz_include_dirs)
