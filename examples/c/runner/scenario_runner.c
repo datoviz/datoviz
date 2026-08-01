@@ -1165,8 +1165,8 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     }
 
     DvzAppConfig app_config = dvz_app_config();
-    if (resolved.presentation == DVZ_RUNNER_PRESENT_GLFW)
-        app_config.fps_cap = resolved.fps;
+    /* Scenario FPS controls scene, preview, and capture timing. Rendering remains uncapped unless
+       DvzAppConfig, such as the DVZ_FPS_CAP override, requests a scheduler cap. */
     app = dvz_app_with_config(scene, &app_config);
     if (app == NULL)
     {
