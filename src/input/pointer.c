@@ -111,9 +111,7 @@ static double _resolve_time(double fallback, uint64_t timestamp)
  */
 static uint64_t _now_ns(void)
 {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
+    return dvz_time_monotonic_ns();
 }
 
 

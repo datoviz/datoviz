@@ -80,6 +80,8 @@ struct DvzCanvas
     bool primary_sink_attached;
     DvzCanvasFramePool frame_pool;
     DvzCanvasTimingState timings;
+    double current_slot_wait_us;
+    double current_acquire_wait_us;
     DvzCanvasDraw draw_callback;
     void* draw_user_data;
     uint64_t frame_id;
@@ -166,7 +168,8 @@ void dvz_canvas_timings_init(DvzCanvasTimingState* timings, size_t capacity);
 void dvz_canvas_timings_release(DvzCanvasTimingState* timings);
 
 void dvz_canvas_timings_record(
-    DvzCanvasTimingState* timings, uint64_t frame_id, double cpu_submit_us);
+    DvzCanvasTimingState* timings, uint64_t frame_id, double cpu_submit_us, double slot_wait_us,
+    double acquire_wait_us);
 
 const DvzFrameTiming* dvz_canvas_timings_view(const DvzCanvasTimingState* timings, size_t* count);
 

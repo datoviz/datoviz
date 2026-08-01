@@ -1205,7 +1205,8 @@ void dvz_canvas_timings_release(DvzCanvasTimingState* timings)
 
 
 void dvz_canvas_timings_record(
-    DvzCanvasTimingState* timings, uint64_t frame_id, double cpu_submit_us)
+    DvzCanvasTimingState* timings, uint64_t frame_id, double cpu_submit_us, double slot_wait_us,
+    double acquire_wait_us)
 {
     ANN(timings);
     if (!timings->samples || timings->capacity == 0)
@@ -1216,6 +1217,8 @@ void dvz_canvas_timings_record(
     *timing = (DvzFrameTiming){
         .frame_id = frame_id,
         .cpu_submit_us = cpu_submit_us,
+        .slot_wait_us = slot_wait_us,
+        .acquire_wait_us = acquire_wait_us,
         .gpu_complete_us = 0.0,
         .present_start_us = 0.0,
         .present_done_us = 0.0,
@@ -1906,7 +1909,9 @@ int dvz_canvas_submit(DvzCanvas* canvas)
         canvas->timeline_value = wait_value;
     }
     double elapsed = dvz_clock_interval(&clock) * 1e6;
-    dvz_canvas_timings_record(&canvas->timings, canvas->frame_id, elapsed);
+    dvz_canvas_timings_record(
+        &canvas->timings, canvas->frame_id, elapsed, canvas->current_slot_wait_us,
+        canvas->current_acquire_wait_us);
     return result;
 }
 

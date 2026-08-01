@@ -739,12 +739,15 @@ int test_canvas_timings(TstContext* suite, const TstCase* item)
     dvz_canvas_timings_init(&timings, 4);
     for (uint64_t i = 0; i < 6; ++i)
     {
-        dvz_canvas_timings_record(&timings, i, 100.0 + (double)i);
+        dvz_canvas_timings_record(
+            &timings, i, 100.0 + (double)i, 10.0 + (double)i, 20.0 + (double)i);
     }
     size_t count = 0;
     const DvzFrameTiming* samples = dvz_canvas_timings_view(&timings, &count);
     AT(samples != NULL);
     AT(count == 4);
+    AT(samples[0].slot_wait_us == 14.0);
+    AT(samples[0].acquire_wait_us == 24.0);
     dvz_canvas_timings_release(&timings);
     return 0;
 }

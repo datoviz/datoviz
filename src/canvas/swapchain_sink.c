@@ -26,6 +26,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_time_utils.h"
 #include "_vk_utils.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/queues.h"
@@ -1550,11 +1551,14 @@ static int canvas_select_acquire_slot(
 
     uint32_t slot_idx = state->frame_index % state->image_count;
     DvzCanvasSwapchainSlot* slot = &state->slots[slot_idx];
+    const uint64_t wait_start_ns = dvz_time_monotonic_ns();
     if (!dvz_fence_wait(slot->in_flight))
     {
         log_error("failed to wait for canvas swapchain slot %u", slot_idx);
         return -1;
     }
+    state->canvas->current_slot_wait_us =
+        (double)(dvz_time_monotonic_ns() - wait_start_ns) * 1e-3;
     dvz_fence_reset(slot->in_flight);
 
     *slot_idx_out = slot_idx;
@@ -1585,12 +1589,15 @@ static int canvas_acquire_image_for_slot(
 
     uint32_t image_index = 0;
     DvzPresentStatus acquire_status = DVZ_PRESENT_STATUS_OK;
+    const uint64_t acquire_start_ns = dvz_time_monotonic_ns();
     if (!canvas_test_consume_forced_status(&state->test_force_acquire_status, &acquire_status))
     {
         acquire_status = dvz_swapchain_acquire(
             state->swapchain_wrapper, dvz_semaphore_handle(slot->image_available), UINT64_MAX,
             &image_index);
     }
+    state->canvas->current_acquire_wait_us =
+        (double)(dvz_time_monotonic_ns() - acquire_start_ns) * 1e-3;
     int acquire_status_rc = canvas_handle_acquire_status(canvas, state, acquire_status, slot_idx);
     if (acquire_status_rc != 0)
     {
@@ -2222,6 +2229,8 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
     {
         return -1;
     }
+    canvas->current_slot_wait_us = 0.0;
+    canvas->current_acquire_wait_us = 0.0;
     if (state->runtime_state == DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
     {
         log_error("canvas swapchain acquire aborted after device loss");

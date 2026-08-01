@@ -29,6 +29,7 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "datoviz/input/pointer.h"
 #include "datoviz/scene.h"
 #include "example_random.h"
 #include "example_style.h"
@@ -47,6 +48,8 @@
 #define SEED                  12345u
 #define PANZOOM_PERIOD_FRAMES 240u
 #define PANZOOM_WORKLOAD      "panzoom-v1"
+#define INTERACTION_WORKLOAD  "interaction-v1"
+#define INTERACTION_PERIOD_FRAMES 120u
 
 
 
@@ -65,7 +68,10 @@ DvzScenarioSpec dvz_start_scatter_scenario(void);
 typedef struct ScatterState
 {
     DvzPanzoom* panzoom;
+    DvzInputRouter* input;
     bool panzoom_benchmark;
+    bool interaction_benchmark;
+    uint64_t interaction_frame;
 } ScatterState;
 
 
@@ -78,6 +84,19 @@ static bool _panzoom_benchmark_requested(void)
 {
     const char* workload = getenv("DVZ_SCATTER_BENCHMARK");
     return workload != NULL && strcmp(workload, PANZOOM_WORKLOAD) == 0;
+}
+
+
+
+/**
+ * Return whether the deterministic pointer-interaction workload is requested.
+ *
+ * @return true when the interaction post-frame callback is required
+ */
+static bool _interaction_benchmark_requested(void)
+{
+    const char* workload = getenv("DVZ_SCATTER_BENCHMARK");
+    return workload != NULL && strcmp(workload, INTERACTION_WORKLOAD) == 0;
 }
 
 
@@ -213,19 +232,59 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     const char* workload = getenv("DVZ_SCATTER_BENCHMARK");
     if (workload != NULL && workload[0] != '\0' && strcmp(workload, "static") != 0)
     {
-        if (strcmp(workload, PANZOOM_WORKLOAD) != 0)
+        if (strcmp(workload, PANZOOM_WORKLOAD) != 0 && strcmp(workload, INTERACTION_WORKLOAD) != 0)
         {
             fprintf(stderr, "scatter: unsupported benchmark workload '%s'\n", workload);
             dvz_free(state);
             return false;
         }
         state->panzoom_benchmark = _panzoom_benchmark_requested();
-        fprintf(stdout, "scenario_benchmark_workload: %s\n", PANZOOM_WORKLOAD);
+        state->interaction_benchmark = _interaction_benchmark_requested();
+        fprintf(stdout, "scenario_benchmark_workload: %s\n", workload);
     }
 
     *out_user = state;
 
     return true;
+}
+
+
+
+static bool
+_scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user_data)
+{
+    (void)ctx;
+    (void)app;
+    ScatterState* state = (ScatterState*)user_data;
+    if (state == NULL || !state->interaction_benchmark)
+        return true;
+    state->input = dvz_view_input(view);
+    return state->input != NULL;
+}
+
+
+
+static void _scenario_post_frame(DvzScenarioContext* ctx, void* user_data)
+{
+    ScatterState* state = (ScatterState*)user_data;
+    if (ctx == NULL || state == NULL || !state->interaction_benchmark || state->input == NULL)
+        return;
+
+    const uint64_t phase = state->interaction_frame % INTERACTION_PERIOD_FRAMES;
+    const double tau = 6.28318530717958647692;
+    const double angle = tau * (double)phase / (double)INTERACTION_PERIOD_FRAMES;
+    const float width = (float)ctx->logical_width;
+    const float height = (float)ctx->logical_height;
+    const float x = 0.5f * width + 0.2f * width * (float)sin(angle);
+    const float y = 0.5f * height + 0.15f * height * (float)cos(angle);
+    const DvzPointerEventType type =
+        phase == 0 ? DVZ_POINTER_EVENT_PRESS :
+        phase + 1 == INTERACTION_PERIOD_FRAMES ? DVZ_POINTER_EVENT_RELEASE :
+                                                 DVZ_POINTER_EVENT_MOVE;
+    dvz_pointer_emit_position(
+        state->input, type, x, y, width, height, DVZ_POINTER_BUTTON_LEFT, 0, 1.0f,
+        dvz_input_timestamp_ns(), NULL);
+    state->interaction_frame++;
 }
 
 
@@ -268,6 +327,8 @@ DvzScenarioSpec dvz_start_scatter_scenario(void)
             DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
         .frame = _panzoom_benchmark_requested() ? _scenario_frame : NULL,
+        .post_frame = _interaction_benchmark_requested() ? _scenario_post_frame : NULL,
+        .native_view = _interaction_benchmark_requested() ? _scenario_native_view : NULL,
         .destroy = _scenario_destroy,
     };
 }

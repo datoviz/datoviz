@@ -156,6 +156,12 @@ typedef struct DvzAppFrameTiming
     uint64_t trace_ns;
     uint64_t post_ns;
     uint64_t callback_ns;
+    uint64_t input_sequence;
+    uint64_t input_timestamp_ns;
+    uint64_t input_to_render_start_ns;
+    uint64_t input_to_submit_ns;
+    double slot_wait_ms;
+    double acquire_wait_ms;
 } DvzAppFrameTiming;
 
 
@@ -230,6 +236,9 @@ struct DvzView
     double fps_frame_ms;
     double fps_last_sample_elapsed_s;
     DvzAppFrameTimingState frame_timing;
+    uint64_t latest_pointer_timestamp_ns;
+    uint64_t latest_pointer_sequence;
+    uint64_t consumed_pointer_sequence;
     bool frame_requested;
     bool dirty;
     uint64_t next_frame_ns;
@@ -1625,6 +1634,13 @@ _view_input_event(DvzInputRouter* router, const DvzInputEvent* event, void* user
     DvzView* win = (DvzView*)user_data;
     if (win == NULL)
         return;
+    if (event->type == DVZ_INPUT_EVENT_POINTER && event->content.pointer.timestamp_ns != 0)
+    {
+        win->latest_pointer_timestamp_ns = event->content.pointer.timestamp_ns;
+        win->latest_pointer_sequence++;
+        if (win->latest_pointer_sequence == 0)
+            win->latest_pointer_sequence++;
+    }
     _view_mark_dirty(win);
 }
 
@@ -1692,6 +1708,31 @@ _app_timing_percentile(const double* sorted, uint32_t count, uint32_t percentile
     uint64_t index = ((uint64_t)(count - 1) * percentile + 50) / 100;
     return sorted[index];
 }
+
+
+
+/**
+ * Return the newest canvas timing sample by frame identifier.
+ *
+ * @param canvas canvas to inspect
+ * @return newest sample, or NULL without samples
+ */
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+static const DvzFrameTiming* _app_latest_canvas_timing(const DvzCanvas* canvas)
+{
+    if (canvas == NULL)
+        return NULL;
+    size_t count = 0;
+    const DvzFrameTiming* samples = dvz_canvas_timings(canvas, &count);
+    const DvzFrameTiming* latest = NULL;
+    for (size_t i = 0; i < count; i++)
+    {
+        if (latest == NULL || samples[i].frame_id > latest->frame_id)
+            latest = &samples[i];
+    }
+    return latest;
+}
+#endif
 
 
 
@@ -1839,6 +1880,61 @@ static void _app_frame_timing_report(DvzApp* app)
             (double)total.callback_ns * 1e-6 / divisor, canvas_overhead_ms, draw_residual_ms,
             scheduler_residual_ms);
         dvz_free(sorted);
+
+        double* input_start = (double*)dvz_calloc(state->sample_count, sizeof(double));
+        double* input_submit = (double*)dvz_calloc(state->sample_count, sizeof(double));
+        double* slot_wait = (double*)dvz_calloc(state->sample_count, sizeof(double));
+        double* acquire_wait = (double*)dvz_calloc(state->sample_count, sizeof(double));
+        if (input_start == NULL || input_submit == NULL || slot_wait == NULL || acquire_wait == NULL)
+        {
+            dvz_free(input_start);
+            dvz_free(input_submit);
+            dvz_free(slot_wait);
+            dvz_free(acquire_wait);
+            continue;
+        }
+        uint32_t input_count = 0;
+        for (uint32_t i = 0; i < state->sample_count; i++)
+        {
+            const DvzAppFrameTiming* sample = &state->samples[i];
+            slot_wait[i] = sample->slot_wait_ms;
+            acquire_wait[i] = sample->acquire_wait_ms;
+            if (sample->input_sequence != 0)
+            {
+                input_start[input_count] = (double)sample->input_to_render_start_ns * 1e-6;
+                input_submit[input_count] = (double)sample->input_to_submit_ns * 1e-6;
+                input_count++;
+            }
+        }
+        qsort(slot_wait, state->sample_count, sizeof(double), _app_timing_compare_double);
+        qsort(acquire_wait, state->sample_count, sizeof(double), _app_timing_compare_double);
+        qsort(input_start, input_count, sizeof(double), _app_timing_compare_double);
+        qsort(input_submit, input_count, sizeof(double), _app_timing_compare_double);
+        dvz_fprintf(
+            stdout,
+            "app_interaction_latency: view=%u frames=%u samples=%u "
+            "input_to_render_start_p50_ms=%.4f input_to_render_start_p95_ms=%.4f "
+            "input_to_render_start_p99_ms=%.4f input_to_submit_p50_ms=%.4f "
+            "input_to_submit_p95_ms=%.4f input_to_submit_p99_ms=%.4f "
+            "slot_wait_p50_ms=%.4f slot_wait_p95_ms=%.4f slot_wait_p99_ms=%.4f "
+            "acquire_wait_p50_ms=%.4f acquire_wait_p95_ms=%.4f acquire_wait_p99_ms=%.4f\n",
+            vi, state->sample_count, input_count,
+            _app_timing_percentile(input_start, input_count, 50),
+            _app_timing_percentile(input_start, input_count, 95),
+            _app_timing_percentile(input_start, input_count, 99),
+            _app_timing_percentile(input_submit, input_count, 50),
+            _app_timing_percentile(input_submit, input_count, 95),
+            _app_timing_percentile(input_submit, input_count, 99),
+            _app_timing_percentile(slot_wait, state->sample_count, 50),
+            _app_timing_percentile(slot_wait, state->sample_count, 95),
+            _app_timing_percentile(slot_wait, state->sample_count, 99),
+            _app_timing_percentile(acquire_wait, state->sample_count, 50),
+            _app_timing_percentile(acquire_wait, state->sample_count, 95),
+            _app_timing_percentile(acquire_wait, state->sample_count, 99));
+        dvz_free(input_start);
+        dvz_free(input_submit);
+        dvz_free(slot_wait);
+        dvz_free(acquire_wait);
     }
 }
 
@@ -3978,7 +4074,6 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     uint64_t draw_start_ns = 0;
     if (timing != NULL)
     {
-        dvz_memset(timing, sizeof(*timing), 0, sizeof(*timing));
         draw_start_ns = dvz_time_monotonic_ns();
         phase_start = draw_start_ns;
     }
@@ -6359,6 +6454,20 @@ int dvz_view_render_once(DvzView* win)
         win->frame_timing.enabled && win->replay_recording == NULL &&
         win->frame_timing.sample_count < win->frame_timing.sample_capacity;
     uint64_t frame_start_ns = timing_enabled ? dvz_time_monotonic_ns() : 0;
+    if (timing_enabled)
+    {
+        DvzAppFrameTiming* current = &win->frame_timing.current;
+        dvz_memset(current, sizeof(*current), 0, sizeof(*current));
+        if (
+            win->latest_pointer_sequence != win->consumed_pointer_sequence &&
+            win->latest_pointer_timestamp_ns != 0 &&
+            win->latest_pointer_timestamp_ns <= frame_start_ns)
+        {
+            current->input_sequence = win->latest_pointer_sequence;
+            current->input_timestamp_ns = win->latest_pointer_timestamp_ns;
+            current->input_to_render_start_ns = frame_start_ns - win->latest_pointer_timestamp_ns;
+        }
+    }
     int rc = dvz_canvas_frame(win->canvas);
     if (timing_enabled)
         win->frame_timing.current.canvas_frame_ns = dvz_time_monotonic_ns() - frame_start_ns;
@@ -6376,6 +6485,19 @@ int dvz_view_render_once(DvzView* win)
             DvzAppFrameTiming* current = &win->frame_timing.current;
             current->submit_ns = dvz_time_monotonic_ns() - submit_start_ns;
             current->total_ns = dvz_time_monotonic_ns() - frame_start_ns;
+            const DvzFrameTiming* canvas_timing = _app_latest_canvas_timing(win->canvas);
+            if (canvas_timing != NULL)
+            {
+                current->slot_wait_ms = canvas_timing->slot_wait_us * 1e-3;
+                current->acquire_wait_ms = canvas_timing->acquire_wait_us * 1e-3;
+            }
+            if (current->input_sequence != 0)
+            {
+                const uint64_t submit_done_ns = dvz_time_monotonic_ns();
+                if (submit_done_ns >= current->input_timestamp_ns)
+                    current->input_to_submit_ns = submit_done_ns - current->input_timestamp_ns;
+                win->consumed_pointer_sequence = current->input_sequence;
+            }
             win->frame_timing.samples[win->frame_timing.sample_count++] = *current;
         }
         _view_fps_update(win, dvz_input_timestamp_ns());

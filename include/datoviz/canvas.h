@@ -78,6 +78,8 @@ typedef struct
 {
     uint64_t frame_id;
     double cpu_submit_us;
+    double slot_wait_us;
+    double acquire_wait_us;
     double gpu_complete_us;
     double present_start_us;
     double present_done_us;
