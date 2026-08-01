@@ -25,6 +25,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 7. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) only for the approved visual-documentation pilot; request maintainer review after the pilot before broad rollout.
 8. Use [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md) for the required RC3 tutorial-facing API and three-chapter pilot, RC4 course completion, installed-consumer proof, asset work, and final tutorial freeze; shader work must also follow the first-class runtime GLSL and unified `glslc` contract in [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md).
 9. Read [../../spec/scene/README.md](../../spec/scene/README.md) before changing scene semantics or runtime boundaries, [../../spec/drp2/README.md](../../spec/drp2/README.md) before changing DRP2, and [../../spec/bindings/ARRAY_FACADE.md](../../spec/bindings/ARRAY_FACADE.md) plus [../../spec/bindings/CTYPES_POLICY.md](../../spec/bindings/CTYPES_POLICY.md) before changing bindings.
+10. Use [HANDOFF_GPU_SELECTION.md](HANDOFF_GPU_SELECTION.md) for the approved native test-runner GPU selection direction, Windows hybrid-GPU evidence, implementation boundaries, report requirements, and physical validation matrix.
 
 ## Guardrails
 
