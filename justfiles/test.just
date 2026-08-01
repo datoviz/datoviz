@@ -110,6 +110,11 @@ present-check *args:
 #
 
 [linux]
+compare-present reference candidate="HEAD" *args:
+    python3 tools/compare_present_benchmarks.py "{{reference}}" "{{candidate}}" {{args}}
+#
+
+[linux]
 profile-canvas *args:
     just build-profile
     scripts/profile_live_canvas.sh --bin ./build-profile/testing/dvz_live_canvas {{args}}
