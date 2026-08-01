@@ -221,6 +221,7 @@ static bool _frame_plan_render_image_fixture_visual(
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
         _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -236,6 +237,7 @@ static bool _frame_plan_render_image_fixture_visual(
         _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
         _tst_desc.fixture = TST_SCENE_FRAME_PLAN_GPU_FIXTURE;                                     \
         _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -274,9 +276,9 @@ typedef struct
  *
  * @return GPU context configuration with required Vulkan 1.3 features
  */
-static DvzGpuCtxConfig _scene_frame_plan_gpu_ctx_config(void)
+static DvzGpuCtxConfig _scene_frame_plan_gpu_ctx_config(const TstSuite* suite)
 {
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_suite_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -296,7 +298,6 @@ static DvzGpuCtxConfig _scene_frame_plan_gpu_ctx_config(void)
  */
 static void* _scene_frame_plan_gpu_fixture_create(TstSuite* suite, uint32_t worker_index)
 {
-    (void)suite;
     (void)worker_index;
 
     SceneFramePlanGpuFixture* fixture =
@@ -309,7 +310,7 @@ static void* _scene_frame_plan_gpu_fixture_create(TstSuite* suite, uint32_t work
         return fixture;
     }
 
-    DvzGpuCtxConfig gpu_cfg = _scene_frame_plan_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = _scene_frame_plan_gpu_ctx_config(suite);
     fixture->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
     if (fixture->gpu_ctx == NULL)
     {
@@ -2155,7 +2156,7 @@ int test_frame_plan_emit_drp2_depth_peeling_graph_executes(TstContext* suite, co
     AT(validation.ok);
     AT(validation.code == DVZ_DRP2_VALIDATION_OK);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.independentBlend = true;
     dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
@@ -2209,7 +2210,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
         return 0;
     }
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
     features12.timelineSemaphore = true;

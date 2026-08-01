@@ -65,6 +65,15 @@
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = (resource_flags);                                                   \
         _tst_desc.isolation = (isolation_mode);                                                   \
+        _tst_desc.fixture = ((resource_flags) & (TST_RES_GPU | TST_RES_VULKAN)) != 0             \
+                                ? TST_SCENE_APP_GPU_FIXTURE                                       \
+                                : NULL;                                                           \
+        _tst_desc.fixture_scope = ((resource_flags) & (TST_RES_GPU | TST_RES_VULKAN)) != 0        \
+                                      ? TST_FIXTURE_SCOPE_PROCESS                                  \
+                                      : TST_FIXTURE_SCOPE_NONE;                                    \
+        _tst_desc.run_flags = ((resource_flags) & (TST_RES_GPU | TST_RES_VULKAN)) != 0            \
+                                  ? TST_RUN_CASE_ADAPTER_SUPPORTED                                \
+                                  : TST_RUN_CASE_NONE;                                            \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -77,8 +86,21 @@
         _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
         _tst_desc.fixture = TST_SCENE_APP_GPU_FIXTURE;                                            \
         _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         _tst_desc.setup = _app_gpu_validation_setup;                                               \
         _tst_desc.teardown = _app_gpu_validation_teardown;                                        \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+#define TST_SCENE_APP_EXEMPT_CASE(test, resource_flags, isolation_mode)                          \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = (resource_flags);                                                   \
+        _tst_desc.isolation = (isolation_mode);                                                   \
+        /* External GLFW surface setup owns its extension/configuration identity independently. */ \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_EXEMPT;                                        \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -296,9 +318,9 @@ static DvzAppConfig _app_test_resource_config(void)
  *
  * @return GPU context, or NULL when Vulkan setup is unavailable
  */
-static DvzGpuCtx* _app_test_gpu_ctx(void)
+static DvzGpuCtx* _app_test_gpu_ctx(const TstSuite* suite)
 {
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_suite_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.independentBlend = true;
     dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
@@ -338,7 +360,7 @@ static void* _app_gpu_fixture_create(TstSuite* suite, uint32_t worker_index)
         return fixture;
     }
 
-    fixture->gpu_ctx = _app_test_gpu_ctx();
+    fixture->gpu_ctx = _app_test_gpu_ctx(suite);
     if (fixture->gpu_ctx == NULL)
     {
         fixture->skip_reason = "GPU context creation failed";
@@ -413,6 +435,7 @@ static DvzApp* _app_test_create(TstContext* suite, DvzScene* scene)
         (DvzTestGpuFixture*)tst_context_fixture(suite, TST_SCENE_APP_GPU_FIXTURE);
     if (fixture == NULL)
     {
+        /* CPU-only callers intentionally retain the production app constructor. */
         return dvz_app(scene);
     }
     if (!fixture->available)
@@ -1929,7 +1952,31 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     DvzView* win1 = dvz_view_offscreen(app1, figure, 64, 64);
     AT(win1 != NULL);
 
-    DvzApp* app2 = dvz_app(scene);
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceFeatures features10 = {0};
+    features10.independentBlend = true;
+    dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
+    features12.timelineSemaphore = true;
+    dvz_gpu_ctx_config_features12(&gpu_cfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* gpu_ctx2 = dvz_gpu_ctx(&gpu_cfg);
+    if (gpu_ctx2 == NULL)
+    {
+        tst_skip(suite, "second GPU context failed");
+        dvz_app_destroy(app1);
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzAppResources resources2 = dvz_app_resources();
+    resources2.gpu_ctx = gpu_ctx2;
+    DvzAppConfig config2 = _app_test_resource_config();
+    DvzApp* app2 = dvz_app_with_resources(scene, &config2, &resources2);
     if (app2 == NULL)
     {
         log_warn(
@@ -1937,6 +1984,7 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
             "context failed");
         tst_skip(suite, "second GPU context failed");
         dvz_app_destroy(app1);
+        dvz_gpu_ctx_destroy(gpu_ctx2);
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -1961,6 +2009,7 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     AT(probe2.last_window == win2);
 
     dvz_app_destroy(app2);
+    dvz_gpu_ctx_destroy(gpu_ctx2);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -1994,7 +2043,7 @@ int test_app_offscreen_reopen_same_scene_first_frame(
     uint64_t sums[2] = {0};
     for (uint32_t pass = 0; pass < 2; pass++)
     {
-        DvzApp* app = dvz_app(scene);
+        DvzApp* app = _app_test_create(suite, scene);
         if (app == NULL)
         {
             log_warn(
@@ -3671,7 +3720,7 @@ int test_app_offscreen_records_dvzr_frames(TstContext* suite, const TstCase* ite
     AT(dvz_visual_set_data(visual, "size", &size, 1) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_records_dvzr_frames skipped: GPU context creation failed");
@@ -4764,7 +4813,7 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     ANN(blue_visual);
     ANN(occluder_visual);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_depth_peel_mesh_two_layers skipped: GPU context failed");
@@ -8607,7 +8656,7 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
         log_warn("test_app_offscreen_volume_depth_occluded_by_primitive skipped: GPU context failed");
@@ -8686,7 +8735,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_view_panel_panzoom_helper);
     TST_SCENE_APP_SHARED_CASE(test_view_connects_prebound_panel_controller);
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
-    TST_SCENE_APP_CASE(
+    TST_SCENE_APP_EXEMPT_CASE(
         test_app_external_surface_release_waits, TST_SCENE_APP_GPU_RES | TST_RES_GLFW,
         TST_ISOLATION_PROCESS);
 #endif

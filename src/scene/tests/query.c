@@ -40,6 +40,7 @@
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
         _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -52,7 +53,6 @@
             return 0;                                                                             \
         }                                                                                         \
     } while (0)
-
 
 
 /*************************************************************************************************/
@@ -561,7 +561,7 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -739,7 +739,7 @@ int test_scene_image_query_linear_color_sample_not_decoded(
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -862,7 +862,7 @@ int test_scene_image_query_generated_rect_samples_position(
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -956,7 +956,7 @@ int test_scene_image_query_panzoom_samples_transformed_position(
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1070,7 +1070,7 @@ int test_scene_image_query_reuses_retained_request_executor(
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1175,7 +1175,7 @@ int test_scene_image_sample_query_readback_failure(TstContext* suite, const TstC
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1266,7 +1266,7 @@ int test_scene_point_query_misses_empty_pixel(TstContext* suite, const TstCase* 
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1339,7 +1339,7 @@ int test_scene_point_query_item_range_global_identity(TstContext* suite, const T
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1411,7 +1411,7 @@ int test_scene_pixel_query_accepts_square_corner(TstContext* suite, const TstCas
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1481,7 +1481,7 @@ int test_scene_pixel_query_preserves_vertical_item_orientation(
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1562,7 +1562,7 @@ int test_scene_marker_query_accepts_bbox_corner(TstContext* suite, const TstCase
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1636,7 +1636,7 @@ int test_scene_marker_query_preserves_vertical_item_orientation(
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1729,7 +1729,7 @@ int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1811,7 +1811,7 @@ int test_scene_sphere_query_resolves_camera_arcball_item(TstContext* suite, cons
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1911,7 +1911,7 @@ int test_scene_sphere_query_preserves_camera_arcball_y_orientation(
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2034,7 +2034,7 @@ int test_scene_mesh_query_resolves_instance_item(TstContext* suite, const TstCas
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2129,7 +2129,7 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2218,7 +2218,7 @@ int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item)
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2305,7 +2305,7 @@ int test_scene_vector_query_resolves_straight_item(TstContext* suite, const TstC
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2397,7 +2397,7 @@ int test_scene_vector_query_resolves_curved_item(TstContext* suite, const TstCas
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2488,7 +2488,7 @@ int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* i
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2576,7 +2576,7 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2673,7 +2673,7 @@ int test_scene_image_query_resolves_item(TstContext* suite, const TstCase* item)
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2754,7 +2754,7 @@ int test_scene_volume_query_resolves_item(TstContext* suite, const TstCase* item
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2828,7 +2828,7 @@ int test_scene_volume_query_resolves_sample(TstContext* suite, const TstCase* it
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2916,7 +2916,7 @@ int test_scene_volume_query_resolves_label_sample(TstContext* suite, const TstCa
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -3030,7 +3030,7 @@ static int _test_scene_volume_query_label_sample_value(
     ANN(label);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -3173,7 +3173,7 @@ int test_scene_volume_query_resolves_sample_uvw_profile(TstContext* suite, const
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -3397,7 +3397,7 @@ int test_scene_volume_sample_query_readback_failure(TstContext* suite, const Tst
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -3485,7 +3485,7 @@ int test_scene_labels_query_resolves_category(TstContext* suite, const TstCase* 
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -3646,7 +3646,7 @@ int test_scene_labels_query_high_unsigned_id(TstContext* suite, const TstCase* i
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -3851,7 +3851,7 @@ int test_scene_labels_query_readback_failure(TstContext* suite, const TstCase* i
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -3948,7 +3948,7 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
     ANN(item);
     TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;

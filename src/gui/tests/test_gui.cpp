@@ -29,6 +29,9 @@
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
+#include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/window.h"
+#include "datoviz_testing.h"
 #include "../_gui.h"
 
 
@@ -58,6 +61,14 @@ typedef struct GuiInputRecorder
 
 
 
+typedef struct GuiTestGpuResources
+{
+    DvzGpuCtx* gpu_ctx;
+    DvzWindowHost* window_host;
+} GuiTestGpuResources;
+
+
+
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
@@ -74,6 +85,81 @@ static bool _gui_smoke_available(void)
 #else
     return false;
 #endif
+}
+
+
+
+/**
+ * Create selected-GPU resources for a GLFW presentation app smoke.
+ *
+ * @param suite test context
+ * @param[out] resources borrowed app resources to initialize
+ * @return NULL on success, otherwise a skip reason
+ */
+static const char* _gui_test_gpu_resources_create(TstContext* suite, GuiTestGpuResources* resources)
+{
+    ANN(suite);
+    ANN(resources);
+    *resources = {};
+    resources->window_host = dvz_window_host();
+    if (resources->window_host == NULL)
+        return "window host creation failed";
+
+    DvzGpuCtxConfig config = dvz_testing_gpu_ctx_config(suite);
+    if (dvz_canvas_configure_gpu_ctx(
+            resources->window_host, DVZ_BACKEND_GLFW, DVZ_CANVAS_RENDER_MODE_PRESENT, &config) !=
+        DVZ_OK)
+    {
+        dvz_window_host_destroy(resources->window_host);
+        resources->window_host = NULL;
+        return "GLFW GPU context configuration failed";
+    }
+    resources->gpu_ctx = dvz_gpu_ctx(&config);
+    if (resources->gpu_ctx == NULL)
+    {
+        dvz_window_host_destroy(resources->window_host);
+        resources->window_host = NULL;
+        return "GPU context creation failed";
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Destroy selected-GPU resources after every borrowing app has been destroyed.
+ *
+ * @param resources resources to destroy
+ */
+static void _gui_test_gpu_resources_destroy(GuiTestGpuResources* resources)
+{
+    ANN(resources);
+    if (resources->gpu_ctx != NULL)
+        dvz_gpu_ctx_destroy(resources->gpu_ctx);
+    if (resources->window_host != NULL)
+        dvz_window_host_destroy(resources->window_host);
+    *resources = {};
+}
+
+
+
+/**
+ * Create an app borrowing the selected GPU context and GLFW window host.
+ *
+ * @param scene app scene
+ * @param config optional app configuration
+ * @param resources selected GPU resources
+ * @return created app or NULL
+ */
+static DvzApp* _gui_test_app(
+    DvzScene* scene, const DvzAppConfig* config, const GuiTestGpuResources* resources)
+{
+    ANN(scene);
+    ANN(resources);
+    DvzAppResources app_resources = dvz_app_resources();
+    app_resources.gpu_ctx = resources->gpu_ctx;
+    app_resources.window_host = resources->window_host;
+    return dvz_app_with_resources(scene, config, &app_resources);
 }
 
 
@@ -331,6 +417,13 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
         return 0;
     }
 
+    GuiTestGpuResources gpu_resources = {};
+    const char* gpu_skip = _gui_test_gpu_resources_create(suite, &gpu_resources);
+    if (gpu_skip != NULL)
+    {
+        tst_skip(suite, gpu_skip);
+        return 0;
+    }
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
     DvzFigure* source_figure = _gui_test_figure(scene, 160, 120);
@@ -338,12 +431,13 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     AT(source_figure != NULL);
     AT(host_figure != NULL);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _gui_test_app(scene, NULL, &gpu_resources);
     if (app == NULL)
     {
         log_warn("test_gui_viewport_resize_hidden_smoke skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
         return 0;
     }
 
@@ -356,6 +450,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
         tst_skip(suite, "view creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
         return 0;
     }
 
@@ -374,6 +469,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
         tst_skip(suite, "GUI creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
         return 0;
     }
 
@@ -452,6 +548,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     dvz_gui_viewport_destroy(smoke.viewport);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
+    _gui_test_gpu_resources_destroy(&gpu_resources);
     return 0;
 }
 
@@ -464,6 +561,22 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     if (!_gui_smoke_available())
     {
         tst_skip(suite, "GUI/GLFW support unavailable");
+        return 0;
+    }
+
+    GuiTestGpuResources null_gpu_resources = {};
+    const char* gpu_skip = _gui_test_gpu_resources_create(suite, &null_gpu_resources);
+    if (gpu_skip != NULL)
+    {
+        tst_skip(suite, gpu_skip);
+        return 0;
+    }
+    GuiTestGpuResources explicit_gpu_resources = {};
+    gpu_skip = _gui_test_gpu_resources_create(suite, &explicit_gpu_resources);
+    if (gpu_skip != NULL)
+    {
+        _gui_test_gpu_resources_destroy(&null_gpu_resources);
+        tst_skip(suite, gpu_skip);
         return 0;
     }
 
@@ -484,8 +597,8 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     app_config.font_mono_size_px = 17.0f;
     app_config.font_text_size_px = 23.0f;
 
-    DvzApp* null_app = dvz_app_with_config(null_scene, &app_config);
-    DvzApp* explicit_app = dvz_app_with_config(explicit_scene, &app_config);
+    DvzApp* null_app = _gui_test_app(null_scene, &app_config, &null_gpu_resources);
+    DvzApp* explicit_app = _gui_test_app(explicit_scene, &app_config, &explicit_gpu_resources);
     if (null_app == NULL || explicit_app == NULL)
     {
         log_warn("test_gui_config_inherits_app_font_defaults skipped: GPU context creation failed");
@@ -496,6 +609,8 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
             dvz_app_destroy(explicit_app);
         dvz_scene_destroy(null_scene);
         dvz_scene_destroy(explicit_scene);
+        _gui_test_gpu_resources_destroy(&null_gpu_resources);
+        _gui_test_gpu_resources_destroy(&explicit_gpu_resources);
         return 0;
     }
 
@@ -511,6 +626,8 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
         dvz_app_destroy(explicit_app);
         dvz_scene_destroy(null_scene);
         dvz_scene_destroy(explicit_scene);
+        _gui_test_gpu_resources_destroy(&null_gpu_resources);
+        _gui_test_gpu_resources_destroy(&explicit_gpu_resources);
         return 0;
     }
 
@@ -525,6 +642,8 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
         dvz_app_destroy(explicit_app);
         dvz_scene_destroy(null_scene);
         dvz_scene_destroy(explicit_scene);
+        _gui_test_gpu_resources_destroy(&null_gpu_resources);
+        _gui_test_gpu_resources_destroy(&explicit_gpu_resources);
         return 0;
     }
 
@@ -547,6 +666,8 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     dvz_app_destroy(explicit_app);
     dvz_scene_destroy(null_scene);
     dvz_scene_destroy(explicit_scene);
+    _gui_test_gpu_resources_destroy(&null_gpu_resources);
+    _gui_test_gpu_resources_destroy(&explicit_gpu_resources);
     return 0;
 }
 
@@ -570,6 +691,14 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
         return 0;
     }
 
+    GuiTestGpuResources gpu_resources = {};
+    const char* gpu_skip = _gui_test_gpu_resources_create(suite, &gpu_resources);
+    if (gpu_skip != NULL)
+    {
+        tst_skip(suite, gpu_skip);
+        return 0;
+    }
+
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
     DvzFigure* source_a = _gui_test_figure(scene, 160, 120);
@@ -579,12 +708,13 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     AT(source_b != NULL);
     AT(host_figure != NULL);
 
-    DvzApp* app = dvz_app(scene);
+    DvzApp* app = _gui_test_app(scene, NULL, &gpu_resources);
     if (app == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
         return 0;
     }
 
@@ -596,6 +726,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
         tst_skip(suite, "view creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
         return 0;
     }
 
@@ -606,6 +737,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
         tst_skip(suite, "GUI creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
         return 0;
     }
 
@@ -646,6 +778,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     dvz_gui_viewport_destroy(viewport_b);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
+    _gui_test_gpu_resources_destroy(&gpu_resources);
     return 0;
 }
 
@@ -670,6 +803,7 @@ int test_gui(TstSuite* suite)
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN | TST_RES_GLFW;          \
         _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 

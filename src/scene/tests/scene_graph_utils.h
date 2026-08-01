@@ -70,6 +70,7 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
         _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -82,6 +83,7 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
         _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
         _tst_desc.fixture = TST_SCENE_GRAPH_GPU_FIXTURE;                                          \
         _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 

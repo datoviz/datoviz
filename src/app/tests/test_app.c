@@ -31,6 +31,7 @@
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
 #include "datoviz/window/backend.h"
+#include "datoviz_testing.h"
 #include "test_app.h"
 
 
@@ -84,9 +85,9 @@ static DvzAppConfig _test_app_resource_config(void)
  *
  * @return GPU context, or NULL when Vulkan setup is unavailable
  */
-static DvzGpuCtx* _test_app_gpu_ctx(void)
+static DvzGpuCtx* _test_app_gpu_ctx(const TstContext* suite)
 {
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.independentBlend = true;
     dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
@@ -467,14 +468,23 @@ static int test_app_should_exit_reflects_stop_request(TstContext* suite, const T
     ANN(suite);
     ANN(item);
 
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx(suite);
+    if (gpu_ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzAppConfig config = _test_app_resource_config();
     config.exit_policy = DVZ_APP_EXIT_NEVER;
-    DvzApp* app = dvz_app_with_resources(scene, &config, NULL);
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = gpu_ctx;
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
     if (app == NULL)
     {
         dvz_scene_destroy(scene);
+        dvz_gpu_ctx_destroy(gpu_ctx);
         tst_skip(suite, "GPU context creation failed");
         return 0;
     }
@@ -485,6 +495,7 @@ static int test_app_should_exit_reflects_stop_request(TstContext* suite, const T
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(gpu_ctx);
     return 0;
 }
 
@@ -498,13 +509,22 @@ static int test_app_reap_closed_views_noops_without_closed_views(
     ANN(suite);
     ANN(item);
 
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx(suite);
+    if (gpu_ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
     DvzScene* scene = dvz_scene();
     ANN(scene);
     DvzAppConfig config = _test_app_resource_config();
-    DvzApp* app = dvz_app_with_resources(scene, &config, NULL);
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = gpu_ctx;
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
     if (app == NULL)
     {
         dvz_scene_destroy(scene);
+        dvz_gpu_ctx_destroy(gpu_ctx);
         tst_skip(suite, "GPU context creation failed");
         return 0;
     }
@@ -513,6 +533,7 @@ static int test_app_reap_closed_views_noops_without_closed_views(
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(gpu_ctx);
     return 0;
 }
 
@@ -556,7 +577,7 @@ static int test_app_resources_reject_incompatible_runtime(TstContext* suite, con
     ANN(suite);
     ANN(item);
 
-    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx();
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx(suite);
     if (gpu_ctx == NULL)
     {
         tst_skip(suite, "GPU context creation failed");
@@ -594,7 +615,7 @@ static int test_app_resources_borrow_gpu_ctx(TstContext* suite, const TstCase* i
     ANN(suite);
     ANN(item);
 
-    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx();
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx(suite);
     if (gpu_ctx == NULL)
     {
         tst_skip(suite, "GPU context creation failed");
@@ -626,7 +647,7 @@ static int test_app_resources_borrow_gpu_ctx_and_runtime(TstContext* suite, cons
     ANN(suite);
     ANN(item);
 
-    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx();
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx(suite);
     if (gpu_ctx == NULL)
     {
         tst_skip(suite, "GPU context creation failed");
@@ -666,7 +687,7 @@ static int test_app_resources_borrow_gpu_ctx_and_window_host(TstContext* suite, 
     ANN(suite);
     ANN(item);
 
-    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx();
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx(suite);
     if (gpu_ctx == NULL)
     {
         tst_skip(suite, "GPU context creation failed");
@@ -1460,6 +1481,19 @@ int test_app(TstSuite* suite)
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
         _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+#define TST_APP_GPU_DEFAULT_EXEMPT_CASE(test)                                                    \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        /* This case deliberately verifies the production-owned default GPU path. */             \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_EXEMPT;                                        \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -1470,7 +1504,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_capture_config_defaults);
     TST_CASE(test_app_abi_rejects_invalid_structs);
     TST_CASE(test_app_capture_config_env);
-    TST_APP_GPU_CASE(test_app_resources_owned_defaults);
+    TST_APP_GPU_DEFAULT_EXEMPT_CASE(test_app_resources_owned_defaults);
     TST_APP_GPU_CASE(test_app_should_exit_reflects_stop_request);
     TST_APP_GPU_CASE(test_app_reap_closed_views_noops_without_closed_views);
     TST_CASE(test_app_resources_reject_runtime_without_gpu);
@@ -1502,5 +1536,6 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_trace_snapshot_recovers_after_failed_build);
 
 #undef TST_APP_GPU_CASE
+#undef TST_APP_GPU_DEFAULT_EXEMPT_CASE
     return 0;
 }

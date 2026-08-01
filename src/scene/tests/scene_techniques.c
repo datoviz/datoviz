@@ -2443,7 +2443,7 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
 
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -2540,7 +2540,7 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
 
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -5346,7 +5346,7 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
 
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.independentBlend = true;
     dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
@@ -5494,7 +5494,7 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
 
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.independentBlend = true;
     dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);

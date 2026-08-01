@@ -40,9 +40,9 @@ typedef struct
  *
  * @return GPU context configuration with required Vulkan 1.3 features
  */
-static DvzGpuCtxConfig _scene_graph_gpu_ctx_config(void)
+static DvzGpuCtxConfig _scene_graph_gpu_ctx_config(const TstSuite* suite)
 {
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_suite_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -62,7 +62,6 @@ static DvzGpuCtxConfig _scene_graph_gpu_ctx_config(void)
  */
 static void* _scene_graph_gpu_fixture_create(TstSuite* suite, uint32_t worker_index)
 {
-    (void)suite;
     (void)worker_index;
 
     SceneGraphGpuFixture* fixture =
@@ -75,7 +74,7 @@ static void* _scene_graph_gpu_fixture_create(TstSuite* suite, uint32_t worker_in
         return fixture;
     }
 
-    DvzGpuCtxConfig gpu_cfg = _scene_graph_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = _scene_graph_gpu_ctx_config(suite);
     fixture->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
     if (fixture->gpu_ctx == NULL)
     {

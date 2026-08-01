@@ -2736,7 +2736,7 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
 
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
     features12.timelineSemaphore = true;

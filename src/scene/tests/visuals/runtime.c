@@ -353,7 +353,7 @@ int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, con
     dvz_diagnostic_report_init(&report);
     DvzFramePlanEmitConfig emit_cfg = dvz_frame_plan_emit_config();
     emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
     features12.timelineSemaphore = true;
@@ -425,7 +425,7 @@ int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item
 
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
     features12.timelineSemaphore = true;
@@ -896,7 +896,7 @@ int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
 
     TST_SCENE_GRAPH_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.independentBlend = true;
     dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);

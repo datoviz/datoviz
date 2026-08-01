@@ -51,6 +51,7 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
         _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -368,7 +369,7 @@ int test_scene_text_atlas_utf8_runtime_readback(TstContext* suite, const TstCase
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     TST_SCENE_TEXT_ATLAS_REQUIRE_VKLITE(suite);
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
