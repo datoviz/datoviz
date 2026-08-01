@@ -20,6 +20,7 @@
 #include "datoviz/vk/vulkan.h"
 
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vklite/commands.h"
@@ -555,6 +556,18 @@ DVZ_EXPORT VkSemaphore dvz_semaphore_handle(DvzSemaphore* semaphore);
  */
 DVZ_EXPORT int
 dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTypeFlags handle_type);
+
+
+
+/**
+ * Export a semaphore as a native platform handle.
+ *
+ * @param semaphore semaphore to export
+ * @param handle_type external handle type requested by the caller
+ * @return native handle on success, `DVZ_EXTERNAL_HANDLE_INVALID` on failure
+ */
+DVZ_EXPORT DvzExternalHandle
+dvz_semaphore_export(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTypeFlags handle_type);
 
 
 

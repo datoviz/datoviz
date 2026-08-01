@@ -12,6 +12,7 @@
 #include "_dynload.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/vk/device.h"
 #include "encoder_backend.h"
 #include "file_utils.h"
 #include <cuda.h>
@@ -52,6 +53,8 @@ typedef struct
 {
     CUresult (*Init)(unsigned int);
     CUresult (*DeviceGet)(CUdevice*, int);
+    CUresult (*DeviceGetCount)(int*);
+    CUresult (*DeviceGetUuid)(CUuuid*, CUdevice);
     CUresult (*CtxCreate)(CUcontext*, unsigned int, CUdevice);
     CUresult (*CtxSetCurrent)(CUcontext);
     CUresult (*CtxDestroy)(CUcontext);
@@ -115,6 +118,8 @@ static bool _cuda_load(void)
 
     _CU_SYM(Init, "cuInit")
     _CU_SYM(DeviceGet, "cuDeviceGet")
+    _CU_SYM(DeviceGetCount, "cuDeviceGetCount")
+    _CU_SYM(DeviceGetUuid, "cuDeviceGetUuid_v2")
     _CU_SYM(CtxCreate, "cuCtxCreate_v2")
     _CU_SYM(CtxSetCurrent, "cuCtxSetCurrent")
     _CU_SYM(CtxDestroy, "cuCtxDestroy_v2")
@@ -551,27 +556,86 @@ static void nvenc_state_free(DvzVideoBackendNvenc* state)
 
 
 
-static void
-cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, size_t alloc_size)
+static bool _cuda_device_for_vulkan(DvzDevice* device, CUdevice* out)
+{
+    ANN(out);
+    if (device == NULL)
+    {
+        CU_CHECK(g_cu.DeviceGet(out, 0));
+        return true;
+    }
+
+    VkPhysicalDeviceIDProperties id = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ID_PROPERTIES,
+    };
+    VkPhysicalDeviceProperties2 props = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2,
+        .pNext = &id,
+    };
+    vkGetPhysicalDeviceProperties2(dvz_device_physical_device(device), &props);
+
+    int count = 0;
+    CU_CHECK(g_cu.DeviceGetCount(&count));
+    for (int ordinal = 0; ordinal < count; ordinal++)
+    {
+        CUdevice candidate = 0;
+        CUuuid uuid = {0};
+        CU_CHECK(g_cu.DeviceGet(&candidate, ordinal));
+        CU_CHECK(g_cu.DeviceGetUuid(&uuid, candidate));
+        if (memcmp(id.deviceUUID, uuid.bytes, VK_UUID_SIZE) == 0)
+        {
+            *out = candidate;
+            return true;
+        }
+    }
+    log_warn("the selected Vulkan GPU has no matching CUDA device");
+    return false;
+}
+
+
+
+static bool
+cuda_import_vk_memory(
+    CudaCtx* cu, DvzDevice* device, uint32_t width, uint32_t height,
+    DvzExternalHandle memory_handle, size_t alloc_size)
 {
     ANN(cu);
     if (!_cuda_load())
-        return;
+        return false;
     dvz_memset(cu, sizeof(*cu), 0, sizeof(*cu));
     CUdevice dev;
     CU_CHECK(g_cu.Init(0));
-    CU_CHECK(g_cu.DeviceGet(&dev, 0));
+    if (!_cuda_device_for_vulkan(device, &dev))
+        return false;
     CU_CHECK(g_cu.CtxCreate(&cu->cuCtx, 0, dev));
     CU_CHECK(g_cu.CtxSetCurrent(cu->cuCtx));
     CU_CHECK(g_cu.StreamCreate(&cu->stream, CU_STREAM_DEFAULT));
 
+#if OS_UNIX
+    int cuda_memory_fd = dup((int)memory_handle);
+    if (cuda_memory_fd < 0)
+    {
+        log_error("failed to duplicate Vulkan memory FD for CUDA import");
+        return false;
+    }
+#endif
     CUDA_EXTERNAL_MEMORY_HANDLE_DESC hdesc = {
+#if OS_WINDOWS
+        .type = CU_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32,
+        .handle = {
+            .win32 = {
+                .handle = (void*)(intptr_t)memory_handle,
+                .name = NULL,
+            },
+        },
+#else
         .type = CU_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD,
         .handle = {
-            .fd = mem_fd,
+            .fd = cuda_memory_fd,
         },
+#endif
         .size = alloc_size,
-        .flags = 0,
+        .flags = CUDA_EXTERNAL_MEMORY_DEDICATED,
     };
     CU_CHECK(g_cu.ImportExternalMemory(&cu->extMem, &hdesc));
 
@@ -590,6 +654,7 @@ cuda_import_vk_memory(CudaCtx* cu, uint32_t width, uint32_t height, int mem_fd, 
 
     CU_CHECK(g_cu.ModuleLoadDataEx(&cu->cuMod, PTX, 0, NULL, NULL));
     CU_CHECK(g_cu.ModuleGetFunction(&cu->cuFun, cu->cuMod, "rgba2nv12"));
+    return true;
 }
 
 
@@ -972,25 +1037,43 @@ static int nvenc_start(DvzVideoEncoder* enc)
     DvzVideoBackendNvenc* state = nvenc_state(enc);
     ANN(state);
 
-    cuda_import_vk_memory(
-        &state->cuda, enc->cfg.width, enc->cfg.height, enc->memory_fd, enc->memory_size);
+    if (!cuda_import_vk_memory(
+            &state->cuda, enc->device, enc->cfg.width, enc->cfg.height, enc->memory_fd,
+            enc->memory_size))
+    {
+        return -1;
+    }
     state->cuda_ready = true;
 
-    if (enc->wait_semaphore_fd >= 0)
+    if (enc->wait_semaphore_fd != DVZ_EXTERNAL_HANDLE_INVALID)
     {
+#if OS_UNIX
+        int cuda_semaphore_fd = dup((int)enc->wait_semaphore_fd);
+        if (cuda_semaphore_fd < 0)
+        {
+            log_error("failed to duplicate Vulkan semaphore FD for CUDA import");
+            return -1;
+        }
+#endif
         CUDA_EXTERNAL_SEMAPHORE_HANDLE_DESC shdesc = {
-            .type = CU_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD,
+#if OS_WINDOWS
+            .type = CU_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TIMELINE_SEMAPHORE_WIN32,
             .handle = {
-                .fd = enc->wait_semaphore_fd,
+                .win32 = {
+                    .handle = (void*)(intptr_t)enc->wait_semaphore_fd,
+                    .name = NULL,
+                },
             },
+#else
+            .type = CU_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TIMELINE_SEMAPHORE_FD,
+            .handle = {
+                .fd = cuda_semaphore_fd,
+            },
+#endif
             .flags = 0,
         };
         CU_CHECK(g_cu.ImportExternalSemaphore(&state->wait_semaphore, &shdesc));
         state->wait_semaphore_ready = true;
-#if OS_UNIX
-        close(enc->wait_semaphore_fd);
-#endif
-        enc->wait_semaphore_fd = -1;
     }
 
     nvenc_open_session_cuda(&state->nvenc, state->cuda.cuCtx);

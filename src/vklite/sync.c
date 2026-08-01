@@ -650,15 +650,16 @@ VkSemaphore dvz_semaphore_handle(DvzSemaphore* semaphore)
  * @param handle_type external handle type requested by the caller
  * @return file descriptor on success, -1 on failure or unsupported platforms
  */
-int dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTypeFlags handle_type)
+DvzExternalHandle
+dvz_semaphore_export(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTypeFlags handle_type)
 {
     ANN(semaphore);
-#if OS_UNIX
     if (handle_type == 0)
     {
-        return -1;
+        return DVZ_EXTERNAL_HANDLE_INVALID;
     }
 
+#if OS_UNIX
     VkSemaphoreGetFdInfoKHR fd_info = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
         .semaphore = semaphore->vk_semaphore,
@@ -671,10 +672,39 @@ int dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTy
     if (res != VK_SUCCESS)
     {
         log_warn("vkGetSemaphoreFdKHR failed for semaphore (%d)", res);
-        return -1;
+        return DVZ_EXTERNAL_HANDLE_INVALID;
     }
-    return fd;
+    return (DvzExternalHandle)fd;
+#elif OS_WINDOWS
+    VkSemaphoreGetWin32HandleInfoKHR handle_info = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_WIN32_HANDLE_INFO_KHR,
+        .semaphore = semaphore->vk_semaphore,
+        .handleType = handle_type,
+    };
+    HANDLE handle = NULL;
+    VkDevice vkd = dvz_device_handle(semaphore->device);
+    ANNVK(vkd);
+    VkResult res = vkGetSemaphoreWin32HandleKHR(vkd, &handle_info, &handle);
+    if (res != VK_SUCCESS || handle == NULL)
+    {
+        log_warn("vkGetSemaphoreWin32HandleKHR failed for semaphore (%d)", res);
+        return DVZ_EXTERNAL_HANDLE_INVALID;
+    }
+    return (DvzExternalHandle)(intptr_t)handle;
 #else
+    (void)handle_type;
+    return DVZ_EXTERNAL_HANDLE_INVALID;
+#endif
+}
+
+
+
+int dvz_semaphore_export_fd(DvzSemaphore* semaphore, VkExternalSemaphoreHandleTypeFlags handle_type)
+{
+#if OS_UNIX
+    return (int)dvz_semaphore_export(semaphore, handle_type);
+#else
+    (void)semaphore;
     (void)handle_type;
     return -1;
 #endif

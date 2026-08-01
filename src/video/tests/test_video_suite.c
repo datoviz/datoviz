@@ -20,16 +20,12 @@ int test_video_1(TstContext* suite, const TstCase* item)
     return 0;
 }
 
-#if !(defined(DVZ_HAS_NVENC) && DVZ_HAS_NVENC) || defined(_WIN32)
+#if !(defined(DVZ_HAS_NVENC) && DVZ_HAS_NVENC)
 int test_video_nvenc(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
-#if defined(_WIN32) && defined(DVZ_HAS_NVENC) && DVZ_HAS_NVENC
-    tst_skip(suite, "NVENC Vulkan external HANDLE interop is not implemented on Windows");
-#else
     tst_skip(suite, "NVENC backend disabled at build time");
-#endif
     return 0;
 }
 #endif
@@ -68,7 +64,7 @@ int test_video(TstSuite* suite)
 
     TST_VIDEO_CASE(
         test_video_nvenc, TST_RES_GPU | TST_RES_VULKAN | TST_RES_VIDEO | TST_RES_FILESYSTEM,
-        TST_ISOLATION_PROCESS, TST_RUN_CASE_ADAPTER_EXEMPT);
+        TST_ISOLATION_PROCESS, TST_RUN_CASE_ADAPTER_SUPPORTED);
     TST_VIDEO_CASE(
         test_video_kvazaar, TST_RES_GPU | TST_RES_VULKAN | TST_RES_VIDEO | TST_RES_FILESYSTEM,
         TST_ISOLATION_PROCESS, TST_RUN_CASE_ADAPTER_SUPPORTED);

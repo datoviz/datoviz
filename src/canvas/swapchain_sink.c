@@ -27,6 +27,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_vk_utils.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/vk/enums.h"
 #include "datoviz/vk/queues.h"
 #include "datoviz/vklite/buffers.h"
@@ -79,7 +80,7 @@ struct DvzCanvasSwapchainSlot
     VkExtent2D offscreen_extent;
     uint32_t image_index;
     uint64_t resource_generation;
-    int memory_fd;
+    DvzExternalHandle memory_fd;
     bool ready;
     bool commands_recording;
     bool handles_dirty;
@@ -647,9 +648,10 @@ static bool canvas_slot_init(
 
     slot->offscreen_alloc = dvz_allocation_create();
     ANN(slot->offscreen_alloc);
+    DvzAllocationFlags alloc_flags = use_external ? DVZ_ALLOC_DEDICATED_MEMORY : 0;
     if (dvz_allocator_image(
-            canvas->allocator, &img_info, 0, slot->offscreen_alloc, &slot->offscreen_image) !=
-        0)
+            canvas->allocator, &img_info, alloc_flags, slot->offscreen_alloc,
+            &slot->offscreen_image) != 0)
     {
         dvz_allocation_free(slot->offscreen_alloc);
         slot->offscreen_alloc = NULL;
@@ -1027,13 +1029,11 @@ static void canvas_destroy_slot(
     dvz_fence_destroy(slot->in_flight);
     dvz_fence_free(slot->in_flight);
     slot->in_flight = NULL;
-#if OS_UNIX
-    if (slot->memory_fd >= 0)
+    if (slot->memory_fd != DVZ_EXTERNAL_HANDLE_INVALID)
     {
-        close(slot->memory_fd);
-        slot->memory_fd = -1;
+        dvz_external_handle_close(slot->memory_fd);
+        slot->memory_fd = DVZ_EXTERNAL_HANDLE_INVALID;
     }
-#endif
     slot->ready = false;
     slot->swapchain_image = VK_NULL_HANDLE;
     slot->commands_recording = false;

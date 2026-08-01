@@ -559,7 +559,8 @@ int dvz_allocator_copy_from(
 /*  External                                                                                     */
 /*************************************************************************************************/
 
-int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
+int dvz_allocator_export(
+    DvzVma* allocator, DvzAllocation* alloc, DvzExternalHandle* handle)
 {
     ANN(allocator);
     ANN(allocator->device);
@@ -594,7 +595,9 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
         return -1;
     }
 
-    VK_RETURN_RESULT(vkGetMemoryFdKHR(vkd, &info, handle));
+    int fd = -1;
+    VK_RETURN_RESULT(vkGetMemoryFdKHR(vkd, &info, &fd));
+    *handle = (DvzExternalHandle)fd;
 
 #elif OS_WINDOWS
     if (!dvz_device_has_extension(allocator->device, VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME))
@@ -620,7 +623,7 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
 
     HANDLE win32_handle = NULL;
     VK_RETURN_RESULT(vkGetMemoryWin32HandleKHR(vkd, &info, &win32_handle));
-    *handle = (int)(uintptr_t)win32_handle;
+    *handle = (DvzExternalHandle)(intptr_t)win32_handle;
 
 #else
     int out = -1;
@@ -647,7 +650,7 @@ int dvz_allocator_export(DvzVma* allocator, DvzAllocation* alloc, int* handle)
  */
 int dvz_interop_buffer_export(
     DvzVma* allocator, DvzAllocation* alloc, uint64_t offset, uint64_t size, uint32_t usage,
-    int semaphore_handle, uint32_t semaphore_handle_type, uint64_t semaphore_value,
+    DvzExternalHandle semaphore_handle, uint32_t semaphore_handle_type, uint64_t semaphore_value,
     DvzInteropBufferExport* out)
 {
     ANN(allocator);
@@ -671,8 +674,10 @@ int dvz_interop_buffer_export(
         return -1;
     }
 
-    int memory_handle = -1;
-    if (dvz_allocator_export(allocator, alloc, &memory_handle) != 0 || memory_handle < 0)
+    DvzExternalHandle memory_handle = DVZ_EXTERNAL_HANDLE_INVALID;
+    if (
+        dvz_allocator_export(allocator, alloc, &memory_handle) != 0 ||
+        memory_handle == DVZ_EXTERNAL_HANDLE_INVALID)
     {
         log_error("failed to export interop buffer memory handle");
         return -1;
@@ -709,7 +714,8 @@ int dvz_interop_buffer_export(
 
 
 int dvz_allocator_import_buffer(
-    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags, int handle,
+    DvzVma* allocator, VkBufferCreateInfo* info, DvzAllocationFlags flags,
+    DvzExternalHandle handle,
     DvzAllocation* alloc, VkBuffer* vk_buffer)
 {
     ANN(allocator);
@@ -749,10 +755,10 @@ int dvz_allocator_import_buffer(
 #if OS_UNIX
     VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
     import_info.handleType = allocator->external;
-    import_info.fd = handle;
+    import_info.fd = (int)handle;
     VkMemoryFdPropertiesKHR fd_props = {.sType = VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR};
     VkResult fd_res = vkGetMemoryFdPropertiesKHR(
-        allocator->device->vk_device, allocator->external, handle, &fd_props);
+        allocator->device->vk_device, allocator->external, (int)handle, &fd_props);
     if (fd_res != VK_SUCCESS)
     {
         log_error("vkGetMemoryFdPropertiesKHR failed for external buffer import (%d)", fd_res);
@@ -790,7 +796,8 @@ int dvz_allocator_import_buffer(
 
 
 int dvz_allocator_import_image(
-    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags, int handle,
+    DvzVma* allocator, VkImageCreateInfo* info, DvzAllocationFlags flags,
+    DvzExternalHandle handle,
     DvzAllocation* alloc, VkImage* vk_image)
 {
     ANN(allocator);
@@ -824,10 +831,10 @@ int dvz_allocator_import_image(
 #if OS_UNIX
     VkImportMemoryFdInfoKHR import_info = {.sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_FD_INFO_KHR};
     import_info.handleType = allocator->external;
-    import_info.fd = handle;
+    import_info.fd = (int)handle;
     VkMemoryFdPropertiesKHR fd_props = {.sType = VK_STRUCTURE_TYPE_MEMORY_FD_PROPERTIES_KHR};
     VkResult fd_res = vkGetMemoryFdPropertiesKHR(
-        allocator->device->vk_device, allocator->external, handle, &fd_props);
+        allocator->device->vk_device, allocator->external, (int)handle, &fd_props);
     if (fd_res != VK_SUCCESS)
     {
         log_error("vkGetMemoryFdPropertiesKHR failed for external image import (%d)", fd_res);

@@ -25,6 +25,7 @@
 
 #include "datoviz/vk/enums.h"
 #include "datoviz/common/macros.h"
+#include "datoviz/common/types.h"
 
 
 
@@ -104,8 +105,8 @@ typedef struct DvzStreamFrame
     uint64_t resource_generation;
     bool image_valid;
     bool depth_valid;
-    int memory_fd;
-    int wait_semaphore_fd;
+    DvzExternalHandle memory_fd;
+    DvzExternalHandle wait_semaphore_fd;
 } DvzStreamFrame;
 
 

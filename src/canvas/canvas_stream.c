@@ -208,13 +208,9 @@ static int canvas_capture_rgba_callback(
 static bool canvas_has_external_video_support(const DvzCanvas* canvas)
 {
     ANN(canvas);
-#if OS_UNIX
     return (
         canvas->allocator != NULL && dvz_allocator_external(canvas->allocator) != 0 &&
-        canvas->supports_external_semaphore);
-#else
-    return false;
-#endif
+        canvas->supports_external_memory && canvas->supports_external_semaphore);
 }
 
 

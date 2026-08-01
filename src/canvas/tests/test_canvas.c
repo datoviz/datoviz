@@ -2296,12 +2296,10 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(
         test_canvas_video_wait_handle_export_fallback_after_recreate,
         TST_CANVAS_GLFW_RES | TST_RES_VIDEO | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
-    // Auto encoder selection owns an independent CUDA/NVENC device identity.
-    TST_CANVAS_GPU_EXEMPT_CASE(
+    TST_CANVAS_CASE(
         test_canvas_video_sink_start_submit_integration,
         TST_CANVAS_GLFW_RES | TST_CANVAS_VIDEO_RES, TST_ISOLATION_PROCESS);
-    // Auto encoder selection owns an independent CUDA/NVENC device identity.
-    TST_CANVAS_GPU_EXEMPT_CASE(
+    TST_CANVAS_CASE(
         test_canvas_video_sink_disable_rebuild,
         TST_CANVAS_GLFW_RES | TST_CANVAS_VIDEO_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(

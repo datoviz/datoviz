@@ -32,6 +32,7 @@ typedef struct DvzColorf DvzColorf;
 typedef struct DvzTime   DvzTime;
 
 typedef int32_t DvzResult;
+typedef intptr_t DvzExternalHandle;
 
 
 
@@ -41,6 +42,8 @@ typedef int32_t DvzResult;
 
 #define DVZ_OK    ((DvzResult)0)
 #define DVZ_ERROR ((DvzResult)-1)
+
+#define DVZ_EXTERNAL_HANDLE_INVALID ((DvzExternalHandle)-1)
 
 
 

@@ -58,8 +58,8 @@ typedef struct DvzVideoEncoder
     VkImage image;
     VkDeviceMemory memory;
     VkDeviceSize memory_size;
-    int memory_fd;
-    int wait_semaphore_fd;
+    DvzExternalHandle memory_fd;
+    DvzExternalHandle wait_semaphore_fd;
 
     FILE* fp;
     bool own_bitstream_fp;
@@ -106,14 +106,14 @@ DvzVideoEncoder* dvz_video_encoder_create(DvzDevice* device, const DvzVideoEncod
  * @param image GPU image that contains the rendered frame
  * @param memory backing memory imported for the image
  * @param memory_size size of the imported memory
- * @param memory_fd optional DMA-BUF fd representing the memory (platform-specific)
- * @param wait_semaphore_fd timeline semaphore where sinks wait for the frame
+ * @param memory_fd optional platform external handle representing the memory
+ * @param wait_semaphore_fd optional platform external timeline semaphore handle
  * @param bitstream_out optional FILE to write Annex B streams when post-muxing
  * @returns 0 on success or a negative error when setup or backend start fails
  */
 int dvz_video_encoder_start(
     DvzVideoEncoder* enc, VkImage image, VkDeviceMemory memory, VkDeviceSize memory_size,
-    int memory_fd, int wait_semaphore_fd, FILE* bitstream_out);
+    DvzExternalHandle memory_fd, DvzExternalHandle wait_semaphore_fd, FILE* bitstream_out);
 
 
 

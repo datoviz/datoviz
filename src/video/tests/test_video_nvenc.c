@@ -17,9 +17,7 @@
 #define _GNU_SOURCE
 
 #include <assert.h>
-#include <dlfcn.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <float.h>
 #include <inttypes.h>
 #include <stdbool.h>
@@ -27,16 +25,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if OS_UNIX
 #include <unistd.h>
+#endif
 
 #include <volk.h>
 
 #include "test_vk.h"
+#include "../../vk/_device.h"
+#include "../../vk/_gpu.h"
 #include "../../vklite/tests/test_vklite.h"
 #include "../encoder.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/common/macros.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/macros.h"
@@ -47,6 +50,7 @@
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/vklite/sampler.h"
 #include "datoviz/vklite/slots.h"
+#include "datoviz_testing.h"
 #include "test_video.h"
 #include "test_video_common.h"
 #include "testing.h"
@@ -121,9 +125,9 @@ typedef struct
     VkCommandBuffer cmd;
     VkImage image;
     VkDeviceMemory memory;
-    int memory_fd;
+    DvzExternalHandle memory_fd;
     VkSemaphore semaphore;
-    int semaphore_fd;
+    DvzExternalHandle semaphore_fd;
     VkFence fence;
     VkImageLayout image_layout;
     uint64_t timeline_value;
@@ -135,11 +139,11 @@ typedef struct
 /*  Test video                                                                                   */
 /*************************************************************************************************/
 
-static void vk_init_and_make_image(VulkanCtx* vk);
+static void vk_init_and_make_image(VulkanCtx* vk, uint32_t gpu_index);
 
 static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr);
 
-static void vk_init_and_make_image(VulkanCtx* vk)
+static void vk_init_and_make_image(VulkanCtx* vk, uint32_t gpu_index)
 {
     VK_CHECK(volkInitialize());
     dvz_memset(vk, sizeof(*vk), 0, sizeof(*vk));
@@ -160,7 +164,12 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     VK_CHECK(vkEnumeratePhysicalDevices(vk->instance, &np, NULL));
     VkPhysicalDevice* pds = (VkPhysicalDevice*)dvz_calloc(np, sizeof(VkPhysicalDevice));
     VK_CHECK(vkEnumeratePhysicalDevices(vk->instance, &np, pds));
-    vk->phys = pds[0];
+    if (gpu_index >= np)
+    {
+        dvz_fprintf(stderr, "Requested Vulkan GPU index %u is unavailable\n", gpu_index);
+        exit(1);
+    }
+    vk->phys = pds[gpu_index];
     dvz_free(pds);
 
     uint32_t nqf = 0;
@@ -186,9 +195,17 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 
     const char* dev_exts[] = {
         VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+#if OS_WINDOWS
+        VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
+#else
         VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME,
+#endif
         VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+#if OS_WINDOWS
+        VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME,
+#else
         VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME,
+#endif
     };
 
     VkPhysicalDeviceVulkan13Features features_1_3 = {
@@ -210,7 +227,11 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     VK_CHECK(vkCreateDevice(vk->phys, &dci, NULL, &vk->device));
     volkLoadDevice(vk->device);
 
+#if OS_WINDOWS
+    if (!vkGetMemoryWin32HandleKHR || !vkGetSemaphoreWin32HandleKHR)
+#else
     if (!vkGetMemoryFdKHR || !vkGetSemaphoreFdKHR)
+#endif
     {
         dvz_fprintf(stderr, "Required external memory/semaphore extensions not available\n");
         exit(1);
@@ -237,7 +258,11 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     VkExportSemaphoreCreateInfo export_semaphore = {
         .sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO,
         .pNext = &timeline_info,
+#if OS_WINDOWS
+        .handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT,
+#else
         .handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
+#endif
     };
     VkSemaphoreCreateInfo sci = {.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
     sci.pNext = &export_semaphore;
@@ -249,7 +274,11 @@ static void vk_init_and_make_image(VulkanCtx* vk)
 
     VkExternalMemoryImageCreateInfo emici = {
         .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+#if OS_WINDOWS
+        .handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT,
+#else
         .handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT,
+#endif
     };
     VkImageCreateInfo ici2 = {.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     ici2.pNext = &emici;
@@ -290,7 +319,11 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     }
 
     VkExportMemoryAllocateInfo emai = {.sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO};
+#if OS_WINDOWS
+    emai.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+#else
     emai.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+#endif
 
     VkMemoryAllocateInfo mai = {.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
     mai.pNext = &emai;
@@ -301,20 +334,50 @@ static void vk_init_and_make_image(VulkanCtx* vk)
     VK_CHECK(vkBindImageMemory(vk->device, vk->image, vk->memory, 0));
     vk->image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    VkMemoryGetFdInfoKHR getfd = {.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR};
-    getfd.memory = vk->memory;
-    getfd.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
-    VK_CHECK(vkGetMemoryFdKHR(vk->device, &getfd, &vk->memory_fd));
-    if (vk->memory_fd < 0)
+#if OS_WINDOWS
+    VkMemoryGetWin32HandleInfoKHR get_memory = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR,
+        .memory = vk->memory,
+        .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT,
+    };
+    HANDLE memory_handle = NULL;
+    VK_CHECK(vkGetMemoryWin32HandleKHR(vk->device, &get_memory, &memory_handle));
+    vk->memory_fd = (DvzExternalHandle)(intptr_t)memory_handle;
+#else
+    VkMemoryGetFdInfoKHR get_memory = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
+        .memory = vk->memory,
+        .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT,
+    };
+    int memory_fd = -1;
+    VK_CHECK(vkGetMemoryFdKHR(vk->device, &get_memory, &memory_fd));
+    vk->memory_fd = (DvzExternalHandle)memory_fd;
+#endif
+    if (vk->memory_fd == DVZ_EXTERNAL_HANDLE_INVALID)
     {
-        dvz_fprintf(stderr, "Failed to export memory FD\n");
+        dvz_fprintf(stderr, "Failed to export memory handle\n");
         exit(1);
     }
 
-    VkSemaphoreGetFdInfoKHR sfd = {.sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR};
-    sfd.semaphore = vk->semaphore;
-    sfd.handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT;
-    VK_CHECK(vkGetSemaphoreFdKHR(vk->device, &sfd, &vk->semaphore_fd));
+#if OS_WINDOWS
+    VkSemaphoreGetWin32HandleInfoKHR get_semaphore = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_WIN32_HANDLE_INFO_KHR,
+        .semaphore = vk->semaphore,
+        .handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_WIN32_BIT,
+    };
+    HANDLE semaphore_handle = NULL;
+    VK_CHECK(vkGetSemaphoreWin32HandleKHR(vk->device, &get_semaphore, &semaphore_handle));
+    vk->semaphore_fd = (DvzExternalHandle)(intptr_t)semaphore_handle;
+#else
+    VkSemaphoreGetFdInfoKHR get_semaphore = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
+        .semaphore = vk->semaphore,
+        .handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
+    };
+    int semaphore_fd = -1;
+    VK_CHECK(vkGetSemaphoreFdKHR(vk->device, &get_semaphore, &semaphore_fd));
+    vk->semaphore_fd = (DvzExternalHandle)semaphore_fd;
+#endif
 }
 
 static uint64_t vk_render_frame_and_sync(VulkanCtx* vk, const VkClearColorValue* clr)
@@ -420,11 +483,12 @@ int test_video_nvenc(TstContext* suite, const TstCase* tstitem)
     FILE* bitstream_fp = NULL;
     DvzVideoEncoder* encoder = NULL;
 
-    // Intentional selected-GPU exemption: this direct Vulkan/CUDA/NVENC fixture currently selects
-    // Vulkan enumeration index zero and does not prove that CUDA/NVENC resolves the same UUID.
-    // Do not treat it as per-device coverage until UUID matching is implemented.
+    // The Vulkan device follows the test selector and the backend resolves the matching CUDA device
+    // by UUID before importing the external image.
     VulkanCtx vk;
-    vk_init_and_make_image(&vk);
+    vk_init_and_make_image(&vk, dvz_testing_gpu_index(suite));
+    DvzGpu gpu = {.pdevice = vk.phys};
+    DvzDevice device = {.gpu = &gpu, .vk_device = vk.device};
     // -------------------------------------------------------------------------------------------------
     // Placeholder for Datoviz renderer hookup:
     //
@@ -455,7 +519,7 @@ int test_video_nvenc(TstContext* suite, const TstCase* tstitem)
     vcfg.fps = DVZ_TEST_VIDEO_FPS;
     vcfg.mp4_path = "video_nvenc.mp4";
     vcfg.raw_path = "video_nvenc.h26x";
-    encoder = dvz_video_encoder_create(NULL, &vcfg);
+    encoder = dvz_video_encoder_create(&device, &vcfg);
     if (!encoder)
     {
         rc = 1;
@@ -518,10 +582,10 @@ cleanup:
         fclose(bitstream_fp);
         bitstream_fp = NULL;
     }
-    if (vk.memory_fd >= 0)
-        close(vk.memory_fd);
-    if (vk.semaphore_fd >= 0)
-        close(vk.semaphore_fd);
+    if (vk.memory_fd != DVZ_EXTERNAL_HANDLE_INVALID)
+        dvz_external_handle_close(vk.memory_fd);
+    if (vk.semaphore_fd != DVZ_EXTERNAL_HANDLE_INVALID)
+        dvz_external_handle_close(vk.semaphore_fd);
     if (vk.memory)
         vkFreeMemory(vk.device, vk.memory, NULL);
     if (vk.image)

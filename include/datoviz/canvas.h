@@ -106,8 +106,8 @@ typedef struct
     bool handles_dirty;
     uint64_t resource_generation;
     bool image_valid;
-    int memory_fd;
-    int wait_semaphore_fd;
+    DvzExternalHandle memory_fd;
+    DvzExternalHandle wait_semaphore_fd;
 } DvzCanvasLiveImageFrame;
 
 
