@@ -216,6 +216,17 @@ static bool _parse_preview_phase_policy(const char* text, DvzScenarioPreviewPhas
 
 
 
+static char* _runner_strtok(char* str, const char* delimiters, char** context)
+{
+#if defined(_WIN32) || defined(_MSC_VER)
+    return strtok_s(str, delimiters, context);
+#else
+    return strtok_r(str, delimiters, context);
+#endif
+}
+
+
+
 static bool _parse_preview_timeline(const char* text, DvzScenarioPreviewTimeline* out)
 {
     if (text == NULL || text[0] == '\0' || out == NULL)
@@ -229,7 +240,7 @@ static bool _parse_preview_timeline(const char* text, DvzScenarioPreviewTimeline
     memcpy(buffer, text, len + 1);
 
     char* save_segment = NULL;
-    char* segment = strtok_r(buffer, ",", &save_segment);
+    char* segment = _runner_strtok(buffer, ",", &save_segment);
     while (segment != NULL)
     {
         if (timeline.segment_count >= DVZ_SCENARIO_MAX_PREVIEW_SEGMENTS)
@@ -254,7 +265,7 @@ static bool _parse_preview_timeline(const char* text, DvzScenarioPreviewTimeline
         snprintf(item->kind, sizeof(item->kind), "%s", kind);
         item->frames = frames;
 
-        segment = strtok_r(NULL, ",", &save_segment);
+        segment = _runner_strtok(NULL, ",", &save_segment);
     }
     if (timeline.segment_count == 0)
         return false;

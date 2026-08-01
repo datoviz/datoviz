@@ -163,12 +163,20 @@ static bool _file_size(const char* path, DvzSize* out_size)
     FILE* f = fopen(path, "rb");
     if (f == NULL)
         return false;
+#if defined(_WIN32) || defined(_MSC_VER)
+    if (_fseeki64(f, 0, SEEK_END) != 0)
+#else
     if (fseeko(f, 0, SEEK_END) != 0)
+#endif
     {
         fclose(f);
         return false;
     }
-    off_t end = ftello(f);
+#if defined(_WIN32) || defined(_MSC_VER)
+    int64_t end = _ftelli64(f);
+#else
+    int64_t end = (int64_t)ftello(f);
+#endif
     fclose(f);
     if (end < 0)
         return false;

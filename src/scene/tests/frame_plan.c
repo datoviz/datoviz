@@ -1689,14 +1689,16 @@ int test_frame_plan_trace_env(TstContext* suite, const TstCase* item)
         (_scene_frame_plan_trace_flags_from_env("full-ascii") &
          DVZ_FRAME_PLAN_ASCII_ASCII_ONLY) != 0);
 
-    DvzFigure figure = {0};
-    AT(!_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NONE, &figure, "graph"));
-    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, &figure, "graph"));
-    figure.has_last_frame_plan_trace = true;
-    figure.last_frame_plan_trace = "graph";
-    AT(!_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, &figure, "graph"));
-    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, &figure, "graph2"));
-    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_FULL, &figure, "graph"));
+    DvzFigure* figure = (DvzFigure*)dvz_calloc(1, sizeof(DvzFigure));
+    ANN(figure);
+    AT(!_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NONE, figure, "graph"));
+    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, figure, "graph"));
+    figure->has_last_frame_plan_trace = true;
+    figure->last_frame_plan_trace = "graph";
+    AT(!_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, figure, "graph"));
+    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_NORMAL, figure, "graph2"));
+    AT(_scene_frame_plan_trace_should_print(DVZ_FRAME_PLAN_TRACE_FULL, figure, "graph"));
+    dvz_free(figure);
     return 0;
 }
 

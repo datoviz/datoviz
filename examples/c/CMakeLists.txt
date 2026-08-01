@@ -257,6 +257,10 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(
         showcases streaming_daq
         "showcases/streaming_daq.c;showcases/streaming_daq_model.c")
+    if(MSVC)
+        target_compile_options(
+            example_c_showcases_streaming_daq PRIVATE /experimental:c11atomics)
+    endif()
     dvz_add_example(
         showcases svg_tiger
         "showcases/svg_tiger.c;showcases/svg_tiger_model.c")
