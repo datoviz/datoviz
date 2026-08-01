@@ -26,6 +26,8 @@
 
 int test_png_1(TstContext* suite, const TstCase* tstitem);
 
+int test_ppm_io(TstContext* suite, const TstCase* tstitem);
+
 int test_parse_npy(TstContext* suite, const TstCase* tstitem);
 
 int test_read_npy(TstContext* suite, const TstCase* tstitem);

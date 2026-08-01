@@ -88,9 +88,26 @@ int test_png_1(TstContext* suite, const TstCase* tstitem)
 
     DvzSize size = 0;
     void* out = NULL;
-    dvz_make_png((uint32_t)width, (uint32_t)height, rgb, &size, &out);
+    AT(dvz_make_png((uint32_t)width, (uint32_t)height, rgb, &size, &out) == 0);
     AT(size > 0);
     AT(out != NULL);
+
+    uint32_t decoded_width = 0;
+    uint32_t decoded_height = 0;
+    uint8_t* decoded = dvz_load_png(out, size, &decoded_width, &decoded_height);
+    AT(decoded != NULL);
+    AT(decoded_width == (uint32_t)width);
+    AT(decoded_height == (uint32_t)height);
+    const size_t pixel_size = (size_t)width * (size_t)height * 3;
+    AT(memcmp(decoded, rgb, pixel_size) == 0);
+    dvz_free(decoded);
+
+    decoded_width = 42;
+    decoded_height = 42;
+    decoded = dvz_load_png(out, 8, &decoded_width, &decoded_height);
+    AT(decoded == NULL);
+    AT(decoded_width == 0);
+    AT(decoded_height == 0);
     dvz_free(out);
 
     // profiling:
@@ -105,6 +122,40 @@ int test_png_1(TstContext* suite, const TstCase* tstitem)
     // fclose(fp);
 
     dvz_free(rgb);
+    return 0;
+}
+
+
+
+int test_ppm_io(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+
+    char filename[128] = {0};
+    dvz_snprintf(filename, sizeof(filename), "dvztest-fileio-%p.ppm", (void*)suite);
+
+    const uint8_t source[] = {1, 2, 3, 4, 5, 6};
+    AT(dvz_write_ppm(filename, 2, 1, source) == 0);
+
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint8_t* image = dvz_read_ppm(filename, &width, &height);
+    AT(image != NULL);
+    AT(width == 2);
+    AT(height == 1);
+    AT(memcmp(image, source, sizeof(source)) == 0);
+    dvz_free(image);
+
+    const uint8_t truncated[] = "P6\n# unterminated comment";
+    AT(dvz_write_bytes(filename, "wb", sizeof(truncated) - 1, truncated) == 0);
+    width = 42;
+    height = 42;
+    image = dvz_read_ppm(filename, &width, &height);
+    AT(image == NULL);
+    AT(width == 0);
+    AT(height == 0);
+
+    AT(remove(filename) == 0);
     return 0;
 }
 
@@ -277,6 +328,9 @@ int test_fileio(TstSuite* suite)
     TST_MODULE(suite, "fileio");
     TST_GROUP("png");
     TST_CASE(test_png_1);
+
+    TST_GROUP("ppm");
+    TST_CASE(test_ppm_io);
 
     TST_GROUP("text");
     TST_CASE(test_read_text);

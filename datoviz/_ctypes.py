@@ -22160,7 +22160,7 @@ else:
  * @param[out] size destination receiving the PNG buffer size in bytes; must not be NULL
  * @param[out] out destination receiving an owned PNG byte buffer; must not be NULL and the returned
  * buffer must be freed with `dvz_memory_free()`
- * @return zero after the encode attempt
+ * @return zero on success, nonzero for invalid arguments, allocation failure, or encode failure
  */"""
     dvz_make_png.argtypes = [ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8), ctypes.POINTER(ctypes.c_uint64), ctypes.POINTER(ctypes.POINTER(None))]
     dvz_make_png.restype = ctypes.c_int
@@ -33403,7 +33403,7 @@ else:
  * @param height image height in pixels; must be positive
  * @param rgba tightly packed sRGB RGBA8 pixels with straight linear alpha; must contain
  * `width * height * 4` bytes
- * @return zero after the encode attempt
+ * @return zero on success, nonzero for invalid arguments or an encode/write failure
  */"""
     dvz_write_png.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8)]
     dvz_write_png.restype = ctypes.c_int
@@ -33421,7 +33421,7 @@ else:
  * @param width image width in pixels
  * @param height image height in pixels
  * @param image tightly packed RGB8 pixels containing `width * height * 3` bytes; must not be NULL
- * @return zero if the file was opened, nonzero otherwise; write errors are not reported
+ * @return zero on success, nonzero for invalid arguments or an open/write failure
  */"""
     dvz_write_ppm.argtypes = [ctypes.c_char_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint8)]
     dvz_write_ppm.restype = ctypes.c_int

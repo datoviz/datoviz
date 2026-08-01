@@ -2,6 +2,7 @@
 /*  File I/O utilities                                                                           */
 /*************************************************************************************************/
 
+#include <ctype.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -92,6 +93,24 @@ static bool _npy_payload_offset(const uint8_t* bytes, DvzSize size_bytes, DvzSiz
 
     *offset = data_offset;
     return true;
+}
+
+
+
+/**
+ * Return whether dimensions fit the limits and byte arithmetic used by FPNG.
+ *
+ * @param width image width
+ * @param height image height
+ * @param channels number of channels per pixel
+ * @return whether the dimensions are supported
+ */
+static bool _png_dimensions_valid(uint32_t width, uint32_t height, uint32_t channels)
+{
+    const uint32_t max_dimension = 1u << 24;
+    if (width == 0 || height == 0 || width > max_dimension || height > max_dimension)
+        return false;
+    return (uint64_t)width * height <= UINT32_MAX / channels;
 }
 
 DvzSize dvz_file_size(const char* filename)
@@ -388,19 +407,27 @@ int dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const 
 
 int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image)
 {
+    if (filename == NULL || image == NULL || width == 0 || height == 0)
+        return 1;
+    const uint64_t pixel_count = (uint64_t)width * height;
+    if (pixel_count > SIZE_MAX / 3)
+        return 1;
+
     // from https://github.com/SaschaWillems/Vulkan/blob/master/examples/screenshot/screenshot.cpp
-    FILE* fp;
-    fp = fopen(filename, "wb");
+    FILE* fp = fopen(filename, "wb");
     if (fp == NULL)
         return 1;
+
     // ppm header
     char buffer[256];
-    dvz_snprintf(buffer, sizeof(buffer), "P6\n%d\n%d\n255\n", (int)width, (int)height);
-    fwrite(buffer, strlen(buffer), 1, fp);
-    // Write the RGB image.
-    fwrite(image, width * height * 3, 1, fp);
-    fclose(fp);
-    return 0;
+    const int header_size =
+        dvz_snprintf(buffer, sizeof(buffer), "P6\n%u\n%u\n255\n", width, height);
+    bool success = header_size > 0 && (size_t)header_size < sizeof(buffer);
+    success = success && fwrite(buffer, 1, (size_t)header_size, fp) == (size_t)header_size;
+    const size_t image_size = (size_t)(pixel_count * 3);
+    success = success && fwrite(image, 1, image_size, fp) == image_size;
+    success = fclose(fp) == 0 && success;
+    return success ? 0 : 1;
 }
 
 
@@ -417,16 +444,14 @@ uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t* height)
         return NULL;
     }
 
-    FILE* fp;
-    fp = fopen(filename, "rb");
+    FILE* fp = fopen(filename, "rb");
     if (fp == NULL)
     {
         return NULL;
     }
 
     // ppm header
-    // int width, height, depth, c;
-    int c;
+    int c = 0;
     char buff[16];
 
     // read image format
@@ -449,12 +474,25 @@ uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t* height)
     c = getc(fp);
     while (c == '#')
     {
-        while (getc(fp) != '\n')
-            ;
+        do
+        {
+            c = getc(fp);
+        } while (c != '\n' && c != EOF);
+        if (c == EOF)
+        {
+            log_error("unterminated PPM comment (error loading '%s')", filename);
+            fclose(fp);
+            return NULL;
+        }
         c = getc(fp);
     }
 
-    ungetc(c, fp);
+    if (c == EOF || ungetc(c, fp) == EOF)
+    {
+        log_error("truncated PPM header (error loading '%s')", filename);
+        fclose(fp);
+        return NULL;
+    }
     // read image size information
     int parsed_width = 0;
     int parsed_height = 0;
@@ -470,26 +508,40 @@ uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t* height)
         fclose(fp);
         return NULL;
     }
-    *width = (uint32_t)parsed_width;
-    *height = (uint32_t)parsed_height;
-
     // read rgb component
-    int b;
-    if (fscanf(fp, "%d", &b) != 1)
+    int max_value = 0;
+    if (fscanf(fp, "%d", &max_value) != 1 || max_value != 255)
     {
         log_error("invalid rgb component (error loading '%s')", filename);
         fclose(fp);
         return NULL;
     }
-    ASSERT(b == 255);
-    while (fgetc(fp) != '\n')
-        ;
 
-    DvzSize size = (DvzSize)(*width) * (DvzSize)(*height) * 3;
-    ASSERT(size > 0);
-    uint8_t* image = (uint8_t*)dvz_calloc((size_t)size, sizeof(uint8_t));
-    ANN(image);
-    if (fread(image, 1, (size_t)size, fp) != (size_t)size)
+    c = fgetc(fp);
+    if (c == '\r')
+        c = fgetc(fp);
+    if (c != '\n' && !isspace((unsigned char)c))
+    {
+        log_error("invalid PPM header delimiter (error loading '%s')", filename);
+        fclose(fp);
+        return NULL;
+    }
+
+    const uint64_t pixel_count = (uint64_t)parsed_width * (uint64_t)parsed_height;
+    if (pixel_count > SIZE_MAX / 3)
+    {
+        log_error("PPM dimensions are too large (error loading '%s')", filename);
+        fclose(fp);
+        return NULL;
+    }
+    const size_t size = (size_t)(pixel_count * 3);
+    uint8_t* image = (uint8_t*)dvz_malloc(size);
+    if (image == NULL)
+    {
+        fclose(fp);
+        return NULL;
+    }
+    if (fread(image, 1, size, fp) != size)
     {
         log_error("invalid RGB payload (error loading '%s')", filename);
         dvz_free(image);
@@ -497,6 +549,8 @@ uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t* height)
         return NULL;
     }
     fclose(fp);
+    *width = (uint32_t)parsed_width;
+    *height = (uint32_t)parsed_height;
     return image;
 }
 
@@ -508,32 +562,35 @@ uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t* height)
 
 int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgba)
 {
-    ANN(filename);
-    ANN(rgba);
-    ASSERT(width > 0);
-    ASSERT(height > 0);
+    if (filename == NULL || rgba == NULL || !_png_dimensions_valid(width, height, 4))
+        return 1;
 
     fpng::fpng_init();
-    fpng::fpng_encode_image_to_file(filename, rgba, width, height, 4, 0);
-    return 0;
+    return fpng::fpng_encode_image_to_file(filename, rgba, width, height, 4, 0) ? 0 : 1;
 }
 
 
 
 int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out)
 {
-    ANN(rgb);
-    ANN(size);
-    ANN(out);
-    ASSERT(width > 0);
-    ASSERT(height > 0);
+    if (size != NULL)
+        *size = 0;
+    if (out != NULL)
+        *out = NULL;
+    if (rgb == NULL || size == NULL || out == NULL || !_png_dimensions_valid(width, height, 3))
+        return 1;
 
     fpng::fpng_init();
     std::vector<uint8_t> outvec;
-    fpng::fpng_encode_image_to_memory(rgb, width, height, 3, outvec, 0);
+    if (!fpng::fpng_encode_image_to_memory(rgb, width, height, 3, outvec, 0) || outvec.empty())
+        return 1;
     *size = outvec.size();
     *out = dvz_malloc(*size);
-    ANN(*out);
+    if (*out == NULL)
+    {
+        *size = 0;
+        return 1;
+    }
     dvz_memcpy(*out, (size_t)(*size), outvec.data(), (size_t)(*size));
     return 0;
 }
@@ -543,52 +600,46 @@ int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* s
 uint8_t*
 dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* height)
 {
-    ASSERT(size_bytes > 0);
-    ANN(bytes);
-    ANN(width);
-    ANN(height);
+    if (width != NULL)
+        *width = 0;
+    if (height != NULL)
+        *height = 0;
+    if (
+        bytes == NULL || size_bytes == 0 || size_bytes > UINT32_MAX || width == NULL ||
+        height == NULL)
+        return NULL;
 
     // Decode the image from memory
     std::vector<uint8_t> image_data;
-    uint32_t img_width, img_height;
-    uint32_t channels;
-    bool success = fpng::fpng_decode_memory(
-        bytes, size_bytes, image_data, img_width, img_height, channels, 3);
+    uint32_t img_width = 0;
+    uint32_t img_height = 0;
+    uint32_t channels = 0;
+    const int status = fpng::fpng_decode_memory(
+        bytes, (uint32_t)size_bytes, image_data, img_width, img_height, channels, 3);
 
-    if (!success)
+    if (status != fpng::FPNG_DECODE_SUCCESS)
     {
         dvz_fprintf(stderr, "Failed to decode PNG image\n");
         return NULL;
     }
 
-    ASSERT(img_width > 0);
-    ASSERT(img_height > 0);
-    ASSERT(image_data.size() > 0);
-
-    // Assign the width and height to the pointers provided
-    *width = img_width;
-    *height = img_height;
-
-    // Check if the decoded image format is RGB (3 channels)
-    if (channels != 3)
-    {
-        dvz_fprintf(stderr, "Decoded image is not in RGB format\n");
+    const uint64_t expected_size = (uint64_t)img_width * img_height * 3;
+    if (
+        img_width == 0 || img_height == 0 || expected_size > SIZE_MAX ||
+        image_data.size() != (size_t)expected_size)
         return NULL;
-    }
 
-    // Allocate memory for the decoded image
-    uint8_t* output = (uint8_t*)dvz_malloc(img_width * img_height * channels);
+    uint8_t* output = (uint8_t*)dvz_malloc(image_data.size());
     if (output == NULL)
     {
         dvz_fprintf(stderr, "Failed to allocate memory for the decoded image\n");
         return NULL;
     }
 
-    // Copy the decoded data to the allocated buffer
-    dvz_memcpy(
-        output, (size_t)(img_width * img_height * channels), image_data.data(),
-        (size_t)(img_width * img_height * channels));
+    dvz_memcpy(output, image_data.size(), image_data.data(), image_data.size());
 
+    *width = img_width;
+    *height = img_height;
     return output;
 }
 

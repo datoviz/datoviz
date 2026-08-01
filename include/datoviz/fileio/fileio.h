@@ -136,7 +136,7 @@ dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint
  * @param width image width in pixels
  * @param height image height in pixels
  * @param image tightly packed RGB8 pixels containing `width * height * 3` bytes; must not be NULL
- * @return zero if the file was opened, nonzero otherwise; write errors are not reported
+ * @return zero on success, nonzero for invalid arguments or an open/write failure
  */
 DVZ_EXPORT int
 dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
@@ -164,7 +164,7 @@ DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, uint32_t* width, uint32_t
  * @param height image height in pixels; must be positive
  * @param rgba tightly packed sRGB RGBA8 pixels with straight linear alpha; must contain
  * `width * height * 4` bytes
- * @return zero after the encode attempt
+ * @return zero on success, nonzero for invalid arguments or an encode/write failure
  */
 DVZ_EXPORT int
 dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgba);
@@ -180,7 +180,7 @@ dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8
  * @param[out] size destination receiving the PNG buffer size in bytes; must not be NULL
  * @param[out] out destination receiving an owned PNG byte buffer; must not be NULL and the returned
  * buffer must be freed with `dvz_memory_free()`
- * @return zero after the encode attempt
+ * @return zero on success, nonzero for invalid arguments, allocation failure, or encode failure
  */
 DVZ_EXPORT int
 dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out);
