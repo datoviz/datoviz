@@ -214,3 +214,53 @@ def test_dvztest_gpu_migrated_vk_case_joins_campaign() -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert "1/1 tests passed" in completed.stdout
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["--gpu"],
+        ["--gpu", ""],
+        ["--gpu", "-1"],
+        ["--gpu", "+1"],
+        ["--gpu", " 1"],
+        ["--gpu", "1 "],
+        ["--gpu", "1x"],
+        ["--gpu", "4294967296"],
+        ["--gpu=1"],
+        ["--gpu", "0", "--gpu", "1"],
+    ],
+)
+def test_dvz_live_canvas_rejects_invalid_gpu_selectors(args: list[str]) -> None:
+    completed = _run(args, runner="dvz_live_canvas")
+
+    assert completed.returncode != 0
+    assert "gpu" in completed.stderr.lower()
+
+
+def test_dvz_live_canvas_gpu_precedence_and_environment() -> None:
+    discovery = _run(["--list-gpus"])
+    if discovery.returncode != 0:
+        pytest.skip("Vulkan discovery is unavailable on this host")
+
+    invalid_env = os.environ.copy()
+    invalid_env["DVZ_TEST_GPU"] = "invalid"
+    cli = _run(
+        ["--backend", "offscreen", "--frames", "1", "--gpu", "0"],
+        env=invalid_env,
+        runner="dvz_live_canvas",
+    )
+    assert cli.returncode == 0, cli.stderr
+    assert "GPU 0:" in cli.stderr
+    assert "source=cli" in cli.stderr
+
+    selected_env = os.environ.copy()
+    selected_env["DVZ_TEST_GPU"] = "0"
+    env_run = _run(
+        ["--backend", "offscreen", "--frames", "1"],
+        env=selected_env,
+        runner="dvz_live_canvas",
+    )
+    assert env_run.returncode == 0, env_run.stderr
+    assert "GPU 0:" in env_run.stderr
+    assert "source=env" in env_run.stderr

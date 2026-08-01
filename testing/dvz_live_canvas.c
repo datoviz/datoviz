@@ -43,6 +43,7 @@
 #include "datoviz/vklite/rendering.h"
 #include "datoviz/window.h"
 #include "datoviz/window/backend.h"
+#include "datoviz_gpu_selection.h"
 
 #if DVZ_HAS_GLFW
 #define GLFW_INCLUDE_NONE
@@ -97,6 +98,7 @@ typedef struct DvzCanvasAppOptions
     DvzCanvasDrawMode draw_mode;
     bool start_recording;
     bool benchmark;
+    DvzTestingGpuSelection gpu_selection;
 } DvzCanvasAppOptions;
 
 
@@ -169,6 +171,7 @@ static void _dvz_canvas_options_default(DvzCanvasAppOptions* options)
     options->draw_mode = DVZ_CANVAS_DRAW_CLEAR;
     options->start_recording = false;
     options->benchmark = false;
+    dvz_testing_gpu_selection_init(&options->gpu_selection);
 }
 
 
@@ -553,7 +556,8 @@ static void _dvz_canvas_usage(void)
         "                  [--draw clear|scene-drp2]\n"
         "                  [--present fifo|immediate] [--duration seconds]\n"
         "                  [--record path.mp4] [--record-mode auto|external|cpu]\n"
-        "                  [--start-recording] [--screenshots base] [--benchmark]\n"
+        "                  [--start-recording] [--screenshots base] [--benchmark] [--gpu index]\n"
+        "Environment: DVZ_TEST_GPU selects an index when --gpu is absent.\n"
         "\n"
         "hotkeys: Esc quit, S screenshot, R toggle recording\n");
 }
@@ -574,6 +578,7 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
     bool mode_explicit = false;
     bool backend_explicit = false;
     bool present_explicit = false;
+    bool gpu_seen = false;
     for (int i = 1; i < argc; ++i)
     {
         const char* arg = argv[i];
@@ -595,6 +600,11 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         {
             options->benchmark = true;
             continue;
+        }
+        if (strncmp(arg, "--gpu=", 6) == 0)
+        {
+            dvz_fprintf(stderr, "use --gpu <index>; --gpu=<index> is not supported\n");
+            return false;
         }
         if (i + 1 >= argc)
         {
@@ -645,6 +655,20 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         {
             if (!_dvz_canvas_parse_u32(value, &options->height))
                 return false;
+        }
+        else if (strcmp(arg, "--gpu") == 0)
+        {
+            if (gpu_seen)
+            {
+                dvz_fprintf(stderr, "--gpu may be specified only once\n");
+                return false;
+            }
+            if (!dvz_testing_gpu_selection_set_cli(&options->gpu_selection, value))
+            {
+                dvz_fprintf(stderr, "invalid --gpu index: %s\n", value);
+                return false;
+            }
+            gpu_seen = true;
         }
         else if (strcmp(arg, "--frames") == 0)
         {
@@ -747,6 +771,11 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
     {
         dvz_fprintf(
             stderr, "invalid combination: --backend offscreen requires --mode offscreen\\n");
+        return false;
+    }
+    if (!dvz_testing_gpu_selection_set_environment(&options->gpu_selection))
+    {
+        dvz_fprintf(stderr, "invalid DVZ_TEST_GPU index\n");
         return false;
     }
     if (options->benchmark)
@@ -1199,15 +1228,26 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
         return false;
     }
 
-    uint32_t gpu_count = dvz_instance_gpu_count(app->instance);
-    if (gpu_count == 0)
+    DvzGpuInfo gpu_info = {0};
+    uint32_t gpu_count = 0;
+    if (!dvz_testing_gpu_selection_resolve(
+            app->instance, &app->options.gpu_selection, &gpu_info, &gpu_count))
     {
-        dvz_fprintf(stderr, "no Vulkan GPU available\\n");
+        if (gpu_count == 0)
+            dvz_fprintf(stderr, "no Vulkan GPU available\n");
+        else
+            dvz_fprintf(
+                stderr, "GPU index %u is unavailable (available count=%u)\n",
+                app->options.gpu_selection.requested_index, gpu_count);
         return false;
     }
+    const uint32_t gpu_index = gpu_info.index;
+    dvz_fprintf(
+        stderr, "GPU %u: %s (source=%s)\n", gpu_index, gpu_info.name,
+        dvz_testing_gpu_source_name(app->options.gpu_selection.source));
 
     DvzQueueCaps caps = {0};
-    if (!dvz_instance_gpu_queue_caps(app->instance, 0, &caps))
+    if (!dvz_instance_gpu_queue_caps(app->instance, gpu_index, &caps))
     {
         dvz_fprintf(stderr, "failed to query Vulkan queue capabilities\\n");
         return false;
@@ -1216,7 +1256,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     DvzQueues queues = {0};
     dvz_queues(&caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_config(app->instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];

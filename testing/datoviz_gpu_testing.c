@@ -24,28 +24,8 @@
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
+#include "datoviz_gpu_selection.h"
 #include "datoviz_testing.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define DVZ_TEST_GPU_ENV "DVZ_TEST_GPU"
-
-
-
-/*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-typedef enum
-{
-    DVZ_TEST_GPU_SOURCE_DEFAULT = 0,
-    DVZ_TEST_GPU_SOURCE_ENV = 1,
-    DVZ_TEST_GPU_SOURCE_CLI = 2,
-} DvzTestingGpuSource;
 
 
 
@@ -101,41 +81,6 @@ static const char* _dvz_testing_gpu_type_name(VkPhysicalDeviceType type)
 
 
 /**
- * Parse an ASCII decimal GPU index without accepting signs or surrounding text.
- *
- * @param value selector text
- * @param[out] out_index parsed index
- * @return true when the complete value is a uint32 decimal
- */
-static bool _dvz_testing_gpu_parse_index(const char* value, uint32_t* out_index)
-{
-    ANN(out_index);
-    if (value == NULL || value[0] == '\0')
-    {
-        return false;
-    }
-
-    uint32_t parsed = 0;
-    for (const unsigned char* p = (const unsigned char*)value; *p != '\0'; p++)
-    {
-        if (*p < (unsigned char)'0' || *p > (unsigned char)'9')
-        {
-            return false;
-        }
-        const uint32_t digit = (uint32_t)(*p - (unsigned char)'0');
-        if (parsed > (UINT32_MAX - digit) / 10u)
-        {
-            return false;
-        }
-        parsed = parsed * 10u + digit;
-    }
-    *out_index = parsed;
-    return true;
-}
-
-
-
-/**
  * Print every physical device visible through a Datoviz Vulkan instance.
  *
  * @param instance Datoviz instance
@@ -186,7 +131,7 @@ static int _dvz_testing_gpu_resolve(DvzTestingGpuState* state, bool discovery)
         return 0;
     }
 
-    const uint32_t count = dvz_instance_gpu_count(instance);
+    uint32_t count = dvz_instance_gpu_count(instance);
     state->available_count = count;
     if (discovery)
     {
@@ -212,17 +157,17 @@ static int _dvz_testing_gpu_resolve(DvzTestingGpuState* state, bool discovery)
         dvz_instance_destroy(instance);
         return 0;
     }
-    if (state->requested_index >= count)
+    DvzTestingGpuSelection selection = {
+        .requested_index = state->requested_index,
+        .source = state->source,
+        .explicit_selection = state->explicit_selection,
+    };
+    if (!dvz_testing_gpu_selection_resolve(instance, &selection, &state->info, &count))
     {
         dvz_fprintf(
             stderr, "GPU index %u is unavailable (available count=%u)\n",
             state->requested_index, count);
         _dvz_testing_gpu_print_available(instance, count);
-        dvz_instance_destroy(instance);
-        return 1;
-    }
-    if (!dvz_instance_gpu_info(instance, state->requested_index, &state->info))
-    {
         dvz_instance_destroy(instance);
         return 1;
     }
@@ -239,21 +184,6 @@ static int _dvz_testing_gpu_resolve(DvzTestingGpuState* state, bool discovery)
  * @param source selection source
  * @return static source name
  */
-static const char* _dvz_testing_gpu_source_name(DvzTestingGpuSource source)
-{
-    switch (source)
-    {
-    case DVZ_TEST_GPU_SOURCE_CLI:
-        return "cli";
-    case DVZ_TEST_GPU_SOURCE_ENV:
-        return "env";
-    default:
-        return "default";
-    }
-}
-
-
-
 /**
  * Append one JSON-escaped string into a bounded output buffer.
  *
@@ -359,15 +289,16 @@ static int _dvz_testing_gpu_parse_option(void* state, int argc, char** argv, int
             dvz_fprintf(stderr, "--gpu requires an ASCII decimal index\n");
             return -1;
         }
-        uint32_t parsed = 0;
-        if (!_dvz_testing_gpu_parse_index(argv[*index + 1], &parsed))
+        DvzTestingGpuSelection selection = {0};
+        dvz_testing_gpu_selection_init(&selection);
+        if (!dvz_testing_gpu_selection_set_cli(&selection, argv[*index + 1]))
         {
             dvz_fprintf(stderr, "invalid --gpu index: %s\n", argv[*index + 1]);
             return -1;
         }
         (*index)++;
-        gpu->requested_index = parsed;
-        gpu->source = DVZ_TEST_GPU_SOURCE_CLI;
+        gpu->requested_index = selection.requested_index;
+        gpu->source = selection.source;
         gpu->cli_seen = true;
         gpu->explicit_selection = true;
         return 1;
@@ -431,17 +362,17 @@ static int _dvz_testing_gpu_configure(
     }
     if (!gpu->cli_seen)
     {
-        const char* value = getenv(DVZ_TEST_GPU_ENV);
-        if (value != NULL)
+        DvzTestingGpuSelection selection = {0};
+        dvz_testing_gpu_selection_init(&selection);
+        if (!dvz_testing_gpu_selection_set_environment(&selection))
         {
-            uint32_t parsed = 0;
-            if (!_dvz_testing_gpu_parse_index(value, &parsed))
-            {
-                dvz_fprintf(stderr, "invalid %s index: %s\n", DVZ_TEST_GPU_ENV, value);
-                return 1;
-            }
-            gpu->requested_index = parsed;
-            gpu->source = DVZ_TEST_GPU_SOURCE_ENV;
+            dvz_fprintf(stderr, "invalid DVZ_TEST_GPU index\n");
+            return 1;
+        }
+        if (selection.explicit_selection)
+        {
+            gpu->requested_index = selection.requested_index;
+            gpu->source = selection.source;
             gpu->explicit_selection = true;
         }
     }
@@ -566,7 +497,7 @@ static int _dvz_testing_gpu_write_json(const void* state, char* json, size_t siz
         "\"resolved_index\":%u,\"name\":\"%s\",\"device_type\":\"%s\","
         "\"device_type_raw\":%d,\"vendor_id\":%u,\"device_id\":%u,"
         "\"api_version_raw\":%u,\"driver_version_raw\":%u}}",
-        gpu->requested_index, _dvz_testing_gpu_source_name(gpu->source), gpu->info.index, name,
+        gpu->requested_index, dvz_testing_gpu_source_name(gpu->source), gpu->info.index, name,
         _dvz_testing_gpu_type_name(gpu->info.device_type), (int)gpu->info.device_type,
         gpu->info.vendor_id, gpu->info.device_id, gpu->info.api_version,
         gpu->info.driver_version);
@@ -638,7 +569,7 @@ void dvz_testing_install_gpu_adapter(TstSuite* suite)
     ANN(suite);
     DvzTestingGpuState* state = (DvzTestingGpuState*)dvz_calloc(1, sizeof(DvzTestingGpuState));
     ANN(state);
-    state->source = DVZ_TEST_GPU_SOURCE_DEFAULT;
+    state->source = DVZ_TESTING_GPU_SOURCE_DEFAULT;
 
     TstRunAdapter adapter = {0};
     adapter.parse_option = _dvz_testing_gpu_parse_option;

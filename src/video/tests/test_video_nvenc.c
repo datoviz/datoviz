@@ -420,6 +420,9 @@ int test_video_nvenc(TstContext* suite, const TstCase* tstitem)
     FILE* bitstream_fp = NULL;
     DvzVideoEncoder* encoder = NULL;
 
+    // Intentional selected-GPU exemption: this direct Vulkan/CUDA/NVENC fixture currently selects
+    // Vulkan enumeration index zero and does not prove that CUDA/NVENC resolves the same UUID.
+    // Do not treat it as per-device coverage until UUID matching is implemented.
     VulkanCtx vk;
     vk_init_and_make_image(&vk);
     // -------------------------------------------------------------------------------------------------

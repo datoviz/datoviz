@@ -42,13 +42,14 @@ int test_video_kvazaar(TstContext* suite, const TstCase* item)
 
 
 
-#define TST_VIDEO_CASE(test, resource_flags, isolation_mode)                                      \
+#define TST_VIDEO_CASE(test, resource_flags, isolation_mode, selection_flags)                     \
     do                                                                                            \
     {                                                                                             \
         TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = (resource_flags);                                                   \
         _tst_desc.isolation = (isolation_mode);                                                   \
+        _tst_desc.run_flags = (selection_flags);                                                  \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -63,13 +64,13 @@ int test_video(TstSuite* suite)
 
     TST_VIDEO_CASE(
         test_video_nvenc, TST_RES_GPU | TST_RES_VULKAN | TST_RES_VIDEO | TST_RES_FILESYSTEM,
-        TST_ISOLATION_PROCESS);
+        TST_ISOLATION_PROCESS, TST_RUN_CASE_ADAPTER_EXEMPT);
     TST_VIDEO_CASE(
         test_video_kvazaar, TST_RES_GPU | TST_RES_VULKAN | TST_RES_VIDEO | TST_RES_FILESYSTEM,
-        TST_ISOLATION_PROCESS);
+        TST_ISOLATION_PROCESS, TST_RUN_CASE_ADAPTER_SUPPORTED);
     TST_VIDEO_CASE(
         test_video_offline_headless_encode, TST_RES_VIDEO | TST_RES_FILESYSTEM,
-        TST_ISOLATION_PROCESS);
+        TST_ISOLATION_PROCESS, 0);
 
     return 0;
 }

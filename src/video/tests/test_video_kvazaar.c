@@ -24,6 +24,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/common/macros.h"
+#include "datoviz_testing.h"
 #include "test_video.h"
 #include "test_video_common.h"
 #include "testing.h"
@@ -144,7 +145,8 @@ static bool kvz_cpu_init_failed(const char** failure_reason, const char* message
  * @param failure_reason output stage-specific failure reason
  * @return true on success
  */
-static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx, const char** failure_reason)
+static bool kvz_cpu_ctx_init(
+    KvzCpuCtx* ctx, uint32_t gpu_index, const char** failure_reason)
 {
     ANN(ctx);
     ANN(failure_reason);
@@ -190,7 +192,12 @@ static bool kvz_cpu_ctx_init(KvzCpuCtx* ctx, const char** failure_reason)
         dvz_free(devices);
         return kvz_cpu_init_failed(failure_reason, "physical-device enumeration failed");
     }
-    ctx->phys = devices[0];
+    if (gpu_index >= gpu_count)
+    {
+        dvz_free(devices);
+        return kvz_cpu_init_failed(failure_reason, "selected Vulkan GPU is unavailable");
+    }
+    ctx->phys = devices[gpu_index];
     dvz_free(devices);
 
     uint32_t queue_family_count = 0;
@@ -375,7 +382,7 @@ int test_video_kvazaar(TstContext* suite, const TstCase* tstitem)
 
     KvzCpuCtx ctx = {0};
     const char* init_failure = NULL;
-    if (!kvz_cpu_ctx_init(&ctx, &init_failure))
+    if (!kvz_cpu_ctx_init(&ctx, dvz_testing_gpu_index(suite), &init_failure))
     {
         tst_skip(suite, init_failure);
         kvz_cpu_ctx_destroy(&ctx);

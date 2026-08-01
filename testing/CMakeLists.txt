@@ -38,6 +38,25 @@ set_target_properties(testing PROPERTIES
 )
 
 if(TARGET datoviz_vk AND TARGET datoviz_volk)
+    add_library(datoviz_testing_gpu_selection STATIC
+        datoviz_gpu_selection.c
+    )
+
+    target_include_directories(datoviz_testing_gpu_selection
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+    )
+
+    target_link_libraries(datoviz_testing_gpu_selection
+        PRIVATE datoviz_common datoviz_vk
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(datoviz_testing_gpu_selection PUBLIC ${_dvz_compile_definitions})
+    endif()
+
     add_library(datoviz_testing_gpu STATIC
         datoviz_gpu_testing.c
     )
@@ -51,7 +70,7 @@ if(TARGET datoviz_vk AND TARGET datoviz_volk)
 
     target_link_libraries(datoviz_testing_gpu
         PUBLIC testing
-        PRIVATE datoviz_common datoviz_vk datoviz_volk
+        PRIVATE datoviz_common datoviz_vk datoviz_volk datoviz_testing_gpu_selection
     )
 
     if(_dvz_compile_definitions)
@@ -1031,6 +1050,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
     endif()
 
     target_compile_definitions(dvz_live_canvas PRIVATE DVZ_HAS_GLFW=${DVZ_HAS_GLFW})
+    target_link_libraries(dvz_live_canvas PRIVATE datoviz_testing_gpu_selection)
 
     # Include test headers and internal paths
     target_include_directories(dvztest
