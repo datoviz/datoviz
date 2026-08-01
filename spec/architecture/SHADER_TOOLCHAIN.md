@@ -1,6 +1,6 @@
 # Shader Toolchain And Runtime Compilation
 
-Status: required v0.4 architecture and release contract. RC3 owns implementation and the tutorial pilot; RC4 owns exact-artifact proof and freeze.
+Status: implemented v0.4 architecture and release contract. Official-package and supported-platform proof remain RC3 gates; RC4 owns exact-artifact course proof and freeze. Updated: 2026-08-01.
 
 ## Decision
 
@@ -31,7 +31,7 @@ External user shaders and tutorial shaders remain separate files compiled at app
 
 ## Build-System Contract
 
-RC3 must replace independent native shader compiler integrations with one reusable CMake helper based on `glslc`, preferably in a focused module under `cmake/` rather than more top-level and subsystem-local command duplication. Scene shaders, Canvas shaders, native shader fixtures, and applicable examples must share discovery, target-profile flags, dependency tracking, output naming, diagnostics, and optional validation.
+The implemented native shader pipeline uses one reusable CMake helper based on `glslc`. Scene shaders, Canvas shaders, native shader fixtures, and applicable examples share discovery, target-profile flags, dependency tracking, output naming, diagnostics, and optional validation.
 
 The helper must:
 
@@ -43,9 +43,9 @@ The helper must:
 6. fail release builds when required precompiled shaders cannot be produced;
 7. keep an explicitly diagnosed developer fallback where policy allows it.
 
-Canvas must stop imposing an independent `glslangValidator` requirement on normal native source builds. Specialized WebGPU, validation, or contributor workflows may continue to discover it separately.
+Canvas imposes no independent `glslangValidator` requirement on normal native source builds. Specialized WebGPU, validation, or contributor workflows may continue to discover it separately.
 
-Build-time and runtime compilation must use named target profiles from one documented policy. RC3 begins with the current conservative behavior unless cross-platform Vulkan and MoltenVK proof justifies a change:
+Build-time and runtime compilation use named target profiles from one documented policy:
 
 | Profile | Target environment | SPIR-V | Reason |
 | --- | --- | --- | --- |
@@ -56,7 +56,7 @@ Agents must not independently change these versions in CMake, runtime compilatio
 
 ## Runtime Module Boundary
 
-Runtime compiler discovery, dynamic loading, target selection, compilation, diagnostics, and result ownership must move out of the DRP2 pipeline implementation into one focused shader-compilation module. DRP2 and vklite may consume the service but must not own its process-global loader policy.
+Runtime compiler discovery, dynamic loading, target selection, compilation, diagnostics, and result ownership live in the focused `src/shader` module rather than the DRP2 pipeline implementation. DRP2 and vklite may consume the service but do not own its process-global loader policy.
 
 The module may live in `libdatoviz`, but it must not create a hard link or startup dependency on shared shaderc for ordinary rendering. On platforms using a shared provider, initialization must lazy-load the approved runtime library and degrade to an unavailable capability without breaking import, startup, or precompiled-SPIR-V rendering. A platform may use a reviewed static provider when packaging constraints require it.
 
@@ -75,7 +75,7 @@ Official v0.4 wheels and release packages must bundle or otherwise guarantee the
 
 ## Public API Outcome
 
-The existing string-only `dvz_compile_glsl()` surface is insufficient as the final tutorial contract. RC3 must replace it or make it a narrow convenience wrapper over a typed API. v0.3 compatibility must not preserve an inferior design.
+The typed `dvz_shader_compile()` API is the primary tutorial contract. The string-only `dvz_compile_glsl()` surface remains a narrow compatibility convenience over it.
 
 The general API must provide:
 
@@ -90,7 +90,7 @@ The general API must provide:
 9. an availability or preflight query that is safe before GPU initialization;
 10. a file-oriented convenience or null-terminated text reader suitable for external tutorial shaders.
 
-Exact public type and function names remain checkpoint-spike decisions. Public declarations belong in a focused shader header rather than `gpu_ctx.h`. The implementation must not hardcode fixture filenames, silently infer unknown stages, discard compiler diagnostics, require a GPU context, or expose shaderc types in the public API.
+The accepted public surface is declared in `include/datoviz/shader.h` and uses `DvzShaderCompileRequest`, `DvzShaderCompileResult`, `DvzShaderCompileStatus`, `DvzShaderStage`, `DvzShaderProfile`, `dvz_shader_compiler_status()`, `dvz_shader_compiler_available()`, `dvz_shader_compile()`, and `dvz_shader_compile_result_destroy()`. It does not expose shaderc types or require a GPU context.
 
 Audit every existing caller when the API changes. Correct allocator mismatches, especially callers using C `free()` for Datoviz-owned SPIR-V, and add focused lifetime tests. Public header or binding changes require `just ctypes` and `just ctypes-check`.
 
@@ -102,7 +102,7 @@ Do not log a generic hardcoded source name such as a fixture path for unrelated 
 
 ## Validation
 
-RC3 implementation proof requires:
+Implemented local proof covers items 1-7 below. RC3 still requires official-package and supported-platform proof for items 8-10:
 
 1. focused tests for valid vertex, fragment, and compute compilation;
 2. tests for empty source, invalid stage, malformed GLSL, real source filenames, absent provider, incompatible provider where practical, and correct result cleanup;

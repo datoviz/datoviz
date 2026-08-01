@@ -45,21 +45,21 @@ Exit criteria:
 4. the tutorial-enabling Canvas, vklite, shader-file, depth-attachment, OBJ-UV, and controller contracts are implemented from executable chapter spikes, documented, binding-validated where applicable, and proven through installed CMake consumers;
 5. native scene, Canvas, test, and example shaders share one `glslc` build helper and named target-profile policy, normal builds no longer require `glslangValidator`, release products contain precompiled SPIR-V, and generated SPIR-V passes release/CI validation;
 6. runtime shaderc is a focused thread-safe capability outside DRP2 pipeline code with a typed public availability, diagnostic, file, profile, and ownership contract; official packages guarantee its provider while disabled source builds preserve precompiled-SPIR-V rendering;
-7. the first three chapters of the modern GPU graphics tutorial are published as a coherent pilot with live GLFW and deterministic offscreen paths;
+7. rewritten course chapters 1-3 are published with standalone installed-consumer, deterministic offscreen, bounded live GLFW, source-synchronization, and generated-preview proof;
 8. packaging, licenses, generated artifacts, release notes, and the non-tutorial documentation surface are final candidates;
 9. source archives and wheels build, install, compile external shaders, and pass installed smoke tests on supported platforms;
 10. static-analysis, memory/UB, Vulkan validation, long-running loop, docs link, gallery smoke, and example smoke results are either clean or recorded as known issues;
 11. checksums/signing policy and required third-party notices are decided;
-12. RC3 feedback explicitly asks whether first-result latency, C guidance, ownership, runtime shader diagnostics, resize behavior, and the tutorial API profile are suitable before the remaining chapters are implemented.
+12. RC3 feedback explicitly asks whether setup, first-window latency, C guidance, ownership, frame-command explanation, runtime diagnostics, resize behavior, and the tutorial API profile are suitable before chapters 4-15 are implemented.
 
 
 ## RC4: Tutorial And Installed Developer Experience Candidate
 
 Exit criteria:
 
-1. the tutorial is complete through a textured, lit, mouse-rotatable Suzanne mesh and preserves the result-first, one-concept-at-a-time teaching contract;
+1. the tutorial is complete through an interactive textured and lit generated mesh and preserves the result-first, one-concept-at-a-time teaching contract;
 2. tutorial-facing public APIs and ownership contracts are frozen except for recorded blockers;
-3. the Suzanne OBJ, generated texture, scripts, provenance, licenses, package/install rules, and runtime discovery pass the release asset gate;
+3. generated geometry, the procedural asymmetric texture, their deterministic generation path, package/install behavior, and runtime discovery pass the course asset gate without a committed binary prerequisite;
 4. every chapter builds through `find_package(datoviz CONFIG REQUIRED)` against exact installed packages, runtime-compiles its external shaders through the packaged shaderc path and frozen typed API, and has deterministic offscreen proof;
 5. bounded GLFW resize, depth-recreation, arcball-input, repeated-frame, shutdown, and Vulkan-validation smokes pass on supported hosted platforms, with physical exclusions recorded rather than inferred;
 6. tutorial source snippets, complete examples, screenshots, exercises, API links, compatibility labels, and navigation pass the strict documentation gates;
@@ -105,4 +105,4 @@ Each RC should have issue labels or project fields that separate:
 5. documentation issues;
 6. final-release blockers.
 
-After each RC feedback window, summarize findings before the next candidate. RC1 feedback produced a narrow RC2 packaged native-window hotfix, moving its former planned scope to RC3. RC3 now proves the tutorial-facing API and pilot in addition to the documentation, packaging, and quality surface; RC4 completes and freezes the tutorial and installed developer experience before final v0.4.0.
+After each RC feedback window, summarize findings before the next candidate. RC1 feedback produced a narrow RC2 packaged native-window hotfix, moving its former planned scope to RC3. RC3 now proves the tutorial-facing API and rewritten chapters 1-3 in addition to the documentation, packaging, and quality surface; RC4 completes chapters 4-15 and freezes the tutorial and installed developer experience before final v0.4.0.
