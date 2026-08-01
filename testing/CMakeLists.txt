@@ -1227,6 +1227,33 @@ else()
     message(STATUS "Skipping public header probes: datoviz_core target is disabled.")
 endif()
 
+# Build every available modular test executable through one native build-tool invocation.
+set(_dvz_modular_test_targets
+    dvztest_common
+    dvztest_controller
+    dvztest_core
+    dvztest_fileio
+    dvztest_geom
+    dvztest_math
+    dvztest_scheduler
+    dvztest_thread
+    dvztest_vk
+    dvztest_canvas
+    dvztest_drp2
+    dvztest_gui
+    dvztest_scene)
+set(_dvz_available_modular_test_targets "")
+foreach(_dvz_test_target IN LISTS _dvz_modular_test_targets)
+    if(TARGET ${_dvz_test_target})
+        list(APPEND _dvz_available_modular_test_targets ${_dvz_test_target})
+    endif()
+endforeach()
+if(_dvz_available_modular_test_targets)
+    add_custom_target(dvztest_modules DEPENDS ${_dvz_available_modular_test_targets})
+endif()
+unset(_dvz_available_modular_test_targets)
+unset(_dvz_modular_test_targets)
+
 # Track testing targets so top-level logic can apply shared instrumentation (coverage, sanitizers, ...).
 foreach(_dvz_test_target
     testing
