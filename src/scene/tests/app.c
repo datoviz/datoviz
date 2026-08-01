@@ -1499,6 +1499,12 @@ int test_app_view_capabilities(TstContext* suite, const TstCase* item)
     AT(!caps.query_profile_u64_2xr32 ||
        (caps.render_target_format_r32uint && caps.max_color_attachments >= 2));
 
+    const uint64_t max_buffer_size = caps.max_buffer_size;
+    caps.max_buffer_size = 0;
+    DvzCapabilitySnapshot cached = {0};
+    AT(dvz_view_capabilities(win, &cached));
+    AT(cached.max_buffer_size == max_buffer_size);
+
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;

@@ -250,6 +250,9 @@ struct DvzApp
     DvzScene* scene;
     DvzAppConfig config;
     bool stop_requested;
+    DvzCapabilitySnapshot runtime_caps;
+    bool runtime_caps_initialized;
+    bool runtime_caps_backed;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzGpuCtx*      gpu_ctx;
     DvzDrp2Runtime* runtime;
@@ -880,9 +883,16 @@ static bool _app_apply_runtime_caps(const DvzApp* app, DvzCapabilitySnapshot* ca
  * @param out output capability snapshot
  * @return whether the runtime-backed fields were available
  */
-static bool _app_runtime_capabilities(const DvzApp* app, DvzCapabilitySnapshot* out)
+static bool _app_runtime_capabilities(DvzApp* app, DvzCapabilitySnapshot* out)
 {
+    ANN(app);
     ANN(out);
+    if (app->runtime_caps_initialized)
+    {
+        *out = app->runtime_caps;
+        return app->runtime_caps_backed;
+    }
+
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     const bool runtime_caps = _app_apply_runtime_caps(app, &caps);
 
@@ -891,6 +901,9 @@ static bool _app_runtime_capabilities(const DvzApp* app, DvzCapabilitySnapshot* 
     caps.render_target_format_r16float = true;
     caps.supports_render_target_sampling = true;
     caps.supports_color_blending = true;
+    app->runtime_caps = caps;
+    app->runtime_caps_initialized = true;
+    app->runtime_caps_backed = runtime_caps;
     *out = caps;
     return runtime_caps;
 }
@@ -4252,6 +4265,9 @@ dvz_app_with_resources(DvzScene* scene, const DvzAppConfig* config, const DvzApp
             return NULL;
         }
     }
+
+    DvzCapabilitySnapshot initial_caps = {0};
+    (void)_app_runtime_capabilities(app, &initial_caps);
 
     if (res->runtime != NULL)
     {
