@@ -140,12 +140,16 @@ static DvzDynLib _shaderc_open_runtime_dirs(const char* filename)
         if (dir_len > 0)
         {
             char path[4096] = {0};
-            int rc = snprintf(path, sizeof(path), "%.*s/%s", (int)dir_len, cursor, filename);
-            if (rc > 0 && (size_t)rc < sizeof(path))
+            if (dir_len < sizeof(path))
             {
-                DvzDynLib lib = dvz_dynlib_open(path);
-                if (lib != NULL)
-                    return lib;
+                int rc =
+                    dvz_snprintf(path, sizeof(path), "%.*s/%s", (int)dir_len, cursor, filename);
+                if (rc > 0 && (size_t)rc < sizeof(path))
+                {
+                    DvzDynLib lib = dvz_dynlib_open(path);
+                    if (lib != NULL)
+                        return lib;
+                }
             }
         }
         if (end == NULL)
@@ -303,7 +307,8 @@ static void _shader_result_diagnostics(DvzShaderCompileResult* result, const cha
     va_start(args, format);
     va_list copy;
     va_copy(copy, args);
-    int length = vsnprintf(NULL, 0, format, copy);
+    int length = vsnprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+        NULL, 0, format, copy);
     va_end(copy);
     if (length < 0)
     {
@@ -314,7 +319,8 @@ static void _shader_result_diagnostics(DvzShaderCompileResult* result, const cha
     result->diagnostics = (char*)dvz_malloc((size_t)length + 1);
     if (result->diagnostics != NULL)
     {
-        vsnprintf(result->diagnostics, (size_t)length + 1, format, args);
+        vsnprintf( // NOLINT(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+            result->diagnostics, (size_t)length + 1, format, args);
         result->diagnostics_size = (uint64_t)length;
     }
     va_end(args);
@@ -379,7 +385,7 @@ dvz_shader_compile(const DvzShaderCompileRequest* request, DvzShaderCompileResul
 {
     if (result == NULL)
         return DVZ_SHADER_COMPILE_INVALID_REQUEST;
-    memset(result, 0, sizeof(DvzShaderCompileResult));
+    dvz_memset(result, sizeof(DvzShaderCompileResult), 0, sizeof(DvzShaderCompileResult));
     result->status = DVZ_SHADER_COMPILE_INVALID_REQUEST;
 
     if (request == NULL)
@@ -531,7 +537,7 @@ void dvz_shader_compile_result_destroy(DvzShaderCompileResult* result)
         return;
     dvz_free(result->spirv);
     dvz_free(result->diagnostics);
-    memset(result, 0, sizeof(DvzShaderCompileResult));
+    dvz_memset(result, sizeof(DvzShaderCompileResult), 0, sizeof(DvzShaderCompileResult));
 }
 
 

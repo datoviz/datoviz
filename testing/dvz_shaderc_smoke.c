@@ -71,9 +71,10 @@ static void* _compile_thread(void* user_data)
 
 int main(int argc, char** argv)
 {
-    DvzShaderCompileStatus compiler_status = dvz_shader_compiler_status();
+    DvzShaderCompileStatus compiler_status = DVZ_SHADER_COMPILE_INTERNAL_ERROR;
     if (argc == 2 && strcmp(argv[1], "--expect-provider-missing") == 0)
     {
+        compiler_status = dvz_shader_compiler_status();
         if (compiler_status != DVZ_SHADER_COMPILE_PROVIDER_MISSING ||
             dvz_shader_compiler_available())
         {
@@ -87,6 +88,7 @@ int main(int argc, char** argv)
     }
     if (argc == 2 && strcmp(argv[1], "--expect-provider-incompatible") == 0)
     {
+        compiler_status = dvz_shader_compiler_status();
         if (compiler_status != DVZ_SHADER_COMPILE_PROVIDER_INCOMPATIBLE ||
             dvz_shader_compiler_available())
         {
@@ -100,6 +102,7 @@ int main(int argc, char** argv)
     }
 
 #if !DVZ_HAS_SHADERC
+    compiler_status = dvz_shader_compiler_status();
     if (dvz_shader_compiler_available() ||
         compiler_status != DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE)
     {
@@ -109,13 +112,6 @@ int main(int argc, char** argv)
     printf("source-build shaderc disabled-adapter smoke passed\n");
     return 0;
 #endif
-
-    if (!dvz_shader_compiler_available() ||
-        compiler_status != DVZ_SHADER_COMPILE_SUCCESS)
-    {
-        fprintf(stderr, "runtime shader compiler is unavailable\n");
-        return 1;
-    }
 
     enum
     {
@@ -133,7 +129,21 @@ int main(int argc, char** argv)
     }
     for (uint32_t i = 0; i < THREAD_COUNT; i++)
     {
-        if (pthread_join(threads[i], NULL) != 0 || !results[i].succeeded)
+        if (pthread_join(threads[i], NULL) != 0)
+        {
+            fprintf(stderr, "unable to join shader compilation thread %u\n", i);
+            return 1;
+        }
+    }
+    compiler_status = dvz_shader_compiler_status();
+    if (!dvz_shader_compiler_available() || compiler_status != DVZ_SHADER_COMPILE_SUCCESS)
+    {
+        fprintf(stderr, "runtime shader compiler is unavailable\n");
+        return 1;
+    }
+    for (uint32_t i = 0; i < THREAD_COUNT; i++)
+    {
+        if (!results[i].succeeded)
         {
             fprintf(stderr, "concurrent shader compilation failed on thread %u\n", i);
             return 1;
@@ -153,6 +163,55 @@ int main(int argc, char** argv)
         .entry_point = "main",
     };
     DvzShaderCompileResult result = {0};
+
+    if (dvz_shader_compile(NULL, NULL) != DVZ_SHADER_COMPILE_INVALID_REQUEST)
+    {
+        fprintf(stderr, "NULL shader request/result was not rejected\n");
+        return 1;
+    }
+    if (dvz_shader_compile(NULL, &result) != DVZ_SHADER_COMPILE_INVALID_REQUEST ||
+        result.diagnostics == NULL || result.diagnostics_size == 0 || result.spirv != NULL)
+    {
+        fprintf(stderr, "NULL shader request did not return owned diagnostics\n");
+        dvz_shader_compile_result_destroy(&result);
+        return 1;
+    }
+    dvz_shader_compile_result_destroy(&result);
+
+    const char* valid_source = request.source;
+    request.source = NULL;
+    if (dvz_shader_compile(&request, &result) != DVZ_SHADER_COMPILE_INVALID_REQUEST ||
+        result.diagnostics == NULL)
+    {
+        fprintf(stderr, "NULL shader source was not rejected\n");
+        dvz_shader_compile_result_destroy(&result);
+        return 1;
+    }
+    dvz_shader_compile_result_destroy(&result);
+    request.source = valid_source;
+
+    const char* valid_source_name = request.source_name;
+    request.source_name = NULL;
+    if (dvz_shader_compile(&request, &result) != DVZ_SHADER_COMPILE_INVALID_REQUEST ||
+        result.diagnostics == NULL)
+    {
+        fprintf(stderr, "NULL shader source name was not rejected\n");
+        dvz_shader_compile_result_destroy(&result);
+        return 1;
+    }
+    dvz_shader_compile_result_destroy(&result);
+    request.source_name = "";
+    if (dvz_shader_compile(&request, &result) != DVZ_SHADER_COMPILE_INVALID_REQUEST ||
+        result.diagnostics == NULL)
+    {
+        fprintf(stderr, "empty shader source name was not rejected\n");
+        dvz_shader_compile_result_destroy(&result);
+        return 1;
+    }
+    dvz_shader_compile_result_destroy(&result);
+    request.source_name = valid_source_name;
+    request.entry_point = NULL;
+
     if (dvz_shader_compile(&request, &result) != DVZ_SHADER_COMPILE_SUCCESS)
     {
         fprintf(
