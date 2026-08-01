@@ -156,7 +156,10 @@ set(TEST_SOURCES
     "dvztest.c"
 )
 
-if(NOT DVZ_HAS_NVENC)
+# The physical NVENC fixture currently exercises Vulkan/CUDA external FD interop. Keep the
+# backend enabled on Windows, but use the explicit test-suite skip until Win32 HANDLE interop is
+# implemented.
+if(NOT DVZ_HAS_NVENC OR WIN32)
     list(FILTER DVZ_MODULE_TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_nvenc\\.c.*")
     list(FILTER TEST_SOURCES EXCLUDE REGEX "/src/video/tests/test_video_nvenc\\.c.*")
 endif()
