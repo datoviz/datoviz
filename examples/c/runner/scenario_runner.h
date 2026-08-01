@@ -309,6 +309,7 @@ typedef struct DvzRunnerConfig
     DvzAppCaptureConfig capture;
     bool print_progress;
     bool pace_wall_time;
+    bool benchmark;
     bool preview_mode;
     bool preview_sequence;
     uint64_t preview_frame_index;

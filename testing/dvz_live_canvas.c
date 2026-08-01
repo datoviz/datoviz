@@ -136,6 +136,7 @@ typedef struct DvzCanvasApp
     uint32_t benchmark_sample_count;
     double benchmark_start_s;
     double benchmark_last_s;
+    uint64_t benchmark_recreate_start;
 } DvzCanvasApp;
 
 
@@ -366,6 +367,8 @@ static bool _dvz_canvas_benchmark_begin(DvzCanvasApp* app)
     }
 
     uint32_t max_warmup = max_frames / 10;
+    if (max_warmup == 0)
+        max_warmup = 1;
     app->benchmark_warmup_frames = DVZ_CANVAS_BENCHMARK_WARMUP_FRAMES;
     if (app->benchmark_warmup_frames > max_warmup)
     {
@@ -380,6 +383,7 @@ static bool _dvz_canvas_benchmark_begin(DvzCanvasApp* app)
         return false;
     }
     app->benchmark_sample_count = 0;
+    app->benchmark_recreate_start = 0;
 
     double now = _dvz_canvas_benchmark_now();
     app->benchmark_start_s = now;
@@ -408,6 +412,7 @@ static void _dvz_canvas_benchmark_record(DvzCanvasApp* app, uint64_t submitted_f
     {
         app->benchmark_start_s = now;
         app->benchmark_last_s = now;
+        app->benchmark_recreate_start = dvz_canvas_swapchain_recreate_count(app->canvas);
         return;
     }
     if (submitted_frames < app->benchmark_warmup_frames)
@@ -429,16 +434,17 @@ static void _dvz_canvas_benchmark_record(DvzCanvasApp* app, uint64_t submitted_f
 
 
 /**
- * Print benchmark throughput, frame-time distribution, and stutter counts.
+ * Print benchmark throughput, frame-time distribution, stutters, and recreation counts.
  *
  * @param app canvas app state
+ * @returns true when no steady-state swapchain recreation occurred
  */
-static void _dvz_canvas_benchmark_end(DvzCanvasApp* app)
+static bool _dvz_canvas_benchmark_end(DvzCanvasApp* app)
 {
     ANN(app);
     if (!app->options.benchmark || app->benchmark_sample_count == 0)
     {
-        return;
+        return true;
     }
 
     uint32_t count = app->benchmark_sample_count;
@@ -446,7 +452,7 @@ static void _dvz_canvas_benchmark_end(DvzCanvasApp* app)
     if (sorted == NULL)
     {
         dvz_fprintf(stderr, "benchmark: failed to allocate percentile buffer\n");
-        return;
+        return false;
     }
     dvz_memcpy(sorted, count * sizeof(double), app->benchmark_frame_ms, count * sizeof(double));
     qsort(sorted, count, sizeof(double), _dvz_canvas_compare_double);
@@ -484,6 +490,8 @@ static void _dvz_canvas_benchmark_end(DvzCanvasApp* app)
     double avg_ms = count > 0 ? sum_ms / (double)count : 0.0;
     VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
     bool has_resolved = dvz_canvas_swapchain_present_mode(app->canvas, &resolved);
+    uint64_t recreate_count = dvz_canvas_swapchain_recreate_count(app->canvas);
+    uint64_t recreate_delta = recreate_count - app->benchmark_recreate_start;
 
     dvz_fprintf(
         stderr,
@@ -507,8 +515,12 @@ static void _dvz_canvas_benchmark_end(DvzCanvasApp* app)
     dvz_fprintf(
         stderr, "benchmark: stutters >2ms=%u >5ms=%u >10ms=%u >16.67ms=%u\n", stutter_2ms,
         stutter_5ms, stutter_10ms, stutter_16ms);
+    dvz_fprintf(
+        stderr, "benchmark: swapchain recreates total=%llu steady=%llu\n",
+        (unsigned long long)recreate_count, (unsigned long long)recreate_delta);
 
     dvz_free(sorted);
+    return recreate_delta == 0;
 }
 
 
@@ -783,6 +795,11 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
         if (options->max_frames == 0)
         {
             options->max_frames = DVZ_CANVAS_BENCHMARK_DEFAULT_FRAMES;
+        }
+        if (options->max_frames < 2)
+        {
+            dvz_fprintf(stderr, "benchmark requires at least two frames\n");
+            return false;
         }
         if (!present_explicit && options->render_mode == DVZ_CANVAS_RENDER_MODE_PRESENT)
         {
@@ -1537,8 +1554,8 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
     {
         dvz_device_wait(app->device);
     }
-    _dvz_canvas_benchmark_end(app);
-    return 0;
+    bool benchmark_ok = _dvz_canvas_benchmark_end(app);
+    return benchmark_ok ? 0 : 1;
 }
 
 

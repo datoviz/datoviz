@@ -32,6 +32,8 @@
 /*************************************************************************************************/
 
 #define RUNNER_DEFAULT_FRAMES 120u
+#define RUNNER_BENCHMARK_DEFAULT_FRAMES 600u
+#define RUNNER_BENCHMARK_MAX_WARMUP     200u
 #define RUNNER_PATH_SIZE      1024u
 #define RUNNER_PROGRESS_WIDTH 32u
 #define RUNNER_NS_PER_SEC     1000000000ull
@@ -867,6 +869,7 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "usage: %s [mode] [frames]\n", exe);
     fprintf(stdout, "modes:\n");
     fprintf(stdout, "  --live                 show a paced GLFW window (default)\n");
+    fprintf(stdout, "  --benchmark N          benchmark N unpaced GLFW frames after warmup\n");
     fprintf(stdout, "  --live-record N        show GLFW and record paced offscreen video\n");
     fprintf(stdout, "  --video N              record unpaced offscreen video\n");
     fprintf(stdout, "  --offscreen-record N   record unpaced offscreen video\n");
@@ -919,6 +922,7 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec)
         .capture = dvz_app_capture_config_from_env(basename),
         .print_progress = true,
         .pace_wall_time = false,
+        .benchmark = false,
         .preview_mode = false,
         .preview_sequence = false,
         .preview_frame_index = 0,
@@ -1295,7 +1299,26 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
 
     if (resolved.frame_count > 0 && resolved.print_progress)
         _print_progress(0, resolved.frame_count);
-    if (resolved.preview_sequence)
+    if (resolved.benchmark)
+    {
+        uint32_t warmup_frames = resolved.frame_count / 10;
+        if (warmup_frames == 0)
+            warmup_frames = 1;
+        if (warmup_frames > RUNNER_BENCHMARK_MAX_WARMUP)
+            warmup_frames = RUNNER_BENCHMARK_MAX_WARMUP;
+        if (warmup_frames > 0)
+            dvz_app_run(app, warmup_frames);
+
+        uint64_t start_ns = dvz_time_monotonic_ns();
+        dvz_app_run(app, resolved.frame_count);
+        uint64_t elapsed_ns = dvz_time_monotonic_ns() - start_ns;
+        double elapsed_s = (double)elapsed_ns / (double)RUNNER_NS_PER_SEC;
+        double fps = elapsed_s > 0.0 ? (double)resolved.frame_count / elapsed_s : 0.0;
+        fprintf(
+            stdout, "scenario_benchmark: scenario=%s frames=%u warmup=%u elapsed=%.6fs fps=%.2f\n",
+            spec->id != NULL ? spec->id : "?", resolved.frame_count, warmup_frames, elapsed_s, fps);
+    }
+    else if (resolved.preview_sequence)
     {
         for (uint32_t frame = 0; frame < resolved.frame_count; frame++)
         {
@@ -1369,6 +1392,21 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
             config.presentation = DVZ_RUNNER_PRESENT_GLFW;
             config.capture_kind = DVZ_RUNNER_CAPTURE_NONE;
             config.frame_count = 0;
+        }
+        else if (strcmp(arg, "--benchmark") == 0)
+        {
+            config.presentation = DVZ_RUNNER_PRESENT_GLFW;
+            config.capture_kind = DVZ_RUNNER_CAPTURE_NONE;
+            config.frame_count =
+                _frames_after(argc, argv, i, RUNNER_BENCHMARK_DEFAULT_FRAMES);
+            if (config.frame_count < 2)
+            {
+                fprintf(stderr, "scenario_runner: --benchmark requires at least two frames\n");
+                return -1;
+            }
+            config.print_progress = false;
+            config.pace_wall_time = false;
+            config.benchmark = true;
         }
         else if (strcmp(arg, "--live-record") == 0)
         {
@@ -1579,7 +1617,9 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
         }
     }
 
-    if (config.presentation == DVZ_RUNNER_PRESENT_GLFW && config.frame_count > 0)
+    if (
+        config.presentation == DVZ_RUNNER_PRESENT_GLFW && config.frame_count > 0 &&
+        !config.benchmark)
         config.pace_wall_time = true;
 
     return dvz_scenario_run_native(spec, &config);

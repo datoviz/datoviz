@@ -208,9 +208,9 @@ build-profile:
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "${launcher_args[@]}" ${cmake_args}
     )
     if [[ -n "${DVZ_BUILD_JOBS:-}" ]]; then
-        cmake --build build-profile --target dvz_live_canvas --parallel "${DVZ_BUILD_JOBS}"
+        cmake --build build-profile --target dvz_live_canvas scatter --parallel "${DVZ_BUILD_JOBS}"
     else
-        cmake --build build-profile --target dvz_live_canvas
+        cmake --build build-profile --target dvz_live_canvas scatter
     fi
 #
 
