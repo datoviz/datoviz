@@ -440,7 +440,9 @@ static DvzApp* _app_test_create(TstContext* suite, DvzScene* scene)
     }
     if (!fixture->available)
     {
-        tst_skip(suite, fixture->skip_reason != NULL ? fixture->skip_reason : "GPU fixture unavailable");
+        tst_skip(
+            suite,
+            fixture->skip_reason != NULL ? fixture->skip_reason : "GPU fixture unavailable");
         return NULL;
     }
 
@@ -455,6 +457,42 @@ static DvzApp* _app_test_create(TstContext* suite, DvzScene* scene)
     {
         tst_skip(suite, "app creation from shared GPU fixture failed");
     }
+    return app;
+}
+
+
+
+/**
+ * Create an app-owned runtime on the GPU selected by the current test fixture.
+ *
+ * @param suite active test context
+ * @param scene scene borrowed by the app
+ * @return app, or NULL when setup is unavailable
+ */
+static DvzApp* _app_test_create_owned_runtime(TstContext* suite, DvzScene* scene)
+{
+    ANN(suite);
+    ANN(scene);
+
+    DvzTestGpuFixture* fixture =
+        (DvzTestGpuFixture*)tst_context_fixture(suite, TST_SCENE_APP_GPU_FIXTURE);
+    if (fixture == NULL)
+        return dvz_app(scene);
+    if (!fixture->available)
+    {
+        tst_skip(
+            suite,
+            fixture->skip_reason != NULL ? fixture->skip_reason : "GPU fixture unavailable");
+        return NULL;
+    }
+
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = fixture->gpu_ctx;
+    resources.window_host = fixture->window_host;
+    DvzAppConfig config = _app_test_resource_config();
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
+    if (app == NULL)
+        tst_skip(suite, "app-owned runtime creation from shared GPU fixture failed");
     return app;
 }
 
@@ -2043,7 +2081,7 @@ int test_app_offscreen_reopen_same_scene_first_frame(
     uint64_t sums[2] = {0};
     for (uint32_t pass = 0; pass < 2; pass++)
     {
-        DvzApp* app = _app_test_create(suite, scene);
+        DvzApp* app = _app_test_create_owned_runtime(suite, scene);
         if (app == NULL)
         {
             log_warn(
