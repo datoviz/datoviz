@@ -832,6 +832,28 @@ int test_geometry_polygon_triangulation(TstContext* suite, const TstCase* tstite
         AT(square->indices[i] < square->vertex_count);
     dvz_geometry_destroy(square);
 
+    // Earcut enables its z-order linked-list path above 80 vertices. Keep this regression large
+    // enough to exercise sortLinked(), whose non-null tail invariant is easy for analyzers to miss.
+    const uint32_t stress_count = 128;
+    dvec2 stress_xy[128] = {{0}};
+    for (uint32_t i = 0; i < stress_count; i++)
+    {
+        const double angle = DVZ_2PI * (double)i / (double)stress_count;
+        stress_xy[i][0] = cos(angle);
+        stress_xy[i][1] = sin(angle);
+    }
+    DvzGeometry* stress = dvz_triangulate_polygon(
+        &(DvzPolygonDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+            .outer = {.xy = (const dvec2*)stress_xy, .count = stress_count}},
+        NULL);
+    AT(stress != NULL);
+    AT(stress->vertex_count == stress_count);
+    AT(stress->index_count == 3u * (stress_count - 2u));
+    for (uint32_t i = 0; i < stress->index_count; i++)
+        AT(stress->indices[i] < stress->vertex_count);
+    dvz_geometry_destroy(stress);
+
     const dvec2 closed_xy[5] = {
         {0.0, 0.0}, {2.0, 0.0}, {2.0, 2.0}, {0.0, 2.0}, {0.0, 0.0},
     };
