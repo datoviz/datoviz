@@ -1,7 +1,6 @@
-# Qt Host Bridge Implementation Plan
+# Qt Host Bridge Architecture And Packaging
 
-Status: v0.4 implementation handoff. This document is the build and runtime plan for making
-`datoviz.qt` work with PyQt6 without adding Qt to `libdatoviz`.
+Status: v0.4 implemented architecture and RC3 packaging contract. This document defines how `datoviz.qt` works with PyQt6 without adding Qt to `libdatoviz`.
 
 Related policy:
 
@@ -41,7 +40,7 @@ construct and attach a `QVulkanInstance`.
 
 ## v0.4 Decision
 
-Implement a separate optional Qt bridge shared library.
+Use a separate optional Qt bridge shared library.
 
 Requirements:
 
@@ -59,13 +58,13 @@ hosting API.
 
 ## Native Bridge ABI
 
-Use a tiny C ABI exported from a separate shared library, tentatively named:
+Use the tiny C ABI exported from the separate shared library:
 
 ```text
 datoviz_qtbridge
 ```
 
-Suggested header:
+Provider ABI:
 
 ```c
 #pragma once
@@ -112,7 +111,7 @@ read back through the same Qt runtime.
 
 ## CMake Target
 
-Preferred source layout:
+Source layout:
 
 ```text
 src/qtbridge/
@@ -120,19 +119,19 @@ src/qtbridge/
   qt_bridge.h
 ```
 
-Preferred option:
+Build option:
 
 ```text
 DVZ_ENABLE_QT_BRIDGE=ON|OFF|AUTO
 ```
 
-Initial v0.4 behavior can be `AUTO` in source builds:
+Source builds default to `AUTO`:
 
 1. if Qt6 Gui development files are found, build `datoviz_qtbridge`;
 2. otherwise skip it with a status message;
 3. never fail the core Datoviz build because Qt is absent.
 
-The target should:
+The target:
 
 1. link `Qt6::Gui` or the existing `PkgConfig::DVZ_QT6` fallback;
 2. not link against `datoviz` unless a concrete need appears;
@@ -146,18 +145,18 @@ finding Qt without requiring it.
 
 ## Python Integration
 
-`datoviz/qt.py` should keep the public objects:
+`datoviz/qt.py` keeps the public objects:
 
 1. `DatovizWindow`
 2. `DatovizWidget`
 
-The `_create_qt_instance()` implementation should change from a direct PyQt call:
+The `_create_qt_instance()` implementation does not call the missing direct PyQt method:
 
 ```python
 self._qt_instance.setVkInstance(int(instance))
 ```
 
-to a bridge call:
+It uses the bridge call:
 
 ```python
 from PyQt6 import sip
@@ -167,7 +166,7 @@ vk_ptr = int(instance)
 _qt_bridge.set_vk_instance(qt_ptr, vk_ptr)
 ```
 
-Bridge loading should:
+Bridge loading:
 
 1. first honor `DATOVIZ_QTBRIDGE_LIBRARY` if set;
 2. then search installed package/library locations;
@@ -219,22 +218,19 @@ If those exist later, the same native bridge can be reused by passing the unwrap
 `QVulkanInstance*` pointer from Shiboken instead of SIP.
 
 
-## Packaging
+## Release Packaging History And Policy
 
 Main Datoviz wheels should not bundle Qt or PyQt just for this bridge.
 
-RC1 disposition and RC2 packaging route:
+RC1 and RC2 disposition and the RC3 packaging route:
 
 1. The main `datoviz` wheel ships the `datoviz.qt` Python adapter and the `datoviz[qt]` extra, but
    not Qt, PyQt, or `datoviz_qtbridge`.
 2. Source builds keep `DVZ_ENABLE_QT_BRIDGE=AUTO`: build `datoviz_qtbridge` when Qt development
    files are present and skip it without failing the core build when they are absent.
-3. RC1 has no packaged bridge provider. Its Qt/PyQt path is source-build-only, and
-   `datoviz[qt]` alone is insufficient because that extra installs PyQt6 but not the native bridge.
-4. Local developers and RC1 testers use `DATOVIZ_QTBRIDGE_LIBRARY` or an installed provider
-   location to point `datoviz.qt` at a source-built bridge.
-5. RC2 should provide the first split binary route through conda-forge because it can keep PyQt,
-   Qt, and the bridge on one managed Qt runtime.
+3. RC1 and RC2 have no packaged bridge provider. Their Qt/PyQt path is source-build-only, and `datoviz[qt]` alone is insufficient because that extra installs PyQt6 but not the native bridge.
+4. Local developers and RC testers use `DATOVIZ_QTBRIDGE_LIBRARY` or an installed provider location to point `datoviz.qt` at a source-built bridge.
+5. RC3 must provide the first split binary route through conda-forge because it can keep PyQt, Qt, and the bridge on one managed Qt runtime. Local source artifacts are prerequisite evidence, not completion of the release gate.
 6. PyPI provider wheels can be considered only after the bridge ABI, Qt runtime-version policy,
    wheel repair behavior, and failure diagnostics are proven on every target OS.
 
@@ -247,42 +243,34 @@ layout consequences.
 
 The bridge is a provider artifact, not part of the base wheel. RC3 release work is:
 
-1. Keep the base wheel proof on `--qt-probe optional` and verify that it installs, imports, and
-   diagnoses missing Qt/PyQt/bridge state cleanly.
-2. Add a Qt-capable validation lane that configures with `-DDVZ_ENABLE_QT_BRIDGE=ON`, builds
-   `datoviz_qtbridge`, and fails if Qt6 Gui development files are absent.
-3. In that lane, install a known-good PyQt6 build and run `python -m datoviz.qt` with
-   `DATOVIZ_QTBRIDGE_LIBRARY` pointing at the built bridge.
-4. Run the hosted PyQt smoke with the same bridge:
+1. Require published Qt packages whose QtGui build exposes Vulkan and the public `QVulkanInstance` headers on every claimed target; a locally injected feedstock artifact does not satisfy the release gate.
+2. Require a published PyQt6 build against that Qt runtime whose native and cross-built artifacts expose `QVulkanInstance` and `QWindow.setVulkanInstance()`; do not disable the regression test to accommodate an older non-Vulkan Qt artifact.
+3. Keep the base wheel proof on `--qt-probe optional` and verify that it installs, imports, and diagnoses missing Qt/PyQt/bridge state cleanly.
+4. Add a Qt-capable validation lane that configures with `-DDVZ_ENABLE_QT_BRIDGE=ON`, builds `datoviz_qtbridge`, and fails if Qt6 Gui development files are absent.
+5. In that lane, install the known-good published PyQt6 build and run `python -m datoviz.qt` with `DATOVIZ_QTBRIDGE_LIBRARY` pointing at the built bridge.
+6. Run the hosted PyQt smoke with the same bridge:
 
    ```sh
    DATOVIZ_QTBRIDGE_LIBRARY=build/qtbridge/libdatoviz_qtbridge.so \
      python examples/python/qt/hosted_pyqt.py --smoke-ms 1000
    ```
 
-5. Record the exact Qt runtime version reported by PyQt6 and by `datoviz_qtbridge`; mismatches must
-   remain hard failures with clear diagnostics.
-6. Exercise negative probes for missing PyQt6, unsupported PyQt/PySide Vulkan bindings, missing
-   bridge library, bridge ABI mismatch, Qt runtime mismatch, and missing platform WSI support.
-7. For conda-forge, draft a split provider package only after the local Qt-capable lane is green;
-   the package should depend on the same conda-managed Qt/PyQt runtime it links against.
-8. For PyPI, defer provider wheels until there is a documented per-platform policy for bundling or
-   depending on Qt runtime libraries without changing the base `datoviz` wheel contract.
+7. Record the exact Qt runtime version reported by PyQt6 and by `datoviz_qtbridge`; mismatches must remain hard failures with clear diagnostics.
+8. Exercise negative probes for missing PyQt6, unsupported PyQt/PySide Vulkan bindings, missing bridge library, bridge ABI mismatch, Qt runtime mismatch, and missing platform WSI support.
+9. Publish the split provider only after local proof and feedstock CI are green; the package must depend on the same conda-managed Qt/PyQt runtime it links against, and RC3 must validate the resulting exact artifacts on supported hosted platforms.
+10. For PyPI, defer provider wheels until there is a documented per-platform policy for bundling or depending on Qt runtime libraries without changing the base `datoviz` wheel contract.
 
 The provider route must never make `import datoviz` depend on Qt, PyQt, or `datoviz_qtbridge`.
 
 
-## Implementation Checklist
+## Implemented Core Surface
 
-1. Add the `src/qtbridge/` target and optional CMake option.
-2. Export the bridge header only if needed by tests or downstream provider packages.
-3. Install the bridge shared library in a location discoverable by `datoviz.qt`.
-4. Add a private Python bridge loader in `datoviz/qt.py`.
-5. Replace `QVulkanInstance.setVkInstance()` with the bridge call.
-6. Improve import/runtime errors for unsupported PyQt/PySide bindings.
-7. Add a narrow Python probe that can run without opening a visible window when possible.
-8. Keep the existing PyQt hosted example as the user-facing smoke once the bridge works.
-9. Add docs explaining that PyQt hosting requires the optional Qt bridge.
+1. `src/qtbridge/` builds the optional shared provider under `DVZ_ENABLE_QT_BRIDGE=AUTO|ON|OFF` and fails explicitly when `ON` cannot find Qt6 Gui.
+2. The installed provider exports the narrow ABI above and is discoverable by `datoviz.qt`, with `DATOVIZ_QTBRIDGE_LIBRARY` retained as the explicit override.
+3. `datoviz/qt.py` loads and validates the bridge, checks ABI and Qt runtime compatibility, unwraps `QVulkanInstance`, adopts and reads back the Datoviz Vulkan instance, validates the PyQt surface, and reports missing capabilities without affecting base imports.
+4. `python -m datoviz.qt` provides the narrow diagnostic probe, and `examples/python/qt/hosted_pyqt.py` remains the user-facing rendering smoke.
+5. Source and local split-package validation cover Linux x86-64 and macOS ARM64, including a packaged bridge, compatible locally built PyQt Vulkan bindings, and base-only imports without PyQt or the provider.
+6. Published provider artifacts and supported hosted-platform exact-artifact validation remain the RC3 packaging work defined above.
 
 
 ## Validation
@@ -317,5 +305,4 @@ print(hasattr(QWindow, "setVulkanInstance"))
 PY
 ```
 
-The expected PyQt result for the tested wheels is `False`, `False`, `True`; the bridge is meant to
-cover the first two missing bindings.
+For a compatible PyQt Vulkan build, the expected result is `False`, `False`, `True`; the bridge covers the first two missing bindings. Older PyQt packages built against a Qt runtime without the Vulkan feature may fail the import itself and are not valid provider dependencies.

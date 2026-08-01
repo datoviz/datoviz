@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-07-24.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-08-01.
 
 Use [STATUS.md](STATUS.md) for current state, [DOCUMENTATION.md](DOCUMENTATION.md) for public documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable readiness, evidence, physical-validation, communication, and gallery-outreach policy.
 
@@ -40,7 +40,7 @@ Required deliverables:
 1. Implement the two approved gallery-media checkpoints: canonical `1280x720` encoding and freshness policy, followed by bounded deterministic parallel generation.
 2. Finish generated C reference coverage and usable Python documentation for top-level NumPy-adapted calls and exact `datoviz.raw` calls.
 3. Freeze documentation structure, release examples, gallery captures, data attribution, prepared-data provenance, licenses, known issues, and release-note candidates.
-4. Deliver and validate a packaged `datoviz_qtbridge` provider, preferably conda-first, without adding Qt to base wheels.
+4. Deliver and validate a packaged `datoviz_qtbridge` provider, conda-first, without adding Qt to base wheels; the provider must use published compatible Qt and PyQt packages that expose the required Vulkan surface on every claimed target.
 5. Triage RC feedback and PR #132, and retain only fixes or additions that fit the declared RC3 scope.
 6. Keep representative WebGPU/WASM, query/readback, compute-to-render, runtime-recovery, and native render-conformance proof current for the advertised subset.
 7. Make packaging, generated artifacts, release notes, documentation, and quality checks from [../../spec/release/READINESS.md](../../spec/release/READINESS.md) clean or record the remaining limitations explicitly.
@@ -48,6 +48,8 @@ Required deliverables:
 9. Implement [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md): consolidate scene, Canvas, test, and example shader builds on one `glslc` helper; add release/CI SPIR-V validation; move runtime shaderc out of DRP2 into a focused thread-safe module; land typed availability, diagnostic, file, profile, and ownership API outcomes; and guarantee the provider in official packages while retaining disabled source builds.
 10. Publish and validate the first three tutorial chapters through standalone installed CMake consumers, external runtime-compiled shaders, live GLFW execution, deterministic offscreen captures, Vulkan validation, generated binding checks, and supported hosted-platform proof.
 11. End RC3 with only recorded RC3 blockers plus the explicitly planned RC4 tutorial chapters, asset work, installed exact-artifact proof, and full-course freeze remaining.
+
+The Qt provider deliverable is not complete with local source artifacts alone. RC3 requires a published Vulkan-enabled Qt package, a compatible published PyQt package whose native and cross-built macOS artifacts expose `QVulkanInstance`, split `libdatoviz`, `datoviz`, and `datoviz-qtbridge` packages built against that managed runtime, and exact-artifact hosted validation. Upstream maintainer review and publication are therefore external RC3 blockers whenever those prerequisites are unavailable; changing that gate requires an explicit release-scope decision rather than treating unavailable packages as a pass. Current execution status lives in [QT_MACOS_VULKAN_HANDOFF.md](QT_MACOS_VULKAN_HANDOFF.md).
 
 Physical-validation policy:
 
