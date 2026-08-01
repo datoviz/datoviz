@@ -8,6 +8,12 @@
     See <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
 
+/*
+    Datoviz local patches to preserve when refreshing this vendored file:
+    - guard the bit-reader buffer dereference in flush_bits() for static analysis;
+    - account for, count, and release the HEVC VPS vector during mux finalization.
+*/
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -1213,6 +1219,7 @@ static int mp4e_flush_index(MP4E_mux_t *mux)
         index_bytes += tr->smpl.bytes * (sizeof(sample_t) + 4 + 4) / sizeof(sample_t);
         index_bytes += tr->vsps.bytes;
         index_bytes += tr->vpps.bytes;
+        index_bytes += tr->vvps.bytes;
 
         ERR(write_pending_data(mux, tr));
     }
@@ -1537,7 +1544,7 @@ static int mp4e_flush_index(MP4E_mux_t *mux)
                                 }
                             } else
                             {
-                                int numOfVPS  = items_count(&tr->vpps);
+                                int numOfVPS  = items_count(&tr->vvps);
                                 ATOM(BOX_hvcC);
                                 // TODO: read actual params from stream
                                 WRITE_1(1);    // configurationVersion
@@ -1755,6 +1762,7 @@ int MP4E_close(MP4E_mux_t *mux)
         track_t *tr = ((track_t*)mux->tracks.data) + ntr;
         minimp4_vector_reset(&tr->vsps);
         minimp4_vector_reset(&tr->vpps);
+        minimp4_vector_reset(&tr->vvps);
         minimp4_vector_reset(&tr->smpl);
         minimp4_vector_reset(&tr->pending_sample);
     }
