@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_overflow.h"
 #include "datoviz/common/macros.h"
 #include "obj.h"
 #include "datoviz/math/arithm.h"
@@ -119,24 +120,28 @@ void* dvz_container_alloc(DvzContainer* container)
     // If no slot, need to reallocate container.
     if (available_slot == UINT32_MAX)
     {
-        log_trace("reallocate container up to %d items", 2 * container->capacity);
-        void** _new = (void**)dvz_realloc(
-            container->items, (size_t)(2 * container->capacity * container->item_size));
+        ASSERT(container->capacity <= UINT32_MAX / 2u);
+        const uint32_t new_capacity = 2u * container->capacity;
+        uint64_t byte_size = 0;
+        ASSERT(!_dvz_mul_u64_overflows(new_capacity, sizeof(*container->items), &byte_size));
+        ASSERT(byte_size <= SIZE_MAX);
+        log_trace("reallocate container up to %d items", new_capacity);
+        void** _new = (void**)dvz_realloc(container->items, (size_t)byte_size);
         ANN(_new);
         container->items = _new;
 
         ANN(container->items);
         // Initialize newly-allocated pointers to NULL.
-        for (uint32_t i = container->capacity; i < 2 * container->capacity; i++)
+        for (uint32_t i = container->capacity; i < new_capacity; i++)
         {
             container->items[i] = NULL;
         }
         ASSERT(container->items[container->capacity] == NULL);
-        ASSERT(container->items[2 * container->capacity - 1] == NULL);
+        ASSERT(container->items[new_capacity - 1] == NULL);
         // Return the first empty slot of the newly-allocated container.
         available_slot = container->capacity;
         // Update the container capacity.
-        container->capacity *= 2;
+        container->capacity = new_capacity;
     }
     ASSERT(available_slot < UINT32_MAX);
     ASSERT(container->items[available_slot] == NULL);

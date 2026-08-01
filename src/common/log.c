@@ -73,6 +73,20 @@ static const char* level_names[] = {"T", "D", "I", "W", "E", "F"};
 static const char* level_colors[] = {"\x1b[94m", "\x1b[36m", "\x1b[32m",
                                      "\x1b[33m", "\x1b[31m", "\x1b[35m"};
 
+// Use a mutex for the logging lock, preventing multiple threads from interleaving one record.
+static DvzMutex _log_mutex;
+
+
+
+static void _lock(void* udata, int lock)
+{
+    (void)udata;
+    if (lock)
+        dvz_mutex_lock(&_log_mutex);
+    else
+        dvz_mutex_unlock(&_log_mutex);
+}
+
 
 
 /**
@@ -99,6 +113,17 @@ static int _log_level_from_env(void)
 
 
 
+/** Initialize process-wide logger state. */
+static void _log_initialize(void)
+{
+    const int status = dvz_mutex_init(&_log_mutex);
+    assert(status == 0);
+    L.lock = _lock;
+    L.level = _log_level_from_env();
+}
+
+
+
 #if OS_WINDOWS
 static INIT_ONCE _log_once = INIT_ONCE_STATIC_INIT;
 
@@ -110,7 +135,7 @@ static BOOL CALLBACK _log_init_once(PINIT_ONCE once, PVOID parameter, PVOID* con
     (void)once;
     (void)parameter;
     (void)context;
-    L.level = _log_level_from_env();
+    _log_initialize();
     return TRUE;
 }
 
@@ -128,7 +153,7 @@ static pthread_once_t _log_once = PTHREAD_ONCE_INIT;
 
 
 /** Initialize the logger exactly once on POSIX hosts. */
-static void _log_init_once(void) { L.level = _log_level_from_env(); }
+static void _log_init_once(void) { _log_initialize(); }
 
 
 
@@ -148,7 +173,7 @@ static void _log_ensure_env(void)
 {
     if (!_log_initialized)
     {
-        L.level = _log_level_from_env();
+        _log_initialize();
         _log_initialized = true;
     }
 }
@@ -238,7 +263,11 @@ static uint64_t get_thread_idx(void)
 
 void log_set_udata(void* udata) { L.udata = udata; }
 
-void log_set_lock(log_LockFn fn) { L.lock = fn; }
+void log_set_lock(log_LockFn fn)
+{
+    _log_ensure_env();
+    L.lock = fn;
+}
 
 void log_set_fp(FILE* fp) { L.fp = fp; }
 
@@ -342,21 +371,6 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     /* Release lock */
     unlock();
 }
-
-
-
-// Use a mutex for the logging lock, prevent multiple threads from simultaneously writing to the
-// standard output.
-static DvzMutex mutex;
-
-static void _lock(void* udata, int lock)
-{
-    if (lock)
-        dvz_mutex_lock(&mutex);
-    else
-        dvz_mutex_unlock(&mutex);
-}
-
 
 
 /**

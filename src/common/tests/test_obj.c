@@ -107,6 +107,26 @@ int test_obj_1(TstContext* suite, const TstCase* tstitem)
     AT(container.items[2] == d);
     AT(container.items[3] == NULL);
 
+    // Exercise several pointer-table growth steps and ensure earlier objects remain stable.
+    TestObject* objects[32] = {0};
+    for (uint32_t i = 4; i < 32; i++)
+    {
+        objects[i] = (TestObject*)dvz_container_alloc(&container);
+        AT(objects[i] != NULL);
+        objects[i]->x = (float)i;
+        dvz_obj_created(&objects[i]->obj);
+    }
+    AT(container.capacity == 32);
+    AT(container.count == 31);
+    AT(container.items[0] == c);
+    AT(container.items[1] == b);
+    AT(container.items[2] == d);
+    for (uint32_t i = 4; i < 32; i++)
+    {
+        AT(container.items[i - 1] == objects[i]);
+        AT(objects[i]->x == (float)i);
+    }
+
     for (uint32_t k = 0; k < 10; k++)
     {
         DvzContainerIterator iter = dvz_container_iterator(&container);
@@ -128,13 +148,15 @@ int test_obj_1(TstContext* suite, const TstCase* tstitem)
             i++;
             dvz_container_iter(&iter);
         }
-        ASSERT(i == 3);
+        ASSERT(i == 31);
     }
 
     // Destroy all objects.
     dvz_obj_destroyed(&b->obj);
     dvz_obj_destroyed(&c->obj);
     dvz_obj_destroyed(&d->obj);
+    for (uint32_t i = 4; i < 32; i++)
+        dvz_obj_destroyed(&objects[i]->obj);
 
     // Free all memory. This function will fail if there is at least one object not destroyed.
     dvz_container_destroy(&container);

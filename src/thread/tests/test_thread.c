@@ -135,9 +135,37 @@ static void* _log_callback(void* user_data)
 {
     ANN(user_data);
     const uint32_t thread_idx = *(const uint32_t*)user_data;
-    for (uint32_t i = 0; i < 128; i++)
+    for (uint32_t i = 0; i < 16; i++)
         log_info("concurrent log test thread=%u message=%u", thread_idx, i);
     return NULL;
+}
+
+
+
+typedef struct LogInterceptData
+{
+    DvzMutex probe;
+    DvzAtomic overlap;
+} LogInterceptData;
+
+
+
+static int _log_intercept(void* user_data, int level, const char* file, int line, const char* message)
+{
+    ANN(user_data);
+    (void)level;
+    (void)file;
+    (void)line;
+    (void)message;
+    LogInterceptData* data = (LogInterceptData*)user_data;
+    if (pthread_mutex_trylock(&data->probe) != 0)
+    {
+        dvz_atomic_set(data->overlap, 1);
+        return 1;
+    }
+    dvz_sleep(1);
+    dvz_mutex_unlock(&data->probe);
+    return 1;
 }
 
 
@@ -153,9 +181,14 @@ int test_thread_log_concurrent(TstContext* suite, const TstCase* tstitem)
     };
     DvzThread* threads[THREAD_COUNT] = {0};
     uint32_t thread_indices[THREAD_COUNT] = {0};
+    LogInterceptData intercept = {
+        .probe = dvz_mutex(),
+        .overlap = dvz_atomic(),
+    };
 
     log_set_level(LOG_INFO);
     log_set_quiet(1);
+    log_set_intercept(_log_intercept, &intercept);
     for (uint32_t i = 0; i < THREAD_COUNT; i++)
     {
         thread_indices[i] = i;
@@ -164,8 +197,12 @@ int test_thread_log_concurrent(TstContext* suite, const TstCase* tstitem)
     }
     for (uint32_t i = 0; i < THREAD_COUNT; i++)
         dvz_thread_join(threads[i]);
+    AT(dvz_atomic_get(intercept.overlap) == 0);
+    log_set_intercept(NULL, NULL);
     log_set_quiet(0);
     log_set_level(DVZ_DEFAULT_LOG_LEVEL);
+    dvz_atomic_destroy(intercept.overlap);
+    dvz_mutex_destroy(&intercept.probe);
     return 0;
 }
 
