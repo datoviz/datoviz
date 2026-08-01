@@ -55,7 +55,7 @@ int test_vklite_graphics_1(TstContext* suite, const TstCase* tstitem)
     const uint32_t HEIGHT = DVZ_FIXTURE_HEIGHT;
 
     // Bootstrap.
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {0};
     features13.dynamicRendering = true;
     features13.synchronization2 = true;
@@ -289,7 +289,7 @@ int test_vklite_graphics_create_requires_destroy(TstContext* suite, const TstCas
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {0};
     features13.dynamicRendering = true;
     dvz_gpu_ctx_config_features13(&cfg, &features13);
@@ -370,7 +370,7 @@ int test_vklite_fixture_screenshot_repeat(TstContext* suite, const TstCase* tsti
     ANN(suite);
     ANN(tstitem);
 
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);

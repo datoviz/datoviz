@@ -50,7 +50,7 @@ int test_technique_triangle(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Initialize the fixtures.
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off =
         dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
@@ -113,7 +113,7 @@ int test_technique_render_texture(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Initialize the fixtures.
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off =
         dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
@@ -378,7 +378,7 @@ int test_technique_stencil(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Initialize the fixtures.
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off =
         dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
@@ -567,7 +567,7 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Initialize the fixtures.
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off =
         dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
@@ -737,7 +737,7 @@ int test_technique_compute_graphics(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Initialize fixtures.
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off =
         dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
@@ -894,7 +894,7 @@ int test_technique_picking(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Initialize fixtures.
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off =
         dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
@@ -1189,7 +1189,7 @@ int test_technique_wboit(TstContext* suite, const TstCase* tstitem)
     // -----------------------------------------------------------------------------------------
     // Fixtures & device
     // -----------------------------------------------------------------------------------------
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off =
         dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
@@ -1671,7 +1671,7 @@ int test_technique_ssao(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Initialize fixtures (device, allocator, main color/depth, commands, etc.).
-    DvzFixtureGpu* gpu = dvz_fixture_gpu();
+    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
     DvzFixtureOffscreen* off =
         dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);

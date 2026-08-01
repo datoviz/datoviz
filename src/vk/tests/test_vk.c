@@ -88,6 +88,7 @@ static const char* _vk_skip_unless_runtime(TstContext* suite, const TstCase* ite
         TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_GPU | TST_RES_VULKAN;                                       \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_EXEMPT;                                        \
         _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
         _tst_desc.skip = _vk_skip_unless_runtime;                                                 \
         tst_suite_add_case((suite), _tst_desc);                                                   \
@@ -114,8 +115,10 @@ int test_vk(TstSuite* suite)
     const char* tags = "vk";
     TST_MODULE(suite, tags);
 
+    // Preserve the public production-default constructor contract.
     TST_CASE(test_gpu_ctx_config_validation_default);
 
+    // Instance enumeration and validation do not execute selected-device work.
     TST_VK_CASE(test_instance_layers);
     TST_VK_CASE(test_instance_extensions);
     TST_VK_CASE(test_instance_creation);
@@ -123,36 +126,39 @@ int test_vk(TstSuite* suite)
     TST_VK_CASE(test_instance_invalid_layer);
 
     TST_VK_SELECTED_CASE(test_gpu_props);
-    TST_VK_CASE(test_gpu_memprops);
-    TST_VK_CASE(test_gpu_features);
-    TST_VK_CASE(test_gpu_extensions);
+    TST_VK_SELECTED_CASE(test_gpu_memprops);
+    TST_VK_SELECTED_CASE(test_gpu_features);
+    TST_VK_SELECTED_CASE(test_gpu_extensions);
 
-    TST_VK_CASE(test_queues_caps);
-    TST_VK_CASE(test_queues_basic);
-    TST_VK_CASE(test_queues_single_family);
-    TST_VK_CASE(test_queues_multiple);
-    TST_VK_CASE(test_queues_tie_break);
-    TST_VK_CASE(test_queues_no_optional);
-    TST_VK_CASE(test_queues_video_roles);
-    TST_VK_CASE(test_queues_queue_limits);
-    TST_VK_CASE(test_queue_from_role);
-    TST_VK_CASE(test_queue_supports);
+    TST_VK_SELECTED_CASE(test_queues_caps);
+    // Remaining queue tests use synthetic capabilities and are device-independent.
+    TST_CASE(test_queues_basic);
+    TST_CASE(test_queues_single_family);
+    TST_CASE(test_queues_multiple);
+    TST_CASE(test_queues_tie_break);
+    TST_CASE(test_queues_no_optional);
+    TST_CASE(test_queues_video_roles);
+    TST_CASE(test_queues_queue_limits);
+    TST_CASE(test_queue_from_role);
+    TST_CASE(test_queue_supports);
 
-    TST_VK_CASE(test_device_1);
-    TST_VK_CASE(test_device_2);
+    TST_VK_SELECTED_CASE(test_device_1);
+    TST_VK_SELECTED_CASE(test_device_2);
+    // Invalid-index and instance-only device contracts are intentionally exempt.
     TST_VK_CASE(test_device_3);
     TST_VK_CASE(test_device_4);
-    TST_VK_CASE(test_device_destroy_rebuild);
-    TST_VK_CASE(test_device_build_requires_destroy);
+    TST_VK_SELECTED_CASE(test_device_destroy_rebuild);
+    TST_VK_SELECTED_CASE(test_device_build_requires_destroy);
 
 
 
-    TST_VK_CASE(test_memory_1);
-    TST_VK_CASE(test_memory_interop_buffer_timeline);
+    TST_VK_SELECTED_CASE(test_memory_1);
+    TST_VK_SELECTED_CASE(test_memory_interop_buffer_timeline);
+    // External-memory helper maintains independent GPU 0 selection pending its interop policy.
     TST_VK_CASE(test_memory_interop_buffer_export);
 
 #if DVZ_HAS_CUDA && !DVZ_ENABLE_ASAN_IN_DEBUG && !DVZ_USING_MSAN && !DVZ_USING_TSAN
-    // Skip CUDA interop tests when sanitizers that conflict with CUDA are active.
+    // CUDA device-0 UUID matching owns identity and is exempt from Vulkan index selection.
     TST_VK_CASE(test_memory_cuda_1);
 #endif
 

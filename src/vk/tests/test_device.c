@@ -24,6 +24,7 @@
 #include "_assertions.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz_testing.h"
 #include "test_vk.h"
 #include "testing.h"
 #include "vulkan_core.h"
@@ -47,13 +48,14 @@ int test_device_1(TstContext* suite, const TstCase* tstitem)
 
     // Query the queues.
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
 
     // Initialize a device.
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
     DvzDeviceConfig dcfg = dvz_device_config(instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -61,6 +63,9 @@ int test_device_1(TstContext* suite, const TstCase* tstitem)
     }
     DvzDevice* device = dvz_device_create(&dcfg);
     AT(device != NULL);
+    VkPhysicalDevice expected = VK_NULL_HANDLE;
+    AT(dvz_instance_gpu_handle(instance, gpu_index, &expected));
+    AT(device->gpu->pdevice == expected);
 
     // Cleanup.
     dvz_device_destroy(device);
@@ -84,7 +89,9 @@ int test_device_2(TstContext* suite, const TstCase* tstitem)
     // Obtain a GPU.
     uint32_t count = 0;
     DvzGpu* gpus = dvz_instance_gpus(instance, &count);
-    DvzGpu* gpu = &gpus[0];
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(gpu_index < count);
+    DvzGpu* gpu = &gpus[gpu_index];
 
     // Initialize a device.
     DvzDeviceConfig dcfg = dvz_device_config(instance);
@@ -99,8 +106,8 @@ int test_device_2(TstContext* suite, const TstCase* tstitem)
 
     // Queue requests.
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     dvz_device_config_request_queue(&dcfg, 0, 1);
     dvz_device_config_request_queue(&dcfg, 1, 1);
 
@@ -193,14 +200,16 @@ int test_device_destroy_rebuild(TstContext* suite, const TstCase* tstitem)
     AT(gpu_count > 0);
 
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(gpu_index < gpu_count);
+    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
 
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
     AT(queues.queue_count > 0);
 
     DvzDevice device = {0};
-    dvz_gpu_device(&gpus[0], &device);
+    dvz_gpu_device(&gpus[gpu_index], &device);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -246,14 +255,16 @@ int test_device_build_requires_destroy(TstContext* suite, const TstCase* tstitem
     AT(gpu_count > 0);
 
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(gpu_index < gpu_count);
+    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
 
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
     AT(queues.queue_count > 0);
 
     DvzDevice device = {0};
-    dvz_gpu_device(&gpus[0], &device);
+    dvz_gpu_device(&gpus[gpu_index], &device);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];

@@ -38,7 +38,7 @@ int test_vklite_slots_1(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
     ANN(ctx);
 
@@ -116,7 +116,7 @@ int test_vklite_slots_create_failure_unwinds_layouts(TstContext* suite, const Ts
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
     ANN(ctx);
 

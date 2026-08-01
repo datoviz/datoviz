@@ -239,7 +239,7 @@ static void _present_log_loader_env(void)
  * @param fixture fixture to initialize
  * @return true when the fixture is ready, false when test should skip
  */
-static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
+static bool _present_fixture_create(DvzVklitePresentFixture* fixture, uint32_t gpu_index)
 {
     ANN(fixture);
     dvz_memset(fixture, sizeof(*fixture), 0, sizeof(*fixture));
@@ -338,7 +338,7 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
     }
 
     DvzGpuInfo gpu_info = {0};
-    if (!dvz_instance_gpu_info(fixture->instance, 0, &gpu_info))
+    if (!dvz_instance_gpu_info(fixture->instance, gpu_index, &gpu_info))
     {
         log_warn("vklite present tests skipped because GPU descriptor query failed");
         return false;
@@ -346,7 +346,7 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture)
     DvzQueues queues = {0};
     dvz_queues(&gpu_info.queue_caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_config(fixture->instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -594,7 +594,7 @@ int test_vklite_surface_query(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
@@ -651,7 +651,7 @@ int test_vklite_swapchain_recreate(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
@@ -727,7 +727,7 @@ int test_vklite_surface_swapchain_destroy_idempotent(TstContext* suite, const Ts
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
@@ -807,7 +807,7 @@ int test_vklite_swapchain_config_present_mode_immediate(TstContext* suite, const
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
@@ -931,7 +931,7 @@ int test_vklite_swapchain_recreate_resolved_state(TstContext* suite, const TstCa
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
@@ -1011,7 +1011,7 @@ int test_vklite_swapchain_recreate_repeat_state(TstContext* suite, const TstCase
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
@@ -1101,7 +1101,7 @@ int test_vklite_swapchain_destroy_clears_cached_state(TstContext* suite, const T
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
@@ -1164,7 +1164,7 @@ int test_vklite_swapchain_acquire_present_cycle(TstContext* suite, const TstCase
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);
@@ -1258,7 +1258,7 @@ int test_vklite_wrap_backend_external_surface_present(TstContext* suite, const T
     ANN(tstitem);
 
     DvzVklitePresentFixture fixture = {0};
-    if (!_present_fixture_create(&fixture))
+    if (!_present_fixture_create(&fixture, dvz_testing_gpu_index(suite)))
     {
         tst_skip(suite, "vklite present fixture unavailable");
         _present_fixture_destroy(&fixture);

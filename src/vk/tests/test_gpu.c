@@ -135,7 +135,9 @@ int test_gpu_memprops(TstContext* suite, const TstCase* tstitem)
 
     uint32_t count = 0;
     DvzGpu* gpus = dvz_instance_gpus(instance, &count);
-    DvzGpu* gpu = &gpus[0];
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(gpu_index < count);
+    DvzGpu* gpu = &gpus[gpu_index];
 
     dvz_gpu_probe_memprops(gpu);
     VkPhysicalDeviceMemoryProperties* memprops = dvz_gpu_memprops(gpu);
@@ -194,7 +196,9 @@ int test_gpu_features(TstContext* suite, const TstCase* tstitem)
 
     uint32_t count = 0;
     DvzGpu* gpus = dvz_instance_gpus(instance, &count);
-    DvzGpu* gpu = &gpus[0];
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(gpu_index < count);
+    DvzGpu* gpu = &gpus[gpu_index];
 
     dvz_gpu_probe_features(gpu);
 
@@ -231,7 +235,9 @@ int test_gpu_extensions(TstContext* suite, const TstCase* tstitem)
     DvzGpu* gpus = dvz_instance_gpus(instance, &count);
 
     // Probe GPU extensions.
-    DvzGpu* gpu = &gpus[0];
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(gpu_index < count);
+    DvzGpu* gpu = &gpus[gpu_index];
     dvz_gpu_probe_extensions(gpu);
 
     // Call the function under test.

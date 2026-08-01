@@ -24,6 +24,7 @@
 #include "../_gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz_testing.h"
 #include "test_vk.h"
 #include "testing.h"
 #include "vulkan_core.h"
@@ -47,10 +48,11 @@ int test_queues_caps(TstContext* suite, const TstCase* tstitem)
 
     // Probe the GPU queues.
     DvzGpuInfo info = {0};
-    AT(dvz_instance_gpu_info(instance, 0, &info));
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(dvz_instance_gpu_info(instance, gpu_index, &info));
     log_debug("device name: %s", info.name);
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
 
     for (uint32_t qf = 0; qf < qc.family_count; qf++)
     {

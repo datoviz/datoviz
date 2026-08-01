@@ -21,6 +21,7 @@
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vk/queues.h"
+#include "testing.h"
 
 
 
@@ -41,9 +42,10 @@ EXTERN_C_ON
 /**
  * Create a GPU test fixture with GPU context, device, allocator, and main queue access.
  *
+ * @param ctx test context containing the selected GPU configuration
  * @return allocated GPU fixture, or NULL on allocation failure
  */
-DVZ_EXPORT DvzFixtureGpu* dvz_fixture_gpu(void);
+DVZ_EXPORT DvzFixtureGpu* dvz_fixture_gpu(const TstContext* ctx);
 
 
 

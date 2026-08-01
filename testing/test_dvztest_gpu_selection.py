@@ -209,8 +209,8 @@ def test_dvztest_gpu_unavailable_index_prints_discovery_evidence() -> None:
     assert "[0]" in completed.stdout
 
 
-def test_dvztest_gpu_unclassified_campaign_fails_closed() -> None:
+def test_dvztest_gpu_migrated_vk_case_joins_campaign() -> None:
     completed = _run(["--gpu", "0", "--case", "test_gpu_memprops"], runner="dvztest_vk")
 
-    assert completed.returncode != 0
-    assert "unclassified case" in completed.stderr
+    assert completed.returncode == 0, completed.stderr
+    assert "1/1 tests passed" in completed.stdout

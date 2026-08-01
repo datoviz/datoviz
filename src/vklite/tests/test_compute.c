@@ -116,7 +116,7 @@ int test_vklite_compute_1(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {0};
     features13.maintenance4 = true;
     dvz_gpu_ctx_config_features13(&cfg, &features13);
@@ -168,7 +168,7 @@ int test_vklite_compute_create_requires_destroy(TstContext* suite, const TstCase
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {0};
     features13.maintenance4 = true;
     dvz_gpu_ctx_config_features13(&cfg, &features13);

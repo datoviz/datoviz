@@ -61,6 +61,7 @@ static const char* _vklite_skip_unless_runtime(TstContext* suite, const TstCase*
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_GPU | TST_RES_VULKAN;                                       \
         _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
         _tst_desc.skip = _vklite_skip_unless_runtime;                                             \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)

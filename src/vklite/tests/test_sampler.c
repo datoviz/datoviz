@@ -36,7 +36,7 @@ int test_vklite_sampler_1(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.samplerAnisotropy = true;
     dvz_gpu_ctx_config_features10(&cfg, &features10);

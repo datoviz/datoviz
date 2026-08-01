@@ -21,6 +21,7 @@
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz_testing.h"
 #include "fixture_gpu.h"
 
 
@@ -45,12 +46,14 @@ struct DvzFixtureGpu
  *
  * @return allocated GPU fixture, or NULL on allocation failure
  */
-DvzFixtureGpu* dvz_fixture_gpu(void)
+DvzFixtureGpu* dvz_fixture_gpu(const TstContext* ctx)
 {
+    ANN(ctx);
+
     DvzFixtureGpu* fixture = (DvzFixtureGpu*)dvz_calloc(1, sizeof(DvzFixtureGpu));
     ANN(fixture);
 
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(ctx);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.samplerAnisotropy = true;
     features10.sampleRateShading = true;

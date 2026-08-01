@@ -49,7 +49,7 @@ int test_vklite_buffers_1(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
     ANN(ctx);
 
@@ -130,7 +130,7 @@ int test_vklite_buffers_1(TstContext* suite, const TstCase* tstitem)
 int test_vklite_buffer_views(TstContext* suite, const TstCase* tstitem)
 {
     // Bootstrap.
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
     ANN(ctx);
 
@@ -177,7 +177,7 @@ int test_vklite_buffer_create_requires_destroy(TstContext* suite, const TstCase*
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
     ANN(ctx);
 

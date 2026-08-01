@@ -41,7 +41,7 @@ int test_vklite_descriptors_1(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
     ANN(ctx);
 

@@ -42,6 +42,7 @@
 #include "datoviz/vklite/buffers.h"
 #include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/sync.h"
+#include "datoviz_testing.h"
 #include "test_vk.h"
 #include "testing.h"
 
@@ -231,7 +232,7 @@ int test_memory_1(TstContext* suite, const TstCase* tstitem)
     ANN(tstitem);
 
     // Bootstrap.
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
     ANN(ctx);
 
@@ -296,7 +297,7 @@ int test_memory_interop_buffer_timeline(TstContext* suite, const TstCase* tstite
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
         .timelineSemaphore = true,

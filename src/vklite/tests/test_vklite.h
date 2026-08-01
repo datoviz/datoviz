@@ -27,6 +27,7 @@
 #include "datoviz/fileio.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/math/types.h"
+#include "datoviz_testing.h"
 #include "testing.h"
 
 #if !defined(DVZ_SPIRV_ALIGN)

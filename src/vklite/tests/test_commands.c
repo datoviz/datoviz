@@ -40,9 +40,9 @@
  *
  * @return allocated GPU context, or NULL on failure
  */
-static DvzGpuCtx* _commands_ctx(void)
+static DvzGpuCtx* _commands_ctx(const TstContext* suite)
 {
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan12Features features12 = {0};
     features12.timelineSemaphore = true;
     dvz_gpu_ctx_config_features12(&cfg, &features12);
@@ -83,7 +83,7 @@ int test_vklite_commands_1(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtx* ctx = _commands_ctx();
+    DvzGpuCtx* ctx = _commands_ctx(suite);
     ANN(ctx);
 
     DvzDevice* device = dvz_gpu_ctx_device(ctx);
@@ -114,7 +114,7 @@ int test_vklite_commands_repeat_submit(TstContext* suite, const TstCase* tstitem
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtx* ctx = _commands_ctx();
+    DvzGpuCtx* ctx = _commands_ctx(suite);
     ANN(ctx);
 
     DvzDevice* device = dvz_gpu_ctx_device(ctx);
@@ -146,7 +146,7 @@ int test_vklite_commands_destroy_idempotent(TstContext* suite, const TstCase* ts
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtx* ctx = _commands_ctx();
+    DvzGpuCtx* ctx = _commands_ctx(suite);
     ANN(ctx);
 
     DvzDevice* device = dvz_gpu_ctx_device(ctx);
@@ -194,7 +194,7 @@ int test_vklite_timeline_wait_blocks_until_signal(TstContext* suite, const TstCa
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtx* ctx = _commands_ctx();
+    DvzGpuCtx* ctx = _commands_ctx(suite);
     ANN(ctx);
     DvzDevice* device = dvz_gpu_ctx_device(ctx);
     ANN(device);
@@ -234,7 +234,7 @@ int test_vklite_commands_destroy_without_recording(TstContext* suite, const TstC
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtx* ctx = _commands_ctx();
+    DvzGpuCtx* ctx = _commands_ctx(suite);
     ANN(ctx);
 
     DvzDevice* device = dvz_gpu_ctx_device(ctx);
@@ -271,7 +271,7 @@ int test_vklite_commands_borrowed_recording_rejects_lifecycle(TstContext* suite,
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtx* ctx = _commands_ctx();
+    DvzGpuCtx* ctx = _commands_ctx(suite);
     ANN(ctx);
 
     DvzDevice* device = dvz_gpu_ctx_device(ctx);
@@ -313,7 +313,7 @@ int test_vklite_commands_borrowed_recording_unwrap(TstContext* suite, const TstC
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtx* ctx = _commands_ctx();
+    DvzGpuCtx* ctx = _commands_ctx(suite);
     ANN(ctx);
     DvzDevice* device = dvz_gpu_ctx_device(ctx);
     ANN(device);
@@ -392,7 +392,7 @@ int test_vklite_submit_reset_reuse(TstContext* suite, const TstCase* tstitem)
     ANN(suite);
     ANN(tstitem);
 
-    DvzGpuCtx* ctx = _commands_ctx();
+    DvzGpuCtx* ctx = _commands_ctx(suite);
     ANN(ctx);
 
     DvzDevice* device = dvz_gpu_ctx_device(ctx);
