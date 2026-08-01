@@ -564,31 +564,6 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
         return 0;
     }
 
-    GuiTestGpuResources null_gpu_resources = {};
-    const char* gpu_skip = _gui_test_gpu_resources_create(suite, &null_gpu_resources);
-    if (gpu_skip != NULL)
-    {
-        tst_skip(suite, gpu_skip);
-        return 0;
-    }
-    GuiTestGpuResources explicit_gpu_resources = {};
-    gpu_skip = _gui_test_gpu_resources_create(suite, &explicit_gpu_resources);
-    if (gpu_skip != NULL)
-    {
-        _gui_test_gpu_resources_destroy(&null_gpu_resources);
-        tst_skip(suite, gpu_skip);
-        return 0;
-    }
-
-    DvzScene* null_scene = dvz_scene();
-    DvzScene* explicit_scene = dvz_scene();
-    ANN(null_scene);
-    ANN(explicit_scene);
-    DvzFigure* null_figure = _gui_test_figure(null_scene, 320, 240);
-    DvzFigure* explicit_figure = _gui_test_figure(explicit_scene, 320, 240);
-    ANN(null_figure);
-    ANN(explicit_figure);
-
     DvzAppConfig app_config = dvz_app_config();
     app_config.font_sans_family = "App Sans";
     app_config.font_sans_style = "Book";
@@ -597,77 +572,68 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     app_config.font_mono_size_px = 17.0f;
     app_config.font_text_size_px = 23.0f;
 
-    DvzApp* null_app = _gui_test_app(null_scene, &app_config, &null_gpu_resources);
-    DvzApp* explicit_app = _gui_test_app(explicit_scene, &app_config, &explicit_gpu_resources);
-    if (null_app == NULL || explicit_app == NULL)
+    for (uint32_t i = 0; i < 2; i++)
     {
-        log_warn("test_gui_config_inherits_app_font_defaults skipped: GPU context creation failed");
-        tst_skip(suite, "GPU context creation failed");
-        if (null_app != NULL)
-            dvz_app_destroy(null_app);
-        if (explicit_app != NULL)
-            dvz_app_destroy(explicit_app);
-        dvz_scene_destroy(null_scene);
-        dvz_scene_destroy(explicit_scene);
-        _gui_test_gpu_resources_destroy(&null_gpu_resources);
-        _gui_test_gpu_resources_destroy(&explicit_gpu_resources);
-        return 0;
+        GuiTestGpuResources gpu_resources = {};
+        const char* gpu_skip = _gui_test_gpu_resources_create(suite, &gpu_resources);
+        if (gpu_skip != NULL)
+        {
+            tst_skip(suite, gpu_skip);
+            return 0;
+        }
+
+        DvzScene* scene = dvz_scene();
+        ANN(scene);
+        DvzFigure* figure = _gui_test_figure(scene, 320, 240);
+        ANN(figure);
+
+        DvzApp* app = _gui_test_app(scene, &app_config, &gpu_resources);
+        if (app == NULL)
+        {
+            log_warn("test_gui_config_inherits_app_font_defaults skipped: GPU context creation failed");
+            tst_skip(suite, "GPU context creation failed");
+            dvz_scene_destroy(scene);
+            _gui_test_gpu_resources_destroy(&gpu_resources);
+            return 0;
+        }
+
+        const char* title =
+            i == 0 ? "test_gui_null_font_defaults" : "test_gui_explicit_font_defaults";
+        DvzView* win = dvz_view_window(app, figure, 320, 240, title);
+        if (win == NULL)
+        {
+            log_warn("test_gui_config_inherits_app_font_defaults skipped: view creation failed");
+            tst_skip(suite, "view creation failed");
+            dvz_app_destroy(app);
+            dvz_scene_destroy(scene);
+            _gui_test_gpu_resources_destroy(&gpu_resources);
+            return 0;
+        }
+
+        DvzGuiConfig gui_config = dvz_gui_config();
+        DvzGui* gui = dvz_view_gui(win, i == 0 ? NULL : &gui_config);
+        if (gui == NULL)
+        {
+            log_warn("test_gui_config_inherits_app_font_defaults skipped: GUI creation failed");
+            tst_skip(suite, "GUI creation failed");
+            dvz_app_destroy(app);
+            dvz_scene_destroy(scene);
+            _gui_test_gpu_resources_destroy(&gpu_resources);
+            return 0;
+        }
+
+        DvzFontDefaults fonts = _dvz_gui_font_defaults(gui);
+        AT(strcmp(fonts.sans_family, "App Sans") == 0);
+        AT(strcmp(fonts.sans_style, "Book") == 0);
+        AT(strcmp(fonts.mono_family, "App Mono") == 0);
+        AC(fonts.ui_size_px, 19.0f, 1e-6f);
+        AC(fonts.mono_size_px, 17.0f, 1e-6f);
+        AC(fonts.text_size_px, 23.0f, 1e-6f);
+
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
     }
-
-    DvzView* null_win =
-        dvz_view_window(null_app, null_figure, 320, 240, "test_gui_null_font_defaults");
-    DvzView* explicit_win =
-        dvz_view_window(explicit_app, explicit_figure, 320, 240, "test_gui_explicit_font_defaults");
-    if (null_win == NULL || explicit_win == NULL)
-    {
-        log_warn("test_gui_config_inherits_app_font_defaults skipped: view creation failed");
-        tst_skip(suite, "view creation failed");
-        dvz_app_destroy(null_app);
-        dvz_app_destroy(explicit_app);
-        dvz_scene_destroy(null_scene);
-        dvz_scene_destroy(explicit_scene);
-        _gui_test_gpu_resources_destroy(&null_gpu_resources);
-        _gui_test_gpu_resources_destroy(&explicit_gpu_resources);
-        return 0;
-    }
-
-    DvzGui* null_gui = dvz_view_gui(null_win, NULL);
-    DvzGuiConfig gui_config = dvz_gui_config();
-    DvzGui* explicit_gui = dvz_view_gui(explicit_win, &gui_config);
-    if (null_gui == NULL || explicit_gui == NULL)
-    {
-        log_warn("test_gui_config_inherits_app_font_defaults skipped: GUI creation failed");
-        tst_skip(suite, "GUI creation failed");
-        dvz_app_destroy(null_app);
-        dvz_app_destroy(explicit_app);
-        dvz_scene_destroy(null_scene);
-        dvz_scene_destroy(explicit_scene);
-        _gui_test_gpu_resources_destroy(&null_gpu_resources);
-        _gui_test_gpu_resources_destroy(&explicit_gpu_resources);
-        return 0;
-    }
-
-    DvzFontDefaults null_fonts = _dvz_gui_font_defaults(null_gui);
-    DvzFontDefaults explicit_fonts = _dvz_gui_font_defaults(explicit_gui);
-    AT(strcmp(null_fonts.sans_family, "App Sans") == 0);
-    AT(strcmp(explicit_fonts.sans_family, "App Sans") == 0);
-    AT(strcmp(null_fonts.sans_style, "Book") == 0);
-    AT(strcmp(explicit_fonts.sans_style, "Book") == 0);
-    AT(strcmp(null_fonts.mono_family, "App Mono") == 0);
-    AT(strcmp(explicit_fonts.mono_family, "App Mono") == 0);
-    AC(null_fonts.ui_size_px, 19.0f, 1e-6f);
-    AC(explicit_fonts.ui_size_px, 19.0f, 1e-6f);
-    AC(null_fonts.mono_size_px, 17.0f, 1e-6f);
-    AC(explicit_fonts.mono_size_px, 17.0f, 1e-6f);
-    AC(null_fonts.text_size_px, 23.0f, 1e-6f);
-    AC(explicit_fonts.text_size_px, 23.0f, 1e-6f);
-
-    dvz_app_destroy(null_app);
-    dvz_app_destroy(explicit_app);
-    dvz_scene_destroy(null_scene);
-    dvz_scene_destroy(explicit_scene);
-    _gui_test_gpu_resources_destroy(&null_gpu_resources);
-    _gui_test_gpu_resources_destroy(&explicit_gpu_resources);
     return 0;
 }
 
