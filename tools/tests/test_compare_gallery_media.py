@@ -14,6 +14,7 @@ TOOLS_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS_DIR))
 
 import compare_gallery_media as media  # noqa: E402
+import gallery_workers  # noqa: E402
 
 
 def test_mp4_plan_60_fps_then_30_fps_crf_ladder() -> None:
@@ -140,10 +141,10 @@ def test_probe_animated_webp_falls_back_when_ffprobe_omits_dimensions(tmp_path: 
 
 
 def test_parse_jobs_caps_automatic_workers(monkeypatch) -> None:
-    monkeypatch.setattr(media.os, "cpu_count", lambda: 64)
+    monkeypatch.setattr(gallery_workers.os, "cpu_count", lambda: 64)
 
-    assert media.parse_jobs("auto") == 4
-    assert media.parse_jobs("1") == 1
+    assert gallery_workers.parse_jobs("auto") == 4
+    assert gallery_workers.parse_jobs("1") == 1
 
 
 def test_bounded_parallel_map_preserves_order_and_worker_bound() -> None:
@@ -161,7 +162,7 @@ def test_bounded_parallel_map_preserves_order_and_worker_bound() -> None:
             active -= 1
         return value * 10
 
-    results = media.bounded_parallel_map([1, 2, 3], worker, jobs=2)
+    results = gallery_workers.bounded_parallel_map([1, 2, 3], worker, jobs=2)
 
     assert results == [10, 20, 30]
     assert max_active == 2
@@ -170,7 +171,7 @@ def test_bounded_parallel_map_preserves_order_and_worker_bound() -> None:
 def test_bounded_parallel_map_explicit_serial_mode() -> None:
     visited = []
 
-    results = media.bounded_parallel_map(
+    results = gallery_workers.bounded_parallel_map(
         [3, 1, 2],
         lambda value: visited.append(value) or value * 10,
         jobs=1,
@@ -196,7 +197,7 @@ def test_bounded_parallel_map_stops_scheduling_after_failure() -> None:
         return value
 
     with pytest.raises(RuntimeError, match="item-0: broken"):
-        media.bounded_parallel_map(
+        gallery_workers.bounded_parallel_map(
             list(range(8)),
             worker,
             jobs=2,
@@ -216,7 +217,7 @@ def test_parallel_media_workspaces_are_isolated() -> None:
             (path / "sentinel").write_text(example_id, encoding="utf8")
             return str(path)
 
-    workspaces = media.bounded_parallel_map(["a", "b"], worker, jobs=2)
+    workspaces = gallery_workers.bounded_parallel_map(["a", "b"], worker, jobs=2)
 
     assert len(set(workspaces)) == 2
     assert all(not Path(path).exists() for path in workspaces)
