@@ -5544,6 +5544,8 @@ DvzFramePlanUploadDesc._fields_ = [
 DvzFrameTiming._fields_ = [
     ('frame_id', ctypes.c_uint64),
     ('cpu_submit_us', ctypes.c_double),
+    ('slot_wait_us', ctypes.c_double),
+    ('acquire_wait_us', ctypes.c_double),
     ('gpu_complete_us', ctypes.c_double),
     ('present_start_us', ctypes.c_double),
     ('present_done_us', ctypes.c_double),
