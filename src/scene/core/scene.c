@@ -355,8 +355,24 @@ void dvz_scene_destroy(DvzScene* scene)
         return;
     if (!_scene_visual_mutation_allowed(scene, "destroy scene-owned visual data"))
         return;
+    for (uint32_t i = 0; i < scene->text_count; i++)
+        dvz_text_destroy(&scene->texts[i]);
+    for (uint32_t i = 0; i < scene->overlay_card_count; i++)
+        dvz_overlay_card_destroy(&scene->overlay_cards[i]);
     for (uint32_t i = 0; i < scene->figure_count; i++)
-        _scene_figure_frame_plan_trace_reset(&scene->figures[i]);
+    {
+        DvzFigure* figure = &scene->figures[i];
+        _scene_figure_frame_plan_trace_reset(figure);
+        for (uint32_t j = 0; j < figure->panel_count; j++)
+        {
+            DvzPanel* panel = &figure->panels[j];
+            if (panel->camera != NULL)
+            {
+                dvz_camera_destroy(panel->camera);
+                panel->camera = NULL;
+            }
+        }
+    }
     for (uint32_t i = 0; i < scene->composite_count; i++)
         _scene_composite_reset(&scene->composites[i]);
     for (uint32_t i = 0; i < scene->polygon_set_count; i++)
@@ -410,8 +426,6 @@ void dvz_scene_destroy(DvzScene* scene)
         scene->pinned_readouts[i].scene = NULL;
     for (uint32_t i = 0; i < scene->overlay_count; i++)
         scene->overlays[i].scene = NULL;
-    for (uint32_t i = 0; i < scene->overlay_card_count; i++)
-        scene->overlay_cards[i].scene = NULL;
     for (uint32_t i = 0; i < scene->controller_count; i++)
         _scene_controller_destroy(&scene->controllers[i]);
     _scene_request_executor_destroy(&scene->query_executor);

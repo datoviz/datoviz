@@ -763,6 +763,7 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
     {
         log_error("window creation failed on backend %s", slot->backend.name);
         slot->available = false;
+        dvz_pointer_gesture_handler_destroy(window->gesture_handler);
         dvz_input_router_destroy(window->router);
         dvz_free(window);
         if (slot->backend.type != DVZ_BACKEND_OFFSCREEN)
