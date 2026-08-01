@@ -644,6 +644,83 @@ int test_canvas_glfw_present_recovery(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Ensure automatic surface-format selection remains stable across steady presented frames.
+ *
+ * @param suite test context
+ * @param item test case metadata
+ * @return zero on success
+ */
+int test_canvas_glfw_auto_format_stable(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    if (canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) != 0)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        return 1;
+    }
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "canvas GLFW fixture unavailable");
+        return 0;
+    }
+
+    AT(fixture.canvas->cfg.color_format == VK_FORMAT_UNDEFINED);
+    CanvasGlfwClearContext clear_ctx = {
+        .device = fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(fixture.canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    uint32_t submit_count = 0;
+    uint64_t initial_recreate_count = 0;
+    for (uint32_t attempt = 0; attempt < 64 && submit_count < 8; attempt++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(fixture.canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(fixture.canvas) == 0);
+        submit_count++;
+        uint64_t recreate_count = dvz_canvas_swapchain_recreate_count(fixture.canvas);
+        if (initial_recreate_count == 0)
+            initial_recreate_count = recreate_count;
+        AT(recreate_count == initial_recreate_count);
+    }
+    AT(submit_count == 8);
+    AT(initial_recreate_count == 1);
+
+    dvz_canvas_swapchain_mark_out_of_date(fixture.canvas);
+    bool recreated = false;
+    for (uint32_t attempt = 0; attempt < 32; attempt++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(fixture.canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(fixture.canvas) == 0);
+        recreated = true;
+        break;
+    }
+    AT(recreated);
+    AT(dvz_canvas_swapchain_recreate_count(fixture.canvas) == initial_recreate_count + 1);
+
+    dvz_window_host_poll(fixture.host);
+    AT(dvz_canvas_frame(fixture.canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(fixture.canvas) == 0);
+    AT(dvz_canvas_swapchain_recreate_count(fixture.canvas) == initial_recreate_count + 1);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
  * Exercise present-wait semaphore reuse across sustained presentation and swapchain recreation.
  *
  * Vulkan validation layers report binary-semaphore reuse violations during this test. Repeated

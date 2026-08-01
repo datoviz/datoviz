@@ -109,6 +109,10 @@ struct DvzCanvasSwapchain
     uint32_t queue_family;
     uint64_t export_serial;
     uint64_t resource_generation;
+    uint64_t recreate_count;
+    VkSurfaceKHR source_surface;
+    VkExtent2D source_extent;
+    VkFormat requested_format;
     VkFormat frame_format;
     DvzCanvasPresentRuntimeState runtime_state;
     int32_t test_fail_slot_index;
@@ -968,6 +972,10 @@ static VkResult canvas_create_swapchain(DvzCanvasSwapchain* swapchain)
         return VK_ERROR_INITIALIZATION_FAILED;
     }
 
+    swapchain->recreate_count++;
+    swapchain->source_surface = canvas_surface_handle(canvas);
+    swapchain->source_extent = canvas_surface_extent(canvas);
+    swapchain->requested_format = canvas_surface_format(canvas);
     swapchain->dirty = false;
     canvas_runtime_transition(swapchain, DVZ_CANVAS_PRESENT_STATE_READY, "swapchain created");
     return VK_SUCCESS;
@@ -1487,26 +1495,27 @@ static void canvas_swapchain_sync_surface_changes(DvzCanvas* canvas, DvzCanvasSw
     ANN(canvas);
     ANN(state);
 
+    if (!dvz_swapchain_ready(state->swapchain_wrapper))
+        return;
+
     VkSurfaceKHR live_surface = canvas_surface_handle(canvas);
-    VkSurfaceKHR wrapped_surface = state->surface_wrapper != NULL
-                                       ? dvz_surface_handle(state->surface_wrapper)
-                                       : VK_NULL_HANDLE;
-    if (dvz_swapchain_ready(state->swapchain_wrapper) && live_surface != wrapped_surface)
+    VkExtent2D source_extent = canvas_surface_extent(canvas);
+    VkFormat requested_format = canvas_surface_format(canvas);
+    if (live_surface != state->source_surface)
     {
         state->dirty = true;
         canvas_runtime_transition(
             state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface handle changed");
         return;
     }
-
-    VkExtent2D current_extent = dvz_swapchain_extent(state->swapchain_wrapper);
     if (
-        canvas->surface && dvz_swapchain_ready(state->swapchain_wrapper) &&
-        (canvas->surface->extent.width != current_extent.width ||
-         canvas->surface->extent.height != current_extent.height ||
-         canvas_surface_format(canvas) != dvz_swapchain_image_format(state->swapchain_wrapper)))
+        source_extent.width != state->source_extent.width ||
+        source_extent.height != state->source_extent.height ||
+        requested_format != state->requested_format)
     {
         state->dirty = true;
+        canvas_runtime_transition(
+            state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "surface configuration changed");
     }
 }
 
@@ -1845,6 +1854,19 @@ DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas*
         return DVZ_CANVAS_PRESENT_STATE_UNINITIALIZED;
     }
     return canvas->swapchain->runtime_state;
+}
+
+
+
+/**
+ * Return the number of successful swapchain creations.
+ *
+ * @param canvas canvas owning the swapchain
+ * @returns successful creation count, including the initial creation
+ */
+uint64_t dvz_canvas_swapchain_recreate_count(const DvzCanvas* canvas)
+{
+    return canvas != NULL && canvas->swapchain != NULL ? canvas->swapchain->recreate_count : 0;
 }
 
 
