@@ -10,6 +10,7 @@ This directory owns durable testing infrastructure contracts.
 2. [TEST_SUITE_REFACTOR_PLAN.md](TEST_SUITE_REFACTOR_PLAN.md): post-RC test-suite modularity,
    lane, fixture, and cleanup plan.
 3. [LANE_INVENTORY.md](LANE_INVENTORY.md): Phase 1 inventory workflow and review rules.
+4. [INTERACTION_LATENCY.md](INTERACTION_LATENCY.md): portable interaction-latency metrics, controlled workload, and same-machine regression policy.
 
 
 ## Boundary
