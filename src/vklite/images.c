@@ -240,6 +240,25 @@ void dvz_images_flags(DvzImages* img, VkImageCreateFlags flags)
 
 
 
+/**
+ * Configure external-memory handle compatibility for image allocation.
+ *
+ * @param images image wrapper
+ * @param handle_types external-memory handle types, or zero to disable
+ */
+void _dvz_images_external(
+    DvzImages* images, VkExternalMemoryHandleTypeFlagsKHR handle_types)
+{
+    ANN(images);
+    images->external_info = (VkExternalMemoryImageCreateInfo){
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+        .handleTypes = handle_types,
+    };
+    images->info.pNext = handle_types != 0 ? &images->external_info : NULL;
+}
+
+
+
 void dvz_images_mip(DvzImages* img, uint32_t mip)
 {
     ANN(img);

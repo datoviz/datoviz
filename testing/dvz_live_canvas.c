@@ -1625,6 +1625,8 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     ccfg.render_mode = app->options.render_mode;
     ccfg.present_mode = app->options.present_mode;
     ccfg.enable_video_sink = false;
+    if (app->options.draw_mode == DVZ_CANVAS_DRAW_SCENE_DRP2)
+        ccfg.depth_format = VK_FORMAT_D32_SFLOAT;
     app->canvas = dvz_canvas_create(&ccfg);
     if (app->canvas == NULL)
     {

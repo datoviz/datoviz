@@ -233,10 +233,11 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
 /**
  * Attach a borrowed stream frame as a runtime render target.
  *
- * The runtime retains the frame's borrowed image, image-view, and command-buffer handles under
- * `texture_id`. They must remain valid until this target is replaced, the runtime is reset, or the
- * runtime is destroyed. The command buffer must already be recording during subsequent execution;
- * the runtime records into it but does not begin, end, reset, submit, or destroy it.
+ * The runtime retains the frame's borrowed color image, optional depth image, image views, and
+ * command-buffer handles under `texture_id`. They must remain valid until this target is replaced,
+ * the runtime is reset, or the runtime is destroyed. The command buffer must already be recording
+ * during subsequent execution; the runtime records into it but does not begin, end, reset, submit,
+ * or destroy it.
  *
  * @param runtime the runtime
  * @param texture_id the DRP2 texture id to expose for render passes

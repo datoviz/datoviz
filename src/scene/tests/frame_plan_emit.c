@@ -28,6 +28,7 @@
 #include "_technique.h"
 #include "_visual_pipeline.h"
 #include "../../drp2/_stream.h"
+#include "../../drp2/_runtime.h"
 #include "domain/field_internal.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
@@ -2250,6 +2251,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     canvas_cfg.device = dvz_gpu_ctx_device(ctx);
     canvas_cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
     canvas_cfg.color_format = VK_FORMAT_B8G8R8A8_UNORM;
+    canvas_cfg.depth_format = VK_FORMAT_D32_SFLOAT;
     canvas_cfg.timing_history = 2;
     DvzCanvas* canvas = dvz_canvas_create(&canvas_cfg);
     ANN(canvas);
@@ -2280,6 +2282,13 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     AT(state.emit_ok);
     AT(state.direct_target_ok);
     AT(state.execute_ok);
+    Drp2VkliteObject* target = _vklite_find(runtime->vklite_state, 1);
+    ANN(target);
+    AT(target->borrowed_frame_depth);
+    AT(target->depth_image != VK_NULL_HANDLE);
+    AT(target->depth_image_view != VK_NULL_HANDLE);
+    AT(target->depth_images == NULL);
+    AT(target->depth_views == NULL);
     AT(dvz_canvas_submit(canvas) == 0);
     AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
     AT(state.callback_count == 2);
@@ -2287,6 +2296,11 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     AT(state.emit_ok);
     AT(state.direct_target_ok);
     AT(state.execute_ok);
+    target = _vklite_find(runtime->vklite_state, 1);
+    ANN(target);
+    AT(target->borrowed_frame_depth);
+    AT(target->depth_images == NULL);
+    AT(target->depth_views == NULL);
     AT(dvz_canvas_submit(canvas) == 0);
     AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
     AT(state.emit_cfg.color_target_format == (DvzFormat)VK_FORMAT_B8G8R8A8_UNORM);

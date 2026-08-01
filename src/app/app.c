@@ -4371,6 +4371,7 @@ _view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t 
     ccfg.window          = window;
     ccfg.device          = dvz_gpu_ctx_device(app->gpu_ctx);
     ccfg.render_mode     = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    ccfg.depth_format    = VK_FORMAT_D32_SFLOAT;
     if (dvz_figure_color_pipeline(figure) == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
         ccfg.color_format = VK_FORMAT_R8G8B8A8_UNORM;
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
@@ -4445,6 +4446,7 @@ _view_create_glfw(
     DvzCanvasConfig ccfg = dvz_canvas_config();
     ccfg.window = window;
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
+    ccfg.depth_format = VK_FORMAT_D32_SFLOAT;
     /* render_mode defaults to DVZ_CANVAS_RENDER_MODE_PRESENT */
     if (dvz_figure_color_pipeline(figure) == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
         ccfg.color_format = VK_FORMAT_R8G8B8A8_UNORM;
@@ -4541,6 +4543,7 @@ static DvzView* _view_create_external_surface(
     DvzCanvasConfig ccfg = dvz_canvas_config();
     ccfg.window = window;
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
+    ccfg.depth_format = VK_FORMAT_D32_SFLOAT;
     _app_canvas_config_apply_present_mode_env(&ccfg);
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)

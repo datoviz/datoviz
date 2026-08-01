@@ -330,6 +330,8 @@ if ((run_nsys)); then
             >"$out_dir/nsys-scene-drp2.log" 2>&1 || true
         if [[ -f "$nsys_base.nsys-rep" ]]; then
             nsys stats "$nsys_base.nsys-rep" >"$out_dir/nsys-scene-drp2-stats.txt" 2>&1 || true
+            nsys stats --report vulkan_api_sum "$nsys_base.nsys-rep" \
+                >"$out_dir/nsys-scene-drp2-vulkan-api.txt" 2>&1 || true
         fi
         scenario_nsys_base="$out_dir/nsys-scene-app"
         echo "===== scene-app nsys profile ===== (logging to $out_dir/nsys-scene-app.log)"
@@ -340,6 +342,8 @@ if ((run_nsys)); then
         if [[ -f "$scenario_nsys_base.nsys-rep" ]]; then
             nsys stats "$scenario_nsys_base.nsys-rep" \
                 >"$out_dir/nsys-scene-app-stats.txt" 2>&1 || true
+            nsys stats --report vulkan_api_sum "$scenario_nsys_base.nsys-rep" \
+                >"$out_dir/nsys-scene-app-vulkan-api.txt" 2>&1 || true
         fi
     else
         echo "nsys requested but not found" >"$out_dir/nsys-scene-drp2.log"
@@ -364,6 +368,8 @@ Start here:
   perf-report-scene-drp2.no-children.txt
   perf-report-scene-app.children.txt
   perf-report-scene-app.no-children.txt
+  nsys-scene-drp2-vulkan-api.txt
+  nsys-scene-app-vulkan-api.txt
 
 Raw perf data:
   perf-clear.data

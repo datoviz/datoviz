@@ -36,11 +36,16 @@ struct DvzImages
     bool is_swapchain;
 
     VkImageCreateInfo info;
+    VkExternalMemoryImageCreateInfo external_info;
     DvzAllocationFlags req_alloc_flags;
 
     VkImage vk_images[DVZ_MAX_IMAGES];
     DvzAllocation* allocs[DVZ_MAX_IMAGES];
 };
+
+
+void _dvz_images_external(
+    DvzImages* images, VkExternalMemoryHandleTypeFlagsKHR handle_types);
 
 
 

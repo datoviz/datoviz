@@ -224,6 +224,8 @@ struct Drp2VkliteObject
     DvzRendering* rendering;
     DvzImages* depth_images;
     DvzImageViews* depth_views;
+    VkImage depth_image;
+    VkImageView depth_image_view;
     VkCommandBuffer command_buffer;
     VkImageView image_view;
     VkImageLayout image_layout;
@@ -267,6 +269,7 @@ struct Drp2VkliteObject
     bool borrowed_buffer;
     bool borrowed_commands;
     bool borrowed_frame_target;
+    bool borrowed_frame_depth;
     DvzSemaphore* external_timeline_semaphore;
     bool external_timeline_pending;
     bool destroyed;

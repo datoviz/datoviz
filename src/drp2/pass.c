@@ -419,18 +419,18 @@ static DvzDrp2ValidationResult _transition_bind_group_textures(
 
 
 /**
- * Transition an owned transient depth image according to a declared attachment access.
+ * Transition an owned or borrowed frame depth image for a declared attachment access.
  *
  * @param cmds command buffer wrapper
- * @param owner object that owns the depth image wrapper
+ * @param owner object that tracks the depth image
  * @param access requested vklite texture access
  */
-static void _transition_owned_depth_image_access(
+static void _transition_depth_image_access(
     DvzCommands* cmds, Drp2VkliteObject* owner, Drp2TextureAccess access)
 {
     ANN(cmds);
     ANN(owner);
-    ANN(owner->depth_images);
+    ASSERT(owner->depth_images != NULL || owner->depth_image != VK_NULL_HANDLE);
 
     VkImageLayout layout = _vklite_texture_access_layout(access);
     Drp2TextureAccess previous_access =
@@ -449,8 +449,10 @@ static void _transition_owned_depth_image_access(
 
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
-    DvzBarrierImage* bimg =
-        dvz_barriers_image(&barriers, dvz_image_handle(owner->depth_images, 0));
+    VkImage depth_image = owner->borrowed_frame_depth
+                              ? owner->depth_image
+                              : dvz_image_handle(owner->depth_images, 0);
+    DvzBarrierImage* bimg = dvz_barriers_image(&barriers, depth_image);
     ANN(bimg);
     dvz_barrier_image_stage(bimg, src_stage, dst_stage);
     dvz_barrier_image_access(bimg, src_access, dst_access);
@@ -830,6 +832,10 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
 
         if (named_depth == NULL)
         {
+            bool use_borrowed_frame_depth =
+                target->borrowed_frame_target && target->borrowed_frame_depth &&
+                target->depth_image != VK_NULL_HANDLE &&
+                target->depth_image_view != VK_NULL_HANDLE;
             borrowed_depth_owner =
                 target->borrowed_frame_target
                     ? NULL
@@ -841,7 +847,11 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
             load_existing_depth = borrowed_depth_owner != NULL;
             transient_depth_owner = depth_owner;
 
-            if (load_existing_depth)
+            if (use_borrowed_frame_depth)
+            {
+                depth_view = target->depth_image_view;
+            }
+            else if (load_existing_depth)
             {
                 depth_view = dvz_image_views_handle(depth_owner->depth_views, 0);
             }
@@ -995,8 +1005,11 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         _vklite_transition_image_access(
             cmds, named_depth, _depth_texture_access(depth_transition_access));
     }
-    else if (transient_depth_owner != NULL && transient_depth_owner->depth_images != NULL)
-        _transition_owned_depth_image_access(
+    else if (
+        transient_depth_owner != NULL &&
+        (transient_depth_owner->depth_images != NULL ||
+         transient_depth_owner->depth_image != VK_NULL_HANDLE))
+        _transition_depth_image_access(
             cmds, transient_depth_owner, _depth_texture_access(depth_transition_access));
     dvz_cmd_rendering_begin(cmds, rendering);
     return _drp2_ok();

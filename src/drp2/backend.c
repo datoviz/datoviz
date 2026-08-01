@@ -385,6 +385,9 @@ bool _vklite_attach_frame_target(
         dvz_images_free(images);
         return false;
     }
+    object->depth_image = VK_NULL_HANDLE;
+    object->depth_image_view = VK_NULL_HANDLE;
+    object->borrowed_frame_depth = false;
 
     if (object->views != NULL)
     {
@@ -415,6 +418,16 @@ bool _vklite_attach_frame_target(
         object->usage |= DVZ_DRP2_TEXTURE_USAGE_COPY_DST;
     object->sample_count = 1;
     object->borrowed_frame_target = true;
+    if (
+        frame->depth_valid && frame->depth_image_borrowed && frame->depth_view_borrowed &&
+        frame->depth_image != VK_NULL_HANDLE && frame->depth_view != VK_NULL_HANDLE)
+    {
+        object->depth_image = frame->depth_image;
+        object->depth_image_view = frame->depth_view;
+        object->depth_image_layout = frame->depth_layout;
+        object->depth_texture_access = DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT;
+        object->borrowed_frame_depth = true;
+    }
     object->destroyed = false;
     return true;
 }

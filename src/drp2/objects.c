@@ -225,6 +225,9 @@ void _vklite_destroy_object(Drp2VkliteObject* object)
         dvz_images_free(object->depth_images);
         object->depth_images = NULL;
     }
+    object->depth_image = VK_NULL_HANDLE;
+    object->depth_image_view = VK_NULL_HANDLE;
+    object->borrowed_frame_depth = false;
     if (object->views != NULL)
     {
         dvz_image_views_destroy(object->views);

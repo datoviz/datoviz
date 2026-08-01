@@ -26,6 +26,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_time_utils.h"
+#include "../vklite/_images.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/video.h"
 #include "datoviz/vk/enums.h"
@@ -232,6 +233,7 @@ int dvz_canvas_depth_create(
     dvz_images_format(*images, format);
     dvz_images_size(*images, extent.width, extent.height, 1);
     dvz_images_usage(*images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    _dvz_images_external(*images, dvz_allocator_external(canvas->allocator));
     if (dvz_images_create(*images) != 0)
     {
         log_error("failed to create Canvas depth image");
