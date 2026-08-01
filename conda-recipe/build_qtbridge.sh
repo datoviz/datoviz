@@ -30,4 +30,5 @@ cmake -S "$SRC_DIR" -B build-conda-qtbridge -G Ninja \
     -DDVZ_ENABLE_QT_BRIDGE=ON
 
 cmake --build build-conda-qtbridge --target datoviz_qtbridge
-install -Dm755 build-conda-qtbridge/qtbridge/libdatoviz_qtbridge.so "$SP_DIR/datoviz/libdatoviz_qtbridge.so"
+mkdir -p "$SP_DIR/datoviz"
+install -m755 "build-conda-qtbridge/qtbridge/libdatoviz_qtbridge${SHLIB_EXT}" "$SP_DIR/datoviz/libdatoviz_qtbridge${SHLIB_EXT}"

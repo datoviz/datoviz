@@ -20,6 +20,7 @@ Current preflight:
   would otherwise force a user install, which conda-build forbids.
 - On 2026-07-31 Linux x86_64, the stock conda-forge `pyqt6` 6.11.0 package did not export `QVulkanInstance` or `QWindow.setVulkanInstance`, but a local rebuild of the same feedstock with `vulkan-headers` added to its host requirements exported both and passed the full PyQt package tests.
 - Using that locally rebuilt PyQt6 package, all three Datoviz split outputs built and passed their package tests; a fresh-prefix `python -m datoviz.qt` loaded the packaged bridge with ABI 1 and Qt 6.11.1, and `examples/python/qt/hosted_pyqt.py --smoke-ms 1500` rendered and exited successfully on Linux x86_64. A separate base-only environment imported `datoviz` and `datoviz.raw` without installing PyQt6 or the bridge.
+- On 2026-08-01 macOS arm64, local Vulkan-enabled `qt6-main` 6.11.1 and `pyqt6` 6.11.0 packages built all three Datoviz split outputs with `libvulkan-headers`; the packaged bridge loaded as `libdatoviz_qtbridge.dylib`, reported ABI 1 and Qt 6.11.1, and `examples/python/qt/hosted_pyqt.py --smoke-ms 1500` created a Cocoa Vulkan surface through MoltenVK on an Apple M1 Pro, rendered, and exited successfully from a fresh prefix.
 
 Before submitting:
 

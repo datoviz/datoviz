@@ -86,7 +86,7 @@ outputs:
         - cglm
         - python
         - qt6-main
-        - vulkan-headers
+        - libvulkan-headers
       run:
         - python
         - pyqt6
