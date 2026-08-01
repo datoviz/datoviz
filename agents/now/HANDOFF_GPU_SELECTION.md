@@ -1,10 +1,20 @@
 # GPU Selection Test Handoff
 
-Status: implementation pending. The design direction is approved; keep implementation commits separate from the completed Release logging fix.
+Status: automated implementation complete on 2026-08-01. Linux multi-GPU validation is green; the physical Windows AMD/NVIDIA campaign remains pending on access to that machine.
 
 ## Goal
 
 Make native GPU tests select an actual Vulkan physical device through Datoviz instead of changing loader order or relying on hard-coded GPU index `0`. The immediate physical target is the Windows 11 hybrid-GPU laptop with AMD Radeon 780M Graphics and NVIDIA GeForce RTX 5060 Laptop GPU, followed by a reusable cross-platform test contract.
+
+## Implemented Outcome
+
+- The generic runner has one opaque run-adapter seam for option parsing, canonical pre-shard preparation, immutable suite/context state, root-only reporting, schema-v3 JSON metadata, and exact child-metadata comparison before process or shard aggregation.
+- The Datoviz adapter implements strict `--gpu <index>`, `DVZ_TEST_GPU`, exclusive `--list-gpus`, CLI precedence, resolved `DvzGpuInfo` evidence, fail-closed selected-case classification, and context/suite GPU configuration helpers without importing Vulkan into the generic runner.
+- Ordinary vk, vklite, canvas, DRP2, scene, app, GUI, Kvazaar, capture, presentation, fixture, queue-query, and manual-device paths use the selected GPU; production-default, invalid-index, external-surface, CUDA/UUID, external-memory, and CUDA/NVENC-owned identity paths are explicitly exempt where selection cannot be claimed honestly.
+- `dvz_live_canvas` shares a narrow selector independent of the generic runner and uses the resolved GPU for both offscreen and GLFW device setup.
+- CPU-only focused runners retain a Vulkan-free link boundary and emit `"run": {"gpu": null}` consistently.
+- Local validation resolved NVIDIA RTX 5090 as index `0`, Intel RPL-S integrated graphics as index `1`, and llvmpipe as index `2`; index `1` passed full vk, vklite, app, GUI, and selected canvas/scene/video/live paths without loader filtering.
+- The physical Windows Debug/Release AMD/NVIDIA campaign below remains required evidence and must not be inferred from the Linux results.
 
 ## Verified Baseline
 

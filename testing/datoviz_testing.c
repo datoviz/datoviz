@@ -16,6 +16,8 @@
 
 #include <stdlib.h>
 
+#include "_assertions.h"
+#include "_compat.h"
 #include "_log.h"
 #include "datoviz_testing.h"
 
@@ -49,6 +51,24 @@ static void _dvz_testing_log_uninstall(void* user_data)
 
 
 
+/**
+ * Write the Datoviz run metadata used when no GPU adapter is linked.
+ *
+ * @param state unused adapter state
+ * @param json output JSON buffer
+ * @param size output buffer size
+ * @return zero on success
+ */
+static int _dvz_testing_null_gpu_write_json(const void* state, char* json, size_t size)
+{
+    (void)state;
+    ANN(json);
+    const int written = dvz_snprintf(json, size, "{\"gpu\":null}");
+    return written < 0 || (size_t)written >= size ? 1 : 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -65,4 +85,9 @@ void dvz_testing_install_log_adapter(TstSuite* suite)
     adapter.user_data = NULL;
     adapter.error_level = LOG_ERROR;
     tst_suite_set_log_adapter(suite, &adapter);
+
+    // Every Datoviz runner emits the same run shape. GPU-capable runners replace this adapter.
+    TstRunAdapter run_adapter = {0};
+    run_adapter.write_json = _dvz_testing_null_gpu_write_json;
+    tst_suite_set_run_adapter(suite, &run_adapter);
 }

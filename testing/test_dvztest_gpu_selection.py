@@ -114,6 +114,18 @@ def test_dvztest_gpu_cpu_only_json_is_null(tmp_path: Path) -> None:
     assert data["summary"]["selected"] == 1
 
 
+def test_dvztest_cpu_component_json_is_null(tmp_path: Path) -> None:
+    json_path = tmp_path / "cpu-component.json"
+
+    completed = _run(
+        ["--case", "test_alloc_basic", "--json", str(json_path)], runner="dvztest_common"
+    )
+    data = _load_json(json_path)
+
+    assert completed.returncode == 0
+    assert data["run"] == {"gpu": None}
+
+
 def test_dvztest_list_gpus_is_exclusive() -> None:
     completed = _run(["--list-gpus", "--list"])
 
@@ -162,6 +174,7 @@ def test_dvztest_gpu_discovery_and_selected_property_identity(tmp_path: Path) ->
     assert data["run"]["gpu"]["resolved_index"] == 0
     assert data["run"]["gpu"]["selection_source"] == "cli"
     assert data["run"]["gpu"]["name"] in selected.stdout
+    assert selected.stdout.count("GPU 0:") == 1
 
     default_path = tmp_path / "gpu-default.json"
     default = _run(
@@ -193,6 +206,7 @@ def test_dvztest_gpu_discovery_and_selected_property_identity(tmp_path: Path) ->
     assert sharded.returncode == 0, sharded.stderr
     assert sharded_data["summary"]["passed"] == 1
     assert sharded_data["run"]["gpu"]["selection_source"] == "env"
+    assert sharded.stdout.count("GPU 0:") == 1
 
 
 def test_dvztest_gpu_unavailable_index_prints_discovery_evidence() -> None:
@@ -214,6 +228,63 @@ def test_dvztest_gpu_migrated_vk_case_joins_campaign() -> None:
 
     assert completed.returncode == 0, completed.stderr
     assert "1/1 tests passed" in completed.stdout
+
+
+def test_dvztest_nonzero_gpu_identity_when_available(tmp_path: Path) -> None:
+    discovery = _run(["--list-gpus"])
+    if discovery.returncode != 0:
+        pytest.skip("Vulkan discovery is unavailable on this host")
+
+    names: dict[int, str] = {}
+    for line in discovery.stdout.splitlines():
+        if not line.startswith("[") or "] name=\"" not in line:
+            continue
+        index_text, _, remainder = line.partition("] name=\"")
+        name, _, _ = remainder.partition("\" type=")
+        names[int(index_text[1:])] = name
+    if 1 not in names:
+        pytest.skip("a nonzero Vulkan GPU is unavailable on this host")
+
+    resolved: list[dict] = []
+    for index in (0, 1):
+        json_path = tmp_path / f"gpu-{index}.json"
+        completed = _run(
+            ["--gpu", str(index), "--case", "test_gpu_props", "--json", str(json_path)],
+            runner="dvztest_vk",
+        )
+        data = _load_json(json_path)
+        assert completed.returncode == 0, completed.stderr
+        assert data["run"]["gpu"]["resolved_index"] == index
+        assert data["run"]["gpu"]["name"] == names[index]
+        resolved.append(data["run"]["gpu"])
+
+    assert resolved[0]["resolved_index"] != resolved[1]["resolved_index"]
+
+    manual = _run(["--gpu", "1", "--case", "test_device_1"], runner="dvztest_vk")
+    assert manual.returncode == 0, manual.stderr
+    assert "1/1 tests passed" in manual.stdout
+
+    live = _run(
+        ["--backend", "offscreen", "--frames", "1", "--gpu", "1"],
+        runner="dvz_live_canvas",
+    )
+    assert live.returncode == 0, live.stderr
+    assert f"GPU 1: {names[1]}" in live.stderr
+
+
+@pytest.mark.parametrize(
+    ("runner", "case"),
+    [
+        ("dvztest_vk", "test_memory_interop_buffer_export"),
+        ("dvztest_canvas", "test_canvas_video_sink_start_submit_integration"),
+        ("dvztest", "test_app_resources_owned_defaults"),
+    ],
+)
+def test_dvztest_gpu_campaign_excludes_intentional_defaults(runner: str, case: str) -> None:
+    completed = _run(["--gpu", "0", "--case", case], runner=runner)
+
+    assert completed.returncode == 0, completed.stderr
+    assert "0/0 tests passed" in completed.stdout
 
 
 @pytest.mark.parametrize(
