@@ -113,6 +113,8 @@ MP4 gallery cards preserve their explicit native capture rate and are never upsa
 
 Gallery card and poster encodes use content-addressed cache records under `build/gallery-cache/cards/`. Cache keys cover canonical frame content, the encoding profile, generated variants, implementation inputs, and encoder identities; cache hits also verify every output hash. Use `--force` only when intentionally rebuilding verified current outputs.
 
+Animated-frame cache invalidation is entry-scoped: only capture-relevant metadata from the selected manifest entry participates in its fingerprint. Editorial or unrelated-example manifest changes must not invalidate every cached frame sequence.
+
 Generate selected previews with:
 
 ```sh

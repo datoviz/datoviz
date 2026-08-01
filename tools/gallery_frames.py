@@ -42,6 +42,7 @@ class AnimatedPreview:
     motion_axis: str = ""
     motion_cycles: float = 1.0
     motion_phase: str = ""
+    manifest_input_hash: str = ""
 
     @property
     def frame_dir(self) -> Path:
@@ -120,10 +121,26 @@ def collect_previews(
                 motion_axis=motion["axis"],
                 motion_cycles=motion["cycles"],
                 motion_phase=motion["phase"],
+                manifest_input_hash=capture_manifest_hash(entry),
             )
         )
     previews.sort(key=lambda item: (item.lane, item.id))
     return previews
+
+
+def capture_manifest_hash(entry: dict) -> str:
+    """Hash only manifest fields that can affect one preview capture."""
+    motion = entry.get("motion") or {}
+    payload = {
+        "id": entry.get("id"),
+        "source": entry.get("source"),
+        "capture": entry.get("capture") or {},
+        "preview": gallery_media.preview_metadata(entry),
+        "preview_motion": motion.get("preview") or [],
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf8")
+    ).hexdigest()
 
 
 def _timeline_spec(id_: str, preview: dict) -> str:
@@ -239,7 +256,7 @@ def _hash_file(digest: "hashlib._Hash", path: Path) -> None:
 
 def input_hash_for(
     preview: AnimatedPreview,
-    manifest_path: Path,
+    _manifest_path: Path,
     frame_root: Path,
 ) -> str:
     digest = hashlib.sha256()
@@ -263,13 +280,13 @@ def input_hash_for(
         preview.motion_axis,
         f"{preview.motion_cycles:g}",
         preview.motion_phase,
+        preview.manifest_input_hash,
     )
     for field in fields:
         digest.update(field.encode("utf8"))
         digest.update(b"\0")
 
     for path in (
-        manifest_path,
         ROOT / preview.source,
         preview.executable,
         ROOT / "tools/gallery_frames.py",
