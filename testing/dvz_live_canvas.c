@@ -128,6 +128,7 @@ typedef struct DvzCanvasApp
     DvzCallbackId keyboard_subscription_id;
     uint64_t scene_frame_index;
     bool scene_last_ok;
+    bool scene_failed;
     bool scene_reported_ok;
     bool scene_reported_error;
     bool present_mode_reported;
@@ -865,12 +866,14 @@ static void _dvz_canvas_draw_scene_drp2(
     app->scene_last_ok = false;
     if (app->drp2_runtime == NULL || app->scene_emitter == NULL)
     {
+        app->scene_failed = true;
         return;
     }
 
     DvzFramePlan* plan = dvz_frame_plan("live.canvas.scene", app->scene_frame_index++);
     if (plan == NULL)
     {
+        app->scene_failed = true;
         return;
     }
 
@@ -908,6 +911,9 @@ static void _dvz_canvas_draw_scene_drp2(
     DvzDrp2CommandStream* stream = NULL;
     if (ok)
     {
+        app->scene_emit_cfg.color_target_format = (DvzFormat)frame->color_format;
+        app->scene_emit_cfg.target_width = frame->extent.width;
+        app->scene_emit_cfg.target_height = frame->extent.height;
         stage = "emit DRP2 stream";
         stream = dvz_frame_plan_emitter_emit_drp2(
             app->scene_emitter, plan, &app->scene_caps, &report, &app->scene_emit_cfg);
@@ -921,6 +927,7 @@ static void _dvz_canvas_draw_scene_drp2(
     }
 
     app->scene_last_ok = ok;
+    app->scene_failed = app->scene_failed || !ok;
     if (ok && !app->scene_reported_ok)
     {
         dvz_fprintf(
@@ -930,10 +937,18 @@ static void _dvz_canvas_draw_scene_drp2(
     }
     if (!ok && !app->scene_reported_error)
     {
+        DvzDrp2CommandType command_type = DVZ_DRP2_COMMAND_NONE;
+        if (stream != NULL && result.command_index < dvz_drp2_stream_count(stream))
+        {
+            const DvzDrp2Command* command =
+                dvz_drp2_stream_get(stream, result.command_index);
+            command_type = dvz_drp2_command_type(command);
+        }
         dvz_fprintf(
             stderr,
-            "scene-drp2: failed to %s (diagnostics=%u, validation=%d at command %u)\n", stage,
-            dvz_diagnostic_report_count(&report), (int)result.code, result.command_index);
+            "scene-drp2: failed to %s (diagnostics=%u, validation=%d at command %u, type=%d)\n",
+            stage, dvz_diagnostic_report_count(&report), (int)result.code, result.command_index,
+            (int)command_type);
         app->scene_reported_error = true;
     }
     dvz_drp2_stream_destroy(stream);
@@ -1476,6 +1491,7 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
 
     time_t start_time = time(NULL);
     uint64_t submitted_frames = 0;
+    bool run_ok = true;
 
     if (app->options.start_recording)
     {
@@ -1524,11 +1540,18 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
         if (frame_rc != DVZ_CANVAS_FRAME_READY)
         {
             dvz_fprintf(stderr, "canvas frame error: %d\\n", frame_rc);
+            run_ok = false;
             break;
         }
         if (dvz_canvas_submit(app->canvas) != 0)
         {
             dvz_fprintf(stderr, "canvas submit error\\n");
+            run_ok = false;
+            break;
+        }
+        if (app->scene_failed)
+        {
+            run_ok = false;
             break;
         }
         _dvz_canvas_report_present_mode(app);
@@ -1555,7 +1578,7 @@ static int _dvz_canvas_run(DvzCanvasApp* app)
         dvz_device_wait(app->device);
     }
     bool benchmark_ok = _dvz_canvas_benchmark_end(app);
-    return benchmark_ok ? 0 : 1;
+    return run_ok && benchmark_ok ? 0 : 1;
 }
 
 

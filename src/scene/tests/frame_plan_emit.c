@@ -2233,7 +2233,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
 
     DvzWindowConfig window_cfg = dvz_window_config();
     window_cfg.title = "scene-drp2-offscreen-canvas";
-    window_cfg.width = 64;
+    window_cfg.width = 96;
     window_cfg.height = 64;
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
     if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_OFFSCREEN)
@@ -2249,6 +2249,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     canvas_cfg.window = window;
     canvas_cfg.device = dvz_gpu_ctx_device(ctx);
     canvas_cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    canvas_cfg.color_format = VK_FORMAT_B8G8R8A8_UNORM;
     canvas_cfg.timing_history = 2;
     DvzCanvas* canvas = dvz_canvas_create(&canvas_cfg);
     ANN(canvas);
@@ -2266,6 +2267,7 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     state.runtime = runtime;
     state.emit_cfg = dvz_frame_plan_emit_config();
     state.emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    state.emit_cfg.color_pipeline = DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND;
     state.emit_cfg.external_color_target = true;
     state.emit_cfg.color_target_id = 1;
     state.emit_cfg.fullscreen_triangle = true;
@@ -2279,14 +2281,24 @@ int test_scene_drp2_offscreen_canvas_frame(TstContext* suite, const TstCase* ite
     AT(state.direct_target_ok);
     AT(state.execute_ok);
     AT(dvz_canvas_submit(canvas) == 0);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(state.callback_count == 2);
+    AT(state.attach_ok);
+    AT(state.emit_ok);
+    AT(state.direct_target_ok);
+    AT(state.execute_ok);
+    AT(dvz_canvas_submit(canvas) == 0);
     AT(dvz_canvas_offscreen_runtime_state(canvas) == DVZ_CANVAS_OFFSCREEN_STATE_READY);
+    AT(state.emit_cfg.color_target_format == (DvzFormat)VK_FORMAT_B8G8R8A8_UNORM);
+    AT(state.emit_cfg.target_width == 96);
+    AT(state.emit_cfg.target_height == 64);
 
     uint32_t width = 0;
     uint32_t height = 0;
     uint8_t* rgba = NULL;
     AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == 0);
     ANN(rgba);
-    AT(width == 64);
+    AT(width == 96);
     AT(height == 64);
     uint32_t bright_count = 0;
     for (uint32_t i = 0; i < width * height; i++)
