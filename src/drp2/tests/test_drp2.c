@@ -41,11 +41,24 @@
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = (resources_);                                                       \
         _tst_desc.isolation = (isolation_);                                                       \
+        if ((resources_) & (TST_RES_GPU | TST_RES_VULKAN))                                       \
+            _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
 #define TST_DRP2_GPU_CASE(test)                                                                   \
     TST_DRP2_CASE_EX(test, TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN, TST_ISOLATION_PROCESS)
+
+#define TST_DRP2_GPU_EXEMPT_CASE(test)                                                            \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_EXEMPT;                                       \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
 
 #define TST_DRP2_SHARED_GPU_CASE(test)                                                            \
     do                                                                                            \
@@ -54,6 +67,7 @@
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN;                         \
         _tst_desc.isolation = TST_ISOLATION_SERIAL;                                               \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                    \
         _tst_desc.fixture = TST_DRP2_VKLITE_FIXTURE;                                              \
         _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
         _tst_desc.setup = drp2_test_vklite_validation_setup;                                      \
@@ -222,7 +236,8 @@ int test_drp2(TstSuite* suite)
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_refreshes_bind_group_after_buffer_sampler_recreate);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_refresh_defers_retired_descriptors);
 #if DVZ_HAS_CUDA
-    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer);
+    // CUDA selects a device by UUID; exclude it from index-selected GPU campaigns.
+    TST_DRP2_GPU_EXEMPT_CASE(test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer);
 #endif
 #endif
 
@@ -231,4 +246,5 @@ int test_drp2(TstSuite* suite)
 
 #undef TST_DRP2_CASE_EX
 #undef TST_DRP2_GPU_CASE
+#undef TST_DRP2_GPU_EXEMPT_CASE
 #undef TST_DRP2_SHARED_GPU_CASE

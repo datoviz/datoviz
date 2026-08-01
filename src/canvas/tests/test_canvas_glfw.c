@@ -39,6 +39,7 @@
 #include "datoviz/window.h"
 #include "_test_canvas_probe.h"
 #include "test_canvas.h"
+#include "datoviz_testing.h"
 #include "testing.h"
 #include "wrap_surface_fixture.h"
 
@@ -208,10 +209,12 @@ static void canvas_glfw_keyboard_callback(
  * Initialize a GLFW-backed canvas fixture for integration tests.
  *
  * @param fixture fixture storage to initialize
+ * @param gpu_index selected Vulkan physical-device index
  * @param[out] skipped true when the environment cannot run the fixture and the test should skip
  * @return 0 on success, -1 on setup failure
  */
-static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
+static int canvas_glfw_fixture_create(
+    CanvasGlfwFixture* fixture, uint32_t gpu_index, bool* skipped)
 {
     ANN(fixture);
     ANN(skipped);
@@ -284,7 +287,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     }
 
     DvzQueueCaps caps = {0};
-    if (!dvz_instance_gpu_queue_caps(fixture->instance, 0, &caps))
+    if (!dvz_instance_gpu_queue_caps(fixture->instance, gpu_index, &caps))
     {
         *skipped = true;
         log_warn("canvas glfw fixture unavailable because queue capability query failed");
@@ -294,7 +297,7 @@ static int canvas_glfw_fixture_create(CanvasGlfwFixture* fixture, bool* skipped)
     DvzQueues queues = {0};
     dvz_queues(&caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_config(fixture->instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -522,7 +525,7 @@ int test_canvas_swapchain_failfast_slot_init(TstContext* suite, const TstCase* i
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -587,7 +590,7 @@ int test_canvas_glfw_present_recovery(TstContext* suite, const TstCase* item)
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -657,7 +660,7 @@ int test_canvas_glfw_present_semaphore_reuse(TstContext* suite, const TstCase* i
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -732,7 +735,7 @@ int test_canvas_handle_refresh_order(TstContext* suite, const TstCase* item)
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -825,7 +828,7 @@ int test_canvas_video_wait_value_propagation(TstContext* suite, const TstCase* i
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -892,7 +895,7 @@ int test_canvas_video_wait_handle_ready_on_first_start(TstContext* suite, const 
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -978,7 +981,7 @@ int test_canvas_video_wait_handle_export_fallback(TstContext* suite, const TstCa
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -1060,7 +1063,7 @@ int test_canvas_video_wait_handle_export_fallback_after_recreate(TstContext* sui
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -1170,7 +1173,7 @@ int test_canvas_video_sink_start_submit_integration(TstContext* suite, const Tst
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         skip_reason = "GLFW fixture unavailable";
@@ -1277,7 +1280,7 @@ int test_canvas_video_sink_disable_rebuild(TstContext* suite, const TstCase* ite
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         skip_reason = "GLFW fixture unavailable";
@@ -1404,7 +1407,7 @@ int test_canvas_capture_api(TstContext* suite, const TstCase* item)
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -1500,7 +1503,7 @@ int test_canvas_video_handle_refresh_after_recreate(TstContext* suite, const Tst
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -1592,7 +1595,7 @@ int test_canvas_device_lost_fatal_transition(TstContext* suite, const TstCase* i
 
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -1667,7 +1670,7 @@ int test_canvas_glfw_wrap_surface_present_recovery(TstContext* suite, const TstC
 #if DVZ_HAS_GLFW
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -1817,7 +1820,7 @@ int test_canvas_glfw_wrap_surface_resize_recreate_refreshes_state(TstContext* su
 #if DVZ_HAS_GLFW
     CanvasGlfwFixture fixture = {0};
     bool skipped = false;
-    AT(canvas_glfw_fixture_create(&fixture, &skipped) == 0);
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
@@ -2082,17 +2085,18 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     }
 
     DvzGpuInfo info = {0};
-    AT(dvz_instance_gpu_info(instance, 0, &info));
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(dvz_instance_gpu_info(instance, gpu_index, &info));
     log_debug("device name: %s", info.name);
 
     DvzQueueCaps caps = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, 0, &caps));
+    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &caps));
 
     // Create the device.
     DvzQueues queues = {0};
     dvz_queues(&caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_config(instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];

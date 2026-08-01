@@ -41,6 +41,7 @@
 #include "datoviz/window/backend.h"
 #include "_test_canvas_probe.h"
 #include "test_canvas.h"
+#include "datoviz_testing.h"
 #include "testing.h"
 
 /*************************************************************************************************/
@@ -358,14 +359,17 @@ static int canvas_refresh_probe_submit(DvzStreamSink* sink, uint64_t wait_value)
 /**
  * Create a default Vulkan instance/device pair for offscreen canvas tests.
  *
+ * @param suite active test context supplying the selected GPU
  * @param[out] out_instance destination instance pointer
  * @param[out] out_device destination device pointer
  * @param[out] skip_reason optional skip reason when initialization fails
  * @return true on success, false when setup is unavailable
  */
 static bool canvas_test_create_instance_device(
-    DvzInstance** out_instance, DvzDevice** out_device, const char** skip_reason)
+    TstContext* suite, DvzInstance** out_instance, DvzDevice** out_device,
+    const char** skip_reason)
 {
+    ANN(suite);
     ANN(out_instance);
     ANN(out_device);
     if (skip_reason != NULL)
@@ -397,7 +401,8 @@ static bool canvas_test_create_instance_device(
     }
 
     DvzQueueCaps caps = {0};
-    if (!dvz_instance_gpu_queue_caps(instance, 0, &caps))
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    if (!dvz_instance_gpu_queue_caps(instance, gpu_index, &caps))
     {
         if (skip_reason != NULL)
         {
@@ -410,7 +415,7 @@ static bool canvas_test_create_instance_device(
     DvzQueues queues = {0};
     dvz_queues(&caps, &queues);
     DvzDeviceConfig dcfg = dvz_device_config(instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -761,7 +766,7 @@ int test_canvas_offscreen_destroy_recreate(TstContext* suite, const TstCase* ite
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_recreate_cleanup;
     }
@@ -839,7 +844,7 @@ static int test_canvas_offscreen_depth_attachment(TstContext* suite, const TstCa
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
         goto offscreen_depth_cleanup;
 
     host = dvz_window_host();
@@ -929,7 +934,7 @@ int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item)
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto glfw_recreate_cleanup;
     }
@@ -1037,7 +1042,7 @@ static int test_canvas_new_target_cleared(TstContext* suite, const TstCase* item
 
     // Use the public GPU-context path rather than a hand-built device: it is what applications and
     // the Vulkan course use, and it is where uninitialized target memory is observable.
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     if (dvz_canvas_configure_gpu_ctx(
             host, DVZ_BACKEND_OFFSCREEN, DVZ_CANVAS_RENDER_MODE_OFFSCREEN, &gpu_cfg) != DVZ_OK)
     {
@@ -1136,7 +1141,7 @@ static int test_canvas_offscreen_mode_headless(TstContext* suite, const TstCase*
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_cleanup;
     }
@@ -1283,7 +1288,7 @@ static int test_canvas_offscreen_video_sink_cpu_readback(TstContext* suite, cons
     DvzCanvas* canvas = NULL;
     bool enabled = false;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_video_cleanup;
     }
@@ -1394,7 +1399,7 @@ static int test_canvas_offscreen_state_on_stream_submit_failure(TstContext* suit
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_submit_fail_cleanup;
     }
@@ -1488,7 +1493,7 @@ static int test_canvas_offscreen_state_device_lost(TstContext* suite, const TstC
     DvzCanvas* canvas = NULL;
     bool capture_active = false;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_device_lost_cleanup;
     }
@@ -1582,7 +1587,7 @@ static int test_canvas_offscreen_handles_clean_after_rebuild(TstContext* suite, 
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_clean_handles_cleanup;
     }
@@ -1670,7 +1675,7 @@ static int test_canvas_offscreen_live_wait_monotonic_across_rebuild(TstContext* 
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_live_wait_cleanup;
     }
@@ -1774,7 +1779,7 @@ static int test_canvas_offscreen_live_generation_on_resize(TstContext* suite, co
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_generation_cleanup;
     }
@@ -1880,7 +1885,7 @@ static int test_canvas_offscreen_start_update_order_across_rebuild(TstContext* s
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_order_cleanup;
     }
@@ -2001,7 +2006,7 @@ static int test_canvas_offscreen_video_wait_monotonic_across_rebuild(TstContext*
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto offscreen_video_wait_cleanup;
     }
@@ -2137,7 +2142,7 @@ static int test_canvas_present_mode_rejects_offscreen_window(TstContext* suite, 
     DvzWindow* window = NULL;
     DvzCanvas* canvas = NULL;
 
-    if (!canvas_test_create_instance_device(&instance, &device, &skip_reason))
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
     {
         goto guard_cleanup;
     }
@@ -2201,6 +2206,19 @@ guard_cleanup:
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = (resource_flags);                                                   \
         _tst_desc.isolation = (isolation_mode);                                                   \
+        if ((resource_flags) & (TST_RES_GPU | TST_RES_VULKAN))                                   \
+            _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
+#define TST_CANVAS_GPU_EXEMPT_CASE(test, resource_flags, isolation_mode)                         \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = (resource_flags);                                                   \
+        _tst_desc.isolation = (isolation_mode);                                                   \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_EXEMPT;                                       \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
@@ -2276,10 +2294,12 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(
         test_canvas_video_wait_handle_export_fallback_after_recreate,
         TST_CANVAS_GLFW_RES | TST_RES_VIDEO | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
-    TST_CANVAS_CASE(
+    // Auto encoder selection owns an independent CUDA/NVENC device identity.
+    TST_CANVAS_GPU_EXEMPT_CASE(
         test_canvas_video_sink_start_submit_integration,
         TST_CANVAS_GLFW_RES | TST_CANVAS_VIDEO_RES, TST_ISOLATION_PROCESS);
-    TST_CANVAS_CASE(
+    // Auto encoder selection owns an independent CUDA/NVENC device identity.
+    TST_CANVAS_GPU_EXEMPT_CASE(
         test_canvas_video_sink_disable_rebuild,
         TST_CANVAS_GLFW_RES | TST_CANVAS_VIDEO_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
@@ -2304,3 +2324,5 @@ int test_canvas(TstSuite* suite)
         TST_CANVAS_GLFW_RES | TST_CANVAS_VIDEO_RES | TST_RES_ENV, TST_ISOLATION_PROCESS);
     return 0;
 }
+
+#undef TST_CANVAS_GPU_EXEMPT_CASE

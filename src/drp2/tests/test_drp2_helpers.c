@@ -21,6 +21,7 @@
 #include "_assertions.h"
 #include "../_stream.h"
 #include "test_drp2_helpers.h"
+#include "datoviz_testing.h"
 
 #if DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
@@ -100,9 +101,9 @@ typedef struct
  *
  * @return GPU context configuration with required Vulkan 1.3 features
  */
-static DvzGpuCtxConfig _drp2_vklite_gpu_ctx_config(void)
+static DvzGpuCtxConfig _drp2_vklite_gpu_ctx_config(const TstSuite* suite)
 {
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_suite_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -131,7 +132,6 @@ bool drp2_test_vklite_runtime_available(void)
 
 void* drp2_test_vklite_fixture_create(TstSuite* suite, uint32_t worker_index)
 {
-    (void)suite;
     (void)worker_index;
 
     DvzDrp2VkliteFixture* fixture =
@@ -144,7 +144,7 @@ void* drp2_test_vklite_fixture_create(TstSuite* suite, uint32_t worker_index)
         return fixture;
     }
 
-    DvzGpuCtxConfig gpu_cfg = _drp2_vklite_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = _drp2_vklite_gpu_ctx_config(suite);
     fixture->gpu_ctx = dvz_gpu_ctx(&gpu_cfg);
     if (fixture->gpu_ctx == NULL)
     {

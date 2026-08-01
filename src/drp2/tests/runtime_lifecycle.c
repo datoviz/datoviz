@@ -20,6 +20,7 @@
 #include "../_runtime.h"
 #include "../_stream.h"
 #include "datoviz/drp2.h"
+#include "datoviz_testing.h"
 #include "test_drp2.h"
 #include "test_drp2_helpers.h"
 #include "testing.h"
@@ -314,7 +315,7 @@ int test_drp2_runtime_download_buffer_rejects_out_of_range(TstContext* suite, co
         return 0;
     }
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.synchronization2 = true;

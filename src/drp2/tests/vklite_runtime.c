@@ -25,6 +25,7 @@
 #include "_assertions.h"
 #include "../_stream.h"
 #include "datoviz/drp2.h"
+#include "datoviz_testing.h"
 #include "test_drp2.h"
 #include "test_drp2_helpers.h"
 #include "testing.h"
@@ -527,7 +528,7 @@ int test_drp2_runtime_vklite_external_buffer_timeline_copy(
     ANN(suite);
     (void)item;
 
-    DvzGpuCtxConfig cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
         .timelineSemaphore = true,
@@ -1184,7 +1185,7 @@ int test_drp2_runtime_vklite_rejects_invalid_glsl_shader(TstContext* suite, cons
         return 0;
     }
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.synchronization2 = true;
@@ -1237,7 +1238,7 @@ int test_drp2_runtime_vklite_rejects_pipeline_with_failed_shader(TstContext* sui
         return 0;
     }
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
@@ -1296,7 +1297,7 @@ int test_drp2_runtime_vklite_destroy_after_partial_failure(TstContext* suite, co
         return 0;
     }
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.synchronization2 = true;
@@ -1808,7 +1809,7 @@ int test_drp2_runtime_vklite_draws_wboit_format_passes(TstContext* suite, const 
         return 0;
     }
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.independentBlend = true;
     dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
@@ -1985,7 +1986,7 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
         return 0;
     }
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceFeatures features10 = {0};
     features10.independentBlend = true;
     dvz_gpu_ctx_config_features10(&gpu_cfg, &features10);
@@ -2301,7 +2302,7 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
         return 0;
     }
 
-    DvzGpuCtxConfig gpu_cfg = dvz_gpu_ctx_config();
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
     VkPhysicalDeviceVulkan13Features features13 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
     features13.dynamicRendering = true;
