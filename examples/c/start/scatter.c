@@ -20,8 +20,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdbool.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,10 +40,11 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  EXAMPLE_WINDOW_WIDTH
-#define HEIGHT EXAMPLE_WINDOW_HEIGHT
-#define POINT_COUNT 10000u
-#define SEED        12345u
+#define WIDTH                 EXAMPLE_WINDOW_WIDTH
+#define HEIGHT                EXAMPLE_WINDOW_HEIGHT
+#define DEFAULT_POINT_COUNT   10000u
+#define MAX_POINT_COUNT       10000000u
+#define SEED                  12345u
 #define PANZOOM_PERIOD_FRAMES 240u
 #define PANZOOM_WORKLOAD      "panzoom-v1"
 
@@ -67,15 +68,15 @@ typedef struct ScatterState
     bool panzoom_benchmark;
 } ScatterState;
 
-static void _fill_scatter(
-    vec3* positions, DvzColor* colors, float* diameters)
+static void
+_fill_scatter(uint32_t point_count, vec3* positions, DvzColor* colors, float* diameters)
 {
     ANN(positions);
     ANN(colors);
     ANN(diameters);
 
     ExampleRandom rng = example_random(SEED);
-    for (uint32_t i = 0; i < POINT_COUNT; i++)
+    for (uint32_t i = 0; i < point_count; i++)
     {
         positions[i][0] = example_random_range_f32(&rng, -1.0f, +1.0f);
         positions[i][1] = example_random_range_f32(&rng, -1.0f, +1.0f);
@@ -97,30 +98,31 @@ static void _fill_scatter(
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
+ * @param point_count number of points to create
  * @return true when the visual was added
  */
-static bool _add_points(DvzScene* scene, DvzPanel* panel)
+static bool _add_points(DvzScene* scene, DvzPanel* panel, uint32_t point_count)
 {
     ANN(scene);
     ANN(panel);
 
     bool ok = false;
-    vec3* positions = (vec3*)dvz_calloc(POINT_COUNT, sizeof(*positions));
-    DvzColor* colors = (DvzColor*)dvz_calloc(POINT_COUNT, sizeof(*colors));
-    float* diameters = (float*)dvz_calloc(POINT_COUNT, sizeof(*diameters));
+    vec3* positions = (vec3*)dvz_calloc(point_count, sizeof(*positions));
+    DvzColor* colors = (DvzColor*)dvz_calloc(point_count, sizeof(*colors));
+    float* diameters = (float*)dvz_calloc(point_count, sizeof(*diameters));
     if (positions == NULL || colors == NULL || diameters == NULL)
         goto cleanup;
 
-    _fill_scatter(positions, colors, diameters);
+    _fill_scatter(point_count, positions, colors, diameters);
 
     DvzVisual* point = dvz_point(scene, 0);
     if (point == NULL)
         goto cleanup;
 
     DvzVisualDataUpdate updates[] = {
-        {.attr_name = "position", .data = positions, .item_count = POINT_COUNT},
-        {.attr_name = "color", .data = colors, .item_count = POINT_COUNT},
-        {.attr_name = "diameter_px", .data = diameters, .item_count = POINT_COUNT},
+        {.attr_name = "position", .data = positions, .item_count = point_count},
+        {.attr_name = "color", .data = colors, .item_count = point_count},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = point_count},
     };
     if (dvz_visual_set_data_many(point, updates, DVZ_ARRAY_COUNT(updates)) != 0)
         goto cleanup;
@@ -165,7 +167,24 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(panel);
 
-    if (!_add_points(ctx->scene, panel))
+    uint32_t point_count = DEFAULT_POINT_COUNT;
+    const char* point_count_env = getenv("DVZ_SCATTER_POINT_COUNT");
+    if (point_count_env != NULL && point_count_env[0] != '\0')
+    {
+        char* end = NULL;
+        unsigned long parsed = strtoul(point_count_env, &end, 10);
+        if (end == point_count_env || *end != '\0' || parsed == 0 || parsed > MAX_POINT_COUNT)
+        {
+            fprintf(
+                stderr, "scatter: invalid DVZ_SCATTER_POINT_COUNT '%s' (expected 1..%u)\n",
+                point_count_env, MAX_POINT_COUNT);
+            return false;
+        }
+        point_count = (uint32_t)parsed;
+    }
+    fprintf(stdout, "scenario_benchmark_points: %u\n", point_count);
+
+    if (!_add_points(ctx->scene, panel, point_count))
         return false;
 
     DvzPanzoom* panzoom = dvz_scenario_panzoom(ctx, panel, NULL, DVZ_DIM_MASK_XY);
@@ -231,8 +250,8 @@ DvzScenarioSpec dvz_start_scatter_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
-        .requirements = DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER |
-                        DVZ_SCENARIO_REQ_PANZOOM,
+        .requirements =
+            DVZ_SCENARIO_REQ_POINT_VISUAL | DVZ_SCENARIO_REQ_CONTROLLER | DVZ_SCENARIO_REQ_PANZOOM,
         .init = _scenario_init,
         .frame = _scenario_frame,
         .destroy = _scenario_destroy,

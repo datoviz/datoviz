@@ -77,6 +77,7 @@ grep -Eq 'benchmark: swapchain recreates total=[0-9]+ steady=0' "$report_dir/bla
 run_case scene-drp2 env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
     "$live_bin" --benchmark --frames "$frames" --draw scene-drp2 --present immediate
 grep -Eq 'scene-drp2: rendering into canvas target' "$report_dir/scene-drp2.log"
+grep -Eq 'benchmark: scene_points=1' "$report_dir/scene-drp2.log"
 grep -Eq 'benchmark: swapchain recreates total=[0-9]+ steady=0' "$report_dir/scene-drp2.log"
 
 for scene_path in cached-plan cached-stream; do
@@ -89,9 +90,23 @@ for scene_path in cached-plan cached-stream; do
         "$report_dir/scene-drp2-$scene_path.log"
 done
 
+run_case scene-drp2-10k env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
+    "$live_bin" --benchmark --frames "$frames" --draw scene-drp2 --scene-points 10000 \
+    --present immediate
+grep -Eq 'benchmark: scene_points=10000' "$report_dir/scene-drp2-10k.log"
+grep -Eq 'benchmark: swapchain recreates total=[0-9]+ steady=0' \
+    "$report_dir/scene-drp2-10k.log"
+
+run_case scatter-1 env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
+    DVZ_SCATTER_POINT_COUNT=1 "$scenario_bin" --benchmark "$frames"
+grep -Eq 'scenario_benchmark_points: 1' "$report_dir/scatter-1.log"
+grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " \
+    "$report_dir/scatter-1.log"
+
 run_case scatter env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
     "$scenario_bin" --benchmark "$frames"
 grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " "$report_dir/scatter.log"
+grep -Eq 'scenario_benchmark_points: 10000' "$report_dir/scatter.log"
 
 run_case scatter-panzoom env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
     DVZ_SCATTER_BENCHMARK=panzoom-v1 "$scenario_bin" --benchmark "$frames"
@@ -99,4 +114,4 @@ grep -Eq 'scenario_benchmark_workload: panzoom-v1' "$report_dir/scatter-panzoom.
 grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " \
     "$report_dir/scatter-panzoom.log"
 
-echo "present_check: blank=pass scene-drp2=pass scene-controls=pass scatter=pass scatter-panzoom=pass frames=$frames"
+echo "present_check: blank=pass scene-drp2=pass scene-controls=pass scene-10k=pass scatter-1=pass scatter=pass scatter-panzoom=pass frames=$frames"

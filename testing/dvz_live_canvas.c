@@ -25,10 +25,9 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "_scene.h"
 #include "_runtime.h"
+#include "_scene.h"
 #include "canvas_internal.h"
-#include "frame_plan/frame_plan.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/input/keyboard.h"
@@ -45,6 +44,7 @@
 #include "datoviz/window.h"
 #include "datoviz/window/backend.h"
 #include "datoviz_gpu_selection.h"
+#include "frame_plan/frame_plan.h"
 
 #if DVZ_HAS_GLFW
 #define GLFW_INCLUDE_NONE
@@ -58,15 +58,16 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_CANVAS_DEFAULT_BG_R 0.08f
-#define DVZ_CANVAS_DEFAULT_BG_G 0.12f
-#define DVZ_CANVAS_DEFAULT_BG_B 0.16f
-#define DVZ_CANVAS_DEFAULT_BG_A 1.00f
-#define DVZ_CANVAS_DEFAULT_FPS  60
-#define DVZ_CANVAS_DEFAULT_WIDTH 1024
-#define DVZ_CANVAS_DEFAULT_HEIGHT 640
+#define DVZ_CANVAS_DEFAULT_BG_R             0.08f
+#define DVZ_CANVAS_DEFAULT_BG_G             0.12f
+#define DVZ_CANVAS_DEFAULT_BG_B             0.16f
+#define DVZ_CANVAS_DEFAULT_BG_A             1.00f
+#define DVZ_CANVAS_DEFAULT_FPS              60
+#define DVZ_CANVAS_DEFAULT_WIDTH            1024
+#define DVZ_CANVAS_DEFAULT_HEIGHT           640
 #define DVZ_CANVAS_BENCHMARK_DEFAULT_FRAMES 10000
-#define DVZ_CANVAS_BENCHMARK_WARMUP_FRAMES 200
+#define DVZ_CANVAS_BENCHMARK_WARMUP_FRAMES  200
+#define DVZ_CANVAS_SCENE_MAX_POINTS         10000000u
 
 
 
@@ -119,6 +120,7 @@ typedef struct DvzCanvasAppOptions
     DvzVideoCaptureMode record_mode;
     DvzCanvasDrawMode draw_mode;
     DvzCanvasScenePath scene_path;
+    uint32_t scene_point_count;
     bool start_recording;
     bool benchmark;
     DvzTestingGpuSelection gpu_selection;
@@ -137,6 +139,9 @@ typedef struct DvzCanvasApp
     DvzCanvas* canvas;
     DvzDrp2Runtime* drp2_runtime;
     DvzFramePlanEmitter* scene_emitter;
+    float* scene_point_positions;
+    DvzColor* scene_point_colors;
+    float* scene_point_sizes;
     DvzFramePlan* scene_cached_plan;
     DvzDrp2CommandStream* scene_cached_stream;
     DvzCapabilitySnapshot scene_caps;
@@ -203,6 +208,7 @@ static void _dvz_canvas_options_default(DvzCanvasAppOptions* options)
     options->record_mode = DVZ_VIDEO_CAPTURE_AUTO;
     options->draw_mode = DVZ_CANVAS_DRAW_CLEAR;
     options->scene_path = DVZ_CANVAS_SCENE_PATH_FULL;
+    options->scene_point_count = 1;
     options->start_recording = false;
     options->benchmark = false;
     dvz_testing_gpu_selection_init(&options->gpu_selection);
@@ -440,8 +446,8 @@ static bool _dvz_canvas_benchmark_begin(DvzCanvasApp* app)
     }
     if (app->options.draw_mode == DVZ_CANVAS_DRAW_SCENE_DRP2)
     {
-        app->benchmark_scene_timings = (DvzCanvasSceneTiming*)dvz_calloc(
-            max_frames, sizeof(DvzCanvasSceneTiming));
+        app->benchmark_scene_timings =
+            (DvzCanvasSceneTiming*)dvz_calloc(max_frames, sizeof(DvzCanvasSceneTiming));
         if (app->benchmark_scene_timings == NULL)
         {
             dvz_fprintf(stderr, "benchmark: failed to allocate scene timing buffer\n");
@@ -561,8 +567,7 @@ static bool _dvz_canvas_benchmark_end(DvzCanvasApp* app)
     uint64_t recreate_delta = recreate_count - app->benchmark_recreate_start;
 
     dvz_fprintf(
-        stderr,
-        "benchmark: frames=%u warmup=%u samples=%u elapsed=%.6fs fps=%.2f avg_ms=%.4f\n",
+        stderr, "benchmark: frames=%u warmup=%u samples=%u elapsed=%.6fs fps=%.2f avg_ms=%.4f\n",
         app->options.max_frames, app->benchmark_warmup_frames, count, elapsed_s, fps, avg_ms);
     if (has_resolved)
     {
@@ -573,8 +578,7 @@ static bool _dvz_canvas_benchmark_end(DvzCanvasApp* app)
             (int)resolved);
     }
     dvz_fprintf(
-        stderr,
-        "benchmark: frame_ms min=%.4f p50=%.4f p90=%.4f p95=%.4f p99=%.4f max=%.4f\n",
+        stderr, "benchmark: frame_ms min=%.4f p50=%.4f p90=%.4f p95=%.4f p99=%.4f max=%.4f\n",
         sorted[0], _dvz_canvas_benchmark_percentile(sorted, count, 50),
         _dvz_canvas_benchmark_percentile(sorted, count, 90),
         _dvz_canvas_benchmark_percentile(sorted, count, 95),
@@ -586,11 +590,11 @@ static bool _dvz_canvas_benchmark_end(DvzCanvasApp* app)
         stderr, "benchmark: swapchain recreates total=%llu steady=%llu\n",
         (unsigned long long)recreate_count, (unsigned long long)recreate_delta);
 
-    if (
-        app->options.draw_mode == DVZ_CANVAS_DRAW_SCENE_DRP2 &&
+    if (app->options.draw_mode == DVZ_CANVAS_DRAW_SCENE_DRP2 &&
         app->benchmark_scene_timings != NULL &&
         app->benchmark_scene_timing_count > app->benchmark_warmup_frames)
     {
+        dvz_fprintf(stderr, "benchmark: scene_points=%u\n", app->options.scene_point_count);
         DvzCanvasSceneTiming total = {0};
         uint32_t timing_end = app->benchmark_scene_timing_count;
         if (timing_end > app->options.max_frames)
@@ -609,10 +613,9 @@ static bool _dvz_canvas_benchmark_end(DvzCanvasApp* app)
             total.semantic_commit_ms += timing->semantic_commit_ms;
         }
         double divisor = timing_count > 0 ? (double)timing_count : 1.0;
-        double callback_ms =
-            (total.attach_ms + total.plan_ms + total.emit_ms + total.execute_ms +
-             total.cleanup_ms) /
-            divisor;
+        double callback_ms = (total.attach_ms + total.plan_ms + total.emit_ms + total.execute_ms +
+                              total.cleanup_ms) /
+                             divisor;
         dvz_fprintf(
             stderr,
             "benchmark: scene_path=%s phase_ms attach=%.4f plan=%.4f emit=%.4f "
@@ -643,9 +646,8 @@ static bool _dvz_canvas_benchmark_end(DvzCanvasApp* app)
 static void _dvz_canvas_report_present_mode(DvzCanvasApp* app)
 {
     ANN(app);
-    if (
-        app->present_mode_reported ||
-        app->options.render_mode != DVZ_CANVAS_RENDER_MODE_PRESENT || app->canvas == NULL)
+    if (app->present_mode_reported || app->options.render_mode != DVZ_CANVAS_RENDER_MODE_PRESENT ||
+        app->canvas == NULL)
     {
         return;
     }
@@ -677,6 +679,7 @@ static void _dvz_canvas_usage(void)
         "                  [--mode present|offscreen] [--frames N] [--bg r,g,b,a] [--fps N]\n"
         "                  [--draw clear|scene-drp2]\n"
         "                  [--scene-path full|cached-plan|cached-stream]\n"
+        "                  [--scene-points N]\n"
         "                  [--present fifo|immediate] [--duration seconds]\n"
         "                  [--record path.mp4] [--record-mode auto|external|cpu]\n"
         "                  [--start-recording] [--screenshots base] [--benchmark] [--gpu index]\n"
@@ -846,6 +849,11 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
                 return false;
             }
         }
+        else if (strcmp(arg, "--scene-points") == 0)
+        {
+            if (!_dvz_canvas_parse_u32(value, &options->scene_point_count))
+                return false;
+        }
         else if (strcmp(arg, "--duration") == 0)
         {
             if (!_dvz_canvas_parse_double(value, &options->duration_s))
@@ -909,11 +917,15 @@ static bool _dvz_canvas_parse_args(int argc, char** argv, DvzCanvasAppOptions* o
                                    ? DVZ_CANVAS_RENDER_MODE_OFFSCREEN
                                    : DVZ_CANVAS_RENDER_MODE_PRESENT;
     }
-    if (
-        options->draw_mode != DVZ_CANVAS_DRAW_SCENE_DRP2 &&
+    if (options->draw_mode != DVZ_CANVAS_DRAW_SCENE_DRP2 &&
         options->scene_path != DVZ_CANVAS_SCENE_PATH_FULL)
     {
         dvz_fprintf(stderr, "--scene-path requires --draw scene-drp2\n");
+        return false;
+    }
+    if (options->draw_mode != DVZ_CANVAS_DRAW_SCENE_DRP2 && options->scene_point_count != 1)
+    {
+        dvz_fprintf(stderr, "--scene-points requires --draw scene-drp2\n");
         return false;
     }
     if (options->backend == DVZ_BACKEND_OFFSCREEN &&
@@ -1000,24 +1012,22 @@ static DvzFramePlan* _dvz_canvas_scene_plan(DvzCanvasApp* app)
     if (plan == NULL)
         return NULL;
 
-    static const float live_point_position[3] = {0.0f, 0.0f, 0.0f};
-    static const DvzColor live_point_color[1] = {{255, 96, 32, 255}};
-    static const float live_point_size[1] = {12.0f};
+    const uint32_t point_count = app->options.scene_point_count;
+    const size_t position_size = (size_t)point_count * 3 * sizeof(float);
+    const size_t color_size = (size_t)point_count * sizeof(DvzColor);
+    const size_t point_size = (size_t)point_count * sizeof(float);
     bool ok = dvz_frame_plan_upload_bytes(
-        plan, "visual.point.0_position", 0, sizeof(live_point_position), "position",
-        live_point_position);
+        plan, "visual.point.0_position", 0, position_size, "position", app->scene_point_positions);
     ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "visual.point.0_color", 0, sizeof(live_point_color), "color",
-                   live_point_color);
+                   plan, "visual.point.0_color", 0, color_size, "color", app->scene_point_colors);
     ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "visual.point.0_size", 0, sizeof(live_point_size), "size",
-                   live_point_size);
+                   plan, "visual.point.0_size", 0, point_size, "size", app->scene_point_sizes);
     ok = ok && dvz_frame_plan_render(plan, "panel.0", "target.canvas.color", false);
     ok = ok && dvz_frame_plan_render_visual(plan, "visual.point.0");
     DvzFramePlanVisualMeta metadata = {0};
     metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
     metadata.renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
-    metadata.vertex_count = 1;
+    metadata.vertex_count = point_count;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.depth_test_enabled = true;
     dvz_strlcpy(metadata.position_id, "visual.point.0_position", sizeof(metadata.position_id));
@@ -1035,18 +1045,55 @@ static DvzFramePlan* _dvz_canvas_scene_plan(DvzCanvasApp* app)
 
 
 /**
+ * Allocate deterministic point data for the minimal scene benchmark.
+ *
+ * @param app canvas app state
+ * @return true on success
+ */
+static bool _dvz_canvas_scene_data_init(DvzCanvasApp* app)
+{
+    ANN(app);
+    const uint32_t point_count = app->options.scene_point_count;
+    if (point_count == 0 || point_count > DVZ_CANVAS_SCENE_MAX_POINTS)
+        return false;
+
+    app->scene_point_positions = (float*)dvz_calloc((size_t)point_count * 3, sizeof(float));
+    app->scene_point_colors = (DvzColor*)dvz_calloc(point_count, sizeof(DvzColor));
+    app->scene_point_sizes = (float*)dvz_calloc(point_count, sizeof(float));
+    if (app->scene_point_positions == NULL || app->scene_point_colors == NULL ||
+        app->scene_point_sizes == NULL)
+    {
+        return false;
+    }
+
+    const uint32_t side = (uint32_t)ceil(sqrt((double)point_count));
+    for (uint32_t i = 0; i < point_count; i++)
+    {
+        const uint32_t row = i / side;
+        const uint32_t col = i % side;
+        app->scene_point_positions[3 * i + 0] =
+            side > 1 ? -0.9f + 1.8f * (float)col / (float)(side - 1) : 0.0f;
+        app->scene_point_positions[3 * i + 1] =
+            side > 1 ? -0.9f + 1.8f * (float)row / (float)(side - 1) : 0.0f;
+        app->scene_point_colors[i] = (DvzColor){255, 96, 32, 200};
+        app->scene_point_sizes[i] = 8.0f;
+    }
+    return true;
+}
+
+
+
+/**
  * Record benchmark-only scene phase timings for one callback.
  *
  * @param app canvas app state
  * @param timing phase timings
  */
-static void _dvz_canvas_scene_timing_record(
-    DvzCanvasApp* app, const DvzCanvasSceneTiming* timing)
+static void _dvz_canvas_scene_timing_record(DvzCanvasApp* app, const DvzCanvasSceneTiming* timing)
 {
     ANN(app);
     ANN(timing);
-    if (
-        !app->options.benchmark || app->benchmark_scene_timings == NULL ||
+    if (!app->options.benchmark || app->benchmark_scene_timings == NULL ||
         app->benchmark_scene_timing_count >= app->options.max_frames)
     {
         return;
@@ -1062,8 +1109,8 @@ static void _dvz_canvas_scene_timing_record(
  * @param frame stream frame with command buffer and target image view
  * @param user_data app state pointer
  */
-static void _dvz_canvas_draw_scene_drp2(
-    DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
+static void
+_dvz_canvas_draw_scene_drp2(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data)
 {
     (void)canvas;
     ANN(frame);
@@ -1089,8 +1136,7 @@ static void _dvz_canvas_draw_scene_drp2(
         goto finish;
     }
 
-    if (
-        app->scene_cached_stream != NULL &&
+    if (app->scene_cached_stream != NULL &&
         (app->scene_cached_stream_format != (DvzFormat)frame->color_format ||
          app->scene_cached_stream_width != frame->extent.width ||
          app->scene_cached_stream_height != frame->extent.height))
@@ -1162,9 +1208,7 @@ static void _dvz_canvas_draw_scene_drp2(
         ok = result.ok && result.code == DVZ_DRP2_VALIDATION_OK;
     }
 
-    if (
-        ok && emitted_stream &&
-        app->options.scene_path == DVZ_CANVAS_SCENE_PATH_CACHED_STREAM)
+    if (ok && emitted_stream && app->options.scene_path == DVZ_CANVAS_SCENE_PATH_CACHED_STREAM)
     {
         if (app->scene_stream_warm)
         {
@@ -1195,8 +1239,7 @@ finish:
         DvzDrp2CommandType command_type = DVZ_DRP2_COMMAND_NONE;
         if (stream != NULL && result.command_index < dvz_drp2_stream_count(stream))
         {
-            const DvzDrp2Command* command =
-                dvz_drp2_stream_get(stream, result.command_index);
+            const DvzDrp2Command* command = dvz_drp2_stream_get(stream, result.command_index);
             command_type = dvz_drp2_command_type(command);
         }
         dvz_fprintf(
@@ -1297,8 +1340,8 @@ static void _dvz_canvas_toggle_recording(DvzCanvasApp* app)
  * @param event keyboard event
  * @param user_data app state pointer
  */
-static void _dvz_canvas_keyboard(
-    DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
+static void
+_dvz_canvas_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
 {
     ANN(router);
     ANN(event);
@@ -1334,8 +1377,8 @@ static void _dvz_canvas_keyboard(
  * @param action GLFW key action
  * @param mods GLFW modifiers bitmask
  */
-static void _dvz_canvas_glfw_key_callback(
-    GLFWwindow* handle, int key, int scancode, int action, int mods)
+static void
+_dvz_canvas_glfw_key_callback(GLFWwindow* handle, int key, int scancode, int action, int mods)
 {
     (void)scancode;
     (void)mods;
@@ -1483,8 +1526,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
 #if ENABLE_VALIDATION_LAYERS
     icfg.flags = DVZ_INSTANCE_VALIDATION_FLAGS;
 #endif
-    uint32_t ext_count =
-        dvz_window_host_required_extension_count(app->host, app->options.backend);
+    uint32_t ext_count = dvz_window_host_required_extension_count(app->host, app->options.backend);
     if (ext_count > 0)
     {
         const char** extensions = dvz_calloc(ext_count, sizeof(char*));
@@ -1611,8 +1653,7 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
     }
 #endif
 
-    if (
-        app->options.backend == DVZ_BACKEND_OFFSCREEN && app->options.duration_s <= 0.0 &&
+    if (app->options.backend == DVZ_BACKEND_OFFSCREEN && app->options.duration_s <= 0.0 &&
         app->options.max_frames == 0)
     {
         app->options.duration_s = 5.0;
@@ -1636,6 +1677,13 @@ static bool _dvz_canvas_init(DvzCanvasApp* app)
 
     if (app->options.draw_mode == DVZ_CANVAS_DRAW_SCENE_DRP2)
     {
+        if (!_dvz_canvas_scene_data_init(app))
+        {
+            dvz_fprintf(
+                stderr, "failed to allocate %u scene benchmark points (maximum %u)\n",
+                app->options.scene_point_count, DVZ_CANVAS_SCENE_MAX_POINTS);
+            return false;
+        }
         DvzDrp2RuntimeConfig runtime_cfg =
             dvz_drp2_runtime_vklite_config(app->device, app->allocator);
         app->drp2_runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
@@ -1690,6 +1738,12 @@ static void _dvz_canvas_destroy(DvzCanvasApp* app)
         dvz_free(app->benchmark_scene_timings);
         app->benchmark_scene_timings = NULL;
     }
+    dvz_free(app->scene_point_sizes);
+    app->scene_point_sizes = NULL;
+    dvz_free(app->scene_point_colors);
+    app->scene_point_colors = NULL;
+    dvz_free(app->scene_point_positions);
+    app->scene_point_positions = NULL;
     if (app->canvas != NULL)
     {
         DvzInputRouter* router = dvz_canvas_input(app->canvas);

@@ -49,12 +49,14 @@ benchmark: swapchain recreates total=1 steady=0
 benchmark: frames=20 warmup=2 samples=18 elapsed=0.018000s fps=1000.00 avg_ms=1.0000
 benchmark: frame_ms min=0.5000 p50=0.9000 p90=1.1000 p95=1.2000 p99=1.3000 max=1.4000
 benchmark: swapchain recreates total=3 steady=2
+benchmark: scene_points=1
 """
         with self.assertRaisesRegex(compare.CompareError, "steady swapchain recreations"):
             compare.parse_benchmark_output("scene-drp2", "", stderr)
 
     def test_parse_panzoom_requires_version_marker(self) -> None:
         output = (
+            "scenario_benchmark_points: 10000\n"
             "scenario_benchmark: scenario=start_scatter frames=60 warmup=6 "
             "elapsed=0.120000s fps=500.00\n"
         )
@@ -97,6 +99,37 @@ benchmark: swapchain recreates total=3 steady=2
         self.assertEqual(env["DVZ_PRESENT_MODE"], "immediate")
         self.assertEqual(env["DVZ_APP_SCHEDULE"], "continuous")
         self.assertEqual(env["DVZ_SCATTER_BENCHMARK"], "panzoom-v1")
+
+    def test_workload_commands_cover_attribution_ladder(self) -> None:
+        revision = compare.Revision(
+            name="base", ref="base", commit="0" * 40,
+            worktree=Path("/tmp/base"), build_dir=Path("/tmp/base/build-compare"),
+        )
+        cached_plan, _ = compare.workload_command(revision, "scene-drp2-cached-plan", 120)
+        cached_stream, _ = compare.workload_command(revision, "scene-drp2-cached-stream", 120)
+        scene_10k, _ = compare.workload_command(revision, "scene-drp2-10k", 120)
+        _, scatter_1_env = compare.workload_command(revision, "scatter-1", 120)
+        self.assertEqual(cached_plan[-2:], ["--scene-path", "cached-plan"])
+        self.assertEqual(cached_stream[-2:], ["--scene-path", "cached-stream"])
+        self.assertEqual(scene_10k[-2:], ["--scene-points", "10000"])
+        self.assertEqual(scatter_1_env["DVZ_SCATTER_POINT_COUNT"], "1")
+
+    def test_parse_attribution_point_counts(self) -> None:
+        live = """
+benchmark: frames=120 warmup=12 samples=108 elapsed=0.010800s fps=10000.00 avg_ms=0.1000
+benchmark: frame_ms min=0.0500 p50=0.0900 p90=0.1200 p95=0.1400 p99=0.2000 max=0.2500
+benchmark: swapchain recreates total=1 steady=0
+benchmark: scene_points=10000
+"""
+        metrics = compare.parse_benchmark_output("scene-drp2-10k", "", live)
+        self.assertEqual(metrics.samples, 108)
+        scenario = (
+            "scenario_benchmark_points: 1\n"
+            "scenario_benchmark: scenario=start_scatter frames=60 warmup=6 "
+            "elapsed=0.120000s fps=500.00\n"
+        )
+        metrics = compare.parse_benchmark_output("scatter-1", scenario, "")
+        self.assertAlmostEqual(metrics.ms_per_frame, 2.0)
 
 
 if __name__ == "__main__":

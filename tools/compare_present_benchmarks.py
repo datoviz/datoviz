@@ -23,7 +23,16 @@ from typing import Any, Sequence
 
 
 SCHEMA_VERSION = 1
-DEFAULT_WORKLOADS = ("blank", "scene-drp2", "scatter", "scatter-panzoom")
+DEFAULT_WORKLOADS = (
+    "blank",
+    "scene-drp2",
+    "scene-drp2-cached-plan",
+    "scene-drp2-cached-stream",
+    "scene-drp2-10k",
+    "scatter-1",
+    "scatter",
+    "scatter-panzoom",
+)
 EXTERNAL_SUBMODULES = (
     "external/cglm",
     "external/cimgui",
@@ -159,7 +168,7 @@ def resolve_commit(repo: Path, ref: str) -> str:
 
 def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> BenchmarkMetrics:
     combined = f"{stdout}\n{stderr}"
-    if workload in ("blank", "scene-drp2"):
+    if workload == "blank" or workload.startswith("scene-drp2"):
         summary = LIVE_SUMMARY_RE.search(combined)
         percentiles = LIVE_PERCENTILES_RE.search(combined)
         recreate = LIVE_RECREATE_RE.search(combined)
@@ -173,6 +182,9 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
         steady = int(recreate.group("steady"))
         if steady != 0:
             raise CompareError(f"{workload}: observed {steady} steady swapchain recreations")
+        expected_points = 10_000 if workload == "scene-drp2-10k" else 1
+        if workload.startswith("scene-drp2") and f"benchmark: scene_points={expected_points}" not in combined:
+            raise CompareError(f"{workload}: expected scene_points={expected_points}")
         return BenchmarkMetrics(
             frames=frames,
             warmup=int(summary.group("warmup")),
@@ -199,6 +211,9 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
         raise CompareError(f"{workload}: unexpected scenario '{summary.group('scenario')}'")
     if workload == "scatter-panzoom" and "scenario_benchmark_workload: panzoom-v1" not in combined:
         raise CompareError("scatter-panzoom: commit does not implement panzoom-v1")
+    expected_points = 1 if workload == "scatter-1" else 10_000
+    if f"scenario_benchmark_points: {expected_points}" not in combined:
+        raise CompareError(f"{workload}: expected {expected_points} scatter points")
     return BenchmarkMetrics(
         frames=frames,
         warmup=int(summary.group("warmup")),
@@ -277,7 +292,7 @@ def workload_command(revision: Revision, workload: str, frames: int) -> tuple[li
     env = os.environ.copy()
     env["DVZ_PRESENT_MODE"] = "immediate"
     env["DVZ_APP_SCHEDULE"] = "continuous"
-    if workload in ("blank", "scene-drp2"):
+    if workload == "blank" or workload.startswith("scene-drp2"):
         draw = "clear" if workload == "blank" else "scene-drp2"
         command = [
             str(revision.build_dir / "testing" / "dvz_live_canvas"),
@@ -289,7 +304,13 @@ def workload_command(revision: Revision, workload: str, frames: int) -> tuple[li
             "--present",
             "immediate",
         ]
-    elif workload in ("scatter", "scatter-panzoom"):
+        if workload == "scene-drp2-cached-plan":
+            command.extend(["--scene-path", "cached-plan"])
+        elif workload == "scene-drp2-cached-stream":
+            command.extend(["--scene-path", "cached-stream"])
+        elif workload == "scene-drp2-10k":
+            command.extend(["--scene-points", "10000"])
+    elif workload in ("scatter-1", "scatter", "scatter-panzoom"):
         command = [
             str(revision.build_dir / "examples" / "c" / "start" / "scatter"),
             "--benchmark",
@@ -299,6 +320,10 @@ def workload_command(revision: Revision, workload: str, frames: int) -> tuple[li
             env["DVZ_SCATTER_BENCHMARK"] = "panzoom-v1"
         else:
             env.pop("DVZ_SCATTER_BENCHMARK", None)
+        if workload == "scatter-1":
+            env["DVZ_SCATTER_POINT_COUNT"] = "1"
+        else:
+            env.pop("DVZ_SCATTER_POINT_COUNT", None)
     else:
         raise CompareError(f"unknown workload '{workload}'")
     return command, env
