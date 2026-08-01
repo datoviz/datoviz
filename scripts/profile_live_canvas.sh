@@ -216,13 +216,40 @@ for scene_path in cached-plan cached-stream; do
     done
 done
 
+scene_10k_log="$out_dir/benchmark-scene-drp2-10k.log"
+: >"$scene_10k_log"
+for run in $(seq 1 "$bench_runs"); do
+    {
+        echo "===== scene-drp2 10k benchmark run $run/$bench_runs ====="
+        record_command "$bin" --benchmark --frames "$frames" --draw scene-drp2 \
+            --scene-points 10000
+        run_case scene-drp2 --scene-points 10000
+        echo
+    } 2>&1 | tee -a "$scene_10k_log"
+done
+
+scenario_1_log="$out_dir/benchmark-scene-app-1.log"
+: >"$scenario_1_log"
+for run in $(seq 1 "$bench_runs"); do
+    {
+        echo "===== scene-app one-point benchmark run $run/$bench_runs ====="
+        record_command env DVZ_PRESENT_MODE=immediate DVZ_APP_FRAME_TIMING=1 \
+            DVZ_SCATTER_POINT_COUNT=1 "$scenario_bin" --benchmark "$scenario_frames"
+        env DVZ_PRESENT_MODE=immediate DVZ_APP_FRAME_TIMING=1 DVZ_SCATTER_POINT_COUNT=1 \
+            "$scenario_bin" --benchmark "$scenario_frames"
+        echo
+    } 2>&1 | tee -a "$scenario_1_log"
+done
+
 scenario_log="$out_dir/benchmark-scene-app.log"
 : >"$scenario_log"
 for run in $(seq 1 "$bench_runs"); do
     {
         echo "===== scene-app benchmark run $run/$bench_runs ====="
-        record_command env DVZ_PRESENT_MODE=immediate "$scenario_bin" --benchmark "$scenario_frames"
-        env DVZ_PRESENT_MODE=immediate "$scenario_bin" --benchmark "$scenario_frames"
+        record_command env DVZ_PRESENT_MODE=immediate DVZ_APP_FRAME_TIMING=1 \
+            "$scenario_bin" --benchmark "$scenario_frames"
+        env DVZ_PRESENT_MODE=immediate DVZ_APP_FRAME_TIMING=1 \
+            "$scenario_bin" --benchmark "$scenario_frames"
         echo
     } 2>&1 | tee -a "$scenario_log"
 done
@@ -359,6 +386,8 @@ Start here:
   metadata.txt
   benchmark-clear.log
   benchmark-scene-drp2.log
+  benchmark-scene-drp2-10k.log
+  benchmark-scene-app-1.log
   benchmark-scene-app.log
   perf-stat-clear.txt
   perf-stat-scene-drp2.txt

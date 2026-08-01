@@ -25,6 +25,7 @@
 #include "_log.h"
 #include "scene_emit/scene_emit.h"
 #include "_technique.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/drp2/runtime.h"
 #include "../../drp2/_stream.h"
 #include "render_contract/render_contract.h"
@@ -699,6 +700,9 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     _scene_emit_defaults(&caps, &default_caps, &report, &local_report, &cfg, &default_cfg);
     if (!dvz_capability_snapshot_valid(caps))
         return NULL;
+    DvzSceneEmitTiming* timing = &figure->last_emit_timing;
+    dvz_memset(timing, sizeof(*timing), 0, sizeof(*timing));
+    uint64_t phase_start = figure->emit_timing_enabled ? dvz_time_monotonic_ns() : 0;
     float next_device_scale_x = _scene_scale_or_one(cfg->device_scale_x);
     float next_device_scale_y = _scene_scale_or_one(cfg->device_scale_y);
     float next_render_scale = _scene_scale_or_one(cfg->render_scale);
@@ -732,6 +736,11 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     _scene_prepare_guide_visuals(figure);
     _scene_prepare_bars_visuals(figure);
     _scene_prepare_band_visuals(figure);
+    if (figure->emit_timing_enabled)
+    {
+        timing->prepare_ns = dvz_time_monotonic_ns() - phase_start;
+        phase_start = dvz_time_monotonic_ns();
+    }
 
     DvzFramePlan* plan = dvz_frame_plan(figure_id, 0);
     if (plan == NULL)
@@ -757,6 +766,11 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
         dvz_frame_plan_destroy(plan);
         return NULL;
     }
+    if (figure->emit_timing_enabled)
+    {
+        timing->plan_ns = dvz_time_monotonic_ns() - phase_start;
+        phase_start = dvz_time_monotonic_ns();
+    }
 
     DvzDiagnosticReport contract_report;
     dvz_diagnostic_report_init(&contract_report);
@@ -779,6 +793,11 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     }
 
     _scene_report_capability_fallbacks(plan, caps, report);
+    if (figure->emit_timing_enabled)
+    {
+        timing->contract_ns = dvz_time_monotonic_ns() - phase_start;
+        phase_start = dvz_time_monotonic_ns();
+    }
 
     _scene_frame_plan_trace(figure, plan);
 
@@ -792,9 +811,51 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     }
     if (stream != NULL)
         _scene_commit_emit_success(figure);
+    if (figure->emit_timing_enabled)
+    {
+        timing->emit_ns = dvz_time_monotonic_ns() - phase_start;
+        phase_start = dvz_time_monotonic_ns();
+    }
 
     dvz_frame_plan_destroy(plan);
+    if (figure->emit_timing_enabled)
+        timing->cleanup_ns = dvz_time_monotonic_ns() - phase_start;
     return stream;
+}
+
+
+
+/**
+ * Enable or disable detailed timing for one figure's emission path.
+ *
+ * @param figure figure to configure
+ * @param enabled whether timing is enabled
+ */
+void _scene_figure_emit_timing_enable(DvzFigure* figure, bool enabled)
+{
+    if (figure == NULL)
+        return;
+    figure->emit_timing_enabled = enabled;
+    dvz_memset(
+        &figure->last_emit_timing, sizeof(figure->last_emit_timing), 0,
+        sizeof(figure->last_emit_timing));
+}
+
+
+
+/**
+ * Return detailed timing for the most recent figure emission.
+ *
+ * @param figure figure whose timing should be read
+ * @param timing destination timing structure
+ * @return true when timing is enabled and available
+ */
+bool _scene_figure_emit_timing_get(const DvzFigure* figure, DvzSceneEmitTiming* timing)
+{
+    if (figure == NULL || timing == NULL || !figure->emit_timing_enabled)
+        return false;
+    *timing = figure->last_emit_timing;
+    return true;
 }
 
 

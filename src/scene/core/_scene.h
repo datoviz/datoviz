@@ -2052,6 +2052,16 @@ struct DvzGrid
 /*  DvzFigure                                                                                   */
 /*************************************************************************************************/
 
+typedef struct DvzSceneEmitTiming
+{
+    uint64_t prepare_ns;
+    uint64_t plan_ns;
+    uint64_t contract_ns;
+    uint64_t emit_ns;
+    uint64_t cleanup_ns;
+} DvzSceneEmitTiming;
+
+
 struct DvzFigure
 {
     DvzScene*  scene;
@@ -2079,6 +2089,8 @@ struct DvzFigure
 
     char* last_frame_plan_trace;
     bool has_last_frame_plan_trace;
+    bool emit_timing_enabled;
+    DvzSceneEmitTiming last_emit_timing;
 };
 
 

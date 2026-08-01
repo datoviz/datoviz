@@ -19,3 +19,7 @@ bool _scene_figure_has_pending_render_work(const DvzFigure* figure);
 DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     DvzFigure* figure, const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report,
     const DvzFramePlanEmitConfig* cfg);
+
+void _scene_figure_emit_timing_enable(DvzFigure* figure, bool enabled);
+
+bool _scene_figure_emit_timing_get(const DvzFigure* figure, DvzSceneEmitTiming* timing);

@@ -125,11 +125,13 @@ benchmark: scene_points=10000
         self.assertEqual(metrics.samples, 108)
         scenario = (
             "scenario_benchmark_points: 1\n"
+            "app_frame_timing: view=0 frames=60 run_ms=2.0000 scene_plan=0.1250\n"
             "scenario_benchmark: scenario=start_scatter frames=60 warmup=6 "
             "elapsed=0.120000s fps=500.00\n"
         )
         metrics = compare.parse_benchmark_output("scatter-1", scenario, "")
         self.assertAlmostEqual(metrics.ms_per_frame, 2.0)
+        self.assertEqual(metrics.phase_ms, {"run_ms": 2.0, "scene_plan": 0.125})
 
 
 if __name__ == "__main__":

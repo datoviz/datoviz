@@ -98,18 +98,21 @@ grep -Eq 'benchmark: swapchain recreates total=[0-9]+ steady=0' \
     "$report_dir/scene-drp2-10k.log"
 
 run_case scatter-1 env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
-    DVZ_SCATTER_POINT_COUNT=1 "$scenario_bin" --benchmark "$frames"
+    DVZ_APP_FRAME_TIMING=1 DVZ_SCATTER_POINT_COUNT=1 "$scenario_bin" --benchmark "$frames"
 grep -Eq 'scenario_benchmark_points: 1' "$report_dir/scatter-1.log"
+grep -Eq "app_frame_timing: view=0 frames=$frames " "$report_dir/scatter-1.log"
 grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " \
     "$report_dir/scatter-1.log"
 
 run_case scatter env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
-    "$scenario_bin" --benchmark "$frames"
+    DVZ_APP_FRAME_TIMING=1 "$scenario_bin" --benchmark "$frames"
 grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " "$report_dir/scatter.log"
 grep -Eq 'scenario_benchmark_points: 10000' "$report_dir/scatter.log"
+grep -Eq "app_frame_timing: view=0 frames=$frames " "$report_dir/scatter.log"
 
 run_case scatter-panzoom env DVZ_PRESENT_MODE=immediate DVZ_APP_SCHEDULE=continuous \
-    DVZ_SCATTER_BENCHMARK=panzoom-v1 "$scenario_bin" --benchmark "$frames"
+    DVZ_APP_FRAME_TIMING=1 DVZ_SCATTER_BENCHMARK=panzoom-v1 \
+    "$scenario_bin" --benchmark "$frames"
 grep -Eq 'scenario_benchmark_workload: panzoom-v1' "$report_dir/scatter-panzoom.log"
 grep -Eq "scenario_benchmark: scenario=start_scatter frames=$frames " \
     "$report_dir/scatter-panzoom.log"

@@ -34,6 +34,7 @@
 #include "datoviz/gui.h"
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
+#include "../drp2/_runtime.h"
 #include "../drp2/_stream.h"
 #include "mutex_internal.h"
 #include "_scene.h"
@@ -97,6 +98,7 @@
 #define DVZ_APP_MIN_LAYOUT_WIDTH  200u
 #define DVZ_APP_MIN_LAYOUT_HEIGHT 200u
 #define DVZ_APP_DEFAULT_REFERENCE_DPI 96.0
+#define DVZ_APP_TIMING_INTERACTIVE_CAPACITY 65536u
 
 
 
@@ -129,6 +131,41 @@ typedef struct DvzResolvedViewDesc
     uint32_t framebuffer_height;
     float device_scale;
 } DvzResolvedViewDesc;
+
+
+typedef struct DvzAppFrameTiming
+{
+    uint64_t total_ns;
+    uint64_t canvas_frame_ns;
+    uint64_t draw_ns;
+    uint64_t submit_ns;
+    uint64_t prepare_ns;
+    uint64_t attach_ns;
+    uint64_t setup_ns;
+    uint64_t scene_total_ns;
+    uint64_t scene_prepare_ns;
+    uint64_t scene_plan_ns;
+    uint64_t scene_contract_ns;
+    uint64_t scene_emit_ns;
+    uint64_t scene_cleanup_ns;
+    uint64_t execute_ns;
+    uint64_t semantic_validation_ns;
+    uint64_t backend_ns;
+    uint64_t semantic_commit_ns;
+    uint64_t trace_ns;
+    uint64_t post_ns;
+    uint64_t callback_ns;
+} DvzAppFrameTiming;
+
+
+typedef struct DvzAppFrameTimingState
+{
+    bool enabled;
+    DvzAppFrameTiming current;
+    DvzAppFrameTiming* samples;
+    uint32_t sample_count;
+    uint32_t sample_capacity;
+} DvzAppFrameTimingState;
 
 
 
@@ -191,6 +228,7 @@ struct DvzView
     double fps;
     double fps_frame_ms;
     double fps_last_sample_elapsed_s;
+    DvzAppFrameTimingState frame_timing;
     bool frame_requested;
     bool dirty;
     uint64_t next_frame_ns;
@@ -224,6 +262,9 @@ struct DvzApp
     uint32_t     view_count;
     DvzView views[DVZ_APP_MAX_VIEWS];
     DvzAppStatus status;
+    bool frame_timing_enabled;
+    uint64_t frame_timing_run_start_ns;
+    uint64_t frame_timing_host_ns;
 };
 
 
@@ -1606,6 +1647,190 @@ static uint64_t _app_scheduler_now_ns(void)
 
 
 /**
+ * Compare two doubles for timing percentile sorting.
+ *
+ * @param a first double pointer
+ * @param b second double pointer
+ * @return negative, zero, or positive comparison result
+ */
+static int _app_timing_compare_double(const void* a, const void* b)
+{
+    const double da = *(const double*)a;
+    const double db = *(const double*)b;
+    return da < db ? -1 : da > db ? +1 : 0;
+}
+
+
+
+/**
+ * Return a nearest-rank percentile from sorted timing samples.
+ *
+ * @param sorted sorted samples
+ * @param count sample count
+ * @param percentile percentile in the [0, 100] range
+ * @return selected sample, or zero without samples
+ */
+static double
+_app_timing_percentile(const double* sorted, uint32_t count, uint32_t percentile)
+{
+    if (sorted == NULL || count == 0)
+        return 0.0;
+    uint64_t index = ((uint64_t)(count - 1) * percentile + 50) / 100;
+    return sorted[index];
+}
+
+
+
+/**
+ * Reset and enable opt-in frame timing for one app run.
+ *
+ * @param app app entering a run
+ * @param frame_count requested frame count, or zero for interactive mode
+ */
+static void _app_frame_timing_begin(DvzApp* app, uint32_t frame_count)
+{
+    ANN(app);
+    app->frame_timing_enabled = _app_env_flag_enabled("DVZ_APP_FRAME_TIMING");
+    app->frame_timing_host_ns = 0;
+    app->frame_timing_run_start_ns =
+        app->frame_timing_enabled ? dvz_time_monotonic_ns() : 0;
+    const uint32_t capacity =
+        frame_count > 0 ? frame_count : DVZ_APP_TIMING_INTERACTIVE_CAPACITY;
+    for (uint32_t i = 0; i < app->view_count; i++)
+    {
+        DvzView* win = &app->views[i];
+        dvz_free(win->frame_timing.samples);
+        win->frame_timing = (DvzAppFrameTimingState){0};
+        if (!app->frame_timing_enabled)
+        {
+            _scene_figure_emit_timing_enable(win->figure, false);
+            continue;
+        }
+        win->frame_timing.samples =
+            (DvzAppFrameTiming*)dvz_calloc(capacity, sizeof(DvzAppFrameTiming));
+        if (win->frame_timing.samples == NULL)
+        {
+            log_error("failed to allocate app frame timing samples");
+            continue;
+        }
+        win->frame_timing.enabled = true;
+        win->frame_timing.sample_capacity = capacity;
+        _scene_figure_emit_timing_enable(win->figure, true);
+    }
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    _dvz_drp2_runtime_timing_enable(app->runtime, app->frame_timing_enabled);
+#endif
+}
+
+
+
+/**
+ * Print aggregate timing for every measured view in one app run.
+ *
+ * @param app app completing a run
+ */
+static void _app_frame_timing_report(DvzApp* app)
+{
+    ANN(app);
+    if (!app->frame_timing_enabled)
+        return;
+    const uint64_t run_ns = dvz_time_monotonic_ns() - app->frame_timing_run_start_ns;
+    for (uint32_t vi = 0; vi < app->view_count; vi++)
+    {
+        DvzView* win = &app->views[vi];
+        DvzAppFrameTimingState* state = &win->frame_timing;
+        if (!state->enabled || state->sample_count == 0)
+            continue;
+
+        DvzAppFrameTiming total = {0};
+        double* sorted = (double*)dvz_calloc(state->sample_count, sizeof(double));
+        if (sorted == NULL)
+            continue;
+        for (uint32_t i = 0; i < state->sample_count; i++)
+        {
+            const DvzAppFrameTiming* sample = &state->samples[i];
+            sorted[i] = (double)sample->total_ns * 1e-6;
+            total.total_ns += sample->total_ns;
+            total.canvas_frame_ns += sample->canvas_frame_ns;
+            total.draw_ns += sample->draw_ns;
+            total.submit_ns += sample->submit_ns;
+            total.prepare_ns += sample->prepare_ns;
+            total.attach_ns += sample->attach_ns;
+            total.setup_ns += sample->setup_ns;
+            total.scene_total_ns += sample->scene_total_ns;
+            total.scene_prepare_ns += sample->scene_prepare_ns;
+            total.scene_plan_ns += sample->scene_plan_ns;
+            total.scene_contract_ns += sample->scene_contract_ns;
+            total.scene_emit_ns += sample->scene_emit_ns;
+            total.scene_cleanup_ns += sample->scene_cleanup_ns;
+            total.execute_ns += sample->execute_ns;
+            total.semantic_validation_ns += sample->semantic_validation_ns;
+            total.backend_ns += sample->backend_ns;
+            total.semantic_commit_ns += sample->semantic_commit_ns;
+            total.trace_ns += sample->trace_ns;
+            total.post_ns += sample->post_ns;
+            total.callback_ns += sample->callback_ns;
+        }
+        qsort(sorted, state->sample_count, sizeof(double), _app_timing_compare_double);
+        const double divisor = (double)state->sample_count;
+        const double run_ms = (double)run_ns * 1e-6 / divisor;
+        const double host_ms = (double)app->frame_timing_host_ns * 1e-6 / divisor;
+        const double frame_ms = (double)total.total_ns * 1e-6 / divisor;
+        const uint64_t draw_accounted_ns =
+            total.prepare_ns + total.attach_ns + total.setup_ns + total.scene_total_ns +
+            total.trace_ns + total.execute_ns + total.post_ns + total.callback_ns;
+        const double canvas_overhead_ms =
+            total.canvas_frame_ns > total.draw_ns
+                ? (double)(total.canvas_frame_ns - total.draw_ns) * 1e-6 / divisor
+                : 0.0;
+        const double draw_residual_ms =
+            total.draw_ns > draw_accounted_ns
+                ? (double)(total.draw_ns - draw_accounted_ns) * 1e-6 / divisor
+                : 0.0;
+        const double scheduler_residual_ms =
+            run_ms > host_ms + frame_ms ? run_ms - host_ms - frame_ms : 0.0;
+        dvz_fprintf(
+            stdout,
+            "app_frame_timing: view=%u frames=%u run_ms=%.4f host_ms=%.4f "
+            "frame_ms=%.4f p50=%.4f p95=%.4f p99=%.4f canvas=%.4f draw=%.4f "
+            "submit=%.4f prepare=%.4f "
+            "attach=%.4f setup=%.4f scene_total=%.4f scene_prepare=%.4f scene_plan=%.4f "
+            "scene_contract=%.4f "
+            "scene_emit=%.4f scene_cleanup=%.4f execute=%.4f semantic_validation=%.4f "
+            "backend=%.4f semantic_commit=%.4f trace=%.4f post=%.4f callback=%.4f "
+            "canvas_overhead=%.4f "
+            "draw_residual=%.4f "
+            "scheduler_residual=%.4f\n",
+            vi, state->sample_count, run_ms, host_ms, frame_ms,
+            _app_timing_percentile(sorted, state->sample_count, 50),
+            _app_timing_percentile(sorted, state->sample_count, 95),
+            _app_timing_percentile(sorted, state->sample_count, 99),
+            (double)total.canvas_frame_ns * 1e-6 / divisor,
+            (double)total.draw_ns * 1e-6 / divisor,
+            (double)total.submit_ns * 1e-6 / divisor,
+            (double)total.prepare_ns * 1e-6 / divisor,
+            (double)total.attach_ns * 1e-6 / divisor,
+            (double)total.setup_ns * 1e-6 / divisor,
+            (double)total.scene_total_ns * 1e-6 / divisor,
+            (double)total.scene_prepare_ns * 1e-6 / divisor,
+            (double)total.scene_plan_ns * 1e-6 / divisor,
+            (double)total.scene_contract_ns * 1e-6 / divisor,
+            (double)total.scene_emit_ns * 1e-6 / divisor,
+            (double)total.scene_cleanup_ns * 1e-6 / divisor,
+            (double)total.execute_ns * 1e-6 / divisor,
+            (double)total.semantic_validation_ns * 1e-6 / divisor,
+            (double)total.backend_ns * 1e-6 / divisor,
+            (double)total.semantic_commit_ns * 1e-6 / divisor,
+            (double)total.trace_ns * 1e-6 / divisor, (double)total.post_ns * 1e-6 / divisor,
+            (double)total.callback_ns * 1e-6 / divisor, canvas_overhead_ms, draw_residual_ms,
+            scheduler_residual_ms);
+        dvz_free(sorted);
+    }
+}
+
+
+
+/**
  * Poll the built-in window host for pending events.
  *
  * @param app app owning the window host
@@ -1613,8 +1838,11 @@ static uint64_t _app_scheduler_now_ns(void)
 static void _app_host_poll(DvzApp* app)
 {
     ANN(app);
+    uint64_t start_ns = app->frame_timing_enabled ? dvz_time_monotonic_ns() : 0;
     if (app->window_host != NULL)
         dvz_window_host_poll(app->window_host);
+    if (app->frame_timing_enabled)
+        app->frame_timing_host_ns += dvz_time_monotonic_ns() - start_ns;
 }
 
 
@@ -3692,6 +3920,15 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     ANN(win);
     DvzApp* app = win->app;
     ANN(app);
+    DvzAppFrameTiming* timing = win->frame_timing.enabled ? &win->frame_timing.current : NULL;
+    uint64_t phase_start = 0;
+    uint64_t draw_start_ns = 0;
+    if (timing != NULL)
+    {
+        dvz_memset(timing, sizeof(*timing), 0, sizeof(*timing));
+        draw_start_ns = dvz_time_monotonic_ns();
+        phase_start = draw_start_ns;
+    }
 
     if (win->replay_recording != NULL)
     {
@@ -3723,6 +3960,11 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     _dvz_scene_animations_step(app->scene, dvz_input_timestamp_ns());
     _app_sync_figure_size(win, frame);
     bool fly_active = _dvz_figure_fly_update(win->figure, app->scene->clock.dt);
+    if (timing != NULL)
+    {
+        timing->prepare_ns = dvz_time_monotonic_ns() - phase_start;
+        phase_start = dvz_time_monotonic_ns();
+    }
 
     /* Attach the canvas frame to the reserved DRP2 texture ID. */
     if (!dvz_drp2_runtime_attach_frame_target(app->runtime, win->target_id, frame))
@@ -3732,6 +3974,11 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         _app_render_gui_frame(win, frame);
 #endif
         return;
+    }
+    if (timing != NULL)
+    {
+        timing->attach_ns = dvz_time_monotonic_ns() - phase_start;
+        phase_start = dvz_time_monotonic_ns();
     }
 
     /* Emit one frame artifact with the canvas as external color target. */
@@ -3756,11 +4003,30 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     cfg.clear_color[1]        = 0.05f;
     cfg.clear_color[2]        = 0.08f;
     cfg.clear_color[3]        = 1.0f;
+    if (timing != NULL)
+    {
+        timing->setup_ns = dvz_time_monotonic_ns() - phase_start;
+        phase_start = dvz_time_monotonic_ns();
+    }
 
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
+    _scene_figure_emit_timing_enable(win->figure, timing != NULL);
     DvzSceneFrameArtifact* artifact =
         dvz_figure_emit_frame(win->figure, &caps, &report, &cfg);
+    if (timing != NULL)
+    {
+        timing->scene_total_ns = dvz_time_monotonic_ns() - phase_start;
+        DvzSceneEmitTiming scene_timing = {0};
+        if (_scene_figure_emit_timing_get(win->figure, &scene_timing))
+        {
+            timing->scene_prepare_ns = scene_timing.prepare_ns;
+            timing->scene_plan_ns = scene_timing.plan_ns;
+            timing->scene_contract_ns = scene_timing.contract_ns;
+            timing->scene_emit_ns = scene_timing.emit_ns;
+            timing->scene_cleanup_ns = scene_timing.cleanup_ns;
+        }
+    }
     if (artifact == NULL)
     {
         uint32_t n = dvz_diagnostic_report_count(&report);
@@ -3785,9 +4051,25 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         return;
     }
 
+    phase_start = timing != NULL ? dvz_time_monotonic_ns() : 0;
     _app_trace_stream(win, stream);
+    if (timing != NULL)
+        timing->trace_ns = dvz_time_monotonic_ns() - phase_start;
 
+    phase_start = timing != NULL ? dvz_time_monotonic_ns() : 0;
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
+    if (timing != NULL)
+    {
+        timing->execute_ns = dvz_time_monotonic_ns() - phase_start;
+        DvzDrp2RuntimeTiming runtime_timing = {0};
+        if (_dvz_drp2_runtime_timing_get(app->runtime, &runtime_timing))
+        {
+            timing->semantic_validation_ns = runtime_timing.semantic_validation_ns;
+            timing->backend_ns = runtime_timing.backend_ns;
+            timing->semantic_commit_ns = runtime_timing.semantic_commit_ns;
+        }
+        phase_start = dvz_time_monotonic_ns();
+    }
     if (!result.ok)
     {
         _app_log_runtime_failure(win, "_app_draw runtime execution failed", stream, result);
@@ -3802,11 +4084,14 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     if (result.ok)
         _app_record_stream(win, frame, stream);
     dvz_scene_frame_artifact_destroy(artifact);
+    if (timing != NULL)
+        timing->post_ns = dvz_time_monotonic_ns() - phase_start;
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     _app_render_gui_frame(win, frame);
 #endif
 
+    phase_start = timing != NULL ? dvz_time_monotonic_ns() : 0;
     if (win->frame_callback != NULL && _app_frame_callback_allowed(win))
         win->frame_callback(win, win->frame_user_data);
     if (_view_has_pending_scene_work(win))
@@ -3814,6 +4099,11 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     if (fly_active)
         dvz_view_request_frame(win);
     win->frame_index++;
+    if (timing != NULL)
+    {
+        timing->callback_ns = dvz_time_monotonic_ns() - phase_start;
+        timing->draw_ns = dvz_time_monotonic_ns() - draw_start_ns;
+    }
 }
 
 #endif
@@ -4039,6 +4329,8 @@ void dvz_app_destroy(DvzApp* app)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
+        dvz_free(win->frame_timing.samples);
+        win->frame_timing.samples = NULL;
         _view_disconnect_figure_panels(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         if (win->gui != NULL)
@@ -6007,14 +6299,28 @@ int dvz_view_render_once(DvzView* win)
     win->dirty = false;
     win->frame_requested = false;
 
+    const bool timing_enabled =
+        win->frame_timing.enabled && win->replay_recording == NULL &&
+        win->frame_timing.sample_count < win->frame_timing.sample_capacity;
+    uint64_t frame_start_ns = timing_enabled ? dvz_time_monotonic_ns() : 0;
     int rc = dvz_canvas_frame(win->canvas);
+    if (timing_enabled)
+        win->frame_timing.current.canvas_frame_ns = dvz_time_monotonic_ns() - frame_start_ns;
     if (rc == DVZ_CANVAS_FRAME_READY)
     {
+        uint64_t submit_start_ns = timing_enabled ? dvz_time_monotonic_ns() : 0;
         if (dvz_canvas_submit(win->canvas) != 0)
         {
             win->dirty = win->dirty || dirty_before;
             win->frame_requested = win->frame_requested || requested_before;
             return -1;
+        }
+        if (timing_enabled)
+        {
+            DvzAppFrameTiming* current = &win->frame_timing.current;
+            current->submit_ns = dvz_time_monotonic_ns() - submit_start_ns;
+            current->total_ns = dvz_time_monotonic_ns() - frame_start_ns;
+            win->frame_timing.samples[win->frame_timing.sample_count++] = *current;
         }
         _view_fps_update(win, dvz_input_timestamp_ns());
         if (win->app != NULL && win->app->scene != NULL &&
@@ -6075,6 +6381,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
     ANN(app);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    _app_frame_timing_begin(app, frame_count);
     /* FPS counter — opt in via DVZ_FPS=1 (default on for interactive runs to aid profiling). */
     const char* fps_env = getenv("DVZ_FPS");
     bool fps_enabled = (fps_env == NULL) ? (frame_count == 0)
@@ -6146,7 +6453,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
         {
             if (app->stop_requested)
                 break;
-            dvz_window_host_poll(app->window_host);
+            _app_host_poll(app);
             for (uint32_t i = 0; i < app->view_count; i++)
             {
                 DvzView* win = &app->views[i];
@@ -6159,6 +6466,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
     DvzDevice* device = dvz_gpu_ctx_device(app->gpu_ctx);
     if (device != NULL)
         dvz_device_wait(device);
+    _app_frame_timing_report(app);
     _dvz_app_status_finish(&app->status);
 #else
     (void)frame_count;

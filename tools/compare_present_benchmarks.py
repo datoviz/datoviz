@@ -57,6 +57,7 @@ SCENARIO_SUMMARY_RE = re.compile(
     r"scenario_benchmark: scenario=(?P<scenario>\S+) frames=(?P<frames>\d+) "
     r"warmup=(?P<warmup>\d+) elapsed=(?P<elapsed>[0-9.]+)s fps=(?P<fps>[0-9.]+)"
 )
+APP_FRAME_TIMING_RE = re.compile(r"^app_frame_timing: (?P<fields>.+)$", re.MULTILINE)
 
 
 class CompareError(RuntimeError):
@@ -77,6 +78,7 @@ class BenchmarkMetrics:
     p99_ms: float | None = None
     recreate_total: int | None = None
     recreate_steady: int | None = None
+    phase_ms: dict[str, float] | None = None
 
 
 @dataclass(frozen=True)
@@ -214,6 +216,14 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
     expected_points = 1 if workload == "scatter-1" else 10_000
     if f"scenario_benchmark_points: {expected_points}" not in combined:
         raise CompareError(f"{workload}: expected {expected_points} scatter points")
+    timing_matches = list(APP_FRAME_TIMING_RE.finditer(combined))
+    phase_ms = None
+    if timing_matches:
+        phase_ms = {}
+        for field in timing_matches[-1].group("fields").split():
+            key, separator, value = field.partition("=")
+            if separator and key not in {"view", "frames"}:
+                phase_ms[key] = float(value)
     return BenchmarkMetrics(
         frames=frames,
         warmup=int(summary.group("warmup")),
@@ -221,6 +231,7 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
         elapsed_s=elapsed_s,
         fps=float(summary.group("fps")),
         ms_per_frame=1000.0 * elapsed_s / frames,
+        phase_ms=phase_ms,
     )
 
 
@@ -311,6 +322,7 @@ def workload_command(revision: Revision, workload: str, frames: int) -> tuple[li
         elif workload == "scene-drp2-10k":
             command.extend(["--scene-points", "10000"])
     elif workload in ("scatter-1", "scatter", "scatter-panzoom"):
+        env["DVZ_APP_FRAME_TIMING"] = "1"
         command = [
             str(revision.build_dir / "examples" / "c" / "start" / "scatter"),
             "--benchmark",
