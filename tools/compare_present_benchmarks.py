@@ -33,7 +33,6 @@ DEFAULT_WORKLOADS = (
     "scatter",
     "scatter-panzoom",
 )
-AVAILABLE_WORKLOADS = DEFAULT_WORKLOADS + ("scatter-static-cache",)
 EXTERNAL_SUBMODULES = (
     "external/cglm",
     "external/cimgui",
@@ -59,10 +58,6 @@ SCENARIO_SUMMARY_RE = re.compile(
     r"warmup=(?P<warmup>\d+) elapsed=(?P<elapsed>[0-9.]+)s fps=(?P<fps>[0-9.]+)"
 )
 APP_FRAME_TIMING_RE = re.compile(r"^app_frame_timing: (?P<fields>.+)$", re.MULTILINE)
-APP_ARTIFACT_CACHE_RE = re.compile(
-    r"^app_artifact_cache: view=\d+ mode=static hits=(?P<hits>\d+) misses=(?P<misses>\d+)$",
-    re.MULTILINE,
-)
 
 
 class CompareError(RuntimeError):
@@ -218,10 +213,6 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
         raise CompareError(f"{workload}: unexpected scenario '{summary.group('scenario')}'")
     if workload == "scatter-panzoom" and "scenario_benchmark_workload: panzoom-v1" not in combined:
         raise CompareError("scatter-panzoom: commit does not implement panzoom-v1")
-    if workload == "scatter-static-cache":
-        cache = APP_ARTIFACT_CACHE_RE.search(combined)
-        if cache is None or int(cache.group("hits")) != frames or int(cache.group("misses")) != 0:
-            raise CompareError("scatter-static-cache: measured frames were not all cache hits")
     expected_points = 1 if workload == "scatter-1" else 10_000
     if f"scenario_benchmark_points: {expected_points}" not in combined:
         raise CompareError(f"{workload}: expected {expected_points} scatter points")
@@ -330,7 +321,7 @@ def workload_command(revision: Revision, workload: str, frames: int) -> tuple[li
             command.extend(["--scene-path", "cached-stream"])
         elif workload == "scene-drp2-10k":
             command.extend(["--scene-points", "10000"])
-    elif workload in ("scatter-1", "scatter", "scatter-panzoom", "scatter-static-cache"):
+    elif workload in ("scatter-1", "scatter", "scatter-panzoom"):
         env["DVZ_APP_FRAME_TIMING"] = "1"
         command = [
             str(revision.build_dir / "examples" / "c" / "start" / "scatter"),
@@ -341,10 +332,6 @@ def workload_command(revision: Revision, workload: str, frames: int) -> tuple[li
             env["DVZ_SCATTER_BENCHMARK"] = "panzoom-v1"
         else:
             env.pop("DVZ_SCATTER_BENCHMARK", None)
-        if workload == "scatter-static-cache":
-            env["DVZ_APP_BENCHMARK_ARTIFACT_CACHE"] = "static"
-        else:
-            env.pop("DVZ_APP_BENCHMARK_ARTIFACT_CACHE", None)
         if workload == "scatter-1":
             env["DVZ_SCATTER_POINT_COUNT"] = "1"
         else:
@@ -554,7 +541,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int, default=20260801, help="order/bootstrap random seed")
     parser.add_argument("--bootstrap-samples", type=int, default=10_000)
     parser.add_argument("--jobs", type=int, default=max(1, os.cpu_count() or 1))
-    parser.add_argument("--workload", action="append", choices=AVAILABLE_WORKLOADS, dest="workloads")
+    parser.add_argument("--workload", action="append", choices=DEFAULT_WORKLOADS, dest="workloads")
     parser.add_argument("--cmake-arg", action="append", default=[])
     parser.add_argument("--output", type=Path, help="report directory")
     parser.add_argument("--fail-on-regression", action="store_true")

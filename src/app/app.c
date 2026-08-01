@@ -99,7 +99,6 @@
 #define DVZ_APP_MIN_LAYOUT_HEIGHT 200u
 #define DVZ_APP_DEFAULT_REFERENCE_DPI 96.0
 #define DVZ_APP_TIMING_INTERACTIVE_CAPACITY 65536u
-#define DVZ_APP_STATIC_ARTIFACT_CACHE_CAPACITY 8u
 
 
 
@@ -169,27 +168,6 @@ typedef struct DvzAppFrameTimingState
 } DvzAppFrameTimingState;
 
 
-typedef struct DvzAppStaticArtifactCacheEntry
-{
-    uint64_t runtime_resource_scope_id;
-    uint64_t color_target_id;
-    DvzFormat color_target_format;
-    uint32_t target_width;
-    uint32_t target_height;
-    float device_scale_x;
-    float device_scale_y;
-    float render_scale;
-    float user_scale;
-    DvzColorPipeline color_pipeline;
-    DvzSceneShaderFormat shader_format;
-    bool external_color_target;
-    bool fullscreen_triangle;
-    float clear_color[4];
-    bool warm;
-    DvzSceneFrameArtifact* artifact;
-} DvzAppStaticArtifactCacheEntry;
-
-
 
 struct DvzView
 {
@@ -251,10 +229,6 @@ struct DvzView
     double fps_frame_ms;
     double fps_last_sample_elapsed_s;
     DvzAppFrameTimingState frame_timing;
-    DvzAppStaticArtifactCacheEntry
-        static_artifact_cache[DVZ_APP_STATIC_ARTIFACT_CACHE_CAPACITY];
-    uint64_t static_artifact_cache_hits;
-    uint64_t static_artifact_cache_misses;
     bool frame_requested;
     bool dirty;
     uint64_t next_frame_ns;
@@ -279,7 +253,6 @@ struct DvzApp
     DvzCapabilitySnapshot runtime_caps;
     bool runtime_caps_initialized;
     bool runtime_caps_backed;
-    bool static_artifact_cache_enabled;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     DvzGpuCtx*      gpu_ctx;
     DvzDrp2Runtime* runtime;
@@ -1739,8 +1712,6 @@ static void _app_frame_timing_begin(DvzApp* app, uint32_t frame_count)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
-        win->static_artifact_cache_hits = 0;
-        win->static_artifact_cache_misses = 0;
         dvz_free(win->frame_timing.samples);
         win->frame_timing = (DvzAppFrameTimingState){0};
         if (!app->frame_timing_enabled)
@@ -1866,14 +1837,6 @@ static void _app_frame_timing_report(DvzApp* app)
             (double)total.trace_ns * 1e-6 / divisor, (double)total.post_ns * 1e-6 / divisor,
             (double)total.callback_ns * 1e-6 / divisor, canvas_overhead_ms, draw_residual_ms,
             scheduler_residual_ms);
-        if (app->static_artifact_cache_enabled)
-        {
-            dvz_fprintf(
-                stdout,
-                "app_artifact_cache: view=%u mode=static hits=%" PRIu64 " misses=%" PRIu64
-                "\n",
-                vi, win->static_artifact_cache_hits, win->static_artifact_cache_misses);
-        }
         dvz_free(sorted);
     }
 }
@@ -3310,114 +3273,6 @@ static void _app_trace_stream(DvzView* win, const DvzDrp2CommandStream* stream)
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 
 /**
- * Destroy every retained benchmark-only static frame artifact for one view.
- *
- * @param win view owning the cache
- */
-static void _app_static_artifact_cache_clear(DvzView* win)
-{
-    ANN(win);
-    for (uint32_t i = 0; i < DVZ_APP_STATIC_ARTIFACT_CACHE_CAPACITY; i++)
-    {
-        DvzAppStaticArtifactCacheEntry* entry = &win->static_artifact_cache[i];
-        dvz_scene_frame_artifact_destroy(entry->artifact);
-        *entry = (DvzAppStaticArtifactCacheEntry){0};
-    }
-}
-
-
-
-/**
- * Return whether a static artifact cache entry matches the current emission configuration.
- *
- * @param entry cache entry
- * @param cfg current emission configuration
- * @return true when the retained artifact is compatible
- */
-static bool _app_static_artifact_cache_matches(
-    const DvzAppStaticArtifactCacheEntry* entry, const DvzFramePlanEmitConfig* cfg)
-{
-    ANN(entry);
-    ANN(cfg);
-    return entry->runtime_resource_scope_id == cfg->runtime_resource_scope_id &&
-           entry->color_target_id == cfg->color_target_id &&
-           entry->color_target_format == cfg->color_target_format &&
-           entry->target_width == cfg->target_width && entry->target_height == cfg->target_height &&
-           entry->device_scale_x == cfg->device_scale_x &&
-           entry->device_scale_y == cfg->device_scale_y &&
-           entry->render_scale == cfg->render_scale && entry->user_scale == cfg->user_scale &&
-           entry->color_pipeline == cfg->color_pipeline &&
-           entry->shader_format == cfg->shader_format &&
-           entry->external_color_target == cfg->external_color_target &&
-           entry->fullscreen_triangle == cfg->fullscreen_triangle &&
-           memcmp(entry->clear_color, cfg->clear_color, sizeof(entry->clear_color)) == 0;
-}
-
-
-
-/**
- * Return the bounded static artifact cache entry for one runtime resource scope.
- *
- * @param win view owning the cache
- * @param cfg current emission configuration
- * @return cache entry reserved for this scope
- */
-static DvzAppStaticArtifactCacheEntry*
-_app_static_artifact_cache_entry(DvzView* win, const DvzFramePlanEmitConfig* cfg)
-{
-    ANN(win);
-    ANN(cfg);
-    DvzAppStaticArtifactCacheEntry* empty = NULL;
-    for (uint32_t i = 0; i < DVZ_APP_STATIC_ARTIFACT_CACHE_CAPACITY; i++)
-    {
-        DvzAppStaticArtifactCacheEntry* entry = &win->static_artifact_cache[i];
-        if (entry->runtime_resource_scope_id == cfg->runtime_resource_scope_id)
-            return entry;
-        if (empty == NULL && entry->runtime_resource_scope_id == 0)
-            empty = entry;
-    }
-    if (empty != NULL)
-        return empty;
-
-    uint32_t index = (uint32_t)(cfg->runtime_resource_scope_id % DVZ_APP_STATIC_ARTIFACT_CACHE_CAPACITY);
-    DvzAppStaticArtifactCacheEntry* entry = &win->static_artifact_cache[index];
-    dvz_scene_frame_artifact_destroy(entry->artifact);
-    *entry = (DvzAppStaticArtifactCacheEntry){0};
-    return entry;
-}
-
-
-
-/**
- * Initialize or refresh a static artifact cache entry configuration.
- *
- * @param entry cache entry
- * @param cfg current emission configuration
- */
-static void _app_static_artifact_cache_configure(
-    DvzAppStaticArtifactCacheEntry* entry, const DvzFramePlanEmitConfig* cfg)
-{
-    ANN(entry);
-    ANN(cfg);
-    entry->runtime_resource_scope_id = cfg->runtime_resource_scope_id;
-    entry->color_target_id = cfg->color_target_id;
-    entry->color_target_format = cfg->color_target_format;
-    entry->target_width = cfg->target_width;
-    entry->target_height = cfg->target_height;
-    entry->device_scale_x = cfg->device_scale_x;
-    entry->device_scale_y = cfg->device_scale_y;
-    entry->render_scale = cfg->render_scale;
-    entry->user_scale = cfg->user_scale;
-    entry->color_pipeline = cfg->color_pipeline;
-    entry->shader_format = cfg->shader_format;
-    entry->external_color_target = cfg->external_color_target;
-    entry->fullscreen_triangle = cfg->fullscreen_triangle;
-    memcpy(entry->clear_color, cfg->clear_color, sizeof(entry->clear_color));
-}
-
-
-
-/**
  * Synchronize the figure size with the current output before emitting a frame.
  *
  * @param win view being drawn
@@ -3607,8 +3462,6 @@ static bool _app_runtime_recovery_apply(DvzApp* app)
         return true;
     if (app->runtime != NULL)
         dvz_drp2_runtime_reset(app->runtime);
-    for (uint32_t i = 0; i < app->view_count; i++)
-        _app_static_artifact_cache_clear(&app->views[i]);
     if (!_scene_runtime_emitter_reset(app->scene))
     {
         log_error("_app_draw failed to reset scene runtime emitter after runtime failure");
@@ -4172,30 +4025,8 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
     _scene_figure_emit_timing_enable(win->figure, timing != NULL);
-    DvzAppStaticArtifactCacheEntry* cache_entry = NULL;
-    DvzSceneFrameArtifact* artifact = NULL;
-    bool artifact_cache_hit = false;
-    if (app->static_artifact_cache_enabled)
-    {
-        cache_entry = _app_static_artifact_cache_entry(win, &cfg);
-        if (
-            cache_entry->runtime_resource_scope_id != 0 &&
-            !_app_static_artifact_cache_matches(cache_entry, &cfg))
-        {
-            dvz_scene_frame_artifact_destroy(cache_entry->artifact);
-            *cache_entry = (DvzAppStaticArtifactCacheEntry){0};
-        }
-        if (cache_entry->runtime_resource_scope_id == 0)
-            _app_static_artifact_cache_configure(cache_entry, &cfg);
-        artifact = cache_entry->artifact;
-        artifact_cache_hit = artifact != NULL;
-        if (artifact_cache_hit)
-            win->static_artifact_cache_hits++;
-        else
-            win->static_artifact_cache_misses++;
-    }
-    if (artifact == NULL)
-        artifact = dvz_figure_emit_frame(win->figure, &caps, &report, &cfg);
+    DvzSceneFrameArtifact* artifact =
+        dvz_figure_emit_frame(win->figure, &caps, &report, &cfg);
     if (timing != NULL)
     {
         timing->scene_total_ns = dvz_time_monotonic_ns() - phase_start;
@@ -4226,11 +4057,6 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         stream == NULL)
     {
         log_error("_app_draw failed to create scene frame artifact");
-        if (artifact_cache_hit && cache_entry != NULL)
-        {
-            cache_entry->artifact = NULL;
-            cache_entry->warm = false;
-        }
         dvz_scene_frame_artifact_destroy(artifact);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         _app_render_gui_frame(win, frame);
@@ -4270,23 +4096,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     if (result.ok)
         _app_record_stream(win, frame, stream);
-    bool retain_artifact = false;
-    if (
-        result.ok && app->static_artifact_cache_enabled && !artifact_cache_hit &&
-        cache_entry != NULL)
-    {
-        if (cache_entry->warm)
-        {
-            cache_entry->artifact = artifact;
-            retain_artifact = true;
-        }
-        else
-        {
-            cache_entry->warm = true;
-        }
-    }
-    if (!artifact_cache_hit && !retain_artifact)
-        dvz_scene_frame_artifact_destroy(artifact);
+    dvz_scene_frame_artifact_destroy(artifact);
     if (timing != NULL)
         timing->post_ns = dvz_time_monotonic_ns() - phase_start;
 
@@ -4391,14 +4201,6 @@ dvz_app_with_resources(DvzScene* scene, const DvzAppConfig* config, const DvzApp
         return NULL;
     app->scene = scene;
     app->config = resolved;
-    const char* static_cache = getenv("DVZ_APP_BENCHMARK_ARTIFACT_CACHE");
-    app->static_artifact_cache_enabled =
-        static_cache != NULL && strcmp(static_cache, "static") == 0;
-    if (app->static_artifact_cache_enabled)
-    {
-        log_warn(
-            "benchmark-only static artifact cache enabled; retained scene mutations are ignored");
-    }
     DvzFontDefaults fonts = _app_config_font_defaults(&resolved);
     dvz_scene_set_font_defaults(scene, &fonts);
     _dvz_app_status_init(&app->status);
@@ -4543,7 +4345,6 @@ void dvz_app_destroy(DvzApp* app)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
-        _app_static_artifact_cache_clear(win);
         dvz_free(win->frame_timing.samples);
         win->frame_timing.samples = NULL;
         _view_disconnect_figure_panels(win);
