@@ -258,6 +258,87 @@ int test_frame_plan_growth_json(TstContext* suite, const TstCase* item)
 }
 
 
+int test_frame_plan_render_visual_growth(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    AT(sizeof(DvzFramePlanNode) <= 16 * 1024);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.visual-growth", 10);
+    ANN(plan);
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+
+    char visual_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    for (uint32_t i = 0; i < 9; i++)
+    {
+        dvz_snprintf(visual_id, sizeof(visual_id), "visual.growth.%02" PRIu32, i);
+        AT(dvz_frame_plan_render_visual(plan, visual_id));
+
+        DvzFramePlanVisualMeta metadata = {0};
+        metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+        metadata.item_range_first = i;
+        metadata.item_range_count = 100 + i;
+        AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    }
+    AT(dvz_frame_plan_render_metadata_complete(plan));
+
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == 9);
+    AT(render->u.render.visual_capacity >= 9);
+    AT(render->u.render.visual_capacity <= DVZ_SCENE_MAX_RENDER_VISUALS);
+    for (uint32_t i = 0; i < 9; i++)
+    {
+        dvz_snprintf(visual_id, sizeof(visual_id), "visual.growth.%02" PRIu32, i);
+        AT(strcmp(render->u.render.visuals[i], visual_id) == 0);
+        AT(render->u.render.visual_metadata[i].has_metadata);
+        AT(render->u.render.visual_metadata[i].item_range_first == i);
+        AT(render->u.render.visual_metadata[i].item_range_count == 100 + i);
+    }
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+int test_frame_plan_render_visual_capacity_limit(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.visual-limit", 11);
+    ANN(plan);
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+
+    char visual_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_RENDER_VISUALS; i++)
+    {
+        dvz_snprintf(visual_id, sizeof(visual_id), "visual.limit.%03" PRIu32, i);
+        AT(dvz_frame_plan_render_visual(plan, visual_id));
+        DvzFramePlanVisualMeta metadata = {.visual_index = i};
+        AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    }
+
+    const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
+    ANN(render);
+    AT(render->u.render.visual_count == DVZ_SCENE_MAX_RENDER_VISUALS);
+    AT(render->u.render.visual_capacity == DVZ_SCENE_MAX_RENDER_VISUALS);
+    AT(dvz_frame_plan_render_metadata_complete(plan));
+    AT(strcmp(render->u.render.visuals[0], "visual.limit.000") == 0);
+    AT(render->u.render.visual_metadata[0].visual_index == 0);
+    AT(render->u.render.visual_metadata[DVZ_SCENE_MAX_RENDER_VISUALS - 1].visual_index ==
+       DVZ_SCENE_MAX_RENDER_VISUALS - 1);
+
+    AT(!dvz_frame_plan_render_visual(plan, "visual.limit.overflow"));
+    AT(render->u.render.visual_count == DVZ_SCENE_MAX_RENDER_VISUALS);
+    AT(render->u.render.visual_capacity == DVZ_SCENE_MAX_RENDER_VISUALS);
+
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
 int test_frame_plan_json_escapes_labels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2579,6 +2660,8 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_render_pass_roles);
     TST_CASE(test_frame_plan_clear);
     TST_CASE(test_frame_plan_growth_json);
+    TST_CASE(test_frame_plan_render_visual_growth);
+    TST_CASE(test_frame_plan_render_visual_capacity_limit);
     TST_CASE(test_frame_plan_json_escapes_labels);
     TST_CASE(test_scene_resource_keys);
     TST_CASE(test_frame_plan_render_visual_metadata);

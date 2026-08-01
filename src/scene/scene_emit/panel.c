@@ -34,6 +34,7 @@
 #include "core/generated_visual_policy.h"
 #include "datoviz/drp2/runtime.h"
 #include "domain/buffer_internal.h"
+#include "frame_plan/internal.h"
 #include "registry/registry.h"
 #include "render_contract/render_contract.h"
 #include "scene_emit/internal.h"
@@ -539,7 +540,13 @@ static bool _scene_append_visual_to_render_pass(
         metadata.draw_scene_occlusion_bind_binding = 0;
     }
 
-    uint32_t slot = node->u.render.visual_count++;
+    DvzMVP visual_mvp = {0};
+    if (!_scene_panel_attachment_mvp(
+            panel, visual, attach, &node->u.render.apply_mvp, &visual_mvp))
+        return false;
+    if (!_frame_plan_render_visual_reserve(node, node->u.render.visual_count + 1))
+        return false;
+    uint32_t slot = node->u.render.visual_count;
     dvz_strlcpy(node->u.render.visuals[slot], visual_id, sizeof(node->u.render.visuals[slot]));
     dvz_memcpy(
         &node->u.render.visual_metadata[slot], sizeof(DvzFramePlanVisualMeta), &metadata,
@@ -547,16 +554,13 @@ static bool _scene_append_visual_to_render_pass(
     node->u.render.visual_metadata[slot].has_metadata = true;
     node->u.render.controller_modes[slot] = attach->controller_mode;
 
-    DvzMVP visual_mvp = {0};
-    if (!_scene_panel_attachment_mvp(
-            panel, visual, attach, &node->u.render.apply_mvp, &visual_mvp))
-        return false;
     node->u.render.visual_mvp[slot] = visual_mvp;
     node->u.render.visual_has_mvp[slot] =
         visual->has_local_transform || attach->coord_space == DVZ_VISUAL_COORD_DATA ||
         attach->coord_space == DVZ_VISUAL_COORD_PANEL ||
         attach->coord_space == DVZ_VISUAL_COORD_PANEL_PIXEL ||
         attach->controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ;
+    node->u.render.visual_count++;
     return true;
 }
 

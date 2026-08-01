@@ -379,7 +379,7 @@ bool _scene_image_query_plan(
     dvz_strlcpy(metadata.texture_id, "query0_texture", sizeof(metadata.texture_id));
     ok = ok && dvz_frame_plan_render_visual_metadata(plan, &metadata);
     DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
-    if (render != NULL)
+    if (ok && render != NULL && render->u.render.visual_count > 0)
     {
         DvzMVP mvp = {0};
         _scene_panel_apply_mvp(panel, &mvp);

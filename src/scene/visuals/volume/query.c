@@ -506,7 +506,7 @@ static bool _volume_query_build_sample(
          dvz_frame_plan_render_visual(plan, "volume_query0") &&
          dvz_frame_plan_render_visual_metadata(plan, &metadata);
     DvzFramePlanNode* render = plan != NULL ? dvz_frame_plan_last_render_node(plan) : NULL;
-    if (render != NULL)
+    if (ok && render != NULL && render->u.render.visual_count > 0)
     {
         DvzMVP mvp = {0};
         _scene_request_visual_mvp(ctx->panel, ctx->visual, ctx->request_ndc, &mvp);

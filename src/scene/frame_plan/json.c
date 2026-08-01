@@ -627,7 +627,9 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append(builder, ", \"pass_role\": ");
         _json_append_escaped_string(builder, _render_pass_role_name(node->u.render.pass_role));
         _json_append(builder, ", \"visuals\": ");
-        _json_append_string_array(builder, node->u.render.visual_count, node->u.render.visuals);
+        _json_append_string_array(
+            builder, node->u.render.visual_count,
+            (const char(*)[DVZ_SCENE_LABEL_SIZE])node->u.render.visuals);
         _json_append(builder, ", \"picking\": %s }", node->u.render.picking ? "true" : "false");
         break;
     case DVZ_FRAME_PLAN_NODE_CLEAR:

@@ -97,6 +97,14 @@ void dvz_frame_plan_destroy(DvzFramePlan* plan)
             dvz_free(plan->nodes[i].u.upload.owned_data);
             plan->nodes[i].u.upload.owned_data = NULL;
         }
+        else if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_RENDER)
+        {
+            dvz_free(plan->nodes[i].u.render.visuals);
+            dvz_free(plan->nodes[i].u.render.visual_metadata);
+            dvz_free(plan->nodes[i].u.render.controller_modes);
+            dvz_free(plan->nodes[i].u.render.visual_mvp);
+            dvz_free(plan->nodes[i].u.render.visual_has_mvp);
+        }
     }
     dvz_free(plan->nodes);
     dvz_free(plan->graph_resources);

@@ -30,4 +30,6 @@ DvzFramePlanNode* _frame_plan_append_node(DvzFramePlan* plan, DvzFramePlanNodeTy
 
 DvzFramePlanNode* _frame_plan_last_node(DvzFramePlan* plan, DvzFramePlanNodeType type);
 
+bool _frame_plan_render_visual_reserve(DvzFramePlanNode* node, uint32_t count);
+
 const char* _frame_graph_access_usage_name(DvzFrameGraphAccessUsage usage);

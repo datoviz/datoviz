@@ -274,6 +274,10 @@ int test_frame_plan_clear(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_growth_json(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_render_visual_growth(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_render_visual_capacity_limit(TstContext* suite, const TstCase* item);
+
 int test_frame_plan_json_escapes_labels(TstContext* suite, const TstCase* item);
 
 int test_scene_resource_keys(TstContext* suite, const TstCase* item);
@@ -821,6 +825,8 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
 int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item);
 
 int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCase* item);
+
+int test_scene_frame_plan_visual_reallocation_safe(TstContext* suite, const TstCase* item);
 
 int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item);
 

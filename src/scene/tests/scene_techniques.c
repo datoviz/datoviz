@@ -862,6 +862,91 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
 
 
 /**
+ * Verify scene emission preserves parallel render metadata across visual storage growth.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_frame_plan_visual_reallocation_safe(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    vec3 positions[1] = {{0.0f, 0.0f, 0.0f}};
+    DvzColor colors[1] = {{255, 255, 255, 255}};
+    float sizes[1] = {10.0f};
+    const uint32_t visual_count = DVZ_FRAME_PLAN_INITIAL_VISUAL_CAPACITY + 1;
+    for (uint32_t i = 0; i < visual_count; i++)
+    {
+        DvzVisual* point = dvz_point(scene, 0);
+        ANN(point);
+        AT(dvz_visual_set_data(point, "position", positions, 1) == 0);
+        AT(dvz_visual_set_data(point, "color", colors, 1) == 0);
+        AT(dvz_visual_set_data(point, "size", sizes, 1) == 0);
+        DvzVisualAttachDesc attach = {
+            DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+            .controller_mode = i % 2 == 0 ? DVZ_CONTROLLER_APPLY : DVZ_CONTROLLER_FIXED,
+        };
+        AT(dvz_panel_add_visual(panel, point, &attach) == 0);
+    }
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.visual.realloc", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+
+    const DvzFramePlanNode* opaque = NULL;
+    for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
+    {
+        const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
+        if (
+            node != NULL && node->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE)
+        {
+            opaque = node;
+            break;
+        }
+    }
+    ANN(opaque);
+    AT(opaque->u.render.visual_count == visual_count);
+    AT(opaque->u.render.visual_capacity >= visual_count);
+    for (uint32_t i = 0; i < visual_count; i++)
+    {
+        AT(opaque->u.render.visuals[i][0] != '\0');
+        AT(opaque->u.render.visual_metadata[i].has_metadata);
+        AT(opaque->u.render.visual_metadata[i].visual_index == i);
+        const DvzPanelAttach* attach = &panel->visuals[i];
+        AT(opaque->u.render.controller_modes[i] == attach->controller_mode);
+        bool expected_mvp =
+            attach->visual->has_local_transform || attach->coord_space == DVZ_VISUAL_COORD_DATA ||
+            attach->coord_space == DVZ_VISUAL_COORD_PANEL ||
+            attach->coord_space == DVZ_VISUAL_COORD_PANEL_PIXEL ||
+            attach->controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ;
+        AT(opaque->u.render.visual_has_mvp[i] == expected_mvp);
+    }
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_contracts_validate(figure, plan, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify panel MSAA lowers through graph resources, resolves, and DRP2 pipeline samples.
  *
  * @param suite the active test suite

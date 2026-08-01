@@ -24,7 +24,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY 32
+#define DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY 8
+#define DVZ_FRAME_PLAN_INITIAL_VISUAL_CAPACITY 4
 #define DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY 16
 #define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY 16
 #define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES 8
@@ -472,8 +473,9 @@ struct DvzFramePlanNode
             char panel_id[DVZ_SCENE_LABEL_SIZE];
             char render_target_id[DVZ_SCENE_LABEL_SIZE];
             uint32_t visual_count;
-            char visuals[DVZ_SCENE_MAX_RENDER_VISUALS][DVZ_SCENE_LABEL_SIZE];
-            DvzFramePlanVisualMeta visual_metadata[DVZ_SCENE_MAX_RENDER_VISUALS];
+            uint32_t visual_capacity;
+            char (*visuals)[DVZ_SCENE_LABEL_SIZE];
+            DvzFramePlanVisualMeta* visual_metadata;
             bool picking;
             DvzFramePlanRenderPassRole pass_role;
             bool has_pass_contract;
@@ -485,9 +487,9 @@ struct DvzFramePlanNode
             DvzSceneViewportUniform viewport;
             bool has_mvp;
             DvzMVP apply_mvp;  /* panel APPLY MVP from panzoom/arcball; identity MVP for FIXED computed by converter */
-            DvzControllerMode controller_modes[DVZ_SCENE_MAX_RENDER_VISUALS];  /* parallel to visuals[] */
-            DvzMVP visual_mvp[DVZ_SCENE_MAX_RENDER_VISUALS];
-            bool visual_has_mvp[DVZ_SCENE_MAX_RENDER_VISUALS];
+            DvzControllerMode* controller_modes; /* parallel to visuals[] */
+            DvzMVP* visual_mvp;
+            bool* visual_has_mvp;
         } render;
         struct
         {

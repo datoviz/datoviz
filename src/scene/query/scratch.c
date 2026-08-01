@@ -164,7 +164,7 @@ void _dvz_scene_query_apply_render_state(
     ANN(panel);
     ANN(request_ndc);
     DvzFramePlanNode* render = dvz_frame_plan_last_render_node(plan);
-    if (render == NULL)
+    if (render == NULL || render->u.render.visual_count == 0)
         return;
 
     const DvzPanelAttach* attach = NULL;

@@ -27,6 +27,77 @@
 /*************************************************************************************************/
 
 /**
+ * Reserve parallel render-visual storage on a FramePlan node.
+ *
+ * @param node the render node
+ * @param count the required visual capacity
+ * @return whether the requested capacity is available
+ */
+bool _frame_plan_render_visual_reserve(DvzFramePlanNode* node, uint32_t count)
+{
+    if (node == NULL || node->type != DVZ_FRAME_PLAN_NODE_RENDER ||
+        count > DVZ_SCENE_MAX_RENDER_VISUALS)
+        return false;
+    if (count <= node->u.render.visual_capacity)
+        return true;
+
+    uint32_t old_capacity = node->u.render.visual_capacity;
+    uint32_t capacity = old_capacity > 0 ? old_capacity : DVZ_FRAME_PLAN_INITIAL_VISUAL_CAPACITY;
+    while (capacity < count)
+    {
+        if (capacity > DVZ_SCENE_MAX_RENDER_VISUALS / 2)
+        {
+            capacity = DVZ_SCENE_MAX_RENDER_VISUALS;
+            break;
+        }
+        capacity *= 2;
+    }
+
+    char(*visuals)[DVZ_SCENE_LABEL_SIZE] = (char(*)[DVZ_SCENE_LABEL_SIZE])dvz_realloc(
+        node->u.render.visuals, (uint64_t)capacity * sizeof(*visuals));
+    if (visuals == NULL)
+        return false;
+    node->u.render.visuals = visuals;
+
+    DvzFramePlanVisualMeta* metadata = (DvzFramePlanVisualMeta*)dvz_realloc(
+        node->u.render.visual_metadata, (uint64_t)capacity * sizeof(*metadata));
+    if (metadata == NULL)
+        return false;
+    node->u.render.visual_metadata = metadata;
+
+    DvzControllerMode* controller_modes = (DvzControllerMode*)dvz_realloc(
+        node->u.render.controller_modes, (uint64_t)capacity * sizeof(*controller_modes));
+    if (controller_modes == NULL)
+        return false;
+    node->u.render.controller_modes = controller_modes;
+
+    DvzMVP* visual_mvp =
+        (DvzMVP*)dvz_realloc(node->u.render.visual_mvp, (uint64_t)capacity * sizeof(*visual_mvp));
+    if (visual_mvp == NULL)
+        return false;
+    node->u.render.visual_mvp = visual_mvp;
+
+    bool* visual_has_mvp = (bool*)dvz_realloc(
+        node->u.render.visual_has_mvp, (uint64_t)capacity * sizeof(*visual_has_mvp));
+    if (visual_has_mvp == NULL)
+        return false;
+    node->u.render.visual_has_mvp = visual_has_mvp;
+
+    uint32_t added = capacity - old_capacity;
+    memset(&node->u.render.visuals[old_capacity], 0, (uint64_t)added * sizeof(*visuals));
+    memset(&node->u.render.visual_metadata[old_capacity], 0, (uint64_t)added * sizeof(*metadata));
+    memset(
+        &node->u.render.controller_modes[old_capacity], 0,
+        (uint64_t)added * sizeof(*controller_modes));
+    memset(&node->u.render.visual_mvp[old_capacity], 0, (uint64_t)added * sizeof(*visual_mvp));
+    memset(
+        &node->u.render.visual_has_mvp[old_capacity], 0,
+        (uint64_t)added * sizeof(*visual_has_mvp));
+    node->u.render.visual_capacity = capacity;
+    return true;
+}
+
+/**
  * Append a compute node.
  *
  * @param plan the FramePlan
@@ -231,7 +302,7 @@ bool dvz_frame_plan_render_visual(DvzFramePlan* plan, const char* visual_id)
     DvzFramePlanNode* node = _frame_plan_last_node(plan, DVZ_FRAME_PLAN_NODE_RENDER);
     if (
         node == NULL || visual_id == NULL || visual_id[0] == '\0' ||
-        node->u.render.visual_count >= DVZ_SCENE_MAX_RENDER_VISUALS)
+        !_frame_plan_render_visual_reserve(node, node->u.render.visual_count + 1))
         return false;
     char* dst = node->u.render.visuals[node->u.render.visual_count];
     size_t len = strlen(visual_id);
