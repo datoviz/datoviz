@@ -517,11 +517,11 @@ int test_geometry_obj_loader(TstContext* suite, const TstCase* tstitem)
     (void)tstitem;
 
     const char* path = "build/test_geom_obj_loader.obj";
-    const char obj[] = "  v -1 0 0\n"
+    const char obj[] = "  v -1 0 0 1\n"
                        "v 1 0 0\n"
                        "v 1 1 0\n"
                        "v -1 1 0\n"
-                       "\tvt 0.1 0.2\n"
+                       "\tvt 0.1 0.2 0\n"
                        "vt 0.8 0.2\n"
                        "vt 0.9 0.9\n"
                        "vt 0.2 0.8\n"
@@ -602,6 +602,10 @@ int test_geometry_obj_loader(TstContext* suite, const TstCase* tstitem)
         "v 0 0 0\nv 1 0 0\nv 0 1 0\nvn 0 0 1\nf 1// 2//1 3//1\n",
         "v 0 0 0\nv 1 0 0\nv 0 1 0\nf -4 -2 -1\n",
         "v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2\n",
+        "v nan 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n",
+        "v 0 0 0junk\nv 1 0 0\nv 0 1 0\nf 1 2 3\n",
+        "v 0 0 0\nv 1 0 0\nv 0 1 0\nvn 0 inf 1\nf 1//1 2//1 3//1\n",
+        "v 0 0 0\nv 1 0 0\nv 0 1 0\nvt 0 0 junk\nf 1/1 2/1 3/1\n",
     };
     for (uint32_t i = 0; i < sizeof(malformed) / sizeof(malformed[0]); i++)
     {

@@ -14,6 +14,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -108,6 +109,48 @@ static void _obj_color_or_default(const DvzColor color, DvzColor* out)
         *out = dvz_color_rgb(255, 255, 255);
     else
         *out = color;
+}
+
+
+
+/**
+ * Parse a bounded sequence of finite floating-point values.
+ *
+ * @param text source text after the OBJ record prefix
+ * @param required_count number of required values copied to @p values
+ * @param max_count maximum number of values permitted by the OBJ record
+ * @param values output values with room for @p required_count elements
+ * @return whether the complete record is valid
+ */
+static bool _obj_parse_values(
+    const char* text, uint32_t required_count, uint32_t max_count, double* values)
+{
+    ANN(text);
+    ANN(values);
+    ASSERT(required_count > 0);
+    ASSERT(required_count <= max_count);
+
+    uint32_t count = 0;
+    while (true)
+    {
+        while (isspace((unsigned char)*text))
+            text++;
+        if (*text == '\0' || *text == '#')
+            break;
+        if (count >= max_count)
+            return false;
+
+        errno = 0;
+        char* end = NULL;
+        const double value = strtod(text, &end);
+        if (errno == ERANGE || end == text || !isfinite(value))
+            return false;
+        if (count < required_count)
+            values[count] = value;
+        count++;
+        text = end;
+    }
+    return count >= required_count;
 }
 
 
@@ -359,7 +402,7 @@ DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* de
         if (record[0] == 'v' && isspace((unsigned char)record[1]))
         {
             dvec3 value = {0};
-            if (sscanf(record + 2, "%lf %lf %lf", &value[0], &value[1], &value[2]) != 3 ||
+            if (!_obj_parse_values(record + 2, 3, 4, value) ||
                 !_obj_append_dvec3(
                     &arrays.positions, &arrays.position_count, &arrays.position_capacity, value))
             {
@@ -370,7 +413,7 @@ DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* de
         else if (record[0] == 'v' && record[1] == 'n' && isspace((unsigned char)record[2]))
         {
             dvec3 value = {0};
-            if (sscanf(record + 3, "%lf %lf %lf", &value[0], &value[1], &value[2]) != 3 ||
+            if (!_obj_parse_values(record + 3, 3, 3, value) ||
                 !_obj_append_dvec3(
                     &arrays.normals, &arrays.normal_count, &arrays.normal_capacity, value))
             {
@@ -381,7 +424,7 @@ DvzGeometry* dvz_geometry_obj(const char* filename, const DvzGeometryObjDesc* de
         else if (record[0] == 'v' && record[1] == 't' && isspace((unsigned char)record[2]))
         {
             dvec2 value = {0};
-            if (sscanf(record + 3, "%lf %lf", &value[0], &value[1]) != 2 ||
+            if (!_obj_parse_values(record + 3, 2, 3, value) ||
                 !_obj_append_dvec2(
                     &arrays.texcoords, &arrays.texcoord_count, &arrays.texcoord_capacity, value))
             {
