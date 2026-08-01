@@ -18,6 +18,8 @@
 /*************************************************************************************************/
 
 #include "testing.h"
+#include "datoviz/vk/gpu.h"
+#include "datoviz/vk/gpu_ctx.h"
 
 
 
@@ -28,6 +30,20 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 void dvz_testing_install_log_adapter(TstSuite* suite);
+
+void dvz_testing_install_gpu_adapter(TstSuite* suite);
+
+uint32_t dvz_testing_gpu_index(const TstContext* ctx);
+
+DvzGpuCtxConfig dvz_testing_gpu_ctx_config(const TstContext* ctx);
+
+uint32_t dvz_testing_suite_gpu_index(const TstSuite* suite);
+
+DvzGpuCtxConfig dvz_testing_suite_gpu_ctx_config(const TstSuite* suite);
+
+bool dvz_testing_gpu_info(const TstContext* ctx, DvzGpuInfo* out_info);
+
+bool dvz_testing_suite_gpu_info(const TstSuite* suite, DvzGpuInfo* out_info);
 
 
 

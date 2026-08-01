@@ -80,6 +80,9 @@ int main(int argc, char** argv)
 
     TstSuite _suite = tst_suite();
     dvz_testing_install_log_adapter(&_suite);
+#if defined(DVZ_HAS_TEST_GPU_ADAPTER) && DVZ_HAS_TEST_GPU_ADAPTER
+    dvz_testing_install_gpu_adapter(&_suite);
+#endif
     TstSuite* suite = &_suite;
 
     test_vk(suite);

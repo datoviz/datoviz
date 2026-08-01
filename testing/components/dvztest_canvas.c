@@ -46,6 +46,9 @@ int main(int argc, char** argv)
 
     TstSuite suite = tst_suite();
     dvz_testing_install_log_adapter(&suite);
+#if defined(DVZ_HAS_TEST_GPU_ADAPTER) && DVZ_HAS_TEST_GPU_ADAPTER
+    dvz_testing_install_gpu_adapter(&suite);
+#endif
 
     test_stream(&suite);
     test_input(&suite);

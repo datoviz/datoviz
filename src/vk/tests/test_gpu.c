@@ -22,6 +22,7 @@
 #include "../_gpu.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/instance.h"
+#include "datoviz_testing.h"
 #include "test_vk.h"
 #include "testing.h"
 #include "vulkan_core.h"
@@ -65,11 +66,19 @@ int test_gpu_props(TstContext* suite, const TstCase* tstitem)
 
     uint32_t count = 0;
     DvzGpu* gpus = dvz_instance_gpus(instance, &count);
-    DvzGpu* gpu = &gpus[0];
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    AT(gpu_index < count);
+    DvzGpu* gpu = &gpus[gpu_index];
 
     dvz_gpu_probe_properties(gpu);
 
     VkPhysicalDeviceProperties* props = dvz_gpu_properties10(gpu);
+    DvzGpuInfo selected = {0};
+    AT(dvz_testing_gpu_info(suite, &selected));
+    AT(selected.index == gpu_index);
+    AT(selected.vendor_id == props->vendorID);
+    AT(selected.device_id == props->deviceID);
+    AT(strcmp(selected.name, props->deviceName) == 0);
     log_debug("device ID: %u", props->deviceID);
     log_debug("device name: %s", props->deviceName);
     log_debug("device type: %u", props->deviceType);
@@ -97,6 +106,17 @@ int test_gpu_props(TstContext* suite, const TstCase* tstitem)
         dvz_pretty_size(props13->maxBufferSize, buffer_size_str, sizeof(buffer_size_str)));
 
     dvz_instance_destroy(instance);
+
+    DvzGpuCtxConfig gpu_config = dvz_testing_gpu_ctx_config(suite);
+    DvzGpuCtx* gpu_ctx = dvz_gpu_ctx(&gpu_config);
+    AT(gpu_ctx != NULL);
+    DvzGpuInfo context_info = {0};
+    AT(dvz_gpu_ctx_gpu_info(gpu_ctx, &context_info));
+    AT(context_info.index == selected.index);
+    AT(context_info.vendor_id == selected.vendor_id);
+    AT(context_info.device_id == selected.device_id);
+    AT(strcmp(context_info.name, selected.name) == 0);
+    dvz_gpu_ctx_destroy(gpu_ctx);
     return 0;
 }
 

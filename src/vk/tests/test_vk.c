@@ -93,6 +93,18 @@ static const char* _vk_skip_unless_runtime(TstContext* suite, const TstCase* ite
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
+#define TST_VK_SELECTED_CASE(test)                                                                \
+    do                                                                                            \
+    {                                                                                             \
+        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
+        _tst_desc.tags = tags;                                                                    \
+        _tst_desc.resources = TST_RES_GPU | TST_RES_VULKAN;                                       \
+        _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
+        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
+        _tst_desc.skip = _vk_skip_unless_runtime;                                                 \
+        tst_suite_add_case((suite), _tst_desc);                                                   \
+    } while (0)
+
 
 
 int test_vk(TstSuite* suite)
@@ -110,7 +122,7 @@ int test_vk(TstSuite* suite)
     TST_VK_CASE(test_instance_validation_features);
     TST_VK_CASE(test_instance_invalid_layer);
 
-    TST_VK_CASE(test_gpu_props);
+    TST_VK_SELECTED_CASE(test_gpu_props);
     TST_VK_CASE(test_gpu_memprops);
     TST_VK_CASE(test_gpu_features);
     TST_VK_CASE(test_gpu_extensions);

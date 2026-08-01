@@ -1353,6 +1353,19 @@ static int _tst_select_cases(
         TstCase* test = &suite->cases[i];
         if (_tst_case_matches(test, options))
         {
+            if (suite->run_adapter.filter_case != NULL)
+            {
+                int accepted =
+                    suite->run_adapter.filter_case(suite->run_adapter.state, test);
+                if (accepted < 0)
+                {
+                    return 1;
+                }
+                if (accepted == 0)
+                {
+                    continue;
+                }
+            }
             TstSelectedCase item = {};
             item.test = test;
             item.order_index = selected->size();
@@ -1851,6 +1864,7 @@ static int _tst_write_json(
         out << "      \"function\": \"" << _tst_json_escape(r.function_name) << "\",\n";
         out << "      \"status\": \"" << _tst_status_name(r.status) << "\",\n";
         out << "      \"resources\": \"" << _tst_resources_string(r.resources) << "\",\n";
+        out << "      \"run_flags\": " << r.run_flags << ",\n";
         out << "      \"isolation\": \"" << _tst_isolation_name(r.isolation) << "\",\n";
         if (r.fixture != NULL)
             out << "      \"fixture\": \"" << _tst_json_escape(r.fixture) << "\",\n";
@@ -2080,6 +2094,8 @@ static int _tst_read_json_results(const char* path, std::vector<TstOwnedResult>*
         else if (line.find("\"fixture_scope\"") != std::string::npos)
             current.test.fixture_scope =
                 _tst_fixture_scope_from_name(_tst_json_line_string(line).c_str());
+        else if (line.find("\"run_flags\"") != std::string::npos)
+            current.test.run_flags = (uint32_t)_tst_json_line_u64(line);
         else if (line.find("\"fixture\"") != std::string::npos &&
                  line.find("null") == std::string::npos)
             current.fixture = _tst_json_line_string(line);
@@ -2794,6 +2810,7 @@ void tst_suite_add_case(TstSuite* suite, TstCaseDesc desc)
     test->function_name = desc.function_name != NULL ? desc.function_name : desc.name;
     test->tags = desc.tags;
     test->resources = desc.resources;
+    test->run_flags = desc.run_flags;
     test->isolation = desc.isolation;
     test->timeout_ms = desc.timeout_ms;
     test->test = desc.test;

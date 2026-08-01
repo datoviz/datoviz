@@ -37,6 +37,35 @@ set_target_properties(testing PROPERTIES
     LINKER_LANGUAGE CXX
 )
 
+if(TARGET datoviz_vk AND TARGET datoviz_volk)
+    add_library(datoviz_testing_gpu STATIC
+        datoviz_gpu_testing.c
+    )
+
+    target_include_directories(datoviz_testing_gpu
+        PUBLIC
+        ${PROJECT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/src/common
+    )
+
+    target_link_libraries(datoviz_testing_gpu
+        PUBLIC testing
+        PRIVATE datoviz_common datoviz_vk datoviz_volk
+    )
+
+    if(_dvz_compile_definitions)
+        target_compile_definitions(datoviz_testing_gpu PUBLIC ${_dvz_compile_definitions})
+    endif()
+endif()
+
+function(dvz_enable_gpu_test_adapter target)
+    if(TARGET datoviz_testing_gpu)
+        target_link_libraries(${target} PRIVATE datoviz_testing_gpu)
+        target_compile_definitions(${target} PRIVATE DVZ_HAS_TEST_GPU_ADAPTER=1)
+    endif()
+endfunction()
+
 if(APPLE)
     set(_dvz_runtime_rpath "@executable_path;@loader_path")
 elseif(UNIX)
@@ -488,6 +517,7 @@ if(_dvz_has_core AND _dvz_has_drp2)
         ${DVZ_TEST_DRP2_SOURCES}
         components/dvztest_drp2.c
     )
+    dvz_enable_gpu_test_adapter(dvztest_drp2)
 
     target_link_libraries(dvztest_drp2
         PRIVATE
@@ -575,6 +605,7 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
         ${DVZ_TEST_SCENE_SOURCES}
         components/dvztest_scene.c
     )
+    dvz_enable_gpu_test_adapter(dvztest_scene)
 
     target_link_libraries(dvztest_scene
         PRIVATE
@@ -644,6 +675,7 @@ if(_dvz_has_core AND _dvz_has_vk)
         ${DVZ_TEST_VK_SOURCES}
         components/dvztest_vk.c
     )
+    dvz_enable_gpu_test_adapter(dvztest_vk)
 
     target_link_libraries(dvztest_vk
         PRIVATE
@@ -722,6 +754,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         ${DVZ_TEST_CANVAS_SOURCES}
         components/dvztest_canvas.c
     )
+    dvz_enable_gpu_test_adapter(dvztest_canvas)
 
     target_link_libraries(dvztest_canvas
         PRIVATE
@@ -786,6 +819,7 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
             ${DVZ_TEST_GUI_SOURCES}
             components/dvztest_gui.c
         )
+        dvz_enable_gpu_test_adapter(dvztest_gui)
 
         target_link_libraries(dvztest_gui
             PRIVATE
@@ -853,6 +887,8 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
     # Build one executable: dvztest
     add_executable(dvztest ${TEST_SOURCES})
     add_executable(dvztest_integration ${DVZ_INTEGRATION_SOURCES})
+    dvz_enable_gpu_test_adapter(dvztest)
+    dvz_enable_gpu_test_adapter(dvztest_integration)
 
 # Link to the common module and the shared testing library
     target_link_libraries(dvztest

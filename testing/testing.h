@@ -195,6 +195,15 @@ typedef enum
 
 
 
+typedef enum
+{
+    TST_RUN_CASE_NONE = 0,
+    TST_RUN_CASE_ADAPTER_SUPPORTED = 1u << 0,
+    TST_RUN_CASE_ADAPTER_EXEMPT = 1u << 1,
+} TstRunCaseFlags;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -218,6 +227,7 @@ typedef int (*TstRunParseOption)(void* state, int argc, char** argv, int* index)
 typedef int (*TstRunConfigure)(
     void* state, int argc, char** argv, bool list, bool list_groups, bool child_process);
 typedef int (*TstRunEarlyAction)(void* state);
+typedef int (*TstRunFilterCase)(const void* state, const TstCase* test);
 typedef int (*TstRunPrepare)(
     void* state, uint32_t case_count, const TstCase* const* cases, bool child_process);
 typedef int (*TstRunWriteJson)(const void* state, char* json, size_t size);
@@ -247,6 +257,7 @@ struct TstCaseDesc
     const char* function_name;
     const char* tags;
     uint64_t resources;
+    uint32_t run_flags;
     TstIsolation isolation;
     uint64_t timeout_ms;
     TstFunction test;
@@ -268,6 +279,7 @@ struct TstCase
     const char* function_name;
     const char* tags;
     uint64_t resources;
+    uint32_t run_flags;
     TstIsolation isolation;
     uint64_t timeout_ms;
     TstFunction test;
@@ -307,6 +319,7 @@ struct TstRunAdapter
     TstRunParseOption parse_option;
     TstRunConfigure configure;
     TstRunEarlyAction early_action;
+    TstRunFilterCase filter_case;
     TstRunPrepare prepare;
     TstRunWriteJson write_json;
     TstRunReport report;
