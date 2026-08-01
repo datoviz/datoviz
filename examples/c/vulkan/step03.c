@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <datoviz.h>
@@ -20,6 +21,7 @@ typedef struct
     DvzCommands* commands;
     DvzRendering* rendering;
     uint64_t start_ns;
+    float capture_time;
     bool animate;
 } Renderer;
 
@@ -31,7 +33,7 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
 
     // Elapsed seconds since startup. Offscreen captures use a fixed time so the image never
     // depends on how fast the machine ran.
-    float t = 0.5f;
+    float t = renderer->capture_time;
     if (renderer->animate)
         t = (float)(dvz_time_monotonic_ns() - renderer->start_ns) * 1e-9f;
 
@@ -55,9 +57,14 @@ int main(int argc, char** argv)
 {
     // With --png PATH the program renders offscreen and saves an image instead of opening a window.
     const char* png_path = NULL;
+    float capture_time = 0.5f;
     for (int i = 1; i < argc - 1; i++)
+    {
         if (strcmp(argv[i], "--png") == 0)
             png_path = argv[i + 1];
+        else if (strcmp(argv[i], "--time") == 0)
+            capture_time = strtof(argv[i + 1], NULL);
+    }
     bool live = png_path == NULL;
 
     DvzBackend backend = live ? DVZ_BACKEND_GLFW : DVZ_BACKEND_OFFSCREEN;
@@ -105,6 +112,7 @@ int main(int argc, char** argv)
         .commands = dvz_commands_create_wrapper(),
         .rendering = dvz_rendering_create_wrapper(),
         .start_ns = dvz_time_monotonic_ns(),
+        .capture_time = capture_time,
         .animate = live,
     };
     dvz_canvas_set_draw_callback(canvas, draw, &renderer);

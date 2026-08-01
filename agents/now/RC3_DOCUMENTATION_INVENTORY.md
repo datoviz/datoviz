@@ -1,6 +1,6 @@
 # RC3 Documentation Inventory
 
-Status: implementation inventory and GPU-dependent media generation complete; rewritten course previews, maintainer review, exact artifacts, and publication decisions remain. Updated: 2026-08-01.
+Status: implementation inventory, GPU-dependent media generation, and rewritten course previews complete; maintainer review, exact artifacts, and publication decisions remain. Updated: 2026-08-01.
 
 Use [DOCUMENTATION.md](DOCUMENTATION.md) for documentation sequencing and [STATUS.md](STATUS.md) for repo-wide blockers.
 
@@ -17,7 +17,7 @@ Use [DOCUMENTATION.md](DOCUMENTATION.md) for documentation sequencing and [STATU
 | Animation/card candidates | Build-local candidates current | Maintainer approval of exact publication bytes if promotion is desired. |
 | Canonical screenshots | Reviewed Linux baseline promoted | Future replacements require the same repeatability, review, provenance, and exact-approval boundary. |
 | Four-page visual-system pilot | Awaiting maintainer review | Approve visual density, colors, diagrams, and media choices before broad rollout. |
-| Rewritten Vulkan course chapters 1-3 | Implemented | Replace deleted-pilot preview generation; review voice and pacing; prove the first official package newer than RC2 and supported hosted platforms. |
+| Rewritten Vulkan course chapters 1-3 | Implemented with generated previews | Review voice, pacing, and previews; prove the first official package newer than RC2 and supported hosted platforms. |
 | PR #132 | Triaged read-only | Decide whether to close as superseded and request focused successors for remaining topics. |
 | External outreach | Not started | Approve exact content and publication action before contact. |
 

@@ -8,7 +8,7 @@ Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file i
 
 Datoviz `v0.4.0rc2` is published and closed. The active source branch and GitHub default remain `v0.4-dev`; the next release milestone is RC3.
 
-The RC3 tutorial-enabling API, rewritten course chapters 1-3, documentation inventory, gallery tooling, canonical screenshot promotion, and local Qt bridge proof are implemented. RC3 remains blocked on branch cutover, rewritten course preview integration and exact package proof, maintainer documentation/media decisions, final release-quality gates, and publication of compatible Qt/PyQt provider packages.
+The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, and local Qt bridge proof are implemented. RC3 remains blocked on branch cutover, exact package proof, maintainer documentation/media decisions, final release-quality gates, and publication of compatible Qt/PyQt provider packages.
 
 The active runtime path is:
 

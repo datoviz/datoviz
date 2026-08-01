@@ -109,12 +109,12 @@ def copy_gallery_webp_assets(site_dir):
     )
 
 
-def copy_tutorial_webp_assets(site_dir):
+def copy_vulkan_course_media(site_dir):
     site = Path(site_dir)
     copy_tree_if_exists(
-        'build/tutorial-webp/vulkan',
-        site / 'assets/tutorials/vulkan',
-        'Vulkan tutorial WebP asset',
+        'build/vulkan-course-media',
+        site / 'assets/gpu-graphics',
+        'Vulkan course media asset',
     )
 
 
@@ -261,9 +261,9 @@ def on_files(files, config):
     add_generated_tree(
         files,
         config,
-        'build/tutorial-webp/vulkan',
-        'assets/tutorials/vulkan',
-        'Vulkan tutorial WebP asset',
+        'build/vulkan-course-media',
+        'assets/gpu-graphics',
+        'Vulkan course media asset',
     )
     add_generated_tree(files, config, 'build/webgpu-data', 'webgpu-data', 'WebGPU data bundle')
     return files
@@ -271,5 +271,5 @@ def on_files(files, config):
 
 def on_post_build(config, **kwargs):
     copy_gallery_webp_assets(config['site_dir'])
-    copy_tutorial_webp_assets(config['site_dir'])
+    copy_vulkan_course_media(config['site_dir'])
     copy_webgpu_live_assets(config['site_dir'])

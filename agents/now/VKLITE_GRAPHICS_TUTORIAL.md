@@ -1,6 +1,6 @@
 # Modern GPU Graphics In Vulkan Course Execution
 
-Status: rewritten chapters 1-3 and enabling API implemented; replacement previews and exact post-RC2 package proof remain for RC3; chapters 4-15 remain for RC4. Updated: 2026-08-01.
+Status: rewritten chapters 1-3, enabling API, and generated previews implemented; exact post-RC2 package proof remains for RC3; chapters 4-15 remain for RC4. Updated: 2026-08-01.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
@@ -10,6 +10,7 @@ Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHIC
 - `examples/c/vulkan/step01.c` through `step03.c` are the canonical programs and build as `example_c_vulkan_stepNN`.
 - `just vulkan-course-check` verifies that every chapter C excerpt occurs in its canonical program.
 - `just vulkan-course-smoke` and `just vulkan-course-installed-smoke` build and run every current step with deterministic captures and Vulkan validation.
+- `just tutorial-media` generates chapter 1's terminal card, validates chapter 2's exact flat RGBA, and captures chapter 3 at fixed times for a reduced-motion-safe still and animated WebP.
 - Canvas-owned targets start with defined contents, making empty or load-based first frames reproducible.
 - Installed loader discovery reports explicit search routes and works from a source install without manual runtime-directory arguments.
 - `just vulkan-course-wheel-smoke <version>` tests the exact package-first instructions. It correctly reports that `0.4.0rc2` lacks the post-RC2 tutorial API.
@@ -24,12 +25,10 @@ Official-package shaderc proof on supported platforms, package installation proo
 
 ## RC3 Next Steps
 
-1. Replace the old `tools/build_tutorial_media.py` pilot inputs with generated previews for chapters 1-3.
-2. Generate chapter 1’s terminal card from captured stdout, validate chapter 2 against exact expected RGBA, and add deterministic fixed-time capture plus animated WebP for chapter 3.
-3. Verify the Canvas keyboard subscription path needed by chapter 5 and record the smallest safe pipeline-reload shape; do not add a watcher or general hot-reload subsystem.
-4. Run the rewritten chapters through source-install, exact official package newer than RC2, and supported hosted-platform smokes with validation.
-5. Record any platform-delivered live resize limitation without redesigning the API around an unavailable event.
-6. Obtain maintainer review of chapters 1-3 voice, pacing, ownership explanations, package instructions, and generated previews before broad RC4 prose.
+1. Verify the Canvas keyboard subscription path needed by chapter 5 and record the smallest safe pipeline-reload shape; do not add a watcher or general hot-reload subsystem.
+2. Run the rewritten chapters through source-install, exact official package newer than RC2, and supported hosted-platform smokes with validation.
+3. Record any platform-delivered live resize limitation without redesigning the API around an unavailable event.
+4. Obtain maintainer review of chapters 1-3 voice, pacing, ownership explanations, package instructions, and generated previews before broad RC4 prose.
 
 ## RC4 Chapter Queue
 

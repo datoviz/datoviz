@@ -10,8 +10,8 @@ from pathlib import Path
 
 
 TEXT_SUFFIXES = {".css", ".html", ".js", ".json", ".txt", ".xml"}
-MEDIA_ASSET_PREFIXES = ("assets/gallery/v0.4/", "assets/tutorials/vulkan/")
-MEDIA_REFERENCE_RE = re.compile(r"(?:data-src|poster|src)=[\"']([^\"']+)[\"']")
+MEDIA_ASSET_PREFIXES = ("assets/gallery/v0.4/", "assets/gpu-graphics/")
+MEDIA_REFERENCE_RE = re.compile(r"(?:data-src|poster|src|srcset)=[\"']([^\"']+)[\"']")
 
 
 def _copy_tree(source: Path, destination: Path) -> None:

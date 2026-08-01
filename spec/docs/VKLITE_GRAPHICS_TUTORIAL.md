@@ -1,6 +1,6 @@
 # Modern GPU Graphics In Vulkan Tutorial Contract
 
-Status: required final-v0.4 tutorial. The rewritten chapters 1-3 and enabling API are implemented; RC4 owns chapters 4-15, exact-artifact proof, and freeze. Updated: 2026-08-01.
+Status: required final-v0.4 tutorial. The rewritten chapters 1-3, enabling API, and generated previews are implemented; RC4 owns chapters 4-15, exact-artifact proof, and freeze. Updated: 2026-08-01.
 
 Use [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline and [../../agents/now/VKLITE_GRAPHICS_TUTORIAL.md](../../agents/now/VKLITE_GRAPHICS_TUTORIAL.md) for current execution status. This document owns the durable educational, abstraction, delivery, versioning, and validation contract.
 

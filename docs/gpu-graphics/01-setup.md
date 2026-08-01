@@ -2,6 +2,8 @@
 
 **Your program at the end of this chapter: 9 lines.**
 
+![A terminal running the chapter 1 program and printing the Datoviz version.](../assets/gpu-graphics/01-setup.webp)
+
 Nothing is drawn in this chapter; the goal is narrower and more important: a project directory, a
 build you can run with one command, and proof that your compiler, the Datoviz headers, and the
 Datoviz library agree with each other. Every later chapter assumes this works, and a build problem
@@ -90,11 +92,12 @@ find_package(datoviz CONFIG REQUIRED)
 
 add_executable(vkcourse main.c)
 target_link_libraries(vkcourse PRIVATE datoviz::datoviz)
+if(NOT WIN32)
+    target_link_libraries(vkcourse PRIVATE m)
+endif()
 ```
 
-Those six lines are the whole build, for all fifteen chapters. `datoviz::datoviz` carries the
-include paths, the library, and its dependencies, including the Vulkan headers you will start using
-in chapter 2, so you never add them by hand.
+That is the whole build for all fifteen chapters. `datoviz::datoviz` carries the include paths, the library, and its dependencies, including the Vulkan headers you will start using in chapter 2. The separate `m` link supplies the standard math functions used from chapter 3 onward on Unix; MSVC provides them without a separate library.
 
 Configure once, pointing CMake at wherever you installed Datoviz:
 
@@ -130,7 +133,7 @@ The exact version string is whatever you installed; what matters is that it prin
     For a single-file program you can skip CMake entirely and let `datoviz-config` supply the flags:
 
     ```sh
-    cc main.c $(datoviz-config --cflags --libs) -o vkcourse && ./vkcourse
+    cc main.c $(datoviz-config --cflags --libs) -lm -o vkcourse && ./vkcourse
     ```
 
     This is convenient while iterating, but it is not available for MSVC on Windows, which is why

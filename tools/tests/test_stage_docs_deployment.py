@@ -88,14 +88,14 @@ def test_refuse_missing_gallery_media(tmp_path: Path) -> None:
         )
 
 
-def test_refuse_missing_tutorial_media(tmp_path: Path) -> None:
+def test_refuse_missing_vulkan_course_media(tmp_path: Path) -> None:
     built = _built_site(tmp_path)
     (built / "index.html").write_text(
-        '<img src="/assets/tutorials/vulkan/first-triangle.webp">',
+        '<source srcset="/assets/gpu-graphics/03-frame.webp">',
         encoding="utf8",
     )
 
-    with pytest.raises(ValueError, match="first-triangle.webp"):
+    with pytest.raises(ValueError, match="03-frame.webp"):
         stage_deployment(
             built,
             _site_repo(tmp_path),

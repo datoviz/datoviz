@@ -2,6 +2,8 @@
 
 **Your program at the end of this chapter: about 120 lines. The raw Vulkan equivalent: around 900.**
 
+![The chapter 2 window filled with its deterministic blue-grey clear color.](../assets/gpu-graphics/02-window.webp)
+
 By the end of this chapter your program opens a resizable window, fills it with a color you chose,
 and keeps drawing until you close it. Given one command-line flag, it renders the same picture to a
 PNG file instead. Keep that flag from the start: it is how you will check every later chapter

@@ -84,6 +84,7 @@ def _installed_build(temporary: Path, discovery: list[str]) -> Path:
         + "".join(
             f"add_executable({step.name} {SOURCES / (step.name + '.c')})\n"
             f"target_link_libraries({step.name} PRIVATE datoviz::datoviz)\n"
+            f"if(NOT WIN32)\n  target_link_libraries({step.name} PRIVATE m)\nendif()\n"
             for step in STEPS
         )
     )

@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Status
 
-Status: RC3 implementation inventory complete; maintainer review, rewritten course previews, exact release artifacts, and publication decisions remain. Updated: 2026-08-01.
+Status: RC3 implementation inventory and rewritten course previews complete; maintainer review, exact release artifacts, and publication decisions remain. Updated: 2026-08-01.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for current blockers, [RC3_DOCUMENTATION_INVENTORY.md](RC3_DOCUMENTATION_INVENTORY.md) for the compact inventory, and `spec/docs/` plus `spec/release/` for durable policy.
 
@@ -16,17 +16,17 @@ Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for current 
 - The four-page visual-system pilot passes strict build and software-rendered desktop/mobile inspection.
 - PR #132 is triaged read-only; most topics are superseded and remaining topics require focused successor work.
 - Rewritten course chapters 1-3, their canonical programs, source synchronization, and installed source-prefix smoke are implemented.
+- Rewritten course previews are generated from the canonical programs with real stdout, exact flat-color validation, deterministic fixed-time animation, and no `data` dependency.
 
 ## Remaining RC3 Documentation Work
 
 1. Obtain maintainer review of the four-page visual pilot before broad rollout.
-2. Retarget tutorial preview generation from deleted pilot assets to rewritten chapters 1-3 and validate each chapter’s media contract.
-3. Review the rewritten course voice, pacing, API profile, ownership explanations, and package-first instructions.
-4. Approve exact animation/card publication candidates if they should replace canonical website assets.
-5. Decide whether to request focused successor PRs for residual PR #132 topics.
-6. Keep branch-specific links unchanged until the branch cutover and reconcile them atomically afterward.
-7. Draft exact RC3 release notes, validation evidence, and release-specific known issues only when artifact scope is fixed.
-8. Review exact outreach drafts before any dataset-author or public GitHub communication.
+2. Review the rewritten course voice, pacing, API profile, ownership explanations, package-first instructions, and generated previews.
+3. Approve exact animation/card publication candidates if they should replace canonical website assets.
+4. Decide whether to request focused successor PRs for residual PR #132 topics.
+5. Keep branch-specific links unchanged until the branch cutover and reconcile them atomically afterward.
+6. Draft exact RC3 release notes, validation evidence, and release-specific known issues only when artifact scope is fixed.
+7. Review exact outreach drafts before any dataset-author or public GitHub communication.
 
 ## RC4 Documentation Gate
 

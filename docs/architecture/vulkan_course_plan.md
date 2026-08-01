@@ -1,7 +1,6 @@
 # Vulkan course — rewrite plan
 
-**Status: in progress. Part 1 (chapters 1-3) has landed; chapters 4-15 are pending. Supersedes the
-RC3 "Vulkan tutorial pilot", which is deleted.**
+**Status: in progress. Part 1 (chapters 1-3), its canonical programs, source checks, smokes, and generated previews have landed; chapters 4-15 are pending. Supersedes the deleted RC3 Vulkan tutorial pilot.**
 
 This note plans a full rewrite of the AI-generated Vulkan tutorial that lived at
 `docs/tutorials/vulkan/`. The rewrite changes the section, the pedagogy, the code delivery model,
@@ -186,7 +185,7 @@ opposite move if the pacing needs it.
 
 The reader needs no repository. The repository still needs the code, or the docs rot.
 
-- **`examples/c/vulkan-course/step01.c` … `step15.c`** plus `shaders/` and one `CMakeLists.txt`.
+- **`examples/c/vulkan/step01.c` … `step15.c`** plus `shaders/` and one `CMakeLists.txt`.
   Each `stepNN.c` is the honest state of the reader's file at the end of chapter NN — a real
   program, no `#ifdef` switches. `diff stepNN.c stepNN+1.c` is exactly the chapter's delta, which
   makes both authoring and review straightforward.
@@ -212,22 +211,18 @@ Everything the API needs already exists and is proven by the current spikes: `dv
 attachments, `dvz_arcball_*` / `dvz_camera_*`, and `dvz_geometry_*`. **No new public API is
 required.**
 
-Two things to verify before chapter 1 is written:
-1. `datoviz-config --cflags` exposes the Vulkan headers that `vklite` signatures need (the CMake
-   target does, per `d94f72dd6`).
-2. There is a usable key-press path at the canvas/input layer for the chapter 5 hot-reload key.
+Remaining RC3 verification: confirm the Canvas/input key-press path for chapter 5's hot-reload key and record the smallest safe pipeline-reload shape. The installed CMake target already exposes the Vulkan headers required by `vklite` signatures.
 
 ---
 
-## 8. Migration checklist
+## 8. Migration status
 
-1. Add `docs/gpu-graphics/` and write the prologue plus part 1.
-2. Renumber the nav: new `Advanced > Vulkan course` group; delete the `Tutorials` tab and
-   `docs/tutorials/`.
-3. Add `examples/c/vulkan-course/` step by step, in lockstep with each chapter.
-4. Rewrite the two `tools/` scripts and the `justfile` recipes; wire the new media generation.
-5. Delete `examples/c/tutorial/`, `docs/tutorials/`, `data/tutorials/vulkan/`.
-6. Redirect or drop the three old `tutorials/vulkan/*` URLs (days old, RC-only, low risk).
+1. Done: add `docs/gpu-graphics/`, the prologue, and chapters 1-3.
+2. Done: add the `Advanced > Vulkan course` navigation group and remove the pilot `Tutorials` section.
+3. In progress: add canonical programs under `examples/c/vulkan/` in lockstep with each chapter; steps 1-3 are present.
+4. Done for chapters 1-3: source synchronization, execution smokes, and generated preview tooling are wired into the docs build.
+5. Done: delete `examples/c/tutorial/`, `docs/tutorials/`, and `data/tutorials/vulkan/`.
+6. Done: the old `tutorials/vulkan/*` pages and navigation are absent from the v0.4 site.
 
 ---
 

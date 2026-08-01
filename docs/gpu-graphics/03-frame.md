@@ -2,6 +2,11 @@
 
 **Your program at the end of this chapter: about 140 lines.**
 
+<picture>
+  <source media="(prefers-reduced-motion: no-preference)" srcset="/assets/gpu-graphics/03-frame.webp">
+  <img src="/assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues and greys.">
+</picture>
+
 Chapter 2 asked you to accept five lines on faith. This chapter takes them apart, because they are
 the shape of every frame you will ever draw: the triangle in chapter 4 and the lit textured mesh in
 chapter 15 both slot into exactly the same sequence, between the same two calls.
@@ -134,6 +139,7 @@ typedef struct
     DvzCommands* commands;
     DvzRendering* rendering;
     uint64_t start_ns;
+    float capture_time;
     bool animate;
 } Renderer;
 ```
@@ -143,7 +149,7 @@ In the callback, compute the color before recording:
 ```c
     // Elapsed seconds since startup. Offscreen captures use a fixed time so the image never
     // depends on how fast the machine ran.
-    float t = 0.5f;
+    float t = renderer->capture_time;
     if (renderer->animate)
         t = (float)(dvz_time_monotonic_ns() - renderer->start_ns) * 1e-9f;
 
@@ -165,9 +171,14 @@ laptop and a 144 Hz monitor, whereas `frame_index * 0.01f` would run five times 
 latter. Everything that moves in this course (the spinning cube, the arcball's inertia) takes its
 time from here.
 
-**Offscreen renders use a fixed time.** A wall clock would make every `--png` capture different, so
-nothing could ever be compared against a reference. Freezing `t` at `0.5` offscreen makes captures
-byte-for-byte reproducible: run it twice, get the same file.
+**Offscreen renders use a fixed time.** A wall clock would make every `--png` capture different, so nothing could ever be compared against a reference. Add `float capture_time = 0.5f;` beside `png_path`, accept an optional fixed time in the existing argument loop, and store it in `Renderer`:
+
+```c
+        else if (strcmp(argv[i], "--time") == 0)
+            capture_time = strtof(argv[i + 1], NULL);
+```
+
+This needs `#include <stdlib.h>` for `strtof`. Ordinary offscreen runs freeze `t` at `0.5`; `--time` lets you request another reproducible instant and is how this chapter’s animated preview is generated.
 
 Finally, update the initializer to match the new struct:
 
@@ -177,6 +188,7 @@ Finally, update the initializer to match the new struct:
         .commands = dvz_commands_create_wrapper(),
         .rendering = dvz_rendering_create_wrapper(),
         .start_ns = dvz_time_monotonic_ns(),
+        .capture_time = capture_time,
         .animate = live,
     };
 ```
@@ -194,9 +206,10 @@ keeps going, because resizing changes only the `extent` your callback reads each
 ```sh
 ./build/vkcourse --png chapter03.png
 ./build/vkcourse --png chapter03-again.png
+./build/vkcourse --png later.png --time 1.5
 ```
 
-Both files are identical.
+The first two files are identical. The third is another reproducible point on the same animation.
 
 ??? info "Under the hood: the frame you did not have to orchestrate"
 
