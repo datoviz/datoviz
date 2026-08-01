@@ -17,10 +17,17 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 
 def _runner_path(name: str = "dvztest") -> Path:
     suffix = ".exe" if platform.system() == "Windows" else ""
-    path = ROOT_DIR / "build" / "testing" / f"{name}{suffix}"
-    if not path.exists():
-        raise RuntimeError(f"missing GPU test runner: {path}; run `just build` first")
-    return path
+    build_dir = Path(os.environ.get("DVZ_TEST_BUILD_DIR", ROOT_DIR / "build"))
+    config = os.environ.get("DVZ_TEST_CONFIG", "Debug")
+    candidates = [
+        build_dir / "testing" / f"{name}{suffix}",
+        build_dir / "testing" / config / f"{name}{suffix}",
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    searched = ", ".join(str(path) for path in candidates)
+    raise RuntimeError(f"missing GPU test runner; searched: {searched}; build it first")
 
 
 def _run(

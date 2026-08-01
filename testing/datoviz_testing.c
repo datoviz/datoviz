@@ -19,7 +19,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
-#include "datoviz_testing.h"
+#include "testing.h"
 
 
 

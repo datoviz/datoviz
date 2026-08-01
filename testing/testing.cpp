@@ -2203,9 +2203,23 @@ static void _tst_rebuild_summary(
 static std::string _tst_child_json_path(uint32_t shard_index)
 {
     const char* tmp = std::getenv("TMPDIR");
+#if defined(_WIN32)
     if (tmp == NULL || tmp[0] == '\0')
     {
+        tmp = std::getenv("TEMP");
+    }
+    if (tmp == NULL || tmp[0] == '\0')
+    {
+        tmp = std::getenv("TMP");
+    }
+#endif
+    if (tmp == NULL || tmp[0] == '\0')
+    {
+#if defined(_WIN32)
+        tmp = ".";
+#else
         tmp = "/tmp";
+#endif
     }
     std::ostringstream ss;
     ss << tmp << "/dvztest-shard-";
