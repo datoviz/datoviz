@@ -1,6 +1,6 @@
 # RC3 Render And QA Orchestration
 
-Status: **review draft; no execution authorized**. Planning branch: `plan/rc3-render-qa-orchestration`. Updated: 2026-08-02.
+Status: **approved and active**. Integration branch: `orchestrate/rc3-render-qa`. Updated: 2026-08-02.
 
 This handoff coordinates two substantial pre-RC3 lanes: the remaining C source audit and the render-product/technique-composition refactor. It is written for one `sol-medium` primary orchestrator using bounded lower-cost subagents while the maintainer is away.
 
@@ -28,7 +28,7 @@ Execution begins only after the maintainer approves:
 4. the exact base commits and branch names;
 5. whether the render lane includes issue #137 directly or requires a preceding narrow stabilization patch.
 
-The primary agent must record those approvals verbatim or link the approving user turn before starting implementation.
+The maintainer resolved this gate on 2026-08-02 with “ok i approve everything”, then authorized execution with “ok so let's start and stop when you need my approval”. This approves all recommended decisions, the R0-R9 packet DAG, the two-lane orchestration policy, the recommended branch/worktree names, issue #137 directly in R7 without a preceding blur-only patch, and local checkpoint commits. It does not authorize pushes or publication. The integration parent is fetched `origin/v0.4-dev` commit `2751887de`; approved QA and planning checkpoints were replayed on `orchestrate/rc3-render-qa` before the execution base was frozen.
 
 ## Roles And Authority
 

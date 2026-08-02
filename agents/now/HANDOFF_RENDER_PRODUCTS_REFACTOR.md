@@ -1,8 +1,8 @@
 # Render Products Refactor Handoff
 
-Status: **mapped, blocked on maintainer architecture approval**. Planning branch: `plan/rc3-render-qa-orchestration`. Updated: 2026-08-02.
+Status: **approved and active**. Integration branch: `orchestrate/rc3-render-qa`. Updated: 2026-08-02.
 
-This handoff turns [the review-draft architecture](../../spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) into an executable implementation campaign. It authorizes no implementation or publication by itself.
+This handoff turns [the approved architecture](../../spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) into the active implementation campaign. The maintainer authorized local implementation and checkpoint commits on 2026-08-02; pushes and publication remain unauthorized.
 
 ## Required Reading And Authority
 
@@ -14,7 +14,7 @@ This handoff turns [the review-draft architecture](../../spec/scene/proposals/ac
 
 ## Campaign Entry Gate
 
-Do not start R0 until the maintainer has:
+The maintainer completed this gate on 2026-08-02 by approving:
 
 1. approved or edited every decision in the proposal's Maintainer Decision Gate;
 2. selected the implementation base branch and exact base commit;
@@ -22,7 +22,7 @@ Do not start R0 until the maintainer has:
 4. confirmed whether a narrow issue #137 stabilization patch should precede the architecture migration or be delivered inside R7;
 5. accepted the checkpoint and QA integration sequence in [HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md](HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md).
 
-My preference is to implement the architecture on a fresh branch from the integrated, approved base, with no standalone blur-only patch. Add characterization tests first, then deliver the estimator and architectural fix through R7. Apply an emergency narrow fix only if the maintainer needs a distributable build before the refactor lands.
+Implementation uses a fresh branch from the integrated approved base with no standalone blur-only patch. Add characterization tests first, then deliver the estimator and architectural fix through R7. A future emergency narrow fix requires a new maintainer request.
 
 ## Non-Negotiable Invariants
 

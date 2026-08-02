@@ -29,9 +29,9 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 9. Use [HANDOFF_GPU_SELECTION.md](HANDOFF_GPU_SELECTION.md) for the implemented GPU-selection contract and remaining physical Windows matrix.
 10. Use [HANDOFF_WINDOWS_VALIDATION.md](HANDOFF_WINDOWS_VALIDATION.md) for the physical Windows machine baseline, remaining AMD/NVIDIA and Qt/vcpkg work, and exact-candidate proof boundary.
 11. Use [HANDOFF_FRAME_DEMAND.md](HANDOFF_FRAME_DEMAND.md) for the implemented interaction-pacing and opt-in frame-slot contracts, Linux comparison evidence, pending Windows comparison, and future motion extension.
-12. Use [QA_SOURCE_AUDIT.md](QA_SOURCE_AUDIT.md) for completed incremental source-audit evidence and the proposed end-to-end remaining campaign map on local branch `qa/rc3-source-audit`; maintainer review of the mapping commit is required before autonomous execution begins.
-13. Review [../../spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md](../../spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) before the proposed issue #137/SSAO and deep rendering refactor; its maintainer decision gate blocks implementation.
-14. After architecture approval, use [HANDOFF_RENDER_PRODUCTS_REFACTOR.md](HANDOFF_RENDER_PRODUCTS_REFACTOR.md) for the implementation DAG and [HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md](HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md) for the two-lane branch, worktree, model, lock, integration, and affected-QA contract.
+12. Use [QA_SOURCE_AUDIT.md](QA_SOURCE_AUDIT.md) for completed incremental source-audit evidence and the approved end-to-end remaining campaign on local branch `qa/rc3-source-audit`.
+13. Use the approved [render-product architecture](../../spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) for the issue #137/SSAO and deep rendering refactor.
+14. Use [HANDOFF_RENDER_PRODUCTS_REFACTOR.md](HANDOFF_RENDER_PRODUCTS_REFACTOR.md) for the active implementation DAG and [HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md](HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md) for the two-lane branch, worktree, model, lock, integration, and affected-QA contract.
 15. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
 
 ## Guardrails

@@ -1,6 +1,6 @@
 # Render Products And Technique Composition
 
-Status: **review draft**. This proposal is not approved for implementation until the maintainer resolves the decision gate at the end of this file. Updated: 2026-08-02.
+Status: **approved for RC3 implementation**. The maintainer approved the complete decision gate on 2026-08-02. Updated: 2026-08-02.
 
 This proposal replaces effect-specific scene planning and runtime lowering with a semantic render-product model and a single technique composer. It is deliberately aggressive because v0.4 is still in release-candidate development and API compatibility may be broken to establish a correct long-term boundary.
 
@@ -282,4 +282,4 @@ The recommended decisions are:
 10. Approve fixed-input deterministic AO on one backend and tolerance-based cross-GPU/backend visual conformance.
 11. Defer temporal techniques, public plugins, editable frame graphs, a full deferred renderer, display HDR/color management, ray tracing, and broad new effects.
 
-Implementation must not begin until the maintainer accepts these decisions or edits this proposal. Any implementation discovery that changes product semantics, scene/DRP2 ownership, the public API direction, or the migration scope returns to maintainer review rather than being decided by an execution subagent.
+The maintainer approved all eleven recommended decisions without edits on 2026-08-02. Any implementation discovery that changes product semantics, scene/DRP2 ownership, the public API direction, or the migration scope returns to maintainer review rather than being decided by an execution subagent.

@@ -1,6 +1,6 @@
 # Incremental C QA Handoff
 
-Status: active incremental source audit completed through `input`; the remaining campaign is mapped on local branch `qa/rc3-source-audit`, with a review-draft two-lane adjustment for the planned render-product refactor. Updated: 2026-08-02.
+Status: active incremental source audit completed through `input`; the remaining campaign and two-lane render coordination were approved on 2026-08-02. Updated: 2026-08-02.
 
 This handoff records the current static-analysis, sanitizer, lifetime, bounds, and corruption-prevention pass. It is development evidence for the RC3 release-quality lane, not final exact-artifact or platform-matrix proof.
 
@@ -248,10 +248,10 @@ At `e710ea15f` on the Linux NVIDIA RTX 5090 host:
 - Input TSan was not run because the public router contract is synchronous and the production caller audit found no supported Datoviz-owned concurrent access path. This is a deliberate non-applicable disposition, not evidence for concurrent router use.
 - `scene` and `window` received a teardown fix only; they still need full module audits later. The Vulkan-facing foundation (`window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, `scene`, and `app`) should be approached only after the smaller CPU-oriented modules because ownership and provider noise require more careful matrices.
 
-## Review Gate And Restart Sequence
+## Approved Restart Sequence
 
-1. The maintainer reviews the remaining campaign contract, the render-product proposal, and the two-lane orchestration handoff, then requests any boundary, order, validation, checkpoint, or stopping-rule changes before autonomous execution begins.
-2. After explicit approval, begin with the `math` numeric-helper checkpoint, apply the module-entry drift check, and proceed through only the pre-landing slices in Temporary Two-Lane Coordination while the separate render lane runs.
+1. The maintainer approved the remaining campaign contract, render-product proposal, and two-lane orchestration handoff without edits on 2026-08-02.
+2. Begin with the `math` numeric-helper checkpoint, apply the module-entry drift check, and proceed through only the pre-landing slices in Temporary Two-Lane Coordination while the separate render lane runs.
 3. After the render branch lands, consume its cumulative landing manifest, rerun only the mechanically invalidated completed slices, and execute every deferred module/slice in dependency order. Do not infer that unchanged directories retain valid conclusions when shared contracts moved.
 4. Keep this document current after each checkpoint: condense completed queue text into evidence when detail is no longer useful, preserve limitations, and leave the next exact restart point unambiguous.
 5. At campaign completion, provide the maintainer a consolidated report of commits, findings, clean audited areas, tests and tools, limitations, remaining risks, integration options, and final worktree status.
