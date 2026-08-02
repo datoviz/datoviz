@@ -45,9 +45,9 @@ Do not add `vkDeviceWaitIdle`, queue-idle waits, readbacks, or extra fences to o
 
 ## Frames-In-Flight Experiment
 
-The current swapchain canvas allocates one frame slot per swapchain image and rotates slots modulo the image count. This couples swapchain image availability to the maximum CPU/GPU work allowed in flight. On a surface with four images, ordinary FIFO can therefore queue multiple stale interaction frames.
+The swapchain canvas separates reusable frame slots from swapchain images. Unset or `auto` `DVZ_MAX_FRAMES_IN_FLIGHT` preserves one slot per image, while a positive explicit value limits `slot_count` to `min(requested, image_count)` for controlled latency experiments.
 
-After the latency telemetry is stable, separate `slot_count` from `image_count` behind an internal configuration or benchmark-only environment override. Keep swapchain image views, layouts, and render-finished semaphores per image; keep command buffers, acquire semaphores, and in-flight fences per frame slot. Test one, two, and the current image-count number of slots. This is an experiment until validation and latency data establish a safe default.
+Swapchain image views, layouts, and render-finished semaphores remain per image; command buffers, acquire semaphores, in-flight fences, offscreen/depth resources, and Canvas stream-frame entries remain per frame slot. Test one, two, and the current image-count number of slots. The override remains experimental and opt-in until cross-platform validation and latency data establish a safe default.
 
 The experiment must preserve binary semaphore reuse rules, resize/recreate behavior, device-loss handling, captures, live sinks, and validation-layer cleanliness. It must not introduce a parallel renderer or presentation path.
 
