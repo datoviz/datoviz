@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-08-01.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-08-03.
 
 Use [STATUS.md](STATUS.md) for current blockers, [DOCUMENTATION.md](DOCUMENTATION.md) for documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable release policy.
 
@@ -22,7 +22,7 @@ Preserve old v0.3 `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, mak
 
 ## 2. RC3 Documentation, Packaging, Quality, And Course Foundation
 
-Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, local Apple Silicon split-package proof, and the local R1-R8 render-product/GTAO/public-AO implementation. Render R9, exact-head validation, integration, and affected QA remain release-quality gates rather than new feature scope.
+Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, local Apple Silicon split-package proof, and the R1-R9 render-product/GTAO/public-AO implementation. The render-product checkpoints, exact-head validation, landing evidence, and affected-QA manifest are committed and pushed on `refactor/rc3-render-products`. The approved follow-up refreshed the AO gallery reference, added the prepared choropleth data, validated the full GLFW lane under Xvfb, and passed the full WebGPU scenario with explicit panel-local and presentation semantics through integration head `a6203eba1`.
 
 Remaining RC3 deliverables:
 

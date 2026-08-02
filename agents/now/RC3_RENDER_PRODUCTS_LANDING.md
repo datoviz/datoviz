@@ -1,13 +1,17 @@
 # RC3 Render Products Landing Manifest
 
-Status: R1-R9 implementation complete and validated on `refactor/rc3-render-products`; final evidence checkpoint and push are pending. Updated: 2026-08-03.
+Status: R1-R9 implementation, landing evidence, and the approved data, headless-presentation, and WebGPU follow-up are complete, validated, committed, and pushed on `refactor/rc3-render-products`. Updated: 2026-08-03.
 
 ## Revision Boundary
 
 - Campaign merge base: `2751887de1b01d96ea14e8d005120cc7a51e4939` (`origin/v0.4-dev` at base freeze).
 - Render implementation parent after approved integration prerequisites: `c657845f1`.
 - Validated implementation head through R9: `c0eada723`.
-- Final integration head: pending this evidence-only checkpoint.
+- Landing evidence head: `19ea96758`.
+- GLFW fixture follow-up: `c84bc53ee`.
+- AO media and choropleth parent integration: `bc0312e44`, pointing to data head `a9542d2`.
+- Typed WebGPU presentation smoke: `59b6a187a`.
+- Validated follow-up integration head: `a6203eba1`.
 
 Ordered render commits after `c657845f1`:
 
@@ -122,7 +126,7 @@ M  testing/components/dvztest_vk.c
 M  testing/test_scene_architecture_source_guard.py
 ```
 
-The legacy `features/technique_ssao.c`, Python counterpart, and gallery page are renamed to `technique_ao`; Git records these as delete/add pairs until similarity detection. Historical release evidence and the protected `data` submodule retain their original SSAO-labelled artifact names.
+The legacy `features/technique_ssao.c`, Python counterpart, gallery page, and current gallery media are renamed to `technique_ao`; Git records source moves as delete/add pairs until similarity detection. Historical release evidence retains the labels captured at those revisions.
 
 ## Contract Deltas
 
@@ -141,12 +145,14 @@ The legacy `features/technique_ssao.c`, Python counterpart, and gallery page are
 
 Exact-head validation of `c0eada723` passed the full native build; 1,080/1,114 native tests with 0 failures and 34 display-only skips; 566/566 scene CPU tests; 159/160 scene GPU tests with 0 failures and one GLFW skip; 91/98 runtime/vklite tests with 0 failures and seven GLFW skips; 94/94 DRP2 contract tests; all 125 DRP2 fixtures; shader ABI; specifications and source guards; regenerated ctypes, ABI/policy checks, raw smoke, and 50 Python binding tests; and API/generated/status/build documentation checks. GPU evidence ran on NVIDIA GeForce RTX 5090 with Vulkan validation enabled. GTAO evidence covered perspective/orthographic projection, the issue-137 zoom sweep, stationary redraw, MSAA 1x/4x, unequal panels, resize round-trip, background validity, mesh ambient-only material integration, and analytic spheres; EDL, source-over, WBOIT, depth peeling, volume occlusion, overlays, and queries also passed their focused native GPU cases.
 
-Known landing limitations:
+Approved follow-up resolution evidence:
 
-- The protected `data` submodule still contains historical `features_technique_ssao` gallery media; the render landing does not stage or update its gitlink.
-- `just check-example-manifests` fails only because that protected historical media remains named `data/gallery/v0.4/features/features_technique_ssao.png`; changing it requires a separately approved data-submodule update.
-- `just webgpu-check` builds the WASM scene target and passes its loader/progress/overlay checks, then stops because the protected data checkout lacks the prepared US-state choropleth bundle. DRP2/WebGPU fixture preflight and runner smoke pass independently.
-- GLFW, GUI, canvas swapchain, external-surface, and vklite presentation cases are unavailable because this headless runner has no `DISPLAY`; all offscreen Vulkan paths pass.
+- Data commit `a0477d8` replaces `data/gallery/v0.4/features/features_technique_ssao.png` with the refreshed `features_technique_ao.png`; the focused gallery-media check passes and parent commit `bc0312e44` integrates its gitlink and available-media inventory.
+- Data commit `a9542d2` adds the prepared US-state choropleth bundle with 48 regions, 72 rings, 10,983 points, provenance, and per-artifact hashes; parent commit `bc0312e44` integrates its gitlink and deterministic LF generation. `just webgpu-check` passes end to end, including bundle validation and choropleth loading. Its semantic smoke now asserts three panel-local scene-color passes followed by explicit presentation, and the protein warning assertion uses ambient-occlusion terminology instead of legacy SSAO wording.
+- Xvfb makes the GLFW/swapchain lane available on this headless host. After moving the sole fixture-induced skip, `canvas/glfw_destroy_recreate`, onto the established GLFW fixture, that test passes three repeated runs and the complete exact-head Xvfb lane passes 24/24 with 0 failures and 0 skips: 20 canvas, three GUI, and one scene test.
+
+Remaining landing limitations:
+
 - Physical Windows, macOS, AMD, Intel, and WebGPU browser hardware evidence is outside this local NVIDIA/Linux worktree and remains governed by the RC3 release matrix.
 - Historical release evidence keeps the labels captured at the time; it is not renamed to imply a different artifact.
 

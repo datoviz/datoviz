@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-02.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-03.
 
 Keep this file current and short. Durable behavior belongs in `spec/`; completed campaign detail belongs in Git history, release assets, and tagged documentation.
 
@@ -18,7 +18,9 @@ The optional Qt bridge and local Apple Silicon split-package proof are complete.
 
 Interaction pacing and the opt-in frames-in-flight experiment are implemented. Linux/X11 FIFO measurements favor one reusable slot and two slots also improve latency; physical Windows measurements at 144 Hz classify one, two, and automatic slots as no material change, all three smokes felt very smooth, and the evidence recommends one slot pending the separate default-policy decision.
 
-The issue #137 render-product lane is implemented locally through R8: typed panel-local products, coherent surface/MSAA semantics, product-driven EDL/transparency/volume composition, deterministic material-aware GTAO, and the semantic AO public API are present. R9 documentation/cleanup and exact-head final validation remain before integration and affected QA.
+The issue #137 render-product lane is implemented through R9: typed panel-local products, coherent surface/MSAA semantics, product-driven EDL/transparency/volume composition, deterministic material-aware GTAO, the semantic AO public API, legacy-path cleanup, and authoritative specifications are present. Its checkpoint commits, exact-head validation, landing evidence, and affected-QA manifest are committed and pushed on `refactor/rc3-render-products` through `19ea96758`.
+
+The approved limitation follow-up refreshed the AO gallery reference, added the prepared US-state choropleth bundle, and made the complete GLFW/swapchain lane pass under Xvfb. The full WebGPU scenario is green after asserting three semantic panel-local render passes plus explicit presentation and updating the browser AO expectation; the validated follow-up is committed and pushed through integration head `a6203eba1`.
 
 ## Remaining RC3 Gates
 
@@ -29,7 +31,7 @@ The issue #137 render-product lane is implemented locally through R8: typed pane
 | Documentation and gallery | Generated reference, Python guidance, attribution, known limitations, gallery tooling, regenerated candidates, canonical screenshots, and the visual pilot are complete. | Review the visual pilot and rewritten course voice; approve exact animation/card publication if desired; decide PR #132 successors; draft RC3 notes and evidence after artifact scope freezes. |
 | Qt/PyQt provider | Local Qt 6.11.1 build 2, PyQt6 6.11.0 build 3, split Datoviz packages, Vulkan instance, Cocoa surface, and hosted rendering proof are green. | Merge and publish Qt build 2, rerun and publish compatible PyQt, then build and validate exact split Datoviz artifacts on supported hosted platforms. |
 | Distribution | RC2 wheel and package-index campaigns are complete; reusable source, wheel, conda, and vcpkg tooling exists. The checkout-backed Windows `x64-windows` overlay and standalone Debug/Release CMake consumers pass on the physical MSVC machine. | Validate the exact final RC3 source/wheel/provider artifacts, release-source vcpkg URL and SHA512, conda layouts, third-party notices, and checksum/signing decisions. |
-| Release quality | Native, hosted, WebGPU, query, compute, documentation, gallery, and GPU-selection evidence exists. The render-product implementation is locally complete through R8 with checkpoint validation, and its landing plus affected-QA manifests are prepared. | Finish R9 and the exact-head final matrix, integrate the reviewed render checkpoints, execute [RC3_RENDER_PRODUCTS_AFFECTED_QA.md](RC3_RENDER_PRODUCTS_AFFECTED_QA.md), then run the exact RC3 static-analysis, sanitizer where practical, Vulkan, long-loop, docs, gallery, example, source-archive, wheel, and installed-consumer gates; record limitations explicitly. |
+| Release quality | Native, hosted, WebGPU, query, compute, documentation, gallery, and GPU-selection evidence exists. The R1-R9 render-product implementation, checkpoint validation, landing evidence, affected-QA manifest, and approved gallery/data/GLFW/WebGPU follow-up are committed, validated, and pushed. | Run the exact RC3 static-analysis, sanitizer where practical, Vulkan, long-loop, docs, gallery, example, source-archive, wheel, and installed-consumer gates; record remaining platform limitations explicitly. |
 
 Hosted Linux and Windows exact-artifact proof is mandatory for RC3. Physical Linux and Windows proof should be restored when hardware is available; final v0.4.0 requires that proof or an explicit maintainer-approved exception.
 
