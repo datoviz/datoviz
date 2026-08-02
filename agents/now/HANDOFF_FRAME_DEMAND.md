@@ -1,6 +1,6 @@
 # Frame Demand And Interaction Pacing Handoff
 
-Status: frame demand and opt-in frames-in-flight experiment implemented; Linux/X11 data favors one slot; Windows slot-count comparison and default-policy decision remain. Updated: 2026-08-02.
+Status: frame demand and opt-in frames-in-flight experiment implemented; Linux/X11 data favors one slot, Windows data is neutral with all physical smokes smooth, and the separate default-policy decision remains. Updated: 2026-08-02.
 
 This handoff records the approved architecture and implementation contract for responsive on-demand interaction. It remains concrete enough for a lower-reasoning agent to maintain or extend without reopening the architecture question.
 
@@ -207,6 +207,16 @@ The Linux/X11 RTX 5090 comparison used ordinary FIFO, baseline `c49e98e1a`, cand
 
 Median p95 slot-wait remained approximately 16.2-16.5 ms and acquire-wait remained below 0.04 ms in these runs. These are CPU submission and queue-pressure proxies, not input-to-photon measurements. The historical baseline predates configuration fields, so its report-side configuration is marked unverified; its code uses the original coupled slot/image count, while candidate telemetry resolved ordinary FIFO with four images and one, two, or four slots as requested.
 
+The physical Windows 11 AMD Radeon 780M comparison used the same reference, candidate `2c32d3e92fac41785ea063e6677bd4ae688f57cf`, five paired runs, 300 frames, ordinary FIFO, and a 1920×1080 144 Hz display:
+
+| Candidate slots | Base p95 input-to-submit | Candidate p95 input-to-submit | Paired delta | 95% CI | Verdict |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 1 | 8.2325 ms | 8.1788 ms | -1.94% | [-5.00%, +1.30%] | no material change |
+| 2 | 7.8764 ms | 7.8570 ms | -0.25% | [-0.97%, +0.00%] | no material change |
+| auto (3) | 7.7733 ms | 7.8876 ms | +0.16% | [-1.92%, +2.91%] | no material change |
+
+All candidate configurations resolved ordinary FIFO with three images and the requested one, two, or three slots. The historical base lacks configuration telemetry, so report-side verification is false as expected. Release Canvas passed on both GPUs with the required slot-count, one-slot, and two-slot cases and no validation messages. Scripted real-input smokes rendered correctly on production-default AMD, sustained approximately 144 FPS during drag, returned to zero FPS after release, resized, and closed normally. The maintainer then reported that all three ordinary-FIFO configurations felt very smooth. One slot moves most waiting from acquire to slot reuse but does not materially change total Windows input-to-submit freshness. Retained reports and raw logs remain outside Git under the local Codex output root.
+
 Reproduce or extend the comparison with:
 
 ```sh
@@ -219,8 +229,8 @@ The comparison tool forces ordinary FIFO for `scatter-interaction`. Keep raw rep
 
 ## Next Decision
 
-Run the same one-, two-, and auto-slot comparison on physical Windows using the exact procedure and report contract in [HANDOFF_WINDOWS_VALIDATION.md](HANDOFF_WINDOWS_VALIDATION.md#2-run-the-fifo-frame-slot-comparison-now), then make a separate default-policy decision. Linux evidence favors one slot for FIFO interaction and the auto control shows no implementation regression, but the override remains opt-in until cross-platform data is available. The expected direction is capped FIFO latest-ready when supported, a bounded-frames-in-flight FIFO fallback, explicit environment overrides, and eventually refresh-aware pacing instead of an unconditional 60 FPS cap.
+Make the separate default-policy decision. Linux evidence materially favors one slot, while the 144 Hz Windows evidence is neutral but directionally non-regressing for one slot, its auto control is neutral, and all three physical smokes felt very smooth. The evidence therefore recommends one FIFO frame slot by default with `DVZ_MAX_FRAMES_IN_FLIGHT` retained as an override, but the override stays opt-in until the maintainer explicitly accepts that policy. Present-mode policy remains separate. The expected direction is capped FIFO latest-ready when supported, a bounded-frames-in-flight FIFO fallback, explicit environment overrides, and eventually refresh-aware pacing instead of an unconditional 60 FPS cap.
 
 ## Completion Criteria
 
-The frame-demand and opt-in frame-slot slices are complete: normal interactive views idle without input, active controller drags render continuously, release returns to idle, unrelated views remain idle, existing continuous sources retain their behavior, and one-/two-slot FIFO paths pass validation, resize, capture, and live-sink coverage. Windows comparison and the separate default-policy decision remain.
+The frame-demand and opt-in frame-slot slices are complete: normal interactive views idle without input, active controller drags render continuously, release returns to idle, unrelated views remain idle, existing continuous sources retain their behavior, and one-/two-slot FIFO paths pass validation, resize, capture, live-sink coverage, and physical Windows comparison. Only the separate default-policy decision remains.

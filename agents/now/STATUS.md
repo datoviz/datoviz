@@ -16,7 +16,7 @@ The documentation inventory, generated C reference, Python binding guidance, dat
 
 The optional Qt bridge and local Apple Silicon split-package proof are complete. The required RC3 provider lane remains externally blocked on conda-forge publication of Vulkan-enabled Qt followed by compatible PyQt and exact Datoviz provider artifacts.
 
-Interaction pacing and the opt-in frames-in-flight experiment are implemented. Linux/X11 FIFO measurements favor one reusable slot, two slots also improve latency, and automatic/current behavior is neutral; physical Windows slot-count comparison remains before any default-policy decision.
+Interaction pacing and the opt-in frames-in-flight experiment are implemented. Linux/X11 FIFO measurements favor one reusable slot and two slots also improve latency; physical Windows measurements at 144 Hz classify one, two, and automatic slots as no material change, all three smokes felt very smooth, and the evidence recommends one slot pending the separate default-policy decision.
 
 ## Remaining RC3 Gates
 
