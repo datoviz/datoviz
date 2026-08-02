@@ -53,6 +53,83 @@ static int _test_set_phong_material(
 
 
 
+/**
+ * Characterize an SSAO visibility normalization domain.
+ *
+ * This R0 mathematical helper models sample classifications only. It does not read shader source
+ * or assert GPU/image conformance.
+ *
+ * @param sample_count total samples in the deterministic sample domain
+ * @param geometry_hit_count samples that intersect geometry
+ * @param occluding_hit_count geometry hits classified as occluding
+ * @param complete_domain whether all samples, including geometry misses, normalize visibility
+ * @return normalized ambient visibility
+ */
+static float _test_ssao_normalized_visibility(
+    uint32_t sample_count, uint32_t geometry_hit_count, uint32_t occluding_hit_count,
+    bool complete_domain)
+{
+    ASSERT(sample_count > 0);
+    ASSERT(geometry_hit_count <= sample_count);
+    ASSERT(occluding_hit_count <= geometry_hit_count);
+    if (complete_domain)
+        return (float)(sample_count - occluding_hit_count) / (float)sample_count;
+    if (geometry_hit_count == 0)
+        return 1.0f;
+    return (float)(geometry_hit_count - occluding_hit_count) / (float)geometry_hit_count;
+}
+
+
+
+/**
+ * Characterize legacy SSAO hit-only normalization against the approved complete sample domain.
+ *
+ * This is R0 mathematical characterization only: it neither reads shader source nor provides
+ * GPU or image conformance coverage.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_ssao_normalization_characterization(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const uint32_t sample_count = 16;
+
+    const float sparse_legacy =
+        _test_ssao_normalized_visibility(sample_count, 1, 1, false);
+    const float sparse_complete =
+        _test_ssao_normalized_visibility(sample_count, 1, 1, true);
+    AT(sparse_legacy == 0.0f);
+    AT(sparse_complete == 15.0f / 16.0f);
+    AT(sparse_legacy == _test_ssao_normalized_visibility(sample_count, 1, 1, false));
+    AT(sparse_complete == _test_ssao_normalized_visibility(sample_count, 1, 1, true));
+
+    const float dense_legacy =
+        _test_ssao_normalized_visibility(sample_count, 16, 8, false);
+    const float dense_complete =
+        _test_ssao_normalized_visibility(sample_count, 16, 8, true);
+    AT(dense_legacy == 0.5f);
+    AT(dense_complete == 0.5f);
+    AT(dense_legacy == _test_ssao_normalized_visibility(sample_count, 16, 8, false));
+    AT(dense_complete == _test_ssao_normalized_visibility(sample_count, 16, 8, true));
+
+    const float background_legacy =
+        _test_ssao_normalized_visibility(sample_count, 0, 0, false);
+    const float background_complete =
+        _test_ssao_normalized_visibility(sample_count, 0, 0, true);
+    AT(background_legacy == 1.0f);
+    AT(background_complete == 1.0f);
+    AT(background_legacy == _test_ssao_normalized_visibility(sample_count, 0, 0, false));
+    AT(background_complete == _test_ssao_normalized_visibility(sample_count, 0, 0, true));
+
+    return 0;
+}
+
+
+
 int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

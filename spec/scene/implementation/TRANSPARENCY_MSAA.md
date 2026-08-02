@@ -32,23 +32,22 @@ Installed modes:
 4. `DVZ_ALPHA_DEPTH_PEEL`;
 5. `DVZ_ALPHA_MASK`.
 
-The scene plans transparent passes after opaque passes. Opaque visuals must not render after a
-transparent accumulation stage in the same panel. Panels without transparent visuals should not pay
-for transparent accumulation, peeling, or resolve passes.
+The scene plans transparency in `transparent_shading` after AO-aware opaque shading and EDL, and before volume, overlay, and presentation work. Opaque visuals must not render after transparent accumulation in the same panel. Panels without transparent visuals allocate no transparent products or passes.
+
+Source-over authored order is preserved independently of technique phase order. Transparent and volume visuals depth-test against compatible opaque surface products where required but do not produce or consume ambient visibility in RC3.
 
 ## WBOIT Expansion
 
 WBOIT is the active approximate OIT path. Its graph expansion should:
 
-1. ensure the opaque pass writes the final target and opaque depth;
+1. consume the current typed `scene_color` version and compatible `surface_depth`;
 2. allocate explicit accumulation and reveal/transmittance textures;
 3. add a transparent accumulation pass that reads opaque depth when present;
-4. add a resolve pass that samples accumulation textures and writes the final target;
+4. add a resolve pass that samples accumulation textures and produces the successor `scene_color` version;
 5. validate floating-point target formats, color attachment count, blending support, and sampled
    render-target support.
 
-WBOIT should stay explicit in FramePlan and DRP2 streams. It should not become hidden runtime
-knowledge below the scene contract.
+WBOIT products carry explicit premultiplication and transmittance semantics. WBOIT stays explicit in FramePlan and DRP2 streams and never becomes hidden effect-family runtime knowledge.
 
 ## Depth Peeling Contract
 
@@ -65,7 +64,7 @@ target for real dual depth peeling is:
 5. composite the accumulated transparent result over the final target;
 6. keep all rendering graph-backed and DRP2-lowered.
 
-Recommended graph resources per panel:
+The following resource names describe the current legacy physical topology, not semantic product identity:
 
 1. `<panel>.peel.depth_minmax_ping`;
 2. `<panel>.peel.depth_minmax_pong`;
@@ -74,7 +73,7 @@ Recommended graph resources per panel:
 5. optional per-iteration temporary front/back color targets;
 6. `<panel>.depth.opaque` when transparent visuals depth-test against opaque visuals.
 
-Recommended pass structure:
+The following pass labels likewise describe the current legacy physical topology:
 
 1. `opaque`: writes `rt` and optional opaque depth;
 2. `peel.init`: initializes min/max transparent depth and clears accumulators;
@@ -142,16 +141,21 @@ Alpha-to-coverage is visual or material specific:
 
 ## MSAA FramePlan Rules
 
-Graph texture resources carry a sample count. Rules:
+Every product declares its sample domain and resolve policy. Graph texture resources carry the resolved concrete sample count. Rules:
 
 1. default sample count is `1`;
 2. color and depth attachments in one render pass must use the same sample count;
 3. sampled post-process inputs should remain single-sample unless the shader explicitly samples
    multisampled images;
-4. multisampled color outputs need a single-sample resolve target before presentation or ordinary
-   post-processing.
+4. multisampled products consumed by single-sample work require an explicit product-specific resolve;
+5. linear scene color uses a compatible linear-color resolve;
+6. linear surface depth selects the nearest valid covered surface under the declared depth convention;
+7. surface normal belongs to the selected surface sample, or uses an explicitly declared coverage-weighted reconstruction followed by normalization;
+8. surface coverage resolves to the declared covered fraction or binary winning-surface validity;
+9. object IDs select one winning covered sample and are never averaged, interpolated, or normalized-filtered;
+10. ambient visibility is normally evaluated after coherent surface resolve.
 
-Example graph shape for a normal scene color pass:
+Current legacy physical graph shape for a normal scene color pass:
 
 ```text
 opaque_msaa_color: COLOR_ATTACHMENT, sample_count = N
@@ -164,10 +168,7 @@ opaque pass:
   depth attachment = opaque_msaa_depth
 ```
 
-Graph-backed effects such as EDL or SSAO should use multisampled attachments only before the pass
-that needs geometric edge quality. Downstream postprocess passes should consume resolved
-single-sample color, depth, and normal textures unless a later design deliberately supports
-multisampled sampling.
+Graph-backed effects such as EDL or ambient visibility use multisampled attachments only before the pass that needs geometric edge quality. Downstream consumers use a coherently resolved single-sample surface record unless a later contract deliberately supports multisampled sampling.
 
 ## DRP2 And vklite Requirements
 
@@ -200,7 +201,7 @@ MSAA available, the preferred path is:
 3. alpha-to-coverage in the pipeline;
 4. no source-over blending for ordinary opaque sphere rendering.
 
-This avoids overlap halos where depth and color coverage disagree.
+This avoids overlap halos where depth and color coverage disagree. Sphere surface capture must use the analytic ray hit, corrected fragment depth, generated normal, and coverage belonging to the same visible fragment.
 
 ## Validation Expectations
 

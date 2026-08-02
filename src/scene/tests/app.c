@@ -180,6 +180,29 @@ typedef struct
 
 typedef struct
 {
+    uint32_t foreground_count;
+    uint32_t background_count;
+    uint32_t response_count;
+    uint32_t dark_background_count;
+    uint32_t max_delta;
+    uint32_t changed_count;
+} AppSsaoMetrics;
+
+
+typedef struct
+{
+    uint8_t minimum;
+    uint8_t p01;
+    uint8_t p05;
+    uint8_t median;
+    double mean;
+    uint32_t dark_count;
+    uint32_t nongray_count;
+} AppSsaoFrameMetrics;
+
+
+typedef struct
+{
     uint8_t rgb[3];
     bool skipped;
     const char* skip_reason;
@@ -638,6 +661,376 @@ static AppSsaoQuad _app_ssao_add_quad(
     {
         out.visual = NULL;
         return out;
+    }
+    return out;
+}
+
+
+
+/**
+ * Add mesh and raycast-sphere geometry that exposes isolated, dense, and silhouette AO inputs.
+ *
+ * @param scene scene owner
+ * @param panel destination panel
+ * @return whether every visual was created and attached
+ */
+static bool _app_ssao_add_characterization_geometry(DvzScene* scene, DvzPanel* panel)
+{
+    ANN(scene);
+    ANN(panel);
+
+    DvzColor back_color = {180, 190, 202, 255};
+    AppSsaoQuad back =
+        _app_ssao_add_quad(scene, panel, -0.90f, +0.90f, -0.76f, +0.76f, -0.70f, back_color);
+    if (back.visual == NULL)
+        return false;
+
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    if (sphere == NULL ||
+        dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != DVZ_OK)
+        return false;
+
+    vec3 positions[5] = {
+        {-0.48f, +0.12f, +0.02f},
+        {+0.12f, -0.10f, +0.04f},
+        {+0.30f, -0.04f, +0.06f},
+        {+0.20f, +0.16f, +0.08f},
+        {+0.36f, +0.18f, +0.05f},
+    };
+    DvzColor colors[5] = {
+        {230, 100, 82, 255}, {86, 195, 128, 255}, {88, 135, 230, 255},
+        {235, 195, 78, 255}, {185, 95, 222, 255},
+    };
+    float radii[5] = {0.18f, 0.23f, 0.22f, 0.20f, 0.19f};
+    return
+        dvz_visual_set_data(sphere, "position", positions, 5) == DVZ_OK &&
+        dvz_visual_set_data(sphere, "color", colors, 5) == DVZ_OK &&
+        dvz_visual_set_data(sphere, "radius", radii, 5) == DVZ_OK &&
+        dvz_panel_add_visual(panel, sphere, NULL) == DVZ_OK;
+}
+
+
+
+/**
+ * Capture one app-rendered SSAO characterization frame.
+ *
+ * @param canvas source offscreen canvas
+ * @param out_width output width
+ * @param out_height output height
+ * @param out_rgba output owned RGBA pixels
+ * @return whether capture succeeded
+ */
+static bool _app_ssao_capture(
+    DvzCanvas* canvas, uint32_t* out_width, uint32_t* out_height, uint8_t** out_rgba)
+{
+    ANN(canvas);
+    ANN(out_width);
+    ANN(out_height);
+    ANN(out_rgba);
+    *out_width = 0;
+    *out_height = 0;
+    *out_rgba = NULL;
+    return dvz_canvas_capture_rgba(canvas, out_width, out_height, out_rgba) == DVZ_OK &&
+           *out_rgba != NULL;
+}
+
+
+
+/**
+ * Render a fixed number of offscreen frames for deterministic warmup.
+ *
+ * @param view offscreen view
+ * @param frame_count number of frames
+ * @return whether every frame completed
+ */
+static bool _app_ssao_render_frames(DvzView* view, uint32_t frame_count)
+{
+    ANN(view);
+    for (uint32_t i = 0; i < frame_count; i++)
+    {
+        if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
+            return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Measure global grayscale visibility distribution in one AO debug capture.
+ *
+ * @param rgba captured pixels
+ * @param pixel_count number of pixels
+ * @return visibility distribution metrics
+ */
+static AppSsaoFrameMetrics
+_app_ssao_frame_metrics(const uint8_t* rgba, uint32_t pixel_count)
+{
+    ANN(rgba);
+    ASSERT(pixel_count > 0);
+    AppSsaoFrameMetrics out = {.minimum = UINT8_MAX};
+    uint32_t histogram[256] = {0};
+    uint64_t sum = 0;
+    for (uint32_t i = 0; i < pixel_count; i++)
+    {
+        const uint8_t* pixel = &rgba[4 * i];
+        uint8_t value = pixel[0];
+        if (value < out.minimum)
+            out.minimum = value;
+        histogram[value]++;
+        sum += value;
+        if (value < 13)
+            out.dark_count++;
+        if (abs((int)pixel[0] - (int)pixel[1]) > 1 ||
+            abs((int)pixel[0] - (int)pixel[2]) > 1)
+            out.nongray_count++;
+    }
+    out.mean = (double)sum / (double)pixel_count;
+
+    uint32_t cumulative = 0;
+    const uint32_t rank01 = (pixel_count + 99u) / 100u;
+    const uint32_t rank05 = (pixel_count + 19u) / 20u;
+    const uint32_t rank50 = (pixel_count + 1u) / 2u;
+    bool has_p01 = false, has_p05 = false, has_median = false;
+    for (uint32_t value = 0; value < 256; value++)
+    {
+        cumulative += histogram[value];
+        if (!has_p01 && cumulative >= rank01)
+        {
+            out.p01 = (uint8_t)value;
+            has_p01 = true;
+        }
+        if (!has_p05 && cumulative >= rank05)
+        {
+            out.p05 = (uint8_t)value;
+            has_p05 = true;
+        }
+        if (!has_median && cumulative >= rank50)
+        {
+            out.median = (uint8_t)value;
+            has_median = true;
+        }
+    }
+    return out;
+}
+
+
+
+/**
+ * Log one current-behavior AO debug metric record.
+ *
+ * @param label configuration label
+ * @param rgba captured pixels
+ * @param width capture width
+ * @param height capture height
+ * @param projection projection label
+ * @param scale FOV or orthographic height
+ * @param samples MSAA sample count
+ */
+static void _app_ssao_log_frame_metrics(
+    const char* label, const uint8_t* rgba, uint32_t width, uint32_t height,
+    const char* projection, float scale, uint32_t samples)
+{
+    ANN(label);
+    ANN(rgba);
+    ANN(projection);
+    AppSsaoFrameMetrics metrics = _app_ssao_frame_metrics(rgba, width * height);
+    log_info(
+        "SSAO_R0 case=%s projection=%s scale=%.3f width=%u height=%u msaa=%u min=%u "
+        "mean=%.3f p01=%u p05=%u p50=%u dark=%u nongray=%u",
+        label, projection, scale, width, height, samples, metrics.minimum, metrics.mean,
+        metrics.p01, metrics.p05, metrics.median, metrics.dark_count, metrics.nongray_count);
+}
+
+
+
+/**
+ * Measure stable foreground, background, and AO response pixels for an RGBA capture pair.
+ *
+ * @param baseline non-AO RGBA pixels
+ * @param ao AO RGBA pixels
+ * @param image_width full capture width
+ * @param x measured rectangle X origin
+ * @param y measured rectangle Y origin
+ * @param width capture width
+ * @param height capture height
+ * @return compact current-behavior metrics
+ */
+static AppSsaoMetrics _app_ssao_region_metrics(
+    const uint8_t* baseline, const uint8_t* ao, uint32_t image_width, uint32_t x, uint32_t y,
+    uint32_t width, uint32_t height)
+{
+    ANN(baseline);
+    ANN(ao);
+    AppSsaoMetrics out = {0};
+    const uint32_t clear_offset = 4 * (y * image_width + x);
+    const uint8_t clear[3] = {
+        baseline[clear_offset], baseline[clear_offset + 1], baseline[clear_offset + 2]};
+    for (uint32_t row = 0; row < height; row++)
+    {
+        for (uint32_t column = 0; column < width; column++)
+        {
+            const uint32_t offset = 4 * ((y + row) * image_width + x + column);
+            const uint8_t* a = &baseline[offset];
+            const uint8_t* b = &ao[offset];
+            uint32_t clear_delta = 0;
+            for (uint32_t channel = 0; channel < 3; channel++)
+                clear_delta += (uint32_t)abs((int)a[channel] - (int)clear[channel]);
+            const bool strict_background = clear_delta <= 3;
+            const bool strict_foreground = clear_delta >= 24;
+            if (strict_foreground)
+                out.foreground_count++;
+            if (strict_background)
+                out.background_count++;
+
+            uint8_t visibility = b[0] < b[1] ? b[0] : b[1];
+            visibility = visibility < b[2] ? visibility : b[2];
+            if (strict_foreground && visibility < 254)
+                out.response_count++;
+            if (strict_background && visibility < 254)
+                out.dark_background_count++;
+
+            uint32_t pixel_delta = 0;
+            for (uint32_t channel = 0; channel < 4; channel++)
+            {
+                uint32_t delta = (uint32_t)abs((int)a[channel] - (int)b[channel]);
+                if (delta > pixel_delta)
+                    pixel_delta = delta;
+            }
+            if (pixel_delta > 1)
+                out.changed_count++;
+            if (pixel_delta > out.max_delta)
+                out.max_delta = pixel_delta;
+        }
+    }
+    return out;
+}
+
+
+
+/** Measure stable foreground, background, and AO response over a full RGBA capture. */
+static AppSsaoMetrics
+_app_ssao_metrics(const uint8_t* baseline, const uint8_t* ao, uint32_t width, uint32_t height)
+{
+    return _app_ssao_region_metrics(baseline, ao, width, 0, 0, width, height);
+}
+
+
+
+/**
+ * Measure a same-extent RGBA difference without assigning an image-quality expectation.
+ *
+ * @param a first RGBA pixels
+ * @param b second RGBA pixels
+ * @param pixel_count number of RGBA pixels
+ * @return compact delta metrics
+ */
+static AppSsaoMetrics
+_app_ssao_delta_metrics(const uint8_t* a, const uint8_t* b, uint32_t pixel_count)
+{
+    ANN(a);
+    ANN(b);
+    AppSsaoMetrics out = {0};
+    for (uint32_t i = 0; i < pixel_count; i++)
+    {
+        uint32_t pixel_delta = 0;
+        for (uint32_t channel = 0; channel < 4; channel++)
+        {
+            uint32_t delta =
+                (uint32_t)abs((int)a[4 * i + channel] - (int)b[4 * i + channel]);
+            if (delta > pixel_delta)
+                pixel_delta = delta;
+        }
+        if (pixel_delta > 1)
+            out.changed_count++;
+        if (pixel_delta > out.max_delta)
+            out.max_delta = pixel_delta;
+    }
+    return out;
+}
+
+
+
+/**
+ * Measure a rectangular RGBA delta in a same-extent capture.
+ *
+ * @param a first RGBA pixels
+ * @param b second RGBA pixels
+ * @param width capture width
+ * @param x rectangle X origin
+ * @param y rectangle Y origin
+ * @param rect_width rectangle width
+ * @param rect_height rectangle height
+ * @return compact rectangular delta metrics
+ */
+static AppSsaoMetrics _app_ssao_region_delta_metrics(
+    const uint8_t* a, const uint8_t* b, uint32_t width, uint32_t x, uint32_t y,
+    uint32_t rect_width, uint32_t rect_height)
+{
+    ANN(a);
+    ANN(b);
+    AppSsaoMetrics out = {0};
+    for (uint32_t row = 0; row < rect_height; row++)
+    {
+        AppSsaoMetrics row_metrics =
+            _app_ssao_delta_metrics(&a[4 * ((y + row) * width + x)],
+                                    &b[4 * ((y + row) * width + x)], rect_width);
+        out.changed_count += row_metrics.changed_count;
+        if (row_metrics.max_delta > out.max_delta)
+            out.max_delta = row_metrics.max_delta;
+    }
+    return out;
+}
+
+
+
+/**
+ * Measure the delta outside two panel rectangles.
+ *
+ * @param a first RGBA pixels
+ * @param b second RGBA pixels
+ * @param width capture width
+ * @param height capture height
+ * @param first first rectangle as X, Y, width, height
+ * @param second second rectangle as X, Y, width, height
+ * @return compact outside-region delta metrics
+ */
+static AppSsaoMetrics _app_ssao_outside_delta_metrics(
+    const uint8_t* a, const uint8_t* b, uint32_t width, uint32_t height,
+    const uint32_t first[4], const uint32_t second[4])
+{
+    ANN(a);
+    ANN(b);
+    ANN(first);
+    ANN(second);
+    AppSsaoMetrics out = {0};
+    for (uint32_t y = 0; y < height; y++)
+    {
+        for (uint32_t x = 0; x < width; x++)
+        {
+            bool in_first =
+                x >= first[0] && x < first[0] + first[2] && y >= first[1] &&
+                y < first[1] + first[3];
+            bool in_second =
+                x >= second[0] && x < second[0] + second[2] && y >= second[1] &&
+                y < second[1] + second[3];
+            if (in_first || in_second)
+                continue;
+            const uint8_t* pixel_a = &a[4 * (y * width + x)];
+            const uint8_t* pixel_b = &b[4 * (y * width + x)];
+            for (uint32_t channel = 0; channel < 4; channel++)
+            {
+                uint32_t delta =
+                    (uint32_t)abs((int)pixel_a[channel] - (int)pixel_b[channel]);
+                if (delta > out.max_delta)
+                    out.max_delta = delta;
+                if (delta > 1)
+                {
+                    out.changed_count++;
+                    break;
+                }
+            }
+        }
     }
     return out;
 }
@@ -3806,6 +4199,411 @@ int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstC
 
     dvz_free(rgba1);
     dvz_free(rgba0);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Characterize current SSAO debug output across projections, raycast sphere density, and MSAA.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_ssao_projection_zoom_characterization(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 112, 88, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel_full(figure);
+    AT(panel != NULL);
+    AT(_app_ssao_add_characterization_geometry(scene, panel));
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.015f, 0.02f, 0.03f, 1.0f));
+    DvzCameraDesc initial_camera = dvz_camera_desc();
+    AT(dvz_panel_set_camera_desc(panel, &initial_camera) == DVZ_OK);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_ssao_projection_zoom_characterization skipped: GPU context failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 112, 88);
+    ANN(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    uint32_t width = 0, height = 0;
+    uint8_t* baseline = NULL;
+    AT(_app_ssao_capture(canvas, &width, &height, &baseline));
+    AT(width == 112 && height == 88);
+
+    DvzSsaoDesc ssao = dvz_ssao_desc();
+    ssao.radius = 3.0f;
+    ssao.strength = 8.0f;
+    ssao.bias = 0.0f;
+    ssao.sample_count = 16;
+    ssao.debug_view = true;
+    ssao.blur_enabled = false;
+    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t ao_width = 0, ao_height = 0;
+    uint8_t* ao = NULL;
+    AT(_app_ssao_capture(canvas, &ao_width, &ao_height, &ao));
+    AT(ao_width == width && ao_height == height);
+
+    const uint32_t pixel_count = width * height;
+    AppSsaoMetrics response = _app_ssao_metrics(baseline, ao, width, height);
+    AT(response.foreground_count > 0);
+    AT(response.background_count > 0);
+    AT(response.response_count > 0);
+    AT(response.dark_background_count == 0);
+    AppSsaoFrameMetrics initial_metrics = _app_ssao_frame_metrics(ao, pixel_count);
+    AT(initial_metrics.nongray_count == 0);
+    _app_ssao_log_frame_metrics("default", ao, width, height, "perspective", 0.0f, 1);
+
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    uint32_t steady_width = 0, steady_height = 0;
+    uint8_t* steady = NULL;
+    AT(_app_ssao_capture(canvas, &steady_width, &steady_height, &steady));
+    AT(steady_width == width && steady_height == height);
+    AppSsaoMetrics stationary = _app_ssao_delta_metrics(ao, steady, pixel_count);
+    AT(stationary.max_delta <= 1);
+    AT((uint64_t)stationary.changed_count * 10000u <= pixel_count);
+
+    const float fov_y[] = {0.45f, 0.75f, 1.05f};
+    for (uint32_t i = 0; i < sizeof(fov_y) / sizeof(fov_y[0]); i++)
+    {
+        DvzCameraDesc camera = dvz_camera_desc();
+        camera.view.eye[2] = 3.0f;
+        camera.projection.fov_y = fov_y[i];
+        AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+        AT(dvz_panel_set_ssao(panel, NULL) == DVZ_OK);
+        AT(_app_ssao_render_frames(win, 2));
+        uint32_t reference_width = 0, reference_height = 0;
+        uint8_t* reference = NULL;
+        AT(_app_ssao_capture(canvas, &reference_width, &reference_height, &reference));
+        AT(reference_width == width && reference_height == height);
+        AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+        AT(_app_ssao_render_frames(win, 2));
+        uint32_t frame_width = 0, frame_height = 0;
+        uint8_t* frame = NULL;
+        AT(_app_ssao_capture(canvas, &frame_width, &frame_height, &frame));
+        AT(frame_width == width && frame_height == height);
+        AT(_app_rgb_sum(frame, pixel_count) > 0);
+        AppSsaoMetrics zoom_response =
+            _app_ssao_metrics(reference, frame, width, height);
+        AT(zoom_response.foreground_count > 0);
+        AT(zoom_response.response_count > 0);
+        AT(zoom_response.dark_background_count == 0);
+        AppSsaoFrameMetrics frame_metrics = _app_ssao_frame_metrics(frame, pixel_count);
+        AT(frame_metrics.nongray_count == 0);
+        _app_ssao_log_frame_metrics(
+            "zoom", frame, frame_width, frame_height, "perspective", fov_y[i], 1);
+        dvz_free(frame);
+        dvz_free(reference);
+    }
+
+    ssao.blur_enabled = true;
+    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+    DvzCameraDesc blurred_camera = dvz_camera_desc();
+    blurred_camera.view.eye[2] = 3.0f;
+    blurred_camera.projection.fov_y = 0.75f;
+    AT(dvz_panel_set_camera_desc(panel, &blurred_camera) == DVZ_OK);
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t blurred_width = 0, blurred_height = 0;
+    uint8_t* blurred = NULL;
+    AT(_app_ssao_capture(canvas, &blurred_width, &blurred_height, &blurred));
+    AT(blurred_width == width && blurred_height == height);
+    _app_ssao_log_frame_metrics(
+        "legacy-blur", blurred, blurred_width, blurred_height, "perspective", 0.75f, 1);
+    dvz_free(blurred);
+    ssao.blur_enabled = false;
+    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+
+    DvzCameraDesc orthographic = dvz_camera_desc();
+    orthographic.view.eye[2] = 3.0f;
+    orthographic.projection.type = DVZ_CAMERA_ORTHOGRAPHIC;
+    orthographic.projection.ortho_height = 2.4f;
+    AT(dvz_panel_set_camera_desc(panel, &orthographic) == DVZ_OK);
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t orthographic_width = 0, orthographic_height = 0;
+    uint8_t* orthographic_rgba = NULL;
+    AT(_app_ssao_capture(canvas, &orthographic_width, &orthographic_height, &orthographic_rgba));
+    AT(orthographic_width == width && orthographic_height == height);
+    AT(_app_rgb_sum(orthographic_rgba, pixel_count) > 0);
+    _app_ssao_log_frame_metrics(
+        "orthographic", orthographic_rgba, orthographic_width, orthographic_height,
+        "orthographic", orthographic.projection.ortho_height, 1);
+    dvz_free(orthographic_rgba);
+
+    DvzCameraDesc msaa_camera = dvz_camera_desc();
+    msaa_camera.view.eye[2] = 3.0f;
+    msaa_camera.projection.fov_y = 0.75f;
+    AT(dvz_panel_set_camera_desc(panel, &msaa_camera) == DVZ_OK);
+    AT(dvz_panel_set_msaa(panel, NULL) == DVZ_OK);
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t msaa1_width = 0, msaa1_height = 0;
+    uint8_t* msaa1 = NULL;
+    AT(_app_ssao_capture(canvas, &msaa1_width, &msaa1_height, &msaa1));
+    AT(msaa1_width == width && msaa1_height == height);
+    AT(_app_rgb_sum(msaa1, pixel_count) > 0);
+    _app_ssao_log_frame_metrics(
+        "msaa-off", msaa1, msaa1_width, msaa1_height, "perspective", 0.75f, 1);
+
+    DvzMsaaDesc msaa4_desc = dvz_msaa_desc();
+    msaa4_desc.sample_count = 4;
+    AT(dvz_panel_set_msaa(panel, &msaa4_desc) == DVZ_OK);
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t msaa4_width = 0, msaa4_height = 0;
+    uint8_t* msaa4_rgba = NULL;
+    AT(_app_ssao_capture(canvas, &msaa4_width, &msaa4_height, &msaa4_rgba));
+    AT(msaa4_width == width && msaa4_height == height);
+    AT(_app_rgb_sum(msaa4_rgba, pixel_count) > 0);
+    _app_ssao_log_frame_metrics(
+        "msaa-4x", msaa4_rgba, msaa4_width, msaa4_height, "perspective", 0.75f, 4);
+    AppSsaoMetrics msaa_delta = _app_ssao_delta_metrics(msaa1, msaa4_rgba, pixel_count);
+    log_info(
+        "SSAO_R0 pair=msaa-1x-4x max_delta=%u changed=%u pixels=%u",
+        msaa_delta.max_delta, msaa_delta.changed_count, pixel_count);
+    dvz_free(msaa4_rgba);
+    dvz_free(msaa1);
+
+    log_info(
+        "SSAO R0 projection: fg=%u bg=%u response=%u stationary-max=%u stationary-changed=%u",
+        response.foreground_count, response.background_count, response.response_count,
+        stationary.max_delta, stationary.changed_count);
+    dvz_free(steady);
+    dvz_free(ao);
+    dvz_free(baseline);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Characterize current SSAO panel isolation for unequal panel origins and extents.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_ssao_panel_isolation_characterization(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
+    AT(figure != NULL);
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.08f, 0.15f, 0.35f, 0.70f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.53f, 0.08f, 0.39f, 0.82f});
+    AT(left != NULL && right != NULL);
+    AT(_app_ssao_add_characterization_geometry(scene, left));
+    AT(_app_ssao_add_characterization_geometry(scene, right));
+    dvz_panel_set_background_color(left, dvz_color_from_unit(0.015f, 0.02f, 0.03f, 1.0f));
+    dvz_panel_set_background_color(right, dvz_color_from_unit(0.015f, 0.02f, 0.03f, 1.0f));
+    DvzCameraDesc panel_camera = dvz_camera_desc();
+    AT(dvz_panel_set_camera_desc(left, &panel_camera) == DVZ_OK);
+    AT(dvz_panel_set_camera_desc(right, &panel_camera) == DVZ_OK);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_ssao_panel_isolation_characterization skipped: GPU context failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 128, 96);
+    ANN(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    uint32_t width = 0, height = 0;
+    uint8_t* baseline = NULL;
+    AT(_app_ssao_capture(canvas, &width, &height, &baseline));
+    AT(width == 128 && height == 96);
+
+    DvzSsaoDesc ssao = dvz_ssao_desc();
+    ssao.radius = 3.0f;
+    ssao.strength = 8.0f;
+    ssao.bias = 0.0f;
+    ssao.sample_count = 16;
+    ssao.debug_view = true;
+    ssao.blur_enabled = false;
+    AT(dvz_panel_set_ssao(left, &ssao) == DVZ_OK);
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t ao_width = 0, ao_height = 0;
+    uint8_t* ao = NULL;
+    AT(_app_ssao_capture(canvas, &ao_width, &ao_height, &ao));
+    AT(ao_width == width && ao_height == height);
+
+    AppSsaoMetrics response =
+        _app_ssao_region_metrics(baseline, ao, width, 11, 15, 43, 66);
+    AT(response.foreground_count > 0);
+    AT(response.background_count > 0);
+    AT(response.response_count > 0);
+    AT(response.dark_background_count == 0);
+
+    const uint32_t right_x = 68;
+    const uint32_t right_y = 8;
+    const uint32_t right_width = 49;
+    const uint32_t right_height = 78;
+    AppSsaoMetrics right_delta = _app_ssao_region_delta_metrics(
+        baseline, ao, width, right_x, right_y, right_width, right_height);
+    AT(right_delta.max_delta <= 1);
+
+    const uint32_t left_rect[4] = {8, 12, 49, 72};
+    const uint32_t right_rect[4] = {66, 6, 53, 82};
+    AppSsaoMetrics outside_delta =
+        _app_ssao_outside_delta_metrics(baseline, ao, width, height, left_rect, right_rect);
+    AT(outside_delta.max_delta <= 1);
+
+    AT(dvz_panel_set_ssao(right, &ssao) == DVZ_OK);
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t both_width = 0, both_height = 0;
+    uint8_t* both = NULL;
+    AT(_app_ssao_capture(canvas, &both_width, &both_height, &both));
+    AT(both_width == width && both_height == height);
+    AppSsaoMetrics left_delta =
+        _app_ssao_region_delta_metrics(ao, both, width, 12, 16, 41, 63);
+    AT(left_delta.max_delta <= 1);
+    _app_ssao_log_frame_metrics("panels-both", both, width, height, "perspective", 0.0f, 1);
+
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+    uint32_t steady_width = 0, steady_height = 0;
+    uint8_t* steady = NULL;
+    AT(_app_ssao_capture(canvas, &steady_width, &steady_height, &steady));
+    AT(steady_width == width && steady_height == height);
+    AppSsaoMetrics stationary = _app_ssao_delta_metrics(both, steady, width * height);
+    AT(stationary.max_delta <= 1);
+    AT((uint64_t)stationary.changed_count * 10000u <= (uint64_t)width * height);
+
+    log_info(
+        "SSAO_R0 panels response=%u dark-background=%u right-max=%u right-changed=%u left-max=%u "
+        "outside-max=%u stationary-max=%u stationary-changed=%u",
+        response.response_count, response.dark_background_count, right_delta.max_delta, right_delta.changed_count,
+        left_delta.max_delta, outside_delta.max_delta, stationary.max_delta,
+        stationary.changed_count);
+    dvz_free(steady);
+    dvz_free(both);
+    dvz_free(ao);
+    dvz_free(baseline);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Characterize current SSAO output after an offscreen resize round trip.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_ssao_resize_characterization(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 96, 72, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel_full(figure);
+    AT(panel != NULL);
+    AT(_app_ssao_add_characterization_geometry(scene, panel));
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.015f, 0.02f, 0.03f, 1.0f));
+    DvzCameraDesc resize_camera = dvz_camera_desc();
+    AT(dvz_panel_set_camera_desc(panel, &resize_camera) == DVZ_OK);
+
+    DvzSsaoDesc ssao = dvz_ssao_desc();
+    ssao.radius = 3.0f;
+    ssao.strength = 8.0f;
+    ssao.bias = 0.0f;
+    ssao.sample_count = 16;
+    ssao.debug_view = true;
+    ssao.blur_enabled = false;
+    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_ssao_resize_characterization skipped: GPU context failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 96, 72);
+    ANN(win);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t width = 0, height = 0;
+    uint8_t* baseline = NULL;
+    AT(_app_ssao_capture(canvas, &width, &height, &baseline));
+    AT(width == 96 && height == 72);
+    AT(_app_rgb_sum(baseline, width * height) > 0);
+
+    _app_ssao_log_frame_metrics("resize-start", baseline, width, height, "perspective", 0.0f, 1);
+
+    const uint32_t resize_widths[2] = {128, 80};
+    const uint32_t resize_heights[2] = {96, 60};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        AT(dvz_view_resize(win, resize_widths[i], resize_heights[i]) == DVZ_OK);
+        AT(_app_ssao_render_frames(win, 2));
+        uint32_t resized_width = 0, resized_height = 0;
+        uint8_t* resized = NULL;
+        AT(_app_ssao_capture(canvas, &resized_width, &resized_height, &resized));
+        AT(resized_width == resize_widths[i] && resized_height == resize_heights[i]);
+        AT(_app_rgb_sum(resized, resized_width * resized_height) > 0);
+        _app_ssao_log_frame_metrics(
+            "resize-step", resized, resized_width, resized_height, "perspective", 0.0f, 1);
+        dvz_free(resized);
+    }
+
+    AT(dvz_view_resize(win, width, height) == DVZ_OK);
+    AT(_app_ssao_render_frames(win, 2));
+    uint32_t roundtrip_width = 0, roundtrip_height = 0;
+    uint8_t* roundtrip = NULL;
+    AT(_app_ssao_capture(canvas, &roundtrip_width, &roundtrip_height, &roundtrip));
+    AT(roundtrip_width == width && roundtrip_height == height);
+    AppSsaoMetrics roundtrip_delta = _app_ssao_delta_metrics(baseline, roundtrip, width * height);
+    AT(roundtrip_delta.max_delta <= 1);
+    AT((uint64_t)roundtrip_delta.changed_count * 10000u <= (uint64_t)width * height);
+
+    log_info(
+        "SSAO R0 resize: roundtrip-max=%u roundtrip-changed=%u", roundtrip_delta.max_delta,
+        roundtrip_delta.changed_count);
+    dvz_free(roundtrip);
+    dvz_free(baseline);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     return 0;
@@ -8890,6 +9688,9 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_projection_stable);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_ssao_changes_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sphere_ssao_darkens_contact);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_ssao_projection_zoom_characterization);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_ssao_panel_isolation_characterization);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_ssao_resize_characterization);
     TST_SCENE_APP_CASE(
         test_app_offscreen_records_dvzr_frames,
         TST_SCENE_APP_GPU_RES | TST_RES_FILESYSTEM | TST_RES_ENV, TST_ISOLATION_PROCESS);

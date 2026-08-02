@@ -88,11 +88,11 @@ Rules:
 5. the effect must respect panel viewport and scissor boundaries;
 6. the effect should be disabled or excluded for exact image inspection unless requested.
 
-Relationship to SSAO:
+Relationship to ambient visibility:
 
-1. SSAO remains the local occlusion/cavity cue;
+1. material-consumed ambient visibility remains the local occlusion/cavity cue;
 2. edge enhancement remains the discontinuity/boundary cue;
-3. both may be enabled together, but edge enhancement should normally run after SSAO composite.
+3. both may be enabled together, but edge enhancement runs in scene postprocessing after AO-aware opaque shading, EDL, transparency, and volume composition.
 
 Recommended inputs are resolved panel color, linear or reconstructable depth, a normal buffer when
 available, and optionally object IDs later for semantic region boundaries.
@@ -128,25 +128,30 @@ Open choices:
 
 ## Ordering
 
-Preferred default composition order for a panel with all relevant effects enabled:
+The default composition order for a panel with all relevant effects enabled is:
 
 ```text
-base opaque / transparent / volume composition
-SSAO or EDL composite, when enabled
+surface capture
+AO-aware opaque material shading
+EDL surface postprocess, when enabled
+transparent composition
+volume composition
 edge enhancement composite
 bloom bright-pass and blur
 outline mask generation
 outline composite
-external UI overlay slot
+scene overlay
+external UI overlay slot, outside FramePlan
 presentation or export
 ```
 
 Rationale:
 
-1. edge enhancement should see the shaded scene after ambient occlusion;
-2. bloom should not blur selection outlines by default;
-3. outlines should remain crisp and visible above bloom;
-4. external UI remains outside the scene FramePlan and should not be affected by scene effects.
+1. ambient visibility modulates only ambient or indirect diffuse material lighting;
+2. EDL sees AO-aware opaque color and canonical surface depth without affecting later transparent or volume work;
+3. bloom should not blur selection outlines by default;
+4. outlines should remain crisp and visible above bloom;
+5. external UI remains outside the scene FramePlan and should not be affected by scene effects.
 
 This ordering may be adjusted for specific export modes, but deviations must be explicit.
 

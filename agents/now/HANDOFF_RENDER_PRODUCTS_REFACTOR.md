@@ -22,6 +22,8 @@ The maintainer completed this gate on 2026-08-02 by approving:
 4. confirmed whether a narrow issue #137 stabilization patch should precede the architecture migration or be delivered inside R7;
 5. accepted the checkpoint and QA integration sequence in [HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md](HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md).
 
+The maintainer also approved the R0 cycle-resolution refinement on 2026-08-02: AO uses a coherent surface-capture prepass before `surface_analysis` and forward opaque shading, and scene occlusion uses a typed `scene_occlusion_depth` product distinct from `surface_depth` and `volume_first_hit_depth`.
+
 Implementation uses a fresh branch from the integrated approved base with no standalone blur-only patch. Add characterization tests first, then deliver the estimator and architectural fix through R7. A future emergency narrow fix requires a new maintainer request.
 
 ## Non-Negotiable Invariants
@@ -80,7 +82,7 @@ Owner: main `sol-medium` orchestrator or a supervised `terra-medium` test mapper
 Paths:
 
 - approved proposal promotion into `spec/scene/implementation/**`, `spec/scene/semantics/EFFECTS.md`, `spec/scene/pipeline/**`, and affected visual specs;
-- characterization tests in `src/scene/tests/{scene_techniques,frame_plan,frame_plan_emit,scene_graph}.c`, `src/scene/tests/visuals/runtime.c`, and `src/app/tests/test_app.c`;
+- characterization tests in `src/scene/tests/{scene_techniques,frame_plan,frame_plan_emit,scene_graph,app}.c` and `src/scene/tests/visuals/runtime.c`;
 - issue #137 examples and capture fixtures without committing unapproved binary media.
 
 Deliverables:
@@ -97,6 +99,8 @@ Acceptance:
 - No DRP2, runtime, shader, or public API changes occur in this packet.
 
 Stop and escalate if the approved decisions cannot be expressed consistently across existing specialized specs, or if a required fixture would commit prohibited binary data.
+
+R0 evidence on the Linux RTX 5090 runner: all 14 focused SSAO tests pass; the perspective FOV sweep at `0.45`, `0.75`, and `1.05` records visibility minima `136`, `130`, and `186` with means `244.799`, `251.647`, and `253.453`; the legacy blur minimum is `203`; orthographic minimum is `185`; MSAA 1x and 4x captures are identical on this backend; stationary redraw, unequal-panel isolation, and resize round-trip have maximum delta `0`; strict panel-local background has zero dark pixels. `just build`, `just spec-check` including all 125 DRP2 fixtures and WebGPU checks, and `git diff --check` pass. These are characterization values, not R7 quality thresholds.
 
 ## R1 — Typed Products And Frame-Plan Schema
 

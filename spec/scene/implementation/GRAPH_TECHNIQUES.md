@@ -1,9 +1,6 @@
 # Graph-Backed Technique Implementor Notes
 
-Status: implementation-facing notes for scene techniques that expand retained panel state into
-FramePlan graph resources and passes. Public semantics remain in the scene semantics and proposal
-documents; this file records the implementation contract shared by transparency, EDL, SSAO, MSAA,
-screen-space effects, and future graph-backed techniques.
+Status: normative implementation contract for scene techniques that compose retained panel state into semantic render products and lower them through FramePlan, DRP2, and vklite. Public semantics remain in the scene semantics documents.
 
 ## Stack Boundary
 
@@ -20,53 +17,59 @@ retained scene state
 Do not add a parallel renderer, visual-private postprocess path, scene-private Vulkan execution
 path, or public framegraph API for these lanes.
 
-## Current Foundation
+## Approved v0.4 Composition Model
 
-The active graph-backed paths include:
-
-1. opaque depth;
-2. blended transparency;
-3. WBOIT;
-4. depth peeling;
-5. blended volume composition;
-6. G-buffer depth/normal resources;
-7. EDL;
-8. SSAO and optional SSAO blur;
-9. MSAA resolve.
-
-Technique activation is routed through retained scene or panel technique state and remains
-default-off unless the technique is part of the baseline opaque path. Graph-backed runtime dispatch
-should stay generic; effect-specific runtime code should be limited to shader, pipeline, bind-group,
-and fullscreen draw or dispatch preparation.
-
-## Resource Model
-
-FramePlan resources should be ordinary typed graph nodes, not hard-coded fields for one technique.
-
-Minimum descriptor:
+The scene composer owns one deterministic transaction per panel:
 
 ```text
-Resource {
-    id
-    kind: texture | buffer | external_target
-    format
-    extent: figure | panel | fixed | resource_ref
-    usage: render_attachment | depth_attachment | sampled | storage | copy_src | copy_dst
-    lifetime: borrowed | per_frame | persistent
+panel visuals + retained technique state + target capabilities
+  -> visual-layer classification
+  -> required semantic product closure
+  -> compatible producer and capability resolution
+  -> technique expansion
+  -> graph validation and transient lifetime analysis
+  -> immutable FramePlan
+```
+
+Every draw belongs to exactly one semantic layer: `surface_opaque`, `surface_masked`, `transparent`, `volume`, `overlay`, or `query`. Authored visual order remains independent from technique phase order and must be preserved within layers where source-over, annotation, label, or fixed-controller order is visible.
+
+The default semantic phase order is `surface_capture`, `surface_analysis`, `opaque_shading`, `surface_postprocess`, `transparent_shading`, `volume_shading`, `scene_postprocess`, `overlay`, `presentation`, and independent `query`. GTAO evaluation and reconstruction run in `surface_analysis`. Product dependencies refine this partial order; effect names, resource suffixes, insertion order, and work labels do not.
+
+A technique is an immutable internal descriptor declaring typed inputs and outputs, phase constraints, participating layers, capability requirements and fallbacks, and a declarative pass expansion. Technique activation remains retained panel state and default-off unless it is part of baseline opaque rendering.
+
+## Semantic Product And Resource Model
+
+Render products and physical graph resources are separate contracts. A product defines meaning and legal producer-consumer relationships; a resource defines allocation, format realization, access, and lifetime. Format compatibility alone never proves semantic compatibility.
+
+The minimum RC3 product descriptor carries:
+
+```text
+RenderProductContract {
+    id: typed plan-local product version
+    kind: scene_color | surface_depth | surface_normal | surface_coverage | object_id |
+          ambient_visibility | scene_occlusion_depth | transparent_accumulation |
+          volume_first_hit_depth | presentation_color
+    domain: panel | view | scene | query | presentation
+    extent: absolute | panel_relative | source_relative
+    format_class
+    sample_domain_and_resolve_policy
+    coordinate_space_and_encoding
+    alpha_coverage_and_validity
+    required_accesses
+    lifetime
+    producer_and_consumers
 }
 ```
 
-Examples:
+`surface_depth`, `surface_normal`, and `surface_coverage` form one coherent surface record for the same winning opaque or masked fragment. A consumer may not select them independently. Product IDs are typed and plan-local; human names remain diagnostics only.
 
-1. `rt`: borrowed final target;
-2. `panel0.depth.opaque`: per-frame depth texture;
-3. `panel0.wboit.accum`: per-frame WBOIT accumulation texture;
-4. `panel0.peel.depth_ping`: per-frame depth-peeling texture;
-5. `panel0.ssao.normal`: per-frame normal texture;
-6. `panel0.outline.mask`: per-frame outline mask or object-id texture.
+When `ambient_visibility` is enabled, its coherent surface record is produced by a `surface_capture` prepass, ambient visibility is evaluated and reconstructed, and `opaque_shading` then redraws eligible geometry while consuming that visibility. An opaque-shading MRT may produce surface products only for consumers that do not feed the same shading pass, such as EDL when AO is disabled; the composer must reject a product cycle rather than disguise it through attachment aliasing.
 
-Technique code owns names and creation policy. Core FramePlan validation should only require typed
-resources, declared usage, deterministic ownership, and valid read/write relationships.
+Every product is panel-local by default and carries panel pixel origin, local extent, render scale, rounding policy, and local-to-target transform. Shaders sample panel-local products in local coordinates. Physical pooling or aliasing is permitted only for non-overlapping lifetimes with compatible format, extent, samples, access, and ownership.
+
+FramePlan validation rejects missing or ambiguous producers, incompatible product semantics, cross-panel reuse, phase cycles, read-before-produce, undefined background reads, implicit sample changes, and incompatible product-resource realization.
+
+A color-transforming technique consumes one typed `scene_color` version and produces a distinct successor version. Versioned products make ordering and ownership explicit; a pass never reads and writes the same semantic product version as hidden feedback.
 
 ## Pass Model
 
@@ -104,34 +107,34 @@ ResourceAccess {
 }
 ```
 
-Pass tags and roles are diagnostic and policy-facing. The core execution model is typed
-resources, attachments, access, and explicit ordering. Dependency-derived ordering can come later;
-the first priority is deterministic insertion order with validation.
+Pass tags, roles, and labels are diagnostic only. Declarative work records the pipeline-provider key, work class, product bindings, attachments, clear/load/store policy, sample and resolve policy, viewport and panel-local transform, ordered draw filter, and diagnostics. Generic runtime lowering must not recover any of those facts by scanning a name or technique-family enum.
 
 ## Technique Expansion Rules
 
-Technique builders append resources and passes to the generic graph.
+Technique descriptors expand semantic products into the generic graph.
 
 WBOIT:
 
-1. ensure the opaque pass writes the final target and opaque depth;
-2. add accumulation and reveal textures;
-3. add transparent accumulation pass reading opaque depth;
-4. add resolve pass sampling accumulation/reveal textures and writing the final target.
+1. consume opaque `scene_color` and compatible `surface_depth`;
+2. produce explicit transparent accumulation and transmittance products;
+3. preserve authored transparent ordering where the selected algorithm requires it;
+4. resolve within `transparent_shading` before volume and overlay work.
 
 Depth peeling:
 
-1. ensure the opaque pass writes the final target and opaque depth;
-2. add front/back accumulators and ping/pong peel-depth resources;
-3. add initialization and fixed-count peel iteration passes;
-4. add composite pass sampling peel accumulators and writing the final target.
+1. consume opaque `scene_color` and compatible `surface_depth`;
+2. declare every peel depth, color, and transmittance product explicitly;
+3. retain fixed iteration and ping-pong semantics through product dependencies;
+4. resolve within `transparent_shading` without contributing to or consuming AO in RC3.
 
 SSAO:
 
-1. add or reuse G-buffer depth/normal resources;
-2. add SSAO evaluation pass;
-3. add optional blur pass;
-4. add composite pass.
+1. consume the coherent `surface_depth`, `surface_normal`, and `surface_coverage` record;
+2. run in `surface_analysis` and produce deterministic `ambient_visibility` with declared view-space scale and reconstruction policy;
+3. reconstruct or denoise with depth-aware, normal-aware, projection-derived support;
+4. bind ambient visibility into eligible opaque or masked material lighting rather than compositing black over scene color.
+
+EDL consumes canonical `surface_depth` plus AO-aware opaque `scene_color` and produces `scene_color` in `surface_postprocess`, before transparency and volume composition.
 
 Screen-space outline:
 
@@ -143,8 +146,8 @@ Screen-space outline:
 Screen-space edge enhancement:
 
 1. reuse G-buffer depth/normal resources when available;
-2. add edge mask or composite resource roles;
-3. run after SSAO or EDL composite by default;
+2. add edge mask or composite products;
+3. run in `scene_postprocess` after transparent and volume composition by default;
 4. keep panel viewport/scissor boundaries authoritative.
 
 Bloom:
@@ -172,8 +175,8 @@ capability checks instead of open-coded visual-family tests.
 
 ## Runtime Guardrails
 
-1. Graph resources should drive texture creation and usage flags.
-2. Graph passes should drive pass ordering and sampled reads.
+1. Product-linked graph resources drive texture creation and usage flags.
+2. Product dependencies and graph passes drive pass ordering and sampled reads.
 3. Descriptor refresh must reuse the existing graph-resource and texture-recreation path.
 4. Borrowed canvas frame targets remain borrowed and must not be destroyed by scene or runtime
    technique code.
@@ -182,6 +185,8 @@ capability checks instead of open-coded visual-family tests.
 6. Keep examples and tests in lockstep with each new technique.
 7. Do not hardcode domain semantics such as molecular rendering into core material or technique
    state.
+8. Do not allocate effect-family target buckets or match `(panel_id, work_label, ordinal)` in generic runtime code.
+9. Do not keep legacy role-driven and product-driven composition as parallel completion paths.
 
 ## DRP2 Gaps To Track
 
@@ -201,16 +206,8 @@ Graph-backed techniques still depend on continued hardening of:
    ops, and independent blend.
 
 
-## Technique Backlog
+## Migration Boundary
 
-1. Keep technique-builder cleanup behavior-preserving: do not change graph names, pass order, or
-   stream output while only reducing local clutter.
-2. Extend visual pass-capability tests as each family joins G-buffer, EDL, SSAO, outline, or other
-   screen-space effect paths.
-3. Decide whether EDL becomes a generic postprocess that can compose after selected transparent,
-   volume, or SSAO branches.
-4. Add object-id or mask resources only when outline or selection semantics require them.
-5. Keep scalar material modulation for curvature, cavity, accessibility, uncertainty, and similar
-   channels deferred until retained scalar slots are represented in material or visual state.
-6. Keep full PBR, light objects, shadows, and ray-tracing-forward policies outside this generic
-   technique layer until the shared material contract is stable.
+The current role enums, string resource IDs, effect graph builders, target buckets, and trace normalization remain temporary legacy implementation details only while R1-R9 migrate their consumers. They are not architectural authority and must be deleted by the final migration checkpoint.
+
+Temporal products, public technique plugins, user-editable graphs, a full deferred renderer, display HDR/color management, ray tracing, and broad new effects remain outside RC3. Object-ID outlines and bloom may reuse products later but are not promoted by this refactor.
