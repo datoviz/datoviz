@@ -1,6 +1,6 @@
 # Incremental C QA Handoff
 
-Status: active incremental source audit completed through `input`; the remaining campaign is mapped on local branch `qa/rc3-source-audit` for maintainer review before execution. Updated: 2026-08-02.
+Status: active incremental source audit completed through `input`; the remaining campaign is mapped on local branch `qa/rc3-source-audit`, with a review-draft two-lane adjustment for the planned render-product refactor. Updated: 2026-08-02.
 
 This handoff records the current static-analysis, sanitizer, lifetime, bounds, and corruption-prevention pass. It is development evidence for the RC3 release-quality lane, not final exact-artifact or platform-matrix proof.
 
@@ -30,6 +30,39 @@ This queue is the proposed execution contract for the autonomous remainder of th
 7. Make one local checkpoint commit per coherent fix group after the required staging inspection. Keep external/vendor changes isolated, preserve unrelated work, and update this handoff with exact evidence and limitations after each module or meaningful submodule group.
 8. Continue past unavailable providers, inconclusive tools, and physical-platform gaps after recording them honestly. Stop only for an architectural or public-API choice not determined by reviewed contracts, a required scope expansion, a repeated irreducible blocker, a staged stop-sign path, conflicting user work, or an action requiring external publication or unavailable authority.
 
+### Temporary Two-Lane Coordination
+
+If the maintainer approves [HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md](HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md) and the render-product architecture, that handoff temporarily refines the dependency order below while rendering contracts are changing. The original module map remains the complete campaign boundary; only the timing and final-sign-off points change.
+
+| Module or slice | Before render landing | Final sign-off after landing |
+| --- | --- | --- |
+| `math` | Complete normally. | Repeat only if math sources, public/shared math headers, build flags, or direct consumer assumptions change. |
+| `window` host/wrap/headless/GLFW core | Audit ownership, callbacks, configuration, metrics, failure rollback, and local lifecycle. | Repeat affected tests if borrow/ownership, surface replacement, extensions, resize/frame-request, presentation callbacks, or shared headers change. Withhold canvas/presentation integration sign-off until landing. |
+| `stream` registry/core state machine | Audit registration, growth, start/update/submit/stop transactionality, and local ownership. | Always repeat canvas/video attachment integration; repeat core if public/shared contracts, payload lifetime, callback tables, state ordering, or error semantics change. |
+| `video` encoder core/mux/providers | Audit provider-independent configuration, encoder ownership, muxing, provider cleanup, and isolated provider paths. | Always repeat `video_sink.c` plus canvas/stream integration; repeat core/provider slices if frame descriptors, formats, stride/timestamp, public/shared headers, provider configuration, or file/error contracts change. |
+| `canvas` | Defer. | Complete the planned module audit after render landing. |
+| `vk` | Defer. | Audit affected loader/device/queue/memory/interop/capability/format/sample/resolve ownership surfaces after landing. Complete the original module boundary unless the landing manifest mechanically proves an isolated untouched slice. |
+| `vklite` | Defer. | Audit every changed command/sync/resource/descriptor/pipeline/rendering/surface/swapchain/technique slice plus direct runtime consumers. |
+| DRP2 wire/serialization/recording | Read-only inspection is safe, but do not record final sign-off while the protocol and shared headers may change. | Repeat changed packet/schema/fixture/semantic slices; unchanged pure slices may retain prior evidence only when the landing manifest proves no public/shared/header/build dependency. |
+| DRP2 backend/objects/pipeline/pass/transfer/runtime | Defer. | Audit all affected native execution and parity slices after vklite and render contracts stabilize. |
+| Scene isolated retained CPU state | Inspect only when the render landing manifest is expected to exclude its public contracts, shared headers, frame artifacts, query formats, and shaders. My preference is to defer final scene sign-off. | Repeat direct tests for every changed or dependency-invalidated slice. |
+| `frame_plan`, `render_contract`, `scene_emit`, scene `runtime`, `techniques`, governed shaders, shader registry, and affected visual foundation/capability/pipeline/lowering/material paths | Defer. | Complete these source-audit slices after legacy rendering paths are removed. Include analytic sphere, mesh/primitive, surface-record, AO, EDL, transparency, MSAA, panel extent, capability, and shader ABI boundaries. |
+| Scene query/interaction/text/annotation and unrelated visuals | No final work is required solely because rendering changes. | Repeat only when changed directly or invalidated through public/shared headers, frame-artifact identity, query readback formats, common shaders, build configuration, or direct caller contracts. |
+| `app` | Defer. | Audit affected configuration/lifecycle/scheduling/presentation/trace/replay/recovery integration after the rendering and QA branches converge. |
+
+This policy is contract-based, not directory-based. A textually unchanged module slice is invalidated by a public/shared header, lifecycle, frame-state, resource identity, shader ABI, fixture, build-configuration, or direct caller contract change on which its conclusion depended.
+
+The render lane must supply a landing manifest with its merge base/head, changed public/shared headers, source paths, generated inputs, shader/build/fixture changes, ownership and lifecycle deltas, protocol/schema deltas, test configurations, and explicit unaffected claims. Apply these mechanical rules:
+
+1. An isolated implementation change reruns the slice's static checks, focused normal/sanitizer tests, and direct boundary consumer tests.
+2. A public or shared-header change reruns every recorded slice that includes or relies on it.
+3. A DRP2 command/schema/semantic change reruns changed C tests, fixtures, `just drp2-fixtures`, WebGPU preflight, and scene emission for the command class.
+4. A shader/technique/resource-contract change reruns shader ABI/source guards, relevant vklite/DRP2 runtime, scene technique/emission tests, validated offscreen proof, and the affected visual conformance cases.
+5. A window/swapchain/canvas frame-lifecycle change reruns window/canvas/stream/video integration and bounded live presentation; offscreen evidence alone is insufficient.
+6. A public API/header, binding policy, or binding-generator change runs `just ctypes` and `just ctypes-check` before Python, GSP, or packaging validation.
+
+During the parallel period, use separate worktrees and build trees, one writer/committer per lane under one primary integrator, and explicit writer/build/sanitizer/GPU/shader/binding/DRP2/integration locks. Do not run concurrent heavy builds, sanitizers, shaderc first-use, GPU/WSI, validation, CUDA/NVENC, binding generation, DRP2 fixture generation, or packaging. A QA finding in a render-leased path becomes a cross-lane record rather than an overlapping edit.
+
 ### Dependency Order
 
 | Order | Module | Planned checkpoints | Principal focused runner/gate |
@@ -45,7 +78,7 @@ This queue is the proposed execution contract for the autonomous remainder of th
 | 9 | `scene` | Core/domain/contracts/query/interaction/visual families/annotation/emission/runtime/techniques | `dvztest_scene`, scene/DRP2/runtime/render lanes, source guards |
 | 10 | `app` | Configuration/lifecycle; scheduling/presentation; trace/record/replay; runtime recovery | unified `app` filters, scene app-offscreen groups, integration/live loops |
 
-The order follows the current handoff and keeps smaller CPU-oriented modules ahead of provider-heavy foundations. A finding may pull a downstream caller into focused validation, but implementation changes stay in the owning module checkpoint unless the reviewed contract proves the foundation itself is wrong.
+The order follows the standalone QA handoff and keeps smaller CPU-oriented modules ahead of provider-heavy foundations. During the approved two-lane campaign, use the temporary ordering above: `math`, window core, stream core, and video core/provider slices may precede the render landing; canvas and the affected Vulkan/DRP2/scene/app foundation follow it. A finding may pull a downstream caller into focused validation, but implementation changes stay in the owning module checkpoint unless the reviewed contract proves the foundation itself is wrong.
 
 ### `math`
 
@@ -217,9 +250,10 @@ At `e710ea15f` on the Linux NVIDIA RTX 5090 host:
 
 ## Review Gate And Restart Sequence
 
-1. The maintainer reviews the remaining campaign contract and requests any boundary, order, validation, checkpoint, or stopping-rule changes before autonomous execution begins.
-2. After explicit approval, begin with the `math` numeric-helper checkpoint, apply the module-entry drift check, and proceed through the reviewed dependency order without waiting between cleanly authorized slices.
-3. Keep this document current after each checkpoint: condense completed queue text into evidence when detail is no longer useful, preserve limitations, and leave the next exact restart point unambiguous.
-4. At campaign completion, provide the maintainer a consolidated report of commits, findings, clean audited areas, tests and tools, limitations, remaining risks, integration options, and final worktree status.
+1. The maintainer reviews the remaining campaign contract, the render-product proposal, and the two-lane orchestration handoff, then requests any boundary, order, validation, checkpoint, or stopping-rule changes before autonomous execution begins.
+2. After explicit approval, begin with the `math` numeric-helper checkpoint, apply the module-entry drift check, and proceed through only the pre-landing slices in Temporary Two-Lane Coordination while the separate render lane runs.
+3. After the render branch lands, consume its cumulative landing manifest, rerun only the mechanically invalidated completed slices, and execute every deferred module/slice in dependency order. Do not infer that unchanged directories retain valid conclusions when shared contracts moved.
+4. Keep this document current after each checkpoint: condense completed queue text into evidence when detail is no longer useful, preserve limitations, and leave the next exact restart point unambiguous.
+5. At campaign completion, provide the maintainer a consolidated report of commits, findings, clean audited areas, tests and tools, limitations, remaining risks, integration options, and final worktree status.
 
 For final RC3 release evidence, convert this exploratory sequence into a frozen matrix with exact commit/artifact identity, commands, tool versions, configurations, pass/fail/skip totals, timeouts, suppressions, provider versions, GPU/driver identity, and explicit exclusions.
