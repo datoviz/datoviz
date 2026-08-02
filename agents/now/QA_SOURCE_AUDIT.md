@@ -1,6 +1,6 @@
 # Incremental C QA Handoff
 
-Status: active incremental source audit completed through `input` and the first `math` numeric-helper checkpoint; the remaining campaign and two-lane render coordination were approved on 2026-08-02. Updated: 2026-08-02.
+Status: active incremental source audit completed through `input`, math statistics, and the bounded math box checkpoint; the remaining campaign and two-lane render coordination were approved on 2026-08-02. Updated: 2026-08-02.
 
 This handoff records the current static-analysis, sanitizer, lifetime, bounds, and corruption-prevention pass. It is development evidence for the RC3 release-quality lane, not final exact-artifact or platform-matrix proof.
 
@@ -226,18 +226,21 @@ After the last module, rerun the frozen locally available matrix from the exact 
 | Sanitizer configuration | Made validation-layer exclusion durable in Linux ASan, MSan, and TSan recipe configuration. Explicitly reset ASan and TSan caches to `ON`, rebuilt through the recipes, and verified both caches resolved to `DVZ_USE_VALIDATION:BOOL=OFF`. | `a5a3073ec` |
 | Input | Confirmed the synchronous router is active through window backends, canvas, controllers, scene, and WASM. Hardened subscription growth against overflow and allocation failure, preserved live arrays after failed growth, prevented removed callbacks from running later in the same dispatch, avoided callback-ID reuse after wrap, handled constructor and dispatch allocation failure, and rejected corrupting duplicate presses and backwards click timestamps. Added focused callback lifetime, allocation-failure, and gesture regressions. | `e710ea15f` |
 | Math statistics | Confirmed the active math source set and corrected handoff drift: the public umbrella is `include/datoviz/dvzmath.h`, there is no standalone `test_parallel.c`, and parallel coverage lives in `test_stats.c`. Removed four duplicate exported statistics implementations from `parallel.c`, preserving the documented zero-count `dvz_range()` no-op in the sole `stats.c` implementation, and added focused range, extrema, clipping, and equal-bound normalization coverage. | `c157b2cfb` |
+| Math boxes | Added the missing documented non-null output assertion to `dvz_box_inverse()` and regression coverage for nonpositive extent passthrough, empty and strategy-specific merges, ordinary one-dimensional and polygon normalization, and ordinary inverse mappings. Degenerate source/target axes, non-finite inputs, overlapping buffers, and initialization of untouched `vec3` components remain explicit contract questions; this checkpoint does not change them. | `c0005f0f6` |
 
 Focused normal tests, relevant sanitizer runs, per-file static analysis, `just build`, `just spec-check`, and `git diff --check` were used throughout the checkpoints where applicable. There is no retained machine-readable campaign report, so final RC3 evidence must rerun the frozen matrix from exact release artifacts.
 
 ## Latest Confirmed State
 
-At `c157b2cfb` on the Linux NVIDIA RTX 5090 host:
+At `c0005f0f6` on the Linux NVIDIA RTX 5090 host:
 
 - Normal `just build` and `just test math` passed; math selected 15/15 tests.
 - The focused math lane passed 15/15 under ASan/UBSan/LSan with `DVZ_USE_VALIDATION:BOOL=OFF`; the runtime emitted the host's existing sanitizer interceptor warnings without a sanitizer finding.
 - Focused `clang-tidy` on `stats.c` and `parallel.c` emitted no user-code diagnostic. Focused `cppcheck` emitted only its configuration-count notice.
 - `just spec-check` passed through the main worktree's existing `.venv`, including 125/125 DRP2 fixtures, WebGPU fixtures/preflight, scheduler tests, and scene source guards. The first invocation with system Python was an environment failure because `/usr/bin/python3` lacks `pytest`, not a repository failure.
 - `git diff --check` passed before the implementation checkpoint.
+- The focused normal box selection passed 7/7 including its direct scene query consumer, while the exact ASan/UBSan/LSan `math/box` group passed 6/6 with validation disabled and no sanitizer finding. The broad `just atest box` selector was stopped after its six box cases passed because it also selected and stalled in an unrelated GPU scene-query case.
+- Focused `clang-tidy` on `box.c` and `test_box.c` emitted no user-code diagnostic, and focused `cppcheck` emitted no diagnostic.
 
 Previous input checkpoint evidence at `e710ea15f`:
 
