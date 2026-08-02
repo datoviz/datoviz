@@ -219,7 +219,7 @@ The comparison tool forces ordinary FIFO for `scatter-interaction`. Keep raw rep
 
 ## Next Decision
 
-Run the same one-, two-, and auto-slot comparison on physical Windows, then make a separate default-policy decision. Linux evidence favors one slot for FIFO interaction and the auto control shows no implementation regression, but the override remains opt-in until cross-platform data is available. The expected direction is capped FIFO latest-ready when supported, a bounded-frames-in-flight FIFO fallback, explicit environment overrides, and eventually refresh-aware pacing instead of an unconditional 60 FPS cap.
+Run the same one-, two-, and auto-slot comparison on physical Windows using the exact procedure and report contract in [HANDOFF_WINDOWS_VALIDATION.md](HANDOFF_WINDOWS_VALIDATION.md#2-run-the-fifo-frame-slot-comparison-now), then make a separate default-policy decision. Linux evidence favors one slot for FIFO interaction and the auto control shows no implementation regression, but the override remains opt-in until cross-platform data is available. The expected direction is capped FIFO latest-ready when supported, a bounded-frames-in-flight FIFO fallback, explicit environment overrides, and eventually refresh-aware pacing instead of an unconditional 60 FPS cap.
 
 ## Completion Criteria
 
