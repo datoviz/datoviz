@@ -154,6 +154,8 @@ dvz_input_subscribe_pointer(DvzInputRouter* router, DvzPointerCallback callback,
  *
  * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
  * currently registered on this router.
+ * Subscriptions added during dispatch begin with the next event. A subscription removed before its
+ * turn in the current dispatch is not invoked.
  *
  * @param router target router; must not be NULL
  * @param id subscription identifier returned by a subscribe function

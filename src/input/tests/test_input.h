@@ -28,9 +28,15 @@ int test_router_callbacks(TstContext* suite, const TstCase* item);
 
 int test_router_unsubscribe(TstContext* suite, const TstCase* item);
 
+int test_router_remove_later_callback(TstContext* suite, const TstCase* item);
+
+int test_router_growth_failure(TstContext* suite, const TstCase* item);
+
 int test_keyboard_modifiers(TstContext* suite, const TstCase* item);
 
 int test_pointer_gestures(TstContext* suite, const TstCase* item);
+
+int test_pointer_gesture_invalid_sequences(TstContext* suite, const TstCase* item);
 
 int test_pointer_wheel(TstContext* suite, const TstCase* item);
 

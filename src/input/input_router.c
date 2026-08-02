@@ -109,16 +109,55 @@ struct DvzInputRouter
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-static void
-_ensure_capacity(uint32_t item_size, void** data, uint32_t* capacity, uint32_t min_capacity)
+static bool
+_ensure_capacity(size_t item_size, void** data, uint32_t* capacity, uint32_t min_capacity)
 {
     if (*capacity >= min_capacity)
-        return;
-    uint32_t new_capacity = *capacity ? (*capacity * 2) : 4;
+        return true;
+    uint32_t new_capacity = *capacity ? *capacity : 4;
     while (new_capacity < min_capacity)
+    {
+        if (new_capacity > UINT32_MAX / 2)
+        {
+            new_capacity = min_capacity;
+            break;
+        }
         new_capacity *= 2;
-    *data = dvz_realloc(*data, item_size * new_capacity);
+    }
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(item_size, new_capacity, &bytes) || bytes > SIZE_MAX)
+        return false;
+    void* resized = dvz_realloc(*data, bytes);
+    if (resized == NULL)
+        return false;
+    *data = resized;
     *capacity = new_capacity;
+    return true;
+}
+
+
+
+static bool _subscription_active(const DvzInputRouter* router, DvzCallbackId id)
+{
+    ANN(router);
+    if (id == DVZ_CALLBACK_ID_NONE)
+        return false;
+    for (uint32_t i = 0; i < router->pointer_count; i++)
+        if (router->pointer_subs[i].id == id)
+            return true;
+    for (uint32_t i = 0; i < router->keyboard_count; i++)
+        if (router->keyboard_subs[i].id == id)
+            return true;
+    for (uint32_t i = 0; i < router->event_count; i++)
+        if (router->event_subs[i].id == id)
+            return true;
+    for (uint32_t i = 0; i < router->resize_count; i++)
+        if (router->resize_subs[i].id == id)
+            return true;
+    for (uint32_t i = 0; i < router->scale_count; i++)
+        if (router->scale_subs[i].id == id)
+            return true;
+    return false;
 }
 
 
@@ -126,9 +165,12 @@ _ensure_capacity(uint32_t item_size, void** data, uint32_t* capacity, uint32_t m
 static DvzCallbackId _next_callback_id(DvzInputRouter* router)
 {
     ANN(router);
-    router->next_callback_id++;
-    if (router->next_callback_id == DVZ_CALLBACK_ID_NONE)
+    do
+    {
         router->next_callback_id++;
+    } while (
+        router->next_callback_id == DVZ_CALLBACK_ID_NONE ||
+        _subscription_active(router, router->next_callback_id));
     return router->next_callback_id;
 }
 
@@ -238,13 +280,14 @@ static void _dispatch_pointer_subs(DvzInputRouter* router, const DvzPointerEvent
     uint32_t count = router->pointer_count;
     DvzPointerSubscription* subs =
         (DvzPointerSubscription*)dvz_calloc(count, sizeof(DvzPointerSubscription));
-    ANN(subs);
+    if (subs == NULL)
+        return;
     size_t bytes = sizeof(DvzPointerSubscription) * count;
     dvz_memcpy(subs, bytes, router->pointer_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzPointerSubscription* sub = &subs[i];
-        if (sub->callback != NULL)
+        if (sub->callback != NULL && _subscription_active(router, sub->id))
             sub->callback(router, event, sub->user_data);
     }
     dvz_free(subs);
@@ -261,13 +304,14 @@ static void _dispatch_keyboard_subs(DvzInputRouter* router, const DvzKeyboardEve
     uint32_t count = router->keyboard_count;
     DvzKeyboardSubscription* subs =
         (DvzKeyboardSubscription*)dvz_calloc(count, sizeof(DvzKeyboardSubscription));
-    ANN(subs);
+    if (subs == NULL)
+        return;
     size_t bytes = sizeof(DvzKeyboardSubscription) * count;
     dvz_memcpy(subs, bytes, router->keyboard_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzKeyboardSubscription* sub = &subs[i];
-        if (sub->callback != NULL)
+        if (sub->callback != NULL && _subscription_active(router, sub->id))
             sub->callback(router, event, sub->user_data);
     }
     dvz_free(subs);
@@ -284,13 +328,14 @@ static void _dispatch_resize_subs(DvzInputRouter* router, const DvzInputResizeEv
     uint32_t count = router->resize_count;
     DvzResizeSubscription* subs =
         (DvzResizeSubscription*)dvz_calloc(count, sizeof(DvzResizeSubscription));
-    ANN(subs);
+    if (subs == NULL)
+        return;
     size_t bytes = sizeof(DvzResizeSubscription) * count;
     dvz_memcpy(subs, bytes, router->resize_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzResizeSubscription* sub = &subs[i];
-        if (sub->callback != NULL)
+        if (sub->callback != NULL && _subscription_active(router, sub->id))
             sub->callback(router, event, sub->user_data);
     }
     dvz_free(subs);
@@ -307,13 +352,14 @@ static void _dispatch_scale_subs(DvzInputRouter* router, const DvzInputScaleEven
     uint32_t count = router->scale_count;
     DvzScaleSubscription* subs =
         (DvzScaleSubscription*)dvz_calloc(count, sizeof(DvzScaleSubscription));
-    ANN(subs);
+    if (subs == NULL)
+        return;
     size_t bytes = sizeof(DvzScaleSubscription) * count;
     dvz_memcpy(subs, bytes, router->scale_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzScaleSubscription* sub = &subs[i];
-        if (sub->callback != NULL)
+        if (sub->callback != NULL && _subscription_active(router, sub->id))
             sub->callback(router, event, sub->user_data);
     }
     dvz_free(subs);
@@ -330,13 +376,14 @@ static void _dispatch_event_subs(DvzInputRouter* router, const DvzInputEvent* ev
     uint32_t count = router->event_count;
     DvzEventSubscription* subs =
         (DvzEventSubscription*)dvz_calloc(count, sizeof(DvzEventSubscription));
-    ANN(subs);
+    if (subs == NULL)
+        return;
     size_t bytes = sizeof(DvzEventSubscription) * count;
     dvz_memcpy(subs, bytes, router->event_subs, bytes);
     for (uint32_t i = 0; i < count; i++)
     {
         DvzEventSubscription* sub = &subs[i];
-        if (sub->callback != NULL)
+        if (sub->callback != NULL && _subscription_active(router, sub->id))
             sub->callback(router, event, sub->user_data);
     }
     dvz_free(subs);
@@ -391,7 +438,6 @@ static void _emit_union_scale(DvzInputRouter* router, const DvzInputScaleEvent* 
 DvzInputRouter* dvz_input_router(void)
 {
     DvzInputRouter* router = (DvzInputRouter*)dvz_calloc(1, sizeof(DvzInputRouter));
-    ANN(router);
     return router;
 }
 
@@ -420,9 +466,11 @@ DvzCallbackId dvz_input_subscribe_pointer(
 {
     if (router == NULL || callback == NULL)
         return DVZ_CALLBACK_ID_NONE;
-    _ensure_capacity(
-        sizeof(DvzPointerSubscription), (void**)&router->pointer_subs, &router->pointer_capacity,
-        router->pointer_count + 1);
+    if (router->pointer_count == UINT32_MAX ||
+        !_ensure_capacity(
+            sizeof(DvzPointerSubscription), (void**)&router->pointer_subs,
+            &router->pointer_capacity, router->pointer_count + 1))
+        return DVZ_CALLBACK_ID_NONE;
     DvzCallbackId id = _next_callback_id(router);
     router->pointer_subs[router->pointer_count++] =
         (DvzPointerSubscription){id, callback, user_data};
@@ -465,9 +513,11 @@ DvzCallbackId dvz_input_subscribe_keyboard(
 {
     if (router == NULL || callback == NULL)
         return DVZ_CALLBACK_ID_NONE;
-    _ensure_capacity(
-        sizeof(DvzKeyboardSubscription), (void**)&router->keyboard_subs,
-        &router->keyboard_capacity, router->keyboard_count + 1);
+    if (router->keyboard_count == UINT32_MAX ||
+        !_ensure_capacity(
+            sizeof(DvzKeyboardSubscription), (void**)&router->keyboard_subs,
+            &router->keyboard_capacity, router->keyboard_count + 1))
+        return DVZ_CALLBACK_ID_NONE;
     DvzCallbackId id = _next_callback_id(router);
     router->keyboard_subs[router->keyboard_count++] =
         (DvzKeyboardSubscription){id, callback, user_data};
@@ -491,9 +541,11 @@ dvz_input_subscribe_event(DvzInputRouter* router, DvzInputCallback callback, voi
 {
     if (router == NULL || callback == NULL)
         return DVZ_CALLBACK_ID_NONE;
-    _ensure_capacity(
-        sizeof(DvzEventSubscription), (void**)&router->event_subs, &router->event_capacity,
-        router->event_count + 1);
+    if (router->event_count == UINT32_MAX ||
+        !_ensure_capacity(
+            sizeof(DvzEventSubscription), (void**)&router->event_subs, &router->event_capacity,
+            router->event_count + 1))
+        return DVZ_CALLBACK_ID_NONE;
     DvzCallbackId id = _next_callback_id(router);
     router->event_subs[router->event_count++] = (DvzEventSubscription){id, callback, user_data};
     return id;
@@ -512,9 +564,11 @@ DvzCallbackId dvz_input_subscribe_resize(
 {
     if (router == NULL || callback == NULL)
         return DVZ_CALLBACK_ID_NONE;
-    _ensure_capacity(
-        sizeof(DvzResizeSubscription), (void**)&router->resize_subs, &router->resize_capacity,
-        router->resize_count + 1);
+    if (router->resize_count == UINT32_MAX ||
+        !_ensure_capacity(
+            sizeof(DvzResizeSubscription), (void**)&router->resize_subs,
+            &router->resize_capacity, router->resize_count + 1))
+        return DVZ_CALLBACK_ID_NONE;
     DvzCallbackId id = _next_callback_id(router);
     router->resize_subs[router->resize_count++] = (DvzResizeSubscription){id, callback, user_data};
     return id;
@@ -551,9 +605,11 @@ dvz_input_subscribe_scale(DvzInputRouter* router, DvzScaleCallback callback, voi
 {
     if (router == NULL || callback == NULL)
         return DVZ_CALLBACK_ID_NONE;
-    _ensure_capacity(
-        sizeof(DvzScaleSubscription), (void**)&router->scale_subs, &router->scale_capacity,
-        router->scale_count + 1);
+    if (router->scale_count == UINT32_MAX ||
+        !_ensure_capacity(
+            sizeof(DvzScaleSubscription), (void**)&router->scale_subs, &router->scale_capacity,
+            router->scale_count + 1))
+        return DVZ_CALLBACK_ID_NONE;
     DvzCallbackId id = _next_callback_id(router);
     router->scale_subs[router->scale_count++] = (DvzScaleSubscription){id, callback, user_data};
     return id;

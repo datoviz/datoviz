@@ -67,7 +67,6 @@ DvzKeyboardModifierState* dvz_keyboard_modifier_state(void)
 {
     DvzKeyboardModifierState* state =
         (DvzKeyboardModifierState*)dvz_calloc(1, sizeof(DvzKeyboardModifierState));
-    ANN(state);
     return state;
 }
 

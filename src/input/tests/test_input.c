@@ -32,6 +32,7 @@
 typedef struct
 {
     DvzPointerEventType last_type;
+    DvzPointerButton drag_start_button;
     uint32_t count;
     DvzPointerEventType history[16];
 } EventRecorder;
@@ -45,6 +46,16 @@ typedef struct
     bool unsubscribe_ok;
     uint32_t follower_calls;
 } DispatchRecorder;
+
+
+
+typedef struct
+{
+    DvzCallbackId removed_id;
+    uint32_t remover_calls;
+    uint32_t removed_calls;
+    bool remove_ok;
+} RemovalRecorder;
 
 
 
@@ -153,6 +164,8 @@ static void _record_event(DvzInputRouter* router, const DvzInputEvent* event, vo
     if (event->type != DVZ_INPUT_EVENT_POINTER)
         return;
     recorder->last_type = event->content.pointer.type;
+    if (recorder->last_type == DVZ_POINTER_EVENT_DRAG_START)
+        recorder->drag_start_button = event->content.pointer.button;
     if (recorder->count < sizeof(recorder->history) / sizeof(recorder->history[0]))
         recorder->history[recorder->count++] = recorder->last_type;
 }
@@ -214,6 +227,49 @@ _follower_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* us
     ANN(user_data);
     DispatchRecorder* recorder = user_data;
     recorder->follower_calls++;
+}
+
+
+
+/**
+ * Remove a later callback before its turn in the current dispatch.
+ */
+static void
+_remove_later_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    RemovalRecorder* recorder = user_data;
+    recorder->remover_calls++;
+    recorder->remove_ok = dvz_input_unsubscribe(router, recorder->removed_id);
+}
+
+
+
+/**
+ * Record an invocation that should be suppressed after unsubscription.
+ */
+static void
+_removed_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    RemovalRecorder* recorder = user_data;
+    recorder->removed_calls++;
+}
+
+
+
+/**
+ * Reject subscription-array growth for allocation-failure coverage.
+ */
+static void* _reject_realloc(void* pointer, DvzSize size)
+{
+    (void)pointer;
+    (void)size;
+    return NULL;
 }
 
 
@@ -362,6 +418,61 @@ int test_router_unsubscribe(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Ensure removing a later callback prevents it from running with stale user data.
+ */
+int test_router_remove_later_callback(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    DvzInputRouter* router = dvz_input_router();
+    RemovalRecorder recorder = {0};
+    DvzCallbackId remover_id =
+        dvz_input_subscribe_pointer(router, _remove_later_pointer, &recorder);
+    recorder.removed_id = dvz_input_subscribe_pointer(router, _removed_pointer, &recorder);
+    AT(remover_id != DVZ_CALLBACK_ID_NONE);
+    AT(recorder.removed_id != DVZ_CALLBACK_ID_NONE);
+    DvzPointerEvent event =
+        _make_event(DVZ_POINTER_EVENT_MOVE, 0.0f, 0.0f, DVZ_POINTER_BUTTON_NONE, 1);
+    dvz_input_emit_pointer(router, &event);
+    AT(recorder.remover_calls == 1);
+    AT(recorder.remove_ok);
+    AT(recorder.removed_calls == 0);
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
+ * Preserve existing subscriptions when growing the callback array fails.
+ */
+int test_router_growth_failure(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    DvzInputRouter* router = dvz_input_router();
+    DispatchRecorder recorder = {0};
+    for (uint32_t i = 0; i < 4; i++)
+        AT(dvz_input_subscribe_pointer(router, _follower_pointer, &recorder) !=
+           DVZ_CALLBACK_ID_NONE);
+
+    const DvzAllocator* previous_allocator = dvz_get_allocator();
+    DvzAllocator failing_allocator = {.realloc_fn = _reject_realloc};
+    dvz_set_allocator(&failing_allocator);
+    DvzCallbackId failed_id =
+        dvz_input_subscribe_pointer(router, _follower_pointer, &recorder);
+    dvz_set_allocator(previous_allocator);
+
+    AT(failed_id == DVZ_CALLBACK_ID_NONE);
+    DvzPointerEvent event =
+        _make_event(DVZ_POINTER_EVENT_MOVE, 0.0f, 0.0f, DVZ_POINTER_BUTTON_NONE, 1);
+    dvz_input_emit_pointer(router, &event);
+    AT(recorder.follower_calls == 4);
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
  * Verify modifier bit tracking works for shift.
  */
 int test_keyboard_modifiers(TstContext* suite, const TstCase* item)
@@ -428,6 +539,52 @@ int test_pointer_gestures(TstContext* suite, const TstCase* item)
     drag_release.timestamp_ns = drag_move.timestamp_ns + 10000000;
     dvz_input_emit_pointer(router, &drag_release);
     AT(_recorder_contains(&recorder, DVZ_POINTER_EVENT_DRAG_STOP));
+
+    dvz_pointer_gesture_handler_destroy(gestures);
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
+ * Reject corrupting duplicate presses and backwards event timestamps.
+ */
+int test_pointer_gesture_invalid_sequences(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    DvzInputRouter* router = dvz_input_router();
+    DvzPointerGestureHandler* gestures = dvz_pointer_gesture_handler(router);
+    EventRecorder recorder = {0};
+    dvz_input_subscribe_event(router, _record_event, &recorder);
+
+    DvzPointerEvent press =
+        _make_event(DVZ_POINTER_EVENT_PRESS, 10.0f, 10.0f, DVZ_POINTER_BUTTON_LEFT, 1000000000);
+    dvz_input_emit_pointer(router, &press);
+    DvzPointerEvent duplicate = press;
+    duplicate.button = DVZ_POINTER_BUTTON_RIGHT;
+    duplicate.timestamp_ns += 10000000;
+    dvz_input_emit_pointer(router, &duplicate);
+    DvzPointerEvent move = press;
+    move.type = DVZ_POINTER_EVENT_MOVE;
+    move.pos[0] += 30.0f;
+    move.timestamp_ns += 20000000;
+    dvz_input_emit_pointer(router, &move);
+    AT(recorder.drag_start_button == DVZ_POINTER_BUTTON_LEFT);
+    DvzPointerEvent drag_release = move;
+    drag_release.type = DVZ_POINTER_EVENT_RELEASE;
+    drag_release.timestamp_ns += 10000000;
+    dvz_input_emit_pointer(router, &drag_release);
+
+    _recorder_reset(&recorder);
+    DvzPointerEvent late_press =
+        _make_event(DVZ_POINTER_EVENT_PRESS, 0.0f, 0.0f, DVZ_POINTER_BUTTON_LEFT, 2000000000);
+    dvz_input_emit_pointer(router, &late_press);
+    DvzPointerEvent early_release = late_press;
+    early_release.type = DVZ_POINTER_EVENT_RELEASE;
+    early_release.timestamp_ns--;
+    dvz_input_emit_pointer(router, &early_release);
+    AT(!_recorder_contains(&recorder, DVZ_POINTER_EVENT_CLICK));
 
     dvz_pointer_gesture_handler_destroy(gestures);
     dvz_input_router_destroy(router);
@@ -528,8 +685,11 @@ int test_input(TstSuite* suite)
     TST_MODULE(suite, tags);
     TST_CASE(test_router_callbacks);
     TST_CASE(test_router_unsubscribe);
+    TST_CASE(test_router_remove_later_callback);
+    TST_CASE(test_router_growth_failure);
     TST_CASE(test_keyboard_modifiers);
     TST_CASE(test_pointer_gestures);
+    TST_CASE(test_pointer_gesture_invalid_sequences);
     TST_CASE(test_pointer_wheel);
     TST_CASE(test_pointer_emit_window_size);
     TST_CASE(test_resize_scale_events);

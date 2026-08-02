@@ -49,7 +49,6 @@ struct DvzPointerGestureHandler
     vec2 cur_pos;
     double time;
     double last_press;
-    double last_click;
 };
 
 
@@ -241,6 +240,12 @@ _after_press(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
     handler->time = _resolve_time(handler->time, event->timestamp_ns);
     double delay = handler->time - handler->last_press;
 
+    if (
+        handler->state == DVZ_POINTER_STATE_PRESS ||
+        handler->state == DVZ_POINTER_STATE_DRAGGING ||
+        handler->state == DVZ_POINTER_STATE_CLICK_PRESS)
+        return NULL_EVENT;
+
     if (handler->state == DVZ_POINTER_STATE_RELEASE)
         _vec2_copy(event->pos, handler->press_pos);
 
@@ -252,21 +257,21 @@ _after_press(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 
     switch (handler->state)
     {
-    case DVZ_POINTER_STATE_PRESS:
-    case DVZ_POINTER_STATE_DRAGGING:
-        return NULL_EVENT;
-
     case DVZ_POINTER_STATE_RELEASE:
     case DVZ_POINTER_STATE_DOUBLE_CLICK:
         handler->state = DVZ_POINTER_STATE_PRESS;
         break;
 
     case DVZ_POINTER_STATE_CLICK:
-        handler->state = (delay <= DVZ_POINTER_DOUBLE_CLICK_MAX_DELAY) ? DVZ_POINTER_STATE_CLICK_PRESS
-                                                                       : DVZ_POINTER_STATE_PRESS;
+        handler->state =
+            (delay >= 0 && delay <= DVZ_POINTER_DOUBLE_CLICK_MAX_DELAY)
+                ? DVZ_POINTER_STATE_CLICK_PRESS
+                : DVZ_POINTER_STATE_PRESS;
         break;
 
+    case DVZ_POINTER_STATE_PRESS:
     case DVZ_POINTER_STATE_CLICK_PRESS:
+    case DVZ_POINTER_STATE_DRAGGING:
     default:
         break;
     }
@@ -317,12 +322,11 @@ _after_release(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 
     case DVZ_POINTER_STATE_PRESS:
     case DVZ_POINTER_STATE_CLICK_PRESS:
-        if (delay <= DVZ_POINTER_CLICK_MAX_DELAY)
+        if (delay >= 0 && delay <= DVZ_POINTER_CLICK_MAX_DELAY)
         {
             handler->state = DVZ_POINTER_STATE_CLICK;
             ev.type = (prev == DVZ_POINTER_STATE_CLICK_PRESS) ? DVZ_POINTER_EVENT_DOUBLE_CLICK
                                                               : DVZ_POINTER_EVENT_CLICK;
-            handler->last_click = handler->time;
         }
         else
         {
@@ -464,9 +468,16 @@ DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router)
     ANN(router);
     DvzPointerGestureHandler* handler =
         (DvzPointerGestureHandler*)dvz_calloc(1, sizeof(DvzPointerGestureHandler));
+    if (handler == NULL)
+        return NULL;
     handler->router = router;
     handler->state = DVZ_POINTER_STATE_RELEASE;
     handler->subscription_id = dvz_input_subscribe_pointer(router, _pointer_router_callback, handler);
+    if (handler->subscription_id == DVZ_CALLBACK_ID_NONE)
+    {
+        dvz_free(handler);
+        return NULL;
+    }
     return handler;
 }
 

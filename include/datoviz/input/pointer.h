@@ -177,7 +177,8 @@ DVZ_EXPORT void dvz_pointer_emit_wheel(
  * double-click, drag-start, drag, and drag-stop events.
  *
  * @param router router to observe; borrowed and must outlive the handler
- * @return a new owned handler; destroy it before destroying @p router
+ * @return a new owned handler, or NULL on allocation or subscription failure; destroy it before
+ * destroying @p router
  */
 DVZ_EXPORT DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router);
 
