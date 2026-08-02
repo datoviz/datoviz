@@ -110,6 +110,94 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         first.passes[1].bindings[0].load_source_product_id.value ==
         first.techniques[1].input_ids[0].value);
 
+    DvzFramePlan* generic_graph = dvz_frame_plan("composition.generic-graph", 0);
+    ANN(generic_graph);
+    AT(_scene_panel_composition_lower_graph(generic_graph, &first, NULL));
+    AT(generic_graph->graph_resource_count == 1);
+    AT(generic_graph->graph_pass_count == first.pass_count);
+    AT(strcmp(generic_graph->graph_resources[0].id, "rt") == 0);
+    AT(generic_graph->graph_resources[0].kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET);
+    for (uint32_t i = 0; i < first.pass_count; i++)
+    {
+        const DvzFrameGraphPass* graph_pass = &generic_graph->graph_passes[i];
+        AT(graph_pass->has_composition_pass);
+        AT(graph_pass->composition_pass_id.value == first.passes[i].id.value);
+        AT(graph_pass->color_attachment_count == 1);
+        AT(strcmp(graph_pass->color_attachments[0].resource_id, "rt") == 0);
+    }
+    AT(
+        generic_graph->graph_passes[0].color_attachments[0].load_op ==
+        DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
+    AT(
+        generic_graph->graph_passes[1].color_attachments[0].load_op ==
+        DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+    dvz_frame_plan_destroy(generic_graph);
+
+    DvzSceneMsaaTechniqueState msaa = {
+        .enabled = true,
+        .sample_count = 4,
+        .alpha_to_coverage = true,
+    };
+    DvzPanelRenderPlan multisample_plan = plan;
+    multisample_plan.msaa_state = &msaa;
+    DvzPanelCompositionSnapshot multisample = {0};
+    AT(_scene_panel_composition_resolve(&multisample_plan, &caps, &multisample, NULL));
+    generic_graph = dvz_frame_plan("composition.generic-graph-msaa", 0);
+    ANN(generic_graph);
+    AT(_scene_panel_composition_lower_graph(generic_graph, &multisample, NULL));
+    AT(generic_graph->graph_resources[1].sample_count == 4);
+    AT(generic_graph->graph_passes[0].alpha_to_coverage);
+    AT(
+        strcmp(
+            generic_graph->graph_passes[0].color_attachments[0].resolve_resource_id,
+            "rt") == 0);
+    dvz_frame_plan_destroy(generic_graph);
+
+    generic_graph = dvz_frame_plan("composition.generic-graph-rollback", 0);
+    ANN(generic_graph);
+    DvzFrameGraphResource incompatible_rt = {0};
+    dvz_strlcpy(incompatible_rt.id, "rt", sizeof(incompatible_rt.id));
+    incompatible_rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    incompatible_rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    incompatible_rt.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+    incompatible_rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(generic_graph, &incompatible_rt));
+    AT(!_scene_panel_composition_lower_graph(generic_graph, &first, NULL));
+    AT(generic_graph->graph_resource_count == 1);
+    AT(generic_graph->graph_pass_count == 0);
+    dvz_frame_plan_destroy(generic_graph);
+
+    DvzPanelCompositionSnapshot invalid_graph_work = first;
+    invalid_graph_work.passes[0].bindings[0].slot =
+        DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS;
+    invalid_graph_work.work_declaration_fingerprint =
+        _frame_plan_composition_work_fingerprint(&invalid_graph_work);
+    generic_graph = dvz_frame_plan("composition.generic-graph-slot", 0);
+    ANN(generic_graph);
+    AT(!_scene_panel_composition_lower_graph(generic_graph, &invalid_graph_work, NULL));
+    AT(generic_graph->graph_resource_count == 0);
+    AT(generic_graph->graph_pass_count == 0);
+    dvz_frame_plan_destroy(generic_graph);
+
+    invalid_graph_work = multisample;
+    DvzSceneWorkBinding* invalid_multisample_load = &invalid_graph_work.passes[0].bindings[0];
+    invalid_multisample_load->access = DVZ_SCENE_WORK_ACCESS_READ_WRITE;
+    invalid_multisample_load->load = DVZ_SCENE_ATTACHMENT_LOAD_LOAD;
+    invalid_multisample_load->clear = false;
+    invalid_multisample_load->clear_value_kind = DVZ_SCENE_CLEAR_VALUE_NONE;
+    invalid_multisample_load->load_source_ref_kind = DVZ_SCENE_RESOURCE_REF_PRODUCT;
+    invalid_multisample_load->load_source_product_id = invalid_multisample_load->product_id;
+    invalid_graph_work.work_declaration_fingerprint =
+        _frame_plan_composition_work_fingerprint(&invalid_graph_work);
+    generic_graph = dvz_frame_plan("composition.generic-graph-msaa-load", 0);
+    ANN(generic_graph);
+    AT(!_scene_panel_composition_lower_graph(generic_graph, &invalid_graph_work, NULL));
+    AT(generic_graph->graph_resource_count == 0);
+    AT(generic_graph->graph_pass_count == 0);
+    dvz_frame_plan_destroy(generic_graph);
+
     DvzPanelCompositionSnapshot work_drift = first;
     work_drift.passes[0].provider = DVZ_SCENE_WORK_PROVIDER_EDL;
     DvzDiagnosticReport work_drift_report;
@@ -328,6 +416,18 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         }
     }
     AT(found_occluded_peel);
+
+    generic_graph = dvz_frame_plan("composition.generic-chain", 0);
+    ANN(generic_graph);
+    AT(_scene_panel_composition_lower_graph(generic_graph, &chain, NULL));
+    AT(generic_graph->graph_pass_count == chain.pass_count);
+    dvz_frame_plan_destroy(generic_graph);
+
+    generic_graph = dvz_frame_plan("composition.generic-peel", 0);
+    ANN(generic_graph);
+    AT(_scene_panel_composition_lower_graph(generic_graph, &occluded_peel_composed, NULL));
+    AT(generic_graph->graph_pass_count == occluded_peel_composed.pass_count);
+    dvz_frame_plan_destroy(generic_graph);
 
     DvzCapabilitySnapshot no_blend = caps;
     no_blend.supports_color_blending = false;
@@ -645,6 +745,23 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(found_surface_normal_scratch);
     AT(found_surface_depth_scratch);
     AT(found_edl_color_scratch);
+
+    generic_graph = dvz_frame_plan("composition.generic-effects", 0);
+    ANN(generic_graph);
+    AT(_scene_panel_composition_lower_graph(generic_graph, &composed, NULL));
+    AT(generic_graph->graph_pass_count == composed.pass_count);
+    AT(generic_graph->graph_resource_count > composed.scratch_resource_count);
+    for (uint32_t i = 0; i < composed.pass_count; i++)
+        AT(
+            generic_graph->graph_passes[i].composition_pass_id.value ==
+            composed.passes[i].id.value);
+    const uint32_t first_panel_resource_count = generic_graph->graph_resource_count;
+    DvzPanelCompositionSnapshot adjacent_composed = composed;
+    dvz_strlcpy(adjacent_composed.panel_id, "figure_0_p1", sizeof(adjacent_composed.panel_id));
+    AT(_scene_panel_composition_lower_graph(generic_graph, &adjacent_composed, NULL));
+    AT(generic_graph->graph_pass_count == 2 * composed.pass_count);
+    AT(generic_graph->graph_resource_count == 2 * first_panel_resource_count - 1);
+    dvz_frame_plan_destroy(generic_graph);
 
     DvzCapabilitySnapshot no_surface_rgba = caps;
     no_surface_rgba.render_target_format_rgba16float = false;

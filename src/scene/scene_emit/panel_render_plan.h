@@ -140,3 +140,6 @@ bool _scene_panel_composition_resolve(
 bool _scene_bind_panel_composition(
     DvzFramePlan* plan, const char* panel_id, const DvzPanelCompositionSnapshot* snapshot,
     DvzDiagnosticReport* report);
+
+bool _scene_panel_composition_lower_graph(
+    DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot, DvzDiagnosticReport* report);
