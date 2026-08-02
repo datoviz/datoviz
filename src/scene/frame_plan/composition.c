@@ -201,7 +201,7 @@ static bool _composition_scratch_contract_valid(const DvzSceneScratchResource* s
     }
     if (scratch->format != format || scratch->format_class != format_class ||
         scratch->usage_mask != usage || scratch->scope != scope ||
-        scratch->extent_policy != DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE ||
+        scratch->extent_policy != DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE ||
         scratch->lifetime != (scope == DVZ_SCENE_SCRATCH_SCOPE_PANEL
                                   ? DVZ_SCENE_SCRATCH_LIFETIME_FRAME
                                   : DVZ_SCENE_SCRATCH_LIFETIME_TECHNIQUE))
@@ -245,6 +245,19 @@ uint64_t _frame_plan_composition_work_fingerprint(const DvzPanelCompositionSnaps
     uint64_t hash = UINT64_C(1469598103934665603);
 #define HASH32(_value) hash = _composition_hash_u32(hash, (uint32_t)(_value))
 #define HASH64(_value) hash = _composition_hash_u64(hash, (uint64_t)(_value))
+    HASH32(snapshot->origin_x);
+    HASH32(snapshot->origin_y);
+    HASH32(snapshot->width);
+    HASH32(snapshot->height);
+    uint32_t float_bits = 0;
+    dvz_memcpy(&float_bits, sizeof(float_bits), &snapshot->render_scale, sizeof(float_bits));
+    HASH32(float_bits);
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        dvz_memcpy(
+            &float_bits, sizeof(float_bits), &snapshot->local_to_target[i], sizeof(float_bits));
+        HASH32(float_bits);
+    }
     HASH32(snapshot->scratch_resource_count);
     for (uint32_t i = 0; i < snapshot->scratch_resource_count; i++)
     {
@@ -359,6 +372,12 @@ bool _frame_plan_composition_validate(
             report, "panel %s composition snapshot is not finalized", panel_id);
     if (snapshot->panel_id[0] == '\0')
         return _composition_report(report, "composition snapshot has no panel identity");
+    if (snapshot->width == 0 || snapshot->height == 0 || !isfinite(snapshot->render_scale) ||
+        snapshot->render_scale <= 0)
+        return _composition_report(report, "panel %s has invalid local coordinates", panel_id);
+    for (uint32_t i = 0; i < 4; i++)
+        if (!isfinite(snapshot->local_to_target[i]))
+            return _composition_report(report, "panel %s has invalid local transform", panel_id);
     if (snapshot->technique_count > DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES ||
         snapshot->pass_count > DVZ_PANEL_COMPOSITION_MAX_PASSES ||
         snapshot->scratch_resource_count > DVZ_PANEL_COMPOSITION_MAX_SCRATCH_RESOURCES)
@@ -569,8 +588,9 @@ bool _frame_plan_composition_validate(
             return _composition_report(
                 report, "panel %s pass %u has an unknown work provider", panel_id, pass->id.value);
         if (pass->work_class <= DVZ_SCENE_WORK_NONE ||
-            pass->coordinate_space != DVZ_RENDER_PRODUCT_COORDINATES_FRAMEBUFFER_PIXEL ||
-            pass->viewport_panel_local || pass->scissor_panel_local || pass->sample_count == 0 ||
+            pass->coordinate_space != DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL ||
+            !pass->viewport_panel_local || !pass->scissor_panel_local ||
+            pass->sample_count == 0 ||
             (pass->binding_count == 0 && pass->unrealized_product_count == 0) ||
             pass->binding_count > DVZ_PANEL_COMPOSITION_MAX_WORK_BINDINGS)
             return _composition_report(

@@ -615,6 +615,12 @@ typedef struct DvzPanelCompositionSnapshot
 {
     bool valid;
     char panel_id[DVZ_SCENE_LABEL_SIZE];
+    int32_t origin_x;
+    int32_t origin_y;
+    uint32_t width;
+    uint32_t height;
+    float render_scale;
+    float local_to_target[4];
     uint64_t required_product_mask;
     DvzCapabilitySnapshot capabilities;
     uint32_t available_capability_mask;

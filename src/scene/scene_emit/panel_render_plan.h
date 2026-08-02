@@ -67,6 +67,12 @@ typedef struct
 typedef struct
 {
     char panel_id[64];
+    int32_t origin_x;
+    int32_t origin_y;
+    uint32_t width;
+    uint32_t height;
+    float render_scale;
+    float local_to_target[4];
     uint32_t drawable_count;
     uint32_t order[DVZ_SCENE_MAX_VISUALS];
     DvzPanelRenderVisualPlan visuals[DVZ_SCENE_MAX_VISUALS];

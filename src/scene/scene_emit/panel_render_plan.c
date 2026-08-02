@@ -13,6 +13,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <string.h>
 
 #include "_assertions.h"
@@ -384,6 +385,32 @@ static bool _scene_panel_render_plan_build_mutable(
     ASSERT(panel_index < figure->panel_count);
     DvzPanel* panel = &figure->panels[panel_index];
     dvz_snprintf(out->panel_id, sizeof(out->panel_id), "%s_p%u", figure_id, panel_index);
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    const float scale_x = figure->device_scale_x > 0.0f
+                              ? figure->device_scale_x * figure->render_scale
+                              : 1.0f;
+    const float scale_y = figure->device_scale_y > 0.0f
+                              ? figure->device_scale_y * figure->render_scale
+                              : 1.0f;
+    const float x0 = panel_x * scale_x;
+    const float y0 = panel_y * scale_y;
+    const float x1 = (panel_x + panel_width) * scale_x;
+    const float y1 = (panel_y + panel_height) * scale_y;
+    out->origin_x = (int32_t)floorf(x0);
+    out->origin_y = (int32_t)floorf(y0);
+    const int32_t outer_x = (int32_t)ceilf(x1);
+    const int32_t outer_y = (int32_t)ceilf(y1);
+    out->width = outer_x > out->origin_x ? (uint32_t)(outer_x - out->origin_x) : 1;
+    out->height = outer_y > out->origin_y ? (uint32_t)(outer_y - out->origin_y) : 1;
+    out->render_scale = figure->render_scale > 0.0f ? figure->render_scale : 1.0f;
+    out->local_to_target[0] = 1.0f;
+    out->local_to_target[1] = 1.0f;
+    out->local_to_target[2] = (float)out->origin_x;
+    out->local_to_target[3] = (float)out->origin_y;
     out->drawable_count = _scene_panel_drawable_visual_count(figure, panel);
     _scene_panel_visual_order(panel, out->order);
 

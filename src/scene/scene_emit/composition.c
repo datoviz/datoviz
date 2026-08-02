@@ -741,7 +741,7 @@ static DvzSceneScratchResourceId _composition_scratch(
                                                          ? DVZ_FORMAT_R8G8B8A8_UNORM
                                                          : DVZ_FORMAT_D32_SFLOAT))))),
         .format_class = format,
-        .extent_policy = DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE,
+        .extent_policy = DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE,
         .sample_domain = DVZ_RENDER_PRODUCT_SAMPLES_SINGLE,
         .sample_count = 1,
         .usage_mask = usage_mask,
@@ -903,9 +903,9 @@ static bool _composition_declare_work(
                            ? DVZ_SCENE_WORK_FULLSCREEN
                            : DVZ_SCENE_WORK_VISUAL_DRAWS;
     pass->provider = _composition_provider(pass->role);
-    pass->coordinate_space = DVZ_RENDER_PRODUCT_COORDINATES_FRAMEBUFFER_PIXEL;
-    pass->viewport_panel_local = false;
-    pass->scissor_panel_local = false;
+    pass->coordinate_space = DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL;
+    pass->viewport_panel_local = true;
+    pass->scissor_panel_local = true;
     pass->sample_count =
         pass->role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE ? context->opaque_samples : 1;
     pass->resolve_policy = DVZ_RENDER_PRODUCT_RESOLVE_NONE;
@@ -1713,6 +1713,21 @@ bool _scene_panel_composition_resolve(
     ANN(out);
     DvzPanelCompositionSnapshot draft = {0};
     dvz_snprintf(draft.panel_id, sizeof(draft.panel_id), "%s", render_plan->panel_id);
+    draft.origin_x = render_plan->origin_x;
+    draft.origin_y = render_plan->origin_y;
+    draft.width = render_plan->width > 0 ? render_plan->width : 1;
+    draft.height = render_plan->height > 0 ? render_plan->height : 1;
+    draft.render_scale = render_plan->render_scale > 0 ? render_plan->render_scale : 1.0f;
+    dvz_memcpy(
+        draft.local_to_target, sizeof(draft.local_to_target), render_plan->local_to_target,
+        sizeof(render_plan->local_to_target));
+    if (draft.local_to_target[0] == 0.0f && draft.local_to_target[1] == 0.0f)
+    {
+        draft.local_to_target[0] = 1.0f;
+        draft.local_to_target[1] = 1.0f;
+        draft.local_to_target[2] = (float)draft.origin_x;
+        draft.local_to_target[3] = (float)draft.origin_y;
+    }
     if (caps != NULL)
         draft.capabilities = *caps;
     draft.available_capability_mask = _composition_available_capabilities(caps);

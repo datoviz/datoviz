@@ -159,8 +159,9 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
          (UINT64_C(1) << DVZ_RENDER_PRODUCT_PRESENTATION_COLOR)) != 0);
     AT(first.work_declaration_fingerprint != 0);
     AT(first.passes[0].provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
-    AT(first.passes[0].coordinate_space == DVZ_RENDER_PRODUCT_COORDINATES_FRAMEBUFFER_PIXEL);
-    AT(!first.passes[0].viewport_panel_local);
+    AT(first.passes[0].coordinate_space == DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL);
+    AT(first.passes[0].viewport_panel_local);
+    AT(first.passes[0].scissor_panel_local);
     AT(first.passes[0].binding_count == 1);
     AT(first.passes[0].bindings[0].clear_value_kind == DVZ_SCENE_CLEAR_VALUE_FRAME);
     AT(first.passes[1].provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
@@ -638,6 +639,10 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     const uint64_t color_bit = UINT64_C(1) << DVZ_RENDER_PRODUCT_SCENE_COLOR;
     DvzPanelCompositionSnapshot cycle = {
         .valid = true,
+        .width = 1,
+        .height = 1,
+        .render_scale = 1.0f,
+        .local_to_target = {1.0f, 1.0f, 0.0f, 0.0f},
         .required_product_mask = color_bit,
         .technique_count = 2,
     };
@@ -795,7 +800,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     for (uint32_t i = 0; i < composed.scratch_resource_count; i++)
     {
         const DvzSceneScratchResource* scratch = &composed.scratch_resources[i];
-        AT(scratch->extent_policy == DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE);
+        AT(scratch->extent_policy == DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE);
         if (scratch->kind == DVZ_SCENE_SCRATCH_SURFACE_NORMAL_LEGACY)
         {
             AT(scratch->format == DVZ_FORMAT_R16G16B16A16_SFLOAT);
