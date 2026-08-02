@@ -15,12 +15,40 @@
 /*************************************************************************************************/
 
 #include "scene_graph_utils.h"
+#include "frame_plan/internal.h"
 
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Resolve the typed provider represented by one physical graph pass.
+ *
+ * @param plan source frame plan
+ * @param pass physical graph pass
+ * @return provider key, or none when the pass is not composition-backed
+ */
+DvzSceneWorkProviderKey _scene_test_graph_pass_provider(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
+{
+    ANN(plan);
+    if (pass == NULL || !pass->has_composition_pass)
+        return DVZ_SCENE_WORK_PROVIDER_NONE;
+    const DvzPanelCompositionSnapshot* snapshot =
+        _frame_plan_composition_get(plan, pass->panel_id);
+    if (snapshot == NULL)
+        return DVZ_SCENE_WORK_PROVIDER_NONE;
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        if (snapshot->passes[i].id.value == pass->composition_pass_id.value)
+            return snapshot->passes[i].provider;
+    }
+    return DVZ_SCENE_WORK_PROVIDER_NONE;
+}
+
+
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 typedef struct

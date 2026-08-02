@@ -183,6 +183,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     {
         const DvzFrameGraphPass* graph_pass = &generic_graph->graph_passes[i];
         AT(graph_pass->has_composition_pass);
+        AT(graph_pass->work_label[0] == '\0');
         AT(graph_pass->composition_pass_id.value == first.passes[i].id.value);
         AT(graph_pass->color_attachment_count == 1);
         AT(strcmp(graph_pass->color_attachments[0].resource_id, "rt") == 0);
@@ -1888,7 +1889,9 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(
         opaque_pass->composition_pass_id.value ==
         opaque_node->u.render.composition_pass_id.value);
-    AT(strcmp(gbuffer_pass->work_label, "gbuffer") == 0);
+    AT(
+        _scene_test_graph_pass_provider(plan, gbuffer_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE);
     AT(gbuffer_pass->color_attachment_count == 1);
     AT(gbuffer_pass->has_depth_attachment);
     AT(strcmp(gbuffer_pass->color_attachments[0].resource_id, "figure_0_p0.gbuffer.normal") == 0);
@@ -2264,7 +2267,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
 
     const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, 0);
     ANN(pass);
-    AT(strcmp(pass->work_label, "opaque") == 0);
+    AT(_scene_test_graph_pass_provider(plan, pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
     AT(pass->color_attachment_count == 1);
     AT(strcmp(pass->color_attachments[0].resource_id, "figure_0_p0.msaa.color") == 0);
     AT(pass->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
@@ -2598,11 +2601,13 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
     const DvzFrameGraphPass* blended_pass = dvz_frame_plan_graph_pass_get(plan, 1);
     ANN(opaque_pass);
     ANN(blended_pass);
-    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+    AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
     AT(strcmp(opaque_pass->color_attachments[0].resource_id, "figure_0_p0.msaa.color") == 0);
     AT(strcmp(opaque_pass->color_attachments[0].resolve_resource_id, "rt") == 0);
     AT(opaque_pass->color_attachments[0].resolve_mode == VK_RESOLVE_MODE_AVERAGE_BIT);
-    AT(strcmp(blended_pass->work_label, "transparent_blend") == 0);
+    AT(
+        _scene_test_graph_pass_provider(plan, blended_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
     AT(strcmp(blended_pass->color_attachments[0].resource_id, "rt") == 0);
     AT(!blended_pass->has_depth_attachment);
 
@@ -2744,9 +2749,10 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         ANN(pass);
-        if (strcmp(pass->work_label, "ssao_composite") == 0)
+        const DvzSceneWorkProviderKey provider = _scene_test_graph_pass_provider(plan, pass);
+        if (provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE)
             saw_ssao_composite = true;
-        if (saw_ssao_composite && strcmp(pass->work_label, "transparent_blend") == 0)
+        if (saw_ssao_composite && provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND)
             saw_blended_after_ssao = true;
     }
     AT(saw_ssao_composite);
@@ -3086,8 +3092,8 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     const DvzFrameGraphPass* edl_pass = dvz_frame_plan_graph_pass_get(plan, 1);
     ANN(opaque_pass);
     ANN(edl_pass);
-    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
-    AT(strcmp(edl_pass->work_label, "edl_resolve") == 0);
+    AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
+    AT(_scene_test_graph_pass_provider(plan, edl_pass) == DVZ_SCENE_WORK_PROVIDER_EDL);
     AT(opaque_pass->has_depth_attachment);
     AT(strcmp(opaque_pass->color_attachments[0].resource_id, "figure_0_p0.edl.color") == 0);
     AT(strcmp(opaque_pass->depth_attachment.resource_id, "figure_0_p0.edl.depth") == 0);
@@ -3252,9 +3258,10 @@ int test_scene_edl_blended_overlay_runtime_lowering(TstContext* suite, const Tst
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         ANN(pass);
-        found_edl_pass = found_edl_pass || strcmp(pass->work_label, "edl_resolve") == 0;
+        const DvzSceneWorkProviderKey provider = _scene_test_graph_pass_provider(plan, pass);
+        found_edl_pass = found_edl_pass || provider == DVZ_SCENE_WORK_PROVIDER_EDL;
         found_blended_pass =
-            found_blended_pass || strcmp(pass->work_label, "transparent_blend") == 0;
+            found_blended_pass || provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND;
     }
     AT(found_edl_pass);
     AT(found_blended_pass);
@@ -3441,10 +3448,11 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(transparent_plan, i);
         ANN(pass);
-        found_edl_resolve =
-            found_edl_resolve || strcmp(pass->work_label, "edl_resolve") == 0;
+        const DvzSceneWorkProviderKey provider =
+            _scene_test_graph_pass_provider(transparent_plan, pass);
+        found_edl_resolve = found_edl_resolve || provider == DVZ_SCENE_WORK_PROVIDER_EDL;
         found_wboit_resolve =
-            found_wboit_resolve || strcmp(pass->work_label, "wboit_resolve") == 0;
+            found_wboit_resolve || provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE;
     }
     AT(!found_edl_resolve);
     AT(found_wboit_resolve);
@@ -3581,10 +3589,14 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     ANN(opaque_pass);
     ANN(ssao_pass);
     ANN(composite_pass);
-    AT(strcmp(gbuffer_pass->work_label, "gbuffer") == 0);
-    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
-    AT(strcmp(ssao_pass->work_label, "ssao") == 0);
-    AT(strcmp(composite_pass->work_label, "ssao_composite") == 0);
+    AT(
+        _scene_test_graph_pass_provider(plan, gbuffer_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE);
+    AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
+    AT(_scene_test_graph_pass_provider(plan, ssao_pass) == DVZ_SCENE_WORK_PROVIDER_SSAO);
+    AT(
+        _scene_test_graph_pass_provider(plan, composite_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE);
     AT(ssao_pass->read_count == 2);
     AT(strcmp(ssao_pass->reads[0].resource_id, "figure_0_p0.gbuffer.normal") == 0);
     AT(strcmp(ssao_pass->reads[1].resource_id, "figure_0_p0.gbuffer.depth") == 0);
@@ -3627,7 +3639,7 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     composite_pass = dvz_frame_plan_graph_pass_get(plan, 4);
     ANN(blur_pass);
     ANN(composite_pass);
-    AT(strcmp(blur_pass->work_label, "ssao_blur") == 0);
+    AT(_scene_test_graph_pass_provider(plan, blur_pass) == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR);
     AT(blur_pass->read_count == 3);
     AT(strcmp(blur_pass->reads[0].resource_id, "figure_0_p0.ssao.occlusion") == 0);
     AT(strcmp(blur_pass->reads[1].resource_id, "figure_0_p0.gbuffer.normal") == 0);
@@ -4388,7 +4400,9 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         ANN(pass);
-        if (strcmp(pass->work_label, "transparent_blend") == 0)
+        if (
+            _scene_test_graph_pass_provider(plan, pass) ==
+            DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND)
             blend_pass = pass;
     }
     ANN(blend_pass);
@@ -4590,11 +4604,12 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         ANN(pass);
-        if (strcmp(pass->work_label, "volume_occlusion") == 0)
+        const DvzSceneWorkProviderKey provider = _scene_test_graph_pass_provider(plan, pass);
+        if (provider == DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION)
             volume_pass = pass;
-        else if (strcmp(pass->work_label, "scene_occlusion") == 0)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION)
             scene_pass = pass;
-        else if (strcmp(pass->work_label, "transparent_blend") == 0)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND)
             blend_pass = pass;
     }
     ANN(volume_pass);
@@ -4853,9 +4868,13 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     ANN(opaque_pass);
     ANN(accum_pass);
     ANN(resolve_pass);
-    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
-    AT(strcmp(accum_pass->work_label, "wboit_accum") == 0);
-    AT(strcmp(resolve_pass->work_label, "wboit_resolve") == 0);
+    AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
+    AT(
+        _scene_test_graph_pass_provider(plan, accum_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION);
+    AT(
+        _scene_test_graph_pass_provider(plan, resolve_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE);
     AT(opaque_pass->has_depth_attachment);
     AT(accum_pass->color_attachment_count == 2);
     AT(accum_pass->has_depth_attachment);
@@ -5005,8 +5024,10 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite,
     const DvzFrameGraphPass* accum_pass = dvz_frame_plan_graph_pass_get(plan, 1);
     ANN(opaque_pass);
     ANN(accum_pass);
-    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
-    AT(strcmp(accum_pass->work_label, "wboit_accum") == 0);
+    AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
+    AT(
+        _scene_test_graph_pass_provider(plan, accum_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION);
     AT(!opaque_pass->has_depth_attachment);
     AT(accum_pass->has_depth_attachment);
     AT(strcmp(accum_pass->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
@@ -5153,9 +5174,15 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     ANN(init_pass);
     ANN(iter_pass);
     ANN(composite_pass);
-    AT(strcmp(init_pass->work_label, "depth_peel_init") == 0);
-    AT(strcmp(iter_pass->work_label, "depth_peel_iter") == 0);
-    AT(strcmp(composite_pass->work_label, "depth_peel_composite") == 0);
+    AT(
+        _scene_test_graph_pass_provider(plan, init_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT);
+    AT(
+        _scene_test_graph_pass_provider(plan, iter_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION);
+    AT(
+        _scene_test_graph_pass_provider(plan, composite_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE);
     AT(init_pass->color_attachment_count == 3);
     AT(iter_pass->read_count == 1);
     AT(strcmp(iter_pass->reads[0].resource_id, "figure_0_p0.peel.depth_minmax_ping") == 0);
@@ -5303,7 +5330,9 @@ int test_scene_visual_alpha_mode_depth_peel_blended_overlay(TstContext* suite, c
     ANN(overlay_node);
     ANN(overlay_pass);
     AT(dvz_frame_plan_render_pass_role(overlay_node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
-    AT(strcmp(overlay_pass->work_label, "transparent_blend") == 0);
+    AT(
+        _scene_test_graph_pass_provider(plan, overlay_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
@@ -5369,7 +5398,7 @@ int test_scene_visual_alpha_mode_depth_peel_loads_prior_panel(
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         if (
             pass != NULL && strcmp(pass->panel_id, "figure_0_p1") == 0 &&
-            strcmp(pass->work_label, "opaque") == 0)
+            _scene_test_graph_pass_provider(plan, pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE)
         {
             right_opaque = pass;
             break;

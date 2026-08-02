@@ -1754,11 +1754,13 @@ int test_scene_visual_scene_occlusion_frame_plan(TstContext* suite, const TstCas
     const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 1);
     ANN(occlusion_pass);
     ANN(opaque_pass);
-    AT(strcmp(occlusion_pass->work_label, "scene_occlusion") == 0);
+    AT(
+        _scene_test_graph_pass_provider(plan, occlusion_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION);
     AT(occlusion_pass->color_attachment_count == 1);
     AT(strcmp(occlusion_pass->color_attachments[0].resource_id,
               "figure_0_p0.scene_occlusion.depth") == 0);
-    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+    AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
     AT(opaque_pass->read_count == 1);
     AT(strcmp(opaque_pass->reads[0].resource_id, "figure_0_p0.scene_occlusion.depth") == 0);
     AT(opaque_pass->reads[0].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED);
@@ -2033,8 +2035,10 @@ int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCa
     const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 1);
     ANN(volume_pass);
     ANN(opaque_pass);
-    AT(strcmp(volume_pass->work_label, "volume_occlusion") == 0);
-    AT(strcmp(opaque_pass->work_label, "opaque") == 0);
+    AT(
+        _scene_test_graph_pass_provider(plan, volume_pass) ==
+        DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION);
+    AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
 
     DvzDiagnosticReport graph_report;
     dvz_diagnostic_report_init(&graph_report);
