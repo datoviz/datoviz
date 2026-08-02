@@ -1,6 +1,6 @@
 # Windows Native Validation Handoff
 
-Status: native development environment and source-build validation are green; frame-slot comparison, symmetric AMD/NVIDIA, local PyQt hosting, Windows vcpkg, and exact-candidate physical proof remain. Updated: 2026-08-02.
+Status: native development, automated AMD/NVIDIA source validation, and the Windows vcpkg consumer are green; the FIFO frame-slot comparison remains, the visible DRP2 live-canvas gate exposed an AMD/NVIDIA rendering asymmetry, and a Vulkan-enabled PyQt provider plus exact-candidate physical proof also remain. Updated: 2026-08-02.
 
 ## Scope
 
@@ -10,8 +10,13 @@ Source-checkout results are development evidence only. They must not be reported
 
 ## Machine And Completed Baseline
 
-- Windows 11 x64 with Visual Studio 2022, MSVC 14.44.35207, Windows SDK 10.0.26100.0, Vulkan SDK 1.4.350.0, CUDA Toolkit 13.2, and Qt 6.11.1 MSVC 2022 64-bit.
+- Windows 11 x64 with Visual Studio 2022, MSVC 14.44.35207, Windows SDK 10.0.26100.0, Vulkan SDK 1.4.350.0, CUDA Toolkit 13.2, Qt 6.11.1 MSVC 2022 64-bit, and Node.js LTS 24.18.1.
 - Vulkan GPU 0 is AMD Radeon 780M Graphics; GPU 1 is NVIDIA GeForce RTX 5060 Laptop GPU.
+- The isolated validation branch starts from `5393b56a8`; its retained campaign reports are source-checkout evidence and must be rerun when the runtime candidate changes.
+- The final affected Debug and Release matrix passed `canvas`, `gui`, `vk`, `vklite`, and `video` on both GPUs with 0 failures and no Vulkan validation messages. Expected capability skips were four canvas, one vklite, and one NVENC case on AMD, and one GLFW lifecycle canvas case on NVIDIA.
+- The broad NVIDIA Debug run passed 1,066 of 1,067 selected cases with one expected skip. The broad Release run initially exposed leaked logger state from the thread module; after making the test adapter restore its threshold per case, Release also passed 1,066 of 1,067 with one expected skip and no Vulkan validation messages.
+- Debug and Release `dvz_live_canvas` offscreen scene smoke passed on both GPUs. In the scripted Release GLFW screenshot check, NVIDIA rendered one orange point but AMD rendered a blank black frame; `--scene-points 100000` was parsed and reported by the benchmark but the NVIDIA screenshot still contained only one point. Both processes closed normally and reported no Vulkan validation error. This visible gate is open and must not be reported as passed.
+- The full spec-check suite passes on Windows after installing its `jsonschema` dependency and fixing fixture-tool handling of Windows file URIs and portable JSON path separators.
 - Runtime commit `e179adeda` passed the full modular Debug and Release suites on the NVIDIA Vulkan ICD: 1,074 selected, 1,070 passed, 0 failed, and 4 expected Windows/platform skips in each configuration.
 - Debug and Release NVIDIA NVENC spot checks passed; the AMD NVENC check produced the expected unsupported-device skip.
 - The native Qt bridge builds at `build-msvc/qtbridge/<Configuration>/datoviz_qtbridge.dll`.
@@ -19,16 +24,14 @@ Source-checkout results are development evidence only. They must not be reported
 - The `dvztest_modules` aggregate target reduced the measured combined Debug and Release rebuild from 478.7 seconds to 260.5 seconds; an aggregate Debug no-op build took 14.3 seconds.
 - Retained local logs, JSON reports, recordings, and the detailed summary are outside the repository under `Documents/Codex/2026-08-01/je-configure-ce-pc-windows-11/outputs/`. Do not commit those payloads.
 
-## 1. Complete The Symmetric AMD/NVIDIA Campaign Now
+## 1. Resolve And Repeat The Visible AMD/NVIDIA Checks
 
-This is the highest-value remaining physical-machine task. Follow [HANDOFF_GPU_SELECTION.md](HANDOFF_GPU_SELECTION.md#remaining-physical-windows-campaign) and preserve separate output roots for GPU 0 and GPU 1.
+The automated symmetric source campaign is complete at the branch point recorded above, but the GLFW scene result is asymmetric. Follow [HANDOFF_GPU_SELECTION.md](HANDOFF_GPU_SELECTION.md#remaining-physical-windows-campaign) and preserve separate output roots for GPU 0 and GPU 1 when repeating it for another candidate.
 
-1. Record `--list-gpus` output and Windows, Vulkan loader, GPU, and driver versions.
-2. Run identical Debug scopes on both indices for `vk`, `vklite`, `drp2`, `canvas`, `scene`, `app`, `gui`, `capture`, and applicable `video` cases.
-3. Repeat the same scopes in Release without using `DVZ_LOG_LEVEL` to influence behavior.
-4. Run `dvz_live_canvas` with both offscreen and GLFW backends on each index; a human must assess visible presentation and interaction.
-5. Keep enumeration, production-default, invalid-index, CPU-only, CUDA/UUID, and encoder tests in a separate exemption set.
-6. Compare exact totals, skips, exits, validation messages, presentation behavior, and report metadata between AMD and NVIDIA.
+1. Determine why the DRP2 live canvas is blank on AMD and why the requested 100,000-point grid appears as a single point on NVIDIA.
+2. Repeat the Release GLFW live canvas on GPU 0 and GPU 1 after the affected runtime changes land.
+3. On each window, confirm visible rendering, resize behavior, normal close, and reopen; record pass, fail, or skip with a reason.
+4. Keep the observed AMD/NVIDIA capability skips separate from unexplained asymmetry: AMD has no NVENC and lacks the tested external-memory interop path, while the NVIDIA GLFW lifecycle case has an expected platform skip.
 
 The runner interface is:
 
@@ -134,15 +137,13 @@ Do not change code or defaults solely because a benchmark verdict says `improvem
 
 Recommend one slot only if the one-slot candidate passes validation and physical behavior, materially improves or does not regress Windows p95 input-to-submit latency, and is consistent with the Linux direction. Recommend two slots if one slot fails correctness or materially regresses Windows while two slots passes and improves. Recommend auto if both bounded settings fail correctness or materially regress. Report `inconclusive` if configuration identity, display stability, sample integrity, or confidence intervals do not support a decision. My preferred policy, if Windows confirms Linux, is one FIFO frame slot by default with `DVZ_MAX_FRAMES_IN_FLIGHT` retained as an override; present-mode policy remains a separate decision.
 
-## 3. Complete Local Qt/PyQt Source-Hosting Proof Now
+## 3. Resolve The Local Qt/PyQt Provider Blocker
 
-Qt and the native bridge are installed, but this Python 3.12 environment still needs PyQt6 and a source-hosted smoke. This local proof validates the Windows development environment; it does not replace the externally blocked exact conda-provider campaign in [STATUS.md](STATUS.md).
+Qt 6.11.1, the native Release bridge, and PyQt6 6.11.0 are installed. The bridge loads and reports ABI 1 with Qt 6.11.1, but the PyPI Windows PyQt6 package does not expose `QVulkanInstance`; `python -m datoviz.qt` therefore stops with the intended Vulkan-support diagnostic. This is a provider limitation, not a Datoviz rendering failure, and it does not replace the externally blocked exact conda-provider campaign in [STATUS.md](STATUS.md).
 
-1. Install PyQt6 into the intended Python 3.12 environment and record its version and Qt runtime version.
-2. Point `DATOVIZ_QTBRIDGE_LIBRARY` at the bridge for the matching Debug or Release configuration when automatic discovery does not find it.
-3. Run `python -m datoviz.qt` and `python examples/python/qt/hosted_pyqt.py --smoke-ms 1000`.
-4. Run one visible hosted window and have the maintainer confirm rendering, resize, interaction, normal close, and reopen.
-5. Preserve explicit negative diagnostics for a missing bridge, unavailable `QVulkanInstance`, and provider/runtime mismatch when those paths can be reproduced safely.
+1. Obtain a Windows PyQt6 build that exposes `QVulkanInstance` and matches Qt 6.11.1, or validate an explicitly supported alternative provider.
+2. Run `python -m datoviz.qt` and `python examples/python/qt/hosted_pyqt.py --smoke-ms 1000` with `DATOVIZ_QTBRIDGE_LIBRARY` pointing at the matching bridge.
+3. Run one visible hosted window and have the maintainer confirm rendering, resize, interaction, normal close, and reopen.
 
 PowerShell template:
 
@@ -152,15 +153,18 @@ python -m datoviz.qt
 python .\examples\python\qt\hosted_pyqt.py --smoke-ms 1000
 ```
 
-## 4. Validate The Windows vcpkg Overlay Now
+## 4. Windows vcpkg Overlay Result
 
-Use a clean vcpkg installation and the supported `x64-windows` triplet. First validate the checkout-backed pre-tag path, then build and run the CMake package consumer. Follow [../../vcpkg-overlay/README.md](../../vcpkg-overlay/README.md) and retain the exact vcpkg commit, triplet, compiler, command lines, and consumer result.
+The checkout-backed `x64-windows` overlay was built from source with vcpkg commit `39344dff01c5a5a0134caf2624cdd492f05d30ea` and MSVC 14.44.35207. Debug and Release standalone CMake consumers both built and ran, reporting Datoviz 0.4.0rc2. The shared-package fixes keep the internal image helper within each DLL layer and install MSDF runtime DLLs under `bin` and `debug/bin`.
+
+For checkout-backed validation, disable binary-cache restoration because the ABI key does not include file contents behind `DATOVIZ_VCPKG_SOURCE_PATH`. Follow [../../vcpkg-overlay/README.md](../../vcpkg-overlay/README.md) and retain the exact vcpkg commit, triplet, compiler, command lines, and consumer result.
 
 PowerShell template:
 
 ```powershell
 $env:DATOVIZ_VCPKG_SOURCE_PATH = (Get-Location).Path
-& <vcpkg.exe> install datoviz --overlay-ports="$PWD\vcpkg-overlay\ports" --triplet x64-windows
+$env:VCPKG_KEEP_ENV_VARS = "DATOVIZ_VCPKG_SOURCE_PATH"
+& <vcpkg.exe> install datoviz:x64-windows --classic --overlay-ports="$PWD\vcpkg-overlay\ports" --triplet x64-windows --binarysource=clear
 cmake -S .\examples\c\integration\cmake_package -B .\build\vcpkg-consumer -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>\scripts\buildsystems\vcpkg.cmake
 cmake --build .\build\vcpkg-consumer --config Release
 ```
