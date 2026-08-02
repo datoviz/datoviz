@@ -236,6 +236,9 @@ bool _frame_plan_graph_pass_writes_resource(const DvzFrameGraphPass* pass, const
         if (_frame_plan_graph_attachment_writes(&pass->color_attachments[i]) &&
             strcmp(pass->color_attachments[i].resource_id, resource_id) == 0)
             return true;
+        if (pass->color_attachments[i].resolve_resource_id[0] != '\0' &&
+            strcmp(pass->color_attachments[i].resolve_resource_id, resource_id) == 0)
+            return true;
     }
     if (pass->has_depth_attachment && _frame_plan_graph_attachment_writes(&pass->depth_attachment) &&
         strcmp(pass->depth_attachment.resource_id, resource_id) == 0)
@@ -338,6 +341,13 @@ bool _frame_plan_graph_pass_write_count_resource(
             *count += 1;
             if (usage != NULL)
                 *usage = _frame_plan_graph_color_attachment_usage(&pass->color_attachments[i]);
+        }
+        if (pass->color_attachments[i].resolve_resource_id[0] != '\0' &&
+            strcmp(pass->color_attachments[i].resolve_resource_id, resource_id) == 0)
+        {
+            *count += 1;
+            if (usage != NULL)
+                *usage = DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT;
         }
     }
     if (pass->has_depth_attachment && _frame_plan_graph_attachment_writes(&pass->depth_attachment) &&

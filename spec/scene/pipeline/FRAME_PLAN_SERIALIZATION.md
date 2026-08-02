@@ -22,22 +22,77 @@ A serializable FramePlan allows:
 
 ```json
 {
-  "frame_plan_schema": "0.1",
+  "frame_plan_schema": "0.2",
   "frame_plan": {
     "figure_id": "<string>",
     "frame_index": "<uint64>",
-    "nodes": [ <node>, ... ]
+    "nodes": [ <node>, ... ],
+    "products": [ <product>, ... ]
   }
 }
 ```
 
-The JSON above is the current schema `0.1` shape. It has no semantic product array and remains valid only for current characterization and fixtures.
+The JSON above is the current schema `0.2` shape. Schema `0.1` is the pre-product characterization shape.
 
 `figure_id` is the scene-assigned figure identity.
 `frame_index` is a monotonically increasing counter per figure.
 `nodes` is an ordered list of plan nodes, in execution order.
 
-R1 must bump the schema version and add a concrete `products` array serialized independently from physical graph resources. Each product record exposes its typed plan-local ID, kind, domain, panel/view and camera identity where applicable, extent policy and resolved extent, format class and concrete format, sample domain and resolve policy, coordinate/encoding/alpha/coverage/validity metadata, lifetime, producer, consumers, and capability adaptations. Diagnostic names remain non-authoritative.
+The `products` array is serialized independently from physical graph resources. Each product record exposes its typed plan-local ID and version, kind, domain, panel/view and camera identity where applicable, extent policy and resolved extent, format class and concrete format, sample domain and resolve policy, coordinate/encoding/alpha/coverage/validity metadata, required accesses, physical resource realization, source product, coherent surface-record identity, producer, consumers, and capability adaptations. Diagnostic names remain non-authoritative.
+
+### Product Record
+
+```json
+{
+  "id": 10,
+  "label": "surface_depth@1",
+  "version": 1,
+  "kind": "surface_depth",
+  "domain": "panel",
+  "panel_id": "panel.0",
+  "view_id": "view.0",
+  "camera_id": "camera.0",
+  "projection_id": "projection.0",
+  "extent": {
+    "policy": "panel_relative",
+    "rounding": "outward",
+    "origin": { "x": 16, "y": 12 },
+    "width": 640,
+    "height": 480,
+    "render_scale": 1.0,
+    "local_to_target": [1.0, 1.0, 16.0, 12.0]
+  },
+  "format_class": "depth_float",
+  "concrete_format": 100,
+  "sample_domain": "single",
+  "sample_count": 1,
+  "resolve_policy": "none",
+  "coordinate_space": "panel_local",
+  "encoding": "linear_view_depth",
+  "alpha": "none",
+  "coverage": "none",
+  "validity": "explicit_coverage",
+  "validity_product_id": 12,
+  "has_background_value": false,
+  "background_value": [0.0, 0.0, 0.0, 0.0],
+  "has_integer_sentinel": false,
+  "integer_sentinel": 0,
+  "required_accesses": ["color_attachment", "sampled"],
+  "lifetime": "per_frame",
+  "resource_index": 3,
+  "resource_label": "panel.0.surface.depth",
+  "source_product_id": 0,
+  "surface_record_id": 1,
+  "producer_pass_index": 2,
+  "producer_pass_label": "panel.0.surface_capture",
+  "consumers": [
+    { "pass_index": 3, "validity_requirement": "explicit_coverage", "pass_label": "panel.0.gtao" }
+  ],
+  "capability_adaptations": 0
+}
+```
+
+The numeric `id`, `source_product_id`, and `surface_record_id` fields are typed plan-local identities; zero is the absent identity. `label` is optional diagnostic text and never authoritative. `resource_index`, `producer_pass_index`, and consumer `pass_index` values are indices into the immutable graph arrays. Resource and pass labels are duplicated only for diagnostics. The numeric `concrete_format` uses the same internal format enum as graph resources. A source product identifies an explicit predecessor or resolve source; it is never inferred from labels or shared physical storage. Every consumer declares the validity form it accepts. `capability_adaptations` is a deterministic bitset whose named meanings are defined with the composer capability contract before nonzero values are emitted.
 
 
 ## Node Types
@@ -139,7 +194,7 @@ This is the primary acceptance test for the converter before GPU execution.
 
 ## Versioning
 
-The current serialization shape is versioned as `"frame_plan_schema": "0.1"` (pre-stable). The approved semantic-product shape is an R1 target, not part of schema `0.1`, and requires a version bump when its concrete fields land.
+The current serialization shape is versioned as `"frame_plan_schema": "0.2"` (pre-stable). Schema `0.2` adds typed semantic products without changing the DRP2 protocol.
 Fixtures pinned to a schema version are valid only for that version.
 Schema bumps are permitted while the scene spec is pre-release.
 

@@ -33,3 +33,30 @@ DvzFramePlanNode* _frame_plan_last_node(DvzFramePlan* plan, DvzFramePlanNodeType
 bool _frame_plan_render_visual_reserve(DvzFramePlanNode* node, uint32_t count);
 
 const char* _frame_graph_access_usage_name(DvzFrameGraphAccessUsage usage);
+
+const char* _frame_plan_product_kind_name(DvzRenderProductKind kind);
+
+const char* _frame_plan_product_domain_name(DvzRenderProductDomain domain);
+
+const char* _frame_plan_product_extent_name(DvzRenderProductExtentPolicy extent);
+
+const char* _frame_plan_product_rounding_name(DvzRenderProductRoundingPolicy rounding);
+
+const char* _frame_plan_product_format_name(DvzRenderProductFormatClass format_class);
+
+const char* _frame_plan_product_samples_name(DvzRenderProductSampleDomain sample_domain);
+
+const char* _frame_plan_product_resolve_name(DvzRenderProductResolvePolicy resolve_policy);
+
+const char* _frame_plan_product_coordinates_name(DvzRenderProductCoordinateSpace coordinates);
+
+const char* _frame_plan_product_encoding_name(DvzRenderProductEncoding encoding);
+
+const char* _frame_plan_product_alpha_name(DvzRenderProductAlpha alpha);
+
+const char* _frame_plan_product_coverage_name(DvzRenderProductCoverage coverage);
+
+const char* _frame_plan_product_validity_name(DvzRenderProductValidity validity);
+
+const char* _frame_plan_product_validity_requirement_name(
+    DvzRenderProductValidityRequirement requirement);

@@ -509,5 +509,6 @@ bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport
         if (pass->kind == DVZ_FRAME_GRAPH_PASS_RENDER)
             ok = _graph_validate_render_pass_attachment_extents(plan, pass, report) && ok;
     }
+    ok = dvz_frame_plan_products_validate(plan, report) && ok;
     return ok;
 }

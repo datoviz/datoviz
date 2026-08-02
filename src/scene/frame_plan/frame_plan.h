@@ -28,6 +28,8 @@
 #define DVZ_FRAME_PLAN_INITIAL_VISUAL_CAPACITY 4
 #define DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY 16
 #define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY 16
+#define DVZ_FRAME_PLAN_INITIAL_PRODUCT_CAPACITY 16
+#define DVZ_FRAME_PLAN_INITIAL_PRODUCT_USE_CAPACITY 32
 #define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES 8
 #define DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS 4
 #define DVZ_FRAME_PLAN_ASCII_COMPACT 0x01u
@@ -126,6 +128,193 @@ typedef enum
 
 typedef enum
 {
+    DVZ_RENDER_PRODUCT_NONE = 0,
+    DVZ_RENDER_PRODUCT_SCENE_COLOR,
+    DVZ_RENDER_PRODUCT_SURFACE_DEPTH,
+    DVZ_RENDER_PRODUCT_SURFACE_NORMAL,
+    DVZ_RENDER_PRODUCT_SURFACE_COVERAGE,
+    DVZ_RENDER_PRODUCT_OBJECT_ID,
+    DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY,
+    DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH,
+    DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION,
+    DVZ_RENDER_PRODUCT_TRANSPARENT_TRANSMITTANCE,
+    DVZ_RENDER_PRODUCT_TRANSPARENT_PEEL_DEPTH,
+    DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH,
+    DVZ_RENDER_PRODUCT_PRESENTATION_COLOR,
+} DvzRenderProductKind;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_DOMAIN_NONE = 0,
+    DVZ_RENDER_PRODUCT_DOMAIN_PANEL,
+    DVZ_RENDER_PRODUCT_DOMAIN_VIEW,
+    DVZ_RENDER_PRODUCT_DOMAIN_SCENE,
+    DVZ_RENDER_PRODUCT_DOMAIN_QUERY,
+    DVZ_RENDER_PRODUCT_DOMAIN_PRESENTATION,
+} DvzRenderProductDomain;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_EXTENT_NONE = 0,
+    DVZ_RENDER_PRODUCT_EXTENT_ABSOLUTE,
+    DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE,
+    DVZ_RENDER_PRODUCT_EXTENT_SOURCE_RELATIVE,
+} DvzRenderProductExtentPolicy;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_ROUND_NONE = 0,
+    DVZ_RENDER_PRODUCT_ROUND_FLOOR,
+    DVZ_RENDER_PRODUCT_ROUND_CEIL,
+    DVZ_RENDER_PRODUCT_ROUND_NEAREST,
+    DVZ_RENDER_PRODUCT_ROUND_OUTWARD,
+} DvzRenderProductRoundingPolicy;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_FORMAT_NONE = 0,
+    DVZ_RENDER_PRODUCT_FORMAT_LINEAR_COLOR,
+    DVZ_RENDER_PRODUCT_FORMAT_DEPTH_FLOAT,
+    DVZ_RENDER_PRODUCT_FORMAT_NORMAL_FLOAT,
+    DVZ_RENDER_PRODUCT_FORMAT_COVERAGE,
+    DVZ_RENDER_PRODUCT_FORMAT_UINT_ID,
+    DVZ_RENDER_PRODUCT_FORMAT_SCALAR_FLOAT,
+    DVZ_RENDER_PRODUCT_FORMAT_PRESENTATION_COLOR,
+} DvzRenderProductFormatClass;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_SAMPLES_NONE = 0,
+    DVZ_RENDER_PRODUCT_SAMPLES_SINGLE,
+    DVZ_RENDER_PRODUCT_SAMPLES_MULTISAMPLE,
+    DVZ_RENDER_PRODUCT_SAMPLES_RESOLVED,
+} DvzRenderProductSampleDomain;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_RESOLVE_NONE = 0,
+    DVZ_RENDER_PRODUCT_RESOLVE_LINEAR_COLOR,
+    DVZ_RENDER_PRODUCT_RESOLVE_NEAREST_VALID_DEPTH,
+    DVZ_RENDER_PRODUCT_RESOLVE_WINNING_NORMAL,
+    DVZ_RENDER_PRODUCT_RESOLVE_COVERAGE_FRACTION,
+    DVZ_RENDER_PRODUCT_RESOLVE_WINNING_ID,
+    DVZ_RENDER_PRODUCT_RESOLVE_VISIBILITY,
+} DvzRenderProductResolvePolicy;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_COORDINATES_NONE = 0,
+    DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL,
+    DVZ_RENDER_PRODUCT_COORDINATES_VIEW,
+    DVZ_RENDER_PRODUCT_COORDINATES_SCENE,
+    DVZ_RENDER_PRODUCT_COORDINATES_TARGET,
+    DVZ_RENDER_PRODUCT_COORDINATES_WORLD,
+    DVZ_RENDER_PRODUCT_COORDINATES_CLIP,
+    DVZ_RENDER_PRODUCT_COORDINATES_NDC,
+    DVZ_RENDER_PRODUCT_COORDINATES_FRAMEBUFFER_PIXEL,
+    DVZ_RENDER_PRODUCT_COORDINATES_NOT_APPLICABLE,
+} DvzRenderProductCoordinateSpace;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_ENCODING_NONE = 0,
+    DVZ_RENDER_PRODUCT_ENCODING_LINEAR_SCENE_COLOR,
+    DVZ_RENDER_PRODUCT_ENCODING_LINEAR_VIEW_DEPTH,
+    DVZ_RENDER_PRODUCT_ENCODING_VIEW_NORMAL,
+    DVZ_RENDER_PRODUCT_ENCODING_UNIT_VISIBILITY,
+    DVZ_RENDER_PRODUCT_ENCODING_INTEGER_ID,
+    DVZ_RENDER_PRODUCT_ENCODING_COVERAGE,
+    DVZ_RENDER_PRODUCT_ENCODING_PREMULTIPLIED_ACCUMULATION,
+    DVZ_RENDER_PRODUCT_ENCODING_UNIT_TRANSMITTANCE,
+    DVZ_RENDER_PRODUCT_ENCODING_PRESENTATION_TRANSFER,
+} DvzRenderProductEncoding;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_ALPHA_NONE = 0,
+    DVZ_RENDER_PRODUCT_ALPHA_OPAQUE,
+    DVZ_RENDER_PRODUCT_ALPHA_STRAIGHT,
+    DVZ_RENDER_PRODUCT_ALPHA_PREMULTIPLIED,
+} DvzRenderProductAlpha;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_COVERAGE_NONE = 0,
+    DVZ_RENDER_PRODUCT_COVERAGE_BINARY,
+    DVZ_RENDER_PRODUCT_COVERAGE_SAMPLE_FRACTION,
+    DVZ_RENDER_PRODUCT_COVERAGE_WINNING_SAMPLE,
+} DvzRenderProductCoverage;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_VALIDITY_NONE = 0,
+    DVZ_RENDER_PRODUCT_VALIDITY_FULL_EXTENT,
+    DVZ_RENDER_PRODUCT_VALIDITY_EXPLICIT_COVERAGE,
+    DVZ_RENDER_PRODUCT_VALIDITY_BACKGROUND_VALUE,
+    DVZ_RENDER_PRODUCT_VALIDITY_INTEGER_SENTINEL,
+} DvzRenderProductValidity;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_NONE = 0,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_ANY_DEFINED,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_EXPLICIT_COVERAGE,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_BACKGROUND_VALUE,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_INTEGER_SENTINEL,
+} DvzRenderProductValidityRequirement;
+
+
+
+typedef struct DvzRenderProductId
+{
+    uint32_t value;
+} DvzRenderProductId;
+
+
+
+typedef struct DvzSurfaceRecordId
+{
+    uint32_t value;
+} DvzSurfaceRecordId;
+
+
+
+typedef struct DvzRenderProductConsumer
+{
+    DvzRenderProductId product_id;
+    uint32_t pass_index;
+    DvzRenderProductValidityRequirement validity_requirement;
+} DvzRenderProductConsumer;
+
+
+
+typedef enum
+{
     DVZ_FRAME_GRAPH_PASS_NONE = 0,
     DVZ_FRAME_GRAPH_PASS_RENDER,
     DVZ_FRAME_GRAPH_PASS_COMPUTE,
@@ -192,6 +381,51 @@ typedef struct DvzFrameGraphResource
     uint32_t usage_flags;
     DvzFrameGraphResourceLifetime lifetime;
 } DvzFrameGraphResource;
+
+
+
+typedef struct DvzRenderProductContract
+{
+    DvzRenderProductId id;
+    char diagnostic_label[DVZ_SCENE_LABEL_SIZE];
+    uint32_t version;
+    DvzRenderProductKind kind;
+    DvzRenderProductDomain domain;
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    char view_id[DVZ_SCENE_LABEL_SIZE];
+    char camera_id[DVZ_SCENE_LABEL_SIZE];
+    char projection_id[DVZ_SCENE_LABEL_SIZE];
+    DvzRenderProductExtentPolicy extent_policy;
+    DvzRenderProductRoundingPolicy rounding_policy;
+    int32_t origin_x;
+    int32_t origin_y;
+    uint32_t width;
+    uint32_t height;
+    float render_scale;
+    float local_to_target[4];
+    DvzRenderProductFormatClass format_class;
+    uint32_t concrete_format;
+    DvzRenderProductSampleDomain sample_domain;
+    uint32_t sample_count;
+    DvzRenderProductResolvePolicy resolve_policy;
+    DvzRenderProductCoordinateSpace coordinate_space;
+    DvzRenderProductEncoding encoding;
+    DvzRenderProductAlpha alpha;
+    DvzRenderProductCoverage coverage;
+    DvzRenderProductValidity validity;
+    DvzRenderProductId validity_product_id;
+    bool has_background_value;
+    float background_value[4];
+    bool has_integer_sentinel;
+    uint64_t integer_sentinel;
+    uint32_t required_usage_flags;
+    DvzFrameGraphResourceLifetime lifetime;
+    uint32_t resource_index;
+    DvzRenderProductId source_product_id;
+    DvzSurfaceRecordId surface_record_id;
+    uint32_t producer_pass_index;
+    uint32_t capability_adaptations;
+} DvzRenderProductContract;
 
 
 
@@ -538,6 +772,12 @@ struct DvzFramePlan
     uint32_t graph_pass_capacity;
     uint32_t graph_pass_count;
     DvzFrameGraphPass* graph_passes;
+    uint32_t product_capacity;
+    uint32_t product_count;
+    DvzRenderProductContract* products;
+    uint32_t product_use_capacity;
+    uint32_t product_use_count;
+    DvzRenderProductConsumer* product_uses;
 };
 
 
@@ -597,6 +837,19 @@ bool dvz_frame_graph_pass_depth_attachment(
     DvzFrameGraphPass* pass, const DvzFrameGraphAttachment* attachment);
 
 bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport* report);
+
+bool dvz_frame_plan_product(DvzFramePlan* plan, const DvzRenderProductContract* product);
+
+bool dvz_frame_plan_product_consumer(
+    DvzFramePlan* plan, DvzRenderProductId product_id, uint32_t pass_index,
+    DvzRenderProductValidityRequirement validity_requirement);
+
+uint32_t dvz_frame_plan_product_count(const DvzFramePlan* plan);
+
+const DvzRenderProductContract*
+dvz_frame_plan_product_get(const DvzFramePlan* plan, uint32_t index);
+
+bool dvz_frame_plan_products_validate(const DvzFramePlan* plan, DvzDiagnosticReport* report);
 
 char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan);
 

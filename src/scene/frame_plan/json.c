@@ -393,6 +393,117 @@ static void _json_append_graph_resource(JsonBuilder* builder, const DvzFrameGrap
 
 
 
+/** Append one semantic render-product contract. */
+static void _json_append_product(
+    JsonBuilder* builder, const DvzFramePlan* plan, const DvzRenderProductContract* product)
+{
+    ANN(builder);
+    ANN(plan);
+    ANN(product);
+    _json_append(
+        builder, "{ \"id\": %" PRIu32 ", \"label\": ", product->id.value);
+    _json_append_escaped_string(builder, product->diagnostic_label);
+    _json_append(builder, ", \"version\": %" PRIu32 ", \"kind\": ", product->version);
+    _json_append_escaped_string(builder, _frame_plan_product_kind_name(product->kind));
+    _json_append(builder, ", \"domain\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_domain_name(product->domain));
+    _json_append(builder, ", \"panel_id\": ");
+    _json_append_escaped_string(builder, product->panel_id);
+    _json_append(builder, ", \"view_id\": ");
+    _json_append_escaped_string(builder, product->view_id);
+    _json_append(builder, ", \"camera_id\": ");
+    _json_append_escaped_string(builder, product->camera_id);
+    _json_append(builder, ", \"projection_id\": ");
+    _json_append_escaped_string(builder, product->projection_id);
+    _json_append(builder, ", \"extent\": { \"policy\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_extent_name(product->extent_policy));
+    _json_append(builder, ", \"rounding\": ");
+    _json_append_escaped_string(
+        builder, _frame_plan_product_rounding_name(product->rounding_policy));
+    _json_append(
+        builder,
+        ", \"origin\": { \"x\": %" PRId32 ", \"y\": %" PRId32 " }, \"width\": %" PRIu32
+        ", \"height\": %" PRIu32 ", \"render_scale\": %.9g, \"local_to_target\": [%.9g, %.9g, %.9g, %.9g] }, \"format_class\": ",
+        product->origin_x, product->origin_y, product->width, product->height,
+        (double)product->render_scale, (double)product->local_to_target[0],
+        (double)product->local_to_target[1], (double)product->local_to_target[2],
+        (double)product->local_to_target[3]);
+    _json_append_escaped_string(builder, _frame_plan_product_format_name(product->format_class));
+    _json_append(
+        builder, ", \"concrete_format\": %" PRIu32 ", \"sample_domain\": ",
+        product->concrete_format);
+    _json_append_escaped_string(
+        builder, _frame_plan_product_samples_name(product->sample_domain));
+    _json_append(builder, ", \"sample_count\": %" PRIu32 ", \"resolve_policy\": ", product->sample_count);
+    _json_append_escaped_string(
+        builder, _frame_plan_product_resolve_name(product->resolve_policy));
+    _json_append(builder, ", \"coordinate_space\": ");
+    _json_append_escaped_string(
+        builder, _frame_plan_product_coordinates_name(product->coordinate_space));
+    _json_append(builder, ", \"encoding\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_encoding_name(product->encoding));
+    _json_append(builder, ", \"alpha\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_alpha_name(product->alpha));
+    _json_append(builder, ", \"coverage\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_coverage_name(product->coverage));
+    _json_append(builder, ", \"validity\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_validity_name(product->validity));
+    _json_append(
+        builder,
+        ", \"validity_product_id\": %" PRIu32 ", \"has_background_value\": %s, \"background_value\": [%.9g, %.9g, %.9g, %.9g], \"has_integer_sentinel\": %s, \"integer_sentinel\": %" PRIu64,
+        product->validity_product_id.value, product->has_background_value ? "true" : "false",
+        (double)product->background_value[0], (double)product->background_value[1],
+        (double)product->background_value[2], (double)product->background_value[3],
+        product->has_integer_sentinel ? "true" : "false", product->integer_sentinel);
+    _json_append(builder, ", \"required_accesses\": ");
+    _json_append_graph_resource_usage(builder, product->required_usage_flags);
+    _json_append(builder, ", \"lifetime\": ");
+    _json_append_escaped_string(builder, _graph_lifetime_name(product->lifetime));
+    _json_append(
+        builder,
+        ", \"resource_index\": %" PRIu32 ", \"source_product_id\": %" PRIu32
+        ", \"surface_record_id\": %" PRIu32 ", \"producer_pass_index\": %" PRIu32,
+        product->resource_index, product->source_product_id.value,
+        product->surface_record_id.value, product->producer_pass_index);
+    _json_append(builder, ", \"resource_label\": ");
+    _json_append_escaped_string(
+        builder, product->resource_index < plan->graph_resource_count
+                     ? plan->graph_resources[product->resource_index].id
+                     : "");
+    _json_append(builder, ", \"producer_pass_label\": ");
+    _json_append_escaped_string(
+        builder, product->producer_pass_index < plan->graph_pass_count
+                     ? plan->graph_passes[product->producer_pass_index].id
+                     : "");
+    _json_append(builder, ", \"consumers\": [");
+    bool has_consumer = false;
+    for (uint32_t i = 0; i < plan->product_use_count; i++)
+    {
+        const DvzRenderProductConsumer* use = &plan->product_uses[i];
+        if (use->product_id.value != product->id.value)
+            continue;
+        if (has_consumer)
+            _json_append(builder, ", ");
+        _json_append(
+            builder, "{ \"pass_index\": %" PRIu32 ", \"validity_requirement\": ",
+            use->pass_index);
+        _json_append_escaped_string(
+            builder, _frame_plan_product_validity_requirement_name(
+                         use->validity_requirement));
+        _json_append(builder, ", \"pass_label\": ");
+        _json_append_escaped_string(
+            builder, use->pass_index < plan->graph_pass_count
+                         ? plan->graph_passes[use->pass_index].id
+                         : "");
+        _json_append(builder, " }");
+        has_consumer = true;
+    }
+    _json_append(
+        builder, "], \"capability_adaptations\": %" PRIu32 " }", product->capability_adaptations);
+}
+
+
+
 /**
  * Append one graph access descriptor.
  *
@@ -706,7 +817,7 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
     _json_append(
         &builder,
         "{\n"
-        "  \"frame_plan_schema\": \"0.1\",\n"
+        "  \"frame_plan_schema\": \"0.2\",\n"
         "  \"frame_plan\": {\n"
         "    \"figure_id\": ");
     _json_append_escaped_string(&builder, plan->figure_id);
@@ -722,6 +833,17 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
         _json_append(&builder, "      ");
         _json_append_node(&builder, &plan->nodes[i]);
         _json_append(&builder, "%s\n", i + 1 < plan->count ? "," : "");
+    }
+
+    _json_append(
+        &builder,
+        "    ],\n"
+        "    \"products\": [\n");
+    for (uint32_t i = 0; i < plan->product_count; i++)
+    {
+        _json_append(&builder, "      ");
+        _json_append_product(&builder, plan, &plan->products[i]);
+        _json_append(&builder, "%s\n", i + 1 < plan->product_count ? "," : "");
     }
 
     _json_append(
@@ -782,6 +904,16 @@ char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan)
         &builder,
         "{\n"
         "  \"graph_debug\": {\n"
+        "    \"products\": [\n");
+    for (uint32_t i = 0; i < plan->product_count; i++)
+    {
+        _json_append(&builder, "      ");
+        _json_append_product(&builder, plan, &plan->products[i]);
+        _json_append(&builder, "%s\n", i + 1 < plan->product_count ? "," : "");
+    }
+    _json_append(
+        &builder,
+        "    ],\n"
         "    \"passes\": [\n");
     for (uint32_t i = 0; i < plan->graph_pass_count; i++)
     {

@@ -79,7 +79,9 @@ The minimum RC3 product kinds are:
 | `object_id` | Integer query identity. It is never averaged or filtered and remains outside presentation postprocessing. |
 | `ambient_visibility` | Scalar visibility in `[0, 1]`, where `1` is unoccluded. It carries the resolution and reconstruction policy used by material shading. |
 | `scene_occlusion_depth` | Nearest depth from explicitly participating scene occluders. It is distinct from the primary opaque surface record and from volume first-hit depth even when a producer contributes or a physical format is shared. |
-| `transparent_accumulation` | Technique-private weighted or peeled color/transmittance products with explicit premultiplication semantics. |
+| `transparent_accumulation` | Technique-private weighted or peeled color with explicit premultiplication semantics. |
+| `transparent_transmittance` | Technique-private scalar transmittance with unit-range encoding distinct from accumulated color. |
+| `transparent_peel_depth` | Technique-private peeled linear view depth distinct from the primary opaque surface record. |
 | `volume_first_hit_depth` | Volume ray first-hit or occupancy depth. It may share depth conventions with `surface_depth` but is not silently interchangeable with it. |
 | `presentation_color` | Final panel color in the transfer function and alpha convention required by the presentation or capture target. |
 

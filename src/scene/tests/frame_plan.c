@@ -147,7 +147,7 @@ int test_frame_plan_static_render(TstContext* suite, const TstCase* item)
 
     char* json = dvz_frame_plan_json(plan);
     ANN(json);
-    AT(strstr(json, "\"frame_plan_schema\": \"0.1\"") != NULL);
+    AT(strstr(json, "\"frame_plan_schema\": \"0.2\"") != NULL);
     AT(strstr(json, "\"figure_id\": \"figure.main\"") != NULL);
     AT(strstr(json, "\"frame_index\": 7") != NULL);
     AT(strstr(json, "\"type\": \"upload\"") != NULL);
@@ -1626,6 +1626,601 @@ int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* ite
 
 
 
+static DvzFramePlan* _product_test_plan(uint32_t resource_samples)
+{
+    DvzFramePlan* plan = dvz_frame_plan("figure.products", 40);
+    if (plan == NULL)
+        return NULL;
+
+    DvzFrameGraphResource resource = {0};
+    dvz_strlcpy(resource.id, "product.resource", sizeof(resource.id));
+    resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    resource.width = 64;
+    resource.height = 48;
+    resource.sample_count = resource_samples;
+    resource.format = DVZ_FORMAT_R8G8B8A8_UNORM;
+    resource.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    if (!dvz_frame_plan_graph_resource(plan, &resource))
+        goto error;
+
+    DvzFrameGraphAttachment attachment = {0};
+    dvz_strlcpy(attachment.resource_id, resource.id, sizeof(attachment.resource_id));
+    attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    DvzFrameGraphPass producer = {0};
+    dvz_strlcpy(producer.id, "panel0.producer", sizeof(producer.id));
+    dvz_strlcpy(producer.panel_id, "panel.0", sizeof(producer.panel_id));
+    producer.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    if (!dvz_frame_graph_pass_color_attachment(&producer, &attachment) ||
+        !dvz_frame_plan_graph_pass(plan, &producer))
+        goto error;
+
+    DvzFrameGraphPass consumer = {0};
+    dvz_strlcpy(consumer.id, "panel0.consumer", sizeof(consumer.id));
+    dvz_strlcpy(consumer.panel_id, "panel.0", sizeof(consumer.panel_id));
+    consumer.kind = DVZ_FRAME_GRAPH_PASS_COMPUTE;
+    if (!dvz_frame_graph_pass_read(&consumer, resource.id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
+        !dvz_frame_plan_graph_pass(plan, &consumer))
+        goto error;
+
+    DvzRenderProductContract product = {0};
+    product.id = (DvzRenderProductId){1};
+    dvz_strlcpy(
+        product.diagnostic_label, "scene_color@1", sizeof(product.diagnostic_label));
+    product.version = 1;
+    product.kind = DVZ_RENDER_PRODUCT_SCENE_COLOR;
+    product.domain = DVZ_RENDER_PRODUCT_DOMAIN_PANEL;
+    dvz_strlcpy(product.panel_id, "panel.0", sizeof(product.panel_id));
+    dvz_strlcpy(product.view_id, "view.0", sizeof(product.view_id));
+    dvz_strlcpy(product.camera_id, "camera.0", sizeof(product.camera_id));
+    dvz_strlcpy(product.projection_id, "projection.0", sizeof(product.projection_id));
+    product.extent_policy = DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE;
+    product.rounding_policy = DVZ_RENDER_PRODUCT_ROUND_OUTWARD;
+    product.width = 64;
+    product.height = 48;
+    product.render_scale = 1.0f;
+    product.local_to_target[0] = 1.0f;
+    product.local_to_target[1] = 1.0f;
+    product.format_class = DVZ_RENDER_PRODUCT_FORMAT_LINEAR_COLOR;
+    product.concrete_format = resource.format;
+    product.sample_domain = resource_samples > 1 ? DVZ_RENDER_PRODUCT_SAMPLES_MULTISAMPLE
+                                                : DVZ_RENDER_PRODUCT_SAMPLES_SINGLE;
+    product.sample_count = resource_samples;
+    product.resolve_policy = DVZ_RENDER_PRODUCT_RESOLVE_NONE;
+    product.coordinate_space = DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL;
+    product.encoding = DVZ_RENDER_PRODUCT_ENCODING_LINEAR_SCENE_COLOR;
+    product.alpha = DVZ_RENDER_PRODUCT_ALPHA_PREMULTIPLIED;
+    product.validity = DVZ_RENDER_PRODUCT_VALIDITY_FULL_EXTENT;
+    product.required_usage_flags = resource.usage_flags;
+    product.lifetime = resource.lifetime;
+    product.resource_index = 0;
+    product.producer_pass_index = 0;
+    if (!dvz_frame_plan_product(plan, &product) ||
+        !dvz_frame_plan_product_consumer(
+            plan, product.id, 1, DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT))
+        goto error;
+    return plan;
+
+error:
+    dvz_frame_plan_destroy(plan);
+    return NULL;
+}
+
+
+
+static bool _report_contains(const DvzDiagnosticReport* report, const char* text)
+{
+    ANN(report);
+    ANN(text);
+    for (uint32_t i = 0; i < dvz_diagnostic_report_count(report); i++)
+    {
+        const char* message = dvz_diagnostic_report_get(report, i);
+        if (message != NULL && strstr(message, text) != NULL)
+            return true;
+    }
+    return false;
+}
+
+
+
+int test_frame_plan_products_schema(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    AT(dvz_frame_plan_product_count(plan) == 1);
+    const DvzRenderProductContract* product = dvz_frame_plan_product_get(plan, 0);
+    ANN(product);
+    AT(product->kind == DVZ_RENDER_PRODUCT_SCENE_COLOR);
+
+    char* json = dvz_frame_plan_json(plan);
+    ANN(json);
+    AT(strstr(json, "\"frame_plan_schema\": \"0.2\"") != NULL);
+    AT(strstr(json, "\"products\": [") != NULL);
+    AT(strstr(json, "\"kind\": \"scene_color\"") != NULL);
+    AT(strstr(json, "\"id\": 1") != NULL);
+    AT(strstr(json, "\"label\": \"scene_color@1\"") != NULL);
+    AT(strstr(json, "\"resource_index\": 0") != NULL);
+    AT(strstr(json, "\"resource_label\": \"product.resource\"") != NULL);
+    AT(strstr(json, "\"producer_pass_index\": 0") != NULL);
+    AT(strstr(json, "\"producer_pass_label\": \"panel0.producer\"") != NULL);
+    AT(strstr(json, "\"pass_label\": \"panel0.consumer\"") != NULL);
+    dvz_frame_plan_json_destroy(json);
+
+    char* ascii = dvz_frame_plan_graph_ascii(plan, DVZ_FRAME_PLAN_ASCII_COMPACT);
+    ANN(ascii);
+    AT(strstr(ascii, "Graph products=1") != NULL);
+    AT(strstr(ascii, "#1 scene_color@1 v1") != NULL);
+    dvz_frame_plan_graph_ascii_destroy(ascii);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_color_successor(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+
+    DvzFrameGraphResource resource = plan->graph_resources[0];
+    dvz_strlcpy(resource.id, "product.successor", sizeof(resource.id));
+    AT(dvz_frame_plan_graph_resource(plan, &resource));
+    DvzFrameGraphAttachment attachment = plan->graph_passes[0].color_attachments[0];
+    dvz_strlcpy(attachment.resource_id, resource.id, sizeof(attachment.resource_id));
+    DvzFrameGraphPass transform = {0};
+    dvz_strlcpy(transform.id, "panel0.transform", sizeof(transform.id));
+    dvz_strlcpy(transform.panel_id, "panel.0", sizeof(transform.panel_id));
+    transform.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
+    AT(dvz_frame_graph_pass_read(
+        &transform, plan->graph_resources[plan->products[0].resource_index].id,
+        DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+    AT(dvz_frame_graph_pass_color_attachment(&transform, &attachment));
+    AT(dvz_frame_plan_graph_pass(plan, &transform));
+    AT(dvz_frame_plan_product_consumer(
+        plan, plan->products[0].id, 2,
+        DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT));
+
+    DvzRenderProductContract successor = plan->products[0];
+    successor.id = (DvzRenderProductId){2};
+    dvz_strlcpy(
+        successor.diagnostic_label, "scene_color@2", sizeof(successor.diagnostic_label));
+    successor.version = 2;
+    successor.resource_index = 1;
+    successor.source_product_id = plan->products[0].id;
+    successor.producer_pass_index = 2;
+    AT(dvz_frame_plan_product(plan, &successor));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_cross_panel(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    dvz_strlcpy(
+        plan->graph_passes[1].panel_id, "panel.1", sizeof(plan->graph_passes[1].panel_id));
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "crosses panel scope at consumer"));
+    plan->products[0].domain = DVZ_RENDER_PRODUCT_DOMAIN_QUERY;
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "crosses panel scope at consumer"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_implicit_samples(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(4);
+    ANN(plan);
+    plan->products[0].sample_domain = DVZ_RENDER_PRODUCT_SAMPLES_SINGLE;
+    plan->products[0].sample_count = 1;
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "sample count does not match resource"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_undefined_background(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    plan->products[0].validity = DVZ_RENDER_PRODUCT_VALIDITY_BACKGROUND_VALUE;
+    plan->products[0].has_background_value = false;
+    plan->product_uses[0].validity_requirement =
+        DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_BACKGROUND_VALUE;
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "lacks its declared background value"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_format_inference(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    plan->products[0].format_class = DVZ_RENDER_PRODUCT_FORMAT_DEPTH_FLOAT;
+    plan->products[0].encoding = DVZ_RENDER_PRODUCT_ENCODING_LINEAR_VIEW_DEPTH;
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "kind is incompatible"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_incoherent_surface_record(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    DvzRenderProductContract* depth = &plan->products[0];
+    depth->id = (DvzRenderProductId){10};
+    plan->product_uses[0].product_id = depth->id;
+    dvz_strlcpy(
+        depth->diagnostic_label, "surface_depth@1", sizeof(depth->diagnostic_label));
+    depth->kind = DVZ_RENDER_PRODUCT_SURFACE_DEPTH;
+    depth->format_class = DVZ_RENDER_PRODUCT_FORMAT_DEPTH_FLOAT;
+    depth->concrete_format = DVZ_FORMAT_R32_SFLOAT;
+    plan->graph_resources[0].format = depth->concrete_format;
+    depth->encoding = DVZ_RENDER_PRODUCT_ENCODING_LINEAR_VIEW_DEPTH;
+    depth->alpha = DVZ_RENDER_PRODUCT_ALPHA_NONE;
+    depth->validity = DVZ_RENDER_PRODUCT_VALIDITY_EXPLICIT_COVERAGE;
+    plan->product_uses[0].validity_requirement =
+        DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_EXPLICIT_COVERAGE;
+    depth->surface_record_id = (DvzSurfaceRecordId){1};
+
+    const DvzRenderProductKind kinds[2] = {
+        DVZ_RENDER_PRODUCT_SURFACE_NORMAL, DVZ_RENDER_PRODUCT_SURFACE_COVERAGE};
+    const DvzRenderProductFormatClass formats[2] = {
+        DVZ_RENDER_PRODUCT_FORMAT_NORMAL_FLOAT, DVZ_RENDER_PRODUCT_FORMAT_COVERAGE};
+    const DvzRenderProductEncoding encodings[2] = {
+        DVZ_RENDER_PRODUCT_ENCODING_VIEW_NORMAL, DVZ_RENDER_PRODUCT_ENCODING_COVERAGE};
+    const uint32_t concrete_formats[2] = {
+        DVZ_FORMAT_R16G16B16A16_SFLOAT, DVZ_FORMAT_R8_UNORM};
+    const char* ids[2] = {"surface_normal@1", "surface_coverage@1"};
+    const char* resources[2] = {"surface.normal", "surface.coverage"};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzFrameGraphResource resource = plan->graph_resources[0];
+        dvz_strlcpy(resource.id, resources[i], sizeof(resource.id));
+        resource.format = concrete_formats[i];
+        AT(dvz_frame_plan_graph_resource(plan, &resource));
+        DvzFrameGraphAttachment attachment = plan->graph_passes[0].color_attachments[0];
+        dvz_strlcpy(attachment.resource_id, resources[i], sizeof(attachment.resource_id));
+        AT(dvz_frame_graph_pass_color_attachment(&plan->graph_passes[0], &attachment));
+        AT(dvz_frame_graph_pass_read(
+            &plan->graph_passes[1], resources[i], DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
+
+        DvzRenderProductContract product = *depth;
+        product.id = (DvzRenderProductId){11 + i};
+        dvz_strlcpy(product.diagnostic_label, ids[i], sizeof(product.diagnostic_label));
+        product.kind = kinds[i];
+        product.format_class = formats[i];
+        product.concrete_format = concrete_formats[i];
+        product.encoding = encodings[i];
+        product.coverage = i == 1 ? DVZ_RENDER_PRODUCT_COVERAGE_BINARY
+                                  : DVZ_RENDER_PRODUCT_COVERAGE_NONE;
+        product.resource_index = i + 1;
+        AT(dvz_frame_plan_product(plan, &product));
+        AT(dvz_frame_plan_product_consumer(
+            plan, product.id, 1,
+            i == 1 ? DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT
+                   : DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_EXPLICIT_COVERAGE));
+    }
+    plan->products[0].validity_product_id = plan->products[2].id;
+    plan->products[1].validity_product_id = plan->products[2].id;
+    plan->products[2].validity = DVZ_RENDER_PRODUCT_VALIDITY_FULL_EXTENT;
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+
+    plan->product_use_count--;
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "omits its explicit coverage use"));
+    AT(dvz_frame_plan_product_consumer(
+        plan, plan->products[2].id, 1,
+        DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT));
+
+    plan->products[1].surface_record_id = (DvzSurfaceRecordId){2};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "mixes incompatible surface records"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_incompatible_concrete_format(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    plan->products[0].kind = DVZ_RENDER_PRODUCT_OBJECT_ID;
+    plan->products[0].format_class = DVZ_RENDER_PRODUCT_FORMAT_UINT_ID;
+    plan->products[0].encoding = DVZ_RENDER_PRODUCT_ENCODING_INTEGER_ID;
+    plan->products[0].alpha = DVZ_RENDER_PRODUCT_ALPHA_NONE;
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "concrete format is incompatible"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_omitted_reader(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    DvzFrameGraphPass reader = plan->graph_passes[1];
+    dvz_strlcpy(reader.id, "panel0.untyped-reader", sizeof(reader.id));
+    AT(dvz_frame_plan_graph_pass(plan, &reader));
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "omits actual reader"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_intervening_writer(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    DvzFrameGraphPass consumer = plan->graph_passes[1];
+    DvzFrameGraphPass writer = plan->graph_passes[0];
+    dvz_strlcpy(writer.id, "panel0.intervening-writer", sizeof(writer.id));
+    plan->graph_passes[1] = writer;
+    AT(dvz_frame_plan_graph_pass(plan, &consumer));
+    plan->product_uses[0].pass_index = 2;
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "overwritten before consumer"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_alias_overlap(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    DvzRenderProductContract alias = plan->products[0];
+    alias.id = (DvzRenderProductId){2};
+    dvz_strlcpy(alias.diagnostic_label, "alias@1", sizeof(alias.diagnostic_label));
+    AT(dvz_frame_plan_product(plan, &alias));
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "overlapping physical aliases"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+static DvzFramePlan* _product_explicit_resolve_test_plan(void)
+{
+    DvzFramePlan* plan = _product_test_plan(4);
+    if (plan == NULL)
+        return NULL;
+    DvzFrameGraphPass consumer = plan->graph_passes[1];
+
+    DvzFrameGraphResource resolved_resource = plan->graph_resources[0];
+    dvz_strlcpy(resolved_resource.id, "product.resolved", sizeof(resolved_resource.id));
+    resolved_resource.sample_count = 1;
+    resolved_resource.usage_flags =
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_STORAGE | DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+    if (!dvz_frame_plan_graph_resource(plan, &resolved_resource))
+        goto error;
+
+    DvzFrameGraphPass resolver = {0};
+    dvz_strlcpy(resolver.id, "panel0.resolve", sizeof(resolver.id));
+    dvz_strlcpy(resolver.panel_id, "panel.0", sizeof(resolver.panel_id));
+    resolver.kind = DVZ_FRAME_GRAPH_PASS_COMPUTE;
+    if (!dvz_frame_graph_pass_read(
+            &resolver, plan->graph_resources[0].id, DVZ_FRAME_GRAPH_ACCESS_SAMPLED) ||
+        !dvz_frame_graph_pass_write(
+            &resolver, resolved_resource.id, DVZ_FRAME_GRAPH_ACCESS_STORAGE_WRITE))
+        goto error;
+    plan->graph_passes[1] = resolver;
+    dvz_strlcpy(
+        consumer.reads[0].resource_id, resolved_resource.id,
+        sizeof(consumer.reads[0].resource_id));
+    if (!dvz_frame_plan_graph_pass(plan, &consumer))
+        goto error;
+    plan->product_uses[0].pass_index = 1;
+
+    DvzRenderProductContract resolved = plan->products[0];
+    resolved.id = (DvzRenderProductId){2};
+    dvz_strlcpy(
+        resolved.diagnostic_label, "scene_color_resolved@2",
+        sizeof(resolved.diagnostic_label));
+    resolved.version = 2;
+    resolved.resource_index = 1;
+    resolved.source_product_id = plan->products[0].id;
+    resolved.producer_pass_index = 1;
+    resolved.sample_domain = DVZ_RENDER_PRODUCT_SAMPLES_RESOLVED;
+    resolved.sample_count = 1;
+    resolved.resolve_policy = DVZ_RENDER_PRODUCT_RESOLVE_LINEAR_COLOR;
+    resolved.required_usage_flags = resolved_resource.usage_flags;
+    if (!dvz_frame_plan_product(plan, &resolved) ||
+        !dvz_frame_plan_product_consumer(
+            plan, resolved.id, 2, DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT))
+        goto error;
+    return plan;
+
+error:
+    dvz_frame_plan_destroy(plan);
+    return NULL;
+}
+
+
+
+int test_frame_plan_products_explicit_shader_resolve(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_explicit_resolve_test_plan();
+    ANN(plan);
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    plan->products[1].resolve_policy = DVZ_RENDER_PRODUCT_RESOLVE_WINNING_ID;
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "invalid sample-domain or resolve contract"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_attachment_resolve(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(4);
+    ANN(plan);
+
+    DvzFrameGraphResource resolved_resource = plan->graph_resources[0];
+    dvz_strlcpy(resolved_resource.id, "product.attachment-resolved", sizeof(resolved_resource.id));
+    resolved_resource.sample_count = 1;
+    AT(dvz_frame_plan_graph_resource(plan, &resolved_resource));
+    dvz_strlcpy(
+        plan->graph_passes[0].color_attachments[0].resolve_resource_id, resolved_resource.id,
+        sizeof(plan->graph_passes[0].color_attachments[0].resolve_resource_id));
+    dvz_strlcpy(
+        plan->graph_passes[1].reads[0].resource_id, resolved_resource.id,
+        sizeof(plan->graph_passes[1].reads[0].resource_id));
+    plan->product_use_count = 0;
+
+    DvzRenderProductContract resolved = plan->products[0];
+    resolved.id = (DvzRenderProductId){2};
+    dvz_strlcpy(
+        resolved.diagnostic_label, "scene_color_attachment_resolved@2",
+        sizeof(resolved.diagnostic_label));
+    resolved.version = 2;
+    resolved.resource_index = 1;
+    resolved.source_product_id = plan->products[0].id;
+    resolved.sample_domain = DVZ_RENDER_PRODUCT_SAMPLES_RESOLVED;
+    resolved.sample_count = 1;
+    resolved.resolve_policy = DVZ_RENDER_PRODUCT_RESOLVE_LINEAR_COLOR;
+    AT(dvz_frame_plan_product(plan, &resolved));
+    AT(dvz_frame_plan_product_consumer(
+        plan, resolved.id, 1, DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT));
+
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    plan->products[1].resolve_policy = DVZ_RENDER_PRODUCT_RESOLVE_WINNING_NORMAL;
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "attachment resolve for a non-color policy"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_consumer_growth(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    for (uint32_t i = 2; i < 42; i++)
+    {
+        DvzFrameGraphPass consumer = plan->graph_passes[1];
+        dvz_snprintf(consumer.id, sizeof(consumer.id), "panel0.consumer.%" PRIu32, i);
+        AT(dvz_frame_plan_graph_pass(plan, &consumer));
+        AT(dvz_frame_plan_product_consumer(
+            plan, plan->products[0].id, i,
+            DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT));
+    }
+    AT(plan->product_use_count == 41);
+    AT(plan->product_use_capacity >= 41);
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(dvz_frame_plan_graph_validate(plan, &report));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
+int test_frame_plan_products_reject_orphan_use(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzFramePlan* plan = _product_test_plan(1);
+    ANN(plan);
+    plan->product_uses[0].product_id = (DvzRenderProductId){999};
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_frame_plan_graph_validate(plan, &report));
+    AT(_report_contains(&report, "references unknown product id 999"));
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
+
 /**
  * Ensure the FramePlan graph terminal view includes passes, resources, and dependencies.
  *
@@ -2682,6 +3277,21 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_buffer_to_texture_copy);
     TST_CASE(test_frame_plan_abi_rejects_invalid_structs);
     TST_CASE(test_frame_plan_graph_static_multipass);
+    TST_CASE(test_frame_plan_products_schema);
+    TST_CASE(test_frame_plan_products_color_successor);
+    TST_CASE(test_frame_plan_products_reject_cross_panel);
+    TST_CASE(test_frame_plan_products_reject_implicit_samples);
+    TST_CASE(test_frame_plan_products_reject_undefined_background);
+    TST_CASE(test_frame_plan_products_reject_format_inference);
+    TST_CASE(test_frame_plan_products_reject_incoherent_surface_record);
+    TST_CASE(test_frame_plan_products_reject_incompatible_concrete_format);
+    TST_CASE(test_frame_plan_products_reject_omitted_reader);
+    TST_CASE(test_frame_plan_products_reject_intervening_writer);
+    TST_CASE(test_frame_plan_products_reject_alias_overlap);
+    TST_CASE(test_frame_plan_products_explicit_shader_resolve);
+    TST_CASE(test_frame_plan_products_attachment_resolve);
+    TST_CASE(test_frame_plan_products_consumer_growth);
+    TST_CASE(test_frame_plan_products_reject_orphan_use);
     TST_CASE(test_frame_plan_graph_ascii);
     TST_CASE(test_frame_plan_trace_env);
     TST_CASE(test_frame_plan_graph_dependencies_dump);

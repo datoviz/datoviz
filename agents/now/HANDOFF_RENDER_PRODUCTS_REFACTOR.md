@@ -128,6 +128,8 @@ Acceptance:
 
 Stop and escalate if existing fixed graph limits cannot represent the needed attachments/accesses, if product identity would need persistence across plans, or if a protocol capability appears necessary. Any DRP2 change starts with authoritative prose, schema, and fixtures.
 
+R1 implementation evidence: typed plan-local products and coherent surface-record identities remain internal to the scene FramePlan; growable typed use records bind consumers and validity requirements without a fixed consumer limit; physical resources and diagnostic labels remain non-authoritative realizations; exact attachment and explicit shader resolves, format classes, access closure, panel scope, surface pairing, validity payloads, live intervals, and aliases are mechanically validated. JSON schema `0.2` and ASCII output expose deterministic provenance. The focused product matrix passes 15/15, the broader frame-plan lane passes 88/88, `just spec-check` passes all 125 DRP2 fixtures, 39 WebGPU fixtures/streams, pytest gates, and source guards, and `git diff --check` passes. No DRP2 protocol change was required.
+
 ## R2 — Central Composer, Layers, Phases, And Snapshots
 
 Owner: main `sol-medium`; cheap agents may map visual capabilities read-only. Checkpoint: `scene: centralize panel technique composition`.

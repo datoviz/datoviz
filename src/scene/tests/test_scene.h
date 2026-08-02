@@ -323,6 +323,38 @@ int test_frame_plan_abi_rejects_invalid_structs(TstContext* suite, const TstCase
 
 int test_frame_plan_graph_static_multipass(TstContext* suite, const TstCase* item);
 
+int test_frame_plan_products_schema(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_color_successor(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_cross_panel(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_implicit_samples(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_undefined_background(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_format_inference(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_incoherent_surface_record(
+    TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_incompatible_concrete_format(
+    TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_omitted_reader(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_intervening_writer(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_alias_overlap(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_explicit_shader_resolve(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_attachment_resolve(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_consumer_growth(TstContext* suite, const TstCase* item);
+
+int test_frame_plan_products_reject_orphan_use(TstContext* suite, const TstCase* item);
+
 int test_frame_plan_graph_ascii(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_trace_env(TstContext* suite, const TstCase* item);
