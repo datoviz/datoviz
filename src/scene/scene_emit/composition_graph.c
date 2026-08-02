@@ -58,6 +58,7 @@ typedef struct
 {
     uint32_t resource_count;
     uint32_t pass_count;
+    uint32_t persisted_realization_count;
     uint32_t realization_count;
     CompositionGraphRealization realizations
         [COMPOSITION_GRAPH_MAX_PRODUCT_REALIZATIONS + DVZ_PANEL_COMPOSITION_MAX_SCRATCH_RESOURCES];
@@ -584,6 +585,7 @@ bool _scene_panel_composition_lower_graph(
     CompositionGraphDraft draft = {
         .resource_count = plan->graph_resource_count,
         .pass_count = plan->graph_pass_count,
+        .persisted_realization_count = plan->realization_count,
     };
     bool ok = true;
     for (uint32_t i = 0; ok && i < snapshot->scratch_resource_count; i++)
@@ -607,10 +609,23 @@ bool _scene_panel_composition_lower_graph(
         ok = _composition_graph_lower_pass(plan, snapshot, &draft, &snapshot->passes[i], report);
     if (ok)
         ok = dvz_frame_plan_graph_validate(plan, report);
+    for (uint32_t i = 0; ok && i < draft.realization_count; i++)
+    {
+        const CompositionGraphRealization* realization = &draft.realizations[i];
+        DvzSceneGraphRealization persisted = {
+            .ref_kind = realization->ref_kind,
+            .product_id = realization->product_id,
+            .scratch_id = realization->scratch_id,
+            .graph_resource_index = realization->graph_resource_index,
+        };
+        _frame_plan_copy_label(persisted.panel_id, sizeof(persisted.panel_id), snapshot->panel_id);
+        ok = _frame_plan_realization_append(plan, &persisted);
+    }
     if (!ok)
     {
         plan->graph_resource_count = draft.resource_count;
         plan->graph_pass_count = draft.pass_count;
+        plan->realization_count = draft.persisted_realization_count;
     }
     return ok;
 }

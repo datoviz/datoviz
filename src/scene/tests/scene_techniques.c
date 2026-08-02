@@ -117,6 +117,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(generic_graph->graph_pass_count == first.pass_count);
     AT(strcmp(generic_graph->graph_resources[0].id, "rt") == 0);
     AT(generic_graph->graph_resources[0].kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET);
+    AT(generic_graph->realization_count > 0);
     for (uint32_t i = 0; i < first.pass_count; i++)
     {
         const DvzFrameGraphPass* graph_pass = &generic_graph->graph_passes[i];
@@ -124,6 +125,13 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         AT(graph_pass->composition_pass_id.value == first.passes[i].id.value);
         AT(graph_pass->color_attachment_count == 1);
         AT(strcmp(graph_pass->color_attachments[0].resource_id, "rt") == 0);
+        for (uint32_t j = 0; j < first.passes[i].binding_count; j++)
+        {
+            const DvzSceneWorkBinding* binding = &first.passes[i].bindings[j];
+            ANN(_frame_plan_realization_get(
+                generic_graph, first.panel_id, binding->ref_kind, binding->product_id,
+                binding->scratch_id));
+        }
     }
     AT(
         generic_graph->graph_passes[0].color_attachments[0].load_op ==
@@ -761,6 +769,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(_scene_panel_composition_lower_graph(generic_graph, &adjacent_composed, NULL));
     AT(generic_graph->graph_pass_count == 2 * composed.pass_count);
     AT(generic_graph->graph_resource_count == 2 * first_panel_resource_count - 1);
+    AT(generic_graph->realization_count > DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY);
     dvz_frame_plan_destroy(generic_graph);
 
     DvzCapabilitySnapshot no_surface_rgba = caps;

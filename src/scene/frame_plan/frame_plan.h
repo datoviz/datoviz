@@ -520,6 +520,17 @@ typedef struct DvzSceneWorkBinding
 
 
 
+typedef struct DvzSceneGraphRealization
+{
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    DvzSceneResourceRefKind ref_kind;
+    DvzRenderProductId product_id;
+    DvzSceneScratchResourceId scratch_id;
+    uint32_t graph_resource_index;
+} DvzSceneGraphRealization;
+
+
+
 typedef struct DvzSceneResolvedTechnique
 {
     DvzSceneTechniqueInstanceId instance_id;
@@ -1098,6 +1109,9 @@ struct DvzFramePlan
     uint32_t composition_capacity;
     uint32_t composition_count;
     DvzPanelCompositionSnapshot* compositions;
+    uint32_t realization_capacity;
+    uint32_t realization_count;
+    DvzSceneGraphRealization* realizations;
 };
 
 

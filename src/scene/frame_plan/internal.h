@@ -46,6 +46,13 @@ bool _frame_plan_composition_append(
 const DvzPanelCompositionSnapshot* _frame_plan_composition_get(
     const DvzFramePlan* plan, const char* panel_id);
 
+bool _frame_plan_realization_append(
+    DvzFramePlan* plan, const DvzSceneGraphRealization* realization);
+
+const DvzSceneGraphRealization* _frame_plan_realization_get(
+    const DvzFramePlan* plan, const char* panel_id, DvzSceneResourceRefKind ref_kind,
+    DvzRenderProductId product_id, DvzSceneScratchResourceId scratch_id);
+
 bool _frame_plan_render_visual_reserve(DvzFramePlanNode* node, uint32_t count);
 
 const char* _frame_graph_access_usage_name(DvzFrameGraphAccessUsage usage);
