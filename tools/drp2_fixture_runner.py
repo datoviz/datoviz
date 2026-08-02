@@ -10,7 +10,8 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence
-from urllib.parse import unquote, urlparse
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 import jsonschema
 
@@ -1411,7 +1412,7 @@ class DRP2FixtureRunner:
                 passed = actual['command_index'] == expected['command_index']
 
         return FixtureResult(
-            fixture_path=str(fixture_path.relative_to(self.root_dir)),
+            fixture_path=fixture_path.relative_to(self.root_dir).as_posix(),
             fixture_name=fixture['name'],
             actual_outcome=actual['outcome'],
             actual_phase=actual['phase'],
@@ -1437,7 +1438,7 @@ class DRP2FixtureRunner:
     ) -> FixtureResult:
         expected = fixture.get('expected', {})
         return FixtureResult(
-            fixture_path=str(fixture_path.relative_to(self.root_dir)),
+            fixture_path=fixture_path.relative_to(self.root_dir).as_posix(),
             fixture_name=fixture.get('name', fixture_path.stem),
             actual_outcome=actual_outcome,
             actual_phase=actual_phase,
@@ -1514,7 +1515,7 @@ def _retrieve_schema_resource(uri: str) -> Resource:
     parsed = urlparse(uri)
     if parsed.scheme != 'file':
         raise ValueError(f'unsupported schema uri: {uri}')
-    schema_path = Path(unquote(parsed.path))
+    schema_path = Path(url2pathname(parsed.path))
     with schema_path.open('r', encoding='utf-8') as stream:
         return Resource.from_contents(json.load(stream))
 

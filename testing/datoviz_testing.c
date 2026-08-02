@@ -38,6 +38,10 @@ static int _dvz_testing_log_intercept(
 static void _dvz_testing_log_install(TstContext* ctx, void* user_data)
 {
     (void)user_data;
+    // Tests may change the process-wide logger threshold. Restore the runner threshold before each
+    // case so that a previous test cannot make later expected-error checks silent.
+    if (getenv("DVZ_LOG_LEVEL") == NULL)
+        log_set_level(LOG_INFO);
     log_set_intercept(_dvz_testing_log_intercept, ctx);
 }
 
