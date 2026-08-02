@@ -33,6 +33,9 @@ DvzFramePlanNode* _frame_plan_last_node(DvzFramePlan* plan, DvzFramePlanNodeType
 bool _frame_plan_composition_validate(
     const DvzPanelCompositionSnapshot* snapshot, DvzDiagnosticReport* report);
 
+uint64_t _frame_plan_composition_work_fingerprint(
+    const DvzPanelCompositionSnapshot* snapshot);
+
 bool _scene_panel_composition_contract_validate(
     const DvzPanelCompositionSnapshot* snapshot, DvzDiagnosticReport* report);
 

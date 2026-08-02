@@ -622,6 +622,45 @@ static void _ascii_append_flow(AsciiBuilder* builder, const DvzFramePlan* plan, 
 
 
 
+static void _ascii_append_compositions(AsciiBuilder* builder, const DvzFramePlan* plan)
+{
+    ANN(builder);
+    ANN(plan);
+    for (uint32_t i = 0; i < plan->composition_count; i++)
+    {
+        const DvzPanelCompositionSnapshot* composition = &plan->compositions[i];
+        _ascii_append(
+            builder, "Composition panel=%s scratch=%" PRIu32 " passes=%" PRIu32 "\n",
+            composition->panel_id, composition->scratch_resource_count, composition->pass_count);
+        for (uint32_t j = 0; j < composition->scratch_resource_count; j++)
+        {
+            const DvzSceneScratchResource* scratch = &composition->scratch_resources[j];
+            _ascii_append(
+                builder,
+                "  scratch #%" PRIu32 " kind=%u format=%u extent=%u samples=%" PRIu32
+                " usage=0x%x scope=%u\n",
+                scratch->id.value, (uint32_t)scratch->kind, scratch->format,
+                (uint32_t)scratch->extent_policy, scratch->sample_count, scratch->usage_mask,
+                (uint32_t)scratch->scope);
+        }
+        for (uint32_t j = 0; j < composition->pass_count; j++)
+        {
+            const DvzSceneResolvedPass* pass = &composition->passes[j];
+            _ascii_append(
+                builder,
+                "  work #%" PRIu32 " class=%u provider=%u coordinates=%u samples=%" PRIu32
+                " bindings=%" PRIu32 " legacy=%u\n",
+                pass->id.value, (uint32_t)pass->work_class, (uint32_t)pass->provider,
+                (uint32_t)pass->coordinate_space, pass->sample_count, pass->binding_count,
+                pass->legacy_transition ? 1u : 0u);
+        }
+    }
+    if (plan->composition_count > 0)
+        _ascii_append(builder, "\n");
+}
+
+
+
 /**
  * Append compact upload and readback plan nodes.
  *
@@ -969,6 +1008,8 @@ char* dvz_frame_plan_graph_ascii(const DvzFramePlan* plan, uint32_t flags)
         dvz_frame_plan_graph_dependency_count(plan));
 
     _ascii_append_plan_nodes(&builder, plan, flags);
+
+    _ascii_append_compositions(&builder, plan);
 
     _ascii_append_products(&builder, plan);
 

@@ -782,13 +782,14 @@ DVZ_PRODUCT_NAME_FUNCTION(
     "query", "presentation")
 DVZ_PRODUCT_NAME_FUNCTION(
     _frame_plan_product_extent_name, DvzRenderProductExtentPolicy, "none", "absolute",
-    "panel_relative", "source_relative")
+    "target_relative", "panel_relative", "source_relative")
 DVZ_PRODUCT_NAME_FUNCTION(
     _frame_plan_product_rounding_name, DvzRenderProductRoundingPolicy, "none", "floor", "ceil",
     "nearest", "outward")
 DVZ_PRODUCT_NAME_FUNCTION(
     _frame_plan_product_format_name, DvzRenderProductFormatClass, "none", "linear_color",
-    "depth_float", "normal_float", "coverage", "uint_id", "scalar_float", "presentation_color")
+    "depth_float", "normal_float", "coverage", "uint_id", "scalar_float", "vector2_float",
+    "presentation_color")
 DVZ_PRODUCT_NAME_FUNCTION(
     _frame_plan_product_samples_name, DvzRenderProductSampleDomain, "none", "single",
     "multisample", "resolved")

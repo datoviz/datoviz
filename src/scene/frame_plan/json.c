@@ -807,6 +807,79 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
 
 
 
+static void _json_append_composition(
+    JsonBuilder* builder, const DvzPanelCompositionSnapshot* composition)
+{
+    ANN(builder);
+    ANN(composition);
+    _json_append(builder, "{ \"panel_id\": ");
+    _json_append_escaped_string(builder, composition->panel_id);
+    _json_append(
+        builder, ", \"work_fingerprint\": \"0x%016" PRIx64 "\", \"scratch_resources\": [",
+        composition->work_declaration_fingerprint);
+    for (uint32_t i = 0; i < composition->scratch_resource_count; i++)
+    {
+        const DvzSceneScratchResource* scratch = &composition->scratch_resources[i];
+        _json_append(
+            builder,
+            "%s{ \"id\": %" PRIu32 ", \"technique_instance_id\": %" PRIu32
+            ", \"scope\": %u, \"kind\": %u, \"format\": %u, \"format_class\": %u"
+            ", \"extent\": %u, \"sample_domain\": %u, \"sample_count\": %" PRIu32
+            ", \"usage\": %u, \"lifetime\": %u }",
+            i > 0 ? ", " : "", scratch->id.value, scratch->technique_instance_id.value,
+            (uint32_t)scratch->scope, (uint32_t)scratch->kind, scratch->format,
+            (uint32_t)scratch->format_class, (uint32_t)scratch->extent_policy,
+            (uint32_t)scratch->sample_domain, scratch->sample_count, scratch->usage_mask,
+            (uint32_t)scratch->lifetime);
+    }
+    _json_append(builder, "], \"passes\": [");
+    for (uint32_t i = 0; i < composition->pass_count; i++)
+    {
+        const DvzSceneResolvedPass* pass = &composition->passes[i];
+        _json_append(
+            builder,
+            "%s{ \"id\": %" PRIu32 ", \"work_index\": %" PRIu32
+            ", \"work_class\": %u, \"provider\": %u, \"coordinates\": %u"
+            ", \"sample_count\": %" PRIu32 ", \"resolve\": %u, \"alpha_to_coverage\": %s"
+            ", \"legacy_transition\": %s, \"unrealized_product_ids\": [",
+            i > 0 ? ", " : "", pass->id.value, pass->work_index,
+            (uint32_t)pass->work_class, (uint32_t)pass->provider,
+            (uint32_t)pass->coordinate_space, pass->sample_count,
+            (uint32_t)pass->resolve_policy, pass->alpha_to_coverage ? "true" : "false",
+            pass->legacy_transition ? "true" : "false");
+        for (uint32_t j = 0; j < pass->unrealized_product_count; j++)
+            _json_append(
+                builder, "%s%" PRIu32, j > 0 ? ", " : "",
+                pass->unrealized_product_ids[j].value);
+        _json_append(builder, "], \"bindings\": [");
+        for (uint32_t j = 0; j < pass->binding_count; j++)
+        {
+            const DvzSceneWorkBinding* binding = &pass->bindings[j];
+            _json_append(
+                builder,
+                "%s{ \"ref\": %u, \"product\": %" PRIu32 ", \"scratch\": %" PRIu32
+                ", \"usage\": %u, \"access\": %u, \"slot\": %" PRIu32
+                ", \"set\": %" PRIu32 ", \"binding\": %" PRIu32
+                ", \"load\": %u, \"store\": %u, \"clear\": %s, \"clear_kind\": %u"
+                ", \"depth_attachment\": %s, \"load_source_ref\": %u"
+                ", \"load_source_product\": %" PRIu32 ", \"load_source_scratch\": %" PRIu32
+                " }",
+                j > 0 ? ", " : "", (uint32_t)binding->ref_kind, binding->product_id.value,
+                binding->scratch_id.value, (uint32_t)binding->usage,
+                (uint32_t)binding->access, binding->slot, binding->set, binding->binding,
+                (uint32_t)binding->load, (uint32_t)binding->store,
+                binding->clear ? "true" : "false", (uint32_t)binding->clear_value_kind,
+                binding->depth_attachment ? "true" : "false",
+                (uint32_t)binding->load_source_ref_kind,
+                binding->load_source_product_id.value, binding->load_source_scratch_id.value);
+        }
+        _json_append(builder, "] }");
+    }
+    _json_append(builder, "] }");
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -856,6 +929,17 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
         _json_append(&builder, "      ");
         _json_append_product(&builder, plan, &plan->products[i]);
         _json_append(&builder, "%s\n", i + 1 < plan->product_count ? "," : "");
+    }
+
+    _json_append(
+        &builder,
+        "    ],\n"
+        "    \"compositions\": [\n");
+    for (uint32_t i = 0; i < plan->composition_count; i++)
+    {
+        _json_append(&builder, "      ");
+        _json_append_composition(&builder, &plan->compositions[i]);
+        _json_append(&builder, "%s\n", i + 1 < plan->composition_count ? "," : "");
     }
 
     _json_append(

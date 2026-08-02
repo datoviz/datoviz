@@ -96,6 +96,42 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(
         (first.required_product_mask &
          (UINT64_C(1) << DVZ_RENDER_PRODUCT_PRESENTATION_COLOR)) != 0);
+    AT(first.work_declaration_fingerprint != 0);
+    AT(first.passes[0].provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
+    AT(first.passes[0].coordinate_space == DVZ_RENDER_PRODUCT_COORDINATES_FRAMEBUFFER_PIXEL);
+    AT(!first.passes[0].viewport_panel_local);
+    AT(first.passes[0].binding_count == 1);
+    AT(first.passes[0].bindings[0].clear_value_kind == DVZ_SCENE_CLEAR_VALUE_FRAME);
+    AT(first.passes[1].provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
+    AT(first.passes[1].binding_count == 1);
+    AT(first.passes[1].bindings[0].load == DVZ_SCENE_ATTACHMENT_LOAD_LOAD);
+    AT(first.passes[1].bindings[0].access == DVZ_SCENE_WORK_ACCESS_READ_WRITE);
+    AT(
+        first.passes[1].bindings[0].load_source_product_id.value ==
+        first.techniques[1].input_ids[0].value);
+
+    DvzPanelCompositionSnapshot work_drift = first;
+    work_drift.passes[0].provider = DVZ_SCENE_WORK_PROVIDER_EDL;
+    DvzDiagnosticReport work_drift_report;
+    dvz_diagnostic_report_init(&work_drift_report);
+    AT(!_frame_plan_composition_validate(&work_drift, &work_drift_report));
+    AT(strstr(
+           dvz_diagnostic_report_get(&work_drift_report, 0),
+           "declarative work drifts") != NULL);
+
+    work_drift = first;
+    work_drift.passes[0].provider = (DvzSceneWorkProviderKey)UINT32_MAX;
+    dvz_diagnostic_report_init(&work_drift_report);
+    AT(!_frame_plan_composition_validate(&work_drift, &work_drift_report));
+    AT(strstr(dvz_diagnostic_report_get(&work_drift_report, 0), "unknown work provider") != NULL);
+
+    work_drift = first;
+    work_drift.passes[1].bindings[0].load_source_product_id.value++;
+    dvz_diagnostic_report_init(&work_drift_report);
+    AT(!_frame_plan_composition_validate(&work_drift, &work_drift_report));
+    AT(strstr(
+           dvz_diagnostic_report_get(&work_drift_report, 0),
+           "declarative work drifts") != NULL);
 
     DvzPanelRenderPlan volume_plan = plan;
     volume_plan.visuals[1].layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
@@ -481,7 +517,11 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     repeated.passes[2].id.value = 3;
     repeated.passes[2].technique_instance_id = repeated.techniques[2].instance_id;
     repeated.passes[2].ordinal = 1;
+    repeated.passes[2].bindings[0].product_id = repeated.techniques[2].output_ids[0];
+    repeated.passes[2].bindings[0].load_source_product_id = repeated.techniques[2].input_ids[0];
     repeated.pass_count = 3;
+    repeated.work_declaration_fingerprint =
+        _frame_plan_composition_work_fingerprint(&repeated);
     AT(repeated.techniques[1].id == repeated.techniques[2].id);
     AT(_frame_plan_composition_validate(&repeated, NULL));
 
@@ -536,6 +576,75 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     }
     AT(found_surface_capture_caps);
     AT(found_ambient_composite_caps);
+    bool found_gbuffer_work = false;
+    bool found_ssao_blur_work = false;
+    bool found_ssao_composite_work = false;
+    bool found_edl_work = false;
+    for (uint32_t i = 0; i < composed.pass_count; i++)
+    {
+        const DvzSceneResolvedPass* pass = &composed.passes[i];
+        if (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
+        {
+            AT(pass->binding_count == 2);
+            AT(pass->legacy_transition);
+            AT(pass->unrealized_product_count == 3);
+            found_gbuffer_work = true;
+        }
+        else if (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR)
+        {
+            AT(pass->binding_count == 4);
+            AT(pass->bindings[0].binding == 0);
+            AT(pass->bindings[1].binding == 1);
+            AT(pass->bindings[2].binding == 2);
+            found_ssao_blur_work = true;
+        }
+        else if (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE)
+        {
+            AT(pass->binding_count == 2);
+            AT(pass->bindings[0].usage == DVZ_SCENE_WORK_BINDING_SAMPLED);
+            AT(pass->bindings[1].load == DVZ_SCENE_ATTACHMENT_LOAD_LOAD);
+            found_ssao_composite_work = true;
+        }
+        else if (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE)
+        {
+            AT(pass->binding_count == 3);
+            AT(pass->bindings[0].binding == 0);
+            AT(pass->bindings[1].binding == 1);
+            AT(pass->bindings[2].clear_value_kind == DVZ_SCENE_CLEAR_VALUE_FRAME);
+            AT(pass->unrealized_product_count == 2);
+            found_edl_work = true;
+        }
+    }
+    AT(found_gbuffer_work);
+    AT(found_ssao_blur_work);
+    AT(found_ssao_composite_work);
+    AT(found_edl_work);
+    bool found_surface_normal_scratch = false;
+    bool found_surface_depth_scratch = false;
+    bool found_edl_color_scratch = false;
+    for (uint32_t i = 0; i < composed.scratch_resource_count; i++)
+    {
+        const DvzSceneScratchResource* scratch = &composed.scratch_resources[i];
+        AT(scratch->extent_policy == DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE);
+        if (scratch->kind == DVZ_SCENE_SCRATCH_SURFACE_NORMAL_LEGACY)
+        {
+            AT(scratch->format == DVZ_FORMAT_R16G16B16A16_SFLOAT);
+            found_surface_normal_scratch = true;
+        }
+        else if (scratch->kind == DVZ_SCENE_SCRATCH_SURFACE_DEPTH)
+        {
+            AT(scratch->format == DVZ_FORMAT_D32_SFLOAT);
+            found_surface_depth_scratch = true;
+        }
+        else if (scratch->kind == DVZ_SCENE_SCRATCH_EDL_COLOR)
+        {
+            AT(scratch->format == DVZ_FORMAT_R8G8B8A8_UNORM);
+            found_edl_color_scratch = true;
+        }
+    }
+    AT(found_surface_normal_scratch);
+    AT(found_surface_depth_scratch);
+    AT(found_edl_color_scratch);
 
     DvzCapabilitySnapshot no_surface_rgba = caps;
     no_surface_rgba.render_target_format_rgba16float = false;
@@ -1572,6 +1681,9 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     ANN(json);
     AT(strstr(json, "\"composition_pass_id\"") != NULL);
     AT(strstr(json, "\"graph_pass_index\"") != NULL);
+    AT(strstr(json, "\"compositions\"") != NULL);
+    AT(strstr(json, "\"work_fingerprint\"") != NULL);
+    AT(strstr(json, "\"unrealized_product_ids\"") != NULL);
     dvz_frame_plan_json_destroy(json);
 
     DvzCapabilitySnapshot caps = {0};

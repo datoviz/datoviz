@@ -24,25 +24,28 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY 8
-#define DVZ_FRAME_PLAN_INITIAL_VISUAL_CAPACITY 4
-#define DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY 16
-#define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY 16
-#define DVZ_FRAME_PLAN_INITIAL_PRODUCT_CAPACITY 16
-#define DVZ_FRAME_PLAN_INITIAL_PRODUCT_USE_CAPACITY 32
-#define DVZ_FRAME_PLAN_INITIAL_COMPOSITION_CAPACITY 4
-#define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES 8
-#define DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS 4
-#define DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES (DVZ_SCENE_MAX_RENDER_VISUALS + 16)
-#define DVZ_PANEL_COMPOSITION_MAX_PASSES (DVZ_SCENE_MAX_RENDER_VISUALS + 64)
+#define DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY             8
+#define DVZ_FRAME_PLAN_INITIAL_VISUAL_CAPACITY           4
+#define DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY   16
+#define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY       16
+#define DVZ_FRAME_PLAN_INITIAL_PRODUCT_CAPACITY          16
+#define DVZ_FRAME_PLAN_INITIAL_PRODUCT_USE_CAPACITY      32
+#define DVZ_FRAME_PLAN_INITIAL_COMPOSITION_CAPACITY      4
+#define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES                8
+#define DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS       4
+#define DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES             (DVZ_SCENE_MAX_RENDER_VISUALS + 16)
+#define DVZ_PANEL_COMPOSITION_MAX_PASSES                 (DVZ_SCENE_MAX_RENDER_VISUALS + 64)
 #define DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE 4
-#define DVZ_FRAME_PLAN_ASCII_COMPACT 0x01u
-#define DVZ_FRAME_PLAN_ASCII_VERBOSE 0x02u
-#define DVZ_FRAME_PLAN_ASCII_SHOW_UPLOADS 0x04u
-#define DVZ_FRAME_PLAN_ASCII_SHOW_READBACKS 0x08u
-#define DVZ_FRAME_PLAN_ASCII_ASCII_ONLY 0x10u
-#define DVZ_FRAME_PLAN_ASCII_MAX_WIDTH_120 0x20u
-#define DVZ_SCENE_LABELS_LOOKUP_CAPACITY 65u
+#define DVZ_PANEL_COMPOSITION_MAX_SCRATCH_RESOURCES      16
+#define DVZ_PANEL_COMPOSITION_MAX_WORK_BINDINGS          8
+#define DVZ_PANEL_COMPOSITION_MAX_UNREALIZED_PRODUCTS    4
+#define DVZ_FRAME_PLAN_ASCII_COMPACT                     0x01u
+#define DVZ_FRAME_PLAN_ASCII_VERBOSE                     0x02u
+#define DVZ_FRAME_PLAN_ASCII_SHOW_UPLOADS                0x04u
+#define DVZ_FRAME_PLAN_ASCII_SHOW_READBACKS              0x08u
+#define DVZ_FRAME_PLAN_ASCII_ASCII_ONLY                  0x10u
+#define DVZ_FRAME_PLAN_ASCII_MAX_WIDTH_120               0x20u
+#define DVZ_SCENE_LABELS_LOOKUP_CAPACITY                 65u
 
 
 
@@ -165,6 +168,7 @@ typedef enum
 {
     DVZ_RENDER_PRODUCT_EXTENT_NONE = 0,
     DVZ_RENDER_PRODUCT_EXTENT_ABSOLUTE,
+    DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE,
     DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE,
     DVZ_RENDER_PRODUCT_EXTENT_SOURCE_RELATIVE,
 } DvzRenderProductExtentPolicy;
@@ -191,6 +195,7 @@ typedef enum
     DVZ_RENDER_PRODUCT_FORMAT_COVERAGE,
     DVZ_RENDER_PRODUCT_FORMAT_UINT_ID,
     DVZ_RENDER_PRODUCT_FORMAT_SCALAR_FLOAT,
+    DVZ_RENDER_PRODUCT_FORMAT_VECTOR2_FLOAT,
     DVZ_RENDER_PRODUCT_FORMAT_PRESENTATION_COLOR,
 } DvzRenderProductFormatClass;
 
@@ -357,12 +362,161 @@ typedef enum
 
 typedef DvzFramePlanPassId DvzSceneCompositionPassId;
 
-
-
 typedef struct DvzSceneTechniqueInstanceId
 {
     uint32_t value;
 } DvzSceneTechniqueInstanceId;
+
+typedef struct DvzSceneScratchResourceId
+{
+    uint32_t value;
+} DvzSceneScratchResourceId;
+
+typedef enum
+{
+    DVZ_SCENE_WORK_NONE = 0,
+    DVZ_SCENE_WORK_VISUAL_DRAWS,
+    DVZ_SCENE_WORK_FULLSCREEN,
+    DVZ_SCENE_WORK_COMPUTE,
+} DvzSceneWorkClass;
+
+/* Stable provider identities deliberately replace runtime pipeline/shader names. */
+typedef enum
+{
+    DVZ_SCENE_WORK_PROVIDER_NONE = 0,
+    DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION,
+    DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION,
+    DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE,
+    DVZ_SCENE_WORK_PROVIDER_SSAO,
+    DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR,
+    DVZ_SCENE_WORK_PROVIDER_OPAQUE,
+    DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE,
+    DVZ_SCENE_WORK_PROVIDER_EDL,
+    DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND,
+    DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION,
+    DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE,
+    DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT,
+    DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION,
+    DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE,
+    DVZ_SCENE_WORK_PROVIDER_PRESENTATION,
+} DvzSceneWorkProviderKey;
+
+typedef enum
+{
+    DVZ_SCENE_RESOURCE_REF_NONE = 0,
+    DVZ_SCENE_RESOURCE_REF_PRODUCT,
+    DVZ_SCENE_RESOURCE_REF_SCRATCH,
+    DVZ_SCENE_RESOURCE_REF_EXTERNAL,
+} DvzSceneResourceRefKind;
+
+typedef enum
+{
+    DVZ_SCENE_SCRATCH_NONE = 0,
+    DVZ_SCENE_SCRATCH_SCENE_OCCLUSION_DEVICE_DEPTH,
+    DVZ_SCENE_SCRATCH_VOLUME_OCCLUSION_DEVICE_DEPTH,
+    DVZ_SCENE_SCRATCH_Z_ONLY_DEPTH,
+    DVZ_SCENE_SCRATCH_SURFACE_NORMAL_LEGACY,
+    DVZ_SCENE_SCRATCH_SURFACE_DEPTH,
+    DVZ_SCENE_SCRATCH_FORWARD_DEPTH,
+    DVZ_SCENE_SCRATCH_PEEL_FORWARD_DEPTH,
+    DVZ_SCENE_SCRATCH_SSAO_RAW,
+    DVZ_SCENE_SCRATCH_WBOIT_WEIGHT,
+    DVZ_SCENE_SCRATCH_PEEL_BACK_ACCUM,
+    DVZ_SCENE_SCRATCH_PEEL_DEPTH_PING,
+    DVZ_SCENE_SCRATCH_PEEL_DEPTH_PONG,
+    DVZ_SCENE_SCRATCH_EDL_COLOR,
+    DVZ_SCENE_SCRATCH_EDL_DEPTH,
+} DvzSceneScratchKind;
+
+typedef enum
+{
+    DVZ_SCENE_WORK_BINDING_NONE = 0,
+    DVZ_SCENE_WORK_BINDING_ATTACHMENT,
+    DVZ_SCENE_WORK_BINDING_SAMPLED,
+    DVZ_SCENE_WORK_BINDING_STORAGE,
+} DvzSceneWorkBindingUsage;
+
+typedef enum
+{
+    DVZ_SCENE_WORK_ACCESS_NONE = 0,
+    DVZ_SCENE_WORK_ACCESS_READ,
+    DVZ_SCENE_WORK_ACCESS_WRITE,
+    DVZ_SCENE_WORK_ACCESS_READ_WRITE,
+} DvzSceneWorkAccess;
+
+typedef enum
+{
+    DVZ_SCENE_ATTACHMENT_LOAD_NONE = 0,
+    DVZ_SCENE_ATTACHMENT_LOAD_CLEAR,
+    DVZ_SCENE_ATTACHMENT_LOAD_LOAD,
+    DVZ_SCENE_ATTACHMENT_LOAD_DONT_CARE,
+} DvzSceneAttachmentLoad;
+
+typedef enum
+{
+    DVZ_SCENE_ATTACHMENT_STORE_NONE = 0,
+    DVZ_SCENE_ATTACHMENT_STORE_STORE,
+    DVZ_SCENE_ATTACHMENT_STORE_DONT_CARE,
+} DvzSceneAttachmentStore;
+
+typedef enum
+{
+    DVZ_SCENE_CLEAR_VALUE_NONE = 0,
+    DVZ_SCENE_CLEAR_VALUE_LITERAL,
+    DVZ_SCENE_CLEAR_VALUE_FRAME,
+} DvzSceneClearValueKind;
+
+typedef enum
+{
+    DVZ_SCENE_SCRATCH_LIFETIME_NONE = 0,
+    DVZ_SCENE_SCRATCH_LIFETIME_PASS,
+    DVZ_SCENE_SCRATCH_LIFETIME_TECHNIQUE,
+    DVZ_SCENE_SCRATCH_LIFETIME_FRAME,
+} DvzSceneScratchLifetime;
+
+typedef enum
+{
+    DVZ_SCENE_SCRATCH_SCOPE_NONE = 0,
+    DVZ_SCENE_SCRATCH_SCOPE_PANEL,
+    DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE,
+    DVZ_SCENE_SCRATCH_SCOPE_PASS,
+} DvzSceneScratchScope;
+
+typedef struct DvzSceneScratchResource
+{
+    DvzSceneScratchResourceId id;
+    DvzSceneTechniqueInstanceId technique_instance_id;
+    DvzSceneScratchScope scope;
+    DvzSceneScratchKind kind;
+    uint32_t format;
+    DvzRenderProductFormatClass format_class;
+    DvzRenderProductExtentPolicy extent_policy;
+    DvzRenderProductSampleDomain sample_domain;
+    uint32_t sample_count;
+    uint32_t usage_mask;
+    DvzSceneScratchLifetime lifetime;
+} DvzSceneScratchResource;
+
+typedef struct DvzSceneWorkBinding
+{
+    DvzSceneResourceRefKind ref_kind;
+    DvzRenderProductId product_id;
+    DvzSceneScratchResourceId scratch_id;
+    DvzSceneWorkBindingUsage usage;
+    DvzSceneWorkAccess access;
+    uint32_t slot;
+    uint32_t set;
+    uint32_t binding;
+    DvzSceneAttachmentLoad load;
+    DvzSceneAttachmentStore store;
+    bool clear;
+    DvzSceneClearValueKind clear_value_kind;
+    bool depth_attachment;
+    float clear_value[4];
+    DvzSceneResourceRefKind load_source_ref_kind;
+    DvzRenderProductId load_source_product_id;
+    DvzSceneScratchResourceId load_source_scratch_id;
+} DvzSceneWorkBinding;
 
 
 
@@ -403,6 +557,26 @@ typedef struct DvzSceneResolvedPass
     uint32_t ordinal;
     uint32_t authored_order_begin;
     uint32_t authored_order_end;
+    uint32_t work_index;
+    DvzSceneWorkClass work_class;
+    DvzSceneWorkProviderKey provider;
+    DvzRenderProductCoordinateSpace coordinate_space;
+    bool viewport_panel_local;
+    bool scissor_panel_local;
+    uint32_t sample_count;
+    DvzRenderProductResolvePolicy resolve_policy;
+    bool alpha_to_coverage;
+    uint32_t visual_layer_filter;
+    uint32_t visual_order_begin;
+    uint32_t visual_order_end;
+    uint32_t dispatch_x;
+    uint32_t dispatch_y;
+    uint32_t dispatch_z;
+    bool legacy_transition;
+    uint32_t unrealized_product_count;
+    DvzRenderProductId unrealized_product_ids[DVZ_PANEL_COMPOSITION_MAX_UNREALIZED_PRODUCTS];
+    uint32_t binding_count;
+    DvzSceneWorkBinding bindings[DVZ_PANEL_COMPOSITION_MAX_WORK_BINDINGS];
 } DvzSceneResolvedPass;
 
 
@@ -418,8 +592,11 @@ typedef struct DvzPanelCompositionSnapshot
     uint32_t requested_sample_count;
     uint32_t effective_sample_count;
     bool alpha_to_coverage;
+    uint64_t work_declaration_fingerprint;
     uint32_t technique_count;
     DvzSceneResolvedTechnique techniques[DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES];
+    uint32_t scratch_resource_count;
+    DvzSceneScratchResource scratch_resources[DVZ_PANEL_COMPOSITION_MAX_SCRATCH_RESOURCES];
     uint32_t pass_count;
     DvzSceneResolvedPass passes[DVZ_PANEL_COMPOSITION_MAX_PASSES];
 } DvzPanelCompositionSnapshot;
@@ -802,7 +979,7 @@ struct DvzFramePlanNode
             char data_tag[DVZ_SCENE_LABEL_SIZE];
             const void* data; /* optional: if non-NULL, actual bytes to upload */
             void* owned_data;
-            bool external; /* register only; resource is provided by the live runtime */
+            bool external;         /* register only; resource is provided by the live runtime */
             uint32_t buffer_usage; /* optional DRP2 buffer-usage mask (0 = vertex default) */
             uint32_t item_stride;  /* optional element stride, used by index buffers */
             /* Optional primitive topology hint, propagated to the converter resource entry.
@@ -859,7 +1036,8 @@ struct DvzFramePlanNode
             bool has_viewport;
             DvzSceneViewportUniform viewport;
             bool has_mvp;
-            DvzMVP apply_mvp;  /* panel APPLY MVP from panzoom/arcball; identity MVP for FIXED computed by converter */
+            DvzMVP apply_mvp; /* panel APPLY MVP from panzoom/arcball; identity MVP for FIXED
+                                 computed by converter */
             DvzControllerMode* controller_modes; /* parallel to visuals[] */
             DvzMVP* visual_mvp;
             bool* visual_has_mvp;
