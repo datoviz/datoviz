@@ -176,14 +176,14 @@ void _scene_visual_pipeline_desc_apply_query_pick(
  * Apply render-pass-specific policy to one pipeline descriptor.
  *
  * @param visual the visual descriptor
- * @param pass_role render pass role being prepared
+ * @param provider typed work provider being prepared
  * @param force_point_depth whether point-like visuals must write depth
  * @param pass_sample_count multisample count for the render pass
  * @param pass_alpha_to_coverage whether alpha-to-coverage is enabled for the pass
  * @param pipeline pipeline descriptor to update
  */
 void _scene_visual_pipeline_desc_apply_pass_policy(
-    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role, bool force_point_depth,
+    const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider, bool force_point_depth,
     uint32_t pass_sample_count, bool pass_alpha_to_coverage,
     DvzSceneVisualPipelineDesc* pipeline)
 {
@@ -195,13 +195,13 @@ void _scene_visual_pipeline_desc_apply_pass_policy(
                       visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
 
     if (
-        pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER &&
+        provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE &&
         visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
     {
         pipeline->needs_material_layout = false;
     }
 
-    if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION)
+    if (provider == DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION)
     {
         pipeline->needs_image_layout = false;
         pipeline->needs_glyph_layout = false;

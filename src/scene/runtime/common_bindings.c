@@ -181,6 +181,7 @@ static void _mvp_uniform_copy(DvzMVP* dst, const DvzMVP* src)
  * @param emitter the persistent emitter
  * @param stream the DRP2 command stream
  * @param render the render node
+ * @param provider typed work provider owning the draw
  * @param common_bgl_id the shared common bind group layout id
  * @param mode_tag the controller mode tag
  * @param viewport_rect viewport rectangle selection
@@ -372,8 +373,8 @@ bool _scene_common_bindings_resolve_panel_sets(
  */
 bool _scene_common_bindings_resolve_visual_set(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    uint32_t visual_index, uint64_t common_bgl_id, DvzFramePlanViewportRect viewport_rect,
-    uint64_t* out_bg_id)
+    DvzSceneWorkProviderKey provider, uint32_t visual_index, uint64_t common_bgl_id,
+    DvzFramePlanViewportRect viewport_rect, uint64_t* out_bg_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -395,8 +396,7 @@ bool _scene_common_bindings_resolve_visual_set(
         visual_id = "visual";
     char tag[256];
     dvz_snprintf(
-        tag, sizeof(tag), "%s_pass_%u_%s", mode_tag, (uint32_t)render->u.render.pass_role,
-        visual_id);
+        tag, sizeof(tag), "%s_provider_%u_%s", mode_tag, (uint32_t)provider, visual_id);
     uint32_t flags =
         mode == DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL ? DVZ_MVP_FLAGS_ISOTROPIC_LOCAL : 0;
     bool fixed = mode == DVZ_CONTROLLER_FIXED;
@@ -462,9 +462,7 @@ bool _scene_common_bindings_resolve_single_set(
     if (visual_id == NULL || visual_id[0] == '\0')
         visual_id = "single";
     char tag[256];
-    dvz_snprintf(
-        tag, sizeof(tag), "%s_pass_%u_%s", mode_tag, (uint32_t)render->u.render.pass_role,
-        visual_id);
+    dvz_snprintf(tag, sizeof(tag), "%s_single_%s", mode_tag, visual_id);
     uint64_t common_bg_id = 0;
     ok = ok && _resolve_common_set(
                    emitter, stream, render, common_bgl_id, tag, viewport_rect, fixed, mvp_flags,

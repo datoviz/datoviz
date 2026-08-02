@@ -386,8 +386,12 @@ bool _emitter_emit_render_multi(
     uint32_t draw_count = 0;
     uint32_t pass_sample_count = _graph_render_pass_sample_count(emitter, plan, graph_pass);
     uint32_t color_target_format = _render_pass_color_target_format(plan, graph_pass, cfg);
+    const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, graph_pass);
+    DvzSceneWorkProviderKey provider =
+        resolved != NULL ? resolved->provider : DVZ_SCENE_WORK_PROVIDER_OPAQUE;
     ok = _emitter_prepare_render_multi(
-        emitter, stream, render, cfg, pass_has_depth_attachment, false, color_target_format,
+        emitter, stream, render, provider, cfg, pass_has_depth_attachment, false,
+        color_target_format,
         sampled_depth_id, false, 0, 0, 0, 0, pass_sample_count,
         graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws, &draw_count);
     if (!ok)
@@ -480,7 +484,7 @@ bool _emitter_emit_scene_figure_renders(
         batch->render = render;
         uint32_t report_start = dvz_diagnostic_report_count(report);
         ok = _emitter_prepare_render_multi(
-            emitter, stream, render, cfg, needs_depth, false,
+            emitter, stream, render, DVZ_SCENE_WORK_PROVIDER_OPAQUE, cfg, needs_depth, false,
             _render_pass_scene_color_target_format(cfg), 0, false, 0, 0, 0, 0, 1, false,
             report, batch->draws, &batch->draw_count);
         if (!ok && dvz_diagnostic_report_count(report) == report_start)
@@ -735,7 +739,8 @@ bool _emitter_emit_scene_graph_renders(
                 edl_depth != NULL &&
                 strcmp(render_graph_pass->depth_attachment.resource_id, edl_depth->id) == 0;
             ok = _emitter_prepare_render_multi(
-                emitter, stream, render, cfg, pass_has_depth_attachment, force_point_depth,
+                emitter, stream, render, provider, cfg, pass_has_depth_attachment,
+                force_point_depth,
                 _render_pass_color_target_format(plan, render_graph_pass, cfg), sampled_depth_id,
                 sampled_depth_is_volume_occlusion, scene_occlusion_depth_id,
                 depth_peel_sampled_bgl_id, depth_peel_sampled_bg_id, depth_peel_dummy_bg_id,

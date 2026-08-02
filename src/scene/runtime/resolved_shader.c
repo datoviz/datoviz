@@ -42,7 +42,8 @@ static const char* _runtime_shader_format_label(DvzSceneShaderFormat format)
 
 
 static bool _runtime_shader_report(
-    DvzDiagnosticReport* report, const DvzSceneVisualDesc* desc, DvzFramePlanRenderPassRole pass,
+    DvzDiagnosticReport* report, const DvzSceneVisualDesc* desc,
+    DvzSceneWorkProviderKey provider,
     const DvzSceneResolvedShaderStage* stage, const char* reason)
 {
     ANN(desc);
@@ -53,9 +54,9 @@ static bool _runtime_shader_report(
     const char* visual = _visual_type_name(type);
     int written = dvz_snprintf(
         message, sizeof(message),
-        "scene runtime shader validation failed: visual=%s pass=%s format=%s stage=%s key=%s "
+        "scene runtime shader validation failed: visual=%s provider=%s format=%s stage=%s key=%s "
         "reason=%s",
-        visual, _scene_runtime_pass_role_name(pass),
+        visual, _scene_runtime_work_provider_name(provider),
         stage->format != NULL && stage->format[0] != '\0' ? stage->format : "<empty>",
         stage->stage_label != NULL && stage->stage_label[0] != '\0' ? stage->stage_label
                                                                     : "<empty>",
@@ -92,7 +93,7 @@ static void _runtime_shader_stage_resolve(
 
 
 static bool _runtime_shader_stage_valid(
-    const DvzSceneVisualDesc* desc, DvzFramePlanRenderPassRole pass,
+    const DvzSceneVisualDesc* desc, DvzSceneWorkProviderKey provider,
     DvzSceneShaderFormat format, const DvzSceneResolvedShaderStage* stage,
     DvzDiagnosticReport* report)
 {
@@ -100,16 +101,16 @@ static bool _runtime_shader_stage_valid(
     ANN(stage);
 
     if (stage->key[0] == '\0')
-        return _runtime_shader_report(report, desc, pass, stage, "empty key");
+        return _runtime_shader_report(report, desc, provider, stage, "empty key");
     if (stage->stage == NULL || stage->stage[0] == '\0')
-        return _runtime_shader_report(report, desc, pass, stage, "empty stage");
+        return _runtime_shader_report(report, desc, provider, stage, "empty stage");
     if (stage->format == NULL || stage->format[0] == '\0')
-        return _runtime_shader_report(report, desc, pass, stage, "empty format");
+        return _runtime_shader_report(report, desc, provider, stage, "empty format");
     if (stage->source == NULL || stage->source[0] == '\0')
     {
         const char* reason =
             format == DVZ_SCENE_SHADER_FORMAT_WGSL ? "missing WGSL source" : "missing GLSL source";
-        return _runtime_shader_report(report, desc, pass, stage, reason);
+        return _runtime_shader_report(report, desc, provider, stage, reason);
     }
     return true;
 }
@@ -163,45 +164,46 @@ static bool _runtime_shader_emit_stage(
 /*************************************************************************************************/
 
 /**
- * Return a diagnostic label for a render pass role.
+ * Return a diagnostic label for a typed work provider.
  *
- * @param role frame-plan render pass role.
- * @return stable pass role label.
+ * @param provider work provider key.
+ * @return stable provider label.
  */
-const char* _scene_runtime_pass_role_name(DvzFramePlanRenderPassRole role)
+const char* _scene_runtime_work_provider_name(DvzSceneWorkProviderKey provider)
 {
-    switch (role)
+    switch (provider)
     {
-    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
+    case DVZ_SCENE_WORK_PROVIDER_OPAQUE:
         return "opaque";
-    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
-        return "gbuffer";
-    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
+    case DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE:
+        return "surface_capture";
+    case DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION:
         return "volume_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
+    case DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION:
         return "scene_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
+    case DVZ_SCENE_WORK_PROVIDER_SSAO:
         return "ssao";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
+    case DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR:
         return "ssao_blur";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-        return "ssao_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
-        return "edl_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
-        return "transparent_accumulation";
-    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
+    case DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE:
+        return "ambient_composite";
+    case DVZ_SCENE_WORK_PROVIDER_EDL:
+        return "edl";
+    case DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION:
+        return "wboit_accumulation";
+    case DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND:
         return "transparent_blend";
-    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+    case DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE:
         return "wboit_resolve";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
+    case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT:
         return "depth_peel_init";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
-        return "depth_peel_iter";
-    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
+    case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION:
+        return "depth_peel_iteration";
+    case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE:
         return "depth_peel_composite";
-    case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
-        return "picking";
+    case DVZ_SCENE_WORK_PROVIDER_PRESENTATION:
+        return "presentation";
+    case DVZ_SCENE_WORK_PROVIDER_NONE:
     default:
         return "unknown";
     }
@@ -214,7 +216,7 @@ const char* _scene_runtime_pass_role_name(DvzFramePlanRenderPassRole role)
  *
  * @param shader visual shader descriptor after pass/query policies.
  * @param desc visual descriptor used for diagnostics.
- * @param pass render pass role.
+ * @param provider typed work provider.
  * @param format selected shader source format.
  * @param out resolved shader descriptor.
  * @param report diagnostic report receiving validation failures.
@@ -222,7 +224,7 @@ const char* _scene_runtime_pass_role_name(DvzFramePlanRenderPassRole role)
  */
 bool _scene_runtime_shader_resolve(
     const DvzSceneVisualShaderDesc* shader, const DvzSceneVisualDesc* desc,
-    DvzFramePlanRenderPassRole pass, DvzSceneShaderFormat format,
+    DvzSceneWorkProviderKey provider, DvzSceneShaderFormat format,
     DvzSceneResolvedShader* out, DvzDiagnosticReport* report)
 {
     ANN(shader);
@@ -236,8 +238,8 @@ bool _scene_runtime_shader_resolve(
     out->builtin_variant = shader->builtin_variant;
     out->builtin_version = shader->builtin_version;
 
-    return _runtime_shader_stage_valid(desc, pass, format, &out->vertex, report) &&
-           _runtime_shader_stage_valid(desc, pass, format, &out->fragment, report);
+    return _runtime_shader_stage_valid(desc, provider, format, &out->vertex, report) &&
+           _runtime_shader_stage_valid(desc, provider, format, &out->fragment, report);
 }
 
 

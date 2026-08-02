@@ -268,7 +268,7 @@ bool _scene_visual_shader_desc_apply_query_pick(
  * Resolve shader metadata for graph-driven special render passes.
  *
  * @param visual mutable visual descriptor; pass policies may disable material data
- * @param pass_role render pass role being prepared
+ * @param provider typed work provider being prepared
  * @param format_tag shader-format cache-key suffix
  * @param shader output shader descriptor
  * @param out_fragment_glsl_variant owned GLSL variant, when one is generated
@@ -277,7 +277,7 @@ bool _scene_visual_shader_desc_apply_query_pick(
  * @return whether the pass-specific shader descriptor was resolved successfully
  */
 bool _scene_visual_shader_desc_for_pass(
-    DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role, const char* format_tag,
+    DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider, const char* format_tag,
     DvzSceneVisualShaderDesc* shader, char** out_fragment_glsl_variant, bool* out_handled,
     bool* out_skip)
 {
@@ -292,7 +292,7 @@ bool _scene_visual_shader_desc_for_pass(
     *out_handled = false;
     *out_skip = false;
 
-    if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
+    if (provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE)
     {
         *out_handled = true;
         if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && !visual->has_normal)
@@ -348,7 +348,7 @@ bool _scene_visual_shader_desc_for_pass(
         return true;
     }
 
-    if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION)
+    if (provider == DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION)
     {
         *out_handled = true;
         if (visual->kind != DVZ_SCENE_VISUAL_DESC_VOLUME)
@@ -371,7 +371,7 @@ bool _scene_visual_shader_desc_for_pass(
         return true;
     }
 
-    if (pass_role != DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION)
+    if (provider != DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION)
         return true;
 
     *out_handled = true;
@@ -507,7 +507,7 @@ static const char* _shader_depth_peel_fragment_spirv_key(DvzSceneBuiltinShader s
  * Apply render-pass shader key and source policy after base shader resolution.
  *
  * @param visual the visual descriptor
- * @param pass_role render pass role being prepared
+ * @param provider typed work provider being prepared
  * @param alpha_mode visual alpha mode
  * @param controller_mode controller attachment mode for the visual
  * @param picking whether the render pass is a picking pass
@@ -524,7 +524,7 @@ static const char* _shader_depth_peel_fragment_spirv_key(DvzSceneBuiltinShader s
  * @return whether the shader descriptor was updated successfully
  */
 bool _scene_visual_shader_desc_apply_pass_policy(
-    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role,
+    const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider,
     DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, bool picking,
     bool pass_has_depth_attachment, bool force_point_depth, bool wboit_accumulation,
     uint32_t pass_sample_count, bool pass_alpha_to_coverage, bool scene_occluded_shader,
@@ -536,9 +536,9 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     ANN(out_fragment_glsl_variant);
     ANN(out_segment_coverage_blend);
 
-    bool depth_peel_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
-                           pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
-    bool gbuffer_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER;
+    bool depth_peel_pass = provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
+                           provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
+    bool gbuffer_pass = provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE;
     bool point_like = visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
@@ -578,13 +578,13 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     if (_scene_alpha_mode_is_depth_peel(alpha_mode))
     {
         const char* peel_suffix =
-            pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ? "_peel_init" : "_peel_iter";
+            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ? "_peel_init" : "_peel_iter";
         if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), peel_suffix) ||
             !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), peel_suffix))
         {
             return false;
         }
-        bool back_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
+        bool back_pass = provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
         DvzSceneBuiltinShader peel_shader =
             _shader_depth_peel_fragment(visual->has_normal, back_pass);
         shader->fragment_glsl = _builtin_shader_glsl(peel_shader, true);

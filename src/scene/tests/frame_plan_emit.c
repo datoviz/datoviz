@@ -3445,7 +3445,7 @@ int test_frame_plan_emitter_wgsl_missing_source_preflight(
     dvz_diagnostic_report_init(&report);
     DvzSceneResolvedShader resolved = {0};
     AT(!_scene_runtime_shader_resolve(
-        &shader, &desc, DVZ_FRAME_PLAN_RENDER_PASS_PICKING, DVZ_SCENE_SHADER_FORMAT_WGSL,
+        &shader, &desc, DVZ_SCENE_WORK_PROVIDER_OPAQUE, DVZ_SCENE_SHADER_FORMAT_WGSL,
         &resolved, &report));
     AT(dvz_diagnostic_report_count(&report) == 1);
 
@@ -3453,7 +3453,7 @@ int test_frame_plan_emitter_wgsl_missing_source_preflight(
     ANN(message);
     AT(strstr(message, "scene runtime shader validation failed") != NULL);
     AT(strstr(message, "visual=point") != NULL);
-    AT(strstr(message, "pass=picking") != NULL);
+    AT(strstr(message, "provider=opaque") != NULL);
     AT(strstr(message, "format=wgsl") != NULL);
     AT(strstr(message, "stage=vertex") != NULL);
     AT(strstr(message, "key=_vs_missing_wgsl") != NULL);

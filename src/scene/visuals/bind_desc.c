@@ -61,16 +61,16 @@ bool _scene_visual_bind_desc(
  * Return whether scene occlusion sampling must occupy bind set 2 for one visual.
  *
  * @param visual the visual descriptor
- * @param pass_role render pass role being prepared
+ * @param provider typed work provider being prepared
  * @return whether scene occlusion should use set 2 instead of set 1
  */
 bool _scene_visual_bind_desc_uses_scene_occlusion_set2(
-    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role)
+    const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider)
 {
     ANN(visual);
-    bool gbuffer_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER;
+    bool surface_capture = provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE;
     return visual->image_texture_id != 0 || visual->volume_texture_id != 0 ||
-           (visual->material_buffer_id != 0 && !gbuffer_pass);
+           (visual->material_buffer_id != 0 && !surface_capture);
 }
 
 
@@ -78,18 +78,18 @@ bool _scene_visual_bind_desc_uses_scene_occlusion_set2(
  * Apply render-pass binding policy after a visual bind descriptor has been resolved.
  *
  * @param bind bind descriptor to update
- * @param pass_role render pass role being prepared
+ * @param provider typed work provider being prepared
  * @param sampled_depth_id sampled depth texture id, or zero
  * @param sampled_depth_is_volume_occlusion whether the sampled depth comes from volume occlusion
  * @param scene_occlusion_depth_id scene occlusion depth texture id, or zero
  */
 void _scene_visual_bind_desc_apply_pass_policy(
-    DvzSceneVisualBindDesc* bind, DvzFramePlanRenderPassRole pass_role, uint64_t sampled_depth_id,
+    DvzSceneVisualBindDesc* bind, DvzSceneWorkProviderKey provider, uint64_t sampled_depth_id,
     bool sampled_depth_is_volume_occlusion, uint64_t scene_occlusion_depth_id)
 {
     ANN(bind);
 
-    bool scene_occlusion_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION;
+    bool scene_occlusion_pass = provider == DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION;
     if (scene_occlusion_pass)
     {
         bind->uses_image_set1 = false;
@@ -106,7 +106,7 @@ void _scene_visual_bind_desc_apply_pass_policy(
     }
 
     bool volume_depth_producer_pass =
-        pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION || scene_occlusion_pass;
+        provider == DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION || scene_occlusion_pass;
     if (bind->uses_volume_set1 && !volume_depth_producer_pass && !bind->volume_occluded)
         bind->volume_occlusion.enabled = false;
     if (bind->uses_volume_set1 && volume_depth_producer_pass)

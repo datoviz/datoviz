@@ -95,6 +95,7 @@ static bool _emit_blend_policy(
  * @param emitter frame-plan emitter carrying scene/runtime state.
  * @param stream destination DRP2 command stream.
  * @param render render node to prepare.
+ * @param provider typed work provider selecting render policy.
  * @param cfg optional frame-plan emit configuration.
  * @param pass_has_depth_attachment whether the render pass will carry a depth attachment.
  * @param force_point_depth whether point-like visuals must emit depth writes.
@@ -111,7 +112,8 @@ static bool _emit_blend_policy(
  */
 bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanEmitConfig* cfg, bool pass_has_depth_attachment, bool force_point_depth,
+    DvzSceneWorkProviderKey provider, const DvzFramePlanEmitConfig* cfg,
+    bool pass_has_depth_attachment, bool force_point_depth,
     uint32_t color_target_format, uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
     uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
@@ -127,16 +129,12 @@ bool _emitter_prepare_render_multi(
     bool ok = true;
     bool is_new = false;
     const char* fmt = _shader_format_tag(cfg);
-    bool wboit_accumulation =
-        render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION;
-    bool volume_occlusion_pass =
-        render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION;
-    bool scene_occlusion_pass =
-        render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION;
-    bool gbuffer_pass = render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER;
-    bool depth_peel_pass =
-        render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
-        render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
+    bool wboit_accumulation = provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION;
+    bool volume_occlusion_pass = provider == DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION;
+    bool scene_occlusion_pass = provider == DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION;
+    bool gbuffer_pass = provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE;
+    bool depth_peel_pass = provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
+                           provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
     DvzSceneShaderFormat shader_format =
         cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_GLSL;
 
@@ -185,12 +183,13 @@ bool _emitter_prepare_render_multi(
             break;
         }
         _scene_visual_bind_desc_apply_pass_policy(
-            &bind, render->u.render.pass_role, sampled_depth_id, sampled_depth_is_volume_occlusion,
+            &bind, provider, sampled_depth_id, sampled_depth_is_volume_occlusion,
             scene_occlusion_depth_id);
         if (bind.uses_common_set0)
         {
             ok = _scene_common_bindings_resolve_visual_set(
-                emitter, stream, render, i, common_bgl_id, viewport_rect, &vis_bg_set0);
+                emitter, stream, render, provider, i, common_bgl_id, viewport_rect,
+                &vis_bg_set0);
             if (!ok)
                 break;
         }
@@ -200,7 +199,7 @@ bool _emitter_prepare_render_multi(
         bool special_pass_handled = false;
         bool special_pass_skip = false;
         ok = _scene_visual_shader_desc_for_pass(
-            &desc, render->u.render.pass_role, fmt, &shader, &scene_occlusion_fragment_glsl,
+            &desc, provider, fmt, &shader, &scene_occlusion_fragment_glsl,
             &special_pass_handled, &special_pass_skip);
         if (!ok)
         {
@@ -237,10 +236,10 @@ bool _emitter_prepare_render_multi(
         bool scene_occluded_shader =
             desc.scene_occluded && scene_occlusion_depth_id != 0 && !scene_occlusion_pass;
         bool scene_occlusion_uses_set2 = _scene_visual_bind_desc_uses_scene_occlusion_set2(
-            &desc, render->u.render.pass_role);
+            &desc, provider);
         bool segment_coverage_blend = false;
         ok = _scene_visual_shader_desc_apply_pass_policy(
-            &desc, render->u.render.pass_role, alpha_mode, render->u.render.controller_modes[i],
+            &desc, provider, alpha_mode, render->u.render.controller_modes[i],
             render->u.render.picking, pass_has_depth_attachment, force_point_depth,
             wboit_accumulation, pass_sample_count, pass_alpha_to_coverage, scene_occluded_shader,
             scene_occlusion_uses_set2, &shader, &scene_occlusion_fragment_glsl,
@@ -256,8 +255,7 @@ bool _emitter_prepare_render_multi(
 
         DvzSceneResolvedShader resolved_shader = {0};
         if (!_scene_runtime_shader_resolve(
-                &shader, &desc, render->u.render.pass_role, shader_format, &resolved_shader,
-                report))
+                &shader, &desc, provider, shader_format, &resolved_shader, report))
         {
             _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
             ok = false;
@@ -306,7 +304,7 @@ bool _emitter_prepare_render_multi(
             _scene_visual_pipeline_desc_apply_query_pick(
                 &desc, color_target_format, &pipeline);
         _scene_visual_pipeline_desc_apply_pass_policy(
-            &desc, render->u.render.pass_role, force_point_depth, pass_sample_count,
+            &desc, provider, force_point_depth, pass_sample_count,
             pass_alpha_to_coverage, &pipeline);
         if (!pipeline.needs_item_state_style_layout)
             bind.uses_item_state_style_set1 = false;
@@ -439,7 +437,7 @@ bool _emitter_prepare_render_multi(
                 uint64_t layouts[DVZ_DRP2_MAX_BIND_GROUPS] = {0};
                 uint32_t layout_count = 0;
                 bool depth_peel_iter_pass =
-                    render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER &&
+                    provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION &&
                     depth_peel_sampled_bgl_id != 0;
                 if (depth_peel_iter_pass)
                 {
@@ -798,7 +796,7 @@ bool _emitter_prepare_render_multi(
             else
                 vis_bg_set1 = scene_occ_bg_id;
         }
-        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
+        if (provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION)
         {
             if (vis_bg_set1 == 0)
                 vis_bg_set1 = depth_peel_dummy_bg_id;

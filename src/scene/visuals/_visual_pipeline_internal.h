@@ -99,7 +99,7 @@ void _scene_visual_pipeline_desc_apply_query_pick(
     DvzSceneVisualPipelineDesc* pipeline);
 
 void _scene_visual_pipeline_desc_apply_pass_policy(
-    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role, bool force_point_depth,
+    const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider, bool force_point_depth,
     uint32_t pass_sample_count, bool pass_alpha_to_coverage,
     DvzSceneVisualPipelineDesc* pipeline);
 
@@ -108,12 +108,12 @@ bool _scene_visual_shader_desc_apply_query_pick(
     DvzSceneVisualShaderDesc* shader, bool* out_applied);
 
 bool _scene_visual_shader_desc_for_pass(
-    DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role, const char* format_tag,
+    DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider, const char* format_tag,
     DvzSceneVisualShaderDesc* shader, char** out_fragment_glsl_variant, bool* out_handled,
     bool* out_skip);
 
 bool _scene_visual_shader_desc_apply_pass_policy(
-    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role,
+    const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider,
     DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, bool picking,
     bool pass_has_depth_attachment, bool force_point_depth, bool wboit_accumulation,
     uint32_t pass_sample_count, bool pass_alpha_to_coverage, bool scene_occluded_shader,
@@ -121,10 +121,10 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     char** out_fragment_glsl_variant, bool* out_segment_coverage_blend);
 
 bool _scene_visual_bind_desc_uses_scene_occlusion_set2(
-    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role);
+    const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider);
 
 void _scene_visual_bind_desc_apply_pass_policy(
-    DvzSceneVisualBindDesc* bind, DvzFramePlanRenderPassRole pass_role, uint64_t sampled_depth_id,
+    DvzSceneVisualBindDesc* bind, DvzSceneWorkProviderKey provider, uint64_t sampled_depth_id,
     bool sampled_depth_is_volume_occlusion, uint64_t scene_occlusion_depth_id);
 
 uint64_t _scene_render_visual_resource_id(
