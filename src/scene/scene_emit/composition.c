@@ -19,6 +19,7 @@
 
 #include "_assertions.h"
 #include "_compat.h"
+#include "_technique.h"
 #include "frame_plan/internal.h"
 #include "scene_emit/panel_render_plan.h"
 
@@ -139,7 +140,8 @@ static const DvzSceneTechniqueContract TECHNIQUE_CONTRACTS[] = {
         .must_follow_phase_mask = (1u << (uint32_t)DVZ_SCENE_PHASE_SURFACE_CAPTURE) |
                                   (1u << (uint32_t)DVZ_SCENE_PHASE_SURFACE_ANALYSIS),
         .optional_inputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY) |
-                           PRODUCT_BIT(DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH),
+                           PRODUCT_BIT(DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH) |
+                           PRODUCT_BIT(DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH),
         .outputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SCENE_COLOR),
         .optional_outputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SURFACE_DEPTH),
         .participating_layer_mask = LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE) |
@@ -1074,6 +1076,9 @@ static bool _composition_declare_work(
     {
         const bool depth_peel =
             _composition_has_technique(snapshot, DVZ_SCENE_TECHNIQUE_DEPTH_PEEL);
+        const bool forward_depth_required =
+            render_plan->opaque_needs_depth ||
+            (render_plan->blended_group_count > 0 && render_plan->transparent_needs_depth);
         if (context->effective_edl)
         {
             ok = SCRATCH(
@@ -1099,7 +1104,7 @@ static bool _composition_declare_work(
             if (ok)
                 _composition_frame_clear_value(pass);
         }
-        if (ok && render_plan->opaque_needs_depth && !context->effective_edl)
+        if (ok && forward_depth_required && !context->effective_edl)
             ok = SCRATCH(
                 depth_peel ? DVZ_SCENE_SCRATCH_PEEL_FORWARD_DEPTH
                            : DVZ_SCENE_SCRATCH_FORWARD_DEPTH,
@@ -1111,7 +1116,7 @@ static bool _composition_declare_work(
                 DVZ_SCENE_WORK_BINDING_ATTACHMENT, DVZ_SCENE_WORK_ACCESS_WRITE, UINT32_MAX,
                 UINT32_MAX, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR, DVZ_SCENE_ATTACHMENT_STORE_STORE,
                 true);
-        if (ok && render_plan->opaque_needs_depth && !context->effective_edl)
+        if (ok && forward_depth_required && !context->effective_edl)
         {
             ok = _composition_scratch_samples(
                 snapshot, pass->bindings[pass->binding_count - 1].scratch_id,
@@ -1173,7 +1178,8 @@ static bool _composition_declare_work(
                 true);
             if (ok && load == DVZ_SCENE_ATTACHMENT_LOAD_CLEAR)
                 _composition_clear_value(pass, 1, 0, 0, 0);
-            context->forward_depth_written = context->forward_depth_written || writes_depth;
+            /* CLEAR establishes a valid depth surface even when this group only reads it. */
+            context->forward_depth_written = true;
         }
         break;
     }
@@ -1228,7 +1234,9 @@ static bool _composition_declare_work(
                 DVZ_SCENE_WORK_BINDING_ATTACHMENT, DVZ_SCENE_WORK_ACCESS_WRITE, 2, UINT32_MAX,
                 DVZ_SCENE_ATTACHMENT_LOAD_CLEAR, DVZ_SCENE_ATTACHMENT_STORE_STORE, false);
         if (ok)
+        {
             _composition_clear_value(pass, -1, -1, 0, 0);
+        }
         if (ok && render_plan->transparent_needs_depth)
         {
             ok = SCRATCH(
@@ -1274,7 +1282,10 @@ static bool _composition_declare_work(
                 DVZ_SCENE_WORK_BINDING_ATTACHMENT, DVZ_SCENE_WORK_ACCESS_WRITE, 2, UINT32_MAX,
                 DVZ_SCENE_ATTACHMENT_LOAD_CLEAR, DVZ_SCENE_ATTACHMENT_STORE_STORE, false);
         if (ok)
+        {
+            pass->bindings[0].set = DVZ_SCENE_DEPTH_PEEL_BIND_SET;
             _composition_clear_value(pass, -1, -1, 0, 0);
+        }
         if (ok && render_plan->transparent_needs_depth)
         {
             ok = SCRATCH(
@@ -1782,6 +1793,8 @@ bool _scene_panel_composition_resolve(
         uint64_t opaque_inputs = effective_ssao ? ambient_visibility : 0;
         if (render_plan->scene_occlusion_enabled)
             opaque_inputs |= scene_occlusion;
+        if (render_plan->volume_occlusion_enabled)
+            opaque_inputs |= volume_first_hit;
         uint64_t opaque_outputs = scene_color;
         if (effective_edl && !needs_surface_record)
             opaque_outputs |= _composition_product_bit(DVZ_RENDER_PRODUCT_SURFACE_DEPTH);

@@ -26,7 +26,7 @@
     { "cmd": "CreateBindGroup", "id": 5011, "bind_group_layout_id": 5008, "entries": [{ "binding": 0, "binding_type": "sampled_texture", "resource_kind": "texture", "resource_id": 22 }, { "binding": 1, "binding_type": "sampler", "resource_kind": "sampler", "resource_id": 5009 }, { "binding": 2, "binding_type": "uniform_buffer", "resource_kind": "buffer", "resource_id": 5010, "offset": 0, "size": 16 }] },
     { "cmd": "WriteBuffer", "buffer_id": 5010, "offset": 0, "size": 16, "data": "AACAPwAAAAAAAAAAAAAAAA==" },
     { "cmd": "BeginCommandEncoder", "id": 10000 },
-    { "cmd": "BeginRenderPass", "id": 10001, "encoder_id": 10000, "color_attachments": [ { "texture_id": 5000, "load_op": "clear", "store_op": "store", "clear_value": { "r": 0, "g": 0, "b": 0, "a": 1 } } ] },
+    { "cmd": "BeginRenderPass", "id": 10001, "encoder_id": 10000, "color_attachments": [ { "texture_id": 5000, "load_op": "clear", "store_op": "store", "clear_value": { "r": 0, "g": 0, "b": 0, "a": 1 } } ], "render_area": { "x": 0, "y": 0, "width": 4, "height": 4 }, "viewport": { "x": 0, "y": 0, "width": 4, "height": 4 }, "scissor": { "x": 0, "y": 0, "width": 4, "height": 4 } },
     { "cmd": "SetViewport", "pass_id": 10001, "x": 0, "y": 0, "width": 4, "height": 4, "min_depth": 0, "max_depth": 1 },
     { "cmd": "SetScissor", "pass_id": 10001, "x": 0, "y": 0, "width": 4, "height": 4 },
     { "cmd": "SetPipeline", "pass_id": 10001, "pipeline_id": 5007 },

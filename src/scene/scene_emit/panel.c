@@ -133,32 +133,8 @@ static bool _scene_composition_pass_for_role(
 
 
 
-static bool _scene_graph_pass_role(
-    const DvzFrameGraphPass* pass, DvzFramePlanRenderPassRole* out)
-{
-    ANN(pass);
-    ANN(out);
-    for (uint32_t value = (uint32_t)DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
-         value <= (uint32_t)DVZ_FRAME_PLAN_RENDER_PASS_PICKING; value++)
-    {
-        DvzFramePlanRenderPassRole role = (DvzFramePlanRenderPassRole)value;
-        const char* label = _scene_render_role_work_label(role);
-        if (label[0] != '\0' && strcmp(pass->work_label, label) == 0)
-        {
-            *out = role;
-            return true;
-        }
-    }
-    return false;
-}
-
-
-
 /**
- * Persist typed composition identity and direct graph-pass indices after legacy graph expansion.
- *
- * The work-label conversion is a checkpoint-local bridge for effect-specific R2 graph builders.
- * Contract validation and runtime lowering consume only the persisted typed identity.
+ * Persist typed composition identity and direct graph-pass indices.
  *
  * @param plan the destination frame plan
  * @param panel_id the panel id
@@ -251,49 +227,14 @@ bool _scene_bind_panel_composition(
 
     for (uint32_t i = 0; i < plan->graph_pass_count; i++)
     {
-        DvzFrameGraphPass* pass = &plan->graph_passes[i];
-        if (strcmp(pass->panel_id, panel_id) != 0)
-            continue;
-        DvzFramePlanRenderPassRole role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
-        if (!_scene_graph_pass_role(pass, &role))
-            continue;
-        uint32_t ordinal = 0;
-        for (uint32_t j = 0; j < i; j++)
-        {
-            const DvzFrameGraphPass* previous = &plan->graph_passes[j];
-            DvzFramePlanRenderPassRole previous_role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
-            if (strcmp(previous->panel_id, panel_id) == 0 &&
-                _scene_graph_pass_role(previous, &previous_role) && previous_role == role)
-                ordinal++;
-        }
-        const DvzSceneResolvedPass* resolved = NULL;
-        if (!_scene_composition_pass_for_role(snapshot, role, ordinal, &resolved))
+        const DvzFrameGraphPass* pass = &plan->graph_passes[i];
+        if (strcmp(pass->panel_id, panel_id) == 0 && !pass->has_composition_pass)
         {
             _scene_emit_graph_report(
-                report, "panel %s graph role %u ordinal %u is absent from composition snapshot",
-                panel_id, (uint32_t)role, ordinal);
+                report, "panel %s graph pass %s has no typed composition identity", panel_id,
+                pass->id);
             ok = false;
-            continue;
         }
-        bool duplicate = false;
-        for (uint32_t j = 0; j < i; j++)
-        {
-            const DvzFrameGraphPass* previous = &plan->graph_passes[j];
-            if (strcmp(previous->panel_id, panel_id) == 0 && previous->has_composition_pass &&
-                previous->composition_pass_id.value == resolved->id.value)
-            {
-                _scene_emit_graph_report(
-                    report, "panel %s composition pass %u has duplicate graph bindings",
-                    panel_id, resolved->id.value);
-                ok = false;
-                duplicate = true;
-                break;
-            }
-        }
-        if (duplicate)
-            continue;
-        pass->has_composition_pass = true;
-        pass->composition_pass_id = resolved->id;
     }
 
     for (uint32_t i = 0; i < plan->count; i++)
@@ -809,6 +750,7 @@ static bool _scene_append_visual_to_render_pass(
     metadata.draw_blend_mode = (uint32_t)draw_contract.blend_mode;
     metadata.draw_shader_feature_mask = draw_contract.shader_feature_mask;
     metadata.draw_bind_group_layout_mask = draw_contract.bind_group_layout_mask;
+    metadata.draw_overlay_composite = draw_contract.overlay_composite;
     metadata.draw_has_raster_state = draw_contract.has_raster_state;
     metadata.draw_cull_mode = draw_contract.cull_mode;
     metadata.draw_front_face = draw_contract.front_face;
@@ -1342,198 +1284,25 @@ bool _scene_emit_panel_render_caps(
         blended_group_emitted[group] = true;
     }
 
-    if (scene_occlusion_node != invalid_node &&
-        !_scene_technique_emit_scene_occlusion_frame_graph(plan, panel_id))
-    {
-        _scene_emit_graph_report(
-            report, "failed to emit scene occlusion FramePlan graph for panel %s", panel_id);
-        graph_ok = false;
-    }
-
-    bool emit_blended_after_ssao = false;
     if (transparent_node != invalid_node)
     {
-        if (volume_occlusion_node != invalid_node &&
-            !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
         uint32_t resolve_node = invalid_node;
-        (void)_scene_begin_panel_render_pass(
-            plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
-            &panel_apply_mvp, &panel_viewport, plot_desc, &resolve_node);
-        if (render_plan.gbuffer_required && gbuffer_node != invalid_node &&
-            !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &render_plan.gbuffer))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
+        if (!_scene_begin_panel_render_pass(
+                plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
+                &panel_apply_mvp, &panel_viewport, plot_desc, &resolve_node))
             graph_ok = false;
-        }
-        if (!_scene_technique_emit_wboit_frame_graph(
-                plan, panel_id, render_plan.opaque_needs_depth,
-                render_plan.transparent_needs_depth))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit WBOIT FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-        if (render_plan.blended_group_count > 0 &&
-            !_scene_technique_emit_blended_frame_graph(
-                plan, panel_id, false, render_plan.opaque_needs_depth,
-                render_plan.opaque_needs_depth || render_plan.transparent_needs_depth,
-                render_plan.blended_group_count, render_plan.blended_needs_depth,
-                render_plan.blended_writes_depth, NULL))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit blended FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
     }
-    else if (depth_peel_init_node != invalid_node)
+
+    if (render_plan.edl_enabled && render_plan.edl_has_depth_producer)
     {
-        if (volume_occlusion_node != invalid_node &&
-            !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
+        (void)_scene_emit_edl_params_upload(
+            plan, panel, panel_id, render_plan.edl_state, &panel_apply_mvp, &panel_viewport);
+        if (!_scene_begin_panel_render_pass(
+                plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
+                &panel_apply_mvp, &panel_viewport, plot_desc, &edl_node))
             graph_ok = false;
-        }
-        if (render_plan.gbuffer_required && gbuffer_node != invalid_node &&
-            !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &render_plan.gbuffer))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-        if (!_scene_technique_emit_depth_peel_frame_graph(
-                plan, panel_id, render_plan.opaque_needs_depth,
-                render_plan.transparent_needs_depth))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit depth-peeling FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-        if (render_plan.blended_group_count > 0 &&
-            !_scene_technique_emit_blended_frame_graph(
-                plan, panel_id, false, false, false, render_plan.blended_group_count,
-                render_plan.blended_needs_depth, render_plan.blended_writes_depth, NULL))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit blended FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
     }
-    else if (render_plan.blended_group_count > 0)
-    {
-        if (volume_occlusion_node != invalid_node &&
-            !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-        if (render_plan.gbuffer_required && gbuffer_node != invalid_node &&
-            !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &render_plan.gbuffer))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-        if (render_plan.edl_enabled && render_plan.edl_has_depth_producer)
-        {
-            (void)_scene_emit_edl_params_upload(
-                plan, panel, panel_id, render_plan.edl_state, &panel_apply_mvp, &panel_viewport);
-            if (!_scene_begin_panel_render_pass(
-                    plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
-                    &panel_apply_mvp, &panel_viewport, plot_desc, &edl_node) ||
-                !_scene_technique_emit_edl_frame_graph(plan, panel_id))
-            {
-                _scene_emit_graph_report(
-                    report, "failed to emit EDL FramePlan graph for panel %s", panel_id);
-                graph_ok = false;
-            }
-        }
-        bool blended_depth_producer =
-            render_plan.opaque_needs_depth || render_plan.transparent_needs_depth;
-        if (render_plan.ssao_enabled && gbuffer_node != invalid_node &&
-            render_plan.gbuffer.producer_count > 0)
-        {
-            bool any_blended_needs_depth = false;
-            for (uint32_t i = 0; i < render_plan.blended_group_count; i++)
-                any_blended_needs_depth =
-                    any_blended_needs_depth || render_plan.blended_needs_depth[i];
-            const DvzSceneMsaaTechniqueState* pre_ssao_msaa =
-                any_blended_needs_depth ? NULL : effective_msaa;
-            if (!_scene_technique_emit_blended_frame_graph(
-                    plan, panel_id, true, blended_depth_producer, blended_depth_producer, 0, NULL,
-                    NULL, pre_ssao_msaa))
-            {
-                _scene_emit_graph_report(
-                    report, "failed to emit blended FramePlan graph for panel %s", panel_id);
-                graph_ok = false;
-            }
-            else
-            {
-                emit_blended_after_ssao = true;
-            }
-        }
-        else if (!_scene_technique_emit_blended_frame_graph(
-                     plan, panel_id, true, blended_depth_producer, blended_depth_producer,
-                     render_plan.blended_group_count, render_plan.blended_needs_depth,
-                     render_plan.blended_writes_depth, effective_msaa))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit blended FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-    }
-    else if (
-        opaque_node != invalid_node &&
-        (render_plan.opaque_needs_depth || volume_occlusion_node != invalid_node ||
-         scene_occlusion_node != invalid_node))
-    {
-        if (volume_occlusion_node != invalid_node &&
-            !_scene_technique_emit_volume_occlusion_frame_graph(plan, panel_id))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit volume occlusion FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-        if (render_plan.gbuffer_required && gbuffer_node != invalid_node &&
-            !_scene_technique_emit_gbuffer_frame_graph(plan, panel_id, &render_plan.gbuffer))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit G-buffer FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-        if (render_plan.edl_enabled && render_plan.edl_has_depth_producer)
-        {
-            (void)_scene_emit_edl_params_upload(
-                plan, panel, panel_id, render_plan.edl_state, &panel_apply_mvp, &panel_viewport);
-            if (!_scene_begin_panel_render_pass(
-                    plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
-                    &panel_apply_mvp, &panel_viewport, plot_desc, &edl_node) ||
-                !_scene_technique_emit_edl_frame_graph(plan, panel_id))
-            {
-                _scene_emit_graph_report(
-                    report, "failed to emit EDL FramePlan graph for panel %s", panel_id);
-                graph_ok = false;
-            }
-        }
-        else if (
-            (gbuffer_node != invalid_node || volume_occlusion_node != invalid_node ||
-             scene_occlusion_node != invalid_node ||
-             (!render_plan.ssao_enabled && effective_msaa != NULL)) &&
-            !_scene_technique_emit_opaque_frame_graph(
-                plan, panel_id, render_plan.opaque_needs_depth, effective_msaa))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit opaque FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-    }
+
     if (render_plan.ssao_enabled && gbuffer_node != invalid_node &&
         render_plan.gbuffer.producer_count > 0)
     {
@@ -1557,42 +1326,14 @@ bool _scene_emit_panel_render_caps(
             ssao_composite_node = invalid_node;
         if (ssao_node == invalid_node ||
             (render_plan.ssao_state->blur_enabled && ssao_blur_node == invalid_node) ||
-            ssao_composite_node == invalid_node ||
-            !_scene_technique_emit_ssao_frame_graph(
-                plan, panel_id, &render_plan.gbuffer, render_plan.ssao_state))
+            ssao_composite_node == invalid_node)
         {
-            _scene_emit_graph_report(
-                report, "failed to emit SSAO FramePlan graph for panel %s", panel_id);
             graph_ok = false;
         }
     }
-    if (emit_blended_after_ssao)
-    {
-        bool blended_depth_producer =
-            render_plan.opaque_needs_depth || render_plan.transparent_needs_depth;
-        if (!_scene_technique_emit_blended_frame_graph(
-                plan, panel_id, false, false, blended_depth_producer,
-                render_plan.blended_group_count, render_plan.blended_needs_depth,
-                render_plan.blended_writes_depth, NULL))
-        {
-            _scene_emit_graph_report(
-                report, "failed to emit blended FramePlan graph for panel %s", panel_id);
-            graph_ok = false;
-        }
-    }
-    if (volume_occlusion_node != invalid_node &&
-        !_scene_add_volume_occlusion_reads(plan, panel_id))
-    {
-        _scene_emit_graph_report(
-            report, "failed to add volume occlusion FramePlan reads for panel %s", panel_id);
+    if (graph_ok &&
+        !_scene_panel_composition_lower_graph(plan, &render_plan.composition, report))
         graph_ok = false;
-    }
-    if (scene_occlusion_node != invalid_node && !_scene_add_scene_occlusion_reads(plan, panel_id))
-    {
-        _scene_emit_graph_report(
-            report, "failed to add scene occlusion FramePlan reads for panel %s", panel_id);
-        graph_ok = false;
-    }
     if (graph_ok &&
         !_scene_bind_panel_composition(plan, panel_id, &render_plan.composition, report))
         graph_ok = false;

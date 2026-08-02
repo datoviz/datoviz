@@ -57,6 +57,7 @@ static void _contract_apply_draw_metadata(
     draw->front_face = meta->draw_front_face;
     draw->shader_feature_mask = meta->draw_shader_feature_mask;
     draw->bind_group_layout_mask = meta->draw_bind_group_layout_mask;
+    draw->overlay_composite = meta->draw_overlay_composite;
 
     draw->depth_test = (draw->depth_policy & DVZ_SCENE_DEPTH_POLICY_TEST) != 0;
     draw->depth_write = (draw->depth_policy & DVZ_SCENE_DEPTH_POLICY_WRITE) != 0;

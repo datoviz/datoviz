@@ -24,8 +24,9 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "frame_plan/frame_plan.h"
 #include "frame_plan/emit.h"
+#include "frame_plan/frame_plan.h"
+#include "frame_plan/internal.h"
 #include "_frame_plan_runtime_internal.h"
 #include "_frame_plan_runtime_upload.h"
 #include "_render_pass.h"
@@ -1070,26 +1071,63 @@ uint64_t _depth_peel_bind_group_fingerprint(
  * @return whether the bind group is available.
  */
 bool _depth_peel_resolve_sampled_bind_group(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFrameGraphPass* pass,
-    const SceneGraphRuntimeTargets* targets, const char* key, uint64_t bgl_id, uint64_t sampler_id,
-    uint64_t* out_bg_id)
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFrameGraphPass* pass, const SceneGraphRuntimeTargets* targets, uint32_t binding_set,
+    const char* key, uint64_t bgl_id, uint64_t sampler_id, uint64_t* out_bg_id)
 {
     ANN(emitter);
     ANN(stream);
+    ANN(plan);
     ANN(pass);
     ANN(targets);
     ANN(key);
     ANN(out_bg_id);
-    if (pass->read_count == 0 || pass->read_count + 1 > DVZ_DRP2_MAX_BINDINGS)
+    if (!pass->has_composition_pass)
+        return false;
+
+    const DvzPanelCompositionSnapshot* snapshot =
+        _frame_plan_composition_get(plan, pass->panel_id);
+    if (snapshot == NULL)
+        return false;
+    const DvzSceneResolvedPass* resolved = NULL;
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        if (snapshot->passes[i].id.value == pass->composition_pass_id.value)
+        {
+            resolved = &snapshot->passes[i];
+            break;
+        }
+    }
+    if (resolved == NULL)
         return false;
 
     uint64_t texture_ids[DVZ_DRP2_MAX_BINDINGS] = {0};
-    for (uint32_t i = 0; i < pass->read_count; i++)
+    uint32_t texture_count = 0;
+    for (uint32_t i = 0; i < resolved->binding_count; i++)
     {
-        texture_ids[i] = _graph_runtime_targets_get(targets, pass->reads[i].resource_id);
+        const DvzSceneWorkBinding* binding = &resolved->bindings[i];
+        if (binding->usage != DVZ_SCENE_WORK_BINDING_SAMPLED || binding->set != binding_set)
+            continue;
+        if (binding->binding >= DVZ_DRP2_MAX_BINDINGS - 1 ||
+            texture_ids[binding->binding] != 0)
+            return false;
+        const DvzSceneGraphRealization* realization = _frame_plan_realization_get(
+            plan, pass->panel_id, binding->ref_kind, binding->product_id, binding->scratch_id);
+        if (realization == NULL || realization->graph_resource_index >= plan->graph_resource_count)
+            return false;
+        const DvzFrameGraphResource* resource =
+            &plan->graph_resources[realization->graph_resource_index];
+        texture_ids[binding->binding] = _graph_runtime_targets_get(targets, resource->id);
+        if (texture_ids[binding->binding] == 0)
+            return false;
+        if (binding->binding + 1 > texture_count)
+            texture_count = binding->binding + 1;
+    }
+    if (texture_count == 0 || texture_count + 1 > DVZ_DRP2_MAX_BINDINGS)
+        return false;
+    for (uint32_t i = 0; i < texture_count; i++)
         if (texture_ids[i] == 0)
             return false;
-    }
 
     bool is_new = false;
     ResourceId* resource = _resource_entry(&emitter->objects, key, &is_new);
@@ -1097,26 +1135,26 @@ bool _depth_peel_resolve_sampled_bind_group(
         return false;
     uint64_t bg_id = resource->id;
     uint64_t fingerprint =
-        _depth_peel_bind_group_fingerprint(texture_ids, pass->read_count, sampler_id);
+        _depth_peel_bind_group_fingerprint(texture_ids, texture_count, sampler_id);
     if (!is_new && resource->byte_size != fingerprint)
         is_new = true;
     resource->byte_size = fingerprint;
     if (is_new)
     {
         DvzDrp2BindGroupEntry entries[DVZ_DRP2_MAX_BINDINGS] = {0};
-        for (uint32_t i = 0; i < pass->read_count; i++)
+        for (uint32_t i = 0; i < texture_count; i++)
         {
             entries[i].binding = i;
             entries[i].binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE;
             entries[i].resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE;
             entries[i].resource_id = texture_ids[i];
         }
-        entries[pass->read_count].binding = pass->read_count;
-        entries[pass->read_count].binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER;
-        entries[pass->read_count].resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER;
-        entries[pass->read_count].resource_id = sampler_id;
+        entries[texture_count].binding = texture_count;
+        entries[texture_count].binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER;
+        entries[texture_count].resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER;
+        entries[texture_count].resource_id = sampler_id;
         if (!dvz_drp2_stream_create_bind_group_entries(
-                stream, bg_id, bgl_id, pass->read_count + 1, entries))
+                stream, bg_id, bgl_id, texture_count + 1, entries))
             return false;
     }
 
@@ -1267,7 +1305,7 @@ bool _emitter_prepare_depth_peel_targets(
         _runtime_scope_key(
             cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
         ok = ok && _depth_peel_resolve_sampled_bind_group(
-                       emitter, stream, composite_pass, &out->graph, composite_bg_key,
+                       emitter, stream, plan, composite_pass, &out->graph, 0, composite_bg_key,
                        out->composite_bgl_id, out->sampler_id, &out->composite_bg_id);
     }
 
@@ -1288,8 +1326,8 @@ bool _emitter_prepare_depth_peel_targets(
                 iter_idx);
             _runtime_scope_key(cfg, iter_bg_base_key, iter_bg_key, sizeof(iter_bg_key));
             ok = _depth_peel_resolve_sampled_bind_group(
-                emitter, stream, iter_pass, &out->graph, iter_bg_key, out->iter_bgl_id,
-                out->sampler_id, &out->iter_bg_ids[iter_idx]);
+                emitter, stream, plan, iter_pass, &out->graph, DVZ_SCENE_DEPTH_PEEL_BIND_SET,
+                iter_bg_key, out->iter_bgl_id, out->sampler_id, &out->iter_bg_ids[iter_idx]);
         }
     }
 

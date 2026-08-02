@@ -411,9 +411,9 @@ bool _emitter_prepare_wboit_targets(
 uint64_t _depth_peel_bind_group_fingerprint(
     const uint64_t* texture_ids, uint32_t texture_count, uint64_t sampler_id);
 bool _depth_peel_resolve_sampled_bind_group(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFrameGraphPass* pass,
-    const SceneGraphRuntimeTargets* targets, const char* key, uint64_t bgl_id, uint64_t sampler_id,
-    uint64_t* out_bg_id);
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFrameGraphPass* pass, const SceneGraphRuntimeTargets* targets, uint32_t binding_set,
+    const char* key, uint64_t bgl_id, uint64_t sampler_id, uint64_t* out_bg_id);
 bool _emitter_prepare_depth_peel_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,

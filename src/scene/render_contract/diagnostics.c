@@ -153,7 +153,8 @@ static bool _scene_pass_contract_validate_technique(
             ok = false;
         }
         if (contract->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER &&
-            contract->sampled_read_count != 1)
+            !_contract_reads_resource_suffix(contract, ".peel.depth_minmax_ping") &&
+            !_contract_reads_resource_suffix(contract, ".peel.depth_minmax_pong"))
         {
             _contract_report(report, "depth peel iteration pass must sample previous bounds");
             ok = false;

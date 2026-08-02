@@ -1546,16 +1546,21 @@ static bool _overlay_card_realize_rich(DvzFigure* figure, DvzOverlayCard* card)
     float content_y = card->card.realized_rect_px[1] + card->card.padding_px[1];
     float content_w = card->card.content_size_px[0];
     float content_h = card->card.content_size_px[1];
-    return _scene_text_block_realize_image(
-               &card->rich_block, panel,
-               &(DvzTextBlockImageDesc){
-                   .position_px = {content_x, content_y, 0.0f},
-                   .extent_px = {content_w, content_h},
-                   .anchor = {-1.0f, -1.0f},
-                   .pixel_space = true,
-                   .z_layer = INT32_MAX / 4 - 1,
-                   .controller_mode = DVZ_CONTROLLER_FIXED,
-               }) == 0;
+    if (_scene_text_block_realize_image(
+            &card->rich_block, panel,
+            &(DvzTextBlockImageDesc){
+                .position_px = {content_x, content_y, 0.0f},
+                .extent_px = {content_w, content_h},
+                .anchor = {-1.0f, -1.0f},
+                .pixel_space = true,
+                .z_layer = INT32_MAX / 4 - 1,
+                .controller_mode = DVZ_CONTROLLER_FIXED,
+            }) != 0)
+    {
+        return false;
+    }
+    return _scene_panel_add_generated_visual(
+               panel, card->rich_block.image_visual, DVZ_GENERATED_VISUAL_OVERLAY_TEXT, 0) == 0;
 }
 
 

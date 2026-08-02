@@ -816,6 +816,7 @@ Attachment descriptor semantics:
   nonzero resolve mode marks the target as present.
 - `load_op`: whether the attachment content is loaded or cleared at pass start.
 - `store_op`: whether the final attachment content is stored after the pass.
+- `access`: whether the pass reads, writes, or reads and writes the attachment. Omission preserves the command's default access.
 - `clear_value`: clear color used when a color attachment `load_op` is clear.
 - `depth_load_op`: whether depth content is loaded or cleared at pass start.
 - `depth_store_op`: whether final depth content is stored after the pass.

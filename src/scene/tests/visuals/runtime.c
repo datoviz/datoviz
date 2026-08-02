@@ -1358,7 +1358,14 @@ int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, co
         {
             if (cmd->u.begin_render_pass.has_explicit_rects)
             {
-                AT(cmd->u.begin_render_pass.render_area_px[0] == 0);
+                if (begin_render_pass_count == 0)
+                {
+                    AT(cmd->u.begin_render_pass.render_area_px[0] == 0);
+                }
+                else
+                {
+                    AT(cmd->u.begin_render_pass.render_area_px[0] > 0);
+                }
                 AT(cmd->u.begin_render_pass.render_area_px[1] == 0);
                 AT(cmd->u.begin_render_pass.render_area_px[2] > 0);
                 AT(cmd->u.begin_render_pass.render_area_px[3] > 0);

@@ -26,6 +26,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
+#include "_scene_resource_key.h"
 #include "frame_plan/internal.h"
 #include "scene_emit/panel_render_plan.h"
 
@@ -100,6 +101,27 @@ _composition_graph_resource_index(const DvzFramePlan* plan, const char* resource
         {
             *out = i;
             return true;
+        }
+    }
+    return false;
+}
+
+
+
+static bool _composition_graph_resource_written(
+    const DvzFramePlan* plan, const char* resource_id)
+{
+    ANN(plan);
+    ANN(resource_id);
+    for (uint32_t i = 0; i < plan->graph_pass_count; i++)
+    {
+        const DvzFrameGraphPass* pass = &plan->graph_passes[i];
+        for (uint32_t j = 0; j < pass->color_attachment_count; j++)
+        {
+            const DvzFrameGraphAttachment* attachment = &pass->color_attachments[j];
+            if (strcmp(attachment->resource_id, resource_id) == 0 ||
+                strcmp(attachment->resolve_resource_id, resource_id) == 0)
+                return true;
         }
     }
     return false;
@@ -197,6 +219,176 @@ static DvzRenderProductKind _composition_graph_product_kind(
 
 
 
+static const DvzSceneResolvedPass* _composition_graph_product_producer(
+    const DvzPanelCompositionSnapshot* snapshot, DvzRenderProductId product_id)
+{
+    ANN(snapshot);
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        const DvzSceneResolvedPass* pass = &snapshot->passes[i];
+        for (uint32_t j = 0; j < pass->binding_count; j++)
+        {
+            const DvzSceneWorkBinding* binding = &pass->bindings[j];
+            if (binding->ref_kind == DVZ_SCENE_RESOURCE_REF_PRODUCT &&
+                binding->product_id.value == product_id.value &&
+                binding->usage == DVZ_SCENE_WORK_BINDING_ATTACHMENT)
+                return pass;
+        }
+    }
+    return NULL;
+}
+
+
+
+static const char* _composition_graph_legacy_scratch_suffix(DvzSceneScratchKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_SCENE_SCRATCH_SCENE_OCCLUSION_DEVICE_DEPTH:
+        return "scene_occlusion.depth";
+    case DVZ_SCENE_SCRATCH_VOLUME_OCCLUSION_DEVICE_DEPTH:
+        return "volume_occlusion.depth";
+    case DVZ_SCENE_SCRATCH_Z_ONLY_DEPTH:
+        return "scene_occlusion.z";
+    case DVZ_SCENE_SCRATCH_SURFACE_NORMAL_LEGACY:
+        return "gbuffer.normal";
+    case DVZ_SCENE_SCRATCH_SURFACE_DEPTH:
+        return "gbuffer.depth";
+    case DVZ_SCENE_SCRATCH_FORWARD_DEPTH:
+        return "depth";
+    case DVZ_SCENE_SCRATCH_PEEL_FORWARD_DEPTH:
+        return "depth.opaque";
+    case DVZ_SCENE_SCRATCH_SSAO_RAW:
+        return "ssao.occlusion";
+    case DVZ_SCENE_SCRATCH_WBOIT_WEIGHT:
+        return "wboit.weight";
+    case DVZ_SCENE_SCRATCH_PEEL_BACK_ACCUM:
+        return "peel.back_accum";
+    case DVZ_SCENE_SCRATCH_PEEL_DEPTH_PING:
+        return "peel.depth_minmax_ping";
+    case DVZ_SCENE_SCRATCH_PEEL_DEPTH_PONG:
+        return "peel.depth_minmax_pong";
+    case DVZ_SCENE_SCRATCH_EDL_COLOR:
+        return "edl.color";
+    case DVZ_SCENE_SCRATCH_EDL_DEPTH:
+        return "edl.depth";
+    case DVZ_SCENE_SCRATCH_NONE:
+    default:
+        return NULL;
+    }
+}
+
+
+
+static const char* _composition_graph_legacy_provider_label(DvzSceneWorkProviderKey provider)
+{
+    switch (provider)
+    {
+    case DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION:
+        return "scene_occlusion";
+    case DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION:
+        return "volume_occlusion";
+    case DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE:
+        return "gbuffer";
+    case DVZ_SCENE_WORK_PROVIDER_SSAO:
+        return "ssao";
+    case DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR:
+        return "ssao_blur";
+    case DVZ_SCENE_WORK_PROVIDER_OPAQUE:
+        return "opaque";
+    case DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE:
+        return "ssao_composite";
+    case DVZ_SCENE_WORK_PROVIDER_EDL:
+        return "edl_resolve";
+    case DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND:
+        return "transparent_blend";
+    case DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION:
+        return "wboit_accum";
+    case DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE:
+        return "wboit_resolve";
+    case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT:
+        return "depth_peel_init";
+    case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION:
+        return "depth_peel_iter";
+    case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE:
+        return "depth_peel_composite";
+    case DVZ_SCENE_WORK_PROVIDER_PRESENTATION:
+        return "presentation";
+    case DVZ_SCENE_WORK_PROVIDER_NONE:
+    default:
+        return NULL;
+    }
+}
+
+
+
+static bool _composition_graph_legacy_pass_suffix(
+    const DvzSceneResolvedPass* pass, char* suffix, size_t suffix_size)
+{
+    ANN(pass);
+    ANN(suffix);
+    const char* literal = NULL;
+    switch (pass->role)
+    {
+    case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
+        literal = "scene_occlusion";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
+        literal = "volume_occlusion";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
+        literal = "gbuffer";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
+        literal = "opaque";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
+        literal = "ssao";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
+        literal = "ssao.blur";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
+        literal = "ssao.composite";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
+        literal = "edl.resolve";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
+        literal = "wboit.accum";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
+        literal = "wboit.resolve";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
+        literal = "peel.init";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
+        literal = "peel.composite";
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
+        if (pass->ordinal == 0)
+            literal = "transparent_blend";
+        else
+        {
+            const int written =
+                dvz_snprintf(suffix, suffix_size, "transparent_blend_%u", pass->ordinal);
+            return written >= 0 && (size_t)written < suffix_size;
+        }
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER:
+    {
+        const int written = dvz_snprintf(suffix, suffix_size, "peel.iter.%u", pass->work_index);
+        return written >= 0 && (size_t)written < suffix_size;
+    }
+    default:
+        return false;
+    }
+    return literal != NULL && dvz_strlcpy(suffix, literal, suffix_size) < suffix_size;
+}
+
+
+
 static uint32_t _composition_graph_product_usage(
     const DvzPanelCompositionSnapshot* snapshot, DvzRenderProductId product_id)
 {
@@ -252,10 +444,14 @@ static bool _composition_graph_realize_product(
     else if (kind == DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY)
     {
         resource.format = DVZ_FORMAT_R8_UNORM;
-        const int written = dvz_snprintf(
-            resource.id, sizeof(resource.id), "%s.product.%" PRIu32, snapshot->panel_id,
-            product_id.value);
-        if (written < 0 || (size_t)written >= sizeof(resource.id))
+        const DvzSceneResolvedPass* producer =
+            _composition_graph_product_producer(snapshot, product_id);
+        const char* suffix =
+            producer != NULL && producer->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR
+                ? "ssao.blur"
+                : "ssao.occlusion";
+        if (!_scene_resource_key_panel_graph(
+                snapshot->panel_id, suffix, resource.id, sizeof(resource.id)))
             return _composition_graph_report(
                 report, "panel %s product %" PRIu32 " resource key is truncated",
                 snapshot->panel_id, product_id.value);
@@ -263,10 +459,14 @@ static bool _composition_graph_realize_product(
     else if (kind == DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION)
     {
         resource.format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
-        const int written = dvz_snprintf(
-            resource.id, sizeof(resource.id), "%s.product.%" PRIu32, snapshot->panel_id,
-            product_id.value);
-        if (written < 0 || (size_t)written >= sizeof(resource.id))
+        const DvzSceneResolvedPass* producer =
+            _composition_graph_product_producer(snapshot, product_id);
+        const bool peel =
+            producer != NULL && (producer->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
+                                 producer->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER);
+        if (!_scene_resource_key_panel_graph(
+                snapshot->panel_id, peel ? "peel.front_accum" : "wboit.accum", resource.id,
+                sizeof(resource.id)))
             return _composition_graph_report(
                 report, "panel %s product %" PRIu32 " resource key is truncated",
                 snapshot->panel_id, product_id.value);
@@ -299,10 +499,9 @@ static bool _composition_graph_realize_scratch(
     ANN(draft);
     ANN(scratch);
     DvzFrameGraphResource resource = {0};
-    const int written = dvz_snprintf(
-        resource.id, sizeof(resource.id), "%s.scratch.%" PRIu32, snapshot->panel_id,
-        scratch->id.value);
-    if (written < 0 || (size_t)written >= sizeof(resource.id))
+    const char* suffix = _composition_graph_legacy_scratch_suffix(scratch->kind);
+    if (suffix == NULL || !_scene_resource_key_panel_graph(
+                              snapshot->panel_id, suffix, resource.id, sizeof(resource.id)))
         return _composition_graph_report(
             report, "panel %s scratch %" PRIu32 " resource key is truncated", snapshot->panel_id,
             scratch->id.value);
@@ -428,17 +627,16 @@ static bool _composition_graph_add_attachment(
                 report, "panel %s pass %u has unsupported multisample resolve policy",
                 snapshot->panel_id, resolved->id.value);
         DvzFrameGraphResource multisample = {0};
-        const int written = dvz_snprintf(
-            multisample.id, sizeof(multisample.id), "%s.pass.%u.msaa.%u", snapshot->panel_id,
-            resolved->id.value, binding->slot);
-        if (written < 0 || (size_t)written >= sizeof(multisample.id))
+        if (!_scene_resource_key_panel_graph(
+                snapshot->panel_id, "msaa.color", multisample.id, sizeof(multisample.id)))
             return _composition_graph_report(
                 report, "panel %s pass %u multisample resource key is truncated",
                 snapshot->panel_id, resolved->id.value);
         multisample.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
         multisample.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
         multisample.sample_count = resolved->sample_count;
-        multisample.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+        multisample.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                                  DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
         multisample.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
         uint32_t multisample_index = 0;
         if (!_composition_graph_resource(plan, &multisample, &multisample_index))
@@ -450,6 +648,14 @@ static bool _composition_graph_add_attachment(
         dvz_strlcpy(
             attachment.resource_id, plan->graph_resources[multisample_index].id,
             sizeof(attachment.resource_id));
+    }
+    else if (
+        !binding->depth_attachment && binding->load == DVZ_SCENE_ATTACHMENT_LOAD_CLEAR &&
+        strcmp(attachment.resource_id, "rt") == 0 &&
+        _composition_graph_resource_written(plan, "rt"))
+    {
+        attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD;
+        attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ_WRITE;
     }
     return binding->depth_attachment ? dvz_frame_graph_pass_depth_attachment(pass, &attachment)
                                      : dvz_frame_graph_pass_color_attachment(pass, &attachment);
@@ -470,15 +676,21 @@ static bool _composition_graph_lower_pass(
             report, "panel %s pass %u compute lowering is not implemented", snapshot->panel_id,
             resolved->id.value);
     DvzFrameGraphPass pass = {0};
-    const int written = dvz_snprintf(
-        pass.id, sizeof(pass.id), "%s.composition.%u", snapshot->panel_id, resolved->id.value);
-    if (written < 0 || (size_t)written >= sizeof(pass.id))
+    char pass_suffix[DVZ_SCENE_LABEL_SIZE] = {0};
+    if (!_composition_graph_legacy_pass_suffix(resolved, pass_suffix, sizeof(pass_suffix)) ||
+        !_scene_resource_key_panel_graph(
+            snapshot->panel_id, pass_suffix, pass.id, sizeof(pass.id)))
         return _composition_graph_report(
             report, "panel %s pass %u graph key is truncated", snapshot->panel_id,
             resolved->id.value);
     dvz_strlcpy(pass.panel_id, snapshot->panel_id, sizeof(pass.panel_id));
-    dvz_snprintf(
-        pass.work_label, sizeof(pass.work_label), "provider_%u", (uint32_t)resolved->provider);
+    const char* provider_label = _composition_graph_legacy_provider_label(resolved->provider);
+    if (provider_label == NULL ||
+        dvz_strlcpy(pass.work_label, provider_label, sizeof(pass.work_label)) >=
+            sizeof(pass.work_label))
+        return _composition_graph_report(
+            report, "panel %s pass %u provider label is invalid", snapshot->panel_id,
+            resolved->id.value);
     pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     pass.has_composition_pass = true;
     pass.composition_pass_id = resolved->id;

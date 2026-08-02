@@ -153,6 +153,7 @@ typedef struct DvzSceneDrawFacts
     bool scene_occluded;
     bool scene_occluder;
     bool uses_segment_pipeline;
+    bool overlay_composite;
 
     bool uses_common_set;
     bool uses_material_set;
@@ -169,6 +170,7 @@ typedef struct DvzSceneDrawContract
     DvzAlphaMode alpha_mode;
     DvzBlendMode blend_mode;
     DvzFramePlanRenderPassRole pass_role;
+    bool overlay_composite;
 
     uint32_t depth_policy;
     DvzSceneBlendPolicy blend_policy;

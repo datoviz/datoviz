@@ -2379,9 +2379,9 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
         if (cmd->type == DVZ_DRP2_COMMAND_SET_SCISSOR)
             scissor_count++;
     }
-    AT(pass_count == 1);
+    AT(pass_count == 2);
     AT(draw_count == 2);
-    AT(pipeline_count == 1);
+    AT(pipeline_count == 2);
     AT(bind_group_count == 2);
     AT(viewport_count == 2);
     AT(scissor_count == 2);
@@ -2436,7 +2436,7 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
 
-    uint32_t pass_count = 0, viewport_count = 0, scissor_count = 0;
+    uint32_t pass_count = 0, clear_pass_count = 0, viewport_count = 0, scissor_count = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -2447,7 +2447,8 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
             AC(cmd->u.begin_render_pass.viewport[1], 0.0f, 1e-6f);
             AC(cmd->u.begin_render_pass.viewport[2], 1.0f, 1e-6f);
             AC(cmd->u.begin_render_pass.viewport[3], 1.0f, 1e-6f);
-            AT(cmd->u.begin_render_pass.clear);
+            if (cmd->u.begin_render_pass.clear)
+                clear_pass_count++;
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VIEWPORT)
         {
@@ -2487,7 +2488,8 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
         }
     }
 
-    AT(pass_count == 1);
+    AT(pass_count == 2);
+    AT(clear_pass_count == 1);
     AT(viewport_count == 2);
     AT(scissor_count == 2);
 

@@ -917,6 +917,7 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t draw_blend_mode;
     uint32_t draw_shader_feature_mask;
     uint32_t draw_bind_group_layout_mask;
+    bool draw_overlay_composite;
     bool draw_has_raster_state;
     uint32_t draw_cull_mode;
     uint32_t draw_front_face;

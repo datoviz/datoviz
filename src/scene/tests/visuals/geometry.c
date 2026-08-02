@@ -789,8 +789,8 @@ int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* ite
         }
     }
     AT(found_depth_pass);
-    AT(!found_named_depth_pass);
-    AT(!found_named_depth_texture);
+    AT(found_named_depth_pass);
+    AT(found_named_depth_texture);
     AT(found_depth_pipeline);
 
     _test_scene_stream_destroy(stream);

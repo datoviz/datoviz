@@ -16,6 +16,7 @@
 
 #include "scene_graph_utils.h"
 #include "frame_plan/internal.h"
+#include "render_contract/internal.h"
 #include "scene_emit/panel_render_plan.h"
 
 
@@ -23,6 +24,22 @@
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
+
+static const DvzFrameGraphResource* _test_graph_resource(
+    const DvzFramePlan* plan, const char* id)
+{
+    ANN(plan);
+    ANN(id);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        if (resource != NULL && strcmp(resource->id, id) == 0)
+            return resource;
+    }
+    return NULL;
+}
+
+
 
 /**
  * Verify deterministic immutable composition, approved phase order, and atomic diagnostics.
@@ -1087,6 +1104,20 @@ int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* i
     AT(contract.needs_scene_occlusion_set);
 
     facts = (DvzSceneDrawFacts){
+        .visual_type = DVZ_VISUAL_TYPE_MARKER,
+        .alpha_mode = DVZ_ALPHA_OPAQUE,
+        .uses_common_set = true,
+    };
+    AT(_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &contract));
+    AT(!_draw_pass_role_matches(&contract));
+    facts.overlay_composite = true;
+    AT(_scene_draw_contract_resolve(
+        &facts, DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, &contract));
+    AT(contract.overlay_composite);
+    AT(_draw_pass_role_matches(&contract));
+
+    facts = (DvzSceneDrawFacts){
         .visual_type = DVZ_VISUAL_TYPE_POINT,
         .alpha_mode = DVZ_ALPHA_BLENDED,
         .blend_mode = DVZ_BLEND_ADDITIVE,
@@ -1456,43 +1487,56 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
 
     DvzDiagnosticReport report = {0};
+    DvzFrameGraphResource seeded_resource = {0};
+    dvz_strlcpy(seeded_resource.id, "figure_0_p0.seeded.color", sizeof(seeded_resource.id));
+    seeded_resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    seeded_resource.format = DVZ_FORMAT_R8G8B8A8_UNORM;
+    seeded_resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    seeded_resource.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    seeded_resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
     DvzFrameGraphPass seeded = {0};
     dvz_strlcpy(seeded.panel_id, "figure_0_p0", sizeof(seeded.panel_id));
     seeded.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
 
     DvzFramePlan* plan = dvz_frame_plan("figure_0", 0);
     ANN(plan);
+    AT(dvz_frame_plan_graph_resource(plan, &seeded_resource));
     dvz_strlcpy(seeded.id, "figure_0_p0.seeded.gbuffer", sizeof(seeded.id));
     dvz_strlcpy(seeded.work_label, "gbuffer", sizeof(seeded.work_label));
+    DvzFrameGraphAttachment seeded_attachment = {0};
+    dvz_strlcpy(
+        seeded_attachment.resource_id, seeded_resource.id,
+        sizeof(seeded_attachment.resource_id));
+    seeded_attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+    seeded_attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
+    seeded_attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
+    AT(dvz_frame_graph_pass_color_attachment(&seeded, &seeded_attachment));
     AT(dvz_frame_plan_graph_pass(plan, &seeded));
     dvz_diagnostic_report_init(&report);
-    AT_EXPECTED_ERROR_STRICT(
-        suite, !_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT(!_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
     AT(_frame_plan_composition_get(plan, "figure_0_p0") == NULL);
     bool found = false;
     for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
     {
         const char* message = dvz_diagnostic_report_get(&report, i);
-        found = found || (message != NULL && strstr(message, "absent from composition snapshot"));
+        found = found || (message != NULL && strstr(message, "typed composition identity"));
     }
     AT(found);
     dvz_frame_plan_destroy(plan);
 
     plan = dvz_frame_plan("figure_0", 0);
     ANN(plan);
-    dvz_memset(&seeded, sizeof(seeded), 0, sizeof(seeded));
-    dvz_strlcpy(seeded.id, "figure_0_p0.seeded.typed", sizeof(seeded.id));
-    dvz_strlcpy(seeded.panel_id, "figure_0_p0", sizeof(seeded.panel_id));
-    dvz_strlcpy(seeded.work_label, "synthetic", sizeof(seeded.work_label));
-    seeded.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
-    seeded.has_composition_pass = true;
-    seeded.composition_pass_id = (DvzFramePlanPassId){1};
-    AT(dvz_frame_plan_graph_pass(plan, &seeded));
+    AT(_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    const DvzPanelCompositionSnapshot* snapshot =
+        _frame_plan_composition_get(plan, "figure_0_p0");
+    ANN(snapshot);
+    const DvzFrameGraphPass* original = dvz_frame_plan_graph_pass_get(plan, 0);
+    ANN(original);
+    seeded = *original;
     dvz_strlcpy(seeded.id, "figure_0_p0.seeded.typed.duplicate", sizeof(seeded.id));
     AT(dvz_frame_plan_graph_pass(plan, &seeded));
     dvz_diagnostic_report_init(&report);
-    AT_EXPECTED_ERROR_STRICT(
-        suite, !_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT(!_scene_bind_panel_composition(plan, "figure_0_p0", snapshot, &report));
     found = false;
     for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
     {
@@ -1510,8 +1554,7 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     plan->nodes[0].u.render.has_composition_pass = true;
     plan->nodes[0].u.render.composition_pass_id = (DvzFramePlanPassId){1};
     dvz_diagnostic_report_init(&report);
-    AT_EXPECTED_ERROR_STRICT(
-        suite, !_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT(!_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
     found = false;
     for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
     {
@@ -1670,29 +1713,32 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
 
     DvzFramePlan* plan = dvz_frame_plan("figure_0", 0);
     ANN(plan);
-    DvzFrameGraphPass saturated = {0};
-    dvz_strlcpy(saturated.id, "figure_0_p0.synthetic_full_reads", sizeof(saturated.id));
-    dvz_strlcpy(saturated.panel_id, "figure_0_p0", sizeof(saturated.panel_id));
-    dvz_strlcpy(saturated.work_label, "opaque", sizeof(saturated.work_label));
-    saturated.kind = DVZ_FRAME_GRAPH_PASS_COMPUTE;
-    saturated.read_count = DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES;
-    for (uint32_t i = 0; i < DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES; i++)
-    {
-        dvz_snprintf(
-            saturated.reads[i].resource_id, sizeof(saturated.reads[i].resource_id),
-            "synthetic.read.%u", i);
-        saturated.reads[i].usage = DVZ_FRAME_GRAPH_ACCESS_SAMPLED;
-    }
-    AT(dvz_frame_plan_graph_pass(plan, &saturated));
+    DvzFrameGraphResource incompatible_rt = {0};
+    dvz_strlcpy(incompatible_rt.id, "rt", sizeof(incompatible_rt.id));
+    incompatible_rt.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
+    incompatible_rt.format = DVZ_FORMAT_R8_UNORM;
+    incompatible_rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    incompatible_rt.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT;
+    incompatible_rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
+    AT(dvz_frame_plan_graph_resource(plan, &incompatible_rt));
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
-    AT_EXPECTED_ERROR_STRICT(
-        suite, !_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
-    AT(dvz_diagnostic_report_count(&report) == 1);
-    const char* message = dvz_diagnostic_report_get(&report, 0);
-    ANN(message);
-    AT(strcmp(message, "failed to add volume occlusion FramePlan reads for panel figure_0_p0") == 0);
+    AT(!_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+    bool found_realization_failure = false;
+    for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
+    {
+        const char* message = dvz_diagnostic_report_get(&report, i);
+        found_realization_failure =
+            found_realization_failure ||
+            (message != NULL && strstr(message, "product") != NULL &&
+             strstr(message, "realization failed") != NULL);
+    }
+    AT(found_realization_failure);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 1);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 0);
+    AT(_frame_plan_composition_get(plan, "figure_0_p0") == NULL);
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -2966,7 +3012,7 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     ANN(default_plan);
     _scene_emit_panel_render(figure, 0, default_plan, "figure_0");
     AT(dvz_frame_plan_node_count(default_plan) == 1);
-    AT(dvz_frame_plan_graph_pass_count(default_plan) == 0);
+    AT(dvz_frame_plan_graph_pass_count(default_plan) == 1);
     dvz_frame_plan_destroy(default_plan);
 
     AT(dvz_panel_set_edl(
@@ -3322,7 +3368,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     ANN(fixed_plan);
     _scene_emit_panel_render(figure, 0, fixed_plan, "figure_0");
     AT(dvz_frame_plan_node_count(fixed_plan) == 1);
-    AT(dvz_frame_plan_graph_pass_count(fixed_plan) == 0);
+    AT(dvz_frame_plan_graph_pass_count(fixed_plan) == 1);
 
     float point_sizes[3] = {18.0f, 18.0f, 18.0f};
     DvzVisual* transparent_point = dvz_point(scene, 0);
@@ -3419,7 +3465,7 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     ANN(default_plan);
     _scene_emit_panel_render(figure, 0, default_plan, "figure_0");
     AT(dvz_frame_plan_node_count(default_plan) == 1);
-    AT(dvz_frame_plan_graph_pass_count(default_plan) == 0);
+    AT(dvz_frame_plan_graph_pass_count(default_plan) == 1);
     dvz_frame_plan_destroy(default_plan);
 
     AT(_scene_technique_state_set_ssao(
@@ -3478,8 +3524,8 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     AT(found_occlusion);
 
     const DvzFrameGraphPass* gbuffer_pass = dvz_frame_plan_graph_pass_get(plan, 0);
-    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 1);
-    const DvzFrameGraphPass* ssao_pass = dvz_frame_plan_graph_pass_get(plan, 2);
+    const DvzFrameGraphPass* ssao_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 2);
     const DvzFrameGraphPass* composite_pass = dvz_frame_plan_graph_pass_get(plan, 3);
     ANN(gbuffer_pass);
     ANN(opaque_pass);
@@ -3516,7 +3562,7 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     AT(dvz_frame_plan_render_pass_role(blur_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR);
     AT(dvz_frame_plan_render_pass_role(composite_node) ==
        DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE);
-    const DvzFrameGraphPass* blur_pass = dvz_frame_plan_graph_pass_get(plan, 3);
+    const DvzFrameGraphPass* blur_pass = dvz_frame_plan_graph_pass_get(plan, 2);
     composite_pass = dvz_frame_plan_graph_pass_get(plan, 4);
     ANN(blur_pass);
     ANN(composite_pass);
@@ -3916,8 +3962,14 @@ int test_scene_ssao_ignores_ineligible_visuals(TstContext* suite, const TstCase*
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
     AT(dvz_frame_plan_node_count(plan) == 1);
-    AT(dvz_frame_plan_graph_resource_count(plan) == 0);
-    AT(dvz_frame_plan_graph_pass_count(plan) == 0);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 1);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
+    {
+        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
+        ANN(resource);
+        AT(strstr(resource->id, ".gbuffer.") == NULL);
+        AT(strstr(resource->id, ".ssao.") == NULL);
+    }
 
     dvz_frame_plan_destroy(plan);
     dvz_scene_destroy(scene);
@@ -4718,9 +4770,11 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     AT(dvz_frame_plan_graph_resource_count(plan) == 4);
     AT(dvz_frame_plan_graph_pass_count(plan) == 3);
 
-    const DvzFrameGraphResource* accum_resource = dvz_frame_plan_graph_resource_get(plan, 1);
-    const DvzFrameGraphResource* weight_resource = dvz_frame_plan_graph_resource_get(plan, 2);
-    const DvzFrameGraphResource* depth_resource = dvz_frame_plan_graph_resource_get(plan, 3);
+    const DvzFrameGraphResource* accum_resource =
+        _test_graph_resource(plan, "figure_0_p0.wboit.accum");
+    const DvzFrameGraphResource* weight_resource =
+        _test_graph_resource(plan, "figure_0_p0.wboit.weight");
+    const DvzFrameGraphResource* depth_resource = _test_graph_resource(plan, "figure_0_p0.depth");
     ANN(accum_resource);
     ANN(weight_resource);
     ANN(depth_resource);
@@ -5015,9 +5069,12 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
 
     AT(dvz_frame_plan_graph_resource_count(plan) == 6);
     AT(dvz_frame_plan_graph_pass_count(plan) == 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
-    const DvzFrameGraphResource* depth_resource = dvz_frame_plan_graph_resource_get(plan, 1);
-    const DvzFrameGraphResource* front_accum = dvz_frame_plan_graph_resource_get(plan, 2);
-    const DvzFrameGraphResource* depth_minmax_ping = dvz_frame_plan_graph_resource_get(plan, 4);
+    const DvzFrameGraphResource* depth_resource =
+        _test_graph_resource(plan, "figure_0_p0.depth.opaque");
+    const DvzFrameGraphResource* front_accum =
+        _test_graph_resource(plan, "figure_0_p0.peel.front_accum");
+    const DvzFrameGraphResource* depth_minmax_ping =
+        _test_graph_resource(plan, "figure_0_p0.peel.depth_minmax_ping");
     ANN(depth_resource);
     ANN(front_accum);
     ANN(depth_minmax_ping);
@@ -5439,8 +5496,18 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(transparent, "color", transparent_colors, 3) == 0);
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_DEPTH_PEEL) == 0);
+    AT(dvz_visual_set_scene_occluder(opaque, true) == 0);
+    AT(dvz_visual_set_scene_occluded(transparent, true) == 0);
     AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
+    AT(dvz_panel_set_scene_occlusion(
+           panel,
+           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
+               .enabled = true,
+               .depth_bias = 0.0005f,
+               .soft_edge = 0.01f,
+               .hidden_alpha = 0.2f,
+           }) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
@@ -5549,6 +5616,10 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
+            const char* label =
+                dvz_drp2_stream_label(stream, command->u.create_bind_group.id);
+            if (label != NULL && strstr(label, "_bg_depth_peel_iter_") != NULL)
+                AT(command->u.create_bind_group.entry_count == 2);
             if (command->u.create_bind_group.entry_count == 2 ||
                 command->u.create_bind_group.entry_count == 3)
                 sampled_bind_group_count++;
@@ -5577,7 +5648,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(has_blended_composite_pipeline);
     AT(has_composite_bind_group);
     AT(sampled_bind_group_count >= 1);
-    AT(begin_pass_count == 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    AT(begin_pass_count == 4 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
     AT(triple_attachment_passes == 1 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
 
     dvz_diagnostic_report_init(&report);
