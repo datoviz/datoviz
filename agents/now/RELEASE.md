@@ -22,7 +22,7 @@ Preserve old v0.3 `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, mak
 
 ## 2. RC3 Documentation, Packaging, Quality, And Course Foundation
 
-Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, and local Apple Silicon split-package proof.
+Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, local Apple Silicon split-package proof, and the local R1-R8 render-product/GTAO/public-AO implementation. Render R9, exact-head validation, integration, and affected QA remain release-quality gates rather than new feature scope.
 
 Remaining RC3 deliverables:
 

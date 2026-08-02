@@ -13,12 +13,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdbool.h>
-#include <stdint.h>
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "frame_plan/emit.h"
 #include "_frame_plan_runtime_internal.h"
 #include "_scene.h"
 #include "_scene_shader_abi.h"
@@ -28,6 +25,9 @@
 #include "_visual_pipeline_internal.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
+#include "frame_plan/emit.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 
 /*************************************************************************************************/
@@ -42,8 +42,7 @@ static const char* _runtime_shader_format_label(DvzSceneShaderFormat format)
 
 
 static bool _runtime_shader_report(
-    DvzDiagnosticReport* report, const DvzSceneVisualDesc* desc,
-    DvzSceneWorkProviderKey provider,
+    DvzDiagnosticReport* report, const DvzSceneVisualDesc* desc, DvzSceneWorkProviderKey provider,
     const DvzSceneResolvedShaderStage* stage, const char* reason)
 {
     ANN(desc);
@@ -78,8 +77,7 @@ static void _runtime_shader_stage_resolve(
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneResolvedShaderStage), 0, sizeof(DvzSceneResolvedShaderStage));
 
-    dvz_strlcpy(
-        out->key, fragment ? shader->fragment_key : shader->vertex_key, sizeof(out->key));
+    dvz_strlcpy(out->key, fragment ? shader->fragment_key : shader->vertex_key, sizeof(out->key));
     out->stage = fragment ? "FRAGMENT" : "VERTEX";
     out->stage_label = fragment ? "fragment" : "vertex";
     out->format = _runtime_shader_format_label(format);
@@ -93,9 +91,8 @@ static void _runtime_shader_stage_resolve(
 
 
 static bool _runtime_shader_stage_valid(
-    const DvzSceneVisualDesc* desc, DvzSceneWorkProviderKey provider,
-    DvzSceneShaderFormat format, const DvzSceneResolvedShaderStage* stage,
-    DvzDiagnosticReport* report)
+    const DvzSceneVisualDesc* desc, DvzSceneWorkProviderKey provider, DvzSceneShaderFormat format,
+    const DvzSceneResolvedShaderStage* stage, DvzDiagnosticReport* report)
 {
     ANN(desc);
     ANN(stage);
@@ -137,8 +134,7 @@ static bool _runtime_shader_emit_stage(
         return true;
 
     bool ok = false;
-    bool legacy =
-        cfg != NULL && cfg->color_pipeline == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND;
+    bool legacy = cfg != NULL && cfg->color_pipeline == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND;
     if (stage->use_spirv && !legacy)
     {
         ok = _emit_shader_spirv(stream, id, stage->stage, stage->spirv_key, stage->glsl, cfg);
@@ -183,12 +179,12 @@ const char* _scene_runtime_work_provider_name(DvzSceneWorkProviderKey provider)
         return "volume_occlusion";
     case DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION:
         return "scene_occlusion";
-    case DVZ_SCENE_WORK_PROVIDER_SSAO:
-        return "ssao";
-    case DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR:
-        return "ssao_blur";
-    case DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE:
-        return "ambient_composite";
+    case DVZ_SCENE_WORK_PROVIDER_GTAO:
+        return "gtao";
+    case DVZ_SCENE_WORK_PROVIDER_GTAO_DENOISE:
+        return "gtao_denoise";
+    case DVZ_SCENE_WORK_PROVIDER_GTAO_VISIBILITY_PRESENTATION:
+        return "gtao_visibility_present";
     case DVZ_SCENE_WORK_PROVIDER_EDL:
         return "edl";
     case DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION:
@@ -226,8 +222,8 @@ const char* _scene_runtime_work_provider_name(DvzSceneWorkProviderKey provider)
  */
 bool _scene_runtime_shader_resolve(
     const DvzSceneVisualShaderDesc* shader, const DvzSceneVisualDesc* desc,
-    DvzSceneWorkProviderKey provider, DvzSceneShaderFormat format,
-    DvzSceneResolvedShader* out, DvzDiagnosticReport* report)
+    DvzSceneWorkProviderKey provider, DvzSceneShaderFormat format, DvzSceneResolvedShader* out,
+    DvzDiagnosticReport* report)
 {
     ANN(shader);
     ANN(desc);

@@ -121,7 +121,6 @@ int test_vklite(TstSuite* suite)
     TST_VKLITE_CASE(test_technique_compute_graphics);
     TST_VKLITE_CASE(test_technique_picking);
     TST_VKLITE_CASE(test_technique_wboit);
-    TST_VKLITE_CASE(test_technique_ssao);
 
 
 

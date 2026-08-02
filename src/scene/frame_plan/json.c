@@ -96,12 +96,12 @@ static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
         return "volume_occlusion";
     case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
         return "scene_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-        return "ssao";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
-        return "ssao_blur";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-        return "ssao_composite";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO:
+        return "gtao";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO_DENOISE:
+        return "gtao_denoise";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO_VISIBILITY_PRESENTATION:
+        return "gtao_visibility_presentation";
     case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
         return "edl_resolve";
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
@@ -428,7 +428,7 @@ static void _json_append_product(
         builder,
         ", \"origin\": { \"x\": %" PRId32 ", \"y\": %" PRId32 " }, \"width\": %" PRIu32
         ", \"height\": %" PRIu32 ", \"render_scale\": %.9g, \"local_to_target\": [%.9g, %.9g, "
-                                 "%.9g, %.9g] }, \"format_class\": ",
+        "%.9g, %.9g] }, \"format_class\": ",
         product->origin_x, product->origin_y, product->width, product->height,
         (double)product->render_scale, (double)product->local_to_target[0],
         (double)product->local_to_target[1], (double)product->local_to_target[2],
@@ -657,11 +657,6 @@ static void _json_append_graph_pass(JsonBuilder* builder, const DvzFrameGraphPas
     }
     if (pass->alpha_to_coverage)
         _json_append(builder, ", \"alpha_to_coverage\": true");
-    if (pass->work_label[0] != '\0')
-    {
-        _json_append(builder, ", \"work\": ");
-        _json_append_escaped_string(builder, pass->work_label);
-    }
     _json_append(builder, " }");
 }
 
@@ -852,15 +847,10 @@ _json_append_composition(JsonBuilder* builder, const DvzPanelCompositionSnapshot
             "%s{ \"id\": %" PRIu32 ", \"work_index\": %" PRIu32
             ", \"work_class\": %u, \"provider\": %u, \"coordinates\": %u"
             ", \"sample_count\": %" PRIu32 ", \"resolve\": %u, \"alpha_to_coverage\": %s"
-            ", \"legacy_transition\": %s, \"unrealized_product_ids\": [",
+            ", \"bindings\": [",
             i > 0 ? ", " : "", pass->id.value, pass->work_index, (uint32_t)pass->work_class,
             (uint32_t)pass->provider, (uint32_t)pass->coordinate_space, pass->sample_count,
-            (uint32_t)pass->resolve_policy, pass->alpha_to_coverage ? "true" : "false",
-            pass->legacy_transition ? "true" : "false");
-        for (uint32_t j = 0; j < pass->unrealized_product_count; j++)
-            _json_append(
-                builder, "%s%" PRIu32, j > 0 ? ", " : "", pass->unrealized_product_ids[j].value);
-        _json_append(builder, "], \"bindings\": [");
+            (uint32_t)pass->resolve_policy, pass->alpha_to_coverage ? "true" : "false");
         for (uint32_t j = 0; j < pass->binding_count; j++)
         {
             const DvzSceneWorkBinding* binding = &pass->bindings[j];

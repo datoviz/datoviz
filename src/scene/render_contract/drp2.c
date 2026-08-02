@@ -21,10 +21,10 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include "../../drp2/_stream.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "../../drp2/_stream.h"
 
 
 
@@ -52,8 +52,8 @@ typedef struct ContractDrp2PassState
  * @param pass_contract_id the pass-contract id
  * @return the render node, or NULL when no node matches
  */
-static const DvzFramePlanNode* _contract_render_for_pass_id(
-    const DvzFramePlan* plan, const char* pass_contract_id)
+static const DvzFramePlanNode*
+_contract_render_for_pass_id(const DvzFramePlan* plan, const char* pass_contract_id)
 {
     ANN(plan);
     ANN(pass_contract_id);
@@ -78,8 +78,8 @@ static const DvzFramePlanNode* _contract_render_for_pass_id(
  * @param pipeline_id the render pipeline id
  * @return the pipeline creation command, or NULL when it was created by an earlier stream
  */
-static const DvzDrp2Command* _contract_drp2_pipeline_for_id(
-    const DvzDrp2CommandStream* stream, uint64_t pipeline_id)
+static const DvzDrp2Command*
+_contract_drp2_pipeline_for_id(const DvzDrp2CommandStream* stream, uint64_t pipeline_id)
 {
     ANN(stream);
     if (pipeline_id == 0)
@@ -103,8 +103,8 @@ static const DvzDrp2Command* _contract_drp2_pipeline_for_id(
  * @param texture_id the texture id
  * @return the texture creation command, or NULL when it was created by an earlier stream
  */
-static const DvzDrp2Command* _contract_drp2_texture_for_id(
-    const DvzDrp2CommandStream* stream, uint64_t texture_id)
+static const DvzDrp2Command*
+_contract_drp2_texture_for_id(const DvzDrp2CommandStream* stream, uint64_t texture_id)
 {
     ANN(stream);
     if (texture_id == 0)
@@ -128,8 +128,8 @@ static const DvzDrp2Command* _contract_drp2_texture_for_id(
  * @param bind_group_id the bind-group id
  * @return the bind-group creation command, or NULL when it was created by an earlier stream
  */
-static const DvzDrp2Command* _contract_drp2_bind_group_for_id(
-    const DvzDrp2CommandStream* stream, uint64_t bind_group_id)
+static const DvzDrp2Command*
+_contract_drp2_bind_group_for_id(const DvzDrp2CommandStream* stream, uint64_t bind_group_id)
 {
     ANN(stream);
     if (bind_group_id == 0)
@@ -197,8 +197,8 @@ static uint32_t _contract_effective_sample_count(uint32_t sample_count)
  * @param index color attachment index
  * @return color texture id, or zero when absent
  */
-static uint64_t _contract_render_pass_color_texture_id(
-    const DvzDrp2Command* command, uint32_t index)
+static uint64_t
+_contract_render_pass_color_texture_id(const DvzDrp2Command* command, uint32_t index)
 {
     ANN(command);
     if (index >= DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
@@ -220,8 +220,8 @@ static uint64_t _contract_render_pass_color_texture_id(
  * @return whether known attachment sample counts agree
  */
 static bool _contract_resolve_drp2_pass_state(
-    const DvzDrp2CommandStream* stream, const DvzDrp2Command* command,
-    ContractDrp2PassState* out, DvzDiagnosticReport* report)
+    const DvzDrp2CommandStream* stream, const DvzDrp2Command* command, ContractDrp2PassState* out,
+    DvzDiagnosticReport* report)
 {
     ANN(stream);
     ANN(command);
@@ -229,9 +229,9 @@ static bool _contract_resolve_drp2_pass_state(
     dvz_memset(out, sizeof(ContractDrp2PassState), 0, sizeof(ContractDrp2PassState));
 
     bool ok = true;
-    out->color_attachment_count = command->u.begin_render_pass.color_attachment_count != 0 ?
-                                      command->u.begin_render_pass.color_attachment_count :
-                                      1;
+    out->color_attachment_count = command->u.begin_render_pass.color_attachment_count != 0
+                                      ? command->u.begin_render_pass.color_attachment_count
+                                      : 1;
     if (out->color_attachment_count > DVZ_DRP2_MAX_COLOR_ATTACHMENTS)
     {
         _contract_report(report, "DRP2 render pass has too many color attachments");
@@ -245,8 +245,7 @@ static bool _contract_resolve_drp2_pass_state(
         if (texture == NULL)
             continue;
 
-        out->color_formats[i] =
-            _contract_effective_color_format(texture->u.create_texture.format);
+        out->color_formats[i] = _contract_effective_color_format(texture->u.create_texture.format);
         out->color_format_known[i] = true;
 
         uint32_t sample_count =
@@ -323,8 +322,7 @@ static bool _contract_validate_drp2_blend_target(
     if (!expected->blend_enabled)
         return ok;
 
-    if (
-        actual->src_color_blend_factor != expected->src_color_blend_factor ||
+    if (actual->src_color_blend_factor != expected->src_color_blend_factor ||
         actual->dst_color_blend_factor != expected->dst_color_blend_factor ||
         actual->color_blend_op != expected->color_blend_op ||
         actual->src_alpha_blend_factor != expected->src_alpha_blend_factor ||
@@ -336,9 +334,8 @@ static bool _contract_validate_drp2_blend_target(
             message, sizeof(message),
             "DRP2 pipeline blend equation mismatches contract for target %u "
             "(actual color %u/%u/%u alpha %u/%u/%u, expected color %u/%u/%u alpha %u/%u/%u)",
-            expected->target_index, actual->src_color_blend_factor,
-            actual->dst_color_blend_factor, actual->color_blend_op,
-            actual->src_alpha_blend_factor, actual->dst_alpha_blend_factor,
+            expected->target_index, actual->src_color_blend_factor, actual->dst_color_blend_factor,
+            actual->color_blend_op, actual->src_alpha_blend_factor, actual->dst_alpha_blend_factor,
             actual->alpha_blend_op, expected->src_color_blend_factor,
             expected->dst_color_blend_factor, expected->color_blend_op,
             expected->src_alpha_blend_factor, expected->dst_alpha_blend_factor,
@@ -370,9 +367,9 @@ static bool _contract_validate_drp2_blend_targets(
     if (target_count == 0)
         return true;
 
-    uint32_t pipeline_target_count = command->u.create_render_pipeline.color_target_count != 0 ?
-                                         command->u.create_render_pipeline.color_target_count :
-                                         1;
+    uint32_t pipeline_target_count = command->u.create_render_pipeline.color_target_count != 0
+                                         ? command->u.create_render_pipeline.color_target_count
+                                         : 1;
     if (pipeline_target_count < target_count)
     {
         _contract_report(report, "DRP2 pipeline color target count mismatches blend contract");
@@ -421,8 +418,7 @@ static bool _contract_validate_drp2_raster_state(
         .visual_type = meta->visual_type,
         .desc_kind = meta->desc_kind,
     };
-    _draw_raster_state_contract(
-        &facts, pass_role, &has_raster_state, &cull_mode, &front_face);
+    _draw_raster_state_contract(&facts, pass_role, &has_raster_state, &cull_mode, &front_face);
 
     if (!has_raster_state)
     {
@@ -579,20 +575,19 @@ static bool _contract_validate_drp2_pipeline_color_targets(
     ANN(command);
     ANN(pass_state);
     bool ok = true;
-    uint32_t target_count = command->u.create_render_pipeline.color_target_count != 0 ?
-                                command->u.create_render_pipeline.color_target_count :
-                                1;
-    if (
-        pass_state->color_attachment_count != 0 &&
+    uint32_t target_count = command->u.create_render_pipeline.color_target_count != 0
+                                ? command->u.create_render_pipeline.color_target_count
+                                : 1;
+    if (pass_state->color_attachment_count != 0 &&
         target_count != pass_state->color_attachment_count)
     {
         _contract_report(report, "DRP2 pipeline color target count mismatches render pass");
         ok = false;
     }
 
-    uint32_t count = target_count < pass_state->color_attachment_count ?
-                         target_count :
-                         pass_state->color_attachment_count;
+    uint32_t count = target_count < pass_state->color_attachment_count
+                         ? target_count
+                         : pass_state->color_attachment_count;
     for (uint32_t i = 0; i < count; i++)
     {
         if (!pass_state->color_format_known[i])
@@ -625,10 +620,10 @@ static bool _contract_fullscreen_pipeline_blend_policy(
 
     switch (role)
     {
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO:
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO_DENOISE:
     case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO_VISIBILITY_PRESENTATION:
         *out_policy = DVZ_SCENE_BLEND_POLICY_OPAQUE;
         return true;
     case DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE:
@@ -653,9 +648,8 @@ static bool _contract_fullscreen_pipeline_blend_policy(
  * @return whether the fullscreen draw and pipeline match the pass contract
  */
 static bool _contract_validate_drp2_fullscreen_pipeline(
-    const DvzDrp2Command* command, const DvzDrp2Command* pipeline,
-    DvzFramePlanRenderPassRole role, const ContractDrp2PassState* pass_state,
-    DvzDiagnosticReport* report)
+    const DvzDrp2Command* command, const DvzDrp2Command* pipeline, DvzFramePlanRenderPassRole role,
+    const ContractDrp2PassState* pass_state, DvzDiagnosticReport* report)
 {
     ANN(command);
     ANN(pass_state);
@@ -825,7 +819,8 @@ static bool _contract_validate_drp2_sampled_reads(
         {
             char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
             dvz_snprintf(
-                message, sizeof(message), "DRP2 sampled bind group misses graph read resource '%s'",
+                message, sizeof(message),
+                "DRP2 sampled bind group misses graph read resource '%s'",
                 graph_pass->reads[i].resource_id);
             _contract_report(report, message);
             ok = false;
@@ -977,7 +972,6 @@ static bool _contract_validate_drp2_draw_occlusion_bindings(
 
 
 
-
 /**
  * Validate one DRP2 pipeline against one draw-contract metadata snapshot.
  *
@@ -1106,8 +1100,8 @@ static bool _contract_validate_drp2_begin_render_pass(
  * @param report optional diagnostic report
  * @return whether every producer appears before its consumer
  */
-static bool _contract_validate_graph_topology(
-    const DvzFramePlan* plan, DvzDiagnosticReport* report)
+static bool
+_contract_validate_graph_topology(const DvzFramePlan* plan, DvzDiagnosticReport* report)
 {
     ANN(plan);
     bool ok = true;
@@ -1228,9 +1222,8 @@ bool _scene_frame_plan_drp2_contracts_validate(
             }
             const DvzFramePlanVisualMeta* meta =
                 &active_render->u.render.visual_metadata[active_draw_index];
-            if (meta->has_draw_contract &&
-                !_contract_validate_drp2_draw_occlusion_bindings(
-                    stream, active_bind_groups, meta, report))
+            if (meta->has_draw_contract && !_contract_validate_drp2_draw_occlusion_bindings(
+                                               stream, active_bind_groups, meta, report))
                 ok = false;
             if (active_pipeline != NULL)
             {

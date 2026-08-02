@@ -1,8 +1,10 @@
 # Render Products Refactor Handoff
 
-Status: **approved and active**. Integration branch: `orchestrate/rc3-render-qa`. Updated: 2026-08-02.
+Status: **implementation complete through R8; final convergence active**. Integration branch: `orchestrate/rc3-render-qa`. Updated: 2026-08-02.
 
-This handoff turns [the approved architecture](../../spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) into the active implementation campaign. The maintainer authorized local implementation and checkpoint commits on 2026-08-02; pushes and publication remain unauthorized.
+R9 cleanup, documentation, exact-head validation, and integration are tracked by [RC3_RENDER_PRODUCTS_LANDING.md](RC3_RENDER_PRODUCTS_LANDING.md) and [RC3_RENDER_PRODUCTS_AFFECTED_QA.md](RC3_RENDER_PRODUCTS_AFFECTED_QA.md). This file preserves execution history and packet acceptance criteria; it is not current semantic authority.
+
+This handoff translated [the approved architecture](../../spec/scene/proposals/promoted/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) into the R0-R9 implementation campaign. The maintainer authorized local implementation and checkpoint commits on 2026-08-02; pushes and publication remain governed by the current user authorization and repository rules.
 
 ## Required Reading And Authority
 

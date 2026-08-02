@@ -59,3 +59,4 @@ specialized `spec/scene/` documents listed below.
     `../../semantics/TRANSPARENCY.md`, and `../../pipeline/FRAME_PLAN.md`.
 15. [SCREEN_SPACE_EFFECTS_DESIGN.md](SCREEN_SPACE_EFFECTS_DESIGN.md) ->
     `../../semantics/EFFECTS.md` and `../../implementation/GRAPH_TECHNIQUES.md`.
+16. [RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md](RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) -> `../../implementation/GRAPH_TECHNIQUES.md`, `../../implementation/OCCLUSION_EFFECTS.md`, `../../implementation/TRANSPARENCY_MSAA.md`, `../../semantics/EFFECTS.md`, and the DRP2 specifications.

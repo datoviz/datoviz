@@ -1,9 +1,6 @@
 # Transparency And MSAA Implementor Notes
 
-Status: implementation-facing notes for graph-backed transparency and multisample antialiasing in
-the active scene stack. Public alpha-mode semantics remain in
-[`../semantics/TRANSPARENCY.md`](../semantics/TRANSPARENCY.md); generic graph technique rules remain
-in [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md).
+Status: normative implementation contract for graph-backed transparency and multisample antialiasing in the active scene stack. Public alpha-mode semantics remain in [`../semantics/TRANSPARENCY.md`](../semantics/TRANSPARENCY.md); generic graph technique rules remain in [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md).
 
 ## Scope
 
@@ -38,14 +35,13 @@ Source-over authored order is preserved independently of technique phase order. 
 
 ## WBOIT Expansion
 
-WBOIT is the active approximate OIT path. Its graph expansion should:
+WBOIT is the active approximate OIT path. Its graph expansion must:
 
 1. consume the current typed `scene_color` version and compatible `surface_depth`;
 2. allocate explicit accumulation and reveal/transmittance textures;
 3. add a transparent accumulation pass that reads opaque depth when present;
 4. add a resolve pass that samples accumulation textures and produces the successor `scene_color` version;
-5. validate floating-point target formats, color attachment count, blending support, and sampled
-   render-target support.
+5. validate floating-point target formats, color attachment count, blending support, and sampled render-target support.
 
 WBOIT products carry explicit premultiplication and transmittance semantics. WBOIT stays explicit in FramePlan and DRP2 streams and never becomes hidden effect-family runtime knowledge.
 
@@ -91,10 +87,9 @@ Depth peeling relies on:
 6. graph attachment load/store handling;
 7. graph-access-driven ordering and layout transitions.
 
-Runtime validation should reject sampled reads from a texture that is written in the same pass,
-pipeline formats that do not match graph attachments, and mismatched pass dependencies.
+Runtime validation rejects sampled reads from a texture that is written in the same pass, pipeline formats that do not match graph attachments, and mismatched pass dependencies.
 
-Trace diagnostics should expose peel iteration count, typed product versions, technique-instance identity, and sampled dependency ids when `DVZ_DRP2_TRACE=full` is enabled.
+Full trace diagnostics expose typed product versions, technique-instance identity, declared dependencies, and scoped resource identities. Trace normalization is generic: it normalizes declared numeric and scope identifiers without interpreting effect names, pass labels, or resource suffixes.
 
 ## MSAA Contract
 
@@ -107,10 +102,7 @@ The durable split is:
 3. DRP2 and vklite create compatible multisampled targets and pipelines;
 4. visuals that produce analytic coverage may opt into alpha-to-coverage.
 
-MSAA is pass-wide. Triangle mesh edges, primitive edges, and compatible line/path rasterization
-benefit automatically when rendered into a multisampled pass. Shader-generated silhouettes such as
-sphere impostors, markers, glyphs, and future analytic shapes need alpha-to-coverage or another
-sample-aware coverage strategy.
+MSAA is pass-wide. Triangle mesh edges, primitive edges, and compatible line/path rasterization benefit automatically when rendered into a multisampled pass. Shader-generated silhouettes such as sphere impostors, markers, glyphs, and future analytic shapes need alpha-to-coverage or another sample-aware coverage strategy.
 
 Alpha-to-coverage is visual or material specific:
 
@@ -135,7 +127,7 @@ Every product declares its sample domain and resolve policy. Graph texture resou
 9. object IDs select one winning covered sample and are never averaged, interpolated, or normalized-filtered;
 10. ambient visibility is normally evaluated after coherent surface resolve.
 
-Current legacy physical graph shape for a normal scene color pass:
+Physical graph shape for a normal scene color pass:
 
 ```text
 opaque_msaa_color: COLOR_ATTACHMENT, sample_count = N
@@ -160,7 +152,7 @@ DRP2 must carry explicit multisample state:
 4. pipeline creation carries rasterization sample count and alpha-to-coverage enable;
 5. validation rejects mismatched attachment and pipeline sample counts.
 
-The vklite runtime should:
+The vklite runtime must:
 
 1. create multisampled images for graph resources with sample count greater than one;
 2. configure dynamic rendering with resolve image views for color attachments;
@@ -168,8 +160,7 @@ The vklite runtime should:
 4. configure graphics pipelines with the same sample count;
 5. enable alpha-to-coverage only for pipelines whose visual/material descriptor requests it.
 
-Serialization and fixture output should include sample count and resolve attachment ids before
-examples rely on live replay.
+Serialization and fixture output include sample count and resolve attachment ids.
 
 ## Sphere Policy
 
@@ -196,16 +187,6 @@ Focused coverage should include:
 7. alpha-to-coverage pipeline state for opaque sphere impostors;
 8. resize smoke tests for sampled intermediate descriptors.
 
-## Remaining MSAA Pressure
+## Completed MSAA Boundary
 
-The next MSAA slice should keep the work broad enough to avoid a sphere-only path:
-
-1. serialize sample count and resolve attachment ids before example replay depends on them;
-2. validate sample-count compatibility at the FramePlan, DRP2, and pipeline layers;
-3. cover vklite multisampled graph textures and color resolves in focused tests;
-4. gate alpha-to-coverage on runtime capability and visual/material descriptor state;
-5. keep opaque sphere impostors on depth-writing alpha-to-coverage instead of source-over edges;
-6. expose public panel-level state through `DvzMsaaDesc` and `dvz_panel_set_msaa()` only after the
-   graph/runtime contract is proven;
-7. add a GLFW sphere comparison with sample-count controls once diagnostics can show the active
-   sample count and resolve route.
+FramePlan, DRP2, vklite, scene pipelines, and public panel state carry explicit sample counts and resolve targets. `DvzMsaaDesc` and `dvz_panel_set_msaa()` are the public control surface. Product-specific resolve semantics remain mandatory; later visual families may add analytic coverage, but they may not introduce sphere-only multisample ownership or implicit averaging of semantic surface products.

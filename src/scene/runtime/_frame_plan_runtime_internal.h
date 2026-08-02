@@ -123,10 +123,10 @@ struct SceneWorkRuntime
     uint64_t object_id;
     uint64_t accum_id;
     uint64_t transmittance_id;
-    uint64_t occlusion_id;
-    uint64_t denoise_id;
-    uint64_t blur_id;
-    uint64_t composite_input_id;
+    uint64_t raw_visibility_id;
+    uint64_t denoise_intermediate_id;
+    uint64_t denoised_visibility_id;
+    uint64_t visibility_present_input_id;
     uint64_t params_id;
     uint64_t sampler_id;
     uint64_t pipeline_id;
@@ -135,9 +135,9 @@ struct SceneWorkRuntime
     uint64_t ao_bgl_id;
     uint64_t ao_bg_id;
     uint64_t ao_pipeline_id;
-    uint64_t blur_bgl_id;
-    uint64_t blur_bg_ids[2];
-    uint64_t blur_pipeline_ids[2];
+    uint64_t denoise_bgl_id;
+    uint64_t denoise_bg_ids[2];
+    uint64_t denoise_pipeline_ids[2];
     uint64_t ambient_bgl_id;
     uint64_t ambient_bg_id;
     uint64_t composite_bgl_id;
@@ -378,15 +378,15 @@ bool _emitter_prepare_edl_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
     SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
-uint64_t _ssao_bind_group_fingerprint(
+uint64_t _gtao_bind_group_fingerprint(
     uint64_t first_id, uint64_t second_id, uint64_t third_id, uint64_t fourth_id,
     uint64_t sampler_id, uint64_t params_id);
-bool _emitter_prepare_ssao_targets(
+bool _emitter_prepare_gtao_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
     SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
-uint64_t _wboit_bind_group_fingerprint(
-    uint64_t accum_id, uint64_t transmittance_id, uint64_t sampler_id);
+uint64_t
+_wboit_bind_group_fingerprint(uint64_t accum_id, uint64_t transmittance_id, uint64_t sampler_id);
 bool _emitter_prepare_wboit_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,

@@ -773,7 +773,6 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
     DvzFrameGraphPass opaque = {0};
     dvz_strlcpy(opaque.id, "panel0.opaque", sizeof(opaque.id));
     dvz_strlcpy(opaque.panel_id, "panel.0", sizeof(opaque.panel_id));
-    dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
     opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     AT(dvz_frame_graph_pass_color_attachment(&opaque, &rt_clear));
     AT(dvz_frame_graph_pass_depth_attachment(&opaque, &depth_write));
@@ -788,7 +787,6 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
     DvzFrameGraphPass init = {0};
     dvz_strlcpy(init.id, "panel0.peel.init", sizeof(init.id));
     dvz_strlcpy(init.panel_id, "panel.0", sizeof(init.panel_id));
-    dvz_strlcpy(init.work_label, "depth_peel_init", sizeof(init.work_label));
     init.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     for (uint32_t i = 0; i < 3; i++)
     {
@@ -811,7 +809,6 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
         DvzFrameGraphPass iter = {0};
         dvz_snprintf(iter.id, sizeof(iter.id), "panel0.peel.iter.%u", iter_idx);
         dvz_strlcpy(iter.panel_id, "panel.0", sizeof(iter.panel_id));
-        dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
         iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
         AT(dvz_frame_graph_pass_read(&iter, read_depth, DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
         for (uint32_t i = 0; i < 3; i++)
@@ -838,7 +835,6 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
     DvzFrameGraphPass composite = {0};
     dvz_strlcpy(composite.id, "panel0.peel.composite", sizeof(composite.id));
     dvz_strlcpy(composite.panel_id, "panel.0", sizeof(composite.panel_id));
-    dvz_strlcpy(composite.work_label, "depth_peel_composite", sizeof(composite.work_label));
     composite.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     AT(dvz_frame_graph_pass_read(
         &composite, "panel0.peel.front_accum", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));

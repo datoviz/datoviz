@@ -1,6 +1,8 @@
 # Render Products And Technique Composition
 
-Status: **approved for RC3 implementation**. The maintainer approved the complete decision gate on 2026-08-02. Updated: 2026-08-02.
+Status: **promoted historical decision record**. The maintainer approved the complete decision gate on 2026-08-02 and R1-R9 implemented it on `refactor/rc3-render-products`. Updated: 2026-08-02.
+
+This file preserves the approved problem statement, tradeoffs, and migration sequence. It is no longer implementation authority. Current normative behavior lives in [`../../implementation/GRAPH_TECHNIQUES.md`](../../implementation/GRAPH_TECHNIQUES.md), [`../../implementation/OCCLUSION_EFFECTS.md`](../../implementation/OCCLUSION_EFFECTS.md), [`../../implementation/TRANSPARENCY_MSAA.md`](../../implementation/TRANSPARENCY_MSAA.md), [`../../semantics/EFFECTS.md`](../../semantics/EFFECTS.md), and the DRP2 specifications.
 
 This proposal replaces effect-specific scene planning and runtime lowering with a semantic render-product model and a single technique composer. It is deliberately aggressive because v0.4 is still in release-candidate development and API compatibility may be broken to establish a correct long-term boundary.
 

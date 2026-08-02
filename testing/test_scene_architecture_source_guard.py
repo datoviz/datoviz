@@ -87,7 +87,7 @@ def test_panel_render_policy_lives_in_planner() -> None:
     forbidden_panel_policy = (
         "_scene_visual_pass_caps_from_visual(",
         "_scene_technique_gbuffer_enabled(",
-        "_scene_technique_ssao_state(",
+        "_scene_technique_ao_state(",
         "_scene_technique_msaa_state(",
         "_scene_technique_edl_state(",
         "_scene_panel_has_visible_scene_occlusion_target(",
@@ -111,13 +111,17 @@ def test_effects_use_typed_products_without_legacy_scratch_fallbacks() -> None:
         f"{composition} still allocates an effect-specific scratch at {match.start()}"
     )
 
-    assert text.count("pass->legacy_transition = true;") == 1
-    assert text.count("ok = _composition_mark_unrealized(") == 1
-    ambient_unrealized = re.compile(
-        r"pass->legacy_transition\s*=\s*true;\s*"
-        r"ok\s*=\s*_composition_mark_unrealized\("
-        r"pass,\s*in\[DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY\]\);"
+    assert "legacy_transition" not in text
+    assert "_composition_mark_unrealized" not in text
+
+
+def test_runtime_does_not_infer_composition_identity_from_names() -> None:
+    runtime_text = "\n".join(
+        path.read_text(encoding="utf-8") for path in Path("src/scene/runtime").glob("*.c")
     )
-    assert ambient_unrealized.search(text), (
-        "legacy transition/unrealized products must be limited to ambient visibility composition"
+    forbidden_name_comparison = re.compile(
+        r"(?:strcmp|strstr)\s*\([^;\n]*(?:work_label|pipeline_key|shader_key|builtin_variant|suffix)"
     )
+    match = forbidden_name_comparison.search(runtime_text)
+    assert match is None, "runtime still infers typed composition identity from a name"
+    assert "_scene_render_role_work_label" not in runtime_text

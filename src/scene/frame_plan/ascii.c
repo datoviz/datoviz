@@ -656,10 +656,9 @@ static void _ascii_append_compositions(AsciiBuilder* builder, const DvzFramePlan
             _ascii_append(
                 builder,
                 "  work #%" PRIu32 " class=%u provider=%u coordinates=%u samples=%" PRIu32
-                " bindings=%" PRIu32 " legacy=%u\n",
+                " bindings=%" PRIu32 "\n",
                 pass->id.value, (uint32_t)pass->work_class, (uint32_t)pass->provider,
-                (uint32_t)pass->coordinate_space, pass->sample_count, pass->binding_count,
-                pass->legacy_transition ? 1u : 0u);
+                (uint32_t)pass->coordinate_space, pass->sample_count, pass->binding_count);
         }
     }
     if (plan->composition_count > 0)
@@ -847,8 +846,6 @@ static void _ascii_append_pass(
             builder, "composition-pass: #%" PRIu32 "\n", pass->composition_pass_id.value);
     if (pass->panel_id[0] != '\0')
         _ascii_append(builder, "panel: %s\n", pass->panel_id);
-    if (pass->work_label[0] != '\0')
-        _ascii_append(builder, "work: %s\n", pass->work_label);
     if ((flags & DVZ_FRAME_PLAN_ASCII_VERBOSE) != 0)
     {
         _ascii_append(

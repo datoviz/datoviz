@@ -127,7 +127,7 @@ Depth peeling:
 3. retain fixed iteration and ping-pong semantics through product dependencies;
 4. resolve within `transparent_shading` without contributing to or consuming AO in RC3.
 
-SSAO:
+Ambient visibility / GTAO:
 
 1. consume the coherent `surface_depth`, `surface_normal`, and `surface_coverage` record;
 2. run in `surface_analysis` and produce deterministic `ambient_visibility` with declared view-space scale and reconstruction policy;
@@ -206,8 +206,8 @@ Graph-backed techniques still depend on continued hardening of:
    ops, and independent blend.
 
 
-## Migration Boundary
+## Completed Migration Boundary
 
-The current role enums, string resource IDs, effect graph builders, target buckets, and trace normalization remain temporary legacy implementation details only while R1-R9 migrate their consumers. They are not architectural authority and must be deleted by the final migration checkpoint.
+The R1-R9 migration removed role-driven dispatch, effect-name interpretation, effect-family target allocation, resource-suffix identity, duplicate composition paths, and effect-specific trace normalization from the active runtime. Typed products, provider keys, declared graph accesses, explicit attachment state, and generic scoped trace normalization are the only conforming route. Historical shader filenames and private internal type names do not grant semantic authority and may be renamed mechanically without changing the contract.
 
 Temporal products, public technique plugins, user-editable graphs, a full deferred renderer, display HDR/color management, ray tracing, and broad new effects remain outside RC3. Object-ID outlines and bloom may reuse products later but are not promoted by this refactor.

@@ -165,8 +165,8 @@ static bool _composition_scratch_contract_valid(const DvzSceneScratchResource* s
         usage = depth;
         scope = DVZ_SCENE_SCRATCH_SCOPE_PANEL;
         break;
-    case DVZ_SCENE_SCRATCH_SSAO_RAW:
-    case DVZ_SCENE_SCRATCH_SSAO_DENOISE:
+    case DVZ_SCENE_SCRATCH_GTAO_RAW:
+    case DVZ_SCENE_SCRATCH_GTAO_DENOISE:
         format = DVZ_FORMAT_R32_SFLOAT;
         format_class = DVZ_RENDER_PRODUCT_FORMAT_SCALAR_FLOAT;
         usage = color_sampled;
@@ -303,10 +303,6 @@ uint64_t _frame_plan_composition_work_fingerprint(const DvzPanelCompositionSnaps
         HASH32(pass->dispatch_x);
         HASH32(pass->dispatch_y);
         HASH32(pass->dispatch_z);
-        HASH32(pass->legacy_transition);
-        HASH32(pass->unrealized_product_count);
-        for (uint32_t j = 0; j < pass->unrealized_product_count; j++)
-            HASH32(pass->unrealized_product_ids[j].value);
         HASH32(pass->binding_count);
         for (uint32_t j = 0; j < pass->binding_count; j++)
         {
@@ -468,8 +464,7 @@ bool _frame_plan_composition_validate(
             return _composition_report(
                 report, "panel %s technique %u has inconsistent missing capabilities", panel_id,
                 (uint32_t)technique->id);
-        if (expected_missing != 0 &&
-            technique->fallback != DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION)
+        if (expected_missing != 0)
             return _composition_report(
                 report, "panel %s technique %u has no capability fallback", panel_id,
                 (uint32_t)technique->id);
@@ -598,35 +593,10 @@ bool _frame_plan_composition_validate(
         if (pass->work_class <= DVZ_SCENE_WORK_NONE ||
             pass->coordinate_space != DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL ||
             !pass->viewport_panel_local || !pass->scissor_panel_local || pass->sample_count == 0 ||
-            (pass->binding_count == 0 && pass->unrealized_product_count == 0) ||
+            pass->binding_count == 0 ||
             pass->binding_count > DVZ_PANEL_COMPOSITION_MAX_WORK_BINDINGS)
             return _composition_report(
                 report, "panel %s pass %u has invalid declarative work", panel_id, pass->id.value);
-        if (pass->unrealized_product_count > DVZ_PANEL_COMPOSITION_MAX_UNREALIZED_PRODUCTS ||
-            (pass->unrealized_product_count != 0 && !pass->legacy_transition))
-            return _composition_report(
-                report, "panel %s pass %u has unapproved legacy work omission", panel_id,
-                pass->id.value);
-        for (uint32_t k = 0; k < pass->unrealized_product_count; k++)
-        {
-            const DvzRenderProductId id = pass->unrealized_product_ids[k];
-            bool declared = false;
-            for (uint32_t j = 0; j < snapshot->techniques[technique_index].input_count; j++)
-                declared = declared ||
-                           snapshot->techniques[technique_index].input_ids[j].value == id.value;
-            for (uint32_t j = 0; j < snapshot->techniques[technique_index].output_count; j++)
-                declared = declared ||
-                           snapshot->techniques[technique_index].output_ids[j].value == id.value;
-            for (uint32_t j = 0; j < k; j++)
-                if (pass->unrealized_product_ids[j].value == id.value)
-                    return _composition_report(
-                        report, "panel %s pass %u duplicates an unrealized product id", panel_id,
-                        pass->id.value);
-            if (id.value == 0 || !declared)
-                return _composition_report(
-                    report, "panel %s pass %u omits an undeclared product id", panel_id,
-                    pass->id.value);
-        }
         for (uint32_t k = 0; k < pass->binding_count; k++)
         {
             const DvzSceneWorkBinding* binding = &pass->bindings[k];
@@ -756,10 +726,10 @@ bool _frame_plan_composition_validate(
             const DvzSceneAuxiliaryBinding* binding = &pass->auxiliary_bindings[k];
             const bool edl = pass->provider == DVZ_SCENE_WORK_PROVIDER_EDL &&
                              binding->kind == DVZ_SCENE_AUXILIARY_EDL_PARAMS;
-            const bool ssao = (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO ||
-                               pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR) &&
-                              binding->kind == DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
-            if ((!edl && !ssao) || binding->set == UINT32_MAX || binding->binding == UINT32_MAX ||
+            const bool gtao = (pass->provider == DVZ_SCENE_WORK_PROVIDER_GTAO ||
+                               pass->provider == DVZ_SCENE_WORK_PROVIDER_GTAO_DENOISE) &&
+                              binding->kind == DVZ_SCENE_AUXILIARY_GTAO_PARAMS;
+            if ((!edl && !gtao) || binding->set == UINT32_MAX || binding->binding == UINT32_MAX ||
                 binding->byte_size == 0)
                 return _composition_report(
                     report, "panel %s pass %u has an invalid auxiliary binding", panel_id,

@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene app tests                                                                               */
+/*  Scene app tests */
 /*************************************************************************************************/
 
 
@@ -24,29 +24,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../../app/_app.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
 #include "_scene.h"
 #include "_technique.h"
-#include "../../app/_app.h"
 #include "controller_internal.h"
-#include "domain/field_internal.h"
 #include "datoviz/app.h"
 #include "datoviz/app_interop.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2.h"
 #include "datoviz/ffi.h"
 #include "datoviz/scene.h"
-#include "text/internal.h"
-#include "text/text_internal.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
 #include "datoviz/window/backend.h"
+#include "domain/field_internal.h"
 #include "helpers.h"
 #include "test_scene.h"
 #include "testing.h"
+#include "text/internal.h"
+#include "text/text_internal.h"
 
 
 
@@ -65,12 +65,12 @@
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = (resource_flags);                                                   \
         _tst_desc.isolation = (isolation_mode);                                                   \
-        _tst_desc.fixture = ((resource_flags) & (TST_RES_GPU | TST_RES_VULKAN)) != 0             \
+        _tst_desc.fixture = ((resource_flags) & (TST_RES_GPU | TST_RES_VULKAN)) != 0              \
                                 ? TST_SCENE_APP_GPU_FIXTURE                                       \
                                 : NULL;                                                           \
         _tst_desc.fixture_scope = ((resource_flags) & (TST_RES_GPU | TST_RES_VULKAN)) != 0        \
-                                      ? TST_FIXTURE_SCOPE_PROCESS                                  \
-                                      : TST_FIXTURE_SCOPE_NONE;                                    \
+                                      ? TST_FIXTURE_SCOPE_PROCESS                                 \
+                                      : TST_FIXTURE_SCOPE_NONE;                                   \
         _tst_desc.run_flags = ((resource_flags) & (TST_RES_GPU | TST_RES_VULKAN)) != 0            \
                                   ? TST_RUN_CASE_ADAPTER_SUPPORTED                                \
                                   : TST_RUN_CASE_NONE;                                            \
@@ -87,19 +87,20 @@
         _tst_desc.fixture = TST_SCENE_APP_GPU_FIXTURE;                                            \
         _tst_desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;                                      \
         _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_SUPPORTED;                                     \
-        _tst_desc.setup = _app_gpu_validation_setup;                                               \
+        _tst_desc.setup = _app_gpu_validation_setup;                                              \
         _tst_desc.teardown = _app_gpu_validation_teardown;                                        \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
-#define TST_SCENE_APP_EXEMPT_CASE(test, resource_flags, isolation_mode)                          \
+#define TST_SCENE_APP_EXEMPT_CASE(test, resource_flags, isolation_mode)                           \
     do                                                                                            \
     {                                                                                             \
         TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
         _tst_desc.tags = tags;                                                                    \
         _tst_desc.resources = (resource_flags);                                                   \
         _tst_desc.isolation = (isolation_mode);                                                   \
-        /* External GLFW surface setup owns its extension/configuration identity independently. */ \
+        /* External GLFW surface setup owns its extension/configuration identity independently.   \
+         */                                                                                       \
         _tst_desc.run_flags = TST_RUN_CASE_ADAPTER_EXEMPT;                                        \
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
@@ -113,7 +114,6 @@
             return 0;                                                                             \
         }                                                                                         \
     } while (0)
-
 
 
 
@@ -615,7 +615,9 @@ static void _app_log_capture_from_suite(TstContext* suite, AppLogCapture* captur
             strstr(record->message, "DRP2 sampled bind group misses graph read resource") != NULL;
         capture->contract_validation_failed =
             capture->contract_validation_failed ||
-            strstr(record->message, "emitted runtime DRP2 stream failed scene contract validation") != NULL;
+            strstr(
+                record->message, "emitted runtime DRP2 stream failed scene contract validation") !=
+                NULL;
     }
 }
 
@@ -664,7 +666,8 @@ static AppAoQuad _app_ao_add_quad(
 
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -706,27 +709,22 @@ static bool _app_ao_add_test_geometry(DvzScene* scene, DvzPanel* panel)
         return false;
 
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
-    if (sphere == NULL ||
-        dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != DVZ_OK)
+    if (sphere == NULL || dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) != DVZ_OK)
         return false;
 
     vec3 positions[5] = {
-        {-0.48f, +0.12f, +0.02f},
-        {+0.12f, -0.10f, +0.04f},
-        {+0.30f, -0.04f, +0.06f},
-        {+0.20f, +0.16f, +0.08f},
-        {+0.36f, +0.18f, +0.05f},
+        {-0.48f, +0.12f, +0.02f}, {+0.12f, -0.10f, +0.04f}, {+0.30f, -0.04f, +0.06f},
+        {+0.20f, +0.16f, +0.08f}, {+0.36f, +0.18f, +0.05f},
     };
     DvzColor colors[5] = {
         {230, 100, 82, 255}, {86, 195, 128, 255}, {88, 135, 230, 255},
         {235, 195, 78, 255}, {185, 95, 222, 255},
     };
     float radii[5] = {0.18f, 0.23f, 0.22f, 0.20f, 0.19f};
-    return
-        dvz_visual_set_data(sphere, "position", positions, 5) == DVZ_OK &&
-        dvz_visual_set_data(sphere, "color", colors, 5) == DVZ_OK &&
-        dvz_visual_set_data(sphere, "radius", radii, 5) == DVZ_OK &&
-        dvz_panel_add_visual(panel, sphere, NULL) == DVZ_OK;
+    return dvz_visual_set_data(sphere, "position", positions, 5) == DVZ_OK &&
+           dvz_visual_set_data(sphere, "color", colors, 5) == DVZ_OK &&
+           dvz_visual_set_data(sphere, "radius", radii, 5) == DVZ_OK &&
+           dvz_panel_add_visual(panel, sphere, NULL) == DVZ_OK;
 }
 
 
@@ -740,8 +738,8 @@ static bool _app_ao_add_test_geometry(DvzScene* scene, DvzPanel* panel)
  * @param out_rgba output owned RGBA pixels
  * @return whether capture succeeded
  */
-static bool _app_ao_capture(
-    DvzCanvas* canvas, uint32_t* out_width, uint32_t* out_height, uint8_t** out_rgba)
+static bool
+_app_ao_capture(DvzCanvas* canvas, uint32_t* out_width, uint32_t* out_height, uint8_t** out_rgba)
 {
     ANN(canvas);
     ANN(out_width);
@@ -783,8 +781,7 @@ static bool _app_ao_render_frames(DvzView* view, uint32_t frame_count)
  * @param pixel_count number of pixels
  * @return visibility distribution metrics
  */
-static AppAoFrameMetrics
-_app_ao_frame_metrics(const uint8_t* rgba, uint32_t pixel_count)
+static AppAoFrameMetrics _app_ao_frame_metrics(const uint8_t* rgba, uint32_t pixel_count)
 {
     ANN(rgba);
     ASSERT(pixel_count > 0);
@@ -801,8 +798,7 @@ _app_ao_frame_metrics(const uint8_t* rgba, uint32_t pixel_count)
         sum += value;
         if (value < 13)
             out.dark_count++;
-        if (abs((int)pixel[0] - (int)pixel[1]) > 1 ||
-            abs((int)pixel[0] - (int)pixel[2]) > 1)
+        if (abs((int)pixel[0] - (int)pixel[1]) > 1 || abs((int)pixel[0] - (int)pixel[2]) > 1)
             out.nongray_count++;
     }
     out.mean = (double)sum / (double)pixel_count;
@@ -837,8 +833,7 @@ _app_ao_frame_metrics(const uint8_t* rgba, uint32_t pixel_count)
 
 
 /** Return whether all four capture corners carry valid unoccluded debug visibility. */
-static bool _app_ao_background_corners_valid(
-    const uint8_t* rgba, uint32_t width, uint32_t height)
+static bool _app_ao_background_corners_valid(const uint8_t* rgba, uint32_t width, uint32_t height)
 {
     ANN(rgba);
     if (width == 0 || height == 0)
@@ -848,8 +843,7 @@ static bool _app_ao_background_corners_valid(
     {
         const uint8_t* pixel = &rgba[4 * indices[i]];
         if (pixel[0] < 254 || pixel[1] < 254 || pixel[2] < 254 ||
-            abs((int)pixel[0] - (int)pixel[1]) > 1 ||
-            abs((int)pixel[0] - (int)pixel[2]) > 1)
+            abs((int)pixel[0] - (int)pixel[1]) > 1 || abs((int)pixel[0] - (int)pixel[2]) > 1)
             return false;
     }
     return true;
@@ -966,8 +960,7 @@ _app_ao_metrics(const uint8_t* baseline, const uint8_t* ao, uint32_t width, uint
  * @param pixel_count number of RGBA pixels
  * @return compact delta metrics
  */
-static AppAoMetrics
-_app_ao_delta_metrics(const uint8_t* a, const uint8_t* b, uint32_t pixel_count)
+static AppAoMetrics _app_ao_delta_metrics(const uint8_t* a, const uint8_t* b, uint32_t pixel_count)
 {
     ANN(a);
     ANN(b);
@@ -977,8 +970,7 @@ _app_ao_delta_metrics(const uint8_t* a, const uint8_t* b, uint32_t pixel_count)
         uint32_t pixel_delta = 0;
         for (uint32_t channel = 0; channel < 4; channel++)
         {
-            uint32_t delta =
-                (uint32_t)abs((int)a[4 * i + channel] - (int)b[4 * i + channel]);
+            uint32_t delta = (uint32_t)abs((int)a[4 * i + channel] - (int)b[4 * i + channel]);
             if (delta > pixel_delta)
                 pixel_delta = delta;
         }
@@ -1013,9 +1005,8 @@ static AppAoMetrics _app_ao_region_delta_metrics(
     AppAoMetrics out = {0};
     for (uint32_t row = 0; row < rect_height; row++)
     {
-        AppAoMetrics row_metrics =
-            _app_ao_delta_metrics(&a[4 * ((y + row) * width + x)],
-                                    &b[4 * ((y + row) * width + x)], rect_width);
+        AppAoMetrics row_metrics = _app_ao_delta_metrics(
+            &a[4 * ((y + row) * width + x)], &b[4 * ((y + row) * width + x)], rect_width);
         out.changed_count += row_metrics.changed_count;
         if (row_metrics.max_delta > out.max_delta)
             out.max_delta = row_metrics.max_delta;
@@ -1037,8 +1028,8 @@ static AppAoMetrics _app_ao_region_delta_metrics(
  * @return compact outside-region delta metrics
  */
 static AppAoMetrics _app_ao_outside_delta_metrics(
-    const uint8_t* a, const uint8_t* b, uint32_t width, uint32_t height,
-    const uint32_t first[4], const uint32_t second[4])
+    const uint8_t* a, const uint8_t* b, uint32_t width, uint32_t height, const uint32_t first[4],
+    const uint32_t second[4])
 {
     ANN(a);
     ANN(b);
@@ -1049,20 +1040,17 @@ static AppAoMetrics _app_ao_outside_delta_metrics(
     {
         for (uint32_t x = 0; x < width; x++)
         {
-            bool in_first =
-                x >= first[0] && x < first[0] + first[2] && y >= first[1] &&
-                y < first[1] + first[3];
-            bool in_second =
-                x >= second[0] && x < second[0] + second[2] && y >= second[1] &&
-                y < second[1] + second[3];
+            bool in_first = x >= first[0] && x < first[0] + first[2] && y >= first[1] &&
+                            y < first[1] + first[3];
+            bool in_second = x >= second[0] && x < second[0] + second[2] && y >= second[1] &&
+                             y < second[1] + second[3];
             if (in_first || in_second)
                 continue;
             const uint8_t* pixel_a = &a[4 * (y * width + x)];
             const uint8_t* pixel_b = &b[4 * (y * width + x)];
             for (uint32_t channel = 0; channel < 4; channel++)
             {
-                uint32_t delta =
-                    (uint32_t)abs((int)pixel_a[channel] - (int)pixel_b[channel]);
+                uint32_t delta = (uint32_t)abs((int)pixel_a[channel] - (int)pixel_b[channel]);
                 if (delta > out.max_delta)
                     out.max_delta = delta;
                 if (delta > 1)
@@ -1086,8 +1074,7 @@ static AppAoMetrics _app_ao_outside_delta_metrics(
  * @param color per-vertex color
  * @return created visual, or NULL on failure
  */
-static DvzVisual*
-_app_wboit_add_layer(DvzScene* scene, DvzPanel* panel, DvzColor color)
+static DvzVisual* _app_wboit_add_layer(DvzScene* scene, DvzPanel* panel, DvzColor color)
 {
     ANN(scene);
     ANN(panel);
@@ -1143,12 +1130,8 @@ static DvzVisual* _app_primitive_add_quad(
         return NULL;
 
     vec3 positions[6] = {
-        {xmin, ymin, z},
-        {xmax, ymin, z},
-        {xmin, ymax, z},
-        {xmax, ymin, z},
-        {xmax, ymax, z},
-        {xmin, ymax, z},
+        {xmin, ymin, z}, {xmax, ymin, z}, {xmin, ymax, z},
+        {xmax, ymin, z}, {xmax, ymax, z}, {xmin, ymax, z},
     };
     DvzColor colors[6] = {0};
     for (uint32_t i = 0; i < 6; i++)
@@ -1211,14 +1194,14 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
         dvz_scene_destroy(scene);
         return out;
     }
-    if (scene_occlusion_enabled &&
-        dvz_panel_set_scene_occlusion(
-            panel, &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
-                       .enabled = true,
-                       .depth_bias = 0.0f,
-                       .soft_edge = 0.001f,
-                       .hidden_alpha = 0.05f,
-                   }) != 0)
+    if (scene_occlusion_enabled && dvz_panel_set_scene_occlusion(
+                                       panel, &(DvzSceneOcclusionDesc){
+                                                  DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
+                                                  .enabled = true,
+                                                  .depth_bias = 0.0f,
+                                                  .soft_edge = 0.001f,
+                                                  .hidden_alpha = 0.05f,
+                                              }) != 0)
     {
         dvz_scene_destroy(scene);
         return out;
@@ -1316,12 +1299,10 @@ static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse
 
     DvzColor red = {255, 0, 0, 128};
     DvzColor blue = {0, 0, 255, 128};
-    DvzVisual* first =
-        reverse_order ? _app_wboit_add_layer(scene, panel, blue) :
-                        _app_wboit_add_layer(scene, panel, red);
-    DvzVisual* second =
-        reverse_order ? _app_wboit_add_layer(scene, panel, red) :
-                        _app_wboit_add_layer(scene, panel, blue);
+    DvzVisual* first = reverse_order ? _app_wboit_add_layer(scene, panel, blue)
+                                     : _app_wboit_add_layer(scene, panel, red);
+    DvzVisual* second = reverse_order ? _app_wboit_add_layer(scene, panel, red)
+                                      : _app_wboit_add_layer(scene, panel, blue);
     if (first == NULL || second == NULL)
     {
         dvz_scene_destroy(scene);
@@ -1497,8 +1478,7 @@ static uint32_t _app_yellow_count_in_rows(
         for (uint32_t x = 0; x < width; x++)
         {
             const uint8_t* px = _pixel_at(rgba, width, height, x, y);
-            if (px[0] > 70 && px[1] > 60 && px[2] < 70 && px[0] > px[2] + 35 &&
-                px[1] > px[2] + 25)
+            if (px[0] > 70 && px[1] > 60 && px[2] < 70 && px[0] > px[2] + 35 && px[1] > px[2] + 25)
                 count++;
         }
     }
@@ -1672,12 +1652,8 @@ _app_edl_point_capture(TstContext* suite, bool enabled, float near_clip, float s
         return out;
     }
     vec3 positions[6] = {
-        {-0.24f, -0.18f, -0.30f},
-        {+0.18f, -0.12f, +0.10f},
-        {-0.05f, +0.18f, +0.36f},
-        {+0.23f, +0.22f, -0.38f},
-        {-0.30f, +0.16f, +0.08f},
-        {+0.04f, -0.30f, +0.42f},
+        {-0.24f, -0.18f, -0.30f}, {+0.18f, -0.12f, +0.10f}, {-0.05f, +0.18f, +0.36f},
+        {+0.23f, +0.22f, -0.38f}, {-0.30f, +0.16f, +0.08f}, {+0.04f, -0.30f, +0.42f},
     };
     DvzColor colors[6] = {
         {255, 90, 80, 255},  {80, 220, 130, 255}, {80, 140, 255, 255},
@@ -2102,8 +2078,10 @@ int test_app_offscreen_small_view_clamps_layout(TstContext* suite, const TstCase
     DvzPanel* panel = dvz_grid_panel(grid, 0, 0);
     AT(panel != NULL);
     AT(dvz_panel_set_reserve(
-        panel, &(DvzPanelReserve){.left_px = 140.0f, .right_px = 80.0f, .bottom_px = 90.0f,
-                                        .top_px = 45.0f}) == DVZ_OK);
+           panel,
+           &(DvzPanelReserve){
+               .left_px = 140.0f, .right_px = 80.0f, .bottom_px = 90.0f, .top_px = 45.0f}) ==
+       DVZ_OK);
 
     DvzVisual* visual = dvz_point(scene, 0);
     AT(visual != NULL);
@@ -2118,7 +2096,8 @@ int test_app_offscreen_small_view_clamps_layout(TstContext* suite, const TstCase
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_small_view_clamps_layout skipped: GPU context creation failed");
+        log_warn(
+            "test_app_offscreen_small_view_clamps_layout skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -2194,8 +2173,7 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel =
-        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* visual = dvz_point(scene, 0);
@@ -2389,8 +2367,7 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel =
-        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* points = dvz_point(scene, 0);
@@ -2428,14 +2405,16 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(_scene_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
-    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, image,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) ==
+       0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_query_requests_notify_hosted_callback skipped: GPU context "
-            "failed");
+        log_warn("test_app_offscreen_query_requests_notify_hosted_callback skipped: GPU context "
+                 "failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -2450,12 +2429,16 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     AppRequestFrameProbe request_probe = {0};
     dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
 
-    AT(dvz_panel_query_px(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
+    AT(dvz_panel_query_px(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
     AT(_dvz_view_scheduler_should_render(win, false, 0));
 
-    AT(dvz_panel_query_px(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
+    AT(dvz_panel_query_px(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
     AT(_dvz_view_scheduler_should_render(win, false, 0));
@@ -2485,16 +2468,14 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel =
-        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzApp* app1 = _app_test_create(suite, scene);
     if (app1 == NULL)
     {
-        log_warn(
-            "test_app_offscreen_shared_scene_request_frame_subscribers skipped: GPU context "
-            "failed");
+        log_warn("test_app_offscreen_shared_scene_request_frame_subscribers skipped: GPU context "
+                 "failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -2529,9 +2510,8 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     DvzApp* app2 = dvz_app_with_resources(scene, &config2, &resources2);
     if (app2 == NULL)
     {
-        log_warn(
-            "test_app_offscreen_shared_scene_request_frame_subscribers skipped: second GPU "
-            "context failed");
+        log_warn("test_app_offscreen_shared_scene_request_frame_subscribers skipped: second GPU "
+                 "context failed");
         tst_skip(suite, "second GPU context failed");
         dvz_app_destroy(app1);
         dvz_gpu_ctx_destroy(gpu_ctx2);
@@ -2546,14 +2526,18 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
     dvz_view_set_request_frame_callback(win1, _app_request_frame_probe_callback, &probe1);
     dvz_view_set_request_frame_callback(win2, _app_request_frame_probe_callback, &probe2);
 
-    AT(dvz_panel_query_px(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
+    AT(dvz_panel_query_px(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
     AT(probe1.calls == 1);
     AT(probe1.last_window == win1);
     AT(probe2.calls == 1);
     AT(probe2.last_window == win2);
 
     dvz_app_destroy(app1);
-    AT(dvz_panel_query_px(panel, 32.0, 32.0, &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
+    AT(dvz_panel_query_px(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
     AT(probe1.calls == 1);
     AT(probe2.calls == 2);
     AT(probe2.last_window == win2);
@@ -2573,8 +2557,7 @@ int test_app_offscreen_shared_scene_request_frame_subscribers(
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_reopen_same_scene_first_frame(
-    TstContext* suite, const TstCase* item)
+int test_app_offscreen_reopen_same_scene_first_frame(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2585,8 +2568,7 @@ int test_app_offscreen_reopen_same_scene_first_frame(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel =
-        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, (DvzColor){32, 160, 224, 255});
 
@@ -2652,7 +2634,8 @@ int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCas
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_timer_advances_in_app_run skipped: GPU context creation failed");
+        log_warn(
+            "test_app_offscreen_timer_advances_in_app_run skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -2700,8 +2683,8 @@ int test_app_offscreen_timer_advances_in_render_once(TstContext* suite, const Ts
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_timer_advances_in_render_once skipped: GPU context creation failed");
+        log_warn("test_app_offscreen_timer_advances_in_render_once skipped: GPU context creation "
+                 "failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -2854,7 +2837,8 @@ int test_view_connects_prebound_panel_controller(TstContext* suite, const TstCas
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_view_connects_prebound_panel_controller skipped: GPU context creation failed");
+        log_warn(
+            "test_view_connects_prebound_panel_controller skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -2988,25 +2972,25 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const Ts
 
     /* Three non-overlapping points: red (left), green (center), blue (right). */
     float pos_r[3] = {-0.6f, 0.0f, 0.0f};
-    float pos_g[3] = { 0.0f, 0.0f, 0.0f};
-    float pos_b[3] = { 0.6f, 0.0f, 0.0f};
-    DvzColor red   = {220, 20, 20, 255};
+    float pos_g[3] = {0.0f, 0.0f, 0.0f};
+    float pos_b[3] = {0.6f, 0.0f, 0.0f};
+    DvzColor red = {220, 20, 20, 255};
     DvzColor green = {20, 220, 20, 255};
-    DvzColor blue  = {20, 20, 220, 255};
+    DvzColor blue = {20, 20, 220, 255};
     float size = 10.0f;
 
     DvzVisual* vr = dvz_point(scene, 0);
     DvzVisual* vg = dvz_point(scene, 0);
     DvzVisual* vb = dvz_point(scene, 0);
     AT(dvz_visual_set_data(vr, "position", pos_r, 1) == 0);
-    AT(dvz_visual_set_data(vr, "color",    &red,  1) == 0);
-    AT(dvz_visual_set_data(vr, "size",     &size, 1) == 0);
+    AT(dvz_visual_set_data(vr, "color", &red, 1) == 0);
+    AT(dvz_visual_set_data(vr, "size", &size, 1) == 0);
     AT(dvz_visual_set_data(vg, "position", pos_g, 1) == 0);
-    AT(dvz_visual_set_data(vg, "color",    &green, 1) == 0);
-    AT(dvz_visual_set_data(vg, "size",     &size, 1) == 0);
+    AT(dvz_visual_set_data(vg, "color", &green, 1) == 0);
+    AT(dvz_visual_set_data(vg, "size", &size, 1) == 0);
     AT(dvz_visual_set_data(vb, "position", pos_b, 1) == 0);
-    AT(dvz_visual_set_data(vb, "color",    &blue, 1) == 0);
-    AT(dvz_visual_set_data(vb, "size",     &size, 1) == 0);
+    AT(dvz_visual_set_data(vb, "color", &blue, 1) == 0);
+    AT(dvz_visual_set_data(vb, "size", &size, 1) == 0);
     AT(dvz_panel_add_visual(panel, vr, NULL) == 0);
     AT(dvz_panel_add_visual(panel, vg, NULL) == 0);
     AT(dvz_panel_add_visual(panel, vb, NULL) == 0);
@@ -3014,7 +2998,8 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const Ts
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_panel_three_visuals_all_drawn skipped: GPU context creation failed");
+        log_warn("test_app_offscreen_panel_three_visuals_all_drawn skipped: GPU context creation "
+                 "failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -3167,17 +3152,17 @@ int test_app_offscreen_point_depth_cue_darkens_far(TstContext* suite, const TstC
     AT(dvz_visual_set_data(visual, "color", colors, 2) == 0);
     AT(dvz_visual_set_data(visual, "size", sizes, 2) == 0);
     AT(dvz_visual_set_depth_cue(
-           visual,
-           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
-               .mode = DVZ_DEPTH_CUE_DARKEN,
-               .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
-               .falloff = DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL,
-               .near_depth = 0.50f,
-               .far_depth = 1.0f,
-               .strength = 1.0f,
-               .density = 3.0f,
-               .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
-           }) == 0);
+           visual, &(DvzDepthCueDesc){
+                       DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
+                       .mode = DVZ_DEPTH_CUE_DARKEN,
+                       .metric = DVZ_DEPTH_CUE_METRIC_EYE_DISTANCE,
+                       .falloff = DVZ_DEPTH_CUE_FALLOFF_EXPONENTIAL,
+                       .near_depth = 0.50f,
+                       .far_depth = 1.0f,
+                       .strength = 1.0f,
+                       .density = 3.0f,
+                       .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+                   }) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
@@ -3284,8 +3269,7 @@ int test_app_offscreen_point_default_edge_has_fractional_pixels(
             const uint8_t* px = _pixel_at(rgba, width, height, x, y);
             if (px[0] > 240 && px[1] > 240 && px[2] > 240)
                 bright_count++;
-            if (
-                px[0] > 8 && px[0] < 240 && abs((int)px[0] - (int)px[1]) <= 3 &&
+            if (px[0] > 8 && px[0] < 240 && abs((int)px[0] - (int)px[1]) <= 3 &&
                 abs((int)px[0] - (int)px[2]) <= 3)
                 fractional_count++;
         }
@@ -3465,7 +3449,8 @@ static void _app_red_dominant_pixel_stats(
             if (px[0] > 80 && px[0] > px[1] + 40 && px[0] > px[2] + 40)
             {
                 count++;
-                signature += (uint64_t)(x + 1u) * 1315423911ull + (uint64_t)(y + 1u) * 2654435761ull;
+                signature +=
+                    (uint64_t)(x + 1u) * 1315423911ull + (uint64_t)(y + 1u) * 2654435761ull;
             }
         }
     }
@@ -3503,18 +3488,11 @@ static int _app_render_path_join_stats(
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
     vec3 positions[5] = {
-        {-0.82f, -0.56f, 0.0f},
-        {-0.30f, 0.48f, 0.0f},
-        {0.0f, -0.54f, 0.0f},
-        {0.30f, 0.48f, 0.0f},
-        {0.82f, -0.56f, 0.0f},
+        {-0.82f, -0.56f, 0.0f}, {-0.30f, 0.48f, 0.0f}, {0.0f, -0.54f, 0.0f},
+        {0.30f, 0.48f, 0.0f},   {0.82f, -0.56f, 0.0f},
     };
     DvzColor colors[5] = {
-        {255, 0, 0, 255},
-        {255, 0, 0, 255},
-        {255, 0, 0, 255},
-        {255, 0, 0, 255},
-        {255, 0, 0, 255},
+        {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255}, {255, 0, 0, 255},
     };
     float widths[5] = {26.0f, 26.0f, 26.0f, 26.0f, 26.0f};
     AT(dvz_visual_set_data(visual, "position", positions, 5) == 0);
@@ -3749,7 +3727,8 @@ int test_app_offscreen_pixel_square_has_nonblank_pixels(TstContext* suite, const
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_pixel_square_has_nonblank_pixels skipped: GPU context failed");
+        log_warn(
+            "test_app_offscreen_pixel_square_has_nonblank_pixels skipped: GPU context failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -3830,7 +3809,9 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 65.0f, .depth_scale = 1.0f}) == DVZ_OK);
+           panel, &(DvzEdlDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 65.0f,
+                      .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -3940,8 +3921,7 @@ int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCas
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_points_edl_strength_changes_pixels(
-    TstContext* suite, const TstCase* item)
+int test_app_offscreen_points_edl_strength_changes_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -4032,10 +4012,9 @@ int test_app_offscreen_points_edl_projection_stable(TstContext* suite, const Tst
     {
         const uint8_t* a = &near_a.rgba[4 * i];
         const uint8_t* b = &near_b.rgba[4 * i];
-        uint32_t difference =
-            (uint32_t)abs((int)a[0] - (int)b[0]) +
-            (uint32_t)abs((int)a[1] - (int)b[1]) +
-            (uint32_t)abs((int)a[2] - (int)b[2]);
+        uint32_t difference = (uint32_t)abs((int)a[0] - (int)b[0]) +
+                              (uint32_t)abs((int)a[1] - (int)b[1]) +
+                              (uint32_t)abs((int)a[2] - (int)b[2]);
         total_difference += difference;
         if (difference > 3)
             changed_count++;
@@ -4133,8 +4112,7 @@ int test_app_offscreen_mesh_ao_affects_ambient_lighting(TstContext* suite, const
             changed_count++;
         if (lum0 > 80 && lum1 + 6 < lum0)
             darkened_count++;
-        if (lum0 != lum1 &&
-            (abs((int)b[0] - (int)b[1]) > 8 || abs((int)b[1] - (int)b[2]) > 8))
+        if (lum0 != lum1 && (abs((int)b[0] - (int)b[1]) > 8 || abs((int)b[1] - (int)b[2]) > 8))
             colored_changed_count++;
     }
     AT(changed_count > 0);
@@ -4308,8 +4286,7 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_gtao_projection_zoom_stability skipped: GPU context failed");
+        log_warn("test_app_offscreen_gtao_projection_zoom_stability skipped: GPU context failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -4325,8 +4302,8 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     AT(_app_ao_capture(canvas, &width, &height, &baseline));
     AT(width == 112 && height == 88);
 
-    DvzAoDesc ssao = _app_gtao_desc(true);
-    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
+    DvzAoDesc gtao = _app_gtao_desc(true);
+    AT(dvz_panel_set_ao(panel, &gtao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t ao_width = 0, ao_height = 0;
     uint8_t* ao = NULL;
@@ -4368,15 +4345,14 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
         uint8_t* reference = NULL;
         AT(_app_ao_capture(canvas, &reference_width, &reference_height, &reference));
         AT(reference_width == width && reference_height == height);
-        AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
+        AT(dvz_panel_set_ao(panel, &gtao) == DVZ_OK);
         AT(_app_ao_render_frames(win, 2));
         uint32_t frame_width = 0, frame_height = 0;
         uint8_t* frame = NULL;
         AT(_app_ao_capture(canvas, &frame_width, &frame_height, &frame));
         AT(frame_width == width && frame_height == height);
         AT(_app_rgb_sum(frame, pixel_count) > 0);
-        AppAoMetrics zoom_response =
-            _app_ao_metrics(reference, frame, width, height);
+        AppAoMetrics zoom_response = _app_ao_metrics(reference, frame, width, height);
         AT(zoom_response.foreground_count > 0);
         AT(zoom_response.response_count > 0);
         AT(zoom_response.dark_background_count == 0);
@@ -4410,7 +4386,7 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
         canvas, &orthographic_reference_width, &orthographic_reference_height,
         &orthographic_reference));
     AT(orthographic_reference_width == width && orthographic_reference_height == height);
-    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, &gtao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t orthographic_width = 0, orthographic_height = 0;
     uint8_t* orthographic_rgba = NULL;
@@ -4422,13 +4398,12 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     AT(orthographic_response.foreground_count > 0);
     AT(orthographic_response.response_count > 0);
     AT(orthographic_response.dark_background_count == 0);
-    AppAoFrameMetrics orthographic_metrics =
-        _app_ao_frame_metrics(orthographic_rgba, pixel_count);
+    AppAoFrameMetrics orthographic_metrics = _app_ao_frame_metrics(orthographic_rgba, pixel_count);
     AT(orthographic_metrics.nongray_count == 0);
     AT(_app_ao_background_corners_valid(orthographic_rgba, width, height));
     _app_ao_log_frame_metrics(
-        "orthographic", orthographic_rgba, orthographic_width, orthographic_height,
-        "orthographic", orthographic.projection.ortho_height, 1);
+        "orthographic", orthographic_rgba, orthographic_width, orthographic_height, "orthographic",
+        orthographic.projection.ortho_height, 1);
     dvz_free(orthographic_rgba);
     dvz_free(orthographic_reference);
 
@@ -4441,10 +4416,9 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     AT(_app_ao_render_frames(win, 2));
     uint32_t msaa1_reference_width = 0, msaa1_reference_height = 0;
     uint8_t* msaa1_reference = NULL;
-    AT(_app_ao_capture(
-        canvas, &msaa1_reference_width, &msaa1_reference_height, &msaa1_reference));
+    AT(_app_ao_capture(canvas, &msaa1_reference_width, &msaa1_reference_height, &msaa1_reference));
     AT(msaa1_reference_width == width && msaa1_reference_height == height);
-    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, &gtao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t msaa1_width = 0, msaa1_height = 0;
     uint8_t* msaa1 = NULL;
@@ -4454,8 +4428,7 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     AppAoFrameMetrics msaa1_metrics = _app_ao_frame_metrics(msaa1, pixel_count);
     AT(msaa1_metrics.nongray_count == 0);
     AT(_app_ao_background_corners_valid(msaa1, width, height));
-    AppAoMetrics msaa1_response =
-        _app_ao_metrics(msaa1_reference, msaa1, width, height);
+    AppAoMetrics msaa1_response = _app_ao_metrics(msaa1_reference, msaa1, width, height);
     AT(msaa1_response.response_count > 0);
     AT(msaa1_response.dark_background_count == 0);
     _app_ao_log_frame_metrics(
@@ -4468,10 +4441,9 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     AT(_app_ao_render_frames(win, 2));
     uint32_t msaa4_reference_width = 0, msaa4_reference_height = 0;
     uint8_t* msaa4_reference = NULL;
-    AT(_app_ao_capture(
-        canvas, &msaa4_reference_width, &msaa4_reference_height, &msaa4_reference));
+    AT(_app_ao_capture(canvas, &msaa4_reference_width, &msaa4_reference_height, &msaa4_reference));
     AT(msaa4_reference_width == width && msaa4_reference_height == height);
-    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, &gtao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t msaa4_width = 0, msaa4_height = 0;
     uint8_t* msaa4_rgba = NULL;
@@ -4481,16 +4453,15 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     AppAoFrameMetrics msaa4_metrics = _app_ao_frame_metrics(msaa4_rgba, pixel_count);
     AT(msaa4_metrics.nongray_count == 0);
     AT(_app_ao_background_corners_valid(msaa4_rgba, width, height));
-    AppAoMetrics msaa4_response =
-        _app_ao_metrics(msaa4_reference, msaa4_rgba, width, height);
+    AppAoMetrics msaa4_response = _app_ao_metrics(msaa4_reference, msaa4_rgba, width, height);
     AT(msaa4_response.response_count > 0);
     AT(msaa4_response.dark_background_count == 0);
     _app_ao_log_frame_metrics(
         "msaa-4x", msaa4_rgba, msaa4_width, msaa4_height, "perspective", 0.75f, 4);
     AppAoMetrics msaa_delta = _app_ao_delta_metrics(msaa1, msaa4_rgba, pixel_count);
     log_info(
-        "GTAO pair=msaa-1x-4x max_delta=%u changed=%u pixels=%u",
-        msaa_delta.max_delta, msaa_delta.changed_count, pixel_count);
+        "GTAO pair=msaa-1x-4x max_delta=%u changed=%u pixels=%u", msaa_delta.max_delta,
+        msaa_delta.changed_count, pixel_count);
     dvz_free(msaa4_rgba);
     dvz_free(msaa4_reference);
     dvz_free(msaa1);
@@ -4544,8 +4515,7 @@ int test_app_offscreen_gtao_panel_locality(TstContext* suite, const TstCase* ite
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_gtao_panel_locality skipped: GPU context failed");
+        log_warn("test_app_offscreen_gtao_panel_locality skipped: GPU context failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -4561,16 +4531,15 @@ int test_app_offscreen_gtao_panel_locality(TstContext* suite, const TstCase* ite
     AT(_app_ao_capture(canvas, &width, &height, &baseline));
     AT(width == 128 && height == 96);
 
-    DvzAoDesc ssao = _app_gtao_desc(true);
-    AT(dvz_panel_set_ao(left, &ssao) == DVZ_OK);
+    DvzAoDesc gtao = _app_gtao_desc(true);
+    AT(dvz_panel_set_ao(left, &gtao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t ao_width = 0, ao_height = 0;
     uint8_t* ao = NULL;
     AT(_app_ao_capture(canvas, &ao_width, &ao_height, &ao));
     AT(ao_width == width && ao_height == height);
 
-    AppAoMetrics response =
-        _app_ao_region_metrics(baseline, ao, width, 11, 15, 43, 66);
+    AppAoMetrics response = _app_ao_region_metrics(baseline, ao, width, 11, 15, 43, 66);
     AT(response.foreground_count > 0);
     AT(response.background_count > 0);
     AT(response.response_count > 0);
@@ -4590,14 +4559,13 @@ int test_app_offscreen_gtao_panel_locality(TstContext* suite, const TstCase* ite
         _app_ao_outside_delta_metrics(baseline, ao, width, height, left_rect, right_rect);
     AT(outside_delta.max_delta <= 1);
 
-    AT(dvz_panel_set_ao(right, &ssao) == DVZ_OK);
+    AT(dvz_panel_set_ao(right, &gtao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t both_width = 0, both_height = 0;
     uint8_t* both = NULL;
     AT(_app_ao_capture(canvas, &both_width, &both_height, &both));
     AT(both_width == width && both_height == height);
-    AppAoMetrics left_delta =
-        _app_ao_region_delta_metrics(ao, both, width, 12, 16, 41, 63);
+    AppAoMetrics left_delta = _app_ao_region_delta_metrics(ao, both, width, 12, 16, 41, 63);
     AT(left_delta.max_delta <= 1);
     _app_ao_log_frame_metrics("panels-both", both, width, height, "perspective", 0.0f, 1);
 
@@ -4652,8 +4620,8 @@ int test_app_offscreen_gtao_resize_stability(TstContext* suite, const TstCase* i
     DvzCameraDesc resize_camera = dvz_camera_desc();
     AT(dvz_panel_set_camera_desc(panel, &resize_camera) == DVZ_OK);
 
-    DvzAoDesc ssao = _app_gtao_desc(true);
-    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
+    DvzAoDesc gtao = _app_gtao_desc(true);
+    AT(dvz_panel_set_ao(panel, &gtao) == DVZ_OK);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -4859,11 +4827,16 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
 
     /* Large quad covering most of the panel. TRIANGLE_STRIP order: TL, BL, TR, BR */
     vec3 positions[4] = {
-        {-0.9f, -0.9f, 0.0f}, {-0.9f, 0.9f, 0.0f},
-        { 0.9f, -0.9f, 0.0f}, { 0.9f, 0.9f, 0.0f},
+        {-0.9f, -0.9f, 0.0f},
+        {-0.9f, 0.9f, 0.0f},
+        {0.9f, -0.9f, 0.0f},
+        {0.9f, 0.9f, 0.0f},
     };
     vec2 texcoords[4] = {
-        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
     };
 
     /* Solid red 4x4 texture. */
@@ -4884,7 +4857,8 @@ int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCas
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_image_has_nonblank_pixels skipped: GPU context creation failed");
+        log_warn(
+            "test_app_offscreen_image_has_nonblank_pixels skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -4939,12 +4913,14 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 256, 192, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(
-        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel =
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
     DvzScale* scale = dvz_scale(
-        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS, .label = "Intensity"});
+        scene, &(DvzScaleDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "Intensity"});
     AT(scale != NULL);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
@@ -4959,11 +4935,16 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
     DvzVisual* image = dvz_image(scene, 0);
     AT(image != NULL);
     vec3 positions[4] = {
-        {-0.95f, -0.95f, 0.0f}, {-0.95f, 0.95f, 0.0f},
-        {0.95f, -0.95f, 0.0f},  {0.95f, 0.95f, 0.0f},
+        {-0.95f, -0.95f, 0.0f},
+        {-0.95f, 0.95f, 0.0f},
+        {0.95f, -0.95f, 0.0f},
+        {0.95f, 0.95f, 0.0f},
     };
     vec2 texcoords[4] = {
-        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
     };
     int rc = dvz_visual_set_data(image, "position", positions, 4);
     AT(rc == 0);
@@ -4973,7 +4954,8 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
     AT(rc == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -4989,7 +4971,8 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
             values[y * 8 + x] = (float)x / 7.0f;
     }
     bool ok = dvz_sampled_field_set_data(
-                  field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                  field, &(DvzFieldDataView){
+                             DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
                              .data = values,
                              .bytes_per_row = 8 * sizeof(float),
                              .rows_per_image = 8,
@@ -5002,21 +4985,22 @@ int test_app_offscreen_colorbar_has_visible_ramp_and_labels(TstContext* suite, c
 
     DvzColorbar* colorbar = dvz_colorbar(
         panel, scale,
-        &(DvzColorbarDesc){DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
+        &(DvzColorbarDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzColorbarDesc),
             .orientation = DVZ_COLORBAR_ORIENTATION_VERTICAL,
             .anchor = DVZ_SCENE_ANCHOR_PANEL_RIGHT,
             .title = "Intensity",
         });
     AT(colorbar != NULL);
-    dvz_colorbar_set_format(colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1});
+    dvz_colorbar_set_format(
+        colorbar, &(DvzFormatDesc){DVZ_STRUCT_INIT_FIELDS(DvzFormatDesc), .precision = 1});
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_colorbar_has_visible_ramp_and_labels skipped: GPU context "
-            "creation failed");
+        log_warn("test_app_offscreen_colorbar_has_visible_ramp_and_labels skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -5087,8 +5071,8 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(
-        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel =
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -5110,15 +5094,16 @@ int test_app_offscreen_text_has_nonblank_pixels(TstContext* suite, const TstCase
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
-               .z_layer = 1,
+           &(DvzVisualAttachDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1,
                .controller_mode = DVZ_CONTROLLER_FIXED,
                .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_text_has_nonblank_pixels skipped: GPU context creation failed");
+        log_warn(
+            "test_app_offscreen_text_has_nonblank_pixels skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -5172,8 +5157,8 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 256, 72, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(
-        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel =
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
     DvzVisual* text = _scene_text_visual(scene, 0);
@@ -5196,15 +5181,16 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     AT(dvz_visual_set_data_many(text, updates, 5) == 0);
     AT(dvz_panel_add_visual(
            panel, text,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
-               .z_layer = 1,
+           &(DvzVisualAttachDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1,
                .controller_mode = DVZ_CONTROLLER_FIXED,
                .coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL}) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_sdf_text_has_nonblank_pixels skipped: GPU context creation failed");
+        log_warn("test_app_offscreen_sdf_text_has_nonblank_pixels skipped: GPU context creation "
+                 "failed");
         dvz_scene_destroy(scene);
         return 0;
     }
@@ -5229,9 +5215,9 @@ int test_app_offscreen_sdf_text_has_nonblank_pixels(TstContext* suite, const Tst
     uint32_t isolated_green = 0;
     uint32_t sparse_green = 0;
     uint32_t bounds[4] = {0};
-    bool has_bounds =
-        _visual_family_state(text)->text.glyph_visual != NULL &&
-        _app_glyph_pixel_bounds(_visual_family_state(text)->text.glyph_visual, width, height, bounds);
+    bool has_bounds = _visual_family_state(text)->text.glyph_visual != NULL &&
+                      _app_glyph_pixel_bounds(
+                          _visual_family_state(text)->text.glyph_visual, width, height, bounds);
     AT(has_bounds);
     for (uint32_t i = 0; i < width * height; i++)
     {
@@ -5310,29 +5296,27 @@ int test_app_offscreen_text_block_raster_has_nonblank_pixels(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(
-        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel =
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
 
     DvzTextBlock block = {0};
     _scene_text_block_init(&block, "Rich <b>block</b> <i>card</i>");
     AT(_scene_text_block_parse(&block) == 0);
     AT(_scene_text_block_measure(
-           &block,
-           &(DvzTextBlockLayout){
-               .scene = scene,
-               .max_width_px = 96.0f,
-               .font_size_px = 12.0f,
-               .line_height_px = 15.0f,
-               .padding_px = {3.0f, 3.0f},
-           }) == 0);
+           &block, &(DvzTextBlockLayout){
+                       .scene = scene,
+                       .max_width_px = 96.0f,
+                       .font_size_px = 12.0f,
+                       .line_height_px = 15.0f,
+                       .padding_px = {3.0f, 3.0f},
+                   }) == 0);
     AT(_scene_text_block_rasterize(
-           &block,
-           &(DvzTextBlockRasterDesc){
-               .scene = scene,
-               .text_color = {0, 255, 0, 255},
-               .background_color = {0, 0, 0, 0},
-           }) == 0);
+           &block, &(DvzTextBlockRasterDesc){
+                       .scene = scene,
+                       .text_color = {0, 255, 0, 255},
+                       .background_color = {0, 0, 0, 0},
+                   }) == 0);
     AT(_scene_text_block_realize_image(
            &block, panel,
            &(DvzTextBlockImageDesc){
@@ -5347,9 +5331,8 @@ int test_app_offscreen_text_block_raster_has_nonblank_pixels(
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_text_block_raster_has_nonblank_pixels skipped: GPU context "
-            "creation failed");
+        log_warn("test_app_offscreen_text_block_raster_has_nonblank_pixels skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         _scene_text_block_destroy(&block);
         dvz_scene_destroy(scene);
@@ -5395,8 +5378,7 @@ int test_app_offscreen_text_block_raster_has_nonblank_pixels(
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_overlay_rich_card_has_visible_pixels(
-    TstContext* suite, const TstCase* item)
+int test_app_offscreen_overlay_rich_card_has_visible_pixels(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5407,8 +5389,8 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 256, 160, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(
-        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzPanel* panel =
+        dvz_panel(figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
 
@@ -5420,32 +5402,31 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
     style.padding_px[1] = 8.0f;
     style.min_width_px = 120.0f;
     DvzOverlayCard* card = dvz_overlay_card(
-        overlay,
-        &(DvzOverlayCardDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
-            .text = "fallback",
-            .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
-            .offset_px = {12.0f, 10.0f},
-        });
+        overlay, &(DvzOverlayCardDesc){
+                     DVZ_STRUCT_INIT_FIELDS(DvzOverlayCardDesc),
+                     .text = "fallback",
+                     .placement = DVZ_OVERLAY_CARD_PLACEMENT_BOTTOM_RIGHT,
+                     .offset_px = {12.0f, 10.0f},
+                 });
     AT(card != NULL);
     AT(dvz_overlay_card_set_style(card, &style) == 0);
     AT(dvz_overlay_card_set_rich_text(
-           card,
-           &(DvzOverlayRichTextDesc){DVZ_STRUCT_INIT_FIELDS(DvzOverlayRichTextDesc),
-               .source = "<b>Rich card</b> visible",
-               .max_width_px = 112.0f,
-               .char_width_px = 7.0f,
-               .line_height_px = 14.0f,
-               .scale = 2.0f,
-               .text_color = {0, 255, 0, 255},
-               .background_color = {0, 0, 0, 0},
-           }) == 0);
+           card, &(DvzOverlayRichTextDesc){
+                     DVZ_STRUCT_INIT_FIELDS(DvzOverlayRichTextDesc),
+                     .source = "<b>Rich card</b> visible",
+                     .max_width_px = 112.0f,
+                     .char_width_px = 7.0f,
+                     .line_height_px = 14.0f,
+                     .scale = 2.0f,
+                     .text_color = {0, 255, 0, 255},
+                     .background_color = {0, 0, 0, 0},
+                 }) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_overlay_rich_card_has_visible_pixels skipped: GPU context "
-            "creation failed");
+        log_warn("test_app_offscreen_overlay_rich_card_has_visible_pixels skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -5489,7 +5470,8 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
 }
 
 
-int test_app_offscreen_image_field_partial_update_changes_region(TstContext* suite, const TstCase* item)
+int test_app_offscreen_image_field_partial_update_changes_region(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5503,7 +5485,9 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(
+        scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     dvz_scale_set_domain(scale, 0.0, 1.0);
     DvzColormap* colormap = dvz_colormap(scene, NULL);
@@ -5518,18 +5502,24 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     DvzVisual* image = dvz_image(scene, 0);
     ANN(image);
     vec3 positions[4] = {
-        {-0.95f, -0.95f, 0.0f}, {-0.95f, 0.95f, 0.0f},
-        {0.95f, -0.95f, 0.0f},  {0.95f, 0.95f, 0.0f},
+        {-0.95f, -0.95f, 0.0f},
+        {-0.95f, 0.95f, 0.0f},
+        {0.95f, -0.95f, 0.0f},
+        {0.95f, 0.95f, 0.0f},
     };
     vec2 texcoords[4] = {
-        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(dvz_visual_set_scale(image, "color", scale) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -5540,11 +5530,12 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     ANN(field);
     float values[16] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = values,
-                   .bytes_per_row = 4 * sizeof(float),
-                   .rows_per_image = 4,
-               }) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                      .data = values,
+                      .bytes_per_row = 4 * sizeof(float),
+                      .rows_per_image = 4,
+                  }) == DVZ_OK);
     AT(dvz_visual_set_field(image, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -5576,12 +5567,13 @@ int test_app_offscreen_image_field_partial_update_changes_region(TstContext* sui
     for (uint32_t i = 0; i < 8; i++)
         patch[i] = 1.0f;
     AT(dvz_sampled_field_update_region(
-        field, (DvzFieldRegion){.x = 2, .y = 0, .z = 0, .width = 2, .height = 4, .depth = 1},
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-            .data = patch,
-            .bytes_per_row = 2 * sizeof(float),
-            .rows_per_image = 4,
-        }) == DVZ_OK);
+           field, (DvzFieldRegion){.x = 2, .y = 0, .z = 0, .width = 2, .height = 4, .depth = 1},
+           &(DvzFieldDataView){
+               DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+               .data = patch,
+               .bytes_per_row = 2 * sizeof(float),
+               .rows_per_image = 4,
+           }) == DVZ_OK);
 
     dvz_app_run(app, 1);
 
@@ -5645,8 +5637,8 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
 
     uint32_t diff = 0;
     for (uint32_t i = 0; i < 3; i++)
-        diff += forward.rgb[i] > reverse.rgb[i] ? forward.rgb[i] - reverse.rgb[i] :
-                                                  reverse.rgb[i] - forward.rgb[i];
+        diff += forward.rgb[i] > reverse.rgb[i] ? forward.rgb[i] - reverse.rgb[i]
+                                                : reverse.rgb[i] - forward.rgb[i];
     AT(diff <= 6);
     AT(forward.rgb[0] > 20 || forward.rgb[2] > 20);
     AT(reverse.rgb[0] > 20 || reverse.rgb[2] > 20);
@@ -5682,8 +5674,7 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
     DvzVisual* background_visual = _app_primitive_add_quad(
         scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.8f, background, DVZ_ALPHA_OPAQUE, true);
     DvzVisual* transparent_visual = _app_primitive_add_quad(
-        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.4f, transparent, DVZ_ALPHA_BLENDED,
-        true);
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.4f, transparent, DVZ_ALPHA_BLENDED, true);
     DvzVisual* occluder_visual = _app_primitive_add_quad(
         scene, panel, 0.15f, 0.75f, -0.45f, 0.45f, 0.1f, occluder, DVZ_ALPHA_OPAQUE, true);
     ANN(background_visual);
@@ -5827,11 +5818,9 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     DvzVisual* background_visual = _app_primitive_add_quad(
         scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.9f, background, DVZ_ALPHA_OPAQUE, true);
     DvzVisual* red_visual = _app_primitive_add_quad(
-        scene, panel, -0.95f, -0.10f, -0.95f, 0.95f, 0.5f, red, DVZ_ALPHA_DEPTH_PEEL,
-        true);
+        scene, panel, -0.95f, -0.10f, -0.95f, 0.95f, 0.5f, red, DVZ_ALPHA_DEPTH_PEEL, true);
     DvzVisual* blue_visual = _app_primitive_add_quad(
-        scene, panel, -0.05f, 0.95f, -0.95f, 0.95f, 0.3f, blue, DVZ_ALPHA_DEPTH_PEEL,
-        true);
+        scene, panel, -0.05f, 0.95f, -0.95f, 0.95f, 0.3f, blue, DVZ_ALPHA_DEPTH_PEEL, true);
     DvzVisual* occluder_visual = _app_primitive_add_quad(
         scene, panel, 0.15f, 0.75f, -0.45f, 0.45f, 0.1f, occluder, DVZ_ALPHA_OPAQUE, true);
     ANN(background_visual);
@@ -5863,14 +5852,10 @@ int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCa
     AT(height == 64);
 
     const uint32_t region_pixels = 8 * 8;
-    uint64_t red_region_r =
-        _app_rgb_region_channel_sum(rgba, width, height, 12, 28, 20, 36, 0);
-    uint64_t red_region_b =
-        _app_rgb_region_channel_sum(rgba, width, height, 12, 28, 20, 36, 2);
-    uint64_t blue_region_r =
-        _app_rgb_region_channel_sum(rgba, width, height, 28, 28, 36, 36, 0);
-    uint64_t blue_region_b =
-        _app_rgb_region_channel_sum(rgba, width, height, 28, 28, 36, 36, 2);
+    uint64_t red_region_r = _app_rgb_region_channel_sum(rgba, width, height, 12, 28, 20, 36, 0);
+    uint64_t red_region_b = _app_rgb_region_channel_sum(rgba, width, height, 12, 28, 20, 36, 2);
+    uint64_t blue_region_r = _app_rgb_region_channel_sum(rgba, width, height, 28, 28, 36, 36, 0);
+    uint64_t blue_region_b = _app_rgb_region_channel_sum(rgba, width, height, 28, 28, 36, 36, 2);
     uint64_t occluded_region_r =
         _app_rgb_region_channel_sum(rgba, width, height, 40, 28, 48, 36, 0);
     uint64_t occluded_region_g =
@@ -6021,9 +6006,9 @@ int test_app_offscreen_scene_occlusion_hidden_alpha(TstContext* suite, const Tst
     AT(zero_sum > 150);
     AT(hidden_sum > zero_sum ? hidden_sum - zero_sum <= 24 : zero_sum - hidden_sum <= 24);
     AT(hidden.rgb[0] > zero.rgb[0] ? hidden.rgb[0] - zero.rgb[0] <= 24
-                                    : zero.rgb[0] - hidden.rgb[0] <= 24);
+                                   : zero.rgb[0] - hidden.rgb[0] <= 24);
     AT(hidden.rgb[1] > zero.rgb[1] ? hidden.rgb[1] - zero.rgb[1] <= 24
-                                    : zero.rgb[1] - hidden.rgb[1] <= 24);
+                                   : zero.rgb[1] - hidden.rgb[1] <= 24);
     AT(positive.rgb[1] > zero.rgb[1] + 30);
     AT(positive.rgb[0] + 20 < zero.rgb[0]);
     return 0;
@@ -6048,7 +6033,8 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
         _app_source_over_scene_occlusion_capture_center(suite, false, false, 64);
     if (disabled.skipped)
     {
-        log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        log_warn(
+            "test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
         tst_skip(suite, disabled.skip_reason);
         return 0;
     }
@@ -6056,7 +6042,8 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
         _app_source_over_scene_occlusion_capture_center(suite, true, true, 255);
     if (hidden.skipped)
     {
-        log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        log_warn(
+            "test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
         tst_skip(suite, hidden.skip_reason);
         return 0;
     }
@@ -6064,7 +6051,8 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
         _app_source_over_scene_occlusion_capture_center(suite, true, false, 64);
     if (enabled.skipped)
     {
-        log_warn("test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
+        log_warn(
+            "test_app_offscreen_source_over_scene_occlusion_matrix skipped: GPU context failed");
         tst_skip(suite, enabled.skip_reason);
         return 0;
     }
@@ -6077,8 +6065,8 @@ int test_app_offscreen_source_over_scene_occlusion_matrix(TstContext* suite, con
 
     uint32_t diff = 0;
     for (uint32_t i = 0; i < 3; i++)
-        diff += disabled.rgb[i] > enabled.rgb[i] ? disabled.rgb[i] - enabled.rgb[i] :
-                                                   enabled.rgb[i] - disabled.rgb[i];
+        diff += disabled.rgb[i] > enabled.rgb[i] ? disabled.rgb[i] - enabled.rgb[i]
+                                                 : enabled.rgb[i] - disabled.rgb[i];
     bool matches_disabled = diff <= 6;
     bool visibly_occluded = enabled.rgb[1] > 45 && enabled.rgb[0] + 40 < disabled.rgb[0];
     AT(matches_disabled || visibly_occluded);
@@ -6106,12 +6094,12 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
     ANN(far_visual);
 
     vec3 near_positions[6] = {
-        {-0.9f, -0.9f, 0.1f}, {-0.9f, 0.9f, 0.1f},  {0.9f, -0.9f, 0.1f},
-        {0.9f, -0.9f, 0.1f},  {-0.9f, 0.9f, 0.1f},  {0.9f, 0.9f, 0.1f},
+        {-0.9f, -0.9f, 0.1f}, {-0.9f, 0.9f, 0.1f}, {0.9f, -0.9f, 0.1f},
+        {0.9f, -0.9f, 0.1f},  {-0.9f, 0.9f, 0.1f}, {0.9f, 0.9f, 0.1f},
     };
     vec3 far_positions[6] = {
-        {-0.9f, -0.9f, 0.8f}, {-0.9f, 0.9f, 0.8f},  {0.9f, -0.9f, 0.8f},
-        {0.9f, -0.9f, 0.8f},  {-0.9f, 0.9f, 0.8f},  {0.9f, 0.9f, 0.8f},
+        {-0.9f, -0.9f, 0.8f}, {-0.9f, 0.9f, 0.8f}, {0.9f, -0.9f, 0.8f},
+        {0.9f, -0.9f, 0.8f},  {-0.9f, 0.9f, 0.8f}, {0.9f, 0.9f, 0.8f},
     };
     vec3 normals[6] = {
         {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
@@ -6142,9 +6130,8 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_lit_primitive_depth_orders_overlap skipped: GPU context "
-            "creation failed");
+        log_warn("test_app_offscreen_lit_primitive_depth_orders_overlap skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -6181,8 +6168,7 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
-    TstContext* suite, const TstCase* item)
+int test_app_offscreen_lit_primitive_depth_cue_darkens_far(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -6199,10 +6185,9 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
     ANN(visual);
 
     vec3 positions[12] = {
-        {-0.9f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f}, {-0.1f, -0.8f, 0.0f},
-        {-0.1f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f}, {-0.1f, 0.8f, 0.0f},
-        {0.1f, -0.8f, 0.8f},  {0.1f, 0.8f, 0.8f},  {0.9f, -0.8f, 0.8f},
-        {0.9f, -0.8f, 0.8f},  {0.1f, 0.8f, 0.8f},  {0.9f, 0.8f, 0.8f},
+        {-0.9f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f}, {-0.1f, -0.8f, 0.0f}, {-0.1f, -0.8f, 0.0f},
+        {-0.9f, 0.8f, 0.0f},  {-0.1f, 0.8f, 0.0f}, {0.1f, -0.8f, 0.8f},  {0.1f, 0.8f, 0.8f},
+        {0.9f, -0.8f, 0.8f},  {0.9f, -0.8f, 0.8f}, {0.1f, 0.8f, 0.8f},   {0.9f, 0.8f, 0.8f},
     };
     vec3 normals[12];
     DvzColor colors[12];
@@ -6217,25 +6202,24 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(
     AT(dvz_visual_set_data(visual, "position", positions, 12) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 12) == 0);
     AT(dvz_visual_set_data(visual, "normal", normals, 12) == 0);
-    AT(_test_set_phong_material(
-           visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
+    AT(_test_set_phong_material(visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) ==
+       0);
     AT(dvz_visual_set_depth_cue(
-           visual,
-           &(DvzDepthCueDesc){DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
-               .mode = DVZ_DEPTH_CUE_DARKEN,
-               .near_depth = 0.50f,
-               .far_depth = 0.95f,
-               .strength = 1.0f,
-               .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
-           }) == 0);
+           visual, &(DvzDepthCueDesc){
+                       DVZ_STRUCT_INIT_FIELDS(DvzDepthCueDesc),
+                       .mode = DVZ_DEPTH_CUE_DARKEN,
+                       .near_depth = 0.50f,
+                       .far_depth = 0.95f,
+                       .strength = 1.0f,
+                       .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
+                   }) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_lit_primitive_depth_cue_darkens_far skipped: GPU context "
-            "creation failed");
+        log_warn("test_app_offscreen_lit_primitive_depth_cue_darkens_far skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -6294,8 +6278,10 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
     ANN(visual);
 
     vec3 positions[4] = {
-        {-0.8f, -0.8f, 0.0f}, {-0.8f, 0.8f, 0.0f},
-        {0.8f, -0.8f, 0.0f},  {0.8f, 0.8f, 0.0f},
+        {-0.8f, -0.8f, 0.0f},
+        {-0.8f, 0.8f, 0.0f},
+        {0.8f, -0.8f, 0.0f},
+        {0.8f, 0.8f, 0.0f},
     };
     DvzColor colors[4] = {
         {255, 64, 64, 255},
@@ -6304,13 +6290,16 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
         {255, 224, 64, 255},
     };
     vec3 normals[4] = {
-        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
-        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -6322,8 +6311,8 @@ int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* i
     AT(dvz_visual_set_data(visual, "normal", normals, 4) == 0);
     AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
-    AT(_test_set_phong_material(
-           visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
+    AT(_test_set_phong_material(visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) ==
+       0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -6413,28 +6402,19 @@ static void _rotated_mesh_build_cube(
         {{-s, -s, -s}, {+s, -s, -s}, {+s, -s, +s}, {-s, -s, +s}},
     };
     const vec3 face_normals[6] = {
-        {0.0f, 0.0f, +1.0f},
-        {0.0f, 0.0f, -1.0f},
-        {-1.0f, 0.0f, 0.0f},
-        {+1.0f, 0.0f, 0.0f},
-        {0.0f, +1.0f, 0.0f},
-        {0.0f, -1.0f, 0.0f},
+        {0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, -1.0f}, {-1.0f, 0.0f, 0.0f},
+        {+1.0f, 0.0f, 0.0f}, {0.0f, +1.0f, 0.0f}, {0.0f, -1.0f, 0.0f},
     };
     const DvzColor face_colors[6] = {
-        {239, 83, 80, 255},
-        {66, 165, 245, 255},
-        {102, 187, 106, 255},
-        {255, 202, 40, 255},
-        {171, 71, 188, 255},
-        {255, 112, 67, 255},
+        {239, 83, 80, 255},  {66, 165, 245, 255}, {102, 187, 106, 255},
+        {255, 202, 40, 255}, {171, 71, 188, 255}, {255, 112, 67, 255},
     };
 
     for (uint32_t face = 0; face < 6; face++)
     {
         float rotated_normal[3] = {0};
         _rotated_mesh_rotate_point(
-            face_normals[face][0], face_normals[face][1], face_normals[face][2],
-            rotated_normal);
+            face_normals[face][0], face_normals[face][1], face_normals[face][2], rotated_normal);
 
         for (uint32_t corner = 0; corner < 4; corner++)
         {
@@ -6482,20 +6462,12 @@ static void _mesh_build_cube_object_space(
         {{-s, -s, -s}, {+s, -s, -s}, {+s, -s, +s}, {-s, -s, +s}},
     };
     const vec3 face_normals[6] = {
-        {0.0f, 0.0f, +1.0f},
-        {0.0f, 0.0f, -1.0f},
-        {-1.0f, 0.0f, 0.0f},
-        {+1.0f, 0.0f, 0.0f},
-        {0.0f, +1.0f, 0.0f},
-        {0.0f, -1.0f, 0.0f},
+        {0.0f, 0.0f, +1.0f}, {0.0f, 0.0f, -1.0f}, {-1.0f, 0.0f, 0.0f},
+        {+1.0f, 0.0f, 0.0f}, {0.0f, +1.0f, 0.0f}, {0.0f, -1.0f, 0.0f},
     };
     const DvzColor face_colors[6] = {
-        {239, 83, 80, 255},
-        {66, 165, 245, 255},
-        {102, 187, 106, 255},
-        {255, 202, 40, 255},
-        {171, 71, 188, 255},
-        {255, 112, 67, 255},
+        {239, 83, 80, 255},  {66, 165, 245, 255}, {102, 187, 106, 255},
+        {255, 202, 40, 255}, {171, 71, 188, 255}, {255, 112, 67, 255},
     };
 
     for (uint32_t face = 0; face < 6; face++)
@@ -6556,7 +6528,8 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
     _rotated_mesh_build_cube(positions, colors, normals, indices);
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -6569,16 +6542,14 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
     AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     AT(_test_set_phong_material(
-           visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
-       0);
+           visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) == 0);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_rotated_mesh_depth_orders_faces skipped: GPU context "
-            "creation failed");
+        log_warn("test_app_offscreen_rotated_mesh_depth_orders_faces skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -6656,7 +6627,8 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     _mesh_build_cube_object_space(positions, colors, normals, indices);
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -6669,16 +6641,14 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
     AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     AT(_test_set_phong_material(
-           visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) ==
-       0);
+           visual, (float[3]){0.35f, 0.55f, 0.75f}, 0.25f, 0.85f, 0.25f, 32.0f) == 0);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_camera_arcball_mesh_renders_cube skipped: GPU context "
-            "creation failed");
+        log_warn("test_app_offscreen_camera_arcball_mesh_renders_cube skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -6726,8 +6696,12 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
 
-    DvzScale* scale0 = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
-    DvzScale* scale1 = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale0 = dvz_scale(
+        scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale1 = dvz_scale(
+        scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale0);
     ANN(scale1);
     dvz_scale_set_domain(scale0, 0.0, 1.0);
@@ -6747,7 +6721,8 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     dvz_scale_set_colormap(scale1, colormap1);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_R32_FLOAT,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -6758,22 +6733,30 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     ANN(field);
     float values[16] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = values,
-                   .bytes_per_row = 4 * sizeof(float),
-                   .rows_per_image = 4,
-               }) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                      .data = values,
+                      .bytes_per_row = 4 * sizeof(float),
+                      .rows_per_image = 4,
+                  }) == DVZ_OK);
 
     vec2 texcoords[4] = {
-        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
     };
     vec3 left_positions[4] = {
-        {-1.0f, -0.95f, 0.0f}, {-1.0f, 0.95f, 0.0f},
-        {0.0f, -0.95f, 0.0f},  {0.0f, 0.95f, 0.0f},
+        {-1.0f, -0.95f, 0.0f},
+        {-1.0f, 0.95f, 0.0f},
+        {0.0f, -0.95f, 0.0f},
+        {0.0f, 0.95f, 0.0f},
     };
     vec3 right_positions[4] = {
-        {0.0f, -0.95f, 0.0f}, {0.0f, 0.95f, 0.0f},
-        {1.0f, -0.95f, 0.0f}, {1.0f, 0.95f, 0.0f},
+        {0.0f, -0.95f, 0.0f},
+        {0.0f, 0.95f, 0.0f},
+        {1.0f, -0.95f, 0.0f},
+        {1.0f, 0.95f, 0.0f},
     };
 
     DvzVisual* image0 = dvz_image(scene, 0);
@@ -6795,9 +6778,8 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_shared_field_mixed_runtime_updates skipped: GPU context "
-            "creation failed");
+        log_warn("test_app_offscreen_shared_field_mixed_runtime_updates skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -6824,12 +6806,13 @@ int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, con
     for (uint32_t i = 0; i < 8; i++)
         patch[i] = 1.0f;
     AT(dvz_sampled_field_update_region(
-        field, (DvzFieldRegion){.x = 2, .y = 0, .z = 0, .width = 2, .height = 4, .depth = 1},
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-            .data = patch,
-            .bytes_per_row = 2 * sizeof(float),
-            .rows_per_image = 4,
-        }) == DVZ_OK);
+           field, (DvzFieldRegion){.x = 2, .y = 0, .z = 0, .width = 2, .height = 4, .depth = 1},
+           &(DvzFieldDataView){
+               DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+               .data = patch,
+               .bytes_per_row = 2 * sizeof(float),
+               .rows_per_image = 4,
+           }) == DVZ_OK);
 
     dvz_app_run(app, 1);
 
@@ -6892,7 +6875,8 @@ int test_app_offscreen_retained_render_second_frame(TstContext* suite, const Tst
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_retained_render_second_frame skipped: GPU context creation failed");
+        log_warn("test_app_offscreen_retained_render_second_frame skipped: GPU context creation "
+                 "failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -6949,17 +6933,24 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
     AT(visual != NULL);
 
     vec3 positions[4] = {
-        {-0.9f, -0.9f, 0.0f}, {-0.9f, 0.9f, 0.0f},
-        { 0.9f, -0.9f, 0.0f}, { 0.9f, 0.9f, 0.0f},
+        {-0.9f, -0.9f, 0.0f},
+        {-0.9f, 0.9f, 0.0f},
+        {0.9f, -0.9f, 0.0f},
+        {0.9f, 0.9f, 0.0f},
     };
     vec2 texcoords[4] = {
-        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4];
     for (uint32_t i = 0; i < 4 * 4; i++)
     {
-        pixels[i * 4 + 0] = 255; pixels[i * 4 + 1] = 0;
-        pixels[i * 4 + 2] = 0;   pixels[i * 4 + 3] = 255;
+        pixels[i * 4 + 0] = 255;
+        pixels[i * 4 + 1] = 0;
+        pixels[i * 4 + 2] = 0;
+        pixels[i * 4 + 3] = 255;
     }
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(visual, "texcoords", texcoords, 4) == 0);
@@ -6969,7 +6960,8 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_image_retained_render_second_frame skipped: GPU context creation failed");
+        log_warn("test_app_offscreen_image_retained_render_second_frame skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -7017,7 +7009,8 @@ int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, con
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* suite, const TstCase* item)
+int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -7038,8 +7031,10 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     AT(image != NULL);
 
     vec3 mesh_positions[4] = {
-        {-0.9f, -0.8f, 0.0f}, {-0.9f, 0.8f, 0.0f},
-        {-0.1f, -0.8f, 0.0f}, {-0.1f, 0.8f, 0.0f},
+        {-0.9f, -0.8f, 0.0f},
+        {-0.9f, 0.8f, 0.0f},
+        {-0.1f, -0.8f, 0.0f},
+        {-0.1f, 0.8f, 0.0f},
     };
     DvzColor mesh_colors[4] = {
         {64, 255, 64, 255},
@@ -7048,13 +7043,16 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
         {64, 255, 64, 255},
     };
     vec3 mesh_normals[4] = {
-        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
-        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
     };
     DvzIndex mesh_indices[6] = {0, 1, 2, 2, 1, 3};
 
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -7065,16 +7063,21 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     AT(dvz_visual_set_data(mesh, "color", mesh_colors, 4) == 0);
     AT(dvz_visual_set_data(mesh, "normal", mesh_normals, 4) == 0);
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
-    AT(_test_set_phong_material(
-           mesh, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
+    AT(_test_set_phong_material(mesh, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) ==
+       0);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     vec3 image_positions[4] = {
-        {0.1f, -0.8f, 0.0f}, {0.1f, 0.8f, 0.0f},
-        {0.9f, -0.8f, 0.0f}, {0.9f, 0.8f, 0.0f},
+        {0.1f, -0.8f, 0.0f},
+        {0.1f, 0.8f, 0.0f},
+        {0.9f, -0.8f, 0.0f},
+        {0.9f, 0.8f, 0.0f},
     };
     vec2 image_texcoords[4] = {
-        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
     };
     uint8_t pixels[4 * 4 * 4] = {0};
     for (uint32_t i = 0; i < 4 * 4; i++)
@@ -7104,11 +7107,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(TstContext* sui
     ANN(canvas);
 
     const uint32_t sizes[][2] = {
-        {96, 64},
-        {128, 72},
-        {80, 96},
-        {144, 80},
-        {96, 64},
+        {96, 64}, {128, 72}, {80, 96}, {144, 80}, {96, 64},
     };
 
     for (uint32_t frame = 0; frame < sizeof(sizes) / sizeof(sizes[0]); frame++)
@@ -7163,8 +7162,7 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel =
-        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* points = dvz_point(scene, 0);
@@ -7201,7 +7199,10 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
     AT(_scene_visual_set_texture_rgba8(image, (const uint8_t*)pixels, 4, 4, 4u * 4u * 4u) == 0);
-    AT(dvz_panel_add_visual(panel, image, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) == 0);
+    AT(dvz_panel_add_visual(
+           panel, image,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = -1}) ==
+       0);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -7220,10 +7221,14 @@ int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCa
         uint64_t second_id = 200 + frame;
         AT(dvz_panel_query_px(
                panel, 32.0, 32.0,
-               &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = first_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+               &(DvzQueryRequest){
+                   DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = first_id,
+                   .target = DVZ_SCENE_TARGET_ITEM}) == 0);
         AT(dvz_panel_query_px(
                panel, 32.0, 32.0,
-               &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = second_id, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+               &(DvzQueryRequest){
+                   DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = second_id,
+                   .target = DVZ_SCENE_TARGET_ITEM}) == 0);
         AT(scene->pending_query_count == 2);
 
         AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
@@ -7271,8 +7276,7 @@ int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* i
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel =
-        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -7434,8 +7438,7 @@ int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel =
-        dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.x = 0, .y = 0, .width = 1, .height = 1});
     AT(panel != NULL);
 
     DvzVisual* image = dvz_image(scene, 0);
@@ -7460,8 +7463,7 @@ int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
         {
             const bool central_dark = (x == 1 || x == 2) && (y == 1 || y == 2);
             const bool dark = central_dark || ((x + y) % 2 == 0);
-            pixels[y * 4 + x] = dark ? (DvzColor){8, 8, 8, 255}
-                                     : (DvzColor){245, 245, 245, 255};
+            pixels[y * 4 + x] = dark ? (DvzColor){8, 8, 8, 255} : (DvzColor){245, 245, 245, 255};
         }
     }
     AT(dvz_visual_set_data(image, "position", image_pos, 4) == 0);
@@ -7490,7 +7492,8 @@ int test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke(
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke skipped: GPU context failed");
+        log_warn("test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke skipped: GPU context "
+                 "failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -7629,8 +7632,8 @@ int test_app_offscreen_two_panel_points_light_both_halves(TstContext* suite, con
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_two_panel_points_light_both_halves skipped: GPU context creation failed");
+        log_warn("test_app_offscreen_two_panel_points_light_both_halves skipped: GPU context "
+                 "creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -7719,12 +7722,11 @@ int test_app_offscreen_marker_query_selection_preserves_vertical_orientation(
     AT(dvz_panel_add_visual(panel, marker, NULL) == 0);
 
     DvzSelection* selection = dvz_selection(
-        scene,
-        &(DvzSelectionDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
-            .mode = DVZ_SELECT_TOGGLE,
-            .target = DVZ_SCENE_TARGET_ITEM,
-        });
+        scene, &(DvzSelectionDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+                   .mode = DVZ_SELECT_TOGGLE,
+                   .target = DVZ_SCENE_TARGET_ITEM,
+               });
     AT(selection != NULL);
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
     selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
@@ -7736,8 +7738,8 @@ int test_app_offscreen_marker_query_selection_preserves_vertical_orientation(
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_marker_query_selection_preserves_vertical_orientation skipped: GPU context creation failed");
+        log_warn("test_app_offscreen_marker_query_selection_preserves_vertical_orientation "
+                 "skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -7835,12 +7837,11 @@ int test_app_offscreen_pixel_query_selection_preserves_vertical_orientation(
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
 
     DvzSelection* selection = dvz_selection(
-        scene,
-        &(DvzSelectionDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
-            .mode = DVZ_SELECT_TOGGLE,
-            .target = DVZ_SCENE_TARGET_ITEM,
-        });
+        scene, &(DvzSelectionDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+                   .mode = DVZ_SELECT_TOGGLE,
+                   .target = DVZ_SCENE_TARGET_ITEM,
+               });
     AT(selection != NULL);
     DvzSelectionVisualStyle selection_style = dvz_selection_visual_style();
     selection_style.selected_visual_flags = DVZ_ITEM_STATE_VISUAL_TINT;
@@ -7852,8 +7853,8 @@ int test_app_offscreen_pixel_query_selection_preserves_vertical_orientation(
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_pixel_query_selection_preserves_vertical_orientation skipped: GPU context creation failed");
+        log_warn("test_app_offscreen_pixel_query_selection_preserves_vertical_orientation "
+                 "skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -8065,14 +8066,14 @@ int test_app_offscreen_legacy_srgb_blend_readback(TstContext* suite, const TstCa
 
     DvzColor display_red = {230, 57, 70, 255};
     DvzVisual* visual = _app_primitive_add_quad(
-        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.0f, display_red, DVZ_ALPHA_OPAQUE,
-        false);
+        scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.0f, display_red, DVZ_ALPHA_OPAQUE, false);
     AT(visual != NULL);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_legacy_srgb_blend_readback skipped: GPU context creation failed");
+        log_warn(
+            "test_app_offscreen_legacy_srgb_blend_readback skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -8150,7 +8151,8 @@ int test_app_offscreen_linear_color_field_not_decoded(TstContext* suite, const T
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -8167,16 +8169,17 @@ int test_app_offscreen_linear_color_field_not_decoded(TstContext* suite, const T
         {128, 128, 128, 255},
     };
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = pixels,
-                   .bytes_per_row = 2 * sizeof(DvzColor),
-                   .rows_per_image = 2,
-               }) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                      .data = pixels,
+                      .bytes_per_row = 2 * sizeof(DvzColor),
+                      .rows_per_image = 2,
+                  }) == DVZ_OK);
     AT(dvz_visual_set_field(image, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
-    DvzColor expected = dvz_color_from_linear(
-        dvz_colorf(128.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f));
+    DvzColor expected =
+        dvz_color_from_linear(dvz_colorf(128.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f));
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -8256,11 +8259,10 @@ int test_app_offscreen_alpha_over_nonblack_linear(TstContext* suite, const TstCa
     DvzColor expected = dvz_color_from_linear(dvz_colorf(
         src_linear.r * alpha + dst_linear.r * (1.0f - alpha),
         src_linear.g * alpha + dst_linear.g * (1.0f - alpha),
-        src_linear.b * alpha + dst_linear.b * (1.0f - alpha),
-        1.0f));
+        src_linear.b * alpha + dst_linear.b * (1.0f - alpha), 1.0f));
 
-    uint8_t naive_r = (uint8_t)((uint32_t)src.r * src.a / 255u +
-                                (uint32_t)dst.r * (255u - src.a) / 255u);
+    uint8_t naive_r =
+        (uint8_t)((uint32_t)src.r * src.a / 255u + (uint32_t)dst.r * (255u - src.a) / 255u);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -8332,9 +8334,9 @@ int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const T
         scene, panel, -0.95f, 0.95f, -0.95f, 0.95f, 0.0f, dst, DVZ_ALPHA_OPAQUE, false);
     AT(background != NULL);
 
-    DvzScale* scale =
-        dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
-                             .kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(
+        scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     AT(scale != NULL);
     dvz_scale_set_domain(scale, 0.0, 1.0);
 
@@ -8374,18 +8376,16 @@ int test_app_offscreen_colormap_srgb_lut_linear_blend(TstContext* suite, const T
     DvzColor expected = dvz_color_from_linear(dvz_colorf(
         src_linear.r * alpha + dst_linear.r * (1.0f - alpha),
         src_linear.g * alpha + dst_linear.g * (1.0f - alpha),
-        src_linear.b * alpha + dst_linear.b * (1.0f - alpha),
-        1.0f));
+        src_linear.b * alpha + dst_linear.b * (1.0f - alpha), 1.0f));
 
-    uint8_t naive_r = (uint8_t)((uint32_t)src.r * src.a / 255u +
-                                (uint32_t)dst.r * (255u - src.a) / 255u);
+    uint8_t naive_r =
+        (uint8_t)((uint32_t)src.r * src.a / 255u + (uint32_t)dst.r * (255u - src.a) / 255u);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_colormap_srgb_lut_linear_blend skipped: GPU context creation "
-            "failed");
+        log_warn("test_app_offscreen_colormap_srgb_lut_linear_blend skipped: GPU context creation "
+                 "failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -8484,7 +8484,8 @@ int test_app_capture_rejects_undersized_buffer(TstContext* suite, const TstCase*
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_capture_rejects_undersized_buffer skipped: GPU context creation failed");
+        log_warn(
+            "test_app_capture_rejects_undersized_buffer skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -8534,7 +8535,8 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -8545,7 +8547,9 @@ int test_app_offscreen_volume_slice_renders_field(TstContext* suite, const TstCa
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2,
+                      .rows_per_image = 2}) == DVZ_OK);
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, volume, NULL) == 0);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.0f, 0.0f, 0.0f, 1.0f));
@@ -8622,7 +8626,8 @@ int test_app_offscreen_volume_rgba_srgb_linear_blend(TstContext* suite, const Ts
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -8635,11 +8640,12 @@ int test_app_offscreen_volume_rgba_srgb_linear_blend(TstContext* suite, const Ts
     for (uint32_t i = 0; i < 8; i++)
         voxels[i] = src;
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-                   .data = voxels,
-                   .bytes_per_row = 2 * sizeof(DvzColor),
-                   .rows_per_image = 2,
-               }) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                      .data = voxels,
+                      .bytes_per_row = 2 * sizeof(DvzColor),
+                      .rows_per_image = 2,
+                  }) == DVZ_OK);
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_SLICE) == 0);
     AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
@@ -8651,10 +8657,9 @@ int test_app_offscreen_volume_rgba_srgb_linear_blend(TstContext* suite, const Ts
     DvzColor expected = dvz_color_from_linear(dvz_colorf(
         src_linear.r * alpha + dst_linear.r * (1.0f - alpha),
         src_linear.g * alpha + dst_linear.g * (1.0f - alpha),
-        src_linear.b * alpha + dst_linear.b * (1.0f - alpha),
-        1.0f));
-    uint8_t naive_r = (uint8_t)((uint32_t)src.r * src.a / 255u +
-                                (uint32_t)dst.r * (255u - src.a) / 255u);
+        src_linear.b * alpha + dst_linear.b * (1.0f - alpha), 1.0f));
+    uint8_t naive_r =
+        (uint8_t)((uint32_t)src.r * src.a / 255u + (uint32_t)dst.r * (255u - src.a) / 255u);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
@@ -8721,7 +8726,8 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -8731,13 +8737,12 @@ int test_app_offscreen_volume_mip_renders_bright_slice(TstContext* suite, const 
                });
     ANN(field);
     const uint8_t voxels[16] = {
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        255, 255, 255, 255,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
     };
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2,
+                      .rows_per_image = 2}) == DVZ_OK);
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);
@@ -8809,7 +8814,8 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -8820,7 +8826,9 @@ int test_app_offscreen_volume_composite_renders_field(TstContext* suite, const T
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2,
+                      .rows_per_image = 2}) == DVZ_OK);
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == 0);
     AT(dvz_volume_set_step_count(volume, 64) == 0);
@@ -8893,7 +8901,8 @@ int test_app_offscreen_volume_label_composite_renders_category(
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R16_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -8904,15 +8913,17 @@ int test_app_offscreen_volume_label_composite_renders_category(
     ANN(field);
     const uint16_t labels[8] = {2, 2, 2, 2, 2, 2, 2, 2};
     AT(dvz_sampled_field_set_data(
-        field,
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-            .data = labels,
-            .bytes_per_row = 2 * sizeof(uint16_t),
-            .rows_per_image = 2,
-        }) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                      .data = labels,
+                      .bytes_per_row = 2 * sizeof(uint16_t),
+                      .rows_per_image = 2,
+                  }) == DVZ_OK);
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(
+        scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory category = {
         .category_id = 2,
@@ -8930,9 +8941,8 @@ int test_app_offscreen_volume_label_composite_renders_category(
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_volume_label_composite_renders_category skipped: GPU context "
-            "failed");
+        log_warn("test_app_offscreen_volume_label_composite_renders_category skipped: GPU context "
+                 "failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -8971,7 +8981,8 @@ int test_app_offscreen_volume_label_composite_renders_category(
 
 
 /**
- * Ensure composite label-volume rendering displays sparse categorical ids through the lookup buffer.
+ * Ensure composite label-volume rendering displays sparse categorical ids through the lookup
+ * buffer.
  *
  * @param suite the test suite
  * @param item the test item
@@ -8995,7 +9006,8 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
     DvzVisual* volume = dvz_volume(scene, 0);
     ANN(volume);
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R32_UINT,
                    .semantic = DVZ_FIELD_SEMANTIC_LABEL,
@@ -9006,15 +9018,17 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
     ANN(field);
     const uint32_t labels[8] = {70000, 70000, 70000, 70000, 70000, 70000, 70000, 70000};
     AT(dvz_sampled_field_set_data(
-        field,
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
-            .data = labels,
-            .bytes_per_row = 2 * sizeof(uint32_t),
-            .rows_per_image = 2,
-        }) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                      .data = labels,
+                      .bytes_per_row = 2 * sizeof(uint32_t),
+                      .rows_per_image = 2,
+                  }) == DVZ_OK);
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
 
-    DvzScale* scale = dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
+    DvzScale* scale = dvz_scale(
+        scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CATEGORICAL});
     ANN(scale);
     DvzScaleCategory category = {
         .category_id = 70000,
@@ -9032,9 +9046,8 @@ int test_app_offscreen_volume_label_composite_renders_sparse_category(
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn(
-            "test_app_offscreen_volume_label_composite_renders_sparse_category skipped: GPU "
-            "context failed");
+        log_warn("test_app_offscreen_volume_label_composite_renders_sparse_category skipped: GPU "
+                 "context failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -9137,7 +9150,8 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     }
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -9151,13 +9165,12 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
         return out;
     }
     const uint8_t voxels[16] = {
-        255, 255, 255, 255,
-        255, 255, 255, 255,
-        255, 255, 255, 255,
-        255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     };
     if (dvz_sampled_field_set_data(
-            field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) != DVZ_OK)
+            field, &(DvzFieldDataView){
+                       DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels,
+                       .bytes_per_row = 2, .rows_per_image = 2}) != DVZ_OK)
     {
         dvz_scene_destroy(scene);
         return out;
@@ -9196,7 +9209,8 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     if (mode == APP_VOLUME_OCCLUSION_MODE_VOLUME &&
         dvz_panel_set_volume_occluder(
             panel, volume,
-            &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
+            &(DvzVolumeOcclusionDesc){
+                DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                 .enabled = true,
                 .alpha_threshold = 0.005f,
                 .fade_distance = 0.02f,
@@ -9208,7 +9222,8 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
     }
     if (mode == APP_VOLUME_OCCLUSION_MODE_SCENE &&
         dvz_panel_set_scene_occlusion(
-            panel, &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
+            panel, &(DvzSceneOcclusionDesc){
+                       DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                        .enabled = true,
                        .depth_bias = 0.0f,
                        .soft_edge = 0.02f,
@@ -9465,8 +9480,8 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, c
     if (!(enabled.total_sum + 64ull * 64ull * 12ull < disabled.total_sum))
     {
         log_error(
-            "volume slice scene occlusion dimming failed: disabled=%" PRIu64
-            " enabled=%" PRIu64 " threshold=%" PRIu64,
+            "volume slice scene occlusion dimming failed: disabled=%" PRIu64 " enabled=%" PRIu64
+            " threshold=%" PRIu64,
             disabled.total_sum, enabled.total_sum, 64ull * 64ull * 12ull);
         return 1;
     }
@@ -9481,7 +9496,8 @@ int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, c
  * @param item the test item
  * @return 0 on success
  */
-int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suite, const TstCase* item)
+int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -9496,7 +9512,8 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     ANN(panel);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -9506,13 +9523,12 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
                });
     ANN(field);
     const uint8_t voxels[16] = {
-        255, 255, 255, 255,
-        255, 255, 255, 255,
-        255, 255, 255, 255,
-        255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     };
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2,
+                      .rows_per_image = 2}) == DVZ_OK);
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -9541,7 +9557,8 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -9570,14 +9587,21 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     dvz_visual_set_visible(mesh, false);
 
     AT(dvz_panel_add_visual(
-           panel, volume, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) == 0);
+           panel, volume,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) ==
+       0);
     AT(dvz_panel_add_visual(
-           panel, slice, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) == 0);
+           panel, slice,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) ==
+       0);
     AT(dvz_panel_add_visual(
-           panel, mesh, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) == 0);
+           panel, mesh,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) ==
+       0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
-           &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
+           &(DvzVolumeOcclusionDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                .enabled = true,
                .alpha_threshold = 0.005f,
                .fade_distance = 0.02f,
@@ -9598,9 +9622,8 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     if (win == NULL)
     {
-        log_warn(
-            "test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle skipped: view "
-            "failed");
+        log_warn("test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle skipped: view "
+                 "failed");
         tst_skip(suite, "view creation failed");
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);
@@ -9619,7 +9642,8 @@ int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suit
     AT(dvz_visual_set_scene_occluder(mesh, true) == 0);
     AT(dvz_visual_set_scene_occluded(slice, true) == 0);
     AT(dvz_panel_set_scene_occlusion(
-           panel, &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
+           panel, &(DvzSceneOcclusionDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
                       .enabled = true,
                       .depth_bias = 0.0005f,
                       .soft_edge = 0.02f,
@@ -9682,7 +9706,8 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     AT(dvz_panel_add_visual(panel, occluder, NULL) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -9692,13 +9717,12 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
                });
     ANN(field);
     const uint8_t voxels[16] = {
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        255, 255, 255, 255,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255,
     };
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2,
+                      .rows_per_image = 2}) == DVZ_OK);
     AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
     AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_MIP) == 0);
     AT(dvz_volume_set_step_count(volume, 16) == 0);
@@ -9709,7 +9733,8 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)
     {
-        log_warn("test_app_offscreen_volume_depth_occluded_by_primitive skipped: GPU context failed");
+        log_warn(
+            "test_app_offscreen_volume_depth_occluded_by_primitive skipped: GPU context failed");
         tst_skip(suite, "GPU context failed");
         dvz_scene_destroy(scene);
         return 0;
@@ -9838,8 +9863,10 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_gsp_first_slice_smoke);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);
-    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_marker_query_selection_preserves_vertical_orientation);
-    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_query_selection_preserves_vertical_orientation);
+    TST_SCENE_APP_SHARED_CASE(
+        test_app_offscreen_marker_query_selection_preserves_vertical_orientation);
+    TST_SCENE_APP_SHARED_CASE(
+        test_app_offscreen_pixel_query_selection_preserves_vertical_orientation);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_clear_color);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_midgray_srgb_readback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_legacy_srgb_blend_readback);

@@ -65,8 +65,16 @@ bool _contract_validate_graph_backed_render_nodes(
         const DvzFramePlanNode* render = &plan->nodes[i];
         if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
-        if (!_scene_render_role_requires_graph_pass(render->u.render.pass_role))
+        if (!render->u.render.has_composition_pass)
+        {
+            if (render->u.render.pass_role != DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE &&
+                render->u.render.pass_role != DVZ_FRAME_PLAN_RENDER_PASS_PICKING)
+            {
+                _contract_report(report, "graph-backed render node has no matching graph pass");
+                ok = false;
+            }
             continue;
+        }
         if (_contract_graph_pass_for_render(plan, render) != NULL)
             continue;
         _contract_report(report, "graph-backed render node has no matching graph pass");

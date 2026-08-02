@@ -99,9 +99,9 @@ typedef enum
     DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM,
     DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT,
     DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE,
-    DVZ_SCENE_BUILTIN_SHADER_SSAO,
-    DVZ_SCENE_BUILTIN_SHADER_SSAO_BLUR,
-    DVZ_SCENE_BUILTIN_SHADER_SSAO_COMPOSITE,
+    DVZ_SCENE_BUILTIN_SHADER_GTAO,
+    DVZ_SCENE_BUILTIN_SHADER_GTAO_DENOISE,
+    DVZ_SCENE_BUILTIN_SHADER_GTAO_VISIBILITY_PRESENTATION,
     DVZ_SCENE_BUILTIN_SHADER_EDL_RESOLVE,
     DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT,
     DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_BACK,
@@ -120,8 +120,7 @@ const char* _shader_format_tag(const DvzFramePlanEmitConfig* cfg);
 
 const char* _shader_format_token(const DvzFramePlanEmitConfig* cfg);
 
-const char*
-_shader_source(const DvzFramePlanEmitConfig* cfg, const char* wgsl, const char* glsl);
+const char* _shader_source(const DvzFramePlanEmitConfig* cfg, const char* wgsl, const char* glsl);
 
 void _render_vertex_shader_source(
     const DvzFramePlanEmitConfig* cfg, const char** wgsl, const char** glsl);
@@ -131,8 +130,8 @@ bool _emit_shader(
     const char* glsl, const DvzFramePlanEmitConfig* cfg);
 
 bool _emit_shader_spirv(
-    DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
-    const char* spirv_key, const char* glsl, const DvzFramePlanEmitConfig* cfg);
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* spirv_key,
+    const char* glsl, const DvzFramePlanEmitConfig* cfg);
 
 char* _shader_glsl_variant(const char* glsl, const char* defines);
 

@@ -1,0 +1,38 @@
+# RC3 Render Products Affected-QA Manifest
+
+Status: required post-R9 QA invalidation matrix for the exact render landing. Updated: 2026-08-02.
+
+Use the revision boundary and exact path inventory in [RC3_RENDER_PRODUCTS_LANDING.md](RC3_RENDER_PRODUCTS_LANDING.md). A row is complete only when its result is recorded against the final integrated head; checkpoint results establish feasibility but do not close the final row.
+
+| Affected boundary | Why invalidated | Required focused evidence | Final result |
+| --- | --- | --- | --- |
+| Public scene API and ABI | `DvzAoDesc`, AO enums/functions, obsolete SSAO controls, and public frame-plan role API changed. | `just ctypes`, `just ctypes-check`, binding smoke, Python AO examples, exported-symbol check, API docs generation/check. | Pending exact-head run. |
+| Scene frame plan and composer | Product schema, versions, phases, dependencies, diagnostics, serialization, panel geometry, and transactional emission changed. | Frame-plan, scene-graph, composition, serialization, ASCII/JSON, resize, unequal-panel, minimized/zero-extent, diagnostic, and deterministic-plan tests. | Pending exact-head run. |
+| DRP2 contract and fixtures | Attachment resolve/load/store metadata and emitted streams changed. | `just test-drp2-contract`, DRP2 fixture validation/regeneration check, schema check, native stream validation, WebGPU preflight and smoke. | Pending exact-head run. |
+| vklite/runtime resource ownership | Graph realization, descriptor refresh, aliasing, bind groups, pipeline state, and generic lowering changed. | Native/vklite runtime suites with validation layers; resize/recreate, sampled binding, alias lifetime, failure cleanup, repeated-frame, and offscreen shutdown cases. | Pending exact-head run. |
+| Canvas/stream presentation boundary | Panel-local targets, load/store, presentation versions, and borrowed target use changed even though canvas/stream sources are textually unchanged. | Canvas/stream scene integration, offscreen capture, bounded live presentation where available, repeated resize and shutdown; preserve borrowed ownership. | Pending exact-head run. |
+| App trace and replay | Effect-specific normalization was removed and scoped typed resource identity changed. | App trace suite, record/replay smoke, deterministic normalized traces, no label/suffix interpretation source guard. | Pending exact-head run. |
+| Shader ABI and registry | Surface capture, resolve, GTAO, EDL, transparency, volume, material bindings, and many visual fragment variants changed. | `just shader-abi-check`, direct GLSL compile, shader source guards, pipeline-layout/bind-group tests, WGSL material compile/preflight. | Pending exact-head run. |
+| Coherent surface/MSAA | Surface record and product-specific resolves changed across mesh, primitive, point, masked, and analytic sphere paths. | Perspective/orthographic, intersections, clipping/discard, silhouettes, background validity, alpha-to-coverage, MSAA off/on, sample compatibility, object-ID selection. | Pending exact-head run. |
+| AO/GTAO and materials | Estimator, denoise, material binding, public controls, and issue #137 behavior changed. | Graph/lowering, mesh and sphere GPU execution, zoom sweep, stationary redraw, projection modes, unequal panels, resize, MSAA, background validity, ambient-only effect, and direct/specular/emissive/unlit exclusions. | Pending exact-head run. |
+| EDL and transparency | EDL, source-over, WBOIT, depth peeling, volume composition, overlay order, and typed products changed. | EDL projection/strength/resize, source-over order, WBOIT order independence, all peel iterations and clipping, volume/scene occlusion, transparent→volume→overlay phase order, load/store validation. | Pending exact-head run. |
+| Visual registry consumers | Capability declarations and shader/pipeline selection changed for participating and excluded families. | Focused mesh/sphere/primitive/point/marker/path/pixel/splat/volume tests plus ineligible transparent, overlay, query, and unlit guards. | Pending exact-head run. |
+| Query/selection | Queries must bypass AO, EDL, transparency presentation, and overlay mutations; sphere query shaders changed. | Scene query/readback suites, sphere/mesh identity, MSAA object-ID policy, hidden/ineligible visual cases. | Pending exact-head run. |
+| Examples, gallery, and public docs | AO target, IDs, callers, generated inventories, WebGPU capability metadata, and API reference changed. | Full build, `just check-example-manifests`, `just docs-generate`, `just docs-check-generated`, docs status/build/link checks, Python example smoke. | Pending exact-head run; historical data media rename requires separate approved data update or recorded exception. |
+| QA source-audit carryover | Render sources did not edit isolated math/window/stream/video algorithms, but shared headers and presentation boundaries invalidate consumers. | Preserve completed isolated math findings; rerun window/canvas/stream/video integration boundaries and all deferred scene/app/vk/vklite/DRP2 audit slices from `QA_SOURCE_AUDIT.md`. | Pending affected-audit lane. |
+
+## Required Final Sequence
+
+1. Freeze the R9 head and record it in the landing manifest.
+2. Run public API/binding generation before Python, gallery, packaging, or API-doc validation.
+3. Run CPU graph/contract/source-guard suites, shader ABI, DRP2 fixtures, WebGPU preflight/smoke, then validated native GPU suites under the repository build/GPU locks.
+4. Run examples and documentation generation/checks without staging the protected `data` gitlink or binary media.
+5. Run deferred window/canvas/stream/video and scene/app/vk/vklite QA boundary slices.
+6. Record exact commands, counts, GPU/provider identities, failures, retries, and unavailable platforms in this file or a linked exact-head evidence record.
+7. Run `git diff --check`, inspect the staged set and prohibited paths, then integrate only after every failure is fixed or explicitly dispositioned.
+
+## Explicit Non-Invalidations
+
+- Pure math algorithm tests remain valid because the render landing after `c657845f1` changes no `src/math` path.
+- Window-host, stream-registry, and video-codec isolated unit conclusions remain valid because their source is unchanged; only their canvas/presentation integration conclusions are invalidated.
+- Historical RC1/RC2 artifacts, release evidence, and SSAO-labelled gallery captures remain immutable evidence of those exact revisions.

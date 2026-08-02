@@ -358,7 +358,6 @@ int test_frame_plan_graph_dependencies_dump(TstContext* suite, const TstCase* it
 
 int test_frame_plan_graph_depth_peeling_shape(TstContext* suite, const TstCase* item);
 
-int test_frame_plan_graph_gbuffer_shape(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_graph_validation_read_before_write(TstContext* suite, const TstCase* item);
 
@@ -848,7 +847,7 @@ int test_scene_visual_family_registry_coverage(TstContext* suite, const TstCase*
 
 int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* item);
 
-int test_scene_role_work_label_mapping_complete(TstContext* suite, const TstCase* item);
+int test_scene_role_policy_mapping_complete(TstContext* suite, const TstCase* item);
 
 int test_scene_render_contract_validation_errors(TstContext* suite, const TstCase* item);
 
@@ -880,7 +879,7 @@ int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const Ts
 
 int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item);
 
-int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item);
+int test_scene_msaa_gtao_blended_overlay_runtime_lowering(TstContext* suite, const TstCase* item);
 
 int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase* item);
 
@@ -894,21 +893,19 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
 
 int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* item);
 
-int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item);
+int test_scene_gtao_graph_foundation(TstContext* suite, const TstCase* item);
 
 int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item);
 
 int test_scene_graph_runtime_targets_grow(TstContext* suite, const TstCase* item);
 
-int test_scene_ssao_normalization_characterization(TstContext* suite, const TstCase* item);
+int test_scene_gtao_runtime_lowering(TstContext* suite, const TstCase* item);
 
-int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item);
+int test_scene_gtao_glsl_executes(TstContext* suite, const TstCase* item);
 
-int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item);
+int test_scene_sphere_gtao_glsl_executes(TstContext* suite, const TstCase* item);
 
-int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item);
-
-int test_scene_ssao_ignores_ineligible_visuals(TstContext* suite, const TstCase* item);
+int test_scene_gtao_ignores_ineligible_visuals(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase* item);
 
@@ -1342,8 +1339,7 @@ int test_app_offscreen_mesh_ao_affects_ambient_lighting(TstContext* suite, const
 
 int test_app_offscreen_sphere_gtao_darkens_contact(TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_gtao_projection_zoom_stability(
-    TstContext* suite, const TstCase* item);
+int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_gtao_panel_locality(TstContext* suite, const TstCase* item);
 
