@@ -1,6 +1,6 @@
 # Incremental C QA Handoff
 
-Status: active incremental source audit completed through `input`, math statistics, and the bounded math box checkpoint; the remaining campaign and two-lane render coordination were approved on 2026-08-02. Updated: 2026-08-02.
+Status: active incremental source audit completed through `input` and the bounded math statistics, box, and easing checkpoints; the remaining campaign and two-lane render coordination were approved on 2026-08-02. Updated: 2026-08-02.
 
 This handoff records the current static-analysis, sanitizer, lifetime, bounds, and corruption-prevention pass. It is development evidence for the RC3 release-quality lane, not final exact-artifact or platform-matrix proof.
 
@@ -227,12 +227,13 @@ After the last module, rerun the frozen locally available matrix from the exact 
 | Input | Confirmed the synchronous router is active through window backends, canvas, controllers, scene, and WASM. Hardened subscription growth against overflow and allocation failure, preserved live arrays after failed growth, prevented removed callbacks from running later in the same dispatch, avoided callback-ID reuse after wrap, handled constructor and dispatch allocation failure, and rejected corrupting duplicate presses and backwards click timestamps. Added focused callback lifetime, allocation-failure, and gesture regressions. | `e710ea15f` |
 | Math statistics | Confirmed the active math source set and corrected handoff drift: the public umbrella is `include/datoviz/dvzmath.h`, there is no standalone `test_parallel.c`, and parallel coverage lives in `test_stats.c`. Removed four duplicate exported statistics implementations from `parallel.c`, preserving the documented zero-count `dvz_range()` no-op in the sole `stats.c` implementation, and added focused range, extrema, clipping, and equal-bound normalization coverage. | `c157b2cfb` |
 | Math boxes | Added the missing documented non-null output assertion to `dvz_box_inverse()` and regression coverage for nonpositive extent passthrough, empty and strategy-specific merges, ordinary one-dimensional and polygon normalization, and ordinary inverse mappings. Degenerate source/target axes, non-finite inputs, overlapping buffers, and initialization of untouched `vec3` components remain explicit contract questions; this checkpoint does not change them. | `c0005f0f6` |
+| Math easing | Corrected `DVZ_EASING_IN_SINE`, which had duplicated out-sine, and added midpoint coverage that distinguishes both curves. | `4b7250561` |
 
 Focused normal tests, relevant sanitizer runs, per-file static analysis, `just build`, `just spec-check`, and `git diff --check` were used throughout the checkpoints where applicable. There is no retained machine-readable campaign report, so final RC3 evidence must rerun the frozen matrix from exact release artifacts.
 
 ## Latest Confirmed State
 
-At `c0005f0f6` on the Linux NVIDIA RTX 5090 host:
+At `4b7250561` on the Linux NVIDIA RTX 5090 host:
 
 - Normal `just build` and `just test math` passed; math selected 15/15 tests.
 - The focused math lane passed 15/15 under ASan/UBSan/LSan with `DVZ_USE_VALIDATION:BOOL=OFF`; the runtime emitted the host's existing sanitizer interceptor warnings without a sanitizer finding.
@@ -241,6 +242,9 @@ At `c0005f0f6` on the Linux NVIDIA RTX 5090 host:
 - `git diff --check` passed before the implementation checkpoint.
 - The focused normal box selection passed 7/7 including its direct scene query consumer, while the exact ASan/UBSan/LSan `math/box` group passed 6/6 with validation disabled and no sanitizer finding. The broad `just atest box` selector was stopped after its six box cases passed because it also selected and stalled in an unrelated GPU scene-query case.
 - Focused `clang-tidy` on `box.c` and `test_box.c` emitted no user-code diagnostic, and focused `cppcheck` emitted no diagnostic.
+- The sine-easing case passed normally and under ASan/UBSan/LSan with validation disabled; focused `clang-tidy` and `cppcheck` emitted no user-code diagnostic. The full normal math lane remained 15/15, `just build`, `just spec-check`, and `git diff --check` passed.
+
+The remaining math inventory found no active production caller for the entropy-seeded PRNG and confirmed that OpenMP is hard-disabled by the current build. Reproducible PRNG construction and OpenMP process/thread semantics require explicit API decisions before changes. Active scene track construction and evaluation accept non-finite inputs, do not validate all public enums or unsupported tangent fields, and step interpolation misses the final inclusive non-repeating endpoint; these are recorded for the scene interaction contract rather than folded into the math checkpoint.
 
 Previous input checkpoint evidence at `e710ea15f`:
 
