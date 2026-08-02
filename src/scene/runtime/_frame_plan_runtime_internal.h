@@ -321,9 +321,11 @@ bool _emitter_emit_render_multi_draws(
 void _emit_target_extent(const DvzFramePlanEmitConfig* cfg, uint32_t* width, uint32_t* height);
 const DvzFrameGraphResource*
 _graph_resource_by_id(const DvzFramePlan* plan, const char* resource_id);
-const DvzFrameGraphPass* _graph_pass_by_composition_role(
-    const DvzFramePlan* plan, const char* panel_id, DvzFramePlanRenderPassRole role,
-    uint32_t ordinal);
+const DvzFrameGraphPass* _graph_pass_by_composition_provider(
+    const DvzFramePlan* plan, const char* panel_id, DvzSceneWorkProviderKey provider,
+    uint32_t occurrence);
+const DvzSceneResolvedPass* _graph_composition_pass(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass);
 const DvzFrameGraphResource* _graph_composition_scratch_resource(
     const DvzFramePlan* plan, const DvzFrameGraphPass* pass, DvzSceneScratchKind kind,
     DvzSceneWorkBindingUsage usage);

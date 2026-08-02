@@ -838,17 +838,13 @@ bool _emitter_emit_scene_graph_renders(
             {
                 depth_peel_sampled_bgl_id = targets->iter_bgl_id;
                 depth_peel_dummy_bg_id = targets->dummy_bg_id;
-                for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
+                const DvzSceneResolvedPass* resolved =
+                    _graph_composition_pass(plan, render_graph_pass);
+                if (resolved != NULL &&
+                    resolved->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION &&
+                    resolved->ordinal < DVZ_SCENE_DEPTH_PEEL_ITERATIONS)
                 {
-                    char iter_pass_id[DVZ_SCENE_LABEL_SIZE];
-                    dvz_snprintf(
-                        iter_pass_id, sizeof(iter_pass_id), "%s.peel.iter.%" PRIu32,
-                        render->u.render.panel_id, iter_idx);
-                    if (strcmp(render_graph_pass->id, iter_pass_id) == 0)
-                    {
-                        depth_peel_sampled_bg_id = targets->iter_bg_ids[iter_idx];
-                        break;
-                    }
+                    depth_peel_sampled_bg_id = targets->iter_bg_ids[resolved->ordinal];
                 }
             }
         }

@@ -89,17 +89,17 @@ _graph_resource_by_id(const DvzFramePlan* plan, const char* resource_id)
 
 
 /**
- * Return a graph pass descriptor by typed composition role and ordinal.
+ * Return a graph pass descriptor by typed composition provider and occurrence.
  *
  * @param plan the FramePlan.
  * @param panel_id the panel id.
- * @param role typed render-pass role
- * @param ordinal role-local pass ordinal
+ * @param provider typed work provider
+ * @param occurrence provider-local occurrence
  * @return the graph pass descriptor, or NULL when absent.
  */
-const DvzFrameGraphPass* _graph_pass_by_composition_role(
-    const DvzFramePlan* plan, const char* panel_id, DvzFramePlanRenderPassRole role,
-    uint32_t ordinal)
+const DvzFrameGraphPass* _graph_pass_by_composition_provider(
+    const DvzFramePlan* plan, const char* panel_id, DvzSceneWorkProviderKey provider,
+    uint32_t occurrence)
 {
     ANN(plan);
     ANN(panel_id);
@@ -107,10 +107,13 @@ const DvzFrameGraphPass* _graph_pass_by_composition_role(
     if (snapshot == NULL)
         return NULL;
     DvzSceneCompositionPassId composition_pass_id = {0};
+    uint32_t provider_occurrence = 0;
     for (uint32_t i = 0; i < snapshot->pass_count; i++)
     {
         const DvzSceneResolvedPass* resolved = &snapshot->passes[i];
-        if (resolved->role == role && resolved->ordinal == ordinal)
+        if (resolved->provider != provider)
+            continue;
+        if (provider_occurrence++ == occurrence)
         {
             composition_pass_id = resolved->id;
             break;
@@ -132,6 +135,33 @@ const DvzFrameGraphPass* _graph_pass_by_composition_role(
 
 
 /**
+ * Return the immutable composition work represented by a physical graph pass.
+ *
+ * @param plan source FramePlan
+ * @param pass physical graph pass
+ * @return resolved composition pass, or NULL when the graph pass is untyped
+ */
+const DvzSceneResolvedPass* _graph_composition_pass(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
+{
+    ANN(plan);
+    if (pass == NULL || !pass->has_composition_pass)
+        return NULL;
+    const DvzPanelCompositionSnapshot* snapshot =
+        _frame_plan_composition_get(plan, pass->panel_id);
+    if (snapshot == NULL)
+        return NULL;
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        if (snapshot->passes[i].id.value == pass->composition_pass_id.value)
+            return &snapshot->passes[i];
+    }
+    return NULL;
+}
+
+
+
+/**
  * Resolve one typed scratch binding on a graph pass to its physical resource.
  *
  * @param plan source FramePlan
@@ -145,22 +175,12 @@ const DvzFrameGraphResource* _graph_composition_scratch_resource(
     DvzSceneWorkBindingUsage usage)
 {
     ANN(plan);
-    if (pass == NULL || !pass->has_composition_pass)
+    const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, pass);
+    if (resolved == NULL)
         return NULL;
     const DvzPanelCompositionSnapshot* snapshot =
         _frame_plan_composition_get(plan, pass->panel_id);
     if (snapshot == NULL)
-        return NULL;
-    const DvzSceneResolvedPass* resolved = NULL;
-    for (uint32_t i = 0; i < snapshot->pass_count; i++)
-    {
-        if (snapshot->passes[i].id.value == pass->composition_pass_id.value)
-        {
-            resolved = &snapshot->passes[i];
-            break;
-        }
-    }
-    if (resolved == NULL)
         return NULL;
     for (uint32_t i = 0; i < resolved->binding_count; i++)
     {

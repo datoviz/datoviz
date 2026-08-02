@@ -381,10 +381,10 @@ bool _emitter_prepare_ssao_targets(
     ANN(out);
 
     const DvzFrameGraphPass* pass = _graph_pass_for_render(plan, render);
-    const DvzFrameGraphPass* blur_pass = _graph_pass_by_composition_role(
-        plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR, 0);
-    const DvzFrameGraphPass* composite_pass = _graph_pass_by_composition_role(
-        plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE, 0);
+    const DvzFrameGraphPass* blur_pass = _graph_pass_by_composition_provider(
+        plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR, 0);
+    const DvzFrameGraphPass* composite_pass = _graph_pass_by_composition_provider(
+        plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE, 0);
     if (pass == NULL || composite_pass == NULL || pass->read_count < 2 ||
         pass->color_attachment_count < 1 || composite_pass->read_count < 1)
         return false;
@@ -970,8 +970,8 @@ bool _emitter_prepare_wboit_targets(
     bg_resource->byte_size = bg_fingerprint;
     if (ok && is_new)
     {
-        const DvzFrameGraphPass* resolve_graph_pass = _graph_pass_by_composition_role(
-            plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE, 0);
+        const DvzFrameGraphPass* resolve_graph_pass = _graph_pass_by_composition_provider(
+            plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE, 0);
         uint64_t accum_id = _graph_sampled_read_texture_id(
             resolve_graph_pass, 0, out->color_id, graph_targets, out->accum_id);
         uint64_t weight_id = _graph_sampled_read_texture_id(
@@ -1308,8 +1308,8 @@ bool _emitter_prepare_depth_peel_targets(
                        stream, out->dummy_bg_id, dummy_bgl_id, 1, &entry);
     }
 
-    const DvzFrameGraphPass* composite_pass = _graph_pass_by_composition_role(
-        plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE, 0);
+    const DvzFrameGraphPass* composite_pass = _graph_pass_by_composition_provider(
+        plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE, 0);
     ok = ok && composite_pass != NULL;
     if (ok)
     {
@@ -1323,8 +1323,9 @@ bool _emitter_prepare_depth_peel_targets(
 
     for (uint32_t iter_idx = 0; ok && iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
     {
-        const DvzFrameGraphPass* iter_pass = _graph_pass_by_composition_role(
-            plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, iter_idx);
+        const DvzFrameGraphPass* iter_pass = _graph_pass_by_composition_provider(
+            plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION,
+            iter_idx);
         ok = ok && iter_pass != NULL;
         if (ok)
         {
