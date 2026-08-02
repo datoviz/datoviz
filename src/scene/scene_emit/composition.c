@@ -37,8 +37,7 @@
 #define COMPOSITION_CAP_TRIPLE_COLOR_ATTACHMENTS 0x20u
 
 #define COMPOSITION_ADAPT_MSAA_REDUCED             0x01u
-#define COMPOSITION_ADAPT_LEGACY_AMBIENT_COMPOSITE 0x02u
-#define COMPOSITION_ADAPT_CAPABILITY_FALLBACK      0x04u
+#define COMPOSITION_ADAPT_CAPABILITY_FALLBACK 0x04u
 #define COMPOSITION_EXPAND_SSAO_BLUR               0x01u
 #define COMPOSITION_EXPAND_PRESENTATION            0x02u
 
@@ -111,7 +110,7 @@ static const DvzSceneTechniqueContract TECHNIQUE_CONTRACTS[] = {
                                     LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED),
         .required_capability_mask =
             COMPOSITION_CAP_RGBA16FLOAT | COMPOSITION_CAP_TRIPLE_COLOR_ATTACHMENTS,
-        .fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION,
+        .fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_NONE,
         .pass_template_count = 1,
         .pass_templates = {{DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER, COMPOSITION_PASS_ONCE}},
     },
@@ -143,7 +142,7 @@ static const DvzSceneTechniqueContract TECHNIQUE_CONTRACTS[] = {
                                     LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED),
         .required_capability_mask = COMPOSITION_CAP_SAMPLED_RENDER_TARGET |
                                     COMPOSITION_CAP_RGBA16FLOAT | COMPOSITION_CAP_R16FLOAT,
-        .fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION,
+        .fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_NONE,
         .pass_template_count = 2,
         .pass_templates =
             {
@@ -177,9 +176,8 @@ static const DvzSceneTechniqueContract TECHNIQUE_CONTRACTS[] = {
         .outputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SCENE_COLOR),
         .participating_layer_mask = LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE) |
                                     LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED),
-        .required_capability_mask =
-            COMPOSITION_CAP_SAMPLED_RENDER_TARGET | COMPOSITION_CAP_COLOR_BLEND,
-        .fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION,
+        .required_capability_mask = COMPOSITION_CAP_SAMPLED_RENDER_TARGET,
+        .fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_NONE,
         .pass_template_count = 1,
         .pass_templates = {{DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE, COMPOSITION_PASS_ONCE}},
     },
@@ -814,8 +812,9 @@ static DvzSceneScratchResourceId _composition_scratch(
         .technique_instance_id = technique_id,
         .scope = scope,
         .kind = kind,
-        .format = kind == DVZ_SCENE_SCRATCH_SSAO_RAW
-                      ? DVZ_FORMAT_R8_UNORM
+        .format = kind == DVZ_SCENE_SCRATCH_SSAO_RAW ||
+                          kind == DVZ_SCENE_SCRATCH_SSAO_DENOISE
+                      ? DVZ_FORMAT_R32_SFLOAT
                       : (kind == DVZ_SCENE_SCRATCH_SCENE_OCCLUSION_DEVICE_DEPTH ||
                                  kind == DVZ_SCENE_SCRATCH_VOLUME_OCCLUSION_DEVICE_DEPTH
                              ? DVZ_FORMAT_R32_SFLOAT
@@ -1032,11 +1031,6 @@ static bool _composition_declare_work(
         auxiliary_kind = DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
         auxiliary_binding = 5;
     }
-    else if (pass->provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE)
-    {
-        auxiliary_kind = DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
-        auxiliary_binding = 2;
-    }
     if (auxiliary_kind != DVZ_SCENE_AUXILIARY_NONE)
     {
         pass->auxiliary_binding_count = 1;
@@ -1174,13 +1168,23 @@ static bool _composition_declare_work(
         break;
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
         ok = SCRATCH(
-                 DVZ_SCENE_SCRATCH_SSAO_RAW, DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE, COLOR_USAGE,
+                 work_index == 0 ? DVZ_SCENE_SCRATCH_SSAO_RAW
+                                 : DVZ_SCENE_SCRATCH_SSAO_DENOISE,
+                 DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE, COLOR_USAGE,
                  DVZ_SCENE_WORK_BINDING_SAMPLED, DVZ_SCENE_WORK_ACCESS_READ, UINT32_MAX, 0,
                  DVZ_SCENE_ATTACHMENT_LOAD_NONE, DVZ_SCENE_ATTACHMENT_STORE_NONE, false) &&
              SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_NORMAL, 1) &&
              SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_DEPTH, 2) &&
              SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE, 3) &&
-             ATTACH(DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY, 0, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR);
+             (work_index == 0
+                  ? SCRATCH(
+                        DVZ_SCENE_SCRATCH_SSAO_DENOISE, DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE,
+                        COLOR_USAGE, DVZ_SCENE_WORK_BINDING_ATTACHMENT,
+                        DVZ_SCENE_WORK_ACCESS_WRITE, 0, UINT32_MAX,
+                        DVZ_SCENE_ATTACHMENT_LOAD_CLEAR, DVZ_SCENE_ATTACHMENT_STORE_STORE, false)
+                  : ATTACH(
+                        DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY, 0,
+                        DVZ_SCENE_ATTACHMENT_LOAD_CLEAR));
         if (ok)
         {
             _composition_clear_value(pass, 1, 1, 1, 1);
@@ -1224,10 +1228,7 @@ static bool _composition_declare_work(
             context->forward_depth_written = true;
         }
         if (ok && in[DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY].value != 0)
-        {
-            pass->legacy_transition = true;
-            ok = _composition_mark_unrealized(pass, in[DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY]);
-        }
+            ok = SAMPLE(DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY, 0);
         break;
     }
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
@@ -1530,7 +1531,7 @@ static bool _composition_expand_all(
         {
             uint32_t repeat = contract->pass_templates[i].repeat;
             if (repeat == COMPOSITION_PASS_OPTIONAL_SSAO_BLUR)
-                repeat = (technique->expansion_flags & COMPOSITION_EXPAND_SSAO_BLUR) != 0;
+                repeat = (technique->expansion_flags & COMPOSITION_EXPAND_SSAO_BLUR) != 0 ? 2 : 0;
             else if (repeat == COMPOSITION_PASS_OPTIONAL_PRESENTATION)
                 repeat = (technique->expansion_flags & COMPOSITION_EXPAND_PRESENTATION) != 0;
             else if (repeat == COMPOSITION_PASS_DEPTH_PEEL_ITERATIONS)
@@ -1598,11 +1599,6 @@ bool _scene_panel_composition_contract_validate(
                 expected_fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_REDUCE_SAMPLES;
             }
         }
-        if (technique->id == DVZ_SCENE_TECHNIQUE_AMBIENT_COMPOSITE)
-        {
-            allowed_adaptations |= COMPOSITION_ADAPT_LEGACY_AMBIENT_COMPOSITE;
-            required_adaptations |= COMPOSITION_ADAPT_LEGACY_AMBIENT_COMPOSITE;
-        }
         if (technique->missing_capability_mask != 0)
         {
             if (contract->fallback != DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION)
@@ -1632,7 +1628,7 @@ bool _scene_panel_composition_contract_validate(
         {
             uint32_t repeat = contract->pass_templates[i].repeat;
             if (repeat == COMPOSITION_PASS_OPTIONAL_SSAO_BLUR)
-                repeat = (technique->expansion_flags & COMPOSITION_EXPAND_SSAO_BLUR) != 0;
+                repeat = (technique->expansion_flags & COMPOSITION_EXPAND_SSAO_BLUR) != 0 ? 2 : 0;
             else if (repeat == COMPOSITION_PASS_OPTIONAL_PRESENTATION)
                 repeat = (technique->expansion_flags & COMPOSITION_EXPAND_PRESENTATION) != 0;
             else if (repeat == COMPOSITION_PASS_DEPTH_PEEL_ITERATIONS)
@@ -1912,7 +1908,7 @@ bool _scene_panel_composition_resolve(
             DVZ_PANEL_RENDER_INVALID_INDEX, &begin, &end);
         if (!_composition_add_technique(
                 &draft, DVZ_SCENE_TECHNIQUE_SURFACE_CAPTURE, 0, surface_record, msaa_adaptation,
-                DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION) ||
+                DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
             !_composition_set_latest_expansion(&draft, begin, end, 0))
             return _composition_report(
                 report, "panel %s surface capture expansion failed", render_plan->panel_id);
@@ -1966,15 +1962,15 @@ bool _scene_panel_composition_resolve(
                 report, "panel %s opaque shading expansion failed", render_plan->panel_id);
     }
 
-    if (effective_ssao)
+    if (effective_ssao && render_plan->ssao_state != NULL && render_plan->ssao_state->debug_view)
     {
         if (!_composition_add_technique(
                 &draft, DVZ_SCENE_TECHNIQUE_AMBIENT_COMPOSITE, scene_color | ambient_visibility,
-                scene_color, COMPOSITION_ADAPT_LEGACY_AMBIENT_COMPOSITE,
-                DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION) ||
+                scene_color, 0, DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
             !_composition_set_latest_expansion(&draft, begin, end, 0))
             return _composition_report(
-                report, "panel %s ambient transition expansion failed", render_plan->panel_id);
+                report, "panel %s ambient debug presentation expansion failed",
+                render_plan->panel_id);
     }
 
     if (effective_edl)

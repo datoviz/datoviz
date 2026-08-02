@@ -110,7 +110,8 @@ bool _emitter_prepare_render_multi(
     DvzSceneWorkProviderKey provider, const DvzFramePlanEmitConfig* cfg,
     bool pass_has_depth_attachment, bool force_point_depth, const uint32_t* color_target_formats,
     uint32_t color_target_count, uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
-    uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
+    uint64_t scene_occlusion_depth_id, uint64_t ambient_visibility_bgl_id,
+    uint64_t ambient_visibility_bg_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
     bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
     uint32_t* draw_count_out)
@@ -130,6 +131,9 @@ bool _emitter_prepare_render_multi(
     bool gbuffer_pass = provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE;
     bool depth_peel_pass = provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
                            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
+    const bool ambient_visibility_pass =
+        provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE && ambient_visibility_bgl_id != 0 &&
+        ambient_visibility_bg_id != 0;
     DvzSceneShaderFormat shader_format =
         cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_GLSL;
     uint32_t color_target_format =
@@ -145,6 +149,14 @@ bool _emitter_prepare_render_multi(
     if (!_scene_common_bindings_resolve_panel_sets(
             emitter, stream, render, &common_bgl_id, &apply_bg_id, &fixed_bg_id, &isotropic_bg_id))
         return false;
+
+    if (ambient_visibility_pass)
+    {
+        uint64_t ambient_dummy_bgl_id = _obj_id(emitter, "_bgl_unused_set", &is_new);
+        if (ambient_dummy_bgl_id == 0 ||
+            (is_new && !_create_dummy_bind_group_layout(stream, ambient_dummy_bgl_id)))
+            return false;
+    }
 
     /* Image BGL + sampler (shared, created lazily on first image visual). */
     uint64_t img_bgl_id = 0, img_sampler_linear_id = 0, img_sampler_nearest_id = 0;
@@ -263,6 +275,31 @@ bool _emitter_prepare_render_multi(
             _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
             break;
         }
+        if (ambient_visibility_pass && !render->u.render.picking && desc.material_buffer_id != 0)
+        {
+            char* ambient_variant = _shader_glsl_variant(
+                shader.fragment_glsl, "#define DVZ_AMBIENT_VISIBILITY 1\n");
+            if (ambient_variant == NULL)
+            {
+                _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
+                ok = false;
+                break;
+            }
+            _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
+            scene_occlusion_fragment_glsl = ambient_variant;
+            shader.fragment_glsl = ambient_variant;
+            shader.fragment_spirv_key = NULL;
+            ok = _runtime_key_appendf(
+                shader.fragment_key, sizeof(shader.fragment_key), report,
+                "_ambient_visibility");
+            if (!ok)
+                break;
+            ok = _runtime_key_appendf(
+                shader.pipeline_key, sizeof(shader.pipeline_key), report,
+                "_ambient_visibility");
+            if (!ok)
+                break;
+        }
         DvzSceneBlendPolicy effective_blend_policy =
             segment_coverage_blend ? DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE : blend_policy;
 
@@ -319,6 +356,8 @@ bool _emitter_prepare_render_multi(
         _scene_visual_pipeline_desc_apply_pass_policy(
             &desc, provider, force_point_depth, pass_sample_count, pass_alpha_to_coverage,
             &pipeline);
+        pipeline.needs_ambient_visibility_layout =
+            ambient_visibility_pass && !render->u.render.picking && desc.material_buffer_id != 0;
         if (!pipeline.needs_item_state_style_layout)
             bind.uses_item_state_style_set1 = false;
         if (!pipeline.needs_material_layout)
@@ -448,12 +487,23 @@ bool _emitter_prepare_render_multi(
             {
                 uint64_t layouts[DVZ_DRP2_MAX_BIND_GROUPS] = {0};
                 uint32_t layout_count = 0;
+                uint64_t dummy_bgl_id = 0;
+                if (pipeline.needs_ambient_visibility_layout)
+                {
+                    dummy_bgl_id = _obj_id(emitter, "_bgl_unused_set", &is_new);
+                    if (dummy_bgl_id == 0)
+                        ok = false;
+                    else if (is_new)
+                        ok = _create_dummy_bind_group_layout(stream, dummy_bgl_id);
+                    if (!ok)
+                        break;
+                }
                 bool depth_peel_iter_pass =
                     provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION &&
                     depth_peel_sampled_bgl_id != 0;
                 if (depth_peel_iter_pass)
                 {
-                    uint64_t dummy_bgl_id = _obj_id(emitter, "_bgl_unused_set", &is_new);
+                    dummy_bgl_id = _obj_id(emitter, "_bgl_unused_set", &is_new);
                     if (dummy_bgl_id == 0)
                     {
                         ok = false;
@@ -500,11 +550,13 @@ bool _emitter_prepare_render_multi(
                         pipeline.uses_textured_mesh_layout ? textured_mesh_bgl_id : img_bgl_id,
                         labels_bgl_id, glyph_bgl_id, volume_bgl_id, visual_material_bgl_id,
                         item_state_style_bgl_id, scene_occlusion_bgl_id, scene_occlusion_uses_set2,
-                        layouts, &layout_count);
+                        ambient_visibility_bgl_id, dummy_bgl_id, layouts, &layout_count);
                 }
                 if (layout_count > 0)
                     ok = dvz_drp2_stream_pipeline_set_bind_group_layouts(
                         stream, layout_count, layouts);
+                if (!ok)
+                    _diagnostic(report, "scene render pipeline bind-group layouts failed");
             }
             if (ok && pipeline.has_depth_state)
                 ok = dvz_drp2_stream_pipeline_set_depth_state(
@@ -818,6 +870,12 @@ bool _emitter_prepare_render_multi(
             if (vis_bg_set2 == 0)
                 vis_bg_set2 = depth_peel_dummy_bg_id;
             vis_bg_set3 = depth_peel_sampled_bg_id;
+        }
+        else if (pipeline.needs_ambient_visibility_layout)
+        {
+            if (vis_bg_set2 == 0)
+                vis_bg_set2 = depth_peel_dummy_bg_id;
+            vis_bg_set3 = ambient_visibility_bg_id;
         }
 
         if (!ok)

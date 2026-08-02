@@ -671,11 +671,9 @@ void _scene_technique_ssao_uniform(
     if (mvp != NULL)
     {
         mat4 proj = {0};
-        mat4 view = {0};
         dvz_memcpy(proj, sizeof(proj), mvp->proj, sizeof(mvp->proj));
-        dvz_memcpy(view, sizeof(view), mvp->view, sizeof(mvp->view));
+        glm_mat4_copy(proj, out->proj);
         glm_mat4_inv(proj, out->inv_proj);
-        glm_mat4_copy(view, out->view);
     }
     if (viewport != NULL)
     {
@@ -683,18 +681,41 @@ void _scene_technique_ssao_uniform(
         out->viewport[1] = viewport->y;
         out->viewport[2] = viewport->width > 0.0f ? viewport->width : 1.0f;
         out->viewport[3] = viewport->height > 0.0f ? viewport->height : 1.0f;
+        out->extent[0] = out->viewport[2];
+        out->extent[1] = out->viewport[3];
+        out->extent[2] = 1.0f / out->extent[0];
+        out->extent[3] = 1.0f / out->extent[1];
     }
-    out->params[0] = ssao->radius;
-    out->params[1] = ssao->strength;
-    out->params[2] = ssao->bias;
-    out->params[3] = (float)ssao->sample_count;
-    out->params2[0] = ssao->power;
-    out->params2[1] = ssao->min_visibility;
-    out->params2[2] = ssao->blur_radius;
-    out->params2[3] = ssao->debug_view ? 1.0f : 0.0f;
-    out->params3[0] = ssao->blur_depth_sigma;
-    out->params3[1] = ssao->blur_normal_sigma;
-    out->params3[2] = ssao->blur_enabled ? 1.0f : 0.0f;
+    out->appearance[0] = ssao->radius;
+    out->appearance[1] = ssao->strength;
+    out->appearance[2] = fmaxf(ssao->bias * 4.0f, 0.1f);
+    out->appearance[3] = ssao->min_visibility;
+    out->sampling[0] = ssao->radius;
+    out->sampling[1] = ssao->bias;
+    out->sampling[2] = ssao->blur_depth_sigma;
+    out->sampling[3] = ssao->blur_normal_sigma;
+    if (ssao->sample_count <= 12)
+    {
+        out->mode[0] = 2;
+        out->mode[1] = 3;
+    }
+    else if (ssao->sample_count <= 24)
+    {
+        out->mode[0] = 3;
+        out->mode[1] = 4;
+    }
+    else if (ssao->sample_count <= 48)
+    {
+        out->mode[0] = 4;
+        out->mode[1] = 6;
+    }
+    else
+    {
+        out->mode[0] = 6;
+        out->mode[1] = 8;
+    }
+    out->mode[2] = 0;
+    out->mode[3] = ssao->debug_view ? 1 : 0;
 }
 
 

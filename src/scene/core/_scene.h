@@ -1822,12 +1822,13 @@ typedef struct DvzSceneEdlTechniqueState
 
 typedef struct DvzSceneSsaoUniform
 {
+    mat4 proj;
     mat4 inv_proj;
-    mat4 view;
     float viewport[4];
-    float params[4];
-    float params2[4];
-    float params3[4];
+    float extent[4];
+    float appearance[4];
+    float sampling[4];
+    int32_t mode[4];
 } DvzSceneSsaoUniform;
 
 

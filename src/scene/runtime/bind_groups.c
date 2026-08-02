@@ -65,7 +65,8 @@ void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
     uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id,
     uint64_t material_bgl_id, uint64_t item_state_style_bgl_id, uint64_t scene_occlusion_bgl_id,
-    bool scene_occlusion_uses_set2, uint64_t* out_layouts, uint32_t* out_count)
+    bool scene_occlusion_uses_set2, uint64_t ambient_visibility_bgl_id, uint64_t dummy_bgl_id,
+    uint64_t* out_layouts, uint32_t* out_count)
 {
     ANN(pipeline);
     ANN(out_layouts);
@@ -105,6 +106,12 @@ void _pipeline_bind_group_layouts(
         while (count < DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION)
             out_layouts[count++] = 0;
         out_layouts[count++] = scene_occlusion_bgl_id;
+    }
+    if (pipeline->needs_ambient_visibility_layout && ambient_visibility_bgl_id != 0)
+    {
+        while (count < 3)
+            out_layouts[count++] = dummy_bgl_id;
+        out_layouts[count++] = ambient_visibility_bgl_id;
     }
     *out_count = count;
 }

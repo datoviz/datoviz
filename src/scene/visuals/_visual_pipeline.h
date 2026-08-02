@@ -240,6 +240,7 @@ typedef struct DvzSceneVisualPipelineDesc
     bool needs_material_layout;
     bool needs_item_state_style_layout;
     bool needs_scene_occlusion_layout;
+    bool needs_ambient_visibility_layout;
     bool has_depth_state;
     bool depth_write_enabled;
     DvzCompareOp depth_compare_op;

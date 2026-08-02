@@ -665,7 +665,7 @@ bool _emitter_emit_render_multi(
         resolved != NULL ? resolved->provider : DVZ_SCENE_WORK_PROVIDER_OPAQUE;
     ok = _emitter_prepare_render_multi(
         emitter, stream, render, provider, cfg, pass_has_depth_attachment, false,
-        color_target_formats, color_target_count, sampled_depth_id, false, 0, 0, 0, 0,
+        color_target_formats, color_target_count, sampled_depth_id, false, 0, 0, 0, 0, 0, 0,
         pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws,
         &draw_count);
     if (!ok)
@@ -759,7 +759,7 @@ bool _emitter_emit_scene_figure_renders(
         uint32_t report_start = dvz_diagnostic_report_count(report);
         ok = _emitter_prepare_render_multi(
             emitter, stream, render, DVZ_SCENE_WORK_PROVIDER_OPAQUE, cfg, needs_depth, false,
-            &scene_color_format, 1, 0, false, 0, 0, 0, 0, 1, false, report, batch->draws,
+            &scene_color_format, 1, 0, false, 0, 0, 0, 0, 0, 0, 1, false, report, batch->draws,
             &batch->draw_count);
         if (!ok && dvz_diagnostic_report_count(report) == report_start)
             _diagnostic(report, "scene figure render preparation failed");
@@ -1015,6 +1015,25 @@ bool _emitter_emit_scene_graph_renders(
             emitter, stream, plan, cfg, render_graph_pass, &scene_occlusion_depth_id);
         if (!ok)
             break;
+        uint64_t ambient_visibility_bgl_id = 0;
+        uint64_t ambient_visibility_bg_id = 0;
+        uint64_t ambient_dummy_bg_id = 0;
+        if (_graph_composition_pass_reads_product_kind(
+                plan, render_graph_pass, DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY))
+        {
+            const SceneWorkRuntime* ambient = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_SSAO,
+                render->u.render.panel_id);
+            if (ambient == NULL || ambient->ambient_bgl_id == 0 || ambient->ambient_bg_id == 0)
+            {
+                _diagnostic(report, "typed ambient visibility runtime is unavailable");
+                ok = false;
+                break;
+            }
+            ambient_visibility_bgl_id = ambient->ambient_bgl_id;
+            ambient_visibility_bg_id = ambient->ambient_bg_id;
+            ambient_dummy_bg_id = ambient->dummy_bg_id;
+        }
 
         if (render->u.render.visual_count > 0)
         {
@@ -1028,7 +1047,9 @@ bool _emitter_emit_scene_graph_renders(
                      emitter, stream, render, provider, cfg, pass_has_depth_attachment,
                      false, color_target_formats, color_target_count, sampled_depth_id,
                      sampled_depth_is_volume_occlusion, scene_occlusion_depth_id,
-                     depth_peel_sampled_bgl_id, depth_peel_sampled_bg_id, depth_peel_dummy_bg_id,
+                     ambient_visibility_bgl_id, ambient_visibility_bg_id,
+                     depth_peel_sampled_bgl_id, depth_peel_sampled_bg_id,
+                     depth_peel_dummy_bg_id != 0 ? depth_peel_dummy_bg_id : ambient_dummy_bg_id,
                      _graph_render_pass_sample_count(emitter, plan, render_graph_pass),
                      render_graph_pass != NULL && render_graph_pass->alpha_to_coverage, report,
                      batch->draws, &batch->draw_count);
@@ -1600,7 +1621,12 @@ bool _emitter_emit_scene_graph_renders(
             const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
                 work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_SSAO,
                 render->u.render.panel_id);
-            if (targets == NULL || targets->blur_id == 0 || targets->blur_pipeline_id == 0)
+            const DvzSceneResolvedPass* blur_work = _graph_composition_pass(
+                plan, ordered_graph_pass != NULL ? ordered_graph_pass
+                                                 : _graph_pass_for_render(plan, render));
+            const uint32_t axis = blur_work != NULL ? blur_work->work_index : UINT32_MAX;
+            if (targets == NULL || axis > 1 || targets->blur_pipeline_ids[axis] == 0 ||
+                targets->blur_bg_ids[axis] == 0)
             {
                 ok = false;
                 break;
@@ -1610,8 +1636,9 @@ bool _emitter_emit_scene_graph_renders(
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
                                                       : _graph_pass_for_render(plan, render);
+            const uint64_t fallback_target = axis == 0 ? targets->denoise_id : targets->blur_id;
             uint64_t target_id = _graph_color_attachment_texture_id(
-                graph_pass, 0, scene_color_id, &graph_targets, targets->blur_id);
+                graph_pass, 0, scene_color_id, &graph_targets, fallback_target);
             DvzPanelDesc render_rect = {0};
             const float visibility_clear[4] = {1, 1, 1, 1};
             ok = _stream_begin_render_pass_graph_rect(
@@ -1625,8 +1652,10 @@ bool _emitter_emit_scene_graph_renders(
                  dvz_drp2_stream_set_scissor(
                      stream, pass_id, render_rect.x, render_rect.y, render_rect.width,
                      render_rect.height) &&
-                 dvz_drp2_stream_set_pipeline(stream, pass_id, targets->blur_pipeline_id) &&
-                 dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->blur_bg_id) &&
+                 dvz_drp2_stream_set_pipeline(
+                     stream, pass_id, targets->blur_pipeline_ids[axis]) &&
+                 dvz_drp2_stream_set_bind_group(
+                     stream, pass_id, 0, targets->blur_bg_ids[axis]) &&
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }

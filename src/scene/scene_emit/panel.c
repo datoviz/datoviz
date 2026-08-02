@@ -1203,6 +1203,7 @@ bool _scene_emit_panel_render_caps(
     uint32_t edl_node = invalid_node;
     uint32_t ssao_node = invalid_node;
     uint32_t ssao_blur_node = invalid_node;
+    uint32_t ssao_blur_y_node = invalid_node;
     uint32_t ssao_composite_node = invalid_node;
     uint32_t presentation_node = invalid_node;
     uint32_t edl_params_node = invalid_node;
@@ -1239,6 +1240,37 @@ bool _scene_emit_panel_render_caps(
             plot_desc, &surface_resolve_node))
         graph_ok = false;
 
+    if (render_plan.ssao_enabled && gbuffer_node != invalid_node &&
+        render_plan.gbuffer.producer_count > 0)
+    {
+        if (!_scene_emit_ssao_params_upload(
+                plan, panel, panel_id, render_plan.ssao_state, &panel_apply_mvp, &panel_viewport,
+                &ssao_params_node))
+            graph_ok = false;
+        if (!_scene_begin_panel_render_pass(
+                plan, panel_id, "rt.ssao.occlusion", panel->desc,
+                DVZ_FRAME_PLAN_RENDER_PASS_SSAO, &panel_apply_mvp, &panel_viewport, plot_desc,
+                &ssao_node))
+            ssao_node = invalid_node;
+        if (render_plan.ssao_state->blur_enabled)
+        {
+            if (!_scene_begin_panel_render_pass(
+                    plan, panel_id, "rt.gtao.denoise.x", panel->desc,
+                    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR, &panel_apply_mvp, &panel_viewport,
+                    plot_desc, &ssao_blur_node))
+                ssao_blur_node = invalid_node;
+            if (!_scene_begin_panel_render_pass(
+                    plan, panel_id, "rt.gtao.denoise.y", panel->desc,
+                    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR, &panel_apply_mvp, &panel_viewport,
+                    plot_desc, &ssao_blur_y_node))
+                ssao_blur_y_node = invalid_node;
+        }
+        if (ssao_node == invalid_node ||
+            (render_plan.ssao_state->blur_enabled &&
+             (ssao_blur_node == invalid_node || ssao_blur_y_node == invalid_node)))
+            graph_ok = false;
+    }
+
     if (render_plan.opaque_visual_count > 0 || render_plan.has_transparent)
     {
         if (_scene_begin_panel_render_pass(
@@ -1259,6 +1291,15 @@ bool _scene_emit_panel_render_caps(
                 }
             }
         }
+    }
+
+    if (render_plan.ssao_enabled && render_plan.ssao_state != NULL &&
+        render_plan.ssao_state->debug_view)
+    {
+        if (!_scene_begin_panel_render_pass(
+                plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE,
+                &panel_apply_mvp, &panel_viewport, plot_desc, &ssao_composite_node))
+            graph_ok = false;
     }
 
     for (uint32_t pass_idx = 0; pass_idx < render_plan.transparent_pass_count; pass_idx++)
@@ -1303,36 +1344,6 @@ bool _scene_emit_panel_render_caps(
             graph_ok = false;
     }
 
-    if (render_plan.ssao_enabled && gbuffer_node != invalid_node &&
-        render_plan.gbuffer.producer_count > 0)
-    {
-        if (!_scene_emit_ssao_params_upload(
-                plan, panel, panel_id, render_plan.ssao_state, &panel_apply_mvp, &panel_viewport,
-                &ssao_params_node))
-            graph_ok = false;
-        if (!_scene_begin_panel_render_pass(
-                plan, panel_id, "rt.ssao.occlusion", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO,
-                &panel_apply_mvp, &panel_viewport, plot_desc, &ssao_node))
-            ssao_node = invalid_node;
-        if (render_plan.ssao_state->blur_enabled)
-        {
-            if (!_scene_begin_panel_render_pass(
-                    plan, panel_id, "rt.ssao.blur", panel->desc,
-                    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR, &panel_apply_mvp, &panel_viewport,
-                    plot_desc, &ssao_blur_node))
-                ssao_blur_node = invalid_node;
-        }
-        if (!_scene_begin_panel_render_pass(
-                plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE,
-                &panel_apply_mvp, &panel_viewport, plot_desc, &ssao_composite_node))
-            ssao_composite_node = invalid_node;
-        if (ssao_node == invalid_node ||
-            (render_plan.ssao_state->blur_enabled && ssao_blur_node == invalid_node) ||
-            ssao_composite_node == invalid_node)
-        {
-            graph_ok = false;
-        }
-    }
     const DvzSceneResolvedPass* presentation_pass = NULL;
     if (_scene_composition_pass_for_role(
             &render_plan.composition, DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION, 0,

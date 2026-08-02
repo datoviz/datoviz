@@ -124,6 +124,7 @@ struct SceneWorkRuntime
     uint64_t accum_id;
     uint64_t transmittance_id;
     uint64_t occlusion_id;
+    uint64_t denoise_id;
     uint64_t blur_id;
     uint64_t composite_input_id;
     uint64_t params_id;
@@ -135,8 +136,10 @@ struct SceneWorkRuntime
     uint64_t ssao_bg_id;
     uint64_t ssao_pipeline_id;
     uint64_t blur_bgl_id;
-    uint64_t blur_bg_id;
-    uint64_t blur_pipeline_id;
+    uint64_t blur_bg_ids[2];
+    uint64_t blur_pipeline_ids[2];
+    uint64_t ambient_bgl_id;
+    uint64_t ambient_bg_id;
     uint64_t composite_bgl_id;
     uint64_t composite_bg_id;
     uint64_t composite_pipeline_id;
@@ -210,7 +213,8 @@ void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
     uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id,
     uint64_t material_bgl_id, uint64_t item_state_style_bgl_id, uint64_t scene_occlusion_bgl_id,
-    bool scene_occlusion_uses_set2, uint64_t* out_layouts, uint32_t* out_count);
+    bool scene_occlusion_uses_set2, uint64_t ambient_visibility_bgl_id, uint64_t dummy_bgl_id,
+    uint64_t* out_layouts, uint32_t* out_count);
 bool _resolve_material_bind_group_layout(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id);
 bool _resolve_item_state_style_bind_group_layout(
@@ -277,7 +281,8 @@ bool _emitter_prepare_render_multi(
     DvzSceneWorkProviderKey provider, const DvzFramePlanEmitConfig* cfg,
     bool pass_has_depth_attachment, bool force_point_depth, const uint32_t* color_target_formats,
     uint32_t color_target_count, uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
-    uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
+    uint64_t scene_occlusion_depth_id, uint64_t ambient_visibility_bgl_id,
+    uint64_t ambient_visibility_bg_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
     bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
     uint32_t* draw_count_out);
@@ -295,6 +300,8 @@ const DvzFrameGraphPass* _graph_pass_by_composition_provider(
     uint32_t occurrence);
 const DvzSceneResolvedPass*
 _graph_composition_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass);
+bool _graph_composition_pass_reads_product_kind(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass, DvzRenderProductKind kind);
 const DvzFrameGraphResource* _graph_composition_scratch_resource(
     const DvzFramePlan* plan, const DvzFrameGraphPass* pass, DvzSceneScratchKind kind,
     DvzSceneWorkBindingUsage usage);

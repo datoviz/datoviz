@@ -160,6 +160,39 @@ _graph_composition_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
 
 
 
+bool _graph_composition_pass_reads_product_kind(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass, DvzRenderProductKind kind)
+{
+    ANN(plan);
+    const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, pass);
+    if (resolved == NULL)
+        return false;
+    const DvzPanelCompositionSnapshot* snapshot =
+        _frame_plan_composition_get(plan, pass->panel_id);
+    if (snapshot == NULL)
+        return false;
+    const DvzSceneResolvedTechnique* technique = NULL;
+    for (uint32_t i = 0; i < snapshot->technique_count; i++)
+        if (snapshot->techniques[i].instance_id.value == resolved->technique_instance_id.value)
+            technique = &snapshot->techniques[i];
+    if (technique == NULL)
+        return false;
+    for (uint32_t i = 0; i < resolved->binding_count; i++)
+    {
+        const DvzSceneWorkBinding* binding = &resolved->bindings[i];
+        if (binding->ref_kind != DVZ_SCENE_RESOURCE_REF_PRODUCT ||
+            binding->usage != DVZ_SCENE_WORK_BINDING_SAMPLED)
+            continue;
+        for (uint32_t j = 0; j < technique->input_count; j++)
+            if (technique->input_ids[j].value == binding->product_id.value &&
+                technique->inputs[j] == kind)
+                return true;
+    }
+    return false;
+}
+
+
+
 /**
  * Resolve one typed scratch binding on a graph pass to its physical resource.
  *

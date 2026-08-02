@@ -166,7 +166,8 @@ static bool _composition_scratch_contract_valid(const DvzSceneScratchResource* s
         scope = DVZ_SCENE_SCRATCH_SCOPE_PANEL;
         break;
     case DVZ_SCENE_SCRATCH_SSAO_RAW:
-        format = DVZ_FORMAT_R8_UNORM;
+    case DVZ_SCENE_SCRATCH_SSAO_DENOISE:
+        format = DVZ_FORMAT_R32_SFLOAT;
         format_class = DVZ_RENDER_PRODUCT_FORMAT_SCALAR_FLOAT;
         usage = color_sampled;
         scope = DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE;
@@ -756,8 +757,7 @@ bool _frame_plan_composition_validate(
             const bool edl = pass->provider == DVZ_SCENE_WORK_PROVIDER_EDL &&
                              binding->kind == DVZ_SCENE_AUXILIARY_EDL_PARAMS;
             const bool ssao = (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO ||
-                               pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR ||
-                               pass->provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE) &&
+                               pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR) &&
                               binding->kind == DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
             if ((!edl && !ssao) || binding->set == UINT32_MAX || binding->binding == UINT32_MAX ||
                 binding->byte_size == 0)

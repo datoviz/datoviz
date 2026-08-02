@@ -356,6 +356,8 @@ static const char* _composition_graph_legacy_scratch_suffix(DvzSceneScratchKind 
         return "depth.opaque";
     case DVZ_SCENE_SCRATCH_SSAO_RAW:
         return "ssao.occlusion";
+    case DVZ_SCENE_SCRATCH_SSAO_DENOISE:
+        return "gtao.denoise";
     case DVZ_SCENE_SCRATCH_WBOIT_WEIGHT:
         return "wboit.weight";
     case DVZ_SCENE_SCRATCH_PEEL_BACK_ACCUM:
@@ -403,8 +405,11 @@ _composition_graph_pass_suffix(const DvzSceneResolvedPass* pass, char* suffix, s
         literal = "ssao";
         break;
     case DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR:
-        literal = "ssao.blur";
-        break;
+    {
+        const int written = dvz_snprintf(
+            suffix, suffix_size, "gtao.denoise.%c", pass->work_index == 0 ? 'x' : 'y');
+        return written >= 0 && (size_t)written < suffix_size;
+    }
     case DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE:
         literal = "ssao.composite";
         break;
@@ -680,7 +685,7 @@ static bool _composition_graph_realize_product(
     }
     else if (kind == DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY)
     {
-        resource.format = DVZ_FORMAT_R8_UNORM;
+        resource.format = DVZ_FORMAT_R32_SFLOAT;
         const char* suffix =
             producer != NULL && producer->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR
                 ? "ssao.blur"

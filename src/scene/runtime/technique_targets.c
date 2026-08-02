@@ -747,12 +747,15 @@ bool _emitter_prepare_ssao_targets(
     ANN(out);
 
     const DvzFrameGraphPass* pass = _graph_pass_for_render(plan, render);
-    const DvzFrameGraphPass* blur_pass = _graph_pass_by_composition_provider(
+    const DvzFrameGraphPass* blur_x_pass = _graph_pass_by_composition_provider(
         plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR, 0);
+    const DvzFrameGraphPass* blur_y_pass = _graph_pass_by_composition_provider(
+        plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR, 1);
     const DvzFrameGraphPass* composite_pass = _graph_pass_by_composition_provider(
         plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE, 0);
-    if (pass == NULL || composite_pass == NULL || pass->read_count < 3 ||
-        pass->color_attachment_count < 1 || composite_pass->read_count < 1)
+    if (pass == NULL || pass->read_count != 3 || pass->color_attachment_count != 1 ||
+        ((blur_x_pass == NULL) != (blur_y_pass == NULL)) ||
+        (composite_pass != NULL && composite_pass->read_count != 1))
         return false;
 
     uint32_t width = 0;
@@ -770,11 +773,17 @@ bool _emitter_prepare_ssao_targets(
     if (normal_resource == NULL || depth_resource == NULL || coverage_resource == NULL ||
         occlusion_resource == NULL)
         return false;
-    const DvzFrameGraphResource* blur_resource =
-        blur_pass != NULL && blur_pass->color_attachment_count > 0
-            ? _graph_resource_by_id(plan, blur_pass->color_attachments[0].resource_id)
+    const DvzFrameGraphResource* denoise_resource =
+        blur_x_pass != NULL && blur_x_pass->color_attachment_count == 1
+            ? _graph_resource_by_id(plan, blur_x_pass->color_attachments[0].resource_id)
             : NULL;
-    if (blur_pass != NULL && (blur_pass->read_count < 4 || blur_resource == NULL))
+    const DvzFrameGraphResource* blur_resource =
+        blur_y_pass != NULL && blur_y_pass->color_attachment_count == 1
+            ? _graph_resource_by_id(plan, blur_y_pass->color_attachments[0].resource_id)
+            : NULL;
+    if (blur_x_pass != NULL &&
+        (blur_x_pass->read_count != 4 || blur_y_pass->read_count != 4 ||
+         denoise_resource == NULL || blur_resource == NULL))
         return false;
 
     bool ok = _graph_resolve_texture_2d(
@@ -788,18 +797,26 @@ bool _emitter_prepare_ssao_targets(
                    DVZ_FORMAT_R8_UNORM, &out->coverage_id);
     ok = ok && _graph_resolve_texture_2d(
                    emitter, stream, plan, cfg, occlusion_resource, width, height,
-                   DVZ_FORMAT_R8_UNORM, &out->occlusion_id);
+                   DVZ_FORMAT_R32_SFLOAT, &out->occlusion_id);
     ok = ok && _graph_runtime_targets_add(graph_targets, normal_resource->id, out->normal_id);
     ok = ok && _graph_runtime_targets_add(graph_targets, depth_resource->id, out->depth_id);
     ok = ok &&
          _graph_runtime_targets_add(graph_targets, coverage_resource->id, out->coverage_id);
     ok =
         ok && _graph_runtime_targets_add(graph_targets, occlusion_resource->id, out->occlusion_id);
+    if (denoise_resource != NULL)
+    {
+        ok = ok && _graph_resolve_texture_2d(
+                       emitter, stream, plan, cfg, denoise_resource, width, height,
+                       DVZ_FORMAT_R32_SFLOAT, &out->denoise_id);
+        ok = ok && _graph_runtime_targets_add(
+                       graph_targets, denoise_resource->id, out->denoise_id);
+    }
     if (blur_resource != NULL)
     {
         ok = ok && _graph_resolve_texture_2d(
                        emitter, stream, plan, cfg, blur_resource, width, height,
-                       DVZ_FORMAT_R8_UNORM, &out->blur_id);
+                       DVZ_FORMAT_R32_SFLOAT, &out->blur_id);
         ok = ok && _graph_runtime_targets_add(graph_targets, blur_resource->id, out->blur_id);
     }
     if (!ok)
@@ -818,6 +835,26 @@ bool _emitter_prepare_ssao_targets(
         return false;
     if (is_new)
         ok = ok && dvz_drp2_stream_create_sampler(stream, out->sampler_id);
+
+    uint64_t dummy_bgl_id = _obj_id(emitter, "_bgl_unused_set", &is_new);
+    if (dummy_bgl_id == 0)
+        return false;
+    if (ok && is_new)
+        ok = _create_dummy_bind_group_layout(stream, dummy_bgl_id);
+    out->dummy_bg_id = _obj_id(emitter, "_bg_unused_set", &is_new);
+    if (out->dummy_bg_id == 0)
+        return false;
+    if (ok && is_new)
+    {
+        DvzDrp2BindGroupEntry entry = {
+            .binding = 0,
+            .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+            .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+            .resource_id = out->sampler_id,
+        };
+        ok = dvz_drp2_stream_create_bind_group_entries(
+            stream, out->dummy_bg_id, dummy_bgl_id, 1, &entry);
+    }
 
     out->ssao_bgl_id = _obj_id(emitter, "_bgl_ssao", &is_new);
     if (out->ssao_bgl_id == 0)
@@ -919,7 +956,7 @@ bool _emitter_prepare_ssao_targets(
                        stream, out->ssao_bg_id, out->ssao_bgl_id, 5, entries);
     }
 
-    if (blur_pass != NULL)
+    if (blur_x_pass != NULL)
     {
         out->blur_bgl_id = _obj_id(emitter, "_bgl_ssao_blur", &is_new);
         if (out->blur_bgl_id == 0)
@@ -975,7 +1012,7 @@ bool _emitter_prepare_ssao_targets(
         ResourceId* blur_bg = _resource_entry(&emitter->objects, bg_key, &is_new);
         if (blur_bg == NULL || blur_bg->id == 0)
             return false;
-        out->blur_bg_id = blur_bg->id;
+        out->blur_bg_ids[0] = blur_bg->id;
         fingerprint = _ssao_bind_group_fingerprint(
             out->occlusion_id, out->normal_id, out->depth_id, out->coverage_id, out->sampler_id,
             out->params_id);
@@ -985,13 +1022,13 @@ bool _emitter_prepare_ssao_targets(
         if (ok && is_new)
         {
             uint64_t occlusion_id =
-                _graph_sampled_read_texture_id(blur_pass, 0, 0, graph_targets, out->occlusion_id);
+                _graph_sampled_read_texture_id(blur_x_pass, 0, 0, graph_targets, out->occlusion_id);
             uint64_t normal_id =
-                _graph_sampled_read_texture_id(blur_pass, 1, 0, graph_targets, out->normal_id);
+                _graph_sampled_read_texture_id(blur_x_pass, 1, 0, graph_targets, out->normal_id);
             uint64_t depth_id =
-                _graph_sampled_read_texture_id(blur_pass, 2, 0, graph_targets, out->depth_id);
+                _graph_sampled_read_texture_id(blur_x_pass, 2, 0, graph_targets, out->depth_id);
             uint64_t coverage_id = _graph_sampled_read_texture_id(
-                blur_pass, 3, 0, graph_targets, out->coverage_id);
+                blur_x_pass, 3, 0, graph_targets, out->coverage_id);
             DvzDrp2BindGroupEntry entries[6] = {
                 {
                     .binding = 0,
@@ -1033,79 +1070,106 @@ bool _emitter_prepare_ssao_targets(
                 },
             };
             ok = ok && dvz_drp2_stream_create_bind_group_entries(
-                           stream, out->blur_bg_id, out->blur_bgl_id, 6, entries);
+                           stream, out->blur_bg_ids[0], out->blur_bgl_id, 6, entries);
+        }
+
+        dvz_snprintf(
+            bg_key, sizeof(bg_key),
+            "_bg_gtao_denoise_y_%" PRIu64 "_%" PRIu64 "_%" PRIu64 "_%" PRIu64 "_%" PRIu64,
+            out->denoise_id, out->normal_id, out->depth_id, out->coverage_id, out->params_id);
+        ResourceId* blur_y_bg = _resource_entry(&emitter->objects, bg_key, &is_new);
+        if (blur_y_bg == NULL || blur_y_bg->id == 0)
+            return false;
+        out->blur_bg_ids[1] = blur_y_bg->id;
+        fingerprint = _ssao_bind_group_fingerprint(
+            out->denoise_id, out->normal_id, out->depth_id, out->coverage_id, out->sampler_id,
+            out->params_id);
+        if (!is_new && blur_y_bg->byte_size != fingerprint)
+            is_new = true;
+        blur_y_bg->byte_size = fingerprint;
+        if (ok && is_new)
+        {
+            const uint64_t sampled_ids[4] = {
+                _graph_sampled_read_texture_id(
+                    blur_y_pass, 0, 0, graph_targets, out->denoise_id),
+                _graph_sampled_read_texture_id(
+                    blur_y_pass, 1, 0, graph_targets, out->normal_id),
+                _graph_sampled_read_texture_id(
+                    blur_y_pass, 2, 0, graph_targets, out->depth_id),
+                _graph_sampled_read_texture_id(
+                    blur_y_pass, 3, 0, graph_targets, out->coverage_id),
+            };
+            DvzDrp2BindGroupEntry entries[6] = {
+                {.binding = 0, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                 .resource_id = sampled_ids[0]},
+                {.binding = 1, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                 .resource_id = sampled_ids[1]},
+                {.binding = 2, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                 .resource_id = sampled_ids[2]},
+                {.binding = 3, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+                 .resource_id = sampled_ids[3]},
+                {.binding = 4, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+                 .resource_id = out->sampler_id},
+                {.binding = 5, .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                 .resource_id = out->params_id, .offset = 0,
+                 .size = sizeof(DvzSceneSsaoUniform)},
+            };
+            ok = ok && dvz_drp2_stream_create_bind_group_entries(
+                           stream, out->blur_bg_ids[1], out->blur_bgl_id, 6, entries);
         }
     }
 
-    out->composite_bgl_id = _obj_id(emitter, "_bgl_ssao_composite", &is_new);
-    if (out->composite_bgl_id == 0)
+    out->ambient_bgl_id = _obj_id(emitter, "_bgl_ambient_visibility", &is_new);
+    if (out->ambient_bgl_id == 0)
         return false;
     if (ok && is_new)
     {
-        DvzDrp2BindGroupLayoutEntry entries[3] = {
-            {
-                .binding = 0,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
-                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
-                .access = DVZ_DRP2_BINDING_ACCESS_READ,
-            },
-            {
-                .binding = 1,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
-                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
-                .access = DVZ_DRP2_BINDING_ACCESS_READ,
-            },
-            {
-                .binding = 2,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
-                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
-                .access = DVZ_DRP2_BINDING_ACCESS_READ,
-            },
+        DvzDrp2BindGroupLayoutEntry entries[2] = {
+            {.binding = 0, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+             .access = DVZ_DRP2_BINDING_ACCESS_READ},
+            {.binding = 1, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+             .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+             .access = DVZ_DRP2_BINDING_ACCESS_READ},
         };
-        ok = ok && dvz_drp2_stream_create_bind_group_layout_entries(
-                       stream, out->composite_bgl_id, 3, entries);
+        ok = dvz_drp2_stream_create_bind_group_layout_entries(
+            stream, out->ambient_bgl_id, 2, entries);
+    }
+    dvz_snprintf(
+        bg_key, sizeof(bg_key), "_bg_ambient_visibility_%" PRIu64, out->composite_input_id);
+    ResourceId* ambient_bg = _resource_entry(&emitter->objects, bg_key, &is_new);
+    if (ambient_bg == NULL || ambient_bg->id == 0)
+        return false;
+    out->ambient_bg_id = ambient_bg->id;
+    fingerprint = _ssao_bind_group_fingerprint(
+        out->composite_input_id, 0, 0, 0, out->sampler_id, 0);
+    if (!is_new && ambient_bg->byte_size != fingerprint)
+        is_new = true;
+    ambient_bg->byte_size = fingerprint;
+    if (ok && is_new)
+    {
+        DvzDrp2BindGroupEntry entries[2] = {
+            {.binding = 0, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
+             .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
+             .resource_id = out->composite_input_id},
+            {.binding = 1, .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
+             .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
+             .resource_id = out->sampler_id},
+        };
+        ok = dvz_drp2_stream_create_bind_group_entries(
+            stream, out->ambient_bg_id, out->ambient_bgl_id, 2, entries);
     }
 
-    dvz_snprintf(
-        bg_key, sizeof(bg_key), "_bg_ssao_composite_%" PRIu64 "_%" PRIu64, out->composite_input_id,
-        out->params_id);
-    ResourceId* composite_bg = _resource_entry(&emitter->objects, bg_key, &is_new);
-    if (composite_bg == NULL || composite_bg->id == 0)
-        return false;
-    out->composite_bg_id = composite_bg->id;
-    fingerprint = _ssao_bind_group_fingerprint(
-        out->composite_input_id, 0, 0, 0, out->sampler_id, out->params_id);
-    if (!is_new && composite_bg->byte_size != fingerprint)
-        is_new = true;
-    composite_bg->byte_size = fingerprint;
-    if (ok && is_new)
+    if (composite_pass != NULL)
     {
-        uint64_t composite_input_id = _graph_sampled_read_texture_id(
-            composite_pass, 0, 0, graph_targets, out->composite_input_id);
-        DvzDrp2BindGroupEntry entries[3] = {
-            {
-                .binding = 0,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
-                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = composite_input_id,
-            },
-            {
-                .binding = 1,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
-                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
-                .resource_id = out->sampler_id,
-            },
-            {
-                .binding = 2,
-                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
-                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
-                .resource_id = out->params_id,
-                .offset = 0,
-                .size = sizeof(DvzSceneSsaoUniform),
-            },
-        };
-        ok = ok && dvz_drp2_stream_create_bind_group_entries(
-                       stream, out->composite_bg_id, out->composite_bgl_id, 3, entries);
+        out->composite_bgl_id = out->ambient_bgl_id;
+        out->composite_bg_id = out->ambient_bg_id;
     }
 
     const char* fmt = _shader_format_tag(cfg);
@@ -1139,13 +1203,11 @@ bool _emitter_prepare_ssao_targets(
         ok = ok &&
              _create_pipeline_with_layout(
                  stream, out->ssao_pipeline_id, vs_id, fs_id, out->ssao_bgl_id) &&
-             dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R8_UNORM);
+             dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R32_SFLOAT);
 
-    if (blur_pass != NULL)
+    if (blur_x_pass != NULL)
     {
         dvz_snprintf(vs_key, sizeof(vs_key), "_vs_ssao_blur%s", fmt);
-        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_ssao_blur%s", fmt);
-        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_ssao_blur%s", fmt);
         vs_id = _obj_id(emitter, vs_key, &is_new);
         if (vs_id == 0)
             return false;
@@ -1153,59 +1215,72 @@ bool _emitter_prepare_ssao_targets(
             ok = ok && _emit_shader_spirv(
                            stream, vs_id, "VERTEX", "fullscreen_vert",
                            _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SSAO_BLUR, false), cfg);
+        for (uint32_t axis = 0; ok && axis < 2; axis++)
+        {
+            dvz_snprintf(fs_key, sizeof(fs_key), "_fs_gtao_den%u%s", axis, fmt);
+            dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_gtao_den%u%s", axis, fmt);
+            fs_id = _obj_id(emitter, fs_key, &is_new);
+            if (fs_id == 0)
+                return false;
+            if (is_new)
+            {
+                const char* define = axis == 0 ? "#define DVZ_GTAO_DENOISE_AXIS 1\n"
+                                               : "#define DVZ_GTAO_DENOISE_AXIS 2\n";
+                char* variant = _shader_glsl_variant(
+                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SSAO_BLUR, true), define);
+                if (variant == NULL)
+                    return false;
+                ok = _emit_shader_spirv(
+                    stream, fs_id, "FRAGMENT",
+                    axis == 0 ? "gtao_denoise_x_frag" : "gtao_denoise_y_frag", variant, cfg);
+                _shader_glsl_variant_destroy(variant);
+            }
+            out->blur_pipeline_ids[axis] = _obj_id(emitter, pipe_key, &is_new);
+            if (out->blur_pipeline_ids[axis] == 0)
+                return false;
+            if (ok && is_new)
+                ok = _create_pipeline_with_layout(
+                         stream, out->blur_pipeline_ids[axis], vs_id, fs_id,
+                         out->blur_bgl_id) &&
+                     dvz_drp2_stream_pipeline_set_color_target(
+                         stream, 0, DVZ_FORMAT_R32_SFLOAT);
+        }
+    }
+
+    if (composite_pass != NULL)
+    {
+        dvz_snprintf(vs_key, sizeof(vs_key), "_vs_ssao_comp%s", fmt);
+        dvz_snprintf(fs_key, sizeof(fs_key), "_fs_ssao_comp%s", fmt);
+        uint32_t final_format = _render_pass_scene_color_target_format(cfg);
+        dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_ssao_comp%s_%u", fmt, final_format);
+        vs_id = _obj_id(emitter, vs_key, &is_new);
+        if (vs_id == 0)
+            return false;
+        if (ok && is_new)
+            ok = ok && _emit_shader_spirv(
+                           stream, vs_id, "VERTEX", "fullscreen_vert",
+                           _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SSAO_COMPOSITE, false),
+                           cfg);
 
         fs_id = _obj_id(emitter, fs_key, &is_new);
         if (fs_id == 0)
             return false;
         if (ok && is_new)
             ok = ok && _emit_shader_spirv(
-                           stream, fs_id, "FRAGMENT", "ssao_blur_frag",
-                           _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SSAO_BLUR, true), cfg);
+                           stream, fs_id, "FRAGMENT", "ssao_composite_frag",
+                           _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SSAO_COMPOSITE, true),
+                           cfg);
 
-        out->blur_pipeline_id = _obj_id(emitter, pipe_key, &is_new);
-        if (out->blur_pipeline_id == 0)
+        out->composite_pipeline_id = _obj_id(emitter, pipe_key, &is_new);
+        if (out->composite_pipeline_id == 0)
             return false;
         if (ok && is_new)
+        {
             ok = ok &&
                  _create_pipeline_with_layout(
-                     stream, out->blur_pipeline_id, vs_id, fs_id, out->blur_bgl_id) &&
-                 dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R8_UNORM);
-    }
-
-    dvz_snprintf(vs_key, sizeof(vs_key), "_vs_ssao_comp%s", fmt);
-    dvz_snprintf(fs_key, sizeof(fs_key), "_fs_ssao_comp%s", fmt);
-    uint32_t final_format = _render_pass_scene_color_target_format(cfg);
-    dvz_snprintf(pipe_key, sizeof(pipe_key), "_pipe_ssao_comp%s_%u", fmt, final_format);
-    vs_id = _obj_id(emitter, vs_key, &is_new);
-    if (vs_id == 0)
-        return false;
-    if (ok && is_new)
-        ok = ok && _emit_shader_spirv(
-                       stream, vs_id, "VERTEX", "fullscreen_vert",
-                       _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SSAO_COMPOSITE, false), cfg);
-
-    fs_id = _obj_id(emitter, fs_key, &is_new);
-    if (fs_id == 0)
-        return false;
-    if (ok && is_new)
-        ok = ok && _emit_shader_spirv(
-                       stream, fs_id, "FRAGMENT", "ssao_composite_frag",
-                       _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SSAO_COMPOSITE, true), cfg);
-
-    out->composite_pipeline_id = _obj_id(emitter, pipe_key, &is_new);
-    if (out->composite_pipeline_id == 0)
-        return false;
-    if (ok && is_new)
-    {
-        ok = ok &&
-             _create_pipeline_with_layout(
-                 stream, out->composite_pipeline_id, vs_id, fs_id, out->composite_bgl_id) &&
-             dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format) &&
-             dvz_drp2_stream_pipeline_set_color_blend(
-                 stream, 0, DVZ_BLEND_FACTOR_SRC_ALPHA, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                 DVZ_BLEND_OP_ADD, DVZ_BLEND_FACTOR_ONE, DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-                 DVZ_BLEND_OP_ADD,
-                 DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B | DVZ_MASK_COLOR_A);
+                     stream, out->composite_pipeline_id, vs_id, fs_id, out->composite_bgl_id) &&
+                 dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format);
+        }
     }
     out->render = render;
     out->provider = DVZ_SCENE_WORK_PROVIDER_SSAO;

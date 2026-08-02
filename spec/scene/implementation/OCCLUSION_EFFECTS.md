@@ -1,6 +1,6 @@
 # Occlusion Effects Implementor Notes
 
-Status: normative implementation contract for graph-backed occlusion techniques in the active scene stack. This file defines durable SSAO, scene-occlusion, and volume-occlusion behavior; release sequencing belongs in `agents/now/STATUS.md`.
+Status: normative implementation contract for graph-backed occlusion techniques in the active scene stack. This file defines durable GTAO, scene-occlusion, and volume-occlusion behavior; release sequencing belongs in `agents/now/STATUS.md`.
 
 These notes refine the shared graph technique contract in
 [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md).
@@ -57,9 +57,13 @@ The RC3 estimator is a deterministic horizon-based view-space method in the GTAO
 6. silhouettes, borders, invalid background, alpha-to-coverage, and degenerate projection inputs preserve coherent validity;
 7. stationary redraws are stable, while cross-GPU and cross-backend conformance uses documented tolerances rather than bit identity.
 
-Reduced-resolution visibility requires depth-aware and normal-aware reconstruction. Denoise support is derived from view-space radius and projection; a fixed unqualified pixel blur radius is not a public or internal semantic contract.
+Quality selects a fixed complete sampling domain: low uses 2 directions by 3 steps, medium uses 3 by 4, high uses 4 by 6, and ultra uses 6 by 8. Direction `i` uses `theta = pi * (i + 0.5) / direction_count`; every declared step remains in the denominator even when it reaches invalid background, falls outside the panel, or is rejected by thickness and bias. The implementation is full-resolution in RC3. Any future reduced-resolution mode requires depth-aware and normal-aware reconstruction and an explicit product-extent contract.
 
-The ordinary public descriptor exposes semantic radius, intensity, thickness or bias, quality, optional minimum visibility, and debug mode. Raw sample count, blur enable, pixel blur radius, and blur sigma are removed from the stable descriptor or isolated in an explicitly unstable expert/debug surface during R8.
+For a valid center sample, reconstruction yields a view-space position `P` from the canonical positive linear depth and the inverse projection. Each accepted candidate `Q` contributes a bounded horizon term derived from `max(dot(N, normalize(Q - P)), 0)`, view-space falloff, coherent coverage, thickness, and bias. Visibility is `1 - sum(max_horizon_per_ray) / (2 * direction_count)`, clamped to `[0, 1]` before intensity and minimum-visibility mapping. Perspective and orthographic paths use the same positive linear-depth convention; projected sampling radius is derived from the projection matrix and panel-local product extent, not the canvas origin or an unqualified pixel radius.
+
+The bounded denoise is separable and edge-aware. Its support is derived from view-space radius and projection, and its weights reject incompatible canonical depth, signed view normal, and invalid coverage. Background reconstructs to visibility one and must not borrow foreground occlusion across silhouettes or panel borders. A fixed unqualified pixel blur radius is not a public or internal semantic contract.
+
+The ordinary public descriptor exposes semantic radius, intensity, thickness, quality, optional minimum visibility, and debug mode. Raw sample count, blur enable, pixel blur radius, blur sigma, and kernel arrays are not stable controls. Until the R8 API break lands, tests may translate the temporary `DvzSsaoDesc` fields to these semantic inputs, but no runtime behavior may depend on the legacy hit-count estimator or fixed-pixel blur.
 
 ## Scene Occlusion Model
 
@@ -260,7 +264,7 @@ Focused tests should cover:
 
 ## Quality And Consumer Backlog
 
-The old hit-count-normalized SSAO kernel, fixed-pixel blur, optional blur toggle, and black-overlay composite are legacy removal targets, not backlog direction. R7 replaces them through the semantic product path above.
+The old hit-count-normalized SSAO kernel, random rotation, fixed-pixel blur, optional blur toggle, and black-overlay composite have no conforming runtime role. Compatibility names that remain until the R8 public API break are descriptor translation only; the semantic product path above is authoritative.
 
 Non-volume occlusion consumers should start with primitive or unlit mesh. Contract tests should
 verify the volume-occlusion pass, depth resource, graph read, selected shader/pipeline variant, and
