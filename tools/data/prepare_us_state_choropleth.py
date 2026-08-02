@@ -364,7 +364,7 @@ def _write_bundle(records: list[dict[str, Any]], bundle_root: Path) -> None:
             f.write(struct.pack("<Q", region_id))
 
     with (prepared / "regions.tsv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f, delimiter="\t")
+        writer = csv.writer(f, delimiter="\t", lineterminator="\n")
         writer.writerow(
             [
                 "statefp",

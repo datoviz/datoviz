@@ -1446,7 +1446,7 @@
       "media": {
         "screenshot": {
           "expected": true,
-          "status": "pending",
+          "status": "available",
           "source": "data/gallery/v0.4/features/features_technique_ao.png",
           "site_asset": "/assets/gallery/v0.4/features/features_technique_ao.webp"
         }
