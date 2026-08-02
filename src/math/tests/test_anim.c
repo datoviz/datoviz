@@ -14,6 +14,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
+
 #include "_assertions.h"
 #include "datoviz/math/anim.h"
 #include "test_math.h"
@@ -35,5 +37,7 @@ int test_anim_1(TstContext* suite, const TstCase* tstitem)
         AC(dvz_easing((DvzEasing)i, t), 0, DVZ_EPSILON);
         AC(dvz_easing((DvzEasing)i, 1), 1, DVZ_EPSILON);
     }
+    AC(dvz_easing(DVZ_EASING_IN_SINE, 0.5), 1.0 - sqrt(0.5), DVZ_EPSILON);
+    AC(dvz_easing(DVZ_EASING_OUT_SINE, 0.5), sqrt(0.5), DVZ_EPSILON);
     return 0;
 }
