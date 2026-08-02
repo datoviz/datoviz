@@ -115,8 +115,8 @@ static DvzFramePlanNode* _scene_frame_plan_node_mut(DvzFramePlan* plan, uint32_t
 
 
 static bool _scene_composition_pass_for_role(
-    const DvzPanelCompositionSnapshot* snapshot, DvzFramePlanRenderPassRole role,
-    uint32_t ordinal, const DvzSceneResolvedPass** out)
+    const DvzPanelCompositionSnapshot* snapshot, DvzFramePlanRenderPassRole role, uint32_t ordinal,
+    const DvzSceneResolvedPass** out)
 {
     ANN(snapshot);
     ANN(out);
@@ -186,8 +186,8 @@ bool _scene_bind_panel_composition(
                 previous->u.render.composition_pass_id.value == resolved->id.value)
             {
                 _scene_emit_graph_report(
-                    report, "panel %s composition pass %u has duplicate render bindings",
-                    panel_id, resolved->id.value);
+                    report, "panel %s composition pass %u has duplicate render bindings", panel_id,
+                    resolved->id.value);
                 ok = false;
                 duplicate = true;
                 break;
@@ -526,8 +526,7 @@ static DvzFramePlanClipRect _scene_visual_clip_rect(
     DvzFramePlanClipRect explicit_clip_rect = DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (_scene_visual_explicit_clip_rect(attach, &explicit_clip_rect))
         return explicit_clip_rect;
-    if (
-        visual->ops != NULL && visual->ops->data_coord_uses_plot_clip_rect &&
+    if (visual->ops != NULL && visual->ops->data_coord_uses_plot_clip_rect &&
         attach->coord_space == DVZ_VISUAL_COORD_DATA)
         return DVZ_FRAME_PLAN_CLIP_RECT_PLOT;
     if (visual->ops != NULL && visual->ops->panel_clip_rect)
@@ -558,7 +557,8 @@ static DvzFramePlanViewportRect _scene_visual_viewport_rect(
     DvzFramePlanViewportRect explicit_viewport_rect = DVZ_FRAME_PLAN_VIEWPORT_PLOT;
     if (_scene_visual_explicit_viewport_rect(attach, &explicit_viewport_rect))
         return explicit_viewport_rect;
-    if (attach->coord_space == DVZ_VISUAL_COORD_DATA || attach->coord_space == DVZ_VISUAL_COORD_VIEW)
+    if (attach->coord_space == DVZ_VISUAL_COORD_DATA ||
+        attach->coord_space == DVZ_VISUAL_COORD_VIEW)
     {
         return DVZ_FRAME_PLAN_VIEWPORT_PLOT;
     }
@@ -918,8 +918,8 @@ static bool _scene_emit_blended_group_node(
  * @return effective MSAA state, or NULL when MSAA is disabled or lowered to single-sample
  */
 static const DvzSceneMsaaTechniqueState* _scene_composition_msaa_state(
-    const DvzPanelCompositionSnapshot* snapshot,
-    const char* panel_id, DvzDiagnosticReport* report, DvzSceneMsaaTechniqueState* storage)
+    const DvzPanelCompositionSnapshot* snapshot, const char* panel_id, DvzDiagnosticReport* report,
+    DvzSceneMsaaTechniqueState* storage)
 {
     ANN(snapshot);
     ANN(storage);
@@ -1066,6 +1066,7 @@ bool _scene_emit_panel_render_caps(
     uint32_t ssao_node = invalid_node;
     uint32_t ssao_blur_node = invalid_node;
     uint32_t ssao_composite_node = invalid_node;
+    uint32_t presentation_node = invalid_node;
     uint32_t edl_params_node = invalid_node;
     uint32_t ssao_params_node = invalid_node;
     for (uint32_t i = 0; i < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; i++)
@@ -1293,6 +1294,14 @@ bool _scene_emit_panel_render_caps(
             graph_ok = false;
         }
     }
+    const DvzSceneResolvedPass* presentation_pass = NULL;
+    if (_scene_composition_pass_for_role(
+            &render_plan.composition, DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION, 0,
+            &presentation_pass) &&
+        !_scene_begin_panel_render_pass(
+            plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION,
+            &panel_apply_mvp, &panel_viewport, plot_desc, &presentation_node))
+        graph_ok = false;
     if (graph_ok && edl_params_node != invalid_node &&
         !_scene_bind_auxiliary_upload(
             &render_plan.composition, DVZ_SCENE_AUXILIARY_EDL_PARAMS, edl_params_node))
@@ -1307,14 +1316,12 @@ bool _scene_emit_panel_render_caps(
             _frame_plan_composition_work_fingerprint(&render_plan.composition);
         graph_ok = _frame_plan_composition_validate(&render_plan.composition, report);
     }
-    if (graph_ok &&
-        !_scene_panel_composition_lower_graph(plan, &render_plan.composition, report))
+    if (graph_ok && !_scene_panel_composition_lower_graph(plan, &render_plan.composition, report))
         graph_ok = false;
     if (graph_ok &&
         !_scene_bind_panel_composition(plan, panel_id, &render_plan.composition, report))
         graph_ok = false;
-    if (graph_ok &&
-        !_frame_plan_composition_append(plan, &render_plan.composition, report))
+    if (graph_ok && !_frame_plan_composition_append(plan, &render_plan.composition, report))
         graph_ok = false;
     return graph_ok;
 }

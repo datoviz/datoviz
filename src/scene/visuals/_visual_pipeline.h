@@ -291,6 +291,7 @@ typedef struct DvzSceneVisualBindDesc
     bool uses_scene_occlusion_set2;
     uint64_t scene_occlusion_depth_texture_id;
     DvzSceneOcclusionDesc scene_occlusion;
+    float sampled_panel_origin[2];
 } DvzSceneVisualBindDesc;
 
 
@@ -323,8 +324,7 @@ typedef struct DvzScenePointLoweringDesc
 
 
 uint64_t _scene_visual_resource_by_role(
-    const ConverterState* state, const uint64_t* ids, uint32_t n,
-    DvzFramePlanResourceRole role);
+    const ConverterState* state, const uint64_t* ids, uint32_t n, DvzFramePlanResourceRole role);
 
 bool _emitter_resolve_render_vertex_buffers(
     DvzFramePlanEmitter* emitter, const DvzFramePlanNode* render, uint64_t* out_ids,
@@ -341,24 +341,23 @@ bool _scene_visual_pass_caps_from_visual(
     const DvzVisual* visual, const DvzPanelAttach* attach, DvzSceneVisualPassCaps* out);
 
 bool _scene_visual_pass_caps_from_desc(
-    const DvzSceneVisualDesc* visual, DvzAlphaMode alpha_mode,
-    DvzControllerMode controller_mode, DvzSceneVisualPassCaps* out);
+    const DvzSceneVisualDesc* visual, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
+    DvzSceneVisualPassCaps* out);
 
 void _scene_visual_pass_caps_resolve(
     DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    bool has_normals, bool has_material_resource, bool depth_cue_enabled,
-    bool depth_test_enabled, DvzSceneVisualLayer baseline_layer, uint32_t baseline_product_caps,
+    bool has_normals, bool has_material_resource, bool depth_cue_enabled, bool depth_test_enabled,
+    DvzSceneVisualLayer baseline_layer, uint32_t baseline_product_caps,
     uint32_t baseline_phase_participation, DvzSceneVisualPassCaps* out);
 
 bool _scene_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,
-    const char* format_tag,
-    DvzSceneVisualShaderDesc* out);
+    const char* format_tag, DvzSceneVisualShaderDesc* out);
 
 bool _scene_visual_pipeline_desc(
-    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth,
-    bool wboit_accumulation, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
-    DvzSceneShaderFormat shader_format, DvzSceneVisualPipelineDesc* out);
+    const DvzSceneVisualDesc* visual, bool picking, bool pass_needs_depth, bool wboit_accumulation,
+    DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, DvzSceneShaderFormat shader_format,
+    DvzSceneVisualPipelineDesc* out);
 
 bool _scene_visual_bind_desc(
     const DvzSceneVisualDesc* visual, DvzControllerMode controller_mode,

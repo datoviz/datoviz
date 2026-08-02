@@ -372,12 +372,18 @@ bool _frame_plan_composition_validate(
             report, "panel %s composition snapshot is not finalized", panel_id);
     if (snapshot->panel_id[0] == '\0')
         return _composition_report(report, "composition snapshot has no panel identity");
-    if (snapshot->width == 0 || snapshot->height == 0 || !isfinite(snapshot->render_scale) ||
-        snapshot->render_scale <= 0)
+    const bool dormant = snapshot->width == 0 || snapshot->height == 0;
+    if (!isfinite(snapshot->render_scale) || snapshot->render_scale <= 0)
         return _composition_report(report, "panel %s has invalid local coordinates", panel_id);
+    if (dormant && (snapshot->width != 0 || snapshot->height != 0 ||
+                    snapshot->technique_count != 0 || snapshot->pass_count != 0 ||
+                    snapshot->scratch_resource_count != 0 || snapshot->required_product_mask != 0))
+        return _composition_report(report, "panel %s has active work at zero extent", panel_id);
     for (uint32_t i = 0; i < 4; i++)
         if (!isfinite(snapshot->local_to_target[i]))
             return _composition_report(report, "panel %s has invalid local transform", panel_id);
+    if (dormant)
+        return true;
     if (snapshot->technique_count > DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES ||
         snapshot->pass_count > DVZ_PANEL_COMPOSITION_MAX_PASSES ||
         snapshot->scratch_resource_count > DVZ_PANEL_COMPOSITION_MAX_SCRATCH_RESOURCES)
@@ -589,8 +595,7 @@ bool _frame_plan_composition_validate(
                 report, "panel %s pass %u has an unknown work provider", panel_id, pass->id.value);
         if (pass->work_class <= DVZ_SCENE_WORK_NONE ||
             pass->coordinate_space != DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL ||
-            !pass->viewport_panel_local || !pass->scissor_panel_local ||
-            pass->sample_count == 0 ||
+            !pass->viewport_panel_local || !pass->scissor_panel_local || pass->sample_count == 0 ||
             (pass->binding_count == 0 && pass->unrealized_product_count == 0) ||
             pass->binding_count > DVZ_PANEL_COMPOSITION_MAX_WORK_BINDINGS)
             return _composition_report(
@@ -749,13 +754,12 @@ bool _frame_plan_composition_validate(
             const DvzSceneAuxiliaryBinding* binding = &pass->auxiliary_bindings[k];
             const bool edl = pass->provider == DVZ_SCENE_WORK_PROVIDER_EDL &&
                              binding->kind == DVZ_SCENE_AUXILIARY_EDL_PARAMS;
-            const bool ssao =
-                (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO ||
-                 pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR ||
-                 pass->provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE) &&
-                binding->kind == DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
-            if ((!edl && !ssao) || binding->set == UINT32_MAX ||
-                binding->binding == UINT32_MAX || binding->byte_size == 0)
+            const bool ssao = (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO ||
+                               pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR ||
+                               pass->provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE) &&
+                              binding->kind == DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
+            if ((!edl && !ssao) || binding->set == UINT32_MAX || binding->binding == UINT32_MAX ||
+                binding->byte_size == 0)
                 return _composition_report(
                     report, "panel %s pass %u has an invalid auxiliary binding", panel_id,
                     pass->id.value);

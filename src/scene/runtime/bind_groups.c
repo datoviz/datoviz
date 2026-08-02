@@ -24,8 +24,6 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "frame_plan/frame_plan.h"
-#include "frame_plan/emit.h"
 #include "_frame_plan_runtime_internal.h"
 #include "_frame_plan_runtime_upload.h"
 #include "_render_pass.h"
@@ -39,6 +37,8 @@
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
+#include "frame_plan/emit.h"
+#include "frame_plan/frame_plan.h"
 #include "render_contract/render_contract.h"
 
 
@@ -682,6 +682,8 @@ bool _resolve_scene_occlusion_bind_group(
 
     DvzSceneOcclusionUniform uniform = {0};
     _scene_occlusion_uniform_from_desc(&bind->scene_occlusion, &uniform);
+    uniform.viewport[0] = bind->sampled_panel_origin[0];
+    uniform.viewport[1] = bind->sampled_panel_origin[1];
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneOcclusionUniform), &uniform))
         return false;
@@ -994,6 +996,8 @@ bool _resolve_volume_bind_group(
     _volume_uniform_from_state(
         &bind->volume_state, bind->volume_transfer_rgba, bind->volume_color_role,
         &bind->volume_occlusion, slot);
+    slot->texture_params[1] = bind->sampled_panel_origin[0];
+    slot->texture_params[2] = bind->sampled_panel_origin[1];
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneVolumeUniform), slot))
         return false;

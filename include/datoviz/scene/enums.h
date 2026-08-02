@@ -56,6 +56,7 @@ typedef enum
     DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT,
     DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER,
     DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE,
+    DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION,
     DVZ_FRAME_PLAN_RENDER_PASS_PICKING,
 } DvzFramePlanRenderPassRole;
 
@@ -142,9 +143,9 @@ typedef enum
 /* Coordinate interpretation for retained visual positions when attached to a panel. */
 typedef enum
 {
-    DVZ_VISUAL_COORD_VIEW   = 0, /* metric panel view coordinates */
-    DVZ_VISUAL_COORD_DATA   = 1, /* default: positions are panel data/domain coordinates */
-    DVZ_VISUAL_COORD_PANEL  = 2, /* normalized panel coordinates, intentionally viewport-shaped */
+    DVZ_VISUAL_COORD_VIEW = 0,  /* metric panel view coordinates */
+    DVZ_VISUAL_COORD_DATA = 1,  /* default: positions are panel data/domain coordinates */
+    DVZ_VISUAL_COORD_PANEL = 2, /* normalized panel coordinates, intentionally viewport-shaped */
     DVZ_VISUAL_COORD_PANEL_PIXEL = 3, /* panel-local logical pixels, top-left origin */
 } DvzVisualCoordSpace;
 
@@ -152,18 +153,19 @@ typedef enum
 /* Explicit scissor selection for a visual attached to a panel. */
 typedef enum
 {
-    DVZ_VISUAL_CLIP_AUTO  = 0, /* derive from generated role, visual ops, and coordinate space */
+    DVZ_VISUAL_CLIP_AUTO = 0,  /* derive from generated role, visual ops, and coordinate space */
     DVZ_VISUAL_CLIP_PANEL = 1, /* full panel scissor */
-    DVZ_VISUAL_CLIP_PLOT  = 2, /* inner plot scissor */
+    DVZ_VISUAL_CLIP_PLOT = 2,  /* inner plot scissor */
 } DvzVisualClipRect;
 
 
 /* Explicit viewport selection for a visual attached to a panel. */
 typedef enum
 {
-    DVZ_VISUAL_VIEWPORT_AUTO   = 0, /* derive from generated role, visual ops, and coordinate space */
-    DVZ_VISUAL_VIEWPORT_PANEL  = 1, /* full panel viewport */
-    DVZ_VISUAL_VIEWPORT_PLOT   = 2, /* inner plot viewport */
+    DVZ_VISUAL_VIEWPORT_AUTO =
+        0, /* derive from generated role, visual ops, and coordinate space */
+    DVZ_VISUAL_VIEWPORT_PANEL = 1,  /* full panel viewport */
+    DVZ_VISUAL_VIEWPORT_PLOT = 2,   /* inner plot viewport */
     DVZ_VISUAL_VIEWPORT_TARGET = 3, /* render target viewport */
 } DvzVisualViewportRect;
 
@@ -172,11 +174,11 @@ typedef enum
 typedef enum
 {
     DVZ_PANEL_COORD_FIGURE_PX = 0, /* figure logical pixels */
-    DVZ_PANEL_COORD_PANEL_PX  = 1, /* panel-local logical pixels, origin at outer rect */
-    DVZ_PANEL_COORD_INNER_PX  = 2, /* inner-rect logical pixels, after padding */
-    DVZ_PANEL_COORD_PLOT_PX   = 3, /* plot-local logical pixels, after padding and reserve */
-    DVZ_PANEL_COORD_DATA      = 4, /* panel data/domain coordinates */
-    DVZ_PANEL_COORD_VIEW      = 5, /* panel view/visual coordinates */
+    DVZ_PANEL_COORD_PANEL_PX = 1,  /* panel-local logical pixels, origin at outer rect */
+    DVZ_PANEL_COORD_INNER_PX = 2,  /* inner-rect logical pixels, after padding */
+    DVZ_PANEL_COORD_PLOT_PX = 3,   /* plot-local logical pixels, after padding and reserve */
+    DVZ_PANEL_COORD_DATA = 4,      /* panel data/domain coordinates */
+    DVZ_PANEL_COORD_VIEW = 5,      /* panel view/visual coordinates */
 } DvzPanelCoordSpace;
 
 
@@ -211,13 +213,13 @@ typedef enum
 
 typedef enum
 {
-    DVZ_CONTROLLER_LINK_NONE     = 0x00u,
+    DVZ_CONTROLLER_LINK_NONE = 0x00u,
     DVZ_CONTROLLER_LINK_ROTATION = 0x01u,
-    DVZ_CONTROLLER_LINK_PAN      = 0x02u,
-    DVZ_CONTROLLER_LINK_ZOOM     = 0x04u,
+    DVZ_CONTROLLER_LINK_PAN = 0x02u,
+    DVZ_CONTROLLER_LINK_ZOOM = 0x04u,
     DVZ_CONTROLLER_LINK_EXTENT_X = 0x08u,
     DVZ_CONTROLLER_LINK_EXTENT_Y = 0x10u,
-    DVZ_CONTROLLER_LINK_CAMERA   = 0x20u,
+    DVZ_CONTROLLER_LINK_CAMERA = 0x20u,
 } DvzControllerLinkComponent;
 
 
@@ -369,8 +371,8 @@ typedef enum
 
 typedef enum
 {
-    DVZ_SHAPE_ASPECT_FILLED  = 0,
-    DVZ_SHAPE_ASPECT_STROKE  = 1,
+    DVZ_SHAPE_ASPECT_FILLED = 0,
+    DVZ_SHAPE_ASPECT_STROKE = 1,
     DVZ_SHAPE_ASPECT_OUTLINE = 2,
 } DvzShapeAspect;
 

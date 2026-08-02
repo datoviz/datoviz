@@ -40,6 +40,7 @@
 #define COMPOSITION_ADAPT_LEGACY_AMBIENT_COMPOSITE 0x02u
 #define COMPOSITION_ADAPT_CAPABILITY_FALLBACK      0x04u
 #define COMPOSITION_EXPAND_SSAO_BLUR               0x01u
+#define COMPOSITION_EXPAND_PRESENTATION            0x02u
 
 #define PRODUCT_BIT(_kind) (UINT64_C(1) << (uint32_t)(_kind))
 #define LAYER_BIT(_layer)  (1u << (uint32_t)(_layer))
@@ -75,6 +76,7 @@ typedef struct DvzSceneTechniqueContract
 #define COMPOSITION_PASS_ONCE                  1u
 #define COMPOSITION_PASS_OPTIONAL_SSAO_BLUR    UINT32_MAX
 #define COMPOSITION_PASS_DEPTH_PEEL_ITERATIONS (UINT32_MAX - 1u)
+#define COMPOSITION_PASS_OPTIONAL_PRESENTATION (UINT32_MAX - 2u)
 
 
 
@@ -278,6 +280,9 @@ static const DvzSceneTechniqueContract TECHNIQUE_CONTRACTS[] = {
                                   (1u << (uint32_t)DVZ_SCENE_PHASE_OVERLAY),
         .required_inputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SCENE_COLOR),
         .outputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_PRESENTATION_COLOR),
+        .pass_template_count = 1,
+        .pass_templates =
+            {{DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION, COMPOSITION_PASS_OPTIONAL_PRESENTATION}},
     },
 };
 
@@ -674,6 +679,8 @@ static DvzSceneWorkProviderKey _composition_provider(DvzFramePlanRenderPassRole 
         return DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE;
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
         return DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND;
+    case DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION:
+        return DVZ_SCENE_WORK_PROVIDER_PRESENTATION;
     default:
         return DVZ_SCENE_WORK_PROVIDER_NONE;
     }
@@ -894,7 +901,8 @@ static bool _composition_declare_work(
     ANN(context->render_plan);
     const DvzPanelRenderPlan* render_plan = context->render_plan;
     pass->work_index = work_index;
-    pass->work_class = (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO ||
+    pass->work_class = (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION ||
+                        pass->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO ||
                         pass->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE ||
                         pass->role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE ||
                         pass->role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE ||
@@ -1349,6 +1357,12 @@ static bool _composition_declare_work(
              ATTACH(DVZ_RENDER_PRODUCT_SCENE_COLOR, 0, DVZ_SCENE_ATTACHMENT_LOAD_LOAD);
         context->forward_depth_written = false;
         break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION:
+        ok = SAMPLE(DVZ_RENDER_PRODUCT_SCENE_COLOR, 0) &&
+             ATTACH(DVZ_RENDER_PRODUCT_PRESENTATION_COLOR, 0, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR);
+        if (ok)
+            _composition_frame_clear_value(pass);
+        break;
     default:
         ok = false;
         break;
@@ -1436,17 +1450,25 @@ static bool _composition_expand_all(
         .opaque_samples = opaque_samples,
         .effective_edl = _composition_has_technique(snapshot, DVZ_SCENE_TECHNIQUE_EDL),
     };
+    const bool presentation_required =
+        opaque_samples > 1 ||
+        _composition_has_technique(snapshot, DVZ_SCENE_TECHNIQUE_WBOIT) ||
+        _composition_has_technique(snapshot, DVZ_SCENE_TECHNIQUE_DEPTH_PEEL);
     for (uint32_t k = 0; k < snapshot->technique_count; k++)
     {
-        const DvzSceneResolvedTechnique* technique = &snapshot->techniques[k];
+        DvzSceneResolvedTechnique* technique = &snapshot->techniques[k];
         const DvzSceneTechniqueContract* contract = _composition_contract(technique->id);
         if (contract == NULL)
             return false;
+        if (technique->id == DVZ_SCENE_TECHNIQUE_PRESENTATION && presentation_required)
+            technique->expansion_flags |= COMPOSITION_EXPAND_PRESENTATION;
         for (uint32_t i = 0; i < contract->pass_template_count; i++)
         {
             uint32_t repeat = contract->pass_templates[i].repeat;
             if (repeat == COMPOSITION_PASS_OPTIONAL_SSAO_BLUR)
                 repeat = (technique->expansion_flags & COMPOSITION_EXPAND_SSAO_BLUR) != 0;
+            else if (repeat == COMPOSITION_PASS_OPTIONAL_PRESENTATION)
+                repeat = (technique->expansion_flags & COMPOSITION_EXPAND_PRESENTATION) != 0;
             else if (repeat == COMPOSITION_PASS_DEPTH_PEEL_ITERATIONS)
                 repeat = DVZ_SCENE_DEPTH_PEEL_ITERATIONS;
             for (uint32_t j = 0; j < repeat; j++)
@@ -1533,9 +1555,11 @@ bool _scene_panel_composition_contract_validate(
                 report, "panel %s technique instance %u drifts from fallback semantics",
                 snapshot->panel_id, technique->instance_id.value);
 
-        const uint32_t allowed_expansions = technique->id == DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY
-                                                ? COMPOSITION_EXPAND_SSAO_BLUR
-                                                : 0;
+        uint32_t allowed_expansions = 0;
+        if (technique->id == DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY)
+            allowed_expansions |= COMPOSITION_EXPAND_SSAO_BLUR;
+        if (technique->id == DVZ_SCENE_TECHNIQUE_PRESENTATION)
+            allowed_expansions |= COMPOSITION_EXPAND_PRESENTATION;
         if ((technique->expansion_flags & ~allowed_expansions) != 0)
             return _composition_report(
                 report, "panel %s technique instance %u has undeclared expansion flags",
@@ -1545,6 +1569,8 @@ bool _scene_panel_composition_contract_validate(
             uint32_t repeat = contract->pass_templates[i].repeat;
             if (repeat == COMPOSITION_PASS_OPTIONAL_SSAO_BLUR)
                 repeat = (technique->expansion_flags & COMPOSITION_EXPAND_SSAO_BLUR) != 0;
+            else if (repeat == COMPOSITION_PASS_OPTIONAL_PRESENTATION)
+                repeat = (technique->expansion_flags & COMPOSITION_EXPAND_PRESENTATION) != 0;
             else if (repeat == COMPOSITION_PASS_DEPTH_PEEL_ITERATIONS)
                 repeat = DVZ_SCENE_DEPTH_PEEL_ITERATIONS;
             for (uint32_t j = 0; j < repeat; j++)
@@ -1715,8 +1741,8 @@ bool _scene_panel_composition_resolve(
     dvz_snprintf(draft.panel_id, sizeof(draft.panel_id), "%s", render_plan->panel_id);
     draft.origin_x = render_plan->origin_x;
     draft.origin_y = render_plan->origin_y;
-    draft.width = render_plan->width > 0 ? render_plan->width : 1;
-    draft.height = render_plan->height > 0 ? render_plan->height : 1;
+    draft.width = render_plan->width;
+    draft.height = render_plan->height;
     draft.render_scale = render_plan->render_scale > 0 ? render_plan->render_scale : 1.0f;
     dvz_memcpy(
         draft.local_to_target, sizeof(draft.local_to_target), render_plan->local_to_target,
@@ -1731,6 +1757,20 @@ bool _scene_panel_composition_resolve(
     if (caps != NULL)
         draft.capabilities = *caps;
     draft.available_capability_mask = _composition_available_capabilities(caps);
+
+    if (draft.width == 0 || draft.height == 0)
+    {
+        draft.width = 0;
+        draft.height = 0;
+        draft.requested_sample_count = 1;
+        draft.effective_sample_count = 1;
+        draft.valid = true;
+        draft.work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(&draft);
+        if (!_frame_plan_composition_validate(&draft, report))
+            return false;
+        *out = draft;
+        return true;
+    }
 
     if (!_composition_validate_visuals(render_plan, report))
         return false;

@@ -249,9 +249,8 @@ static bool _scene_panel_render_plan_classify_transparent(
     {
         bool start_blended_pass = out->blended_group_count == 0;
         if (!start_blended_pass && out->transparent_pass_count > 0)
-            start_blended_pass =
-                out->transparent_passes[out->transparent_pass_count - 1].kind !=
-                DVZ_PANEL_RENDER_TRANSPARENT_BLENDED;
+            start_blended_pass = out->transparent_passes[out->transparent_pass_count - 1].kind !=
+                                 DVZ_PANEL_RENDER_TRANSPARENT_BLENDED;
         if (!start_blended_pass)
         {
             uint32_t prev = out->blended_group_count - 1;
@@ -355,7 +354,8 @@ static void _scene_panel_render_plan_order_phases(DvzPanelRenderPlan* plan)
     {
         for (uint32_t i = 0; i < plan->transparent_pass_count; i++)
         {
-            if (_scene_panel_render_plan_phase_bucket(plan, &plan->transparent_passes[i]) == bucket)
+            if (_scene_panel_render_plan_phase_bucket(plan, &plan->transparent_passes[i]) ==
+                bucket)
                 ordered[count++] = plan->transparent_passes[i];
         }
     }
@@ -390,12 +390,10 @@ static bool _scene_panel_render_plan_build_mutable(
     float panel_width = 0.0f;
     float panel_height = 0.0f;
     _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
-    const float scale_x = figure->device_scale_x > 0.0f
-                              ? figure->device_scale_x * figure->render_scale
-                              : 1.0f;
-    const float scale_y = figure->device_scale_y > 0.0f
-                              ? figure->device_scale_y * figure->render_scale
-                              : 1.0f;
+    const float scale_x =
+        figure->device_scale_x > 0.0f ? figure->device_scale_x * figure->render_scale : 1.0f;
+    const float scale_y =
+        figure->device_scale_y > 0.0f ? figure->device_scale_y * figure->render_scale : 1.0f;
     const float x0 = panel_x * scale_x;
     const float y0 = panel_y * scale_y;
     const float x1 = (panel_x + panel_width) * scale_x;
@@ -404,8 +402,8 @@ static bool _scene_panel_render_plan_build_mutable(
     out->origin_y = (int32_t)floorf(y0);
     const int32_t outer_x = (int32_t)ceilf(x1);
     const int32_t outer_y = (int32_t)ceilf(y1);
-    out->width = outer_x > out->origin_x ? (uint32_t)(outer_x - out->origin_x) : 1;
-    out->height = outer_y > out->origin_y ? (uint32_t)(outer_y - out->origin_y) : 1;
+    out->width = outer_x > out->origin_x ? (uint32_t)(outer_x - out->origin_x) : 0;
+    out->height = outer_y > out->origin_y ? (uint32_t)(outer_y - out->origin_y) : 0;
     out->render_scale = figure->render_scale > 0.0f ? figure->render_scale : 1.0f;
     out->local_to_target[0] = 1.0f;
     out->local_to_target[1] = 1.0f;

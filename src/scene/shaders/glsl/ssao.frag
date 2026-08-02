@@ -11,6 +11,7 @@ layout(set = 0, binding = 3) uniform SsaoParams {
     vec4 params2;
     vec4 params3;
 } ssao;
+layout(location = 0) in vec2 localUv;
 layout(location = 0) out float outVisibility;
 
 const vec3 KERNEL[32] = vec3[](
@@ -38,9 +39,9 @@ float hash12(vec2 p)
     return fract((p3.x + p3.y) * p3.z);
 }
 
-vec3 reconstructViewPosition(ivec2 texel, float depth)
+vec3 reconstructViewPosition(ivec2 texel, ivec2 extent, float depth)
 {
-    vec2 uv = (vec2(texel) + vec2(0.5) - ssao.viewport.xy) / max(ssao.viewport.zw, vec2(1.0));
+    vec2 uv = (vec2(texel) + vec2(0.5)) / max(vec2(extent), vec2(1.0));
     vec2 ndc = uv * 2.0 - 1.0;
     vec4 clip = vec4(ndc.x, -ndc.y, depth * 2.0 - 1.0, 1.0);
     vec4 view = ssao.invProj * clip;
@@ -57,9 +58,8 @@ bool projectViewPosition(vec3 viewPos, ivec2 extent, out ivec2 texel)
     vec2 uv = clip.xy / clip.w * 0.5 + 0.5;
     if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0)
         return false;
-    vec2 pixel = ssao.viewport.xy + uv * ssao.viewport.zw;
-    texel = ivec2(pixel);
-    return texel.x >= 0 && texel.y >= 0 && texel.x < extent.x && texel.y < extent.y;
+    texel = clamp(ivec2(uv * vec2(extent)), ivec2(0), extent - ivec2(1));
+    return true;
 }
 
 vec3 viewNormalFromEncoded(vec4 normalSample)
@@ -82,10 +82,8 @@ void tangentBasis(vec3 normal, vec2 fragCoord, out vec3 tangent, out vec3 bitang
 
 void main()
 {
-    ivec2 p = ivec2(gl_FragCoord.xy);
     ivec2 extent = textureSize(sampler2D(depthTex, samp), 0);
-    if (p.x < 0 || p.y < 0 || p.x >= extent.x || p.y >= extent.y)
-        discard;
+    ivec2 p = clamp(ivec2(localUv * vec2(extent)), ivec2(0), extent - ivec2(1));
 
     float centerDepth = texelFetch(sampler2D(depthTex, samp), p, 0).r;
     if (centerDepth >= 0.999999)
@@ -95,12 +93,12 @@ void main()
     }
 
     vec4 centerSample = texelFetch(sampler2D(normalTex, samp), p, 0);
-    vec3 centerPos = reconstructViewPosition(p, centerDepth);
+    vec3 centerPos = reconstructViewPosition(p, extent, centerDepth);
     vec3 centerNormal = viewNormalFromEncoded(centerSample);
 
     vec3 tangent = vec3(0.0);
     vec3 bitangent = vec3(0.0);
-    tangentBasis(centerNormal, gl_FragCoord.xy, tangent, bitangent);
+    tangentBasis(centerNormal, vec2(p) + vec2(0.5), tangent, bitangent);
 
     float radius = max(ssao.params.x, 0.001);
     float bias = max(ssao.params.z, 0.0);
@@ -124,7 +122,7 @@ void main()
             continue;
 
         vec4 sampleNormalDepth = texelFetch(sampler2D(normalTex, samp), q, 0);
-        vec3 actualPos = reconstructViewPosition(q, sampleDepth);
+        vec3 actualPos = reconstructViewPosition(q, extent, sampleDepth);
         vec3 actualNormal = viewNormalFromEncoded(sampleNormalDepth);
         float distanceWeight = 1.0 - smoothstep(0.0, radius, length(actualPos - centerPos));
         float facingWeight = smoothstep(0.0, 0.6, dot(centerNormal, actualNormal) * 0.5 + 0.5);

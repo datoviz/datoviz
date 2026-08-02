@@ -20,8 +20,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "frame_plan/frame_plan.h"
-#include "frame_plan/emit.h"
 #include "_scene.h"
 #include "_shader_registry.h"
 #include "_technique.h"
@@ -29,6 +27,8 @@
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
+#include "frame_plan/emit.h"
+#include "frame_plan/frame_plan.h"
 
 
 
@@ -48,6 +48,7 @@ typedef struct DvzSceneResolvedShader DvzSceneResolvedShader;
 typedef struct DvzSceneOcclusionUniform
 {
     float params[4];
+    float viewport[4];
 } DvzSceneOcclusionUniform;
 
 
@@ -198,8 +199,8 @@ const char* _depth_peel_fragment_spirv_key(DvzSceneBuiltinShader shader);
 const char* _scene_runtime_work_provider_name(DvzSceneWorkProviderKey provider);
 bool _scene_runtime_shader_resolve(
     const DvzSceneVisualShaderDesc* shader, const DvzSceneVisualDesc* desc,
-    DvzSceneWorkProviderKey provider, DvzSceneShaderFormat format,
-    DvzSceneResolvedShader* out, DvzDiagnosticReport* report);
+    DvzSceneWorkProviderKey provider, DvzSceneShaderFormat format, DvzSceneResolvedShader* out,
+    DvzDiagnosticReport* report);
 bool _scene_runtime_shader_emit(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream,
     const DvzSceneResolvedShader* shader, const DvzFramePlanEmitConfig* cfg, uint64_t* out_vs_id,
@@ -221,8 +222,8 @@ bool _resolve_item_state_style_bind_group(
     uint64_t material_buffer_id, uint64_t item_state_style_buffer_id, uint64_t* out_id);
 bool _resolve_textured_mesh_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
-    uint64_t material_buffer_id, uint64_t texture_id, uint64_t sampler_id,
-    DvzColorRole color_role, uint64_t* out_id);
+    uint64_t material_buffer_id, uint64_t texture_id, uint64_t sampler_id, DvzColorRole color_role,
+    uint64_t* out_id);
 bool _resolve_image_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
     uint64_t texture_id, uint64_t sampler_id, bool nearest, DvzColorRole color_role,
@@ -273,26 +274,26 @@ bool _scene_draw_packet_emit(
 bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     DvzSceneWorkProviderKey provider, const DvzFramePlanEmitConfig* cfg,
-    bool pass_has_depth_attachment, bool force_point_depth,
-    uint32_t color_target_format, uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
+    bool pass_has_depth_attachment, bool force_point_depth, uint32_t color_target_format,
+    uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
     uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
     bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
     uint32_t* draw_count_out);
-DvzPanelDesc _render_desc_framebuffer_rect(
-    const DvzPanelDesc* desc, const DvzFramePlanEmitConfig* cfg);
+DvzPanelDesc
+_render_desc_framebuffer_rect(const DvzPanelDesc* desc, const DvzFramePlanEmitConfig* cfg);
 bool _emitter_emit_render_multi_draws(
     DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneDrawPacket* draws,
-    uint32_t draw_count, SceneRenderStateCache* cache);
+    uint32_t draw_count, bool attachment_panel_local, SceneRenderStateCache* cache);
 void _emit_target_extent(const DvzFramePlanEmitConfig* cfg, uint32_t* width, uint32_t* height);
 const DvzFrameGraphResource*
 _graph_resource_by_id(const DvzFramePlan* plan, const char* resource_id);
 const DvzFrameGraphPass* _graph_pass_by_composition_provider(
     const DvzFramePlan* plan, const char* panel_id, DvzSceneWorkProviderKey provider,
     uint32_t occurrence);
-const DvzSceneResolvedPass* _graph_composition_pass(
-    const DvzFramePlan* plan, const DvzFrameGraphPass* pass);
+const DvzSceneResolvedPass*
+_graph_composition_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass);
 const DvzFrameGraphResource* _graph_composition_scratch_resource(
     const DvzFramePlan* plan, const DvzFrameGraphPass* pass, DvzSceneScratchKind kind,
     DvzSceneWorkBindingUsage usage);
@@ -357,6 +358,10 @@ bool _graph_resolve_render_depth(
     const DvzFrameGraphPass** graph_pass, uint64_t* out_depth_id);
 uint64_t _edl_bind_group_fingerprint(
     uint64_t color_id, uint64_t depth_id, uint64_t sampler_id, uint64_t params_id);
+bool _emitter_prepare_presentation_targets(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
 bool _emitter_prepare_edl_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,

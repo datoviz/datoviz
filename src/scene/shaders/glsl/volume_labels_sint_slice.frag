@@ -171,7 +171,8 @@ bool inside_clip_plane(vec3 uvw)
 float depth_visibility(vec3 uvw)
 {
     vec2 size = vec2(textureSize(sampler2D(depthTex, samp), 0));
-    vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
+    vec2 uv = clamp(
+        (gl_FragCoord.xy - volume.texture_params.yz) / size, vec2(0.0), vec2(1.0));
     float scene_depth = texture(sampler2D(depthTex, samp), uv).r;
     float self_depth = projected_depth(uvw);
     if (volume.occlusion.w > 0.5) {
@@ -201,7 +202,8 @@ float depth_visibility(vec3 uvw)
 float scene_occlusion_visibility_linear(vec3 uvw)
 {
     vec2 size = vec2(textureSize(sampler2D(sceneOcclusionDepth, sceneOcclusionSamp), 0));
-    vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
+    vec2 uv = clamp(
+        (gl_FragCoord.xy - sceneOcclusion.viewport.xy) / size, vec2(0.0), vec2(1.0));
     float scene_depth = texture(sampler2D(sceneOcclusionDepth, sceneOcclusionSamp), uv).r;
     if (scene_depth >= 0.999999) {
         return 1.0;

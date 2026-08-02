@@ -16,8 +16,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "helpers.h"
 #include "datoviz_testing.h"
+#include "helpers.h"
 #include "testing.h"
 
 
@@ -50,8 +50,7 @@ int test_axis_panzoom_visible_domain(TstContext* suite, const TstCase* item);
 
 int test_axis_dynamic_segment_draw_count(TstContext* suite, const TstCase* item);
 
-int test_axis_descriptor_abi_rejects_invalid_structs(
-    TstContext* suite, const TstCase* item);
+int test_axis_descriptor_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
 
 int test_scene_fly(TstSuite* suite);
 
@@ -191,8 +190,7 @@ int test_panzoom_zoom_wheel(TstContext* suite, const TstCase* item);
 
 int test_panzoom_zoom_limits(TstContext* suite, const TstCase* item);
 
-int test_panzoom_keep_aspect_right_drag_diagonal_boundary(
-    TstContext* suite, const TstCase* item);
+int test_panzoom_keep_aspect_right_drag_diagonal_boundary(TstContext* suite, const TstCase* item);
 
 int test_panzoom_viewport_filters_pointer_events(TstContext* suite, const TstCase* item);
 
@@ -206,8 +204,7 @@ int test_shared_panzoom_xy_visible_domains(TstContext* suite, const TstCase* ite
 
 int test_figure_window_to_layout_coordinates(TstContext* suite, const TstCase* item);
 
-int test_panzoom_panel_input_uses_hidpi_figure_coordinates(
-    TstContext* suite, const TstCase* item);
+int test_panzoom_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, const TstCase* item);
 
 int test_panzoom_panel_input_uses_plot_viewport_with_reserve(
     TstContext* suite, const TstCase* item);
@@ -240,8 +237,7 @@ int test_arcball_double_click_resets(TstContext* suite, const TstCase* item);
 
 int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase* item);
 
-int test_arcball_panel_input_uses_hidpi_figure_coordinates(
-    TstContext* suite, const TstCase* item);
+int test_arcball_panel_input_uses_hidpi_figure_coordinates(TstContext* suite, const TstCase* item);
 
 int test_arcball_linked_panel_wheel_targets_each_panel(TstContext* suite, const TstCase* item);
 
@@ -264,8 +260,7 @@ int test_controller_link_panzoom_two_way_target_drives_source(
 
 int test_controller_link_validation(TstContext* suite, const TstCase* item);
 
-int test_controller_link_destroy_stops_arcball_propagation(
-    TstContext* suite, const TstCase* item);
+int test_controller_link_destroy_stops_arcball_propagation(TstContext* suite, const TstCase* item);
 
 int test_controller_destroy_detaches_panels_links_and_reuses_slot(
     TstContext* suite, const TstCase* item);
@@ -399,7 +394,8 @@ int test_frame_plan_emit_drp2_static_render_glsl_executes(TstContext* suite, con
 
 int test_frame_plan_emit_drp2_readback_glsl_executes(TstContext* suite, const TstCase* item);
 
-int test_frame_plan_emitter_runtime_two_frames_glsl_executes(TstContext* suite, const TstCase* item);
+int test_frame_plan_emitter_runtime_two_frames_glsl_executes(
+    TstContext* suite, const TstCase* item);
 
 int test_frame_plan_emitter_runtime_dynamic_two_frames_glsl_executes(
     TstContext* suite, const TstCase* item);
@@ -459,9 +455,11 @@ int test_scene_primitive_line_strip_glsl_executes(TstContext* suite, const TstCa
 
 int test_scene_primitive_triangle_list_emit_wgsl(TstContext* suite, const TstCase* item);
 
-int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstContext* suite, const TstCase* item);
+int test_scene_mesh_indexed_default_color_emits_draw_indexed(
+    TstContext* suite, const TstCase* item);
 
-int test_scene_mesh_instance_transform_emits_instanced_draw(TstContext* suite, const TstCase* item);
+int test_scene_mesh_instance_transform_emits_instanced_draw(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* item);
 
@@ -523,8 +521,7 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
 int test_app_offscreen_frame_callback_enables_continuous_scheduler(
     TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_interaction_demand_is_view_scoped(
-    TstContext* suite, const TstCase* item);
+int test_app_offscreen_interaction_demand_is_view_scoped(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_query_requests_notify_hosted_callback(
     TstContext* suite, const TstCase* item);
@@ -532,8 +529,7 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
 int test_app_offscreen_shared_scene_request_frame_subscribers(
     TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_reopen_same_scene_first_frame(
-    TstContext* suite, const TstCase* item);
+int test_app_offscreen_reopen_same_scene_first_frame(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_timer_advances_in_app_run(TstContext* suite, const TstCase* item);
 
@@ -580,14 +576,11 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
 
 int test_frame_plan_emitter_runtime_object_map_grows(TstContext* suite, const TstCase* item);
 
-int test_frame_plan_emitter_rejects_empty_persistent_keys(
-    TstContext* suite, const TstCase* item);
+int test_frame_plan_emitter_rejects_empty_persistent_keys(TstContext* suite, const TstCase* item);
 
-int test_frame_plan_emitter_wgsl_query_shader_resolves(
-    TstContext* suite, const TstCase* item);
+int test_frame_plan_emitter_wgsl_query_shader_resolves(TstContext* suite, const TstCase* item);
 
-int test_frame_plan_emitter_wgsl_missing_source_preflight(
-    TstContext* suite, const TstCase* item);
+int test_frame_plan_emitter_wgsl_missing_source_preflight(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_emitter_runtime_texture_two_frames(TstContext* suite, const TstCase* item);
 
@@ -617,7 +610,8 @@ int test_scene_grid_panel_recomputes_before_emit(TstContext* suite, const TstCas
 
 int test_scene_grid_panel_tracks_figure_resize(TstContext* suite, const TstCase* item);
 
-int test_scene_grid_destroy_detaches_panels_and_reuses_slot(TstContext* suite, const TstCase* item);
+int test_scene_grid_destroy_detaches_panels_and_reuses_slot(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_grid_destroy_detached_panel_still_emits(TstContext* suite, const TstCase* item);
 
@@ -639,13 +633,11 @@ int test_scene_z_layer_orders_emit(TstContext* suite, const TstCase* item);
 
 int test_scene_controller_mode_fixed_emits_separate_mvp(TstContext* suite, const TstCase* item);
 
-int test_scene_split_pass_visuals_emit_separate_common_mvp(
-    TstContext* suite, const TstCase* item);
+int test_scene_split_pass_visuals_emit_separate_common_mvp(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_local_transform_bounds_and_clear(TstContext* suite, const TstCase* item);
 
-int test_scene_visual_local_transform_emits_per_visual_mvp(
-    TstContext* suite, const TstCase* item);
+int test_scene_visual_local_transform_emits_per_visual_mvp(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_data_coord_space_tracks_panel_view2d_resize(
     TstContext* suite, const TstCase* item);
@@ -664,8 +656,7 @@ int test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state(
 int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
     TstContext* suite, const TstCase* item);
 
-int test_scene_overlapping_depth_panels_glsl_clear_depth(
-    TstContext* suite, const TstCase* item);
+int test_scene_overlapping_depth_panels_glsl_clear_depth(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const TstCase* item);
 
@@ -724,8 +715,7 @@ int test_scene_legend_lifecycle_and_reserve(TstContext* suite, const TstCase* it
 
 int test_scene_legend_prepare_visuals(TstContext* suite, const TstCase* item);
 
-int test_scene_legend_emit_stream_contains_derived_visuals(
-    TstContext* suite, const TstCase* item);
+int test_scene_legend_emit_stream_contains_derived_visuals(TstContext* suite, const TstCase* item);
 
 int test_scene_colorbar_auto_reserve_and_visuals(TstContext* suite, const TstCase* item);
 
@@ -742,8 +732,7 @@ int test_scene_colorbar_updates_retained_visuals(TstContext* suite, const TstCas
 int test_scene_colorbar_emit_stream_contains_derived_visuals(
     TstContext* suite, const TstCase* item);
 
-int test_scene_colorbar_invalid_domain_reports_diagnostic(
-    TstContext* suite, const TstCase* item);
+int test_scene_colorbar_invalid_domain_reports_diagnostic(TstContext* suite, const TstCase* item);
 
 int test_scene_colorbar_rejects_unsupported_requests(TstContext* suite, const TstCase* item);
 
@@ -824,7 +813,8 @@ int test_scene_shared_field_update_marks_two_visuals_dirty(TstContext* suite, co
 int test_scene_image_field_partial_update_emits_texture_subregion(
     TstContext* suite, const TstCase* item);
 
-int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, const TstCase* item);
+int test_scene_image_field_resize_emits_texture_reallocation(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, const TstCase* item);
 
@@ -860,14 +850,19 @@ int test_scene_role_work_label_mapping_complete(TstContext* suite, const TstCase
 
 int test_scene_render_contract_validation_errors(TstContext* suite, const TstCase* item);
 
-int test_scene_frame_plan_missing_graph_pass_fails_contract(TstContext* suite, const TstCase* item);
+int test_scene_frame_plan_missing_graph_pass_fails_contract(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const TstCase* item);
+int test_scene_panel_composition_hidpi_geometry(TstContext* suite, const TstCase* item);
+int test_scene_panel_local_intermediate_realization(TstContext* suite, const TstCase* item);
+int test_scene_panel_local_resize_refresh(TstContext* suite, const TstCase* item);
 
 int test_scene_render_contract_rejects_untyped_visual_metadata(
     TstContext* suite, const TstCase* item);
 
-int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite, const TstCase* item);
+int test_scene_panel_graph_failure_reports_specific_diagnostic(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item);
 
@@ -938,13 +933,15 @@ int test_scene_visual_alpha_mode_noncontiguous_oit_rejected(
 
 int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const TstCase* item);
 
-int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstContext* suite, const TstCase* item);
+int test_scene_visual_alpha_mode_requires_wboit_capabilities(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCase* item);
 
 int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCase* item);
 
-int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, const TstCase* item);
+int test_scene_drp2_contract_checker_rejects_pipeline_drift(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, const TstCase* item);
 
@@ -981,8 +978,7 @@ int test_scene_panel_visual_bounds_sphere_local_transform_screen(
 
 int test_scene_panel_bounds_overlay_visual(TstContext* suite, const TstCase* item);
 
-int test_scene_panel_bounds_overlay_visual_panzoom_padding(
-    TstContext* suite, const TstCase* item);
+int test_scene_panel_bounds_overlay_visual_panzoom_padding(TstContext* suite, const TstCase* item);
 
 int test_scene_panel_bounds_overlay_sphere_item_state_bounds(
     TstContext* suite, const TstCase* item);
@@ -998,16 +994,13 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_index_data_upload(TstContext* suite, const TstCase* item);
 
-int test_scene_point_storage_position_buffer_emits_usage(
-    TstContext* suite, const TstCase* item);
+int test_scene_point_storage_position_buffer_emits_usage(TstContext* suite, const TstCase* item);
 
 int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const TstCase* item);
 
-int test_scene_visual_shader_transform_future_compat(
-    TstContext* suite, const TstCase* item);
+int test_scene_visual_shader_transform_future_compat(TstContext* suite, const TstCase* item);
 
-int test_scene_compute_point_position_buffer_emits_drp2(
-    TstContext* suite, const TstCase* item);
+int test_scene_compute_point_position_buffer_emits_drp2(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_geometry_upload(TstContext* suite, const TstCase* item);
 
@@ -1021,7 +1014,8 @@ int test_scene_additional_typed_data_uploads(TstContext* suite, const TstCase* i
 
 int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCase* item);
 
-int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite, const TstCase* item);
+int test_scene_point_external_position_buffer_emits_no_upload(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_point_external_position_buffer_executes(TstContext* suite, const TstCase* item);
 
@@ -1039,7 +1033,8 @@ int test_scene_rejects_mismatched_point_attribute_counts(TstContext* suite, cons
 
 int test_scene_point_visual_resizes_existing_attributes(TstContext* suite, const TstCase* item);
 
-int test_scene_rejects_range_update_without_full_allocation(TstContext* suite, const TstCase* item);
+int test_scene_rejects_range_update_without_full_allocation(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_stream_allows_mutation_after_emit(TstContext* suite, const TstCase* item);
 
@@ -1077,11 +1072,9 @@ int test_scene_image_query_resolves_sample(TstContext* suite, const TstCase* ite
 int test_scene_image_query_plan_preserves_linear_color_role(
     TstContext* suite, const TstCase* item);
 
-int test_scene_image_query_linear_color_sample_not_decoded(
-    TstContext* suite, const TstCase* item);
+int test_scene_image_query_linear_color_sample_not_decoded(TstContext* suite, const TstCase* item);
 
-int test_scene_image_query_generated_rect_samples_position(
-    TstContext* suite, const TstCase* item);
+int test_scene_image_query_generated_rect_samples_position(TstContext* suite, const TstCase* item);
 
 int test_scene_image_query_panzoom_samples_transformed_position(
     TstContext* suite, const TstCase* item);
@@ -1104,8 +1097,7 @@ int test_scene_marker_query_preserves_vertical_item_orientation(
 
 int test_scene_sphere_query_resolves_item(TstContext* suite, const TstCase* item);
 
-int test_scene_sphere_query_resolves_camera_arcball_item(
-    TstContext* suite, const TstCase* item);
+int test_scene_sphere_query_resolves_camera_arcball_item(TstContext* suite, const TstCase* item);
 
 int test_scene_sphere_query_preserves_camera_arcball_y_orientation(
     TstContext* suite, const TstCase* item);
@@ -1137,8 +1129,7 @@ int test_scene_volume_query_resolves_high_uint_label_sample(
 
 int test_scene_volume_query_resolves_signed_label_sample(TstContext* suite, const TstCase* item);
 
-int test_scene_volume_query_resolves_sample_uvw_profile(
-    TstContext* suite, const TstCase* item);
+int test_scene_volume_query_resolves_sample_uvw_profile(TstContext* suite, const TstCase* item);
 
 int test_scene_volume_sample_query_rejects_deferred_policies(
     TstContext* suite, const TstCase* item);
@@ -1188,8 +1179,7 @@ int test_scene_point_item_range_emit_glsl(TstContext* suite, const TstCase* item
 
 int test_scene_point_item_range_emit_wgsl(TstContext* suite, const TstCase* item);
 
-int test_scene_point_item_range_empty_clear_no_reupload(
-    TstContext* suite, const TstCase* item);
+int test_scene_point_item_range_empty_clear_no_reupload(TstContext* suite, const TstCase* item);
 
 int test_scene_second_emit_no_uploads_when_not_dirty(TstContext* suite, const TstCase* item);
 
@@ -1199,12 +1189,12 @@ int test_scene_pending_render_work_tracks_volume_state(TstContext* suite, const 
 
 int test_scene_pending_render_work_tracks_labels_state(TstContext* suite, const TstCase* item);
 
-int test_scene_pending_render_work_clears_unlit_background(
-    TstContext* suite, const TstCase* item);
+int test_scene_pending_render_work_clears_unlit_background(TstContext* suite, const TstCase* item);
 
 int test_scene_hidden_visual_first_visible_later_uploads(TstContext* suite, const TstCase* item);
 
-int test_scene_hidden_indexed_mesh_first_visible_later_uploads(TstContext* suite, const TstCase* item);
+int test_scene_hidden_indexed_mesh_first_visible_later_uploads(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes(
     TstContext* suite, const TstCase* item);
@@ -1217,7 +1207,8 @@ int test_scene_partial_update_merges_ranges_before_emit(TstContext* suite, const
 
 int test_scene_multiple_panels_multiple_point_visuals_emit(TstContext* suite, const TstCase* item);
 
-int test_scene_render_pass_scope_excludes_resource_commands(TstContext* suite, const TstCase* item);
+int test_scene_render_pass_scope_excludes_resource_commands(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_interaction_core(TstContext* suite, const TstCase* item);
 
@@ -1337,8 +1328,7 @@ int test_app_offscreen_points_edl_renders(TstContext* suite, const TstCase* item
 
 int test_app_offscreen_points_edl_changes_pixels(TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_points_edl_strength_changes_pixels(
-    TstContext* suite, const TstCase* item);
+int test_app_offscreen_points_edl_strength_changes_pixels(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_points_edl_projection_stable(TstContext* suite, const TstCase* item);
 
@@ -1346,9 +1336,11 @@ int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase
 
 int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_ssao_projection_zoom_characterization(TstContext* suite, const TstCase* item);
+int test_app_offscreen_ssao_projection_zoom_characterization(
+    TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_ssao_panel_isolation_characterization(TstContext* suite, const TstCase* item);
+int test_app_offscreen_ssao_panel_isolation_characterization(
+    TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_ssao_resize_characterization(TstContext* suite, const TstCase* item);
 
@@ -1367,8 +1359,7 @@ int test_app_offscreen_overlay_rich_card_has_visible_pixels(
 int test_app_offscreen_image_field_partial_update_changes_region(
     TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_shared_field_mixed_runtime_updates(
-    TstContext* suite, const TstCase* item);
+int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_image_retained_render_second_frame(TstContext* suite, const TstCase* item);
 
@@ -1424,9 +1415,11 @@ int test_app_offscreen_volume_occlusion_region_delta(TstContext* suite, const Ts
 
 int test_app_offscreen_volume_occlusion_perspective_camera(TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_volume_slice_scene_occlusion_dimming(TstContext* suite, const TstCase* item);
+int test_app_offscreen_volume_slice_scene_occlusion_dimming(
+    TstContext* suite, const TstCase* item);
 
-int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(TstContext* suite, const TstCase* item);
+int test_app_offscreen_volume_slice_mesh_scene_occlusion_toggle(
+    TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, const TstCase* item);
 

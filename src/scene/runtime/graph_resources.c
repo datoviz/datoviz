@@ -24,12 +24,9 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "_overflow.h"
-#include "frame_plan/frame_plan.h"
-#include "frame_plan/internal.h"
-#include "frame_plan/emit.h"
 #include "_frame_plan_runtime_internal.h"
 #include "_frame_plan_runtime_upload.h"
+#include "_overflow.h"
 #include "_render_pass.h"
 #include "_scene.h"
 #include "_scene_common_bindings.h"
@@ -41,6 +38,9 @@
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
+#include "frame_plan/emit.h"
+#include "frame_plan/frame_plan.h"
+#include "frame_plan/internal.h"
 #include "render_contract/render_contract.h"
 
 
@@ -124,8 +124,7 @@ const DvzFrameGraphPass* _graph_pass_by_composition_provider(
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
-        if (pass != NULL && strcmp(pass->panel_id, panel_id) == 0 &&
-            pass->has_composition_pass &&
+        if (pass != NULL && strcmp(pass->panel_id, panel_id) == 0 && pass->has_composition_pass &&
             pass->composition_pass_id.value == composition_pass_id.value)
             return pass;
     }
@@ -141,8 +140,8 @@ const DvzFrameGraphPass* _graph_pass_by_composition_provider(
  * @param pass physical graph pass
  * @return resolved composition pass, or NULL when the graph pass is untyped
  */
-const DvzSceneResolvedPass* _graph_composition_pass(
-    const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
+const DvzSceneResolvedPass*
+_graph_composition_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
 {
     ANN(plan);
     if (pass == NULL || !pass->has_composition_pass)
@@ -193,8 +192,8 @@ const DvzFrameGraphResource* _graph_composition_scratch_resource(
             if (scratch->id.value != binding->scratch_id.value || scratch->kind != kind)
                 continue;
             const DvzSceneGraphRealization* realization = _frame_plan_realization_get(
-                plan, pass->panel_id, DVZ_SCENE_RESOURCE_REF_SCRATCH,
-                (DvzRenderProductId){0}, scratch->id);
+                plan, pass->panel_id, DVZ_SCENE_RESOURCE_REF_SCRATCH, (DvzRenderProductId){0},
+                scratch->id);
             if (realization == NULL)
                 return NULL;
             return dvz_frame_plan_graph_resource_get(plan, realization->graph_resource_index);
@@ -217,8 +216,8 @@ _graph_pass_for_render(const DvzFramePlan* plan, const DvzFramePlanNode* render)
 {
     ANN(plan);
     ANN(render);
-    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER ||
-        !render->u.render.has_composition_pass || !render->u.render.has_graph_pass_index)
+    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER || !render->u.render.has_composition_pass ||
+        !render->u.render.has_graph_pass_index)
         return NULL;
     const DvzFrameGraphPass* pass =
         dvz_frame_plan_graph_pass_get(plan, render->u.render.graph_pass_index);
@@ -258,8 +257,8 @@ _graph_render_for_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
     for (uint32_t i = 0; i < plan->count; i++)
     {
         const DvzFramePlanNode* render = &plan->nodes[i];
-        if (render->type == DVZ_FRAME_PLAN_NODE_RENDER &&
-            render->u.render.has_composition_pass && render->u.render.has_graph_pass_index &&
+        if (render->type == DVZ_FRAME_PLAN_NODE_RENDER && render->u.render.has_composition_pass &&
+            render->u.render.has_graph_pass_index &&
             render->u.render.graph_pass_index == graph_pass_index &&
             render->u.render.composition_pass_id.value == pass->composition_pass_id.value &&
             strcmp(render->u.render.panel_id, pass->panel_id) == 0)
@@ -627,9 +626,8 @@ static bool _graph_runtime_targets_reserve(SceneGraphRuntimeTargets* targets, ui
     if (capacity <= targets->capacity)
         return true;
 
-    uint32_t new_capacity = targets->capacity > 0
-                                ? targets->capacity
-                                : DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY;
+    uint32_t new_capacity =
+        targets->capacity > 0 ? targets->capacity : DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY;
     while (new_capacity < capacity)
     {
         if (new_capacity > UINT32_MAX / 2)
@@ -956,6 +954,9 @@ bool _runtime_resolve_texture_2d(
         resource->texture_depth != 1 || format != resource->texture_format ||
         sample_count != resource->texture_sample_count)
     {
+        if (emitter->resources.next_id == UINT64_MAX)
+            return false;
+        resource->id = emitter->resources.next_id++;
         resource->texture_width = width;
         resource->texture_height = height;
         resource->texture_depth = 1;
@@ -979,6 +980,55 @@ bool _runtime_resolve_texture_2d(
     }
     *out_id = resource->id;
     return true;
+}
+
+
+
+/**
+ * Resolve the concrete extent of one graph texture.
+ *
+ * @param plan source FramePlan.
+ * @param resource graph resource descriptor.
+ * @param fallback_width figure/target fallback width.
+ * @param fallback_height figure/target fallback height.
+ * @param width output concrete width.
+ * @param height output concrete height.
+ * @return whether the graph extent is valid and resolvable.
+ */
+static bool _graph_resource_extent(
+    const DvzFramePlan* plan, const DvzFrameGraphResource* resource, uint32_t fallback_width,
+    uint32_t fallback_height, uint32_t* width, uint32_t* height)
+{
+    ANN(resource);
+    ANN(width);
+    ANN(height);
+    switch (resource->extent_kind)
+    {
+    case DVZ_FRAME_GRAPH_EXTENT_FIGURE:
+        *width = fallback_width;
+        *height = fallback_height;
+        break;
+    case DVZ_FRAME_GRAPH_EXTENT_PANEL:
+    case DVZ_FRAME_GRAPH_EXTENT_FIXED:
+        *width = resource->width;
+        *height = resource->height;
+        break;
+    case DVZ_FRAME_GRAPH_EXTENT_RESOURCE_REF:
+    {
+        if (plan == NULL || resource->extent_resource_id[0] == '\0' ||
+            strcmp(resource->extent_resource_id, resource->id) == 0)
+            return false;
+        const DvzFrameGraphResource* source =
+            _graph_resource_by_id(plan, resource->extent_resource_id);
+        if (source == NULL)
+            return false;
+        return _graph_resource_extent(
+            plan, source, fallback_width, fallback_height, width, height);
+    }
+    default:
+        return false;
+    }
+    return *width > 0 && *height > 0;
 }
 
 
@@ -1030,6 +1080,8 @@ bool _graph_resolve_texture_2d(
     uint32_t height, uint32_t fallback_format, uint64_t* out_id)
 {
     ANN(resource);
+    if (!_graph_resource_extent(plan, resource, width, height, &width, &height))
+        return false;
     uint32_t format = resource->format != 0 ? resource->format : fallback_format;
     uint32_t usage = _graph_texture_usage_to_drp2(resource->usage_flags);
     if (plan != NULL)

@@ -108,8 +108,7 @@ _composition_graph_resource_index(const DvzFramePlan* plan, const char* resource
 
 
 
-static bool _composition_graph_resource_written(
-    const DvzFramePlan* plan, const char* resource_id)
+static bool _composition_graph_resource_written(const DvzFramePlan* plan, const char* resource_id)
 {
     ANN(plan);
     ANN(resource_id);
@@ -240,6 +239,17 @@ static const DvzSceneResolvedPass* _composition_graph_product_producer(
 
 
 
+static bool _composition_graph_has_presentation(const DvzPanelCompositionSnapshot* snapshot)
+{
+    ANN(snapshot);
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+        if (snapshot->passes[i].provider == DVZ_SCENE_WORK_PROVIDER_PRESENTATION)
+            return true;
+    return false;
+}
+
+
+
 static const char* _composition_graph_legacy_scratch_suffix(DvzSceneScratchKind kind)
 {
     switch (kind)
@@ -280,8 +290,8 @@ static const char* _composition_graph_legacy_scratch_suffix(DvzSceneScratchKind 
 
 
 
-static bool _composition_graph_pass_suffix(
-    const DvzSceneResolvedPass* pass, char* suffix, size_t suffix_size)
+static bool
+_composition_graph_pass_suffix(const DvzSceneResolvedPass* pass, char* suffix, size_t suffix_size)
 {
     ANN(pass);
     ANN(suffix);
@@ -339,6 +349,9 @@ static bool _composition_graph_pass_suffix(
         const int written = dvz_snprintf(suffix, suffix_size, "peel.iter.%u", pass->work_index);
         return written >= 0 && (size_t)written < suffix_size;
     }
+    case DVZ_SCENE_WORK_PROVIDER_PRESENTATION:
+        literal = "presentation";
+        break;
     default:
         return false;
     }
@@ -388,14 +401,48 @@ static bool _composition_graph_realize_product(
     const DvzRenderProductKind kind = _composition_graph_product_kind(snapshot, product_id);
     DvzFrameGraphResource resource = {0};
     resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    resource.width = snapshot->width;
+    resource.height = snapshot->height;
+    resource.depth = 1;
     resource.sample_count = 1;
     resource.usage_flags = _composition_graph_product_usage(snapshot, product_id);
     resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
     if (kind == DVZ_RENDER_PRODUCT_SCENE_COLOR)
     {
+        if (_composition_graph_has_presentation(snapshot))
+        {
+            // Scene color inherits the configured presentation-target format. This keeps the
+            // single-sample resolve attachment format-compatible with its multisample source.
+            resource.format = 0;
+            resource.usage_flags |= DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                                    DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
+            if (!_scene_resource_key_panel_graph(
+                    snapshot->panel_id, "scene.color", resource.id, sizeof(resource.id)))
+                return _composition_graph_report(
+                    report, "panel %s product %" PRIu32 " resource key is truncated",
+                    snapshot->panel_id, product_id.value);
+        }
+        else
+        {
+            dvz_strlcpy(resource.id, "rt", sizeof(resource.id));
+            resource.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+            resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+            resource.width = 0;
+            resource.height = 0;
+            resource.depth = 0;
+            resource.usage_flags |= DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+            resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
+        }
+    }
+    else if (kind == DVZ_RENDER_PRODUCT_PRESENTATION_COLOR)
+    {
         dvz_strlcpy(resource.id, "rt", sizeof(resource.id));
         resource.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+        resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        resource.width = 0;
+        resource.height = 0;
+        resource.depth = 0;
         resource.usage_flags |= DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
         resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_BORROWED;
     }
@@ -419,10 +466,9 @@ static bool _composition_graph_realize_product(
         resource.format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
         const DvzSceneResolvedPass* producer =
             _composition_graph_product_producer(snapshot, product_id);
-        const bool peel =
-            producer != NULL &&
-            (producer->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
-             producer->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION);
+        const bool peel = producer != NULL &&
+                          (producer->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
+                           producer->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION);
         if (!_scene_resource_key_panel_graph(
                 snapshot->panel_id, peel ? "peel.front_accum" : "wboit.accum", resource.id,
                 sizeof(resource.id)))
@@ -466,7 +512,20 @@ static bool _composition_graph_realize_scratch(
             scratch->id.value);
     resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
     resource.format = scratch->format;
-    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+    resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+    resource.width = snapshot->width;
+    resource.height = snapshot->height;
+    resource.depth = 1;
+    // Forward depth shares framebuffer coordinates with the borrowed figure color target.
+    // Vulkan has no per-attachment origin, so this renderer depth attachment must match it.
+    if (scratch->kind == DVZ_SCENE_SCRATCH_FORWARD_DEPTH &&
+        !_composition_graph_has_presentation(snapshot))
+    {
+        resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        resource.width = 0;
+        resource.height = 0;
+        resource.depth = 0;
+    }
     resource.sample_count = scratch->sample_count;
     resource.usage_flags = scratch->usage_mask;
     resource.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
@@ -592,7 +651,10 @@ static bool _composition_graph_add_attachment(
                 report, "panel %s pass %u multisample resource key is truncated",
                 snapshot->panel_id, resolved->id.value);
         multisample.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
-        multisample.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
+        multisample.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
+        multisample.width = snapshot->width;
+        multisample.height = snapshot->height;
+        multisample.depth = 1;
         multisample.sample_count = resolved->sample_count;
         multisample.usage_flags = DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                                   DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;

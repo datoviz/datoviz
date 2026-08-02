@@ -121,6 +121,9 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_pass_capabilities);
     TST_CASE(test_scene_visual_family_registry_coverage);
     TST_CASE(test_scene_panel_composition_snapshot);
+    TST_CASE(test_scene_panel_composition_hidpi_geometry);
+    TST_CASE(test_scene_panel_local_intermediate_realization);
+    TST_CASE(test_scene_panel_local_resize_refresh);
     TST_CASE(test_scene_graph_runtime_targets_grow);
     TST_CASE(test_scene_draw_contract_resolver_matrix);
     TST_CASE(test_scene_role_work_label_mapping_complete);
@@ -242,7 +245,8 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_pending_render_work_clears_unlit_background);
     TST_CASE(test_scene_hidden_visual_first_visible_later_uploads);
     TST_CASE(test_scene_hidden_indexed_mesh_first_visible_later_uploads);
-    TST_SCENE_GRAPH_GPU_CASE(test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes);
+    TST_SCENE_GRAPH_GPU_CASE(
+        test_scene_hidden_wboit_mesh_scene_occlusion_two_frames_glsl_executes);
     TST_CASE(test_scene_partial_update_uploads_only_range);
     TST_CASE(test_scene_repeated_partial_updates_across_frames);
     TST_CASE(test_scene_partial_update_merges_ranges_before_emit);

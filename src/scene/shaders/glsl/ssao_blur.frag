@@ -12,11 +12,12 @@ layout(set = 0, binding = 4) uniform SsaoParams {
     vec4 params2;
     vec4 params3;
 } ssao;
+layout(location = 0) in vec2 localUv;
 layout(location = 0) out float outVisibility;
 
-vec3 reconstructViewPosition(ivec2 texel, float depth)
+vec3 reconstructViewPosition(ivec2 texel, ivec2 extent, float depth)
 {
-    vec2 uv = (vec2(texel) + vec2(0.5) - ssao.viewport.xy) / max(ssao.viewport.zw, vec2(1.0));
+    vec2 uv = (vec2(texel) + vec2(0.5)) / max(vec2(extent), vec2(1.0));
     vec2 ndc = uv * 2.0 - 1.0;
     vec4 clip = vec4(ndc.x, -ndc.y, depth * 2.0 - 1.0, 1.0);
     vec4 view = ssao.invProj * clip;
@@ -31,10 +32,8 @@ vec3 viewNormalFromEncoded(vec4 normalSample)
 
 void main()
 {
-    ivec2 p = ivec2(gl_FragCoord.xy);
     ivec2 extent = textureSize(sampler2D(occlusionTex, samp), 0);
-    if (p.x < 0 || p.y < 0 || p.x >= extent.x || p.y >= extent.y)
-        discard;
+    ivec2 p = clamp(ivec2(localUv * vec2(extent)), ivec2(0), extent - ivec2(1));
 
     float centerDepth = texelFetch(sampler2D(depthTex, samp), p, 0).r;
     if (centerDepth >= 0.999999)
@@ -43,7 +42,7 @@ void main()
         return;
     }
 
-    vec3 centerPos = reconstructViewPosition(p, centerDepth);
+    vec3 centerPos = reconstructViewPosition(p, extent, centerDepth);
     vec3 centerNormal = viewNormalFromEncoded(texelFetch(sampler2D(normalTex, samp), p, 0));
     int radius = int(clamp(round(ssao.params2.z), 1.0, 16.0));
     float depthSigma = max(ssao.params3.x, 0.001);
@@ -62,7 +61,7 @@ void main()
             if (sampleDepth >= 0.999999)
                 continue;
 
-            vec3 samplePos = reconstructViewPosition(q, sampleDepth);
+            vec3 samplePos = reconstructViewPosition(q, extent, sampleDepth);
             vec3 sampleNormal =
                 viewNormalFromEncoded(texelFetch(sampler2D(normalTex, samp), q, 0));
             float spatial2 = float(x * x + y * y);

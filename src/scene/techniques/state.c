@@ -173,6 +173,13 @@ const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
         .sampled_texture_binding_count = 2,
     },
     {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION,
+        .work_label = "presentation",
+        .graph_required = true,
+        .fullscreen_resolve = true,
+        .sampled_texture_binding_count = 1,
+    },
+    {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_PICKING,
         .work_label = "picking",
     },

@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Scene technique graph tests                                                                   */
+/*  Scene technique graph tests */
 /*************************************************************************************************/
 
 
@@ -14,11 +14,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene_graph_utils.h"
-#include "runtime/_frame_plan_runtime_internal.h"
 #include "frame_plan/internal.h"
 #include "render_contract/internal.h"
+#include "runtime/_frame_plan_runtime_internal.h"
 #include "scene_emit/panel_render_plan.h"
+#include "scene_graph_utils.h"
 
 
 
@@ -26,8 +26,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-static const DvzFrameGraphResource* _test_graph_resource(
-    const DvzFramePlan* plan, const char* id)
+static const DvzFrameGraphResource* _test_graph_resource(const DvzFramePlan* plan, const char* id)
 {
     ANN(plan);
     ANN(id);
@@ -38,6 +37,389 @@ static const DvzFrameGraphResource* _test_graph_resource(
             return resource;
     }
     return NULL;
+}
+
+
+
+/**
+ * Create one indexed opaque mesh panel with either G-buffer or SSAO technique work enabled.
+ *
+ * @param scene the scene
+ * @param figure the parent figure
+ * @param desc normalized panel rectangle
+ * @param ssao whether to enable SSAO instead of the standalone G-buffer
+ * @return the configured panel, or NULL on failure
+ */
+static DvzPanel*
+_test_r4_surface_panel(DvzScene* scene, DvzFigure* figure, const DvzPanelDesc* desc, bool ssao)
+{
+    ANN(scene);
+    ANN(figure);
+    ANN(desc);
+
+    DvzPanel* panel = dvz_panel(figure, desc);
+    if (panel == NULL)
+        return NULL;
+
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    if (mesh == NULL)
+        return NULL;
+    vec3 positions[4] = {
+        {-0.5f, -0.5f, 0.0f},
+        {+0.5f, -0.5f, 0.0f},
+        {-0.5f, +0.5f, 0.0f},
+        {+0.5f, +0.5f, 0.0f},
+    };
+    vec3 normals[4] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
+    if (index_buffer == NULL ||
+        dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) != DVZ_OK ||
+        dvz_visual_set_data(mesh, "position", positions, 4) != DVZ_OK ||
+        dvz_visual_set_data(mesh, "normal", normals, 4) != DVZ_OK ||
+        dvz_visual_set_buffer(mesh, "index", index_buffer) != DVZ_OK ||
+        dvz_panel_add_visual(panel, mesh, NULL) != DVZ_OK)
+        return NULL;
+
+    if (ssao &&
+        !_scene_technique_state_set_ssao(
+            &panel->techniques, &(DvzSceneSsaoDesc){
+                                    DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f,
+                                    .strength = 1.0f, .bias = 0.025f, .sample_count = 16}))
+        return NULL;
+    if (!ssao)
+        _scene_technique_state_enable_gbuffer(&panel->techniques, true);
+    return panel;
+}
+
+
+
+/**
+ * Verify asymmetric fractional HiDPI panel geometry uses one outward-rounded physical rectangle.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_composition_hidpi_geometry(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 101, 67, 0);
+    ANN(figure);
+    DvzPanel* panel =
+        _test_r4_surface_panel(scene, figure, &(DvzPanelDesc){0.13f, 0.17f, 0.37f, 0.41f}, false);
+    ANN(panel);
+    figure->device_scale_x = 1.25f;
+    figure->device_scale_y = 1.50f;
+    figure->render_scale = 0.80f;
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzPanelRenderPlan render_plan = {0};
+    AT(_scene_panel_render_plan_build(figure, 0, "figure_0", &caps, &report, &render_plan));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(render_plan.origin_x == 13);
+    AT(render_plan.origin_y == 13);
+    AT(render_plan.width == 38);
+    AT(render_plan.height == 34);
+    AC(render_plan.render_scale, 0.80f, 1e-6f);
+    AC(render_plan.local_to_target[0], 1.0f, 1e-6f);
+    AC(render_plan.local_to_target[1], 1.0f, 1e-6f);
+    AC(render_plan.local_to_target[2], 13.0f, 1e-6f);
+    AC(render_plan.local_to_target[3], 13.0f, 1e-6f);
+
+    DvzPanelCompositionSnapshot composition = {0};
+    AT(_scene_panel_composition_resolve(&render_plan, &caps, &composition, &report));
+    AT(composition.origin_x == render_plan.origin_x);
+    AT(composition.origin_y == render_plan.origin_y);
+    AT(composition.width == render_plan.width);
+    AT(composition.height == render_plan.height);
+    AT(memcmp(
+           composition.local_to_target, render_plan.local_to_target,
+           sizeof(composition.local_to_target)) == 0);
+
+    DvzPanelRenderPlan dormant = render_plan;
+    dormant.width = 0;
+    dormant.height = 0;
+    DvzPanelCompositionSnapshot dormant_composition = {0};
+    AT(_scene_panel_composition_resolve(&dormant, &caps, &dormant_composition, &report));
+    AT(dormant_composition.pass_count == 0);
+    AT(dormant_composition.scratch_resource_count == 0);
+    DvzFramePlan* dormant_graph = dvz_frame_plan("r4.dormant", 0);
+    ANN(dormant_graph);
+    AT(_scene_panel_composition_lower_graph(dormant_graph, &dormant_composition, &report));
+    AT(dormant_graph->graph_pass_count == 0);
+    for (uint32_t i = 0; i < dormant_graph->graph_resource_count; i++)
+        AT(dormant_graph->graph_resources[i].kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET);
+    dvz_frame_plan_destroy(dormant_graph);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify panel-local technique intermediates and their passes use the exact local extent.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_local_intermediate_realization(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 203, 137, 0);
+    ANN(figure);
+    DvzPanel* panel =
+        _test_r4_surface_panel(scene, figure, &(DvzPanelDesc){0.13f, 0.17f, 0.37f, 0.41f}, false);
+    ANN(panel);
+
+    DvzFramePlan* plan = dvz_frame_plan("r4.panel-local", 0);
+    ANN(plan);
+    AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
+    const DvzPanelCompositionSnapshot* composition =
+        _frame_plan_composition_get(plan, "figure_0_p0");
+    ANN(composition);
+    AT(composition->origin_x == 26);
+    AT(composition->origin_y == 23);
+    AT(composition->width == 76);
+    AT(composition->height == 57);
+    for (uint32_t i = 0; i < plan->graph_resource_count; i++)
+    {
+        const DvzFrameGraphResource* resource = &plan->graph_resources[i];
+        if (resource->kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET)
+            continue;
+        if (strcmp(resource->id, "figure_0_p0.depth") == 0)
+        {
+            AT(resource->extent_kind == DVZ_FRAME_GRAPH_EXTENT_FIGURE);
+            continue;
+        }
+        AT(resource->extent_kind == DVZ_FRAME_GRAPH_EXTENT_PANEL);
+        AT(resource->width == composition->width);
+        AT(resource->height == composition->height);
+    }
+    dvz_frame_plan_destroy(plan);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report = {0};
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 203;
+    cfg.target_height = 137;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t normal_id = 0;
+    uint64_t gbuffer_pass_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+            continue;
+        const char* label = dvz_drp2_stream_label(stream, command->u.create_texture.id);
+        if (label != NULL && strcmp(label, "fig0_p0.gbuffer.normal") == 0)
+        {
+            normal_id = command->u.create_texture.id;
+            AT(command->u.create_texture.width == 76);
+            AT(command->u.create_texture.height == 57);
+        }
+        if (label != NULL && strcmp(label, "fig0_p0.gbuffer.depth") == 0)
+        {
+            AT(command->u.create_texture.width == 76);
+            AT(command->u.create_texture.height == 57);
+        }
+    }
+    AT(normal_id != 0);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+            command->u.begin_render_pass.texture_id == normal_id)
+        {
+            gbuffer_pass_id = command->u.begin_render_pass.id;
+            AT(command->u.begin_render_pass.render_area_px[0] == 0);
+            AT(command->u.begin_render_pass.render_area_px[1] == 0);
+            AT(command->u.begin_render_pass.render_area_px[2] == 76);
+            AT(command->u.begin_render_pass.render_area_px[3] == 57);
+            AC(command->u.begin_render_pass.viewport_px[0], 0.0f, 1e-6f);
+            AC(command->u.begin_render_pass.viewport_px[1], 0.0f, 1e-6f);
+            AC(command->u.begin_render_pass.viewport_px[2], 76.0f, 1e-6f);
+            AC(command->u.begin_render_pass.viewport_px[3], 57.0f, 1e-6f);
+            AC(command->u.begin_render_pass.scissor_px[0], 0.0f, 1e-6f);
+            AC(command->u.begin_render_pass.scissor_px[1], 0.0f, 1e-6f);
+            AC(command->u.begin_render_pass.scissor_px[2], 76.0f, 1e-6f);
+            AC(command->u.begin_render_pass.scissor_px[3], 57.0f, 1e-6f);
+        }
+    }
+    AT(gbuffer_pass_id != 0);
+    bool found_local_viewport = false;
+    bool found_local_scissor = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_SET_VIEWPORT &&
+            command->u.set_viewport.pass_id == gbuffer_pass_id)
+        {
+            AC(command->u.set_viewport.viewport[0], 0.0f, 1e-6f);
+            AC(command->u.set_viewport.viewport[1], 0.0f, 1e-6f);
+            AC(command->u.set_viewport.viewport[2], 75.11f, 1e-4f);
+            AC(command->u.set_viewport.viewport[3], 56.17f, 1e-4f);
+            found_local_viewport = true;
+        }
+        if (command->type == DVZ_DRP2_COMMAND_SET_SCISSOR &&
+            command->u.set_scissor.pass_id == gbuffer_pass_id)
+        {
+            AC(command->u.set_scissor.scissor[0], 0.0f, 1e-6f);
+            AC(command->u.set_scissor.scissor[1], 0.0f, 1e-6f);
+            AC(command->u.set_scissor.scissor[2], 75.11f, 1e-4f);
+            AC(command->u.set_scissor.scissor[3], 56.17f, 1e-4f);
+            found_local_scissor = true;
+        }
+    }
+    AT(found_local_viewport);
+    AT(found_local_scissor);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify a panel-only resize recreates its targets, refreshes descriptors, and then becomes quiet.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_panel_local_resize_refresh(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 200, 100, 0);
+    ANN(figure);
+    DvzPanel* panel =
+        _test_r4_surface_panel(scene, figure, &(DvzPanelDesc){0.10f, 0.20f, 0.30f, 0.50f}, true);
+    ANN(panel);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.supports_color_blending = true;
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    cfg.target_width = 200;
+    cfg.target_height = 100;
+    cfg.runtime_resource_scope_id = UINT64_C(0x44);
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* initial = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(initial);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    AT(dvz_panel_set_desc(panel, &(DvzPanelDesc){0.10f, 0.20f, 0.45f, 0.50f}) == DVZ_OK);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* resized = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(resized);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    uint64_t normal_id = 0;
+    uint64_t depth_id = 0;
+    bool recreated_normal = false;
+    bool recreated_depth = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(resized); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(resized, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+            continue;
+        const char* label = dvz_drp2_stream_label(resized, command->u.create_texture.id);
+        if (label != NULL && strstr(label, "fig0_p0.gbuffer.normal") != NULL)
+        {
+            normal_id = command->u.create_texture.id;
+            recreated_normal =
+                command->u.create_texture.width == 90 && command->u.create_texture.height == 50;
+        }
+        else if (label != NULL && strstr(label, "fig0_p0.gbuffer.depth") != NULL)
+        {
+            depth_id = command->u.create_texture.id;
+            recreated_depth =
+                command->u.create_texture.width == 90 && command->u.create_texture.height == 50;
+        }
+    }
+    AT(recreated_normal);
+    AT(recreated_depth);
+    bool refreshed_ssao = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(resized); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(resized, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
+            command->u.create_bind_group.entry_count == 4)
+        {
+            refreshed_ssao = refreshed_ssao ||
+                             (command->u.create_bind_group.entries[0].resource_id == normal_id &&
+                              command->u.create_bind_group.entries[1].resource_id == depth_id);
+        }
+    }
+    AT(refreshed_ssao);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* steady = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(steady);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    bool recreated_steady = false;
+    bool refreshed_steady = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(steady); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(steady, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+        {
+            const char* label = dvz_drp2_stream_label(steady, command->u.create_texture.id);
+            recreated_steady =
+                recreated_steady || (label != NULL && strstr(label, "fig0_p0.gbuffer.") != NULL);
+        }
+        else if (
+            command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
+            command->u.create_bind_group.entry_count == 4 &&
+            command->u.create_bind_group.entries[0].resource_id == normal_id &&
+            command->u.create_bind_group.entries[1].resource_id == depth_id)
+            refreshed_steady = true;
+    }
+    AT(!recreated_steady);
+    AT(!refreshed_steady);
+
+    _test_scene_stream_destroy(steady);
+    _test_scene_stream_destroy(resized);
+    _test_scene_stream_destroy(initial);
+    dvz_scene_destroy(scene);
+    return 0;
 }
 
 
@@ -99,25 +481,29 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
 
     DvzPanelRenderPlan plan = {0};
     dvz_strlcpy(plan.panel_id, "figure_0_p0", sizeof(plan.panel_id));
+    plan.width = 64;
+    plan.height = 64;
     plan.drawable_count = 2;
     plan.visual_count = 2;
     plan.visuals[0] = (DvzPanelRenderVisualPlan){
         .visual_index = 3,
         .authored_order = 0,
         .layer = DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE,
-        .caps = {
-            .layer = DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE,
-            .phase_participation = DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING,
-        },
+        .caps =
+            {
+                .layer = DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE,
+                .phase_participation = DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING,
+            },
     };
     plan.visuals[1] = (DvzPanelRenderVisualPlan){
         .visual_index = 7,
         .authored_order = 1,
         .layer = DVZ_SCENE_VISUAL_LAYER_TRANSPARENT,
-        .caps = {
-            .layer = DVZ_SCENE_VISUAL_LAYER_TRANSPARENT,
-            .phase_participation = DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING,
-        },
+        .caps =
+            {
+                .layer = DVZ_SCENE_VISUAL_LAYER_TRANSPARENT,
+                .phase_participation = DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING,
+            },
     };
     plan.opaque_visuals[0] = plan.visuals[0];
     plan.opaque_visual_count = 1;
@@ -154,9 +540,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(first.passes[1].authored_order_begin == 1);
     AT(first.passes[0].id.value != first.passes[1].id.value);
     AT((first.required_product_mask & (UINT64_C(1) << DVZ_RENDER_PRODUCT_SCENE_COLOR)) != 0);
-    AT(
-        (first.required_product_mask &
-         (UINT64_C(1) << DVZ_RENDER_PRODUCT_PRESENTATION_COLOR)) != 0);
+    AT((first.required_product_mask & (UINT64_C(1) << DVZ_RENDER_PRODUCT_PRESENTATION_COLOR)) !=
+       0);
     AT(first.work_declaration_fingerprint != 0);
     AT(first.passes[0].provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
     AT(first.passes[0].coordinate_space == DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL);
@@ -168,9 +553,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(first.passes[1].binding_count == 1);
     AT(first.passes[1].bindings[0].load == DVZ_SCENE_ATTACHMENT_LOAD_LOAD);
     AT(first.passes[1].bindings[0].access == DVZ_SCENE_WORK_ACCESS_READ_WRITE);
-    AT(
-        first.passes[1].bindings[0].load_source_product_id.value ==
-        first.techniques[1].input_ids[0].value);
+    AT(first.passes[1].bindings[0].load_source_product_id.value ==
+       first.techniques[1].input_ids[0].value);
 
     DvzFramePlan* generic_graph = dvz_frame_plan("composition.generic-graph", 0);
     ANN(generic_graph);
@@ -196,12 +580,10 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
                 binding->scratch_id));
         }
     }
-    AT(
-        generic_graph->graph_passes[0].color_attachments[0].load_op ==
-        DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
-    AT(
-        generic_graph->graph_passes[1].color_attachments[0].load_op ==
-        DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+    AT(generic_graph->graph_passes[0].color_attachments[0].load_op ==
+       DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
+    AT(generic_graph->graph_passes[1].color_attachments[0].load_op ==
+       DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
     dvz_frame_plan_destroy(generic_graph);
 
     DvzSceneMsaaTechniqueState msaa = {
@@ -216,12 +598,14 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     generic_graph = dvz_frame_plan("composition.generic-graph-msaa", 0);
     ANN(generic_graph);
     AT(_scene_panel_composition_lower_graph(generic_graph, &multisample, NULL));
-    AT(generic_graph->graph_resources[1].sample_count == 4);
+    AT(generic_graph->graph_resource_count == 3);
+    AT(generic_graph->graph_resources[2].sample_count == 4);
     AT(generic_graph->graph_passes[0].alpha_to_coverage);
-    AT(
-        strcmp(
-            generic_graph->graph_passes[0].color_attachments[0].resolve_resource_id,
-            "rt") == 0);
+    AT(strcmp(
+           generic_graph->graph_passes[0].color_attachments[0].resolve_resource_id,
+           "figure_0_p0.scene.color") == 0);
+    AT(multisample.passes[2].role == DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION);
+    AT(strcmp(generic_graph->graph_passes[2].color_attachments[0].resource_id, "rt") == 0);
     dvz_frame_plan_destroy(generic_graph);
 
     generic_graph = dvz_frame_plan("composition.generic-graph-rollback", 0);
@@ -231,8 +615,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     incompatible_rt.kind = DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
     incompatible_rt.extent_kind = DVZ_FRAME_GRAPH_EXTENT_FIGURE;
     incompatible_rt.usage_flags =
-        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
-        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
+        DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
     incompatible_rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
     AT(dvz_frame_plan_graph_resource(generic_graph, &incompatible_rt));
     AT(!_scene_panel_composition_lower_graph(generic_graph, &first, NULL));
@@ -241,8 +624,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     dvz_frame_plan_destroy(generic_graph);
 
     DvzPanelCompositionSnapshot invalid_graph_work = first;
-    invalid_graph_work.passes[0].bindings[0].slot =
-        DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS;
+    invalid_graph_work.passes[0].bindings[0].slot = DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS;
     invalid_graph_work.work_declaration_fingerprint =
         _frame_plan_composition_work_fingerprint(&invalid_graph_work);
     generic_graph = dvz_frame_plan("composition.generic-graph-slot", 0);
@@ -274,9 +656,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     DvzDiagnosticReport work_drift_report;
     dvz_diagnostic_report_init(&work_drift_report);
     AT(!_frame_plan_composition_validate(&work_drift, &work_drift_report));
-    AT(strstr(
-           dvz_diagnostic_report_get(&work_drift_report, 0),
-           "declarative work drifts") != NULL);
+    AT(strstr(dvz_diagnostic_report_get(&work_drift_report, 0), "declarative work drifts") !=
+       NULL);
 
     work_drift = first;
     work_drift.passes[0].provider = (DvzSceneWorkProviderKey)UINT32_MAX;
@@ -288,9 +669,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     work_drift.passes[1].bindings[0].load_source_product_id.value++;
     dvz_diagnostic_report_init(&work_drift_report);
     AT(!_frame_plan_composition_validate(&work_drift, &work_drift_report));
-    AT(strstr(
-           dvz_diagnostic_report_get(&work_drift_report, 0),
-           "declarative work drifts") != NULL);
+    AT(strstr(dvz_diagnostic_report_get(&work_drift_report, 0), "declarative work drifts") !=
+       NULL);
 
     DvzPanelRenderPlan volume_plan = plan;
     volume_plan.visuals[1].layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
@@ -303,11 +683,9 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     DvzPanelCompositionSnapshot rejected_participation = {0};
     AT(!_scene_panel_composition_resolve(
         &volume_plan, &caps, &rejected_participation, &participation_report));
-    AT(strstr(
-           dvz_diagnostic_report_get(&participation_report, 0),
-           "layer/phase participation") != NULL);
-    volume_plan.visuals[1].caps.phase_participation |=
-        DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING;
+    AT(strstr(dvz_diagnostic_report_get(&participation_report, 0), "layer/phase participation") !=
+       NULL);
+    volume_plan.visuals[1].caps.phase_participation |= DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING;
     volume_plan.blended_visuals[0].caps.phase_participation |=
         DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING;
     DvzPanelCompositionSnapshot volume_composed = {0};
@@ -329,6 +707,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
 
     DvzPanelRenderPlan chain_plan = {0};
     dvz_snprintf(chain_plan.panel_id, sizeof(chain_plan.panel_id), "chain_p0");
+    chain_plan.width = 64;
+    chain_plan.height = 64;
     chain_plan.drawable_count = 5;
     chain_plan.visual_count = 5;
     chain_plan.visuals[0] = plan.visuals[0];
@@ -387,8 +767,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     occluded_chain.scene_occlusion_count = 1;
     DvzPanelCompositionSnapshot occluded = {0};
     AT(_scene_panel_composition_resolve(&occluded_chain, &caps, &occluded, NULL));
-    const uint64_t scene_occlusion_bit =
-        UINT64_C(1) << DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH;
+    const uint64_t scene_occlusion_bit = UINT64_C(1) << DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH;
     uint32_t occluded_transparent_count = 0;
     for (uint32_t i = 0; i < occluded.technique_count; i++)
     {
@@ -434,8 +813,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
             &wboit_plan, &missing, &rejected, &capability_report));
         AT(dvz_diagnostic_report_count(&capability_report) == 1);
         AT(strstr(dvz_diagnostic_report_get(&capability_report, 0), "WBOIT requires") != NULL);
-        AT(strstr(
-               dvz_diagnostic_report_get(&capability_report, 0), wboit_requirements[i]) != NULL);
+        AT(strstr(dvz_diagnostic_report_get(&capability_report, 0), wboit_requirements[i]) !=
+           NULL);
     }
 
     DvzPanelRenderPlan peel_plan = wboit_plan;
@@ -460,13 +839,10 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         DvzDiagnosticReport capability_report;
         dvz_diagnostic_report_init(&capability_report);
         DvzPanelCompositionSnapshot rejected = {0};
-        AT(!_scene_panel_composition_resolve(
-            &peel_plan, &missing, &rejected, &capability_report));
-        AT(strstr(
-               dvz_diagnostic_report_get(&capability_report, 0), "depth peeling requires") !=
+        AT(!_scene_panel_composition_resolve(&peel_plan, &missing, &rejected, &capability_report));
+        AT(strstr(dvz_diagnostic_report_get(&capability_report, 0), "depth peeling requires") !=
            NULL);
-        AT(strstr(
-               dvz_diagnostic_report_get(&capability_report, 0), peel_requirements[i]) != NULL);
+        AT(strstr(dvz_diagnostic_report_get(&capability_report, 0), peel_requirements[i]) != NULL);
     }
 
     DvzPanelRenderPlan occluded_peel = peel_plan;
@@ -474,8 +850,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     occluded_peel.scene_occlusion[0] = occluded_peel.visuals[0];
     occluded_peel.scene_occlusion_count = 1;
     DvzPanelCompositionSnapshot occluded_peel_composed = {0};
-    AT(_scene_panel_composition_resolve(
-        &occluded_peel, &caps, &occluded_peel_composed, NULL));
+    AT(_scene_panel_composition_resolve(&occluded_peel, &caps, &occluded_peel_composed, NULL));
     bool found_occluded_peel = false;
     for (uint32_t i = 0; i < occluded_peel_composed.technique_count; i++)
     {
@@ -505,8 +880,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     DvzDiagnosticReport blend_report;
     dvz_diagnostic_report_init(&blend_report);
     DvzPanelCompositionSnapshot rejected_blend = {0};
-    AT(!_scene_panel_composition_resolve(
-        &plan, &no_blend, &rejected_blend, &blend_report));
+    AT(!_scene_panel_composition_resolve(&plan, &no_blend, &rejected_blend, &blend_report));
     AT(strstr(dvz_diagnostic_report_get(&blend_report, 0), "alpha blending requires") != NULL);
 
     DvzFramePlan* persisted = dvz_frame_plan("composition.persistence", 0);
@@ -536,13 +910,15 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     invalid_snapshot.passes[1].id = invalid_snapshot.passes[0].id;
     dvz_diagnostic_report_init(&validation_report);
     AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
-    AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "duplicate pass identity") != NULL);
+    AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "duplicate pass identity") !=
+       NULL);
 
     invalid_snapshot = first;
     invalid_snapshot.techniques[1].instance_id = invalid_snapshot.techniques[0].instance_id;
     dvz_diagnostic_report_init(&validation_report);
     AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
-    AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "duplicate technique instance") != NULL);
+    AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "duplicate technique instance") !=
+       NULL);
 
     invalid_snapshot = first;
     invalid_snapshot.techniques[0].must_follow_phase_mask =
@@ -589,8 +965,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(contract_rejections->composition_count == 0);
 
     invalid_snapshot = first;
-    invalid_snapshot.techniques[1].fallback =
-        DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION;
+    invalid_snapshot.techniques[1].fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION;
     dvz_diagnostic_report_init(&validation_report);
     AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "fallback semantics") != NULL);
@@ -609,7 +984,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     invalid_snapshot.pass_count--;
     dvz_diagnostic_report_init(&validation_report);
     AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
-    AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "missing a declared pass") != NULL);
+    AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "missing a declared pass") !=
+       NULL);
     AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
@@ -622,7 +998,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     invalid_snapshot.pass_count++;
     dvz_diagnostic_report_init(&validation_report);
     AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
-    AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "undeclared extra passes") != NULL);
+    AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "undeclared extra passes") !=
+       NULL);
     AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
@@ -695,8 +1072,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     repeated.passes[2].bindings[0].product_id = repeated.techniques[2].output_ids[0];
     repeated.passes[2].bindings[0].load_source_product_id = repeated.techniques[2].input_ids[0];
     repeated.pass_count = 3;
-    repeated.work_declaration_fingerprint =
-        _frame_plan_composition_work_fingerprint(&repeated);
+    repeated.work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(&repeated);
     AT(repeated.techniques[1].id == repeated.techniques[2].id);
     AT(_frame_plan_composition_validate(&repeated, NULL));
 
@@ -704,8 +1080,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     ANN(empty_scene);
     DvzFigure* empty_figure = dvz_figure(empty_scene, 64, 64, 0);
     ANN(empty_figure);
-    DvzPanel* empty_panel =
-        dvz_panel(empty_figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* empty_panel = dvz_panel(empty_figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(empty_panel);
     DvzFramePlan* empty_plan = dvz_frame_plan("empty", 0);
     ANN(empty_plan);
@@ -827,9 +1202,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(generic_graph->graph_pass_count == composed.pass_count);
     AT(generic_graph->graph_resource_count > composed.scratch_resource_count);
     for (uint32_t i = 0; i < composed.pass_count; i++)
-        AT(
-            generic_graph->graph_passes[i].composition_pass_id.value ==
-            composed.passes[i].id.value);
+        AT(generic_graph->graph_passes[i].composition_pass_id.value ==
+           composed.passes[i].id.value);
     const uint32_t first_panel_resource_count = generic_graph->graph_resource_count;
     DvzPanelCompositionSnapshot adjacent_composed = composed;
     dvz_strlcpy(adjacent_composed.panel_id, "figure_0_p1", sizeof(adjacent_composed.panel_id));
@@ -842,8 +1216,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     DvzCapabilitySnapshot no_surface_rgba = caps;
     no_surface_rgba.render_target_format_rgba16float = false;
     DvzPanelCompositionSnapshot surface_fallback = {0};
-    AT(_scene_panel_composition_resolve(
-        &effects, &no_surface_rgba, &surface_fallback, NULL));
+    AT(_scene_panel_composition_resolve(&effects, &no_surface_rgba, &surface_fallback, NULL));
     bool found_surface_rgba_fallback = false;
     for (uint32_t i = 0; i < surface_fallback.technique_count; i++)
     {
@@ -871,8 +1244,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     DvzCapabilitySnapshot no_ambient_sampling = caps;
     no_ambient_sampling.supports_render_target_sampling = false;
     DvzPanelCompositionSnapshot ambient_fallback = {0};
-    AT(_scene_panel_composition_resolve(
-        &effects, &no_ambient_sampling, &ambient_fallback, NULL));
+    AT(_scene_panel_composition_resolve(&effects, &no_ambient_sampling, &ambient_fallback, NULL));
     bool found_ambient_sampling_fallback = false;
     for (uint32_t i = 0; i < ambient_fallback.technique_count; i++)
     {
@@ -1026,28 +1398,22 @@ int test_scene_ssao_normalization_characterization(TstContext* suite, const TstC
 
     const uint32_t sample_count = 16;
 
-    const float sparse_legacy =
-        _test_ssao_normalized_visibility(sample_count, 1, 1, false);
-    const float sparse_complete =
-        _test_ssao_normalized_visibility(sample_count, 1, 1, true);
+    const float sparse_legacy = _test_ssao_normalized_visibility(sample_count, 1, 1, false);
+    const float sparse_complete = _test_ssao_normalized_visibility(sample_count, 1, 1, true);
     AT(sparse_legacy == 0.0f);
     AT(sparse_complete == 15.0f / 16.0f);
     AT(sparse_legacy == _test_ssao_normalized_visibility(sample_count, 1, 1, false));
     AT(sparse_complete == _test_ssao_normalized_visibility(sample_count, 1, 1, true));
 
-    const float dense_legacy =
-        _test_ssao_normalized_visibility(sample_count, 16, 8, false);
-    const float dense_complete =
-        _test_ssao_normalized_visibility(sample_count, 16, 8, true);
+    const float dense_legacy = _test_ssao_normalized_visibility(sample_count, 16, 8, false);
+    const float dense_complete = _test_ssao_normalized_visibility(sample_count, 16, 8, true);
     AT(dense_legacy == 0.5f);
     AT(dense_complete == 0.5f);
     AT(dense_legacy == _test_ssao_normalized_visibility(sample_count, 16, 8, false));
     AT(dense_complete == _test_ssao_normalized_visibility(sample_count, 16, 8, true));
 
-    const float background_legacy =
-        _test_ssao_normalized_visibility(sample_count, 0, 0, false);
-    const float background_complete =
-        _test_ssao_normalized_visibility(sample_count, 0, 0, true);
+    const float background_legacy = _test_ssao_normalized_visibility(sample_count, 0, 0, false);
+    const float background_complete = _test_ssao_normalized_visibility(sample_count, 0, 0, true);
     AT(background_legacy == 1.0f);
     AT(background_complete == 1.0f);
     AT(background_legacy == _test_ssao_normalized_visibility(sample_count, 0, 0, false));
@@ -1074,23 +1440,18 @@ int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* i
         .uses_common_set = true,
         .uses_material_set = true,
     };
-    AT(_scene_draw_contract_resolve(
-        &facts, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, &contract));
+    AT(_scene_draw_contract_resolve(&facts, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, &contract));
     AT(contract.visual_type == DVZ_VISUAL_TYPE_MESH);
     AT(contract.alpha_mode == DVZ_ALPHA_OPAQUE);
     AT(contract.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(contract.depth_test);
     AT(contract.depth_write);
     AT(!contract.samples_depth);
-    AT(
-        contract.depth_policy ==
-        (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE));
+    AT(contract.depth_policy == (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE));
     AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_OPAQUE);
     AT(contract.shader_feature_mask == 0);
-    AT(
-        contract.bind_group_layout_mask ==
-        (DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON |
-         DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL));
+    AT(contract.bind_group_layout_mask ==
+       (DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON | DVZ_SCENE_BIND_GROUP_REQUIREMENT_MATERIAL));
     AT(contract.needs_common_set);
     AT(contract.needs_material_set);
 
@@ -1104,20 +1465,15 @@ int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* i
         .uses_common_set = true,
         .uses_material_set = true,
     };
-    AT(_scene_draw_contract_resolve(
-        &facts, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, &contract));
+    AT(_scene_draw_contract_resolve(&facts, DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE, &contract));
     AT(contract.visual_type == DVZ_VISUAL_TYPE_SEGMENT);
     AT(contract.depth_test);
     AT(contract.depth_write);
     AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_SEGMENT_COVERAGE);
     AT(contract.blend_target_count == 1);
     AT(contract.blend_targets[0].blend_enabled);
-    AT(
-        contract.blend_targets[0].src_color_blend_factor ==
-        DVZ_BLEND_FACTOR_SRC_ALPHA);
-    AT(
-        contract.blend_targets[0].dst_color_blend_factor ==
-        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    AT(contract.blend_targets[0].src_color_blend_factor == DVZ_BLEND_FACTOR_SRC_ALPHA);
+    AT(contract.blend_targets[0].dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 
     facts = (DvzSceneDrawFacts){
         .visual_type = DVZ_VISUAL_TYPE_VOLUME,
@@ -1139,16 +1495,12 @@ int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* i
     AT(contract.samples_scene_occlusion);
     AT(contract.depth_policy == DVZ_SCENE_DEPTH_POLICY_SAMPLE);
     AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER);
-    AT(
-        contract.shader_feature_mask ==
-        (DVZ_SCENE_SHADER_FEATURE_SAMPLE_DEPTH |
-         DVZ_SCENE_SHADER_FEATURE_SAMPLE_VOLUME_OCCLUSION |
-         DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION));
-    AT(
-        contract.bind_group_layout_mask ==
-        (DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON |
-         DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME |
-         DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION));
+    AT(contract.shader_feature_mask ==
+       (DVZ_SCENE_SHADER_FEATURE_SAMPLE_DEPTH | DVZ_SCENE_SHADER_FEATURE_SAMPLE_VOLUME_OCCLUSION |
+        DVZ_SCENE_SHADER_FEATURE_SAMPLE_SCENE_OCCLUSION));
+    AT(contract.bind_group_layout_mask ==
+       (DVZ_SCENE_BIND_GROUP_REQUIREMENT_COMMON | DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME |
+        DVZ_SCENE_BIND_GROUP_REQUIREMENT_SCENE_OCCLUSION));
     AT(contract.needs_common_set);
     AT(contract.needs_volume_set);
     AT(contract.needs_scene_occlusion_set);
@@ -1181,14 +1533,10 @@ int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* i
     AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_ADDITIVE);
     AT(contract.blend_target_count == 1);
     AT(contract.blend_targets[0].blend_enabled);
-    AT(
-        contract.blend_targets[0].src_color_blend_factor ==
-        DVZ_BLEND_FACTOR_SRC_ALPHA);
+    AT(contract.blend_targets[0].src_color_blend_factor == DVZ_BLEND_FACTOR_SRC_ALPHA);
     AT(contract.blend_targets[0].dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE);
     AT(contract.blend_targets[0].src_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE);
-    AT(
-        contract.blend_targets[0].dst_alpha_blend_factor ==
-        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    AT(contract.blend_targets[0].dst_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
 
     facts.alpha_mode = DVZ_ALPHA_WBOIT;
     AT(!_scene_draw_contract_resolve(
@@ -1225,13 +1573,9 @@ int test_scene_draw_contract_resolver_matrix(TstContext* suite, const TstCase* i
     AT(contract.depth_test);
     AT(contract.depth_write);
     AT(contract.writes_scene_occlusion_depth);
-    AT(
-        contract.depth_policy ==
-        (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE));
+    AT(contract.depth_policy == (DVZ_SCENE_DEPTH_POLICY_TEST | DVZ_SCENE_DEPTH_POLICY_WRITE));
     AT(contract.blend_policy == DVZ_SCENE_BLEND_POLICY_NONE);
-    AT(
-        contract.shader_feature_mask ==
-        DVZ_SCENE_SHADER_FEATURE_WRITE_SCENE_OCCLUSION);
+    AT(contract.shader_feature_mask == DVZ_SCENE_SHADER_FEATURE_WRITE_SCENE_OCCLUSION);
     AT(!contract.samples_scene_occlusion);
     AT(!contract.needs_scene_occlusion_set);
 
@@ -1271,6 +1615,7 @@ int test_scene_role_work_label_mapping_complete(TstContext* suite, const TstCase
         {DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT, "depth_peel_init", true},
         {DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, "depth_peel_iter", true},
         {DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE, "depth_peel_composite", true},
+        {DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION, "presentation", true},
         {DVZ_FRAME_PLAN_RENDER_PASS_PICKING, "picking", false},
     };
     for (uint32_t i = 0; i < sizeof(rows) / sizeof(rows[0]); i++)
@@ -1324,6 +1669,11 @@ int test_scene_role_work_label_mapping_complete(TstContext* suite, const TstCase
 
     AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE, &policy));
     AT(policy.fullscreen_resolve);
+
+    AT(_scene_technique_pass_policy(DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION, &policy));
+    AT(policy.fullscreen_resolve);
+    AT(policy.sampled_texture_binding_count == 1);
+
 
     return 0;
 }
@@ -1555,8 +1905,7 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     dvz_strlcpy(seeded.work_label, "gbuffer", sizeof(seeded.work_label));
     DvzFrameGraphAttachment seeded_attachment = {0};
     dvz_strlcpy(
-        seeded_attachment.resource_id, seeded_resource.id,
-        sizeof(seeded_attachment.resource_id));
+        seeded_attachment.resource_id, seeded_resource.id, sizeof(seeded_attachment.resource_id));
     seeded_attachment.load_op = DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
     seeded_attachment.store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
     seeded_attachment.access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
@@ -1577,8 +1926,7 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     plan = dvz_frame_plan("figure_0", 0);
     ANN(plan);
     AT(_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
-    const DvzPanelCompositionSnapshot* snapshot =
-        _frame_plan_composition_get(plan, "figure_0_p0");
+    const DvzPanelCompositionSnapshot* snapshot = _frame_plan_composition_get(plan, "figure_0_p0");
     ANN(snapshot);
     const DvzFrameGraphPass* original = dvz_frame_plan_graph_pass_get(plan, 0);
     ANN(original);
@@ -1599,8 +1947,7 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     plan = dvz_frame_plan("figure_0", 0);
     ANN(plan);
     AT(dvz_frame_plan_render_panel_role(
-        plan, "figure_0_p0", "rt.query", false, panel->desc,
-        DVZ_FRAME_PLAN_RENDER_PASS_PICKING));
+        plan, "figure_0_p0", "rt.query", false, panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_PICKING));
     plan->nodes[0].u.render.has_composition_pass = true;
     plan->nodes[0].u.render.composition_pass_id = (DvzFramePlanPassId){1};
     dvz_diagnostic_report_init(&report);
@@ -1629,15 +1976,14 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     ANN(plan);
     dvz_diagnostic_report_init(&report);
     AT_EXPECTED_ERROR_STRICT(
-        suite, !_scene_bind_panel_composition(
-                   plan, "figure_0_p0", &omitted, &report));
+        suite, !_scene_bind_panel_composition(plan, "figure_0_p0", &omitted, &report));
     bool missing_render = false;
     bool missing_graph = false;
     for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
     {
         const char* message = dvz_diagnostic_report_get(&report, i);
-        missing_render = missing_render ||
-                         (message != NULL && strstr(message, "no render binding") != NULL);
+        missing_render =
+            missing_render || (message != NULL && strstr(message, "no render binding") != NULL);
         missing_graph = missing_graph ||
                         (message != NULL && strstr(message, "no required graph binding") != NULL);
     }
@@ -1655,13 +2001,11 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
             .phase = DVZ_SCENE_PHASE_PRESENTATION,
         }},
     };
-    dvz_snprintf(
-        presentation_only.panel_id, sizeof(presentation_only.panel_id), "figure_0_p0");
+    dvz_snprintf(presentation_only.panel_id, sizeof(presentation_only.panel_id), "figure_0_p0");
     plan = dvz_frame_plan("figure_0", 0);
     ANN(plan);
     dvz_diagnostic_report_init(&report);
-    AT(_scene_bind_panel_composition(
-        plan, "figure_0_p0", &presentation_only, &report));
+    AT(_scene_bind_panel_composition(plan, "figure_0_p0", &presentation_only, &report));
     AT(dvz_diagnostic_report_count(&report) == 0);
     dvz_frame_plan_destroy(plan);
 
@@ -1715,7 +2059,8 @@ int test_scene_render_contract_rejects_untyped_visual_metadata(
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite, const TstCase* item)
+int test_scene_panel_graph_failure_reports_specific_diagnostic(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1728,7 +2073,8 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -1739,7 +2085,9 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2,
+                      .rows_per_image = 2}) == DVZ_OK);
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -1754,7 +2102,8 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
     AT(dvz_panel_add_visual(panel, slice, NULL) == 0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
-           &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
+           &(DvzVolumeOcclusionDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                .enabled = true,
                .alpha_threshold = 0.01f,
                .fade_distance = 0.04f,
@@ -1781,9 +2130,8 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(TstContext* suite
     {
         const char* message = dvz_diagnostic_report_get(&report, i);
         found_realization_failure =
-            found_realization_failure ||
-            (message != NULL && strstr(message, "product") != NULL &&
-             strstr(message, "realization failed") != NULL);
+            found_realization_failure || (message != NULL && strstr(message, "product") != NULL &&
+                                          strstr(message, "realization failed") != NULL);
     }
     AT(found_realization_failure);
     AT(dvz_frame_plan_graph_resource_count(plan) == 1);
@@ -1832,7 +2180,8 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -1883,20 +2232,16 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     const DvzFrameGraphPass* gbuffer_pass = dvz_frame_plan_graph_pass_get(plan, 0);
     ANN(gbuffer_pass);
     AT(gbuffer_pass->has_composition_pass);
-    AT(
-        gbuffer_pass->composition_pass_id.value ==
-        gbuffer_node->u.render.composition_pass_id.value);
+    AT(gbuffer_pass->composition_pass_id.value ==
+       gbuffer_node->u.render.composition_pass_id.value);
     AT(gbuffer_node->u.render.graph_pass_index == 0);
     const DvzFrameGraphPass* opaque_pass =
         dvz_frame_plan_graph_pass_get(plan, opaque_node->u.render.graph_pass_index);
     ANN(opaque_pass);
     AT(opaque_pass->has_composition_pass);
-    AT(
-        opaque_pass->composition_pass_id.value ==
-        opaque_node->u.render.composition_pass_id.value);
-    AT(
-        _scene_test_graph_pass_provider(plan, gbuffer_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE);
+    AT(opaque_pass->composition_pass_id.value == opaque_node->u.render.composition_pass_id.value);
+    AT(_scene_test_graph_pass_provider(plan, gbuffer_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE);
     AT(gbuffer_pass->color_attachment_count == 1);
     AT(gbuffer_pass->has_depth_attachment);
     AT(strcmp(gbuffer_pass->color_attachments[0].resource_id, "figure_0_p0.gbuffer.normal") == 0);
@@ -1943,8 +2288,8 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
                 normal_id = cmd->u.create_texture.id;
                 found_normal_texture =
                     cmd->u.create_texture.format == DVZ_FORMAT_R16G16B16A16_SFLOAT &&
-                    (cmd->u.create_texture.usage &
-                     DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+                    (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) !=
+                        0 &&
                     (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0;
             }
             if (label != NULL && strcmp(label, "fig0_p0.gbuffer.depth") == 0)
@@ -1952,29 +2297,27 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
                 depth_id = cmd->u.create_texture.id;
                 found_depth_texture =
                     cmd->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT &&
-                    (cmd->u.create_texture.usage &
-                     DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+                    (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) !=
+                        0 &&
                     (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING) != 0;
             }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
             found_gbuffer_pass =
-                found_gbuffer_pass ||
-                 (normal_id != 0 && depth_id != 0 &&
-                 cmd->u.begin_render_pass.texture_id == normal_id &&
-                 cmd->u.begin_render_pass.depth_texture_id == depth_id);
+                found_gbuffer_pass || (normal_id != 0 && depth_id != 0 &&
+                                       cmd->u.begin_render_pass.texture_id == normal_id &&
+                                       cmd->u.begin_render_pass.depth_texture_id == depth_id);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
-            found_gbuffer_pipeline =
-                found_gbuffer_pipeline ||
-                (label != NULL && strstr(label, "_pipe_gbuffer") != NULL &&
-                 cmd->u.create_render_pipeline.color_targets[0].format ==
-                     DVZ_FORMAT_R16G16B16A16_SFLOAT &&
-                 cmd->u.create_render_pipeline.has_depth_attachment &&
-                 cmd->u.create_render_pipeline.depth_write_enabled);
+            found_gbuffer_pipeline = found_gbuffer_pipeline ||
+                                     (label != NULL && strstr(label, "_pipe_gbuffer") != NULL &&
+                                      cmd->u.create_render_pipeline.color_targets[0].format ==
+                                          DVZ_FORMAT_R16G16B16A16_SFLOAT &&
+                                      cmd->u.create_render_pipeline.has_depth_attachment &&
+                                      cmd->u.create_render_pipeline.depth_write_enabled);
         }
     }
     AT(found_normal_texture);
@@ -2031,7 +2374,8 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -2083,7 +2427,7 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
     AT(dvz_frame_plan_node_count(plan) == DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY - 1);
 
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
-    AT(dvz_frame_plan_node_count(plan) == DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY + 4);
+    AT(dvz_frame_plan_node_count(plan) == DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY + 5);
 
     const DvzFramePlanNode* gbuffer_node =
         dvz_frame_plan_node_get(plan, DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY - 1);
@@ -2102,12 +2446,10 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
     ANN(resolve_node);
     AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
     AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(
-        dvz_frame_plan_render_pass_role(blended_node) ==
-        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
-    AT(
-        dvz_frame_plan_render_pass_role(wboit_node) ==
-        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
+    AT(dvz_frame_plan_render_pass_role(blended_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(dvz_frame_plan_render_pass_role(wboit_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
     AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
     AT(gbuffer_node->u.render.visual_count == 3);
     AT(opaque_node->u.render.visual_count == 3);
@@ -2174,8 +2516,7 @@ int test_scene_frame_plan_visual_reallocation_safe(TstContext* suite, const TstC
     for (uint32_t i = 0; i < dvz_frame_plan_node_count(plan); i++)
     {
         const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
-        if (
-            node != NULL && node->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+        if (node != NULL && node->type == DVZ_FRAME_PLAN_NODE_RENDER &&
             node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE)
         {
             opaque = node;
@@ -2192,11 +2533,11 @@ int test_scene_frame_plan_visual_reallocation_safe(TstContext* suite, const TstC
         AT(opaque->u.render.visual_metadata[i].visual_index == i);
         const DvzPanelAttach* attach = &panel->visuals[i];
         AT(opaque->u.render.controller_modes[i] == attach->controller_mode);
-        bool expected_mvp =
-            attach->visual->has_local_transform || attach->coord_space == DVZ_VISUAL_COORD_DATA ||
-            attach->coord_space == DVZ_VISUAL_COORD_PANEL ||
-            attach->coord_space == DVZ_VISUAL_COORD_PANEL_PIXEL ||
-            attach->controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ;
+        bool expected_mvp = attach->visual->has_local_transform ||
+                            attach->coord_space == DVZ_VISUAL_COORD_DATA ||
+                            attach->coord_space == DVZ_VISUAL_COORD_PANEL ||
+                            attach->coord_space == DVZ_VISUAL_COORD_PANEL_PIXEL ||
+                            attach->controller_mode == DVZ_CONTROLLER_APPLY_VIEW_PROJ;
         AT(opaque->u.render.visual_has_mvp[i] == expected_mvp);
     }
 
@@ -2233,7 +2574,9 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4, .alpha_to_coverage = true}) == DVZ_OK);
+           panel, &(DvzMsaaDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4,
+                      .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -2248,11 +2591,12 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzFramePlan* plan = dvz_frame_plan("figure.msaa", 0);
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
-    AT(dvz_frame_plan_node_count(plan) == 1);
-    AT(dvz_frame_plan_graph_resource_count(plan) == 3);
-    AT(dvz_frame_plan_graph_pass_count(plan) == 1);
+    AT(dvz_frame_plan_node_count(plan) == 2);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 4);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 2);
 
     const DvzFrameGraphResource* msaa_color = NULL;
+    const DvzFrameGraphResource* scene_color = NULL;
     const DvzFrameGraphResource* depth = NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
     {
@@ -2260,14 +2604,20 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
         ANN(resource);
         if (strcmp(resource->id, "figure_0_p0.msaa.color") == 0)
             msaa_color = resource;
+        else if (strcmp(resource->id, "figure_0_p0.scene.color") == 0)
+            scene_color = resource;
         else if (strcmp(resource->id, "figure_0_p0.depth") == 0)
             depth = resource;
     }
     ANN(msaa_color);
+    ANN(scene_color);
     ANN(depth);
     AT(msaa_color->format == 0);
     AT(msaa_color->sample_count == 4);
     AT(msaa_color->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC);
+    AT(scene_color->extent_kind == DVZ_FRAME_GRAPH_EXTENT_PANEL);
+    AT(scene_color->width == 64);
+    AT(scene_color->height == 64);
     AT(depth->sample_count == 4);
 
     const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, 0);
@@ -2276,10 +2626,17 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(pass->color_attachment_count == 1);
     AT(strcmp(pass->color_attachments[0].resource_id, "figure_0_p0.msaa.color") == 0);
     AT(pass->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
-    AT(strcmp(pass->color_attachments[0].resolve_resource_id, "rt") == 0);
+    AT(strcmp(pass->color_attachments[0].resolve_resource_id, "figure_0_p0.scene.color") == 0);
     AT(pass->color_attachments[0].resolve_mode == VK_RESOLVE_MODE_AVERAGE_BIT);
     AT(pass->has_depth_attachment);
     AT(strcmp(pass->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
+
+    const DvzFrameGraphPass* presentation_pass = dvz_frame_plan_graph_pass_get(plan, 1);
+    ANN(presentation_pass);
+    AT(_scene_test_graph_pass_provider(plan, presentation_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_PRESENTATION);
+    AT(presentation_pass->color_attachment_count == 1);
+    AT(strcmp(presentation_pass->color_attachments[0].resource_id, "rt") == 0);
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -2316,8 +2673,8 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
                 found_msaa_texture =
                     cmd->u.create_texture.sample_count == 4 &&
                     cmd->u.create_texture.format == DVZ_FORMAT_B8G8R8A8_UNORM &&
-                    (cmd->u.create_texture.usage &
-                     DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0 &&
+                    (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) !=
+                        0 &&
                     (cmd->u.create_texture.usage & DVZ_DRP2_TEXTURE_USAGE_COPY_SRC) != 0;
             }
             if (label != NULL && strcmp(label, "fig0_p0.depth") == 0)
@@ -2329,9 +2686,8 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_shader_module.id);
-            found_sphere_a2c_shader =
-                found_sphere_a2c_shader ||
-                (label != NULL && strcmp(label, "_fs_sphereg_a2c") == 0);
+            found_sphere_a2c_shader = found_sphere_a2c_shader ||
+                                      (label != NULL && strcmp(label, "_fs_sphereg_a2c") == 0);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -2350,10 +2706,9 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
             found_msaa_pipeline =
-                found_msaa_pipeline ||
-                (label != NULL && strstr(label, "_pipe_sphere") != NULL &&
-                 cmd->u.create_render_pipeline.sample_count == 4 &&
-                 cmd->u.create_render_pipeline.alpha_to_coverage_enabled);
+                found_msaa_pipeline || (label != NULL && strstr(label, "_pipe_sphere") != NULL &&
+                                        cmd->u.create_render_pipeline.sample_count == 4 &&
+                                        cmd->u.create_render_pipeline.alpha_to_coverage_enabled);
         }
     }
     AT(found_msaa_texture);
@@ -2365,7 +2720,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     _test_scene_stream_destroy(stream);
 
     cfg.external_color_target = true;
-    cfg.color_target_id = 0;
+    cfg.color_target_id = 4242;
     cfg.color_target_format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
     caps.max_color_sample_count = 4;
     caps.max_depth_sample_count = 4;
@@ -2374,9 +2729,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     ANN(stream);
     AT(dvz_diagnostic_report_error_count(&report) == 0);
-    validation = dvz_drp2_validate_stream(stream);
-    AT(validation.ok);
-    bool found_presentation_resolve = false;
+    bool found_external_presentation = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -2386,16 +2739,17 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
         {
             const DvzDrp2ColorAttachment* attachment =
                 &cmd->u.begin_render_pass.color_attachments[0];
-            found_presentation_resolve =
-                found_presentation_resolve ||
-                (attachment->resolve_texture_id == 0 &&
-                 attachment->resolve_mode == VK_RESOLVE_MODE_AVERAGE_BIT);
+            found_external_presentation =
+                found_external_presentation ||
+                (cmd->u.begin_render_pass.texture_id == 4242 &&
+                 attachment->resolve_texture_id == 0 &&
+                 attachment->resolve_mode == VK_RESOLVE_MODE_NONE);
         }
     }
-    AT(found_presentation_resolve);
+    AT(found_external_presentation);
     char* json = dvz_drp2_stream_json(stream, "external_msaa_resolve");
     ANN(json);
-    AT(strstr(json, "\"resolve_target\": { \"texture_id\": 0") != NULL);
+    AT(strstr(json, "\"texture_id\": 4242") != NULL);
     dvz_drp2_stream_json_destroy(json);
     _test_scene_stream_destroy(stream);
 
@@ -2427,10 +2781,9 @@ int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const Ts
     AT(left != NULL);
     AT(right != NULL);
     AT(dvz_panel_set_msaa(
-        right,
-        &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
-                       .enabled = true,
-                       .sample_count = 4}) == DVZ_OK);
+           right, &(DvzMsaaDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true,
+                      .sample_count = 4}) == DVZ_OK);
 
     DvzVisual* left_sphere = dvz_sphere(scene, 0);
     DvzVisual* right_sphere = dvz_sphere(scene, 0);
@@ -2486,39 +2839,33 @@ int test_scene_msaa_mixed_plain_panel_resolve_region(TstContext* suite, const Ts
             bool right_msaa_rect = false;
             if (cmd->u.begin_render_pass.has_explicit_rects)
             {
-                left_plain_rect =
-                    cmd->u.begin_render_pass.viewport_px[0] == 0.0f &&
-                    cmd->u.begin_render_pass.viewport_px[1] == 0.0f &&
-                    cmd->u.begin_render_pass.viewport_px[2] == 64.0f &&
-                    cmd->u.begin_render_pass.viewport_px[3] == 64.0f;
-                right_msaa_rect =
-                    cmd->u.begin_render_pass.viewport_px[0] == 64.0f &&
-                    cmd->u.begin_render_pass.viewport_px[1] == 0.0f &&
-                    cmd->u.begin_render_pass.viewport_px[2] == 64.0f &&
-                    cmd->u.begin_render_pass.viewport_px[3] == 64.0f;
+                left_plain_rect = cmd->u.begin_render_pass.viewport_px[0] == 0.0f &&
+                                  cmd->u.begin_render_pass.viewport_px[1] == 0.0f &&
+                                  cmd->u.begin_render_pass.viewport_px[2] == 64.0f &&
+                                  cmd->u.begin_render_pass.viewport_px[3] == 64.0f;
+                right_msaa_rect = cmd->u.begin_render_pass.viewport_px[0] == 0.0f &&
+                                  cmd->u.begin_render_pass.viewport_px[1] == 0.0f &&
+                                  cmd->u.begin_render_pass.viewport_px[2] == 64.0f &&
+                                  cmd->u.begin_render_pass.viewport_px[3] == 64.0f;
             }
             else
             {
-                left_plain_rect =
-                    cmd->u.begin_render_pass.viewport[0] == 0.0f &&
-                    cmd->u.begin_render_pass.viewport[1] == 0.0f &&
-                    cmd->u.begin_render_pass.viewport[2] == 1.0f &&
-                    cmd->u.begin_render_pass.viewport[3] == 1.0f;
-                right_msaa_rect =
-                    cmd->u.begin_render_pass.viewport[0] == 0.5f &&
-                    cmd->u.begin_render_pass.viewport[1] == 0.0f &&
-                    cmd->u.begin_render_pass.viewport[2] == 0.5f &&
-                    cmd->u.begin_render_pass.viewport[3] == 1.0f;
+                left_plain_rect = cmd->u.begin_render_pass.viewport[0] == 0.0f &&
+                                  cmd->u.begin_render_pass.viewport[1] == 0.0f &&
+                                  cmd->u.begin_render_pass.viewport[2] == 1.0f &&
+                                  cmd->u.begin_render_pass.viewport[3] == 1.0f;
+                right_msaa_rect = cmd->u.begin_render_pass.viewport[0] == 0.0f &&
+                                  cmd->u.begin_render_pass.viewport[1] == 0.0f &&
+                                  cmd->u.begin_render_pass.viewport[2] == 1.0f &&
+                                  cmd->u.begin_render_pass.viewport[3] == 1.0f;
             }
             found_left_plain_pass =
                 found_left_plain_pass ||
                 (cmd->u.begin_render_pass.texture_id != 0 &&
-                 cmd->u.begin_render_pass.texture_id != msaa_texture_id &&
-                 left_plain_rect);
+                 cmd->u.begin_render_pass.texture_id != msaa_texture_id && left_plain_rect);
             found_right_msaa_pass =
                 found_right_msaa_pass ||
-                (msaa_texture_id != 0 &&
-                 cmd->u.begin_render_pass.texture_id == msaa_texture_id &&
+                (msaa_texture_id != 0 && cmd->u.begin_render_pass.texture_id == msaa_texture_id &&
                  cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id != 0 &&
                  right_msaa_rect);
         }
@@ -2552,11 +2899,9 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel,
-        &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
-                       .enabled = true,
-                       .sample_count = 4,
-                       .alpha_to_coverage = true}) == DVZ_OK);
+           panel, &(DvzMsaaDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4,
+                      .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -2583,8 +2928,8 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
     DvzFramePlan* plan = dvz_frame_plan("figure.msaa.blended", 0);
     ANN(plan);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
-    AT(dvz_frame_plan_node_count(plan) == 2);
-    AT(dvz_frame_plan_graph_pass_count(plan) == 2);
+    AT(dvz_frame_plan_node_count(plan) == 3);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 3);
 
     const DvzFrameGraphResource* msaa_color = NULL;
     const DvzFrameGraphResource* depth = NULL;
@@ -2608,12 +2953,13 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
     ANN(blended_pass);
     AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
     AT(strcmp(opaque_pass->color_attachments[0].resource_id, "figure_0_p0.msaa.color") == 0);
-    AT(strcmp(opaque_pass->color_attachments[0].resolve_resource_id, "rt") == 0);
+    AT(strcmp(
+           opaque_pass->color_attachments[0].resolve_resource_id,
+           "figure_0_p0.scene.color") == 0);
     AT(opaque_pass->color_attachments[0].resolve_mode == VK_RESOLVE_MODE_AVERAGE_BIT);
-    AT(
-        _scene_test_graph_pass_provider(plan, blended_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
-    AT(strcmp(blended_pass->color_attachments[0].resource_id, "rt") == 0);
+    AT(_scene_test_graph_pass_provider(plan, blended_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
+    AT(strcmp(blended_pass->color_attachments[0].resource_id, "figure_0_p0.scene.color") == 0);
     AT(!blended_pass->has_depth_attachment);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
@@ -2659,11 +3005,10 @@ int test_scene_msaa_blended_overlay_runtime_lowering(TstContext* suite, const Ts
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
-            found_msaa_sphere_pipeline =
-                found_msaa_sphere_pipeline ||
-                (label != NULL && strstr(label, "_pipe_sphere") != NULL &&
-                 cmd->u.create_render_pipeline.sample_count == 4 &&
-                 cmd->u.create_render_pipeline.alpha_to_coverage_enabled);
+            found_msaa_sphere_pipeline = found_msaa_sphere_pipeline ||
+                                         (label != NULL && strstr(label, "_pipe_sphere") != NULL &&
+                                          cmd->u.create_render_pipeline.sample_count == 4 &&
+                                          cmd->u.create_render_pipeline.alpha_to_coverage_enabled);
             found_single_sample_blended_pipeline =
                 found_single_sample_blended_pipeline ||
                 (label != NULL && strstr(label, "_pipe_point") != NULL &&
@@ -2703,19 +3048,14 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel,
-        &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc),
-                       .enabled = true,
-                       .sample_count = 16,
-                       .alpha_to_coverage = true}) == DVZ_OK);
+           panel, &(DvzMsaaDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 16,
+                      .alpha_to_coverage = true}) == DVZ_OK);
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc),
-                            .radius = 1.0f,
-                            .strength = 2.5f,
-                            .bias = 0.02f,
-                            .sample_count = 16,
-                            .blur_enabled = true}));
+        &(DvzSceneSsaoDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f, .strength = 2.5f,
+            .bias = 0.02f, .sample_count = 16, .blur_enabled = true}));
 
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
@@ -2805,8 +3145,9 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 16,
-                              .alpha_to_coverage = true}) == DVZ_OK);
+           panel, &(DvzMsaaDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 16,
+                      .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -2847,7 +3188,8 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
     ANN(render_node);
     ANN(graph_pass);
     DvzScenePassContract contract = {0};
-    AT(_scene_pass_contract_from_render_ex(plan, panel, render_node, graph_pass, &caps, &contract));
+    AT(_scene_pass_contract_from_render_ex(
+        plan, panel, render_node, graph_pass, &caps, &contract));
     const DvzSceneAttachmentUse* contract_msaa_color = NULL;
     const DvzSceneAttachmentUse* contract_depth = NULL;
     for (uint32_t i = 0; i < contract.attachment_count; i++)
@@ -2896,22 +3238,19 @@ int test_scene_msaa_runtime_capability_lowering(TstContext* suite, const TstCase
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
             found_msaa_texture =
-                found_msaa_texture ||
-                (label != NULL && strcmp(label, "fig0_p0.msaa.color") == 0 &&
-                 cmd->u.create_texture.sample_count == 8);
+                found_msaa_texture || (label != NULL && strcmp(label, "fig0_p0.msaa.color") == 0 &&
+                                       cmd->u.create_texture.sample_count == 8);
             found_depth_texture =
-                found_depth_texture ||
-                (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
-                 cmd->u.create_texture.sample_count == 8);
+                found_depth_texture || (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
+                                        cmd->u.create_texture.sample_count == 8);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
             found_msaa_pipeline =
-                found_msaa_pipeline ||
-                (label != NULL && strstr(label, "_pipe_sphere") != NULL &&
-                 cmd->u.create_render_pipeline.sample_count == 8 &&
-                 cmd->u.create_render_pipeline.alpha_to_coverage_enabled);
+                found_msaa_pipeline || (label != NULL && strstr(label, "_pipe_sphere") != NULL &&
+                                        cmd->u.create_render_pipeline.sample_count == 8 &&
+                                        cmd->u.create_render_pipeline.alpha_to_coverage_enabled);
         }
     }
     AT(found_msaa_texture);
@@ -2944,8 +3283,9 @@ int test_scene_msaa_runtime_capability_disable_topology(TstContext* suite, const
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4,
-                              .alpha_to_coverage = true}) == DVZ_OK);
+           panel, &(DvzMsaaDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4,
+                      .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* sphere = dvz_sphere(scene, 0);
     AT(sphere != NULL);
@@ -2991,8 +3331,7 @@ int test_scene_msaa_runtime_capability_disable_topology(TstContext* suite, const
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
             found_msaa_texture =
-                found_msaa_texture ||
-                (label != NULL && strcmp(label, "fig0_p0.msaa.color") == 0);
+                found_msaa_texture || (label != NULL && strcmp(label, "fig0_p0.msaa.color") == 0);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -3006,12 +3345,10 @@ int test_scene_msaa_runtime_capability_disable_topology(TstContext* suite, const
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
             if (label != NULL && strstr(label, "_pipe_sphere") != NULL)
             {
-                found_single_sample_pipeline =
-                    found_single_sample_pipeline ||
-                    cmd->u.create_render_pipeline.sample_count == 1;
+                found_single_sample_pipeline = found_single_sample_pipeline ||
+                                               cmd->u.create_render_pipeline.sample_count == 1;
                 found_multisample_pipeline =
-                    found_multisample_pipeline ||
-                    cmd->u.create_render_pipeline.sample_count > 1;
+                    found_multisample_pipeline || cmd->u.create_render_pipeline.sample_count > 1;
             }
         }
     }
@@ -3071,10 +3408,9 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     dvz_frame_plan_destroy(default_plan);
 
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc),
-                   .radius = 2.0f,
-                   .strength = 55.0f,
-                   .depth_scale = 1.0f}) == DVZ_OK);
+           panel, &(DvzEdlDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f,
+                      .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl", 0);
     ANN(plan);
@@ -3140,28 +3476,24 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_texture.id);
             found_color_texture =
-                found_color_texture ||
-                (label != NULL && strcmp(label, "fig0_p0.edl.color") == 0 &&
-                 cmd->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM);
+                found_color_texture || (label != NULL && strcmp(label, "fig0_p0.edl.color") == 0 &&
+                                        cmd->u.create_texture.format == DVZ_FORMAT_R8G8B8A8_UNORM);
             found_depth_texture =
-                found_depth_texture ||
-                (label != NULL && strcmp(label, "fig0_p0.edl.depth") == 0 &&
-                 cmd->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT);
+                found_depth_texture || (label != NULL && strcmp(label, "fig0_p0.edl.depth") == 0 &&
+                                        cmd->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
-            found_params_upload =
-                found_params_upload ||
-                (label != NULL && strcmp(label, "fig0_p0.edl.params") == 0 &&
-                 cmd->u.write_buffer.size == sizeof(DvzSceneEdlUniform));
+            found_params_upload = found_params_upload ||
+                                  (label != NULL && strcmp(label, "fig0_p0.edl.params") == 0 &&
+                                   cmd->u.write_buffer.size == sizeof(DvzSceneEdlUniform));
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.create_render_pipeline.id);
-            found_edl_pipeline =
-                found_edl_pipeline ||
-                (label != NULL && strstr(label, "_pipe_edl_resolve") != NULL);
+            found_edl_pipeline = found_edl_pipeline ||
+                                 (label != NULL && strstr(label, "_pipe_edl_resolve") != NULL);
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
@@ -3231,7 +3563,9 @@ int test_scene_edl_blended_overlay_runtime_lowering(TstContext* suite, const Tst
     AT(dvz_panel_add_visual(panel, overlay, NULL) == 0);
 
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
+           panel, &(DvzEdlDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f,
+                      .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl.label", 0);
     ANN(plan);
@@ -3245,13 +3579,11 @@ int test_scene_edl_blended_overlay_runtime_lowering(TstContext* suite, const Tst
         ANN(node);
         if (node->type == DVZ_FRAME_PLAN_NODE_RENDER)
         {
-            found_edl_node =
-                found_edl_node ||
-                dvz_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE;
+            found_edl_node = found_edl_node || dvz_frame_plan_render_pass_role(node) ==
+                                                   DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE;
             found_blended_node =
-                found_blended_node ||
-                dvz_frame_plan_render_pass_role(node) ==
-                    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
+                found_blended_node || dvz_frame_plan_render_pass_role(node) ==
+                                          DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
         }
     }
     AT(found_edl_node);
@@ -3344,7 +3676,8 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
     };
     DvzIndex mesh_indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -3359,7 +3692,9 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     AT(dvz_panel_set_edl(
-        panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
+           panel, &(DvzEdlDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f,
+                      .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.edl.depth_producers", 0);
     ANN(plan);
@@ -3422,9 +3757,13 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     AT(dvz_visual_set_data(fixed_visual, "color", colors, 3) == 0);
     AT(dvz_panel_add_visual(
            fixed_panel, fixed_visual,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
+           &(DvzVisualAttachDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),
+               .controller_mode = DVZ_CONTROLLER_FIXED}) == 0);
     AT(dvz_panel_set_edl(
-        fixed_panel, &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
+           fixed_panel, &(DvzEdlDesc){
+                            DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f,
+                            .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* fixed_plan = dvz_frame_plan("figure.edl.fixed", 0);
     ANN(fixed_plan);
@@ -3441,8 +3780,9 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     AT(dvz_visual_set_alpha_mode(transparent_point, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(transparent_panel, transparent_point, NULL) == 0);
     AT(dvz_panel_set_edl(
-        transparent_panel,
-        &(DvzEdlDesc){DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f, .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
+           transparent_panel, &(DvzEdlDesc){
+                                  DVZ_STRUCT_INIT_FIELDS(DvzEdlDesc), .radius = 2.0f,
+                                  .strength = 55.0f, .depth_scale = 1.0f}) == DVZ_OK);
 
     DvzFramePlan* transparent_plan = dvz_frame_plan("figure.edl.transparent", 0);
     ANN(transparent_plan);
@@ -3506,7 +3846,8 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -3532,9 +3873,9 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     dvz_frame_plan_destroy(default_plan);
 
     AT(_scene_technique_state_set_ssao(
-        &panel->techniques,
-        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
-                            .sample_count = 32}));
+        &panel->techniques, &(DvzSceneSsaoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f,
+                                .strength = 2.0f, .bias = 0.05f, .sample_count = 32}));
     const DvzSceneSsaoTechniqueState* ssao = _scene_technique_ssao_state(scene, panel);
     ANN(ssao);
     AT(ssao->enabled);
@@ -3573,14 +3914,11 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     {
         const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
         ANN(resource);
-        found_normal =
-            found_normal || strcmp(resource->id, "figure_0_p0.gbuffer.normal") == 0;
-        found_depth =
-            found_depth || strcmp(resource->id, "figure_0_p0.gbuffer.depth") == 0;
+        found_normal = found_normal || strcmp(resource->id, "figure_0_p0.gbuffer.normal") == 0;
+        found_depth = found_depth || strcmp(resource->id, "figure_0_p0.gbuffer.depth") == 0;
         found_occlusion =
-            found_occlusion ||
-            (strcmp(resource->id, "figure_0_p0.ssao.occlusion") == 0 &&
-             resource->format == DVZ_FORMAT_R8_UNORM);
+            found_occlusion || (strcmp(resource->id, "figure_0_p0.ssao.occlusion") == 0 &&
+                                resource->format == DVZ_FORMAT_R8_UNORM);
     }
     AT(found_normal);
     AT(found_depth);
@@ -3594,14 +3932,12 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     ANN(opaque_pass);
     ANN(ssao_pass);
     ANN(composite_pass);
-    AT(
-        _scene_test_graph_pass_provider(plan, gbuffer_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE);
+    AT(_scene_test_graph_pass_provider(plan, gbuffer_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE);
     AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
     AT(_scene_test_graph_pass_provider(plan, ssao_pass) == DVZ_SCENE_WORK_PROVIDER_SSAO);
-    AT(
-        _scene_test_graph_pass_provider(plan, composite_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE);
+    AT(_scene_test_graph_pass_provider(plan, composite_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE);
     AT(ssao_pass->read_count == 2);
     AT(strcmp(ssao_pass->reads[0].resource_id, "figure_0_p0.gbuffer.normal") == 0);
     AT(strcmp(ssao_pass->reads[1].resource_id, "figure_0_p0.gbuffer.depth") == 0);
@@ -3626,8 +3962,9 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
 
     AT(_scene_technique_state_set_ssao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
-                            .sample_count = 32, .blur_enabled = true}));
+        &(DvzSceneSsaoDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f,
+            .bias = 0.05f, .sample_count = 32, .blur_enabled = true}));
     plan = dvz_frame_plan("figure.ssao.blur", 0);
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
@@ -3678,7 +4015,9 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
-        panel, &(DvzMsaaDesc){DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4, .alpha_to_coverage = true}) == DVZ_OK);
+           panel, &(DvzMsaaDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 4,
+                      .alpha_to_coverage = true}) == DVZ_OK);
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     AT(mesh != NULL);
@@ -3697,7 +4036,8 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -3709,9 +4049,9 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
-        &panel->techniques,
-        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
-                            .sample_count = 16}));
+        &panel->techniques, &(DvzSceneSsaoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f,
+                                .strength = 2.0f, .bias = 0.05f, .sample_count = 16}));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -3763,10 +4103,9 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
         else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
         {
             const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
-            found_params_upload =
-                found_params_upload ||
-                (label != NULL && strcmp(label, "fig0_p0.ssao.params") == 0 &&
-                 cmd->u.write_buffer.size == sizeof(DvzSceneSsaoUniform));
+            found_params_upload = found_params_upload ||
+                                  (label != NULL && strcmp(label, "fig0_p0.ssao.params") == 0 &&
+                                   cmd->u.write_buffer.size == sizeof(DvzSceneSsaoUniform));
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -3858,7 +4197,8 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -3870,9 +4210,9 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
-        &panel->techniques,
-        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
-                            .sample_count = 16}));
+        &panel->techniques, &(DvzSceneSsaoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f,
+                                .strength = 2.5f, .bias = 0.02f, .sample_count = 16}));
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
@@ -3961,9 +4301,9 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(sphere, "radius", sizes, 4) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
-        &panel->techniques,
-        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f, .strength = 2.5f, .bias = 0.02f,
-                            .sample_count = 16}));
+        &panel->techniques, &(DvzSceneSsaoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f,
+                                .strength = 2.5f, .bias = 0.02f, .sample_count = 16}));
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
@@ -4032,9 +4372,9 @@ int test_scene_ssao_ignores_ineligible_visuals(TstContext* suite, const TstCase*
     AT(dvz_visual_set_data(primitive, "color", colors, 3) == 0);
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
     AT(_scene_technique_state_set_ssao(
-        &panel->techniques,
-        &(DvzSceneSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f, .bias = 0.05f,
-                            .sample_count = 32}));
+        &panel->techniques, &(DvzSceneSsaoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f,
+                                .strength = 2.0f, .bias = 0.05f, .sample_count = 32}));
 
     DvzFramePlan* plan = dvz_frame_plan("figure.ssao.ineligible", 0);
     ANN(plan);
@@ -4120,15 +4460,11 @@ int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase
     AT(blend_contract.draws[0].blend_policy == DVZ_SCENE_BLEND_POLICY_SOURCE_OVER);
     AT(blend_contract.draws[0].blend_target_count == 1);
     AT(blend_contract.draws[0].blend_targets[0].blend_enabled);
-    AT(
-        blend_contract.draws[0].blend_targets[0].src_color_blend_factor ==
-        DVZ_BLEND_FACTOR_SRC_ALPHA);
-    AT(
-        blend_contract.draws[0].blend_targets[0].dst_color_blend_factor ==
-        DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
-    AT(
-        blend_contract.draws[0].blend_targets[0].src_alpha_blend_factor ==
-        DVZ_BLEND_FACTOR_ONE);
+    AT(blend_contract.draws[0].blend_targets[0].src_color_blend_factor ==
+       DVZ_BLEND_FACTOR_SRC_ALPHA);
+    AT(blend_contract.draws[0].blend_targets[0].dst_color_blend_factor ==
+       DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+    AT(blend_contract.draws[0].blend_targets[0].src_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
@@ -4261,12 +4597,11 @@ int test_scene_visual_additive_blend(TstContext* suite, const TstCase* item)
         if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
             continue;
         const DvzDrp2ColorTarget* target = &command->u.create_render_pipeline.color_targets[0];
-        found = found ||
-                (target->blend_enabled &&
-                 target->src_color_blend_factor == DVZ_BLEND_FACTOR_SRC_ALPHA &&
-                 target->dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE &&
-                 target->src_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE &&
-                 target->dst_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+        found = found || (target->blend_enabled &&
+                          target->src_color_blend_factor == DVZ_BLEND_FACTOR_SRC_ALPHA &&
+                          target->dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE &&
+                          target->src_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE &&
+                          target->dst_alpha_blend_factor == DVZ_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
     }
     AT(found);
 
@@ -4298,7 +4633,8 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -4309,7 +4645,9 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2,
+                      .rows_per_image = 2}) == DVZ_OK);
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -4332,7 +4670,8 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -4351,11 +4690,17 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_BLENDED) == 0);
 
     AT(dvz_panel_add_visual(
-           panel, volume, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) == 0);
+           panel, volume,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) ==
+       0);
     AT(dvz_panel_add_visual(
-           panel, slice, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) == 0);
+           panel, slice,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) ==
+       0);
     AT(dvz_panel_add_visual(
-           panel, mesh, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) == 0);
+           panel, mesh,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) ==
+       0);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.alpha.volume_mesh", 0);
     ANN(plan);
@@ -4366,8 +4711,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     {
         const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
         ANN(node);
-        if (dvz_frame_plan_render_pass_role(node) ==
-            DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+        if (dvz_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
         {
             transparent_node = node;
             break;
@@ -4387,26 +4731,21 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     AT(transparent_node->u.render.visual_metadata[1].has_draw_contract);
     AT(transparent_node->u.render.visual_metadata[2].has_draw_contract);
     AT(strlen(transparent_node->u.render.visual_metadata[0].draw_contract_id) > 0);
-    AT(
-        transparent_node->u.render.visual_metadata[0].draw_depth_policy ==
-        DVZ_SCENE_DEPTH_POLICY_SAMPLE);
-    AT(
-        transparent_node->u.render.visual_metadata[0].draw_blend_policy ==
-        DVZ_SCENE_BLEND_POLICY_SOURCE_OVER);
-    AT(
-        transparent_node->u.render.visual_metadata[0].draw_bind_group_layout_mask &
-        DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME);
-    AT(
-        transparent_node->u.render.visual_metadata[2].draw_depth_policy ==
-        DVZ_SCENE_DEPTH_POLICY_TEST);
+    AT(transparent_node->u.render.visual_metadata[0].draw_depth_policy ==
+       DVZ_SCENE_DEPTH_POLICY_SAMPLE);
+    AT(transparent_node->u.render.visual_metadata[0].draw_blend_policy ==
+       DVZ_SCENE_BLEND_POLICY_SOURCE_OVER);
+    AT(transparent_node->u.render.visual_metadata[0].draw_bind_group_layout_mask &
+       DVZ_SCENE_BIND_GROUP_REQUIREMENT_VOLUME);
+    AT(transparent_node->u.render.visual_metadata[2].draw_depth_policy ==
+       DVZ_SCENE_DEPTH_POLICY_TEST);
 
     const DvzFrameGraphPass* blend_pass = NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         ANN(pass);
-        if (
-            _scene_test_graph_pass_provider(plan, pass) ==
+        if (_scene_test_graph_pass_provider(plan, pass) ==
             DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND)
             blend_pass = pass;
     }
@@ -4481,7 +4820,8 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(panel != NULL);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_3D,
                    .format = DVZ_FIELD_FORMAT_R8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_SCALAR,
@@ -4492,7 +4832,9 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     ANN(field);
     const uint8_t voxels[8] = {255, 255, 255, 255, 255, 255, 255, 255};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2, .rows_per_image = 2}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = voxels, .bytes_per_row = 2,
+                      .rows_per_image = 2}) == DVZ_OK);
 
     DvzVisual* volume = dvz_volume(scene, 0);
     DvzVisual* slice = dvz_volume(scene, 0);
@@ -4521,7 +4863,8 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     };
     DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
     DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
                    .stride = sizeof(DvzIndex),
                });
@@ -4546,27 +4889,34 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(dvz_visual_set_scene_occluder(mesh, true) == 0);
 
     AT(dvz_panel_add_visual(
-           panel, volume, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) == 0);
+           panel, volume,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 0}) ==
+       0);
     AT(dvz_panel_add_visual(
-           panel, slice, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) == 0);
+           panel, slice,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 1}) ==
+       0);
     AT(dvz_panel_add_visual(
-           panel, mesh, &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) == 0);
+           panel, mesh,
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 2}) ==
+       0);
     AT(dvz_panel_set_volume_occluder(
            panel, volume,
-           &(DvzVolumeOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
+           &(DvzVolumeOcclusionDesc){
+               DVZ_STRUCT_INIT_FIELDS(DvzVolumeOcclusionDesc),
                .enabled = true,
                .alpha_threshold = 0.01f,
                .fade_distance = 0.04f,
                .occluded_alpha = 0.2f,
            }) == 0);
     AT(dvz_panel_set_scene_occlusion(
-           panel,
-           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
-               .enabled = true,
-               .depth_bias = 0.0005f,
-               .soft_edge = 0.01f,
-               .hidden_alpha = 0.2f,
-           }) == 0);
+           panel, &(DvzSceneOcclusionDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
+                      .enabled = true,
+                      .depth_bias = 0.0005f,
+                      .soft_edge = 0.01f,
+                      .hidden_alpha = 0.2f,
+                  }) == 0);
 
     DvzFramePlan* plan = dvz_frame_plan("figure.alpha.volume_mesh_occlusion", 0);
     ANN(plan);
@@ -4591,7 +4941,8 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(strcmp(
            blend_node->u.render.visual_metadata[1].draw_volume_occlusion_producer_pass_id,
            "figure_0_p0.volume_occlusion") == 0);
-    AT(blend_node->u.render.visual_metadata[1].draw_volume_occlusion_bind_set == DVZ_SCENE_SHADER_SET_VISUAL);
+    AT(blend_node->u.render.visual_metadata[1].draw_volume_occlusion_bind_set ==
+       DVZ_SCENE_SHADER_SET_VISUAL);
     AT(blend_node->u.render.visual_metadata[1].draw_volume_occlusion_bind_binding == 3);
     AT(strcmp(
            blend_node->u.render.visual_metadata[1].draw_scene_occlusion_resource_id,
@@ -4599,7 +4950,8 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(strcmp(
            blend_node->u.render.visual_metadata[1].draw_scene_occlusion_producer_pass_id,
            "figure_0_p0.scene_occlusion") == 0);
-    AT(blend_node->u.render.visual_metadata[1].draw_scene_occlusion_bind_set == DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION);
+    AT(blend_node->u.render.visual_metadata[1].draw_scene_occlusion_bind_set ==
+       DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION);
     AT(blend_node->u.render.visual_metadata[1].draw_scene_occlusion_bind_binding == 0);
 
     const DvzFrameGraphPass* volume_pass = NULL;
@@ -4628,12 +4980,10 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     {
         reads_volume_occlusion =
             reads_volume_occlusion ||
-            strcmp(blend_pass->reads[i].resource_id,
-                   "figure_0_p0.volume_occlusion.depth") == 0;
+            strcmp(blend_pass->reads[i].resource_id, "figure_0_p0.volume_occlusion.depth") == 0;
         reads_scene_occlusion =
             reads_scene_occlusion ||
-            strcmp(blend_pass->reads[i].resource_id,
-                   "figure_0_p0.scene_occlusion.depth") == 0;
+            strcmp(blend_pass->reads[i].resource_id, "figure_0_p0.scene_occlusion.depth") == 0;
     }
     AT(reads_volume_occlusion);
     AT(reads_scene_occlusion);
@@ -4651,19 +5001,18 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     AT(contract.draws[1].needs_volume_set);
     AT(contract.draws[1].needs_scene_occlusion_set);
     AT(strcmp(
-           contract.draws[1].volume_occlusion_resource_id,
-           "figure_0_p0.volume_occlusion.depth") == 0);
+           contract.draws[1].volume_occlusion_resource_id, "figure_0_p0.volume_occlusion.depth") ==
+       0);
     AT(strcmp(
-           contract.draws[1].volume_occlusion_producer_pass_id,
-           "figure_0_p0.volume_occlusion") == 0);
+           contract.draws[1].volume_occlusion_producer_pass_id, "figure_0_p0.volume_occlusion") ==
+       0);
     AT(contract.draws[1].volume_occlusion_bind_set == 1);
     AT(contract.draws[1].volume_occlusion_bind_binding == 3);
     AT(strcmp(
-           contract.draws[1].scene_occlusion_resource_id,
-           "figure_0_p0.scene_occlusion.depth") == 0);
-    AT(strcmp(
-           contract.draws[1].scene_occlusion_producer_pass_id,
-           "figure_0_p0.scene_occlusion") == 0);
+           contract.draws[1].scene_occlusion_resource_id, "figure_0_p0.scene_occlusion.depth") ==
+       0);
+    AT(strcmp(contract.draws[1].scene_occlusion_producer_pass_id, "figure_0_p0.scene_occlusion") ==
+       0);
     AT(contract.draws[1].scene_occlusion_bind_set == 2);
     AT(contract.draws[1].scene_occlusion_bind_binding == 0);
     AT(contract.draws[2].depth_test);
@@ -4677,12 +5026,11 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     {
         if (exact_contract.attachments[i].role == DVZ_SCENE_ATTACHMENT_SAMPLED &&
             strcmp(
-                exact_contract.attachments[i].resource_id,
-                "figure_0_p0.volume_occlusion.depth") == 0)
+                exact_contract.attachments[i].resource_id, "figure_0_p0.volume_occlusion.depth") ==
+                0)
         {
             dvz_strlcpy(
-                exact_contract.attachments[i].resource_id,
-                "figure_0_p1.volume_occlusion.depth",
+                exact_contract.attachments[i].resource_id, "figure_0_p1.volume_occlusion.depth",
                 sizeof(exact_contract.attachments[i].resource_id));
             break;
         }
@@ -4696,15 +5044,14 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     {
         if (exact_contract.attachments[i].role == DVZ_SCENE_ATTACHMENT_SAMPLED &&
             strcmp(
-                exact_contract.attachments[i].resource_id,
-                "figure_0_p0.volume_occlusion.depth") == 0)
+                exact_contract.attachments[i].resource_id, "figure_0_p0.volume_occlusion.depth") ==
+                0)
         {
             AT(strcmp(
                    exact_contract.attachments[i].producer_pass_id,
                    "figure_0_p0.volume_occlusion") == 0);
             dvz_strlcpy(
-                exact_contract.attachments[i].producer_pass_id,
-                "figure_0_p1.volume_occlusion",
+                exact_contract.attachments[i].producer_pass_id, "figure_0_p1.volume_occlusion",
                 sizeof(exact_contract.attachments[i].producer_pass_id));
             break;
         }
@@ -4749,8 +5096,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
         {
             DvzDrp2BindGroupEntry* entry = &command->u.create_bind_group.entries[j];
             const char* label = dvz_drp2_stream_label(stream, entry->resource_id);
-            if (
-                entry->binding == 3 && label != NULL &&
+            if (entry->binding == 3 && label != NULL &&
                 strcmp(label, "figure_0_p0.volume_occlusion.depth") == 0)
             {
                 volume_bind_group = command;
@@ -4828,7 +5174,7 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
 
-    AT(dvz_frame_plan_node_count(plan) == 3);
+    AT(dvz_frame_plan_node_count(plan) == 4);
     const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
     const DvzFramePlanNode* accum_node = dvz_frame_plan_node_get(plan, 1);
     const DvzFramePlanNode* resolve_node = dvz_frame_plan_node_get(plan, 2);
@@ -4836,9 +5182,8 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     ANN(accum_node);
     ANN(resolve_node);
     AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(
-        dvz_frame_plan_render_pass_role(accum_node) ==
-        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
+    AT(dvz_frame_plan_render_pass_role(accum_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
     AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
     AT(opaque_node->u.render.visual_count == 1);
     AT(accum_node->u.render.visual_count == 1);
@@ -4848,8 +5193,8 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     AT(strcmp(opaque_node->u.render.render_target_id, "rt") == 0);
     AT(strcmp(accum_node->u.render.render_target_id, "rt.wboit_accum") == 0);
     AT(strcmp(resolve_node->u.render.render_target_id, "rt") == 0);
-    AT(dvz_frame_plan_graph_resource_count(plan) == 4);
-    AT(dvz_frame_plan_graph_pass_count(plan) == 3);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 5);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4);
 
     const DvzFrameGraphResource* accum_resource =
         _test_graph_resource(plan, "figure_0_p0.wboit.accum");
@@ -4874,30 +5219,26 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     ANN(accum_pass);
     ANN(resolve_pass);
     AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
-    AT(
-        _scene_test_graph_pass_provider(plan, accum_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION);
-    AT(
-        _scene_test_graph_pass_provider(plan, resolve_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE);
+    AT(_scene_test_graph_pass_provider(plan, accum_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION);
+    AT(_scene_test_graph_pass_provider(plan, resolve_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE);
     AT(opaque_pass->has_depth_attachment);
     AT(accum_pass->color_attachment_count == 2);
     AT(accum_pass->has_depth_attachment);
     AT(resolve_pass->read_count == 2);
     AT(resolve_pass->color_attachment_count == 1);
-    AT(dvz_frame_plan_graph_dependency_count(plan) == 4);
+    AT(dvz_frame_plan_graph_dependency_count(plan) == 5);
     bool has_accum_resolve_dependency = false;
     bool has_depth_dependency = false;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_dependency_count(plan); i++)
     {
         DvzFrameGraphDependency dep = {0};
         AT(dvz_frame_plan_graph_dependency_get(plan, i, &dep));
-        if (
-            strcmp(dep.producer_pass_id, "figure_0_p0.wboit.accum") == 0 &&
+        if (strcmp(dep.producer_pass_id, "figure_0_p0.wboit.accum") == 0 &&
             strcmp(dep.consumer_pass_id, "figure_0_p0.wboit.resolve") == 0)
             has_accum_resolve_dependency = true;
-        if (
-            strcmp(dep.producer_pass_id, "figure_0_p0.opaque") == 0 &&
+        if (strcmp(dep.producer_pass_id, "figure_0_p0.opaque") == 0 &&
             strcmp(dep.consumer_pass_id, "figure_0_p0.wboit.accum") == 0 &&
             strcmp(dep.resource_id, "figure_0_p0.depth") == 0)
             has_depth_dependency = true;
@@ -4935,14 +5276,10 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     AT(accum_contract.draws[0].blend_target_count == 2);
     AT(accum_contract.draws[0].blend_targets[0].format == DVZ_FORMAT_R16G16B16A16_SFLOAT);
     AT(accum_contract.draws[0].blend_targets[0].blend_enabled);
-    AT(
-        accum_contract.draws[0].blend_targets[0].dst_color_blend_factor ==
-        DVZ_BLEND_FACTOR_ONE);
+    AT(accum_contract.draws[0].blend_targets[0].dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE);
     AT(accum_contract.draws[0].blend_targets[1].format == DVZ_FORMAT_R16_SFLOAT);
     AT(accum_contract.draws[0].blend_targets[1].blend_enabled);
-    AT(
-        accum_contract.draws[0].blend_targets[1].color_write_mask ==
-        DVZ_MASK_COLOR_R);
+    AT(accum_contract.draws[0].blend_targets[1].color_write_mask == DVZ_MASK_COLOR_R);
     AT(accum_contract.color_attachment_count == 2);
     AT(accum_contract.has_depth_attachment);
     AT(accum_contract.attachments[0].format == DVZ_FORMAT_R16G16B16A16_SFLOAT);
@@ -4952,7 +5289,8 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     AT(dvz_diagnostic_report_count(&report) == 0);
 
     DvzScenePassContract resolve_contract = {0};
-    AT(_scene_pass_contract_from_render(plan, panel, resolve_node, resolve_pass, &resolve_contract));
+    AT(_scene_pass_contract_from_render(
+        plan, panel, resolve_node, resolve_pass, &resolve_contract));
     AT(resolve_contract.fullscreen_resolve);
     AT(resolve_contract.draw_count == 0);
     AT(resolve_contract.attachment_count == 3);
@@ -4977,7 +5315,8 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite, const TstCase* item)
+int test_scene_visual_alpha_mode_wboit_transparent_only_depth(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5010,7 +5349,7 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite,
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
 
-    AT(dvz_frame_plan_node_count(plan) == 3);
+    AT(dvz_frame_plan_node_count(plan) == 4);
     const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
     const DvzFramePlanNode* accum_node = dvz_frame_plan_node_get(plan, 1);
     const DvzFramePlanNode* resolve_node = dvz_frame_plan_node_get(plan, 2);
@@ -5018,9 +5357,8 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite,
     ANN(accum_node);
     ANN(resolve_node);
     AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(
-        dvz_frame_plan_render_pass_role(accum_node) ==
-        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
+    AT(dvz_frame_plan_render_pass_role(accum_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
     AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
     AT(opaque_node->u.render.visual_count == 0);
     AT(accum_node->u.render.visual_count == 1);
@@ -5030,9 +5368,8 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(TstContext* suite,
     ANN(opaque_pass);
     ANN(accum_pass);
     AT(_scene_test_graph_pass_provider(plan, opaque_pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
-    AT(
-        _scene_test_graph_pass_provider(plan, accum_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION);
+    AT(_scene_test_graph_pass_provider(plan, accum_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION);
     AT(!opaque_pass->has_depth_attachment);
     AT(accum_pass->has_depth_attachment);
     AT(strcmp(accum_pass->depth_attachment.resource_id, "figure_0_p0.depth") == 0);
@@ -5114,10 +5451,8 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
     };
-    DvzColor opaque_colors[3] = {
-        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
-    DvzColor transparent_colors[3] = {
-        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    DvzColor opaque_colors[3] = {{255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
 
     AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
@@ -5131,7 +5466,7 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
 
-    AT(dvz_frame_plan_node_count(plan) == 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    AT(dvz_frame_plan_node_count(plan) == 4 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
     const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 0);
     const DvzFramePlanNode* init_node = dvz_frame_plan_node_get(plan, 1);
     const DvzFramePlanNode* iter_node = dvz_frame_plan_node_get(plan, 2);
@@ -5144,9 +5479,8 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(dvz_frame_plan_render_pass_role(init_node) == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT);
     AT(dvz_frame_plan_render_pass_role(iter_node) == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER);
-    AT(
-        dvz_frame_plan_render_pass_role(composite_node) ==
-        DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE);
+    AT(dvz_frame_plan_render_pass_role(composite_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE);
     AT(opaque_node->u.render.visual_count == 1);
     AT(init_node->u.render.visual_count == 1);
     AT(iter_node->u.render.visual_count == 1);
@@ -5154,8 +5488,8 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(init_node->u.render.visual_metadata[0].alpha_mode == DVZ_ALPHA_DEPTH_PEEL);
     AT(iter_node->u.render.visual_metadata[0].alpha_mode == DVZ_ALPHA_DEPTH_PEEL);
 
-    AT(dvz_frame_plan_graph_resource_count(plan) == 6);
-    AT(dvz_frame_plan_graph_pass_count(plan) == 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    AT(dvz_frame_plan_graph_resource_count(plan) == 7);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 4 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
     const DvzFrameGraphResource* depth_resource =
         _test_graph_resource(plan, "figure_0_p0.depth.opaque");
     const DvzFrameGraphResource* front_accum =
@@ -5179,15 +5513,12 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     ANN(init_pass);
     ANN(iter_pass);
     ANN(composite_pass);
-    AT(
-        _scene_test_graph_pass_provider(plan, init_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT);
-    AT(
-        _scene_test_graph_pass_provider(plan, iter_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION);
-    AT(
-        _scene_test_graph_pass_provider(plan, composite_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE);
+    AT(_scene_test_graph_pass_provider(plan, init_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT);
+    AT(_scene_test_graph_pass_provider(plan, iter_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION);
+    AT(_scene_test_graph_pass_provider(plan, composite_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE);
     AT(init_pass->color_attachment_count == 3);
     AT(iter_pass->read_count == 1);
     AT(strcmp(iter_pass->reads[0].resource_id, "figure_0_p0.peel.depth_minmax_ping") == 0);
@@ -5218,9 +5549,8 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(init_contract.draws[0].blend_targets[2].format == DVZ_FORMAT_R32G32_SFLOAT);
     AT(init_contract.draws[0].blend_targets[2].blend_enabled);
     AT(init_contract.draws[0].blend_targets[2].color_blend_op == DVZ_BLEND_OP_MAX);
-    AT(
-        init_contract.draws[0].blend_targets[2].color_write_mask ==
-        (DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G));
+    AT(init_contract.draws[0].blend_targets[2].color_write_mask ==
+       (DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G));
     AT(init_contract.draws[0].has_raster_state);
     AT(init_contract.draws[0].cull_mode == DVZ_CULL_MODE_NONE);
     AT(init_contract.draws[0].front_face == DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
@@ -5244,9 +5574,8 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     AT(iter_contract.draws[0].blend_targets[2].format == DVZ_FORMAT_R32G32_SFLOAT);
     AT(iter_contract.draws[0].blend_targets[2].blend_enabled);
     AT(iter_contract.draws[0].blend_targets[2].color_blend_op == DVZ_BLEND_OP_MAX);
-    AT(
-        iter_contract.draws[0].blend_targets[2].color_write_mask ==
-        (DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G));
+    AT(iter_contract.draws[0].blend_targets[2].color_write_mask ==
+       (DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G));
     AT(iter_contract.draws[0].has_raster_state);
     AT(iter_contract.draws[0].cull_mode == DVZ_CULL_MODE_NONE);
     AT(iter_contract.draws[0].front_face == DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
@@ -5326,18 +5655,18 @@ int test_scene_visual_alpha_mode_depth_peel_blended_overlay(TstContext* suite, c
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
 
-    AT(dvz_frame_plan_node_count(plan) == 4 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
-    AT(dvz_frame_plan_graph_pass_count(plan) == 4 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    AT(dvz_frame_plan_node_count(plan) == 5 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    AT(dvz_frame_plan_graph_pass_count(plan) == 5 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
     const DvzFramePlanNode* overlay_node =
         dvz_frame_plan_node_get(plan, 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
     const DvzFrameGraphPass* overlay_pass =
         dvz_frame_plan_graph_pass_get(plan, 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
     ANN(overlay_node);
     ANN(overlay_pass);
-    AT(dvz_frame_plan_render_pass_role(overlay_node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
-    AT(
-        _scene_test_graph_pass_provider(plan, overlay_pass) ==
-        DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
+    AT(dvz_frame_plan_render_pass_role(overlay_node) ==
+       DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(_scene_test_graph_pass_provider(plan, overlay_pass) ==
+       DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
@@ -5398,20 +5727,26 @@ int test_scene_visual_alpha_mode_depth_peel_loads_prior_panel(
     AT(_scene_emit_panel_render(figure, 1, plan, "figure_0"));
 
     const DvzFrameGraphPass* right_opaque = NULL;
+    const DvzFrameGraphPass* right_presentation = NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
-        if (
-            pass != NULL && strcmp(pass->panel_id, "figure_0_p1") == 0 &&
-            _scene_test_graph_pass_provider(plan, pass) == DVZ_SCENE_WORK_PROVIDER_OPAQUE)
-        {
+        if (pass == NULL || strcmp(pass->panel_id, "figure_0_p1") != 0)
+            continue;
+        const DvzSceneWorkProviderKey provider = _scene_test_graph_pass_provider(plan, pass);
+        if (provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE)
             right_opaque = pass;
-            break;
-        }
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_PRESENTATION)
+            right_presentation = pass;
     }
     ANN(right_opaque);
+    ANN(right_presentation);
     AT(right_opaque->color_attachment_count == 1);
-    AT(right_opaque->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+    AT(strcmp(right_opaque->color_attachments[0].resource_id, "figure_0_p1.scene.color") == 0);
+    AT(right_opaque->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
+    AT(right_presentation->color_attachment_count == 1);
+    AT(strcmp(right_presentation->color_attachments[0].resource_id, "rt") == 0);
+    AT(right_presentation->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
@@ -5497,8 +5832,7 @@ int test_scene_visual_alpha_mode_mixed_oit_rejected(TstContext* suite, const Tst
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_noncontiguous_oit_rejected(
-    TstContext* suite, const TstCase* item)
+int test_scene_visual_alpha_mode_noncontiguous_oit_rejected(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5581,10 +5915,8 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
     };
-    DvzColor opaque_colors[3] = {
-        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
-    DvzColor transparent_colors[3] = {
-        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    DvzColor opaque_colors[3] = {{255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
 
     AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
@@ -5596,13 +5928,13 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
     AT(dvz_panel_set_scene_occlusion(
-           panel,
-           &(DvzSceneOcclusionDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
-               .enabled = true,
-               .depth_bias = 0.0005f,
-               .soft_edge = 0.01f,
-               .hidden_alpha = 0.2f,
-           }) == 0);
+           panel, &(DvzSceneOcclusionDesc){
+                      DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
+                      .enabled = true,
+                      .depth_bias = 0.0005f,
+                      .soft_edge = 0.01f,
+                      .hidden_alpha = 0.2f,
+                  }) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.max_color_attachments = 3;
@@ -5646,9 +5978,8 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
         if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
         {
             const char* label = dvz_drp2_stream_label(stream, command->u.create_texture.id);
-            has_front_accum =
-                has_front_accum || (label != NULL &&
-                                    strcmp(label, "fig0_p0.peel.front_accum") == 0);
+            has_front_accum = has_front_accum ||
+                              (label != NULL && strcmp(label, "fig0_p0.peel.front_accum") == 0);
             has_depth_minmax_pong =
                 has_depth_minmax_pong ||
                 (label != NULL && strcmp(label, "fig0_p0.peel.depth_minmax_pong") == 0);
@@ -5656,16 +5987,14 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
                 has_depth_minmax_pong_rg32 ||
                 (label != NULL && strcmp(label, "fig0_p0.peel.depth_minmax_pong") == 0 &&
                  command->u.create_texture.format == DVZ_FORMAT_R32G32_SFLOAT);
-            has_depth_texture =
-                has_depth_texture ||
-                (label != NULL && strcmp(label, "fig0_p0.depth.opaque") == 0 &&
-                 command->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT);
+            has_depth_texture = has_depth_texture ||
+                                (label != NULL && strcmp(label, "fig0_p0.depth.opaque") == 0 &&
+                                 command->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
-            has_three_target_pipeline =
-                has_three_target_pipeline ||
-                command->u.create_render_pipeline.color_target_count == 3;
+            has_three_target_pipeline = has_three_target_pipeline ||
+                                        command->u.create_render_pipeline.color_target_count == 3;
             if (command->u.create_render_pipeline.color_target_count == 3)
             {
                 const DvzDrp2ColorTarget* front =
@@ -5675,8 +6004,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
                 const DvzDrp2ColorTarget* bounds =
                     &command->u.create_render_pipeline.color_targets[2];
                 has_depth_bounds_rg32_target =
-                    has_depth_bounds_rg32_target ||
-                    bounds->format == DVZ_FORMAT_R32G32_SFLOAT;
+                    has_depth_bounds_rg32_target || bounds->format == DVZ_FORMAT_R32G32_SFLOAT;
                 has_depth_peel_front_under_blend =
                     has_depth_peel_front_under_blend ||
                     (front->blend_enabled &&
@@ -5690,8 +6018,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
                     has_depth_bounds_max_blend ||
                     (bounds->blend_enabled && bounds->color_blend_op == DVZ_BLEND_OP_MAX &&
                      bounds->alpha_blend_op == DVZ_BLEND_OP_MAX &&
-                     bounds->color_write_mask ==
-                         (DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G));
+                     bounds->color_write_mask == (DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G));
                 has_depth_peel_no_cull =
                     has_depth_peel_no_cull ||
                     (command->u.create_render_pipeline.has_raster_state &&
@@ -5711,15 +6038,14 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
-            const char* label =
-                dvz_drp2_stream_label(stream, command->u.create_bind_group.id);
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_bind_group.id);
             if (label != NULL && strstr(label, "_bg_depth_peel_iter_") != NULL)
                 AT(command->u.create_bind_group.entry_count == 2);
             if (command->u.create_bind_group.entry_count == 2 ||
                 command->u.create_bind_group.entry_count == 3)
                 sampled_bind_group_count++;
-            has_composite_bind_group = has_composite_bind_group ||
-                                       command->u.create_bind_group.entry_count == 3;
+            has_composite_bind_group =
+                has_composite_bind_group || command->u.create_bind_group.entry_count == 3;
         }
         else if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
@@ -5743,7 +6069,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(has_blended_composite_pipeline);
     AT(has_composite_bind_group);
     AT(sampled_bind_group_count >= 1);
-    AT(begin_pass_count == 4 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
+    AT(begin_pass_count == 5 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
     AT(triple_attachment_passes == 1 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
 
     dvz_diagnostic_report_init(&report);
@@ -5780,6 +6106,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(has_scoped_composite_bind_group);
 
     dvz_diagnostic_report_init(&report);
+    AT(dvz_figure_resize(figure, 96, 48) == DVZ_OK);
     cfg.target_width = 96;
     cfg.target_height = 48;
     DvzDrp2CommandStream* scoped_resize_stream =
@@ -5801,8 +6128,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
                 resized_front_accum ||
                 (label != NULL &&
                  strcmp(label, "fig0_p0.peel.front_accum_scope_000000000000007b") == 0 &&
-                 command->u.create_texture.width == 96 &&
-                 command->u.create_texture.height == 48);
+                 command->u.create_texture.width == 96 && command->u.create_texture.height == 48);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
         {
@@ -5816,7 +6142,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
         }
     }
     AT(resized_front_accum);
-    AT(!rebuilt_composite_bind_group);
+    AT(rebuilt_composite_bind_group);
 
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;
@@ -5853,7 +6179,8 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_visual_alpha_mode_requires_wboit_capabilities(TstContext* suite, const TstCase* item)
+int test_scene_visual_alpha_mode_requires_wboit_capabilities(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -5939,10 +6266,8 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
     };
-    DvzColor opaque_colors[3] = {
-        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
-    DvzColor transparent_colors[3] = {
-        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    DvzColor opaque_colors[3] = {{255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
 
     AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
@@ -5991,15 +6316,15 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     bool has_resolve_bind_group = false;
     bool resolve_bind_group_samples_graph_targets = false;
     uint32_t begin_pass_count = 0;
-    uint64_t begin_pass_textures[3] = {0};
-    uint32_t begin_pass_color_counts[3] = {0};
-    bool begin_pass_clears[3] = {0};
-    bool begin_pass_depths[3] = {0};
-    uint64_t begin_pass_depth_textures[3] = {0};
-    DvzDrp2AttachmentLoadOp begin_pass_depth_loads[3] = {0};
-    DvzDrp2AttachmentAccess begin_pass_depth_access[3] = {0};
-    uint64_t begin_pass_second_attachment_textures[3] = {0};
-    bool begin_pass_second_attachment_clears[3] = {0};
+    uint64_t begin_pass_textures[4] = {0};
+    uint32_t begin_pass_color_counts[4] = {0};
+    bool begin_pass_clears[4] = {0};
+    bool begin_pass_depths[4] = {0};
+    uint64_t begin_pass_depth_textures[4] = {0};
+    DvzDrp2AttachmentLoadOp begin_pass_depth_loads[4] = {0};
+    DvzDrp2AttachmentAccess begin_pass_depth_access[4] = {0};
+    uint64_t begin_pass_second_attachment_textures[4] = {0};
+    bool begin_pass_second_attachment_clears[4] = {0};
 
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
@@ -6007,19 +6332,16 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
         ANN(command);
         if (command->type == DVZ_DRP2_COMMAND_CREATE_TEXTURE)
         {
-            has_accum_texture =
-                has_accum_texture ||
-                command->u.create_texture.format == DVZ_FORMAT_R16G16B16A16_SFLOAT;
+            has_accum_texture = has_accum_texture ||
+                                command->u.create_texture.format == DVZ_FORMAT_R16G16B16A16_SFLOAT;
             has_weight_texture =
                 has_weight_texture || command->u.create_texture.format == DVZ_FORMAT_R16_SFLOAT;
             const char* label = dvz_drp2_stream_label(stream, command->u.create_texture.id);
-            has_named_depth_texture =
-                has_named_depth_texture ||
-                (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
-                 command->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT);
-            has_graph_accum_texture =
-                has_graph_accum_texture ||
-                (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0);
+            has_named_depth_texture = has_named_depth_texture ||
+                                      (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
+                                       command->u.create_texture.format == DVZ_FORMAT_D32_SFLOAT);
+            has_graph_accum_texture = has_graph_accum_texture ||
+                                      (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0);
             if (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0)
                 graph_accum_texture_id = command->u.create_texture.id;
             has_graph_weight_texture =
@@ -6030,24 +6352,21 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
             has_graph_accum_usage =
                 has_graph_accum_usage ||
                 (label != NULL && strcmp(label, "fig0_p0.wboit.accum") == 0 &&
-                 (command->u.create_texture.usage &
-                  (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
-                   DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING)) ==
+                 (command->u.create_texture.usage & (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                                                     DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING)) ==
                      (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
                       DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
             has_graph_weight_usage =
                 has_graph_weight_usage ||
                 (label != NULL && strcmp(label, "fig0_p0.wboit.weight") == 0 &&
-                 (command->u.create_texture.usage &
-                  (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
-                   DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING)) ==
+                 (command->u.create_texture.usage & (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
+                                                     DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING)) ==
                      (DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT |
                       DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING));
             has_graph_depth_usage =
-                has_graph_depth_usage ||
-                (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
-                 (command->u.create_texture.usage &
-                  DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0);
+                has_graph_depth_usage || (label != NULL && strcmp(label, "fig0_p0.depth") == 0 &&
+                                          (command->u.create_texture.usage &
+                                           DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT) != 0);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -6066,23 +6385,25 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
                 has_opaque_depth_pipeline ||
                 (command->u.create_render_pipeline.has_depth_attachment &&
                  command->u.create_render_pipeline.depth_write_enabled &&
-                 command->u.create_render_pipeline.depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL &&
+                 command->u.create_render_pipeline.depth_compare_op ==
+                     DVZ_COMPARE_OP_LESS_OR_EQUAL &&
                  command->u.create_render_pipeline.vertex_buffer_slots == 2 &&
-                 command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                 command->u.create_render_pipeline.topology ==
+                     DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
             has_fixed_background_depth_pipeline =
                 has_fixed_background_depth_pipeline ||
                 (command->u.create_render_pipeline.has_depth_attachment &&
                  !command->u.create_render_pipeline.depth_write_enabled &&
                  command->u.create_render_pipeline.depth_compare_op == DVZ_COMPARE_OP_ALWAYS &&
                  command->u.create_render_pipeline.vertex_buffer_slots == 2 &&
-                 command->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+                 command->u.create_render_pipeline.topology ==
+                     DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
         }
         else if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
-            if (begin_pass_count < 3)
+            if (begin_pass_count < 4)
             {
-                begin_pass_textures[begin_pass_count] =
-                    command->u.begin_render_pass.texture_id;
+                begin_pass_textures[begin_pass_count] = command->u.begin_render_pass.texture_id;
                 begin_pass_color_counts[begin_pass_count] =
                     command->u.begin_render_pass.color_attachment_count;
                 begin_pass_clears[begin_pass_count] = command->u.begin_render_pass.clear;
@@ -6139,10 +6460,11 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     AT(has_accum_pass);
     AT(has_resolve_bind_group);
     AT(resolve_bind_group_samples_graph_targets);
-    AT(begin_pass_count == 3);
+    AT(begin_pass_count == 4);
     AT(begin_pass_color_counts[0] == 1);
     AT(begin_pass_color_counts[1] == 2);
     AT(begin_pass_color_counts[2] == 1);
+    AT(begin_pass_color_counts[3] == 1);
     AT(begin_pass_textures[1] == graph_accum_texture_id);
     AT(begin_pass_second_attachment_textures[1] == graph_weight_texture_id);
     AT(begin_pass_textures[1] != begin_pass_textures[0]);
@@ -6152,6 +6474,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     AT(begin_pass_depths[0]);
     AT(begin_pass_depths[1]);
     AT(!begin_pass_depths[2]);
+    AT(!begin_pass_depths[3]);
     AT(begin_pass_depth_textures[0] != 0);
     AT(begin_pass_depth_textures[0] == begin_pass_depth_textures[1]);
     AT(begin_pass_depth_textures[2] == 0);
@@ -6163,6 +6486,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     AT(!begin_pass_clears[2]);
     AT(begin_pass_textures[0] != 0);
     AT(begin_pass_textures[0] == begin_pass_textures[2]);
+    AT(begin_pass_textures[3] != begin_pass_textures[2]);
     AT(begin_pass_textures[1] != begin_pass_textures[0]);
 
     dvz_diagnostic_report_init(&report);
@@ -6180,12 +6504,10 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
         if (command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
             continue;
         const char* label = dvz_drp2_stream_label(scoped_stream, command->u.create_texture.id);
-        if (label != NULL &&
-            strcmp(label, "fig0_p0.wboit.accum_scope_000000000000007c") == 0)
+        if (label != NULL && strcmp(label, "fig0_p0.wboit.accum_scope_000000000000007c") == 0)
             scoped_accum_texture_id = command->u.create_texture.id;
         else if (
-            label != NULL &&
-            strcmp(label, "fig0_p0.wboit.weight_scope_000000000000007c") == 0)
+            label != NULL && strcmp(label, "fig0_p0.wboit.weight_scope_000000000000007c") == 0)
             scoped_weight_texture_id = command->u.create_texture.id;
     }
     AT(scoped_accum_texture_id != 0);
@@ -6207,6 +6529,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     AT(has_scoped_resolve_bind_group);
 
     dvz_diagnostic_report_init(&report);
+    AT(dvz_figure_resize(figure, 96, 48) == DVZ_OK);
     cfg.target_width = 96;
     cfg.target_height = 48;
     DvzDrp2CommandStream* scoped_resize_stream =
@@ -6224,13 +6547,11 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
             continue;
         const char* label =
             dvz_drp2_stream_label(scoped_resize_stream, command->u.create_texture.id);
-        if (label != NULL &&
-            strcmp(label, "fig0_p0.wboit.accum_scope_000000000000007c") == 0 &&
+        if (label != NULL && strcmp(label, "fig0_p0.wboit.accum_scope_000000000000007c") == 0 &&
             command->u.create_texture.width == 96 && command->u.create_texture.height == 48)
             resized_accum_texture_id = command->u.create_texture.id;
         else if (
-            label != NULL &&
-            strcmp(label, "fig0_p0.wboit.weight_scope_000000000000007c") == 0 &&
+            label != NULL && strcmp(label, "fig0_p0.wboit.weight_scope_000000000000007c") == 0 &&
             command->u.create_texture.width == 96 && command->u.create_texture.height == 48)
             resized_weight_texture_id = command->u.create_texture.id;
     }
@@ -6250,7 +6571,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
             (command->u.create_bind_group.entries[0].resource_id == resized_accum_texture_id &&
              command->u.create_bind_group.entries[1].resource_id == resized_weight_texture_id);
     }
-    AT(!rebuilt_resolve_bind_group);
+    AT(rebuilt_resolve_bind_group);
 
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;
@@ -6346,9 +6667,8 @@ int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCas
             if (splat_wboit)
             {
                 has_splat_wboit_shader = true;
-                AT(
-                    command->u.create_shader_module.builtin_version ==
-                    DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
+                AT(command->u.create_shader_module.builtin_version ==
+                   DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
             }
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
@@ -6364,9 +6684,8 @@ int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCas
                 if (strcmp(command->u.create_render_pipeline.builtin_pipeline, "scene.splat") == 0)
                 {
                     has_splat_wboit_pipeline_identity = true;
-                    AT(
-                        command->u.create_render_pipeline.builtin_version ==
-                        DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
+                    AT(command->u.create_render_pipeline.builtin_version ==
+                       DVZ_SCENE_SHADER_BUILTIN_CONTRACT_VERSION);
                 }
             }
         }
@@ -6410,8 +6729,7 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, c
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
     };
-    DvzColor opaque_colors[3] = {
-        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor opaque_colors[3] = {{255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
     DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
     AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
@@ -6600,10 +6918,8 @@ int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, con
         {0.5f, -0.5f, 0.0f},
         {0.0f, 0.5f, 0.0f},
     };
-    DvzColor opaque_colors[3] = {
-        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
-    DvzColor transparent_colors[3] = {
-        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    DvzColor opaque_colors[3] = {{255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
     AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
     AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
@@ -6643,8 +6959,7 @@ int test_scene_drp2_contract_checker_rejects_raster_drift(TstContext* suite, con
     for (uint32_t i = 0; i < stream->count; i++)
     {
         DvzDrp2Command* command = &stream->commands[i];
-        if (
-            command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE ||
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE ||
             command->u.create_render_pipeline.color_target_count != 3 ||
             !command->u.create_render_pipeline.has_raster_state)
             continue;
@@ -6718,10 +7033,8 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
         {0.55f, -0.45f, -0.1f},
         {0.05f, 0.55f, -0.1f},
     };
-    DvzColor opaque_colors[3] = {
-        {255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
-    DvzColor transparent_colors[3] = {
-        {255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
+    DvzColor opaque_colors[3] = {{255, 255, 255, 255}, {255, 255, 255, 255}, {255, 255, 255, 255}};
+    DvzColor transparent_colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
 
     AT(dvz_visual_set_data(opaque, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == 0);
@@ -6760,9 +7073,8 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
         const DvzDrp2Command* command = dvz_drp2_stream_get(source_over0, i);
         ANN(command);
         source_over0_has_wboit =
-            source_over0_has_wboit ||
-            (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
-             command->u.begin_render_pass.color_attachment_count == 2);
+            source_over0_has_wboit || (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+                                       command->u.begin_render_pass.color_attachment_count == 2);
     }
     AT(!source_over0_has_wboit);
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, source_over0);
@@ -6781,9 +7093,8 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
         const DvzDrp2Command* command = dvz_drp2_stream_get(wboit, i);
         ANN(command);
         wboit_has_accum_pass =
-            wboit_has_accum_pass ||
-            (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
-             command->u.begin_render_pass.color_attachment_count == 2);
+            wboit_has_accum_pass || (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+                                     command->u.begin_render_pass.color_attachment_count == 2);
     }
     AT(wboit_has_accum_pass);
     result = dvz_drp2_runtime_execute(runtime, wboit);
@@ -6802,9 +7113,8 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
         const DvzDrp2Command* command = dvz_drp2_stream_get(source_over1, i);
         ANN(command);
         source_over1_has_wboit =
-            source_over1_has_wboit ||
-            (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
-             command->u.begin_render_pass.color_attachment_count == 2);
+            source_over1_has_wboit || (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+                                       command->u.begin_render_pass.color_attachment_count == 2);
     }
     AT(!source_over1_has_wboit);
     result = dvz_drp2_runtime_execute(runtime, source_over1);
@@ -6870,8 +7180,7 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
     AT(dvz_visual_set_data(transparent, "color", colors, 3) == 0);
     AT(dvz_visual_set_data(transparent, "normal", normals, 3) == 0);
     AT(_test_set_phong_material(
-           transparent, (float[3]){0.0f, 0.0f, 1.0f}, 0.25f, 0.75f, 0.25f, 32.0f) ==
-       0);
+           transparent, (float[3]){0.0f, 0.0f, 1.0f}, 0.25f, 0.75f, 0.25f, 32.0f) == 0);
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
 
@@ -6902,11 +7211,10 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
         if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
         {
             begin_render_pass_count++;
-            if (final_target_id == 0)
-                final_target_id = command->u.begin_render_pass.texture_id;
+            final_target_id = command->u.begin_render_pass.texture_id;
         }
     }
-    AT(begin_render_pass_count == 3);
+    AT(begin_render_pass_count == 4);
     AT(final_target_id != 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -6933,8 +7241,8 @@ int test_scene_visual_alpha_mode_wboit_glsl_executes(TstContext* suite, const Ts
         DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
     AT(dvz_drp2_stream_begin_command_encoder(readback, encoder_id));
     AT(dvz_drp2_stream_copy_texture_to_buffer(
-        readback, encoder_id, final_target_id, readback_buffer_id, 0, width, height,
-        width * 4, height));
+        readback, encoder_id, final_target_id, readback_buffer_id, 0, width, height, width * 4,
+        height));
     AT(dvz_drp2_stream_finish_command_encoder(readback, encoder_id, command_buffer_id));
     AT(dvz_drp2_stream_queue_submit(readback, command_buffer_id, submission_id));
 
@@ -7037,7 +7345,7 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
         ANN(command);
-        if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS && final_target_id == 0)
+        if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS)
             final_target_id = command->u.begin_render_pass.texture_id;
     }
     AT(final_target_id != 0);
@@ -7048,6 +7356,13 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
     ANN(runtime);
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    if (!result.ok)
+    {
+        const DvzDrp2Command* failed = dvz_drp2_stream_get(stream, result.command_index);
+        log_error(
+            "depth peel GLSL stream failed: code=%d command=%" PRIu32 " type=%d", result.code,
+            result.command_index, failed != NULL ? (int)failed->type : -1);
+    }
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(dvz_gpu_ctx_error_count(ctx) == 0);
@@ -7066,8 +7381,8 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
         DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
     AT(dvz_drp2_stream_begin_command_encoder(readback, encoder_id));
     AT(dvz_drp2_stream_copy_texture_to_buffer(
-        readback, encoder_id, final_target_id, readback_buffer_id, 0, width, height,
-        width * 4, height));
+        readback, encoder_id, final_target_id, readback_buffer_id, 0, width, height, width * 4,
+        height));
     AT(dvz_drp2_stream_finish_command_encoder(readback, encoder_id, command_buffer_id));
     AT(dvz_drp2_stream_queue_submit(readback, command_buffer_id, submission_id));
 

@@ -8,12 +8,12 @@ layout(set = 0, binding = 3) uniform EdlParams {
     vec4 viewport;
     vec4 params;
 } edl;
+layout(location = 0) in vec2 localUv;
 layout(location = 0) out vec4 outColor;
 
-float viewDepth(ivec2 texel, float depth)
+float viewDepth(ivec2 texel, ivec2 extent, float depth)
 {
-    vec2 uv = (vec2(texel) + vec2(0.5) - edl.viewport.xy) /
-              max(edl.viewport.zw, vec2(1.0));
+    vec2 uv = (vec2(texel) + vec2(0.5)) / max(vec2(extent), vec2(1.0));
     vec2 ndc = uv * 2.0 - 1.0;
     vec4 clip = vec4(ndc.x, -ndc.y, depth * 2.0 - 1.0, 1.0);
     vec4 view = edl.invProj * clip;
@@ -22,10 +22,8 @@ float viewDepth(ivec2 texel, float depth)
 
 void main()
 {
-    ivec2 p = ivec2(gl_FragCoord.xy);
     ivec2 extent = textureSize(sampler2D(colorTex, samp), 0);
-    if (p.x < 0 || p.y < 0 || p.x >= extent.x || p.y >= extent.y)
-        discard;
+    ivec2 p = clamp(ivec2(localUv * vec2(extent)), ivec2(0), extent - ivec2(1));
 
     vec4 color = texelFetch(sampler2D(colorTex, samp), p, 0);
     float center = texelFetch(sampler2D(depthTex, samp), p, 0).r;
@@ -37,10 +35,9 @@ void main()
 
     int radius = int(clamp(round(edl.params.x), 1.0, 8.0));
     float depthScale = max(edl.params.z, 0.001);
-    float centerViewDepth = viewDepth(p, center);
-    ivec2 panelMin = max(ivec2(floor(edl.viewport.xy)), ivec2(0));
-    ivec2 panelMax = min(
-        ivec2(ceil(edl.viewport.xy + edl.viewport.zw)) - ivec2(1), extent - ivec2(1));
+    float centerViewDepth = viewDepth(p, extent, center);
+    ivec2 panelMin = ivec2(0);
+    ivec2 panelMax = extent - ivec2(1);
     ivec2 offsets[8] = ivec2[](
         ivec2(+1, 0), ivec2(-1, 0), ivec2(0, +1), ivec2(0, -1),
         ivec2(+1, +1), ivec2(-1, +1), ivec2(+1, -1), ivec2(-1, -1));
@@ -53,7 +50,7 @@ void main()
         float relativeDepth = 1.0;
         if (neighbor < 0.999999)
         {
-            float neighborViewDepth = viewDepth(q, neighbor);
+            float neighborViewDepth = viewDepth(q, extent, neighbor);
             relativeDepth = max(0.0, neighborViewDepth - centerViewDepth) / centerViewDepth;
         }
         response += min(relativeDepth, 1.0) * depthScale;
