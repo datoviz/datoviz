@@ -93,7 +93,8 @@ static bool _emit_blend_policy(DvzDrp2CommandStream* stream, DvzSceneBlendPolicy
  * @param cfg optional frame-plan emit configuration.
  * @param pass_has_depth_attachment whether the render pass will carry a depth attachment.
  * @param force_point_depth whether point-like visuals must emit depth writes.
- * @param color_target_format effective color target format for this render pass.
+ * @param color_target_formats effective color target formats for this render pass.
+ * @param color_target_count number of effective color target formats.
  * @param sampled_depth_id depth texture sampled by volume shaders, or zero.
  * @param sampled_depth_is_volume_occlusion whether sampled_depth_id is a volume occlusion texture.
  * @param depth_peel_sampled_bgl_id sampled bind-group layout for peel iteration bounds.
@@ -107,8 +108,8 @@ static bool _emit_blend_policy(DvzDrp2CommandStream* stream, DvzSceneBlendPolicy
 bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     DvzSceneWorkProviderKey provider, const DvzFramePlanEmitConfig* cfg,
-    bool pass_has_depth_attachment, bool force_point_depth, uint32_t color_target_format,
-    uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
+    bool pass_has_depth_attachment, bool force_point_depth, const uint32_t* color_target_formats,
+    uint32_t color_target_count, uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
     uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
     bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
@@ -131,6 +132,8 @@ bool _emitter_prepare_render_multi(
                            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
     DvzSceneShaderFormat shader_format =
         cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_GLSL;
+    uint32_t color_target_format =
+        color_target_formats != NULL && color_target_count > 0 ? color_target_formats[0] : 0;
 
     uint64_t common_bgl_id = 0;
     uint64_t apply_bg_id = 0;
@@ -278,10 +281,12 @@ bool _emitter_prepare_render_multi(
         }
         _shader_glsl_variant_destroy(scene_occlusion_fragment_glsl);
 
-        if (color_target_format != 0)
+        for (uint32_t target_idx = 0; ok && target_idx < color_target_count; target_idx++)
+        {
             ok = _runtime_key_appendf(
-                shader.pipeline_key, sizeof(shader.pipeline_key), report, "_fmt%u",
-                color_target_format);
+                shader.pipeline_key, sizeof(shader.pipeline_key), report, "_fmt%u_%u", target_idx,
+                color_target_formats[target_idx]);
+        }
         if (ok)
             ok = _runtime_key_appendf(
                 shader.pipeline_key, sizeof(shader.pipeline_key), report, "_bp%u",
@@ -515,8 +520,12 @@ bool _emitter_prepare_render_multi(
             }
             else if (ok && gbuffer_pass)
             {
-                ok = dvz_drp2_stream_pipeline_set_color_target(
-                    stream, 0, DVZ_FORMAT_R16G16B16A16_SFLOAT);
+                for (uint32_t target_idx = 0; ok && target_idx < color_target_count; target_idx++)
+                {
+                    ok = color_target_formats[target_idx] != 0 &&
+                         dvz_drp2_stream_pipeline_set_color_target(
+                             stream, target_idx, color_target_formats[target_idx]);
+                }
             }
             else if (ok && (volume_occlusion_pass || scene_occlusion_pass))
             {

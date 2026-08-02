@@ -119,6 +119,7 @@ struct SceneWorkRuntime
     uint64_t color_id;
     uint64_t depth_id;
     uint64_t normal_id;
+    uint64_t coverage_id;
     uint64_t object_id;
     uint64_t accum_id;
     uint64_t weight_id;
@@ -274,8 +275,8 @@ bool _scene_draw_packet_emit(
 bool _emitter_prepare_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
     DvzSceneWorkProviderKey provider, const DvzFramePlanEmitConfig* cfg,
-    bool pass_has_depth_attachment, bool force_point_depth, uint32_t color_target_format,
-    uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
+    bool pass_has_depth_attachment, bool force_point_depth, const uint32_t* color_target_formats,
+    uint32_t color_target_count, uint64_t sampled_depth_id, bool sampled_depth_is_volume_occlusion,
     uint64_t scene_occlusion_depth_id, uint64_t depth_peel_sampled_bgl_id,
     uint64_t depth_peel_sampled_bg_id, uint64_t depth_peel_dummy_bg_id, uint32_t pass_sample_count,
     bool pass_alpha_to_coverage, DvzDiagnosticReport* report, SceneDrawPacket* draws,
@@ -362,13 +363,17 @@ bool _emitter_prepare_presentation_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
     SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
+bool _emitter_prepare_surface_resolve_targets(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
+    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
 bool _emitter_prepare_edl_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
     SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
 uint64_t _ssao_bind_group_fingerprint(
-    uint64_t first_id, uint64_t second_id, uint64_t third_id, uint64_t sampler_id,
-    uint64_t params_id);
+    uint64_t first_id, uint64_t second_id, uint64_t third_id, uint64_t fourth_id,
+    uint64_t sampler_id, uint64_t params_id);
 bool _emitter_prepare_ssao_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,

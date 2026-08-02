@@ -99,6 +99,11 @@ const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
         .graph_required = true,
     },
     {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE,
+        .work_label = "surface_resolve",
+        .graph_required = true,
+    },
+    {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION,
         .work_label = "volume_occlusion",
         .graph_required = true,

@@ -90,6 +90,8 @@ static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
         return "opaque";
     case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
         return "gbuffer";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE:
+        return "surface_resolve";
     case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
         return "volume_occlusion";
     case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:

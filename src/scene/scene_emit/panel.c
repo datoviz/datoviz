@@ -1056,6 +1056,7 @@ bool _scene_emit_panel_render_caps(
 
     uint32_t opaque_node = invalid_node;
     uint32_t gbuffer_node = invalid_node;
+    uint32_t surface_resolve_node = invalid_node;
     uint32_t transparent_node = invalid_node;
     uint32_t depth_peel_init_node = invalid_node;
     uint32_t depth_peel_iter_nodes[DVZ_SCENE_DEPTH_PEEL_ITERATIONS] = {0};
@@ -1093,6 +1094,15 @@ bool _scene_emit_panel_render_caps(
             }
         }
     }
+    const DvzSceneResolvedPass* surface_resolve_pass = NULL;
+    if (_scene_composition_pass_for_role(
+            &render_plan.composition, DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE, 0,
+            &surface_resolve_pass) &&
+        !_scene_begin_panel_render_pass(
+            plan, panel_id, "rt.surface.resolve", panel->desc,
+            DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE, &panel_apply_mvp, &panel_viewport,
+            plot_desc, &surface_resolve_node))
+        graph_ok = false;
 
     if (render_plan.opaque_visual_count > 0 || render_plan.has_transparent)
     {

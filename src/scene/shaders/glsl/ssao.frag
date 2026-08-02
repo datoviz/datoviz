@@ -2,8 +2,9 @@
 
 layout(set = 0, binding = 0) uniform texture2D normalTex;
 layout(set = 0, binding = 1) uniform texture2D depthTex;
-layout(set = 0, binding = 2) uniform sampler samp;
-layout(set = 0, binding = 3) uniform SsaoParams {
+layout(set = 0, binding = 2) uniform texture2D coverageTex;
+layout(set = 0, binding = 3) uniform sampler samp;
+layout(set = 0, binding = 4) uniform SsaoParams {
     mat4 invProj;
     mat4 view;
     vec4 viewport;
@@ -84,6 +85,13 @@ void main()
 {
     ivec2 extent = textureSize(sampler2D(depthTex, samp), 0);
     ivec2 p = clamp(ivec2(localUv * vec2(extent)), ivec2(0), extent - ivec2(1));
+
+    float centerCoverage = texelFetch(sampler2D(coverageTex, samp), p, 0).r;
+    if (centerCoverage <= 0.0)
+    {
+        outVisibility = 1.0;
+        return;
+    }
 
     float centerDepth = texelFetch(sampler2D(depthTex, samp), p, 0).r;
     if (centerDepth >= 0.999999)

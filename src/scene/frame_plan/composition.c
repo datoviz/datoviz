@@ -207,7 +207,8 @@ static bool _composition_scratch_contract_valid(const DvzSceneScratchResource* s
                                   : DVZ_SCENE_SCRATCH_LIFETIME_TECHNIQUE))
         return false;
     if (scratch->sample_count > 1)
-        return scratch->kind == DVZ_SCENE_SCRATCH_FORWARD_DEPTH &&
+        return (scratch->kind == DVZ_SCENE_SCRATCH_FORWARD_DEPTH ||
+                scratch->kind == DVZ_SCENE_SCRATCH_Z_ONLY_DEPTH) &&
                scratch->sample_domain == DVZ_RENDER_PRODUCT_SAMPLES_MULTISAMPLE;
     return scratch->sample_count == 1 &&
            scratch->sample_domain == DVZ_RENDER_PRODUCT_SAMPLES_SINGLE;

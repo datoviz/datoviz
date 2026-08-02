@@ -415,6 +415,8 @@ int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item);
 int test_scene_sphere_emit_glsl_executes(TstContext* suite, const TstCase* item);
 int test_scene_sphere_mode(TstContext* suite, const TstCase* item);
 
+int test_scene_sphere_analytic_shader_contract(TstContext* suite, const TstCase* item);
+
 int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item);
 
 int test_scene_segment_caps(TstContext* suite, const TstCase* item);
@@ -865,6 +867,8 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(
     TstContext* suite, const TstCase* item);
 
 int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item);
+int test_scene_surface_products_single_sample_contract(TstContext* suite, const TstCase* item);
+int test_scene_surface_products_msaa_resolve_contract(TstContext* suite, const TstCase* item);
 
 int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCase* item);
 

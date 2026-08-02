@@ -46,23 +46,32 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-static uint32_t _render_pass_color_target_format(
+static uint32_t _render_pass_color_target_formats(
     const DvzFramePlan* plan, const DvzFrameGraphPass* graph_pass,
-    const DvzFramePlanEmitConfig* cfg)
+    const DvzFramePlanEmitConfig* cfg, uint32_t formats[DVZ_DRP2_MAX_COLOR_ATTACHMENTS])
 {
+    ANN(formats);
     if (graph_pass != NULL && graph_pass->color_attachment_count > 0)
     {
-        const DvzFrameGraphAttachment* attachment = &graph_pass->color_attachments[0];
-        if (strcmp(attachment->resource_id, "rt") == 0)
+        for (uint32_t i = 0; i < graph_pass->color_attachment_count; i++)
         {
-            return _render_pass_scene_color_target_format(cfg);
+            const DvzFrameGraphAttachment* attachment = &graph_pass->color_attachments[i];
+            if (strcmp(attachment->resource_id, "rt") == 0)
+            {
+                formats[i] = _render_pass_scene_color_target_format(cfg);
+                continue;
+            }
+            const DvzFrameGraphResource* resource =
+                _graph_resource_by_id(plan, attachment->resource_id);
+            if (resource == NULL)
+                return 0;
+            formats[i] = resource->format != 0 ? resource->format
+                                               : _render_pass_scene_color_target_format(cfg);
         }
-        const DvzFrameGraphResource* resource =
-            _graph_resource_by_id(plan, attachment->resource_id);
-        if (resource != NULL && resource->format != 0)
-            return resource->format;
+        return graph_pass->color_attachment_count;
     }
-    return _render_pass_scene_color_target_format(cfg);
+    formats[0] = _render_pass_scene_color_target_format(cfg);
+    return 1;
 }
 
 
@@ -568,14 +577,19 @@ bool _emitter_emit_render_multi(
     SceneDrawPacket draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t draw_count = 0;
     uint32_t pass_sample_count = _graph_render_pass_sample_count(emitter, plan, graph_pass);
-    uint32_t color_target_format = _render_pass_color_target_format(plan, graph_pass, cfg);
+    uint32_t color_target_formats[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+    uint32_t color_target_count =
+        _render_pass_color_target_formats(plan, graph_pass, cfg, color_target_formats);
+    if (color_target_count == 0)
+        return false;
     const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, graph_pass);
     DvzSceneWorkProviderKey provider =
         resolved != NULL ? resolved->provider : DVZ_SCENE_WORK_PROVIDER_OPAQUE;
     ok = _emitter_prepare_render_multi(
         emitter, stream, render, provider, cfg, pass_has_depth_attachment, false,
-        color_target_format, sampled_depth_id, false, 0, 0, 0, 0, pass_sample_count,
-        graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws, &draw_count);
+        color_target_formats, color_target_count, sampled_depth_id, false, 0, 0, 0, 0,
+        pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws,
+        &draw_count);
     if (!ok)
         return false;
 
@@ -656,6 +670,7 @@ bool _emitter_emit_scene_figure_renders(
     if (batches == NULL)
         return false;
     uint32_t batch_count = 0;
+    const uint32_t scene_color_format = _render_pass_scene_color_target_format(cfg);
     for (uint32_t i = 0; ok && i < plan->count; i++)
     {
         const DvzFramePlanNode* render = &plan->nodes[i];
@@ -666,8 +681,8 @@ bool _emitter_emit_scene_figure_renders(
         uint32_t report_start = dvz_diagnostic_report_count(report);
         ok = _emitter_prepare_render_multi(
             emitter, stream, render, DVZ_SCENE_WORK_PROVIDER_OPAQUE, cfg, needs_depth, false,
-            _render_pass_scene_color_target_format(cfg), 0, false, 0, 0, 0, 0, 1, false, report,
-            batch->draws, &batch->draw_count);
+            &scene_color_format, 1, 0, false, 0, 0, 0, 0, 1, false, report, batch->draws,
+            &batch->draw_count);
         if (!ok && dvz_diagnostic_report_count(report) == report_start)
             _diagnostic(report, "scene figure render preparation failed");
         if (ok)
@@ -791,7 +806,8 @@ bool _emitter_emit_scene_graph_renders(
         const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, render_graph_pass);
         DvzSceneWorkProviderKey provider =
             resolved != NULL ? resolved->provider : DVZ_SCENE_WORK_PROVIDER_NONE;
-        if (provider == DVZ_SCENE_WORK_PROVIDER_SSAO ||
+        if (provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_RESOLVE ||
+            provider == DVZ_SCENE_WORK_PROVIDER_SSAO ||
             provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR ||
             provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE ||
             provider == DVZ_SCENE_WORK_PROVIDER_EDL ||
@@ -799,7 +815,15 @@ bool _emitter_emit_scene_graph_renders(
             provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE ||
             provider == DVZ_SCENE_WORK_PROVIDER_PRESENTATION)
         {
-            if (provider == DVZ_SCENE_WORK_PROVIDER_SSAO)
+            if (provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_RESOLVE)
+            {
+                ok = _emitter_prepare_surface_resolve_targets(
+                    emitter, stream, plan, render, cfg, &graph_targets,
+                    &work_runtimes[work_runtime_count]);
+                if (ok)
+                    work_runtime_count++;
+            }
+            else if (provider == DVZ_SCENE_WORK_PROVIDER_SSAO)
             {
                 ok = _emitter_prepare_ssao_targets(
                     emitter, stream, plan, render, cfg, &graph_targets,
@@ -917,6 +941,9 @@ bool _emitter_emit_scene_graph_renders(
         {
             SceneRenderBatch* batch = &batches[batch_count];
             batch->render = render;
+            uint32_t color_target_formats[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
+            uint32_t color_target_count = _render_pass_color_target_formats(
+                plan, render_graph_pass, cfg, color_target_formats);
             const DvzFrameGraphResource* edl_depth = _graph_composition_scratch_resource(
                 plan, render_graph_pass, DVZ_SCENE_SCRATCH_EDL_DEPTH,
                 DVZ_SCENE_WORK_BINDING_ATTACHMENT);
@@ -924,14 +951,15 @@ bool _emitter_emit_scene_graph_renders(
                 render_graph_pass != NULL && render_graph_pass->has_depth_attachment &&
                 edl_depth != NULL &&
                 strcmp(render_graph_pass->depth_attachment.resource_id, edl_depth->id) == 0;
-            ok = _emitter_prepare_render_multi(
-                emitter, stream, render, provider, cfg, pass_has_depth_attachment,
-                force_point_depth, _render_pass_color_target_format(plan, render_graph_pass, cfg),
-                sampled_depth_id, sampled_depth_is_volume_occlusion, scene_occlusion_depth_id,
-                depth_peel_sampled_bgl_id, depth_peel_sampled_bg_id, depth_peel_dummy_bg_id,
-                _graph_render_pass_sample_count(emitter, plan, render_graph_pass),
-                render_graph_pass != NULL && render_graph_pass->alpha_to_coverage, report,
-                batch->draws, &batch->draw_count);
+            ok = color_target_count > 0 &&
+                 _emitter_prepare_render_multi(
+                     emitter, stream, render, provider, cfg, pass_has_depth_attachment,
+                     force_point_depth, color_target_formats, color_target_count, sampled_depth_id,
+                     sampled_depth_is_volume_occlusion, scene_occlusion_depth_id,
+                     depth_peel_sampled_bgl_id, depth_peel_sampled_bg_id, depth_peel_dummy_bg_id,
+                     _graph_render_pass_sample_count(emitter, plan, render_graph_pass),
+                     render_graph_pass != NULL && render_graph_pass->alpha_to_coverage, report,
+                     batch->draws, &batch->draw_count);
             if (ok)
                 batch_count++;
             else
@@ -1020,16 +1048,27 @@ bool _emitter_emit_scene_graph_renders(
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
             DvzPanelDesc render_rect = {0};
-            const float surface_clear[4] = {0.5f, 0.5f, 1.0f, 0.0f};
+            const float fallback_clear[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+            const float* surface_clear =
+                graph_pass != NULL ? graph_pass->color_attachments[0].clear_color : fallback_clear;
+            bool clear_surface = graph_pass == NULL || graph_pass->color_attachments[0].load_op ==
+                                                           DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
             ok = _stream_begin_render_pass_graph_rect(
                 stream, plan, graph_pass, render, cfg, pass_id, encoder_id, target_id,
-                surface_clear, true, false, &render_rect);
-            if (ok && graph_pass != NULL && graph_pass->color_attachment_count > 1)
+                surface_clear, clear_surface, false, &render_rect);
+            for (uint32_t attachment_idx = 1;
+                 ok && graph_pass != NULL && attachment_idx < graph_pass->color_attachment_count;
+                 attachment_idx++)
             {
-                uint64_t object_id = _graph_color_attachment_texture_id(
-                    graph_pass, 1, scene_color_id, &graph_targets, 0);
+                uint64_t attachment_id = _graph_color_attachment_texture_id(
+                    graph_pass, attachment_idx, scene_color_id, &graph_targets, 0);
+                const DvzFrameGraphAttachment* attachment =
+                    &graph_pass->color_attachments[attachment_idx];
+                bool clear_attachment =
+                    attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
                 ok = dvz_drp2_stream_begin_render_pass_add_color_attachment(
-                    stream, object_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
+                    stream, attachment_id, attachment->clear_color[0], attachment->clear_color[1],
+                    attachment->clear_color[2], attachment->clear_color[3], clear_attachment);
             }
             ok = ok &&
                  _stream_apply_graph_color_ops(stream, graph_pass, scene_color_id, &graph_targets);
@@ -1046,6 +1085,65 @@ bool _emitter_emit_scene_graph_renders(
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
             scene_cache.pipeline_id = 0;
             scene_cache.bg_set0 = 0;
+        }
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_RESOLVE)
+        {
+            const SceneWorkRuntime* runtime =
+                _work_runtime_for_render(work_runtimes, work_runtime_count, render);
+            const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
+                                                      ? ordered_graph_pass
+                                                      : _graph_pass_for_render(plan, render);
+            if (runtime == NULL || graph_pass == NULL || graph_pass->color_attachment_count != 3)
+            {
+                ok = false;
+                break;
+            }
+
+            uint64_t target_id = _graph_color_attachment_texture_id(
+                graph_pass, 0, scene_color_id, &graph_targets, 0);
+            if (target_id == 0)
+            {
+                ok = false;
+                break;
+            }
+            uint64_t pass_id = _emitter_next_transient_id(emitter);
+            _label_render_pass_contract(stream, pass_id, render);
+            const DvzFrameGraphAttachment* first = &graph_pass->color_attachments[0];
+            DvzPanelDesc render_rect = {0};
+            ok = _stream_begin_render_pass_graph_rect(
+                stream, plan, graph_pass, render, cfg, pass_id, encoder_id, target_id,
+                first->clear_color,
+                first->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, false, &render_rect);
+            for (uint32_t attachment_idx = 1; ok && attachment_idx < 3; attachment_idx++)
+            {
+                uint64_t attachment_id = _graph_color_attachment_texture_id(
+                    graph_pass, attachment_idx, scene_color_id, &graph_targets, 0);
+                const DvzFrameGraphAttachment* attachment =
+                    &graph_pass->color_attachments[attachment_idx];
+                if (attachment_id == 0)
+                {
+                    ok = false;
+                    break;
+                }
+                ok = dvz_drp2_stream_begin_render_pass_add_color_attachment(
+                    stream, attachment_id, attachment->clear_color[0],
+                    attachment->clear_color[1], attachment->clear_color[2],
+                    attachment->clear_color[3],
+                    attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR);
+            }
+            ok = ok &&
+                 _stream_apply_graph_color_ops(
+                     stream, graph_pass, scene_color_id, &graph_targets) &&
+                 dvz_drp2_stream_set_viewport(
+                     stream, pass_id, render_rect.x, render_rect.y, render_rect.width,
+                     render_rect.height) &&
+                 dvz_drp2_stream_set_scissor(
+                     stream, pass_id, render_rect.x, render_rect.y, render_rect.width,
+                     render_rect.height) &&
+                 dvz_drp2_stream_set_pipeline(stream, pass_id, runtime->pipeline_id) &&
+                 dvz_drp2_stream_set_bind_group(stream, pass_id, 0, runtime->bind_group_id) &&
+                 dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
+                 dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
         else if (
             provider == DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION ||
@@ -1524,9 +1622,9 @@ bool _emitter_emit_scene_graph_renders(
                                                       : _graph_pass_for_render(plan, render);
             uint64_t target_id = _graph_color_attachment_texture_id(
                 graph_pass, 0, final_color_id, &graph_targets, final_color_id);
-            bool clear_panel = graph_pass != NULL && graph_pass->color_attachment_count > 0 &&
-                               graph_pass->color_attachments[0].load_op ==
-                                   DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
+            bool clear_panel =
+                graph_pass != NULL && graph_pass->color_attachment_count > 0 &&
+                graph_pass->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR;
             DvzPanelDesc render_rect = {0};
             ok = _stream_begin_render_pass_graph_rect(
                      stream, plan, graph_pass, render, cfg, pass_id, encoder_id, target_id,

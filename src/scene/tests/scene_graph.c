@@ -35,6 +35,7 @@ int test_scene_graph(TstSuite* suite)
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_point_emit_glsl_executes);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_sphere_emit_glsl_executes);
     TST_CASE(test_scene_sphere_mode);
+    TST_CASE(test_scene_sphere_analytic_shader_contract);
     TST_CASE(test_scene_segment_caps);
     TST_CASE(test_scene_vector_style_and_bounds);
     TST_CASE(test_scene_path_stroke_style);
@@ -133,6 +134,8 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_render_contract_rejects_untyped_visual_metadata);
     TST_CASE(test_scene_panel_graph_failure_reports_specific_diagnostic);
     TST_CASE(test_scene_gbuffer_runtime_lowering);
+    TST_CASE(test_scene_surface_products_single_sample_contract);
+    TST_CASE(test_scene_surface_products_msaa_resolve_contract);
     TST_CASE(test_scene_frame_plan_node_reallocation_safe);
     TST_CASE(test_scene_frame_plan_visual_reallocation_safe);
     TST_CASE(test_scene_msaa_runtime_lowering);

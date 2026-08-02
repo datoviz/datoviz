@@ -177,6 +177,8 @@ const char* _scene_runtime_work_provider_name(DvzSceneWorkProviderKey provider)
         return "opaque";
     case DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE:
         return "surface_capture";
+    case DVZ_SCENE_WORK_PROVIDER_SURFACE_RESOLVE:
+        return "surface_resolve";
     case DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION:
         return "volume_occlusion";
     case DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION:

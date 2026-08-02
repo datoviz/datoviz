@@ -190,6 +190,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "mesh_textured_frag" : "mesh_textured_vert";
     case DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL:
         return fragment ? "gbuffer_normal_frag" : "primitive_lit_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SURFACE_RESOLVE:
+        return fragment ? "surface_resolve_frag" : "fullscreen_vert";
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
         return fragment ? "image_frag" : "image_vert";
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL:

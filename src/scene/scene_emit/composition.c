@@ -109,10 +109,26 @@ static const DvzSceneTechniqueContract TECHNIQUE_CONTRACTS[] = {
                    PRODUCT_BIT(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE),
         .participating_layer_mask = LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE) |
                                     LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED),
-        .required_capability_mask = COMPOSITION_CAP_RGBA16FLOAT,
+        .required_capability_mask =
+            COMPOSITION_CAP_RGBA16FLOAT | COMPOSITION_CAP_TRIPLE_COLOR_ATTACHMENTS,
         .fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION,
         .pass_template_count = 1,
         .pass_templates = {{DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER, COMPOSITION_PASS_ONCE}},
+    },
+    {
+        .id = DVZ_SCENE_TECHNIQUE_SURFACE_RESOLVE,
+        .version = 1,
+        .phase = DVZ_SCENE_PHASE_SURFACE_CAPTURE,
+        .required_inputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SURFACE_DEPTH) |
+                           PRODUCT_BIT(DVZ_RENDER_PRODUCT_SURFACE_NORMAL) |
+                           PRODUCT_BIT(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE),
+        .outputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SURFACE_DEPTH) |
+                   PRODUCT_BIT(DVZ_RENDER_PRODUCT_SURFACE_NORMAL) |
+                   PRODUCT_BIT(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE),
+        .required_capability_mask = COMPOSITION_CAP_SAMPLED_RENDER_TARGET |
+                                    COMPOSITION_CAP_TRIPLE_COLOR_ATTACHMENTS,
+        .pass_template_count = 1,
+        .pass_templates = {{DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE, COMPOSITION_PASS_ONCE}},
     },
     {
         .id = DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY,
@@ -657,6 +673,8 @@ static DvzSceneWorkProviderKey _composition_provider(DvzFramePlanRenderPassRole 
         return DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION;
     case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
         return DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE;
+    case DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE:
+        return DVZ_SCENE_WORK_PROVIDER_SURFACE_RESOLVE;
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
         return DVZ_SCENE_WORK_PROVIDER_SSAO;
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
@@ -902,6 +920,7 @@ static bool _composition_declare_work(
     const DvzPanelRenderPlan* render_plan = context->render_plan;
     pass->work_index = work_index;
     pass->work_class = (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION ||
+                        pass->role == DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE ||
                         pass->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO ||
                         pass->role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE ||
                         pass->role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE ||
@@ -915,13 +934,19 @@ static bool _composition_declare_work(
     pass->viewport_panel_local = true;
     pass->scissor_panel_local = true;
     pass->sample_count =
-        pass->role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE ? context->opaque_samples : 1;
+        pass->role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE
+            ? context->opaque_samples
+            : (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER
+                   ? snapshot->effective_sample_count
+                   : 1);
     pass->resolve_policy = DVZ_RENDER_PRODUCT_RESOLVE_NONE;
     if (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE && context->opaque_samples > 1)
         pass->resolve_policy = DVZ_RENDER_PRODUCT_RESOLVE_LINEAR_COLOR;
-    pass->alpha_to_coverage = pass->role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE &&
-                              context->opaque_samples > 1 && render_plan->msaa_state != NULL &&
-                              render_plan->msaa_state->alpha_to_coverage;
+    pass->alpha_to_coverage =
+        (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE ||
+         pass->role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER) &&
+        pass->sample_count > 1 && render_plan->msaa_state != NULL &&
+        render_plan->msaa_state->alpha_to_coverage;
     pass->visual_layer_filter = technique->participating_layer_mask;
     pass->visual_order_begin = technique->authored_order_begin;
     pass->visual_order_end = technique->authored_order_end;
@@ -935,12 +960,12 @@ static bool _composition_declare_work(
     else if (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO)
     {
         auxiliary_kind = DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
-        auxiliary_binding = 3;
+        auxiliary_binding = 4;
     }
     else if (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR)
     {
         auxiliary_kind = DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
-        auxiliary_binding = 4;
+        auxiliary_binding = 5;
     }
     else if (pass->provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE)
     {
@@ -976,6 +1001,12 @@ static bool _composition_declare_work(
         pass, DVZ_SCENE_RESOURCE_REF_PRODUCT, out[_p], (DvzSceneScratchResourceId){0},            \
         DVZ_SCENE_WORK_BINDING_SAMPLED, DVZ_SCENE_WORK_ACCESS_READ, UINT32_MAX, 0, _binding,      \
         DVZ_SCENE_ATTACHMENT_LOAD_NONE, DVZ_SCENE_ATTACHMENT_STORE_NONE, false, false)
+#define SAMPLE_PROVIDER(_p)                                                                       \
+    _composition_bind(                                                                            \
+        pass, DVZ_SCENE_RESOURCE_REF_PRODUCT, in[_p], (DvzSceneScratchResourceId){0},             \
+        DVZ_SCENE_WORK_BINDING_SAMPLED, DVZ_SCENE_WORK_ACCESS_READ, UINT32_MAX, UINT32_MAX,       \
+        UINT32_MAX, DVZ_SCENE_ATTACHMENT_LOAD_NONE, DVZ_SCENE_ATTACHMENT_STORE_NONE, false,       \
+        false)
 #define ATTACH(_p, _slot, _load)                                                                  \
     _composition_bind(                                                                            \
         pass, DVZ_SCENE_RESOURCE_REF_PRODUCT, out[_p], (DvzSceneScratchResourceId){0},            \
@@ -1039,40 +1070,43 @@ static bool _composition_declare_work(
              _composition_mark_unrealized(pass, out[DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH]);
         break;
     case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
-        ok = SCRATCH(
-                 DVZ_SCENE_SCRATCH_SURFACE_NORMAL_LEGACY, DVZ_SCENE_SCRATCH_SCOPE_PANEL,
-                 COLOR_USAGE, DVZ_SCENE_WORK_BINDING_ATTACHMENT, DVZ_SCENE_WORK_ACCESS_WRITE, 0,
-                 UINT32_MAX, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR, DVZ_SCENE_ATTACHMENT_STORE_STORE,
-                 false) &&
+        ok = ATTACH(DVZ_RENDER_PRODUCT_SURFACE_DEPTH, 0, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR) &&
+             ATTACH(DVZ_RENDER_PRODUCT_SURFACE_NORMAL, 1, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR) &&
+             ATTACH(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE, 2, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR) &&
              SCRATCH(
-                 DVZ_SCENE_SCRATCH_SURFACE_DEPTH, DVZ_SCENE_SCRATCH_SCOPE_PANEL,
-                 DEPTH_SAMPLED_USAGE, DVZ_SCENE_WORK_BINDING_ATTACHMENT,
-                 DVZ_SCENE_WORK_ACCESS_WRITE, UINT32_MAX, UINT32_MAX,
+                 DVZ_SCENE_SCRATCH_Z_ONLY_DEPTH, DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE, DEPTH_USAGE,
+                 DVZ_SCENE_WORK_BINDING_ATTACHMENT, DVZ_SCENE_WORK_ACCESS_WRITE, UINT32_MAX,
+                 UINT32_MAX,
                  DVZ_SCENE_ATTACHMENT_LOAD_CLEAR, DVZ_SCENE_ATTACHMENT_STORE_STORE, true);
         if (ok)
         {
-            pass->bindings[0].clear_value[0] = 0.5f;
-            pass->bindings[0].clear_value[1] = 0.5f;
-            pass->bindings[0].clear_value[2] = 1.0f;
-            _composition_clear_value(pass, 1, 0, 0, 0);
-            pass->legacy_transition = true;
-            ok = _composition_mark_unrealized(pass, out[DVZ_RENDER_PRODUCT_SURFACE_NORMAL]) &&
-                 _composition_mark_unrealized(pass, out[DVZ_RENDER_PRODUCT_SURFACE_DEPTH]) &&
-                 _composition_mark_unrealized(pass, out[DVZ_RENDER_PRODUCT_SURFACE_COVERAGE]);
+            ok = _composition_scratch_samples(
+                snapshot, pass->bindings[3].scratch_id, pass->sample_count);
+            _composition_clear_value(pass, 0, 0, 0, 0);
+            _composition_clear_value(pass, 1, 0, 0, 1.0f);
+            _composition_clear_value(pass, 2, 0, 0, 0);
+            _composition_clear_value(pass, 3, 1, 0, 0);
+        }
+        break;
+    case DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE:
+        ok = SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_DEPTH, 0) &&
+             SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_NORMAL, 1) &&
+             SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE, 2) &&
+             ATTACH(DVZ_RENDER_PRODUCT_SURFACE_DEPTH, 0, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR) &&
+             ATTACH(DVZ_RENDER_PRODUCT_SURFACE_NORMAL, 1, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR) &&
+             ATTACH(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE, 2, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR);
+        if (ok)
+        {
+            _composition_clear_value(pass, 3, 0, 0, 0);
+            _composition_clear_value(pass, 4, 0, 0, 1.0f);
+            _composition_clear_value(pass, 5, 0, 0, 0);
         }
         break;
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
         ok =
-            SCRATCH(
-                DVZ_SCENE_SCRATCH_SURFACE_NORMAL_LEGACY, DVZ_SCENE_SCRATCH_SCOPE_PANEL,
-                COLOR_USAGE, DVZ_SCENE_WORK_BINDING_SAMPLED, DVZ_SCENE_WORK_ACCESS_READ,
-                UINT32_MAX, 0, DVZ_SCENE_ATTACHMENT_LOAD_NONE, DVZ_SCENE_ATTACHMENT_STORE_NONE,
-                false) &&
-            SCRATCH(
-                DVZ_SCENE_SCRATCH_SURFACE_DEPTH, DVZ_SCENE_SCRATCH_SCOPE_PANEL,
-                DEPTH_SAMPLED_USAGE, DVZ_SCENE_WORK_BINDING_SAMPLED, DVZ_SCENE_WORK_ACCESS_READ,
-                UINT32_MAX, 1, DVZ_SCENE_ATTACHMENT_LOAD_NONE, DVZ_SCENE_ATTACHMENT_STORE_NONE,
-                false) &&
+            SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_NORMAL, 0) &&
+            SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_DEPTH, 1) &&
+            SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE, 2) &&
             ((technique->expansion_flags & COMPOSITION_EXPAND_SSAO_BLUR) != 0
                  ? SCRATCH(
                        DVZ_SCENE_SCRATCH_SSAO_RAW, DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE, COLOR_USAGE,
@@ -1084,10 +1118,7 @@ static bool _composition_declare_work(
         if (ok)
         {
             _composition_clear_value(pass, 1, 1, 1, 1);
-            pass->legacy_transition = true;
-            ok = _composition_mark_unrealized(pass, in[DVZ_RENDER_PRODUCT_SURFACE_NORMAL]) &&
-                 _composition_mark_unrealized(pass, in[DVZ_RENDER_PRODUCT_SURFACE_DEPTH]) &&
-                 _composition_mark_unrealized(pass, in[DVZ_RENDER_PRODUCT_SURFACE_COVERAGE]);
+            ok = true;
         }
         break;
     case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
@@ -1095,24 +1126,14 @@ static bool _composition_declare_work(
                  DVZ_SCENE_SCRATCH_SSAO_RAW, DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE, COLOR_USAGE,
                  DVZ_SCENE_WORK_BINDING_SAMPLED, DVZ_SCENE_WORK_ACCESS_READ, UINT32_MAX, 0,
                  DVZ_SCENE_ATTACHMENT_LOAD_NONE, DVZ_SCENE_ATTACHMENT_STORE_NONE, false) &&
-             SCRATCH(
-                 DVZ_SCENE_SCRATCH_SURFACE_NORMAL_LEGACY, DVZ_SCENE_SCRATCH_SCOPE_PANEL,
-                 COLOR_USAGE, DVZ_SCENE_WORK_BINDING_SAMPLED, DVZ_SCENE_WORK_ACCESS_READ,
-                 UINT32_MAX, 1, DVZ_SCENE_ATTACHMENT_LOAD_NONE, DVZ_SCENE_ATTACHMENT_STORE_NONE,
-                 false) &&
-             SCRATCH(
-                 DVZ_SCENE_SCRATCH_SURFACE_DEPTH, DVZ_SCENE_SCRATCH_SCOPE_PANEL,
-                 DEPTH_SAMPLED_USAGE, DVZ_SCENE_WORK_BINDING_SAMPLED, DVZ_SCENE_WORK_ACCESS_READ,
-                 UINT32_MAX, 2, DVZ_SCENE_ATTACHMENT_LOAD_NONE, DVZ_SCENE_ATTACHMENT_STORE_NONE,
-                 false) &&
+             SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_NORMAL, 1) &&
+             SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_DEPTH, 2) &&
+             SAMPLE(DVZ_RENDER_PRODUCT_SURFACE_COVERAGE, 3) &&
              ATTACH(DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY, 0, DVZ_SCENE_ATTACHMENT_LOAD_CLEAR);
         if (ok)
         {
             _composition_clear_value(pass, 1, 1, 1, 1);
-            pass->legacy_transition = true;
-            ok = _composition_mark_unrealized(pass, in[DVZ_RENDER_PRODUCT_SURFACE_NORMAL]) &&
-                 _composition_mark_unrealized(pass, in[DVZ_RENDER_PRODUCT_SURFACE_DEPTH]) &&
-                 _composition_mark_unrealized(pass, in[DVZ_RENDER_PRODUCT_SURFACE_COVERAGE]);
+            ok = true;
         }
         break;
     case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
@@ -1858,6 +1879,13 @@ bool _scene_panel_composition_resolve(
             !_composition_set_latest_expansion(&draft, begin, end, 0))
             return _composition_report(
                 report, "panel %s surface capture expansion failed", render_plan->panel_id);
+        if (draft.effective_sample_count > 1 &&
+            (!_composition_add_technique(
+                 &draft, DVZ_SCENE_TECHNIQUE_SURFACE_RESOLVE, surface_record, surface_record, 0,
+                 DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
+             !_composition_set_latest_expansion(&draft, begin, end, 0)))
+            return _composition_report(
+                report, "panel %s surface resolve expansion failed", render_plan->panel_id);
     }
 
     if (effective_ssao)

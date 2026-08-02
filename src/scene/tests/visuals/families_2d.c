@@ -22,6 +22,123 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Return the nearest positive analytic ray/sphere intersection distance.
+ *
+ * @param origin ray origin
+ * @param direction normalized ray direction
+ * @param center sphere center
+ * @param radius sphere radius
+ * @param distance output intersection distance
+ * @return whether the ray has a positive intersection
+ */
+static bool _test_sphere_nearest_hit(
+    const vec3 origin, const vec3 direction, const vec3 center, float radius, float* distance)
+{
+    ANN(distance);
+    vec3 oc = {
+        origin[0] - center[0], origin[1] - center[1], origin[2] - center[2]};
+    float b = oc[0] * direction[0] + oc[1] * direction[1] + oc[2] * direction[2];
+    float c = oc[0] * oc[0] + oc[1] * oc[1] + oc[2] * oc[2] - radius * radius;
+    float discriminant = b * b - c;
+    if (discriminant < 0.0f)
+        return false;
+    float root = sqrtf(fmaxf(discriminant, 0.0f));
+    float near_distance = -b - root;
+    float far_distance = -b + root;
+    *distance = near_distance > 1e-6f ? near_distance : far_distance;
+    return *distance > 1e-6f;
+}
+
+
+
+/**
+ * Verify the shared GLSL sphere contract and characterize its projection-independent root choice.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_sphere_analytic_shader_contract(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const DvzSceneBuiltinShader fragment_shaders[] = {
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_PICK,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32,
+    };
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(fragment_shaders); i++)
+    {
+        const char* source = _builtin_shader_glsl(fragment_shaders[i], true);
+        ANN(source);
+        AT(strstr(source, "struct DvzSphereHit") != NULL);
+        AT(strstr(source, "bool sphereIntersect(") != NULL);
+        AT(strstr(source, "sphereIntersect(fragCenterView, fragRadius, fragSpriteRadiusPx, hit)") !=
+           NULL);
+        AT(strstr(source, "gl_FragDepth = hit.deviceDepth;") != NULL);
+        AT(strstr(source, "hit.deviceDepth < 0.0 || hit.deviceDepth > 1.0") != NULL);
+    }
+
+    const DvzSceneBuiltinShader vertex_shaders[] = {
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_ITEM_STATE,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32,
+    };
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(vertex_shaders); i++)
+    {
+        const char* source = _builtin_shader_glsl(vertex_shaders[i], false);
+        ANN(source);
+        AT(strstr(source, "float sphereProjectedRadiusPx(") != NULL);
+        AT(strstr(source, "sphereProjectedRadiusPx(centerView.xyz, radius)") != NULL);
+    }
+
+    const char* ordinary = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE, true);
+    const char* capture = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, true);
+    ANN(ordinary);
+    ANN(capture);
+    AT(strstr(ordinary, "hit.coverage * fragColor.a <= coverageThreshold") != NULL);
+    AT(strstr(capture, "float coverage = hit.coverage * fragColor.a;") != NULL);
+    AT(strstr(capture, "coverage = 1.0;") != NULL);
+    AT(strstr(capture, "outDepth = vec4(hit.linearDepth") != NULL);
+    AT(strstr(capture, "outNormal = vec4(hit.normalView") != NULL);
+
+    // Perspective ray through an off-axis center selects the front surface.
+    vec3 perspective_origin = {0.0f, 0.0f, 0.0f};
+    vec3 off_axis_center = {1.0f, 0.5f, -5.0f};
+    vec3 perspective_direction = {1.0f, 0.5f, -5.0f};
+    glm_vec3_normalize(perspective_direction);
+    float distance = 0.0f;
+    AT(_test_sphere_nearest_hit(
+        perspective_origin, perspective_direction, off_axis_center, 1.0f, &distance));
+    AC(distance, glm_vec3_norm(off_axis_center) - 1.0f, 1e-5f);
+
+    // Orthographic rays retain their per-fragment origin and select the same front surface.
+    vec3 ortho_origin = {1.0f, 0.5f, 0.0f};
+    vec3 ortho_direction = {0.0f, 0.0f, -1.0f};
+    AT(_test_sphere_nearest_hit(
+        ortho_origin, ortho_direction, off_axis_center, 1.0f, &distance));
+    AC(distance, 4.0f, 1e-5f);
+
+    // When the camera is inside the sphere, the negative near root is rejected for the positive
+    // exit root.
+    vec3 inside_origin = {1.0f, 0.5f, -5.0f};
+    AT(_test_sphere_nearest_hit(
+        inside_origin, ortho_direction, off_axis_center, 1.0f, &distance));
+    AC(distance, 1.0f, 1e-5f);
+
+    vec3 miss_origin = {2.01f, 0.5f, 0.0f};
+    AT(!_test_sphere_nearest_hit(
+        miss_origin, ortho_direction, off_axis_center, 1.0f, &distance));
+    return 0;
+}
+
+
+
 int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

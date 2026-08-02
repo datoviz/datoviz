@@ -618,9 +618,27 @@ bool _scene_visual_shader_desc_apply_pass_policy(
             {
                 if (!_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_a2c"))
                     return false;
-                shader->fragment_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
-                shader->fragment_spirv_key = "sphere_a2c_frag";
+                if (gbuffer_pass)
+                {
+                    *out_fragment_glsl_variant = _shader_glsl_variant(
+                        shader->fragment_glsl, "#define DVZ_SURFACE_CAPTURE_A2C 1\n");
+                    shader->fragment_glsl = *out_fragment_glsl_variant;
+                    shader->fragment_spirv_key = NULL;
+                    shader->fragment_wgsl = NULL;
+                    shader->builtin_family = NULL;
+                    shader->builtin_variant = NULL;
+                    shader->builtin_version = 0;
+                    shader->builtin_pipeline = NULL;
+                    shader->builtin_pipeline_version = 0;
+                    if (shader->fragment_glsl == NULL)
+                        return false;
+                }
+                else
+                {
+                    shader->fragment_glsl =
+                        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
+                    shader->fragment_spirv_key = "sphere_a2c_frag";
+                }
             }
         }
     }
