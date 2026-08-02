@@ -1,13 +1,13 @@
 # RC3 Render Products Landing Manifest
 
-Status: cumulative R1-R9 candidate landing manifest for `refactor/rc3-render-products`; final R9 checkpoint and integration commit are pending. Updated: 2026-08-03.
+Status: R1-R9 implementation complete and validated on `refactor/rc3-render-products`; final evidence checkpoint and push are pending. Updated: 2026-08-03.
 
 ## Revision Boundary
 
 - Campaign merge base: `2751887de1b01d96ea14e8d005120cc7a51e4939` (`origin/v0.4-dev` at base freeze).
 - Render implementation parent after approved integration prerequisites: `c657845f1`.
-- Current committed render head through R8: `5b6820b4d`; the R9 candidate is the additional tracked and untracked worktree path set inventoried below.
-- Final integration head: pending the R9 documentation checkpoint, final validation, and integration review.
+- Validated implementation head through R9: `c0eada723`.
+- Final integration head: pending this evidence-only checkpoint.
 
 Ordered render commits after `c657845f1`:
 
@@ -32,10 +32,11 @@ Ordered render commits after `c657845f1`:
 19. `c39a7ae9a` — migrate effects to typed render products.
 20. `f7fcb4233` — replace SSAO with material-aware GTAO.
 21. `5b6820b4d` — replace the SSAO public API with semantic AO.
+22. `c0eada723` — remove legacy technique composition paths and promote final specifications.
 
 ## Exact Changed Scope
 
-The candidate path set is the union of `git diff --name-only c657845f1..5b6820b4d` and the tracked or untracked R9 paths reported by `git status --short` before the checkpoint. It is exhaustively partitioned below. After the R9 checkpoint, `git diff --name-only c657845f1..<final-render-head>` replaces this provisional union as the authoritative inventory.
+The authoritative implementation path set is `git diff --name-only c657845f1..c0eada723`. It is exhaustively partitioned below; the evidence-only checkpoint changes only the two landing records.
 
 | Scope | Exact paths |
 | --- | --- |
@@ -58,7 +59,7 @@ The candidate path set is the union of `git diff --name-only c657845f1..5b6820b4
 | Authoritative scene specifications and proposal history | `spec/scene/examples/TECHNIQUES.md`, `spec/scene/implementation/GRAPH_TECHNIQUES.md`, `OCCLUSION_EFFECTS.md`, `README.md`, `TRANSPARENCY_MSAA.md`, `spec/scene/semantics/EFFECTS.md`, `spec/scene/validation/RENDER_CONFORMANCE.md`, `spec/scene/proposals/active/README.md`, `spec/scene/proposals/promoted/README.md`, and the move of `RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md` from `proposals/active/` to `proposals/promoted/` |
 | Active execution records | `agents/now/HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md`, `HANDOFF_RENDER_PRODUCTS_REFACTOR.md`, `RELEASE.md`, `START.md`, `STATUS.md`, this manifest, and `RC3_RENDER_PRODUCTS_AFFECTED_QA.md` |
 
-The exact R9 candidate delta before its checkpoint is:
+The exact R9 delta committed by `c0eada723` was:
 
 ```text
 M  agents/now/HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md
@@ -138,11 +139,14 @@ The legacy `features/technique_ssao.c`, Python counterpart, and gallery page are
 
 ## Validation Evidence And Limitations
 
-Checkpoint evidence includes the full native build, scene CPU suites, frame-plan and app-trace suites, DRP2 contract fixtures, WebGPU smoke/preflight, shader ABI and direct GLSL compilation, generated binding checks, API documentation checks, and focused validated GPU EDL/WBOIT/depth-peel/volume/AO cases on NVIDIA GeForce RTX 5090. The final combined validation matrix is owned by R9/final lane and must be appended to the integration record; checkpoint evidence is not a substitute for that exact-head run.
+Exact-head validation of `c0eada723` passed the full native build; 1,080/1,114 native tests with 0 failures and 34 display-only skips; 566/566 scene CPU tests; 159/160 scene GPU tests with 0 failures and one GLFW skip; 91/98 runtime/vklite tests with 0 failures and seven GLFW skips; 94/94 DRP2 contract tests; all 125 DRP2 fixtures; shader ABI; specifications and source guards; regenerated ctypes, ABI/policy checks, raw smoke, and 50 Python binding tests; and API/generated/status/build documentation checks. GPU evidence ran on NVIDIA GeForce RTX 5090 with Vulkan validation enabled. GTAO evidence covered perspective/orthographic projection, the issue-137 zoom sweep, stationary redraw, MSAA 1x/4x, unequal panels, resize round-trip, background validity, mesh ambient-only material integration, and analytic spheres; EDL, source-over, WBOIT, depth peeling, volume occlusion, overlays, and queries also passed their focused native GPU cases.
 
 Known landing limitations:
 
 - The protected `data` submodule still contains historical `features_technique_ssao` gallery media; the render landing does not stage or update its gitlink.
+- `just check-example-manifests` fails only because that protected historical media remains named `data/gallery/v0.4/features/features_technique_ssao.png`; changing it requires a separately approved data-submodule update.
+- `just webgpu-check` builds the WASM scene target and passes its loader/progress/overlay checks, then stops because the protected data checkout lacks the prepared US-state choropleth bundle. DRP2/WebGPU fixture preflight and runner smoke pass independently.
+- GLFW, GUI, canvas swapchain, external-surface, and vklite presentation cases are unavailable because this headless runner has no `DISPLAY`; all offscreen Vulkan paths pass.
 - Physical Windows, macOS, AMD, Intel, and WebGPU browser hardware evidence is outside this local NVIDIA/Linux worktree and remains governed by the RC3 release matrix.
 - Historical release evidence keeps the labels captured at the time; it is not renamed to imply a different artifact.
 
