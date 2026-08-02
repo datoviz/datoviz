@@ -32,7 +32,8 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 12. Use [QA_SOURCE_AUDIT.md](QA_SOURCE_AUDIT.md) for completed incremental source-audit evidence and the approved end-to-end remaining campaign on local branch `qa/rc3-source-audit`.
 13. Use the approved [render-product architecture](../../spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) for the issue #137/SSAO and deep rendering refactor.
 14. Use [HANDOFF_RENDER_PRODUCTS_REFACTOR.md](HANDOFF_RENDER_PRODUCTS_REFACTOR.md) for the active implementation DAG and [HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md](HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md) for the two-lane branch, worktree, model, lock, integration, and affected-QA contract.
-15. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
+15. Use [../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md) and [NEXT_STEPS.md](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/NEXT_STEPS.md) for the planned non-blocking RC4 Windows/NVIDIA CUDA/Vulkan interop lane.
+16. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
 
 ## Guardrails
 
