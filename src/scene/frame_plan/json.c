@@ -815,8 +815,14 @@ static void _json_append_composition(
     _json_append(builder, "{ \"panel_id\": ");
     _json_append_escaped_string(builder, composition->panel_id);
     _json_append(
-        builder, ", \"work_fingerprint\": \"0x%016" PRIx64 "\", \"scratch_resources\": [",
-        composition->work_declaration_fingerprint);
+        builder,
+        ", \"geometry\": { \"origin_x\": %d, \"origin_y\": %d, \"width\": %" PRIu32
+        ", \"height\": %" PRIu32 ", \"render_scale\": %.9g, \"local_to_target\": [%.9g, %.9g, %.9g, %.9g] }"
+        ", \"work_fingerprint\": \"0x%016" PRIx64 "\", \"scratch_resources\": [",
+        composition->origin_x, composition->origin_y, composition->width, composition->height,
+        (double)composition->render_scale, (double)composition->local_to_target[0],
+        (double)composition->local_to_target[1], (double)composition->local_to_target[2],
+        (double)composition->local_to_target[3], composition->work_declaration_fingerprint);
     for (uint32_t i = 0; i < composition->scratch_resource_count; i++)
     {
         const DvzSceneScratchResource* scratch = &composition->scratch_resources[i];

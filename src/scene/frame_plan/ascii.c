@@ -630,8 +630,15 @@ static void _ascii_append_compositions(AsciiBuilder* builder, const DvzFramePlan
     {
         const DvzPanelCompositionSnapshot* composition = &plan->compositions[i];
         _ascii_append(
-            builder, "Composition panel=%s scratch=%" PRIu32 " passes=%" PRIu32 "\n",
-            composition->panel_id, composition->scratch_resource_count, composition->pass_count);
+            builder,
+            "Composition panel=%s origin=(%d,%d) extent=%" PRIu32 "x%" PRIu32
+            " scale=%.6g local_to_target=(%.6g,%.6g,%.6g,%.6g) scratch=%" PRIu32
+            " passes=%" PRIu32 "\n",
+            composition->panel_id, composition->origin_x, composition->origin_y,
+            composition->width, composition->height, (double)composition->render_scale,
+            (double)composition->local_to_target[0], (double)composition->local_to_target[1],
+            (double)composition->local_to_target[2], (double)composition->local_to_target[3],
+            composition->scratch_resource_count, composition->pass_count);
         for (uint32_t j = 0; j < composition->scratch_resource_count; j++)
         {
             const DvzSceneScratchResource* scratch = &composition->scratch_resources[j];
