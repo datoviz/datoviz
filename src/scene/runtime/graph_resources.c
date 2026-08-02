@@ -24,7 +24,9 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "_overflow.h"
 #include "frame_plan/frame_plan.h"
+#include "frame_plan/internal.h"
 #include "frame_plan/emit.h"
 #include "_frame_plan_runtime_internal.h"
 #include "_frame_plan_runtime_upload.h"
@@ -87,46 +89,96 @@ _graph_resource_by_id(const DvzFramePlan* plan, const char* resource_id)
 
 
 /**
- * Return a graph pass descriptor by panel and work label.
+ * Return a graph pass descriptor by typed composition role and ordinal.
  *
  * @param plan the FramePlan.
  * @param panel_id the panel id.
- * @param work_label the graph pass work label.
+ * @param role typed render-pass role
+ * @param ordinal role-local pass ordinal
  * @return the graph pass descriptor, or NULL when absent.
  */
-const DvzFrameGraphPass*
-_graph_pass_by_panel_work(const DvzFramePlan* plan, const char* panel_id, const char* work_label)
+const DvzFrameGraphPass* _graph_pass_by_composition_role(
+    const DvzFramePlan* plan, const char* panel_id, DvzFramePlanRenderPassRole role,
+    uint32_t ordinal)
 {
     ANN(plan);
     ANN(panel_id);
-    ANN(work_label);
+    const DvzPanelCompositionSnapshot* snapshot = _frame_plan_composition_get(plan, panel_id);
+    if (snapshot == NULL)
+        return NULL;
+    DvzSceneCompositionPassId composition_pass_id = {0};
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        const DvzSceneResolvedPass* resolved = &snapshot->passes[i];
+        if (resolved->role == role && resolved->ordinal == ordinal)
+        {
+            composition_pass_id = resolved->id;
+            break;
+        }
+    }
+    if (composition_pass_id.value == 0)
+        return NULL;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
         const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
         if (pass != NULL && strcmp(pass->panel_id, panel_id) == 0 &&
-            strcmp(pass->work_label, work_label) == 0)
+            pass->has_composition_pass &&
+            pass->composition_pass_id.value == composition_pass_id.value)
             return pass;
     }
     return NULL;
 }
 
 
+
 /**
- * Return a graph pass descriptor by id.
+ * Resolve one typed scratch binding on a graph pass to its physical resource.
  *
- * @param plan the FramePlan.
- * @param pass_id graph pass id.
- * @return the graph pass descriptor, or NULL when absent.
+ * @param plan source FramePlan
+ * @param pass typed graph pass
+ * @param kind semantic scratch kind
+ * @param usage required binding usage
+ * @return realized graph resource, or NULL when absent
  */
-const DvzFrameGraphPass* _graph_pass_by_id(const DvzFramePlan* plan, const char* pass_id)
+const DvzFrameGraphResource* _graph_composition_scratch_resource(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass, DvzSceneScratchKind kind,
+    DvzSceneWorkBindingUsage usage)
 {
     ANN(plan);
-    ANN(pass_id);
-    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    if (pass == NULL || !pass->has_composition_pass)
+        return NULL;
+    const DvzPanelCompositionSnapshot* snapshot =
+        _frame_plan_composition_get(plan, pass->panel_id);
+    if (snapshot == NULL)
+        return NULL;
+    const DvzSceneResolvedPass* resolved = NULL;
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
     {
-        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
-        if (pass != NULL && strcmp(pass->id, pass_id) == 0)
-            return pass;
+        if (snapshot->passes[i].id.value == pass->composition_pass_id.value)
+        {
+            resolved = &snapshot->passes[i];
+            break;
+        }
+    }
+    if (resolved == NULL)
+        return NULL;
+    for (uint32_t i = 0; i < resolved->binding_count; i++)
+    {
+        const DvzSceneWorkBinding* binding = &resolved->bindings[i];
+        if (binding->ref_kind != DVZ_SCENE_RESOURCE_REF_SCRATCH || binding->usage != usage)
+            continue;
+        for (uint32_t j = 0; j < snapshot->scratch_resource_count; j++)
+        {
+            const DvzSceneScratchResource* scratch = &snapshot->scratch_resources[j];
+            if (scratch->id.value != binding->scratch_id.value || scratch->kind != kind)
+                continue;
+            const DvzSceneGraphRealization* realization = _frame_plan_realization_get(
+                plan, pass->panel_id, DVZ_SCENE_RESOURCE_REF_SCRATCH,
+                (DvzRenderProductId){0}, scratch->id);
+            if (realization == NULL)
+                return NULL;
+            return dvz_frame_plan_graph_resource_get(plan, realization->graph_resource_index);
+        }
     }
     return NULL;
 }
@@ -543,6 +595,51 @@ bool _stream_apply_graph_depth(
 
 
 /**
+ * Ensure the runtime target map can hold the requested number of mappings.
+ *
+ * @param targets runtime target map.
+ * @param capacity requested mapping capacity.
+ * @return whether the capacity is available.
+ */
+static bool _graph_runtime_targets_reserve(SceneGraphRuntimeTargets* targets, uint32_t capacity)
+{
+    ANN(targets);
+    if (capacity <= targets->capacity)
+        return true;
+
+    uint32_t new_capacity = targets->capacity > 0
+                                ? targets->capacity
+                                : DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY;
+    while (new_capacity < capacity)
+    {
+        if (new_capacity > UINT32_MAX / 2)
+        {
+            new_capacity = UINT32_MAX;
+            break;
+        }
+        new_capacity *= 2;
+    }
+    uint64_t bytes = 0;
+    if (new_capacity < capacity ||
+        _dvz_mul_u64_overflows(new_capacity, sizeof(SceneGraphRuntimeTarget), &bytes) ||
+        bytes > SIZE_MAX)
+        return false;
+
+    SceneGraphRuntimeTarget* resized = NULL;
+    if (targets->targets == NULL)
+        resized = (SceneGraphRuntimeTarget*)dvz_calloc(new_capacity, sizeof(*resized));
+    else
+        resized = (SceneGraphRuntimeTarget*)dvz_realloc(targets->targets, bytes);
+    if (resized == NULL)
+        return false;
+    targets->targets = resized;
+    targets->capacity = new_capacity;
+    return true;
+}
+
+
+
+/**
  * Register one graph resource id to runtime texture id mapping.
  *
  * @param targets runtime target map.
@@ -566,13 +663,31 @@ bool _graph_runtime_targets_add(
             return true;
         }
     }
-    if (targets->count >= DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY)
+    if (targets->count == UINT32_MAX ||
+        !_graph_runtime_targets_reserve(targets, targets->count + 1))
         return false;
 
     SceneGraphRuntimeTarget* target = &targets->targets[targets->count++];
     dvz_strlcpy(target->resource_id, resource_id, sizeof(target->resource_id));
     target->texture_id = texture_id;
     return true;
+}
+
+
+
+/**
+ * Destroy a runtime target map and reset it to its zero state.
+ *
+ * @param targets runtime target map, or NULL.
+ */
+void _graph_runtime_targets_destroy(SceneGraphRuntimeTargets* targets)
+{
+    if (targets == NULL)
+        return;
+    dvz_free(targets->targets);
+    targets->targets = NULL;
+    targets->count = 0;
+    targets->capacity = 0;
 }
 
 
@@ -674,31 +789,6 @@ uint64_t _graph_sampled_read_texture_id(
 
 
 /**
- * Return the index of a sampled volume-occlusion read in a graph pass.
- *
- * @param pass graph pass descriptor, or NULL
- * @param out_read_index output read index
- * @return whether a volume occlusion read was found
- */
-bool _graph_volume_occlusion_read_index(const DvzFrameGraphPass* pass, uint32_t* out_read_index)
-{
-    ANN(out_read_index);
-    if (pass == NULL)
-        return false;
-    for (uint32_t i = 0; i < pass->read_count; i++)
-    {
-        if (pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED &&
-            _scene_resource_id_has_suffix(pass->reads[i].resource_id, ".volume_occlusion.depth"))
-        {
-            *out_read_index = i;
-            return true;
-        }
-    }
-    return false;
-}
-
-
-/**
  * Resolve the sampled volume-occlusion texture read by a graph pass.
  *
  * @param emitter the persistent emitter
@@ -715,44 +805,16 @@ bool _graph_resolve_volume_occlusion_read(
 {
     ANN(out_id);
     *out_id = 0;
-    uint32_t read_index = 0;
-    if (!_graph_volume_occlusion_read_index(pass, &read_index))
-        return true;
-
-    const DvzFrameGraphResource* resource =
-        _graph_resource_by_id(plan, pass->reads[read_index].resource_id);
+    const DvzFrameGraphResource* resource = _graph_composition_scratch_resource(
+        plan, pass, DVZ_SCENE_SCRATCH_VOLUME_OCCLUSION_DEVICE_DEPTH,
+        DVZ_SCENE_WORK_BINDING_SAMPLED);
     if (resource == NULL)
-        return false;
+        return true;
     uint32_t width = 0;
     uint32_t height = 0;
     _emit_target_extent(cfg, &width, &height);
     return _graph_resolve_texture_2d(
         emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_R32_SFLOAT, out_id);
-}
-
-
-/**
- * Return the index of a sampled scene-occlusion read in a graph pass.
- *
- * @param pass graph pass descriptor, or NULL
- * @param out_read_index output read index
- * @return whether a scene occlusion read was found
- */
-bool _graph_scene_occlusion_read_index(const DvzFrameGraphPass* pass, uint32_t* out_read_index)
-{
-    ANN(out_read_index);
-    if (pass == NULL)
-        return false;
-    for (uint32_t i = 0; i < pass->read_count; i++)
-    {
-        if (pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED &&
-            _scene_resource_id_has_suffix(pass->reads[i].resource_id, ".scene_occlusion.depth"))
-        {
-            *out_read_index = i;
-            return true;
-        }
-    }
-    return false;
 }
 
 
@@ -773,14 +835,11 @@ bool _graph_resolve_scene_occlusion_read(
 {
     ANN(out_id);
     *out_id = 0;
-    uint32_t read_index = 0;
-    if (!_graph_scene_occlusion_read_index(pass, &read_index))
-        return true;
-
-    const DvzFrameGraphResource* resource =
-        _graph_resource_by_id(plan, pass->reads[read_index].resource_id);
+    const DvzFrameGraphResource* resource = _graph_composition_scratch_resource(
+        plan, pass, DVZ_SCENE_SCRATCH_SCENE_OCCLUSION_DEVICE_DEPTH,
+        DVZ_SCENE_WORK_BINDING_SAMPLED);
     if (resource == NULL)
-        return false;
+        return true;
     uint32_t width = 0;
     uint32_t height = 0;
     _emit_target_extent(cfg, &width, &height);

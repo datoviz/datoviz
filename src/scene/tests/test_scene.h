@@ -899,6 +899,8 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item);
 
 int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item);
 
+int test_scene_graph_runtime_targets_grow(TstContext* suite, const TstCase* item);
+
 int test_scene_ssao_normalization_characterization(TstContext* suite, const TstCase* item);
 
 int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item);

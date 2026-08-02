@@ -65,12 +65,14 @@ static bool _create_pipeline_with_layout(
 
 bool _emitter_prepare_gbuffer_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
-    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg, SceneGBufferTargets* out)
+    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
+    SceneGraphRuntimeTargets* graph_targets, SceneGBufferTargets* out)
 {
     ANN(emitter);
     ANN(stream);
     ANN(plan);
     ANN(render);
+    ANN(graph_targets);
     ANN(out);
 
     const DvzFrameGraphPass* pass = _graph_pass_for_render(plan, render);
@@ -93,7 +95,7 @@ bool _emitter_prepare_gbuffer_targets(
         ok = _graph_resolve_texture_2d(
             emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_R16G16B16A16_SFLOAT,
             &texture_id);
-        ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, texture_id);
+        ok = ok && _graph_runtime_targets_add(graph_targets, resource->id, texture_id);
         if (ok && i == 0)
             out->normal_id = texture_id;
         else if (ok && i == 1)
@@ -109,7 +111,7 @@ bool _emitter_prepare_gbuffer_targets(
         ok = _graph_resolve_texture_2d(
             emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_D32_SFLOAT,
             &out->depth_id);
-        ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, out->depth_id);
+        ok = ok && _graph_runtime_targets_add(graph_targets, resource->id, out->depth_id);
     }
 
     return ok && out->normal_id != 0;
@@ -152,12 +154,14 @@ uint64_t _edl_bind_group_fingerprint(
  */
 bool _emitter_prepare_edl_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
-    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg, SceneEdlTargets* out)
+    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
+    SceneGraphRuntimeTargets* graph_targets, SceneEdlTargets* out)
 {
     ANN(emitter);
     ANN(stream);
     ANN(plan);
     ANN(render);
+    ANN(graph_targets);
     ANN(out);
 
     const DvzFrameGraphPass* pass = _graph_pass_for_render(plan, render);
@@ -181,8 +185,8 @@ bool _emitter_prepare_edl_targets(
     ok = ok && _graph_resolve_texture_2d(
                    emitter, stream, plan, cfg, depth_resource, width, height, DVZ_FORMAT_D32_SFLOAT,
                    &out->depth_id);
-    ok = ok && _graph_runtime_targets_add(&out->graph, color_resource->id, out->color_id);
-    ok = ok && _graph_runtime_targets_add(&out->graph, depth_resource->id, out->depth_id);
+    ok = ok && _graph_runtime_targets_add(graph_targets, color_resource->id, out->color_id);
+    ok = ok && _graph_runtime_targets_add(graph_targets, depth_resource->id, out->depth_id);
     if (!ok)
         return false;
 
@@ -254,8 +258,10 @@ bool _emitter_prepare_edl_targets(
     bg_resource->byte_size = fingerprint;
     if (ok && is_new)
     {
-        uint64_t color_id = _graph_sampled_read_texture_id(pass, 0, 0, &out->graph, out->color_id);
-        uint64_t depth_id = _graph_sampled_read_texture_id(pass, 1, 0, &out->graph, out->depth_id);
+        uint64_t color_id =
+            _graph_sampled_read_texture_id(pass, 0, 0, graph_targets, out->color_id);
+        uint64_t depth_id =
+            _graph_sampled_read_texture_id(pass, 1, 0, graph_targets, out->depth_id);
         DvzDrp2BindGroupEntry entries[4] = {
             {
                 .binding = 0,
@@ -364,19 +370,21 @@ uint64_t _ssao_bind_group_fingerprint(
  */
 bool _emitter_prepare_ssao_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
-    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg, SceneSsaoTargets* out)
+    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
+    SceneGraphRuntimeTargets* graph_targets, SceneSsaoTargets* out)
 {
     ANN(emitter);
     ANN(stream);
     ANN(plan);
     ANN(render);
+    ANN(graph_targets);
     ANN(out);
 
     const DvzFrameGraphPass* pass = _graph_pass_for_render(plan, render);
-    const DvzFrameGraphPass* blur_pass =
-        _graph_pass_by_panel_work(plan, render->u.render.panel_id, "ssao_blur");
-    const DvzFrameGraphPass* composite_pass =
-        _graph_pass_by_panel_work(plan, render->u.render.panel_id, "ssao_composite");
+    const DvzFrameGraphPass* blur_pass = _graph_pass_by_composition_role(
+        plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR, 0);
+    const DvzFrameGraphPass* composite_pass = _graph_pass_by_composition_role(
+        plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE, 0);
     if (pass == NULL || composite_pass == NULL || pass->read_count < 2 ||
         pass->color_attachment_count < 1 || composite_pass->read_count < 1)
         return false;
@@ -409,15 +417,15 @@ bool _emitter_prepare_ssao_targets(
     ok = ok && _graph_resolve_texture_2d(
                    emitter, stream, plan, cfg, occlusion_resource, width, height,
                    DVZ_FORMAT_R8_UNORM, &out->occlusion_id);
-    ok = ok && _graph_runtime_targets_add(&out->graph, normal_resource->id, out->normal_id);
-    ok = ok && _graph_runtime_targets_add(&out->graph, depth_resource->id, out->depth_id);
-    ok = ok && _graph_runtime_targets_add(&out->graph, occlusion_resource->id, out->occlusion_id);
+    ok = ok && _graph_runtime_targets_add(graph_targets, normal_resource->id, out->normal_id);
+    ok = ok && _graph_runtime_targets_add(graph_targets, depth_resource->id, out->depth_id);
+    ok = ok && _graph_runtime_targets_add(graph_targets, occlusion_resource->id, out->occlusion_id);
     if (blur_resource != NULL)
     {
         ok = ok && _graph_resolve_texture_2d(
                        emitter, stream, plan, cfg, blur_resource, width, height,
                        DVZ_FORMAT_R8_UNORM, &out->blur_id);
-        ok = ok && _graph_runtime_targets_add(&out->graph, blur_resource->id, out->blur_id);
+        ok = ok && _graph_runtime_targets_add(graph_targets, blur_resource->id, out->blur_id);
     }
     if (!ok)
         return false;
@@ -492,8 +500,9 @@ bool _emitter_prepare_ssao_targets(
     if (ok && is_new)
     {
         uint64_t normal_id =
-            _graph_sampled_read_texture_id(pass, 0, 0, &out->graph, out->normal_id);
-        uint64_t depth_id = _graph_sampled_read_texture_id(pass, 1, 0, &out->graph, out->depth_id);
+            _graph_sampled_read_texture_id(pass, 0, 0, graph_targets, out->normal_id);
+        uint64_t depth_id =
+            _graph_sampled_read_texture_id(pass, 1, 0, graph_targets, out->depth_id);
         DvzDrp2BindGroupEntry entries[4] = {
             {
                 .binding = 0,
@@ -584,11 +593,11 @@ bool _emitter_prepare_ssao_targets(
         if (ok && is_new)
         {
             uint64_t occlusion_id =
-                _graph_sampled_read_texture_id(blur_pass, 0, 0, &out->graph, out->occlusion_id);
+                _graph_sampled_read_texture_id(blur_pass, 0, 0, graph_targets, out->occlusion_id);
             uint64_t normal_id =
-                _graph_sampled_read_texture_id(blur_pass, 1, 0, &out->graph, out->normal_id);
+                _graph_sampled_read_texture_id(blur_pass, 1, 0, graph_targets, out->normal_id);
             uint64_t depth_id =
-                _graph_sampled_read_texture_id(blur_pass, 2, 0, &out->graph, out->depth_id);
+                _graph_sampled_read_texture_id(blur_pass, 2, 0, graph_targets, out->depth_id);
             DvzDrp2BindGroupEntry entries[5] = {
                 {
                     .binding = 0,
@@ -672,7 +681,7 @@ bool _emitter_prepare_ssao_targets(
     if (ok && is_new)
     {
         uint64_t composite_input_id = _graph_sampled_read_texture_id(
-            composite_pass, 0, 0, &out->graph, out->composite_input_id);
+            composite_pass, 0, 0, graph_targets, out->composite_input_id);
         DvzDrp2BindGroupEntry entries[3] = {
             {
                 .binding = 0,
@@ -837,11 +846,12 @@ uint64_t _wboit_bind_group_fingerprint(uint64_t accum_id, uint64_t weight_id, ui
 bool _emitter_prepare_wboit_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,
-    SceneWboitTargets* out)
+    SceneGraphRuntimeTargets* graph_targets, SceneWboitTargets* out)
 {
     ANN(emitter);
     ANN(stream);
     ANN(render);
+    ANN(graph_targets);
     ANN(out);
 
     uint32_t width = 0;
@@ -902,11 +912,11 @@ bool _emitter_prepare_wboit_targets(
     if (!ok)
         return false;
     ok = ok && (accum_resource == NULL ||
-                _graph_runtime_targets_add(&out->graph, accum_resource->id, out->accum_id));
+                _graph_runtime_targets_add(graph_targets, accum_resource->id, out->accum_id));
     ok = ok && (weight_resource == NULL ||
-                _graph_runtime_targets_add(&out->graph, weight_resource->id, out->weight_id));
+                _graph_runtime_targets_add(graph_targets, weight_resource->id, out->weight_id));
     ok = ok && (depth_resource == NULL ||
-                _graph_runtime_targets_add(&out->graph, depth_resource->id, out->depth_id));
+                _graph_runtime_targets_add(graph_targets, depth_resource->id, out->depth_id));
     if (!ok)
         return false;
 
@@ -960,12 +970,12 @@ bool _emitter_prepare_wboit_targets(
     bg_resource->byte_size = bg_fingerprint;
     if (ok && is_new)
     {
-        const DvzFrameGraphPass* resolve_graph_pass =
-            _graph_pass_by_panel_work(plan, render->u.render.panel_id, "wboit_resolve");
+        const DvzFrameGraphPass* resolve_graph_pass = _graph_pass_by_composition_role(
+            plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE, 0);
         uint64_t accum_id = _graph_sampled_read_texture_id(
-            resolve_graph_pass, 0, out->color_id, &out->graph, out->accum_id);
+            resolve_graph_pass, 0, out->color_id, graph_targets, out->accum_id);
         uint64_t weight_id = _graph_sampled_read_texture_id(
-            resolve_graph_pass, 1, out->color_id, &out->graph, out->weight_id);
+            resolve_graph_pass, 1, out->color_id, graph_targets, out->weight_id);
         DvzDrp2BindGroupEntry entries[3] = {
             {
                 .binding = 0,
@@ -1178,12 +1188,13 @@ bool _depth_peel_resolve_sampled_bind_group(
 bool _emitter_prepare_depth_peel_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,
-    SceneDepthPeelTargets* out)
+    SceneGraphRuntimeTargets* graph_targets, SceneDepthPeelTargets* out)
 {
     ANN(emitter);
     ANN(stream);
     ANN(plan);
     ANN(render);
+    ANN(graph_targets);
     ANN(out);
 
     uint32_t width = 0;
@@ -1200,7 +1211,8 @@ bool _emitter_prepare_depth_peel_targets(
         if (resource == NULL || resource->kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET)
             continue;
         size_t panel_id_len = strlen(render->u.render.panel_id);
-        if (strncmp(resource->id, render->u.render.panel_id, panel_id_len) != 0)
+        if (strncmp(resource->id, render->u.render.panel_id, panel_id_len) != 0 ||
+            resource->id[panel_id_len] != '.')
             continue;
 
         uint64_t texture_id = 0;
@@ -1211,7 +1223,7 @@ bool _emitter_prepare_depth_peel_targets(
             format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
         ok = _graph_resolve_texture_2d(
             emitter, stream, plan, cfg, resource, width, height, format, &texture_id);
-        ok = ok && _graph_runtime_targets_add(&out->graph, resource->id, texture_id);
+        ok = ok && _graph_runtime_targets_add(graph_targets, resource->id, texture_id);
         if (ok && (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0)
             out->depth_id = texture_id;
     }
@@ -1296,8 +1308,8 @@ bool _emitter_prepare_depth_peel_targets(
                        stream, out->dummy_bg_id, dummy_bgl_id, 1, &entry);
     }
 
-    const DvzFrameGraphPass* composite_pass =
-        _graph_pass_by_panel_work(plan, render->u.render.panel_id, "depth_peel_composite");
+    const DvzFrameGraphPass* composite_pass = _graph_pass_by_composition_role(
+        plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE, 0);
     ok = ok && composite_pass != NULL;
     if (ok)
     {
@@ -1305,17 +1317,14 @@ bool _emitter_prepare_depth_peel_targets(
         _runtime_scope_key(
             cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
         ok = ok && _depth_peel_resolve_sampled_bind_group(
-                       emitter, stream, plan, composite_pass, &out->graph, 0, composite_bg_key,
+                       emitter, stream, plan, composite_pass, graph_targets, 0, composite_bg_key,
                        out->composite_bgl_id, out->sampler_id, &out->composite_bg_id);
     }
 
     for (uint32_t iter_idx = 0; ok && iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
     {
-        char iter_pass_id[DVZ_SCENE_LABEL_SIZE];
-        dvz_snprintf(
-            iter_pass_id, sizeof(iter_pass_id), "%s.peel.iter.%" PRIu32, render->u.render.panel_id,
-            iter_idx);
-        const DvzFrameGraphPass* iter_pass = _graph_pass_by_id(plan, iter_pass_id);
+        const DvzFrameGraphPass* iter_pass = _graph_pass_by_composition_role(
+            plan, render->u.render.panel_id, DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, iter_idx);
         ok = ok && iter_pass != NULL;
         if (ok)
         {
@@ -1326,7 +1335,7 @@ bool _emitter_prepare_depth_peel_targets(
                 iter_idx);
             _runtime_scope_key(cfg, iter_bg_base_key, iter_bg_key, sizeof(iter_bg_key));
             ok = _depth_peel_resolve_sampled_bind_group(
-                emitter, stream, plan, iter_pass, &out->graph, DVZ_SCENE_DEPTH_PEEL_BIND_SET,
+                emitter, stream, plan, iter_pass, graph_targets, DVZ_SCENE_DEPTH_PEEL_BIND_SET,
                 iter_bg_key, out->iter_bgl_id, out->sampler_id, &out->iter_bg_ids[iter_idx]);
         }
     }

@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "scene_graph_utils.h"
+#include "runtime/_frame_plan_runtime_internal.h"
 #include "frame_plan/internal.h"
 #include "render_contract/internal.h"
 #include "scene_emit/panel_render_plan.h"
@@ -37,6 +38,49 @@ static const DvzFrameGraphResource* _test_graph_resource(
             return resource;
     }
     return NULL;
+}
+
+
+
+/**
+ * Verify runtime graph target growth, replacement, lookup, and idempotent cleanup.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_graph_runtime_targets_grow(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    SceneGraphRuntimeTargets targets = {0};
+    const uint32_t count = 2 * DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY + 1;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        char id[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(id, sizeof(id), "panel.runtime.%" PRIu32, i);
+        AT(_graph_runtime_targets_add(&targets, id, 1000 + i));
+    }
+    AT(targets.count == count);
+    AT(targets.capacity >= count);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        char id[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(id, sizeof(id), "panel.runtime.%" PRIu32, i);
+        AT(_graph_runtime_targets_get(&targets, id) == 1000 + i);
+    }
+
+    AT(_graph_runtime_targets_add(&targets, "panel.runtime.0", 9999));
+    AT(targets.count == count);
+    AT(_graph_runtime_targets_get(&targets, "panel.runtime.0") == 9999);
+
+    _graph_runtime_targets_destroy(&targets);
+    AT(targets.targets == NULL);
+    AT(targets.count == 0);
+    AT(targets.capacity == 0);
+    _graph_runtime_targets_destroy(&targets);
+    return 0;
 }
 
 
