@@ -293,6 +293,7 @@ void dvz_box_normalize_3D(
 void dvz_box_inverse(DvzBox source, DvzBox target, const vec3 pos, dvec3* out)
 {
     ANN(pos);
+    ANN(out);
 
     double scale_x =
         source.xmax != source.xmin ? (target.xmax - target.xmin) / (source.xmax - source.xmin) : 1;
