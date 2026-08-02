@@ -13,7 +13,13 @@ This example compares a synthetic molecular aggregate with and without ambient o
 
 ## Preview
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--pending" role="img" aria-label="Screenshot pending for View-Space Ambient Occlusion"><span>Screenshot pending</span></div>
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/features/features_technique_ao.poster.webp" alt="View-Space Ambient Occlusion" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../../../assets/gallery/v0.4/features/features_technique_ao.poster.webp" aria-label="View-Space Ambient Occlusion preview">
+    <source data-src="../../../../assets/gallery/v0.4/features/features_technique_ao.mp4" type="video/mp4">
+  </video>
+</div>
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>No live WebGPU preview</strong>
