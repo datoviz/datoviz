@@ -25,6 +25,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_app.h"
+#include "presentation_policy.h"
 #include "_status.h"
 #include "_time_utils.h"
 #include "_trace.h"
@@ -481,18 +482,17 @@ static void _app_config_apply_schedule_env(DvzAppConfig* config)
 static void _app_config_apply_fps_cap_env(DvzAppConfig* config)
 {
     ANN(config);
-    const char* env = getenv("DVZ_FPS_CAP");
-    if (env == NULL || env[0] == '\0')
-        return;
-
-    char* end = NULL;
-    double fps = strtod(env, &end);
-    if (end == env || *end != '\0' || fps <= 0)
+    double fps = 0;
+    if (_dvz_app_fps_cap_env(&fps))
     {
-        log_warn("ignoring DVZ_FPS_CAP='%s' (expected positive FPS)", env);
+        config->fps_cap = fps;
         return;
     }
-    config->fps_cap = fps;
+    const char* env = getenv("DVZ_FPS_CAP");
+    if (env != NULL && env[0] != '\0')
+    {
+        log_warn("ignoring DVZ_FPS_CAP='%s' (expected positive FPS)", env);
+    }
 }
 
 
@@ -2310,6 +2310,10 @@ static bool _app_has_pending_windows(DvzApp* app)
 
 
 
+static double _view_effective_fps_cap(DvzView* win);
+
+
+
 /**
  * Return the earliest continuous-frame deadline among enabled windows.
  *
@@ -2323,9 +2327,13 @@ static uint64_t _app_next_continuous_deadline(DvzApp* app)
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
-        if (!_view_has_continuous_work(win) || win->next_frame_ns == 0)
-            continue;
         if (_view_close_requested(win))
+            continue;
+        bool continuous = _view_has_continuous_work(win);
+        double fps_cap = _view_effective_fps_cap(win);
+        if (_dvz_app_view_requires_scheduler_poll(continuous, fps_cap, win->next_frame_ns))
+            return 0;
+        if (!continuous)
             continue;
         if (deadline == 0 || win->next_frame_ns < deadline)
             deadline = win->next_frame_ns;
@@ -2459,6 +2467,38 @@ static void _view_update_deadline(DvzView* win, uint64_t now, double fps_cap)
         win->next_frame_ns = UINT64_MAX;
     if (win->next_frame_ns <= now)
         win->next_frame_ns = UINT64_MAX - now >= period_ns ? now + period_ns : UINT64_MAX;
+}
+
+
+
+/**
+ * Return the effective continuous-frame cap for one view.
+ *
+ * @param win view to inspect
+ * @return positive FPS cap, or zero for unlimited/backpressure pacing
+ */
+static double _view_effective_fps_cap(DvzView* win)
+{
+    ANN(win);
+    double app_fps_cap = win->app != NULL ? win->app->config.fps_cap : 0;
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    uint32_t refresh_rate_hz = 0;
+    if (win->canvas != NULL)
+    {
+        present_mode = win->canvas->cfg.present_mode;
+        (void)dvz_canvas_swapchain_present_mode(win->canvas, &present_mode);
+    }
+    if (win->window != NULL)
+    {
+        const DvzWindowMetrics* metrics = dvz_window_metrics(win->window);
+        if (metrics != NULL)
+            refresh_rate_hz = metrics->refresh_rate_hz;
+    }
+    return _dvz_app_view_effective_fps_cap(app_fps_cap, present_mode, refresh_rate_hz);
+#else
+    return app_fps_cap;
+#endif
 }
 
 
@@ -4035,32 +4075,42 @@ static void _app_draw_replay(DvzView* win, const DvzStreamFrame* frame)
 
 
 /**
- * Apply the DVZ_PRESENT_MODE environment override to a present canvas configuration.
+ * Apply the app presentation policy to a present canvas configuration.
  *
  * @param ccfg canvas configuration to mutate
  */
-static void _app_canvas_config_apply_present_mode_env(DvzCanvasConfig* ccfg)
+static void _app_canvas_config_apply_presentation_policy(
+    DvzCanvasConfig* ccfg, bool prefer_latest_ready)
 {
     ANN(ccfg);
-    /* DVZ_PRESENT_MODE: fifo, fifo-latest, mailbox, or immediate. */
-    const char* pm_env = getenv("DVZ_PRESENT_MODE");
-    if (pm_env != NULL)
+    if (prefer_latest_ready)
+        ccfg->present_mode = _dvz_app_present_mode_default();
+    VkPresentModeKHR present_mode = ccfg->present_mode;
+    if (_dvz_app_present_mode_env(&present_mode))
     {
-        if (strcmp(pm_env, "immediate") == 0)
-            ccfg->present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-        else if (strcmp(pm_env, "mailbox") == 0)
-            ccfg->present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
-        else if (strcmp(pm_env, "fifo") == 0)
-            ccfg->present_mode = VK_PRESENT_MODE_FIFO_KHR;
-#if defined(VK_KHR_present_mode_fifo_latest_ready)
-        else if (strcmp(pm_env, "fifo-latest") == 0)
-            ccfg->present_mode = VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
-#endif
-        else
+        ccfg->present_mode = present_mode;
+    }
+    else
+    {
+        const char* value = getenv("DVZ_PRESENT_MODE");
+        if (value != NULL && value[0] != '\0')
             log_warn(
                 "ignoring DVZ_PRESENT_MODE='%s' "
                 "(expected fifo|fifo-latest|mailbox|immediate)",
-                pm_env);
+                value);
+    }
+
+    uint32_t frame_slot_count = 0;
+    if (_dvz_app_frame_slot_count_env(&frame_slot_count))
+        ccfg->frame_slot_count = frame_slot_count;
+    else
+    {
+        const char* value = getenv("DVZ_MAX_FRAMES_IN_FLIGHT");
+        if (value != NULL && value[0] != '\0')
+            log_warn(
+                "ignoring DVZ_MAX_FRAMES_IN_FLIGHT='%s' "
+                "(expected auto or a positive integer)",
+                value);
     }
 }
 
@@ -4934,7 +4984,7 @@ _view_create_glfw(
     /* render_mode defaults to DVZ_CANVAS_RENDER_MODE_PRESENT */
     if (dvz_figure_color_pipeline(figure) == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
         ccfg.color_format = VK_FORMAT_R8G8B8A8_UNORM;
-    _app_canvas_config_apply_present_mode_env(&ccfg);
+    _app_canvas_config_apply_presentation_policy(&ccfg, true);
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)
     {
@@ -5028,7 +5078,8 @@ static DvzView* _view_create_external_surface(
     ccfg.window = window;
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
     ccfg.depth_format = VK_FORMAT_D32_SFLOAT;
-    _app_canvas_config_apply_present_mode_env(&ccfg);
+    /* External hosts may not report a refresh rate, so retain Canvas FIFO unless overridden. */
+    _app_canvas_config_apply_presentation_policy(&ccfg, false);
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)
     {
@@ -6619,8 +6670,7 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             bool pending = _app_has_pending_windows(app);
             if (continuous)
             {
-                uint64_t deadline =
-                    app->config.fps_cap > 0 ? _app_next_continuous_deadline(app) : 0;
+                uint64_t deadline = _app_next_continuous_deadline(app);
                 if (deadline > 0)
                     _app_host_wait_until(app, deadline);
                 else
@@ -6642,15 +6692,16 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             {
                 DvzView* win = &app->views[i];
                 bool view_continuous = _view_has_continuous_work(win);
-                if (!view_continuous)
+                double fps_cap = _view_effective_fps_cap(win);
+                if (!view_continuous || fps_cap <= 0)
                     win->next_frame_ns = 0;
                 if (!_view_should_render(win, view_continuous, now))
                     continue;
                 int rc = dvz_view_render_once(win);
                 if (
-                    view_continuous && app->config.fps_cap > 0 &&
+                    view_continuous && fps_cap > 0 &&
                     rc == DVZ_CANVAS_FRAME_READY)
-                    _view_update_deadline(win, _app_scheduler_now_ns(), app->config.fps_cap);
+                    _view_update_deadline(win, _app_scheduler_now_ns(), fps_cap);
                 if (rc == DVZ_CANVAS_FRAME_READY && fps_enabled)
                     fps_window_frames++;
             }

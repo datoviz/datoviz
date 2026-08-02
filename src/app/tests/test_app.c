@@ -21,10 +21,12 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
+#include "../presentation_policy.h"
 #include "../_status.h"
 #include "../_trace.h"
 #include "../../drp2/_stream.h"
 #include "datoviz/app.h"
+#include "datoviz/canvas.h"
 #include "datoviz/drp2/runtime.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
@@ -249,6 +251,103 @@ static int test_app_config_env_fps_cap(TstContext* suite, const TstCase* item)
     AT(config.fps_cap == 144.5);
 
     _test_restore_env("DVZ_FPS_CAP", old_fps_cap != NULL ? saved_fps_cap : NULL);
+    return 0;
+}
+
+
+
+static int test_app_presentation_policy_defaults(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    const char* old_present_mode = getenv("DVZ_PRESENT_MODE");
+    const char* old_frame_slots = getenv("DVZ_MAX_FRAMES_IN_FLIGHT");
+    char saved_present_mode[64] = {0};
+    char saved_frame_slots[64] = {0};
+    if (old_present_mode != NULL)
+        dvz_snprintf(saved_present_mode, sizeof(saved_present_mode), "%s", old_present_mode);
+    if (old_frame_slots != NULL)
+        dvz_snprintf(saved_frame_slots, sizeof(saved_frame_slots), "%s", old_frame_slots);
+    (void)tst_unsetenv("DVZ_PRESENT_MODE");
+    (void)tst_unsetenv("DVZ_MAX_FRAMES_IN_FLIGHT");
+
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    AT(_dvz_app_present_mode_default() == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR);
+#else
+    AT(_dvz_app_present_mode_default() == VK_PRESENT_MODE_FIFO_KHR);
+#endif
+    VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    uint32_t frame_slot_count = 0;
+    AT(!_dvz_app_present_mode_env(&present_mode));
+    AT(!_dvz_app_frame_slot_count_env(&frame_slot_count));
+
+    _test_restore_env(
+        "DVZ_PRESENT_MODE", old_present_mode != NULL ? saved_present_mode : NULL);
+    _test_restore_env(
+        "DVZ_MAX_FRAMES_IN_FLIGHT", old_frame_slots != NULL ? saved_frame_slots : NULL);
+    return 0;
+}
+
+
+
+static int test_app_presentation_policy_env_overrides(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    const char* old_present_mode = getenv("DVZ_PRESENT_MODE");
+    const char* old_frame_slots = getenv("DVZ_MAX_FRAMES_IN_FLIGHT");
+    char saved_present_mode[64] = {0};
+    char saved_frame_slots[64] = {0};
+    if (old_present_mode != NULL)
+        dvz_snprintf(saved_present_mode, sizeof(saved_present_mode), "%s", old_present_mode);
+    if (old_frame_slots != NULL)
+        dvz_snprintf(saved_frame_slots, sizeof(saved_frame_slots), "%s", old_frame_slots);
+
+    VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    AT(tst_setenv("DVZ_PRESENT_MODE", "mailbox") == 0);
+    AT(_dvz_app_present_mode_env(&present_mode));
+    AT(present_mode == VK_PRESENT_MODE_MAILBOX_KHR);
+    AT(tst_setenv("DVZ_PRESENT_MODE", "invalid") == 0);
+    AT(!_dvz_app_present_mode_env(&present_mode));
+
+    uint32_t frame_slot_count = 0;
+    AT(tst_setenv("DVZ_MAX_FRAMES_IN_FLIGHT", "auto") == 0);
+    AT(_dvz_app_frame_slot_count_env(&frame_slot_count));
+    AT(frame_slot_count == DVZ_CANVAS_FRAME_SLOT_COUNT_AUTOMATIC);
+    AT(tst_setenv("DVZ_MAX_FRAMES_IN_FLIGHT", "2") == 0);
+    AT(_dvz_app_frame_slot_count_env(&frame_slot_count));
+    AT(frame_slot_count == 2);
+    AT(tst_setenv("DVZ_MAX_FRAMES_IN_FLIGHT", "0") == 0);
+    AT(!_dvz_app_frame_slot_count_env(&frame_slot_count));
+
+    _test_restore_env(
+        "DVZ_PRESENT_MODE", old_present_mode != NULL ? saved_present_mode : NULL);
+    _test_restore_env(
+        "DVZ_MAX_FRAMES_IN_FLIGHT", old_frame_slots != NULL ? saved_frame_slots : NULL);
+    return 0;
+}
+
+
+
+static int test_app_presentation_policy_effective_fps_cap(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    AT(_dvz_app_view_effective_fps_cap(144.0, VK_PRESENT_MODE_FIFO_KHR, 60) == 144.0);
+    AT(_dvz_app_view_effective_fps_cap(0, VK_PRESENT_MODE_FIFO_KHR, 60) == 0);
+    AT(!_dvz_app_view_requires_scheduler_poll(true, 60.0, 123));
+    AT(_dvz_app_view_requires_scheduler_poll(true, 0, 123));
+    AT(_dvz_app_view_requires_scheduler_poll(true, 60.0, 0));
+    AT(!_dvz_app_view_requires_scheduler_poll(false, 0, 0));
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    AT(_dvz_app_view_effective_fps_cap(
+           0, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, 120) == 120.0);
+    AT(_dvz_app_view_effective_fps_cap(
+           0, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, 0) == 0);
+#endif
     return 0;
 }
 
@@ -1518,6 +1617,9 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_config_defaults);
     TST_CASE(test_app_config_env_schedule);
     TST_CASE(test_app_config_env_fps_cap);
+    TST_CASE(test_app_presentation_policy_defaults);
+    TST_CASE(test_app_presentation_policy_env_overrides);
+    TST_CASE(test_app_presentation_policy_effective_fps_cap);
     TST_CASE(test_app_view_size_policy_resolve);
     TST_CASE(test_app_capture_config_defaults);
     TST_CASE(test_app_abi_rejects_invalid_structs);
