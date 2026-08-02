@@ -861,6 +861,8 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
 
 int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item);
 
+int test_scene_ssao_normalization_characterization(TstContext* suite, const TstCase* item);
+
 int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item);
 
 int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item);
@@ -1301,6 +1303,12 @@ int test_app_offscreen_points_edl_projection_stable(TstContext* suite, const Tst
 int test_app_offscreen_mesh_ssao_changes_pixels(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_sphere_ssao_darkens_contact(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_ssao_projection_zoom_characterization(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_ssao_panel_isolation_characterization(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_ssao_resize_characterization(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_image_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 

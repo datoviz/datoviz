@@ -1,8 +1,6 @@
 # Occlusion Effects Implementor Notes
 
-Status: implementation-facing notes for graph-backed occlusion techniques in the active scene
-stack. This file records durable implementation contracts for SSAO, scene occlusion, and volume
-occlusion. Current execution order belongs in `agents/now/STATUS.md`.
+Status: normative implementation contract for graph-backed occlusion techniques in the active scene stack. This file defines durable SSAO, scene-occlusion, and volume-occlusion behavior; release sequencing belongs in `agents/now/STATUS.md`.
 
 These notes refine the shared graph technique contract in
 [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md).
@@ -22,102 +20,46 @@ retained scene state
 Do not add a parallel renderer, presentation layer, visual-private postprocess path, or ad-hoc
 Vulkan path for occlusion features.
 
-## SSAO Pipeline Contract
+## Ambient Visibility Pipeline Contract
 
-SSAO is a panel-local technique. It is retained on panel technique state, not on individual visuals,
-because it depends on composed panel depth and normal information.
+Ambient occlusion is a panel-local technique retained on panel state. The RC3 implementation produces a semantic `ambient_visibility` product from the coherent opaque or masked surface record and consumes that product inside eligible material lighting.
 
-The minimum graph-backed SSAO pipeline is:
-
-```text
-GBUFFER PASS
-  outputs:
-    base color texture
-    normal texture
-    linear depth texture
-  depth:
-    graph-declared depth attachment for depth testing
-
-SSAO PASS
-  inputs:
-    normal texture
-    linear or reconstructable depth texture
-    kernel and parameter data
-  output:
-    raw ambient-occlusion texture
-
-OPTIONAL BLUR PASS
-  inputs:
-    raw AO texture
-    depth texture
-    normal texture
-  output:
-    blurred AO texture
-
-COMPOSITE PASS
-  inputs:
-    base color texture
-    raw or blurred AO texture
-  output:
-    final panel color target
-```
-
-Recommended graph resources for a panel:
-
-1. `<panel>.ssao.color`;
-2. `<panel>.ssao.normal`;
-3. `<panel>.ssao.linear_depth` or equivalent sampled depth source;
-4. `<panel>.ssao.depth`;
-5. `<panel>.ssao.ao`;
-6. `<panel>.ssao.blur`, only when blur is enabled;
-7. borrowed final target `rt`.
-
-Recommended formats:
-
-1. color: `RGBA8_UNORM` unless a higher precision color target is required;
-2. normal: `RGBA16_SFLOAT`;
-3. linear depth: `R32_SFLOAT`;
-4. depth attachment: `D32_SFLOAT`;
-5. AO: `R8_UNORM` or `R16_SFLOAT`, chosen deliberately and covered by fixtures.
-
-For the first robust path, use primitive, mesh, and sphere visuals that can produce valid normals
-and depth. Points, images, text, volume, and overlay/fixed-controller visuals can remain outside
-the SSAO G-buffer until their participation policy is explicit.
-
-## SSAO Quality Contract
-
-The quality target is stable, smooth, depth-aware SSAO suitable for dense scientific scenes:
-
-1. sphere clouds and mesh cavities show contact or cavity darkening;
-2. occlusion strength does not collapse merely because the camera zooms or the scene moves deeper
-   in clip space;
-3. blur smooths sample noise without bleeding across depth or normal discontinuities;
-4. controls have predictable units and effect.
-
-Preferred shader model:
-
-1. reconstruct view-space position from depth using inverse projection and viewport coordinates;
-2. decode or read the current normal;
-3. build a tangent frame around the normal;
-4. rotate a hemisphere sample kernel per pixel using a deterministic hash or small noise texture;
-5. project sample positions back to screen coordinates;
-6. compare sampled scene depth or reconstructed position against the projected sample depth;
-7. accumulate occlusion with range falloff and bias.
-
-Parameter semantics:
-
-1. `radius`: view-space sampling radius;
-2. `bias`: minimum view-space separation before a sample can occlude;
-3. `strength`: final occlusion contrast/intensity;
-4. `sample_count`: number of hemisphere samples, preferably one of `8`, `16`, `32`, or `64`;
-5. `blur`: optional bilateral smoothing.
-
-Bilateral blur should use AO, depth, and normal inputs. It must avoid large depth and normal
-discontinuities and should be a separate graph pass:
+The required composition is:
 
 ```text
-GBUFFER -> SSAO_RAW -> SSAO_BILATERAL_BLUR -> COMPOSITE
+surface_capture
+  -> coherent surface_depth + surface_normal + surface_coverage
+  -> deterministic GTAO-family evaluation
+  -> optional edge-aware reconstruction/denoise
+  -> ambient_visibility
+  -> opaque_shading material ambient/indirect term
 ```
+
+This sequence is a required prepass when AO is enabled: eligible opaque and masked geometry is captured first and redrawn for forward opaque shading after visibility exists. Piggybacking the surface record onto the same opaque-shading pass that consumes AO would create a frame-graph cycle and is invalid. Without AO, compatible shading MRT output may serve later consumers such as EDL.
+
+The black source-over composite is invalid and must be removed. Ordinary AO must not darken direct diffuse, specular, emissive, unlit, transparent, volume, overlay, query, or presentation contributions. A debug presentation may display `ambient_visibility` without mutating ordinary lighting.
+
+Opaque and masked visuals participate only when their capture path matches shaded clipping, discard, deformation, culling, depth bias, coverage, generated normal, and corrected fragment depth semantics. Analytic sphere impostors are a required first-class producer and conformance target. Transparent, volume, unlit, overlay, and query work neither produces nor consumes AO in RC3.
+
+`surface_depth`, `surface_normal`, and `surface_coverage` must describe the same winning sample after semantic resolve. Background validity is explicit. Unsupported visual families are diagnosed or excluded; they do not emit approximate normals or depth.
+
+The concrete depth, normal, coverage, and visibility formats are capability-resolved and recorded in diagnostics. A fallback may reduce visibility resolution or quality but may not restore black composition, reinterpret normals or depth, or silently disable enabled AO.
+
+## Ambient Visibility Quality Contract
+
+The RC3 estimator is a deterministic horizon-based view-space method in the GTAO family. It must satisfy:
+
+1. every declared direction or sample remains in the normalization domain, with background and rejected samples contributing unoccluded visibility;
+2. radius, thickness, falloff, and bias use view-space or another explicit physical scene scale;
+3. fixed inputs use deterministic directions without temporal jitter or visible unmatched per-pixel random rotation;
+4. perspective and orthographic reconstruction use declared camera parameters and one canonical linear view-depth convention;
+5. visibility is finite and bounded in `[0, 1]` before artistic intensity or contrast mapping;
+6. silhouettes, borders, invalid background, alpha-to-coverage, and degenerate projection inputs preserve coherent validity;
+7. stationary redraws are stable, while cross-GPU and cross-backend conformance uses documented tolerances rather than bit identity.
+
+Reduced-resolution visibility requires depth-aware and normal-aware reconstruction. Denoise support is derived from view-space radius and projection; a fixed unqualified pixel blur radius is not a public or internal semantic contract.
+
+The ordinary public descriptor exposes semantic radius, intensity, thickness or bias, quality, optional minimum visibility, and debug mode. Raw sample count, blur enable, pixel blur radius, and blur sigma are removed from the stable descriptor or isolated in an explicitly unstable expert/debug surface during R8.
 
 ## Scene Occlusion Model
 
@@ -147,22 +89,25 @@ Known limitations:
 
 ## Scene Occlusion Resources And Passes
 
-Use per-panel graph resources:
+The typed panel-local `scene_occlusion_depth` product represents the merged nearest scene-occluder field. It is distinct from `surface_depth` and `volume_first_hit_depth`, even when their physical formats or depth conventions are compatible.
+
+The current physical resource realization may use:
 
 1. `<panel>.scene_occlusion.mesh_depth`;
 2. `<panel>.scene_occlusion.volume_depth`;
 3. `<panel>.scene_occlusion.depth`.
 
-The merged depth texture should use `R32_SFLOAT` and store normalized or linear front depth. Linear
-view depth is preferred for stable soft-edge behavior.
+The `scene_occlusion_depth` product stores the nearest positive finite linear view depth in the same camera-space convention as canonical `surface_depth`. Its validity is carried explicitly by coverage or equivalent product metadata; when coverage is false, the numeric depth texel is ignored. Producers with normalized device depth, reversed depth, or another physical encoding must convert to this canonical value before the nearest-depth merge. The current normalized-depth textures are legacy physical inputs, not an alternative semantic encoding of the product.
 
 Frame graph integration:
 
 1. detect active occluders and occludees per panel;
 2. emit occlusion prepass resources and passes before regular rendering;
 3. merge mesh and volume depth sources when more than one producer is active;
-4. add graph reads from occluded render passes to `<panel>.scene_occlusion.depth`;
-5. preserve normal render ordering: opaque, blended, WBOIT, depth peeling, postprocess.
+4. add typed `scene_occlusion_depth` reads to occluded render passes, realized by `<panel>.scene_occlusion.depth` in the current graph;
+5. preserve semantic ordering: coherent surface capture, surface analysis, AO-aware opaque shading, EDL, transparent composition, volume composition, scene postprocessing, overlay, then presentation; a transparency technique may internally choose ordinary blending, WBOIT, or depth peeling without changing that semantic order.
+
+The scene-occlusion depth field is distinct from the coherent `surface_depth` product consumed by ambient visibility and EDL. A volume first-hit depth producer may feed scene occlusion, but it does not make volume rendering an AO surface producer.
 
 The system must not route ordinary blended passes through WBOIT target ownership.
 
@@ -291,40 +236,31 @@ Required capabilities:
 
 1. graph-created sampled render targets;
 2. `R32_SFLOAT` or chosen depth/occlusion color target support;
-3. enough color attachments for the SSAO G-buffer path;
+3. enough compatible attachments for the coherent surface-record capture path;
 4. sampled texture bindings and bind groups for fullscreen and visual-family consumers;
 5. descriptor refresh after graph texture recreation;
 6. explicit diagnostics when required formats or attachment counts are unavailable.
 
-Sampler configuration remains a specific risk for SSAO noise textures. If the first SSAO quality
-upgrade avoids nearest/repeat noise sampling, record that as a deliberate simplification; otherwise
-extend DRP2 sampler descriptors narrowly and add fixtures.
+The deterministic GTAO-family estimator does not use the legacy random-rotation noise texture. Any later stochastic or temporal estimator requires a separately declared determinism, sampling, and history contract.
 
 ## Validation Expectations
 
 Focused tests should cover:
 
-1. graph-shape resources and dependencies for SSAO and scene/volume occlusion;
+1. graph-shape products, resources, and dependencies for ambient visibility and scene/volume occlusion;
 2. default-off behavior;
 3. opt-in DRP2 stream shape;
 4. graph texture recreation with stable ids and live bind groups;
-5. nonblank GPU/offscreen smoke where the environment supports it;
-6. disabled-versus-enabled image differences;
-7. multi-panel viewport/scissor correctness;
-8. shader/pipeline keys differing for occluded versus non-occluded variants.
+5. deterministic numeric or image metrics for zoom sweeps, isolated and dense sphere impostors, meshes, silhouettes, perspective and orthographic projection, stationary redraws, and background or panel borders;
+6. MSAA off/on and alpha-to-coverage coherence for depth, normal, coverage, and visibility;
+7. unequal multi-panel origin/extent, resize, HiDPI, reduced-resolution reconstruction, disabled, and explicit fallback paths;
+8. proof that direct, specular, emissive, unlit, transparent, volume, overlay, query, and scalar color-mapping contributions remain unchanged by ordinary AO;
+9. shader/pipeline keys differing for occluded versus non-occluded variants.
 
 
 ## Quality And Consumer Backlog
 
-SSAO quality work should stay on the same graph path:
-
-1. add inverse projection or reconstruction parameters to SSAO uniforms;
-2. reconstruct view-space position from depth;
-3. replace fixed 2D kernels with normal-oriented hemisphere kernels;
-4. add deterministic per-pixel kernel rotation;
-5. harden bilateral blur as an explicit optional graph pass;
-6. expose radius, bias, strength, sample count, blur, and quality preset controls in the tuning
-   example.
+The old hit-count-normalized SSAO kernel, fixed-pixel blur, optional blur toggle, and black-overlay composite are legacy removal targets, not backlog direction. R7 replaces them through the semantic product path above.
 
 Non-volume occlusion consumers should start with primitive or unlit mesh. Contract tests should
 verify the volume-occlusion pass, depth resource, graph read, selected shader/pipeline variant, and

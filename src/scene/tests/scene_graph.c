@@ -139,6 +139,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_edl_blended_overlay_runtime_lowering);
     TST_CASE(test_scene_edl_depth_producer_capabilities);
     TST_CASE(test_scene_edl_ignores_ineligible_passes);
+    TST_CASE(test_scene_ssao_normalization_characterization);
     TST_CASE(test_scene_ssao_graph_foundation);
     TST_CASE(test_scene_ssao_runtime_lowering);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_ssao_glsl_executes);

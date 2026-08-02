@@ -2,9 +2,7 @@
 
 ## Status
 
-Proposal. This document defines the desired debug surface for rendering a `FramePlan` as a
-terminal-readable graph. It is implementation-facing, but it does not define public scene semantics
-or a stable render-graph API.
+Approved internal debug contract. This document defines the desired terminal-readable `FramePlan` graph surface. It is implementation-facing and does not define public scene semantics or a stable render-graph API.
 
 
 ## Purpose
@@ -26,8 +24,7 @@ It should answer:
 1. The view is a debug rendering of the scene-owned `FramePlan`; it must not expose backend handles,
    command buffers, image views, swapchains, or Vulkan/WebGPU objects.
 2. The textual output must be deterministic for a deterministic `FramePlan`.
-3. The view must be generated from `FramePlan` nodes, graph resources, graph passes, and inferred
-   graph dependencies, not from the lowered DRP2 runtime state.
+3. The view must be generated from `FramePlan` nodes, semantic products, graph resources, graph passes, and inferred graph dependencies, not from the lowered DRP2 runtime state.
 4. The graph view is allowed to simplify dense graphs, but any hidden edge must still appear in a
    plain dependency list below the drawing.
 5. The default view should fit ordinary single-panel plans in a 120-column terminal.
@@ -40,7 +37,8 @@ It should answer:
 | Shape | Meaning |
 |---|---|
 | `[node]` | Executable work: upload, compute, render, copy, or readback |
-| `(resource)` | Logical buffer, texture, attachment, external target, or readback resource |
+| `{product}` | Semantic render product with typed plan-local identity |
+| `(resource)` | Physical logical buffer, texture, attachment, external target, or readback resource |
 | `──>` | Data dependency or resource flow |
 | `│`, `▼` | Continuation of a data dependency |
 | `...` | Deliberate elision of repeated or too-wide content |
@@ -49,9 +47,11 @@ Use UTF-8 box/arrow characters by default. Provide an ASCII-only mode for CI log
 do not render UTF-8 reliably.
 
 
-## Default Output Shape
+## Legacy R0 Characterization Example
 
-The preferred first view is a vertical, resource-mediated DAG sketch:
+The following drawing records the current role- and resource-label-based SSAO graph so R0 diagnostics can recognize and remove it. It is not the approved composition target: the `ssao_composite` black-overlay pass and string-derived resource identity must disappear during R1-R7.
+
+The current legacy view is a vertical, resource-mediated DAG sketch:
 
 ```text
 FramePlan figure=fig0 frame=42
@@ -101,6 +101,24 @@ The drawing is informative and optimized for humans. The `Edges:` section is the
 fallback that preserves exact dependencies.
 
 
+## Approved Semantic Target
+
+The terminal view must ultimately expose products independently of their physical texture aliases and show AO as a lighting input rather than a color composite:
+
+```text
+[surface capture]
+  ├──> {surface_depth} ────┐
+  ├──> {surface_normal} ───┼──> [ambient visibility]
+  └──> {surface_coverage} ─┘              │
+                                         ▼
+                              {ambient_visibility}
+                                         │
+                                         ▼
+                                [opaque shading]
+                                consumes ambient only
+```
+
+
 ## Node Metadata
 
 The compact view should keep each box to roughly four lines.
@@ -112,7 +130,8 @@ The compact view should keep each box to roughly four lines.
 | Render pass | index, pass role or graph pass id, panel id, visual count or short visual list |
 | Copy | plan index, source, destination, byte size, request id when present |
 | Readback | plan index, resource id, request id |
-| Resource | id, kind, usage summary, lifetime, extent when non-obvious |
+| Product | typed id, semantic kind, validity, samples/resolve, producer and consumers |
+| Resource | id, concrete format, usage summary, lifetime, extent when non-obvious |
 
 Verbose mode may add:
 

@@ -116,6 +116,28 @@ percentage, and paths to actual and diff images on failure.
 This layer answers: did the backend still render the fixture as expected?
 
 
+## Ambient Visibility Metamorphic Metrics
+
+Ambient-visibility quality uses numeric metamorphic comparisons rather than exact graph fixtures or committed binary goldens. Each capture records geometry, projection, camera scale, resolution, panel rectangle, MSAA, reconstruction mode, GPU, driver, and the surface/interior/silhouette/background masks used by the metric.
+
+R0 records current values without treating known issue #137 behavior as correct. R7 must meet or deliberately revise these provisional targets from exact candidate captures:
+
+| Metric | Provisional R7 target |
+| --- | --- |
+| Same-backend stationary redraw | Maximum RGBA8 delta `0` and zero changed pixels after warmup |
+| Background visibility | Minimum `254/255` and zero dark-background pixels |
+| Isolated sphere eroded interior | p01 visibility at least `0.95` and zero local specks |
+| Dense-sphere or mesh local specks | At most `0.1%` of eroded interior pixels |
+| Perspective zoom sweep | Mean drift at most `0.05` and p05 drift at most `0.10` |
+| Cross-resolution normalized metrics | Mean and p05 drift at most `0.05` |
+| Equal-resolution panel relocation | Maximum delta `1` and changed fraction at most `0.01%` |
+| Resize round-trip | Maximum delta `1` and changed fraction at most `0.01%` |
+| MSAA 1x/4x eroded interior | Mean and p05 drift at most `0.05`, excluding the silhouette band |
+| Silhouette/background leakage | At most `0.1%` of strict-background pixels |
+
+The R0 analyzer records global minimum, mean, p01, p05, and p50 visibility, very-dark and nongray pixels, foreground AO response and background preservation using strict clear-color-relative masks, and paired-capture maximum channel delta and changed pixels. Current-behavior assertions remain limited to valid captures and masks, background preservation, nontrivial AO response where expected, stationary stability, panel isolation, and resize round-trip stability. R7 must add eroded-interior, silhouette, and strict-background masks; 3x3-neighborhood local-speck metrics; complete capture-environment metadata; and acceptance for zoom consistency, MSAA parity, speck removal, silhouette quality, and material-term isolation.
+
+
 ## Failure Interpretation
 
 The layers are intended to make failures actionable:

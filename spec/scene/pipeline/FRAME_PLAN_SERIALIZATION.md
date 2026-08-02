@@ -31,9 +31,13 @@ A serializable FramePlan allows:
 }
 ```
 
+The JSON above is the current schema `0.1` shape. It has no semantic product array and remains valid only for current characterization and fixtures.
+
 `figure_id` is the scene-assigned figure identity.
 `frame_index` is a monotonically increasing counter per figure.
 `nodes` is an ordered list of plan nodes, in execution order.
+
+R1 must bump the schema version and add a concrete `products` array serialized independently from physical graph resources. Each product record exposes its typed plan-local ID, kind, domain, panel/view and camera identity where applicable, extent policy and resolved extent, format class and concrete format, sample domain and resolve policy, coordinate/encoding/alpha/coverage/validity metadata, lifetime, producer, consumers, and capability adaptations. Diagnostic names remain non-authoritative.
 
 
 ## Node Types
@@ -135,7 +139,7 @@ This is the primary acceptance test for the converter before GPU execution.
 
 ## Versioning
 
-The serialization shape is versioned as `"frame_plan_schema": "0.1"` (pre-stable).
+The current serialization shape is versioned as `"frame_plan_schema": "0.1"` (pre-stable). The approved semantic-product shape is an R1 target, not part of schema `0.1`, and requires a version bump when its concrete fields land.
 Fixtures pinned to a schema version are valid only for that version.
 Schema bumps are permitted while the scene spec is pre-release.
 

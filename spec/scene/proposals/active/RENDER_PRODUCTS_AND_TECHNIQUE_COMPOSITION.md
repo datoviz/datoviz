@@ -78,6 +78,7 @@ The minimum RC3 product kinds are:
 | `surface_coverage` | Coverage or validity for the winning surface, including the resolved-edge rule when MSAA is active. |
 | `object_id` | Integer query identity. It is never averaged or filtered and remains outside presentation postprocessing. |
 | `ambient_visibility` | Scalar visibility in `[0, 1]`, where `1` is unoccluded. It carries the resolution and reconstruction policy used by material shading. |
+| `scene_occlusion_depth` | Nearest depth from explicitly participating scene occluders. It is distinct from the primary opaque surface record and from volume first-hit depth even when a producer contributes or a physical format is shared. |
 | `transparent_accumulation` | Technique-private weighted or peeled color/transmittance products with explicit premultiplication semantics. |
 | `volume_first_hit_depth` | Volume ray first-hit or occupancy depth. It may share depth conventions with `surface_depth` but is not silently interchangeable with it. |
 | `presentation_color` | Final panel color in the transfer function and alpha convention required by the presentation or capture target. |
@@ -106,16 +107,21 @@ Visual order and technique phase order are separate. Visual order preserves auth
 The composer orders work through semantic phases:
 
 1. `surface_capture`: produce or resolve the coherent surface record when required.
-2. `opaque_shading`: produce the base scene color and consume material inputs such as ambient visibility.
-3. `surface_postprocess`: transform opaque surface color using its coherent surface record; EDL runs here after AO-aware material shading and before transparency.
-4. `transparent_shading`: accumulate and resolve transparent surface work against the declared scene color and depth products.
-5. `volume_shading`: composite volume work using explicitly compatible scene or volume depth products.
-6. `scene_postprocess`: transform the composed scene color or derive presentation effects such as DoF, bloom, outlines, or tone mapping.
-7. `overlay`: compose content that should not receive scene-space lighting or depth effects.
-8. `presentation`: encode or copy to the external panel target.
-9. `query`: execute independent query plans outside presentation composition.
+2. `surface_analysis`: derive products such as ambient visibility from the coherent surface record without producing scene color.
+3. `opaque_shading`: produce the base scene color and consume material inputs such as ambient visibility.
+4. `surface_postprocess`: transform opaque surface color using its coherent surface record; EDL runs here after AO-aware material shading and before transparency.
+5. `transparent_shading`: accumulate and resolve transparent surface work against the declared scene color and depth products.
+6. `volume_shading`: composite volume work using explicitly compatible scene or volume depth products.
+7. `scene_postprocess`: transform the composed scene color or derive presentation effects such as DoF, bloom, outlines, or tone mapping.
+8. `overlay`: compose content that should not receive scene-space lighting or depth effects.
+9. `presentation`: encode or copy to the external panel target.
+10. `query`: execute independent query plans outside presentation composition.
 
 The phase order is a default partial order, not an effect-name list. A technique declares dependencies between product producers and consumers; the frame graph supplies the exact topological order and rejects cycles or multiple ambiguous producers.
+
+A technique that transforms color consumes one `scene_color` product version and produces a distinct successor version. This versioning expresses the composition chain without multiple producers or read/write feedback on one product identity.
+
+AO requires a coherent `surface_capture` prepass before visibility evaluation and forward `opaque_shading`, so eligible opaque and masked geometry is drawn twice when AO is enabled. Producing the record as an MRT of the same shading pass that consumes `ambient_visibility` would form a cycle and is forbidden. MRT piggyback remains valid for later consumers that do not feed the producing pass, such as EDL when AO is disabled, or after a separately approved deferred-lighting design.
 
 ## Technique Contract And Composer
 
@@ -164,7 +170,7 @@ RC3 does not require an always-on HDR intermediate. The composer allocates a hig
 
 ## Surface Capture And SSAO
 
-When any enabled technique requires surface geometry, the composer schedules one shared surface-capture path for all eligible visuals. It must avoid duplicate geometry work where a compatible opaque shading pass can produce the same products through multiple render targets, but correctness and portability take precedence over forcing one backend strategy.
+When any enabled technique requires surface geometry, the composer schedules one shared surface-capture path for all eligible visuals. AO requires this prepass before `surface_analysis` and forward opaque shading, accepting duplicate eligible geometry for correctness. A compatible opaque-shading MRT may satisfy only later consumers that cannot feed the producing pass; optimization never overrides dependency acyclicity or portability.
 
 Surface capture must describe the same nearest visible opaque or masked fragment as ordinary surface shading, including clip/discard rules, deformation, culling, depth bias, analytic sphere-impostor ray intersection, corrected fragment depth, alpha-to-coverage, and generated normals. Unsupported visual families are diagnosed or excluded explicitly; they never emit best-effort normals or depth. Transparent, volume, unlit overlay, and query layers are excluded from AO production and reception in the RC3 contract.
 
@@ -209,7 +215,7 @@ The graph rejects implicit sample-count changes and format/filter combinations t
 | EDL | Consumes canonical linear `surface_depth` plus AO-aware opaque scene color and produces scene color in `surface_postprocess` before transparency; it no longer owns a private depth convention. |
 | WBOIT | Keeps its accumulation algorithm but declares transparent accumulation, transmittance, scene-color, and depth products in `transparent_shading`. Transparent content is depth-tested against the opaque surface but does not produce or consume AO in RC3. |
 | Depth peeling | Keeps peel iteration semantics but declares per-layer depth/color/transmittance products and explicit ordering in `transparent_shading`. Peeled content does not produce or consume AO in RC3. |
-| Scene/volume occlusion | Shares typed coordinate and validity conventions where applicable, but scene surface depth and volume first-hit depth remain distinct product kinds. |
+| Scene/volume occlusion | Produces or consumes typed `scene_occlusion_depth` with explicit contribution from compatible mesh or `volume_first_hit_depth` sources; `scene_occlusion_depth`, `surface_depth`, and `volume_first_hit_depth` remain distinct product kinds. |
 | Depth cue | Remains material-local in RC3. A future panel fog technique may consume surface depth, but this refactor must not silently change depth-cue appearance. |
 | DoF | Can later consume canonical surface depth and linear scene color without inventing another depth capture. It remains proposal-stage unless separately promoted. |
 | Bloom/tone mapping | Can later consume linear scene color and produce presentation-ready color. RC3 establishes the encoding boundary without requiring either effect. |
@@ -283,3 +289,5 @@ The recommended decisions are:
 11. Defer temporal techniques, public plugins, editable frame graphs, a full deferred renderer, display HDR/color management, ray tracing, and broad new effects.
 
 The maintainer approved all eleven recommended decisions without edits on 2026-08-02. Any implementation discovery that changes product semantics, scene/DRP2 ownership, the public API direction, or the migration scope returns to maintainer review rather than being decided by an execution subagent.
+
+During R0 consistency review, the maintainer additionally approved the required AO prepass and typed `scene_occlusion_depth` refinement: AO-enabled panels capture the coherent surface record before `surface_analysis` and redraw eligible geometry for forward opaque shading, while scene-occlusion depth remains semantically distinct from surface and volume first-hit depth.
