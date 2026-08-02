@@ -1,6 +1,6 @@
 # Frame Demand And Interaction Pacing Handoff
 
-Status: frame demand and presentation policy implemented; native app windows prefer refresh-paced FIFO latest-ready, mailbox is the next low-latency fallback, ordinary FIFO uses one slot, and explicit overrides remain available. Updated: 2026-08-03.
+Status: frame demand and presentation policy implemented; a pending scheduler-admission refactor must apply pacing to every requested native frame so default interaction is refresh-paced without dirty-frame bursts. Updated: 2026-08-03.
 
 This handoff records the approved architecture and implementation contract for responsive on-demand interaction. It remains concrete enough for a lower-reasoning agent to maintain or extend without reopening the architecture question.
 
@@ -232,6 +232,60 @@ The comparison tool forces ordinary FIFO for `scatter-interaction`. Keep raw rep
 
 The maintainer accepted one frame slot as the ordinary FIFO fallback on 2026-08-03 after a physical Linux smoke reproduced very sluggish interaction with the automatic four-slot pool and two slots, while one slot improved the result. Same-machine telemetry measured p95 input-to-submit latency of approximately 116 ms with four slots, 83 ms with two slots, and 66 ms with one slot. A subsequent controlled smoke showed that forced-continuous one-slot FIFO remained sluggish, while immediate and FIFO latest-ready capped to the 60 Hz monitor were very smooth. These are CPU submission freshness proxies plus physical qualitative evidence, not input-to-photon measurements. The root cause is stale ordered presentation under continuous ordinary FIFO, not scene throughput, controller frame demand, or the frame-slot separation itself.
 
+## Pending Scheduler-Admission Refactor
+
+The refresh-aware policy fixed continuous interaction pacing, and `0ba106935` bounds temporarily unknown refresh rates to 60 Hz. The remaining defect is architectural: the app currently applies a view deadline only while `_view_has_continuous_work()` is true. Dirty, event-driven, and other one-shot frames can bypass pacing and submit in short unbounded bursts, which explains default telemetry near 2,000 FPS even when the monitor reports 60 Hz.
+
+The long-term scheduling boundary is:
+
+```text
+frame demand -> pacing admission -> render/submit -> Vulkan presentation
+```
+
+Frame demand decides whether a view needs work. Pacing admission decides when that view may submit its next frame. These decisions must remain independent: continuous demand must not imply unbounded submission, and one-shot demand must not bypass an active pacing policy.
+
+Use an internal per-view pacing policy with these modes:
+
+| Situation | Pacing policy |
+| --- | --- |
+| Default app-owned native window | Refresh-paced using the active monitor rate, with a 60 Hz fallback while the rate is unknown |
+| Positive explicit `DVZ_FPS_CAP` | Fixed-rate at the requested cap |
+| Explicit immediate mode without an FPS cap | Unbounded for benchmarks and intentional throughput testing |
+| External or embedded surface | Host-driven; the Datoviz native scheduler must not impose an independent cadence |
+
+The app's pacing intent must survive Vulkan capability fallback. A default refresh-paced window remains refresh-paced if FIFO latest-ready resolves to mailbox or ordinary FIFO. Window reports monitor facts, app owns demand coalescing and pacing admission, Canvas owns frame resources and submission, and vklite resolves present-mode capabilities. Do not infer the scheduler policy solely from the final Vulkan present-mode enum.
+
+The scheduler implementation must:
+
+1. Combine pending one-shot work and continuous frame demand into a per-view `needs_frame` decision.
+2. Admit every requested native frame through the view's pacing deadline, regardless of whether its source is continuous interaction, a dirty scene, an event, animation, replay, or another invalidation.
+3. Coalesce repeated events and invalidations while a paced view waits so the next render consumes the newest state instead of queueing stale intermediate states.
+4. Render the first requested frame immediately after a genuinely idle period, pace subsequent frames no faster than the selected cadence, render the final release or mutation frame, and then return to event waiting with zero idle rendering.
+5. Compute the earliest eligible deadline across views without busy polling. An unpaced or already-due view must remain immediately eligible and must not be delayed by another capped view.
+6. Advance a paced deadline only after a successful presented frame. Resize, recreate, minimized, failed, and deferred-present paths must preserve their existing ownership and retry semantics.
+7. Keep explicit benchmark rendering through `dvz_view_render_once()` unpaced unless the benchmark explicitly requests a cap.
+
+Prefer small pure policy and deadline helpers in `src/app/presentation_policy.c` over embedding more timing branches directly in the host loop. Store only the minimum per-view pacing state needed by the scheduler; this refactor does not require a public API unless implementation proves that an explicit pacing selection must be user-facing.
+
+Required deterministic coverage:
+
+1. A burst of dirty or one-shot requests is coalesced and cannot exceed the view cadence.
+2. Interaction starts with an immediate frame, remains bounded at 60, 75, 120, and 144 Hz, produces a final release frame, and returns to idle.
+3. Unknown monitor refresh uses 60 Hz, while a positive explicit FPS cap remains authoritative.
+4. Default refresh pacing survives FIFO-latest-to-mailbox and FIFO-latest-to-FIFO capability fallback.
+5. Explicit immediate mode remains unbounded when no FPS cap is set.
+6. Multiple views honor independent deadlines, and a future deadline never blocks an unpaced or already-due view.
+7. Expired deadlines recover without catch-up bursts, drift-amplifying loops, or synthetic queued frames.
+8. Existing frame-callback, replay, animation, resize, close, external-surface, and one-shot invalidation tests remain green.
+
+Implement and commit this work in logical checkpoints:
+
+1. Add the internal pacing-policy representation and pure policy/deadline tests.
+2. Refactor scheduler admission and add dirty-burst, transition, and multi-view tests.
+3. Run `just build`, `just test app`, the relevant presentation and scene tests, `just present-check --frames 120`, `just spec-check`, and `git diff --check`.
+4. Physically verify default `scatter`: zero idle frames, immediate interaction wake, smooth refresh-capped updates, a correct final release frame, and return to idle. Compare explicit immediate mode to confirm the intentional unbounded escape hatch remains available.
+5. Update the durable interaction-latency specification and completion status only after the physical acceptance behavior passes.
+
 ## Completion Criteria
 
-The frame-demand, frame-slot, and presentation-policy slices are complete: normal interactive views idle without input, active controller drags render continuously, release returns to idle, unrelated views remain idle, existing continuous sources retain their behavior, native app windows prefer refresh-paced FIFO latest-ready, mailbox and one-slot FIFO provide capability fallbacks, and explicit environment overrides remain available.
+The original frame-demand, frame-slot, and presentation-policy slices are complete: normal interactive views idle without input, active controller drags render continuously, release returns to idle, unrelated views remain idle, existing continuous sources retain their behavior, native app windows prefer refresh-paced FIFO latest-ready, mailbox and one-slot FIFO provide capability fallbacks, and explicit environment overrides remain available. The overall regression is not closed until the pending scheduler-admission refactor also proves that every requested default-native frame is refresh-paced, event bursts are coalesced, and idle rendering remains zero.
