@@ -102,62 +102,6 @@ static ResourceId* _auxiliary_buffer_resource(
 
 
 
-bool _emitter_prepare_gbuffer_targets(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
-    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneGBufferTargets* out)
-{
-    ANN(emitter);
-    ANN(stream);
-    ANN(plan);
-    ANN(render);
-    ANN(graph_targets);
-    ANN(out);
-
-    const DvzFrameGraphPass* pass = _graph_pass_for_render(plan, render);
-    if (pass == NULL)
-        return false;
-
-    uint32_t width = 0;
-    uint32_t height = 0;
-    _emit_target_extent(cfg, &width, &height);
-
-    bool ok = true;
-    for (uint32_t i = 0; ok && i < pass->color_attachment_count; i++)
-    {
-        const DvzFrameGraphAttachment* attachment = &pass->color_attachments[i];
-        const DvzFrameGraphResource* resource =
-            _graph_resource_by_id(plan, attachment->resource_id);
-        if (resource == NULL)
-            return false;
-        uint64_t texture_id = 0;
-        ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_R16G16B16A16_SFLOAT,
-            &texture_id);
-        ok = ok && _graph_runtime_targets_add(graph_targets, resource->id, texture_id);
-        if (ok && i == 0)
-            out->normal_id = texture_id;
-        else if (ok && i == 1)
-            out->object_id = texture_id;
-    }
-
-    if (ok && pass->has_depth_attachment)
-    {
-        const DvzFrameGraphResource* resource =
-            _graph_resource_by_id(plan, pass->depth_attachment.resource_id);
-        if (resource == NULL)
-            return false;
-        ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, resource, width, height, DVZ_FORMAT_D32_SFLOAT,
-            &out->depth_id);
-        ok = ok && _graph_runtime_targets_add(graph_targets, resource->id, out->depth_id);
-    }
-
-    return ok && out->normal_id != 0;
-}
-
-
-
 /**
  * Return a compact fingerprint for an EDL sampled bind group dependency set.
  *
@@ -194,7 +138,7 @@ uint64_t _edl_bind_group_fingerprint(
 bool _emitter_prepare_edl_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneEdlTargets* out)
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out)
 {
     ANN(emitter);
     ANN(stream);
@@ -218,14 +162,16 @@ bool _emitter_prepare_edl_targets(
     if (color_resource == NULL || depth_resource == NULL)
         return false;
 
+    uint64_t color_id = 0;
+    uint64_t depth_id = 0;
     bool ok = _graph_resolve_texture_2d(
         emitter, stream, plan, cfg, color_resource, width, height, DVZ_FORMAT_R8G8B8A8_UNORM,
-        &out->color_id);
+        &color_id);
     ok = ok && _graph_resolve_texture_2d(
                    emitter, stream, plan, cfg, depth_resource, width, height, DVZ_FORMAT_D32_SFLOAT,
-                   &out->depth_id);
-    ok = ok && _graph_runtime_targets_add(graph_targets, color_resource->id, out->color_id);
-    ok = ok && _graph_runtime_targets_add(graph_targets, depth_resource->id, out->depth_id);
+                   &depth_id);
+    ok = ok && _graph_runtime_targets_add(graph_targets, color_resource->id, color_id);
+    ok = ok && _graph_runtime_targets_add(graph_targets, depth_resource->id, depth_id);
     if (!ok)
         return false;
 
@@ -233,17 +179,17 @@ bool _emitter_prepare_edl_targets(
         emitter, plan, pass, cfg, DVZ_SCENE_AUXILIARY_EDL_PARAMS);
     if (params == NULL || params->id == 0 || params->byte_size < sizeof(DvzSceneEdlUniform))
         return false;
-    out->params_id = params->id;
+    uint64_t params_id = params->id;
 
     bool is_new = false;
-    out->sampler_id = _obj_id(emitter, "_sampler_edl", &is_new);
-    if (out->sampler_id == 0)
+    uint64_t sampler_id = _obj_id(emitter, "_sampler_edl", &is_new);
+    if (sampler_id == 0)
         return false;
     if (is_new)
-        ok = ok && dvz_drp2_stream_create_sampler(stream, out->sampler_id);
+        ok = ok && dvz_drp2_stream_create_sampler(stream, sampler_id);
 
-    out->resolve_bgl_id = _obj_id(emitter, "_bgl_edl_resolve", &is_new);
-    if (out->resolve_bgl_id == 0)
+    uint64_t bgl_id = _obj_id(emitter, "_bgl_edl_resolve", &is_new);
+    if (bgl_id == 0)
         return false;
     if (ok && is_new)
     {
@@ -274,58 +220,58 @@ bool _emitter_prepare_edl_targets(
             },
         };
         ok = ok && dvz_drp2_stream_create_bind_group_layout_entries(
-                       stream, out->resolve_bgl_id, 4, entries);
+                       stream, bgl_id, 4, entries);
     }
 
     char bg_key[96];
     dvz_snprintf(
-        bg_key, sizeof(bg_key), "_bg_edl_%" PRIu64 "_%" PRIu64 "_%" PRIu64, out->color_id,
-        out->depth_id, out->params_id);
+        bg_key, sizeof(bg_key), "_bg_edl_%" PRIu64 "_%" PRIu64 "_%" PRIu64, color_id,
+        depth_id, params_id);
     ResourceId* bg_resource = _resource_entry(&emitter->objects, bg_key, &is_new);
     if (bg_resource == NULL || bg_resource->id == 0)
         return false;
-    out->resolve_bg_id = bg_resource->id;
+    uint64_t bg_id = bg_resource->id;
     uint64_t fingerprint =
-        _edl_bind_group_fingerprint(out->color_id, out->depth_id, out->sampler_id, out->params_id);
+        _edl_bind_group_fingerprint(color_id, depth_id, sampler_id, params_id);
     if (!is_new && bg_resource->byte_size != fingerprint)
         is_new = true;
     bg_resource->byte_size = fingerprint;
     if (ok && is_new)
     {
-        uint64_t color_id =
-            _graph_sampled_read_texture_id(pass, 0, 0, graph_targets, out->color_id);
-        uint64_t depth_id =
-            _graph_sampled_read_texture_id(pass, 1, 0, graph_targets, out->depth_id);
+        uint64_t sampled_color_id =
+            _graph_sampled_read_texture_id(pass, 0, 0, graph_targets, 0);
+        uint64_t sampled_depth_id =
+            _graph_sampled_read_texture_id(pass, 1, 0, graph_targets, 0);
         DvzDrp2BindGroupEntry entries[4] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = color_id,
+                .resource_id = sampled_color_id,
             },
             {
                 .binding = 1,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = depth_id,
+                .resource_id = sampled_depth_id,
             },
             {
                 .binding = 2,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLER,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
-                .resource_id = out->sampler_id,
+                .resource_id = sampler_id,
             },
             {
                 .binding = 3,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
-                .resource_id = out->params_id,
+                .resource_id = params_id,
                 .offset = 0,
                 .size = sizeof(DvzSceneEdlUniform),
             },
         };
         ok = ok && dvz_drp2_stream_create_bind_group_entries(
-                       stream, out->resolve_bg_id, out->resolve_bgl_id, 4, entries);
+                       stream, bg_id, bgl_id, 4, entries);
     }
 
     const char* fmt = _shader_format_tag(cfg);
@@ -353,14 +299,19 @@ bool _emitter_prepare_edl_targets(
                        stream, fs_id, "FRAGMENT", "edl_resolve_frag",
                        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_EDL_RESOLVE, true), cfg);
 
-    out->resolve_pipeline_id = _obj_id(emitter, pipe_key, &is_new);
-    if (out->resolve_pipeline_id == 0)
+    uint64_t pipeline_id = _obj_id(emitter, pipe_key, &is_new);
+    if (pipeline_id == 0)
         return false;
     if (ok && is_new)
         ok = ok &&
              _create_pipeline_with_layout(
-                 stream, out->resolve_pipeline_id, vs_id, fs_id, out->resolve_bgl_id) &&
+                 stream, pipeline_id, vs_id, fs_id, bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, final_format);
+    out->render = render;
+    out->provider = DVZ_SCENE_WORK_PROVIDER_EDL;
+    out->pipeline_id = pipeline_id;
+    out->bind_group_layout_id = bgl_id;
+    out->bind_group_id = bg_id;
     return ok;
 }
 
@@ -405,7 +356,7 @@ uint64_t _ssao_bind_group_fingerprint(
 bool _emitter_prepare_ssao_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneSsaoTargets* out)
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out)
 {
     ANN(emitter);
     ANN(stream);
@@ -837,6 +788,8 @@ bool _emitter_prepare_ssao_targets(
                  DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
                      DVZ_MASK_COLOR_A);
     }
+    out->render = render;
+    out->provider = DVZ_SCENE_WORK_PROVIDER_SSAO;
     return ok;
 }
 
@@ -875,7 +828,7 @@ uint64_t _wboit_bind_group_fingerprint(uint64_t accum_id, uint64_t weight_id, ui
 bool _emitter_prepare_wboit_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneWboitTargets* out)
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out)
 {
     ANN(emitter);
     ANN(stream);
@@ -1070,6 +1023,8 @@ bool _emitter_prepare_wboit_targets(
                  DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
                      DVZ_MASK_COLOR_A);
     }
+    out->render = render;
+    out->provider = DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION;
     return ok;
 }
 
@@ -1217,7 +1172,7 @@ bool _depth_peel_resolve_sampled_bind_group(
 bool _emitter_prepare_depth_peel_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneDepthPeelTargets* out)
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out)
 {
     ANN(emitter);
     ANN(stream);
@@ -1413,5 +1368,7 @@ bool _emitter_prepare_depth_peel_targets(
                  DVZ_MASK_COLOR_R | DVZ_MASK_COLOR_G | DVZ_MASK_COLOR_B |
                      DVZ_MASK_COLOR_A);
     }
+    out->render = render;
+    out->provider = DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT;
     return ok;
 }

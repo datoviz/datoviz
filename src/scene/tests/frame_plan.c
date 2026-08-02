@@ -917,13 +917,14 @@ int test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels(
 
 
 /**
- * Ensure runtime scene rendering follows graph pass order instead of render node order.
+ * Ensure runtime lowering does not infer unresolved graph work from legacy pass roles or labels.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, const TstCase* item)
+static int test_frame_plan_runtime_ignores_unresolved_graph_work(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -1029,17 +1030,14 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
     AT(dvz_diagnostic_report_count(&report) == 0);
 
     uint32_t viewport_count = 0;
-    float viewport_x[2] = {0};
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
         ANN(command);
-        if (command->type == DVZ_DRP2_COMMAND_SET_VIEWPORT && viewport_count < 2)
-            viewport_x[viewport_count++] = command->u.set_viewport.viewport[0];
+        if (command->type == DVZ_DRP2_COMMAND_SET_VIEWPORT)
+            viewport_count++;
     }
-    AT(viewport_count == 2);
-    AC(viewport_x[0], 0.0f, 1e-6f);
-    AC(viewport_x[1], 50.0f, 1e-6f);
+    AT(viewport_count == 0);
 
     _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);
@@ -3280,7 +3278,7 @@ int test_scene_frame_plan(TstSuite* suite)
     TST_CASE(test_frame_plan_render_image_metadata_wgsl_uses_typed_labels);
     TST_CASE(test_frame_plan_render_textured_mesh_metadata_wgsl_uses_typed_labels);
     TST_CASE(test_frame_plan_render_metadata_complete);
-    TST_CASE(test_frame_plan_runtime_uses_graph_pass_order);
+    TST_CASE(test_frame_plan_runtime_ignores_unresolved_graph_work);
     TST_CASE(test_frame_plan_render_visual_metadata_diagnostic);
     TST_CASE(test_frame_plan_draw_resource_validation_rejects_short_position);
     TST_CASE(test_frame_plan_dynamic_update);

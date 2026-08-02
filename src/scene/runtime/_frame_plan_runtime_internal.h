@@ -39,13 +39,9 @@
 typedef struct SceneDrawVertexBuffer SceneDrawVertexBuffer;
 typedef struct SceneDrawPacket SceneDrawPacket;
 typedef struct SceneRenderBatch SceneRenderBatch;
+typedef struct SceneWorkRuntime SceneWorkRuntime;
 typedef struct SceneGraphRuntimeTarget SceneGraphRuntimeTarget;
 typedef struct SceneGraphRuntimeTargets SceneGraphRuntimeTargets;
-typedef struct SceneGBufferTargets SceneGBufferTargets;
-typedef struct SceneSsaoTargets SceneSsaoTargets;
-typedef struct SceneEdlTargets SceneEdlTargets;
-typedef struct SceneWboitTargets SceneWboitTargets;
-typedef struct SceneDepthPeelTargets SceneDepthPeelTargets;
 typedef struct DvzSceneResolvedShaderStage DvzSceneResolvedShaderStage;
 typedef struct DvzSceneResolvedShader DvzSceneResolvedShader;
 
@@ -115,6 +111,44 @@ struct SceneRenderBatch
 };
 
 
+struct SceneWorkRuntime
+{
+    const DvzFramePlanNode* render;
+    DvzSceneWorkProviderKey provider;
+    uint64_t color_id;
+    uint64_t depth_id;
+    uint64_t normal_id;
+    uint64_t object_id;
+    uint64_t accum_id;
+    uint64_t weight_id;
+    uint64_t occlusion_id;
+    uint64_t blur_id;
+    uint64_t composite_input_id;
+    uint64_t params_id;
+    uint64_t sampler_id;
+    uint64_t pipeline_id;
+    uint64_t bind_group_layout_id;
+    uint64_t bind_group_id;
+    uint64_t ssao_bgl_id;
+    uint64_t ssao_bg_id;
+    uint64_t ssao_pipeline_id;
+    uint64_t blur_bgl_id;
+    uint64_t blur_bg_id;
+    uint64_t blur_pipeline_id;
+    uint64_t composite_bgl_id;
+    uint64_t composite_bg_id;
+    uint64_t composite_pipeline_id;
+    uint64_t resolve_bgl_id;
+    uint64_t resolve_bg_id;
+    uint64_t resolve_pipeline_id;
+    uint64_t iter_bgl_id;
+    uint64_t iter_bg_ids[DVZ_SCENE_DEPTH_PEEL_ITERATIONS];
+    uint64_t dummy_bg_id;
+    uint64_t sampled_depth_id;
+    uint64_t fallback_bind_group_id;
+};
+
+
 struct SceneGraphRuntimeTarget
 {
     char resource_id[DVZ_SCENE_LABEL_SIZE];
@@ -127,74 +161,6 @@ struct SceneGraphRuntimeTargets
     SceneGraphRuntimeTarget* targets;
     uint32_t count;
     uint32_t capacity;
-};
-
-
-struct SceneGBufferTargets
-{
-    uint64_t normal_id;
-    uint64_t object_id;
-    uint64_t depth_id;
-};
-
-
-struct SceneEdlTargets
-{
-    uint64_t color_id;
-    uint64_t depth_id;
-    uint64_t params_id;
-    uint64_t sampler_id;
-    uint64_t resolve_bgl_id;
-    uint64_t resolve_bg_id;
-    uint64_t resolve_pipeline_id;
-};
-
-
-struct SceneSsaoTargets
-{
-    uint64_t normal_id;
-    uint64_t depth_id;
-    uint64_t occlusion_id;
-    uint64_t blur_id;
-    uint64_t composite_input_id;
-    uint64_t params_id;
-    uint64_t sampler_id;
-    uint64_t ssao_bgl_id;
-    uint64_t ssao_bg_id;
-    uint64_t ssao_pipeline_id;
-    uint64_t blur_bgl_id;
-    uint64_t blur_bg_id;
-    uint64_t blur_pipeline_id;
-    uint64_t composite_bgl_id;
-    uint64_t composite_bg_id;
-    uint64_t composite_pipeline_id;
-};
-
-
-struct SceneWboitTargets
-{
-    uint64_t color_id;
-    uint64_t accum_id;
-    uint64_t weight_id;
-    uint64_t depth_id;
-    uint64_t sampler_id;
-    uint64_t resolve_bgl_id;
-    uint64_t resolve_bg_id;
-    uint64_t resolve_pipeline_id;
-};
-
-
-struct SceneDepthPeelTargets
-{
-    uint64_t color_id;
-    uint64_t depth_id;
-    uint64_t sampler_id;
-    uint64_t composite_bgl_id;
-    uint64_t iter_bgl_id;
-    uint64_t composite_bg_id;
-    uint64_t iter_bg_ids[DVZ_SCENE_DEPTH_PEEL_ITERATIONS];
-    uint64_t dummy_bg_id;
-    uint64_t composite_pipeline_id;
 };
 
 
@@ -388,28 +354,24 @@ bool _graph_resolve_render_depth(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
     const DvzFrameGraphPass** graph_pass, uint64_t* out_depth_id);
-bool _emitter_prepare_gbuffer_targets(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
-    const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneGBufferTargets* out);
 uint64_t _edl_bind_group_fingerprint(
     uint64_t color_id, uint64_t depth_id, uint64_t sampler_id, uint64_t params_id);
 bool _emitter_prepare_edl_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneEdlTargets* out);
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
 uint64_t _ssao_bind_group_fingerprint(
     uint64_t first_id, uint64_t second_id, uint64_t third_id, uint64_t sampler_id,
     uint64_t params_id);
 bool _emitter_prepare_ssao_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneSsaoTargets* out);
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
 uint64_t _wboit_bind_group_fingerprint(uint64_t accum_id, uint64_t weight_id, uint64_t sampler_id);
 bool _emitter_prepare_wboit_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneWboitTargets* out);
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
 uint64_t _depth_peel_bind_group_fingerprint(
     const uint64_t* texture_ids, uint32_t texture_count, uint64_t sampler_id);
 bool _depth_peel_resolve_sampled_bind_group(
@@ -419,27 +381,17 @@ bool _depth_peel_resolve_sampled_bind_group(
 bool _emitter_prepare_depth_peel_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,
-    SceneGraphRuntimeTargets* graph_targets, SceneDepthPeelTargets* out);
-const SceneGBufferTargets* _gbuffer_targets_for_panel(
-    const SceneGBufferTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
-    const char* panel_id);
-const SceneEdlTargets* _edl_targets_for_panel(
-    const SceneEdlTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
-    const char* panel_id);
-const SceneSsaoTargets* _ssao_targets_for_panel(
-    const SceneSsaoTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
-    const char* panel_id);
-const SceneWboitTargets* _wboit_targets_for_panel(
-    const SceneWboitTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
-    const char* panel_id);
-const SceneDepthPeelTargets* _depth_peel_targets_for_panel(
-    const SceneDepthPeelTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
+    SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
+const SceneWorkRuntime* _work_runtime_for_render(
+    const SceneWorkRuntime* runtimes, uint32_t count, const DvzFramePlanNode* render);
+const SceneWorkRuntime* _work_runtime_for_provider_panel(
+    const SceneWorkRuntime* runtimes, uint32_t count, DvzSceneWorkProviderKey provider,
     const char* panel_id);
 const SceneRenderBatch* _render_batch_for_node(
     const SceneRenderBatch* batches, uint32_t count, const DvzFramePlanNode* render);
 bool _emitter_emit_wboit_resolve(
     DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneWboitTargets* targets);
+    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneWorkRuntime* runtime);
 bool _emitter_emit_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanNode* readback, bool clear,

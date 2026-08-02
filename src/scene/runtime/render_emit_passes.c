@@ -126,26 +126,23 @@ static bool _stream_begin_render_pass_panel_rect(
 
 
 /**
- * Return G-buffer targets associated with a panel id.
+ * Return prepared runtime work for a render node.
  *
- * @param targets target array
- * @param renders render-node array parallel to targets
- * @param count target count
- * @param panel_id panel id to find
- * @return target entry, or NULL when absent
+ * @param runtimes prepared runtime work array.
+ * @param count runtime work count.
+ * @param render render node to find.
+ * @return runtime work entry, or NULL when absent.
  */
-const SceneGBufferTargets* _gbuffer_targets_for_panel(
-    const SceneGBufferTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
-    const char* panel_id)
+const SceneWorkRuntime* _work_runtime_for_render(
+    const SceneWorkRuntime* runtimes, uint32_t count, const DvzFramePlanNode* render)
 {
-    ANN(targets);
-    ANN(renders);
-    ANN(panel_id);
+    ANN(runtimes);
+    ANN(render);
 
     for (uint32_t i = 0; i < count; i++)
     {
-        if (renders[i] != NULL && strcmp(renders[i]->u.render.panel_id, panel_id) == 0)
-            return &targets[i];
+        if (runtimes[i].render == render)
+            return &runtimes[i];
     }
     return NULL;
 }
@@ -153,106 +150,27 @@ const SceneGBufferTargets* _gbuffer_targets_for_panel(
 
 
 /**
- * Return EDL targets associated with a panel id.
+ * Return prepared runtime work by typed provider and panel.
  *
- * @param targets target array
- * @param renders render-node array parallel to targets
- * @param count target count
- * @param panel_id panel id to find
- * @return target entry, or NULL when absent
- */
-const SceneEdlTargets* _edl_targets_for_panel(
-    const SceneEdlTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
-    const char* panel_id)
-{
-    ANN(targets);
-    ANN(renders);
-    ANN(panel_id);
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        if (renders[i] != NULL && strcmp(renders[i]->u.render.panel_id, panel_id) == 0)
-            return &targets[i];
-    }
-    return NULL;
-}
-
-
-
-/**
- * Return SSAO targets associated with a panel id.
- *
- * @param targets target array
- * @param renders render-node array parallel to targets
- * @param count target count
- * @param panel_id panel id to find
- * @return target entry, or NULL when absent
- */
-const SceneSsaoTargets* _ssao_targets_for_panel(
-    const SceneSsaoTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
-    const char* panel_id)
-{
-    ANN(targets);
-    ANN(renders);
-    ANN(panel_id);
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        if (renders[i] != NULL && strcmp(renders[i]->u.render.panel_id, panel_id) == 0)
-            return &targets[i];
-    }
-    return NULL;
-}
-
-
-
-/**
- * Return WBOIT targets associated with a panel id.
- *
- * @param targets target array.
- * @param renders render-node array parallel to targets.
- * @param count target count.
+ * @param runtimes prepared runtime work array.
+ * @param count runtime work count.
+ * @param provider typed provider identity.
  * @param panel_id panel id to find.
- * @return target entry, or NULL when absent.
+ * @return runtime work entry, or NULL when absent.
  */
-const SceneWboitTargets* _wboit_targets_for_panel(
-    const SceneWboitTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
+const SceneWorkRuntime* _work_runtime_for_provider_panel(
+    const SceneWorkRuntime* runtimes, uint32_t count, DvzSceneWorkProviderKey provider,
     const char* panel_id)
 {
-    ANN(targets);
-    ANN(renders);
+    ANN(runtimes);
     ANN(panel_id);
 
     for (uint32_t i = 0; i < count; i++)
     {
-        if (renders[i] != NULL && strcmp(renders[i]->u.render.panel_id, panel_id) == 0)
-            return &targets[i];
-    }
-    return NULL;
-}
-
-
-/**
- * Return depth-peeling targets associated with a panel id.
- *
- * @param targets target array.
- * @param renders render-node array parallel to targets.
- * @param count target count.
- * @param panel_id panel id to find.
- * @return target entry, or NULL when absent.
- */
-const SceneDepthPeelTargets* _depth_peel_targets_for_panel(
-    const SceneDepthPeelTargets* targets, const DvzFramePlanNode* const* renders, uint32_t count,
-    const char* panel_id)
-{
-    ANN(targets);
-    ANN(renders);
-    ANN(panel_id);
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        if (renders[i] != NULL && strcmp(renders[i]->u.render.panel_id, panel_id) == 0)
-            return &targets[i];
+        const SceneWorkRuntime* runtime = &runtimes[i];
+        if (runtime->provider == provider && runtime->render != NULL &&
+            strcmp(runtime->render->u.render.panel_id, panel_id) == 0)
+            return runtime;
     }
     return NULL;
 }
@@ -630,29 +548,7 @@ bool _emitter_emit_scene_figure_renders(
 bool _plan_has_graph_render_passes(const DvzFramePlan* plan)
 {
     ANN(plan);
-    if (dvz_frame_plan_graph_pass_count(plan) > 0)
-        return true;
-    for (uint32_t i = 0; i < plan->count; i++)
-    {
-        const DvzFramePlanNode* node = &plan->nodes[i];
-        if (node->type != DVZ_FRAME_PLAN_NODE_RENDER)
-            continue;
-        if (node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER ||
-            node->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE)
-            return true;
-    }
-    return false;
+    return dvz_frame_plan_graph_pass_count(plan) > 0;
 }
 
 
@@ -690,84 +586,54 @@ bool _emitter_emit_scene_graph_renders(
     SceneGraphRuntimeTargets graph_targets = {0};
     SceneRenderBatch* batches =
         (SceneRenderBatch*)dvz_calloc(plan->count, sizeof(SceneRenderBatch));
-    SceneGBufferTargets* gbuffer_targets =
-        (SceneGBufferTargets*)dvz_calloc(plan->count, sizeof(SceneGBufferTargets));
-    const DvzFramePlanNode** gbuffer_renders =
-        (const DvzFramePlanNode**)dvz_calloc(plan->count, sizeof(DvzFramePlanNode*));
-    SceneEdlTargets* edl_targets =
-        (SceneEdlTargets*)dvz_calloc(plan->count, sizeof(SceneEdlTargets));
-    const DvzFramePlanNode** edl_renders =
-        (const DvzFramePlanNode**)dvz_calloc(plan->count, sizeof(DvzFramePlanNode*));
-    SceneSsaoTargets* ssao_targets =
-        (SceneSsaoTargets*)dvz_calloc(plan->count, sizeof(SceneSsaoTargets));
-    const DvzFramePlanNode** ssao_renders =
-        (const DvzFramePlanNode**)dvz_calloc(plan->count, sizeof(DvzFramePlanNode*));
-    SceneWboitTargets* wboit_targets =
-        (SceneWboitTargets*)dvz_calloc(plan->count, sizeof(SceneWboitTargets));
-    const DvzFramePlanNode** wboit_renders =
-        (const DvzFramePlanNode**)dvz_calloc(plan->count, sizeof(DvzFramePlanNode*));
-    SceneDepthPeelTargets* depth_peel_targets =
-        (SceneDepthPeelTargets*)dvz_calloc(plan->count, sizeof(SceneDepthPeelTargets));
-    const DvzFramePlanNode** depth_peel_renders =
-        (const DvzFramePlanNode**)dvz_calloc(plan->count, sizeof(DvzFramePlanNode*));
-    if (batches == NULL || gbuffer_targets == NULL || gbuffer_renders == NULL ||
-        edl_targets == NULL || edl_renders == NULL || wboit_targets == NULL ||
-        wboit_renders == NULL || ssao_targets == NULL || ssao_renders == NULL ||
-        depth_peel_targets == NULL || depth_peel_renders == NULL)
+    SceneWorkRuntime* work_runtimes =
+        (SceneWorkRuntime*)dvz_calloc(plan->count, sizeof(SceneWorkRuntime));
+    if (batches == NULL || work_runtimes == NULL)
     {
-        dvz_free(depth_peel_renders);
-        dvz_free(depth_peel_targets);
-        dvz_free(ssao_renders);
-        dvz_free(ssao_targets);
-        dvz_free(wboit_renders);
-        dvz_free(wboit_targets);
-        dvz_free(edl_renders);
-        dvz_free(edl_targets);
-        dvz_free(gbuffer_renders);
-        dvz_free(gbuffer_targets);
+        dvz_free(work_runtimes);
         dvz_free(batches);
         return false;
     }
 
     bool ok = true;
     uint32_t batch_count = 0;
-    uint32_t gbuffer_target_count = 0;
-    uint32_t edl_target_count = 0;
-    uint32_t ssao_target_count = 0;
-    uint32_t target_count = 0;
-    uint32_t depth_target_count = 0;
+    uint32_t work_runtime_count = 0;
     for (uint32_t i = 0; ok && i < plan->count; i++)
     {
         const DvzFramePlanNode* render = &plan->nodes[i];
         if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
-        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO ||
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR ||
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE ||
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE ||
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE ||
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE)
+        const DvzFrameGraphPass* render_graph_pass = _graph_pass_for_render(plan, render);
+        const DvzSceneResolvedPass* resolved =
+            _graph_composition_pass(plan, render_graph_pass);
+        DvzSceneWorkProviderKey provider =
+            resolved != NULL ? resolved->provider : DVZ_SCENE_WORK_PROVIDER_NONE;
+        if (provider == DVZ_SCENE_WORK_PROVIDER_SSAO ||
+            provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR ||
+            provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE ||
+            provider == DVZ_SCENE_WORK_PROVIDER_EDL ||
+            provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE ||
+            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE)
         {
-            if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO)
+            if (provider == DVZ_SCENE_WORK_PROVIDER_SSAO)
             {
                 ok = _emitter_prepare_ssao_targets(
                     emitter, stream, plan, render, cfg, &graph_targets,
-                    &ssao_targets[ssao_target_count]);
+                    &work_runtimes[work_runtime_count]);
                 if (ok)
-                    ssao_renders[ssao_target_count++] = render;
+                    work_runtime_count++;
             }
-            else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE)
+            else if (provider == DVZ_SCENE_WORK_PROVIDER_EDL)
             {
                 ok = _emitter_prepare_edl_targets(
                     emitter, stream, plan, render, cfg, &graph_targets,
-                    &edl_targets[edl_target_count]);
+                    &work_runtimes[work_runtime_count]);
                 if (ok)
-                    edl_renders[edl_target_count++] = render;
+                    work_runtime_count++;
             }
             continue;
         }
 
-        const DvzFrameGraphPass* render_graph_pass = NULL;
         uint64_t render_graph_depth_id = 0;
         ok = _graph_resolve_render_depth(
             emitter, stream, plan, render, cfg, &render_graph_pass, &render_graph_depth_id);
@@ -777,10 +643,10 @@ bool _emitter_emit_scene_graph_renders(
                                          render_graph_pass->has_depth_attachment &&
                                          render_graph_depth_id != 0;
         bool depth_peel_render =
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
+            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
+            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
         bool transient_depth_allowed =
-            render->u.render.pass_role != DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION;
+            provider != DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION;
         if (!depth_peel_render && transient_depth_allowed && !pass_has_depth_attachment &&
             _scene_render_needs_depth(emitter, render))
             pass_has_depth_attachment = true;
@@ -791,43 +657,35 @@ bool _emitter_emit_scene_graph_renders(
         uint64_t depth_peel_sampled_bgl_id = 0;
         uint64_t depth_peel_sampled_bg_id = 0;
         uint64_t depth_peel_dummy_bg_id = 0;
-        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
-        {
-            ok = _emitter_prepare_gbuffer_targets(
-                emitter, stream, plan, render, cfg, &graph_targets,
-                &gbuffer_targets[gbuffer_target_count]);
-            if (ok)
-                gbuffer_renders[gbuffer_target_count++] = render;
-        }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION)
+        if (provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION)
         {
             ok = _emitter_prepare_wboit_targets(
                 emitter, stream, plan, render, scene_color_id, cfg, &graph_targets,
-                &wboit_targets[target_count]);
+                &work_runtimes[work_runtime_count]);
             if (ok)
             {
-                sampled_depth_id = wboit_targets[target_count].depth_id;
-                wboit_renders[target_count++] = render;
+                sampled_depth_id = work_runtimes[work_runtime_count].depth_id;
+                work_runtime_count++;
             }
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT)
         {
             ok = _emitter_prepare_depth_peel_targets(
                 emitter, stream, plan, render, scene_color_id, cfg, &graph_targets,
-                &depth_peel_targets[depth_target_count]);
+                &work_runtimes[work_runtime_count]);
             if (ok)
             {
                 if (render_graph_pass != NULL && render_graph_pass->has_depth_attachment &&
                     render_graph_pass->depth_attachment.access ==
                         DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ)
-                    sampled_depth_id = depth_peel_targets[depth_target_count].depth_id;
-                depth_peel_renders[depth_target_count++] = render;
+                    sampled_depth_id = work_runtimes[work_runtime_count].depth_id;
+                work_runtime_count++;
             }
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION)
         {
-            const SceneDepthPeelTargets* targets = _depth_peel_targets_for_panel(
-                depth_peel_targets, depth_peel_renders, depth_target_count,
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT,
                 render->u.render.panel_id);
             if (targets != NULL && render_graph_pass != NULL &&
                 render_graph_pass->has_depth_attachment &&
@@ -838,13 +696,13 @@ bool _emitter_emit_scene_graph_renders(
             {
                 depth_peel_sampled_bgl_id = targets->iter_bgl_id;
                 depth_peel_dummy_bg_id = targets->dummy_bg_id;
-                const DvzSceneResolvedPass* resolved =
+                const DvzSceneResolvedPass* iteration_work =
                     _graph_composition_pass(plan, render_graph_pass);
-                if (resolved != NULL &&
-                    resolved->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION &&
-                    resolved->ordinal < DVZ_SCENE_DEPTH_PEEL_ITERATIONS)
+                if (iteration_work != NULL &&
+                    iteration_work->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION &&
+                    iteration_work->ordinal < DVZ_SCENE_DEPTH_PEEL_ITERATIONS)
                 {
-                    depth_peel_sampled_bg_id = targets->iter_bg_ids[resolved->ordinal];
+                    depth_peel_sampled_bg_id = targets->iter_bg_ids[iteration_work->ordinal];
                 }
             }
         }
@@ -890,8 +748,8 @@ bool _emitter_emit_scene_graph_renders(
             {
                 char message[96];
                 dvz_snprintf(
-                    message, sizeof(message), "failed to prepare scene render batch for role %d",
-                    (int)render->u.render.pass_role);
+                    message, sizeof(message), "failed to prepare scene render batch for provider %d",
+                    (int)provider);
                 _diagnostic(report, message);
             }
         }
@@ -899,16 +757,7 @@ bool _emitter_emit_scene_graph_renders(
     if (!ok)
     {
         _graph_runtime_targets_destroy(&graph_targets);
-        dvz_free(depth_peel_renders);
-        dvz_free(depth_peel_targets);
-        dvz_free(ssao_renders);
-        dvz_free(ssao_targets);
-        dvz_free(wboit_renders);
-        dvz_free(wboit_targets);
-        dvz_free(edl_renders);
-        dvz_free(edl_targets);
-        dvz_free(gbuffer_renders);
-        dvz_free(gbuffer_targets);
+        dvz_free(work_runtimes);
         dvz_free(batches);
         return false;
     }
@@ -935,14 +784,18 @@ bool _emitter_emit_scene_graph_renders(
             use_graph_order ? _graph_render_for_pass(plan, ordered_graph_pass) : &plan->nodes[i];
         if (render == NULL || render->type != DVZ_FRAME_PLAN_NODE_RENDER)
             continue;
+        const DvzSceneResolvedPass* resolved =
+            _graph_composition_pass(plan, ordered_graph_pass);
+        DvzSceneWorkProviderKey provider =
+            resolved != NULL ? resolved->provider : DVZ_SCENE_WORK_PROVIDER_NONE;
 
         if (use_graph_order && !unordered_plain_opaque_emitted &&
-            (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION ||
-             render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND ||
-             render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE ||
-             render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
-             render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER ||
-             render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE))
+            (provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION ||
+             provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND ||
+             provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE ||
+             provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
+             provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION ||
+             provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE))
         {
             ok = _emitter_emit_graph_unordered_plain_renders_for_role(
                 emitter, stream, plan, cfg, encoder_id, scene_color_id, clear_color, batches,
@@ -952,20 +805,26 @@ bool _emitter_emit_scene_graph_renders(
                 break;
         }
 
-        if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
+        if (provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE)
         {
-            const SceneGBufferTargets* targets = _gbuffer_targets_for_panel(
-                gbuffer_targets, gbuffer_renders, gbuffer_target_count, render->u.render.panel_id);
-            if (targets == NULL)
+            const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
+                                                      ? ordered_graph_pass
+                                                      : _graph_pass_for_render(plan, render);
+            ok = _graph_prepare_render_color_targets(
+                emitter, stream, plan, graph_pass, cfg, &graph_targets);
+            uint64_t graph_depth_id = 0;
+            if (ok && graph_pass != NULL && graph_pass->has_depth_attachment)
+                ok = _graph_resolve_render_depth(
+                    emitter, stream, plan, render, cfg, &graph_pass, &graph_depth_id);
+            if (!ok)
+                break;
+            uint64_t target_id = _graph_color_attachment_texture_id(
+                graph_pass, 0, scene_color_id, &graph_targets, 0);
+            if (target_id == 0)
             {
                 ok = false;
                 break;
             }
-            const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
-                                                      ? ordered_graph_pass
-                                                      : _graph_pass_for_render(plan, render);
-            uint64_t target_id = _graph_color_attachment_texture_id(
-                graph_pass, 0, scene_color_id, &graph_targets, targets->normal_id);
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             _label_render_pass_contract(stream, pass_id, render);
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
@@ -977,13 +836,13 @@ bool _emitter_emit_scene_graph_renders(
             if (ok && graph_pass != NULL && graph_pass->color_attachment_count > 1)
             {
                 uint64_t object_id = _graph_color_attachment_texture_id(
-                    graph_pass, 1, scene_color_id, &graph_targets, targets->object_id);
+                    graph_pass, 1, scene_color_id, &graph_targets, 0);
                 ok = dvz_drp2_stream_begin_render_pass_add_color_attachment(
                     stream, object_id, 0.0f, 0.0f, 0.0f, 0.0f, true);
             }
             ok =
                 ok && _stream_apply_graph_color_ops(stream, graph_pass, scene_color_id, &graph_targets);
-            ok = ok && _stream_apply_graph_depth(stream, graph_pass, targets->depth_id);
+            ok = ok && _stream_apply_graph_depth(stream, graph_pass, graph_depth_id);
             if (ok && has_draws)
             {
                 scene_cache.pipeline_id = 0;
@@ -996,8 +855,8 @@ bool _emitter_emit_scene_graph_renders(
             scene_cache.bg_set0 = 0;
         }
         else if (
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION ||
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION)
+            provider == DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION ||
+            provider == DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION)
         {
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
                                                       ? ordered_graph_pass
@@ -1028,7 +887,7 @@ bool _emitter_emit_scene_graph_renders(
             const SceneRenderBatch* batch = _render_batch_for_node(batches, batch_count, render);
             bool has_draws = batch != NULL;
             bool scene_depth =
-                render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION;
+                provider == DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION;
             ok = dvz_drp2_stream_begin_render_pass_region_clear(
                 stream, pass_id, encoder_id, target_id, scene_depth ? 1.0f : 0.0f,
                 scene_depth ? 1.0f : 0.0f, scene_depth ? 1.0f : 0.0f, scene_depth ? 1.0f : 0.0f,
@@ -1047,17 +906,15 @@ bool _emitter_emit_scene_graph_renders(
             scene_cache.pipeline_id = 0;
             scene_cache.bg_set0 = 0;
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE)
         {
-            const SceneEdlTargets* edl = _edl_targets_for_panel(
-                edl_targets, edl_renders, edl_target_count, render->u.render.panel_id);
-            const SceneWboitTargets* targets = _wboit_targets_for_panel(
-                wboit_targets, wboit_renders, target_count, render->u.render.panel_id);
-            const SceneDepthPeelTargets* depth_targets = _depth_peel_targets_for_panel(
-                depth_peel_targets, depth_peel_renders, depth_target_count,
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count,
+                DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION, render->u.render.panel_id);
+            const SceneWorkRuntime* depth_targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT,
                 render->u.render.panel_id);
-            uint64_t graph_depth_id = edl != NULL             ? edl->depth_id
-                                      : targets != NULL       ? targets->depth_id
+            uint64_t graph_depth_id = targets != NULL       ? targets->depth_id
                                       : depth_targets != NULL ? depth_targets->depth_id
                                                               : 0;
             const DvzFrameGraphPass* graph_pass = ordered_graph_pass != NULL
@@ -1111,10 +968,11 @@ bool _emitter_emit_scene_graph_renders(
             scene_cache.bg_set0 = 0;
             clear_final = false;
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION)
         {
-            const SceneWboitTargets* targets = _wboit_targets_for_panel(
-                wboit_targets, wboit_renders, target_count, render->u.render.panel_id);
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count,
+                DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION, render->u.render.panel_id);
             if (targets == NULL)
             {
                 ok = false;
@@ -1149,7 +1007,7 @@ bool _emitter_emit_scene_graph_renders(
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND)
         {
             uint64_t pass_id = _emitter_next_transient_id(emitter);
             _label_render_pass_contract(stream, pass_id, render);
@@ -1193,11 +1051,11 @@ bool _emitter_emit_scene_graph_renders(
             clear_final = false;
         }
         else if (
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
-            render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER)
+            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
+            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION)
         {
-            const SceneDepthPeelTargets* targets = _depth_peel_targets_for_panel(
-                depth_peel_targets, depth_peel_renders, depth_target_count,
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT,
                 render->u.render.panel_id);
             if (targets == NULL)
             {
@@ -1237,10 +1095,10 @@ bool _emitter_emit_scene_graph_renders(
             }
             ok = ok && dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE)
         {
-            const SceneDepthPeelTargets* targets = _depth_peel_targets_for_panel(
-                depth_peel_targets, depth_peel_renders, depth_target_count,
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT,
                 render->u.render.panel_id);
             if (targets == NULL)
             {
@@ -1270,10 +1128,11 @@ bool _emitter_emit_scene_graph_renders(
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
             clear_final = false;
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_SSAO)
         {
-            const SceneSsaoTargets* targets = _ssao_targets_for_panel(
-                ssao_targets, ssao_renders, ssao_target_count, render->u.render.panel_id);
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_SSAO,
+                render->u.render.panel_id);
             if (targets == NULL)
             {
                 ok = false;
@@ -1301,10 +1160,11 @@ bool _emitter_emit_scene_graph_renders(
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR)
         {
-            const SceneSsaoTargets* targets = _ssao_targets_for_panel(
-                ssao_targets, ssao_renders, ssao_target_count, render->u.render.panel_id);
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_SSAO,
+                render->u.render.panel_id);
             if (targets == NULL || targets->blur_id == 0 || targets->blur_pipeline_id == 0)
             {
                 ok = false;
@@ -1332,10 +1192,11 @@ bool _emitter_emit_scene_graph_renders(
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE)
         {
-            const SceneSsaoTargets* targets = _ssao_targets_for_panel(
-                ssao_targets, ssao_renders, ssao_target_count, render->u.render.panel_id);
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count, DVZ_SCENE_WORK_PROVIDER_SSAO,
+                render->u.render.panel_id);
             if (targets == NULL)
             {
                 ok = false;
@@ -1364,11 +1225,11 @@ bool _emitter_emit_scene_graph_renders(
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
             clear_final = false;
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_EDL)
         {
-            const SceneEdlTargets* targets = _edl_targets_for_panel(
-                edl_targets, edl_renders, edl_target_count, render->u.render.panel_id);
-            if (targets == NULL)
+            const SceneWorkRuntime* runtime =
+                _work_runtime_for_render(work_runtimes, work_runtime_count, render);
+            if (runtime == NULL)
             {
                 ok = false;
                 break;
@@ -1390,16 +1251,17 @@ bool _emitter_emit_scene_graph_renders(
                      stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
                  dvz_drp2_stream_set_scissor(
                      stream, pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
-                 dvz_drp2_stream_set_pipeline(stream, pass_id, targets->resolve_pipeline_id) &&
-                 dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->resolve_bg_id) &&
+                 dvz_drp2_stream_set_pipeline(stream, pass_id, runtime->pipeline_id) &&
+                 dvz_drp2_stream_set_bind_group(stream, pass_id, 0, runtime->bind_group_id) &&
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
             clear_final = false;
         }
-        else if (render->u.render.pass_role == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE)
+        else if (provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE)
         {
-            const SceneWboitTargets* targets = _wboit_targets_for_panel(
-                wboit_targets, wboit_renders, target_count, render->u.render.panel_id);
+            const SceneWorkRuntime* targets = _work_runtime_for_provider_panel(
+                work_runtimes, work_runtime_count,
+                DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION, render->u.render.panel_id);
             if (targets == NULL)
             {
                 ok = false;
@@ -1443,16 +1305,7 @@ bool _emitter_emit_scene_graph_renders(
          _render_pass_copy_finish_submit(
              stream, encoder_id, command_buffer_id, submission_id, final_color_id, rb_id, readback);
     _graph_runtime_targets_destroy(&graph_targets);
-    dvz_free(depth_peel_renders);
-    dvz_free(depth_peel_targets);
-    dvz_free(ssao_renders);
-    dvz_free(ssao_targets);
-    dvz_free(wboit_renders);
-    dvz_free(wboit_targets);
-    dvz_free(edl_renders);
-    dvz_free(edl_targets);
-    dvz_free(gbuffer_renders);
-    dvz_free(gbuffer_targets);
+    dvz_free(work_runtimes);
     dvz_free(batches);
     return ok;
 }
