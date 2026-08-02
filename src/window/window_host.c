@@ -519,6 +519,7 @@ void _dvz_window_metrics_resolve(
     out->native_to_logical = _window_scale_xy(
         _window_extent_ratio(logical_width, native_width),
         _window_extent_ratio(logical_height, native_height));
+    out->refresh_rate_hz = inputs->refresh_rate_hz;
     out->active_hidpi_policy = policy;
     out->generation = inputs->previous_generation + 1;
 }
@@ -1160,6 +1161,7 @@ void dvz_window_backend_emit_resize(
         .native_size = _window_extent(window_width, window_height),
         .framebuffer_size = _window_extent(framebuffer_width, framebuffer_height),
         .content_scale = _window_scale_xy(content_scale_x, content_scale_y),
+        .refresh_rate_hz = window->metrics.refresh_rate_hz,
         .requested_policy = window->config.hidpi_policy,
         .previous_generation = window->metrics.generation,
     };

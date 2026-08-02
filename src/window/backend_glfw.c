@@ -256,6 +256,24 @@ static void _glfw_fill_monitor_scale_inputs(GLFWwindow* handle, DvzWindowScaleIn
 
 
 /**
+ * Return the refresh rate of the monitor that best overlaps a GLFW window.
+ *
+ * @param handle GLFW window handle
+ * @return refresh rate in Hz, or zero when unavailable
+ */
+static uint32_t _glfw_window_refresh_rate(GLFWwindow* handle)
+{
+    ANN(handle);
+    GLFWmonitor* monitor = _glfw_window_monitor(handle);
+    if (monitor == NULL)
+        return 0;
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    return mode != NULL && mode->refreshRate > 0 ? (uint32_t)mode->refreshRate : 0;
+}
+
+
+
+/**
  * Resolve an effective content scale for a GLFW window.
  *
  * @param handle GLFW window handle
@@ -379,6 +397,7 @@ static DvzWindowMetrics _glfw_query_metrics(
         .native_size = native_size,
         .framebuffer_size = _glfw_extent(fb_width, fb_height),
         .content_scale = {.x = scale_x, .y = scale_y},
+        .refresh_rate_hz = _glfw_window_refresh_rate(handle),
         .requested_policy = _glfw_platform_policy(policy),
         .previous_generation = previous_generation,
     };
@@ -628,6 +647,22 @@ static void _glfw_window_size_callback(GLFWwindow* handle, int width, int height
 
 
 
+/**
+ * Refresh window metrics after a GLFW window moves between monitors.
+ *
+ * @param handle GLFW window handle
+ * @param x new window x coordinate
+ * @param y new window y coordinate
+ */
+static void _glfw_window_pos_callback(GLFWwindow* handle, int x, int y)
+{
+    (void)x;
+    (void)y;
+    _glfw_emit_metrics(handle);
+}
+
+
+
 static void _glfw_window_close_callback(GLFWwindow* handle)
 {
     glfwSetWindowShouldClose(handle, GLFW_TRUE);
@@ -742,6 +777,7 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     glfwSetCharCallback(handle, _glfw_char_callback);
     glfwSetFramebufferSizeCallback(handle, _glfw_framebuffer_callback);
     glfwSetWindowSizeCallback(handle, _glfw_window_size_callback);
+    glfwSetWindowPosCallback(handle, _glfw_window_pos_callback);
     glfwSetWindowCloseCallback(handle, _glfw_window_close_callback);
     glfwSetWindowContentScaleCallback(handle, _glfw_scale_callback);
     dvz_window_backend_set_handle(window, handle);

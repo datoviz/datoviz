@@ -48,6 +48,8 @@ int test_window_metrics_native_window_policy(TstContext* suite, const TstCase* i
 
 int test_window_metrics_disabled_policy(TstContext* suite, const TstCase* item);
 
+int test_window_metrics_refresh_rate(TstContext* suite, const TstCase* item);
+
 int test_window_metrics_query_updates_on_resize(TstContext* suite, const TstCase* item);
 
 int test_window_fallback(TstContext* suite, const TstCase* item);

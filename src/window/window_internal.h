@@ -93,6 +93,7 @@ struct DvzWindowMetricsInputs
     DvzExtent native_size;
     DvzExtent framebuffer_size;
     DvzScaleXY content_scale;
+    uint32_t refresh_rate_hz;
     DvzHiDpiPolicy requested_policy;
     uint64_t previous_generation;
 };
