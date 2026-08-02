@@ -862,7 +862,7 @@ static bool _scene_append_planned_visual_to_render_pass(
 static bool _scene_emit_edl_params_upload(
     DvzFramePlan* plan, DvzPanel* panel, const char* panel_id,
     const DvzSceneEdlTechniqueState* edl_state, const DvzMVP* panel_apply_mvp,
-    const DvzSceneViewportUniform* panel_viewport)
+    const DvzSceneViewportUniform* panel_viewport, uint32_t* out_node_index)
 {
     ANN(plan);
     ANN(panel);
@@ -870,6 +870,7 @@ static bool _scene_emit_edl_params_upload(
     ANN(edl_state);
     ANN(panel_apply_mvp);
     ANN(panel_viewport);
+    ANN(out_node_index);
     char edl_params_key[DVZ_SCENE_LABEL_SIZE];
     if (!_scene_edl_params_resource_key(panel_id, edl_params_key, sizeof(edl_params_key)))
         return false;
@@ -880,6 +881,7 @@ static bool _scene_emit_edl_params_upload(
             &panel->techniques.edl.uniform))
         return false;
     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    *out_node_index = plan->count - 1;
     node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
                                   DVZ_DRP2_BUFFER_USAGE_COPY_DST;
     return true;
@@ -890,7 +892,7 @@ static bool _scene_emit_edl_params_upload(
 static bool _scene_emit_ssao_params_upload(
     DvzFramePlan* plan, DvzPanel* panel, const char* panel_id,
     const DvzSceneSsaoTechniqueState* ssao_state, const DvzMVP* panel_apply_mvp,
-    const DvzSceneViewportUniform* panel_viewport)
+    const DvzSceneViewportUniform* panel_viewport, uint32_t* out_node_index)
 {
     ANN(plan);
     ANN(panel);
@@ -898,6 +900,7 @@ static bool _scene_emit_ssao_params_upload(
     ANN(ssao_state);
     ANN(panel_apply_mvp);
     ANN(panel_viewport);
+    ANN(out_node_index);
     char ssao_params_key[DVZ_SCENE_LABEL_SIZE];
     if (!_scene_ssao_params_resource_key(panel_id, ssao_params_key, sizeof(ssao_params_key)))
         return false;
@@ -908,9 +911,43 @@ static bool _scene_emit_ssao_params_upload(
             &panel->techniques.ssao.uniform))
         return false;
     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+    *out_node_index = plan->count - 1;
     node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
                                   DVZ_DRP2_BUFFER_USAGE_COPY_DST;
     return true;
+}
+
+
+
+/**
+ * Bind one typed auxiliary resource to its emitted upload node.
+ *
+ * @param snapshot mutable composition snapshot
+ * @param kind auxiliary resource kind
+ * @param node_index FramePlan upload-node index
+ * @return whether at least one provider binding was resolved
+ */
+static bool _scene_bind_auxiliary_upload(
+    DvzPanelCompositionSnapshot* snapshot, DvzSceneAuxiliaryKind kind, uint32_t node_index)
+{
+    ANN(snapshot);
+    if (node_index == UINT32_MAX)
+        return false;
+    bool found = false;
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        DvzSceneResolvedPass* pass = &snapshot->passes[i];
+        for (uint32_t j = 0; j < pass->auxiliary_binding_count; j++)
+        {
+            DvzSceneAuxiliaryBinding* binding = &pass->auxiliary_bindings[j];
+            if (binding->kind == kind)
+            {
+                binding->upload_node_index = node_index;
+                found = true;
+            }
+        }
+    }
+    return found;
 }
 
 
@@ -1110,6 +1147,8 @@ bool _scene_emit_panel_render_caps(
     uint32_t ssao_node = invalid_node;
     uint32_t ssao_blur_node = invalid_node;
     uint32_t ssao_composite_node = invalid_node;
+    uint32_t edl_params_node = invalid_node;
+    uint32_t ssao_params_node = invalid_node;
     for (uint32_t i = 0; i < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; i++)
         depth_peel_iter_nodes[i] = invalid_node;
     if (render_plan.gbuffer_visual_count > 0)
@@ -1295,8 +1334,10 @@ bool _scene_emit_panel_render_caps(
 
     if (render_plan.edl_enabled && render_plan.edl_has_depth_producer)
     {
-        (void)_scene_emit_edl_params_upload(
-            plan, panel, panel_id, render_plan.edl_state, &panel_apply_mvp, &panel_viewport);
+        if (!_scene_emit_edl_params_upload(
+                plan, panel, panel_id, render_plan.edl_state, &panel_apply_mvp, &panel_viewport,
+                &edl_params_node))
+            graph_ok = false;
         if (!_scene_begin_panel_render_pass(
                 plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
                 &panel_apply_mvp, &panel_viewport, plot_desc, &edl_node))
@@ -1306,8 +1347,10 @@ bool _scene_emit_panel_render_caps(
     if (render_plan.ssao_enabled && gbuffer_node != invalid_node &&
         render_plan.gbuffer.producer_count > 0)
     {
-        (void)_scene_emit_ssao_params_upload(
-            plan, panel, panel_id, render_plan.ssao_state, &panel_apply_mvp, &panel_viewport);
+        if (!_scene_emit_ssao_params_upload(
+                plan, panel, panel_id, render_plan.ssao_state, &panel_apply_mvp, &panel_viewport,
+                &ssao_params_node))
+            graph_ok = false;
         if (!_scene_begin_panel_render_pass(
                 plan, panel_id, "rt.ssao.occlusion", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_SSAO,
                 &panel_apply_mvp, &panel_viewport, plot_desc, &ssao_node))
@@ -1330,6 +1373,20 @@ bool _scene_emit_panel_render_caps(
         {
             graph_ok = false;
         }
+    }
+    if (graph_ok && edl_params_node != invalid_node &&
+        !_scene_bind_auxiliary_upload(
+            &render_plan.composition, DVZ_SCENE_AUXILIARY_EDL_PARAMS, edl_params_node))
+        graph_ok = false;
+    if (graph_ok && ssao_params_node != invalid_node &&
+        !_scene_bind_auxiliary_upload(
+            &render_plan.composition, DVZ_SCENE_AUXILIARY_SSAO_PARAMS, ssao_params_node))
+        graph_ok = false;
+    if (graph_ok && (edl_params_node != invalid_node || ssao_params_node != invalid_node))
+    {
+        render_plan.composition.work_declaration_fingerprint =
+            _frame_plan_composition_work_fingerprint(&render_plan.composition);
+        graph_ok = _frame_plan_composition_validate(&render_plan.composition, report);
     }
     if (graph_ok &&
         !_scene_panel_composition_lower_graph(plan, &render_plan.composition, report))

@@ -3094,6 +3094,12 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(edl_pass->read_count == 2);
     AT(strcmp(edl_pass->reads[0].resource_id, "figure_0_p0.edl.color") == 0);
     AT(strcmp(edl_pass->reads[1].resource_id, "figure_0_p0.edl.depth") == 0);
+    const DvzSceneResolvedPass* edl_work = _graph_composition_pass(plan, edl_pass);
+    ANN(edl_work);
+    AT(edl_work->auxiliary_binding_count == 1);
+    AT(edl_work->auxiliary_bindings[0].kind == DVZ_SCENE_AUXILIARY_EDL_PARAMS);
+    AT(edl_work->auxiliary_bindings[0].upload_node_index == 1);
+    AT(edl_work->auxiliary_bindings[0].binding == 3);
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -3587,6 +3593,17 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     AT(strcmp(composite_pass->reads[0].resource_id, "figure_0_p0.ssao.occlusion") == 0);
     AT(strcmp(composite_pass->color_attachments[0].resource_id, "rt") == 0);
     AT(composite_pass->color_attachments[0].load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD);
+    const DvzSceneResolvedPass* ssao_work = _graph_composition_pass(plan, ssao_pass);
+    const DvzSceneResolvedPass* composite_work = _graph_composition_pass(plan, composite_pass);
+    ANN(ssao_work);
+    ANN(composite_work);
+    AT(ssao_work->auxiliary_binding_count == 1);
+    AT(ssao_work->auxiliary_bindings[0].kind == DVZ_SCENE_AUXILIARY_SSAO_PARAMS);
+    AT(ssao_work->auxiliary_bindings[0].upload_node_index == 2);
+    AT(ssao_work->auxiliary_bindings[0].binding == 3);
+    AT(composite_work->auxiliary_binding_count == 1);
+    AT(composite_work->auxiliary_bindings[0].upload_node_index == 2);
+    AT(composite_work->auxiliary_bindings[0].binding == 2);
 
     dvz_frame_plan_destroy(plan);
 

@@ -873,6 +873,18 @@ static void _json_append_composition(
                 (uint32_t)binding->load_source_ref_kind,
                 binding->load_source_product_id.value, binding->load_source_scratch_id.value);
         }
+        _json_append(builder, "], \"auxiliary_bindings\": [");
+        for (uint32_t j = 0; j < pass->auxiliary_binding_count; j++)
+        {
+            const DvzSceneAuxiliaryBinding* binding = &pass->auxiliary_bindings[j];
+            _json_append(
+                builder,
+                "%s{ \"kind\": %u, \"upload_node\": %" PRIu32
+                ", \"set\": %" PRIu32 ", \"binding\": %" PRIu32
+                ", \"offset\": %" PRIu32 ", \"size\": %" PRIu32 " }",
+                j > 0 ? ", " : "", (uint32_t)binding->kind, binding->upload_node_index,
+                binding->set, binding->binding, binding->byte_offset, binding->byte_size);
+        }
         _json_append(builder, "] }");
     }
     _json_append(builder, "] }");

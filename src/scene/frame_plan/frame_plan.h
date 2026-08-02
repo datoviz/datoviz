@@ -446,6 +446,23 @@ typedef enum
 
 typedef enum
 {
+    DVZ_SCENE_AUXILIARY_NONE = 0,
+    DVZ_SCENE_AUXILIARY_EDL_PARAMS,
+    DVZ_SCENE_AUXILIARY_SSAO_PARAMS,
+} DvzSceneAuxiliaryKind;
+
+typedef struct DvzSceneAuxiliaryBinding
+{
+    uint32_t byte_offset;
+    uint32_t byte_size;
+    DvzSceneAuxiliaryKind kind;
+    uint32_t upload_node_index;
+    uint32_t set;
+    uint32_t binding;
+} DvzSceneAuxiliaryBinding;
+
+typedef enum
+{
     DVZ_SCENE_ATTACHMENT_LOAD_NONE = 0,
     DVZ_SCENE_ATTACHMENT_LOAD_CLEAR,
     DVZ_SCENE_ATTACHMENT_LOAD_LOAD,
@@ -588,6 +605,8 @@ typedef struct DvzSceneResolvedPass
     DvzRenderProductId unrealized_product_ids[DVZ_PANEL_COMPOSITION_MAX_UNREALIZED_PRODUCTS];
     uint32_t binding_count;
     DvzSceneWorkBinding bindings[DVZ_PANEL_COMPOSITION_MAX_WORK_BINDINGS];
+    uint32_t auxiliary_binding_count;
+    DvzSceneAuxiliaryBinding auxiliary_bindings[2];
 } DvzSceneResolvedPass;
 
 

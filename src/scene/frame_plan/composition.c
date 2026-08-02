@@ -319,6 +319,17 @@ uint64_t _frame_plan_composition_work_fingerprint(const DvzPanelCompositionSnaps
             HASH32(binding->load_source_product_id.value);
             HASH32(binding->load_source_scratch_id.value);
         }
+        HASH32(pass->auxiliary_binding_count);
+        for (uint32_t j = 0; j < pass->auxiliary_binding_count; j++)
+        {
+            const DvzSceneAuxiliaryBinding* binding = &pass->auxiliary_bindings[j];
+            HASH32(binding->kind);
+            HASH32(binding->upload_node_index);
+            HASH32(binding->set);
+            HASH32(binding->binding);
+            HASH32(binding->byte_offset);
+            HASH32(binding->byte_size);
+        }
     }
 #undef HASH32
 #undef HASH64
@@ -709,6 +720,26 @@ bool _frame_plan_composition_validate(
                         panel_id, pass->id.value);
             }
         }
+        if (pass->auxiliary_binding_count > 2)
+            return _composition_report(
+                report, "panel %s pass %u has too many auxiliary bindings", panel_id,
+                pass->id.value);
+        for (uint32_t k = 0; k < pass->auxiliary_binding_count; k++)
+        {
+            const DvzSceneAuxiliaryBinding* binding = &pass->auxiliary_bindings[k];
+            const bool edl = pass->provider == DVZ_SCENE_WORK_PROVIDER_EDL &&
+                             binding->kind == DVZ_SCENE_AUXILIARY_EDL_PARAMS;
+            const bool ssao =
+                (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO ||
+                 pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR ||
+                 pass->provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE) &&
+                binding->kind == DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
+            if ((!edl && !ssao) || binding->set == UINT32_MAX ||
+                binding->binding == UINT32_MAX || binding->byte_size == 0)
+                return _composition_report(
+                    report, "panel %s pass %u has an invalid auxiliary binding", panel_id,
+                    pass->id.value);
+        }
     }
     return _scene_panel_composition_contract_validate(snapshot, report);
 }
@@ -730,6 +761,22 @@ bool _frame_plan_composition_append(
     ANN(snapshot);
     if (!_frame_plan_composition_validate(snapshot, report))
         return false;
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        const DvzSceneResolvedPass* pass = &snapshot->passes[i];
+        for (uint32_t j = 0; j < pass->auxiliary_binding_count; j++)
+        {
+            const DvzSceneAuxiliaryBinding* binding = &pass->auxiliary_bindings[j];
+            if (binding->upload_node_index >= plan->count ||
+                plan->nodes[binding->upload_node_index].type != DVZ_FRAME_PLAN_NODE_UPLOAD ||
+                binding->byte_offset + binding->byte_size < binding->byte_offset ||
+                binding->byte_offset + binding->byte_size >
+                    plan->nodes[binding->upload_node_index].u.upload.byte_size)
+                return _composition_report(
+                    report, "panel %s pass %u has an invalid auxiliary upload", snapshot->panel_id,
+                    pass->id.value);
+        }
+    }
     if (_frame_plan_composition_get(plan, snapshot->panel_id) != NULL)
         return _composition_report(
             report, "panel %s has duplicate composition snapshot identity", snapshot->panel_id);

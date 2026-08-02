@@ -917,6 +917,41 @@ static bool _composition_declare_work(
     pass->visual_layer_filter = technique->participating_layer_mask;
     pass->visual_order_begin = technique->authored_order_begin;
     pass->visual_order_end = technique->authored_order_end;
+    DvzSceneAuxiliaryKind auxiliary_kind = DVZ_SCENE_AUXILIARY_NONE;
+    uint32_t auxiliary_binding = 0;
+    if (pass->provider == DVZ_SCENE_WORK_PROVIDER_EDL)
+    {
+        auxiliary_kind = DVZ_SCENE_AUXILIARY_EDL_PARAMS;
+        auxiliary_binding = 3;
+    }
+    else if (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO)
+    {
+        auxiliary_kind = DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
+        auxiliary_binding = 3;
+    }
+    else if (pass->provider == DVZ_SCENE_WORK_PROVIDER_SSAO_BLUR)
+    {
+        auxiliary_kind = DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
+        auxiliary_binding = 4;
+    }
+    else if (pass->provider == DVZ_SCENE_WORK_PROVIDER_AMBIENT_COMPOSITE)
+    {
+        auxiliary_kind = DVZ_SCENE_AUXILIARY_SSAO_PARAMS;
+        auxiliary_binding = 2;
+    }
+    if (auxiliary_kind != DVZ_SCENE_AUXILIARY_NONE)
+    {
+        pass->auxiliary_binding_count = 1;
+        pass->auxiliary_bindings[0] = (DvzSceneAuxiliaryBinding){
+            .kind = auxiliary_kind,
+            .upload_node_index = UINT32_MAX,
+            .set = 0,
+            .binding = auxiliary_binding,
+            .byte_size = auxiliary_kind == DVZ_SCENE_AUXILIARY_EDL_PARAMS
+                             ? sizeof(DvzSceneEdlUniform)
+                             : sizeof(DvzSceneSsaoUniform),
+        };
+    }
     DvzRenderProductId in[DVZ_RENDER_PRODUCT_PRESENTATION_COLOR + 1] = {{0}};
     DvzRenderProductId out[DVZ_RENDER_PRODUCT_PRESENTATION_COLOR + 1] = {{0}};
     for (uint32_t i = 0; i < technique->input_count; i++)

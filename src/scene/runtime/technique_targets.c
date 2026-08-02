@@ -63,6 +63,45 @@ static bool _create_pipeline_with_layout(
 
 
 
+/**
+ * Resolve a typed auxiliary upload binding to its live runtime buffer.
+ *
+ * @param emitter persistent emitter resource registry
+ * @param plan source FramePlan
+ * @param pass typed graph pass
+ * @param cfg optional scoped emission configuration
+ * @param kind auxiliary resource kind
+ * @return live buffer resource, or NULL when unavailable
+ */
+static ResourceId* _auxiliary_buffer_resource(
+    DvzFramePlanEmitter* emitter, const DvzFramePlan* plan, const DvzFrameGraphPass* pass,
+    const DvzFramePlanEmitConfig* cfg, DvzSceneAuxiliaryKind kind)
+{
+    ANN(emitter);
+    ANN(plan);
+    const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, pass);
+    if (resolved == NULL)
+        return NULL;
+    for (uint32_t i = 0; i < resolved->auxiliary_binding_count; i++)
+    {
+        const DvzSceneAuxiliaryBinding* binding = &resolved->auxiliary_bindings[i];
+        if (binding->kind != kind || binding->upload_node_index >= plan->count)
+            continue;
+        const DvzFramePlanNode* upload = &plan->nodes[binding->upload_node_index];
+        if (upload->type != DVZ_FRAME_PLAN_NODE_UPLOAD)
+            return NULL;
+        char scoped_key[DVZ_SCENE_LABEL_SIZE];
+        _runtime_scope_key(
+            cfg, upload->u.upload.resource_id, scoped_key, sizeof(scoped_key));
+        ResourceId* resource = _resource_find(&emitter->resources, scoped_key);
+        return resource != NULL ? resource
+                                : _resource_find(&emitter->resources, upload->u.upload.resource_id);
+    }
+    return NULL;
+}
+
+
+
 bool _emitter_prepare_gbuffer_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
@@ -190,13 +229,8 @@ bool _emitter_prepare_edl_targets(
     if (!ok)
         return false;
 
-    char params_key[DVZ_SCENE_LABEL_SIZE];
-    char scoped_params_key[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(params_key, sizeof(params_key), "%s.edl.params", render->u.render.panel_id);
-    _runtime_scope_key(cfg, params_key, scoped_params_key, sizeof(scoped_params_key));
-    ResourceId* params = _resource_find(&emitter->resources, scoped_params_key);
-    if (params == NULL)
-        params = _resource_find(&emitter->resources, params_key);
+    ResourceId* params = _auxiliary_buffer_resource(
+        emitter, plan, pass, cfg, DVZ_SCENE_AUXILIARY_EDL_PARAMS);
     if (params == NULL || params->id == 0 || params->byte_size < sizeof(DvzSceneEdlUniform))
         return false;
     out->params_id = params->id;
@@ -431,13 +465,8 @@ bool _emitter_prepare_ssao_targets(
         return false;
     out->composite_input_id = blur_resource != NULL ? out->blur_id : out->occlusion_id;
 
-    char params_key[DVZ_SCENE_LABEL_SIZE];
-    char scoped_params_key[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(params_key, sizeof(params_key), "%s.ssao.params", render->u.render.panel_id);
-    _runtime_scope_key(cfg, params_key, scoped_params_key, sizeof(scoped_params_key));
-    ResourceId* params = _resource_find(&emitter->resources, scoped_params_key);
-    if (params == NULL)
-        params = _resource_find(&emitter->resources, params_key);
+    ResourceId* params = _auxiliary_buffer_resource(
+        emitter, plan, pass, cfg, DVZ_SCENE_AUXILIARY_SSAO_PARAMS);
     if (params == NULL || params->id == 0 || params->byte_size < sizeof(DvzSceneSsaoUniform))
         return false;
     out->params_id = params->id;
