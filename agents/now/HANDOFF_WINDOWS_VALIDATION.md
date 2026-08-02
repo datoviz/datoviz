@@ -15,7 +15,7 @@ Source-checkout results are development evidence only. They must not be reported
 - Runtime commit `e179adeda` passed the full modular Debug and Release suites on the NVIDIA Vulkan ICD: 1,074 selected, 1,070 passed, 0 failed, and 4 expected Windows/platform skips in each configuration.
 - Debug and Release NVIDIA NVENC spot checks passed; the AMD NVENC check produced the expected unsupported-device skip.
 - The native Qt bridge builds at `build-msvc/qtbridge/<Configuration>/datoviz_qtbridge.dll`.
-- Interactive Release `start/scatter` with `DVZ_PRESENT_MODE=fifo-latest-ready` and `DVZ_FPS_CAP=60` had smooth physical pan/zoom behavior.
+- Interactive Release `start/scatter` with `DVZ_PRESENT_MODE=fifo-latest` and `DVZ_FPS_CAP=60` had smooth physical pan/zoom behavior.
 - The `dvztest_modules` aggregate target reduced the measured combined Debug and Release rebuild from 478.7 seconds to 260.5 seconds; an aggregate Debug no-op build took 14.3 seconds.
 - Retained local logs, JSON reports, recordings, and the detailed summary are outside the repository under `Documents/Codex/2026-08-01/je-configure-ce-pc-windows-11/outputs/`. Do not commit those payloads.
 

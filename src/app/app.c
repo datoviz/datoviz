@@ -4001,7 +4001,7 @@ static void _app_draw_replay(DvzView* win, const DvzStreamFrame* frame)
 static void _app_canvas_config_apply_present_mode_env(DvzCanvasConfig* ccfg)
 {
     ANN(ccfg);
-    /* DVZ_PRESENT_MODE: fifo, fifo-latest-ready, mailbox, or immediate. */
+    /* DVZ_PRESENT_MODE: fifo, fifo-latest, mailbox, or immediate. */
     const char* pm_env = getenv("DVZ_PRESENT_MODE");
     if (pm_env != NULL)
     {
@@ -4012,13 +4012,13 @@ static void _app_canvas_config_apply_present_mode_env(DvzCanvasConfig* ccfg)
         else if (strcmp(pm_env, "fifo") == 0)
             ccfg->present_mode = VK_PRESENT_MODE_FIFO_KHR;
 #if defined(VK_KHR_present_mode_fifo_latest_ready)
-        else if (strcmp(pm_env, "fifo-latest-ready") == 0)
+        else if (strcmp(pm_env, "fifo-latest") == 0)
             ccfg->present_mode = VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
 #endif
         else
             log_warn(
                 "ignoring DVZ_PRESENT_MODE='%s' "
-                "(expected fifo|fifo-latest-ready|mailbox|immediate)",
+                "(expected fifo|fifo-latest|mailbox|immediate)",
                 pm_env);
     }
 }

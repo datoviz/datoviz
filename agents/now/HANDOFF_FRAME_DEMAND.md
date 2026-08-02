@@ -138,12 +138,12 @@ Verify one condition at a time:
 Physical testing on the NVIDIA RTX 5090 X11 system established that ordinary FIFO sustains 60 presented FPS and receives approximately 130 controller drag events/s but still feels sluggish because queued FIFO images display stale controller states. Immediate mode is responsive. Mailbox is unsupported on this surface and falls back to FIFO. The surface instead advertises `VK_KHR_present_mode_fifo_latest_ready`, which is smooth and tear-free when paired with a scheduler cap:
 
 ```sh
-DVZ_PRESENT_MODE=fifo-latest-ready DVZ_FPS_CAP=60 ./build-profile/examples/c/start/scatter
+DVZ_PRESENT_MODE=fifo-latest DVZ_FPS_CAP=60 ./build-profile/examples/c/start/scatter
 ```
 
 The FPS cap is intentional: FIFO latest-ready otherwise permits thousands of submitted frames/s while displaying only the newest ready frame at vblank. Use a cap matching the target display refresh rate. The Vulkan device must enable the optional FIFO-latest-ready extension and feature bit; validation layers reject merely passing the enum without both.
 
-Physical Windows testing also found `fifo-latest-ready` with `DVZ_FPS_CAP=60` smooth and responsive. This is useful cross-platform evidence, but it is not sufficient reason to make 60 FPS an unconditional default because the actual display may run at 75, 120, 144, or another refresh rate.
+Physical Windows testing also found `fifo-latest` with `DVZ_FPS_CAP=60` smooth and responsive. This is useful cross-platform evidence, but it is not sufficient reason to make 60 FPS an unconditional default because the actual display may run at 75, 120, 144, or another refresh rate.
 
 Run the deterministic benchmark workload to ensure it still owns explicit continuous frames:
 
