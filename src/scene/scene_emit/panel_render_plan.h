@@ -86,7 +86,7 @@ typedef struct
     uint32_t volume_occluder_visual_index;
 
     bool gbuffer_enabled;
-    bool ssao_enabled;
+    bool ao_enabled;
     bool gbuffer_required;
     bool edl_enabled;
     bool edl_has_depth_producer;
@@ -94,7 +94,7 @@ typedef struct
     bool opaque_needs_depth;
     bool transparent_needs_depth;
 
-    const DvzSceneSsaoTechniqueState* ssao_state;
+    const DvzSceneAoTechniqueState* ao_state;
     const DvzSceneMsaaTechniqueState* msaa_state;
     const DvzSceneEdlTechniqueState* edl_state;
     DvzSceneGBufferPlan gbuffer;

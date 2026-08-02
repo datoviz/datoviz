@@ -42,7 +42,7 @@
 
 #define DVZ_EDL_DESC_KNOWN_FLAGS  0u
 #define DVZ_MSAA_DESC_KNOWN_FLAGS 0u
-#define DVZ_SSAO_DESC_KNOWN_FLAGS 0u
+#define DVZ_AO_DESC_KNOWN_FLAGS   0u
 
 
 
@@ -74,13 +74,23 @@ static bool _msaa_desc_validate(const DvzMsaaDesc* desc)
 
 
 
-static bool _ssao_desc_validate(const DvzSsaoDesc* desc)
+static bool _ao_desc_validate(const DvzAoDesc* desc)
 {
     if (desc == NULL)
         return true;
-    if (!DVZ_STRUCT_VALID(desc, DvzSsaoDesc, DVZ_SSAO_DESC_KNOWN_FLAGS))
+    if (!DVZ_STRUCT_VALID(desc, DvzAoDesc, DVZ_AO_DESC_KNOWN_FLAGS))
     {
-        log_error("invalid DvzSsaoDesc ABI prologue");
+        log_error("invalid DvzAoDesc ABI prologue");
+        return false;
+    }
+    if (desc->quality < DVZ_AO_QUALITY_LOW || desc->quality > DVZ_AO_QUALITY_ULTRA)
+    {
+        log_error("invalid ambient-occlusion quality");
+        return false;
+    }
+    if (desc->debug_mode < DVZ_AO_DEBUG_NONE || desc->debug_mode > DVZ_AO_DEBUG_VISIBILITY)
+    {
+        log_error("invalid ambient-occlusion debug mode");
         return false;
     }
     return true;
@@ -372,10 +382,12 @@ void _scene_technique_state_init(DvzSceneTechniqueState* state)
     state->edl.radius = 1.5f;
     state->edl.strength = 35.0f;
     state->edl.depth_scale = 1.0f;
-    state->ssao.radius = 0.5f;
-    state->ssao.strength = 1.0f;
-    state->ssao.bias = 0.025f;
-    state->ssao.sample_count = 16;
+    state->ao.radius = 1.0f;
+    state->ao.intensity = 1.0f;
+    state->ao.thickness = 0.25f;
+    state->ao.quality = DVZ_AO_QUALITY_MEDIUM;
+    state->ao.debug_mode = DVZ_AO_DEBUG_NONE;
+    state->ao.denoise_enabled = true;
     state->msaa.sample_count = 1;
 }
 
@@ -483,56 +495,45 @@ _scene_technique_edl_state(const DvzScene* scene, const DvzPanel* panel)
 
 
 /**
- * Configure internal SSAO state.
+ * Configure internal ambient-occlusion state.
  *
  * @param state the technique state
- * @param desc SSAO descriptor, or NULL to disable
+ * @param desc AO descriptor, or NULL to disable
  * @return whether the state was updated
  */
-bool _scene_technique_state_set_ssao(DvzSceneTechniqueState* state, const DvzSceneSsaoDesc* desc)
+bool _scene_technique_state_set_ao(DvzSceneTechniqueState* state, const DvzSceneAoDesc* desc)
 {
     ANN(state);
-    if (!_ssao_desc_validate(desc))
+    if (!_ao_desc_validate(desc))
         return false;
     if (desc == NULL)
     {
-        state->ssao.enabled = false;
+        state->ao.enabled = false;
         return true;
     }
 
-    state->ssao.enabled = true;
-    state->ssao.radius = _clampf(desc->radius, 0.001f, 64.0f);
-    state->ssao.strength = _clampf(desc->strength, 0.0f, 16.0f);
-    state->ssao.bias = _clampf(desc->bias, 0.0f, 1.0f);
-    state->ssao.power = desc->power > 0.0f ? _clampf(desc->power, 0.1f, 8.0f) : 1.0f;
-    state->ssao.min_visibility = _clampf(desc->min_visibility, 0.0f, 1.0f);
-    state->ssao.blur_radius =
-        desc->blur_radius > 0.0f ? _clampf(desc->blur_radius, 1.0f, 16.0f) : 2.0f;
-    state->ssao.blur_depth_sigma =
-        desc->blur_depth_sigma > 0.0f ? _clampf(desc->blur_depth_sigma, 0.001f, 10.0f) : 0.65f;
-    state->ssao.blur_normal_sigma =
-        desc->blur_normal_sigma > 0.0f ? _clampf(desc->blur_normal_sigma, 0.001f, 1.0f) : 0.35f;
-    state->ssao.sample_count = desc->sample_count == 0 ? 16 : desc->sample_count;
-    if (state->ssao.sample_count < 4)
-        state->ssao.sample_count = 4;
-    if (state->ssao.sample_count > 32)
-        state->ssao.sample_count = 32;
-    state->ssao.blur_enabled = desc->blur_enabled;
-    state->ssao.debug_view = desc->debug_view;
+    state->ao.enabled = true;
+    state->ao.radius = _clampf(desc->radius, 0.001f, 64.0f);
+    state->ao.intensity = _clampf(desc->intensity, 0.0f, 16.0f);
+    state->ao.thickness = _clampf(desc->thickness, 0.001f, 64.0f);
+    state->ao.min_visibility = _clampf(desc->min_visibility, 0.0f, 1.0f);
+    state->ao.quality = desc->quality;
+    state->ao.debug_mode = desc->debug_mode;
+    state->ao.denoise_enabled = true;
     return true;
 }
 
 
 
 /**
- * Return whether a technique state enables SSAO.
+ * Return whether a technique state enables ambient occlusion.
  *
  * @param state the technique state
  * @return whether SSAO is enabled
  */
-bool _scene_technique_state_ssao_enabled(const DvzSceneTechniqueState* state)
+bool _scene_technique_state_ao_enabled(const DvzSceneTechniqueState* state)
 {
-    return state != NULL && state->ssao.enabled;
+    return state != NULL && state->ao.enabled;
 }
 
 
@@ -544,13 +545,13 @@ bool _scene_technique_state_ssao_enabled(const DvzSceneTechniqueState* state)
  * @param panel the panel
  * @return the effective SSAO state, or NULL when disabled
  */
-const DvzSceneSsaoTechniqueState*
-_scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel)
+const DvzSceneAoTechniqueState*
+_scene_technique_ao_state(const DvzScene* scene, const DvzPanel* panel)
 {
-    if (panel != NULL && _scene_technique_state_ssao_enabled(&panel->techniques))
-        return &panel->techniques.ssao;
-    if (scene != NULL && _scene_technique_state_ssao_enabled(&scene->techniques))
-        return &scene->techniques.ssao;
+    if (panel != NULL && _scene_technique_state_ao_enabled(&panel->techniques))
+        return &panel->techniques.ao;
+    if (scene != NULL && _scene_technique_state_ao_enabled(&scene->techniques))
+        return &scene->techniques.ao;
     return NULL;
 }
 
@@ -655,18 +656,18 @@ void _scene_technique_edl_uniform(
 
 
 /**
- * Fill the SSAO shader uniform from retained technique state.
+ * Fill the AO shader uniform from retained technique state.
  *
- * @param ssao the effective SSAO state
+ * @param ao the effective AO state
  * @param out output shader uniform
  */
-void _scene_technique_ssao_uniform(
-    const DvzSceneSsaoTechniqueState* ssao, const DvzMVP* mvp,
-    const DvzSceneViewportUniform* viewport, DvzSceneSsaoUniform* out)
+void _scene_technique_ao_uniform(
+    const DvzSceneAoTechniqueState* ao, const DvzMVP* mvp,
+    const DvzSceneViewportUniform* viewport, DvzSceneAoUniform* out)
 {
     ANN(out);
-    dvz_memset(out, sizeof(DvzSceneSsaoUniform), 0, sizeof(DvzSceneSsaoUniform));
-    if (ssao == NULL)
+    dvz_memset(out, sizeof(DvzSceneAoUniform), 0, sizeof(DvzSceneAoUniform));
+    if (ao == NULL)
         return;
     if (mvp != NULL)
     {
@@ -686,25 +687,25 @@ void _scene_technique_ssao_uniform(
         out->extent[2] = 1.0f / out->extent[0];
         out->extent[3] = 1.0f / out->extent[1];
     }
-    out->appearance[0] = ssao->radius;
-    out->appearance[1] = ssao->strength;
-    out->appearance[2] = fmaxf(ssao->bias * 4.0f, 0.1f);
-    out->appearance[3] = ssao->min_visibility;
-    out->sampling[0] = ssao->radius;
-    out->sampling[1] = ssao->bias;
-    out->sampling[2] = ssao->blur_depth_sigma;
-    out->sampling[3] = ssao->blur_normal_sigma;
-    if (ssao->sample_count <= 12)
+    out->appearance[0] = ao->radius;
+    out->appearance[1] = ao->intensity;
+    out->appearance[2] = ao->thickness;
+    out->appearance[3] = ao->min_visibility;
+    out->sampling[0] = ao->radius;
+    out->sampling[1] = 0.025f;
+    out->sampling[2] = fmaxf(ao->thickness, 0.001f);
+    out->sampling[3] = 0.35f;
+    if (ao->quality == DVZ_AO_QUALITY_LOW)
     {
         out->mode[0] = 2;
         out->mode[1] = 3;
     }
-    else if (ssao->sample_count <= 24)
+    else if (ao->quality == DVZ_AO_QUALITY_MEDIUM)
     {
         out->mode[0] = 3;
         out->mode[1] = 4;
     }
-    else if (ssao->sample_count <= 48)
+    else if (ao->quality == DVZ_AO_QUALITY_HIGH)
     {
         out->mode[0] = 4;
         out->mode[1] = 6;
@@ -715,7 +716,7 @@ void _scene_technique_ssao_uniform(
         out->mode[1] = 8;
     }
     out->mode[2] = 0;
-    out->mode[3] = ssao->debug_view ? 1 : 0;
+    out->mode[3] = ao->debug_mode == DVZ_AO_DEBUG_VISIBILITY ? 1 : 0;
 }
 
 

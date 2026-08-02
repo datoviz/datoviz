@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* sphere - dense analytic sphere impostors with internal SSAO controls.
+/* sphere - dense analytic sphere impostors with internal AO controls.
  *
  * Build:  just example-c visuals/sphere
  * Run:    ./build/examples/c/visuals/sphere
@@ -51,7 +51,7 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-typedef struct SsaoExampleState
+typedef struct AoExampleState
 {
     DvzPanel* panel;
     DvzVisual* sphere;
@@ -59,21 +59,17 @@ typedef struct SsaoExampleState
     float* base_sizes;
     float* live_sizes;
     uint32_t sphere_count;
-    bool ssao_enabled;
+    bool ao_enabled;
     bool msaa_enabled;
     bool msaa_alpha_to_coverage;
     bool spin_enabled;
     bool raycast_mode;
     bool standard_material;
     float radius;
-    float strength;
-    float bias;
-    float power;
+    float intensity;
+    float thickness;
     float min_visibility;
-    float blur_radius;
-    float blur_depth_sigma;
-    float blur_normal_sigma;
-    float sample_count;
+    float quality;
     float msaa_sample_count;
     float size_scale;
     float ambient;
@@ -82,9 +78,8 @@ typedef struct SsaoExampleState
     float shininess;
     float roughness;
     float rim_strength;
-    bool blur_enabled;
-    bool debug_view;
-} SsaoExampleState;
+    DvzAoDebugMode debug_mode;
+} AoExampleState;
 
 
 
@@ -182,7 +177,7 @@ _build_sphere_cloud(vec3* positions, DvzColor* colors, float* sizes, uint32_t ma
  *
  * @param state example state
  */
-static void _apply_sphere_sizes(SsaoExampleState* state)
+static void _apply_sphere_sizes(AoExampleState* state)
 {
     ANN(state);
     if (state->sphere == NULL || state->base_sizes == NULL || state->live_sizes == NULL ||
@@ -203,40 +198,30 @@ static void _apply_sphere_sizes(SsaoExampleState* state)
 
 
 /**
- * Apply the internal SSAO state to the panel.
+ * Apply the internal AO state to the panel.
  *
  * @param state example state
  */
-static void _apply_ssao(SsaoExampleState* state)
+static void _apply_ao(AoExampleState* state)
 {
     ANN(state);
     ANN(state->panel);
 
-    if (!state->ssao_enabled)
+    if (!state->ao_enabled)
     {
-        (void)dvz_panel_set_ssao(state->panel, NULL);
+        (void)dvz_panel_set_ao(state->panel, NULL);
         return;
     }
-    if (state->sample_count < 4.0f)
-        state->sample_count = 4.0f;
-    if (state->sample_count > 32.0f)
-        state->sample_count = 32.0f;
-
-    DvzSsaoDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
+    DvzAoDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzAoDesc),
         .radius = state->radius,
-        .strength = state->strength,
-        .bias = state->bias,
-        .power = state->power,
+        .intensity = state->intensity,
+        .thickness = state->thickness,
         .min_visibility = state->min_visibility,
-        .blur_radius = state->blur_radius,
-        .blur_depth_sigma = state->blur_depth_sigma,
-        .blur_normal_sigma = state->blur_normal_sigma,
-        .sample_count = (uint32_t)(state->sample_count + 0.5f),
-        .blur_enabled = state->blur_enabled,
-        .debug_view = state->debug_view,
+        .quality = (DvzAoQuality)(state->quality + 0.5f),
+        .debug_mode = state->debug_mode,
     };
-    if (dvz_panel_set_ssao(state->panel, &desc) != DVZ_OK)
-        dvz_fprintf(stderr, "dvz_panel_set_ssao() failed\n");
+    if (dvz_panel_set_ao(state->panel, &desc) != DVZ_OK)
+        dvz_fprintf(stderr, "dvz_panel_set_ao() failed\n");
 }
 
 
@@ -246,7 +231,7 @@ static void _apply_ssao(SsaoExampleState* state)
  *
  * @param state example state
  */
-static void _apply_msaa(SsaoExampleState* state)
+static void _apply_msaa(AoExampleState* state)
 {
     ANN(state);
     ANN(state->panel);
@@ -283,7 +268,7 @@ static void _apply_msaa(SsaoExampleState* state)
  *
  * @param state example state
  */
-static void _apply_sphere_mode(SsaoExampleState* state)
+static void _apply_sphere_mode(AoExampleState* state)
 {
     ANN(state);
     if (state->sphere == NULL)
@@ -301,7 +286,7 @@ static void _apply_sphere_mode(SsaoExampleState* state)
  *
  * @param state example state
  */
-static void _apply_material(SsaoExampleState* state)
+static void _apply_material(AoExampleState* state)
 {
     ANN(state);
     if (state->sphere == NULL)
@@ -336,7 +321,7 @@ static void _apply_material(SsaoExampleState* state)
  *
  * @param state example state
  */
-static void _apply_spin(SsaoExampleState* state)
+static void _apply_spin(AoExampleState* state)
 {
     ANN(state);
     if (state->spin.animation == NULL)
@@ -354,24 +339,20 @@ static void _apply_spin(SsaoExampleState* state)
  *
  * @param state example state
  */
-static void _reset_controls(SsaoExampleState* state)
+static void _reset_controls(AoExampleState* state)
 {
     ANN(state);
-    state->ssao_enabled = true;
+    state->ao_enabled = true;
     state->msaa_enabled = true;
     state->msaa_alpha_to_coverage = true;
     state->spin_enabled = false;
     state->raycast_mode = true;
     state->standard_material = true;
     state->radius = 0.374f;
-    state->strength = 1.061f;
-    state->bias = 0.037f;
-    state->power = 3.344f;
+    state->intensity = 1.061f;
+    state->thickness = 0.148f;
     state->min_visibility = 0.888f;
-    state->blur_radius = 6.903f;
-    state->blur_depth_sigma = 1.701f;
-    state->blur_normal_sigma = 0.638f;
-    state->sample_count = 32.0f;
+    state->quality = (float)DVZ_AO_QUALITY_ULTRA;
     state->msaa_sample_count = 8.0f;
     state->size_scale = 0.607f;
     state->ambient = 0.18f;
@@ -380,39 +361,38 @@ static void _reset_controls(SsaoExampleState* state)
     state->shininess = 96.0f;
     state->roughness = 0.30f;
     state->rim_strength = 0.12f;
-    state->blur_enabled = true;
-    state->debug_view = false;
+    state->debug_mode = DVZ_AO_DEBUG_NONE;
     _apply_sphere_sizes(state);
     _apply_sphere_mode(state);
     _apply_material(state);
     _apply_msaa(state);
-    _apply_ssao(state);
+    _apply_ao(state);
     _apply_spin(state);
 }
 
 
 
 /**
- * Build the live SSAO controls.
+ * Build the live AO controls.
  *
  * @param gui GUI overlay
  * @param win view
  * @param user_data example state
  */
-static void _ssao_gui(DvzGui* gui, DvzView* win, void* user_data)
+static void _ao_gui(DvzGui* gui, DvzView* win, void* user_data)
 {
     (void)win;
-    SsaoExampleState* state = (SsaoExampleState*)user_data;
+    AoExampleState* state = (AoExampleState*)user_data;
     if (state == NULL)
         return;
 
-    bool ssao_changed = false;
+    bool ao_changed = false;
     bool msaa_changed = false;
     bool spin_changed = false;
     bool size_changed = false;
     bool mode_changed = false;
     bool material_changed = false;
-    if (dvz_gui_begin(gui, "SSAO", NULL, 0))
+    if (dvz_gui_begin(gui, "AO", NULL, 0))
     {
         spin_changed |= dvz_gui_checkbox(gui, "Auto rotate", &state->spin_enabled);
         mode_changed |= dvz_gui_checkbox(gui, "Raycast impostor", &state->raycast_mode);
@@ -452,44 +432,30 @@ static void _ssao_gui(DvzGui* gui, DvzView* win, void* user_data)
         state->msaa_alpha_to_coverage = msaa.alpha_to_coverage;
         state->msaa_sample_count = msaa.samples;
 
-        dvz_gui_separator_text(gui, "SSAO");
-        DvzExampleGuiSsaoControls ssao = {
-            .enabled = state->ssao_enabled,
-            .blur = state->blur_enabled,
-            .debug_view = state->debug_view,
-            .show_blur_sigmas = true,
+        dvz_gui_separator_text(gui, "AO");
+        DvzExampleGuiAoControls ao = {
+            .enabled = state->ao_enabled,
             .show_debug_view = true,
             .radius = state->radius,
-            .strength = state->strength,
-            .bias = state->bias,
-            .power = state->power,
+            .intensity = state->intensity,
+            .thickness = state->thickness,
             .min_visibility = state->min_visibility,
-            .samples = state->sample_count,
-            .min_samples = 4.0f,
-            .max_samples = 32.0f,
-            .blur_radius = state->blur_radius,
-            .blur_radius_max = 8.0f,
-            .blur_depth_sigma = state->blur_depth_sigma,
-            .blur_normal_sigma = state->blur_normal_sigma,
+            .quality = state->quality,
+            .debug_mode = state->debug_mode,
         };
-        ssao_changed |= example_gui_ssao(gui, &ssao);
-        state->ssao_enabled = ssao.enabled;
-        state->blur_enabled = ssao.blur;
-        state->debug_view = ssao.debug_view;
-        state->radius = ssao.radius;
-        state->strength = ssao.strength;
-        state->bias = ssao.bias;
-        state->power = ssao.power;
-        state->min_visibility = ssao.min_visibility;
-        state->sample_count = ssao.samples;
-        state->blur_radius = ssao.blur_radius;
-        state->blur_depth_sigma = ssao.blur_depth_sigma;
-        state->blur_normal_sigma = ssao.blur_normal_sigma;
+        ao_changed |= example_gui_ao(gui, &ao);
+        state->ao_enabled = ao.enabled;
+        state->radius = ao.radius;
+        state->intensity = ao.intensity;
+        state->thickness = ao.thickness;
+        state->min_visibility = ao.min_visibility;
+        state->quality = ao.quality;
+        state->debug_mode = ao.debug_mode;
 
         if (dvz_gui_button(gui, "Reset"))
         {
             _reset_controls(state);
-            ssao_changed = false;
+            ao_changed = false;
             msaa_changed = false;
             spin_changed = false;
             size_changed = false;
@@ -505,8 +471,8 @@ static void _ssao_gui(DvzGui* gui, DvzView* win, void* user_data)
         _apply_material(state);
     if (size_changed)
         _apply_sphere_sizes(state);
-    if (ssao_changed)
-        _apply_ssao(state);
+    if (ao_changed)
+        _apply_ao(state);
     if (msaa_changed)
         _apply_msaa(state);
     if (spin_changed)
@@ -528,7 +494,7 @@ int main(int argc, char** argv)
     DvzColor* colors = NULL;
     float* base_sizes = NULL;
     float* live_sizes = NULL;
-    SsaoExampleState state = {0};
+    AoExampleState state = {0};
 
     scene = dvz_scene();
     EXAMPLE_CHECK(scene != NULL, "dvz_scene() failed");
@@ -597,7 +563,7 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(spin.animation != NULL, "dvz_anim_visual_transform() failed");
     dvz_anim_set_speed(spin.animation, ROTATION_SPEED_RAD_PER_SEC);
 
-    state = (SsaoExampleState){
+    state = (AoExampleState){
         .panel = panel,
         .sphere = visual,
         .spin = spin,
@@ -609,7 +575,7 @@ int main(int argc, char** argv)
 
     DvzGui* gui = dvz_view_gui(win, NULL);
     EXAMPLE_CHECK(gui != NULL, "dvz_view_gui() failed");
-    dvz_view_set_gui_callback(win, _ssao_gui, &state);
+    dvz_view_set_gui_callback(win, _ao_gui, &state);
 
     dvz_app_run(app, example_frame_count(argc, argv));
     ret = 0;

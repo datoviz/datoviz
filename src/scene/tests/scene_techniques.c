@@ -120,10 +120,11 @@ _test_r4_surface_panel(DvzScene* scene, DvzFigure* figure, const DvzPanelDesc* d
         return NULL;
 
     if (ssao &&
-        !_scene_technique_state_set_ssao(
-            &panel->techniques, &(DvzSceneSsaoDesc){
-                                    DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f,
-                                    .strength = 1.0f, .bias = 0.025f, .sample_count = 16}))
+        !_scene_technique_state_set_ao(
+            &panel->techniques, &(DvzSceneAoDesc){
+                                    DVZ_STRUCT_INIT_FIELDS(DvzSceneAoDesc), .radius = 1.0f,
+                                    .intensity = 1.0f, .thickness = 0.1f,
+                                    .quality = DVZ_AO_QUALITY_MEDIUM}))
         return NULL;
     if (!ssao)
         _scene_technique_state_enable_gbuffer(&panel->techniques, true);
@@ -1182,11 +1183,12 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
 
     caps.max_color_attachments = 4;
     DvzPanelRenderPlan effects = plan;
-    DvzSceneSsaoTechniqueState ssao = {
-        .enabled = true, .blur_enabled = true, .debug_view = true};
+    DvzSceneAoTechniqueState ssao = {
+        .enabled = true, .denoise_enabled = true,
+        .debug_mode = DVZ_AO_DEBUG_VISIBILITY};
     DvzSceneEdlTechniqueState edl = {.enabled = true};
-    effects.ssao_enabled = true;
-    effects.ssao_state = &ssao;
+    effects.ao_enabled = true;
+    effects.ao_state = &ssao;
     effects.edl_enabled = true;
     effects.edl_state = &edl;
     effects.edl_has_depth_producer = true;
@@ -2282,7 +2284,7 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(dvz_frame_plan_node_count(default_plan) == 1);
     const DvzFramePlanNode* default_node = dvz_frame_plan_node_get(default_plan, 0);
     ANN(default_node);
-    AT(dvz_frame_plan_render_pass_role(default_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(default_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     dvz_frame_plan_destroy(default_plan);
 
     _scene_technique_state_enable_gbuffer(&panel->techniques, true);
@@ -2296,8 +2298,8 @@ int test_scene_gbuffer_runtime_lowering(TstContext* suite, const TstCase* item)
     const DvzFramePlanNode* opaque_node = dvz_frame_plan_node_get(plan, 1);
     ANN(gbuffer_node);
     ANN(opaque_node);
-    AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(gbuffer_node->u.render.has_composition_pass);
     AT(gbuffer_node->u.render.has_graph_pass_index);
     AT(opaque_node->u.render.has_composition_pass);
@@ -2778,13 +2780,13 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
     ANN(blended_node);
     ANN(wboit_node);
     ANN(resolve_node);
-    AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(dvz_frame_plan_render_pass_role(blended_node) ==
+    AT(_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(blended_node) ==
        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
-    AT(dvz_frame_plan_render_pass_role(wboit_node) ==
+    AT(_frame_plan_render_pass_role(wboit_node) ==
        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
-    AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
+    AT(_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
     AT(gbuffer_node->u.render.visual_count == 3);
     AT(opaque_node->u.render.visual_count == 3);
     AT(blended_node->u.render.visual_count == 2);
@@ -3384,11 +3386,11 @@ int test_scene_msaa_ssao_blended_overlay_runtime_lowering(TstContext* suite, con
            panel, &(DvzMsaaDesc){
                       DVZ_STRUCT_INIT_FIELDS(DvzMsaaDesc), .enabled = true, .sample_count = 16,
                       .alpha_to_coverage = true}) == DVZ_OK);
-    AT(_scene_technique_state_set_ssao(
+    AT(_scene_technique_state_set_ao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f, .strength = 2.5f,
-            .bias = 0.02f, .sample_count = 16, .blur_enabled = true}));
+        &(DvzSceneAoDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSceneAoDesc), .radius = 1.0f, .intensity = 2.5f,
+            .thickness = 0.1f, .quality = DVZ_AO_QUALITY_MEDIUM}));
 
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
@@ -3773,9 +3775,9 @@ int test_scene_edl_runtime_lowering(TstContext* suite, const TstCase* item)
     ANN(opaque_node);
     ANN(upload_node);
     ANN(edl_node);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(dvz_frame_plan_node_type(upload_node) == DVZ_FRAME_PLAN_NODE_UPLOAD);
-    AT(dvz_frame_plan_render_pass_role(edl_node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE);
+    AT(_frame_plan_render_pass_role(edl_node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE);
     AT(strcmp(upload_node->u.upload.resource_id, "figure_0_p0.edl.params") == 0);
     AT(upload_node->u.upload.byte_size == sizeof(DvzSceneEdlUniform));
     AT(dvz_frame_plan_graph_pass_count(plan) == 3);
@@ -3958,10 +3960,10 @@ int test_scene_edl_blended_overlay_runtime_lowering(TstContext* suite, const Tst
         ANN(node);
         if (node->type == DVZ_FRAME_PLAN_NODE_RENDER)
         {
-            found_edl_node = found_edl_node || dvz_frame_plan_render_pass_role(node) ==
+            found_edl_node = found_edl_node || _frame_plan_render_pass_role(node) ==
                                                    DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE;
             found_blended_node =
-                found_blended_node || dvz_frame_plan_render_pass_role(node) ==
+                found_blended_node || _frame_plan_render_pass_role(node) ==
                                           DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND;
         }
     }
@@ -4083,9 +4085,9 @@ int test_scene_edl_depth_producer_capabilities(TstContext* suite, const TstCase*
     const DvzFramePlanNode* edl_node = dvz_frame_plan_node_get(plan, 2);
     ANN(opaque_node);
     ANN(edl_node);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(opaque_node->u.render.visual_count == 3);
-    AT(dvz_frame_plan_render_pass_role(edl_node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE);
+    AT(_frame_plan_render_pass_role(edl_node) == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE);
     AT(dvz_frame_plan_graph_pass_count(plan) == 3);
     const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 0);
     ANN(opaque_pass);
@@ -4238,11 +4240,11 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
-    AT(!_scene_technique_state_ssao_enabled(&panel->techniques));
-    AT(panel->techniques.ssao.radius == 0.5f);
-    AT(panel->techniques.ssao.strength == 1.0f);
-    AT(panel->techniques.ssao.bias == 0.025f);
-    AT(panel->techniques.ssao.sample_count == 16);
+    AT(!_scene_technique_state_ao_enabled(&panel->techniques));
+    AT(panel->techniques.ao.radius == 1.0f);
+    AT(panel->techniques.ao.intensity == 1.0f);
+    AT(panel->techniques.ao.thickness == 0.25f);
+    AT(panel->techniques.ao.quality == DVZ_AO_QUALITY_MEDIUM);
 
     DvzFramePlan* default_plan = dvz_frame_plan("figure.ssao.default", 0);
     ANN(default_plan);
@@ -4251,19 +4253,22 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     AT(dvz_frame_plan_graph_pass_count(default_plan) == 1);
     dvz_frame_plan_destroy(default_plan);
 
-    AT(_scene_technique_state_set_ssao(
-        &panel->techniques, &(DvzSceneSsaoDesc){
-                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f,
-                                .strength = 2.0f, .bias = 0.05f, .sample_count = 32}));
-    const DvzSceneSsaoTechniqueState* ssao = _scene_technique_ssao_state(scene, panel);
+    AT(_scene_technique_state_set_ao(
+        &panel->techniques, &(DvzSceneAoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneAoDesc), .radius = 1.25f,
+                                .intensity = 2.0f, .thickness = 0.2f,
+                                .quality = DVZ_AO_QUALITY_HIGH}));
+    const DvzSceneAoTechniqueState* ssao = _scene_technique_ao_state(scene, panel);
     ANN(ssao);
     AT(ssao->enabled);
     AT(ssao->radius == 1.25f);
-    AT(ssao->strength == 2.0f);
-    AT(ssao->bias == 0.05f);
-    AT(ssao->sample_count == 32);
-    AT(!ssao->blur_enabled);
+    AT(ssao->intensity == 2.0f);
+    AT(ssao->thickness == 0.2f);
+    AT(ssao->quality == DVZ_AO_QUALITY_HIGH);
+    AT(ssao->denoise_enabled);
 
+    /* Keep direct coverage of the internal no-denoise lowering branch. */
+    panel->techniques.ao.denoise_enabled = false;
     DvzFramePlan* plan = dvz_frame_plan("figure.ssao", 0);
     ANN(plan);
     _scene_emit_panel_render(figure, 0, plan, "figure_0");
@@ -4277,10 +4282,10 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     ANN(opaque_node);
     ANN(upload_node);
     ANN(ssao_node);
-    AT(dvz_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(gbuffer_node) == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER);
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(strcmp(upload_node->u.upload.resource_id, "figure_0_p0.ssao.params") == 0);
-    AT(dvz_frame_plan_render_pass_role(ssao_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO);
+    AT(_frame_plan_render_pass_role(ssao_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO);
 
     bool found_normal = false;
     bool found_depth = false;
@@ -4337,11 +4342,11 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
 
     dvz_frame_plan_destroy(plan);
 
-    AT(_scene_technique_state_set_ssao(
+    AT(_scene_technique_state_set_ao(
         &panel->techniques,
-        &(DvzSceneSsaoDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f, .strength = 2.0f,
-            .bias = 0.05f, .sample_count = 32, .blur_enabled = true}));
+        &(DvzSceneAoDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzSceneAoDesc), .radius = 1.25f, .intensity = 2.0f,
+            .thickness = 0.2f, .quality = DVZ_AO_QUALITY_HIGH}));
     plan = dvz_frame_plan("figure.ssao.blur", 0);
     ANN(plan);
     DvzDiagnosticReport blur_report = {0};
@@ -4353,8 +4358,8 @@ int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item)
     const DvzFramePlanNode* blur_y_node = dvz_frame_plan_node_get(plan, 4);
     ANN(blur_x_node);
     ANN(blur_y_node);
-    AT(dvz_frame_plan_render_pass_role(blur_x_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR);
-    AT(dvz_frame_plan_render_pass_role(blur_y_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR);
+    AT(_frame_plan_render_pass_role(blur_x_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR);
+    AT(_frame_plan_render_pass_role(blur_y_node) == DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR);
     const DvzFrameGraphPass* blur_pass = dvz_frame_plan_graph_pass_get(plan, 2);
     const DvzFrameGraphPass* blur_y_pass = dvz_frame_plan_graph_pass_get(plan, 3);
     ANN(blur_pass);
@@ -4428,11 +4433,12 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
-    AT(_scene_technique_state_set_ssao(
-        &panel->techniques, &(DvzSceneSsaoDesc){
-                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f,
-                                .strength = 2.0f, .bias = 0.05f, .sample_count = 16,
-                                .debug_view = true}));
+    AT(_scene_technique_state_set_ao(
+        &panel->techniques, &(DvzSceneAoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneAoDesc), .radius = 1.25f,
+                                .intensity = 2.0f, .thickness = 0.2f,
+                                .quality = DVZ_AO_QUALITY_MEDIUM,
+                                .debug_mode = DVZ_AO_DEBUG_VISIBILITY}));
 
     DvzCapabilitySnapshot caps = {0};
     DvzDiagnosticReport report = {0};
@@ -4501,7 +4507,7 @@ int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item)
             const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
             found_params_upload = found_params_upload ||
                                   (label != NULL && strcmp(label, "fig0_p0.ssao.params") == 0 &&
-                                   cmd->u.write_buffer.size == sizeof(DvzSceneSsaoUniform));
+                                   cmd->u.write_buffer.size == sizeof(DvzSceneAoUniform));
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -4611,11 +4617,12 @@ int test_scene_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(mesh, "normal", normals, 4) == 0);
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
-    AT(_scene_technique_state_set_ssao(
-        &panel->techniques, &(DvzSceneSsaoDesc){
-                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f,
-                                .strength = 2.5f, .bias = 0.02f, .sample_count = 16,
-                                .debug_view = true}));
+    AT(_scene_technique_state_set_ao(
+        &panel->techniques, &(DvzSceneAoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneAoDesc), .radius = 1.0f,
+                                .intensity = 2.5f, .thickness = 0.1f,
+                                .quality = DVZ_AO_QUALITY_MEDIUM,
+                                .debug_mode = DVZ_AO_DEBUG_VISIBILITY}));
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
@@ -4709,10 +4716,11 @@ int test_scene_sphere_ssao_glsl_executes(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data(sphere, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(sphere, "radius", sizes, 4) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
-    AT(_scene_technique_state_set_ssao(
-        &panel->techniques, &(DvzSceneSsaoDesc){
-                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.0f,
-                                .strength = 2.5f, .bias = 0.02f, .sample_count = 16}));
+    AT(_scene_technique_state_set_ao(
+        &panel->techniques, &(DvzSceneAoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneAoDesc), .radius = 1.0f,
+                                .intensity = 2.5f, .thickness = 0.1f,
+                                .quality = DVZ_AO_QUALITY_MEDIUM}));
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.supports_color_blending = true;
@@ -4784,10 +4792,11 @@ int test_scene_ssao_ignores_ineligible_visuals(TstContext* suite, const TstCase*
     AT(dvz_visual_set_data(primitive, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(primitive, "color", colors, 3) == 0);
     AT(dvz_panel_add_visual(panel, primitive, NULL) == 0);
-    AT(_scene_technique_state_set_ssao(
-        &panel->techniques, &(DvzSceneSsaoDesc){
-                                DVZ_STRUCT_INIT_FIELDS(DvzSceneSsaoDesc), .radius = 1.25f,
-                                .strength = 2.0f, .bias = 0.05f, .sample_count = 32}));
+    AT(_scene_technique_state_set_ao(
+        &panel->techniques, &(DvzSceneAoDesc){
+                                DVZ_STRUCT_INIT_FIELDS(DvzSceneAoDesc), .radius = 1.25f,
+                                .intensity = 2.0f, .thickness = 0.2f,
+                                .quality = DVZ_AO_QUALITY_HIGH}));
 
     DvzFramePlan* plan = dvz_frame_plan("figure.ssao.ineligible", 0);
     ANN(plan);
@@ -4860,8 +4869,8 @@ int test_scene_visual_alpha_mode_standard_blend(TstContext* suite, const TstCase
     const DvzFramePlanNode* transparent_node = dvz_frame_plan_node_get(plan, 1);
     ANN(opaque_node);
     ANN(transparent_node);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(dvz_frame_plan_render_pass_role(transparent_node) ==
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(transparent_node) ==
        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
     AT(opaque_node->u.render.visual_count == 1);
     AT(transparent_node->u.render.visual_count == 1);
@@ -4979,7 +4988,7 @@ int test_scene_visual_additive_blend(TstContext* suite, const TstCase* item)
     AT(dvz_frame_plan_node_count(plan) == 2);
     const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, 1);
     ANN(node);
-    AT(dvz_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
     AT(node->u.render.visual_count == 1);
     AT(node->u.render.visual_metadata[0].draw_blend_policy == DVZ_SCENE_BLEND_POLICY_ADDITIVE);
 
@@ -5125,7 +5134,7 @@ int test_scene_blended_mesh_orders_after_volume_slice(TstContext* suite, const T
     {
         const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
         ANN(node);
-        if (dvz_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+        if (_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
         {
             AT(transparent_node_count < 2);
             transparent_nodes[transparent_node_count++] = node;
@@ -5375,7 +5384,7 @@ int test_scene_blended_mesh_occlusion_contracts(TstContext* suite, const TstCase
     {
         const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
         ANN(node);
-        if (dvz_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+        if (_frame_plan_render_pass_role(node) == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
             blend_node = node;
     }
     ANN(blend_node);
@@ -5626,10 +5635,10 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     ANN(opaque_node);
     ANN(accum_node);
     ANN(resolve_node);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(dvz_frame_plan_render_pass_role(accum_node) ==
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(accum_node) ==
        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
-    AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
+    AT(_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
     AT(opaque_node->u.render.visual_count == 1);
     AT(accum_node->u.render.visual_count == 1);
     AT(resolve_node->u.render.visual_count == 0);
@@ -5801,10 +5810,10 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(
     ANN(opaque_node);
     ANN(accum_node);
     ANN(resolve_node);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(dvz_frame_plan_render_pass_role(accum_node) ==
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(accum_node) ==
        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
-    AT(dvz_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
+    AT(_frame_plan_render_pass_role(resolve_node) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
     AT(opaque_node->u.render.visual_count == 0);
     AT(accum_node->u.render.visual_count == 1);
 
@@ -5921,10 +5930,10 @@ int test_scene_visual_alpha_mode_depth_peel_frame_plan(TstContext* suite, const 
     ANN(init_node);
     ANN(iter_node);
     ANN(composite_node);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(dvz_frame_plan_render_pass_role(init_node) == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT);
-    AT(dvz_frame_plan_render_pass_role(iter_node) == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER);
-    AT(dvz_frame_plan_render_pass_role(composite_node) ==
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(init_node) == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT);
+    AT(_frame_plan_render_pass_role(iter_node) == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER);
+    AT(_frame_plan_render_pass_role(composite_node) ==
        DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE);
     AT(opaque_node->u.render.visual_count == 1);
     AT(init_node->u.render.visual_count == 1);
@@ -6178,7 +6187,7 @@ int test_scene_visual_alpha_mode_depth_peel_blended_overlay(TstContext* suite, c
         dvz_frame_plan_graph_pass_get(plan, 3 + DVZ_SCENE_DEPTH_PEEL_ITERATIONS);
     ANN(overlay_node);
     ANN(overlay_pass);
-    AT(dvz_frame_plan_render_pass_role(overlay_node) ==
+    AT(_frame_plan_render_pass_role(overlay_node) ==
        DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
     AT(_scene_test_graph_pass_provider(plan, overlay_pass) ==
        DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
@@ -6424,7 +6433,7 @@ int test_scene_visual_alpha_mode_noncontiguous_wboit_preserves_order(
     {
         const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
         ANN(node);
-        AT(dvz_frame_plan_render_pass_role(node) == expected[i]);
+        AT(_frame_plan_render_pass_role(node) == expected[i]);
     }
 
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
@@ -6507,7 +6516,7 @@ int test_scene_visual_alpha_mode_noncontiguous_depth_peel_preserves_order(
     {
         const DvzFramePlanNode* node = dvz_frame_plan_node_get(plan, i);
         ANN(node);
-        AT(dvz_frame_plan_render_pass_role(node) == expected[i]);
+        AT(_frame_plan_render_pass_role(node) == expected[i]);
     }
     const DvzPanelCompositionSnapshot* composition =
         _frame_plan_composition_get(plan, "figure_0_p0");

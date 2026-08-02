@@ -67,7 +67,7 @@ typedef struct DvzSceneTechniquePassPolicy
 } DvzSceneTechniquePassPolicy;
 
 
-typedef DvzSsaoDesc DvzSceneSsaoDesc;
+typedef DvzAoDesc DvzSceneAoDesc;
 
 
 
@@ -109,13 +109,13 @@ bool _scene_technique_state_edl_enabled(const DvzSceneTechniqueState* state);
 const DvzSceneEdlTechniqueState*
 _scene_technique_edl_state(const DvzScene* scene, const DvzPanel* panel);
 
-bool _scene_technique_state_set_ssao(
-    DvzSceneTechniqueState* state, const DvzSceneSsaoDesc* desc);
+bool _scene_technique_state_set_ao(
+    DvzSceneTechniqueState* state, const DvzSceneAoDesc* desc);
 
-bool _scene_technique_state_ssao_enabled(const DvzSceneTechniqueState* state);
+bool _scene_technique_state_ao_enabled(const DvzSceneTechniqueState* state);
 
-const DvzSceneSsaoTechniqueState*
-_scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel);
+const DvzSceneAoTechniqueState*
+_scene_technique_ao_state(const DvzScene* scene, const DvzPanel* panel);
 
 bool _scene_technique_state_set_msaa(
     DvzSceneTechniqueState* state, const DvzMsaaDesc* desc);
@@ -129,9 +129,9 @@ void _scene_technique_edl_uniform(
     const DvzSceneEdlTechniqueState* edl, const DvzMVP* mvp,
     const DvzSceneViewportUniform* viewport, DvzSceneEdlUniform* out);
 
-void _scene_technique_ssao_uniform(
-    const DvzSceneSsaoTechniqueState* ssao, const DvzMVP* mvp,
-    const DvzSceneViewportUniform* viewport, DvzSceneSsaoUniform* out);
+void _scene_technique_ao_uniform(
+    const DvzSceneAoTechniqueState* ao, const DvzMVP* mvp,
+    const DvzSceneViewportUniform* viewport, DvzSceneAoUniform* out);
 
 bool _scene_technique_emit_wboit_frame_graph(
     DvzFramePlan* plan, const char* panel_id, bool opaque_needs_depth,
@@ -172,4 +172,4 @@ bool _scene_technique_emit_gbuffer_frame_graph(
 
 bool _scene_technique_emit_ssao_frame_graph(
     DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer,
-    const DvzSceneSsaoTechniqueState* ssao);
+    const DvzSceneAoTechniqueState* ssao);

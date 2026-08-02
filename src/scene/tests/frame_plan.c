@@ -183,11 +183,11 @@ int test_frame_plan_render_pass_roles(TstContext* suite, const TstCase* item)
     const DvzFramePlanNode* opaque = dvz_frame_plan_node_get(plan, 0);
     const DvzFramePlanNode* accum = dvz_frame_plan_node_get(plan, 1);
     const DvzFramePlanNode* resolve = dvz_frame_plan_node_get(plan, 2);
-    AT(dvz_frame_plan_render_pass_role(opaque) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(opaque) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(
-        dvz_frame_plan_render_pass_role(accum) ==
+        _frame_plan_render_pass_role(accum) ==
         DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION);
-    AT(dvz_frame_plan_render_pass_role(resolve) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
+    AT(_frame_plan_render_pass_role(resolve) == DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE);
 
     char* json = dvz_frame_plan_json(plan);
     ANN(json);

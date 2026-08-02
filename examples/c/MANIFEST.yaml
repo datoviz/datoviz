@@ -33,7 +33,7 @@ taxonomy:
     webgpu.route: live browser route for webgpu-live examples
     webgpu.scenario_id: compiled C/WASM scenario id when it differs from the public route id
     webgpu.requirements: browser capability tags used by website routing and diagnostics
-    webgpu.rendering_effects: explicit browser parity for native SSAO, MSAA, EDL, depth cue, WBOIT, or depth peeling
+    webgpu.rendering_effects: explicit browser parity for native ambient occlusion, MSAA, EDL, depth cue, WBOIT, or depth peeling
     agent_copy_safe: true only for examples suitable as starting points for generated user code
   tag_not_folder:
     - workflow
@@ -244,7 +244,7 @@ batches:
     - showcases_brain_volume
 
   review-17-rendering-techniques-a:
-    - features_technique_ssao
+    - features_technique_ao
     - features_technique_msaa
     - features_technique_depth_cue
     - features_technique_transparency
@@ -1034,15 +1034,15 @@ examples:
         - depth-postprocess
     agent_copy_safe: false
 
-  - id: features_technique_ssao
-    title: Screen-Space Ambient Occlusion
+  - id: features_technique_ao
+    title: View-Space Ambient Occlusion
     stage: v0.4_required
     category: feature
-    primary_feature: ssao
+    primary_feature: ao
     lane: features
-    source: examples/c/features/technique_ssao.c
+    source: examples/c/features/technique_ao.c
     python:
-      source: examples/python/gallery/features/technique_ssao.py
+      source: examples/python/gallery/features/technique_ao.py
       status: direct-engine
     validation: smoke+screenshot
     media: *rotation_preview
@@ -3005,9 +3005,9 @@ examples:
         - material
         - real-data
       rendering_effects:
-        - effect: ssao
+        - effect: ao
           status: unavailable
-          warning: The desktop example enables SSAO; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.
+          warning: The desktop example enables ambient occlusion; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.
     agent_copy_safe: false
     dataset:
       name: RCSB PDB protein structure

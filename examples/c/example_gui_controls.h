@@ -60,26 +60,17 @@ typedef struct DvzExampleGuiEdlControls
 
 
 
-typedef struct DvzExampleGuiSsaoControls
+typedef struct DvzExampleGuiAoControls
 {
     bool enabled;
-    bool blur;
-    bool debug_view;
-    bool show_blur_sigmas;
     bool show_debug_view;
     float radius;
-    float strength;
-    float bias;
-    float power;
+    float intensity;
+    float thickness;
     float min_visibility;
-    float samples;
-    float min_samples;
-    float max_samples;
-    float blur_radius;
-    float blur_radius_max;
-    float blur_depth_sigma;
-    float blur_normal_sigma;
-} DvzExampleGuiSsaoControls;
+    float quality;
+    DvzAoDebugMode debug_mode;
+} DvzExampleGuiAoControls;
 
 
 
@@ -95,7 +86,7 @@ bool example_gui_msaa(DvzGui* gui, DvzExampleGuiMsaaControls* controls);
 
 bool example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls);
 
-bool example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls);
+bool example_gui_ao(DvzGui* gui, DvzExampleGuiAoControls* controls);
 
 bool example_gui_clip_box(DvzGui* gui, const char* label, float clip_min[3], float clip_max[3]);
 

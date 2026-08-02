@@ -3,7 +3,7 @@
 Date: 2026-05-17
 
 This note records the target architecture for advanced scene visual effects in v0.4. The immediate
-goal is not to add another rendering effect. The goal is to keep depth cueing, EDL, SSAO, outlines,
+goal is not to add another rendering effect. The goal is to keep depth cueing, EDL, AO, outlines,
 curvature/cavity shading, and future transparency modes from becoming independent special cases in
 `scene_emit.c`, `frame_plan_runtime.c`, and `visual_pipeline.c`.
 
@@ -24,7 +24,7 @@ Current implemented pieces that advanced techniques should reuse:
 3. per-panel controllers: panzoom, arcball, and camera;
 4. graph-backed FramePlan resources, passes, attachments, reads/writes, dependencies, validation,
    and deterministic dumps;
-5. graph-backed opaque-depth, WBOIT, depth-peeling, blended-volume, G-buffer, EDL, SSAO, SSAO blur,
+5. graph-backed opaque-depth, WBOIT, depth-peeling, blended-volume, G-buffer, EDL, AO, AO blur,
    and MSAA paths;
 6. request-time point picking and image probing through auxiliary DRP2 streams;
 7. built-in GLSL/WGSL shader registry support, with visual-family shader selection centralized in
@@ -61,7 +61,7 @@ Scene retained state
   figures, panels, visuals, fields, scales, materials, interaction
 
 Technique planning
-  opaque/depth, transparency, G-buffer, EDL, SSAO, outlines, picking/probing
+  opaque/depth, transparency, G-buffer, EDL, AO, outlines, picking/probing
 
 FramePlan graph
   typed resources, typed passes, dependencies, render/copy/readback/compute work
@@ -106,7 +106,7 @@ WBOIT builder
 depth-peeling builder
 G-buffer builder
 EDL builder
-SSAO builder
+AO builder
 outline builder
 object-id / picking builder
 volume blend/raymarch policy builder
@@ -209,7 +209,7 @@ point / pixel
 
 primitive / mesh
   color, depth, object-id, pick later, transparent accumulation
-  normal/depth and SSAO receiver when normals are available
+  normal/depth and AO receiver when normals are available
 
 path
   color and depth for line/strip first
@@ -218,7 +218,7 @@ path
 image
   color and probe
   object-id later for selected image/layer outlines
-  generally not SSAO/EDL
+  generally not AO/EDL
 
 volume
   raymarch color, blended transparency
@@ -232,7 +232,7 @@ long-term direction is "visual family + material + pass kind -> shader/pipeline/
 ## Near-Term Effects
 
 Prioritize remaining effects by infrastructure value and scientific usefulness. Depth cueing,
-G-buffer, EDL, SSAO, sphere impostors, and MSAA now have active slices, so the list below separates
+G-buffer, EDL, AO, sphere impostors, and MSAA now have active slices, so the list below separates
 implemented foundations from next policy work.
 
 1. **Depth cueing.** Implemented as material/pipeline shader behavior, not a postprocess.
@@ -241,8 +241,7 @@ implemented foundations from next policy work.
    selection effect needs it.
 3. **Eye-dome lighting.** Implemented as a panel-local graph-backed technique for opaque
    depth-producing visuals.
-4. **SSAO/GTAO.** SSAO is implemented through the G-buffer foundation with optional bilateral blur.
-   Future work should focus on quality, capability policy, and composition with other techniques.
+4. **AO/GTAO.** Deterministic view-space GTAO consumes the coherent surface record, uses bounded edge-aware denoising, and modulates only eligible ambient or indirect diffuse lighting.
 5. **ID-based selected outlines.** Prefer an object/group-id buffer for stable semantic outlines.
    Do not permanently overload pick payloads for this role.
 6. **Curvature/cavity scalar modulation.** Keep it generic. Molecular surfaces can use it, but the
@@ -271,7 +270,7 @@ Original implementation sequence and current status:
    primitive/mesh/sphere visuals.
 6. Done: implement EDL through the graph-backed fullscreen pass path.
 7. Deferred: implement object-id selected outlines through the same graph path.
-8. Done: implement SSAO using the G-buffer foundation.
+8. Done: implement AO using the G-buffer foundation.
 9. Deferred: add generic scalar material modulation, then use it for curvature/cavity demos.
 10. Current polish: improve standard-material appearance, decide material policy for
     point/pixel/image/volume, and keep graph-backed technique composition explicit.

@@ -1276,7 +1276,7 @@ int test_scene_panel_plot_clip_rect_metadata(TstContext* suite, const TstCase* i
     AT(dvz_frame_plan_node_count(plan) == 1);
     const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
     ANN(render);
-    AT(dvz_frame_plan_render_pass_role(render) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(render) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(render->u.render.visual_count == 2);
     AT(render->u.render.has_plot_desc);
 

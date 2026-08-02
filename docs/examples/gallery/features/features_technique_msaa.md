@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_technique_ssao/">← Previous: Screen-Space Ambient Occlusion</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_technique_ao/">← Previous: View-Space Ambient Occlusion</a></span>
 <span class="dvz-example-nav__next"><a href="../features_technique_transparency/">Next: Transparency Order →</a></span>
 </div>
 </nav>
@@ -81,7 +81,7 @@ Both panels draw the same translated cube cluster with linked arcball controls, 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_technique_ssao/">← Previous: Screen-Space Ambient Occlusion</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_technique_ao/">← Previous: View-Space Ambient Occlusion</a></span>
 <span class="dvz-example-nav__next"><a href="../features_technique_transparency/">Next: Transparency Order →</a></span>
 </div>
 </nav>

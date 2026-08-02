@@ -873,23 +873,18 @@ struct DvzMsaaDesc
 typedef struct DvzMsaaDesc DvzMsaaDesc;
 
 
-struct DvzSsaoDesc
+struct DvzAoDesc
 {
     uint32_t struct_size;
     uint32_t flags;
     float radius;
-    float strength;
-    float bias;
-    float power;
+    float intensity;
+    float thickness;
     float min_visibility;
-    float blur_radius;
-    float blur_depth_sigma;
-    float blur_normal_sigma;
-    uint32_t sample_count;
-    bool blur_enabled;
-    bool debug_view;
+    DvzAoQuality quality;
+    DvzAoDebugMode debug_mode;
 };
-typedef struct DvzSsaoDesc DvzSsaoDesc;
+typedef struct DvzAoDesc DvzAoDesc;
 
 
 struct DvzVolumeOcclusionDesc

@@ -575,27 +575,27 @@ static DvzMsaaDesc _msaa_desc_from_controls(const DvzExampleGuiMsaaControls* con
 
 
 /**
- * Convert SSAO controls to a descriptor.
+ * Convert AO controls to a descriptor.
  *
  * @param controls controls
- * @return SSAO descriptor
+ * @return AO descriptor
  */
-static DvzSsaoDesc _ssao_desc_from_controls(const DvzExampleGuiSsaoControls* controls)
+static DvzAoDesc _ao_desc_from_controls(const DvzExampleGuiAoControls* controls)
 {
-    DvzSsaoDesc desc = dvz_ssao_desc();
+    DvzAoDesc desc = dvz_ao_desc();
     if (controls == NULL)
         return desc;
     desc.radius = controls->radius;
-    desc.strength = controls->strength;
-    desc.bias = controls->bias;
-    desc.power = controls->power;
+    desc.intensity = controls->intensity;
+    desc.thickness = controls->thickness;
     desc.min_visibility = controls->min_visibility;
-    desc.sample_count = (uint32_t)(controls->samples + 0.5f);
-    desc.blur_enabled = controls->blur;
-    desc.blur_radius = controls->blur_radius;
-    desc.blur_depth_sigma = controls->blur_depth_sigma;
-    desc.blur_normal_sigma = controls->blur_normal_sigma;
-    desc.debug_view = controls->debug_view;
+    int quality = (int)(controls->quality + 0.5f);
+    if (quality < (int)DVZ_AO_QUALITY_LOW)
+        quality = (int)DVZ_AO_QUALITY_LOW;
+    if (quality > (int)DVZ_AO_QUALITY_ULTRA)
+        quality = (int)DVZ_AO_QUALITY_ULTRA;
+    desc.quality = (DvzAoQuality)quality;
+    desc.debug_mode = controls->debug_mode;
     return desc;
 }
 
@@ -622,21 +622,21 @@ static void _msaa_apply(ExampleTunerMsaa* msaa)
 
 
 /**
- * Apply SSAO controls to their panel.
+ * Apply AO controls to their panel.
  *
- * @param ssao SSAO component state
+ * @param ao AO component state
  */
-static void _ssao_apply(ExampleTunerSsao* ssao)
+static void _ao_apply(ExampleTunerAo* ao)
 {
-    if (ssao == NULL || ssao->panel == NULL || ssao->controls == NULL)
+    if (ao == NULL || ao->panel == NULL || ao->controls == NULL)
         return;
-    if (!ssao->controls->enabled)
+    if (!ao->controls->enabled)
     {
-        (void)dvz_panel_set_ssao(ssao->panel, NULL);
+        (void)dvz_panel_set_ao(ao->panel, NULL);
         return;
     }
-    DvzSsaoDesc desc = _ssao_desc_from_controls(ssao->controls);
-    (void)dvz_panel_set_ssao(ssao->panel, &desc);
+    DvzAoDesc desc = _ao_desc_from_controls(ao->controls);
+    (void)dvz_panel_set_ao(ao->panel, &desc);
 }
 
 
@@ -721,36 +721,31 @@ static void _msaa_print(FILE* fp, const ExampleTunerMsaa* state)
 
 
 /**
- * Dump one SSAO component.
+ * Dump one AO component.
  *
  * @param fp output stream
  * @param state component state
  */
-static void _ssao_print(FILE* fp, const ExampleTunerSsao* state)
+static void _ao_print(FILE* fp, const ExampleTunerAo* state)
 {
     ANN(fp);
     ANN(state);
     ANN(state->controls);
 
-    dvz_fprintf(fp, "/* SSAO: %s */\n", _tuner_name(state->name, "ssao"));
+    dvz_fprintf(fp, "/* AO: %s */\n", _tuner_name(state->name, "ao"));
     if (!state->controls->enabled)
     {
-        dvz_fprintf(fp, "(void)dvz_panel_set_ssao(panel, NULL);\n");
+        dvz_fprintf(fp, "(void)dvz_panel_set_ao(panel, NULL);\n");
         return;
     }
-    dvz_fprintf(fp, "DvzSsaoDesc ssao = dvz_ssao_desc();\n");
-    dvz_fprintf(fp, "ssao.radius = %.6ff;\n", state->controls->radius);
-    dvz_fprintf(fp, "ssao.strength = %.6ff;\n", state->controls->strength);
-    dvz_fprintf(fp, "ssao.bias = %.6ff;\n", state->controls->bias);
-    dvz_fprintf(fp, "ssao.power = %.6ff;\n", state->controls->power);
-    dvz_fprintf(fp, "ssao.min_visibility = %.6ff;\n", state->controls->min_visibility);
-    dvz_fprintf(fp, "ssao.sample_count = %uu;\n", (uint32_t)(state->controls->samples + 0.5f));
-    dvz_fprintf(fp, "ssao.blur_enabled = %s;\n", state->controls->blur ? "true" : "false");
-    dvz_fprintf(fp, "ssao.blur_radius = %.6ff;\n", state->controls->blur_radius);
-    dvz_fprintf(fp, "ssao.blur_depth_sigma = %.6ff;\n", state->controls->blur_depth_sigma);
-    dvz_fprintf(fp, "ssao.blur_normal_sigma = %.6ff;\n", state->controls->blur_normal_sigma);
-    dvz_fprintf(fp, "ssao.debug_view = %s;\n", state->controls->debug_view ? "true" : "false");
-    dvz_fprintf(fp, "(void)dvz_panel_set_ssao(panel, &ssao);\n");
+    dvz_fprintf(fp, "DvzAoDesc ao = dvz_ao_desc();\n");
+    dvz_fprintf(fp, "ao.radius = %.6ff;\n", state->controls->radius);
+    dvz_fprintf(fp, "ao.intensity = %.6ff;\n", state->controls->intensity);
+    dvz_fprintf(fp, "ao.thickness = %.6ff;\n", state->controls->thickness);
+    dvz_fprintf(fp, "ao.min_visibility = %.6ff;\n", state->controls->min_visibility);
+    dvz_fprintf(fp, "ao.quality = (DvzAoQuality)%d;\n", (int)(state->controls->quality + 0.5f));
+    dvz_fprintf(fp, "ao.debug_mode = (DvzAoDebugMode)%d;\n", (int)state->controls->debug_mode);
+    dvz_fprintf(fp, "(void)dvz_panel_set_ao(panel, &ao);\n");
 }
 
 
@@ -1212,36 +1207,36 @@ static void _msaa_print_cb(FILE* fp, void* user)
 }
 
 
-static bool _ssao_gui(DvzGui* gui, void* user)
+static bool _ao_gui(DvzGui* gui, void* user)
 {
-    ExampleTunerSsao* state = (ExampleTunerSsao*)user;
+    ExampleTunerAo* state = (ExampleTunerAo*)user;
     if (gui == NULL || state == NULL || state->controls == NULL)
         return false;
-    return example_gui_ssao(gui, state->controls);
+    return example_gui_ao(gui, state->controls);
 }
 
 
-static void _ssao_apply_cb(void* user)
+static void _ao_apply_cb(void* user)
 {
-    _ssao_apply((ExampleTunerSsao*)user);
+    _ao_apply((ExampleTunerAo*)user);
 }
 
 
-static void _ssao_reset(void* user)
+static void _ao_reset(void* user)
 {
-    ExampleTunerSsao* state = (ExampleTunerSsao*)user;
+    ExampleTunerAo* state = (ExampleTunerAo*)user;
     if (state == NULL || state->controls == NULL)
         return;
     *state->controls = state->reset_controls;
-    _ssao_apply(state);
+    _ao_apply(state);
 }
 
 
-static void _ssao_print_cb(FILE* fp, void* user)
+static void _ao_print_cb(FILE* fp, void* user)
 {
-    ExampleTunerSsao* state = (ExampleTunerSsao*)user;
+    ExampleTunerAo* state = (ExampleTunerAo*)user;
     if (state != NULL && state->controls != NULL)
-        _ssao_print(fp, state);
+        _ao_print(fp, state);
 }
 
 
@@ -1998,33 +1993,33 @@ void example_tuner_msaa(
 
 
 /**
- * Register an SSAO tuner component.
+ * Register an AO tuner component.
  *
  * @param tuner tuner
  * @param name component name
- * @param panel panel receiving SSAO state
- * @param controls live SSAO controls
+ * @param panel panel receiving AO state
+ * @param controls live AO controls
  */
-void example_tuner_ssao(
+void example_tuner_ao(
     ExampleTuner* tuner,
     const char* name,
     DvzPanel* panel,
-    DvzExampleGuiSsaoControls* controls)
+    DvzExampleGuiAoControls* controls)
 {
     if (tuner == NULL || panel == NULL || controls == NULL ||
-        tuner->ssao_count >= EXAMPLE_TUNER_MAX_SSAO)
+        tuner->ao_count >= EXAMPLE_TUNER_MAX_AO)
         return;
 
-    ExampleTunerSsao* state = &tuner->ssaos[tuner->ssao_count++];
+    ExampleTunerAo* state = &tuner->aos[tuner->ao_count++];
     state->name = name;
     state->panel = panel;
     state->controls = controls;
     state->reset_controls = *controls;
-    _ssao_apply(state);
+    _ao_apply(state);
 
     (void)example_tuner_add_component(
-        tuner, _tuner_name(name, "SSAO"), state, NULL, _ssao_gui, _ssao_apply_cb, _ssao_reset,
-        _ssao_print_cb);
+        tuner, _tuner_name(name, "AO"), state, NULL, _ao_gui, _ao_apply_cb, _ao_reset,
+        _ao_print_cb);
 }
 
 

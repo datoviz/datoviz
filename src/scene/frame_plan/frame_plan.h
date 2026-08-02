@@ -55,6 +55,29 @@
 
 typedef enum
 {
+    DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE = 0,
+    DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER,
+    DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE,
+    DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION,
+    DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION,
+    DVZ_FRAME_PLAN_RENDER_PASS_SSAO,
+    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR,
+    DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE,
+    DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
+    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION,
+    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
+    DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE,
+    DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION,
+    DVZ_FRAME_PLAN_RENDER_PASS_PICKING,
+} DvzFramePlanRenderPassRole;
+
+
+
+typedef enum
+{
     DVZ_FRAME_PLAN_RESOURCE_ROLE_NONE = 0,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION,
     DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION_START,
@@ -1148,6 +1171,8 @@ struct DvzFramePlan
 /*************************************************************************************************/
 /*  Internal helpers                                                                            */
 /*************************************************************************************************/
+
+DvzFramePlanRenderPassRole _frame_plan_render_pass_role(const DvzFramePlanNode* node);
 
 bool dvz_frame_plan_render_panel(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,

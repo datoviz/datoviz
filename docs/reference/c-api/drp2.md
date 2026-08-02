@@ -3763,10 +3763,11 @@ _Declared in `include/datoviz/drp2/runtime.h`:193._
 
 Attach a borrowed stream frame as a runtime render target.
 
-The runtime retains the frame's borrowed image, image-view, and command-buffer handles under
-`texture_id`. They must remain valid until this target is replaced, the runtime is reset, or the
-runtime is destroyed. The command buffer must already be recording during subsequent execution;
-the runtime records into it but does not begin, end, reset, submit, or destroy it.
+The runtime retains the frame's borrowed color image, optional depth image, image views, and
+command-buffer handles under `texture_id`. They must remain valid until this target is replaced,
+the runtime is reset, or the runtime is destroyed. The command buffer must already be recording
+during subsequent execution; the runtime records into it but does not begin, end, reset, submit,
+or destroy it.
 
 ```c
 _Bool dvz_drp2_runtime_attach_frame_target(
@@ -3783,7 +3784,7 @@ _Bool dvz_drp2_runtime_attach_frame_target(
 | `texture_id` | `uint64_t` | the DRP2 texture id to expose for render passes |
 | `frame` | `const` [`DvzStreamFrame`](app.md#type-dvzstreamframe) * | the borrowed stream frame whose command buffer is currently recording |
 
-_Declared in `include/datoviz/drp2/runtime.h`:246._
+_Declared in `include/datoviz/drp2/runtime.h`:247._
 
 #### `dvz_drp2_runtime_copy_texture_to_frame()` { #dvz_drp2_runtime_copy_texture_to_frame .dvz-api-function }
 
@@ -3808,7 +3809,7 @@ _Bool dvz_drp2_runtime_copy_texture_to_frame(
 | `texture_id` | `uint64_t` | the DRP2 texture id to copy from |
 | `frame` | `const` [`DvzStreamFrame`](app.md#type-dvzstreamframe) * | the borrowed stream frame whose command buffer is currently recording |
 
-_Declared in `include/datoviz/drp2/runtime.h`:262._
+_Declared in `include/datoviz/drp2/runtime.h`:263._
 
 #### `dvz_drp2_runtime_destroy()` { #dvz_drp2_runtime_destroy .dvz-api-function }
 
@@ -3854,7 +3855,7 @@ _Bool dvz_drp2_runtime_download_buffer(
 | `size` | `uint64_t` | number of bytes to read |
 | `dst` | `void` * | destination CPU buffer (caller-allocated, at least size bytes) |
 
-_Declared in `include/datoviz/drp2/runtime.h`:279._
+_Declared in `include/datoviz/drp2/runtime.h`:280._
 
 #### `dvz_drp2_runtime_execute()` { #dvz_drp2_runtime_execute .dvz-api-function }
 

@@ -155,20 +155,16 @@ def _setup_camera(panel) -> None:
         raise RuntimeError("dvz_panel_set_camera_desc() failed")
 
 
-def _set_ssao(panel) -> None:
-    desc = dvz.dvz_ssao_desc()
+def _set_ao(panel) -> None:
+    desc = dvz.dvz_ao_desc()
     desc.radius = 0.72
-    desc.strength = 1.82
-    desc.bias = 0.007
-    desc.power = 2.45
+    desc.intensity = 1.82
+    desc.thickness = 0.028
     desc.min_visibility = 0.42
-    desc.sample_count = 16
-    desc.blur_enabled = True
-    desc.blur_radius = 5.0
-    desc.blur_depth_sigma = 0.65
-    desc.blur_normal_sigma = 0.35
-    if dvz.dvz_panel_set_ssao(panel, ctypes.byref(desc)) != 0:
-        raise RuntimeError("dvz_panel_set_ssao() failed")
+    desc.quality = dvz.DVZ_AO_QUALITY_HIGH
+    desc.debug_mode = dvz.DVZ_AO_DEBUG_NONE
+    if dvz.dvz_panel_set_ao(panel, ctypes.byref(desc)) != 0:
+        raise RuntimeError("dvz_panel_set_ao() failed")
 
 
 def _material():
@@ -352,7 +348,7 @@ def _build_scene(path: Path | None = None):
     scene, figure, panel = ex.scene_panel()
     dvz.dvz_panel_set_background_color(panel, PANEL_BG)
     _setup_camera(panel)
-    _set_ssao(panel)
+    _set_ao(panel)
 
     material = _material()
     spheres = _add_spheres(scene, panel, state, material)

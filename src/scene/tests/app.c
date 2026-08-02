@@ -208,16 +208,15 @@ typedef struct
  * @param debug_view whether ambient visibility is presented explicitly
  * @return configured descriptor
  */
-static DvzSsaoDesc _app_gtao_desc(bool debug_view)
+static DvzAoDesc _app_gtao_desc(bool debug_view)
 {
-    DvzSsaoDesc desc = dvz_ssao_desc();
+    DvzAoDesc desc = dvz_ao_desc();
     desc.radius = 0.75f;
-    desc.strength = 2.0f;
-    desc.bias = 0.03f;
+    desc.intensity = 2.0f;
+    desc.thickness = 0.12f;
     desc.min_visibility = 0.15f;
-    desc.sample_count = 24;
-    desc.blur_enabled = true;
-    desc.debug_view = debug_view;
+    desc.quality = DVZ_AO_QUALITY_MEDIUM;
+    desc.debug_mode = debug_view ? DVZ_AO_DEBUG_VISIBILITY : DVZ_AO_DEBUG_NONE;
     return desc;
 }
 
@@ -4110,8 +4109,8 @@ int test_app_offscreen_mesh_ao_affects_ambient_lighting(TstContext* suite, const
     AT(width0 == 96);
     AT(height0 == 96);
 
-    DvzSsaoDesc ao_desc = _app_gtao_desc(false);
-    AT(dvz_panel_set_ssao(panel, &ao_desc) == DVZ_OK);
+    DvzAoDesc ao_desc = _app_gtao_desc(false);
+    AT(dvz_panel_set_ao(panel, &ao_desc) == DVZ_OK);
     dvz_app_run(app, 1);
     uint32_t width1 = 0, height1 = 0;
     uint8_t* rgba1 = NULL;
@@ -4144,7 +4143,7 @@ int test_app_offscreen_mesh_ao_affects_ambient_lighting(TstContext* suite, const
     AT(_app_rgb_sum(rgba1, pixel_count) < _app_rgb_sum(rgba0, pixel_count));
 
     /* AO is a material input: with no ambient term, direct diffuse remains unchanged. */
-    AT(dvz_panel_set_ssao(panel, NULL) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, NULL) == DVZ_OK);
     AT(_test_set_phong_material(back.visual, light_direction, 0.0f, 1.0f, 0.0f, 32.0f) == 0);
     AT(_test_set_phong_material(front.visual, light_direction, 0.0f, 1.0f, 0.0f, 32.0f) == 0);
     AT(_app_ao_render_frames(win, 2));
@@ -4152,7 +4151,7 @@ int test_app_offscreen_mesh_ao_affects_ambient_lighting(TstContext* suite, const
     uint8_t* direct = NULL;
     AT(_app_ao_capture(canvas, &direct_width, &direct_height, &direct));
     AT(direct_width == width0 && direct_height == height0);
-    AT(dvz_panel_set_ssao(panel, &ao_desc) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, &ao_desc) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t direct_ao_width = 0, direct_ao_height = 0;
     uint8_t* direct_ao = NULL;
@@ -4244,8 +4243,8 @@ int test_app_offscreen_sphere_gtao_darkens_contact(TstContext* suite, const TstC
     AT(width0 == 96);
     AT(height0 == 96);
 
-    DvzSsaoDesc ao_desc = _app_gtao_desc(false);
-    AT(dvz_panel_set_ssao(panel, &ao_desc) == DVZ_OK);
+    DvzAoDesc ao_desc = _app_gtao_desc(false);
+    AT(dvz_panel_set_ao(panel, &ao_desc) == DVZ_OK);
     dvz_app_run(app, 1);
     uint32_t width1 = 0, height1 = 0;
     uint8_t* rgba1 = NULL;
@@ -4326,8 +4325,8 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     AT(_app_ao_capture(canvas, &width, &height, &baseline));
     AT(width == 112 && height == 88);
 
-    DvzSsaoDesc ssao = _app_gtao_desc(true);
-    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+    DvzAoDesc ssao = _app_gtao_desc(true);
+    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t ao_width = 0, ao_height = 0;
     uint8_t* ao = NULL;
@@ -4363,13 +4362,13 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
         camera.view.eye[2] = 3.0f;
         camera.projection.fov_y = fov_y[i];
         AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
-        AT(dvz_panel_set_ssao(panel, NULL) == DVZ_OK);
+        AT(dvz_panel_set_ao(panel, NULL) == DVZ_OK);
         AT(_app_ao_render_frames(win, 2));
         uint32_t reference_width = 0, reference_height = 0;
         uint8_t* reference = NULL;
         AT(_app_ao_capture(canvas, &reference_width, &reference_height, &reference));
         AT(reference_width == width && reference_height == height);
-        AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+        AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
         AT(_app_ao_render_frames(win, 2));
         uint32_t frame_width = 0, frame_height = 0;
         uint8_t* frame = NULL;
@@ -4403,7 +4402,7 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     orthographic.projection.type = DVZ_CAMERA_ORTHOGRAPHIC;
     orthographic.projection.ortho_height = 2.4f;
     AT(dvz_panel_set_camera_desc(panel, &orthographic) == DVZ_OK);
-    AT(dvz_panel_set_ssao(panel, NULL) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, NULL) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t orthographic_reference_width = 0, orthographic_reference_height = 0;
     uint8_t* orthographic_reference = NULL;
@@ -4411,7 +4410,7 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
         canvas, &orthographic_reference_width, &orthographic_reference_height,
         &orthographic_reference));
     AT(orthographic_reference_width == width && orthographic_reference_height == height);
-    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t orthographic_width = 0, orthographic_height = 0;
     uint8_t* orthographic_rgba = NULL;
@@ -4438,14 +4437,14 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     msaa_camera.projection.fov_y = 0.75f;
     AT(dvz_panel_set_camera_desc(panel, &msaa_camera) == DVZ_OK);
     AT(dvz_panel_set_msaa(panel, NULL) == DVZ_OK);
-    AT(dvz_panel_set_ssao(panel, NULL) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, NULL) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t msaa1_reference_width = 0, msaa1_reference_height = 0;
     uint8_t* msaa1_reference = NULL;
     AT(_app_ao_capture(
         canvas, &msaa1_reference_width, &msaa1_reference_height, &msaa1_reference));
     AT(msaa1_reference_width == width && msaa1_reference_height == height);
-    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t msaa1_width = 0, msaa1_height = 0;
     uint8_t* msaa1 = NULL;
@@ -4465,14 +4464,14 @@ int test_app_offscreen_gtao_projection_zoom_stability(TstContext* suite, const T
     DvzMsaaDesc msaa4_desc = dvz_msaa_desc();
     msaa4_desc.sample_count = 4;
     AT(dvz_panel_set_msaa(panel, &msaa4_desc) == DVZ_OK);
-    AT(dvz_panel_set_ssao(panel, NULL) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, NULL) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t msaa4_reference_width = 0, msaa4_reference_height = 0;
     uint8_t* msaa4_reference = NULL;
     AT(_app_ao_capture(
         canvas, &msaa4_reference_width, &msaa4_reference_height, &msaa4_reference));
     AT(msaa4_reference_width == width && msaa4_reference_height == height);
-    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t msaa4_width = 0, msaa4_height = 0;
     uint8_t* msaa4_rgba = NULL;
@@ -4562,8 +4561,8 @@ int test_app_offscreen_gtao_panel_locality(TstContext* suite, const TstCase* ite
     AT(_app_ao_capture(canvas, &width, &height, &baseline));
     AT(width == 128 && height == 96);
 
-    DvzSsaoDesc ssao = _app_gtao_desc(true);
-    AT(dvz_panel_set_ssao(left, &ssao) == DVZ_OK);
+    DvzAoDesc ssao = _app_gtao_desc(true);
+    AT(dvz_panel_set_ao(left, &ssao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t ao_width = 0, ao_height = 0;
     uint8_t* ao = NULL;
@@ -4591,7 +4590,7 @@ int test_app_offscreen_gtao_panel_locality(TstContext* suite, const TstCase* ite
         _app_ao_outside_delta_metrics(baseline, ao, width, height, left_rect, right_rect);
     AT(outside_delta.max_delta <= 1);
 
-    AT(dvz_panel_set_ssao(right, &ssao) == DVZ_OK);
+    AT(dvz_panel_set_ao(right, &ssao) == DVZ_OK);
     AT(_app_ao_render_frames(win, 2));
     uint32_t both_width = 0, both_height = 0;
     uint8_t* both = NULL;
@@ -4653,8 +4652,8 @@ int test_app_offscreen_gtao_resize_stability(TstContext* suite, const TstCase* i
     DvzCameraDesc resize_camera = dvz_camera_desc();
     AT(dvz_panel_set_camera_desc(panel, &resize_camera) == DVZ_OK);
 
-    DvzSsaoDesc ssao = _app_gtao_desc(true);
-    AT(dvz_panel_set_ssao(panel, &ssao) == DVZ_OK);
+    DvzAoDesc ssao = _app_gtao_desc(true);
+    AT(dvz_panel_set_ao(panel, &ssao) == DVZ_OK);
 
     DvzApp* app = _app_test_create(suite, scene);
     if (app == NULL)

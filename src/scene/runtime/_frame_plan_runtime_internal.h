@@ -132,9 +132,9 @@ struct SceneWorkRuntime
     uint64_t pipeline_id;
     uint64_t bind_group_layout_id;
     uint64_t bind_group_id;
-    uint64_t ssao_bgl_id;
-    uint64_t ssao_bg_id;
-    uint64_t ssao_pipeline_id;
+    uint64_t ao_bgl_id;
+    uint64_t ao_bg_id;
+    uint64_t ao_pipeline_id;
     uint64_t blur_bgl_id;
     uint64_t blur_bg_ids[2];
     uint64_t blur_pipeline_ids[2];

@@ -17,7 +17,7 @@ Common workflows:
 - [Debug rendering](../../how-to/debug-rendering.md)
 - [Runtime internals](../../advanced/runtime-internals.md)
 
-Functions: 297
+Functions: 298
 Types: 29
 
 ## Symbol Groups
@@ -28,7 +28,7 @@ Types: 29
 | [Device And Presentation](#device-and-presentation) | 38 | 4 | `include/datoviz/vklite/surface.h`, `include/datoviz/vklite/swapchain.h` |
 | [Pipelines And Bindings](#pipelines-and-bindings) | 70 | 6 | 5 headers |
 | [Resources](#resources) | 75 | 9 | 3 headers |
-| [Synchronization And Submission](#synchronization-and-submission) | 51 | 7 | `include/datoviz/vklite/sync.h` |
+| [Synchronization And Submission](#synchronization-and-submission) | 52 | 7 | `include/datoviz/vklite/sync.h` |
 
 ??? info "Grouped function index"
 
@@ -335,6 +335,7 @@ Types: 29
     | [`dvz_semaphore()`](#dvz_semaphore) | `include/datoviz/vklite/sync.h` |
     | [`dvz_semaphore_create_wrapper()`](#dvz_semaphore_create_wrapper) | `include/datoviz/vklite/sync.h` |
     | [`dvz_semaphore_destroy()`](#dvz_semaphore_destroy) | `include/datoviz/vklite/sync.h` |
+    | [`dvz_semaphore_export()`](#dvz_semaphore_export) | `include/datoviz/vklite/sync.h` |
     | [`dvz_semaphore_export_fd()`](#dvz_semaphore_export_fd) | `include/datoviz/vklite/sync.h` |
     | [`dvz_semaphore_free()`](#dvz_semaphore_free) | `include/datoviz/vklite/sync.h` |
     | [`dvz_semaphore_handle()`](#dvz_semaphore_handle) | `include/datoviz/vklite/sync.h` |
@@ -454,7 +455,7 @@ void dvz_cmd_barriers(
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the command buffers |
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the set of barriers |
 
-_Declared in `include/datoviz/vklite/sync.h`:363._
+_Declared in `include/datoviz/vklite/sync.h`:364._
 
 #### `dvz_cmd_begin()` { #dvz_cmd_begin .dvz-api-function }
 
@@ -5513,7 +5514,7 @@ void dvz_barrier_buffer_access(
 | `src` | `VkAccessFlags2` | the source access |
 | `dst` | `VkAccessFlags2` | the destination access |
 
-_Declared in `include/datoviz/vklite/sync.h`:186._
+_Declared in `include/datoviz/vklite/sync.h`:187._
 
 #### `dvz_barrier_buffer_queue()` { #dvz_barrier_buffer_queue .dvz-api-function }
 
@@ -5533,7 +5534,7 @@ void dvz_barrier_buffer_queue(
 | `src` | `uint32_t` | the source queue family index |
 | `dst` | `uint32_t` | the destination queue family index |
 
-_Declared in `include/datoviz/vklite/sync.h`:198._
+_Declared in `include/datoviz/vklite/sync.h`:199._
 
 #### `dvz_barrier_buffer_stage()` { #dvz_barrier_buffer_stage .dvz-api-function }
 
@@ -5553,7 +5554,7 @@ void dvz_barrier_buffer_stage(
 | `src` | `VkPipelineStageFlags2` | the source stages |
 | `dst` | `VkPipelineStageFlags2` | the destination stages |
 
-_Declared in `include/datoviz/vklite/sync.h`:174._
+_Declared in `include/datoviz/vklite/sync.h`:175._
 
 #### `dvz_barrier_image_access()` { #dvz_barrier_image_access .dvz-api-function }
 
@@ -5573,7 +5574,7 @@ void dvz_barrier_image_access(
 | `src` | `VkAccessFlags2` | the source access |
 | `dst` | `VkAccessFlags2` | the destination access |
 
-_Declared in `include/datoviz/vklite/sync.h`:226._
+_Declared in `include/datoviz/vklite/sync.h`:227._
 
 #### `dvz_barrier_image_aspect()` { #dvz_barrier_image_aspect .dvz-api-function }
 
@@ -5591,7 +5592,7 @@ void dvz_barrier_image_aspect(
 | `bimg` | [`DvzBarrierImage`](runtime-vklite.md#type-dvzbarrierimage) * | the image barrier |
 | `aspect` | `VkImageAspectFlags` | the image aspect flags |
 
-_Declared in `include/datoviz/vklite/sync.h`:261._
+_Declared in `include/datoviz/vklite/sync.h`:262._
 
 #### `dvz_barrier_image_layers()` { #dvz_barrier_image_layers .dvz-api-function }
 
@@ -5611,7 +5612,7 @@ void dvz_barrier_image_layers(
 | `base` | `uint32_t` | the base array layer index |
 | `count` | `uint32_t` | the number of array layers |
 
-_Declared in `include/datoviz/vklite/sync.h`:285._
+_Declared in `include/datoviz/vklite/sync.h`:286._
 
 #### `dvz_barrier_image_layout()` { #dvz_barrier_image_layout .dvz-api-function }
 
@@ -5631,7 +5632,7 @@ void dvz_barrier_image_layout(
 | `old` | `VkImageLayout` | the old image layout |
 | `new_layout` | `VkImageLayout` | the new image layout |
 
-_Declared in `include/datoviz/vklite/sync.h`:238._
+_Declared in `include/datoviz/vklite/sync.h`:239._
 
 #### `dvz_barrier_image_mip()` { #dvz_barrier_image_mip .dvz-api-function }
 
@@ -5651,7 +5652,7 @@ void dvz_barrier_image_mip(
 | `base` | `uint32_t` | the base index |
 | `count` | `uint32_t` | the number of MIP images |
 
-_Declared in `include/datoviz/vklite/sync.h`:273._
+_Declared in `include/datoviz/vklite/sync.h`:274._
 
 #### `dvz_barrier_image_queue()` { #dvz_barrier_image_queue .dvz-api-function }
 
@@ -5671,7 +5672,7 @@ void dvz_barrier_image_queue(
 | `src` | `uint32_t` | the source queue family index |
 | `dst` | `uint32_t` | the destination queue family index |
 
-_Declared in `include/datoviz/vklite/sync.h`:250._
+_Declared in `include/datoviz/vklite/sync.h`:251._
 
 #### `dvz_barrier_image_stage()` { #dvz_barrier_image_stage .dvz-api-function }
 
@@ -5691,7 +5692,7 @@ void dvz_barrier_image_stage(
 | `src` | `VkPipelineStageFlags2` | the source stages |
 | `dst` | `VkPipelineStageFlags2` | the destination stages |
 
-_Declared in `include/datoviz/vklite/sync.h`:214._
+_Declared in `include/datoviz/vklite/sync.h`:215._
 
 #### `dvz_barrier_memory_access()` { #dvz_barrier_memory_access .dvz-api-function }
 
@@ -5711,7 +5712,7 @@ void dvz_barrier_memory_access(
 | `src` | `VkAccessFlags2` | the source access |
 | `dst` | `VkAccessFlags2` | the destination access |
 
-_Declared in `include/datoviz/vklite/sync.h`:159._
+_Declared in `include/datoviz/vklite/sync.h`:160._
 
 #### `dvz_barrier_memory_stage()` { #dvz_barrier_memory_stage .dvz-api-function }
 
@@ -5731,7 +5732,7 @@ void dvz_barrier_memory_stage(
 | `src` | `VkPipelineStageFlags2` | the source stages |
 | `dst` | `VkPipelineStageFlags2` | the destination stages |
 
-_Declared in `include/datoviz/vklite/sync.h`:146._
+_Declared in `include/datoviz/vklite/sync.h`:147._
 
 #### `dvz_barriers()` { #dvz_barriers .dvz-api-function }
 
@@ -5747,7 +5748,7 @@ void dvz_barriers(
 | --- | --- | --- |
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the set of barriers |
 
-_Declared in `include/datoviz/vklite/sync.h`:299._
+_Declared in `include/datoviz/vklite/sync.h`:300._
 
 #### `dvz_barriers_buffer()` { #dvz_barriers_buffer .dvz-api-function }
 
@@ -5773,7 +5774,7 @@ DvzBarrierBuffer * dvz_barriers_buffer(
 | `offset` | `VkDeviceSize` | byte offset of the synchronized range within `buffer` |
 | `size` | `VkDeviceSize` | size of the synchronized range in bytes, or `VK_WHOLE_SIZE` |
 
-_Declared in `include/datoviz/vklite/sync.h`:338._
+_Declared in `include/datoviz/vklite/sync.h`:339._
 
 #### `dvz_barriers_buffer_count()` { #dvz_barriers_buffer_count .dvz-api-function }
 
@@ -5790,7 +5791,7 @@ uint32_t dvz_barriers_buffer_count(
 | return | `uint32_t` | buffer-barrier count |
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the barrier set |
 
-_Declared in `include/datoviz/vklite/sync.h`:383._
+_Declared in `include/datoviz/vklite/sync.h`:384._
 
 #### `dvz_barriers_capacity()` { #dvz_barriers_capacity .dvz-api-function }
 
@@ -5807,7 +5808,7 @@ uint32_t dvz_barriers_capacity(
 | return | `uint32_t` | barrier capacity per barrier type |
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the barrier set |
 
-_Declared in `include/datoviz/vklite/sync.h`:413._
+_Declared in `include/datoviz/vklite/sync.h`:414._
 
 #### `dvz_barriers_dependency_flags()` { #dvz_barriers_dependency_flags .dvz-api-function }
 
@@ -5824,7 +5825,7 @@ VkDependencyFlags dvz_barriers_dependency_flags(
 | return | `VkDependencyFlags` | dependency flags |
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the barrier set |
 
-_Declared in `include/datoviz/vklite/sync.h`:403._
+_Declared in `include/datoviz/vklite/sync.h`:404._
 
 #### `dvz_barriers_flags()` { #dvz_barriers_flags .dvz-api-function }
 
@@ -5842,7 +5843,7 @@ void dvz_barriers_flags(
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the set of barriers |
 | `flags` | `VkDependencyFlags` | the dependency flags |
 
-_Declared in `include/datoviz/vklite/sync.h`:309._
+_Declared in `include/datoviz/vklite/sync.h`:310._
 
 #### `dvz_barriers_image()` { #dvz_barriers_image .dvz-api-function }
 
@@ -5864,7 +5865,7 @@ DvzBarrierImage * dvz_barriers_image(
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the set of barriers |
 | `img` | `VkImage` | live image handle whose known layout and access state will be transitioned |
 
-_Declared in `include/datoviz/vklite/sync.h`:353._
+_Declared in `include/datoviz/vklite/sync.h`:354._
 
 #### `dvz_barriers_image_count()` { #dvz_barriers_image_count .dvz-api-function }
 
@@ -5881,7 +5882,7 @@ uint32_t dvz_barriers_image_count(
 | return | `uint32_t` | image-barrier count |
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the barrier set |
 
-_Declared in `include/datoviz/vklite/sync.h`:393._
+_Declared in `include/datoviz/vklite/sync.h`:394._
 
 #### `dvz_barriers_memory()` { #dvz_barriers_memory .dvz-api-function }
 
@@ -5901,7 +5902,7 @@ DvzBarrierMemory * dvz_barriers_memory(
 | return | [`DvzBarrierMemory`](runtime-vklite.md#type-dvzbarriermemory) * | mutable barrier owned by `barriers`, or NULL when capacity is exhausted |
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the set of barriers |
 
-_Declared in `include/datoviz/vklite/sync.h`:322._
+_Declared in `include/datoviz/vklite/sync.h`:323._
 
 #### `dvz_barriers_memory_count()` { #dvz_barriers_memory_count .dvz-api-function }
 
@@ -5918,7 +5919,7 @@ uint32_t dvz_barriers_memory_count(
 | return | `uint32_t` | memory-barrier count |
 | `barriers` | [`DvzBarriers`](runtime-vklite.md#type-dvzbarriers) * | the barrier set |
 
-_Declared in `include/datoviz/vklite/sync.h`:373._
+_Declared in `include/datoviz/vklite/sync.h`:374._
 
 #### `dvz_fence()` { #dvz_fence .dvz-api-function }
 
@@ -5938,7 +5939,7 @@ void dvz_fence(
 | `signaled` | `_Bool` | whether the fence is created in the signaled state or not |
 | `fence` | [`DvzFence`](runtime-vklite.md#type-dvzfence) * |  |
 
-_Declared in `include/datoviz/vklite/sync.h`:428._
+_Declared in `include/datoviz/vklite/sync.h`:429._
 
 #### `dvz_fence_create_wrapper()` { #dvz_fence_create_wrapper .dvz-api-function }
 
@@ -5952,7 +5953,7 @@ DvzFence * dvz_fence_create_wrapper(void);
 | --- | --- | --- |
 | return | [`DvzFence`](runtime-vklite.md#type-dvzfence) * | allocated fence wrapper, or NULL on allocation failure |
 
-_Declared in `include/datoviz/vklite/sync.h`:88._
+_Declared in `include/datoviz/vklite/sync.h`:89._
 
 #### `dvz_fence_destroy()` { #dvz_fence_destroy .dvz-api-function }
 
@@ -5968,7 +5969,7 @@ void dvz_fence_destroy(
 | --- | --- | --- |
 | `fence` | [`DvzFence`](runtime-vklite.md#type-dvzfence) * | the fence |
 
-_Declared in `include/datoviz/vklite/sync.h`:476._
+_Declared in `include/datoviz/vklite/sync.h`:477._
 
 #### `dvz_fence_free()` { #dvz_fence_free .dvz-api-function }
 
@@ -5984,7 +5985,7 @@ void dvz_fence_free(
 | --- | --- | --- |
 | `fence` | [`DvzFence`](runtime-vklite.md#type-dvzfence) * | fence wrapper to free |
 
-_Declared in `include/datoviz/vklite/sync.h`:97._
+_Declared in `include/datoviz/vklite/sync.h`:98._
 
 #### `dvz_fence_handle()` { #dvz_fence_handle .dvz-api-function }
 
@@ -6001,7 +6002,7 @@ VkFence dvz_fence_handle(
 | return | `VkFence` | borrowed Vulkan fence handle, or `VK_NULL_HANDLE` when not initialized |
 | `fence` | [`DvzFence`](runtime-vklite.md#type-dvzfence) * | the fence |
 
-_Declared in `include/datoviz/vklite/sync.h`:448._
+_Declared in `include/datoviz/vklite/sync.h`:449._
 
 #### `dvz_fence_ready()` { #dvz_fence_ready .dvz-api-function }
 
@@ -6018,7 +6019,7 @@ _Bool dvz_fence_ready(
 | return | `_Bool` | true if the fence is signaled, false if it is unsignaled or the query failed |
 | `fence` | [`DvzFence`](runtime-vklite.md#type-dvzfence) * | the fence |
 
-_Declared in `include/datoviz/vklite/sync.h`:458._
+_Declared in `include/datoviz/vklite/sync.h`:459._
 
 #### `dvz_fence_reset()` { #dvz_fence_reset .dvz-api-function }
 
@@ -6034,7 +6035,7 @@ void dvz_fence_reset(
 | --- | --- | --- |
 | `fence` | [`DvzFence`](runtime-vklite.md#type-dvzfence) * | the fence |
 
-_Declared in `include/datoviz/vklite/sync.h`:467._
+_Declared in `include/datoviz/vklite/sync.h`:468._
 
 #### `dvz_fence_wait()` { #dvz_fence_wait .dvz-api-function }
 
@@ -6051,7 +6052,7 @@ _Bool dvz_fence_wait(
 | return | `_Bool` | whether the fence was signaled successfully |
 | `fence` | [`DvzFence`](runtime-vklite.md#type-dvzfence) * | the fence |
 
-_Declared in `include/datoviz/vklite/sync.h`:438._
+_Declared in `include/datoviz/vklite/sync.h`:439._
 
 #### `dvz_semaphore()` { #dvz_semaphore .dvz-api-function }
 
@@ -6069,7 +6070,7 @@ void dvz_semaphore(
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | logical device that owns the semaphore; must outlive `semaphore` |
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * |  |
 
-_Declared in `include/datoviz/vklite/sync.h`:490._
+_Declared in `include/datoviz/vklite/sync.h`:491._
 
 #### `dvz_semaphore_create_wrapper()` { #dvz_semaphore_create_wrapper .dvz-api-function }
 
@@ -6083,7 +6084,7 @@ DvzSemaphore * dvz_semaphore_create_wrapper(void);
 | --- | --- | --- |
 | return | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | allocated semaphore wrapper, or NULL on allocation failure |
 
-_Declared in `include/datoviz/vklite/sync.h`:106._
+_Declared in `include/datoviz/vklite/sync.h`:107._
 
 #### `dvz_semaphore_destroy()` { #dvz_semaphore_destroy .dvz-api-function }
 
@@ -6099,7 +6100,26 @@ void dvz_semaphore_destroy(
 | --- | --- | --- |
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | the semaphore |
 
-_Declared in `include/datoviz/vklite/sync.h`:566._
+_Declared in `include/datoviz/vklite/sync.h`:579._
+
+#### `dvz_semaphore_export()` { #dvz_semaphore_export .dvz-api-function }
+
+Export a semaphore as a native platform handle.
+
+```c
+DvzExternalHandle dvz_semaphore_export(
+    DvzSemaphore * semaphore,
+    VkExternalSemaphoreHandleTypeFlags handle_type
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzExternalHandle`](runtime-utilities.md#type-dvzexternalhandle) | native handle on success, `DVZ_EXTERNAL_HANDLE_INVALID` on failure |
+| `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | semaphore to export |
+| `handle_type` | `VkExternalSemaphoreHandleTypeFlags` | external handle type requested by the caller |
+
+_Declared in `include/datoviz/vklite/sync.h`:570._
 
 #### `dvz_semaphore_export_fd()` { #dvz_semaphore_export_fd .dvz-api-function }
 
@@ -6118,7 +6138,7 @@ int dvz_semaphore_export_fd(
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | semaphore to export |
 | `handle_type` | `VkExternalSemaphoreHandleTypeFlags` | external handle type requested by the caller |
 
-_Declared in `include/datoviz/vklite/sync.h`:557._
+_Declared in `include/datoviz/vklite/sync.h`:558._
 
 #### `dvz_semaphore_free()` { #dvz_semaphore_free .dvz-api-function }
 
@@ -6134,7 +6154,7 @@ void dvz_semaphore_free(
 | --- | --- | --- |
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | semaphore wrapper to free |
 
-_Declared in `include/datoviz/vklite/sync.h`:115._
+_Declared in `include/datoviz/vklite/sync.h`:116._
 
 #### `dvz_semaphore_handle()` { #dvz_semaphore_handle .dvz-api-function }
 
@@ -6151,7 +6171,7 @@ VkSemaphore dvz_semaphore_handle(
 | return | `VkSemaphore` | borrowed Vulkan semaphore handle, or `VK_NULL_HANDLE` when not initialized |
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | the semaphore |
 
-_Declared in `include/datoviz/vklite/sync.h`:544._
+_Declared in `include/datoviz/vklite/sync.h`:545._
 
 #### `dvz_semaphore_query()` { #dvz_semaphore_query .dvz-api-function }
 
@@ -6168,7 +6188,7 @@ uint64_t dvz_semaphore_query(
 | return | `uint64_t` | current timeline value, or 0 if the query fails |
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | live timeline semaphore to query |
 
-_Declared in `include/datoviz/vklite/sync.h`:534._
+_Declared in `include/datoviz/vklite/sync.h`:535._
 
 #### `dvz_semaphore_signal()` { #dvz_semaphore_signal .dvz-api-function }
 
@@ -6186,7 +6206,7 @@ void dvz_semaphore_signal(
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | live timeline semaphore to signal |
 | `value` | `uint64_t` | monotonically increasing timeline value to signal |
 
-_Declared in `include/datoviz/vklite/sync.h`:514._
+_Declared in `include/datoviz/vklite/sync.h`:515._
 
 #### `dvz_semaphore_timeline()` { #dvz_semaphore_timeline .dvz-api-function }
 
@@ -6208,7 +6228,7 @@ void dvz_semaphore_timeline(
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * |  |
 | `handle_type` | `VkExternalSemaphoreHandleTypeFlags` | external semaphore handle type required for export (0 when unused) |
 
-_Declared in `include/datoviz/vklite/sync.h`:502._
+_Declared in `include/datoviz/vklite/sync.h`:503._
 
 #### `dvz_semaphore_wait()` { #dvz_semaphore_wait .dvz-api-function }
 
@@ -6226,7 +6246,7 @@ void dvz_semaphore_wait(
 | `semaphore` | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) * | live timeline semaphore to wait on |
 | `value` | `uint64_t` | timeline value that must be reached |
 
-_Declared in `include/datoviz/vklite/sync.h`:524._
+_Declared in `include/datoviz/vklite/sync.h`:525._
 
 #### `dvz_submit()` { #dvz_submit .dvz-api-function }
 
@@ -6242,7 +6262,7 @@ void dvz_submit(
 | --- | --- | --- |
 | `submit` | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | the submission |
 
-_Declared in `include/datoviz/vklite/sync.h`:580._
+_Declared in `include/datoviz/vklite/sync.h`:593._
 
 #### `dvz_submit_command()` { #dvz_submit_command .dvz-api-function }
 
@@ -6263,7 +6283,7 @@ void dvz_submit_command(
 | `submit` | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | the submission |
 | `cmd` | `VkCommandBuffer` | the command buffer |
 
-_Declared in `include/datoviz/vklite/sync.h`:625._
+_Declared in `include/datoviz/vklite/sync.h`:638._
 
 #### `dvz_submit_command_count()` { #dvz_submit_command_count .dvz-api-function }
 
@@ -6280,7 +6300,7 @@ uint32_t dvz_submit_command_count(
 | return | `uint32_t` | command-buffer count |
 | `submit` | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | the submission |
 
-_Declared in `include/datoviz/vklite/sync.h`:655._
+_Declared in `include/datoviz/vklite/sync.h`:668._
 
 #### `dvz_submit_create_wrapper()` { #dvz_submit_create_wrapper .dvz-api-function }
 
@@ -6294,7 +6314,7 @@ DvzSubmit * dvz_submit_create_wrapper(void);
 | --- | --- | --- |
 | return | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | allocated submit wrapper, or NULL on allocation failure |
 
-_Declared in `include/datoviz/vklite/sync.h`:124._
+_Declared in `include/datoviz/vklite/sync.h`:125._
 
 #### `dvz_submit_free()` { #dvz_submit_free .dvz-api-function }
 
@@ -6310,7 +6330,7 @@ void dvz_submit_free(
 | --- | --- | --- |
 | `submit` | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | submit wrapper to free |
 
-_Declared in `include/datoviz/vklite/sync.h`:133._
+_Declared in `include/datoviz/vklite/sync.h`:134._
 
 #### `dvz_submit_is_empty()` { #dvz_submit_is_empty .dvz-api-function }
 
@@ -6327,7 +6347,7 @@ _Bool dvz_submit_is_empty(
 | return | `_Bool` | true when the submission is empty |
 | `submit` | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | the submission |
 
-_Declared in `include/datoviz/vklite/sync.h`:665._
+_Declared in `include/datoviz/vklite/sync.h`:678._
 
 #### `dvz_submit_send()` { #dvz_submit_send .dvz-api-function }
 
@@ -6348,7 +6368,7 @@ int32_t dvz_submit_send(
 | `queue` | `VkQueue` | borrowed Vulkan queue on which to submit |
 | `fence` | `VkFence` | optional borrowed fence signaled after completion, or `VK_NULL_HANDLE` |
 
-_Declared in `include/datoviz/vklite/sync.h`:677._
+_Declared in `include/datoviz/vklite/sync.h`:690._
 
 #### `dvz_submit_signal()` { #dvz_submit_signal .dvz-api-function }
 
@@ -6373,7 +6393,7 @@ void dvz_submit_signal(
 | `value` | `uint64_t` | the value to signal, if using a timeline semaphore |
 | `stage` | `VkPipelineStageFlags2` | pipeline stage mask associated with the signal operation |
 
-_Declared in `include/datoviz/vklite/sync.h`:611._
+_Declared in `include/datoviz/vklite/sync.h`:624._
 
 #### `dvz_submit_signal_count()` { #dvz_submit_signal_count .dvz-api-function }
 
@@ -6390,7 +6410,7 @@ uint32_t dvz_submit_signal_count(
 | return | `uint32_t` | signal-semaphore count |
 | `submit` | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | the submission |
 
-_Declared in `include/datoviz/vklite/sync.h`:645._
+_Declared in `include/datoviz/vklite/sync.h`:658._
 
 #### `dvz_submit_wait()` { #dvz_submit_wait .dvz-api-function }
 
@@ -6415,7 +6435,7 @@ void dvz_submit_wait(
 | `value` | `uint64_t` | the value to wait on, if using a timeline semaphore |
 | `stage` | `VkPipelineStageFlags2` | destination pipeline stage mask that waits for the semaphore |
 
-_Declared in `include/datoviz/vklite/sync.h`:595._
+_Declared in `include/datoviz/vklite/sync.h`:608._
 
 #### `dvz_submit_wait_count()` { #dvz_submit_wait_count .dvz-api-function }
 
@@ -6432,7 +6452,7 @@ uint32_t dvz_submit_wait_count(
 | return | `uint32_t` | wait-semaphore count |
 | `submit` | [`DvzSubmit`](runtime-vklite.md#type-dvzsubmit) * | the submission |
 
-_Declared in `include/datoviz/vklite/sync.h`:635._
+_Declared in `include/datoviz/vklite/sync.h`:648._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -6444,7 +6464,7 @@ _Declared in `include/datoviz/vklite/sync.h`:635._
     typedef struct VkBufferMemoryBarrier2 DvzBarrierBuffer;
     ```
 
-    _Declared in `include/datoviz/vklite/sync.h`:37._
+    _Declared in `include/datoviz/vklite/sync.h`:38._
 
 <a id="type-dvzbarrierimage"></a>
 
@@ -6454,7 +6474,7 @@ _Declared in `include/datoviz/vklite/sync.h`:635._
     typedef struct VkImageMemoryBarrier2 DvzBarrierImage;
     ```
 
-    _Declared in `include/datoviz/vklite/sync.h`:38._
+    _Declared in `include/datoviz/vklite/sync.h`:39._
 
 <a id="type-dvzbarriermemory"></a>
 
@@ -6464,7 +6484,7 @@ _Declared in `include/datoviz/vklite/sync.h`:635._
     typedef struct VkMemoryBarrier2 DvzBarrierMemory;
     ```
 
-    _Declared in `include/datoviz/vklite/sync.h`:36._
+    _Declared in `include/datoviz/vklite/sync.h`:37._
 
 <a id="type-dvzbarriers"></a>
 
@@ -6479,7 +6499,7 @@ _Declared in `include/datoviz/vklite/sync.h`:635._
     };
     ```
 
-    _Declared in `include/datoviz/vklite/sync.h`:67._
+    _Declared in `include/datoviz/vklite/sync.h`:68._
 
 <a id="type-dvzfence"></a>
 
@@ -6489,7 +6509,7 @@ _Declared in `include/datoviz/vklite/sync.h`:635._
     typedef struct DvzFence DvzFence;
     ```
 
-    _Declared in `include/datoviz/vklite/sync.h`:40._
+    _Declared in `include/datoviz/vklite/sync.h`:41._
 
 <a id="type-dvzsemaphore"></a>
 
@@ -6509,4 +6529,4 @@ _Declared in `include/datoviz/vklite/sync.h`:635._
     typedef struct DvzSubmit DvzSubmit;
     ```
 
-    _Declared in `include/datoviz/vklite/sync.h`:42._
+    _Declared in `include/datoviz/vklite/sync.h`:43._

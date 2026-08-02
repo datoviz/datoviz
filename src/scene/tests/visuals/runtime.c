@@ -1740,9 +1740,9 @@ int test_scene_visual_scene_occlusion_frame_plan(TstContext* suite, const TstCas
     ANN(occlusion_node);
     ANN(opaque_node);
     AT(
-        dvz_frame_plan_render_pass_role(occlusion_node) ==
+        _frame_plan_render_pass_role(occlusion_node) ==
         DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(occlusion_node->u.render.visual_count == 1);
     AT(opaque_node->u.render.visual_count == 2);
     AT(occlusion_node->u.render.visual_metadata[0].scene_occluder);
@@ -2040,9 +2040,9 @@ int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCa
     ANN(occlusion_node);
     ANN(opaque_node);
     AT(
-        dvz_frame_plan_render_pass_role(occlusion_node) ==
+        _frame_plan_render_pass_role(occlusion_node) ==
         DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION);
-    AT(dvz_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(opaque_node) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
 
     const DvzFrameGraphPass* volume_pass = dvz_frame_plan_graph_pass_get(plan, 0);
     const DvzFrameGraphPass* opaque_pass = dvz_frame_plan_graph_pass_get(plan, 1);

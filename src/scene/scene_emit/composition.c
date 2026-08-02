@@ -1041,7 +1041,7 @@ static bool _composition_declare_work(
             .binding = auxiliary_binding,
             .byte_size = auxiliary_kind == DVZ_SCENE_AUXILIARY_EDL_PARAMS
                              ? sizeof(DvzSceneEdlUniform)
-                             : sizeof(DvzSceneSsaoUniform),
+                             : sizeof(DvzSceneAoUniform),
         };
     }
     DvzRenderProductId in[DVZ_RENDER_PRODUCT_PRESENTATION_COLOR + 1] = {{0}};
@@ -1856,9 +1856,9 @@ bool _scene_panel_composition_resolve(
         _composition_product_bit(DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH);
     const uint64_t volume_first_hit =
         _composition_product_bit(DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH);
-    const bool effective_ssao = render_plan->ssao_enabled && render_plan->gbuffer_visual_count > 0;
+    const bool effective_ssao = render_plan->ao_enabled && render_plan->gbuffer_visual_count > 0;
     const bool effective_edl = render_plan->edl_enabled && render_plan->edl_has_depth_producer;
-    if (render_plan->ssao_enabled && !effective_ssao)
+    if (render_plan->ao_enabled && !effective_ssao)
         draft.disabled_optional_technique_mask |=
             1u << (uint32_t)DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY;
     if (render_plan->edl_enabled && !effective_edl)
@@ -1932,7 +1932,7 @@ bool _scene_panel_composition_resolve(
                 0, DVZ_SCENE_TECHNIQUE_FALLBACK_NONE) ||
             !_composition_set_latest_expansion(
                 &draft, begin, end,
-                render_plan->ssao_state != NULL && render_plan->ssao_state->blur_enabled
+                render_plan->ao_state != NULL && render_plan->ao_state->denoise_enabled
                     ? COMPOSITION_EXPAND_SSAO_BLUR
                     : 0))
             return _composition_report(
@@ -1962,7 +1962,8 @@ bool _scene_panel_composition_resolve(
                 report, "panel %s opaque shading expansion failed", render_plan->panel_id);
     }
 
-    if (effective_ssao && render_plan->ssao_state != NULL && render_plan->ssao_state->debug_view)
+    if (effective_ssao && render_plan->ao_state != NULL &&
+        render_plan->ao_state->debug_mode == DVZ_AO_DEBUG_VISIBILITY)
     {
         if (!_composition_add_technique(
                 &draft, DVZ_SCENE_TECHNIQUE_AMBIENT_COMPOSITE, scene_color | ambient_visibility,

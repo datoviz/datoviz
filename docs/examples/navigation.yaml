@@ -151,7 +151,7 @@ sections:
         examples:
           - features_technique_depth_cue
           - features_technique_edl
-          - features_technique_ssao
+          - features_technique_ao
           - features_technique_msaa
           - features_technique_transparency
           - features_alpha_blending
@@ -206,7 +206,7 @@ sections:
         examples:
           - features_lighting
           - features_mesh_texture
-          - features_technique_ssao
+          - features_technique_ao
           - features_technique_depth_cue
       - title: Animation & Interaction
         examples:

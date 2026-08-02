@@ -111,18 +111,16 @@ typedef struct ProteinExampleState
     int atom_color_mode;
     int ribbon_color_mode;
     bool standard_material;
-    bool ssao_enabled;
+    bool ao_enabled;
     bool msaa_enabled;
     bool msaa_alpha_to_coverage;
     bool spin_enabled;
     float atom_scale;
-    float ssao_radius;
-    float ssao_strength;
-    float ssao_bias;
-    float ssao_power;
-    float ssao_min_visibility;
-    float ssao_samples;
-    float ssao_blur_radius;
+    float ao_radius;
+    float ao_intensity;
+    float ao_thickness;
+    float ao_min_visibility;
+    float ao_quality;
     float msaa_samples;
     float ambient;
     float diffuse;
@@ -130,7 +128,6 @@ typedef struct ProteinExampleState
     float shininess;
     float roughness;
     float rim_strength;
-    bool ssao_blur;
 } ProteinExampleState;
 
 
@@ -847,42 +844,29 @@ static void _apply_material(ProteinExampleState* state)
 
 
 /**
- * Update the panel SSAO state from live controls.
+ * Update the panel AO state from live controls.
  *
  * @param state example state
  */
-static void _apply_ssao(ProteinExampleState* state)
+static void _apply_ao(ProteinExampleState* state)
 {
     ANN(state);
     ANN(state->panel);
 
-    if (!state->ssao_enabled)
+    if (!state->ao_enabled)
     {
-        (void)dvz_panel_set_ssao(state->panel, NULL);
+        (void)dvz_panel_set_ao(state->panel, NULL);
         return;
     }
-    if (state->ssao_samples < 4.0f)
-        state->ssao_samples = 4.0f;
-    if (state->ssao_samples > 32.0f)
-        state->ssao_samples = 32.0f;
-    if (state->ssao_blur_radius < 1.0f)
-        state->ssao_blur_radius = 1.0f;
-    if (state->ssao_blur_radius > 16.0f)
-        state->ssao_blur_radius = 16.0f;
-
-    (void)dvz_panel_set_ssao(
+    (void)dvz_panel_set_ao(
         state->panel,
-        &(DvzSsaoDesc){DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
-            .radius = state->ssao_radius,
-            .strength = state->ssao_strength,
-            .bias = state->ssao_bias,
-            .power = state->ssao_power,
-            .min_visibility = state->ssao_min_visibility,
-            .blur_radius = state->ssao_blur_radius,
-            .blur_depth_sigma = 0.65f,
-            .blur_normal_sigma = 0.35f,
-            .sample_count = (uint32_t)(state->ssao_samples + 0.5f),
-            .blur_enabled = state->ssao_blur,
+        &(DvzAoDesc){DVZ_STRUCT_INIT_FIELDS(DvzAoDesc),
+            .radius = state->ao_radius,
+            .intensity = state->ao_intensity,
+            .thickness = state->ao_thickness,
+            .min_visibility = state->ao_min_visibility,
+            .quality = (DvzAoQuality)(state->ao_quality + 0.5f),
+            .debug_mode = DVZ_AO_DEBUG_NONE,
         });
 }
 
@@ -1049,33 +1033,25 @@ static void _protein_gui(DvzGui* gui, DvzView* win, void* user_data)
         if (msaa_changed)
             _apply_msaa(state);
 
-        dvz_gui_separator_text(gui, "SSAO");
-        DvzExampleGuiSsaoControls ssao = {
-            .enabled = state->ssao_enabled,
-            .blur = state->ssao_blur,
-            .radius = state->ssao_radius,
-            .strength = state->ssao_strength,
-            .bias = state->ssao_bias,
-            .power = state->ssao_power,
-            .min_visibility = state->ssao_min_visibility,
-            .samples = state->ssao_samples,
-            .min_samples = 4.0f,
-            .max_samples = 32.0f,
-            .blur_radius = state->ssao_blur_radius,
-            .blur_radius_max = 16.0f,
+        dvz_gui_separator_text(gui, "AO");
+        DvzExampleGuiAoControls ao = {
+            .enabled = state->ao_enabled,
+            .radius = state->ao_radius,
+            .intensity = state->ao_intensity,
+            .thickness = state->ao_thickness,
+            .min_visibility = state->ao_min_visibility,
+            .quality = state->ao_quality,
+            .debug_mode = DVZ_AO_DEBUG_NONE,
         };
-        bool ssao_changed = example_gui_ssao(gui, &ssao);
-        state->ssao_enabled = ssao.enabled;
-        state->ssao_blur = ssao.blur;
-        state->ssao_radius = ssao.radius;
-        state->ssao_strength = ssao.strength;
-        state->ssao_bias = ssao.bias;
-        state->ssao_power = ssao.power;
-        state->ssao_min_visibility = ssao.min_visibility;
-        state->ssao_samples = ssao.samples;
-        state->ssao_blur_radius = ssao.blur_radius;
-        if (ssao_changed)
-            _apply_ssao(state);
+        bool ao_changed = example_gui_ao(gui, &ao);
+        state->ao_enabled = ao.enabled;
+        state->ao_radius = ao.radius;
+        state->ao_intensity = ao.intensity;
+        state->ao_thickness = ao.thickness;
+        state->ao_min_visibility = ao.min_visibility;
+        state->ao_quality = ao.quality;
+        if (ao_changed)
+            _apply_ao(state);
 
         if (dvz_gui_button(gui, "Reset view"))
             dvz_arcball_reset(state->arcball);
@@ -1300,18 +1276,16 @@ int main(int argc, char** argv)
         .atom_color_mode = PROTEIN_ATOM_COLOR_ELEMENT,
         .ribbon_color_mode = PROTEIN_RIBBON_COLOR_SS,
         .standard_material = true,
-        .ssao_enabled = true,
+        .ao_enabled = true,
         .msaa_enabled = true,
         .msaa_alpha_to_coverage = true,
         .spin_enabled = false,
         .atom_scale = atom_scale,
-        .ssao_radius = 0.609f,
-        .ssao_strength = 1.557f,
-        .ssao_bias = 0.008f,
-        .ssao_power = 2.261f,
-        .ssao_min_visibility = 0.476f,
-        .ssao_samples = 32.0f,
-        .ssao_blur_radius = 11.259f,
+        .ao_radius = 0.609f,
+        .ao_intensity = 1.557f,
+        .ao_thickness = 0.032f,
+        .ao_min_visibility = 0.476f,
+        .ao_quality = (float)DVZ_AO_QUALITY_ULTRA,
         .msaa_samples = 16.0f,
         .ambient = 0.20f,
         .diffuse = 0.76f,
@@ -1319,13 +1293,12 @@ int main(int argc, char** argv)
         .shininess = 80.0f,
         .roughness = 0.409f,
         .rim_strength = 0.024f,
-        .ssao_blur = true,
     };
     state_initialized = true;
     _apply_render_mode(&state);
     _apply_material(&state);
     _apply_msaa(&state);
-    _apply_ssao(&state);
+    _apply_ao(&state);
 
     DvzGui* gui = dvz_view_gui(win, NULL);
     if (gui == NULL)

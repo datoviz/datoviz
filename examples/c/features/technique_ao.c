@@ -7,17 +7,17 @@
 /* This example compares a synthetic molecular aggregate with and without ambient occlusion.
  *
  * What to look for: both panels render the same irregular, multi-lobed aggregate of variable-sized
- * spheres, while the right panel applies SSAO. Narrow clefts, recessed pockets, and near-contact
+ * spheres, while the right panel applies AO. Narrow clefts, recessed pockets, and near-contact
  * atom clusters become easier to separate without a floor or external dataset. In live mode, use
- * the GUI and linked arcball to inspect how radius, strength, bias, power, visibility, sample count,
- * and blur affect local occlusion.
+ * the GUI and linked arcball to inspect how radius, intensity, thickness, minimum visibility, and
+ * quality affect local occlusion.
  *
- * Scenario: features_technique_ssao
+ * Scenario: features_technique_ao
  * Style: features, graphite_cyan, 1280x720 window target
  *
- * Build:  just example-c features/technique_ssao
- * Run:    ./build/examples/c/features/technique_ssao --live
- * Smoke:  ./build/examples/c/features/technique_ssao --png
+ * Build:  just example-c features/technique_ao
+ * Run:    ./build/examples/c/features/technique_ao --live
+ * Smoke:  ./build/examples/c/features/technique_ao --png
  */
 
 
@@ -63,21 +63,21 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-typedef struct SsaoDemoState
+typedef struct AoDemoState
 {
-    DvzPanel* ssao_panel;
+    DvzPanel* ao_panel;
     DvzArcball* plain_arcball;
-    DvzArcball* ssao_arcball;
-    DvzExampleGuiSsaoControls ssao;
+    DvzArcball* ao_arcball;
+    DvzExampleGuiAoControls ao;
     vec3 arcball_angles;
     vec2 arcball_pan;
     float arcball_zoom;
     ExampleTuner tuner;
-} SsaoDemoState;
+} AoDemoState;
 
 
 
-static void _apply_arcball(SsaoDemoState* state)
+static void _apply_arcball(AoDemoState* state)
 {
     if (state == NULL)
         return;
@@ -88,11 +88,11 @@ static void _apply_arcball(SsaoDemoState* state)
         dvz_arcball_zoom(state->plain_arcball, state->arcball_zoom);
         dvz_arcball_pan(state->plain_arcball, state->arcball_pan);
     }
-    if (state->ssao_arcball != NULL)
+    if (state->ao_arcball != NULL)
     {
-        dvz_arcball_set(state->ssao_arcball, state->arcball_angles);
-        dvz_arcball_zoom(state->ssao_arcball, state->arcball_zoom);
-        dvz_arcball_pan(state->ssao_arcball, state->arcball_pan);
+        dvz_arcball_set(state->ao_arcball, state->arcball_angles);
+        dvz_arcball_zoom(state->ao_arcball, state->arcball_zoom);
+        dvz_arcball_pan(state->ao_arcball, state->arcball_pan);
     }
 }
 
@@ -308,7 +308,7 @@ static DvzController* _bind_arcball(DvzScenarioContext* ctx, DvzPanel* panel, ve
 /*************************************************************************************************/
 
 /**
- * Initialize the SSAO feature scenario.
+ * Initialize the AO feature scenario.
  *
  * @param ctx scenario context
  * @param out_user scenario state output
@@ -321,12 +321,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (out_user != NULL)
         *out_user = NULL;
 
-    SsaoDemoState* state = (SsaoDemoState*)dvz_calloc(1, sizeof(*state));
+    AoDemoState* state = (AoDemoState*)dvz_calloc(1, sizeof(*state));
     if (state == NULL)
         return false;
     if (out_user != NULL)
         *out_user = state;
-    state->tuner = example_tuner("SSAO calibration");
+    state->tuner = example_tuner("AO calibration");
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     if (ctx->figure == NULL)
@@ -344,12 +344,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
 
     DvzPanel* plain = dvz_grid_panel(grid, 0, 0);
-    DvzPanel* ssao_panel = dvz_grid_panel(grid, 0, 1);
-    if (plain == NULL || ssao_panel == NULL)
+    DvzPanel* ao_panel = dvz_grid_panel(grid, 0, 1);
+    if (plain == NULL || ao_panel == NULL)
         return false;
-    state->ssao_panel = ssao_panel;
+    state->ao_panel = ao_panel;
     example_graphite_cyan_set_panel_background(plain);
-    example_graphite_cyan_set_panel_background(ssao_panel);
+    example_graphite_cyan_set_panel_background(ao_panel);
 
     DvzTextStyle label_style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
     label_style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
@@ -369,14 +369,14 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
     label.text = "ambient occlusion";
-    annotation = dvz_annotation_label(ssao_panel, &label);
+    annotation = dvz_annotation_label(ao_panel, &label);
     if (annotation == NULL || dvz_annotation_set_style(annotation, &label_style) != 0 ||
         dvz_annotation_set_placement(annotation, &label_placement) != 0)
         return false;
     if (example_set_default_3d_camera(plain, 1.0f) == NULL ||
-        example_set_default_3d_camera(ssao_panel, 1.0f) == NULL)
+        example_set_default_3d_camera(ao_panel, 1.0f) == NULL)
         return false;
-    if (!_add_sphere_cluster(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, ssao_panel))
+    if (!_add_sphere_cluster(ctx->scene, plain) || !_add_sphere_cluster(ctx->scene, ao_panel))
         return false;
 
     state->arcball_angles[0] = -0.239547f;
@@ -386,40 +386,31 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->arcball_pan[0] = +0.000f;
     state->arcball_pan[1] = -0.020f;
     DvzController* plain_controller = _bind_arcball(ctx, plain, state->arcball_angles);
-    DvzController* ssao_controller = _bind_arcball(ctx, ssao_panel, state->arcball_angles);
-    if (plain_controller == NULL || ssao_controller == NULL)
+    DvzController* ao_controller = _bind_arcball(ctx, ao_panel, state->arcball_angles);
+    if (plain_controller == NULL || ao_controller == NULL)
         return false;
     state->plain_arcball = dvz_controller_arcball(plain_controller);
-    state->ssao_arcball = dvz_controller_arcball(ssao_controller);
-    if (state->plain_arcball == NULL || state->ssao_arcball == NULL)
+    state->ao_arcball = dvz_controller_arcball(ao_controller);
+    if (state->plain_arcball == NULL || state->ao_arcball == NULL)
         return false;
     if (dvz_controller_link(
-            ctx->scene, plain_controller, ssao_controller,
+            ctx->scene, plain_controller, ao_controller,
             DVZ_CONTROLLER_LINK_ROTATION | DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM,
             DVZ_CONTROLLER_LINK_TWO_WAY) == NULL)
         return false;
     _apply_arcball(state);
 
-    state->ssao = (DvzExampleGuiSsaoControls){
+    state->ao = (DvzExampleGuiAoControls){
         .enabled = true,
-        .blur = true,
-        .debug_view = false,
-        .show_blur_sigmas = true,
         .show_debug_view = true,
         .radius = 0.560f,
-        .strength = 3.318f,
-        .bias = 0.032f,
-        .power = 1.541f,
+        .intensity = 3.318f,
+        .thickness = 0.128f,
         .min_visibility = 0.000f,
-        .samples = 32.0f,
-        .min_samples = 4.0f,
-        .max_samples = 32.0f,
-        .blur_radius = 4.520f,
-        .blur_radius_max = 16.0f,
-        .blur_depth_sigma = 0.834f,
-        .blur_normal_sigma = 0.309f,
+        .quality = (float)DVZ_AO_QUALITY_ULTRA,
+        .debug_mode = DVZ_AO_DEBUG_NONE,
     };
-    example_tuner_ssao(&state->tuner, "Occlusion", state->ssao_panel, &state->ssao);
+    example_tuner_ao(&state->tuner, "Occlusion", state->ao_panel, &state->ao);
     example_tuner_arcball(
         &state->tuner, "Arcball", state->plain_arcball, state->arcball_angles,
         state->arcball_zoom, state->arcball_pan);
@@ -430,7 +421,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
 {
     (void)app;
-    SsaoDemoState* state = (SsaoDemoState*)user;
+    AoDemoState* state = (AoDemoState*)user;
     if (
         ctx == NULL || ctx->presentation != DVZ_RUNNER_PRESENT_GLFW || state == NULL ||
         view == NULL)
@@ -444,7 +435,7 @@ static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView*
 static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 {
     (void)ctx;
-    SsaoDemoState* state = (SsaoDemoState*)user;
+    AoDemoState* state = (AoDemoState*)user;
     if (state != NULL)
         example_tuner_detach(&state->tuner);
     dvz_free(state);
@@ -453,28 +444,28 @@ static void _scenario_destroy(DvzScenarioContext* ctx, void* user)
 
 static void _scenario_frame(DvzScenarioContext* ctx, void* user)
 {
-    SsaoDemoState* state = (SsaoDemoState*)user;
+    AoDemoState* state = (AoDemoState*)user;
     if (ctx == NULL || !ctx->preview_mode || state == NULL)
         return;
     ExamplePreviewArcballDesc desc = example_preview_arcball_cube_desc();
     example_preview_arcball(
         state->plain_arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
     example_preview_arcball(
-        state->ssao_arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
+        state->ao_arcball, ctx->preview_frame_index, ctx->preview_frame_count, &desc);
 }
 
 
 
 /**
- * Return the SSAO scenario specification.
+ * Return the AO scenario specification.
  *
  * @return scenario specification
  */
-static DvzScenarioSpec _ssao_scenario(void)
+static DvzScenarioSpec _ao_scenario(void)
 {
     return (DvzScenarioSpec){
-        .id = "features_technique_ssao",
-        .title = "Screen-Space Ambient Occlusion",
+        .id = "features_technique_ao",
+        .title = "View-Space Ambient Occlusion",
         .width = WIDTH,
         .height = HEIGHT,
         .fps = 60.0,
@@ -491,7 +482,7 @@ static DvzScenarioSpec _ssao_scenario(void)
 /*************************************************************************************************/
 
 /**
- * Run the SSAO feature example through the native scenario runner.
+ * Run the AO feature example through the native scenario runner.
  *
  * @param argc command-line argument count
  * @param argv command-line argument vector
@@ -499,7 +490,7 @@ static DvzScenarioSpec _ssao_scenario(void)
  */
 int main(int argc, char** argv)
 {
-    DvzScenarioSpec spec = _ssao_scenario();
+    DvzScenarioSpec spec = _ao_scenario();
     if (example_cli_wants_live_gui(argc, argv))
         spec.native_view = _scenario_native_view;
     return dvz_scenario_run_native_cli(&spec, argc, argv) == 0 ? 0 : 1;

@@ -1,8 +1,7 @@
 # Technique Example Notes
 
 > **Status:** informative example guidance
-> **Scope:** examples that demonstrate pass-level rendering techniques such as transparency,
-> occlusion, EDL, SSAO, MSAA, WBOIT, depth peeling, depth cueing, and materials.
+> **Scope:** examples that demonstrate pass-level rendering techniques such as transparency, occlusion, EDL, view-space AO, MSAA, WBOIT, depth peeling, depth cueing, and materials.
 
 Durable transparency and occlusion semantics live in
 [`../semantics/TRANSPARENCY.md`](../semantics/TRANSPARENCY.md), graph-backed technique structure

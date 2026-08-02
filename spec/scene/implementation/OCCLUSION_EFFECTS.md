@@ -63,7 +63,7 @@ For a valid center sample, reconstruction yields a view-space position `P` from 
 
 The bounded denoise is separable and edge-aware. Its support is derived from view-space radius and projection, and its weights reject incompatible canonical depth, signed view normal, and invalid coverage. Background reconstructs to visibility one and must not borrow foreground occlusion across silhouettes or panel borders. A fixed unqualified pixel blur radius is not a public or internal semantic contract.
 
-The ordinary public descriptor exposes semantic radius, intensity, thickness, quality, optional minimum visibility, and debug mode. Raw sample count, blur enable, pixel blur radius, blur sigma, and kernel arrays are not stable controls. Until the R8 API break lands, tests may translate the temporary `DvzSsaoDesc` fields to these semantic inputs, but no runtime behavior may depend on the legacy hit-count estimator or fixed-pixel blur.
+The public `DvzAoDesc` exposes semantic radius, intensity, thickness, minimum visibility, quality, and debug mode through `dvz_ao_desc()` and `dvz_panel_set_ao()`. Raw sample count, blur enable, pixel blur radius, blur sigma, and kernel arrays are not public controls, and no runtime behavior may depend on the legacy hit-count estimator or fixed-pixel blur.
 
 ## Scene Occlusion Model
 
@@ -264,7 +264,7 @@ Focused tests should cover:
 
 ## Quality And Consumer Backlog
 
-The old hit-count-normalized SSAO kernel, random rotation, fixed-pixel blur, optional blur toggle, and black-overlay composite have no conforming runtime role. Compatibility names that remain until the R8 public API break are descriptor translation only; the semantic product path above is authoritative.
+The old hit-count-normalized SSAO kernel, random rotation, fixed-pixel blur, optional blur toggle, and black-overlay composite have no conforming runtime role. The semantic AO product path above and the public AO API are authoritative.
 
 Non-volume occlusion consumers should start with primitive or unlit mesh. Contract tests should
 verify the volume-occlusion pass, depth resource, graph read, selected shader/pipeline variant, and

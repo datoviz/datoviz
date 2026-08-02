@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Screen-space ambient occlusion on a protein-like synthetic aggregate."""
+"""View-space ambient occlusion on a protein-like synthetic aggregate."""
 
 from __future__ import annotations
 
@@ -160,21 +160,16 @@ def _add_sphere_cluster(scene, panel) -> None:
     ex.add_visual(panel, spheres)
 
 
-def _set_ssao(panel) -> None:
-    desc = dvz.dvz_ssao_desc()
+def _set_ao(panel) -> None:
+    desc = dvz.dvz_ao_desc()
     desc.radius = 0.560
-    desc.strength = 3.318
-    desc.bias = 0.032
-    desc.power = 1.541
+    desc.intensity = 3.318
+    desc.thickness = 0.128
     desc.min_visibility = 0.000
-    desc.sample_count = 32
-    desc.blur_radius = 4.520
-    desc.blur_depth_sigma = 0.834
-    desc.blur_normal_sigma = 0.309
-    desc.blur_enabled = True
-    desc.debug_view = False
-    if dvz.dvz_panel_set_ssao(panel, ctypes.byref(desc)) != 0:
-        raise RuntimeError("dvz_panel_set_ssao() failed")
+    desc.quality = dvz.DVZ_AO_QUALITY_ULTRA
+    desc.debug_mode = dvz.DVZ_AO_DEBUG_NONE
+    if dvz.dvz_panel_set_ao(panel, ctypes.byref(desc)) != 0:
+        raise RuntimeError("dvz_panel_set_ao() failed")
 
 
 def _build_scene():
@@ -205,7 +200,7 @@ def _build_scene():
         _add_sphere_cluster(scene, panel)
         panels.append(panel)
 
-    _set_ssao(panels[1])
+    _set_ao(panels[1])
     return scene, figure, panels
 
 

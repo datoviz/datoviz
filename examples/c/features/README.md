@@ -23,7 +23,7 @@ techniques. App lifecycle, capture, recording, replay, and media export examples
 - `animation_tracks.c`: retained track-backed visual transform animation.
 - `compute_buffer_animation.c`: experimental scene compute pass writing a render-consumed buffer.
 - `technique_edl.c`: focused Eye-Dome Lighting panel technique proof.
-- `technique_ssao.c`: focused screen-space ambient occlusion technique proof.
+- `technique_ao.c`: focused view-space ambient occlusion technique proof.
 - `technique_msaa.c`: panel multisample antialiasing comparison.
 - `technique_depth_cue.c`: retained visual depth-cue parameter proof.
 - `technique_transparency.c`: alpha blending, WBOIT, and depth-peeling ordering comparison.

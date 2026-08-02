@@ -1611,8 +1611,8 @@ bool _emitter_emit_scene_graph_renders(
                  dvz_drp2_stream_set_scissor(
                      stream, pass_id, render_rect.x, render_rect.y, render_rect.width,
                      render_rect.height) &&
-                 dvz_drp2_stream_set_pipeline(stream, pass_id, targets->ssao_pipeline_id) &&
-                 dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->ssao_bg_id) &&
+                 dvz_drp2_stream_set_pipeline(stream, pass_id, targets->ao_pipeline_id) &&
+                 dvz_drp2_stream_set_bind_group(stream, pass_id, 0, targets->ao_bg_id) &&
                  dvz_drp2_stream_draw(stream, pass_id, 3, 1, 0, 0) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }

@@ -452,11 +452,11 @@ static bool _scene_panel_render_plan_build_mutable(
     out->scene_occlusion_enabled = _scene_panel_has_visible_scene_occlusion_target(panel);
     out->volume_occlusion_enabled = _scene_panel_has_visible_volume_occlusion_target(panel);
     out->gbuffer_enabled = _scene_technique_gbuffer_enabled(figure->scene, panel);
-    out->ssao_state = _scene_technique_ssao_state(figure->scene, panel);
+    out->ao_state = _scene_technique_ao_state(figure->scene, panel);
     out->msaa_state = _scene_technique_msaa_state(figure->scene, panel);
     out->edl_state = _scene_technique_edl_state(figure->scene, panel);
-    out->ssao_enabled = out->ssao_state != NULL && out->ssao_state->enabled;
-    out->gbuffer_required = out->gbuffer_enabled || out->ssao_enabled;
+    out->ao_enabled = out->ao_state != NULL && out->ao_state->enabled;
+    out->gbuffer_required = out->gbuffer_enabled || out->ao_enabled;
     out->edl_enabled = out->edl_state != NULL && out->edl_state->enabled;
 
     if (out->volume_occlusion_enabled)

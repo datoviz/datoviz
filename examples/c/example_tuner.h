@@ -43,7 +43,7 @@
 #define EXAMPLE_TUNER_MAX_CAMERAS    8u
 #define EXAMPLE_TUNER_MAX_EDL        8u
 #define EXAMPLE_TUNER_MAX_MSAA       8u
-#define EXAMPLE_TUNER_MAX_SSAO       8u
+#define EXAMPLE_TUNER_MAX_AO       8u
 #define EXAMPLE_TUNER_MAX_MATERIALS  16u
 #define EXAMPLE_TUNER_MAX_DEPTH_CUES 8u
 #define EXAMPLE_TUNER_MAX_VOLUMES    8u
@@ -148,13 +148,13 @@ typedef struct ExampleTunerMsaa
 } ExampleTunerMsaa;
 
 
-typedef struct ExampleTunerSsao
+typedef struct ExampleTunerAo
 {
     const char* name;
     DvzPanel* panel;
-    DvzExampleGuiSsaoControls* controls;
-    DvzExampleGuiSsaoControls reset_controls;
-} ExampleTunerSsao;
+    DvzExampleGuiAoControls* controls;
+    DvzExampleGuiAoControls reset_controls;
+} ExampleTunerAo;
 
 
 typedef struct ExampleTunerMaterial
@@ -231,8 +231,8 @@ struct ExampleTuner
     ExampleTunerMsaa msaas[EXAMPLE_TUNER_MAX_MSAA];
     uint32_t msaa_count;
 
-    ExampleTunerSsao ssaos[EXAMPLE_TUNER_MAX_SSAO];
-    uint32_t ssao_count;
+    ExampleTunerAo aos[EXAMPLE_TUNER_MAX_AO];
+    uint32_t ao_count;
 
     ExampleTunerMaterial materials[EXAMPLE_TUNER_MAX_MATERIALS];
     uint32_t material_count;
@@ -395,11 +395,11 @@ static inline void example_tuner_msaa(
     (void)controls;
 }
 
-static inline void example_tuner_ssao(
+static inline void example_tuner_ao(
     ExampleTuner* tuner,
     const char* name,
     DvzPanel* panel,
-    DvzExampleGuiSsaoControls* controls)
+    DvzExampleGuiAoControls* controls)
 {
     (void)tuner;
     (void)name;
@@ -527,11 +527,11 @@ void example_tuner_msaa(
     DvzPanel* panel,
     DvzExampleGuiMsaaControls* controls);
 
-void example_tuner_ssao(
+void example_tuner_ao(
     ExampleTuner* tuner,
     const char* name,
     DvzPanel* panel,
-    DvzExampleGuiSsaoControls* controls);
+    DvzExampleGuiAoControls* controls);
 
 void example_tuner_material(
     ExampleTuner* tuner,

@@ -405,6 +405,6 @@ bool _scene_technique_emit_gbuffer_frame_graph(
  * @param plan the frame plan
  * @param panel_id the panel id
  * @param gbuffer the G-buffer plan providing normal and depth inputs
- * @param ssao_state the effective SSAO state
+ * @param ao_state the effective SSAO state
  * @return whether graph descriptors were emitted
  */

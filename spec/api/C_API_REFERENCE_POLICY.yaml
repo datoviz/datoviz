@@ -48,7 +48,6 @@ pages:
         - DvzFramePlan
         - DvzFramePlanNode
         - DvzFramePlanNodeType
-        - DvzFramePlanRenderPassRole
         - DvzFramePlanCopyDesc
         - DvzFramePlanUploadDesc
       Emission:
@@ -78,11 +77,11 @@ pages:
       - dvz_panel_set_edl
       - dvz_msaa_*
       - dvz_panel_set_msaa
-      - dvz_ssao_*
-      - dvz_panel_set_ssao
+      - dvz_ao_*
+      - dvz_panel_set_ao
       - DvzEdl*
       - DvzMsaa*
-      - DvzSsao*
+      - DvzAo*
       - dvz_scene_occlusion_*
       - dvz_panel_set_scene_occlusion
       - dvz_visual_set_scene_occluder
@@ -101,10 +100,10 @@ pages:
         - dvz_msaa_*
         - dvz_panel_set_msaa
         - DvzMsaa*
-      Screen-Space Ambient Occlusion:
-        - dvz_ssao_*
-        - dvz_panel_set_ssao
-        - DvzSsao*
+      Ambient Occlusion:
+        - dvz_ao_*
+        - dvz_panel_set_ao
+        - DvzAo*
       Scene Occlusion:
         - dvz_scene_occlusion_*
         - dvz_panel_set_scene_occlusion
@@ -749,6 +748,21 @@ pages:
       - time
       - version
       - write
+    symbols:
+      - dvz_external_handle_close
+      - DvzBlendFactor
+      - DvzBlendOp
+      - DvzColor
+      - DvzColorf
+      - DvzColorMask
+      - DvzCompareOp
+      - DvzCullMode
+      - DvzExternalHandle
+      - DvzFormat
+      - DvzFrontFace
+      - DvzLogLevel
+      - DvzPrimitiveTopology
+      - DvzResult
     group_patterns:
       Common Types:
         - DvzColor*

@@ -37,7 +37,7 @@
 
 bool _scene_technique_emit_ssao_frame_graph(
     DvzFramePlan* plan, const char* panel_id, const DvzSceneGBufferPlan* gbuffer,
-    const DvzSceneSsaoTechniqueState* ssao_state)
+    const DvzSceneAoTechniqueState* ao_state)
 {
     ANN(plan);
     ANN(panel_id);
@@ -62,7 +62,7 @@ bool _scene_technique_emit_ssao_frame_graph(
     dvz_snprintf(pass_id, sizeof(pass_id), "%s.ssao", panel_id);
     dvz_snprintf(blur_pass_id, sizeof(blur_pass_id), "%s.ssao.blur", panel_id);
     dvz_snprintf(composite_id, sizeof(composite_id), "%s.ssao.composite", panel_id);
-    bool blur_enabled = ssao_state != NULL && ssao_state->blur_enabled;
+    bool blur_enabled = ao_state != NULL && ao_state->denoise_enabled;
 
     DvzFrameGraphResource occlusion = {0};
     dvz_strlcpy(occlusion.id, occlusion_id, sizeof(occlusion.id));

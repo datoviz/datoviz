@@ -19,6 +19,9 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzAnnotation`](scene.md#type-dvzannotation) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzAnnotationDesc`](scene.md#type-dvzannotationdesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzAnnotationKind`](scene.md#type-dvzannotationkind) | enum | Scene API | `include/datoviz/scene/enums.h` |
+| [`DvzAoDebugMode`](techniques.md#type-dvzaodebugmode) | enum | Rendering Techniques API | `include/datoviz/scene/enums.h` |
+| [`DvzAoDesc`](techniques.md#type-dvzaodesc) | record | Rendering Techniques API | `include/datoviz/scene/types.h` |
+| [`DvzAoQuality`](techniques.md#type-dvzaoquality) | enum | Rendering Techniques API | `include/datoviz/scene/enums.h` |
 | [`DvzApp`](app.md#type-dvzapp) | typedef | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzAppCaptureConfig`](app.md#type-dvzappcaptureconfig) | record | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzAppCaptureFlags`](app.md#type-dvzappcaptureflags) | enum | App, Window, And I/O API | `include/datoviz/app.h` |
@@ -161,6 +164,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzEdlDesc`](techniques.md#type-dvzedldesc) | record | Rendering Techniques API | `include/datoviz/scene/types.h` |
 | [`DvzErrorCallback`](runtime-utilities.md#type-dvzerrorcallback) | typedef | Common And Utility API | `include/datoviz/common/functions.h` |
 | [`DvzExtent`](app.md#type-dvzextent) | record | App, Window, And I/O API | `include/datoviz/window/size.h` |
+| [`DvzExternalHandle`](runtime-utilities.md#type-dvzexternalhandle) | typedef | Common And Utility API | `include/datoviz/common/types.h` |
 | [`DvzFence`](runtime-vklite.md#type-dvzfence) | typedef | vklite API | `include/datoviz/vklite/sync.h` |
 | [`DvzFieldAddressMode`](scene.md#type-dvzfieldaddressmode) | enum | Scene API | `include/datoviz/scene/field.h` |
 | [`DvzFieldDataView`](scene.md#type-dvzfielddataview) | record | Scene API | `include/datoviz/scene/field.h` |
@@ -192,7 +196,6 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzFramePlanNodeType`](frame-plan.md#type-dvzframeplannodetype) | enum | FramePlan And Packet API | `include/datoviz/scene/enums.h` |
 | [`DvzFramePlanPacketResult`](frame-plan.md#type-dvzframeplanpacketresult) | typedef | FramePlan And Packet API | `include/datoviz/scene/frame_packets.h` |
 | [`DvzFramePlanPacketStatus`](frame-plan.md#type-dvzframeplanpacketstatus) | enum | FramePlan And Packet API | `include/datoviz/scene/frame_packets.h` |
-| [`DvzFramePlanRenderPassRole`](frame-plan.md#type-dvzframeplanrenderpassrole) | enum | FramePlan And Packet API | `include/datoviz/scene/enums.h` |
 | [`DvzFramePlanUploadDesc`](frame-plan.md#type-dvzframeplanuploaddesc) | record | FramePlan And Packet API | `include/datoviz/scene/frame_plan.h` |
 | [`DvzFrameTiming`](app.md#type-dvzframetiming) | record | App, Window, And I/O API | `include/datoviz/canvas.h` |
 | [`DvzFrontFace`](drp2.md#type-dvzfrontface) | enum | DRP2 API | `include/datoviz/render_types.h` |
@@ -434,7 +437,6 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzSlots`](runtime-vklite.md#type-dvzslots) | typedef | vklite API | `include/datoviz/vklite/graphics.h` |
 | [`DvzSphereFlags`](visuals.md#type-dvzsphereflags) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
 | [`DvzSphereMode`](visuals.md#type-dvzspheremode) | enum | Visuals And Composites API | `include/datoviz/scene/enums.h` |
-| [`DvzSsaoDesc`](techniques.md#type-dvzssaodesc) | record | Rendering Techniques API | `include/datoviz/scene/types.h` |
 | [`DvzStandardMaterial`](visuals.md#type-dvzstandardmaterial) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzStream`](app.md#type-dvzstream) | typedef | App, Window, And I/O API | `include/datoviz/stream/frame_stream.h` |
 | [`DvzStreamConfig`](app.md#type-dvzstreamconfig) | record | App, Window, And I/O API | `include/datoviz/stream/frame_stream.h` |

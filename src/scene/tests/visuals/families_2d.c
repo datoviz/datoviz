@@ -484,7 +484,7 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item)
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
     const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
     ANN(render);
-    AT(dvz_frame_plan_render_pass_role(render) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(render) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(render->u.render.visual_count == 1);
     AT(render->u.render.visual_metadata[0].renderable_kind == DVZ_RENDERABLE_STROKE_QUAD);
     AT(

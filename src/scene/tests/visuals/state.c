@@ -2525,13 +2525,13 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
     msaa.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_msaa(panel, &msaa) == DVZ_ERROR);
 
-    DvzSsaoDesc ssao = dvz_ssao_desc();
+    DvzAoDesc ssao = dvz_ao_desc();
     ssao.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ssao(panel, &ssao) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ao(panel, &ssao) == DVZ_ERROR);
 
-    ssao = dvz_ssao_desc();
+    ssao = dvz_ao_desc();
     ssao.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ssao(panel, &ssao) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ao(panel, &ssao) == DVZ_ERROR);
 
     DvzVolumeOcclusionDesc volume_occlusion = dvz_volume_occlusion_desc();
     volume_occlusion.struct_size = DVZ_STRUCT_SIZE(DvzVolumeOcclusionDesc) - 1;

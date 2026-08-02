@@ -825,7 +825,7 @@ bool _emitter_prepare_ssao_targets(
 
     ResourceId* params =
         _auxiliary_buffer_resource(emitter, plan, pass, cfg, DVZ_SCENE_AUXILIARY_SSAO_PARAMS);
-    if (params == NULL || params->id == 0 || params->byte_size < sizeof(DvzSceneSsaoUniform))
+    if (params == NULL || params->id == 0 || params->byte_size < sizeof(DvzSceneAoUniform))
         return false;
     out->params_id = params->id;
 
@@ -856,8 +856,8 @@ bool _emitter_prepare_ssao_targets(
             stream, out->dummy_bg_id, dummy_bgl_id, 1, &entry);
     }
 
-    out->ssao_bgl_id = _obj_id(emitter, "_bgl_ssao", &is_new);
-    if (out->ssao_bgl_id == 0)
+    out->ao_bgl_id = _obj_id(emitter, "_bgl_ssao", &is_new);
+    if (out->ao_bgl_id == 0)
         return false;
     if (ok && is_new)
     {
@@ -894,7 +894,7 @@ bool _emitter_prepare_ssao_targets(
             },
         };
         ok = ok && dvz_drp2_stream_create_bind_group_layout_entries(
-                       stream, out->ssao_bgl_id, 5, entries);
+                       stream, out->ao_bgl_id, 5, entries);
     }
 
     char bg_key[160];
@@ -904,7 +904,7 @@ bool _emitter_prepare_ssao_targets(
     ResourceId* bg_resource = _resource_entry(&emitter->objects, bg_key, &is_new);
     if (bg_resource == NULL || bg_resource->id == 0)
         return false;
-    out->ssao_bg_id = bg_resource->id;
+    out->ao_bg_id = bg_resource->id;
     uint64_t fingerprint = _ssao_bind_group_fingerprint(
         out->normal_id, out->depth_id, out->coverage_id, 0, out->sampler_id, out->params_id);
     if (!is_new && bg_resource->byte_size != fingerprint)
@@ -949,11 +949,11 @@ bool _emitter_prepare_ssao_targets(
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
                 .resource_id = out->params_id,
                 .offset = 0,
-                .size = sizeof(DvzSceneSsaoUniform),
+                .size = sizeof(DvzSceneAoUniform),
             },
         };
         ok = ok && dvz_drp2_stream_create_bind_group_entries(
-                       stream, out->ssao_bg_id, out->ssao_bgl_id, 5, entries);
+                       stream, out->ao_bg_id, out->ao_bgl_id, 5, entries);
     }
 
     if (blur_x_pass != NULL)
@@ -1066,7 +1066,7 @@ bool _emitter_prepare_ssao_targets(
                     .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
                     .resource_id = out->params_id,
                     .offset = 0,
-                    .size = sizeof(DvzSceneSsaoUniform),
+                    .size = sizeof(DvzSceneAoUniform),
                 },
             };
             ok = ok && dvz_drp2_stream_create_bind_group_entries(
@@ -1118,7 +1118,7 @@ bool _emitter_prepare_ssao_targets(
                 {.binding = 5, .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
                  .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
                  .resource_id = out->params_id, .offset = 0,
-                 .size = sizeof(DvzSceneSsaoUniform)},
+                 .size = sizeof(DvzSceneAoUniform)},
             };
             ok = ok && dvz_drp2_stream_create_bind_group_entries(
                            stream, out->blur_bg_ids[1], out->blur_bgl_id, 6, entries);
@@ -1196,13 +1196,13 @@ bool _emitter_prepare_ssao_targets(
                        stream, fs_id, "FRAGMENT", "ssao_frag",
                        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SSAO, true), cfg);
 
-    out->ssao_pipeline_id = _obj_id(emitter, pipe_key, &is_new);
-    if (out->ssao_pipeline_id == 0)
+    out->ao_pipeline_id = _obj_id(emitter, pipe_key, &is_new);
+    if (out->ao_pipeline_id == 0)
         return false;
     if (ok && is_new)
         ok = ok &&
              _create_pipeline_with_layout(
-                 stream, out->ssao_pipeline_id, vs_id, fs_id, out->ssao_bgl_id) &&
+                 stream, out->ao_pipeline_id, vs_id, fs_id, out->ao_bgl_id) &&
              dvz_drp2_stream_pipeline_set_color_target(stream, 0, DVZ_FORMAT_R32_SFLOAT);
 
     if (blur_x_pass != NULL)

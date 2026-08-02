@@ -15,7 +15,7 @@ cues.
 - 3D objects should occlude each other correctly.
 - A visual has meaningful alpha values and must blend with the scene.
 - Dense or translucent geometry looks wrong because draw order matters.
-- Depth variation is hard to read and needs depth cueing, SSAO, or another depth technique.
+- Depth variation is hard to read and needs depth cueing, AO, or another depth technique.
 - A browser target needs a status check before using an advanced rendering technique.
 
 ## Minimal sequence
@@ -188,7 +188,7 @@ technique for the experimental browser path.
 - Transparent visuals can still be hidden by opaque depth. That is usually correct.
 - Picking and probing follow rendered visibility rules. A visual hidden by depth state may also be
   absent from the expected query result.
-- Volume, SSAO, EDL, and other depth-based techniques have their own examples and status. Do not
+- Volume, AO, EDL, and other depth-based techniques have their own examples and status. Do not
   assume a technique is portable just because the visual family is portable.
 
 ## Common mistakes

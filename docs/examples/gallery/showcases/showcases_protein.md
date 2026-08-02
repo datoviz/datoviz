@@ -31,7 +31,7 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
     <aside class="dvz-webgpu-unavailable" role="note">
     <strong>WebGPU rendering difference</strong>
-    <span><code>SSAO</code>: The desktop example enables SSAO; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.</span>
+    <span><code>AO</code>: The desktop example enables ambient occlusion; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.</span>
     </aside>
 
     <a href="../../../webgpu/live.html?id=showcases_protein">Open the live WebGPU example</a>.
@@ -109,7 +109,7 @@ The full interactive GUI workbench lives in examples/c/lab/protein_viewer.c.
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_protein"><code>examples/webgpu/live.html?id=showcases_protein</code></a>
     - Browser capability tags: `sphere`, `arcball`, `material`, `real-data`
-    - Browser rendering effects: `ssao` (unavailable)
+    - Browser rendering effects: `ao` (unavailable)
     - Validation: `smoke+screenshot+manual`
 
     **Tags**

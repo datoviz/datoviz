@@ -370,9 +370,9 @@ export const LIVE_EXAMPLES = [
     scenarioId: "showcases_protein",
     effectLimitations: [
       {
-        effect: "ssao",
+        effect: "ao",
         status: "unavailable",
-        warning: "The desktop example enables SSAO; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.",
+        warning: "The desktop example enables ambient occlusion; the WebGPU route currently omits this post-processing effect, so molecular creases and contacts have less ambient-occlusion shading.",
       },
     ],
   },
