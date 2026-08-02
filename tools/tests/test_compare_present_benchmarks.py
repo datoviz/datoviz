@@ -16,6 +16,18 @@ import compare_present_benchmarks as compare  # noqa: E402
 
 
 class PresentBenchmarkComparisonTest(TestCase):
+    def test_link_directory_exposes_shared_contents(self) -> None:
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source"
+            destination = root / "destination"
+            source.mkdir()
+            (source / "probe.txt").write_text("linked", encoding="utf8")
+
+            compare._link_directory(destination, source)
+
+            self.assertEqual((destination / "probe.txt").read_text(encoding="utf8"), "linked")
+
     def test_run_can_merge_stdout_and_stderr_into_one_log(self) -> None:
         with TemporaryDirectory() as temporary:
             log = Path(temporary) / "command.log"

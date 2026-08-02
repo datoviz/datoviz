@@ -493,7 +493,7 @@ class WorktreePair:
             raise CompareError("the checked-out data submodule must be clean for a reproducible comparison")
         destination = worktree / "data"
         destination.rmdir()
-        destination.symlink_to(source.resolve(), target_is_directory=True)
+        _link_directory(destination, source.resolve())
 
     def cleanup(self) -> None:
         if self.keep:
@@ -506,6 +506,20 @@ class WorktreePair:
 
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
         self.cleanup()
+
+
+def _link_directory(destination: Path, source: Path) -> None:
+    """Link a shared directory, using an unprivileged junction fallback on Windows."""
+
+    try:
+        destination.symlink_to(source, target_is_directory=True)
+    except OSError as exc:
+        if os.name != "nt" or exc.winerror != 1314:
+            raise
+        _run(
+            ["cmd.exe", "/d", "/c", "mklink", "/J", str(destination), str(source)],
+            cwd=destination.parent,
+        )
 
 
 def build_revision(
