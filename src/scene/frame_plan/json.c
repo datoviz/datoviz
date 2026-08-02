@@ -611,6 +611,10 @@ static void _json_append_graph_pass(JsonBuilder* builder, const DvzFrameGraphPas
     ANN(pass);
     _json_append(builder, "{ \"id\": ");
     _json_append_escaped_string(builder, pass->id);
+    if (pass->has_composition_pass)
+        _json_append(
+            builder, ", \"composition_pass_id\": %" PRIu32,
+            pass->composition_pass_id.value);
     _json_append(builder, ", \"kind\": ");
     _json_append_escaped_string(builder, _graph_pass_kind_name(pass->kind));
     _json_append(builder, ", \"panel_id\": ");
@@ -737,6 +741,14 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append_escaped_string(builder, node->u.render.render_target_id);
         _json_append(builder, ", \"pass_role\": ");
         _json_append_escaped_string(builder, _render_pass_role_name(node->u.render.pass_role));
+        if (node->u.render.has_composition_pass)
+            _json_append(
+                builder, ", \"composition_pass_id\": %" PRIu32,
+                node->u.render.composition_pass_id.value);
+        if (node->u.render.has_graph_pass_index)
+            _json_append(
+                builder, ", \"graph_pass_index\": %" PRIu32,
+                node->u.render.graph_pass_index);
         _json_append(builder, ", \"visuals\": ");
         _json_append_string_array(
             builder, node->u.render.visual_count,

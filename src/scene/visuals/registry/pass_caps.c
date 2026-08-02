@@ -50,7 +50,8 @@
 void _scene_visual_pass_caps_resolve(
     DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
     bool has_normals, bool has_material_resource, bool depth_cue_enabled, bool depth_test_enabled,
-    DvzSceneVisualPassCaps* out)
+    DvzSceneVisualLayer baseline_layer, uint32_t baseline_product_caps,
+    uint32_t baseline_phase_participation, DvzSceneVisualPassCaps* out)
 {
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualPassCaps), 0, sizeof(DvzSceneVisualPassCaps));
@@ -73,6 +74,9 @@ void _scene_visual_pass_caps_resolve(
     out->kind = kind;
     out->alpha_mode = alpha_mode;
     out->controller_mode = controller_mode;
+    out->layer = baseline_layer;
+    out->product_caps = baseline_product_caps;
+    out->phase_participation = baseline_phase_participation;
     out->fixed_controller = fixed;
     out->has_normals = has_normals;
     out->depth_test_enabled = depth_test_enabled;
@@ -106,6 +110,73 @@ void _scene_visual_pass_caps_resolve(
     out->uses_volume_set = volume;
     out->supports_depth_cue = (primitive && has_normals) || point_like || sphere;
     out->depth_cue_enabled = out->supports_depth_cue && depth_cue_enabled;
+
+    const bool surface_layer = baseline_layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE ||
+                               baseline_layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED;
+    if (volume)
+        out->layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
+    else if (surface_layer && alpha_mode == DVZ_ALPHA_MASK)
+        out->layer = DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED;
+    else if (surface_layer && (wboit || depth_peel || transparent_blend))
+        out->layer = DVZ_SCENE_VISUAL_LAYER_TRANSPARENT;
+
+    if (!out->writes_color)
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR;
+    if (!out->can_write_depth)
+    {
+        out->phase_participation &= ~(uint32_t)DVZ_SCENE_VISUAL_PHASE_SURFACE_CAPTURE;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_DEPTH;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_COVERAGE;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY;
+    }
+    if (!out->eligible_for_gbuffer)
+    {
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY;
+    }
+
+    switch (out->layer)
+    {
+    case DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE:
+    case DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED:
+        break;
+    case DVZ_SCENE_VISUAL_LAYER_TRANSPARENT:
+        out->phase_participation = DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_DEPTH;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_COVERAGE;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY;
+        if (wboit)
+        {
+            out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR;
+            out->product_caps |=
+                DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_ACCUMULATION |
+                DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_TRANSMITTANCE;
+        }
+        else if (depth_peel)
+        {
+            out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR;
+            out->product_caps |=
+                DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_ACCUMULATION |
+                DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_PEEL_DEPTH;
+        }
+        break;
+    case DVZ_SCENE_VISUAL_LAYER_VOLUME:
+        out->phase_participation = DVZ_SCENE_VISUAL_PHASE_VOLUME_SHADING;
+        if (transparent_blend)
+            out->phase_participation |= DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING;
+        break;
+    case DVZ_SCENE_VISUAL_LAYER_OVERLAY:
+        out->phase_participation = DVZ_SCENE_VISUAL_PHASE_OVERLAY;
+        break;
+    case DVZ_SCENE_VISUAL_LAYER_QUERY:
+        out->phase_participation = DVZ_SCENE_VISUAL_PHASE_QUERY;
+        break;
+    default:
+        out->phase_participation = DVZ_SCENE_VISUAL_PHASE_NONE;
+        break;
+    }
 }
 
 
@@ -140,9 +211,13 @@ bool _scene_visual_default_pass_caps(
     bool has_material_resource =
         has_normals || stroke || _scene_visual_desc_is_sphere(kind) ||
         (point_like && lowering->needs_material_params);
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
+    if (ops == NULL)
+        return false;
     _scene_visual_pass_caps_resolve(
         kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
-        visual->material.depth_cue_enabled, visual->depth_test_enabled, out);
+        visual->material.depth_cue_enabled, visual->depth_test_enabled, ops->baseline_layer,
+        ops->baseline_product_caps, ops->baseline_phase_participation, out);
     return true;
 }
 
@@ -156,6 +231,51 @@ bool _scene_visual_default_pass_caps(
  * @param out the output pass capabilities
  * @return whether capabilities were resolved
  */
+void _scene_visual_pass_caps_apply_generated_role(
+    DvzGeneratedVisualRole role, DvzSceneVisualPassCaps* caps)
+{
+    ANN(caps);
+    bool generated_overlay = false;
+    switch (role)
+    {
+    case DVZ_GENERATED_VISUAL_PANEL_BORDER:
+    case DVZ_GENERATED_VISUAL_AXIS_MARKS:
+    case DVZ_GENERATED_VISUAL_AXIS_TEXT:
+    case DVZ_GENERATED_VISUAL_COLORBAR_RAMP:
+    case DVZ_GENERATED_VISUAL_COLORBAR_MARKS:
+    case DVZ_GENERATED_VISUAL_COLORBAR_TEXT:
+    case DVZ_GENERATED_VISUAL_LEGEND_MARKS:
+    case DVZ_GENERATED_VISUAL_LEGEND_TEXT:
+    case DVZ_GENERATED_VISUAL_SCALEBAR_LINE:
+    case DVZ_GENERATED_VISUAL_SCALEBAR_TEXT:
+    case DVZ_GENERATED_VISUAL_OVERLAY_CARD:
+    case DVZ_GENERATED_VISUAL_OVERLAY_TEXT:
+    case DVZ_GENERATED_VISUAL_BOUNDS_OVERLAY:
+        generated_overlay = true;
+        break;
+    default:
+        break;
+    }
+    if (!generated_overlay)
+        return;
+
+    caps->layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
+    caps->phase_participation = DVZ_SCENE_VISUAL_PHASE_OVERLAY;
+    caps->draws_in_opaque_pass = false;
+    caps->draws_in_wboit_pass = false;
+    caps->draws_in_depth_peel_pass = false;
+    caps->draws_in_transparent_blend_pass = true;
+    caps->writes_depth = false;
+    caps->eligible_for_depth_postprocess = false;
+    caps->eligible_for_gbuffer = false;
+    caps->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_DEPTH;
+    caps->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;
+    caps->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_COVERAGE;
+    caps->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY;
+}
+
+
+
 bool _scene_visual_pass_caps_from_visual(
     const DvzVisual* visual, const DvzPanelAttach* attach, DvzSceneVisualPassCaps* out)
 {
@@ -169,7 +289,29 @@ bool _scene_visual_pass_caps_from_visual(
     const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
     if (ops == NULL || ops->resolve_pass_caps == NULL)
         return false;
-    return ops->resolve_pass_caps(visual, attach, &lowering, out);
+    if (!ops->resolve_pass_caps(visual, attach, &lowering, out))
+        return false;
+
+    if (attach->has_generated_role)
+        _scene_visual_pass_caps_apply_generated_role(attach->generated_role, out);
+
+    if (out->layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY)
+    {
+        out->layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
+        out->phase_participation = DVZ_SCENE_VISUAL_PHASE_OVERLAY;
+        out->draws_in_opaque_pass = false;
+        out->draws_in_wboit_pass = false;
+        out->draws_in_depth_peel_pass = false;
+        out->draws_in_transparent_blend_pass = true;
+        out->writes_depth = false;
+        out->eligible_for_depth_postprocess = false;
+        out->eligible_for_gbuffer = false;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_DEPTH;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_COVERAGE;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY;
+    }
+    return true;
 }
 
 
@@ -192,10 +334,23 @@ bool _scene_visual_pass_caps_from_desc(
     if (visual->kind == DVZ_SCENE_VISUAL_DESC_NONE)
         return false;
 
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(
+        _scene_visual_family_desc_default_type(visual->kind));
+    DvzSceneVisualLayer baseline_layer = _scene_visual_desc_is_volume(visual->kind)
+                                             ? DVZ_SCENE_VISUAL_LAYER_VOLUME
+                                             : DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE;
+    uint32_t baseline_product_caps = DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR;
+    uint32_t baseline_phase_participation = DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING;
+    if (ops != NULL)
+    {
+        baseline_layer = ops->baseline_layer;
+        baseline_product_caps = ops->baseline_product_caps;
+        baseline_phase_participation = ops->baseline_phase_participation;
+    }
     _scene_visual_pass_caps_resolve(
         visual->kind, alpha_mode, controller_mode, visual->has_normal,
         visual->material_buffer_id != 0, visual->depth_cue_enabled, visual->depth_test_enabled,
-        out);
+        baseline_layer, baseline_product_caps, baseline_phase_participation, out);
     return true;
 }
 

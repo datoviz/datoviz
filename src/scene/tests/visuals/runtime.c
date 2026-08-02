@@ -2730,8 +2730,54 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     DvzSceneGBufferPlan gbuffer = {0};
     _scene_technique_gbuffer_plan_init(&gbuffer);
 
+    _scene_visual_pass_caps_resolve(
+        DVZ_SCENE_VISUAL_DESC_LABELS_SINT, DVZ_ALPHA_BLENDED, DVZ_CONTROLLER_FIXED, false,
+        false, false, false, DVZ_SCENE_VISUAL_LAYER_OVERLAY,
+        DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR,
+        DVZ_SCENE_VISUAL_PHASE_OVERLAY, &caps);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY);
+    AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_OVERLAY);
+
+    _scene_visual_pass_caps_resolve(
+        DVZ_SCENE_VISUAL_DESC_LABELS_SINT, DVZ_ALPHA_BLENDED, DVZ_CONTROLLER_FIXED, false,
+        false, false, false, DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE,
+        DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR,
+        DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING, &caps);
+    _scene_visual_pass_caps_apply_generated_role(DVZ_GENERATED_VISUAL_AXIS_TEXT, &caps);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY);
+    AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_OVERLAY);
+
+    _scene_visual_pass_caps_resolve(
+        DVZ_SCENE_VISUAL_DESC_GLYPH, DVZ_ALPHA_BLENDED, DVZ_CONTROLLER_FIXED, false, false,
+        false, false, DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE,
+        DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR,
+        DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING, &caps);
+    _scene_visual_pass_caps_apply_generated_role(DVZ_GENERATED_VISUAL_AXIS_MARKS, &caps);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY);
+    AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_OVERLAY);
+
+    _scene_visual_pass_caps_apply_generated_role(DVZ_GENERATED_VISUAL_OVERLAY_CARD, &caps);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY);
+    AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_OVERLAY);
+
+    _scene_visual_pass_caps_resolve(
+        DVZ_SCENE_VISUAL_DESC_IMAGE, DVZ_ALPHA_OPAQUE, DVZ_CONTROLLER_FIXED, false, false,
+        false, false, DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE,
+        DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR,
+        DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING, &caps);
+    _scene_visual_pass_caps_apply_generated_role(DVZ_GENERATED_VISUAL_PANEL_BACKGROUND, &caps);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE);
+    AT(caps.layer != DVZ_SCENE_VISUAL_LAYER_OVERLAY);
+
     AT(_scene_visual_pass_caps_from_visual(point, &panel->visuals[0], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_POINT);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_TRANSPARENT);
+    AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR) == 0);
+    AT(
+        (caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_ACCUMULATION) != 0);
+    AT(
+        (caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_TRANSMITTANCE) != 0);
     AT(caps.draws_in_wboit_pass);
     AT(!caps.draws_in_opaque_pass);
     AT(caps.writes_color);
@@ -2749,6 +2795,11 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
     AT(_scene_visual_pass_caps_from_visual(pixel, &panel->visuals[1], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PIXEL);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE);
+    AT((caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_SURFACE_CAPTURE) != 0);
+    AT((caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING) != 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_DEPTH) != 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_COVERAGE) != 0);
     AT(caps.draws_in_opaque_pass);
     AT(caps.writes_color);
     AT(caps.writes_depth);
@@ -2764,6 +2815,8 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
     AT(_scene_visual_pass_caps_from_visual(primitive, &panel->visuals[2], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL) == 0);
     AT(caps.draws_in_opaque_pass);
     AT(caps.writes_color);
     AT(caps.writes_depth);
@@ -2787,6 +2840,8 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
     AT(_scene_visual_pass_caps_from_visual(fixed_primitive, &panel->visuals[4], &caps));
     AT(caps.fixed_controller);
+    AT((caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_SURFACE_CAPTURE) == 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_DEPTH) == 0);
     AT(caps.writes_color);
     AT(!caps.writes_depth);
     AT(!caps.can_write_depth);
@@ -2799,6 +2854,9 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
     AT(_scene_visual_pass_caps_from_visual(mesh, &panel->visuals[5], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL) != 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY) != 0);
     AT(caps.has_normals);
     AT(caps.writes_depth);
     AT(caps.eligible_for_depth_postprocess);
@@ -2841,6 +2899,11 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
     AT(_scene_visual_pass_caps_from_visual(volume, &panel->visuals[8], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_VOLUME);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_VOLUME);
+    AT((caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_VOLUME_SHADING) != 0);
+    AT((caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING) != 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_SCENE_OCCLUSION_DEPTH) != 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_VOLUME_FIRST_HIT_DEPTH) != 0);
     AT(caps.draws_in_transparent_blend_pass);
     AT(!caps.draws_in_opaque_pass);
     AT(caps.uses_source_over_blend);
@@ -2856,6 +2919,9 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
     AT(_scene_visual_pass_caps_from_visual(splat, &panel->visuals[9], &caps));
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_SPLAT);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_TRANSPARENT);
+    AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR) != 0);
     AT(caps.draws_in_transparent_blend_pass);
     AT(!caps.draws_in_opaque_pass);
     AT(caps.uses_source_over_blend);
@@ -2906,6 +2972,22 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     AT(caps.uses_material_set);
     AT(caps.supports_depth_cue);
 
+    AT(_scene_visual_pass_caps_from_desc(
+        &desc, DVZ_ALPHA_MASK, DVZ_CONTROLLER_APPLY, &caps));
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED);
+    AT((caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_SURFACE_CAPTURE) != 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_COVERAGE) != 0);
+
+    AT(_scene_visual_pass_caps_from_desc(
+        &desc, DVZ_ALPHA_DEPTH_PEEL, DVZ_CONTROLLER_APPLY, &caps));
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_TRANSPARENT);
+    AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING);
+    AT(
+        (caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_ACCUMULATION) != 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_PEEL_DEPTH) != 0);
+    AT(
+        (caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_TRANSMITTANCE) == 0);
+
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -2948,6 +3030,9 @@ int test_scene_visual_family_registry_coverage(TstContext* suite, const TstCase*
         ANN(ops->resolve_pipeline_desc);
         ANN(ops->resolve_shader_desc);
         ANN(ops->resolve_draw_desc);
+        AT(ops->baseline_layer != DVZ_SCENE_VISUAL_LAYER_NONE);
+        AT(ops->baseline_product_caps != DVZ_SCENE_VISUAL_PRODUCT_CAP_NONE);
+        AT(ops->baseline_phase_participation != DVZ_SCENE_VISUAL_PHASE_NONE);
         AT(_scene_visual_family_ops_registered(active_types[i]));
     }
 

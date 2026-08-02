@@ -120,10 +120,12 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
     TST_CASE(test_scene_visual_pass_capabilities);
     TST_CASE(test_scene_visual_family_registry_coverage);
+    TST_CASE(test_scene_panel_composition_snapshot);
     TST_CASE(test_scene_draw_contract_resolver_matrix);
     TST_CASE(test_scene_role_work_label_mapping_complete);
     TST_CASE(test_scene_render_contract_validation_errors);
     TST_CASE(test_scene_frame_plan_missing_graph_pass_fails_contract);
+    TST_CASE(test_scene_panel_composition_binding_is_one_to_one);
     TST_CASE(test_scene_render_contract_rejects_untyped_visual_metadata);
     TST_CASE(test_scene_panel_graph_failure_reports_specific_diagnostic);
     TST_CASE(test_scene_gbuffer_runtime_lowering);
@@ -153,6 +155,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_alpha_mode_depth_peel_blended_overlay);
     TST_CASE(test_scene_visual_alpha_mode_depth_peel_loads_prior_panel);
     TST_CASE(test_scene_visual_alpha_mode_mixed_oit_rejected);
+    TST_CASE(test_scene_visual_alpha_mode_noncontiguous_oit_rejected);
     TST_CASE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
     TST_CASE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TST_CASE(test_scene_visual_alpha_mode_emits_wboit_drp2);

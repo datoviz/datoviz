@@ -69,6 +69,49 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_SCENE_VISUAL_LAYER_NONE = 0,
+    DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE,
+    DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED,
+    DVZ_SCENE_VISUAL_LAYER_TRANSPARENT,
+    DVZ_SCENE_VISUAL_LAYER_VOLUME,
+    DVZ_SCENE_VISUAL_LAYER_OVERLAY,
+    DVZ_SCENE_VISUAL_LAYER_QUERY,
+} DvzSceneVisualLayer;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_NONE = 0x0000,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR = 0x0001,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_DEPTH = 0x0002,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL = 0x0004,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_COVERAGE = 0x0008,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY = 0x0010,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_SCENE_OCCLUSION_DEPTH = 0x0020,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_VOLUME_FIRST_HIT_DEPTH = 0x0040,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_ACCUMULATION = 0x0080,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_TRANSMITTANCE = 0x0100,
+    DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_PEEL_DEPTH = 0x0200,
+} DvzSceneVisualProductCaps;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_VISUAL_PHASE_NONE = 0x00,
+    DVZ_SCENE_VISUAL_PHASE_SURFACE_CAPTURE = 0x01,
+    DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING = 0x02,
+    DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING = 0x04,
+    DVZ_SCENE_VISUAL_PHASE_VOLUME_SHADING = 0x08,
+    DVZ_SCENE_VISUAL_PHASE_OVERLAY = 0x10,
+    DVZ_SCENE_VISUAL_PHASE_QUERY = 0x20,
+} DvzSceneVisualPhaseParticipation;
+
+
+
 typedef struct DvzSceneVisualDesc
 {
     DvzSceneVisualDescKind kind;
@@ -124,6 +167,9 @@ typedef struct DvzSceneVisualPassCaps
     DvzSceneVisualDescKind kind;
     DvzAlphaMode alpha_mode;
     DvzControllerMode controller_mode;
+    DvzSceneVisualLayer layer;
+    uint32_t product_caps;
+    uint32_t phase_participation;
     bool fixed_controller;
     bool has_normals;
     bool depth_test_enabled;
@@ -301,7 +347,8 @@ bool _scene_visual_pass_caps_from_desc(
 void _scene_visual_pass_caps_resolve(
     DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode, DvzControllerMode controller_mode,
     bool has_normals, bool has_material_resource, bool depth_cue_enabled,
-    bool depth_test_enabled, DvzSceneVisualPassCaps* out);
+    bool depth_test_enabled, DvzSceneVisualLayer baseline_layer, uint32_t baseline_product_caps,
+    uint32_t baseline_phase_participation, DvzSceneVisualPassCaps* out);
 
 bool _scene_visual_shader_desc(
     const DvzSceneVisualDesc* visual, bool picking, bool wboit_accumulation,

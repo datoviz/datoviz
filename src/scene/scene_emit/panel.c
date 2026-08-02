@@ -114,6 +114,311 @@ static DvzFramePlanNode* _scene_frame_plan_node_mut(DvzFramePlan* plan, uint32_t
 
 
 
+static bool _scene_composition_pass_for_role(
+    const DvzPanelCompositionSnapshot* snapshot, DvzFramePlanRenderPassRole role,
+    uint32_t ordinal, const DvzSceneResolvedPass** out)
+{
+    ANN(snapshot);
+    ANN(out);
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        if (snapshot->passes[i].role == role && snapshot->passes[i].ordinal == ordinal)
+        {
+            *out = &snapshot->passes[i];
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+static bool _scene_graph_pass_role(
+    const DvzFrameGraphPass* pass, DvzFramePlanRenderPassRole* out)
+{
+    ANN(pass);
+    ANN(out);
+    for (uint32_t value = (uint32_t)DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
+         value <= (uint32_t)DVZ_FRAME_PLAN_RENDER_PASS_PICKING; value++)
+    {
+        DvzFramePlanRenderPassRole role = (DvzFramePlanRenderPassRole)value;
+        const char* label = _scene_render_role_work_label(role);
+        if (label[0] != '\0' && strcmp(pass->work_label, label) == 0)
+        {
+            *out = role;
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+/**
+ * Persist typed composition identity and direct graph-pass indices after legacy graph expansion.
+ *
+ * The work-label conversion is a checkpoint-local bridge for effect-specific R2 graph builders.
+ * Contract validation and runtime lowering consume only the persisted typed identity.
+ *
+ * @param plan the destination frame plan
+ * @param panel_id the panel id
+ * @param snapshot the immutable composition snapshot
+ * @param report optional diagnostic report
+ * @return whether every graph-backed render pass was linked
+ */
+bool _scene_bind_panel_composition(
+    DvzFramePlan* plan, const char* panel_id, const DvzPanelCompositionSnapshot* snapshot,
+    DvzDiagnosticReport* report)
+{
+    ANN(plan);
+    ANN(panel_id);
+    ANN(snapshot);
+    bool ok = true;
+
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER ||
+            strcmp(render->u.render.panel_id, panel_id) != 0)
+            continue;
+        uint32_t ordinal = 0;
+        for (uint32_t j = 0; j < i; j++)
+        {
+            const DvzFramePlanNode* previous = &plan->nodes[j];
+            if (previous->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+                strcmp(previous->u.render.panel_id, panel_id) == 0 &&
+                previous->u.render.pass_role == render->u.render.pass_role)
+                ordinal++;
+        }
+        const DvzSceneResolvedPass* resolved = NULL;
+        if (!_scene_composition_pass_for_role(
+                snapshot, render->u.render.pass_role, ordinal, &resolved))
+        {
+            _scene_emit_graph_report(
+                report, "panel %s render role %u ordinal %u is absent from composition snapshot",
+                panel_id, (uint32_t)render->u.render.pass_role, ordinal);
+            ok = false;
+            continue;
+        }
+        bool duplicate = false;
+        for (uint32_t j = 0; j < i; j++)
+        {
+            const DvzFramePlanNode* previous = &plan->nodes[j];
+            if (previous->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+                strcmp(previous->u.render.panel_id, panel_id) == 0 &&
+                previous->u.render.has_composition_pass &&
+                previous->u.render.composition_pass_id.value == resolved->id.value)
+            {
+                _scene_emit_graph_report(
+                    report, "panel %s composition pass %u has duplicate render bindings",
+                    panel_id, resolved->id.value);
+                ok = false;
+                duplicate = true;
+                break;
+            }
+        }
+        if (duplicate)
+            continue;
+        render->u.render.has_composition_pass = true;
+        render->u.render.composition_pass_id = resolved->id;
+        int written = dvz_snprintf(
+            render->u.render.pass_contract_id, sizeof(render->u.render.pass_contract_id),
+            "%s.composition.%u", panel_id, resolved->id.value);
+        if (written < 0 || (size_t)written >= sizeof(render->u.render.pass_contract_id))
+        {
+            _scene_emit_graph_report(
+                report, "panel %s composition pass contract id is truncated", panel_id);
+            ok = false;
+            continue;
+        }
+        render->u.render.has_pass_contract = true;
+        for (uint32_t j = 0; j < render->u.render.visual_count; j++)
+        {
+            DvzFramePlanVisualMeta* metadata = &render->u.render.visual_metadata[j];
+            written = dvz_snprintf(
+                metadata->draw_contract_id, sizeof(metadata->draw_contract_id), "%s.draw.%u",
+                render->u.render.pass_contract_id, metadata->visual_index);
+            if (written < 0 || (size_t)written >= sizeof(metadata->draw_contract_id))
+            {
+                _scene_emit_graph_report(
+                    report, "panel %s composition draw contract id is truncated", panel_id);
+                ok = false;
+                break;
+            }
+            metadata->has_draw_contract = true;
+        }
+    }
+
+    for (uint32_t i = 0; i < plan->graph_pass_count; i++)
+    {
+        DvzFrameGraphPass* pass = &plan->graph_passes[i];
+        if (strcmp(pass->panel_id, panel_id) != 0)
+            continue;
+        DvzFramePlanRenderPassRole role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
+        if (!_scene_graph_pass_role(pass, &role))
+            continue;
+        uint32_t ordinal = 0;
+        for (uint32_t j = 0; j < i; j++)
+        {
+            const DvzFrameGraphPass* previous = &plan->graph_passes[j];
+            DvzFramePlanRenderPassRole previous_role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
+            if (strcmp(previous->panel_id, panel_id) == 0 &&
+                _scene_graph_pass_role(previous, &previous_role) && previous_role == role)
+                ordinal++;
+        }
+        const DvzSceneResolvedPass* resolved = NULL;
+        if (!_scene_composition_pass_for_role(snapshot, role, ordinal, &resolved))
+        {
+            _scene_emit_graph_report(
+                report, "panel %s graph role %u ordinal %u is absent from composition snapshot",
+                panel_id, (uint32_t)role, ordinal);
+            ok = false;
+            continue;
+        }
+        bool duplicate = false;
+        for (uint32_t j = 0; j < i; j++)
+        {
+            const DvzFrameGraphPass* previous = &plan->graph_passes[j];
+            if (strcmp(previous->panel_id, panel_id) == 0 && previous->has_composition_pass &&
+                previous->composition_pass_id.value == resolved->id.value)
+            {
+                _scene_emit_graph_report(
+                    report, "panel %s composition pass %u has duplicate graph bindings",
+                    panel_id, resolved->id.value);
+                ok = false;
+                duplicate = true;
+                break;
+            }
+        }
+        if (duplicate)
+            continue;
+        pass->has_composition_pass = true;
+        pass->composition_pass_id = resolved->id;
+    }
+
+    for (uint32_t i = 0; i < plan->count; i++)
+    {
+        DvzFramePlanNode* render = &plan->nodes[i];
+        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER ||
+            strcmp(render->u.render.panel_id, panel_id) != 0 ||
+            !render->u.render.has_composition_pass)
+            continue;
+        uint32_t match_count = 0;
+        uint32_t match_index = UINT32_MAX;
+        for (uint32_t j = 0; j < plan->graph_pass_count; j++)
+        {
+            const DvzFrameGraphPass* pass = &plan->graph_passes[j];
+            if (strcmp(pass->panel_id, panel_id) == 0 && pass->has_composition_pass &&
+                pass->composition_pass_id.value == render->u.render.composition_pass_id.value)
+            {
+                match_count++;
+                match_index = j;
+            }
+        }
+        if (match_count > 1)
+        {
+            _scene_emit_graph_report(
+                report, "panel %s composition pass %u has duplicate graph bindings", panel_id,
+                render->u.render.composition_pass_id.value);
+            ok = false;
+            continue;
+        }
+        if (match_count == 1)
+        {
+            bool duplicate = false;
+            for (uint32_t j = 0; j < i; j++)
+            {
+                const DvzFramePlanNode* previous = &plan->nodes[j];
+                if (previous->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+                    strcmp(previous->u.render.panel_id, panel_id) == 0 &&
+                    previous->u.render.has_graph_pass_index &&
+                    previous->u.render.graph_pass_index == match_index)
+                {
+                    _scene_emit_graph_report(
+                        report, "panel %s graph pass %u has duplicate render bindings", panel_id,
+                        match_index);
+                    ok = false;
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate)
+            {
+                render->u.render.has_graph_pass_index = true;
+                render->u.render.graph_pass_index = match_index;
+            }
+        }
+        if (_scene_render_role_requires_graph_pass(render->u.render.pass_role) &&
+            !render->u.render.has_graph_pass_index)
+        {
+            _scene_emit_graph_report(
+                report, "panel %s composition pass %u has no resolved graph pass", panel_id,
+                render->u.render.composition_pass_id.value);
+            ok = false;
+        }
+    }
+
+    /* The forward scans above reject physical work absent from the snapshot. This reverse scan
+     * rejects snapshot work omitted by a legacy emitter. Presentation is represented by a
+     * technique without a resolved pass, and an empty panel has no resolved passes, so both
+     * intentionally require no physical binding here. */
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        const DvzSceneResolvedPass* resolved = &snapshot->passes[i];
+        uint32_t render_count = 0;
+        uint32_t graph_count = 0;
+        for (uint32_t j = 0; j < plan->count; j++)
+        {
+            const DvzFramePlanNode* render = &plan->nodes[j];
+            if (render->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+                strcmp(render->u.render.panel_id, panel_id) == 0 &&
+                render->u.render.has_composition_pass &&
+                render->u.render.composition_pass_id.value == resolved->id.value)
+                render_count++;
+        }
+        for (uint32_t j = 0; j < plan->graph_pass_count; j++)
+        {
+            const DvzFrameGraphPass* pass = &plan->graph_passes[j];
+            if (strcmp(pass->panel_id, panel_id) == 0 && pass->has_composition_pass &&
+                pass->composition_pass_id.value == resolved->id.value)
+                graph_count++;
+        }
+        if (render_count == 0)
+        {
+            _scene_emit_graph_report(
+                report, "panel %s composition pass %u has no render binding", panel_id,
+                resolved->id.value);
+            ok = false;
+        }
+        else if (render_count > 1)
+        {
+            _scene_emit_graph_report(
+                report, "panel %s composition pass %u has duplicate render bindings", panel_id,
+                resolved->id.value);
+            ok = false;
+        }
+
+        bool graph_required = _scene_render_role_requires_graph_pass(resolved->role);
+        if (graph_required && graph_count == 0)
+        {
+            _scene_emit_graph_report(
+                report, "panel %s composition pass %u has no required graph binding", panel_id,
+                resolved->id.value);
+            ok = false;
+        }
+        else if (graph_count > 1)
+        {
+            _scene_emit_graph_report(
+                report, "panel %s composition pass %u has duplicate graph bindings", panel_id,
+                resolved->id.value);
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+
+
 /**
  * Build a stable pass-contract id for one render node.
  *
@@ -501,8 +806,12 @@ static bool _scene_append_visual_to_render_pass(
     metadata.has_draw_contract = true;
     metadata.draw_depth_policy = draw_contract.depth_policy;
     metadata.draw_blend_policy = (uint32_t)draw_contract.blend_policy;
+    metadata.draw_blend_mode = (uint32_t)draw_contract.blend_mode;
     metadata.draw_shader_feature_mask = draw_contract.shader_feature_mask;
     metadata.draw_bind_group_layout_mask = draw_contract.bind_group_layout_mask;
+    metadata.draw_has_raster_state = draw_contract.has_raster_state;
+    metadata.draw_cull_mode = draw_contract.cull_mode;
+    metadata.draw_front_face = draw_contract.front_face;
     if (draw_contract.samples_volume_occlusion)
     {
         if (!_scene_resource_key_panel_graph(
@@ -702,43 +1011,24 @@ static bool _scene_emit_blended_group_node(
 
 
 /**
- * Return the effective MSAA state after applying runtime sample-count capabilities.
+ * Reconstruct the effective MSAA state from the immutable composition snapshot.
  *
- * @param requested configured panel MSAA state
- * @param caps active runtime capabilities, or NULL to preserve the requested state
+ * @param snapshot immutable composition snapshot
  * @param panel_id stable panel id used for diagnostics
  * @param report optional diagnostic report
  * @param storage output storage for the effective state
  * @return effective MSAA state, or NULL when MSAA is disabled or lowered to single-sample
  */
-static const DvzSceneMsaaTechniqueState* _scene_effective_msaa_state(
-    const DvzSceneMsaaTechniqueState* requested, const DvzCapabilitySnapshot* caps,
+static const DvzSceneMsaaTechniqueState* _scene_composition_msaa_state(
+    const DvzPanelCompositionSnapshot* snapshot,
     const char* panel_id, DvzDiagnosticReport* report, DvzSceneMsaaTechniqueState* storage)
 {
+    ANN(snapshot);
     ANN(storage);
-    if (requested == NULL || !requested->enabled || requested->sample_count <= 1)
+    if (snapshot->requested_sample_count <= 1)
         return NULL;
-    *storage = *requested;
-    if (caps == NULL)
-        return storage;
-
-    uint32_t color_max = caps->max_color_sample_count != 0 ? caps->max_color_sample_count : 1;
-    uint32_t depth_max = caps->max_depth_sample_count != 0 ? caps->max_depth_sample_count : 1;
-    uint32_t max_sample_count = color_max < depth_max ? color_max : depth_max;
-    uint32_t effective = 1;
-    if (requested->sample_count >= 16 && max_sample_count >= 16)
-        effective = 16;
-    else if (requested->sample_count >= 8 && max_sample_count >= 8)
-        effective = 8;
-    else if (requested->sample_count >= 4 && max_sample_count >= 4)
-        effective = 4;
-    else if (requested->sample_count >= 2 && max_sample_count >= 2)
-        effective = 2;
-
-    if (effective == requested->sample_count)
-        return storage;
-
-    if (report != NULL)
+    uint32_t effective = snapshot->effective_sample_count;
+    if (effective != snapshot->requested_sample_count && report != NULL)
     {
         char message[DVZ_SCENE_DIAGNOSTIC_SIZE] = {0};
         if (effective > 1)
@@ -746,7 +1036,7 @@ static const DvzSceneMsaaTechniqueState* _scene_effective_msaa_state(
             dvz_snprintf(
                 message, sizeof(message),
                 "panel %s MSAA sample count lowered from %" PRIu32 " to %" PRIu32,
-                panel_id != NULL ? panel_id : "?", requested->sample_count, effective);
+                panel_id != NULL ? panel_id : "?", snapshot->requested_sample_count, effective);
         }
         else
         {
@@ -761,8 +1051,11 @@ static const DvzSceneMsaaTechniqueState* _scene_effective_msaa_state(
     }
     if (effective <= 1)
         return NULL;
-
-    storage->sample_count = effective;
+    *storage = (DvzSceneMsaaTechniqueState){
+        .enabled = true,
+        .sample_count = effective,
+        .alpha_to_coverage = snapshot->alpha_to_coverage,
+    };
     return storage;
 }
 
@@ -790,17 +1083,18 @@ bool _scene_emit_panel_render_caps(
     DvzPanel* panel = &figure->panels[panel_index];
 
     DvzPanelRenderPlan render_plan = {0};
-    if (!_scene_panel_render_plan_build(figure, panel_index, figure_id, &render_plan))
+    if (!_scene_panel_render_plan_build(
+            figure, panel_index, figure_id, caps, report, &render_plan))
         return false;
     const char* panel_id = render_plan.panel_id;
     DvzSceneMsaaTechniqueState effective_msaa_storage = {0};
-    const DvzSceneMsaaTechniqueState* effective_msaa = _scene_effective_msaa_state(
-        render_plan.msaa_state, caps, panel_id, report, &effective_msaa_storage);
+    const DvzSceneMsaaTechniqueState* effective_msaa = _scene_composition_msaa_state(
+        &render_plan.composition, panel_id, report, &effective_msaa_storage);
 
     if (render_plan.drawable_count == 0)
     {
-        dvz_frame_plan_clear_panel(plan, panel_id, "rt", panel->desc);
-        return true;
+        return dvz_frame_plan_clear_panel(plan, panel_id, "rt", panel->desc) &&
+               _frame_plan_composition_append(plan, &render_plan.composition, report);
     }
 
     DvzMVP panel_apply_mvp;
@@ -1299,6 +1593,12 @@ bool _scene_emit_panel_render_caps(
             report, "failed to add scene occlusion FramePlan reads for panel %s", panel_id);
         graph_ok = false;
     }
+    if (graph_ok &&
+        !_scene_bind_panel_composition(plan, panel_id, &render_plan.composition, report))
+        graph_ok = false;
+    if (graph_ok &&
+        !_frame_plan_composition_append(plan, &render_plan.composition, report))
+        graph_ok = false;
     return graph_ok;
 }
 

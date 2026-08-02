@@ -145,39 +145,16 @@ _graph_pass_for_render(const DvzFramePlan* plan, const DvzFramePlanNode* render)
 {
     ANN(plan);
     ANN(render);
-    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
+    if (render->type != DVZ_FRAME_PLAN_NODE_RENDER ||
+        !render->u.render.has_composition_pass || !render->u.render.has_graph_pass_index)
         return NULL;
-    const char* work_label = _scene_render_role_work_label(render->u.render.pass_role);
-    if (work_label[0] == '\0')
+    const DvzFrameGraphPass* pass =
+        dvz_frame_plan_graph_pass_get(plan, render->u.render.graph_pass_index);
+    if (pass == NULL || !pass->has_composition_pass ||
+        pass->composition_pass_id.value != render->u.render.composition_pass_id.value ||
+        strcmp(pass->panel_id, render->u.render.panel_id) != 0)
         return NULL;
-
-    uint32_t ordinal = 0;
-    for (uint32_t i = 0; i < plan->count; i++)
-    {
-        const DvzFramePlanNode* candidate = &plan->nodes[i];
-        if (candidate == render)
-            break;
-        if (candidate->type != DVZ_FRAME_PLAN_NODE_RENDER)
-            continue;
-        const char* candidate_label = _scene_render_role_work_label(candidate->u.render.pass_role);
-        if (candidate_label[0] != '\0' &&
-            strcmp(candidate->u.render.panel_id, render->u.render.panel_id) == 0 &&
-            strcmp(candidate_label, work_label) == 0)
-            ordinal++;
-    }
-
-    uint32_t seen = 0;
-    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
-    {
-        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
-        if (pass == NULL || strcmp(pass->panel_id, render->u.render.panel_id) != 0 ||
-            strcmp(pass->work_label, work_label) != 0)
-            continue;
-        if (seen == ordinal)
-            return pass;
-        seen++;
-    }
-    return NULL;
+    return pass;
 }
 
 
@@ -194,31 +171,27 @@ _graph_render_for_pass(const DvzFramePlan* plan, const DvzFrameGraphPass* pass)
 {
     ANN(plan);
     ANN(pass);
-    uint32_t ordinal = 0;
+    uint32_t graph_pass_index = UINT32_MAX;
     for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
         const DvzFrameGraphPass* candidate = dvz_frame_plan_graph_pass_get(plan, i);
         if (candidate == pass)
+        {
+            graph_pass_index = i;
             break;
-        if (candidate != NULL && strcmp(candidate->panel_id, pass->panel_id) == 0 &&
-            strcmp(candidate->work_label, pass->work_label) == 0)
-            ordinal++;
+        }
     }
-
-    uint32_t seen = 0;
+    if (graph_pass_index == UINT32_MAX || !pass->has_composition_pass)
+        return NULL;
     for (uint32_t i = 0; i < plan->count; i++)
     {
         const DvzFramePlanNode* render = &plan->nodes[i];
-        if (render->type != DVZ_FRAME_PLAN_NODE_RENDER)
-            continue;
-        const char* work_label = _scene_render_role_work_label(render->u.render.pass_role);
-        if (work_label[0] != '\0' && strcmp(render->u.render.panel_id, pass->panel_id) == 0 &&
-            strcmp(work_label, pass->work_label) == 0)
-        {
-            if (seen == ordinal)
-                return render;
-            seen++;
-        }
+        if (render->type == DVZ_FRAME_PLAN_NODE_RENDER &&
+            render->u.render.has_composition_pass && render->u.render.has_graph_pass_index &&
+            render->u.render.graph_pass_index == graph_pass_index &&
+            render->u.render.composition_pass_id.value == pass->composition_pass_id.value &&
+            strcmp(render->u.render.panel_id, pass->panel_id) == 0)
+            return render;
     }
     return NULL;
 }

@@ -796,6 +796,9 @@ static void _ascii_append_pass(
     _ascii_append(
         builder, "[%s #%" PRIu32 "]\n", _ascii_graph_pass_kind_name(pass->kind), pass_index);
     _ascii_append(builder, "id: %s\n", pass->id);
+    if (pass->has_composition_pass)
+        _ascii_append(
+            builder, "composition-pass: #%" PRIu32 "\n", pass->composition_pass_id.value);
     if (pass->panel_id[0] != '\0')
         _ascii_append(builder, "panel: %s\n", pass->panel_id);
     if (pass->work_label[0] != '\0')

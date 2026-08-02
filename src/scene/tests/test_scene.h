@@ -862,6 +862,8 @@ int test_scene_render_contract_validation_errors(TstContext* suite, const TstCas
 
 int test_scene_frame_plan_missing_graph_pass_fails_contract(TstContext* suite, const TstCase* item);
 
+int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const TstCase* item);
+
 int test_scene_render_contract_rejects_untyped_visual_metadata(
     TstContext* suite, const TstCase* item);
 
@@ -895,6 +897,8 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
 
 int test_scene_ssao_graph_foundation(TstContext* suite, const TstCase* item);
 
+int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item);
+
 int test_scene_ssao_normalization_characterization(TstContext* suite, const TstCase* item);
 
 int test_scene_ssao_runtime_lowering(TstContext* suite, const TstCase* item);
@@ -927,6 +931,8 @@ int test_scene_visual_alpha_mode_depth_peel_loads_prior_panel(
     TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_mixed_oit_rejected(TstContext* suite, const TstCase* item);
+int test_scene_visual_alpha_mode_noncontiguous_oit_rejected(
+    TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const TstCase* item);
 

@@ -30,8 +30,12 @@
 #define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY 16
 #define DVZ_FRAME_PLAN_INITIAL_PRODUCT_CAPACITY 16
 #define DVZ_FRAME_PLAN_INITIAL_PRODUCT_USE_CAPACITY 32
+#define DVZ_FRAME_PLAN_INITIAL_COMPOSITION_CAPACITY 4
 #define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES 8
 #define DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS 4
+#define DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES (DVZ_SCENE_MAX_RENDER_VISUALS + 16)
+#define DVZ_PANEL_COMPOSITION_MAX_PASSES (DVZ_SCENE_MAX_RENDER_VISUALS + 64)
+#define DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE 4
 #define DVZ_FRAME_PLAN_ASCII_COMPACT 0x01u
 #define DVZ_FRAME_PLAN_ASCII_VERBOSE 0x02u
 #define DVZ_FRAME_PLAN_ASCII_SHOW_UPLOADS 0x04u
@@ -297,6 +301,131 @@ typedef struct DvzRenderProductId
 
 
 
+typedef struct DvzFramePlanPassId
+{
+    uint32_t value;
+} DvzFramePlanPassId;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_TECHNIQUE_NONE = 0,
+    DVZ_SCENE_TECHNIQUE_SCENE_OCCLUSION,
+    DVZ_SCENE_TECHNIQUE_VOLUME_OCCLUSION,
+    DVZ_SCENE_TECHNIQUE_SURFACE_CAPTURE,
+    DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY,
+    DVZ_SCENE_TECHNIQUE_OPAQUE_SHADING,
+    DVZ_SCENE_TECHNIQUE_AMBIENT_COMPOSITE,
+    DVZ_SCENE_TECHNIQUE_EDL,
+    DVZ_SCENE_TECHNIQUE_TRANSPARENT_BLEND,
+    DVZ_SCENE_TECHNIQUE_WBOIT,
+    DVZ_SCENE_TECHNIQUE_DEPTH_PEEL,
+    DVZ_SCENE_TECHNIQUE_VOLUME_SHADING,
+    DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE,
+    DVZ_SCENE_TECHNIQUE_PRESENTATION,
+} DvzSceneTechniqueId;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_PHASE_NONE = 0,
+    DVZ_SCENE_PHASE_SURFACE_CAPTURE,
+    DVZ_SCENE_PHASE_SURFACE_ANALYSIS,
+    DVZ_SCENE_PHASE_OPAQUE_SHADING,
+    DVZ_SCENE_PHASE_SURFACE_POSTPROCESS,
+    DVZ_SCENE_PHASE_TRANSPARENT_SHADING,
+    DVZ_SCENE_PHASE_VOLUME_SHADING,
+    DVZ_SCENE_PHASE_SCENE_POSTPROCESS,
+    DVZ_SCENE_PHASE_OVERLAY,
+    DVZ_SCENE_PHASE_PRESENTATION,
+    DVZ_SCENE_PHASE_QUERY,
+} DvzSceneTechniquePhase;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_TECHNIQUE_FALLBACK_NONE = 0,
+    DVZ_SCENE_TECHNIQUE_FALLBACK_DISABLE_OPTIONAL,
+    DVZ_SCENE_TECHNIQUE_FALLBACK_REDUCE_SAMPLES,
+    DVZ_SCENE_TECHNIQUE_FALLBACK_LEGACY_TRANSITION,
+} DvzSceneTechniqueFallback;
+
+
+
+typedef DvzFramePlanPassId DvzSceneCompositionPassId;
+
+
+
+typedef struct DvzSceneTechniqueInstanceId
+{
+    uint32_t value;
+} DvzSceneTechniqueInstanceId;
+
+
+
+typedef struct DvzSceneResolvedTechnique
+{
+    DvzSceneTechniqueInstanceId instance_id;
+    DvzSceneTechniqueId id;
+    uint32_t version;
+    DvzSceneTechniquePhase phase;
+    uint32_t must_follow_phase_mask;
+    uint64_t input_product_mask;
+    uint64_t output_product_mask;
+    uint32_t input_count;
+    DvzRenderProductKind inputs[DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE];
+    DvzRenderProductId input_ids[DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE];
+    uint32_t output_count;
+    DvzRenderProductKind outputs[DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE];
+    DvzRenderProductId output_ids[DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE];
+    uint32_t participating_layer_mask;
+    uint32_t required_capability_mask;
+    uint32_t missing_capability_mask;
+    uint32_t capability_adaptations;
+    DvzSceneTechniqueFallback fallback;
+    uint32_t expansion_flags;
+    uint32_t authored_order_begin;
+    uint32_t authored_order_end;
+} DvzSceneResolvedTechnique;
+
+
+
+typedef struct DvzSceneResolvedPass
+{
+    DvzSceneCompositionPassId id;
+    DvzSceneTechniqueInstanceId technique_instance_id;
+    DvzSceneTechniqueId technique_id;
+    DvzSceneTechniquePhase phase;
+    DvzFramePlanRenderPassRole role;
+    uint32_t ordinal;
+    uint32_t authored_order_begin;
+    uint32_t authored_order_end;
+} DvzSceneResolvedPass;
+
+
+
+typedef struct DvzPanelCompositionSnapshot
+{
+    bool valid;
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    uint64_t required_product_mask;
+    DvzCapabilitySnapshot capabilities;
+    uint32_t available_capability_mask;
+    uint32_t disabled_optional_technique_mask;
+    uint32_t requested_sample_count;
+    uint32_t effective_sample_count;
+    bool alpha_to_coverage;
+    uint32_t technique_count;
+    DvzSceneResolvedTechnique techniques[DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES];
+    uint32_t pass_count;
+    DvzSceneResolvedPass passes[DVZ_PANEL_COMPOSITION_MAX_PASSES];
+} DvzPanelCompositionSnapshot;
+
+
+
 typedef struct DvzSurfaceRecordId
 {
     uint32_t value;
@@ -465,6 +594,8 @@ typedef struct DvzFrameGraphRect
 typedef struct DvzFrameGraphPass
 {
     char id[DVZ_SCENE_LABEL_SIZE];
+    bool has_composition_pass;
+    DvzFramePlanPassId composition_pass_id;
     DvzFrameGraphPassKind kind;
     char panel_id[DVZ_SCENE_LABEL_SIZE];
     bool has_viewport;
@@ -595,8 +726,12 @@ typedef struct DvzFramePlanVisualMeta
     char draw_contract_id[DVZ_SCENE_LABEL_SIZE];
     uint32_t draw_depth_policy;
     uint32_t draw_blend_policy;
+    uint32_t draw_blend_mode;
     uint32_t draw_shader_feature_mask;
     uint32_t draw_bind_group_layout_mask;
+    bool draw_has_raster_state;
+    uint32_t draw_cull_mode;
+    uint32_t draw_front_face;
     char draw_volume_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
     char draw_volume_occlusion_producer_pass_id[DVZ_SCENE_LABEL_SIZE];
     uint32_t draw_volume_occlusion_bind_set;
@@ -712,6 +847,10 @@ struct DvzFramePlanNode
             DvzFramePlanVisualMeta* visual_metadata;
             bool picking;
             DvzFramePlanRenderPassRole pass_role;
+            bool has_composition_pass;
+            DvzFramePlanPassId composition_pass_id;
+            bool has_graph_pass_index;
+            uint32_t graph_pass_index;
             bool has_pass_contract;
             char pass_contract_id[DVZ_SCENE_LABEL_SIZE];
             DvzPanelDesc desc;
@@ -778,6 +917,9 @@ struct DvzFramePlan
     uint32_t product_use_capacity;
     uint32_t product_use_count;
     DvzRenderProductConsumer* product_uses;
+    uint32_t composition_capacity;
+    uint32_t composition_count;
+    DvzPanelCompositionSnapshot* compositions;
 };
 
 

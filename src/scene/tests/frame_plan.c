@@ -956,16 +956,26 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
     dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
     dvz_strlcpy(metadata.size_id, "point-size", sizeof(metadata.size_id));
 
+    uint32_t panel1_node_index = plan->count;
     AT(dvz_frame_plan_render_panel_role(
         plan, "panel.1", "rt", false, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f},
         DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE));
     AT(dvz_frame_plan_render_visual(plan, "point"));
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    uint32_t panel0_node_index = plan->count;
     AT(dvz_frame_plan_render_panel_role(
         plan, "panel.0", "rt", false, (DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f},
         DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE));
     AT(dvz_frame_plan_render_visual(plan, "point"));
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    plan->nodes[panel1_node_index].u.render.has_composition_pass = true;
+    plan->nodes[panel1_node_index].u.render.composition_pass_id = (DvzFramePlanPassId){1};
+    plan->nodes[panel1_node_index].u.render.has_graph_pass_index = true;
+    plan->nodes[panel1_node_index].u.render.graph_pass_index = 1;
+    plan->nodes[panel0_node_index].u.render.has_composition_pass = true;
+    plan->nodes[panel0_node_index].u.render.composition_pass_id = (DvzFramePlanPassId){1};
+    plan->nodes[panel0_node_index].u.render.has_graph_pass_index = true;
+    plan->nodes[panel0_node_index].u.render.graph_pass_index = 0;
 
     DvzFrameGraphResource rt = {0};
     dvz_strlcpy(rt.id, "rt", sizeof(rt.id));
@@ -985,6 +995,8 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
     dvz_strlcpy(pass0.id, "panel.0.opaque", sizeof(pass0.id));
     dvz_strlcpy(pass0.panel_id, "panel.0", sizeof(pass0.panel_id));
     dvz_strlcpy(pass0.work_label, "opaque", sizeof(pass0.work_label));
+    pass0.has_composition_pass = true;
+    pass0.composition_pass_id = (DvzFramePlanPassId){1};
     pass0.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     AT(dvz_frame_graph_pass_color_attachment(&pass0, &color));
     AT(dvz_frame_plan_graph_pass(plan, &pass0));
@@ -994,6 +1006,8 @@ static int test_frame_plan_runtime_uses_graph_pass_order(TstContext* suite, cons
     dvz_strlcpy(pass1.id, "panel.1.opaque", sizeof(pass1.id));
     dvz_strlcpy(pass1.panel_id, "panel.1", sizeof(pass1.panel_id));
     dvz_strlcpy(pass1.work_label, "opaque", sizeof(pass1.work_label));
+    pass1.has_composition_pass = true;
+    pass1.composition_pass_id = (DvzFramePlanPassId){1};
     pass1.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     AT(dvz_frame_graph_pass_color_attachment(&pass1, &color));
     AT(dvz_frame_plan_graph_pass(plan, &pass1));
