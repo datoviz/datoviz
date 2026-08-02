@@ -382,8 +382,9 @@ int dvz_allocator_buffer(
     log_trace("creating buffer...");
     VK_RETURN_RESULT(vmaCreateBuffer(
         allocator->vma, &info_local, &alloc_info, vk_buffer, &alloc->alloc, &alloc->info));
-    if (out == 0)
-        log_trace("buffer created");
+    if (out != 0)
+        return out;
+    log_trace("buffer created");
 
     // Get the memory flags found by VMA and store them in the DvzBuffer instance.
     vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);

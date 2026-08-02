@@ -937,6 +937,19 @@ static int canvas_create_allocator(DvzCanvas* canvas)
         log_error("failed to create canvas allocator");
         return -1;
     }
+    canvas->readback_allocator = dvz_allocator_create();
+    ANN(canvas->readback_allocator);
+    if (dvz_device_allocator(canvas->device, 0, canvas->readback_allocator) != 0)
+    {
+        log_error("failed to create canvas readback allocator");
+        dvz_allocator_destroy(canvas->allocator);
+        dvz_allocator_free(canvas->allocator);
+        canvas->allocator = NULL;
+        dvz_allocator_destroy(canvas->readback_allocator);
+        dvz_allocator_free(canvas->readback_allocator);
+        canvas->readback_allocator = NULL;
+        return -1;
+    }
     canvas->allocator_ready = true;
     return 0;
 }
@@ -954,6 +967,12 @@ static void canvas_destroy_allocator(DvzCanvas* canvas)
         dvz_allocator_destroy(canvas->allocator);
         dvz_allocator_free(canvas->allocator);
         canvas->allocator = NULL;
+    }
+    if (canvas->readback_allocator != NULL)
+    {
+        dvz_allocator_destroy(canvas->readback_allocator);
+        dvz_allocator_free(canvas->readback_allocator);
+        canvas->readback_allocator = NULL;
     }
     canvas->allocator_ready = false;
 }
@@ -1299,7 +1318,7 @@ static int canvas_offscreen_capture_rgba_into(
 
     DvzBuffer* staging = dvz_buffer_create_wrapper();
     ANN(staging);
-    dvz_buffer(canvas->device, canvas->allocator, staging);
+    dvz_buffer(canvas->device, canvas->readback_allocator, staging);
     dvz_buffer_size(staging, expected_size);
     dvz_buffer_flags(staging, DVZ_ALLOC_HOST_ACCESS_RANDOM | DVZ_ALLOC_MAPPED);
     dvz_buffer_usage(staging, VK_BUFFER_USAGE_TRANSFER_DST_BIT);

@@ -46,6 +46,16 @@ DATOVIZ_VCPKG_SOURCE_PATH=$PWD \
   vcpkg install datoviz --overlay-ports=vcpkg-overlay/ports --triplet x64-windows
 ```
 
+vcpkg sanitizes the port build environment. Preserve the checkout override explicitly, and use classic mode when invoking vcpkg from a directory that contains a top-level `vcpkg.json` manifest. Windows PowerShell:
+
+```powershell
+$env:DATOVIZ_VCPKG_SOURCE_PATH = (Get-Location).Path
+$env:VCPKG_KEEP_ENV_VARS = "DATOVIZ_VCPKG_SOURCE_PATH"
+vcpkg install datoviz:x64-windows --classic --overlay-ports="$PWD\vcpkg-overlay\ports" --triplet x64-windows --binarysource=clear
+```
+
+The local checkout contents are not part of vcpkg's ABI key for this environment override. Keep `--binarysource=clear` for source-validation runs so that an older package is not restored after the checkout changes; normal package consumers may use their configured binary cache.
+
 Then validate the generated source bundle path:
 
 ```sh

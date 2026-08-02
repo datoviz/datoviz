@@ -44,8 +44,25 @@ struct DvzImages
 };
 
 
-void _dvz_images_external(
-    DvzImages* images, VkExternalMemoryHandleTypeFlagsKHR handle_types);
+/**
+ * Configure external-memory handle compatibility for image allocation.
+ *
+ * This stays inline because Canvas also configures DvzImages while building as a separate Windows
+ * DLL layer; keeping the helper header-local avoids an internal cross-DLL symbol dependency.
+ *
+ * @param images Image wrapper.
+ * @param handle_types External-memory handle types, or zero to disable.
+ */
+static inline void _dvz_images_external(
+    DvzImages* images, VkExternalMemoryHandleTypeFlagsKHR handle_types)
+{
+    ANN(images);
+    images->external_info = (VkExternalMemoryImageCreateInfo){
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+        .handleTypes = handle_types,
+    };
+    images->info.pNext = handle_types != 0 ? &images->external_info : NULL;
+}
 
 
 

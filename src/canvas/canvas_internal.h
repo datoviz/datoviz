@@ -95,6 +95,7 @@ struct DvzCanvas
     bool supports_external_memory;
     bool supports_external_semaphore;
     DvzVma* allocator;
+    DvzVma* readback_allocator;
     bool allocator_ready;
     DvzSemaphore* timeline_semaphore;
     uint64_t timeline_value;
