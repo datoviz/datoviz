@@ -1636,6 +1636,81 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCas
 }
 
 
+int test_frame_plan_emit_drp2_defaults_missing_mvp_to_identity(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.default-mvp", 16);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "point-position", 0, 3 * 3 * sizeof(float), "position"));
+    AT(dvz_frame_plan_upload(plan, "point-color", 0, 3 * sizeof(DvzColor), "color"));
+    AT(dvz_frame_plan_upload(plan, "point-size", 0, 3 * sizeof(float), "size"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+    metadata.renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
+    metadata.vertex_count = 3;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    dvz_strlcpy(metadata.position_id, "point-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "point-size", sizeof(metadata.size_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool found_mvp = false;
+    bool found_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (
+            command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            command->u.write_buffer.size == sizeof(DvzMVP))
+        {
+            const DvzMVP* mvp = (const DvzMVP*)command->u.write_buffer.data_raw;
+            ANN(mvp);
+            for (uint32_t axis = 0; axis < 4; axis++)
+            {
+                AC(mvp->model[axis][axis], 1.0f, 1e-6f);
+                AC(mvp->view[axis][axis], 1.0f, 1e-6f);
+                AC(mvp->proj[axis][axis], 1.0f, 1e-6f);
+            }
+            found_mvp = true;
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            AT(command->u.draw.vertex_count == 3);
+            AT(command->u.draw.instance_count == 1);
+            found_draw = true;
+        }
+    }
+    AT(found_mvp);
+    AT(found_draw);
+
+    _test_scene_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
 static int test_frame_plan_emitter_rejects_untyped_visual_metadata(
     TstContext* suite, const TstCase* item)
 {
@@ -3544,6 +3619,7 @@ int test_scene_frame_plan_emit(TstSuite* suite)
 
     TST_CASE(test_frame_plan_emit_drp2_static_render);
     TST_CASE(test_frame_plan_emit_drp2_static_render_glsl);
+    TST_CASE(test_frame_plan_emit_drp2_defaults_missing_mvp_to_identity);
     TST_CASE(test_frame_plan_emit_drp2_split_packets);
     TST_CASE(test_frame_plan_emitter_rejects_untyped_visual_metadata);
     TST_CASE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);

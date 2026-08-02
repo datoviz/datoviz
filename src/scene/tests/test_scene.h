@@ -350,6 +350,8 @@ int test_frame_plan_graph_validation_pass_kind(TstContext* suite, const TstCase*
 int test_frame_plan_emit_drp2_static_render(TstContext* suite, const TstCase* item);
 
 int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCase* item);
+int test_frame_plan_emit_drp2_defaults_missing_mvp_to_identity(
+    TstContext* suite, const TstCase* item);
 
 int test_frame_plan_emit_drp2_split_packets(TstContext* suite, const TstCase* item);
 
