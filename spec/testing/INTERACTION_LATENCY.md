@@ -45,11 +45,20 @@ Do not add `vkDeviceWaitIdle`, queue-idle waits, readbacks, or extra fences to o
 
 ## Frames-In-Flight Policy
 
-The swapchain canvas separates reusable frame slots from swapchain images. Ordinary FIFO presentation defaults to one reusable frame slot because deeper FIFO queues display stale interaction state without increasing the display cadence. Other presentation modes default to one slot per swapchain image. Explicit `DVZ_MAX_FRAMES_IN_FLIGHT=auto` selects one slot per image for every mode, while a positive value limits `slot_count` to `min(requested, image_count)`.
+The swapchain canvas separates reusable frame slots from swapchain images. Ordinary FIFO presentation defaults to one reusable frame slot because deeper FIFO queues display stale interaction state without increasing the display cadence. Other presentation modes default to one slot per swapchain image. `DvzCanvasConfig.frame_slot_count` expresses the deterministic low-level policy: `DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT` selects the mode default, `DVZ_CANVAS_FRAME_SLOT_COUNT_AUTOMATIC` selects one slot per image, and a positive value limits `slot_count` to `min(requested, image_count)`.
 
-Swapchain image views, layouts, and render-finished semaphores remain per image; command buffers, acquire semaphores, in-flight fences, offscreen/depth resources, and Canvas stream-frame entries remain per frame slot. Test one, two, and the current image-count number of slots. The override remains available for throughput experiments and platform comparisons.
+The app layer owns the process-wide `DVZ_MAX_FRAMES_IN_FLIGHT=auto|N` override and maps it to explicit Canvas configuration. Canvas does not read environment variables. Swapchain image views, layouts, and render-finished semaphores remain per image; command buffers, acquire semaphores, in-flight fences, offscreen/depth resources, and Canvas stream-frame entries remain per frame slot. Test one, two, and the current image-count number of slots.
 
 The experiment must preserve binary semaphore reuse rules, resize/recreate behavior, device-loss handling, captures, live sinks, and validation-layer cleanliness. It must not introduce a parallel renderer or presentation path.
+
+
+## Default Presentation Policy
+
+Continuous interaction scheduling exposed a presentation-freshness regression in ordinary FIFO: the app could keep submitting frames while a drag was active, and FIFO preserved stale controller states ahead of newer input. Frame-slot limits reduce CPU/GPU queue depth but cannot control the window-system presentation queue. Forced-continuous FIFO remaining sluggish while immediate and FIFO latest-ready are smooth distinguishes this failure from frame-demand, controller, scene, or renderer throughput defects.
+
+App-owned native windows request FIFO latest-ready by default when the build and runtime support it. FIFO latest-ready is paced per view at the refresh rate reported by the window backend so it presents the newest ready frame without submitting thousands of redundant frames per second. If latest-ready is unavailable, Canvas follows the surface preference order: mailbox when supported, then mandatory FIFO. The resolved ordinary-FIFO fallback uses one frame slot.
+
+Window refresh rate is a runtime metric and may change when a window moves between monitors. An explicit positive app FPS cap overrides refresh-derived pacing. Explicit present-mode and frame-slot overrides remain authoritative. Window reports display facts, app selects scheduling policy, Canvas executes explicit frame-slot configuration, and vklite resolves Vulkan surface capabilities.
 
 
 ## Commit Comparison

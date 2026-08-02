@@ -5080,8 +5080,9 @@ DvzCanvasConfig._fields_ = [
     ('color_format', ctypes.c_int),
     ('depth_format', ctypes.c_int),
     ('present_mode', ctypes.c_int),
+    ('frame_slot_count', ctypes.c_uint32),
     ('enable_video_sink', ctypes.c_bool),
-    ('_ctypes_padding_0', (ctypes.c_uint8 * 7)),
+    ('_ctypes_padding_0', (ctypes.c_uint8 * 3)),
     ('timing_history', ctypes.c_size_t),
 ]
 
@@ -7248,6 +7249,7 @@ DvzWindowMetrics._fields_ = [
     ('framebuffer_scale', DvzScaleXY),
     ('device_scale', DvzScaleXY),
     ('native_to_logical', DvzScaleXY),
+    ('refresh_rate_hz', ctypes.c_uint32),
     ('active_hidpi_policy', ctypes.c_int),
     ('generation', ctypes.c_uint64),
 ]
