@@ -28,7 +28,7 @@
 // from: https://raw.githubusercontent.com/nicolausYes/easing-functions/master/src/easing.cpp
 // see also: https://easings.net
 
-static double easeInSine(double t) { return sin(DVZ_PI_2 * t); }
+static double easeInSine(double t) { return 1 - cos(DVZ_PI_2 * t); }
 
 static double easeOutSine(double t) { return sin(DVZ_PI_2 * t); }
 
