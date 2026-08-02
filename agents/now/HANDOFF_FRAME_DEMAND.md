@@ -185,7 +185,7 @@ The implemented ownership split is:
 3. Rotation is modulo `slot_count`, and active/last-presented slot and image indices are tracked explicitly for capture and diagnostics.
 4. Live-image metadata refreshes whenever the rotating slot resource generation changes.
 5. Interaction telemetry reports requested/resolved present modes, image count, and slot count; comparison reports reject known configuration mismatches and mark older baselines without configuration telemetry as unverified.
-6. Window metrics report the active monitor refresh rate when known, and app scheduling derives a per-view FIFO-latest cap unless an explicit app cap wins.
+6. Window metrics report the active monitor refresh rate when known, app scheduling derives a per-view FIFO-latest cap unless an explicit app cap wins, and an unknown refresh uses a conservative 60 Hz fallback rather than becoming unbounded.
 
 Do not add device-idle or queue-idle waits, extra fences, a second swapchain path, a special scatter renderer, or a hard-coded 60 FPS cap.
 

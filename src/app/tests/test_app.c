@@ -343,10 +343,19 @@ static int test_app_presentation_policy_effective_fps_cap(TstContext* suite, con
     AT(_dvz_app_view_requires_scheduler_poll(true, 60.0, 0));
     AT(!_dvz_app_view_requires_scheduler_poll(false, 0, 0));
 #if defined(VK_KHR_present_mode_fifo_latest_ready)
+    double unknown_refresh_fps_cap = 0;
+    AT(_dvz_app_view_effective_fps_cap(
+           144.0, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, 60) == 144.0);
+    AT(_dvz_app_view_effective_fps_cap(
+           0, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, 75) == 75.0);
     AT(_dvz_app_view_effective_fps_cap(
            0, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, 120) == 120.0);
     AT(_dvz_app_view_effective_fps_cap(
-           0, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, 0) == 0);
+           0, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, 144) == 144.0);
+    unknown_refresh_fps_cap =
+        _dvz_app_view_effective_fps_cap(0, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR, 0);
+    AT(unknown_refresh_fps_cap == 60.0);
+    AT(!_dvz_app_view_requires_scheduler_poll(true, unknown_refresh_fps_cap, 123));
 #endif
     return 0;
 }

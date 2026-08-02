@@ -17,6 +17,14 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                   */
+/*************************************************************************************************/
+
+#define DVZ_APP_FIFO_LATEST_UNKNOWN_REFRESH_FALLBACK_HZ 60.0
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                   */
 /*************************************************************************************************/
 
@@ -136,8 +144,12 @@ double _dvz_app_view_effective_fps_cap(
     if (app_fps_cap > 0)
         return app_fps_cap;
 #if defined(VK_KHR_present_mode_fifo_latest_ready)
-    if (present_mode == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR && refresh_rate_hz > 0)
-        return (double)refresh_rate_hz;
+    if (present_mode == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR)
+    {
+        if (refresh_rate_hz > 0)
+            return (double)refresh_rate_hz;
+        return DVZ_APP_FIFO_LATEST_UNKNOWN_REFRESH_FALLBACK_HZ;
+    }
 #else
     (void)present_mode;
     (void)refresh_rate_hz;
