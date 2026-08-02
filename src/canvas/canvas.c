@@ -1413,6 +1413,7 @@ DvzCanvasConfig dvz_canvas_config(void)
         .color_format = VK_FORMAT_UNDEFINED,
         .depth_format = VK_FORMAT_UNDEFINED,
         .present_mode = VK_PRESENT_MODE_FIFO_KHR,
+        .frame_slot_count = DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT,
         .enable_video_sink = false,
         .timing_history = DVZ_CANVAS_DEFAULT_TIMING_HISTORY,
     };

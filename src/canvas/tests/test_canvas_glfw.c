@@ -67,6 +67,7 @@ typedef struct CanvasGlfwClearContext
 
 typedef struct CanvasGlfwFixture
 {
+    uint32_t frame_slot_count;
     DvzInstance* instance;
     DvzWindowHost* host;
     DvzDevice* device;
@@ -230,7 +231,9 @@ static int canvas_glfw_fixture_create(
     ANN(skipped);
 
     *skipped = false;
+    uint32_t frame_slot_count = fixture->frame_slot_count;
     dvz_memset(fixture, sizeof(*fixture), 0, sizeof(*fixture));
+    fixture->frame_slot_count = frame_slot_count;
 
 #if !DVZ_HAS_GLFW
     *skipped = true;
@@ -346,6 +349,7 @@ static int canvas_glfw_fixture_create(
     cfg.window = fixture->window;
     cfg.device = fixture->device;
     cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    cfg.frame_slot_count = fixture->frame_slot_count;
     cfg.timing_history = 1;
 
     fixture->canvas = dvz_canvas_create(&cfg);
@@ -482,28 +486,24 @@ static int canvas_glfw_live_probe_callback(
  * Exercise a requested swapchain frame-slot count across present, resize, capture, and live sink.
  *
  * @param suite owning test suite
- * @param requested_slots requested experimental frame-slot count
+ * @param requested_slots requested frame-slot count
  * @return zero on success
  */
 static int _canvas_glfw_frame_slot_experiment(TstContext* suite, uint32_t requested_slots)
 {
     ANN(suite);
-    char value[16] = {0};
-    snprintf(value, sizeof(value), "%u", requested_slots);
-    AT(tst_setenv("DVZ_MAX_FRAMES_IN_FLIGHT", value) == 0);
-
-    CanvasGlfwFixture fixture = {0};
+    CanvasGlfwFixture fixture = {.frame_slot_count = requested_slots};
     bool skipped = false;
     AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
     if (skipped)
     {
         canvas_glfw_fixture_destroy(&fixture);
-        AT(tst_unsetenv("DVZ_MAX_FRAMES_IN_FLIGHT") == 0);
         tst_skip(suite, "GLFW fixture unavailable");
         return 0;
     }
 
     DvzCanvas* canvas = fixture.canvas;
+    AT(canvas->cfg.frame_slot_count == requested_slots);
     CanvasGlfwClearContext clear_ctx = {
         .device = fixture.device,
         .format = DVZ_DEFAULT_COLOR_FORMAT,
@@ -547,9 +547,6 @@ static int _canvas_glfw_frame_slot_experiment(TstContext* suite, uint32_t reques
     if (slot_count > 1)
         AT(live_probe.generation_change_count > 0);
 
-    const char* replacement_value = requested_slots == 1 ? "2" : "1";
-    AT(tst_setenv("DVZ_MAX_FRAMES_IN_FLIGHT", replacement_value) == 0);
-
 #if DVZ_HAS_GLFW
     GLFWwindow* native = (GLFWwindow*)dvz_window_backend_handle(fixture.window);
     ANN(native);
@@ -574,7 +571,7 @@ static int _canvas_glfw_frame_slot_experiment(TstContext* suite, uint32_t reques
     AT(dvz_canvas_swapchain_recreate_count(canvas) == recreate_before + 1);
     image_count = _dvz_canvas_swapchain_image_count(canvas);
     slot_count = _dvz_canvas_swapchain_slot_count(canvas);
-    // The override is cached per Canvas and does not change during swapchain recreation.
+    // Canvas configuration remains stable during swapchain recreation.
     AT(slot_count == _dvz_canvas_frame_slot_count_resolve(requested_slots, image_count));
     AT(canvas->frame_pool.frame_count == slot_count);
 
@@ -594,7 +591,6 @@ static int _canvas_glfw_frame_slot_experiment(TstContext* suite, uint32_t reques
     AT(dvz_canvas_configure_live_image_sink(canvas, false, NULL) == 0);
     AT(dvz_instance_error_count(fixture.instance) == 0);
     canvas_glfw_fixture_destroy(&fixture);
-    AT(tst_unsetenv("DVZ_MAX_FRAMES_IN_FLIGHT") == 0);
     return 0;
 }
 

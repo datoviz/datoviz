@@ -525,6 +525,7 @@ int test_canvas_defaults(TstContext* suite, const TstCase* item)
     AT(cfg.color_format == VK_FORMAT_UNDEFINED);
     AT(cfg.depth_format == VK_FORMAT_UNDEFINED);
     AT(cfg.present_mode == VK_PRESENT_MODE_FIFO_KHR);
+    AT(cfg.frame_slot_count == DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT);
     AT(!cfg.enable_video_sink);
     AT(cfg.timing_history == DVZ_CANVAS_DEFAULT_TIMING_HISTORY);
     return 0;
@@ -729,7 +730,7 @@ int test_canvas_frame_pool(TstContext* suite, const TstCase* item)
 
 
 /**
- * Validate parsing and resolution of the experimental frame-slot override.
+ * Validate configuration and resolution of frame-slot counts.
  *
  * @param suite The owning test suite.
  * @param item The test item (unused).
@@ -740,37 +741,17 @@ int test_canvas_frame_slot_count_resolution(TstContext* suite, const TstCase* it
     ANN(suite);
     (void)item;
 
-    uint32_t requested = UINT32_MAX;
-    AT(_dvz_canvas_max_frames_in_flight_parse(NULL, &requested));
-    AT(requested == 0);
-    AT(_dvz_canvas_max_frames_in_flight_parse("auto", &requested));
-    AT(requested == 0);
-    AT(_dvz_canvas_max_frames_in_flight_parse("1", &requested));
-    AT(requested == 1);
-    AT(_dvz_canvas_max_frames_in_flight_parse("2", &requested));
-    AT(requested == 2);
-    AT(_dvz_canvas_max_frames_in_flight_parse("8", &requested));
-    AT(requested == 8);
-    AT(!_dvz_canvas_max_frames_in_flight_parse("0", &requested));
-    AT(!_dvz_canvas_max_frames_in_flight_parse("invalid", &requested));
-    AT(!_dvz_canvas_max_frames_in_flight_parse("-1", &requested));
-    AT(!_dvz_canvas_max_frames_in_flight_parse("1x", &requested));
-
-    bool valid = false;
-    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, NULL, &valid) == 1);
-    AT(valid);
-    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, "auto", &valid) == 0);
-    AT(valid);
-    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, "2", &valid) == 2);
-    AT(valid);
-    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, "invalid", &valid) == 1);
-    AT(!valid);
-    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_RELAXED_KHR, NULL, &valid) == 0);
-    AT(valid);
-    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_MAILBOX_KHR, NULL, &valid) == 0);
-    AT(valid);
-    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_IMMEDIATE_KHR, NULL, &valid) == 0);
-    AT(valid);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_FIFO_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT) == 1);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_FIFO_RELAXED_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT) == 0);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_MAILBOX_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT) == 0);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_IMMEDIATE_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT) == 0);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_FIFO_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_AUTOMATIC) == 0);
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, 2) == 2);
 
     AT(_dvz_canvas_frame_slot_count_resolve(0, 4) == 4);
     AT(_dvz_canvas_frame_slot_count_resolve(1, 4) == 1);
