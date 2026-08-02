@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 
@@ -94,3 +95,29 @@ def test_panel_render_policy_lives_in_planner() -> None:
     )
     for pattern in forbidden_panel_policy:
         assert pattern not in panel_text, f"{panel_emit} owns planner policy {pattern!r}"
+
+
+def test_effects_use_typed_products_without_legacy_scratch_fallbacks() -> None:
+    composition = Path("src/scene/scene_emit/composition.c")
+    assert composition.exists(), "missing composition source"
+    text = composition.read_text(encoding="utf-8")
+
+    forbidden_scratch_allocation = re.compile(
+        r"\bSCRATCH\s*\(\s*DVZ_SCENE_SCRATCH_"
+        r"(?:EDL|WBOIT|PEEL|SCENE_OCCLUSION|VOLUME_OCCLUSION)"
+    )
+    match = forbidden_scratch_allocation.search(text)
+    assert match is None, (
+        f"{composition} still allocates an effect-specific scratch at {match.start()}"
+    )
+
+    assert text.count("pass->legacy_transition = true;") == 1
+    assert text.count("ok = _composition_mark_unrealized(") == 1
+    ambient_unrealized = re.compile(
+        r"pass->legacy_transition\s*=\s*true;\s*"
+        r"ok\s*=\s*_composition_mark_unrealized\("
+        r"pass,\s*in\[DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY\]\);"
+    )
+    assert ambient_unrealized.search(text), (
+        "legacy transition/unrealized products must be limited to ambient visibility composition"
+    )

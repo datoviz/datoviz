@@ -122,7 +122,7 @@ struct SceneWorkRuntime
     uint64_t coverage_id;
     uint64_t object_id;
     uint64_t accum_id;
-    uint64_t weight_id;
+    uint64_t transmittance_id;
     uint64_t occlusion_id;
     uint64_t blur_id;
     uint64_t composite_input_id;
@@ -378,7 +378,8 @@ bool _emitter_prepare_ssao_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanEmitConfig* cfg,
     SceneGraphRuntimeTargets* graph_targets, SceneWorkRuntime* out);
-uint64_t _wboit_bind_group_fingerprint(uint64_t accum_id, uint64_t weight_id, uint64_t sampler_id);
+uint64_t _wboit_bind_group_fingerprint(
+    uint64_t accum_id, uint64_t transmittance_id, uint64_t sampler_id);
 bool _emitter_prepare_wboit_targets(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, uint64_t color_id, const DvzFramePlanEmitConfig* cfg,

@@ -1817,6 +1817,12 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstContext* suite, const TstCas
     ANN(suite);
     (void)item;
 
+    const char* depth_source =
+        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SCENE_OCCLUSION_DEPTH, true);
+    ANN(depth_source);
+    AT(strstr(depth_source, "outDepth = positiveLinearViewDepth(gl_FragCoord.z);") != NULL);
+    AT(strstr(depth_source, "return max(-view.z / view.w, 0.0);") != NULL);
+
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
@@ -1900,7 +1906,7 @@ int test_scene_visual_scene_occlusion_emits_drp2(TstContext* suite, const TstCas
                 has_scene_depth_pass ||
                 (command->u.begin_render_pass.color_attachment_count == 1 &&
                  command->u.begin_render_pass.has_depth_attachment &&
-                 command->u.begin_render_pass.clear_color[0] == 1.0f);
+                 command->u.begin_render_pass.clear_color[0] == 0.0f);
         }
         else if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
         {
@@ -1975,6 +1981,13 @@ int test_scene_volume_slice_uses_volume_occlusion(TstContext* suite, const TstCa
 {
     ANN(suite);
     (void)item;
+
+    const char* depth_source =
+        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_VOLUME_OCCLUSION_DEPTH, true);
+    ANN(depth_source);
+    AT(strstr(depth_source, "outDepth = 0.0;") != NULL);
+    AT(strstr(depth_source, "outDepth = linear_view_depth(uvw);") != NULL);
+    AT(strstr(depth_source, "gl_FragDepth = projected_depth(uvw);") != NULL);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);

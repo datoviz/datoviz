@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "common.h"
+#include "_visual_pipeline_internal.h"
 
 
 
@@ -106,6 +107,62 @@ int test_scene_sphere_analytic_shader_contract(TstContext* suite, const TstCase*
     AT(strstr(capture, "coverage = 1.0;") != NULL);
     AT(strstr(capture, "outDepth = vec4(hit.linearDepth") != NULL);
     AT(strstr(capture, "outNormal = vec4(hit.normalView") != NULL);
+    AT(strstr(ordinary, "layout(location = 1) out float outSurfaceDepth;") != NULL);
+    AT(strstr(ordinary, "writeSurfaceDepth(hit.linearDepth);") != NULL);
+
+    const DvzSceneBuiltinShader device_depth_shaders[] = {
+        DVZ_SCENE_BUILTIN_SHADER_POINT,
+        DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE,
+        DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE,
+        DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE,
+        DVZ_SCENE_BUILTIN_SHADER_POINT_ITEM_STATE,
+        DVZ_SCENE_BUILTIN_SHADER_PIXEL,
+        DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE,
+        DVZ_SCENE_BUILTIN_SHADER_PIXEL_ITEM_STATE,
+        DVZ_SCENE_BUILTIN_SHADER_MARKER,
+        DVZ_SCENE_BUILTIN_SHADER_MARKER_BITMAP,
+        DVZ_SCENE_BUILTIN_SHADER_MARKER_DISTANCE,
+        DVZ_SCENE_BUILTIN_SHADER_SEGMENT,
+        DVZ_SCENE_BUILTIN_SHADER_PATH,
+        DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE,
+        DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT,
+        DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED,
+        DVZ_SCENE_BUILTIN_SHADER_SPLAT,
+    };
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(device_depth_shaders); i++)
+    {
+        const char* source = _builtin_shader_glsl(device_depth_shaders[i], true);
+        ANN(source);
+        AT(strstr(source, "layout(location = 1) out float outSurfaceDepth;") != NULL);
+        AT(strstr(source, "writeSurfaceDepthFromDevice();") != NULL);
+    }
+
+    const char* edl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_EDL_RESOLVE, true);
+    ANN(edl);
+    AT(strstr(edl, "validSurfaceDepth(center)") != NULL);
+    AT(strstr(edl, "neighbor - center") != NULL);
+    AT(strstr(edl, "edl.invProj * clip") == NULL);
+
+    DvzSceneVisualDesc surface_visual = {
+        .kind = DVZ_SCENE_VISUAL_DESC_SPHERE,
+        .depth_test_enabled = true,
+    };
+    DvzSceneVisualShaderDesc surface_shader = {0};
+    dvz_strlcpy(surface_shader.vertex_key, "_vs_surface", sizeof(surface_shader.vertex_key));
+    dvz_strlcpy(surface_shader.fragment_key, "_fs_surface", sizeof(surface_shader.fragment_key));
+    dvz_strlcpy(surface_shader.pipeline_key, "_pipe_surface", sizeof(surface_shader.pipeline_key));
+    surface_shader.fragment_glsl = ordinary;
+    char* surface_variant = NULL;
+    bool segment_coverage_blend = false;
+    AT(_scene_visual_shader_desc_apply_pass_policy(
+        &surface_visual, DVZ_SCENE_WORK_PROVIDER_OPAQUE, DVZ_ALPHA_OPAQUE,
+        DVZ_CONTROLLER_APPLY, false, true, false, false, true, 1, false, false, false,
+        &surface_shader, &surface_variant, &segment_coverage_blend));
+    ANN(surface_variant);
+    AT(strstr(surface_shader.fragment_key, "_surface_z") != NULL);
+    AT(strstr(surface_shader.pipeline_key, "_surface_z") != NULL);
+    AT(strstr(surface_variant, "#define DVZ_SURFACE_DEPTH_OUTPUT 1") != NULL);
+    _shader_glsl_variant_destroy(surface_variant);
 
     // Perspective ray through an off-axis center selects the front surface.
     vec3 perspective_origin = {0.0f, 0.0f, 0.0f};

@@ -6,6 +6,8 @@
 #include "scene_occlusion.glsl"
 #endif
 
+#ifndef DVZ_MVP_UNIFORM_GLSL
+#define DVZ_MVP_UNIFORM_GLSL
 layout(set = 0, binding = 0) uniform MVP {
     mat4 model;
     mat4 view;
@@ -13,6 +15,7 @@ layout(set = 0, binding = 0) uniform MVP {
     float time;
     uint flags;
 } mvp;
+#endif
 
 #if defined(DVZ_VOLUME_LABEL_UINT)
 layout(set = 1, binding = 0) uniform utexture3D tex;
@@ -172,16 +175,11 @@ float depth_visibility(vec3 uvw)
     vec2 uv = clamp(
         (gl_FragCoord.xy - volume.texture_params.yz) / size, vec2(0.0), vec2(1.0));
     float scene_depth = texture(sampler2D(depthTex, samp), uv).r;
-    float self_depth = projected_depth(uvw);
     if (volume.occlusion.w > 0.5) {
         if (scene_depth <= 0.000001) {
             return 1.0;
         }
-        float delta_depth = self_depth - scene_depth;
-        if (delta_depth <= 0.0) {
-            return 1.0;
-        }
-        float delta = occlusion_delta_depth(uvw, scene_depth, self_depth);
+        float delta = view_depth_from_uvw(uvw) - scene_depth - 0.0005;
         if (delta <= 0.0) {
             return 1.0;
         }
@@ -193,6 +191,7 @@ float depth_visibility(vec3 uvw)
     if (scene_depth >= 0.999999) {
         return 1.0;
     }
+    float self_depth = projected_depth(uvw);
     return self_depth > scene_depth + 0.0005 ? 0.0 : 1.0;
 }
 
@@ -203,16 +202,11 @@ float scene_occlusion_visibility_linear(vec3 uvw)
     vec2 uv = clamp(
         (gl_FragCoord.xy - sceneOcclusion.viewport.xy) / size, vec2(0.0), vec2(1.0));
     float scene_depth = texture(sampler2D(sceneOcclusionDepth, sceneOcclusionSamp), uv).r;
-    if (scene_depth >= 0.999999) {
+    if (scene_depth <= 0.000001) {
         return 1.0;
     }
 
-    float self_depth = projected_depth(uvw);
-    if (self_depth <= scene_depth) {
-        return 1.0;
-    }
-
-    float delta = occlusion_delta_depth(uvw, scene_depth, self_depth);
+    float delta = view_depth_from_uvw(uvw) - scene_depth - sceneOcclusion.params.x;
     if (delta <= 0.0) {
         return 1.0;
     }

@@ -514,6 +514,7 @@ static const char* _shader_depth_peel_fragment_spirv_key(DvzSceneBuiltinShader s
  * @param pass_has_depth_attachment whether the pass carries a depth attachment
  * @param force_point_depth whether point-like visuals must write depth
  * @param wboit_accumulation whether the pass is WBOIT accumulation
+ * @param surface_depth_output whether the pass writes standalone linear surface depth at target 1
  * @param pass_sample_count multisample count for the pass
  * @param pass_alpha_to_coverage whether alpha-to-coverage is enabled for the pass
  * @param scene_occluded_shader whether the shader samples scene occlusion depth
@@ -527,8 +528,8 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider,
     DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, bool picking,
     bool pass_has_depth_attachment, bool force_point_depth, bool wboit_accumulation,
-    uint32_t pass_sample_count, bool pass_alpha_to_coverage, bool scene_occluded_shader,
-    bool scene_occlusion_uses_set2, DvzSceneVisualShaderDesc* shader,
+    bool surface_depth_output, uint32_t pass_sample_count, bool pass_alpha_to_coverage,
+    bool scene_occluded_shader, bool scene_occlusion_uses_set2, DvzSceneVisualShaderDesc* shader,
     char** out_fragment_glsl_variant, bool* out_segment_coverage_blend)
 {
     ANN(visual);
@@ -642,18 +643,31 @@ bool _scene_visual_shader_desc_apply_pass_policy(
             }
         }
     }
-    if (scene_occluded_shader)
+    if (surface_depth_output)
     {
-        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_scene_occ") ||
-            !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_scene_occ"))
+        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_surface_z") ||
+            !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_surface_z"))
         {
             return false;
         }
-        char scene_occlusion_defines[96];
+    }
+    if (scene_occluded_shader || surface_depth_output)
+    {
+        if (scene_occluded_shader &&
+            (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_scene_occ") ||
+             !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_scene_occ")))
+        {
+            return false;
+        }
+        char scene_occlusion_defines[160] = {0};
         dvz_snprintf(
             scene_occlusion_defines, sizeof(scene_occlusion_defines),
-            "#define DVZ_SCENE_OCCLUSION 1\n#define DVZ_SCENE_OCCLUSION_SET %u\n",
-            scene_occlusion_uses_set2 ? 2u : 1u);
+            "%s%s%s",
+            scene_occluded_shader ? "#define DVZ_SCENE_OCCLUSION 1\n" : "",
+            scene_occluded_shader && scene_occlusion_uses_set2
+                ? "#define DVZ_SCENE_OCCLUSION_SET 2\n"
+                : scene_occluded_shader ? "#define DVZ_SCENE_OCCLUSION_SET 1\n" : "",
+            surface_depth_output ? "#define DVZ_SURFACE_DEPTH_OUTPUT 1\n" : "");
         *out_fragment_glsl_variant =
             _shader_glsl_variant(shader->fragment_glsl, scene_occlusion_defines);
         shader->fragment_glsl = *out_fragment_glsl_variant;

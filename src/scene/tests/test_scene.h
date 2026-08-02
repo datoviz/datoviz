@@ -932,7 +932,9 @@ int test_scene_visual_alpha_mode_depth_peel_loads_prior_panel(
     TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_mixed_oit_rejected(TstContext* suite, const TstCase* item);
-int test_scene_visual_alpha_mode_noncontiguous_oit_rejected(
+int test_scene_visual_alpha_mode_noncontiguous_wboit_preserves_order(
+    TstContext* suite, const TstCase* item);
+int test_scene_visual_alpha_mode_noncontiguous_depth_peel_preserves_order(
     TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const TstCase* item);

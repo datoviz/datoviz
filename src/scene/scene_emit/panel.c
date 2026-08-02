@@ -908,6 +908,147 @@ static bool _scene_emit_blended_group_node(
 }
 
 
+
+/**
+ * Emit one authored WBOIT run and its immediate source-over resolve.
+ *
+ * @param figure source figure
+ * @param plan destination FramePlan
+ * @param panel source panel
+ * @param render_plan resolved panel render plan
+ * @param panel_apply_mvp panel transform uniform
+ * @param panel_viewport panel viewport uniform
+ * @param plot_desc panel-local plot rectangle
+ * @param group WBOIT run index
+ * @param report optional diagnostic report
+ * @return whether both nodes and all visuals were emitted
+ */
+static bool _scene_emit_wboit_group_nodes(
+    const DvzFigure* figure, DvzFramePlan* plan, const DvzPanel* panel,
+    const DvzPanelRenderPlan* render_plan, const DvzMVP* panel_apply_mvp,
+    const DvzSceneViewportUniform* panel_viewport, DvzPanelDesc plot_desc, uint32_t group,
+    DvzDiagnosticReport* report)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(panel);
+    ANN(render_plan);
+    ANN(panel_apply_mvp);
+    ANN(panel_viewport);
+    if (group >= render_plan->wboit_group_count)
+        return false;
+
+    char target_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    if (group == 0)
+        dvz_strlcpy(target_id, "rt.wboit_accum", sizeof(target_id));
+    else
+        dvz_snprintf(target_id, sizeof(target_id), "rt.wboit_accum.%" PRIu32, group);
+
+    uint32_t accum_node = DVZ_PANEL_RENDER_INVALID_INDEX;
+    if (!_scene_begin_panel_render_pass(
+            plan, render_plan->panel_id, target_id, panel->desc,
+            DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION, panel_apply_mvp, panel_viewport,
+            plot_desc, &accum_node))
+        return false;
+    DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, accum_node);
+    if (node == NULL)
+        return false;
+
+    for (uint32_t i = 0; i < render_plan->wboit_visual_count; i++)
+    {
+        if (render_plan->wboit_visuals[i].blend_group != group)
+            continue;
+        if (!_scene_append_planned_visual_to_render_pass(
+                figure, plan, node, panel, &render_plan->wboit_visuals[i],
+                render_plan->scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                render_plan->volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
+            return false;
+    }
+
+    uint32_t resolve_node = DVZ_PANEL_RENDER_INVALID_INDEX;
+    return _scene_begin_panel_render_pass(
+        plan, render_plan->panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
+        panel_apply_mvp, panel_viewport, plot_desc, &resolve_node);
+}
+
+
+
+static bool _scene_emit_depth_peel_group_nodes(
+    const DvzFigure* figure, DvzFramePlan* plan, const DvzPanel* panel,
+    const DvzPanelRenderPlan* render_plan, const DvzMVP* panel_apply_mvp,
+    const DvzSceneViewportUniform* panel_viewport, DvzPanelDesc plot_desc, uint32_t group,
+    DvzDiagnosticReport* report)
+{
+    ANN(figure);
+    ANN(plan);
+    ANN(panel);
+    ANN(render_plan);
+    ANN(panel_apply_mvp);
+    ANN(panel_viewport);
+    if (group >= render_plan->depth_peel_group_count)
+        return false;
+
+    char target_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    dvz_snprintf(target_id, sizeof(target_id), "rt.depth_peel.%" PRIu32 ".init", group);
+    uint32_t init_node_index = DVZ_PANEL_RENDER_INVALID_INDEX;
+    if (!_scene_begin_panel_render_pass(
+            plan, render_plan->panel_id, target_id, panel->desc,
+            DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT, panel_apply_mvp, panel_viewport, plot_desc,
+            &init_node_index))
+        return false;
+    DvzFramePlanNode* init_node = _scene_frame_plan_node_mut(plan, init_node_index);
+    if (init_node == NULL)
+        return false;
+    for (uint32_t i = 0; i < render_plan->depth_peel_visual_count; i++)
+    {
+        const DvzPanelRenderVisualPlan* visual = &render_plan->depth_peel_visuals[i];
+        if (visual->blend_group != group)
+            continue;
+        if (!_scene_append_planned_visual_to_render_pass(
+                figure, plan, init_node, panel, visual,
+                render_plan->scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                render_plan->volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
+            return false;
+    }
+
+    for (uint32_t iter = 0; iter < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter++)
+    {
+        dvz_snprintf(
+            target_id, sizeof(target_id), "rt.depth_peel.%" PRIu32 ".iter.%" PRIu32, group, iter);
+        uint32_t iter_node_index = DVZ_PANEL_RENDER_INVALID_INDEX;
+        if (!_scene_begin_panel_render_pass(
+                plan, render_plan->panel_id, target_id, panel->desc,
+                DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, panel_apply_mvp, panel_viewport,
+                plot_desc, &iter_node_index))
+            return false;
+        DvzFramePlanNode* iter_node = _scene_frame_plan_node_mut(plan, iter_node_index);
+        if (iter_node == NULL)
+            return false;
+        for (uint32_t i = 0; i < render_plan->depth_peel_visual_count; i++)
+        {
+            const DvzPanelRenderVisualPlan* visual = &render_plan->depth_peel_visuals[i];
+            if (visual->blend_group != group)
+                continue;
+            if (!_scene_append_planned_visual_to_render_pass(
+                    figure, plan, iter_node, panel, visual,
+                    render_plan->scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
+                    render_plan->volume_occlusion_enabled ? &panel->volume_occlusion : NULL,
+                    report))
+                return false;
+        }
+    }
+
+    dvz_snprintf(
+        target_id, sizeof(target_id), "rt.depth_peel.%" PRIu32 ".composite", group);
+    uint32_t composite_node_index = DVZ_PANEL_RENDER_INVALID_INDEX;
+    return _scene_begin_panel_render_pass(
+        plan, render_plan->panel_id, target_id, panel->desc,
+        DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE, panel_apply_mvp, panel_viewport, plot_desc,
+        &composite_node_index);
+}
+
+
+
 /**
  * Reconstruct the effective MSAA state from the immutable composition snapshot.
  *
@@ -1057,10 +1198,6 @@ bool _scene_emit_panel_render_caps(
     uint32_t opaque_node = invalid_node;
     uint32_t gbuffer_node = invalid_node;
     uint32_t surface_resolve_node = invalid_node;
-    uint32_t transparent_node = invalid_node;
-    uint32_t depth_peel_init_node = invalid_node;
-    uint32_t depth_peel_iter_nodes[DVZ_SCENE_DEPTH_PEEL_ITERATIONS] = {0};
-    uint32_t depth_peel_composite_node = invalid_node;
     uint32_t blended_nodes[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     bool blended_group_emitted[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t edl_node = invalid_node;
@@ -1070,8 +1207,6 @@ bool _scene_emit_panel_render_caps(
     uint32_t presentation_node = invalid_node;
     uint32_t edl_params_node = invalid_node;
     uint32_t ssao_params_node = invalid_node;
-    for (uint32_t i = 0; i < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; i++)
-        depth_peel_iter_nodes[i] = invalid_node;
     if (render_plan.gbuffer_visual_count > 0)
     {
         if (_scene_begin_panel_render_pass(
@@ -1130,9 +1265,23 @@ bool _scene_emit_panel_render_caps(
     {
         const DvzPanelRenderTransparentPassPlan* transparent_pass =
             &render_plan.transparent_passes[pass_idx];
-        if (transparent_pass->kind != DVZ_PANEL_RENDER_TRANSPARENT_BLENDED)
-            break;
-        uint32_t group = transparent_pass->index;
+        const uint32_t group = transparent_pass->index;
+        if (transparent_pass->kind == DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL)
+        {
+            if (!_scene_emit_depth_peel_group_nodes(
+                    figure, plan, panel, &render_plan, &panel_apply_mvp, &panel_viewport,
+                    plot_desc, group, report))
+                graph_ok = false;
+            continue;
+        }
+        if (transparent_pass->kind == DVZ_PANEL_RENDER_TRANSPARENT_WBOIT)
+        {
+            if (!_scene_emit_wboit_group_nodes(
+                    figure, plan, panel, &render_plan, &panel_apply_mvp, &panel_viewport, plot_desc,
+                    group, report))
+                graph_ok = false;
+            continue;
+        }
         if (group >= render_plan.blended_group_count || blended_group_emitted[group])
             continue;
         if (!_scene_emit_blended_group_node(
@@ -1140,126 +1289,6 @@ bool _scene_emit_panel_render_caps(
                 group, blended_nodes, report))
             graph_ok = false;
         blended_group_emitted[group] = true;
-    }
-
-    if (render_plan.depth_peel_visual_count > 0)
-    {
-        if (_scene_begin_panel_render_pass(
-                plan, panel_id, "rt.depth_peel_init", panel->desc,
-                DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT, &panel_apply_mvp, &panel_viewport,
-                plot_desc, &depth_peel_init_node))
-        {
-            bool iter_nodes_ok = true;
-            for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
-            {
-                char iter_target_id[DVZ_SCENE_LABEL_SIZE];
-                dvz_snprintf(
-                    iter_target_id, sizeof(iter_target_id), "rt.depth_peel_iter.%" PRIu32,
-                    iter_idx);
-                if (!_scene_begin_panel_render_pass(
-                        plan, panel_id, iter_target_id, panel->desc,
-                        DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, &panel_apply_mvp,
-                        &panel_viewport, plot_desc, &depth_peel_iter_nodes[iter_idx]))
-                {
-                    iter_nodes_ok = false;
-                    break;
-                }
-                DvzFramePlanNode* iter_node =
-                    _scene_frame_plan_node_mut(plan, depth_peel_iter_nodes[iter_idx]);
-                if (iter_node == NULL)
-                {
-                    iter_nodes_ok = false;
-                    break;
-                }
-                int ret = dvz_snprintf(
-                    iter_node->u.render.pass_contract_id,
-                    sizeof(iter_node->u.render.pass_contract_id), "%s.pass.%u.iter.%" PRIu32,
-                    panel_id, (uint32_t)DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER, iter_idx);
-                if (ret < 0 || (size_t)ret >= sizeof(iter_node->u.render.pass_contract_id))
-                {
-                    iter_nodes_ok = false;
-                    break;
-                }
-            }
-            if (!iter_nodes_ok ||
-                !_scene_begin_panel_render_pass(
-                    plan, panel_id, "rt", panel->desc,
-                    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE, &panel_apply_mvp,
-                    &panel_viewport, plot_desc, &depth_peel_composite_node))
-                depth_peel_init_node = invalid_node;
-        }
-        DvzFramePlanNode* init_node = _scene_frame_plan_node_mut(plan, depth_peel_init_node);
-        if (init_node != NULL)
-        {
-            for (uint32_t i = 0; i < render_plan.depth_peel_visual_count; i++)
-            {
-                if (!_scene_append_planned_visual_to_render_pass(
-                        figure, plan, init_node, panel, &render_plan.depth_peel_visuals[i],
-                        render_plan.scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-                        render_plan.volume_occlusion_enabled ? &panel->volume_occlusion : NULL,
-                        report))
-                    graph_ok = false;
-            }
-        }
-        for (uint32_t iter_idx = 0; iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
-        {
-            DvzFramePlanNode* iter_node =
-                _scene_frame_plan_node_mut(plan, depth_peel_iter_nodes[iter_idx]);
-            if (iter_node == NULL)
-                continue;
-            for (uint32_t i = 0; i < render_plan.depth_peel_visual_count; i++)
-            {
-                if (!_scene_append_planned_visual_to_render_pass(
-                        figure, plan, iter_node, panel, &render_plan.depth_peel_visuals[i],
-                        render_plan.scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-                        render_plan.volume_occlusion_enabled ? &panel->volume_occlusion : NULL,
-                        report))
-                    graph_ok = false;
-            }
-        }
-    }
-
-    if (render_plan.wboit_visual_count > 0)
-    {
-        if (_scene_begin_panel_render_pass(
-                plan, panel_id, "rt.wboit_accum", panel->desc,
-                DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION, &panel_apply_mvp,
-                &panel_viewport, plot_desc, &transparent_node))
-        {
-            DvzFramePlanNode* node = _scene_frame_plan_node_mut(plan, transparent_node);
-            if (node != NULL)
-            {
-                for (uint32_t i = 0; i < render_plan.wboit_visual_count; i++)
-                {
-                    if (!_scene_append_planned_visual_to_render_pass(
-                            figure, plan, node, panel, &render_plan.wboit_visuals[i],
-                            render_plan.scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
-                            render_plan.volume_occlusion_enabled ? &panel->volume_occlusion : NULL,
-                            report))
-                        graph_ok = false;
-                }
-            }
-        }
-    }
-
-    for (uint32_t group = 0; group < render_plan.blended_group_count; group++)
-    {
-        if (blended_group_emitted[group])
-            continue;
-        if (!_scene_emit_blended_group_node(
-                figure, plan, panel, &render_plan, &panel_apply_mvp, &panel_viewport, plot_desc,
-                group, blended_nodes, report))
-            graph_ok = false;
-        blended_group_emitted[group] = true;
-    }
-
-    if (transparent_node != invalid_node)
-    {
-        uint32_t resolve_node = invalid_node;
-        if (!_scene_begin_panel_render_pass(
-                plan, panel_id, "rt", panel->desc, DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
-                &panel_apply_mvp, &panel_viewport, plot_desc, &resolve_node))
-            graph_ok = false;
     }
 
     if (render_plan.edl_enabled && render_plan.edl_has_depth_producer)

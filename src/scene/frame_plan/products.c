@@ -143,6 +143,25 @@ static bool _pass_reads_resource(const DvzFrameGraphPass* pass, const char* reso
 
 
 
+static bool _pass_loads_external_target(
+    const DvzFrameGraphPass* pass, const DvzFrameGraphResource* resource)
+{
+    ANN(pass);
+    ANN(resource);
+    if (resource->kind != DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET)
+        return false;
+    for (uint32_t i = 0; i < pass->color_attachment_count; i++)
+    {
+        const DvzFrameGraphAttachment* attachment = &pass->color_attachments[i];
+        if (strcmp(attachment->resource_id, resource->id) == 0 &&
+            attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD)
+            return true;
+    }
+    return false;
+}
+
+
+
 static uint32_t _pass_resource_usage_flags(const DvzFrameGraphPass* pass, const char* resource_id)
 {
     ANN(pass);
@@ -329,7 +348,8 @@ static bool _format_class_valid(DvzRenderProductFormatClass format_class, uint32
                concrete_format == DVZ_FORMAT_R32G32B32A32_SFLOAT;
     case DVZ_RENDER_PRODUCT_FORMAT_DEPTH_FLOAT:
         return concrete_format == DVZ_FORMAT_R16_SFLOAT ||
-               concrete_format == DVZ_FORMAT_R32_SFLOAT;
+               concrete_format == DVZ_FORMAT_R32_SFLOAT ||
+               concrete_format == DVZ_FORMAT_R32G32_SFLOAT;
     case DVZ_RENDER_PRODUCT_FORMAT_NORMAL_FLOAT:
         return concrete_format == DVZ_FORMAT_R16G16B16A16_SFLOAT ||
                concrete_format == DVZ_FORMAT_R32G32B32A32_SFLOAT;
@@ -450,10 +470,17 @@ static bool _validate_product_resource(
                            resource->extent_kind == DVZ_FRAME_GRAPH_EXTENT_FIXED) ||
                           (product->extent_policy == DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE &&
                            resource->extent_kind == DVZ_FRAME_GRAPH_EXTENT_PANEL) ||
+                          (product->extent_policy == DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE &&
+                           resource->kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET &&
+                           resource->extent_kind == DVZ_FRAME_GRAPH_EXTENT_FIGURE) ||
                           (product->extent_policy == DVZ_RENDER_PRODUCT_EXTENT_SOURCE_RELATIVE &&
                            resource->extent_kind == DVZ_FRAME_GRAPH_EXTENT_RESOURCE_REF);
-    if (!extent_matches || product->width != resource->width ||
-        product->height != resource->height)
+    const bool external_target =
+        product->extent_policy == DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE &&
+        resource->kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+    if (!extent_matches ||
+        (!external_target &&
+         (product->width != resource->width || product->height != resource->height)))
     {
         _frame_plan_graph_report(
             report, "FramePlan product '%s' extent does not match resource '%s'",
@@ -494,6 +521,33 @@ _product_last_use(const DvzFramePlan* plan, const DvzRenderProductContract* prod
             last_use = use->pass_index;
     }
     return last_use;
+}
+
+
+
+static bool _product_safe_in_place_alias(
+    const DvzFramePlan* plan, const DvzRenderProductContract* source,
+    const DvzRenderProductContract* product)
+{
+    ANN(plan);
+    ANN(source);
+    ANN(product);
+    if (source->resource_index != product->resource_index || source->kind != product->kind ||
+        product->sample_domain == DVZ_RENDER_PRODUCT_SAMPLES_RESOLVED ||
+        product->producer_pass_index >= plan->graph_pass_count ||
+        _product_last_use(plan, source) != product->producer_pass_index)
+        return false;
+    const DvzFrameGraphPass* producer = &plan->graph_passes[product->producer_pass_index];
+    const DvzFrameGraphResource* resource = &plan->graph_resources[product->resource_index];
+    for (uint32_t i = 0; i < producer->color_attachment_count; i++)
+    {
+        const DvzFrameGraphAttachment* attachment = &producer->color_attachments[i];
+        if (strcmp(attachment->resource_id, resource->id) == 0 &&
+            attachment->load_op == DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_LOAD &&
+            attachment->access == DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_READ_WRITE)
+            return true;
+    }
+    return false;
 }
 
 
@@ -587,7 +641,8 @@ static bool _validate_product_source(
             _product_label(product), source_resource->id);
         ok = false;
     }
-    if (source->resource_index == product->resource_index)
+    if (source->resource_index == product->resource_index &&
+        !_product_safe_in_place_alias(plan, source, product))
     {
         _frame_plan_graph_report(
             report, "FramePlan product '%s' aliases its live source product resource",
@@ -987,7 +1042,13 @@ bool dvz_frame_plan_products_validate(const DvzFramePlan* plan, DvzDiagnosticRep
                 _product_label(product));
             ok = false;
         }
-        if (_surface_member(product->kind) && product->surface_record_id.value == 0)
+        const bool standalone_depth =
+            product->kind == DVZ_RENDER_PRODUCT_SURFACE_DEPTH &&
+            product->surface_record_id.value == 0 &&
+            product->validity == DVZ_RENDER_PRODUCT_VALIDITY_BACKGROUND_VALUE &&
+            product->has_background_value && product->background_value[0] == 0.0f;
+        if (_surface_member(product->kind) && product->surface_record_id.value == 0 &&
+            !standalone_depth)
         {
             _frame_plan_graph_report(
                 report, "FramePlan surface product '%s' lacks a coherent surface-record identity",
@@ -1133,7 +1194,12 @@ bool dvz_frame_plan_products_validate(const DvzFramePlan* plan, DvzDiagnosticRep
             uint32_t second_end = _product_last_use(plan, second);
             bool overlaps = first->producer_pass_index <= second_end &&
                             second->producer_pass_index <= first_end;
-            if (overlaps)
+            const bool safe_successor_alias =
+                (second->source_product_id.value == first->id.value &&
+                 _product_safe_in_place_alias(plan, first, second)) ||
+                (first->source_product_id.value == second->id.value &&
+                 _product_safe_in_place_alias(plan, second, first));
+            if (overlaps && !safe_successor_alias)
             {
                 _frame_plan_graph_report(
                     report, "FramePlan products '%s' and '%s' have overlapping physical aliases",
@@ -1174,7 +1240,8 @@ bool dvz_frame_plan_products_validate(const DvzFramePlan* plan, DvzDiagnosticRep
                     pass->id, resource_id);
                 ok = false;
             }
-            if (_pass_reads_resource(pass, resource_id) && consumers != 1)
+            if (_pass_reads_resource(pass, resource_id) && consumers != 1 &&
+                !_pass_loads_external_target(pass, &plan->graph_resources[resource_index]))
             {
                 _frame_plan_graph_report(
                     report,

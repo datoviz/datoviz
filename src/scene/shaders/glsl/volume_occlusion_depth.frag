@@ -118,10 +118,17 @@ float projected_depth(vec3 uvw)
     return clamp(0.5 * (clip.z / clip.w) + 0.5, 0.0, 1.0);
 }
 
+float linear_view_depth(vec3 uvw)
+{
+    vec3 pos = uvw_to_object(uvw);
+    vec4 view = mvp.view * mvp.model * vec4(pos, 1.0);
+    return max(-view.z, 0.0);
+}
+
 void main()
 {
 #ifdef DVZ_SCENE_OCCLUSION_DEPTH_FAR
-    outDepth = 1.0;
+    outDepth = 0.0;
     gl_FragDepth = 1.0;
 #else
     outDepth = 0.0;
@@ -174,9 +181,9 @@ void main()
         sample_alpha = clamp(sample_alpha, 0.0, 1.0);
         accum += (1.0 - accum) * sample_alpha;
         if (accum > alpha_threshold) {
-            outDepth = projected_depth(uvw);
+            outDepth = linear_view_depth(uvw);
 #ifdef DVZ_SCENE_OCCLUSION_DEPTH_FAR
-            gl_FragDepth = outDepth;
+            gl_FragDepth = projected_depth(uvw);
 #endif
             return;
         }

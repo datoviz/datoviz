@@ -119,12 +119,22 @@ float projected_depth(vec3 uvw)
     return clamp(0.5 * (clip.z / clip.w) + 0.5, 0.0, 1.0);
 }
 
+float view_depth(vec3 uvw)
+{
+    vec3 pos = uvw_to_object(uvw);
+    vec4 view = mvp.view * mvp.model * vec4(pos, 1.0);
+    return max(-view.z, 0.0);
+}
+
 bool occluded_by_scene_depth(vec3 uvw)
 {
     vec2 size = vec2(textureSize(sampler2D(depthTex, samp), 0));
     vec2 uv = clamp(
         (gl_FragCoord.xy - volume.texture_params.yz) / size, vec2(0.0), vec2(1.0));
     float scene_depth = texture(sampler2D(depthTex, samp), uv).r;
+    if (volume.occlusion.w > 0.5) {
+        return scene_depth > 0.000001 && view_depth(uvw) > scene_depth + 0.0005;
+    }
     if (scene_depth >= 0.999999) {
         return false;
     }

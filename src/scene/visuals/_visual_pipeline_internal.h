@@ -116,8 +116,8 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider,
     DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, bool picking,
     bool pass_has_depth_attachment, bool force_point_depth, bool wboit_accumulation,
-    uint32_t pass_sample_count, bool pass_alpha_to_coverage, bool scene_occluded_shader,
-    bool scene_occlusion_uses_set2, DvzSceneVisualShaderDesc* shader,
+    bool surface_depth_output, uint32_t pass_sample_count, bool pass_alpha_to_coverage,
+    bool scene_occluded_shader, bool scene_occlusion_uses_set2, DvzSceneVisualShaderDesc* shader,
     char** out_fragment_glsl_variant, bool* out_segment_coverage_blend);
 
 bool _scene_visual_bind_desc_uses_scene_occlusion_set2(

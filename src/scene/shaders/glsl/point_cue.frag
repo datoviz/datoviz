@@ -1,6 +1,7 @@
 #version 450
 
 #include "scene_material.glsl"
+#include "surface_depth.glsl"
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec3 fragCue;
@@ -28,4 +29,7 @@ void main() {
         discard;
     vec4 linearColor = semanticColorToLinear(fragColor);
     outColor = vec4(applyDepthCue(linearColor.rgb, fragCue), linearColor.a * alpha);
+#ifdef DVZ_SURFACE_DEPTH_OUTPUT
+    writeSurfaceDepthFromDevice();
+#endif
 }

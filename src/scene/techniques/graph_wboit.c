@@ -446,10 +446,10 @@ bool _scene_technique_emit_scene_occlusion_frame_graph(DvzFramePlan* plan, const
     pass.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     _scene_frame_graph_color_attachment(
         &color, depth_id, DVZ_FRAME_GRAPH_ATTACHMENT_LOAD_CLEAR, true);
-    color.clear_color[0] = 1.0f;
-    color.clear_color[1] = 1.0f;
-    color.clear_color[2] = 1.0f;
-    color.clear_color[3] = 1.0f;
+    color.clear_color[0] = 0.0f;
+    color.clear_color[1] = 0.0f;
+    color.clear_color[2] = 0.0f;
+    color.clear_color[3] = 0.0f;
     if (!dvz_frame_graph_pass_color_attachment(&pass, &color))
         return false;
     _scene_frame_graph_depth_attachment(

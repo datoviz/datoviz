@@ -212,6 +212,23 @@ static bool _scene_panel_render_plan_append_transparent_pass(
 
 
 
+static uint32_t _scene_panel_render_plan_layer_phase(DvzSceneVisualLayer layer)
+{
+    switch (layer)
+    {
+    case DVZ_SCENE_VISUAL_LAYER_TRANSPARENT:
+        return 0;
+    case DVZ_SCENE_VISUAL_LAYER_VOLUME:
+        return 1;
+    case DVZ_SCENE_VISUAL_LAYER_OVERLAY:
+        return 2;
+    default:
+        return 3;
+    }
+}
+
+
+
 static bool _scene_panel_render_plan_classify_transparent(
     DvzPanelRenderPlan* out, DvzVisual* visual, DvzPanelAttach* attach, uint32_t visual_index,
     uint32_t authored_order, const DvzSceneVisualPassCaps* caps)
@@ -259,9 +276,8 @@ static bool _scene_panel_render_plan_classify_transparent(
             {
                 DvzSceneVisualLayer previous_layer =
                     out->blended_visuals[out->blended_visual_count - 1].layer;
-                bool previous_overlay = previous_layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY;
-                bool current_overlay = caps->layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY;
-                start_blended_pass = previous_overlay != current_overlay;
+                start_blended_pass = _scene_panel_render_plan_layer_phase(previous_layer) !=
+                                     _scene_panel_render_plan_layer_phase(caps->layer);
             }
         }
         if (start_blended_pass)
@@ -289,34 +305,48 @@ static bool _scene_panel_render_plan_classify_transparent(
 
     if (caps->draws_in_depth_peel_pass)
     {
-        if (out->depth_peel_visual_count > 0 && out->transparent_pass_count > 0 &&
-            out->transparent_passes[out->transparent_pass_count - 1].kind !=
-                DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL)
-            out->unsupported_noncontiguous_oit = true;
-        if (out->depth_peel_visual_count == 0 &&
-            !_scene_panel_render_plan_append_transparent_pass(
-                out, DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL, 0))
-            return false;
+        bool start_depth_peel_pass = out->depth_peel_group_count == 0;
+        if (!start_depth_peel_pass && out->transparent_pass_count > 0)
+            start_depth_peel_pass =
+                out->transparent_passes[out->transparent_pass_count - 1].kind !=
+                DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL;
+        if (start_depth_peel_pass)
+        {
+            if (out->depth_peel_group_count >= DVZ_SCENE_MAX_RENDER_VISUALS ||
+                !_scene_panel_render_plan_append_transparent_pass(
+                    out, DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL,
+                    out->depth_peel_group_count))
+                return false;
+            out->depth_peel_group_count++;
+        }
         if (!_scene_panel_render_plan_append(
                 out->depth_peel_visuals, &out->depth_peel_visual_count, visual, attach,
                 visual_index, authored_order, caps))
             return false;
+        out->depth_peel_visuals[out->depth_peel_visual_count - 1].blend_group =
+            out->depth_peel_group_count - 1;
         out->transparent_needs_depth =
             out->transparent_needs_depth || caps->needs_depth_attachment;
         return true;
     }
 
-    if (out->wboit_visual_count > 0 && out->transparent_pass_count > 0 &&
-        out->transparent_passes[out->transparent_pass_count - 1].kind !=
-            DVZ_PANEL_RENDER_TRANSPARENT_WBOIT)
-        out->unsupported_noncontiguous_oit = true;
-    if (out->wboit_visual_count == 0 && !_scene_panel_render_plan_append_transparent_pass(
-                                            out, DVZ_PANEL_RENDER_TRANSPARENT_WBOIT, 0))
-        return false;
+    bool start_wboit_pass = out->wboit_group_count == 0;
+    if (!start_wboit_pass && out->transparent_pass_count > 0)
+        start_wboit_pass = out->transparent_passes[out->transparent_pass_count - 1].kind !=
+                           DVZ_PANEL_RENDER_TRANSPARENT_WBOIT;
+    if (start_wboit_pass)
+    {
+        if (out->wboit_group_count >= DVZ_SCENE_MAX_RENDER_VISUALS ||
+            !_scene_panel_render_plan_append_transparent_pass(
+                out, DVZ_PANEL_RENDER_TRANSPARENT_WBOIT, out->wboit_group_count))
+            return false;
+        out->wboit_group_count++;
+    }
     if (!_scene_panel_render_plan_append(
             out->wboit_visuals, &out->wboit_visual_count, visual, attach, visual_index,
             authored_order, caps))
         return false;
+    out->wboit_visuals[out->wboit_visual_count - 1].blend_group = out->wboit_group_count - 1;
     out->transparent_needs_depth = out->transparent_needs_depth || caps->needs_depth_attachment;
     return true;
 }
@@ -337,10 +367,16 @@ static uint32_t _scene_panel_render_plan_phase_bucket(
         if (visual->blend_group == pass->index && visual->layer < 32)
             layers |= 1u << (uint32_t)visual->layer;
     }
+    const uint32_t transparent = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_TRANSPARENT;
+    const uint32_t volume = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_VOLUME;
     const uint32_t overlay = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_OVERLAY;
-    if (layers == overlay)
+    if (layers == transparent)
+        return 0;
+    if (layers == volume)
         return 1;
-    return 0;
+    if (layers == overlay)
+        return 2;
+    return 3;
 }
 
 
@@ -350,7 +386,7 @@ static void _scene_panel_render_plan_order_phases(DvzPanelRenderPlan* plan)
     ANN(plan);
     DvzPanelRenderTransparentPassPlan ordered[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t count = 0;
-    for (uint32_t bucket = 0; bucket < 2; bucket++)
+    for (uint32_t bucket = 0; bucket < 4; bucket++)
     {
         for (uint32_t i = 0; i < plan->transparent_pass_count; i++)
         {

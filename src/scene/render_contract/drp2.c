@@ -823,7 +823,11 @@ static bool _contract_validate_drp2_sampled_reads(
             continue;
         if (!state->sampled_reads_matched[i])
         {
-            _contract_report(report, "DRP2 sampled bind group misses graph read resource");
+            char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
+            dvz_snprintf(
+                message, sizeof(message), "DRP2 sampled bind group misses graph read resource '%s'",
+                graph_pass->reads[i].resource_id);
+            _contract_report(report, message);
             ok = false;
         }
     }

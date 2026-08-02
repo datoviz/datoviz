@@ -91,7 +91,6 @@ typedef struct
     bool edl_enabled;
     bool edl_has_depth_producer;
     bool has_transparent;
-    bool unsupported_noncontiguous_oit;
     bool opaque_needs_depth;
     bool transparent_needs_depth;
 
@@ -117,9 +116,11 @@ typedef struct
 
     DvzPanelRenderVisualPlan depth_peel_visuals[DVZ_SCENE_MAX_VISUALS];
     uint32_t depth_peel_visual_count;
+    uint32_t depth_peel_group_count;
 
     DvzPanelRenderVisualPlan wboit_visuals[DVZ_SCENE_MAX_VISUALS];
     uint32_t wboit_visual_count;
+    uint32_t wboit_group_count;
 
     DvzPanelRenderTransparentPassPlan transparent_passes[DVZ_SCENE_MAX_RENDER_VISUALS];
     uint32_t transparent_pass_count;

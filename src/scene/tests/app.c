@@ -9011,6 +9011,23 @@ static AppVolumeOcclusionCapture _app_volume_occlusion_capture(
             return out;
         }
     }
+    else
+    {
+        DvzCameraDesc camera_desc = dvz_camera_desc();
+        camera_desc.view.eye[0] = 0.5f;
+        camera_desc.view.eye[1] = 0.5f;
+        camera_desc.view.eye[2] = 3.0f;
+        camera_desc.view.target[0] = 0.5f;
+        camera_desc.view.target[1] = 0.5f;
+        camera_desc.view.target[2] = 0.5f;
+        camera_desc.projection.type = DVZ_CAMERA_ORTHOGRAPHIC;
+        camera_desc.projection.ortho_height = 1.0f;
+        if (dvz_panel_set_camera_desc(panel, &camera_desc) != 0)
+        {
+            dvz_scene_destroy(scene);
+            return out;
+        }
+    }
 
     DvzSampledField* field = dvz_sampled_field(
         scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),

@@ -51,52 +51,33 @@ WBOIT products carry explicit premultiplication and transmittance semantics. WBO
 
 ## Depth Peeling Contract
 
-`DVZ_ALPHA_DEPTH_PEEL` is the explicit higher-quality OIT path. It is appropriate when WBOIT
-approximation errors are unacceptable and the runtime can afford extra passes.
+`DVZ_ALPHA_DEPTH_PEEL` is the explicit higher-quality OIT path. It is appropriate when WBOIT approximation errors are unacceptable and the runtime can afford extra passes.
 
-The current scene path uses the fixed internal graph contract below, but the remaining correctness
-target for real dual depth peeling is:
+The fixed dual-depth-peeling expansion is:
 
 1. render opaque scene color and depth first;
 2. initialize per-pixel nearest and farthest transparent depth bounds;
-3. iteratively peel front and back transparent layers using ping-pong min/max depth textures;
+3. iteratively peel front and back transparent layers using versioned typed min/max depth products;
 4. accumulate peeled front layers front-to-back and back layers back-to-front;
 5. composite the accumulated transparent result over the final target;
 6. keep all rendering graph-backed and DRP2-lowered.
 
-The following resource names describe the current legacy physical topology, not semantic product identity:
-
-1. `<panel>.peel.depth_minmax_ping`;
-2. `<panel>.peel.depth_minmax_pong`;
-3. `<panel>.peel.front_accum`;
-4. `<panel>.peel.back_accum`;
-5. optional per-iteration temporary front/back color targets;
-6. `<panel>.depth.opaque` when transparent visuals depth-test against opaque visuals.
-
-The following pass labels likewise describe the current legacy physical topology:
-
-1. `opaque`: writes `rt` and optional opaque depth;
-2. `peel.init`: initializes min/max transparent depth and clears accumulators;
-3. `peel.iter.N`: reads previous min/max, peels the next front/back pair, writes next min/max, and
-   accumulates colors;
-4. `peel.composite`: samples front/back accumulators and writes `rt`.
-
-The first real dual-depth-peeling implementation can use a fixed iteration count such as `4` or
-`8`. A retained quality descriptor can come after correctness is stable.
-
-The first native implementation uses this fixed internal contract:
+The native implementation uses this fixed internal contract:
 
 1. `DVZ_SCENE_DEPTH_PEEL_ITERATIONS = 4`;
-2. depth bounds use normalized Vulkan `gl_FragCoord.z`, where smaller values are nearer;
-3. peel intermediates use `VK_FORMAT_R16G16B16A16_SFLOAT`;
-4. `front_accum` and `back_accum` are persistent per-frame accumulators;
-5. `depth_minmax_ping` and `depth_minmax_pong` are ping-ponged by iteration;
-6. depth bounds are encoded as `(-near, far)` and reduced with max blending in the RG channels;
-7. init writes initial accumulators and the first min/max bounds;
-8. each `peel.iter.N` samples the previous min/max bounds and writes the opposite min/max target;
-9. composite samples only `front_accum` and `back_accum`;
-10. iteration shaders sample peel resources from bind group set 3 so common, material/image/volume,
-   and scene-occlusion bindings keep their existing set positions.
+2. every transparent depth value is finite positive linear view depth reconstructed from the active projection, for both perspective and orthographic cameras;
+3. depth bounds are encoded as `(-near, far)` in typed `transparent_peel_depth` products, with `(-1, -1)` denoting no valid layer;
+4. each iteration samples the preceding depth-product version and writes a distinct successor version, so ping/pong is an optional physical aliasing decision rather than semantic identity;
+5. front and back branches are typed `transparent_accumulation` products stored as `VK_FORMAT_R16G16B16A16_SFLOAT`;
+6. the three MRTs remain front compound, back compound, and depth bounds: each accumulation compound stores premultiplied RGB and accumulated opacity in alpha, and `1 - alpha` is the corresponding branch transmittance;
+7. init explicitly clears both accumulation compounds and the first depth bounds, every iteration explicitly `LOAD`s the prior front/back compounds and clears the successor bounds, and all three outputs use explicit `STORE`;
+8. composite samples only the final front/back typed versions and explicitly `LOAD`s the current `scene_color` attachment before producing its successor;
+9. iteration shaders sample peel bounds from bind group set 3 so common, material/image/volume, and scene-occlusion bindings keep their existing set positions;
+10. noncontiguous peel runs are separate technique instances with independent product versions and runtime bindings, while their init/iteration/composite bundles remain in authored transparency order.
+
+The opaque `D32_SFLOAT` attachment used solely for raster depth testing is explicit physical raster state, not a semantic `surface_depth` consumer. Source-over, WBOIT, and depth peeling share the panel forward-depth attachment when opaque occlusion is required; no fake sampled linear-depth edge is added for this hardware test.
+
+EDL uses a separate typed contract: opaque shading writes `scene_color` and standalone linear-view `surface_depth` as color MRTs, while ordinary forward `D32_SFLOAT` remains the hardware depth attachment. The EDL fullscreen pass samples the typed color and R32 depth products and presentation consumes the resulting scene-color version.
 
 ## Depth Peeling Runtime Requirements
 
@@ -113,8 +94,7 @@ Depth peeling relies on:
 Runtime validation should reject sampled reads from a texture that is written in the same pass,
 pipeline formats that do not match graph attachments, and mismatched pass dependencies.
 
-Trace diagnostics should expose peel iteration count, ping/pong resource ids, and sampled
-dependency ids when `DVZ_DRP2_TRACE=full` is enabled.
+Trace diagnostics should expose peel iteration count, typed product versions, technique-instance identity, and sampled dependency ids when `DVZ_DRP2_TRACE=full` is enabled.
 
 ## MSAA Contract
 
@@ -207,8 +187,8 @@ This avoids overlap halos where depth and color coverage disagree. Sphere surfac
 
 Focused coverage should include:
 
-1. depth-peel graph resources for a fixed iteration count;
-2. ping/pong read/write alternation;
+1. depth-peel typed graph resources for a fixed iteration count;
+2. versioned depth and accumulation predecessor/successor relationships;
 3. DRP2 command order for multi-iteration peeling;
 4. WBOIT and depth-peel format/capability diagnostics;
 5. sample-count serialization and semantic validation;

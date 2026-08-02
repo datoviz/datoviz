@@ -134,6 +134,9 @@ bool _emitter_prepare_render_multi(
         cfg != NULL ? cfg->shader_format : DVZ_SCENE_SHADER_FORMAT_GLSL;
     uint32_t color_target_format =
         color_target_formats != NULL && color_target_count > 0 ? color_target_formats[0] : 0;
+    bool surface_depth_output =
+        provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE && color_target_formats != NULL &&
+        color_target_count > 1 && color_target_formats[1] == DVZ_FORMAT_R32_SFLOAT;
 
     uint64_t common_bgl_id = 0;
     uint64_t apply_bg_id = 0;
@@ -242,15 +245,17 @@ bool _emitter_prepare_render_multi(
             (void)query_shader_applied;
         }
         bool scene_occluded_shader =
-            desc.scene_occluded && scene_occlusion_depth_id != 0 && !scene_occlusion_pass;
+            render->u.render.visual_metadata[i].draw_scene_occlusion_resource_id[0] != '\0' &&
+            scene_occlusion_depth_id != 0 && !scene_occlusion_pass;
         bool scene_occlusion_uses_set2 =
             _scene_visual_bind_desc_uses_scene_occlusion_set2(&desc, provider);
         bool segment_coverage_blend = false;
         ok = _scene_visual_shader_desc_apply_pass_policy(
             &desc, provider, alpha_mode, render->u.render.controller_modes[i],
             render->u.render.picking, pass_has_depth_attachment, force_point_depth,
-            wboit_accumulation, pass_sample_count, pass_alpha_to_coverage, scene_occluded_shader,
-            scene_occlusion_uses_set2, &shader, &scene_occlusion_fragment_glsl,
+            wboit_accumulation, surface_depth_output, pass_sample_count, pass_alpha_to_coverage,
+            scene_occluded_shader, scene_occlusion_uses_set2, &shader,
+            &scene_occlusion_fragment_glsl,
             &segment_coverage_blend);
         if (!ok)
         {
@@ -533,9 +538,11 @@ bool _emitter_prepare_render_multi(
             }
             else
             {
-                if (ok && color_target_format != 0)
+                for (uint32_t target_idx = 0; ok && target_idx < color_target_count; target_idx++)
                 {
-                    ok = dvz_drp2_stream_pipeline_set_color_target(stream, 0, color_target_format);
+                    ok = color_target_formats[target_idx] != 0 &&
+                         dvz_drp2_stream_pipeline_set_color_target(
+                             stream, target_idx, color_target_formats[target_idx]);
                 }
                 if (ok)
                     ok = _emit_blend_policy(stream, effective_blend_policy);

@@ -1,5 +1,7 @@
 #version 450
 
+#include "common.glsl"
+
 #ifdef DVZ_SCENE_OCCLUSION_DEPTH_COLOR
 layout(location = 0) in vec4 fragColor;
 #endif
@@ -13,5 +15,5 @@ void main()
         discard;
     }
 #endif
-    outDepth = gl_FragCoord.z;
+    outDepth = positiveLinearViewDepth(gl_FragCoord.z);
 }

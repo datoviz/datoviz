@@ -412,16 +412,44 @@ _composition_graph_pass_suffix(const DvzSceneResolvedPass* pass, char* suffix, s
         literal = "edl.resolve";
         break;
     case DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION:
-        literal = "wboit.accum";
+        if (pass->ordinal == 0)
+            literal = "wboit.accum";
+        else
+        {
+            const int written =
+                dvz_snprintf(suffix, suffix_size, "wboit.accum.v%u", pass->ordinal + 1);
+            return written >= 0 && (size_t)written < suffix_size;
+        }
         break;
     case DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE:
-        literal = "wboit.resolve";
+        if (pass->ordinal == 0)
+            literal = "wboit.resolve";
+        else
+        {
+            const int written =
+                dvz_snprintf(suffix, suffix_size, "wboit.resolve.v%u", pass->ordinal + 1);
+            return written >= 0 && (size_t)written < suffix_size;
+        }
         break;
     case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT:
-        literal = "peel.init";
+        if (pass->ordinal == 0)
+            literal = "peel.init";
+        else
+        {
+            const int written =
+                dvz_snprintf(suffix, suffix_size, "peel.init.v%u", pass->ordinal + 1);
+            return written >= 0 && (size_t)written < suffix_size;
+        }
         break;
     case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE:
-        literal = "peel.composite";
+        if (pass->ordinal == 0)
+            literal = "peel.composite";
+        else
+        {
+            const int written =
+                dvz_snprintf(suffix, suffix_size, "peel.composite.v%u", pass->ordinal + 1);
+            return written >= 0 && (size_t)written < suffix_size;
+        }
         break;
     case DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND:
         if (pass->ordinal == 0)
@@ -435,7 +463,13 @@ _composition_graph_pass_suffix(const DvzSceneResolvedPass* pass, char* suffix, s
         break;
     case DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION:
     {
-        const int written = dvz_snprintf(suffix, suffix_size, "peel.iter.%u", pass->work_index);
+        const int written = pass->ordinal < DVZ_SCENE_DEPTH_PEEL_ITERATIONS
+                                ? dvz_snprintf(
+                                      suffix, suffix_size, "peel.iter.%u", pass->work_index)
+                                : dvz_snprintf(
+                                      suffix, suffix_size, "peel.iter.v%u.%u",
+                                      pass->ordinal / DVZ_SCENE_DEPTH_PEEL_ITERATIONS + 1,
+                                      pass->work_index);
         return written >= 0 && (size_t)written < suffix_size;
     }
     case DVZ_SCENE_WORK_PROVIDER_PRESENTATION:
@@ -474,6 +508,84 @@ static uint32_t _composition_graph_product_usage(
 
 
 
+static const DvzSceneWorkBinding* _composition_graph_product_attachment(
+    const DvzPanelCompositionSnapshot* snapshot, DvzRenderProductId product_id);
+
+
+
+static DvzRenderProductId _composition_graph_product_source(
+    const DvzPanelCompositionSnapshot* snapshot, DvzRenderProductId product_id)
+{
+    ANN(snapshot);
+    const DvzSceneWorkBinding* attachment =
+        _composition_graph_product_attachment(snapshot, product_id);
+    if (attachment != NULL &&
+        attachment->load_source_ref_kind == DVZ_SCENE_RESOURCE_REF_PRODUCT &&
+        attachment->load_source_product_id.value != product_id.value)
+        return attachment->load_source_product_id;
+    const DvzRenderProductKind kind = _composition_graph_product_kind(snapshot, product_id);
+    for (uint32_t i = 0; i < snapshot->technique_count; i++)
+    {
+        const DvzSceneResolvedTechnique* technique = &snapshot->techniques[i];
+        bool produces = false;
+        for (uint32_t j = 0; j < technique->output_count; j++)
+            produces = produces || technique->output_ids[j].value == product_id.value;
+        if (!produces)
+            continue;
+        for (uint32_t j = 0; j < technique->input_count; j++)
+            if (technique->inputs[j] == kind)
+                return technique->input_ids[j];
+        break;
+    }
+    return (DvzRenderProductId){0};
+}
+
+
+
+static uint32_t _composition_graph_product_version(
+    const DvzPanelCompositionSnapshot* snapshot, DvzRenderProductId product_id)
+{
+    ANN(snapshot);
+    const DvzRenderProductKind kind = _composition_graph_product_kind(snapshot, product_id);
+    uint32_t version = 0;
+    for (uint32_t i = 0; i < snapshot->technique_count; i++)
+    {
+        const DvzSceneResolvedTechnique* technique = &snapshot->techniques[i];
+        for (uint32_t j = 0; j < technique->output_count; j++)
+        {
+            if (technique->outputs[j] != kind)
+                continue;
+            version++;
+            if (technique->output_ids[j].value == product_id.value)
+                return version;
+        }
+    }
+    return 0;
+}
+
+
+
+static const DvzSceneWorkBinding* _composition_graph_product_attachment(
+    const DvzPanelCompositionSnapshot* snapshot, DvzRenderProductId product_id)
+{
+    ANN(snapshot);
+    for (uint32_t i = 0; i < snapshot->pass_count; i++)
+    {
+        const DvzSceneResolvedPass* pass = &snapshot->passes[i];
+        for (uint32_t j = 0; j < pass->binding_count; j++)
+        {
+            const DvzSceneWorkBinding* binding = &pass->bindings[j];
+            if (binding->ref_kind == DVZ_SCENE_RESOURCE_REF_PRODUCT &&
+                binding->product_id.value == product_id.value &&
+                binding->usage == DVZ_SCENE_WORK_BINDING_ATTACHMENT)
+                return binding;
+        }
+    }
+    return NULL;
+}
+
+
+
 static bool _composition_graph_realize_product(
     DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot, CompositionGraphDraft* draft,
     DvzRenderProductId product_id, DvzDiagnosticReport* report)
@@ -488,6 +600,27 @@ static bool _composition_graph_realize_product(
         return true;
 
     const DvzRenderProductKind kind = _composition_graph_product_kind(snapshot, product_id);
+    const DvzSceneWorkBinding* attachment =
+        _composition_graph_product_attachment(snapshot, product_id);
+    if (attachment != NULL && attachment->load == DVZ_SCENE_ATTACHMENT_LOAD_LOAD &&
+        attachment->load_source_ref_kind == DVZ_SCENE_RESOURCE_REF_PRODUCT &&
+        attachment->load_source_product_id.value != 0 &&
+        attachment->load_source_product_id.value != product_id.value)
+    {
+        if (!_composition_graph_realize_product(
+                plan, snapshot, draft, attachment->load_source_product_id, report) ||
+            !_composition_graph_realization(
+                draft, DVZ_SCENE_RESOURCE_REF_PRODUCT, attachment->load_source_product_id,
+                (DvzSceneScratchResourceId){0}, &resource_index) ||
+            !_composition_graph_add_realization(
+                draft, DVZ_SCENE_RESOURCE_REF_PRODUCT, product_id,
+                (DvzSceneScratchResourceId){0}, resource_index))
+            return _composition_graph_report(
+                report, "panel %s product %" PRIu32 " load alias realization failed",
+                snapshot->panel_id, product_id.value);
+        return true;
+    }
+
     DvzFrameGraphResource resource = {0};
     resource.kind = DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
     resource.extent_kind = DVZ_FRAME_GRAPH_EXTENT_PANEL;
@@ -511,8 +644,13 @@ static bool _composition_graph_realize_product(
             resource.sample_count = 1;
             resource.usage_flags |= DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
                                     DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
-            if (!_scene_resource_key_panel_graph(
-                    snapshot->panel_id, "scene.color", resource.id, sizeof(resource.id)))
+            char suffix[DVZ_SCENE_LABEL_SIZE] = {0};
+            const int written = dvz_snprintf(
+                suffix, sizeof(suffix), "scene.color.v%u",
+                _composition_graph_product_version(snapshot, product_id));
+            if (written < 0 || (size_t)written >= sizeof(suffix) ||
+                !_scene_resource_key_panel_graph(
+                    snapshot->panel_id, suffix, resource.id, sizeof(resource.id)))
                 return _composition_graph_report(
                     report, "panel %s product %" PRIu32 " resource key is truncated",
                     snapshot->panel_id, product_id.value);
@@ -553,6 +691,20 @@ static bool _composition_graph_realize_product(
                 report, "panel %s product %" PRIu32 " resource key is truncated",
                 snapshot->panel_id, product_id.value);
     }
+    else if (
+        kind == DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH ||
+        kind == DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH)
+    {
+        resource.format = DVZ_FORMAT_R32_SFLOAT;
+        const char* suffix = kind == DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH
+                                 ? "scene_occlusion.depth"
+                                 : "volume_occlusion.depth";
+        if (!_scene_resource_key_panel_graph(
+                snapshot->panel_id, suffix, resource.id, sizeof(resource.id)))
+            return _composition_graph_report(
+                report, "panel %s product %" PRIu32 " resource key is truncated",
+                snapshot->panel_id, product_id.value);
+    }
     else if (kind == DVZ_RENDER_PRODUCT_SURFACE_DEPTH ||
              kind == DVZ_RENDER_PRODUCT_SURFACE_NORMAL ||
              kind == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE)
@@ -581,12 +733,66 @@ static bool _composition_graph_realize_product(
     else if (kind == DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION)
     {
         resource.format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
+        /* Every peel accumulation lineage ends in a sampled composite, including in-place
+         * LOAD successors that alias their branch's initial physical texture. */
+        resource.usage_flags |= DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT |
+                                DVZ_FRAME_GRAPH_RESOURCE_USAGE_SAMPLED;
         const bool peel = producer != NULL &&
                           (producer->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
                            producer->provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION);
+        char suffix[DVZ_SCENE_LABEL_SIZE] = {0};
+        const uint32_t version = _composition_graph_product_version(snapshot, product_id);
+        const int written = peel
+                                ? dvz_snprintf(
+                                      suffix, sizeof(suffix), "peel.accum.v%u", version)
+                                : (version <= 1
+                                       ? dvz_snprintf(
+                                             suffix, sizeof(suffix), "wboit.accum")
+                                       : dvz_snprintf(
+                                             suffix, sizeof(suffix), "wboit.accum.v%u", version));
+        if (written < 0 || (size_t)written >= sizeof(suffix) ||
+            !_scene_resource_key_panel_graph(
+                snapshot->panel_id, suffix, resource.id, sizeof(resource.id)))
+            return _composition_graph_report(
+                report, "panel %s product %" PRIu32 " resource key is truncated",
+                snapshot->panel_id, product_id.value);
+    }
+    else if (kind == DVZ_RENDER_PRODUCT_TRANSPARENT_TRANSMITTANCE)
+    {
+        resource.format = DVZ_FORMAT_R16_SFLOAT;
+        char suffix[DVZ_SCENE_LABEL_SIZE] = {0};
+        const uint32_t version = _composition_graph_product_version(snapshot, product_id);
+        const int written =
+            version <= 1
+                ? dvz_snprintf(suffix, sizeof(suffix), "wboit.transmittance")
+                : dvz_snprintf(
+                      suffix, sizeof(suffix), "wboit.transmittance.v%u", version);
+        if (written < 0 || (size_t)written >= sizeof(suffix) ||
+            !_scene_resource_key_panel_graph(
+                snapshot->panel_id, suffix, resource.id, sizeof(resource.id)))
+            return _composition_graph_report(
+                report, "panel %s product %" PRIu32 " resource key is truncated",
+                snapshot->panel_id, product_id.value);
+    }
+    else if (kind == DVZ_RENDER_PRODUCT_TRANSPARENT_PEEL_DEPTH)
+    {
+        resource.format = DVZ_FORMAT_R32G32_SFLOAT;
+        char suffix[DVZ_SCENE_LABEL_SIZE] = {0};
+        const int written = dvz_snprintf(
+            suffix, sizeof(suffix), "peel.depth.v%u",
+            _composition_graph_product_version(snapshot, product_id));
+        if (written < 0 || (size_t)written >= sizeof(suffix) ||
+            !_scene_resource_key_panel_graph(
+                snapshot->panel_id, suffix, resource.id, sizeof(resource.id)))
+            return _composition_graph_report(
+                report, "panel %s product %" PRIu32 " resource key is truncated",
+                snapshot->panel_id, product_id.value);
+    }
+    else if (kind == DVZ_RENDER_PRODUCT_OBJECT_ID)
+    {
+        resource.format = DVZ_FORMAT_R32_UINT;
         if (!_scene_resource_key_panel_graph(
-                snapshot->panel_id, peel ? "peel.front_accum" : "wboit.accum", resource.id,
-                sizeof(resource.id)))
+                snapshot->panel_id, "surface.object_id", resource.id, sizeof(resource.id)))
             return _composition_graph_report(
                 report, "panel %s product %" PRIu32 " resource key is truncated",
                 snapshot->panel_id, product_id.value);
@@ -905,7 +1111,175 @@ static bool _composition_graph_lower_pass(
 
 
 
-static bool _composition_graph_materialize_surface_products(
+static const char* _composition_graph_product_semantic(DvzRenderProductKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_RENDER_PRODUCT_SCENE_COLOR:
+        return "scene_color";
+    case DVZ_RENDER_PRODUCT_SURFACE_DEPTH:
+        return "surface_depth";
+    case DVZ_RENDER_PRODUCT_SURFACE_NORMAL:
+        return "surface_normal";
+    case DVZ_RENDER_PRODUCT_SURFACE_COVERAGE:
+        return "surface_coverage";
+    case DVZ_RENDER_PRODUCT_OBJECT_ID:
+        return "object_id";
+    case DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY:
+        return "ambient_visibility";
+    case DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH:
+        return "scene_occlusion_depth";
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION:
+        return "transparent_accumulation";
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_TRANSMITTANCE:
+        return "transparent_transmittance";
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_PEEL_DEPTH:
+        return "transparent_peel_depth";
+    case DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH:
+        return "volume_first_hit_depth";
+    case DVZ_RENDER_PRODUCT_PRESENTATION_COLOR:
+        return "presentation_color";
+    case DVZ_RENDER_PRODUCT_NONE:
+    default:
+        return "none";
+    }
+}
+
+
+
+static DvzRenderProductFormatClass
+_composition_graph_product_format_class(DvzRenderProductKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_RENDER_PRODUCT_SCENE_COLOR:
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION:
+        return DVZ_RENDER_PRODUCT_FORMAT_LINEAR_COLOR;
+    case DVZ_RENDER_PRODUCT_SURFACE_DEPTH:
+    case DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH:
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_PEEL_DEPTH:
+    case DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH:
+        return DVZ_RENDER_PRODUCT_FORMAT_DEPTH_FLOAT;
+    case DVZ_RENDER_PRODUCT_SURFACE_NORMAL:
+        return DVZ_RENDER_PRODUCT_FORMAT_NORMAL_FLOAT;
+    case DVZ_RENDER_PRODUCT_SURFACE_COVERAGE:
+        return DVZ_RENDER_PRODUCT_FORMAT_COVERAGE;
+    case DVZ_RENDER_PRODUCT_OBJECT_ID:
+        return DVZ_RENDER_PRODUCT_FORMAT_UINT_ID;
+    case DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY:
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_TRANSMITTANCE:
+        return DVZ_RENDER_PRODUCT_FORMAT_SCALAR_FLOAT;
+    case DVZ_RENDER_PRODUCT_PRESENTATION_COLOR:
+        return DVZ_RENDER_PRODUCT_FORMAT_PRESENTATION_COLOR;
+    case DVZ_RENDER_PRODUCT_NONE:
+    default:
+        return DVZ_RENDER_PRODUCT_FORMAT_NONE;
+    }
+}
+
+
+
+static DvzRenderProductEncoding _composition_graph_product_encoding(DvzRenderProductKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_RENDER_PRODUCT_SCENE_COLOR:
+        return DVZ_RENDER_PRODUCT_ENCODING_LINEAR_SCENE_COLOR;
+    case DVZ_RENDER_PRODUCT_SURFACE_DEPTH:
+    case DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH:
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_PEEL_DEPTH:
+    case DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH:
+        return DVZ_RENDER_PRODUCT_ENCODING_LINEAR_VIEW_DEPTH;
+    case DVZ_RENDER_PRODUCT_SURFACE_NORMAL:
+        return DVZ_RENDER_PRODUCT_ENCODING_VIEW_NORMAL;
+    case DVZ_RENDER_PRODUCT_SURFACE_COVERAGE:
+        return DVZ_RENDER_PRODUCT_ENCODING_COVERAGE;
+    case DVZ_RENDER_PRODUCT_OBJECT_ID:
+        return DVZ_RENDER_PRODUCT_ENCODING_INTEGER_ID;
+    case DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY:
+        return DVZ_RENDER_PRODUCT_ENCODING_UNIT_VISIBILITY;
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION:
+        return DVZ_RENDER_PRODUCT_ENCODING_PREMULTIPLIED_ACCUMULATION;
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_TRANSMITTANCE:
+        return DVZ_RENDER_PRODUCT_ENCODING_UNIT_TRANSMITTANCE;
+    case DVZ_RENDER_PRODUCT_PRESENTATION_COLOR:
+        return DVZ_RENDER_PRODUCT_ENCODING_PRESENTATION_TRANSFER;
+    case DVZ_RENDER_PRODUCT_NONE:
+    default:
+        return DVZ_RENDER_PRODUCT_ENCODING_NONE;
+    }
+}
+
+
+
+static DvzRenderProductResolvePolicy
+_composition_graph_product_resolve_policy(DvzRenderProductKind kind)
+{
+    switch (kind)
+    {
+    case DVZ_RENDER_PRODUCT_SCENE_COLOR:
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION:
+        return DVZ_RENDER_PRODUCT_RESOLVE_LINEAR_COLOR;
+    case DVZ_RENDER_PRODUCT_SURFACE_DEPTH:
+    case DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH:
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_PEEL_DEPTH:
+    case DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH:
+        return DVZ_RENDER_PRODUCT_RESOLVE_NEAREST_VALID_DEPTH;
+    case DVZ_RENDER_PRODUCT_SURFACE_NORMAL:
+        return DVZ_RENDER_PRODUCT_RESOLVE_WINNING_NORMAL;
+    case DVZ_RENDER_PRODUCT_SURFACE_COVERAGE:
+        return DVZ_RENDER_PRODUCT_RESOLVE_COVERAGE_FRACTION;
+    case DVZ_RENDER_PRODUCT_OBJECT_ID:
+        return DVZ_RENDER_PRODUCT_RESOLVE_WINNING_ID;
+    case DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY:
+    case DVZ_RENDER_PRODUCT_TRANSPARENT_TRANSMITTANCE:
+        return DVZ_RENDER_PRODUCT_RESOLVE_VISIBILITY;
+    case DVZ_RENDER_PRODUCT_PRESENTATION_COLOR:
+    case DVZ_RENDER_PRODUCT_NONE:
+    default:
+        return DVZ_RENDER_PRODUCT_RESOLVE_NONE;
+    }
+}
+
+
+
+static DvzRenderProductValidityRequirement
+_composition_graph_product_requirement(const DvzRenderProductContract* product)
+{
+    ANN(product);
+    switch (product->validity)
+    {
+    case DVZ_RENDER_PRODUCT_VALIDITY_FULL_EXTENT:
+        return DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT;
+    case DVZ_RENDER_PRODUCT_VALIDITY_EXPLICIT_COVERAGE:
+        return DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_EXPLICIT_COVERAGE;
+    case DVZ_RENDER_PRODUCT_VALIDITY_BACKGROUND_VALUE:
+        return DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_BACKGROUND_VALUE;
+    case DVZ_RENDER_PRODUCT_VALIDITY_INTEGER_SENTINEL:
+        return DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_INTEGER_SENTINEL;
+    case DVZ_RENDER_PRODUCT_VALIDITY_NONE:
+    default:
+        return DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_NONE;
+    }
+}
+
+
+
+static bool _composition_graph_product_use_once(
+    DvzFramePlan* plan, DvzRenderProductId product_id, uint32_t pass_index,
+    DvzRenderProductValidityRequirement requirement)
+{
+    ANN(plan);
+    for (uint32_t i = 0; i < plan->product_use_count; i++)
+        if (plan->product_uses[i].product_id.value == product_id.value &&
+            plan->product_uses[i].pass_index == pass_index)
+            return true;
+    return dvz_frame_plan_product_consumer(plan, product_id, pass_index, requirement);
+}
+
+
+
+static bool _composition_graph_materialize_products(
     DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot,
     const CompositionGraphDraft* draft, DvzDiagnosticReport* report)
 {
@@ -919,18 +1293,18 @@ static bool _composition_graph_materialize_surface_products(
         const DvzSceneResolvedTechnique* technique = &snapshot->techniques[i];
         for (uint32_t j = 0; j < technique->output_count; j++)
         {
-            const DvzRenderProductKind kind = technique->outputs[j];
-            if (kind != DVZ_RENDER_PRODUCT_SURFACE_DEPTH &&
-                kind != DVZ_RENDER_PRODUCT_SURFACE_NORMAL &&
-                kind != DVZ_RENDER_PRODUCT_SURFACE_COVERAGE)
-                continue;
             const DvzRenderProductId local_id = technique->output_ids[j];
             if (_composition_graph_global_product_id(map, map_count, local_id).value != 0)
                 continue;
+            uint32_t resource_index = 0;
+            if (_composition_graph_product_unrealized(snapshot, local_id) ||
+                !_composition_graph_realization(
+                    draft, DVZ_SCENE_RESOURCE_REF_PRODUCT, local_id,
+                    (DvzSceneScratchResourceId){0}, &resource_index))
+                continue;
             if (map_count >= COMPOSITION_GRAPH_MAX_PRODUCT_REALIZATIONS)
                 return _composition_graph_report(
-                    report, "panel %s exceeds surface-product mapping capacity",
-                    snapshot->panel_id);
+                    report, "panel %s exceeds product mapping capacity", snapshot->panel_id);
             const DvzRenderProductId global_id = {.value = plan->product_count + map_count + 1};
             map[map_count++] = (CompositionProductMap){
                 .local_id = local_id,
@@ -953,8 +1327,7 @@ static bool _composition_graph_materialize_surface_products(
             if (_composition_graph_product_unrealized(snapshot, local_id))
                 continue;
             return _composition_graph_report(
-                report, "panel %s surface product %u has no producer", snapshot->panel_id,
-                local_id.value);
+                report, "panel %s product %u has no producer", snapshot->panel_id, local_id.value);
         }
         const DvzSceneResolvedTechnique* technique =
             _composition_graph_technique(snapshot, producer->technique_instance_id);
@@ -967,14 +1340,11 @@ static bool _composition_graph_materialize_surface_products(
             !_composition_graph_pass_index(
                 plan, snapshot, producer->id, &producer_pass_index))
             return _composition_graph_report(
-                report, "panel %s surface product %u lacks graph realization",
-                snapshot->panel_id, local_id.value);
+                report, "panel %s product %u lacks graph realization", snapshot->panel_id,
+                local_id.value);
 
-        DvzRenderProductId source_local_id = {0};
+        DvzRenderProductId source_local_id = _composition_graph_product_source(snapshot, local_id);
         DvzRenderProductId coverage_local_id = {0};
-        for (uint32_t j = 0; j < technique->input_count; j++)
-            if (technique->inputs[j] == kind)
-                source_local_id = technique->input_ids[j];
         for (uint32_t j = 0; j < technique->output_count; j++)
             if (technique->outputs[j] == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE)
                 coverage_local_id = technique->output_ids[j];
@@ -983,83 +1353,108 @@ static bool _composition_graph_materialize_surface_products(
         const DvzRenderProductId coverage_global_id =
             _composition_graph_global_product_id(map, map_count, coverage_local_id);
         const DvzFrameGraphResource* resource = &plan->graph_resources[resource_index];
-        const bool resolved = source_global_id.value != 0;
-        const char* semantic = kind == DVZ_RENDER_PRODUCT_SURFACE_DEPTH
-                                   ? "depth"
-                                   : (kind == DVZ_RENDER_PRODUCT_SURFACE_NORMAL ? "normal"
-                                                                                : "coverage");
+        const bool surface = kind == DVZ_RENDER_PRODUCT_SURFACE_DEPTH ||
+                             kind == DVZ_RENDER_PRODUCT_SURFACE_NORMAL ||
+                             kind == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE;
+        const DvzRenderProductContract* source = NULL;
+        for (uint32_t j = 0; j < plan->product_count; j++)
+            if (plan->products[j].id.value == source_global_id.value)
+                source = &plan->products[j];
+        const bool resolved = source != NULL && source->sample_count > 1 &&
+                              resource->sample_count == 1 &&
+                              producer->provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_RESOLVE;
+        const bool presentation = kind == DVZ_RENDER_PRODUCT_PRESENTATION_COLOR;
+        const bool target_backed =
+            resource->kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET;
+        const bool coverage = kind == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE;
+        const bool explicitly_covered =
+            (kind == DVZ_RENDER_PRODUCT_SURFACE_DEPTH ||
+             kind == DVZ_RENDER_PRODUCT_SURFACE_NORMAL) &&
+            coverage_global_id.value != 0;
+        const bool integer = kind == DVZ_RENDER_PRODUCT_OBJECT_ID;
+        const bool full_extent = kind == DVZ_RENDER_PRODUCT_SCENE_COLOR || presentation;
         DvzRenderProductContract product = {
             .id = map[i].global_id,
-            .version = resolved ? 2 : 1,
+            .version = _composition_graph_product_version(snapshot, local_id),
             .kind = kind,
-            .domain = DVZ_RENDER_PRODUCT_DOMAIN_PANEL,
-            .extent_policy = DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE,
+            .domain = presentation ? DVZ_RENDER_PRODUCT_DOMAIN_PRESENTATION
+                                   : DVZ_RENDER_PRODUCT_DOMAIN_PANEL,
+            .extent_policy = target_backed ? DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE
+                                           : DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE,
             .rounding_policy = DVZ_RENDER_PRODUCT_ROUND_OUTWARD,
             .origin_x = snapshot->origin_x,
             .origin_y = snapshot->origin_y,
             .width = snapshot->width,
             .height = snapshot->height,
             .render_scale = snapshot->render_scale,
-            .concrete_format = resource->format,
+            .concrete_format = resource->format != 0 ? resource->format
+                                                     : DVZ_FORMAT_R8G8B8A8_UNORM,
             .sample_domain = resolved ? DVZ_RENDER_PRODUCT_SAMPLES_RESOLVED
-                                      : (producer->sample_count > 1
+                                      : (resource->sample_count > 1
                                              ? DVZ_RENDER_PRODUCT_SAMPLES_MULTISAMPLE
                                              : DVZ_RENDER_PRODUCT_SAMPLES_SINGLE),
-            .sample_count = producer->sample_count,
-            .resolve_policy = resolved
-                                  ? (kind == DVZ_RENDER_PRODUCT_SURFACE_DEPTH
-                                         ? DVZ_RENDER_PRODUCT_RESOLVE_NEAREST_VALID_DEPTH
-                                         : (kind == DVZ_RENDER_PRODUCT_SURFACE_NORMAL
-                                                ? DVZ_RENDER_PRODUCT_RESOLVE_WINNING_NORMAL
-                                                : DVZ_RENDER_PRODUCT_RESOLVE_COVERAGE_FRACTION))
-                                  : DVZ_RENDER_PRODUCT_RESOLVE_NONE,
+            .sample_count = resource->sample_count,
+            .resolve_policy = resolved ? _composition_graph_product_resolve_policy(kind)
+                                       : DVZ_RENDER_PRODUCT_RESOLVE_NONE,
             .coordinate_space = DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL,
-            .alpha = DVZ_RENDER_PRODUCT_ALPHA_NONE,
-            .coverage = kind == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE
+            .alpha = kind == DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION
+                         ? DVZ_RENDER_PRODUCT_ALPHA_PREMULTIPLIED
+                         : ((kind == DVZ_RENDER_PRODUCT_SCENE_COLOR || presentation)
+                                ? DVZ_RENDER_PRODUCT_ALPHA_STRAIGHT
+                                : DVZ_RENDER_PRODUCT_ALPHA_NONE),
+            .coverage = coverage
                             ? (resolved ? DVZ_RENDER_PRODUCT_COVERAGE_SAMPLE_FRACTION
                                         : DVZ_RENDER_PRODUCT_COVERAGE_BINARY)
                             : DVZ_RENDER_PRODUCT_COVERAGE_NONE,
-            .validity = kind == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE
-                            ? DVZ_RENDER_PRODUCT_VALIDITY_BACKGROUND_VALUE
-                            : DVZ_RENDER_PRODUCT_VALIDITY_EXPLICIT_COVERAGE,
-            .validity_product_id = kind == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE
-                                       ? (DvzRenderProductId){0}
-                                       : coverage_global_id,
-            .has_background_value = kind == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE,
+            .validity = full_extent
+                            ? DVZ_RENDER_PRODUCT_VALIDITY_FULL_EXTENT
+                            : (explicitly_covered
+                                   ? DVZ_RENDER_PRODUCT_VALIDITY_EXPLICIT_COVERAGE
+                                   : (integer ? DVZ_RENDER_PRODUCT_VALIDITY_INTEGER_SENTINEL
+                                              : DVZ_RENDER_PRODUCT_VALIDITY_BACKGROUND_VALUE)),
+            .validity_product_id = explicitly_covered ? coverage_global_id
+                                                      : (DvzRenderProductId){0},
+            .has_background_value = !full_extent && !explicitly_covered && !integer,
+            .has_integer_sentinel = integer,
+            .integer_sentinel = 0,
             .required_usage_flags = resource->usage_flags,
             .lifetime = resource->lifetime,
             .resource_index = resource_index,
             .source_product_id = source_global_id,
-            .surface_record_id = {.value = record_base + producer->id.value},
+            .surface_record_id =
+                {.value = surface && coverage_global_id.value != 0
+                              ? record_base + producer->id.value
+                              : 0},
             .producer_pass_index = producer_pass_index,
         };
         product.local_to_target[0] = snapshot->local_to_target[0];
         product.local_to_target[1] = snapshot->local_to_target[1];
         product.local_to_target[2] = snapshot->local_to_target[2];
         product.local_to_target[3] = snapshot->local_to_target[3];
-        product.format_class = kind == DVZ_RENDER_PRODUCT_SURFACE_DEPTH
-                                   ? DVZ_RENDER_PRODUCT_FORMAT_DEPTH_FLOAT
-                                   : (kind == DVZ_RENDER_PRODUCT_SURFACE_NORMAL
-                                          ? DVZ_RENDER_PRODUCT_FORMAT_NORMAL_FLOAT
-                                          : DVZ_RENDER_PRODUCT_FORMAT_COVERAGE);
-        product.encoding = kind == DVZ_RENDER_PRODUCT_SURFACE_DEPTH
-                               ? DVZ_RENDER_PRODUCT_ENCODING_LINEAR_VIEW_DEPTH
-                               : (kind == DVZ_RENDER_PRODUCT_SURFACE_NORMAL
-                                      ? DVZ_RENDER_PRODUCT_ENCODING_VIEW_NORMAL
-                                      : DVZ_RENDER_PRODUCT_ENCODING_COVERAGE);
+        product.format_class = _composition_graph_product_format_class(kind);
+        product.encoding = _composition_graph_product_encoding(kind);
+        if (kind == DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY ||
+            kind == DVZ_RENDER_PRODUCT_TRANSPARENT_TRANSMITTANCE)
+            product.background_value[0] = 1.0f;
+        if (kind == DVZ_RENDER_PRODUCT_TRANSPARENT_PEEL_DEPTH)
+        {
+            product.background_value[0] = -1.0f;
+            product.background_value[1] = -1.0f;
+        }
         const int label_written = dvz_snprintf(
-            product.diagnostic_label, sizeof(product.diagnostic_label), "%s.surface.%s.v%u",
-            snapshot->panel_id, semantic, product.version);
+            product.diagnostic_label, sizeof(product.diagnostic_label), "%s.%s.v%u",
+            snapshot->panel_id, _composition_graph_product_semantic(kind), product.version);
         _frame_plan_copy_label(product.panel_id, sizeof(product.panel_id), snapshot->panel_id);
         _frame_plan_copy_label(product.view_id, sizeof(product.view_id), snapshot->panel_id);
         _frame_plan_copy_label(product.camera_id, sizeof(product.camera_id), snapshot->panel_id);
         _frame_plan_copy_label(
             product.projection_id, sizeof(product.projection_id), snapshot->panel_id);
         if (label_written < 0 || (size_t)label_written >= sizeof(product.diagnostic_label) ||
-            coverage_global_id.value == 0 || !dvz_frame_plan_product(plan, &product))
+            (explicitly_covered && coverage_global_id.value == 0) ||
+            !dvz_frame_plan_product(plan, &product))
             return _composition_graph_report(
-                report, "panel %s surface product %u contract materialization failed",
-                snapshot->panel_id, local_id.value);
+                report, "panel %s product %u contract materialization failed", snapshot->panel_id,
+                local_id.value);
     }
 
     for (uint32_t i = 0; i < snapshot->pass_count; i++)
@@ -1071,23 +1466,44 @@ static bool _composition_graph_materialize_surface_products(
         for (uint32_t j = 0; j < pass->binding_count; j++)
         {
             const DvzSceneWorkBinding* binding = &pass->bindings[j];
-            if (binding->ref_kind != DVZ_SCENE_RESOURCE_REF_PRODUCT ||
-                binding->usage != DVZ_SCENE_WORK_BINDING_SAMPLED)
-                continue;
+            DvzRenderProductId local_id = {0};
+            if (binding->ref_kind == DVZ_SCENE_RESOURCE_REF_PRODUCT &&
+                binding->usage == DVZ_SCENE_WORK_BINDING_SAMPLED)
+                local_id = binding->product_id;
+            else if (
+                binding->usage == DVZ_SCENE_WORK_BINDING_ATTACHMENT &&
+                binding->load == DVZ_SCENE_ATTACHMENT_LOAD_LOAD &&
+                binding->load_source_ref_kind == DVZ_SCENE_RESOURCE_REF_PRODUCT)
+                local_id = binding->load_source_product_id;
             const DvzRenderProductId global_id =
-                _composition_graph_global_product_id(map, map_count, binding->product_id);
+                _composition_graph_global_product_id(map, map_count, local_id);
             if (global_id.value == 0)
                 continue;
-            const DvzRenderProductKind kind =
-                _composition_graph_product_kind(snapshot, binding->product_id);
-            const DvzRenderProductValidityRequirement requirement =
-                kind == DVZ_RENDER_PRODUCT_SURFACE_COVERAGE
-                    ? DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_BACKGROUND_VALUE
-                    : DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_EXPLICIT_COVERAGE;
-            if (!dvz_frame_plan_product_consumer(plan, global_id, pass_index, requirement))
+            const DvzRenderProductContract* product = NULL;
+            for (uint32_t k = 0; k < plan->product_count; k++)
+                if (plan->products[k].id.value == global_id.value)
+                    product = &plan->products[k];
+            if (product == NULL || !_composition_graph_product_use_once(
+                                       plan, global_id, pass_index,
+                                       _composition_graph_product_requirement(product)))
                 return _composition_graph_report(
-                    report, "panel %s surface product %u consumer materialization failed",
-                    snapshot->panel_id, binding->product_id.value);
+                    report, "panel %s product %u consumer materialization failed",
+                    snapshot->panel_id, local_id.value);
+
+            if (product->validity == DVZ_RENDER_PRODUCT_VALIDITY_EXPLICIT_COVERAGE)
+            {
+                const DvzRenderProductId coverage_id = product->validity_product_id;
+                const DvzRenderProductContract* coverage_product = NULL;
+                for (uint32_t k = 0; k < plan->product_count; k++)
+                    if (plan->products[k].id.value == coverage_id.value)
+                        coverage_product = &plan->products[k];
+                if (coverage_product == NULL || !_composition_graph_product_use_once(
+                                                    plan, coverage_id, pass_index,
+                                                    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_BACKGROUND_VALUE))
+                    return _composition_graph_report(
+                        report, "panel %s product %u coverage consumer materialization failed",
+                        snapshot->panel_id, local_id.value);
+            }
         }
     }
     return true;
@@ -1142,7 +1558,7 @@ bool _scene_panel_composition_lower_graph(
     for (uint32_t i = 0; ok && i < snapshot->pass_count; i++)
         ok = _composition_graph_lower_pass(plan, snapshot, &draft, &snapshot->passes[i], report);
     if (ok)
-        ok = _composition_graph_materialize_surface_products(plan, snapshot, &draft, report);
+        ok = _composition_graph_materialize_products(plan, snapshot, &draft, report);
     if (ok)
         ok = dvz_frame_plan_graph_validate(plan, report);
     for (uint32_t i = 0; ok && i < draft.realization_count; i++)

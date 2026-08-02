@@ -807,6 +807,75 @@ uint64_t _graph_sampled_read_texture_id(
 
 
 /**
+ * Return the uniquely typed product resource consumed by one graph pass.
+ *
+ * @param plan source FramePlan
+ * @param pass graph pass descriptor, or NULL
+ * @param kind required semantic product kind
+ * @param out output graph resource, or NULL when the optional product is absent
+ * @return whether the typed lookup is unambiguous and consistent with the graph read
+ */
+static bool _graph_typed_product_read_resource(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass, DvzRenderProductKind kind,
+    const DvzFrameGraphResource** out)
+{
+    ANN(plan);
+    ANN(out);
+    *out = NULL;
+    if (pass == NULL)
+        return true;
+
+    uint32_t pass_index = UINT32_MAX;
+    for (uint32_t i = 0; i < plan->graph_pass_count; i++)
+    {
+        if (&plan->graph_passes[i] == pass)
+        {
+            pass_index = i;
+            break;
+        }
+    }
+    if (pass_index == UINT32_MAX)
+        return false;
+
+    const DvzRenderProductContract* match = NULL;
+    for (uint32_t i = 0; i < plan->product_use_count; i++)
+    {
+        const DvzRenderProductConsumer* use = &plan->product_uses[i];
+        if (use->pass_index != pass_index)
+            continue;
+        for (uint32_t j = 0; j < plan->product_count; j++)
+        {
+            const DvzRenderProductContract* product = &plan->products[j];
+            if (product->id.value != use->product_id.value || product->kind != kind)
+                continue;
+            if (match != NULL && match->id.value != product->id.value)
+                return false;
+            match = product;
+            break;
+        }
+    }
+    if (match == NULL)
+        return true;
+    if (match->resource_index >= plan->graph_resource_count)
+        return false;
+
+    const DvzFrameGraphResource* resource = &plan->graph_resources[match->resource_index];
+    uint32_t sampled_read_count = 0;
+    for (uint32_t i = 0; i < pass->read_count; i++)
+    {
+        if (pass->reads[i].usage == DVZ_FRAME_GRAPH_ACCESS_SAMPLED &&
+            strcmp(pass->reads[i].resource_id, resource->id) == 0)
+            sampled_read_count++;
+    }
+    if (sampled_read_count != 1)
+        return false;
+    *out = resource;
+    return true;
+}
+
+
+
+/**
  * Resolve the sampled volume-occlusion texture read by a graph pass.
  *
  * @param emitter the persistent emitter
@@ -821,11 +890,13 @@ bool _graph_resolve_volume_occlusion_read(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanEmitConfig* cfg, const DvzFrameGraphPass* pass, uint64_t* out_id)
 {
+    ANN(plan);
     ANN(out_id);
     *out_id = 0;
-    const DvzFrameGraphResource* resource = _graph_composition_scratch_resource(
-        plan, pass, DVZ_SCENE_SCRATCH_VOLUME_OCCLUSION_DEVICE_DEPTH,
-        DVZ_SCENE_WORK_BINDING_SAMPLED);
+    const DvzFrameGraphResource* resource = NULL;
+    if (!_graph_typed_product_read_resource(
+            plan, pass, DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH, &resource))
+        return false;
     if (resource == NULL)
         return true;
     uint32_t width = 0;
@@ -851,11 +922,13 @@ bool _graph_resolve_scene_occlusion_read(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanEmitConfig* cfg, const DvzFrameGraphPass* pass, uint64_t* out_id)
 {
+    ANN(plan);
     ANN(out_id);
     *out_id = 0;
-    const DvzFrameGraphResource* resource = _graph_composition_scratch_resource(
-        plan, pass, DVZ_SCENE_SCRATCH_SCENE_OCCLUSION_DEVICE_DEPTH,
-        DVZ_SCENE_WORK_BINDING_SAMPLED);
+    const DvzFrameGraphResource* resource = NULL;
+    if (!_graph_typed_product_read_resource(
+            plan, pass, DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH, &resource))
+        return false;
     if (resource == NULL)
         return true;
     uint32_t width = 0;

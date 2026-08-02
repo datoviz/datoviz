@@ -551,13 +551,15 @@ bool _emitter_prepare_edl_targets(
     uint64_t color_id = 0;
     uint64_t depth_id = 0;
     bool ok = _graph_resolve_texture_2d(
-        emitter, stream, plan, cfg, color_resource, width, height, DVZ_FORMAT_R8G8B8A8_UNORM,
-        &color_id);
+        emitter, stream, plan, cfg, color_resource, width, height,
+        _render_pass_scene_color_target_format(cfg), &color_id);
     ok = ok && _graph_resolve_texture_2d(
                    emitter, stream, plan, cfg, depth_resource, width, height,
-                   DVZ_FORMAT_D32_SFLOAT, &depth_id);
+                   DVZ_FORMAT_R32_SFLOAT, &depth_id);
     ok = ok && _graph_runtime_targets_add(graph_targets, color_resource->id, color_id);
     ok = ok && _graph_runtime_targets_add(graph_targets, depth_resource->id, depth_id);
+    ok = ok &&
+         _graph_prepare_render_color_targets(emitter, stream, plan, pass, cfg, graph_targets);
     if (!ok)
         return false;
 
@@ -622,20 +624,18 @@ bool _emitter_prepare_edl_targets(
     bg_resource->byte_size = fingerprint;
     if (ok && is_new)
     {
-        uint64_t sampled_color_id = _graph_sampled_read_texture_id(pass, 0, 0, graph_targets, 0);
-        uint64_t sampled_depth_id = _graph_sampled_read_texture_id(pass, 1, 0, graph_targets, 0);
         DvzDrp2BindGroupEntry entries[4] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = sampled_color_id,
+                .resource_id = color_id,
             },
             {
                 .binding = 1,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = sampled_depth_id,
+                .resource_id = depth_id,
             },
             {
                 .binding = 2,
@@ -1218,15 +1218,16 @@ bool _emitter_prepare_ssao_targets(
  * Return a compact fingerprint for a WBOIT resolve bind group dependency set.
  *
  * @param accum_id accumulation texture id.
- * @param weight_id weight texture id.
+ * @param transmittance_id transparent transmittance texture id.
  * @param sampler_id sampler id.
  * @return dependency fingerprint.
  */
-uint64_t _wboit_bind_group_fingerprint(uint64_t accum_id, uint64_t weight_id, uint64_t sampler_id)
+uint64_t _wboit_bind_group_fingerprint(
+    uint64_t accum_id, uint64_t transmittance_id, uint64_t sampler_id)
 {
     uint64_t hash = UINT64_C(1469598103934665603);
     hash = (hash ^ accum_id) * UINT64_C(1099511628211);
-    hash = (hash ^ weight_id) * UINT64_C(1099511628211);
+    hash = (hash ^ transmittance_id) * UINT64_C(1099511628211);
     hash = (hash ^ sampler_id) * UINT64_C(1099511628211);
     return hash != 0 ? hash : UINT64_C(1);
 }
@@ -1263,45 +1264,36 @@ bool _emitter_prepare_wboit_targets(
     bool is_new = false;
     out->color_id = color_id;
 
-    char accum_key[DVZ_SCENE_LABEL_SIZE];
-    char weight_key[DVZ_SCENE_LABEL_SIZE];
-    char scoped_accum_key[DVZ_SCENE_LABEL_SIZE];
-    char scoped_weight_key[DVZ_SCENE_LABEL_SIZE];
-    dvz_snprintf(accum_key, sizeof(accum_key), "_wboit_accum_%s", render->u.render.panel_id);
-    dvz_snprintf(weight_key, sizeof(weight_key), "_wboit_weight_%s", render->u.render.panel_id);
-    _runtime_scope_key(cfg, accum_key, scoped_accum_key, sizeof(scoped_accum_key));
-    _runtime_scope_key(cfg, weight_key, scoped_weight_key, sizeof(scoped_weight_key));
-
     const DvzFrameGraphPass* graph_pass = _graph_pass_for_render(plan, render);
-    const DvzFrameGraphResource* accum_resource = NULL;
-    const DvzFrameGraphResource* weight_resource = NULL;
+    const DvzSceneResolvedPass* resolved_accum = _graph_composition_pass(plan, graph_pass);
+    if (resolved_accum == NULL ||
+        resolved_accum->provider != DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION)
+        return false;
+    const DvzFrameGraphPass* resolve_graph_pass = _graph_pass_by_composition_provider(
+        plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE,
+        resolved_accum->ordinal);
+    if (graph_pass == NULL || graph_pass->color_attachment_count != 2 ||
+        resolve_graph_pass == NULL || resolve_graph_pass->read_count != 2)
+        return false;
+
+    const DvzFrameGraphResource* accum_resource =
+        _graph_resource_by_id(plan, graph_pass->color_attachments[0].resource_id);
+    const DvzFrameGraphResource* transmittance_resource =
+        _graph_resource_by_id(plan, graph_pass->color_attachments[1].resource_id);
     const DvzFrameGraphResource* depth_resource = NULL;
-    if (graph_pass != NULL && graph_pass->color_attachment_count >= 2)
-    {
-        accum_resource = _graph_resource_by_id(plan, graph_pass->color_attachments[0].resource_id);
-        weight_resource =
-            _graph_resource_by_id(plan, graph_pass->color_attachments[1].resource_id);
-        if (graph_pass->has_depth_attachment)
-            depth_resource = _graph_resource_by_id(plan, graph_pass->depth_attachment.resource_id);
-    }
+    if (graph_pass->has_depth_attachment)
+        depth_resource = _graph_resource_by_id(plan, graph_pass->depth_attachment.resource_id);
+    if (accum_resource == NULL || transmittance_resource == NULL ||
+        strcmp(resolve_graph_pass->reads[0].resource_id, accum_resource->id) != 0 ||
+        strcmp(resolve_graph_pass->reads[1].resource_id, transmittance_resource->id) != 0)
+        return false;
 
-    uint32_t fallback_usage =
-        DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT | DVZ_DRP2_TEXTURE_USAGE_TEXTURE_BINDING;
-
-    ok = ok && (accum_resource != NULL
-                    ? _graph_resolve_texture_2d(
-                          emitter, stream, plan, cfg, accum_resource, width, height,
-                          DVZ_FORMAT_R16G16B16A16_SFLOAT, &out->accum_id)
-                    : _runtime_resolve_texture_2d(
-                          emitter, stream, scoped_accum_key, width, height,
-                          DVZ_FORMAT_R16G16B16A16_SFLOAT, fallback_usage, 1, &out->accum_id));
-    ok = ok && (weight_resource != NULL
-                    ? _graph_resolve_texture_2d(
-                          emitter, stream, plan, cfg, weight_resource, width, height,
-                          DVZ_FORMAT_R16_SFLOAT, &out->weight_id)
-                    : _runtime_resolve_texture_2d(
-                          emitter, stream, scoped_weight_key, width, height, DVZ_FORMAT_R16_SFLOAT,
-                          fallback_usage, 1, &out->weight_id));
+    ok = _graph_resolve_texture_2d(
+        emitter, stream, plan, cfg, accum_resource, width, height,
+        DVZ_FORMAT_R16G16B16A16_SFLOAT, &out->accum_id);
+    ok = ok && _graph_resolve_texture_2d(
+                   emitter, stream, plan, cfg, transmittance_resource, width, height,
+                   DVZ_FORMAT_R16_SFLOAT, &out->transmittance_id);
     if (!ok)
         return false;
     if (depth_resource != NULL)
@@ -1312,10 +1304,9 @@ bool _emitter_prepare_wboit_targets(
     }
     if (!ok)
         return false;
-    ok = ok && (accum_resource == NULL ||
-                _graph_runtime_targets_add(graph_targets, accum_resource->id, out->accum_id));
-    ok = ok && (weight_resource == NULL ||
-                _graph_runtime_targets_add(graph_targets, weight_resource->id, out->weight_id));
+    ok = ok && _graph_runtime_targets_add(graph_targets, accum_resource->id, out->accum_id);
+    ok = ok && _graph_runtime_targets_add(
+                   graph_targets, transmittance_resource->id, out->transmittance_id);
     ok = ok && (depth_resource == NULL ||
                 _graph_runtime_targets_add(graph_targets, depth_resource->id, out->depth_id));
     if (!ok)
@@ -1358,25 +1349,27 @@ bool _emitter_prepare_wboit_targets(
 
     char bg_key[96];
     dvz_snprintf(
-        bg_key, sizeof(bg_key), "_bg_wboit_%" PRIu64 "_%" PRIu64, out->accum_id, out->weight_id);
+        bg_key, sizeof(bg_key), "_bg_wboit_%" PRIu64 "_%" PRIu64, out->accum_id,
+        out->transmittance_id);
     ResourceId* bg_resource = _resource_entry(&emitter->objects, bg_key, &is_new);
     if (bg_resource == NULL || bg_resource->id == 0)
         return false;
     out->resolve_bg_id = bg_resource->id;
 
     uint64_t bg_fingerprint =
-        _wboit_bind_group_fingerprint(out->accum_id, out->weight_id, out->sampler_id);
+        _wboit_bind_group_fingerprint(
+            out->accum_id, out->transmittance_id, out->sampler_id);
     if (!is_new && bg_resource->byte_size != bg_fingerprint)
         is_new = true;
     bg_resource->byte_size = bg_fingerprint;
     if (ok && is_new)
     {
-        const DvzFrameGraphPass* resolve_graph_pass = _graph_pass_by_composition_provider(
-            plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE, 0);
         uint64_t accum_id = _graph_sampled_read_texture_id(
-            resolve_graph_pass, 0, out->color_id, graph_targets, out->accum_id);
-        uint64_t weight_id = _graph_sampled_read_texture_id(
-            resolve_graph_pass, 1, out->color_id, graph_targets, out->weight_id);
+            resolve_graph_pass, 0, out->color_id, graph_targets, 0);
+        uint64_t transmittance_id = _graph_sampled_read_texture_id(
+            resolve_graph_pass, 1, out->color_id, graph_targets, 0);
+        if (accum_id == 0 || transmittance_id == 0)
+            return false;
         DvzDrp2BindGroupEntry entries[3] = {
             {
                 .binding = 0,
@@ -1388,7 +1381,7 @@ bool _emitter_prepare_wboit_targets(
                 .binding = 1,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_TEXTURE,
-                .resource_id = weight_id,
+                .resource_id = transmittance_id,
             },
             {
                 .binding = 2,
@@ -1574,6 +1567,36 @@ bool _depth_peel_resolve_sampled_bind_group(
 }
 
 
+
+/**
+ * Return one graph pass belonging to a specific typed depth-peeling technique instance.
+ *
+ * @param plan source FramePlan
+ * @param technique_instance_id technique instance identity
+ * @param provider requested depth-peeling provider
+ * @param work_index requested iteration index, ignored for non-iteration providers
+ * @return matching graph pass, or NULL when absent
+ */
+static const DvzFrameGraphPass* _depth_peel_graph_pass(
+    const DvzFramePlan* plan, DvzSceneTechniqueInstanceId technique_instance_id,
+    DvzSceneWorkProviderKey provider, uint32_t work_index)
+{
+    ANN(plan);
+    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
+    {
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, pass);
+        if (resolved == NULL || resolved->provider != provider ||
+            resolved->technique_instance_id.value != technique_instance_id.value)
+            continue;
+        if (provider != DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION ||
+            resolved->work_index == work_index)
+            return pass;
+    }
+    return NULL;
+}
+
+
 /**
  * Prepare depth-peeling graph resources and composite state for one panel.
  *
@@ -1606,27 +1629,34 @@ bool _emitter_prepare_depth_peel_targets(
     bool is_new = false;
     out->color_id = color_id;
 
-    for (uint32_t i = 0; ok && i < dvz_frame_plan_graph_resource_count(plan); i++)
+    const DvzFrameGraphPass* init_graph_pass = _graph_pass_for_render(plan, render);
+    const DvzSceneResolvedPass* init_resolved =
+        _graph_composition_pass(plan, init_graph_pass);
+    if (init_graph_pass == NULL || init_resolved == NULL ||
+        init_resolved->provider != DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT)
+        return false;
+    for (uint32_t i = 0; ok && i < dvz_frame_plan_graph_pass_count(plan); i++)
     {
-        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
-        if (resource == NULL || resource->kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET)
+        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
+        const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, pass);
+        if (pass == NULL || resolved == NULL ||
+            resolved->technique_instance_id.value != init_resolved->technique_instance_id.value)
             continue;
-        size_t panel_id_len = strlen(render->u.render.panel_id);
-        if (strncmp(resource->id, render->u.render.panel_id, panel_id_len) != 0 ||
-            resource->id[panel_id_len] != '.')
-            continue;
-
-        uint64_t texture_id = 0;
-        uint32_t format = resource->format;
-        if ((resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0)
-            format = DVZ_FORMAT_D32_SFLOAT;
-        if (format == 0)
-            format = DVZ_FORMAT_R16G16B16A16_SFLOAT;
-        ok = _graph_resolve_texture_2d(
-            emitter, stream, plan, cfg, resource, width, height, format, &texture_id);
-        ok = ok && _graph_runtime_targets_add(graph_targets, resource->id, texture_id);
-        if (ok && (resource->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_DEPTH_ATTACHMENT) != 0)
-            out->depth_id = texture_id;
+        ok = _graph_prepare_render_color_targets(
+            emitter, stream, plan, pass, cfg, graph_targets);
+        if (ok && pass->has_depth_attachment)
+        {
+            const DvzFrameGraphResource* depth_resource =
+                _graph_resource_by_id(plan, pass->depth_attachment.resource_id);
+            uint64_t depth_id = 0;
+            ok = depth_resource != NULL &&
+                 _graph_resolve_texture_2d(
+                     emitter, stream, plan, cfg, depth_resource, width, height,
+                     DVZ_FORMAT_D32_SFLOAT, &depth_id) &&
+                 _graph_runtime_targets_add(graph_targets, depth_resource->id, depth_id);
+            if (ok && pass == init_graph_pass)
+                out->depth_id = depth_id;
+        }
     }
     if (!ok)
         return false;
@@ -1709,14 +1739,18 @@ bool _emitter_prepare_depth_peel_targets(
                        stream, out->dummy_bg_id, dummy_bgl_id, 1, &entry);
     }
 
-    const DvzFrameGraphPass* composite_pass = _graph_pass_by_composition_provider(
-        plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE, 0);
+    const DvzFrameGraphPass* composite_pass = _depth_peel_graph_pass(
+        plan, init_resolved->technique_instance_id,
+        DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE, 0);
     ok = ok && composite_pass != NULL;
     if (ok)
     {
         char composite_bg_key[DVZ_SCENE_LABEL_SIZE];
-        _runtime_scope_key(
-            cfg, "_bg_depth_peel_composite", composite_bg_key, sizeof(composite_bg_key));
+        char composite_bg_base_key[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(
+            composite_bg_base_key, sizeof(composite_bg_base_key),
+            "_bg_depth_peel_composite_%" PRIu64, init_resolved->technique_instance_id.value);
+        _runtime_scope_key(cfg, composite_bg_base_key, composite_bg_key, sizeof(composite_bg_key));
         ok = ok && _depth_peel_resolve_sampled_bind_group(
                        emitter, stream, plan, composite_pass, graph_targets, 0, composite_bg_key,
                        out->composite_bgl_id, out->sampler_id, &out->composite_bg_id);
@@ -1724,17 +1758,18 @@ bool _emitter_prepare_depth_peel_targets(
 
     for (uint32_t iter_idx = 0; ok && iter_idx < DVZ_SCENE_DEPTH_PEEL_ITERATIONS; iter_idx++)
     {
-        const DvzFrameGraphPass* iter_pass = _graph_pass_by_composition_provider(
-            plan, render->u.render.panel_id, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION,
-            iter_idx);
+        const DvzFrameGraphPass* iter_pass = _depth_peel_graph_pass(
+            plan, init_resolved->technique_instance_id,
+            DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION, iter_idx);
         ok = ok && iter_pass != NULL;
         if (ok)
         {
             char iter_bg_base_key[DVZ_SCENE_LABEL_SIZE];
             char iter_bg_key[DVZ_SCENE_LABEL_SIZE];
             dvz_snprintf(
-                iter_bg_base_key, sizeof(iter_bg_base_key), "_bg_depth_peel_iter_%" PRIu32,
-                iter_idx);
+                iter_bg_base_key, sizeof(iter_bg_base_key),
+                "_bg_depth_peel_iter_%" PRIu64 "_%" PRIu32,
+                init_resolved->technique_instance_id.value, iter_idx);
             _runtime_scope_key(cfg, iter_bg_base_key, iter_bg_key, sizeof(iter_bg_key));
             ok = _depth_peel_resolve_sampled_bind_group(
                 emitter, stream, plan, iter_pass, graph_targets, DVZ_SCENE_DEPTH_PEEL_BIND_SET,

@@ -3,6 +3,7 @@
 #include "common.glsl"
 #include "scene_material.glsl"
 #include "sphere_analytic.glsl"
+#include "surface_depth.glsl"
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec4 fragCenterView;
@@ -24,4 +25,7 @@ void main()
     vec4 shaded = evaluateSceneMaterial(fragColor, normalWorld, surfaceWorld, cameraWorld);
     vec3 cue = vec3(gl_FragDepth, length(cameraWorld - surfaceWorld), length(surfaceWorld));
     outColor = vec4(applyDepthCue(shaded.rgb, cue), shaded.a * hit.coverage);
+#ifdef DVZ_SURFACE_DEPTH_OUTPUT
+    writeSurfaceDepth(hit.linearDepth);
+#endif
 }
