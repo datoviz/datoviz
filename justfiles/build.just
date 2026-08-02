@@ -250,6 +250,7 @@ _sanitizer-build name:
         -DCMAKE_BUILD_TYPE=Debug \
         -DDVZ_ENABLE_ASAN_IN_DEBUG=$([ "{{name}}" = "asan" ] && echo ON || echo OFF) \
         -DDVZ_ENABLE_CUDA=OFF \
+        -DDVZ_USE_VALIDATION=OFF \
         -DDVZ_SANITIZER={{name}} \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     @cd build-{{name}}/ && ninja
