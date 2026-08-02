@@ -87,6 +87,34 @@ static void _state_copy_key(char* dst, size_t dst_size, const char* src)
 
 
 
+/**
+ * Deep-copy one converter state.
+ *
+ * @param src the source converter state
+ * @param dst the destination converter state
+ * @return whether the state was copied successfully
+ */
+static bool _state_clone(const ConverterState* src, ConverterState* dst)
+{
+    ANN(src);
+    ANN(dst);
+    *dst = *src;
+    dst->resources = NULL;
+    if (src->capacity == 0)
+        return true;
+
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(src->capacity, sizeof(ResourceId), &bytes))
+        return false;
+    dst->resources = (ResourceId*)dvz_calloc(1, bytes);
+    if (dst->resources == NULL)
+        return false;
+    dvz_memcpy(dst->resources, (size_t)bytes, src->resources, (size_t)bytes);
+    return true;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -116,6 +144,68 @@ void _state_destroy(ConverterState* state)
         return;
     dvz_free(state->resources);
     dvz_memset(state, sizeof(ConverterState), 0, sizeof(ConverterState));
+}
+
+
+
+/**
+ * Clone all persistent emitter state into an isolated emission candidate.
+ *
+ * @param emitter the persistent emitter
+ * @param candidate the zero-initialized candidate emitter
+ * @return whether the emitter state was cloned successfully
+ */
+bool _emitter_state_clone(
+    const DvzFramePlanEmitter* emitter, DvzFramePlanEmitter* candidate)
+{
+    ANN(emitter);
+    ANN(candidate);
+    dvz_memset(candidate, sizeof(DvzFramePlanEmitter), 0, sizeof(DvzFramePlanEmitter));
+    *candidate = *emitter;
+    candidate->resources.resources = NULL;
+    candidate->objects.resources = NULL;
+    if (!_state_clone(&emitter->resources, &candidate->resources) ||
+        !_state_clone(&emitter->objects, &candidate->objects))
+    {
+        _emitter_state_discard(candidate);
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Atomically replace persistent emitter state with a successful candidate.
+ *
+ * @param emitter the persistent emitter
+ * @param candidate the successful emission candidate
+ */
+void _emitter_state_commit(
+    DvzFramePlanEmitter* emitter, DvzFramePlanEmitter* candidate)
+{
+    ANN(emitter);
+    ANN(candidate);
+    _state_destroy(&emitter->resources);
+    _state_destroy(&emitter->objects);
+    *emitter = *candidate;
+    dvz_memset(candidate, sizeof(DvzFramePlanEmitter), 0, sizeof(DvzFramePlanEmitter));
+}
+
+
+
+/**
+ * Destroy an isolated emitter candidate without changing persistent state.
+ *
+ * @param candidate the emission candidate
+ */
+void _emitter_state_discard(DvzFramePlanEmitter* candidate)
+{
+    if (candidate == NULL)
+        return;
+    _state_destroy(&candidate->resources);
+    _state_destroy(&candidate->objects);
+    dvz_memset(candidate, sizeof(DvzFramePlanEmitter), 0, sizeof(DvzFramePlanEmitter));
 }
 
 

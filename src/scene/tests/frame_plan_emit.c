@@ -1748,6 +1748,93 @@ static int test_frame_plan_emitter_rejects_untyped_visual_metadata(
 }
 
 
+
+/**
+ * Ensure a failed emission cannot consume persistent emitter state before a corrected retry.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_frame_plan_emitter_failure_rolls_back_state(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    DvzFramePlanEmitter* fresh = dvz_frame_plan_emitter();
+    ANN(emitter);
+    ANN(fresh);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.runtime.transaction", 17);
+    ANN(plan);
+    AT(dvz_frame_plan_upload(plan, "buf.retry.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.retry", "target.panel.retry.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.retry"));
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.max_color_sample_count = 4;
+    caps.max_depth_sample_count = 2;
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* failed =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    AT(failed == NULL);
+    AT(dvz_diagnostic_report_error_count(&report) >= 1);
+
+    AT(!emitter->handshake_sent);
+    AT(emitter->resources.count == 0);
+    AT(emitter->resources.next_id == DRP2_ID_RESOURCE_BASE);
+    AT(emitter->objects.count == 0);
+    AT(emitter->objects.next_id == DRP2_EMITTER_OBJECT_ID_BASE);
+    AT(emitter->next_transient_id == DRP2_RUNTIME_TRANSIENT_ID_BASE);
+    AT(emitter->max_color_sample_count == 16);
+    AT(emitter->max_depth_sample_count == 16);
+    AT(emitter->mvp_panel_count == 0);
+    AT(emitter->viewport_panel_count == 0);
+    AT(emitter->volume_count == 0);
+    AT(emitter->labels_count == 0);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "buf.retry.position", sizeof(metadata.position_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* retry =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    ANN(retry);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* expected =
+        dvz_frame_plan_emitter_emit_drp2(fresh, plan, &caps, &report, &cfg);
+    ANN(expected);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    char* retry_json = dvz_drp2_stream_json(retry, "emitter_transaction_retry");
+    char* expected_json = dvz_drp2_stream_json(expected, "emitter_transaction_retry");
+    ANN(retry_json);
+    ANN(expected_json);
+    AT(strcmp(retry_json, expected_json) == 0);
+
+    dvz_drp2_stream_json_destroy(expected_json);
+    dvz_drp2_stream_json_destroy(retry_json);
+    _test_scene_stream_destroy(expected);
+    _test_scene_stream_destroy(retry);
+    dvz_frame_plan_destroy(plan);
+    dvz_frame_plan_emitter_destroy(fresh);
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
+
+
 int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -3622,6 +3709,7 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     TST_CASE(test_frame_plan_emit_drp2_defaults_missing_mvp_to_identity);
     TST_CASE(test_frame_plan_emit_drp2_split_packets);
     TST_CASE(test_frame_plan_emitter_rejects_untyped_visual_metadata);
+    TST_CASE(test_frame_plan_emitter_failure_rolls_back_state);
     TST_CASE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TST_CASE(test_frame_plan_emit_drp2_rejects_small_caps);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE

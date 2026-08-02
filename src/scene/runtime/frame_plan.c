@@ -58,20 +58,20 @@ static bool _runtime_emit_config_validate(
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Helpers                                                                                      */
 /*************************************************************************************************/
 
 /**
- * Emit a runtime-mode DRP2 command stream from a FramePlan.
+ * Emit a runtime-mode DRP2 command stream using an isolated emitter candidate.
  *
- * @param emitter the persistent emitter
+ * @param emitter the candidate emitter
  * @param plan the FramePlan
  * @param caps the capability snapshot
  * @param report the diagnostic report
  * @param cfg the emission configuration
  * @return an owned DRP2 command stream, or NULL on failure
  */
-DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
+static DvzDrp2CommandStream* _frame_plan_emitter_emit_drp2_candidate(
     DvzFramePlanEmitter* emitter, const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps,
     DvzDiagnosticReport* report, const DvzFramePlanEmitConfig* cfg)
 {
@@ -187,5 +187,47 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         dvz_drp2_stream_destroy(stream);
         return NULL;
     }
+    return stream;
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Emit a runtime-mode DRP2 command stream from a FramePlan transactionally.
+ *
+ * @param emitter the persistent emitter
+ * @param plan the FramePlan
+ * @param caps the capability snapshot
+ * @param report the diagnostic report
+ * @param cfg the emission configuration
+ * @return an owned DRP2 command stream, or NULL on failure
+ */
+DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
+    DvzFramePlanEmitter* emitter, const DvzFramePlan* plan, const DvzCapabilitySnapshot* caps,
+    DvzDiagnosticReport* report, const DvzFramePlanEmitConfig* cfg)
+{
+    ANN(emitter);
+    ANN(plan);
+
+    DvzFramePlanEmitter candidate = {0};
+    if (!_emitter_state_clone(emitter, &candidate))
+    {
+        _diagnostic(report, "failed to clone runtime emitter state");
+        return NULL;
+    }
+
+    DvzDrp2CommandStream* stream =
+        _frame_plan_emitter_emit_drp2_candidate(&candidate, plan, caps, report, cfg);
+    if (stream == NULL)
+    {
+        _emitter_state_discard(&candidate);
+        return NULL;
+    }
+
+    _emitter_state_commit(emitter, &candidate);
     return stream;
 }
