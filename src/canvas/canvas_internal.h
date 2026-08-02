@@ -77,6 +77,7 @@ struct DvzCanvas
     DvzStreamSinkRegistry* sink_registry;
     DvzStream* stream;
     bool stream_started;
+    uint64_t stream_resource_generation;
     bool primary_sink_attached;
     DvzCanvasFramePool frame_pool;
     DvzCanvasTimingState timings;
@@ -224,6 +225,19 @@ void dvz_canvas_depth_destroy(
     DvzImages** images, DvzImageViews** views, VkImage* image, VkImageView* view);
 
 void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas);
+
+bool _dvz_canvas_max_frames_in_flight_parse(const char* value, uint32_t* requested_slot_count);
+
+uint32_t _dvz_canvas_frame_slot_count_resolve(
+    uint32_t requested_slot_count, uint32_t image_count);
+
+uint32_t _dvz_canvas_swapchain_image_count(const DvzCanvas* canvas);
+
+uint32_t _dvz_canvas_swapchain_slot_count(const DvzCanvas* canvas);
+
+uint32_t _dvz_canvas_swapchain_last_presented_slot_index(const DvzCanvas* canvas);
+
+uint32_t _dvz_canvas_swapchain_last_presented_image_index(const DvzCanvas* canvas);
 
 bool dvz_canvas_swapchain_present_mode(const DvzCanvas* canvas, VkPresentModeKHR* out_mode);
 

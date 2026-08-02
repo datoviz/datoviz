@@ -729,6 +729,44 @@ int test_canvas_frame_pool(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Validate parsing and resolution of the experimental frame-slot override.
+ *
+ * @param suite The owning test suite.
+ * @param item The test item (unused).
+ * @return Zero on success.
+ */
+int test_canvas_frame_slot_count_resolution(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    uint32_t requested = UINT32_MAX;
+    AT(_dvz_canvas_max_frames_in_flight_parse(NULL, &requested));
+    AT(requested == 0);
+    AT(_dvz_canvas_max_frames_in_flight_parse("auto", &requested));
+    AT(requested == 0);
+    AT(_dvz_canvas_max_frames_in_flight_parse("1", &requested));
+    AT(requested == 1);
+    AT(_dvz_canvas_max_frames_in_flight_parse("2", &requested));
+    AT(requested == 2);
+    AT(_dvz_canvas_max_frames_in_flight_parse("8", &requested));
+    AT(requested == 8);
+    AT(!_dvz_canvas_max_frames_in_flight_parse("0", &requested));
+    AT(!_dvz_canvas_max_frames_in_flight_parse("invalid", &requested));
+    AT(!_dvz_canvas_max_frames_in_flight_parse("-1", &requested));
+    AT(!_dvz_canvas_max_frames_in_flight_parse("1x", &requested));
+
+    AT(_dvz_canvas_frame_slot_count_resolve(0, 4) == 4);
+    AT(_dvz_canvas_frame_slot_count_resolve(1, 4) == 1);
+    AT(_dvz_canvas_frame_slot_count_resolve(2, 4) == 2);
+    AT(_dvz_canvas_frame_slot_count_resolve(8, 4) == 4);
+    AT(_dvz_canvas_frame_slot_count_resolve(0, 0) == 0);
+    return 0;
+}
+
+
+
+/**
  * Check that timing samples wrap around the configured capacity.
  */
 int test_canvas_timings(TstContext* suite, const TstCase* item)
@@ -2255,6 +2293,8 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(test_canvas_configure_gpu_ctx, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_frame_format, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_frame_pool, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(
+        test_canvas_frame_slot_count_resolution, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_timings, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(
         test_canvas_offscreen_destroy_recreate, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);
@@ -2300,6 +2340,12 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(
         test_canvas_glfw_present_semaphore_reuse, TST_CANVAS_GLFW_RES,
         TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_glfw_one_frame_slot,
+        TST_CANVAS_GLFW_RES | TST_RES_ENV, TST_ISOLATION_EXCLUSIVE);
+    TST_CANVAS_CASE(
+        test_canvas_glfw_two_frame_slots,
+        TST_CANVAS_GLFW_RES | TST_RES_ENV, TST_ISOLATION_EXCLUSIVE);
     TST_CANVAS_CASE(test_canvas_handle_refresh_order, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_video_wait_value_propagation,

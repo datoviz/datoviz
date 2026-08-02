@@ -366,6 +366,7 @@ canvas_rebuild_stream(
 
     canvas->stream = replacement;
     canvas->stream_started = false;
+    canvas->stream_resource_generation = 0;
     canvas->primary_sink_attached = true;
     canvas->video_sink_enabled = enable_video;
     canvas->video_capture_mode = enable_video ? capture_mode : DVZ_VIDEO_CAPTURE_AUTO;

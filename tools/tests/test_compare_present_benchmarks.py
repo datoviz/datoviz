@@ -72,6 +72,7 @@ benchmark: scene_points=1
             "scenario_benchmark_points: 10000\n"
             "scenario_benchmark_workload: interaction-v1\n"
             "app_interaction_latency: view=0 frames=60 samples=59 "
+            "requested_present_mode=fifo resolved_present_mode=fifo image_count=4 slot_count=2 "
             "input_to_render_start_p95_ms=12.5000 input_to_submit_p95_ms=18.7500 "
             "slot_wait_p95_ms=4.0000 acquire_wait_p95_ms=0.2500\n"
             "scenario_benchmark: scenario=start_scatter frames=60 warmup=6 "
@@ -80,6 +81,9 @@ benchmark: scene_points=1
         metrics = compare.parse_benchmark_output("scatter-interaction", output, "")
         self.assertIsNotNone(metrics.latency_ms)
         self.assertEqual(metrics.latency_ms["input_to_submit_p95_ms"], 18.75)
+        self.assertEqual(metrics.present_config["resolved_present_mode"], "fifo")
+        self.assertEqual(metrics.present_config["image_count"], 4)
+        self.assertEqual(metrics.present_config["slot_count"], 2)
 
     def test_parse_interaction_requires_samples(self) -> None:
         output = (
@@ -99,6 +103,30 @@ benchmark: scene_points=1
         )
         self.assertEqual(summary.verdict, "regression")
         self.assertAlmostEqual(summary.paired_delta_pct_median, 10.0)
+
+    def test_present_configuration_validation(self) -> None:
+        config = {
+            "requested_present_mode": "fifo",
+            "resolved_present_mode": "fifo",
+            "image_count": 4,
+            "slot_count": 2,
+        }
+        base = compare.BenchmarkMetrics(60, 6, 60, 1.0, 60.0, 16.6, present_config=config)
+        candidate = compare.BenchmarkMetrics(
+            60, 6, 60, 1.0, 60.0, 16.6, present_config=dict(config)
+        )
+        self.assertTrue(compare.validate_present_configurations("scatter-interaction", base, candidate))
+        candidate_config = dict(config)
+        candidate_config["slot_count"] = 1
+        mismatch = compare.BenchmarkMetrics(
+            60, 6, 60, 1.0, 60.0, 16.6, present_config=candidate_config
+        )
+        with self.assertRaisesRegex(compare.CompareError, "configurations differ"):
+            compare.validate_present_configurations("scatter-interaction", base, mismatch)
+        unavailable = compare.BenchmarkMetrics(60, 6, 60, 1.0, 60.0, 16.6)
+        self.assertFalse(
+            compare.validate_present_configurations("scatter-interaction", base, unavailable)
+        )
 
     def test_paired_summary_classifies_improvement(self) -> None:
         summary = compare.summarize_pairs(

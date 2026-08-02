@@ -34,6 +34,8 @@ int test_canvas_frame_format(TstContext* suite, const TstCase* item);
 
 int test_canvas_frame_pool(TstContext* suite, const TstCase* item);
 
+int test_canvas_frame_slot_count_resolution(TstContext* suite, const TstCase* item);
+
 int test_canvas_timings(TstContext* suite, const TstCase* item);
 int test_canvas_offscreen_destroy_recreate(TstContext* suite, const TstCase* item);
 int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item);
@@ -47,6 +49,10 @@ int test_canvas_glfw_present_recovery(TstContext* suite, const TstCase* item);
 int test_canvas_glfw_auto_format_stable(TstContext* suite, const TstCase* item);
 
 int test_canvas_glfw_present_semaphore_reuse(TstContext* suite, const TstCase* item);
+
+int test_canvas_glfw_one_frame_slot(TstContext* suite, const TstCase* item);
+
+int test_canvas_glfw_two_frame_slots(TstContext* suite, const TstCase* item);
 
 int test_canvas_handle_refresh_order(TstContext* suite, const TstCase* item);
 

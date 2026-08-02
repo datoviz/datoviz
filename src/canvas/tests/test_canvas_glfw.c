@@ -76,6 +76,16 @@ typedef struct CanvasGlfwFixture
 
 
 
+typedef struct CanvasGlfwLiveProbe
+{
+    uint32_t callback_count;
+    uint32_t invalid_frame_count;
+    uint32_t generation_change_count;
+    uint64_t last_generation;
+} CanvasGlfwLiveProbe;
+
+
+
 #if DVZ_HAS_GLFW
 typedef struct CanvasWrapSurfaceFixture
 {
@@ -391,6 +401,184 @@ static void canvas_glfw_fixture_destroy(CanvasGlfwFixture* fixture)
         dvz_instance_destroy(fixture->instance);
         fixture->instance = NULL;
     }
+}
+
+
+
+/**
+ * Observe live-image publication while frame slots rotate independently from swapchain images.
+ *
+ * @param frame live-image frame metadata
+ * @param user_data probe state
+ * @return zero on success
+ */
+static int canvas_glfw_live_probe_callback(
+    const DvzCanvasLiveImageFrame* frame, void* user_data)
+{
+    ANN(frame);
+    CanvasGlfwLiveProbe* probe = (CanvasGlfwLiveProbe*)user_data;
+    ANN(probe);
+    probe->callback_count++;
+    if (!frame->image_valid || frame->image == VK_NULL_HANDLE || frame->image_view == VK_NULL_HANDLE)
+        probe->invalid_frame_count++;
+    if (probe->last_generation != 0 && frame->resource_generation != probe->last_generation)
+        probe->generation_change_count++;
+    probe->last_generation = frame->resource_generation;
+    return 0;
+}
+
+
+
+/**
+ * Exercise a requested swapchain frame-slot count across present, resize, capture, and live sink.
+ *
+ * @param suite owning test suite
+ * @param requested_slots requested experimental frame-slot count
+ * @return zero on success
+ */
+static int _canvas_glfw_frame_slot_experiment(TstContext* suite, uint32_t requested_slots)
+{
+    ANN(suite);
+    char value[16] = {0};
+    snprintf(value, sizeof(value), "%u", requested_slots);
+    AT(tst_setenv("DVZ_MAX_FRAMES_IN_FLIGHT", value) == 0);
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        AT(tst_unsetenv("DVZ_MAX_FRAMES_IN_FLIGHT") == 0);
+        tst_skip(suite, "GLFW fixture unavailable");
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    CanvasGlfwClearContext clear_ctx = {
+        .device = fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    CanvasGlfwLiveProbe live_probe = {0};
+    DvzCanvasLiveImageSinkConfig live_cfg = {
+        DVZ_STRUCT_INIT_FIELDS(DvzCanvasLiveImageSinkConfig),
+        .callback = canvas_glfw_live_probe_callback,
+        .user_data = &live_probe,
+    };
+    AT(dvz_canvas_configure_live_image_sink(canvas, true, &live_cfg) == 0);
+
+    uint32_t submit_count = 0;
+    bool indices_diverged = false;
+    for (uint32_t attempt = 0; attempt < 64 && submit_count < 12; attempt++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        submit_count++;
+        uint32_t slot_index = _dvz_canvas_swapchain_last_presented_slot_index(canvas);
+        uint32_t image_index = _dvz_canvas_swapchain_last_presented_image_index(canvas);
+        AT(slot_index < _dvz_canvas_swapchain_slot_count(canvas));
+        AT(image_index < _dvz_canvas_swapchain_image_count(canvas));
+        indices_diverged = indices_diverged || slot_index != image_index;
+    }
+    AT(submit_count == 12);
+
+    uint32_t image_count = _dvz_canvas_swapchain_image_count(canvas);
+    uint32_t slot_count = _dvz_canvas_swapchain_slot_count(canvas);
+    AT(image_count > 0);
+    AT(slot_count == _dvz_canvas_frame_slot_count_resolve(requested_slots, image_count));
+    AT(canvas->frame_pool.frame_count == slot_count);
+    if (image_count > slot_count)
+        AT(indices_diverged);
+    if (slot_count > 1)
+        AT(live_probe.generation_change_count > 0);
+
+    const char* replacement_value = requested_slots == 1 ? "2" : "1";
+    AT(tst_setenv("DVZ_MAX_FRAMES_IN_FLIGHT", replacement_value) == 0);
+
+#if DVZ_HAS_GLFW
+    GLFWwindow* native = (GLFWwindow*)dvz_window_backend_handle(fixture.window);
+    ANN(native);
+    DvzCanvasSurfaceInfo before = dvz_canvas_window_surface_info(canvas);
+    glfwSetWindowSize(native, (int)before.extent.width + 16, (int)before.extent.height + 16);
+#endif
+    dvz_canvas_swapchain_mark_out_of_date(canvas);
+    bool recreated = false;
+    uint64_t recreate_before = dvz_canvas_swapchain_recreate_count(canvas);
+    for (uint32_t attempt = 0; attempt < 64; attempt++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        recreated = true;
+        break;
+    }
+    AT(recreated);
+    AT(dvz_canvas_swapchain_recreate_count(canvas) == recreate_before + 1);
+    image_count = _dvz_canvas_swapchain_image_count(canvas);
+    slot_count = _dvz_canvas_swapchain_slot_count(canvas);
+    // The override is cached per Canvas and does not change during swapchain recreation.
+    AT(slot_count == _dvz_canvas_frame_slot_count_resolve(requested_slots, image_count));
+    AT(canvas->frame_pool.frame_count == slot_count);
+
+    DvzStreamFrame* presented_frame = dvz_canvas_frame_pool_current(&canvas->frame_pool);
+    ANN(presented_frame);
+    VkExtent2D presented_extent = presented_frame->extent;
+    size_t byte_count = (size_t)presented_extent.width * (size_t)presented_extent.height * 4;
+    uint8_t* rgba = (uint8_t*)dvz_calloc(byte_count, sizeof(uint8_t));
+    ANN(rgba);
+    AT(dvz_canvas_capture_rgba_into(
+           canvas, presented_extent.width, presented_extent.height, rgba, byte_count) == 0);
+    dvz_free(rgba);
+
+    AT(live_probe.callback_count == submit_count + 1);
+    AT(live_probe.invalid_frame_count == 0);
+    AT(live_probe.last_generation != 0);
+    AT(dvz_canvas_configure_live_image_sink(canvas, false, NULL) == 0);
+    AT(dvz_instance_error_count(fixture.instance) == 0);
+    canvas_glfw_fixture_destroy(&fixture);
+    AT(tst_unsetenv("DVZ_MAX_FRAMES_IN_FLIGHT") == 0);
+    return 0;
+}
+
+
+
+/**
+ * Validate one reusable frame slot against a multi-image swapchain.
+ *
+ * @param suite The owning test suite.
+ * @param item The test item (unused).
+ * @return Zero on success.
+ */
+int test_canvas_glfw_one_frame_slot(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    return _canvas_glfw_frame_slot_experiment(suite, 1);
+}
+
+
+
+/**
+ * Validate two reusable frame slots against the live swapchain image count.
+ *
+ * @param suite The owning test suite.
+ * @param item The test item (unused).
+ * @return Zero on success.
+ */
+int test_canvas_glfw_two_frame_slots(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    return _canvas_glfw_frame_slot_experiment(suite, 2);
 }
 
 

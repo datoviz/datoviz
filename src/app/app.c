@@ -50,6 +50,7 @@
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include <volk.h>
+#include "../canvas/canvas_internal.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2/recording.h"
 #include "datoviz/drp2/runtime.h"
@@ -77,6 +78,37 @@
 
 /* Keep borrowed canvas targets out of the scene emitter's low transient id range. */
 #define DVZ_APP_CANVAS_TARGET_BASE UINT64_C(0xF000000000000000)
+
+
+
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+/**
+ * Return the stable telemetry name for a Vulkan present mode.
+ *
+ * @param mode Vulkan present mode
+ * @return static present mode name
+ */
+static const char* _app_present_mode_name(VkPresentModeKHR mode)
+{
+    switch (mode)
+    {
+    case VK_PRESENT_MODE_IMMEDIATE_KHR:
+        return "immediate";
+    case VK_PRESENT_MODE_MAILBOX_KHR:
+        return "mailbox";
+    case VK_PRESENT_MODE_FIFO_KHR:
+        return "fifo";
+    case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+        return "fifo-relaxed";
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    case VK_PRESENT_MODE_FIFO_LATEST_READY_KHR:
+        return "fifo-latest";
+#endif
+    default:
+        return "unknown";
+    }
+}
+#endif
 
 #define DVZ_TRACE_COLOR_RESET "\x1b[0m"
 #define DVZ_TRACE_COLOR_DIM   "\x1b[90m"
@@ -1910,15 +1942,24 @@ static void _app_frame_timing_report(DvzApp* app)
         qsort(acquire_wait, state->sample_count, sizeof(double), _app_timing_compare_double);
         qsort(input_start, input_count, sizeof(double), _app_timing_compare_double);
         qsort(input_submit, input_count, sizeof(double), _app_timing_compare_double);
+        VkPresentModeKHR resolved_present_mode = VK_PRESENT_MODE_FIFO_KHR;
+        bool has_present_mode =
+            dvz_canvas_swapchain_present_mode(win->canvas, &resolved_present_mode);
+        uint32_t image_count = _dvz_canvas_swapchain_image_count(win->canvas);
+        uint32_t slot_count = _dvz_canvas_swapchain_slot_count(win->canvas);
         dvz_fprintf(
             stdout,
             "app_interaction_latency: view=%u frames=%u samples=%u "
+            "requested_present_mode=%s resolved_present_mode=%s image_count=%u slot_count=%u "
             "input_to_render_start_p50_ms=%.4f input_to_render_start_p95_ms=%.4f "
             "input_to_render_start_p99_ms=%.4f input_to_submit_p50_ms=%.4f "
             "input_to_submit_p95_ms=%.4f input_to_submit_p99_ms=%.4f "
             "slot_wait_p50_ms=%.4f slot_wait_p95_ms=%.4f slot_wait_p99_ms=%.4f "
             "acquire_wait_p50_ms=%.4f acquire_wait_p95_ms=%.4f acquire_wait_p99_ms=%.4f\n",
             vi, state->sample_count, input_count,
+            _app_present_mode_name(win->canvas->cfg.present_mode),
+            has_present_mode ? _app_present_mode_name(resolved_present_mode) : "unavailable",
+            image_count, slot_count,
             _app_timing_percentile(input_start, input_count, 50),
             _app_timing_percentile(input_start, input_count, 95),
             _app_timing_percentile(input_start, input_count, 99),

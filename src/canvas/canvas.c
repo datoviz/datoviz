@@ -1555,6 +1555,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
     canvas->video_sink_cfg_valid = false;
     canvas->live_image_sink_enabled = false;
     canvas->stream_started = false;
+    canvas->stream_resource_generation = 0;
     canvas->primary_sink_attached = false;
     canvas->offscreen_memory_fd = -1;
     canvas->retired_offscreen_memory_fd = -1;
@@ -1793,6 +1794,8 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         dvz_canvas_swapchain_handles_refreshed(canvas);
         frame->handles_dirty = false;
     }
+    if (canvas->stream_started)
+        canvas->stream_resource_generation = frame->resource_generation;
 
     if (canvas->draw_callback)
     {

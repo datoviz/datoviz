@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 DEFAULT_WORKLOADS = (
     "blank",
     "scene-drp2",
@@ -84,6 +84,7 @@ class BenchmarkMetrics:
     recreate_steady: int | None = None
     phase_ms: dict[str, float] | None = None
     latency_ms: dict[str, float] | None = None
+    present_config: dict[str, str | int] | None = None
 
 
 @dataclass(frozen=True)
@@ -233,11 +234,13 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
             if separator and key not in {"view", "frames"}:
                 phase_ms[key] = float(value)
     latency_ms = None
+    present_config = None
     if workload == "scatter-interaction":
         latency_matches = list(APP_INTERACTION_LATENCY_RE.finditer(combined))
         if not latency_matches:
             raise CompareError("scatter-interaction: missing interaction latency output")
         latency_fields: dict[str, float] = {}
+        config_fields: dict[str, str | int] = {}
         input_samples = 0
         for field in latency_matches[-1].group("fields").split():
             key, separator, value = field.partition("=")
@@ -245,11 +248,20 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
                 continue
             if key == "samples":
                 input_samples = int(value)
+            elif key in {"requested_present_mode", "resolved_present_mode"}:
+                config_fields[key] = value
+            elif key in {"image_count", "slot_count"}:
+                config_fields[key] = int(value)
             elif key.endswith("_ms"):
                 latency_fields[key] = float(value)
         if input_samples < 1 or "input_to_submit_p95_ms" not in latency_fields:
             raise CompareError("scatter-interaction: incomplete interaction latency samples")
         latency_ms = latency_fields
+        required_config = {
+            "requested_present_mode", "resolved_present_mode", "image_count", "slot_count",
+        }
+        if required_config.issubset(config_fields):
+            present_config = config_fields
     return BenchmarkMetrics(
         frames=frames,
         warmup=int(summary.group("warmup")),
@@ -259,6 +271,7 @@ def parse_benchmark_output(workload: str, stdout: str, stderr: str) -> Benchmark
         ms_per_frame=1000.0 * elapsed_s / frames,
         phase_ms=phase_ms,
         latency_ms=latency_ms,
+        present_config=present_config,
     )
 
 
@@ -326,6 +339,20 @@ def summarize_pairs(
         threshold_pct=threshold_pct,
         verdict=verdict,
     )
+
+
+def validate_present_configurations(
+    workload: str, base: BenchmarkMetrics, candidate: BenchmarkMetrics
+) -> bool:
+    """Reject known presentation-configuration mismatches and report whether proof is available."""
+    if base.present_config is None or candidate.present_config is None:
+        return False
+    if base.present_config != candidate.present_config:
+        raise CompareError(
+            f"{workload}: presentation configurations differ: "
+            f"base={base.present_config}, candidate={candidate.present_config}"
+        )
+    return True
 
 
 def workload_command(revision: Revision, workload: str, frames: int) -> tuple[list[str], dict[str, str]]:
@@ -634,6 +661,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         },
         "runs": [],
         "summaries": [],
+        "present_configurations": {},
     }
 
     report_json = output / "report.json"
@@ -647,8 +675,23 @@ def main(argv: Sequence[str] | None = None) -> int:
 
             for workload_index, workload in enumerate(workloads):
                 print(f"preflight: {workload}")
-                execute_benchmark(base, workload, args.frames, pair=-1, order=0, log_dir=log_dir, label="base-preflight")
-                execute_benchmark(candidate, workload, args.frames, pair=-1, order=1, log_dir=log_dir, label="candidate-preflight")
+                base_preflight = execute_benchmark(
+                    base, workload, args.frames, pair=-1, order=0, log_dir=log_dir,
+                    label="base-preflight",
+                )
+                candidate_preflight = execute_benchmark(
+                    candidate, workload, args.frames, pair=-1, order=1, log_dir=log_dir,
+                    label="candidate-preflight",
+                )
+                if workload == "scatter-interaction":
+                    verified = validate_present_configurations(
+                        workload, base_preflight.metrics, candidate_preflight.metrics
+                    )
+                    report["present_configurations"][workload] = {
+                        "verified": verified,
+                        "base": base_preflight.metrics.present_config,
+                        "candidate": candidate_preflight.metrics.present_config,
+                    }
 
                 rng = random.Random(args.seed + workload_index)
                 pairs: list[dict[str, RunResult]] = []
@@ -665,6 +708,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                         )
                         pair_results[revision.name] = result
                         report["runs"].append(asdict(result))
+                    if workload == "scatter-interaction":
+                        validate_present_configurations(
+                            workload,
+                            pair_results["base"].metrics,
+                            pair_results["candidate"].metrics,
+                        )
                     pairs.append(pair_results)
 
                 latency_workload = workload == "scatter-interaction"
