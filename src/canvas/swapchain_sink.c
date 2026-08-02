@@ -170,6 +170,34 @@ bool _dvz_canvas_max_frames_in_flight_parse(const char* value, uint32_t* request
 
 
 /**
+ * Resolve the configured frame-slot request for a presentation mode.
+ *
+ * @param present_mode requested Vulkan presentation mode
+ * @param value environment override, NULL, `auto`, or a positive integer
+ * @param[out] valid whether the override was valid
+ * @return requested slot count, with zero representing one slot per swapchain image
+ */
+uint32_t _dvz_canvas_frame_slot_count_request(
+    VkPresentModeKHR present_mode, const char* value, bool* valid)
+{
+    ANN(valid);
+    *valid = true;
+    uint32_t default_slot_count = present_mode == VK_PRESENT_MODE_FIFO_KHR ? 1 : 0;
+    if (value == NULL)
+        return default_slot_count;
+
+    uint32_t requested_slot_count = 0;
+    if (!_dvz_canvas_max_frames_in_flight_parse(value, &requested_slot_count))
+    {
+        *valid = false;
+        return default_slot_count;
+    }
+    return requested_slot_count;
+}
+
+
+
+/**
  * Resolve a cached frame-slot request against the live swapchain image count.
  *
  * @param requested_slot_count requested count, with zero representing automatic
@@ -1771,14 +1799,15 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->test_force_acquire_status = -1;
     canvas->swapchain->test_force_present_status = -1;
     const char* max_frames_env = getenv("DVZ_MAX_FRAMES_IN_FLIGHT");
-    if (!_dvz_canvas_max_frames_in_flight_parse(
-            max_frames_env, &canvas->swapchain->requested_slot_count))
-    {
+    bool max_frames_env_valid = false;
+    canvas->swapchain->requested_slot_count =
+        _dvz_canvas_frame_slot_count_request(
+            canvas->cfg.present_mode, max_frames_env, &max_frames_env_valid);
+    if (!max_frames_env_valid)
         log_warn(
-            "ignoring DVZ_MAX_FRAMES_IN_FLIGHT='%s' (expected auto or a positive integer)",
-            max_frames_env != NULL ? max_frames_env : "");
-        canvas->swapchain->requested_slot_count = 0;
-    }
+            "ignoring DVZ_MAX_FRAMES_IN_FLIGHT='%s' "
+            "(expected auto or a positive integer)",
+            max_frames_env);
     canvas->swapchain->surface_wrapper = dvz_surface_create_wrapper();
     ANN(canvas->swapchain->surface_wrapper);
     canvas->swapchain->swapchain_wrapper = dvz_swapchain_create_wrapper();

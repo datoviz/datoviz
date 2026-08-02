@@ -756,6 +756,22 @@ int test_canvas_frame_slot_count_resolution(TstContext* suite, const TstCase* it
     AT(!_dvz_canvas_max_frames_in_flight_parse("-1", &requested));
     AT(!_dvz_canvas_max_frames_in_flight_parse("1x", &requested));
 
+    bool valid = false;
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, NULL, &valid) == 1);
+    AT(valid);
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, "auto", &valid) == 0);
+    AT(valid);
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, "2", &valid) == 2);
+    AT(valid);
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, "invalid", &valid) == 1);
+    AT(!valid);
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_RELAXED_KHR, NULL, &valid) == 0);
+    AT(valid);
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_MAILBOX_KHR, NULL, &valid) == 0);
+    AT(valid);
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_IMMEDIATE_KHR, NULL, &valid) == 0);
+    AT(valid);
+
     AT(_dvz_canvas_frame_slot_count_resolve(0, 4) == 4);
     AT(_dvz_canvas_frame_slot_count_resolve(1, 4) == 1);
     AT(_dvz_canvas_frame_slot_count_resolve(2, 4) == 2);

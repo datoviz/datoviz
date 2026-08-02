@@ -16,7 +16,7 @@ The documentation inventory, generated C reference, Python binding guidance, dat
 
 The optional Qt bridge and local Apple Silicon split-package proof are complete. The required RC3 provider lane remains externally blocked on conda-forge publication of Vulkan-enabled Qt followed by compatible PyQt and exact Datoviz provider artifacts.
 
-Interaction pacing and the opt-in frames-in-flight experiment are implemented. Linux/X11 FIFO measurements favor one reusable slot and two slots also improve latency; physical Windows measurements at 144 Hz classify one, two, and automatic slots as no material change, all three smokes felt very smooth, and the evidence recommends one slot pending the separate default-policy decision.
+Interaction pacing and the frames-in-flight policy are implemented. Ordinary FIFO defaults to one reusable slot for interaction freshness; `DVZ_MAX_FRAMES_IN_FLIGHT=auto|N` retains explicit control. Linux/X11 measurements and physical smokes show that one slot avoids the sluggish multi-frame FIFO queue, while physical Windows measurements at 144 Hz classify one, two, and automatic slots as no material throughput change.
 
 The issue #137 render-product lane is implemented through R9: typed panel-local products, coherent surface/MSAA semantics, product-driven EDL/transparency/volume composition, deterministic material-aware GTAO, the semantic AO public API, legacy-path cleanup, and authoritative specifications are present. Its checkpoint commits, exact-head validation, landing evidence, and affected-QA manifest are committed and pushed on `refactor/rc3-render-products` through `19ea96758`.
 

@@ -229,6 +229,9 @@ void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas);
 
 bool _dvz_canvas_max_frames_in_flight_parse(const char* value, uint32_t* requested_slot_count);
 
+uint32_t _dvz_canvas_frame_slot_count_request(
+    VkPresentModeKHR present_mode, const char* value, bool* valid);
+
 uint32_t _dvz_canvas_frame_slot_count_resolve(
     uint32_t requested_slot_count, uint32_t image_count);
 

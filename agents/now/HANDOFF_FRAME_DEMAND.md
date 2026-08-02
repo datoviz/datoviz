@@ -1,6 +1,6 @@
 # Frame Demand And Interaction Pacing Handoff
 
-Status: frame demand and opt-in frames-in-flight experiment implemented; Linux/X11 data favors one slot, Windows data is neutral with all physical smokes smooth, and the separate default-policy decision remains. Updated: 2026-08-02.
+Status: frame demand and frames-in-flight policy implemented; ordinary FIFO defaults to one slot, explicit overrides remain available, and present-mode policy remains separate. Updated: 2026-08-03.
 
 This handoff records the approved architecture and implementation contract for responsive on-demand interaction. It remains concrete enough for a lower-reasoning agent to maintain or extend without reopening the architecture question.
 
@@ -172,11 +172,11 @@ A wheel event should update a controller-owned target and activate `DVZ_FRAME_DE
 
 The motion integrator belongs to the controller. The scheduler should know only that motion remains active and that another frame is required.
 
-## Frames-In-Flight Experiment
+## Frames-In-Flight Policy
 
-The opt-in experiment is implemented at `44307644a`; it is not a default-policy change. Read [../../spec/testing/INTERACTION_LATENCY.md](../../spec/testing/INTERACTION_LATENCY.md) before maintaining or extending it.
+The frame-slot separation experiment was implemented at `44307644a`; the subsequent policy decision makes one slot the ordinary FIFO default. Read [../../spec/testing/INTERACTION_LATENCY.md](../../spec/testing/INTERACTION_LATENCY.md) before maintaining or extending it.
 
-`DvzCanvasSwapchain.image_count` and `slot_count` are now distinct. Unset or `auto` `DVZ_MAX_FRAMES_IN_FLIGHT` preserves the old image-count-sized pool; a positive explicit value resolves to `min(requested, image_count)`; zero and malformed values warn and fall back to current behavior.
+`DvzCanvasSwapchain.image_count` and `slot_count` are distinct. With `DVZ_MAX_FRAMES_IN_FLIGHT` unset, ordinary FIFO requests one slot and other presentation modes preserve the image-count-sized pool. Explicit `auto` requests the image-count-sized pool for every mode; a positive value resolves to `min(requested, image_count)`; zero and malformed values warn and fall back to the mode default.
 
 The implemented ownership split is:
 
@@ -227,10 +227,10 @@ just compare-interaction c49e98e1a HEAD --runs 5 --frames 300
 
 The comparison tool forces ordinary FIFO for `scatter-interaction`. Keep raw reports build-local unless a durable release-evidence location is explicitly chosen.
 
-## Next Decision
+## Default Policy Decision
 
-Make the separate default-policy decision. Linux evidence materially favors one slot, while the 144 Hz Windows evidence is neutral but directionally non-regressing for one slot, its auto control is neutral, and all three physical smokes felt very smooth. The evidence therefore recommends one FIFO frame slot by default with `DVZ_MAX_FRAMES_IN_FLIGHT` retained as an override, but the override stays opt-in until the maintainer explicitly accepts that policy. Present-mode policy remains separate. The expected direction is capped FIFO latest-ready when supported, a bounded-frames-in-flight FIFO fallback, explicit environment overrides, and eventually refresh-aware pacing instead of an unconditional 60 FPS cap.
+The maintainer accepted one frame slot as the ordinary FIFO default on 2026-08-03 after a physical Linux smoke reproduced sluggish interaction with the automatic four-slot pool and two slots, while one slot was smooth. A post-change smoke confirmed that the new default was the smoothest configuration. Same-machine telemetry measured p95 input-to-submit latency of approximately 116 ms with four slots, 83 ms with two slots, and 66 ms with one slot. These are CPU submission freshness proxies, not input-to-photon measurements. Present-mode policy remains separate; the expected direction is capped FIFO latest-ready when supported, a bounded-frames-in-flight FIFO fallback, explicit environment overrides, and eventually refresh-aware pacing instead of an unconditional 60 FPS cap.
 
 ## Completion Criteria
 
-The frame-demand and opt-in frame-slot slices are complete: normal interactive views idle without input, active controller drags render continuously, release returns to idle, unrelated views remain idle, existing continuous sources retain their behavior, and one-/two-slot FIFO paths pass validation, resize, capture, live-sink coverage, and physical Windows comparison. Only the separate default-policy decision remains.
+The frame-demand and frame-slot slices are complete: normal interactive views idle without input, active controller drags render continuously, release returns to idle, unrelated views remain idle, existing continuous sources retain their behavior, one-/two-slot FIFO paths pass validation, resize, capture, and live-sink coverage, and ordinary FIFO now defaults to one slot.

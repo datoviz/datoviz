@@ -43,11 +43,11 @@ Keep the instrumentation opt-in and allocation-free in the steady-state frame pa
 Do not add `vkDeviceWaitIdle`, queue-idle waits, readbacks, or extra fences to obtain measurements. Instrumentation must observe the current synchronization path without changing it.
 
 
-## Frames-In-Flight Experiment
+## Frames-In-Flight Policy
 
-The swapchain canvas separates reusable frame slots from swapchain images. Unset or `auto` `DVZ_MAX_FRAMES_IN_FLIGHT` preserves one slot per image, while a positive explicit value limits `slot_count` to `min(requested, image_count)` for controlled latency experiments.
+The swapchain canvas separates reusable frame slots from swapchain images. Ordinary FIFO presentation defaults to one reusable frame slot because deeper FIFO queues display stale interaction state without increasing the display cadence. Other presentation modes default to one slot per swapchain image. Explicit `DVZ_MAX_FRAMES_IN_FLIGHT=auto` selects one slot per image for every mode, while a positive value limits `slot_count` to `min(requested, image_count)`.
 
-Swapchain image views, layouts, and render-finished semaphores remain per image; command buffers, acquire semaphores, in-flight fences, offscreen/depth resources, and Canvas stream-frame entries remain per frame slot. Test one, two, and the current image-count number of slots. The override remains experimental and opt-in until cross-platform validation and latency data establish a safe default.
+Swapchain image views, layouts, and render-finished semaphores remain per image; command buffers, acquire semaphores, in-flight fences, offscreen/depth resources, and Canvas stream-frame entries remain per frame slot. Test one, two, and the current image-count number of slots. The override remains available for throughput experiments and platform comparisons.
 
 The experiment must preserve binary semaphore reuse rules, resize/recreate behavior, device-loss handling, captures, live sinks, and validation-layer cleanliness. It must not introduce a parallel renderer or presentation path.
 
