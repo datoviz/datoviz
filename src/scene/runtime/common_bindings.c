@@ -280,7 +280,7 @@ static bool _resolve_common_set(
         return false;
     if (override_mvp != NULL)
         mvp_src = override_mvp;
-    else if (fixed)
+    else if (fixed || !render->u.render.has_mvp)
     {
         _identity_mvp(&local_identity);
         mvp_src = &local_identity;
