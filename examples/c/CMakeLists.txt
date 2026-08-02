@@ -88,6 +88,9 @@ function(dvz_add_example group name source)
 
     if(TARGET datoviz_app)
         target_link_libraries(${target} PRIVATE datoviz_app)
+        target_compile_definitions(${target} PRIVATE DVZ_EXAMPLE_HAS_APP=1)
+    else()
+        target_compile_definitions(${target} PRIVATE DVZ_EXAMPLE_HAS_APP=0)
     endif()
 
     if(TARGET datoviz_gui)
