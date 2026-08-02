@@ -406,6 +406,55 @@ static void canvas_glfw_fixture_destroy(CanvasGlfwFixture* fixture)
 
 
 /**
+ * Validate GLFW present canvas destroy/recreate on the same device and window setup.
+ *
+ * @param suite The owning test suite.
+ * @param item The test item (unused).
+ * @return 0 on success.
+ */
+int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
+    if (skipped)
+    {
+        tst_skip(suite, "GLFW fixture unavailable");
+        canvas_glfw_fixture_destroy(&fixture);
+        return 0;
+    }
+
+    dvz_canvas_destroy(fixture.canvas);
+    fixture.canvas = NULL;
+
+    DvzCanvasConfig cfg = dvz_canvas_config();
+    cfg.window = fixture.window;
+    cfg.device = fixture.device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
+    cfg.present_mode = VK_PRESENT_MODE_FIFO_KHR;
+    cfg.timing_history = 4;
+
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        fixture.canvas = dvz_canvas_create(&cfg);
+        ANN(fixture.canvas);
+        AT(dvz_canvas_render_mode(fixture.canvas) == DVZ_CANVAS_RENDER_MODE_PRESENT);
+        AT(dvz_canvas_frame(fixture.canvas) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(fixture.canvas) == 0);
+        dvz_canvas_destroy(fixture.canvas);
+        fixture.canvas = NULL;
+    }
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
  * Observe live-image publication while frame slots rotate independently from swapchain images.
  *
  * @param frame live-image frame metadata
