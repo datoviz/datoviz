@@ -1100,7 +1100,10 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     dvz_frame_plan_destroy(contract_rejections);
 
     const uint64_t color_bit = UINT64_C(1) << DVZ_RENDER_PRODUCT_SCENE_COLOR;
-    DvzPanelCompositionSnapshot cycle = {
+    DvzPanelCompositionSnapshot* cycle = (DvzPanelCompositionSnapshot*)dvz_calloc(
+        1, sizeof(DvzPanelCompositionSnapshot));
+    ANN(cycle);
+    *cycle = (DvzPanelCompositionSnapshot){
         .valid = true,
         .width = 1,
         .height = 1,
@@ -1109,8 +1112,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         .required_product_mask = color_bit,
         .technique_count = 2,
     };
-    dvz_snprintf(cycle.panel_id, sizeof(cycle.panel_id), "cycle_p0");
-    cycle.techniques[0] = (DvzSceneResolvedTechnique){
+    dvz_snprintf(cycle->panel_id, sizeof(cycle->panel_id), "cycle_p0");
+    cycle->techniques[0] = (DvzSceneResolvedTechnique){
         .instance_id = {.value = 1},
         .id = DVZ_SCENE_TECHNIQUE_OPAQUE_SHADING,
         .version = 1,
@@ -1124,7 +1127,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         .outputs = {DVZ_RENDER_PRODUCT_SCENE_COLOR},
         .output_ids = {{.value = 1}},
     };
-    cycle.techniques[1] = (DvzSceneResolvedTechnique){
+    cycle->techniques[1] = (DvzSceneResolvedTechnique){
         .instance_id = {.value = 2},
         .id = DVZ_SCENE_TECHNIQUE_TRANSPARENT_BLEND,
         .version = 1,
@@ -1139,28 +1142,33 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         .output_ids = {{.value = 2}},
     };
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&cycle, &validation_report));
+    AT(!_frame_plan_composition_validate(cycle, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "dependency cycle") != NULL);
+    dvz_free(cycle);
 
-    DvzPanelCompositionSnapshot repeated = first;
-    repeated.techniques[3] = repeated.techniques[2];
-    repeated.techniques[3].instance_id.value = 4;
-    repeated.techniques[2] = repeated.techniques[1];
-    repeated.techniques[2].instance_id.value = 3;
-    repeated.techniques[2].input_ids[0] = repeated.techniques[1].output_ids[0];
-    repeated.techniques[2].output_ids[0].value = 4;
-    repeated.techniques[3].input_ids[0] = repeated.techniques[2].output_ids[0];
-    repeated.technique_count = 4;
-    repeated.passes[2] = repeated.passes[1];
-    repeated.passes[2].id.value = 3;
-    repeated.passes[2].technique_instance_id = repeated.techniques[2].instance_id;
-    repeated.passes[2].ordinal = 1;
-    repeated.passes[2].bindings[0].product_id = repeated.techniques[2].output_ids[0];
-    repeated.passes[2].bindings[0].load_source_product_id = repeated.techniques[2].input_ids[0];
-    repeated.pass_count = 3;
-    repeated.work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(&repeated);
-    AT(repeated.techniques[1].id == repeated.techniques[2].id);
-    AT(_frame_plan_composition_validate(&repeated, NULL));
+    DvzPanelCompositionSnapshot* repeated = (DvzPanelCompositionSnapshot*)dvz_malloc(
+        sizeof(DvzPanelCompositionSnapshot));
+    ANN(repeated);
+    *repeated = first;
+    repeated->techniques[3] = repeated->techniques[2];
+    repeated->techniques[3].instance_id.value = 4;
+    repeated->techniques[2] = repeated->techniques[1];
+    repeated->techniques[2].instance_id.value = 3;
+    repeated->techniques[2].input_ids[0] = repeated->techniques[1].output_ids[0];
+    repeated->techniques[2].output_ids[0].value = 4;
+    repeated->techniques[3].input_ids[0] = repeated->techniques[2].output_ids[0];
+    repeated->technique_count = 4;
+    repeated->passes[2] = repeated->passes[1];
+    repeated->passes[2].id.value = 3;
+    repeated->passes[2].technique_instance_id = repeated->techniques[2].instance_id;
+    repeated->passes[2].ordinal = 1;
+    repeated->passes[2].bindings[0].product_id = repeated->techniques[2].output_ids[0];
+    repeated->passes[2].bindings[0].load_source_product_id = repeated->techniques[2].input_ids[0];
+    repeated->pass_count = 3;
+    repeated->work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(repeated);
+    AT(repeated->techniques[1].id == repeated->techniques[2].id);
+    AT(_frame_plan_composition_validate(repeated, NULL));
+    dvz_free(repeated);
 
     DvzScene* empty_scene = dvz_scene();
     ANN(empty_scene);

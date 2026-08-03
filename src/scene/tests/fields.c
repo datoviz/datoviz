@@ -45,15 +45,6 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-#define TST_FIELDS_PROCESS_CASE(test)                                                            \
-    do                                                                                            \
-    {                                                                                             \
-        TstCaseDesc _tst_desc = tst_case_desc(#test, #test, (test));                              \
-        _tst_desc.tags = tags;                                                                    \
-        _tst_desc.isolation = TST_ISOLATION_PROCESS;                                              \
-        tst_suite_add_case((suite), _tst_desc);                                                   \
-    } while (0)
-
 int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase* item);
 int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const TstCase* item);
 int test_scene_figure_reserve_resolves_content_layout(TstContext* suite, const TstCase* item);
@@ -3814,6 +3805,8 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     caps = dvz_capability_snapshot();
+    caps.max_color_sample_count = 1;
+    caps.max_depth_sample_count = 1;
     dvz_diagnostic_report_init(&report);
 
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
@@ -5209,7 +5202,7 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_volume_field_emit_realizes_3d_texture);
     TST_CASE(test_scene_volume_retained_controls);
     TST_CASE(test_scene_volume_rgba_field_no_transfer);
-    TST_FIELDS_PROCESS_CASE(test_scene_volume_label_slice_uses_categorical_scale);
+    TST_CASE(test_scene_volume_label_slice_uses_categorical_scale);
     TST_CASE(test_scene_volume_label_composite_uses_first_hit_shader);
     TST_CASE(test_scene_volume_signed_label_composite_uses_first_hit_shader);
     TST_CASE(test_scene_volume_label_sparse_lookup_buffer);
