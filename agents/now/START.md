@@ -20,7 +20,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 
 1. Read [STATUS.md](STATUS.md) for current blockers and decisions.
 2. Read [RELEASE.md](RELEASE.md) for the remaining RC3, RC4, and final gates.
-3. Use [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md) for the pending `main`/`v0.3-maintenance` transition; external branch operations require explicit approval of the exact actions.
+3. Use [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md) for the audited pending `main`/`v0.3-maintenance` transition; external push, rename, and ruleset operations require explicit approval of the exact actions.
 4. Use [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md) for the rewritten course execution queue and [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for its durable contract.
 5. Read [DOCUMENTATION.md](DOCUMENTATION.md) before public documentation, generated-reference, gallery, attribution, or release-communication work.
 6. Use [C_DISTRIBUTION.md](C_DISTRIBUTION.md) and [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for C/C++ packaging and exact-artifact work.

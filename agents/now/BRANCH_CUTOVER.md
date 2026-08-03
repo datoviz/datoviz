@@ -1,6 +1,6 @@
 # Post-RC2 Branch Cutover
 
-Status: required post-RC2 plan; external branch operations require later approval of the exact actions. Updated: 2026-07-20.
+Status: read-only preflight complete; external branch operations and the reconciliation push require approval of the exact actions. Updated: 2026-08-03.
 
 ## Goal
 
@@ -12,7 +12,42 @@ Preserve the old v0.3 `main` line as `v0.3-maintenance`, rename the active v0.4 
 - Active v0.4 development branch: `v0.4-dev`.
 - Old v0.3 branch: `main`.
 - Intended v0.3 maintenance branch: not yet created.
-- Additional `dev` branch: retained pending an explicit ownership and disposition audit.
+- Additional `dev` branch: legacy v0.3.6-development history; retain unchanged and frozen through the cutover.
+
+## Audited Snapshot
+
+Read-only preflight completed at `2026-08-03T12:27:21+02:00` after refreshing named branch refs and v0.4 tags. The local `origin/HEAD` cache was stale and has been refreshed to `origin/v0.4-dev`. A broad tag fetch also exposed an unrelated local/remote `nightly` tag collision; neither tag was changed, and the collision must not be resolved as part of the branch cutover.
+
+| Ref | Audited object |
+| --- | --- |
+| `origin/v0.4-dev` | `a8caae27364049ab5e59d20832d798f2cc5e905b` |
+| local `v0.4-dev` | `66e3f80719572b1784036d3f53d0bf77df04470f`, one unpublished cleanup commit ahead |
+| `origin/main` | `c1725df786dfdb7849f4a0d2928968aabfe002ec` |
+| `origin/dev` | `8857bb6b3a769c3c128f13e85c687362982f2a4e` |
+| `v0.4.0rc1^{commit}` | `12da2a6019c2e73bf29734eed482fffcd1e376b3` |
+| `v0.4.0rc2^{commit}` | `8a3bd75096bb1124707d2fd547de512c20211c85` |
+
+The old `main` and active `v0.4-dev` lines have 60 and 5,919 unique commits respectively after their historical merge base. They must be renamed, never merged. The `dev` branch has three commits absent from old `main`: the v0.3.6-development version bump, a packaging update, and a mesh-texture example. Retaining it unchanged as a frozen legacy branch is the lowest-risk disposition; any later recovery into `v0.3-maintenance` requires a separate review.
+
+The parent gitlink and checked-out `data` submodule both point to `a9542d20f2d29aecb9518738f6b7ba1914b63997`, which is the tip of `datoviz/data:v0.4-dev`. The `.gitmodules` branch setting and all `spec/data/` references therefore remain intentionally unchanged because the data repository is outside this cutover.
+
+GitHub has no Pages deployment or configured environments for this repository. No Actions runs were queued or in progress during the audit. The active CircleCI webhook has broad repository events but no checked-in `.circleci` configuration; verify delivery after the rename without changing the hook. The scheduled nightly-pruning workflow follows the default branch and requires no authored branch-filter change.
+
+Open PRs #132 and #136 both target `v0.4-dev`; verify that GitHub retargets both to the renamed `main`. PR #132 remains open while the original author's feedback on #136 is pending.
+
+Two active rulesets apply deletion and non-fast-forward protection: `prevent-force-push-main` follows `~DEFAULT_BRANCH`, while `protect-v0.4-dev` explicitly names `refs/heads/v0.4-dev`. There are no required-status-check or review rules. After the rename, keep the default-branch ruleset on new `main` and repurpose the explicit ruleset as `protect-v0.3-maintenance` so the preserved v0.3 line receives the same deletion and force-push protection.
+
+## Branch-Reference Audit
+
+The audit found 792 `v0.4-dev` or `v0.3-maintenance` occurrences across 184 tracked files. They are classified as follows:
+
+- 664 generated gallery/example occurrences across 117 files: change `tools/build_gallery.py` to emit `main`, then regenerate the manifest, gallery pages, validation gallery, and WebGPU matrix rather than hand-editing generated output.
+- 100 occurrences across 55 live or semantic-review files: change current workflow filters, badges, clone and FetchContent guidance, repository source links, release-conformance defaults, website policy, active agent status, and other instructions that identify the live branch; preserve language that names the historical v0.4-dev development phase or protocol/API assignments.
+- 11 occurrences across nine completed plans, tasks, and evidence files: preserve as historical records.
+- Five occurrences across `.gitmodules` and `spec/data/`: preserve because they refer to `datoviz/data:v0.4-dev`.
+- 12 occurrences in this cutover plan: update current-state wording after completion while retaining the recorded pre-cutover names and evidence.
+
+Four workflows require an immediate authored update from `v0.4-dev` to `main`: `test.yml`, `wheel-conformance.yml`, `package-index-verification.yml`, and `physical-evidence-intake.yml`. The first post-rename reconciliation commit must contain these filters so its push and subsequent PRs exercise the new branch.
 
 ## Preparation
 
@@ -20,17 +55,18 @@ Preserve the old v0.3 `main` line as `v0.3-maintenance`, rename the active v0.4 
 2. Record the current GitHub default branch, branch protections or rulesets, required checks, environments, Pages settings, open pull-request base branches, scheduled or queued workflows, and external integrations that name either branch.
 3. Audit live branch-name references in `.github/`, `README.md`, `docs/`, `mkdocs.yml`, `justfile`, `justfiles/`, packaging recipes, release tooling, badges, clone commands, contribution guidance, and deployment scripts.
 4. Classify references before editing: live instructions and automation must change; tag-pinned RC1/RC2 links, release evidence, and intentional historical prose must remain unchanged.
-5. Decide the `dev` branch disposition explicitly; do not delete, rename, or repoint it merely because it appears old.
+5. Retain `dev` unchanged and frozen as legacy v0.3.6-development history; do not delete, rename, repoint, or merge it during this cutover.
 6. Announce or enforce a short push freeze for the exact cutover window if other contributors or automation could advance either branch.
 
 ## External Cutover Sequence
 
-Execute only after the maintainer approves the recorded tips and exact repository-setting operations:
+Execute only after the maintainer approves the recorded tips and exact repository-setting operations. Refresh every tip immediately before execution because the snapshot above is evidence, not a lease on mutable refs:
 
-1. Rename the old v0.3 `main` branch to `v0.3-maintenance` and verify that its tip is byte-for-byte unchanged.
-2. Rename the default `v0.4-dev` branch to `main` and verify that its tip is byte-for-byte unchanged.
-3. Confirm that GitHub sets the renamed v0.4 `main` as the default and that branch rules, pull-request bases, environments, Pages, and Actions permissions remain correct.
-4. Do not merge `v0.3-maintenance` into the new `main`, force-push either line, rewrite history, or move RC tags.
+1. Publish the local `v0.4-dev` through the committed audit record as an exact fast-forward, verify that validated cleanup commit `66e3f8071` is in its ancestry, refetch, and freeze pushes while confirming that neither source tip changed unexpectedly.
+2. Rename the old v0.3 `main` branch to `v0.3-maintenance` and verify that `c1725df786dfdb7849f4a0d2928968aabfe002ec` remains its tip unless a newly audited pre-cutover tip supersedes this snapshot.
+3. Rename the default `v0.4-dev` branch to `main` and verify that the approved, freshly recorded v0.4 tip remains byte-for-byte unchanged.
+4. Confirm that GitHub sets the renamed v0.4 `main` as the default, both open PRs now target `main`, the default-branch protection follows `main`, and the explicit ruleset is updated to protect `v0.3-maintenance`.
+5. Do not merge `v0.3-maintenance` into the new `main`, force-push either line, rewrite history, move RC tags, alter the `nightly` tags, or change the `data` gitlink.
 
 ## Repository Reconciliation
 
