@@ -223,6 +223,43 @@ int test_drp2_begin_render_pass_attachment_ops(TstContext* suite, const TstCase*
 
 
 
+int test_drp2_begin_render_pass_resolve_json(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+
+    AT(dvz_drp2_stream_begin_render_pass(stream, 1, 2, 3));
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(stream, 0, 4, 0));
+
+    const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, 0);
+    ANN(cmd);
+    AT(cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id == 4);
+    AT(cmd->u.begin_render_pass.color_attachments[0].resolve_mode == VK_RESOLVE_MODE_AVERAGE_BIT);
+
+    char* json = dvz_drp2_stream_json(stream, "resolve_json");
+    ANN(json);
+    AT(strstr(json, "\"resolve_target_texture_id\": 4") != NULL);
+    AT(strstr(json, "\"resolve_target\":") == NULL);
+    AT(strstr(json, "\"mode\":") == NULL);
+    dvz_drp2_stream_json_destroy(json);
+
+    AT(dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(stream, 0, 0, 0));
+    AT(cmd->u.begin_render_pass.color_attachments[0].resolve_texture_id == 0);
+    AT(cmd->u.begin_render_pass.color_attachments[0].resolve_mode == 0);
+    json = dvz_drp2_stream_json(stream, "resolve_disabled_json");
+    ANN(json);
+    AT(strstr(json, "resolve_target") == NULL);
+
+    dvz_drp2_stream_json_destroy(json);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_begin_render_pass_attachment_ops_validation(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

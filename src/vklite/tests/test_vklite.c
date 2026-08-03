@@ -88,6 +88,7 @@ int test_vklite(TstSuite* suite)
     TST_VKLITE_CASE(test_vklite_slots_1);
     TST_VKLITE_CASE(test_vklite_slots_create_failure_unwinds_layouts);
     TST_VKLITE_CASE(test_vklite_compute_1);
+    TST_VKLITE_CASE(test_vklite_compute_spec_bounds);
     TST_VKLITE_CASE(test_vklite_compute_create_requires_destroy);
     TST_VKLITE_CASE(test_vklite_buffers_1);
     TST_VKLITE_CASE(test_vklite_buffer_views);
@@ -97,6 +98,7 @@ int test_vklite(TstSuite* suite)
     TST_VKLITE_CASE(test_vklite_descriptors_1);
     TST_VKLITE_CASE(test_vklite_rendering_reset);
     TST_VKLITE_CASE(test_vklite_graphics_1);
+    TST_VKLITE_CASE(test_vklite_graphics_spec_bounds);
     TST_VKLITE_CASE(test_vklite_graphics_create_requires_destroy);
     TST_VKLITE_CASE(test_vklite_fixture_screenshot_repeat);
     TST_VKLITE_CASE(test_vklite_surface_query);

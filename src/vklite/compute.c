@@ -90,7 +90,7 @@ void dvz_compute_spec(
         return;
     }
 
-    if (offset + size >= DVZ_MAX_SPEC_CONST_SIZE)
+    if (offset > DVZ_MAX_SPEC_CONST_SIZE || size > DVZ_MAX_SPEC_CONST_SIZE - offset)
     {
         char size_str[64] = {0};
         log_error(

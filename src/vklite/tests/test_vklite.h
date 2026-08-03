@@ -101,6 +101,7 @@ int test_vklite_slots_1(TstContext* suite, const TstCase* tstitem);
 int test_vklite_slots_create_failure_unwinds_layouts(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_compute_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_compute_spec_bounds(TstContext* suite, const TstCase* tstitem);
 int test_vklite_compute_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_buffers_1(TstContext* suite, const TstCase* tstitem);
@@ -117,6 +118,7 @@ int test_vklite_descriptors_1(TstContext* suite, const TstCase* tstitem);
 int test_vklite_rendering_reset(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_graphics_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_graphics_spec_bounds(TstContext* suite, const TstCase* tstitem);
 int test_vklite_graphics_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 int test_vklite_fixture_screenshot_repeat(TstContext* suite, const TstCase* tstitem);
 
