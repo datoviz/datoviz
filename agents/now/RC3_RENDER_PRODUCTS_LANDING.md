@@ -1,6 +1,6 @@
 # RC3 Render Products Landing Manifest
 
-Status: R1-R9 implementation, landing evidence, and the approved data, headless-presentation, and WebGPU follow-up are complete, validated, committed, and pushed on `refactor/rc3-render-products`. Updated: 2026-08-03.
+Status: R1-R9 implementation, landing evidence, the approved data/headless-presentation/WebGPU follow-up, and scheduler-pacing convergence are complete and validated on `refactor/rc3-render-products`; the scheduler convergence is committed locally but not pushed. Updated: 2026-08-03.
 
 ## Revision Boundary
 
@@ -12,6 +12,8 @@ Status: R1-R9 implementation, landing evidence, and the approved data, headless-
 - AO media and choropleth parent integration: `bc0312e44`, pointing to data head `a9542d2`.
 - Typed WebGPU presentation smoke: `59b6a187a`.
 - Validated follow-up integration head: `a6203eba1`.
+- Scheduler-pacing convergence parent: `36c6e638f`.
+- Validated scheduler-pacing convergence code head: `f1ceff301`.
 
 Ordered render commits after `c657845f1`:
 
@@ -150,6 +152,13 @@ Approved follow-up resolution evidence:
 - Data commit `a0477d8` replaces `data/gallery/v0.4/features/features_technique_ssao.png` with the refreshed `features_technique_ao.png`; the focused gallery-media check passes and parent commit `bc0312e44` integrates its gitlink and available-media inventory.
 - Data commit `a9542d2` adds the prepared US-state choropleth bundle with 48 regions, 72 rings, 10,983 points, provenance, and per-artifact hashes; parent commit `bc0312e44` integrates its gitlink and deterministic LF generation. `just webgpu-check` passes end to end, including bundle validation and choropleth loading. Its semantic smoke now asserts three panel-local scene-color passes followed by explicit presentation, and the protein warning assertion uses ambient-occlusion terminology instead of legacy SSAO wording.
 - Xvfb makes the GLFW/swapchain lane available on this headless host. After moving the sole fixture-induced skip, `canvas/glfw_destroy_recreate`, onto the established GLFW fixture, that test passes three repeated runs and the complete exact-head Xvfb lane passes 24/24 with 0 failures and 0 skips: 20 canvas, three GUI, and one scene test.
+
+Scheduler-pacing convergence evidence against `f1ceff301`:
+
+- The complete ten-commit pacing chain was replayed without semantic conflict after render-product follow-up head `36c6e638f`; it adds refresh-rate discovery, explicit frame-slot policy, refresh-aware presentation selection, bounded unknown-refresh pacing, and per-view native scheduler admission.
+- `just build`, focused scheduler and interaction-demand tests, and the 150/150 app selection pass. `just ctypes`, `just ctypes-check`, and `just ctypes-smoke` regenerate unchanged bindings and pass 16 ctypes tests plus policy, ABI, facade, and raw-smoke checks.
+- `just present-check --frames 120` passes blank, scene DRP2 full/cached paths, 10k scene, scatter, and deterministic pan/zoom cases with zero steady swapchain recreations or reported stutters. `just spec-check` passes all specification, fixture, scheduler, query, architecture, and visual-boundary guards.
+- The RelWithDebInfo deterministic pan/zoom sample with immediate presentation completes 600 frames at 6474.21 FPS on NVIDIA GeForce RTX 5090. The earlier physical Linux/X11 acceptance of the identical pacing chain found production default, uncapped immediate, and ordinary FIFO with one slot smooth; integration introduced no pacing-code changes.
 
 Remaining landing limitations:
 

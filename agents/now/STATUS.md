@@ -22,6 +22,8 @@ The issue #137 render-product lane is implemented through R9: typed panel-local 
 
 The approved limitation follow-up refreshed the AO gallery reference, added the prepared US-state choropleth bundle, and made the complete GLFW/swapchain lane pass under Xvfb. The full WebGPU scenario is green after asserting three semantic panel-local render passes plus explicit presentation and updating the browser AO expectation; the validated follow-up is committed and pushed through integration head `a6203eba1`.
 
+The scheduler-pacing chain is integrated locally onto `refactor/rc3-render-products` through code head `f1ceff301`. The combined head builds and passes focused scheduler/interaction tests, the 150/150 app selection, regenerated binding policy/ABI/smoke checks, the bounded live presentation matrix, specification and architecture guards, and a 600-frame RelWithDebInfo pan/zoom benchmark. This local convergence has not been pushed.
+
 ## Remaining RC3 Gates
 
 | Lane | Current state | Remaining gate |
