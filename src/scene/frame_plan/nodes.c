@@ -169,7 +169,7 @@ DvzFramePlanNodeType dvz_frame_plan_node_type(const DvzFramePlanNode* node)
  * @param node the FramePlan node
  * @return the render pass role, or opaque for non-render nodes
  */
-DvzFramePlanRenderPassRole dvz_frame_plan_render_pass_role(const DvzFramePlanNode* node)
+DvzFramePlanRenderPassRole _frame_plan_render_pass_role(const DvzFramePlanNode* node)
 {
     if (node == NULL || node->type != DVZ_FRAME_PLAN_NODE_RENDER)
         return DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;

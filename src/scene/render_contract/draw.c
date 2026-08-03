@@ -61,7 +61,9 @@ bool _draw_pass_role_matches(const DvzSceneDrawContract* draw)
     case DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE:
         return draw->alpha_mode == DVZ_ALPHA_OPAQUE || draw->alpha_mode == DVZ_ALPHA_MASK;
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND:
-        return draw->alpha_mode == DVZ_ALPHA_BLENDED;
+        return draw->alpha_mode == DVZ_ALPHA_BLENDED ||
+               (draw->overlay_composite &&
+                (draw->alpha_mode == DVZ_ALPHA_OPAQUE || draw->alpha_mode == DVZ_ALPHA_MASK));
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
         return draw->alpha_mode == DVZ_ALPHA_WBOIT;
     case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT:
@@ -322,6 +324,7 @@ bool _scene_draw_contract_resolve(
     out->alpha_mode = facts->alpha_mode;
     out->blend_mode = facts->blend_mode;
     out->pass_role = pass_role;
+    out->overlay_composite = facts->overlay_composite;
     out->depth_test = facts->can_depth_test && (ordinary_visual_pass || scene_depth_pass);
     out->depth_write = facts->writes_depth || (scene_depth_pass && facts->can_write_depth);
     out->samples_depth =
@@ -423,6 +426,7 @@ bool _scene_draw_contract_from_visual(
         .scene_occluded = visual->scene_occluded,
         .scene_occluder = visual->scene_occluder,
         .uses_segment_pipeline = _scene_visual_desc_uses_coverage_blend(caps.kind),
+        .overlay_composite = caps.layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY,
         .uses_common_set = caps.uses_common_set,
         .uses_material_set = caps.uses_material_set,
         .uses_image_set = caps.uses_image_set,

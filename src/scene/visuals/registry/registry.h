@@ -83,6 +83,9 @@ struct DvzVisualFamilyOps
     const char* name;
     DvzRenderableKind renderable_kind;
     DvzSceneVisualDescKind desc_kind;
+    DvzSceneVisualLayer baseline_layer;
+    uint32_t baseline_product_caps;
+    uint32_t baseline_phase_participation;
     DvzMaterialKind default_material_kind;
     DvzMaterialModel default_material_model;
     const DvzVisualFamilyAttrDesc* attrs;
@@ -128,6 +131,9 @@ struct DvzVisualFamilyOps
 /*************************************************************************************************/
 
 const DvzVisualFamilyOps* _scene_visual_family_ops(DvzVisualType type);
+
+void _scene_visual_pass_caps_apply_generated_role(
+    DvzGeneratedVisualRole role, DvzSceneVisualPassCaps* caps);
 
 const DvzVisualFamilyOps* _scene_visual_family_ops_for_family(DvzSceneVisualFamily family);
 

@@ -393,12 +393,12 @@
             "page": "gallery/features/features_technique_edl.md"
           },
           {
-            "id": "features_technique_ssao",
-            "title": "Screen-Space Ambient Occlusion",
+            "id": "features_technique_ao",
+            "title": "View-Space Ambient Occlusion",
             "category": "feature",
             "status": "supported",
-            "source": "examples/c/features/technique_ssao.c",
-            "page": "gallery/features/features_technique_ssao.md"
+            "source": "examples/c/features/technique_ao.c",
+            "page": "gallery/features/features_technique_ao.md"
           },
           {
             "id": "features_technique_msaa",
@@ -1032,6 +1032,19 @@
             "status": "supported",
             "source": "examples/c/features/annotation_readout.c",
             "page": "gallery/features/features_annotation_readout.md"
+          }
+        ]
+      },
+      "ao": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_technique_ao",
+            "title": "View-Space Ambient Occlusion",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/technique_ao.c",
+            "page": "gallery/features/features_technique_ao.md"
           }
         ]
       },
@@ -1747,19 +1760,6 @@
             "status": "supported",
             "source": "examples/c/features/selection_sphere.c",
             "page": "gallery/features/features_selection_sphere.md"
-          }
-        ]
-      },
-      "ssao": {
-        "count": 1,
-        "examples": [
-          {
-            "id": "features_technique_ssao",
-            "title": "Screen-Space Ambient Occlusion",
-            "category": "feature",
-            "status": "supported",
-            "source": "examples/c/features/technique_ssao.c",
-            "page": "gallery/features/features_technique_ssao.md"
           }
         ]
       },

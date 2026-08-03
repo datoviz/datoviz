@@ -32,6 +32,14 @@
           "store_op": {
             "$ref": "../common/StoreOp.json"
           },
+          "access": {
+            "type": "string",
+            "enum": [
+              "write",
+              "read",
+              "read_write"
+            ]
+          },
           "clear_value": {
             "type": "object",
             "additionalProperties": false,
@@ -158,6 +166,14 @@
         },
         "depth_store_op": {
           "$ref": "../common/StoreOp.json"
+        },
+        "access": {
+          "type": "string",
+          "enum": [
+            "write",
+            "read",
+            "read_write"
+          ]
         },
         "depth_clear_value": {
           "type": "number"

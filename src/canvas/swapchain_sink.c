@@ -16,7 +16,6 @@
 
 #include "canvas_internal.h"
 
-#include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -143,28 +142,20 @@ struct DvzCanvasSwapchainState
 /*************************************************************************************************/
 
 /**
- * Parse the experimental maximum-frames-in-flight override.
+ * Resolve the configured frame-slot request for a presentation mode.
  *
- * @param value environment value, NULL, or `auto`
- * @param requested_slot_count destination requested count, with zero representing automatic
- * @return true when the value is valid, false when current behavior should be used as fallback
+ * @param present_mode resolved Vulkan presentation mode
+ * @param configured_slot_count Canvas configuration selector
+ * @return requested slot count, with zero representing one slot per swapchain image
  */
-bool _dvz_canvas_max_frames_in_flight_parse(const char* value, uint32_t* requested_slot_count)
+uint32_t _dvz_canvas_frame_slot_count_request(
+    VkPresentModeKHR present_mode, uint32_t configured_slot_count)
 {
-    ANN(requested_slot_count);
-    *requested_slot_count = 0;
-    if (value == NULL || strcmp(value, "auto") == 0)
-        return true;
-    if (value[0] == '\0' || value[0] == '-' || value[0] == '+')
-        return false;
-
-    errno = 0;
-    char* end = NULL;
-    unsigned long parsed = strtoul(value, &end, 10);
-    if (errno == ERANGE || end == value || *end != '\0' || parsed == 0 || parsed > UINT32_MAX)
-        return false;
-    *requested_slot_count = (uint32_t)parsed;
-    return true;
+    if (configured_slot_count == DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT)
+        return present_mode == VK_PRESENT_MODE_FIFO_KHR ? 1 : 0;
+    if (configured_slot_count == DVZ_CANVAS_FRAME_SLOT_COUNT_AUTOMATIC)
+        return 0;
+    return configured_slot_count;
 }
 
 
@@ -330,15 +321,24 @@ static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
 {
     ANN(canvas);
 #if defined(VK_KHR_present_mode_fifo_latest_ready)
-    if (
-        canvas->cfg.present_mode == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR &&
-        !dvz_device_has_extension(
-            canvas->device, VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME) &&
-        !dvz_device_has_extension(
-            canvas->device, VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME))
+    const bool requested = canvas->cfg.present_mode == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
+    const bool has_device_extension =
+        dvz_device_has_extension(
+            canvas->device, VK_KHR_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME) ||
+        dvz_device_has_extension(
+            canvas->device, VK_EXT_PRESENT_MODE_FIFO_LATEST_READY_EXTENSION_NAME);
+    const bool has_surface_mode =
+        canvas->swapchain != NULL && canvas->swapchain->surface_wrapper != NULL &&
+        dvz_surface_has_present_mode(
+            canvas->swapchain->surface_wrapper, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR);
+    if (requested && (!has_device_extension || !has_surface_mode))
     {
-        log_warn("FIFO latest-ready present mode unavailable; falling back to FIFO");
-        return VK_PRESENT_MODE_FIFO_KHR;
+        VkPresentModeKHR fallback = VK_PRESENT_MODE_FIFO_KHR;
+        if (canvas->swapchain != NULL && canvas->swapchain->surface_wrapper != NULL)
+            fallback = dvz_surface_preferred_present_mode(canvas->swapchain->surface_wrapper);
+        log_warn(
+            "FIFO latest-ready present mode unavailable; falling back to present mode %d", fallback);
+        return fallback;
     }
 #endif
     return canvas->cfg.present_mode;
@@ -955,8 +955,11 @@ static bool canvas_swapchain_init_slot_state(
     ANN(canvas);
 
     uint32_t image_count = dvz_swapchain_image_count(swapchain->swapchain_wrapper);
-    uint32_t slot_count = _dvz_canvas_frame_slot_count_resolve(
-        swapchain->requested_slot_count, image_count);
+    VkPresentModeKHR present_mode = dvz_swapchain_present_mode(swapchain->swapchain_wrapper);
+    swapchain->requested_slot_count = _dvz_canvas_frame_slot_count_request(
+        present_mode, canvas->cfg.frame_slot_count);
+    uint32_t slot_count =
+        _dvz_canvas_frame_slot_count_resolve(swapchain->requested_slot_count, image_count);
     if (swapchain->swapchain_layouts)
     {
         dvz_free(swapchain->swapchain_layouts);
@@ -1770,15 +1773,6 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->test_force_recreate_status = -1;
     canvas->swapchain->test_force_acquire_status = -1;
     canvas->swapchain->test_force_present_status = -1;
-    const char* max_frames_env = getenv("DVZ_MAX_FRAMES_IN_FLIGHT");
-    if (!_dvz_canvas_max_frames_in_flight_parse(
-            max_frames_env, &canvas->swapchain->requested_slot_count))
-    {
-        log_warn(
-            "ignoring DVZ_MAX_FRAMES_IN_FLIGHT='%s' (expected auto or a positive integer)",
-            max_frames_env != NULL ? max_frames_env : "");
-        canvas->swapchain->requested_slot_count = 0;
-    }
     canvas->swapchain->surface_wrapper = dvz_surface_create_wrapper();
     ANN(canvas->swapchain->surface_wrapper);
     canvas->swapchain->swapchain_wrapper = dvz_swapchain_create_wrapper();
@@ -2405,22 +2399,51 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
         return acquire_status_rc;
     }
 
-    state->frame_index = (state->frame_index + 1) % state->slot_count;
+    state->active_slot = slot;
+    state->active_slot_index = slot_idx;
     if (canvas_slot_bind_acquired_image(state, slot, slot_idx, image_index) != 0)
     {
+        dvz_canvas_swapchain_abort_acquired(canvas);
         return -1;
     }
 
     if (canvas_slot_begin_recording(state, slot) != 0)
     {
+        dvz_canvas_swapchain_abort_acquired(canvas);
         return -1;
     }
 
-    state->active_slot = slot;
-    state->active_slot_index = slot_idx;
+    state->frame_index = (state->frame_index + 1) % state->slot_count;
     canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_ACQUIRED, "acquire success");
     canvas_frame_from_slot(state, slot, frame);
     return 0;
+}
+
+
+
+/**
+ * Abandon an acquired image after a pre-submit frame failure.
+ *
+ * The selected fence was reset before acquisition and the image cannot be returned directly to the
+ * presentation engine. Force a swapchain recreate before the next acquire instead of reusing the
+ * unsignaled slot or retaining the acquired image.
+ *
+ * @param canvas canvas whose active acquisition must be abandoned
+ */
+void dvz_canvas_swapchain_abort_acquired(DvzCanvas* canvas)
+{
+    if (canvas == NULL || canvas->swapchain == NULL)
+        return;
+    DvzCanvasSwapchain* state = canvas->swapchain;
+    if (state->active_slot == NULL)
+        return;
+    canvas_clear_active_slot(state);
+    if (state->runtime_state != DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    {
+        state->dirty = true;
+        canvas_runtime_transition(
+            state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "abandoned acquired frame");
+    }
 }
 
 

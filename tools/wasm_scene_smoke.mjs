@@ -689,6 +689,50 @@ function expectCanvasRenderPass(
   }
 }
 
+function expectPanelLocalPresentationBoundary(stream, label, scenePassCount) {
+  const passes = commandsOf(stream, "BeginRenderPass");
+  requireOk(
+    passes.length === scenePassCount + 1,
+    `${label}: expected ${scenePassCount} panel-local pass(es) plus presentation`,
+  );
+  const scenePasses = passes.slice(0, scenePassCount);
+  const sourceTextureId = scenePasses[0]?.color_attachments?.[0]?.texture_id;
+  requireOk(sourceTextureId > 0, `${label}: expected panel-local scene-color target`);
+  for (const [index, pass] of scenePasses.entries()) {
+    const attachment = pass.color_attachments?.[0];
+    requireOk(
+      attachment?.texture_id === sourceTextureId,
+      `${label}: panel-local pass ${index} did not preserve scene-color identity`,
+    );
+    requireOk(
+      attachment.load_op === (index === 0 ? "clear" : "load") &&
+        attachment.store_op === "store",
+      `${label}: panel-local pass ${index} has unexpected load/store behavior`,
+    );
+  }
+  const presentationPass = passes[scenePassCount];
+  const presentationAttachment = presentationPass.color_attachments?.[0];
+  requireOk(
+    presentationAttachment?.texture_id === 0 &&
+      presentationAttachment.load_op === "clear" &&
+      presentationAttachment.store_op === "store",
+    `${label}: expected explicit browser-canvas presentation target`,
+  );
+  requireOk(
+    presentationPass.depth_stencil_attachment === undefined,
+    `${label}: presentation pass unexpectedly has a depth attachment`,
+  );
+  const presentationDraws = commandsOf(stream, "Draw").filter(
+    (draw) => draw.pass_id === presentationPass.id,
+  );
+  requireOk(
+    presentationDraws.length === 1 &&
+      presentationDraws[0].vertex_count === 3 &&
+      presentationDraws[0].instance_count === 1,
+    `${label}: expected one fullscreen-triangle presentation draw`,
+  );
+}
+
 function expectDraw(stream, vertexCount, instanceCount, label) {
   const found = commandsOf(stream, "Draw").some(
     (draw) => draw.vertex_count === vertexCount && draw.instance_count === instanceCount,
@@ -736,7 +780,8 @@ function expectCommonSceneStreamShape(
 }
 
 function expect2DSceneStreamShape(stream, label) {
-  expectCommonSceneStreamShape(stream, label, 3, { allowOffscreenColorTargets: true });
+  expectCommonSceneStreamShape(stream, label, 4, { allowOffscreenColorTargets: true });
+  expectPanelLocalPresentationBoundary(stream, label, 3);
   expectDraw(stream, 6, 5, `${label} point`);
   expectDraw(stream, 6, 6, `${label} pixel`);
   expectDraw(stream, 6, 4, `${label} marker`);
@@ -997,7 +1042,8 @@ function expect2DUpdateStreamShape(
   pointInstances = 5,
   { allowSetupCommands = false } = {},
 ) {
-  expectFrameCommandShape(stream, label, 3, { allowOffscreenColorTargets: true });
+  expectFrameCommandShape(stream, label, 4, { allowOffscreenColorTargets: true });
+  expectPanelLocalPresentationBoundary(stream, label, 3);
   if (!allowSetupCommands) {
     expectNoSetupCommands(stream, label);
   }
@@ -4354,9 +4400,10 @@ try {
         "api image texture resize",
       );
       const visualReload = emitStream(Module, scene, figure, "generic 2D visual reload");
-      expectFrameCommandShape(visualReload.stream, "generic 2D visual reload", 3, {
+      expectFrameCommandShape(visualReload.stream, "generic 2D visual reload", 4, {
         allowOffscreenColorTargets: true,
       });
+      expectPanelLocalPresentationBoundary(visualReload.stream, "generic 2D visual reload", 3);
       expectSetupCommands(visualReload.stream, "generic 2D visual reload");
       expectDraw(visualReload.stream, 6, 5, "generic 2D visual reload point");
       expectDraw(visualReload.stream, 6, 6, "generic 2D visual reload pixel");

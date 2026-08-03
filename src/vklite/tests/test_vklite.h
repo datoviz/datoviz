@@ -88,8 +88,7 @@ int test_vklite_timeline_wait_blocks_until_signal(TstContext* suite, const TstCa
 int test_vklite_commands_destroy_without_recording(TstContext* suite, const TstCase* tstitem);
 int test_vklite_commands_borrowed_recording_rejects_lifecycle(
     TstContext* suite, const TstCase* tstitem);
-int test_vklite_commands_borrowed_recording_unwrap(
-    TstContext* suite, const TstCase* tstitem);
+int test_vklite_commands_borrowed_recording_unwrap(TstContext* suite, const TstCase* tstitem);
 int test_vklite_barriers_reset(TstContext* suite, const TstCase* tstitem);
 int test_vklite_submit_reset_reuse(TstContext* suite, const TstCase* tstitem);
 
@@ -102,6 +101,7 @@ int test_vklite_slots_1(TstContext* suite, const TstCase* tstitem);
 int test_vklite_slots_create_failure_unwinds_layouts(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_compute_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_compute_spec_bounds(TstContext* suite, const TstCase* tstitem);
 int test_vklite_compute_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_buffers_1(TstContext* suite, const TstCase* tstitem);
@@ -118,6 +118,7 @@ int test_vklite_descriptors_1(TstContext* suite, const TstCase* tstitem);
 int test_vklite_rendering_reset(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_graphics_1(TstContext* suite, const TstCase* tstitem);
+int test_vklite_graphics_spec_bounds(TstContext* suite, const TstCase* tstitem);
 int test_vklite_graphics_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 int test_vklite_fixture_screenshot_repeat(TstContext* suite, const TstCase* tstitem);
 
@@ -163,8 +164,6 @@ int test_technique_compute_graphics(TstContext* suite, const TstCase* tstitem);
 int test_technique_picking(TstContext* suite, const TstCase* tstitem);
 
 int test_technique_wboit(TstContext* suite, const TstCase* tstitem);
-
-int test_technique_ssao(TstContext* suite, const TstCase* tstitem);
 
 
 

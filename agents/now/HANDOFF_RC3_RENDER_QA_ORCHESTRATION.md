@@ -1,6 +1,6 @@
 # RC3 Render And QA Orchestration
 
-Status: **approved and active**. Integration branch: `orchestrate/rc3-render-qa`. Updated: 2026-08-02.
+Status: **approved; render implementation complete through R8 and final convergence active**. Integration branch: `orchestrate/rc3-render-qa`. Updated: 2026-08-02.
 
 This handoff coordinates two substantial pre-RC3 lanes: the remaining C source audit and the render-product/technique-composition refactor. It is written for one `sol-medium` primary orchestrator using bounded lower-cost subagents while the maintainer is away.
 
@@ -22,7 +22,7 @@ No branch push, pull request, GitHub comment, or other publication is authorized
 
 Execution begins only after the maintainer approves:
 
-1. the decisions in `spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md`;
+1. the decisions in `spec/scene/proposals/promoted/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md`;
 2. the packet DAG in [HANDOFF_RENDER_PRODUCTS_REFACTOR.md](HANDOFF_RENDER_PRODUCTS_REFACTOR.md);
 3. this branch/worktree, model, lock, integration, and QA invalidation policy;
 4. the exact base commits and branch names;

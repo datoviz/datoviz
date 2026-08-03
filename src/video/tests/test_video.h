@@ -44,6 +44,7 @@ int test_video_1(TstContext* suite, const TstCase* tstitem);
 int test_video_nvenc(TstContext* suite, const TstCase* tstitem);
 int test_video_kvazaar(TstContext* suite, const TstCase* tstitem);
 int test_video_offline_headless_encode(TstContext* suite, const TstCase* tstitem);
+int test_video_output_errors_propagate(TstContext* suite, const TstCase* tstitem);
 
 
 

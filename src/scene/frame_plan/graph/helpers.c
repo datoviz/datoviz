@@ -101,8 +101,8 @@ bool _frame_plan_graph_resource_index(
  * @param end exclusive upper pass index
  * @return whether the id was found
  */
-bool
-_frame_plan_graph_pass_id_exists_before(const DvzFramePlan* plan, const char* pass_id, uint32_t end)
+bool _frame_plan_graph_pass_id_exists_before(
+    const DvzFramePlan* plan, const char* pass_id, uint32_t end)
 {
     if (plan == NULL || pass_id == NULL || pass_id[0] == '\0')
         return false;
@@ -236,11 +236,16 @@ bool _frame_plan_graph_pass_writes_resource(const DvzFrameGraphPass* pass, const
         if (_frame_plan_graph_attachment_writes(&pass->color_attachments[i]) &&
             strcmp(pass->color_attachments[i].resource_id, resource_id) == 0)
             return true;
+        if (pass->color_attachments[i].resolve_resource_id[0] != '\0' &&
+            strcmp(pass->color_attachments[i].resolve_resource_id, resource_id) == 0)
+            return true;
     }
-    if (pass->has_depth_attachment && _frame_plan_graph_attachment_writes(&pass->depth_attachment) &&
+    if (pass->has_depth_attachment &&
+        _frame_plan_graph_attachment_writes(&pass->depth_attachment) &&
         strcmp(pass->depth_attachment.resource_id, resource_id) == 0)
         return true;
-    if (pass->has_stencil_attachment && _frame_plan_graph_attachment_writes(&pass->stencil_attachment) &&
+    if (pass->has_stencil_attachment &&
+        _frame_plan_graph_attachment_writes(&pass->stencil_attachment) &&
         strcmp(pass->stencil_attachment.resource_id, resource_id) == 0)
         return true;
     return false;
@@ -339,15 +344,24 @@ bool _frame_plan_graph_pass_write_count_resource(
             if (usage != NULL)
                 *usage = _frame_plan_graph_color_attachment_usage(&pass->color_attachments[i]);
         }
+        if (pass->color_attachments[i].resolve_resource_id[0] != '\0' &&
+            strcmp(pass->color_attachments[i].resolve_resource_id, resource_id) == 0)
+        {
+            *count += 1;
+            if (usage != NULL)
+                *usage = DVZ_FRAME_GRAPH_ACCESS_COLOR_ATTACHMENT;
+        }
     }
-    if (pass->has_depth_attachment && _frame_plan_graph_attachment_writes(&pass->depth_attachment) &&
+    if (pass->has_depth_attachment &&
+        _frame_plan_graph_attachment_writes(&pass->depth_attachment) &&
         strcmp(pass->depth_attachment.resource_id, resource_id) == 0)
     {
         *count += 1;
         if (usage != NULL)
             *usage = _frame_plan_graph_depth_attachment_usage(&pass->depth_attachment);
     }
-    if (pass->has_stencil_attachment && _frame_plan_graph_attachment_writes(&pass->stencil_attachment) &&
+    if (pass->has_stencil_attachment &&
+        _frame_plan_graph_attachment_writes(&pass->stencil_attachment) &&
         strcmp(pass->stencil_attachment.resource_id, resource_id) == 0)
     {
         *count += 1;
@@ -381,7 +395,8 @@ bool _frame_plan_graph_find_last_writer_before(
         uint32_t count = 0;
         DvzFrameGraphAccessUsage usage = DVZ_FRAME_GRAPH_ACCESS_NONE;
         const DvzFrameGraphPass* pass = &plan->graph_passes[i - 1];
-        bool has_writer = _frame_plan_graph_pass_write_count_resource(pass, resource_id, &count, &usage);
+        bool has_writer =
+            _frame_plan_graph_pass_write_count_resource(pass, resource_id, &count, &usage);
         if (has_writer)
         {
             *producer_index = i - 1;
@@ -416,7 +431,8 @@ bool _frame_plan_graph_find_first_writer_after(
     {
         uint32_t count = 0;
         DvzFrameGraphAccessUsage usage = DVZ_FRAME_GRAPH_ACCESS_NONE;
-        if (_frame_plan_graph_pass_write_count_resource(&plan->graph_passes[i], resource_id, &count, &usage))
+        if (_frame_plan_graph_pass_write_count_resource(
+                &plan->graph_passes[i], resource_id, &count, &usage))
         {
             *producer_index = i;
             if (producer_usage != NULL)
@@ -485,11 +501,11 @@ uint32_t _frame_plan_graph_pass_dependency_count(
     ANN(plan);
     ANN(pass);
     uint32_t count = 0;
-#define COUNT_DEP(resource, usage)                                                               \
+#define COUNT_DEP(resource, usage)                                                                \
     do                                                                                            \
     {                                                                                             \
-        if (_frame_plan_graph_dependency_from_access(plan, (resource), (usage), pass_index,                  \
-                                          count == target_index ? out : NULL))                    \
+        if (_frame_plan_graph_dependency_from_access(                                             \
+                plan, (resource), (usage), pass_index, count == target_index ? out : NULL))       \
             count++;                                                                              \
     } while (0)
 
@@ -502,7 +518,8 @@ uint32_t _frame_plan_graph_pass_dependency_count(
     {
         const DvzFrameGraphAttachment* attachment = &pass->color_attachments[i];
         if (_frame_plan_graph_attachment_reads(attachment))
-            COUNT_DEP(attachment->resource_id, _frame_plan_graph_color_attachment_usage(attachment));
+            COUNT_DEP(
+                attachment->resource_id, _frame_plan_graph_color_attachment_usage(attachment));
     }
     if (pass->has_depth_attachment && _frame_plan_graph_attachment_reads(&pass->depth_attachment))
     {
@@ -510,7 +527,8 @@ uint32_t _frame_plan_graph_pass_dependency_count(
             pass->depth_attachment.resource_id,
             _frame_plan_graph_depth_attachment_usage(&pass->depth_attachment));
     }
-    if (pass->has_stencil_attachment && _frame_plan_graph_attachment_reads(&pass->stencil_attachment))
+    if (pass->has_stencil_attachment &&
+        _frame_plan_graph_attachment_reads(&pass->stencil_attachment))
     {
         COUNT_DEP(
             pass->stencil_attachment.resource_id,
@@ -551,7 +569,8 @@ bool _frame_plan_graph_resource_written_before(
  * @param resource graph resource descriptor
  * @return whether the resource is color-attachment compatible
  */
-bool _frame_plan_graph_resource_is_color_attachment_compatible(const DvzFrameGraphResource* resource)
+bool _frame_plan_graph_resource_is_color_attachment_compatible(
+    const DvzFrameGraphResource* resource)
 {
     ANN(resource);
     return resource->kind == DVZ_FRAME_GRAPH_RESOURCE_TEXTURE ||
@@ -566,7 +585,8 @@ bool _frame_plan_graph_resource_is_color_attachment_compatible(const DvzFrameGra
  * @param resource graph resource descriptor
  * @return whether the resource is depth-attachment compatible
  */
-bool _frame_plan_graph_resource_is_depth_attachment_compatible(const DvzFrameGraphResource* resource)
+bool _frame_plan_graph_resource_is_depth_attachment_compatible(
+    const DvzFrameGraphResource* resource)
 {
     ANN(resource);
     return resource->kind == DVZ_FRAME_GRAPH_RESOURCE_TEXTURE;
@@ -616,7 +636,8 @@ bool _frame_plan_graph_resource_extent_matches(
 
     if (a->extent_kind != b->extent_kind)
         return false;
-    if (a->extent_kind == DVZ_FRAME_GRAPH_EXTENT_FIXED)
+    if (a->extent_kind == DVZ_FRAME_GRAPH_EXTENT_FIXED ||
+        a->extent_kind == DVZ_FRAME_GRAPH_EXTENT_PANEL)
         return a->width == b->width && a->height == b->height;
     if (a->extent_kind == DVZ_FRAME_GRAPH_EXTENT_RESOURCE_REF)
         return strcmp(a->extent_resource_id, b->extent_resource_id) == 0;

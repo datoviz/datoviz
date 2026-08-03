@@ -1870,6 +1870,11 @@ int test_scene_overlay_card_rich_text_public_api(TstContext* suite, const TstCas
     AC(card->rich_block.raster_scale, 2.0f, 1e-6f);
     ANN(card->card.background_visual);
     ANN(card->rich_block.image_visual);
+    const DvzPanelAttach* rich_attach =
+        _interaction_panel_attach(panel, card->rich_block.image_visual);
+    ANN(rich_attach);
+    AT(rich_attach->has_generated_role);
+    AT(rich_attach->generated_role == DVZ_GENERATED_VISUAL_OVERLAY_TEXT);
     AT(card->card.background_visual->visible);
     AT(card->rich_block.image_visual->visible);
     AT(card->card.text_visual == NULL || !card->card.text_visual->visible);

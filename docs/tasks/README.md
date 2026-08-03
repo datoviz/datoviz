@@ -114,6 +114,7 @@ Current tracked task records in this directory:
 - `2026-05-13-doc-state-refresh` — completed
 - `2026-05-13-next-implementation-priorities` — completed planning record
 - `2026-05-13-visual-attribute-sources` — completed planning record
+- `2026-08-02-windows-cuda-vulkan-interop` — planned RC4 engineering lane
 
 Update this index opportunistically when adding or superseding tasks; it does not need to be perfectly exhaustive
 for older history, but it should stay accurate for current and recent work.

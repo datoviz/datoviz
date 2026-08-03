@@ -745,21 +745,16 @@ DvzEdlDesc dvz_edl_desc(void)
 
 
 
-DvzSsaoDesc dvz_ssao_desc(void)
+DvzAoDesc dvz_ao_desc(void)
 {
-    return (DvzSsaoDesc){
-        DVZ_STRUCT_INIT_FIELDS(DvzSsaoDesc),
-        .radius = 3.0f,
-        .strength = 8.0f,
-        .bias = 0.0f,
-        .power = 1.0f,
+    return (DvzAoDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzAoDesc),
+        .radius = 1.0f,
+        .intensity = 1.0f,
+        .thickness = 0.25f,
         .min_visibility = 0.0f,
-        .blur_radius = 2.0f,
-        .blur_depth_sigma = 0.65f,
-        .blur_normal_sigma = 0.35f,
-        .sample_count = 16,
-        .blur_enabled = true,
-        .debug_view = false,
+        .quality = DVZ_AO_QUALITY_MEDIUM,
+        .debug_mode = DVZ_AO_DEBUG_NONE,
     };
 }
 
@@ -920,16 +915,16 @@ DvzResult dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc)
 
 
 /**
- * Configure screen-space ambient occlusion for one panel.
+ * Configure ambient occlusion for one panel.
  *
  * @param panel the panel
- * @param desc SSAO descriptor, or NULL to disable
- * @return whether the panel SSAO state was updated
+ * @param desc AO descriptor, or NULL to disable
+ * @return whether the panel AO state was updated
  */
-DvzResult dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc)
+DvzResult dvz_panel_set_ao(DvzPanel* panel, const DvzAoDesc* desc)
 {
     ANN(panel);
-    bool ok = _scene_technique_state_set_ssao(&panel->techniques, desc);
+    bool ok = _scene_technique_state_set_ao(&panel->techniques, desc);
     if (ok)
         _scene_notify_request_frame(panel->figure);
     return ok ? DVZ_OK : DVZ_ERROR;

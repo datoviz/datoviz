@@ -22,16 +22,16 @@
 #include "_compat.h"
 #include "_overflow.h"
 #include "_scene.h"
-#include "scene_emit/internal.h"
 #include "_scene_resource_key.h"
-#include "frame_plan/frame_plan.h"
 #include "_visual_internal.h"
 #include "core/panel_layout_internal.h"
-#include "domain/buffer_internal.h"
-#include "registry/registry.h"
-#include "scene_emit/visual_lowering.h"
-#include "datoviz/scene/scale.h"
 #include "datoviz/drp2/runtime.h"
+#include "datoviz/scene/scale.h"
+#include "domain/buffer_internal.h"
+#include "frame_plan/frame_plan.h"
+#include "registry/registry.h"
+#include "scene_emit/internal.h"
+#include "scene_emit/visual_lowering.h"
 
 
 /*************************************************************************************************/
@@ -190,20 +190,20 @@ bool _scene_edl_params_resource_key(const char* panel_id, char* out_key, size_t 
 
 
 /**
- * Resolve the resource key used by one panel's SSAO uniform.
+ * Resolve the resource key used by one panel's GTAO uniform.
  *
  * @param panel_id the panel id
  * @param out_key output resource key
  * @param out_size output resource key capacity
  * @return whether the key was resolved
  */
-bool _scene_ssao_params_resource_key(const char* panel_id, char* out_key, size_t out_size)
+bool _scene_gtao_params_resource_key(const char* panel_id, char* out_key, size_t out_size)
 {
     ANN(panel_id);
     ANN(out_key);
     if (out_size == 0)
         return false;
-    dvz_snprintf(out_key, out_size, "%s.ssao.params", panel_id);
+    dvz_snprintf(out_key, out_size, "%s.gtao.params", panel_id);
     return true;
 }
 
@@ -307,8 +307,8 @@ bool _scene_frame_plan_upload_style_bytes(
         upload_data = owned;
     }
 
-    bool ok =
-        dvz_frame_plan_upload_bytes(plan, resource_id, byte_offset, byte_size, data_tag, upload_data);
+    bool ok = dvz_frame_plan_upload_bytes(
+        plan, resource_id, byte_offset, byte_size, data_tag, upload_data);
     if (!ok)
     {
         dvz_free(owned);
@@ -402,13 +402,12 @@ bool _scene_visual_attrs_dirty(const DvzVisual* visual)
  * @param attr the retained attribute
  * @return whether the attribute needs derived RGBA upload
  */
-static bool _scene_attr_needs_scalar_color_upload(
-    const DvzVisual* visual, const DvzVisualAttr* attr)
+static bool
+_scene_attr_needs_scalar_color_upload(const DvzVisual* visual, const DvzVisualAttr* attr)
 {
     ANN(visual);
     ANN(attr);
-    return strcmp(attr->name, "color") == 0 &&
-           attr->format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 &&
+    return strcmp(attr->name, "color") == 0 && attr->format == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32 &&
            visual->ops != NULL && visual->ops->supports_scalar_color_scale;
 }
 
@@ -556,7 +555,8 @@ bool _scene_emit_visual_material_upload_if_needed(
     ANN(visual);
     if (!upload_material_params)
         return true;
-    if (!_scene_visual_needs_material_params(visual) || !_visual_family_state(visual)->material_params_dirty)
+    if (!_scene_visual_needs_material_params(visual) ||
+        !_visual_family_state(visual)->material_params_dirty)
         return true;
     return _scene_emit_visual_material_upload(figure, plan, visual, visual_index);
 }
@@ -666,11 +666,13 @@ void _scene_emit_visual_index_buffer_upload(
     ANN(plan);
     ANN(visual);
     ANN(emitted_buffers);
-    if (_visual_family_state(visual)->buffer == NULL || _visual_family_state(visual)->buffer->data == NULL)
+    if (_visual_family_state(visual)->buffer == NULL ||
+        _visual_family_state(visual)->buffer->data == NULL)
         return;
 
     uint32_t buffer_idx = _scene_buffer_index(figure->scene, _visual_family_state(visual)->buffer);
-    if (!_visual_family_state(visual)->buffer->dirty || buffer_idx == UINT32_MAX || emitted_buffers[buffer_idx])
+    if (!_visual_family_state(visual)->buffer->dirty || buffer_idx == UINT32_MAX ||
+        emitted_buffers[buffer_idx])
         return;
 
     char buffer_resource_id[128];
@@ -683,7 +685,8 @@ void _scene_emit_visual_index_buffer_upload(
         plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_INDEX,
         DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, buffer_idx,
         _visual_family_state(visual)->buffer->desc.stride > 0
-            ? _visual_family_state(visual)->buffer->desc.byte_size / _visual_family_state(visual)->buffer->desc.stride
+            ? _visual_family_state(visual)->buffer->desc.byte_size /
+                  _visual_family_state(visual)->buffer->desc.stride
             : 0);
     DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
     node->u.upload.buffer_usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_INDEX;

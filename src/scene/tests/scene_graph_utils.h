@@ -109,6 +109,8 @@ uint64_t _stream_scene_common_layout_id(const DvzDrp2CommandStream* stream);
 uint64_t _stream_bind_group_layout_id(const DvzDrp2CommandStream* stream, uint64_t bind_group_id);
 bool _stream_has_render_pipeline_label(const DvzDrp2CommandStream* stream, const char* label);
 bool _stream_has_render_pipeline_label_part(const DvzDrp2CommandStream* stream, const char* part);
+DvzSceneWorkProviderKey _scene_test_graph_pass_provider(
+    const DvzFramePlan* plan, const DvzFrameGraphPass* pass);
 
 
 static inline const DvzPanelAttach*

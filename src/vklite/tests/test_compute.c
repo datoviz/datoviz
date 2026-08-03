@@ -19,6 +19,7 @@
 
 #include "test_vk.h"
 #include "_assertions.h"
+#include "_compute.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/compute.h"
 #include "datoviz/vklite/shader.h"
@@ -109,6 +110,30 @@ static DVZ_SPIRV_ALIGN unsigned char minimal_compute[] = {
 /*************************************************************************************************/
 /*  Compute tests                                                                                */
 /*************************************************************************************************/
+
+int test_vklite_compute_spec_bounds(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzCompute* compute = dvz_compute_create_wrapper();
+    ANN(compute);
+
+    uint32_t value = 0x12345678;
+    dvz_compute_spec(compute, 0, UINT64_MAX, 1, &value);
+    AT(compute->spec_info.mapEntryCount == 0);
+    AT(compute->spec_info.dataSize == 0);
+
+    dvz_compute_spec(
+        compute, 0, DVZ_MAX_SPEC_CONST_SIZE - sizeof(value), sizeof(value), &value);
+    AT(compute->spec_info.mapEntryCount == 1);
+    AT(compute->spec_info.dataSize == DVZ_MAX_SPEC_CONST_SIZE);
+
+    dvz_compute_free(compute);
+    return 0;
+}
+
+
 
 int test_vklite_compute_1(TstContext* suite, const TstCase* tstitem)
 {

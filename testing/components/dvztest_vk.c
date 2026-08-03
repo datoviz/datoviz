@@ -16,10 +16,10 @@
 
 #include <stddef.h>
 
-#include "_log.h"
-#include "datoviz/vk/instance.h"
 #include "../../src/vk/tests/test_vk.h"
 #include "../../src/vklite/tests/test_vklite.h"
+#include "_log.h"
+#include "datoviz/vk/instance.h"
 #include "datoviz_testing.h"
 #include "testing.h"
 
@@ -108,7 +108,6 @@ int main(int argc, char** argv)
     TST_VKLITE_CASE(test_technique_compute_graphics);
     TST_VKLITE_CASE(test_technique_picking);
     TST_VKLITE_CASE(test_technique_wboit);
-    TST_VKLITE_CASE(test_technique_ssao);
 
     int res = tst_suite_run(suite, argc, argv);
     tst_suite_destroy(suite);

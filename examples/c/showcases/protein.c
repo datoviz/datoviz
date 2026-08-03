@@ -111,7 +111,7 @@ typedef struct ProteinState
     DvzAnimation* selection_animation;
     DvzAnimation* crosshair_animation;
     DvzMaterialDesc sphere_material;
-    DvzExampleGuiSsaoControls ssao;
+    DvzExampleGuiAoControls ao;
     ExampleTuner tuner;
 } ProteinState;
 
@@ -879,24 +879,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         "visual setup failed");
 
 #ifndef DVZ_EXAMPLE_NO_MAIN
-    state->ssao = (DvzExampleGuiSsaoControls){
+    state->ao = (DvzExampleGuiAoControls){
         .enabled = true,
         .radius = 0.72f,
-        .strength = 1.82f,
-        .bias = 0.007f,
-        .power = 2.45f,
+        .intensity = 1.82f,
+        .thickness = 0.028f,
         .min_visibility = 0.42f,
-        .samples = 16.0f,
-        .min_samples = 4.0f,
-        .max_samples = 32.0f,
-        .blur = true,
-        .blur_radius = 5.0f,
-        .blur_radius_max = 12.0f,
-        .blur_depth_sigma = 0.65f,
-        .blur_normal_sigma = 0.35f,
-        .show_blur_sigmas = true,
+        .quality = (float)DVZ_AO_QUALITY_HIGH,
+        .debug_mode = DVZ_AO_DEBUG_NONE,
     };
-    example_tuner_ssao(&state->tuner, "SSAO", panel, &state->ssao);
+    example_tuner_ao(&state->tuner, "Ambient occlusion", panel, &state->ao);
 #endif
 
     DvzController* arcball_controller = dvz_arcball(ctx->scene, NULL);

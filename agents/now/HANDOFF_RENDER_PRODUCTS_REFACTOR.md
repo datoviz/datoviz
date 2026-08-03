@@ -1,8 +1,10 @@
 # Render Products Refactor Handoff
 
-Status: **approved and active**. Integration branch: `orchestrate/rc3-render-qa`. Updated: 2026-08-02.
+Status: **implementation complete through R8; final convergence active**. Integration branch: `orchestrate/rc3-render-qa`. Updated: 2026-08-02.
 
-This handoff turns [the approved architecture](../../spec/scene/proposals/active/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) into the active implementation campaign. The maintainer authorized local implementation and checkpoint commits on 2026-08-02; pushes and publication remain unauthorized.
+R9 cleanup, documentation, exact-head validation, and integration are tracked by [RC3_RENDER_PRODUCTS_LANDING.md](RC3_RENDER_PRODUCTS_LANDING.md) and [RC3_RENDER_PRODUCTS_AFFECTED_QA.md](RC3_RENDER_PRODUCTS_AFFECTED_QA.md). This file preserves execution history and packet acceptance criteria; it is not current semantic authority.
+
+This handoff translated [the approved architecture](../../spec/scene/proposals/promoted/RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) into the R0-R9 implementation campaign. The maintainer authorized local implementation and checkpoint commits on 2026-08-02; pushes and publication remain governed by the current user authorization and repository rules.
 
 ## Required Reading And Authority
 
@@ -21,6 +23,8 @@ The maintainer completed this gate on 2026-08-02 by approving:
 3. approved a separate render implementation branch or worktree;
 4. confirmed whether a narrow issue #137 stabilization patch should precede the architecture migration or be delivered inside R7;
 5. accepted the checkpoint and QA integration sequence in [HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md](HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md).
+
+The maintainer also approved the R0 cycle-resolution refinement on 2026-08-02: AO uses a coherent surface-capture prepass before `surface_analysis` and forward opaque shading, and scene occlusion uses a typed `scene_occlusion_depth` product distinct from `surface_depth` and `volume_first_hit_depth`.
 
 Implementation uses a fresh branch from the integrated approved base with no standalone blur-only patch. Add characterization tests first, then deliver the estimator and architectural fix through R7. A future emergency narrow fix requires a new maintainer request.
 
@@ -80,7 +84,7 @@ Owner: main `sol-medium` orchestrator or a supervised `terra-medium` test mapper
 Paths:
 
 - approved proposal promotion into `spec/scene/implementation/**`, `spec/scene/semantics/EFFECTS.md`, `spec/scene/pipeline/**`, and affected visual specs;
-- characterization tests in `src/scene/tests/{scene_techniques,frame_plan,frame_plan_emit,scene_graph}.c`, `src/scene/tests/visuals/runtime.c`, and `src/app/tests/test_app.c`;
+- characterization tests in `src/scene/tests/{scene_techniques,frame_plan,frame_plan_emit,scene_graph,app}.c` and `src/scene/tests/visuals/runtime.c`;
 - issue #137 examples and capture fixtures without committing unapproved binary media.
 
 Deliverables:
@@ -97,6 +101,8 @@ Acceptance:
 - No DRP2, runtime, shader, or public API changes occur in this packet.
 
 Stop and escalate if the approved decisions cannot be expressed consistently across existing specialized specs, or if a required fixture would commit prohibited binary data.
+
+R0 evidence on the Linux RTX 5090 runner: all 14 focused SSAO tests pass; the perspective FOV sweep at `0.45`, `0.75`, and `1.05` records visibility minima `136`, `130`, and `186` with means `244.799`, `251.647`, and `253.453`; the legacy blur minimum is `203`; orthographic minimum is `185`; MSAA 1x and 4x captures are identical on this backend; stationary redraw, unequal-panel isolation, and resize round-trip have maximum delta `0`; strict panel-local background has zero dark pixels. `just build`, `just spec-check` including all 125 DRP2 fixtures and WebGPU checks, and `git diff --check` pass. These are characterization values, not R7 quality thresholds.
 
 ## R1 — Typed Products And Frame-Plan Schema
 
@@ -123,6 +129,8 @@ Acceptance:
 - Product IDs are not exported as stable user handles.
 
 Stop and escalate if existing fixed graph limits cannot represent the needed attachments/accesses, if product identity would need persistence across plans, or if a protocol capability appears necessary. Any DRP2 change starts with authoritative prose, schema, and fixtures.
+
+R1 implementation evidence: typed plan-local products and coherent surface-record identities remain internal to the scene FramePlan; growable typed use records bind consumers and validity requirements without a fixed consumer limit; physical resources and diagnostic labels remain non-authoritative realizations; exact attachment and explicit shader resolves, format classes, access closure, panel scope, surface pairing, validity payloads, live intervals, and aliases are mechanically validated. JSON schema `0.2` and ASCII output expose deterministic provenance. The focused product matrix passes 15/15, the broader frame-plan lane passes 88/88, `just spec-check` passes all 125 DRP2 fixtures, 39 WebGPU fixtures/streams, pytest gates, and source guards, and `git diff --check` passes. No DRP2 protocol change was required.
 
 ## R2 — Central Composer, Layers, Phases, And Snapshots
 
@@ -151,6 +159,8 @@ Acceptance:
 - Missing producers, ambiguous producers, phase cycles, and incompatible participation fail precisely.
 
 Stop and escalate when a visual needs technique-family behavior that cannot be represented as a layer, phase, product use, material feature, ordered draw fact, or capability. Define the missing semantic contract instead of adding another family switch.
+
+R2 implementation evidence: visual families now declare baseline semantic layers, product capabilities, and phase participation; generated annotation, card, bounds, text, and glyph roles resolve explicitly to overlay while fixed backgrounds remain surface content; one centralized immutable contract table selects ordered technique instances, resolves product-version chains and complete capabilities/fallbacks, expands generic pass templates, validates producer uniqueness, cycles, phase constraints, pass identities, persisted contract drift, complete physical binding, and exact pass-template expansion, and publishes the exact panel snapshot transactionally into the FramePlan. Repeated source-over transforms retain distinct technique and `scene_color` versions, compatible volume source-over work preserves authored order in transparent shading, overlays compose last, semantic occlusion dependencies remain explicit across transparency algorithms, and unsupported noncontiguous repeated OIT runs fail rather than persist false order. Render nodes and graph passes use typed panel-local composition identities plus direct indices, draw contracts are frozen from retained metadata, MSAA emission consumes the snapshot decision, and the checkpoint-local label bridge is confined to final legacy graph binding for removal during R3. Full scene-graph coverage passes 215/215, including GPU SSAO/WBOIT/depth-peel paths, focused composition/capability/overlay/persistence/identity tests pass, all 88 affected FramePlan tests pass, `just spec-check` passes, and `git diff --check` passes.
 
 ## R3 — Declarative Work And Generic Lowering
 

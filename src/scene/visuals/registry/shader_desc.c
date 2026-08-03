@@ -268,7 +268,7 @@ bool _scene_visual_shader_desc_apply_query_pick(
  * Resolve shader metadata for graph-driven special render passes.
  *
  * @param visual mutable visual descriptor; pass policies may disable material data
- * @param pass_role render pass role being prepared
+ * @param provider typed work provider being prepared
  * @param format_tag shader-format cache-key suffix
  * @param shader output shader descriptor
  * @param out_fragment_glsl_variant owned GLSL variant, when one is generated
@@ -277,7 +277,7 @@ bool _scene_visual_shader_desc_apply_query_pick(
  * @return whether the pass-specific shader descriptor was resolved successfully
  */
 bool _scene_visual_shader_desc_for_pass(
-    DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role, const char* format_tag,
+    DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider, const char* format_tag,
     DvzSceneVisualShaderDesc* shader, char** out_fragment_glsl_variant, bool* out_handled,
     bool* out_skip)
 {
@@ -292,7 +292,7 @@ bool _scene_visual_shader_desc_for_pass(
     *out_handled = false;
     *out_skip = false;
 
-    if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
+    if (provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE)
     {
         *out_handled = true;
         if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && !visual->has_normal)
@@ -348,7 +348,7 @@ bool _scene_visual_shader_desc_for_pass(
         return true;
     }
 
-    if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION)
+    if (provider == DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION)
     {
         *out_handled = true;
         if (visual->kind != DVZ_SCENE_VISUAL_DESC_VOLUME)
@@ -371,7 +371,7 @@ bool _scene_visual_shader_desc_for_pass(
         return true;
     }
 
-    if (pass_role != DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION)
+    if (provider != DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION)
         return true;
 
     *out_handled = true;
@@ -507,13 +507,14 @@ static const char* _shader_depth_peel_fragment_spirv_key(DvzSceneBuiltinShader s
  * Apply render-pass shader key and source policy after base shader resolution.
  *
  * @param visual the visual descriptor
- * @param pass_role render pass role being prepared
+ * @param provider typed work provider being prepared
  * @param alpha_mode visual alpha mode
  * @param controller_mode controller attachment mode for the visual
  * @param picking whether the render pass is a picking pass
  * @param pass_has_depth_attachment whether the pass carries a depth attachment
  * @param force_point_depth whether point-like visuals must write depth
  * @param wboit_accumulation whether the pass is WBOIT accumulation
+ * @param surface_depth_output whether the pass writes standalone linear surface depth at target 1
  * @param pass_sample_count multisample count for the pass
  * @param pass_alpha_to_coverage whether alpha-to-coverage is enabled for the pass
  * @param scene_occluded_shader whether the shader samples scene occlusion depth
@@ -524,11 +525,11 @@ static const char* _shader_depth_peel_fragment_spirv_key(DvzSceneBuiltinShader s
  * @return whether the shader descriptor was updated successfully
  */
 bool _scene_visual_shader_desc_apply_pass_policy(
-    const DvzSceneVisualDesc* visual, DvzFramePlanRenderPassRole pass_role,
+    const DvzSceneVisualDesc* visual, DvzSceneWorkProviderKey provider,
     DvzAlphaMode alpha_mode, DvzControllerMode controller_mode, bool picking,
     bool pass_has_depth_attachment, bool force_point_depth, bool wboit_accumulation,
-    uint32_t pass_sample_count, bool pass_alpha_to_coverage, bool scene_occluded_shader,
-    bool scene_occlusion_uses_set2, DvzSceneVisualShaderDesc* shader,
+    bool surface_depth_output, uint32_t pass_sample_count, bool pass_alpha_to_coverage,
+    bool scene_occluded_shader, bool scene_occlusion_uses_set2, DvzSceneVisualShaderDesc* shader,
     char** out_fragment_glsl_variant, bool* out_segment_coverage_blend)
 {
     ANN(visual);
@@ -536,9 +537,9 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     ANN(out_fragment_glsl_variant);
     ANN(out_segment_coverage_blend);
 
-    bool depth_peel_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ||
-                           pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
-    bool gbuffer_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER;
+    bool depth_peel_pass = provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
+                           provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
+    bool gbuffer_pass = provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE;
     bool point_like = visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
@@ -578,13 +579,13 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     if (_scene_alpha_mode_is_depth_peel(alpha_mode))
     {
         const char* peel_suffix =
-            pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT ? "_peel_init" : "_peel_iter";
+            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ? "_peel_init" : "_peel_iter";
         if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), peel_suffix) ||
             !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), peel_suffix))
         {
             return false;
         }
-        bool back_pass = pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER;
+        bool back_pass = provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
         DvzSceneBuiltinShader peel_shader =
             _shader_depth_peel_fragment(visual->has_normal, back_pass);
         shader->fragment_glsl = _builtin_shader_glsl(peel_shader, true);
@@ -618,24 +619,55 @@ bool _scene_visual_shader_desc_apply_pass_policy(
             {
                 if (!_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_a2c"))
                     return false;
-                shader->fragment_glsl =
-                    _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
-                shader->fragment_spirv_key = "sphere_a2c_frag";
+                if (gbuffer_pass)
+                {
+                    *out_fragment_glsl_variant = _shader_glsl_variant(
+                        shader->fragment_glsl, "#define DVZ_SURFACE_CAPTURE_A2C 1\n");
+                    shader->fragment_glsl = *out_fragment_glsl_variant;
+                    shader->fragment_spirv_key = NULL;
+                    shader->fragment_wgsl = NULL;
+                    shader->builtin_family = NULL;
+                    shader->builtin_variant = NULL;
+                    shader->builtin_version = 0;
+                    shader->builtin_pipeline = NULL;
+                    shader->builtin_pipeline_version = 0;
+                    if (shader->fragment_glsl == NULL)
+                        return false;
+                }
+                else
+                {
+                    shader->fragment_glsl =
+                        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C, true);
+                    shader->fragment_spirv_key = "sphere_a2c_frag";
+                }
             }
         }
     }
-    if (scene_occluded_shader)
+    if (surface_depth_output)
     {
-        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_scene_occ") ||
-            !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_scene_occ"))
+        if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_surface_z") ||
+            !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_surface_z"))
         {
             return false;
         }
-        char scene_occlusion_defines[96];
+    }
+    if (scene_occluded_shader || surface_depth_output)
+    {
+        if (scene_occluded_shader &&
+            (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_scene_occ") ||
+             !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_scene_occ")))
+        {
+            return false;
+        }
+        char scene_occlusion_defines[160] = {0};
         dvz_snprintf(
             scene_occlusion_defines, sizeof(scene_occlusion_defines),
-            "#define DVZ_SCENE_OCCLUSION 1\n#define DVZ_SCENE_OCCLUSION_SET %u\n",
-            scene_occlusion_uses_set2 ? 2u : 1u);
+            "%s%s%s",
+            scene_occluded_shader ? "#define DVZ_SCENE_OCCLUSION 1\n" : "",
+            scene_occluded_shader && scene_occlusion_uses_set2
+                ? "#define DVZ_SCENE_OCCLUSION_SET 2\n"
+                : scene_occluded_shader ? "#define DVZ_SCENE_OCCLUSION_SET 1\n" : "",
+            surface_depth_output ? "#define DVZ_SURFACE_DEPTH_OUTPUT 1\n" : "");
         *out_fragment_glsl_variant =
             _shader_glsl_variant(shader->fragment_glsl, scene_occlusion_defines);
         shader->fragment_glsl = *out_fragment_glsl_variant;

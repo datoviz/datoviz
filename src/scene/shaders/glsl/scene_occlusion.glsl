@@ -1,6 +1,8 @@
 #ifndef DVZ_SCENE_OCCLUSION_GLSL
 #define DVZ_SCENE_OCCLUSION_GLSL
 
+#include "common.glsl"
+
 #ifndef DVZ_SCENE_OCCLUSION_SET
 #define DVZ_SCENE_OCCLUSION_SET 2
 #endif
@@ -10,6 +12,7 @@ layout(set = DVZ_SCENE_OCCLUSION_SET, binding = 1) uniform sampler sceneOcclusio
 
 layout(set = DVZ_SCENE_OCCLUSION_SET, binding = 2) uniform SceneOcclusionParams {
     vec4 params;
+    vec4 viewport;
 } sceneOcclusion;
 
 float sceneOcclusionVisibility(float selfDepth)
@@ -19,9 +22,10 @@ float sceneOcclusionVisibility(float selfDepth)
     }
 
     vec2 size = vec2(textureSize(sampler2D(sceneOcclusionDepth, sceneOcclusionSamp), 0));
-    vec2 uv = clamp(gl_FragCoord.xy / size, vec2(0.0), vec2(1.0));
+    vec2 uv = clamp(
+        (gl_FragCoord.xy - sceneOcclusion.viewport.xy) / size, vec2(0.0), vec2(1.0));
     float sceneDepth = texture(sampler2D(sceneOcclusionDepth, sceneOcclusionSamp), uv).r;
-    if (sceneDepth >= 0.999999) {
+    if (sceneDepth <= 0.000001) {
         return 1.0;
     }
 
@@ -47,7 +51,7 @@ void applySceneOcclusionDepth(inout vec4 color, float selfDepth)
 
 void applySceneOcclusion(inout vec4 color)
 {
-    applySceneOcclusionDepth(color, gl_FragCoord.z);
+    applySceneOcclusionDepth(color, positiveLinearViewDepth(gl_FragCoord.z));
 }
 
 #endif

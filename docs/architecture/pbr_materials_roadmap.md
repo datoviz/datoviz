@@ -28,7 +28,7 @@ The active scene stack already has several useful foundations:
 4. `src/scene/glsl/scene_material.glsl` centralizes material evaluation for lit visual shaders.
 5. Mesh, primitive, and sphere visuals can use the shared material path.
 6. Sphere impostors have analytic normals, making them a good uniform-material PBR target.
-7. Mesh and primitive visuals can participate in normal/depth G-buffer and SSAO paths when normals
+7. Mesh and primitive visuals can participate in normal/depth G-buffer and AO paths when normals
    are available.
 8. Visual pass capability resolution is centralized in `src/scene/visual_pipeline.c`.
 
@@ -66,7 +66,7 @@ The target material feature set is:
    - BRDF lookup texture;
 6. compatibility with existing scene effects:
    - depth cueing as a post-material modifier;
-   - SSAO through G-buffer normals/depth;
+   - AO through G-buffer normals/depth;
    - WBOIT and depth peeling for transparent materials;
    - object-id and outline passes later.
 
@@ -114,7 +114,7 @@ should remain non-PBR unless they are rendered as tube or ribbon surfaces with m
 ### Non-PBR Families
 
 Image, point, pixel, and volume visuals should not expose PBR in the usual surface-material sense.
-They may use lighting-like effects, depth cueing, transfer functions, EDL, SSAO, or gradient
+They may use lighting-like effects, depth cueing, transfer functions, EDL, AO, or gradient
 shading, but those are separate scientific visualization techniques rather than surface PBR.
 
 
@@ -276,7 +276,7 @@ facts. Useful questions include:
 4. does the material need tangents?
 5. does the material use sampled maps?
 6. can this visual emit normal/depth G-buffer data?
-7. can this visual participate in SSAO, WBOIT, depth peeling, object-id, or outline passes?
+7. can this visual participate in AO, WBOIT, depth peeling, object-id, or outline passes?
 
 The long-term selection rule should be:
 

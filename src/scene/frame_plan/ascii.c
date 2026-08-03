@@ -24,6 +24,7 @@
 #include "_assertions.h"
 #include "_compat.h"
 #include "frame_plan/frame_plan.h"
+#include "internal.h"
 
 
 
@@ -621,6 +622,51 @@ static void _ascii_append_flow(AsciiBuilder* builder, const DvzFramePlan* plan, 
 
 
 
+static void _ascii_append_compositions(AsciiBuilder* builder, const DvzFramePlan* plan)
+{
+    ANN(builder);
+    ANN(plan);
+    for (uint32_t i = 0; i < plan->composition_count; i++)
+    {
+        const DvzPanelCompositionSnapshot* composition = &plan->compositions[i];
+        _ascii_append(
+            builder,
+            "Composition panel=%s origin=(%d,%d) extent=%" PRIu32 "x%" PRIu32
+            " scale=%.6g local_to_target=(%.6g,%.6g,%.6g,%.6g) scratch=%" PRIu32
+            " passes=%" PRIu32 "\n",
+            composition->panel_id, composition->origin_x, composition->origin_y,
+            composition->width, composition->height, (double)composition->render_scale,
+            (double)composition->local_to_target[0], (double)composition->local_to_target[1],
+            (double)composition->local_to_target[2], (double)composition->local_to_target[3],
+            composition->scratch_resource_count, composition->pass_count);
+        for (uint32_t j = 0; j < composition->scratch_resource_count; j++)
+        {
+            const DvzSceneScratchResource* scratch = &composition->scratch_resources[j];
+            _ascii_append(
+                builder,
+                "  scratch #%" PRIu32 " kind=%u format=%u extent=%u samples=%" PRIu32
+                " usage=0x%x scope=%u\n",
+                scratch->id.value, (uint32_t)scratch->kind, scratch->format,
+                (uint32_t)scratch->extent_policy, scratch->sample_count, scratch->usage_mask,
+                (uint32_t)scratch->scope);
+        }
+        for (uint32_t j = 0; j < composition->pass_count; j++)
+        {
+            const DvzSceneResolvedPass* pass = &composition->passes[j];
+            _ascii_append(
+                builder,
+                "  work #%" PRIu32 " class=%u provider=%u coordinates=%u samples=%" PRIu32
+                " bindings=%" PRIu32 "\n",
+                pass->id.value, (uint32_t)pass->work_class, (uint32_t)pass->provider,
+                (uint32_t)pass->coordinate_space, pass->sample_count, pass->binding_count);
+        }
+    }
+    if (plan->composition_count > 0)
+        _ascii_append(builder, "\n");
+}
+
+
+
 /**
  * Append compact upload and readback plan nodes.
  *
@@ -795,10 +841,11 @@ static void _ascii_append_pass(
     _ascii_append(
         builder, "[%s #%" PRIu32 "]\n", _ascii_graph_pass_kind_name(pass->kind), pass_index);
     _ascii_append(builder, "id: %s\n", pass->id);
+    if (pass->has_composition_pass)
+        _ascii_append(
+            builder, "composition-pass: #%" PRIu32 "\n", pass->composition_pass_id.value);
     if (pass->panel_id[0] != '\0')
         _ascii_append(builder, "panel: %s\n", pass->panel_id);
-    if (pass->work_label[0] != '\0')
-        _ascii_append(builder, "work: %s\n", pass->work_label);
     if ((flags & DVZ_FRAME_PLAN_ASCII_VERBOSE) != 0)
     {
         _ascii_append(
@@ -854,6 +901,87 @@ static void _ascii_append_dependency_list(AsciiBuilder* builder, const DvzFrameP
 
 
 
+static void _ascii_append_products(AsciiBuilder* builder, const DvzFramePlan* plan)
+{
+    ANN(builder);
+    ANN(plan);
+    if (plan->product_count == 0)
+        return;
+    _ascii_append(builder, "Products\n");
+    for (uint32_t i = 0; i < plan->product_count; i++)
+    {
+        const DvzRenderProductContract* product = &plan->products[i];
+        _ascii_append(
+            builder, "  (#%" PRIu32 " %s v%" PRIu32 ") %s domain=%s", product->id.value,
+            product->diagnostic_label[0] != '\0' ? product->diagnostic_label : "<unnamed>",
+            product->version,
+            _frame_plan_product_kind_name(product->kind),
+            _frame_plan_product_domain_name(product->domain));
+        _ascii_append(
+            builder, " panel=%s view=%s camera=%s projection=%s", product->panel_id,
+            product->view_id, product->camera_id, product->projection_id);
+        _ascii_append(
+            builder, "\n    extent=%s/%s origin=%" PRId32 ",%" PRId32 " size=%" PRIu32 "x%" PRIu32,
+            _frame_plan_product_extent_name(product->extent_policy),
+            _frame_plan_product_rounding_name(product->rounding_policy), product->origin_x,
+            product->origin_y, product->width, product->height);
+        _ascii_append(
+            builder, " scale=%.6g transform=%.6g,%.6g,%.6g,%.6g",
+            (double)product->render_scale, (double)product->local_to_target[0],
+            (double)product->local_to_target[1], (double)product->local_to_target[2],
+            (double)product->local_to_target[3]);
+        _ascii_append(
+            builder, "\n    format=%s/%" PRIu32 " samples=%s/%" PRIu32 " resolve=%s",
+            _frame_plan_product_format_name(product->format_class), product->concrete_format,
+            _frame_plan_product_samples_name(product->sample_domain), product->sample_count,
+            _frame_plan_product_resolve_name(product->resolve_policy));
+        _ascii_append(
+            builder, " coordinates=%s encoding=%s alpha=%s coverage=%s validity=%s",
+            _frame_plan_product_coordinates_name(product->coordinate_space),
+            _frame_plan_product_encoding_name(product->encoding),
+            _frame_plan_product_alpha_name(product->alpha),
+            _frame_plan_product_coverage_name(product->coverage),
+            _frame_plan_product_validity_name(product->validity));
+        _ascii_append(
+            builder, "\n    resource=#%" PRIu32 " source=#%" PRIu32 " record=#%" PRIu32
+                     " producer-pass=#%" PRIu32 "(%s) usage=0x%08" PRIx32 " lifetime=%s adaptations=0x%08" PRIx32,
+            product->resource_index, product->source_product_id.value,
+            product->surface_record_id.value, product->producer_pass_index,
+            product->producer_pass_index < plan->graph_pass_count
+                ? plan->graph_passes[product->producer_pass_index].id
+                : "<invalid>",
+            product->required_usage_flags, _ascii_graph_lifetime_name(product->lifetime),
+            product->capability_adaptations);
+        _ascii_append(
+            builder,
+            "\n    validity-product=#%" PRIu32 " background=%s[%.6g,%.6g,%.6g,%.6g] sentinel=%s%" PRIu64,
+            product->validity_product_id.value, product->has_background_value ? "" : "unset:",
+            (double)product->background_value[0], (double)product->background_value[1],
+            (double)product->background_value[2], (double)product->background_value[3],
+            product->has_integer_sentinel ? "" : "unset:", product->integer_sentinel);
+        bool has_consumer = false;
+        for (uint32_t j = 0; j < plan->product_use_count; j++)
+        {
+            const DvzRenderProductConsumer* use = &plan->product_uses[j];
+            if (use->product_id.value != product->id.value)
+                continue;
+            if (!has_consumer)
+                _ascii_append(builder, "\n    consumers=");
+            _ascii_append(
+                builder, "%s#%" PRIu32 "(%s):%s", has_consumer ? "," : "", use->pass_index,
+                use->pass_index < plan->graph_pass_count
+                    ? plan->graph_passes[use->pass_index].id
+                    : "<invalid>",
+                _frame_plan_product_validity_requirement_name(use->validity_requirement));
+            has_consumer = true;
+        }
+        _ascii_append(builder, "\n");
+    }
+    _ascii_append(builder, "\n");
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -877,11 +1005,17 @@ char* dvz_frame_plan_graph_ascii(const DvzFramePlan* plan, uint32_t flags)
     _ascii_append(
         &builder,
         "FramePlan figure=%s frame=%" PRIu64 "\n"
-        "Graph resources=%" PRIu32 " passes=%" PRIu32 " dependencies=%" PRIu32 "\n\n",
-        plan->figure_id, plan->frame_index, plan->graph_resource_count, plan->graph_pass_count,
+        "Graph products=%" PRIu32 " resources=%" PRIu32 " passes=%" PRIu32
+        " dependencies=%" PRIu32 "\n\n",
+        plan->figure_id, plan->frame_index, plan->product_count, plan->graph_resource_count,
+        plan->graph_pass_count,
         dvz_frame_plan_graph_dependency_count(plan));
 
     _ascii_append_plan_nodes(&builder, plan, flags);
+
+    _ascii_append_compositions(&builder, plan);
+
+    _ascii_append_products(&builder, plan);
 
     _ascii_append_flow(&builder, plan, flags);
 

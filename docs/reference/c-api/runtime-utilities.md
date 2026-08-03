@@ -12,8 +12,8 @@ Common runtime, file I/O, font, render-type, and miscellaneous utility functions
 
 Use these functions for allocation, diagnostics, resources, file access, and shared runtime support.
 
-Functions: 24
-Types: 8
+Functions: 25
+Types: 9
 
 ## Symbol Groups
 
@@ -21,6 +21,7 @@ Types: 8
 | --- | ---: | ---: | --- |
 | [Common Types](#common-types) | 0 | 4 | `include/datoviz/common/types.h` |
 | [Error](#error) | 1 | 1 | `include/datoviz/common/functions.h` |
+| [External](#external) | 1 | 1 | `include/datoviz/common/functions.h`, `include/datoviz/common/types.h` |
 | [File](#file) | 1 | 0 | `include/datoviz/fileio/fileio.h` |
 | [Font](#font) | 2 | 2 | `include/datoviz/font.h` |
 | [Load](#load) | 2 | 0 | `include/datoviz/fileio/fileio.h` |
@@ -41,6 +42,12 @@ Types: 8
     | Function | Header |
     | --- | --- |
     | [`dvz_error_set_callback()`](#dvz_error_set_callback) | `include/datoviz/common/functions.h` |
+
+    **External**
+
+    | Function | Header |
+    | --- | --- |
+    | [`dvz_external_handle_close()`](#dvz_external_handle_close) | `include/datoviz/common/functions.h` |
 
     **File**
 
@@ -137,7 +144,7 @@ Types: 8
     };
     ```
 
-    _Declared in `include/datoviz/common/types.h`:51._
+    _Declared in `include/datoviz/common/types.h`:54._
 
 <a id="type-dvzcolorf"></a>
 
@@ -152,7 +159,7 @@ Types: 8
     };
     ```
 
-    _Declared in `include/datoviz/common/types.h`:61._
+    _Declared in `include/datoviz/common/types.h`:64._
 
 <a id="type-dvzresult"></a>
 
@@ -175,7 +182,7 @@ Types: 8
     };
     ```
 
-    _Declared in `include/datoviz/common/types.h`:71._
+    _Declared in `include/datoviz/common/types.h`:74._
 
 ## Error { #error }
 
@@ -214,6 +221,42 @@ _Declared in `include/datoviz/common/functions.h`:60._
     ```
 
     _Declared in `include/datoviz/common/functions.h`:39._
+
+## External { #external }
+
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Functions</strong></p>
+
+#### `dvz_external_handle_close()` { #dvz_external_handle_close .dvz-api-function }
+
+Close an owned platform external handle.
+
+On Unix the value is treated as a file descriptor. On Windows it is treated as a native
+`HANDLE` without exposing `windows.h` in the public API. Passing
+`DVZ_EXTERNAL_HANDLE_INVALID` is allowed.
+
+```c
+void dvz_external_handle_close(
+    DvzExternalHandle handle
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `handle` | [`DvzExternalHandle`](runtime-utilities.md#type-dvzexternalhandle) | owned platform external handle |
+
+_Declared in `include/datoviz/common/functions.h`:84._
+
+<p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
+
+<a id="type-dvzexternalhandle"></a>
+
+??? abstract "`DvzExternalHandle` · typedef"
+
+    ```c
+    typedef intptr_t DvzExternalHandle;
+    ```
+
+    _Declared in `include/datoviz/common/types.h`:35._
 
 ## File { #file }
 
@@ -407,7 +450,7 @@ int dvz_make_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | zero after the encode attempt |
+| return | `int` | zero on success, nonzero for invalid arguments, allocation failure, or encode failure |
 | `width` | `uint32_t` | image width in pixels; must be positive |
 | `height` | `uint32_t` | image height in pixels; must be positive |
 | `rgb` | `const` `uint8_t` * | tightly packed sRGB RGB8 pixels containing `width * height * 3` bytes; must not be NULL |
@@ -691,7 +734,7 @@ uint64_t dvz_time_monotonic_ns(void);
 | --- | --- | --- |
 | return | `uint64_t` | monotonic timestamp in nanoseconds |
 
-_Declared in `include/datoviz/common/functions.h`:79._
+_Declared in `include/datoviz/common/functions.h`:92._
 
 ## Version { #version }
 
@@ -730,7 +773,7 @@ int dvz_write_bytes(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | zero if the file was opened, nonzero otherwise; write errors are not reported |
+| return | `int` | zero on success, nonzero for invalid arguments or an open/write failure |
 | `filename` | `const` `char` * | destination file path; must not be NULL |
 | `mode` | `const` `char` * | standard `fopen()` mode, typically `"wb"` or `"ab"`; must not be NULL |
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | number of bytes to write |
@@ -753,7 +796,7 @@ int dvz_write_png(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | zero after the encode attempt |
+| return | `int` | zero on success, nonzero for invalid arguments or an encode/write failure |
 | `filename` | `const` `char` * | destination PNG file path; must not be NULL |
 | `width` | `uint32_t` | image width in pixels; must be positive |
 | `height` | `uint32_t` | image height in pixels; must be positive |
@@ -776,7 +819,7 @@ int dvz_write_ppm(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| return | `int` | zero if the file was opened, nonzero otherwise; write errors are not reported |
+| return | `int` | zero on success, nonzero for invalid arguments or an open/write failure |
 | `filename` | `const` `char` * | destination PPM file path; must not be NULL |
 | `width` | `uint32_t` | image width in pixels |
 | `height` | `uint32_t` | image height in pixels |

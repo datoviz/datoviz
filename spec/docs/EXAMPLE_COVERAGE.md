@@ -337,7 +337,7 @@ when they become public:
 | `technique.msaa` | `examples/c/features/technique_msaa.c` | Geometry with clear edge aliasing improvement. | Teaches MSAA configuration. |
 | `technique.depth_testing` | `examples/c/features/technique_depth_testing.c` | Overlapping 3D objects that make depth testing or ordering behavior obvious. | Teaches depth-buffer behavior. Keep depth cueing, transparency, and WBOIT separate. |
 | `technique.edl` | `examples/c/features/technique_edl.c` | Dense point or pixel cloud with depth enhancement visible. | Teaches EDL as a rendering technique, not point visual basics. |
-| `technique.ssao` | `examples/c/features/technique_ssao.c` | 3D mesh or sphere scene with ambient occlusion visible. | Teaches SSAO configuration. |
+| `technique.ssao` | `examples/c/features/technique_ao.c` | 3D mesh or sphere scene with ambient occlusion visible. | Teaches ambient-occlusion configuration. |
 | `technique.depth_cue` | `examples/c/features/technique_depth_cue.c` | 3D objects fading or scaling with depth. | Teaches depth cueing. |
 | `technique.bounds_overlay` | `examples/c/features/bounds_overlay.c` | Visual bounds or debug overlays drawn around known objects. | Keep diagnostic status explicit; do not make this a normal visual example. |
 

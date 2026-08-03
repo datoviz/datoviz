@@ -1,6 +1,7 @@
 #version 450
 
 #include "color.glsl"
+#include "surface_depth.glsl"
 
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
@@ -36,5 +37,8 @@ void main()
         discard;
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(outColor);
+#endif
+#ifdef DVZ_SURFACE_DEPTH_OUTPUT
+    writeSurfaceDepthFromDevice();
 #endif
 }

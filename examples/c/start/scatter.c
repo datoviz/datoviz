@@ -258,8 +258,13 @@ _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void*
     ScatterState* state = (ScatterState*)user_data;
     if (state == NULL || !state->interaction_benchmark)
         return true;
+#if defined(DVZ_EXAMPLE_HAS_APP) && DVZ_EXAMPLE_HAS_APP
     state->input = dvz_view_input(view);
     return state->input != NULL;
+#else
+    (void)view;
+    return false;
+#endif
 }
 
 

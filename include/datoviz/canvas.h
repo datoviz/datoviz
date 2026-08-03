@@ -50,6 +50,12 @@ typedef struct DvzDevice DvzDevice;
 
 #define DVZ_CANVAS_DEFAULT_TIMING_HISTORY 120
 
+// Use the resolved presentation mode: FIFO uses one slot and all other modes use every image.
+#define DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT 0
+
+// Allocate one frame slot for every swapchain image, regardless of presentation mode.
+#define DVZ_CANVAS_FRAME_SLOT_COUNT_AUTOMATIC UINT32_MAX
+
 
 
 /*************************************************************************************************/
@@ -67,6 +73,8 @@ typedef struct
     VkFormat color_format;
     VkFormat depth_format;
     VkPresentModeKHR present_mode;
+    // Use a DVZ_CANVAS_FRAME_SLOT_COUNT_* selector or a positive fixed count.
+    uint32_t frame_slot_count;
     bool enable_video_sink;
     size_t timing_history;
 } DvzCanvasConfig;

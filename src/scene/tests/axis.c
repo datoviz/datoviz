@@ -3059,7 +3059,7 @@ static int test_axis_integer_lattice_panzoom_alignment(TstContext* suite, const 
     DvzFramePlan* plan = dvz_frame_plan("axis.integer_lattice", 0);
     ANN(plan);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
-    AT(dvz_frame_plan_node_count(plan) == 2);
+    AT(dvz_frame_plan_node_count(plan) == 3);
     uint32_t apply_count = 0;
     uint32_t fixed_count = 0;
     uint32_t visual_count = 0;
@@ -3324,7 +3324,7 @@ static int test_axis_visual_clip_rect_panel(TstContext* suite, const TstCase* it
     DvzFramePlan* plan = dvz_frame_plan("axis.clip_rect_panel", 0);
     ANN(plan);
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
-    AT(dvz_frame_plan_node_count(plan) == 2);
+    AT(dvz_frame_plan_node_count(plan) == 3);
     uint32_t visual_count = 0;
     uint32_t panel_clip_count = 0;
     uint32_t plot_clip_count = 0;

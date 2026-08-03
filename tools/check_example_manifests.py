@@ -42,7 +42,7 @@ REQUIRED_DATASET_FIELDS = {
 }
 WEBGPU_EFFECT_STATUSES = {"supported", "limited", "unavailable"}
 WEBGPU_RENDERING_EFFECT_PATTERNS = {
-    "ssao": re.compile(r"\b(?:dvz_panel_set_ssao|example_tuner_ssao)\b"),
+    "ao": re.compile(r"\b(?:dvz_panel_set_ao|example_tuner_ao)\b"),
     "msaa": re.compile(r"\b(?:dvz_panel_set_msaa|example_tuner_msaa)\b"),
     "edl": re.compile(r"\b(?:dvz_panel_set_edl|example_tuner_edl)\b"),
     "depth-cue": re.compile(r"\b(?:dvz_visual_set_depth_cue|example_tuner_depth_cue)\b"),

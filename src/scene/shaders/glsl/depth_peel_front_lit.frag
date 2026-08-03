@@ -1,5 +1,6 @@
 #version 450
 
+#include "common.glsl"
 #include "scene_material.glsl"
 
 layout(location = 0) in vec4 fragColor;
@@ -21,7 +22,8 @@ vec4 shade()
 void main()
 {
     /* Init pass: reduce all transparent fragments to first nearest/farthest depth bounds. */
+    float viewDepth = positiveLinearViewDepth(gl_FragCoord.z);
     frontAccum = vec4(0.0);
     backAccum = vec4(0.0);
-    depthPair = vec4(-gl_FragCoord.z, gl_FragCoord.z, 0.0, 0.0);
+    depthPair = vec4(-viewDepth, viewDepth, 0.0, 0.0);
 }

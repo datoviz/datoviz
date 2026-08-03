@@ -99,6 +99,7 @@ struct DvzWindowMetrics
     DvzScaleXY device_scale;
     DvzScaleXY native_to_logical;
 
+    uint32_t refresh_rate_hz;
     DvzHiDpiPolicy active_hidpi_policy;
     uint64_t generation;
 };

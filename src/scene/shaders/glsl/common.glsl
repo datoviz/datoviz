@@ -18,6 +18,8 @@
 #ifndef DVZ_COMMON_GLSL
 #define DVZ_COMMON_GLSL
 
+#ifndef DVZ_MVP_UNIFORM_GLSL
+#define DVZ_MVP_UNIFORM_GLSL
 layout(set = 0, binding = 0) uniform MVP {
     mat4 model;
     mat4 view;
@@ -25,6 +27,7 @@ layout(set = 0, binding = 0) uniform MVP {
     float time;
     uint flags;
 } mvp;
+#endif
 
 layout(set = 0, binding = 1) uniform Viewport {
     vec4 rect;
@@ -44,6 +47,14 @@ float transform_radius(float radius)
     float sy = length(mvp.model[1].xyz);
     float sz = length(mvp.model[2].xyz);
     return radius * max(max(sx, sy), sz);
+}
+
+float positiveLinearViewDepth(float deviceDepth)
+{
+    vec4 view = inverse(mvp.proj) * vec4(0.0, 0.0, deviceDepth * 2.0 - 1.0, 1.0);
+    if (abs(view.w) <= 1e-8)
+        return 0.0;
+    return max(-view.z / view.w, 0.0);
 }
 
 #endif

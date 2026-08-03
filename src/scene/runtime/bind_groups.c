@@ -24,8 +24,6 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
-#include "frame_plan/frame_plan.h"
-#include "frame_plan/emit.h"
 #include "_frame_plan_runtime_internal.h"
 #include "_frame_plan_runtime_upload.h"
 #include "_render_pass.h"
@@ -39,6 +37,8 @@
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
+#include "frame_plan/emit.h"
+#include "frame_plan/frame_plan.h"
 #include "render_contract/render_contract.h"
 
 
@@ -65,7 +65,8 @@ void _pipeline_bind_group_layouts(
     const DvzSceneVisualPipelineDesc* pipeline, uint64_t common_bgl_id, uint64_t image_bgl_id,
     uint64_t labels_bgl_id, uint64_t glyph_bgl_id, uint64_t volume_bgl_id,
     uint64_t material_bgl_id, uint64_t item_state_style_bgl_id, uint64_t scene_occlusion_bgl_id,
-    bool scene_occlusion_uses_set2, uint64_t* out_layouts, uint32_t* out_count)
+    bool scene_occlusion_uses_set2, uint64_t ambient_visibility_bgl_id, uint64_t dummy_bgl_id,
+    uint64_t* out_layouts, uint32_t* out_count)
 {
     ANN(pipeline);
     ANN(out_layouts);
@@ -105,6 +106,12 @@ void _pipeline_bind_group_layouts(
         while (count < DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION)
             out_layouts[count++] = 0;
         out_layouts[count++] = scene_occlusion_bgl_id;
+    }
+    if (pipeline->needs_ambient_visibility_layout && ambient_visibility_bgl_id != 0)
+    {
+        while (count < 3)
+            out_layouts[count++] = dummy_bgl_id;
+        out_layouts[count++] = ambient_visibility_bgl_id;
     }
     *out_count = count;
 }
@@ -682,6 +689,8 @@ bool _resolve_scene_occlusion_bind_group(
 
     DvzSceneOcclusionUniform uniform = {0};
     _scene_occlusion_uniform_from_desc(&bind->scene_occlusion, &uniform);
+    uniform.viewport[0] = bind->sampled_panel_origin[0];
+    uniform.viewport[1] = bind->sampled_panel_origin[1];
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneOcclusionUniform), &uniform))
         return false;
@@ -994,6 +1003,8 @@ bool _resolve_volume_bind_group(
     _volume_uniform_from_state(
         &bind->volume_state, bind->volume_transfer_rgba, bind->volume_color_role,
         &bind->volume_occlusion, slot);
+    slot->texture_params[1] = bind->sampled_panel_origin[0];
+    slot->texture_params[2] = bind->sampled_panel_origin[1];
     if (!dvz_drp2_stream_write_buffer_bytes(
             stream, params_buf_id, 0, sizeof(DvzSceneVolumeUniform), slot))
         return false;

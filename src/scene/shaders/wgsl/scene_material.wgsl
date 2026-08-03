@@ -15,11 +15,12 @@ struct SceneMaterial {
 
 @group(1) @binding(0) var<uniform> material: SceneMaterial;
 
-fn evaluate_scene_material_linear_item(
+fn evaluate_scene_material_linear_item_with_ambient_visibility(
     linear_item_color: vec4f,
     normal: vec3f,
     world_position: vec3f,
     camera_position: vec3f,
+    ambient_visibility: f32,
 ) -> vec4f {
     let model = i32(material.model.x + 0.5);
     let opacity = clamp(material.model.y, 0.0, 1.0);
@@ -58,15 +59,39 @@ fn evaluate_scene_material_linear_item(
         let shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
         let specular = pow(max(dot(n, h), 0.0), shininess) * specular_strength;
         let rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rim_strength;
-        let diffuse = base * (0.04 + (1.0 - metallic) * lambert);
+        let visibility = clamp(ambient_visibility, 0.0, 1.0);
+        let diffuse = base * (0.04 * visibility + (1.0 - metallic) * lambert);
         let rgb = diffuse + vec3f(specular + rim) + emissive;
         return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), alpha);
     }
 
     let specular = pow(max(dot(n, h), 0.0), max(material.params.w, 1.0));
-    let rgb = base * (material.params.x + material.params.y * lambert) +
+    let visibility = clamp(ambient_visibility, 0.0, 1.0);
+    let rgb = base * (material.params.x * visibility + material.params.y * lambert) +
         vec3f(material.params.z * specular);
     return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), alpha);
+}
+
+fn evaluate_scene_material_linear_item(
+    linear_item_color: vec4f,
+    normal: vec3f,
+    world_position: vec3f,
+    camera_position: vec3f,
+) -> vec4f {
+    return evaluate_scene_material_linear_item_with_ambient_visibility(
+        linear_item_color, normal, world_position, camera_position, 1.0);
+}
+
+fn evaluate_scene_material_with_ambient_visibility(
+    item_color: vec4f,
+    normal: vec3f,
+    world_position: vec3f,
+    camera_position: vec3f,
+    ambient_visibility: f32,
+) -> vec4f {
+    return evaluate_scene_material_linear_item_with_ambient_visibility(
+        semantic_color_to_linear(item_color), normal, world_position, camera_position,
+        ambient_visibility);
 }
 
 fn evaluate_scene_material(
@@ -75,8 +100,8 @@ fn evaluate_scene_material(
     world_position: vec3f,
     camera_position: vec3f,
 ) -> vec4f {
-    return evaluate_scene_material_linear_item(
-        semantic_color_to_linear(item_color), normal, world_position, camera_position);
+    return evaluate_scene_material_with_ambient_visibility(
+        item_color, normal, world_position, camera_position, 1.0);
 }
 
 fn depth_cue_coordinate(cue: vec3f) -> f32 {

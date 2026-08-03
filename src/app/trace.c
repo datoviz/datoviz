@@ -659,23 +659,6 @@ static bool _trace_label_has_scope_suffix(const char* label)
 
 
 /**
- * Return whether a label names a transient post-process bind group.
- *
- * @param label source debug label
- * @return true if the label is a transient bind group
- */
-static bool _trace_label_is_transient_bind_group(const char* label)
-{
-    if (label == NULL)
-        return false;
-    return strncmp(label, "_bg_edl_", strlen("_bg_edl_")) == 0 ||
-           strncmp(label, "_bg_wboit_", strlen("_bg_wboit_")) == 0 ||
-           strncmp(label, "_bg_ssao_", strlen("_bg_ssao_")) == 0;
-}
-
-
-
-/**
  * Normalize one DRP2 debug label for semantic trace comparison.
  *
  * @param label source debug label
@@ -689,32 +672,6 @@ static bool _trace_normalize_label(const char* label, char* out, uint32_t out_si
     ANN(out);
     if (out_size == 0)
         return false;
-
-    if (strncmp(label, "_bg_edl_", strlen("_bg_edl_")) == 0)
-    {
-        int written = dvz_snprintf(out, out_size, "_bg_edl_resolve");
-        return written >= 0 && (uint32_t)written < out_size;
-    }
-    if (strncmp(label, "_bg_wboit_", strlen("_bg_wboit_")) == 0)
-    {
-        int written = dvz_snprintf(out, out_size, "_bg_wboit_resolve");
-        return written >= 0 && (uint32_t)written < out_size;
-    }
-    if (strncmp(label, "_bg_ssao_blur_", strlen("_bg_ssao_blur_")) == 0)
-    {
-        int written = dvz_snprintf(out, out_size, "_bg_ssao_blur");
-        return written >= 0 && (uint32_t)written < out_size;
-    }
-    if (strncmp(label, "_bg_ssao_composite_", strlen("_bg_ssao_composite_")) == 0)
-    {
-        int written = dvz_snprintf(out, out_size, "_bg_ssao_composite");
-        return written >= 0 && (uint32_t)written < out_size;
-    }
-    if (strncmp(label, "_bg_ssao_", strlen("_bg_ssao_")) == 0)
-    {
-        int written = dvz_snprintf(out, out_size, "_bg_ssao");
-        return written >= 0 && (uint32_t)written < out_size;
-    }
 
     uint32_t len = 0;
     while (len < DVZ_DRP2_LABEL_SIZE && label[len] != '\0')
@@ -733,6 +690,105 @@ static bool _trace_normalize_label(const char* label, char* out, uint32_t out_si
         dvz_memcpy(out, out_size, label, copy_len);
     out[copy_len] = '\0';
     return true;
+}
+
+
+
+/**
+ * Normalize transient numeric components in an arbitrary bind-group label.
+ *
+ * @param label source debug label
+ * @param out destination label
+ * @param out_size destination buffer size
+ * @return whether the normalized label fit in the destination buffer
+ */
+static bool _trace_normalize_bind_group_label(
+    const char* label, char* out, uint32_t out_size)
+{
+    ANN(label);
+    ANN(out);
+    char normalized[DVZ_DRP2_LABEL_SIZE] = {0};
+    if (!_trace_normalize_label(label, normalized, sizeof(normalized)))
+        return false;
+
+    uint32_t src = 0;
+    uint32_t dst = 0;
+    while (normalized[src] != '\0')
+    {
+        if (normalized[src] >= '0' && normalized[src] <= '9')
+        {
+            if (dst + 1 >= out_size)
+                return false;
+            out[dst++] = '#';
+            while (normalized[src] >= '0' && normalized[src] <= '9')
+                src++;
+            continue;
+        }
+        if (dst + 1 >= out_size)
+            return false;
+        out[dst++] = normalized[src++];
+    }
+    out[dst] = '\0';
+    return true;
+}
+
+
+
+/**
+ * Return whether a bind group owns a resource with a transient scope label.
+ *
+ * @param stream command stream carrying resource labels and bind-group declarations
+ * @param bind_group_id bind-group id
+ * @return whether any declared resource is frame-scoped
+ */
+static bool _trace_bind_group_is_scoped(
+    const DvzDrp2CommandStream* stream, uint64_t bind_group_id)
+{
+    ANN(stream);
+    const char* label = dvz_drp2_stream_label(stream, bind_group_id);
+    if (_trace_label_has_scope_suffix(label))
+        return true;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command == NULL || command->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP ||
+            command->u.create_bind_group.id != bind_group_id)
+            continue;
+        for (uint32_t j = 0; j < command->u.create_bind_group.entry_count; j++)
+        {
+            const uint64_t resource_id = command->u.create_bind_group.entries[j].resource_id;
+            if (_trace_label_has_scope_suffix(dvz_drp2_stream_label(stream, resource_id)))
+                return true;
+        }
+        return false;
+    }
+    return false;
+}
+
+
+
+/**
+ * Format one bind-group id as a label with generic transient numeric components.
+ *
+ * @param stream command stream carrying debug labels
+ * @param id bind-group id
+ * @param out destination token
+ * @param out_size destination buffer size
+ * @return whether the token fit in the destination buffer
+ */
+static bool _trace_semantic_bind_group_id(
+    const DvzDrp2CommandStream* stream, uint64_t id, char* out, uint32_t out_size)
+{
+    ANN(stream);
+    const char* label = dvz_drp2_stream_label(stream, id);
+    if (label != NULL && label[0] != '\0')
+    {
+        if (_trace_bind_group_is_scoped(stream, id))
+            return _trace_normalize_bind_group_label(label, out, out_size);
+        return _trace_normalize_label(label, out, out_size);
+    }
+    int written = dvz_snprintf(out, out_size, "%" PRIu64, id);
+    return written >= 0 && (uint32_t)written < out_size;
 }
 
 
@@ -880,10 +936,10 @@ static bool _trace_snapshot_append_command(
             command->u.create_bind_group_layout.entry_count);
     case DVZ_DRP2_COMMAND_CREATE_BIND_GROUP:
     {
-        const char* label = dvz_drp2_stream_label(stream, command->u.create_bind_group.id);
-        if (_trace_label_is_transient_bind_group(label))
+        if (_trace_bind_group_is_scoped(stream, command->u.create_bind_group.id))
             return true;
-        if (!_trace_semantic_id(stream, command->u.create_bind_group.id, a, sizeof(a)) ||
+        if (!_trace_semantic_bind_group_id(
+                stream, command->u.create_bind_group.id, a, sizeof(a)) ||
             !_trace_semantic_id(
                 stream, command->u.create_bind_group.bind_group_layout_id, b, sizeof(b)))
             return false;
@@ -898,11 +954,10 @@ static bool _trace_snapshot_append_command(
         return _trace_snapshot_append(snapshot, "- bind-layout id=%s", a);
     case DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP:
     {
-        const char* label =
-            dvz_drp2_stream_label(stream, command->u.destroy_bind_group.bind_group_id);
-        if (_trace_label_is_transient_bind_group(label))
+        if (_trace_bind_group_is_scoped(stream, command->u.destroy_bind_group.bind_group_id))
             return true;
-        if (!_trace_semantic_id(stream, command->u.destroy_bind_group.bind_group_id, a, sizeof(a)))
+        if (!_trace_semantic_bind_group_id(
+                stream, command->u.destroy_bind_group.bind_group_id, a, sizeof(a)))
             return false;
         return _trace_snapshot_append(snapshot, "- bind-group id=%s", a);
     }
@@ -989,7 +1044,8 @@ static bool _trace_snapshot_append_command(
         return _trace_snapshot_append_pass_line(snapshot, "pass", ordinal, suffix);
     case DVZ_DRP2_COMMAND_SET_BIND_GROUP:
         ordinal = _trace_pass_ordinal(passes, pass_count, command->u.set_bind_group.pass_id);
-        if (!_trace_semantic_id(stream, command->u.set_bind_group.bind_group_id, a, sizeof(a)))
+        if (!_trace_semantic_bind_group_id(
+                stream, command->u.set_bind_group.bind_group_id, a, sizeof(a)))
             return false;
         if (!_trace_format_suffix(
             suffix, sizeof(suffix), "bind[%" PRIu32 "]=%s",

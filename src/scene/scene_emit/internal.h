@@ -37,7 +37,7 @@ bool _scene_attr_resource_key(
 
 bool _scene_edl_params_resource_key(const char* panel_id, char* out_key, size_t out_size);
 
-bool _scene_ssao_params_resource_key(const char* panel_id, char* out_key, size_t out_size);
+bool _scene_gtao_params_resource_key(const char* panel_id, char* out_key, size_t out_size);
 
 bool _scene_image_uses_generated_quads(const DvzVisual* visual);
 

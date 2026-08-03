@@ -135,8 +135,8 @@ static float _scene_panel_user_scale(const DvzPanel* panel)
  * @param reserve input reserve
  * @return scaled reserve
  */
-static DvzPanelReserve _scene_panel_scaled_reserve(
-    const DvzPanel* panel, const DvzPanelReserve* reserve)
+static DvzPanelReserve
+_scene_panel_scaled_reserve(const DvzPanel* panel, const DvzPanelReserve* reserve)
 {
     ANN(panel);
     ANN(reserve);
@@ -181,7 +181,7 @@ static void _scene_panel_identity_mvp(DvzMVP* out)
     glm_mat4_identity(out->model);
     glm_mat4_identity(out->view);
     glm_mat4_identity(out->proj);
-    out->time  = 0.0f;
+    out->time = 0.0f;
     out->flags = 0;
 }
 
@@ -213,9 +213,9 @@ bool _scene_panel_panzoom_extent(const DvzPanel* panel, float out[4])
     if (!dvz_panzoom_resolve(
             &panzoom,
             &(DvzPanzoomEval){
-                .base_extent = {
-                    view.view_extent[0], view.view_extent[1], view.view_extent[2],
-                    view.view_extent[3]},
+                .base_extent =
+                    {view.view_extent[0], view.view_extent[1], view.view_extent[2],
+                     view.view_extent[3]},
                 .viewport_width = plot.width,
                 .viewport_height = plot.height,
             },
@@ -261,14 +261,13 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
         DvzRect plot = {0};
         (void)dvz_panel_plot_rect_px(panel, &plot);
         DvzPanzoomResolved resolved = {0};
-        if (
-            _scene_panel_view2d_resolve(panel, &view) &&
+        if (_scene_panel_view2d_resolve(panel, &view) &&
             dvz_panzoom_resolve(
                 &panzoom,
                 &(DvzPanzoomEval){
-                    .base_extent = {
-                        view.view_extent[0], view.view_extent[1], view.view_extent[2],
-                        view.view_extent[3]},
+                    .base_extent =
+                        {view.view_extent[0], view.view_extent[1], view.view_extent[2],
+                         view.view_extent[3]},
                     .viewport_width = plot.width,
                     .viewport_height = plot.height,
                 },
@@ -414,7 +413,7 @@ bool _scene_panel_attachment_mvp(
 
 
 /**
- * Return a panel's pixel size, falling back to a conventional viewport size.
+ * Return a panel's pixel size.
  *
  * @param panel the panel
  * @param out_width output width in pixels
@@ -425,22 +424,18 @@ void _scene_panel_pixel_size(const DvzPanel* panel, float* out_width, float* out
     ANN(panel);
     ANN(out_width);
     ANN(out_height);
-    float figure_width = panel->figure != NULL && panel->figure->width > 0 ?
-                             (float)panel->figure->width :
-                             800.0f;
-    float figure_height = panel->figure != NULL && panel->figure->height > 0 ?
-                              (float)panel->figure->height :
-                              600.0f;
+    float figure_width = panel->figure != NULL ? (float)panel->figure->width : 800.0f;
+    float figure_height = panel->figure != NULL ? (float)panel->figure->height : 600.0f;
     float width = panel->desc.width * figure_width;
     float height = panel->desc.height * figure_height;
-    *out_width = width > 0.0f ? width : 800.0f;
-    *out_height = height > 0.0f ? height : 600.0f;
+    *out_width = width > 0.0f ? width : 0.0f;
+    *out_height = height > 0.0f ? height : 0.0f;
 }
 
 
 
 /**
- * Return a panel's pixel rectangle, falling back to a conventional viewport size.
+ * Return a panel's pixel rectangle.
  *
  * @param panel the panel
  * @param out_x output x origin in pixels
@@ -456,12 +451,8 @@ void _scene_panel_pixel_rect(
     ANN(out_y);
     ANN(out_width);
     ANN(out_height);
-    float figure_width = panel->figure != NULL && panel->figure->width > 0 ?
-                             (float)panel->figure->width :
-                             800.0f;
-    float figure_height = panel->figure != NULL && panel->figure->height > 0 ?
-                              (float)panel->figure->height :
-                              600.0f;
+    float figure_width = panel->figure != NULL ? (float)panel->figure->width : 800.0f;
+    float figure_height = panel->figure != NULL ? (float)panel->figure->height : 600.0f;
     *out_x = panel->desc.x * figure_width;
     *out_y = panel->desc.y * figure_height;
     _scene_panel_pixel_size(panel, out_width, out_height);
@@ -475,8 +466,8 @@ void _scene_panel_pixel_rect(
  * @param out_width output width in pixels
  * @param out_height output height in pixels
  */
-static void _scene_panel_inner_pixel_size(
-    const DvzPanel* panel, float* out_width, float* out_height)
+static void
+_scene_panel_inner_pixel_size(const DvzPanel* panel, float* out_width, float* out_height)
 {
     ANN(panel);
     ANN(out_width);
@@ -556,8 +547,7 @@ void _scene_panel_plot_visual_rect(const DvzPanel* panel, float out[4])
     const float left = width > 0.0f ? (padding.left_px + reserve.left_px) / width : 0.0f;
     const float right = width > 0.0f ? (padding.right_px + reserve.right_px) / width : 0.0f;
     const float top = height > 0.0f ? (padding.top_px + reserve.top_px) / height : 0.0f;
-    const float bottom =
-        height > 0.0f ? (padding.bottom_px + reserve.bottom_px) / height : 0.0f;
+    const float bottom = height > 0.0f ? (padding.bottom_px + reserve.bottom_px) / height : 0.0f;
 
     out[0] = -1.0f + 2.0f * left;
     out[1] = +1.0f - 2.0f * right;
@@ -632,20 +622,20 @@ DvzPanelDesc _scene_panel_plot_desc(const DvzPanel* panel)
     const float bottom = panel_height > 0.0f ? reserve.bottom_px / panel_height : 0.0f;
 
     return (DvzPanelDesc){
-        .x = panel->figure != NULL && panel->figure->width > 0 ?
-                 (panel_x + reserve.left_px) / (float)panel->figure->width :
-                 panel->desc.x + left * panel->desc.width,
-        .y = panel->figure != NULL && panel->figure->height > 0 ?
-                 (panel_y + reserve.top_px) / (float)panel->figure->height :
-                 panel->desc.y + top * panel->desc.height,
-        .width = panel->figure != NULL && panel->figure->width > 0 ?
-                     (panel_width - reserve.left_px - reserve.right_px) /
-                         (float)panel->figure->width :
-                     (1.0f - left - right) * panel->desc.width,
-        .height = panel->figure != NULL && panel->figure->height > 0 ?
-                      (panel_height - reserve.top_px - reserve.bottom_px) /
-                          (float)panel->figure->height :
-                      (1.0f - top - bottom) * panel->desc.height,
+        .x = panel->figure != NULL && panel->figure->width > 0
+                 ? (panel_x + reserve.left_px) / (float)panel->figure->width
+                 : panel->desc.x + left * panel->desc.width,
+        .y = panel->figure != NULL && panel->figure->height > 0
+                 ? (panel_y + reserve.top_px) / (float)panel->figure->height
+                 : panel->desc.y + top * panel->desc.height,
+        .width =
+            panel->figure != NULL && panel->figure->width > 0
+                ? (panel_width - reserve.left_px - reserve.right_px) / (float)panel->figure->width
+                : (1.0f - left - right) * panel->desc.width,
+        .height = panel->figure != NULL && panel->figure->height > 0
+                      ? (panel_height - reserve.top_px - reserve.bottom_px) /
+                            (float)panel->figure->height
+                      : (1.0f - top - bottom) * panel->desc.height,
     };
 }
 
@@ -719,8 +709,8 @@ static bool _panel_coord_outer_rect(const DvzPanel* panel, DvzRect* out)
 }
 
 
-static bool _panel_coord_rect_for_space(
-    const DvzPanel* panel, DvzPanelCoordSpace space, DvzRect* out)
+static bool
+_panel_coord_rect_for_space(const DvzPanel* panel, DvzPanelCoordSpace space, DvzRect* out)
 {
     if (panel == NULL || out == NULL)
         return false;
@@ -807,15 +797,14 @@ static bool _panel_coord_view_to_data(const DvzPanel* panel, const double view[2
 }
 
 
-static bool _panel_coord_view_to_plot_px(
-    const DvzPanel* panel, const double view[2], double plot_px[2])
+static bool
+_panel_coord_view_to_plot_px(const DvzPanel* panel, const double view[2], double plot_px[2])
 {
     if (panel == NULL || !_panel_coord_finite2(view) || plot_px == NULL)
         return false;
     DvzRect plot = {0};
     float extent[4] = {0};
-    if (
-        !dvz_panel_plot_rect_px(panel, &plot) || !_panel_coord_rect_valid(&plot) ||
+    if (!dvz_panel_plot_rect_px(panel, &plot) || !_panel_coord_rect_valid(&plot) ||
         !_panel_coord_view_extent(panel, extent))
     {
         return false;
@@ -828,15 +817,14 @@ static bool _panel_coord_view_to_plot_px(
 }
 
 
-static bool _panel_coord_plot_px_to_view(
-    const DvzPanel* panel, const double plot_px[2], double view[2])
+static bool
+_panel_coord_plot_px_to_view(const DvzPanel* panel, const double plot_px[2], double view[2])
 {
     if (panel == NULL || !_panel_coord_finite2(plot_px) || view == NULL)
         return false;
     DvzRect plot = {0};
     float extent[4] = {0};
-    if (
-        !dvz_panel_plot_rect_px(panel, &plot) || !_panel_coord_rect_valid(&plot) ||
+    if (!dvz_panel_plot_rect_px(panel, &plot) || !_panel_coord_rect_valid(&plot) ||
         !_panel_coord_view_extent(panel, extent))
     {
         return false;
@@ -849,8 +837,8 @@ static bool _panel_coord_plot_px_to_view(
 }
 
 
-static bool _panel_coord_data_to_plot_px(
-    const DvzPanel* panel, const double data[2], double plot_px[2])
+static bool
+_panel_coord_data_to_plot_px(const DvzPanel* panel, const double data[2], double plot_px[2])
 {
     double view[2] = {0};
     return _panel_coord_data_to_view(panel, data, view) &&
@@ -858,8 +846,8 @@ static bool _panel_coord_data_to_plot_px(
 }
 
 
-static bool _panel_coord_plot_px_to_data(
-    const DvzPanel* panel, const double plot_px[2], double data[2])
+static bool
+_panel_coord_plot_px_to_data(const DvzPanel* panel, const double plot_px[2], double data[2])
 {
     double view[2] = {0};
     return _panel_coord_plot_px_to_view(panel, plot_px, view) &&
@@ -947,8 +935,8 @@ static bool _panel_coord_require_target_rect(
 
 
 static bool _panel_coord_from_figure(
-    const DvzPanel* panel, DvzPanelCoordSpace from, DvzPanelCoordSpace to,
-    const double figure[2], double out[2])
+    const DvzPanel* panel, DvzPanelCoordSpace from, DvzPanelCoordSpace to, const double figure[2],
+    double out[2])
 {
     if (panel == NULL || !_panel_coord_space_valid(to) || !_panel_coord_finite2(figure) ||
         out == NULL)

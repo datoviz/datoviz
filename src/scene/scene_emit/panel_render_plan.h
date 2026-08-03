@@ -22,6 +22,7 @@
 
 #include "_scene.h"
 #include "_technique.h"
+#include "_visual_pipeline.h"
 
 
 
@@ -43,6 +44,9 @@ typedef struct
     DvzPanelAttach* attach;
     uint32_t visual_index;
     uint32_t blend_group;
+    uint32_t authored_order;
+    DvzSceneVisualLayer layer;
+    DvzSceneVisualPassCaps caps;
     bool needs_depth;
     bool writes_depth;
 } DvzPanelRenderVisualPlan;
@@ -63,8 +67,17 @@ typedef struct
 typedef struct
 {
     char panel_id[64];
+    int32_t origin_x;
+    int32_t origin_y;
+    uint32_t width;
+    uint32_t height;
+    float render_scale;
+    float local_to_target[4];
     uint32_t drawable_count;
     uint32_t order[DVZ_SCENE_MAX_VISUALS];
+    DvzPanelRenderVisualPlan visuals[DVZ_SCENE_MAX_VISUALS];
+    uint32_t visual_count;
+    DvzPanelCompositionSnapshot composition;
 
     bool scene_occlusion_enabled;
     bool volume_occlusion_enabled;
@@ -73,7 +86,7 @@ typedef struct
     uint32_t volume_occluder_visual_index;
 
     bool gbuffer_enabled;
-    bool ssao_enabled;
+    bool ao_enabled;
     bool gbuffer_required;
     bool edl_enabled;
     bool edl_has_depth_producer;
@@ -81,7 +94,7 @@ typedef struct
     bool opaque_needs_depth;
     bool transparent_needs_depth;
 
-    const DvzSceneSsaoTechniqueState* ssao_state;
+    const DvzSceneAoTechniqueState* ao_state;
     const DvzSceneMsaaTechniqueState* msaa_state;
     const DvzSceneEdlTechniqueState* edl_state;
     DvzSceneGBufferPlan gbuffer;
@@ -103,9 +116,11 @@ typedef struct
 
     DvzPanelRenderVisualPlan depth_peel_visuals[DVZ_SCENE_MAX_VISUALS];
     uint32_t depth_peel_visual_count;
+    uint32_t depth_peel_group_count;
 
     DvzPanelRenderVisualPlan wboit_visuals[DVZ_SCENE_MAX_VISUALS];
     uint32_t wboit_visual_count;
+    uint32_t wboit_group_count;
 
     DvzPanelRenderTransparentPassPlan transparent_passes[DVZ_SCENE_MAX_RENDER_VISUALS];
     uint32_t transparent_pass_count;
@@ -122,4 +137,16 @@ const char* _scene_panel_render_visual_draw_position_attr(const DvzVisual* visua
 bool _scene_panel_render_visual_is_visible_drawable(const DvzVisual* visual);
 
 bool _scene_panel_render_plan_build(
-    DvzFigure* figure, uint32_t panel_index, const char* figure_id, DvzPanelRenderPlan* out);
+    DvzFigure* figure, uint32_t panel_index, const char* figure_id,
+    const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report, DvzPanelRenderPlan* out);
+
+bool _scene_panel_composition_resolve(
+    const DvzPanelRenderPlan* render_plan, const DvzCapabilitySnapshot* caps,
+    DvzPanelCompositionSnapshot* out, DvzDiagnosticReport* report);
+
+bool _scene_bind_panel_composition(
+    DvzFramePlan* plan, const char* panel_id, const DvzPanelCompositionSnapshot* snapshot,
+    DvzDiagnosticReport* report);
+
+bool _scene_panel_composition_lower_graph(
+    DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot, DvzDiagnosticReport* report);

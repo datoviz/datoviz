@@ -190,6 +190,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "mesh_textured_frag" : "mesh_textured_vert";
     case DVZ_SCENE_BUILTIN_SHADER_GBUFFER_NORMAL:
         return fragment ? "gbuffer_normal_frag" : "primitive_lit_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_SURFACE_RESOLVE:
+        return fragment ? "surface_resolve_frag" : "fullscreen_vert";
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE:
         return fragment ? "image_frag" : "image_vert";
     case DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL:
@@ -236,12 +238,12 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "wboit_accum_lit_frag" : "primitive_lit_vert";
     case DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE:
         return fragment ? "wboit_resolve_frag" : "fullscreen_vert";
-    case DVZ_SCENE_BUILTIN_SHADER_SSAO:
-        return fragment ? "ssao_frag" : "fullscreen_vert";
-    case DVZ_SCENE_BUILTIN_SHADER_SSAO_BLUR:
-        return fragment ? "ssao_blur_frag" : "fullscreen_vert";
-    case DVZ_SCENE_BUILTIN_SHADER_SSAO_COMPOSITE:
-        return fragment ? "ssao_composite_frag" : "fullscreen_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_GTAO:
+        return fragment ? "gtao_frag" : "fullscreen_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_GTAO_DENOISE:
+        return fragment ? "gtao_denoise_frag" : "fullscreen_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_GTAO_VISIBILITY_PRESENTATION:
+        return fragment ? "gtao_visibility_present_frag" : "fullscreen_vert";
     case DVZ_SCENE_BUILTIN_SHADER_EDL_RESOLVE:
         return fragment ? "edl_resolve_frag" : "fullscreen_vert";
     case DVZ_SCENE_BUILTIN_SHADER_DEPTH_PEEL_FRONT:
@@ -386,8 +388,7 @@ static bool _shader_preprocess_into(
             const char* include_source = _shader_include_source(include_name);
             if (include_source == NULL)
                 return false;
-            if (!_shader_preprocess_into(
-                    dst, len, cap, include_source, NULL, false, depth + 1))
+            if (!_shader_preprocess_into(dst, len, cap, include_source, NULL, false, depth + 1))
                 return false;
         }
         else
@@ -420,8 +421,8 @@ static bool _shader_preprocess_into(
  * @param depth include recursion depth
  * @return whether preprocessing succeeded
  */
-static bool
-_shader_wgsl_preprocess_into(char** dst, size_t* len, size_t* cap, const char* wgsl, uint32_t depth)
+static bool _shader_wgsl_preprocess_into(
+    char** dst, size_t* len, size_t* cap, const char* wgsl, uint32_t depth)
 {
     ANN(dst);
     ANN(len);
@@ -501,9 +502,8 @@ static char* _shader_wgsl_variant(const char* wgsl, bool legacy_srgb_blend)
     char* out = NULL;
     size_t len = 0;
     size_t cap = 0;
-    const char* prefix =
-        legacy_srgb_blend ? "const DVZ_LEGACY_SRGB_BLEND: bool = true;\n"
-                          : "const DVZ_LEGACY_SRGB_BLEND: bool = false;\n";
+    const char* prefix = legacy_srgb_blend ? "const DVZ_LEGACY_SRGB_BLEND: bool = true;\n"
+                                           : "const DVZ_LEGACY_SRGB_BLEND: bool = false;\n";
     if (!_shader_builder_append(&out, &len, &cap, prefix, strlen(prefix)))
     {
         dvz_free(out);
@@ -523,10 +523,7 @@ static char* _shader_wgsl_variant(const char* wgsl, bool legacy_srgb_blend)
  *
  * @param glsl owned GLSL source
  */
-void _shader_glsl_variant_destroy(char* glsl)
-{
-    dvz_free(glsl);
-}
+void _shader_glsl_variant_destroy(char* glsl) { dvz_free(glsl); }
 
 
 /**
@@ -568,8 +565,7 @@ const char* _shader_format_token(const DvzFramePlanEmitConfig* cfg)
  * @param glsl the GLSL shader source
  * @return the selected shader source
  */
-const char*
-_shader_source(const DvzFramePlanEmitConfig* cfg, const char* wgsl, const char* glsl)
+const char* _shader_source(const DvzFramePlanEmitConfig* cfg, const char* wgsl, const char* glsl)
 {
     if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL)
         return glsl;
@@ -653,11 +649,10 @@ bool _emit_shader(
  * @return whether the command was appended
  */
 bool _emit_shader_spirv(
-    DvzDrp2CommandStream* stream, uint64_t id, const char* stage,
-    const char* spirv_key, const char* glsl, const DvzFramePlanEmitConfig* cfg)
+    DvzDrp2CommandStream* stream, uint64_t id, const char* stage, const char* spirv_key,
+    const char* glsl, const DvzFramePlanEmitConfig* cfg)
 {
-    if (
-        cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL &&
+    if (cfg != NULL && cfg->shader_format == DVZ_SCENE_SHADER_FORMAT_GLSL &&
         cfg->color_pipeline == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
     {
         return _emit_shader(stream, id, stage, NULL, glsl, cfg);
@@ -715,10 +710,7 @@ const char* _builtin_shader_wgsl(DvzSceneBuiltinShader shader, bool fragment)
  *
  * @return the WGSL source
  */
-const char* _fixture_vertex_wgsl(void)
-{
-    return _resource_wgsl("fixture_vert");
-}
+const char* _fixture_vertex_wgsl(void) { return _resource_wgsl("fixture_vert"); }
 
 
 
@@ -727,10 +719,7 @@ const char* _fixture_vertex_wgsl(void)
  *
  * @return the WGSL source
  */
-const char* _fullscreen_vertex_wgsl(void)
-{
-    return _resource_wgsl("fullscreen_vert");
-}
+const char* _fullscreen_vertex_wgsl(void) { return _resource_wgsl("fullscreen_vert"); }
 
 
 
@@ -739,10 +728,7 @@ const char* _fullscreen_vertex_wgsl(void)
  *
  * @return the WGSL source
  */
-const char* _fixture_fragment_wgsl(void)
-{
-    return _resource_wgsl("fixture_frag");
-}
+const char* _fixture_fragment_wgsl(void) { return _resource_wgsl("fixture_frag"); }
 
 
 
@@ -751,10 +737,7 @@ const char* _fixture_fragment_wgsl(void)
  *
  * @return the WGSL source
  */
-const char* _texture_vertex_wgsl(void)
-{
-    return _resource_wgsl("texture_vert");
-}
+const char* _texture_vertex_wgsl(void) { return _resource_wgsl("texture_vert"); }
 
 
 
@@ -763,10 +746,7 @@ const char* _texture_vertex_wgsl(void)
  *
  * @return the WGSL source
  */
-const char* _texture_fragment_wgsl(void)
-{
-    return _resource_wgsl("texture_frag");
-}
+const char* _texture_fragment_wgsl(void) { return _resource_wgsl("texture_frag"); }
 
 
 
@@ -775,7 +755,4 @@ const char* _texture_fragment_wgsl(void)
  *
  * @return the WGSL source
  */
-const char* _compute_copy_wgsl(void)
-{
-    return _resource_wgsl("compute_copy");
-}
+const char* _compute_copy_wgsl(void) { return _resource_wgsl("compute_copy"); }

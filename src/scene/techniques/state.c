@@ -42,7 +42,7 @@
 
 #define DVZ_EDL_DESC_KNOWN_FLAGS  0u
 #define DVZ_MSAA_DESC_KNOWN_FLAGS 0u
-#define DVZ_SSAO_DESC_KNOWN_FLAGS 0u
+#define DVZ_AO_DESC_KNOWN_FLAGS   0u
 
 
 
@@ -74,13 +74,23 @@ static bool _msaa_desc_validate(const DvzMsaaDesc* desc)
 
 
 
-static bool _ssao_desc_validate(const DvzSsaoDesc* desc)
+static bool _ao_desc_validate(const DvzAoDesc* desc)
 {
     if (desc == NULL)
         return true;
-    if (!DVZ_STRUCT_VALID(desc, DvzSsaoDesc, DVZ_SSAO_DESC_KNOWN_FLAGS))
+    if (!DVZ_STRUCT_VALID(desc, DvzAoDesc, DVZ_AO_DESC_KNOWN_FLAGS))
     {
-        log_error("invalid DvzSsaoDesc ABI prologue");
+        log_error("invalid DvzAoDesc ABI prologue");
+        return false;
+    }
+    if (desc->quality < DVZ_AO_QUALITY_LOW || desc->quality > DVZ_AO_QUALITY_ULTRA)
+    {
+        log_error("invalid ambient-occlusion quality");
+        return false;
+    }
+    if (desc->debug_mode < DVZ_AO_DEBUG_NONE || desc->debug_mode > DVZ_AO_DEBUG_VISIBILITY)
+    {
+        log_error("invalid ambient-occlusion debug mode");
         return false;
     }
     return true;
@@ -91,90 +101,70 @@ static bool _ssao_desc_validate(const DvzSsaoDesc* desc)
 const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE,
-        .work_label = "opaque",
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER,
-        .work_label = "gbuffer",
-        .graph_required = true,
+    },
+    {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION,
-        .work_label = "volume_occlusion",
-        .graph_required = true,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION,
-        .work_label = "scene_occlusion",
-        .graph_required = true,
     },
     {
-        .role = DVZ_FRAME_PLAN_RENDER_PASS_SSAO,
-        .work_label = "ssao",
-        .graph_required = true,
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_GTAO,
     },
     {
-        .role = DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR,
-        .work_label = "ssao_blur",
-        .graph_required = true,
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_GTAO_DENOISE,
     },
     {
-        .role = DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE,
-        .work_label = "ssao_composite",
-        .graph_required = true,
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_GTAO_VISIBILITY_PRESENTATION,
         .fullscreen_resolve = true,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
-        .work_label = "edl_resolve",
-        .graph_required = true,
         .fullscreen_resolve = true,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION,
-        .work_label = "wboit_accum",
-        .graph_required = true,
         .wboit_accumulation = true,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
-        .work_label = "transparent_blend",
-        .graph_required = true,
         .transparent_blend = true,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
-        .work_label = "wboit_resolve",
-        .graph_required = true,
         .fullscreen_resolve = true,
         .needs_wboit_resolve_layout = true,
         .sampled_texture_binding_count = 2,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT,
-        .work_label = "depth_peel_init",
-        .graph_required = true,
         .depth_peel = true,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER,
-        .work_label = "depth_peel_iter",
-        .graph_required = true,
         .depth_peel = true,
         .needs_depth_peel_sampled_layout = true,
         .sampled_texture_binding_count = 1,
     },
     {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE,
-        .work_label = "depth_peel_composite",
-        .graph_required = true,
         .fullscreen_resolve = true,
         .needs_depth_peel_sampled_layout = true,
         .sampled_texture_binding_count = 2,
     },
     {
+        .role = DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION,
+        .fullscreen_resolve = true,
+        .sampled_texture_binding_count = 1,
+    },
+    {
         .role = DVZ_FRAME_PLAN_RENDER_PASS_PICKING,
-        .work_label = "picking",
     },
 };
 
@@ -183,71 +173,6 @@ const DvzSceneTechniquePassPolicy TECHNIQUE_PASS_POLICIES[] = {
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
-
-/**
- * Return whether a graph resource id is already declared.
- *
- * @param plan the frame plan
- * @param resource_id the resource id
- * @return whether the graph resource exists
- */
-bool _scene_frame_graph_has_resource(const DvzFramePlan* plan, const char* resource_id)
-{
-    ANN(plan);
-    ANN(resource_id);
-    for (uint32_t i = 0; i < dvz_frame_plan_graph_resource_count(plan); i++)
-    {
-        const DvzFrameGraphResource* resource = dvz_frame_plan_graph_resource_get(plan, i);
-        if (resource != NULL && strcmp(resource->id, resource_id) == 0)
-            return true;
-    }
-    return false;
-}
-
-
-/**
- * Return whether a graph pass already writes a color attachment.
- *
- * @param plan the frame plan
- * @param resource_id the color attachment resource id
- * @return whether the color attachment is already written
- */
-bool _scene_frame_graph_color_written(const DvzFramePlan* plan, const char* resource_id)
-{
-    ANN(plan);
-    ANN(resource_id);
-    for (uint32_t i = 0; i < dvz_frame_plan_graph_pass_count(plan); i++)
-    {
-        const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, i);
-        if (pass == NULL)
-            continue;
-        for (uint32_t j = 0; j < pass->color_attachment_count; j++)
-        {
-            if (strcmp(pass->color_attachments[j].resource_id, resource_id) == 0)
-                return true;
-        }
-    }
-    return false;
-}
-
-
-
-/**
- * Add a graph resource unless it already exists.
- *
- * @param plan the frame plan
- * @param resource the graph resource descriptor
- * @return whether the resource exists or was added
- */
-bool _scene_frame_graph_resource_once(DvzFramePlan* plan, const DvzFrameGraphResource* resource)
-{
-    ANN(plan);
-    ANN(resource);
-    if (_scene_frame_graph_has_resource(plan, resource->id))
-        return true;
-    return dvz_frame_plan_graph_resource(plan, resource);
-}
-
 
 /**
  * Return whether a sample count is supported by the scene MSAA planner.
@@ -264,54 +189,6 @@ bool _scene_msaa_sample_count_valid(uint32_t sample_count)
 
 
 /**
- * Fill a color attachment descriptor.
- *
- * @param attachment the graph attachment descriptor
- * @param resource_id the resource id
- * @param load_op the attachment load op
- * @param clear whether the attachment starts with a clear value
- */
-void _scene_frame_graph_color_attachment(
-    DvzFrameGraphAttachment* attachment, const char* resource_id,
-    DvzFrameGraphAttachmentLoadOp load_op, bool clear)
-{
-    ANN(attachment);
-    ANN(resource_id);
-    dvz_memset(attachment, sizeof(DvzFrameGraphAttachment), 0, sizeof(DvzFrameGraphAttachment));
-    dvz_strlcpy(attachment->resource_id, resource_id, sizeof(attachment->resource_id));
-    attachment->load_op = load_op;
-    attachment->store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
-    attachment->access = DVZ_FRAME_GRAPH_ATTACHMENT_ACCESS_WRITE;
-    attachment->clear_color[3] = clear ? 0.0f : 1.0f;
-}
-
-
-
-/**
- * Fill a depth attachment descriptor.
- *
- * @param attachment the graph attachment descriptor
- * @param resource_id the resource id
- * @param load_op the attachment load op
- * @param access the attachment access
- */
-void _scene_frame_graph_depth_attachment(
-    DvzFrameGraphAttachment* attachment, const char* resource_id,
-    DvzFrameGraphAttachmentLoadOp load_op, DvzFrameGraphAttachmentAccess access)
-{
-    ANN(attachment);
-    ANN(resource_id);
-    dvz_memset(attachment, sizeof(DvzFrameGraphAttachment), 0, sizeof(DvzFrameGraphAttachment));
-    dvz_strlcpy(attachment->resource_id, resource_id, sizeof(attachment->resource_id));
-    attachment->load_op = load_op;
-    attachment->store_op = DVZ_FRAME_GRAPH_ATTACHMENT_STORE_STORE;
-    attachment->access = access;
-    attachment->clear_depth = 1.0f;
-}
-
-
-
-/**
  * Return whether visual capabilities can feed a primitive/mesh G-buffer.
  *
  * @param caps the resolved visual pass capabilities
@@ -321,6 +198,48 @@ bool _scene_caps_support_gbuffer(const DvzSceneVisualPassCaps* caps)
 {
     ANN(caps);
     return caps->eligible_for_gbuffer;
+}
+
+
+
+/**
+ * Reset an internal G-buffer plan.
+ *
+ * @param plan the G-buffer plan
+ */
+void _scene_technique_gbuffer_plan_init(DvzSceneGBufferPlan* plan)
+{
+    ANN(plan);
+    dvz_memset(plan, sizeof(DvzSceneGBufferPlan), 0, sizeof(DvzSceneGBufferPlan));
+}
+
+
+
+/**
+ * Add one retained visual to an internal G-buffer plan when it is eligible.
+ *
+ * @param plan the G-buffer plan
+ * @param visual the retained visual
+ * @param attach the panel attachment
+ * @return whether the visual was accepted as a G-buffer producer
+ */
+bool _scene_technique_gbuffer_plan_add_visual(
+    DvzSceneGBufferPlan* plan, const DvzVisual* visual, const DvzPanelAttach* attach)
+{
+    ANN(plan);
+    ANN(visual);
+    ANN(attach);
+
+    DvzSceneVisualPassCaps caps = {0};
+    if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps) ||
+        !_scene_caps_support_gbuffer(&caps))
+        return false;
+
+    plan->enabled = true;
+    plan->needs_depth = true;
+    plan->needs_normal = true;
+    plan->producer_count++;
+    return true;
 }
 
 
@@ -360,10 +279,12 @@ void _scene_technique_state_init(DvzSceneTechniqueState* state)
     state->edl.radius = 1.5f;
     state->edl.strength = 35.0f;
     state->edl.depth_scale = 1.0f;
-    state->ssao.radius = 0.5f;
-    state->ssao.strength = 1.0f;
-    state->ssao.bias = 0.025f;
-    state->ssao.sample_count = 16;
+    state->ao.radius = 1.0f;
+    state->ao.intensity = 1.0f;
+    state->ao.thickness = 0.25f;
+    state->ao.quality = DVZ_AO_QUALITY_MEDIUM;
+    state->ao.debug_mode = DVZ_AO_DEBUG_NONE;
+    state->ao.denoise_enabled = true;
     state->msaa.sample_count = 1;
 }
 
@@ -471,74 +392,63 @@ _scene_technique_edl_state(const DvzScene* scene, const DvzPanel* panel)
 
 
 /**
- * Configure internal SSAO state.
+ * Configure internal ambient-occlusion state.
  *
  * @param state the technique state
- * @param desc SSAO descriptor, or NULL to disable
+ * @param desc AO descriptor, or NULL to disable
  * @return whether the state was updated
  */
-bool _scene_technique_state_set_ssao(DvzSceneTechniqueState* state, const DvzSceneSsaoDesc* desc)
+bool _scene_technique_state_set_ao(DvzSceneTechniqueState* state, const DvzSceneAoDesc* desc)
 {
     ANN(state);
-    if (!_ssao_desc_validate(desc))
+    if (!_ao_desc_validate(desc))
         return false;
     if (desc == NULL)
     {
-        state->ssao.enabled = false;
+        state->ao.enabled = false;
         return true;
     }
 
-    state->ssao.enabled = true;
-    state->ssao.radius = _clampf(desc->radius, 0.001f, 64.0f);
-    state->ssao.strength = _clampf(desc->strength, 0.0f, 16.0f);
-    state->ssao.bias = _clampf(desc->bias, 0.0f, 1.0f);
-    state->ssao.power = desc->power > 0.0f ? _clampf(desc->power, 0.1f, 8.0f) : 1.0f;
-    state->ssao.min_visibility = _clampf(desc->min_visibility, 0.0f, 1.0f);
-    state->ssao.blur_radius =
-        desc->blur_radius > 0.0f ? _clampf(desc->blur_radius, 1.0f, 16.0f) : 2.0f;
-    state->ssao.blur_depth_sigma =
-        desc->blur_depth_sigma > 0.0f ? _clampf(desc->blur_depth_sigma, 0.001f, 10.0f) : 0.65f;
-    state->ssao.blur_normal_sigma =
-        desc->blur_normal_sigma > 0.0f ? _clampf(desc->blur_normal_sigma, 0.001f, 1.0f) : 0.35f;
-    state->ssao.sample_count = desc->sample_count == 0 ? 16 : desc->sample_count;
-    if (state->ssao.sample_count < 4)
-        state->ssao.sample_count = 4;
-    if (state->ssao.sample_count > 32)
-        state->ssao.sample_count = 32;
-    state->ssao.blur_enabled = desc->blur_enabled;
-    state->ssao.debug_view = desc->debug_view;
+    state->ao.enabled = true;
+    state->ao.radius = _clampf(desc->radius, 0.001f, 64.0f);
+    state->ao.intensity = _clampf(desc->intensity, 0.0f, 16.0f);
+    state->ao.thickness = _clampf(desc->thickness, 0.001f, 64.0f);
+    state->ao.min_visibility = _clampf(desc->min_visibility, 0.0f, 1.0f);
+    state->ao.quality = desc->quality;
+    state->ao.debug_mode = desc->debug_mode;
+    state->ao.denoise_enabled = true;
     return true;
 }
 
 
 
 /**
- * Return whether a technique state enables SSAO.
+ * Return whether a technique state enables ambient occlusion.
  *
  * @param state the technique state
- * @return whether SSAO is enabled
+ * @return whether GTAO is enabled
  */
-bool _scene_technique_state_ssao_enabled(const DvzSceneTechniqueState* state)
+bool _scene_technique_state_ao_enabled(const DvzSceneTechniqueState* state)
 {
-    return state != NULL && state->ssao.enabled;
+    return state != NULL && state->ao.enabled;
 }
 
 
 
 /**
- * Return the effective SSAO state for one scene/panel pair.
+ * Return the effective GTAO state for one scene/panel pair.
  *
  * @param scene the scene
  * @param panel the panel
- * @return the effective SSAO state, or NULL when disabled
+ * @return the effective GTAO state, or NULL when disabled
  */
-const DvzSceneSsaoTechniqueState*
-_scene_technique_ssao_state(const DvzScene* scene, const DvzPanel* panel)
+const DvzSceneAoTechniqueState*
+_scene_technique_ao_state(const DvzScene* scene, const DvzPanel* panel)
 {
-    if (panel != NULL && _scene_technique_state_ssao_enabled(&panel->techniques))
-        return &panel->techniques.ssao;
-    if (scene != NULL && _scene_technique_state_ssao_enabled(&scene->techniques))
-        return &scene->techniques.ssao;
+    if (panel != NULL && _scene_technique_state_ao_enabled(&panel->techniques))
+        return &panel->techniques.ao;
+    if (scene != NULL && _scene_technique_state_ao_enabled(&scene->techniques))
+        return &scene->techniques.ao;
     return NULL;
 }
 
@@ -643,27 +553,25 @@ void _scene_technique_edl_uniform(
 
 
 /**
- * Fill the SSAO shader uniform from retained technique state.
+ * Fill the AO shader uniform from retained technique state.
  *
- * @param ssao the effective SSAO state
+ * @param ao the effective AO state
  * @param out output shader uniform
  */
-void _scene_technique_ssao_uniform(
-    const DvzSceneSsaoTechniqueState* ssao, const DvzMVP* mvp,
-    const DvzSceneViewportUniform* viewport, DvzSceneSsaoUniform* out)
+void _scene_technique_ao_uniform(
+    const DvzSceneAoTechniqueState* ao, const DvzMVP* mvp, const DvzSceneViewportUniform* viewport,
+    DvzSceneAoUniform* out)
 {
     ANN(out);
-    dvz_memset(out, sizeof(DvzSceneSsaoUniform), 0, sizeof(DvzSceneSsaoUniform));
-    if (ssao == NULL)
+    dvz_memset(out, sizeof(DvzSceneAoUniform), 0, sizeof(DvzSceneAoUniform));
+    if (ao == NULL)
         return;
     if (mvp != NULL)
     {
         mat4 proj = {0};
-        mat4 view = {0};
         dvz_memcpy(proj, sizeof(proj), mvp->proj, sizeof(mvp->proj));
-        dvz_memcpy(view, sizeof(view), mvp->view, sizeof(mvp->view));
+        glm_mat4_copy(proj, out->proj);
         glm_mat4_inv(proj, out->inv_proj);
-        glm_mat4_copy(view, out->view);
     }
     if (viewport != NULL)
     {
@@ -671,18 +579,41 @@ void _scene_technique_ssao_uniform(
         out->viewport[1] = viewport->y;
         out->viewport[2] = viewport->width > 0.0f ? viewport->width : 1.0f;
         out->viewport[3] = viewport->height > 0.0f ? viewport->height : 1.0f;
+        out->extent[0] = out->viewport[2];
+        out->extent[1] = out->viewport[3];
+        out->extent[2] = 1.0f / out->extent[0];
+        out->extent[3] = 1.0f / out->extent[1];
     }
-    out->params[0] = ssao->radius;
-    out->params[1] = ssao->strength;
-    out->params[2] = ssao->bias;
-    out->params[3] = (float)ssao->sample_count;
-    out->params2[0] = ssao->power;
-    out->params2[1] = ssao->min_visibility;
-    out->params2[2] = ssao->blur_radius;
-    out->params2[3] = ssao->debug_view ? 1.0f : 0.0f;
-    out->params3[0] = ssao->blur_depth_sigma;
-    out->params3[1] = ssao->blur_normal_sigma;
-    out->params3[2] = ssao->blur_enabled ? 1.0f : 0.0f;
+    out->appearance[0] = ao->radius;
+    out->appearance[1] = ao->intensity;
+    out->appearance[2] = ao->thickness;
+    out->appearance[3] = ao->min_visibility;
+    out->sampling[0] = ao->radius;
+    out->sampling[1] = 0.025f;
+    out->sampling[2] = fmaxf(ao->thickness, 0.001f);
+    out->sampling[3] = 0.35f;
+    if (ao->quality == DVZ_AO_QUALITY_LOW)
+    {
+        out->mode[0] = 2;
+        out->mode[1] = 3;
+    }
+    else if (ao->quality == DVZ_AO_QUALITY_MEDIUM)
+    {
+        out->mode[0] = 3;
+        out->mode[1] = 4;
+    }
+    else if (ao->quality == DVZ_AO_QUALITY_HIGH)
+    {
+        out->mode[0] = 4;
+        out->mode[1] = 6;
+    }
+    else
+    {
+        out->mode[0] = 6;
+        out->mode[1] = 8;
+    }
+    out->mode[2] = 0;
+    out->mode[3] = ao->debug_mode == DVZ_AO_DEBUG_VISIBILITY ? 1 : 0;
 }
 
 
@@ -739,40 +670,7 @@ bool _scene_technique_pass_policy(
     }
     dvz_memset(out, sizeof(DvzSceneTechniquePassPolicy), 0, sizeof(DvzSceneTechniquePassPolicy));
     out->role = role;
-    out->work_label = "";
     return false;
-}
-
-
-
-/**
- * Return the graph work label used by one render-pass role.
- *
- * @param role the FramePlan render-pass role
- * @return the graph work label, or an empty string when none is expected
- */
-const char* _scene_render_role_work_label(DvzFramePlanRenderPassRole role)
-{
-    DvzSceneTechniquePassPolicy policy = {0};
-    if (!_scene_technique_pass_policy(role, &policy))
-        return "";
-    return policy.work_label;
-}
-
-
-
-/**
- * Return whether one render-pass role must have a matching graph pass.
- *
- * @param role the FramePlan render-pass role
- * @return whether the role is graph-backed
- */
-bool _scene_render_role_requires_graph_pass(DvzFramePlanRenderPassRole role)
-{
-    DvzSceneTechniquePassPolicy policy = {0};
-    if (!_scene_technique_pass_policy(role, &policy))
-        return false;
-    return policy.graph_required;
 }
 
 

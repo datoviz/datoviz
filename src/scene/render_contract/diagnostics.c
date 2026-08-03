@@ -21,6 +21,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "_assertions.h"
+#include "shaders/_scene_shader_abi.h"
 
 
 
@@ -59,11 +60,11 @@ static bool _scene_pass_contract_validate_technique(
     switch (contract->role)
     {
     case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
-        attachment = _contract_attachment_suffix(
-            contract, DVZ_SCENE_ATTACHMENT_COLOR, ".volume_occlusion.depth");
+        attachment = contract->attachment_count > 0 ? &contract->attachments[0] : NULL;
         if (contract->color_attachment_count != 1 || attachment == NULL ||
-            attachment->format != DVZ_FORMAT_R32_SFLOAT || !attachment->write ||
-            !attachment->clear)
+            attachment->role != DVZ_SCENE_ATTACHMENT_COLOR ||
+            attachment->resource_id[0] == '\0' || attachment->format != DVZ_FORMAT_R32_SFLOAT ||
+            !attachment->write || !attachment->clear)
         {
             _contract_report(report, "volume occlusion pass has invalid output attachment");
             ok = false;
@@ -71,19 +72,26 @@ static bool _scene_pass_contract_validate_technique(
         break;
 
     case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
-        attachment = _contract_attachment_suffix(
-            contract, DVZ_SCENE_ATTACHMENT_COLOR, ".scene_occlusion.depth");
+        attachment = contract->attachment_count > 0 ? &contract->attachments[0] : NULL;
         if (contract->color_attachment_count != 1 || attachment == NULL ||
-            attachment->format != DVZ_FORMAT_R32_SFLOAT || !attachment->write ||
-            !attachment->clear)
+            attachment->role != DVZ_SCENE_ATTACHMENT_COLOR ||
+            attachment->resource_id[0] == '\0' || attachment->format != DVZ_FORMAT_R32_SFLOAT ||
+            !attachment->write || !attachment->clear)
         {
             _contract_report(report, "scene occlusion pass has invalid color attachment");
             ok = false;
         }
-        attachment = _contract_attachment_suffix(
-            contract, DVZ_SCENE_ATTACHMENT_DEPTH, ".scene_occlusion.z");
+        attachment = NULL;
+        for (uint32_t i = 0; i < contract->attachment_count; i++)
+        {
+            if (contract->attachments[i].role == DVZ_SCENE_ATTACHMENT_DEPTH)
+            {
+                attachment = &contract->attachments[i];
+                break;
+            }
+        }
         if (attachment == NULL || attachment->format != DVZ_FORMAT_D32_SFLOAT ||
-            !attachment->write || !attachment->clear)
+            attachment->resource_id[0] == '\0' || !attachment->write || !attachment->clear)
         {
             _contract_report(report, "scene occlusion pass has invalid depth attachment");
             ok = false;
@@ -91,20 +99,18 @@ static bool _scene_pass_contract_validate_technique(
         break;
 
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
-        attachment = _contract_attachment_suffix(
-            contract, DVZ_SCENE_ATTACHMENT_COLOR, ".wboit.accum");
+        attachment = contract->attachment_count > 0 ? &contract->attachments[0] : NULL;
         if (attachment == NULL || attachment->format != DVZ_FORMAT_R16G16B16A16_SFLOAT ||
-            attachment->sample_count != 1)
+            attachment->sample_count != 1 || attachment->role != DVZ_SCENE_ATTACHMENT_COLOR)
         {
             _contract_report(report, "WBOIT accumulation pass has invalid accumulation target");
             ok = false;
         }
-        attachment = _contract_attachment_suffix(
-            contract, DVZ_SCENE_ATTACHMENT_COLOR, ".wboit.weight");
+        attachment = contract->attachment_count > 1 ? &contract->attachments[1] : NULL;
         if (attachment == NULL || attachment->format != DVZ_FORMAT_R16_SFLOAT ||
-            attachment->sample_count != 1)
+            attachment->sample_count != 1 || attachment->role != DVZ_SCENE_ATTACHMENT_COLOR)
         {
-            _contract_report(report, "WBOIT accumulation pass has invalid weight target");
+            _contract_report(report, "WBOIT accumulation pass has invalid transmittance target");
             ok = false;
         }
         if (contract->color_attachment_count != 2)
@@ -153,7 +159,9 @@ static bool _scene_pass_contract_validate_technique(
             ok = false;
         }
         if (contract->role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER &&
-            contract->sampled_read_count != 1)
+            (contract->sampled_read_count < 1 ||
+             !contract->needs_depth_peel_sampled_layout ||
+             contract->sampled_texture_binding_count != 1))
         {
             _contract_report(report, "depth peel iteration pass must sample previous bounds");
             ok = false;
@@ -199,8 +207,6 @@ bool _scene_pass_contract_validate(
     bool ok = true;
     bool needs_depth = false;
     bool samples_depth = false;
-    bool samples_volume_occlusion = false;
-    bool samples_scene_occlusion = false;
 
     for (uint32_t i = 0; i < contract->draw_count; i++)
     {
@@ -219,51 +225,65 @@ bool _scene_pass_contract_validate(
         samples_depth = samples_depth || draw->samples_depth;
         if (draw->samples_volume_occlusion)
         {
-            const DvzSceneAttachmentUse* use = NULL;
-            if (draw->volume_occlusion_resource_id[0] != '\0')
-                use = _contract_sampled_resource_use(
-                    contract, draw->volume_occlusion_resource_id);
-            if (draw->volume_occlusion_resource_id[0] != '\0' && use == NULL)
+            const DvzSceneAttachmentUse* use = _contract_sampled_resource_use(
+                contract, draw->volume_occlusion_resource_id);
+            if (
+                draw->volume_occlusion_resource_id[0] == '\0' ||
+                draw->volume_occlusion_producer_pass_id[0] == '\0')
+            {
+                _contract_report(report, "volume-occluded draw is missing typed resource identity");
+                ok = false;
+            }
+            else if (use == NULL)
             {
                 _contract_report(
                     report, "volume-occluded draw has no exact volume occlusion read edge");
                 ok = false;
             }
-            else if (
-                use != NULL && draw->volume_occlusion_producer_pass_id[0] != '\0' &&
-                strcmp(use->producer_pass_id, draw->volume_occlusion_producer_pass_id) != 0)
+            else if (strcmp(use->producer_pass_id, draw->volume_occlusion_producer_pass_id) != 0)
             {
                 _contract_report(
                     report, "volume-occluded draw producer pass mismatches contract");
                 ok = false;
             }
-            else if (draw->volume_occlusion_resource_id[0] == '\0')
+            if (
+                draw->volume_occlusion_bind_set != DVZ_SCENE_SHADER_SET_VISUAL ||
+                draw->volume_occlusion_bind_binding != 3)
             {
-                samples_volume_occlusion = true;
+                _contract_report(report, "volume-occluded draw has invalid typed binding metadata");
+                ok = false;
             }
         }
         if (draw->samples_scene_occlusion)
         {
-            const DvzSceneAttachmentUse* use = NULL;
-            if (draw->scene_occlusion_resource_id[0] != '\0')
-                use = _contract_sampled_resource_use(contract, draw->scene_occlusion_resource_id);
-            if (draw->scene_occlusion_resource_id[0] != '\0' && use == NULL)
+            const DvzSceneAttachmentUse* use =
+                _contract_sampled_resource_use(contract, draw->scene_occlusion_resource_id);
+            if (
+                draw->scene_occlusion_resource_id[0] == '\0' ||
+                draw->scene_occlusion_producer_pass_id[0] == '\0')
+            {
+                _contract_report(report, "scene-occluded draw is missing typed resource identity");
+                ok = false;
+            }
+            else if (use == NULL)
             {
                 _contract_report(
                     report, "scene-occluded draw has no exact scene occlusion read edge");
                 ok = false;
             }
-            else if (
-                use != NULL && draw->scene_occlusion_producer_pass_id[0] != '\0' &&
-                strcmp(use->producer_pass_id, draw->scene_occlusion_producer_pass_id) != 0)
+            else if (strcmp(use->producer_pass_id, draw->scene_occlusion_producer_pass_id) != 0)
             {
                 _contract_report(
                     report, "scene-occluded draw producer pass mismatches contract");
                 ok = false;
             }
-            else if (draw->scene_occlusion_resource_id[0] == '\0')
+            if (
+                (draw->scene_occlusion_bind_set != DVZ_SCENE_SHADER_SET_VISUAL &&
+                 draw->scene_occlusion_bind_set != DVZ_SCENE_SHADER_SET_SCENE_OCCLUSION) ||
+                draw->scene_occlusion_bind_binding != 0)
             {
-                samples_scene_occlusion = true;
+                _contract_report(report, "scene-occluded draw has invalid typed binding metadata");
+                ok = false;
             }
         }
     }
@@ -276,18 +296,6 @@ bool _scene_pass_contract_validate(
     if (samples_depth && !_contract_has_sampled_depth_resource(contract))
     {
         _contract_report(report, "sampled-depth draw has no produced depth resource");
-        ok = false;
-    }
-    if (samples_volume_occlusion &&
-        !_contract_reads_resource_suffix(contract, ".volume_occlusion.depth"))
-    {
-        _contract_report(report, "volume-occluded draw has no volume occlusion read edge");
-        ok = false;
-    }
-    if (samples_scene_occlusion &&
-        !_contract_reads_resource_suffix(contract, ".scene_occlusion.depth"))
-    {
-        _contract_report(report, "scene-occluded draw has no scene occlusion read edge");
         ok = false;
     }
     ok = _scene_pass_contract_validate_technique(contract, report) && ok;

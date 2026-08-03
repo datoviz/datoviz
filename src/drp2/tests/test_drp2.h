@@ -292,6 +292,8 @@ int test_drp2_begin_render_pass_multi_color_attachments(TstContext* suite, const
 
 int test_drp2_begin_render_pass_attachment_ops(TstContext* suite, const TstCase* item);
 
+int test_drp2_begin_render_pass_resolve_json(TstContext* suite, const TstCase* item);
+
 int test_drp2_begin_render_pass_attachment_ops_validation(TstContext* suite, const TstCase* item);
 
 int test_drp2_begin_render_pass_named_depth_validation(TstContext* suite, const TstCase* item);

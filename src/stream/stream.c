@@ -258,6 +258,8 @@ int dvz_stream_attach_sink(
     if (backend->create && backend->create(sink, config) != 0)
     {
         log_error("failed to create frame sink '%s'", backend->name ? backend->name : "?");
+        if (backend->destroy)
+            backend->destroy(sink);
         stream->sink_count -= 1;
         dvz_memset(sink, sizeof(*sink), 0, sizeof(*sink));
         return -1;
@@ -428,17 +430,20 @@ int dvz_stream_stop(DvzStream* stream)
         return 0;
     }
 
+    int rc = 0;
     for (size_t i = 0; i < stream->sink_count; ++i)
     {
         DvzStreamSink* sink = &stream->sinks[i];
         if (sink->started && sink->backend && sink->backend->stop)
         {
-            sink->backend->stop(sink);
+            int sink_rc = sink->backend->stop(sink);
+            if (sink_rc != 0 && rc == 0)
+                rc = sink_rc;
         }
         sink->started = false;
     }
     stream->started = false;
-    return 0;
+    return rc;
 }
 
 

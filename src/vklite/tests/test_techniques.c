@@ -18,7 +18,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
-#include "test_vk.h"
 #include "_assertions.h"
 #include "_buffers.h"
 #include "_images.h"
@@ -34,6 +33,7 @@
 #include "datoviz/vklite/slots.h"
 #include "fixture_gpu.h"
 #include "fixture_offscreen.h"
+#include "test_vk.h"
 #include "test_vklite.h"
 #include "testing.h"
 #include "vulkan_core.h"
@@ -52,8 +52,7 @@ int test_technique_triangle(TstContext* suite, const TstCase* tstitem)
     // Initialize the fixtures.
     DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
-    DvzFixtureOffscreen* off =
-        dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);
 
     // Load the shaders.
@@ -63,8 +62,7 @@ int test_technique_triangle(TstContext* suite, const TstCase* tstitem)
     uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
 
     // Get the graphics pipeline
-    DvzGraphics* graphics =
-        dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
+    DvzGraphics* graphics = dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
     ANN(graphics);
 
     // Slots
@@ -115,8 +113,7 @@ int test_technique_render_texture(TstContext* suite, const TstCase* tstitem)
     // Initialize the fixtures.
     DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
-    DvzFixtureOffscreen* off =
-        dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);
     DvzDevice* device = dvz_fixture_gpu_device(gpu);
     DvzVma* allocator = dvz_fixture_gpu_alloc(gpu);
@@ -132,8 +129,7 @@ int test_technique_render_texture(TstContext* suite, const TstCase* tstitem)
     uint32_t* fs_spv = dvz_test_shader_load("hello_square.frag.spv", &fs_size);
 
     // Initialize graphics pipeline.
-    DvzGraphics* graphics =
-        dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
+    DvzGraphics* graphics = dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
     ANN(graphics);
 
     // Slots
@@ -380,8 +376,7 @@ int test_technique_stencil(TstContext* suite, const TstCase* tstitem)
     // Initialize the fixtures.
     DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
-    DvzFixtureOffscreen* off =
-        dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);
     DvzDevice* device = dvz_fixture_gpu_device(gpu);
     ANN(device);
@@ -466,8 +461,7 @@ int test_technique_stencil(TstContext* suite, const TstCase* tstitem)
         // Attachments.
         DvzAttachment* catt = dvz_rendering_color(mrendering, 0);
         dvz_attachment_image(
-            catt, dvz_image_views_handle(color_view, 0),
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            catt, dvz_image_views_handle(color_view, 0), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         dvz_attachment_ops(
             catt, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
@@ -492,8 +486,7 @@ int test_technique_stencil(TstContext* suite, const TstCase* tstitem)
     uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
 
     // Get the graphics pipeline
-    DvzGraphics* graphics =
-        dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
+    DvzGraphics* graphics = dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
     ANN(graphics);
 
     dvz_graphics_stencil(
@@ -569,8 +562,7 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     // Initialize the fixtures.
     DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
-    DvzFixtureOffscreen* off =
-        dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);
     DvzDevice* device = dvz_fixture_gpu_device(gpu);
     DvzVma* allocator = dvz_fixture_gpu_alloc(gpu);
@@ -607,7 +599,8 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
         dvz_images_usage(msdepth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
         dvz_images_create(msdepth);
 
-        // This color-resolve smoke test needs multisampled depth, but does not consume depth later.
+        // This color-resolve smoke test needs multisampled depth, but does not consume depth
+        // later.
         dvz_image_views(msdepth, msdepth_view);
         dvz_image_views_aspect(msdepth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
         dvz_image_views_create(msdepth_view);
@@ -622,8 +615,7 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
     uint32_t* fs_spv = dvz_test_shader_load("hello_triangle.frag.spv", &fs_size);
 
     // Get the graphics pipeline
-    DvzGraphics* graphics =
-        dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
+    DvzGraphics* graphics = dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
     ANN(graphics);
 
     dvz_graphics_multisampling(graphics, sample_count, 0.5, 0);
@@ -675,23 +667,19 @@ int test_technique_msaa(TstContext* suite, const TstCase* tstitem)
         dvz_barrier_image_layout(
             bcolor, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-        DvzBarrierImage* bmscolor =
-            dvz_barriers_image(&barriers, dvz_image_handle(msimg, 0));
+        DvzBarrierImage* bmscolor = dvz_barriers_image(&barriers, dvz_image_handle(msimg, 0));
         dvz_barrier_image_stage(
-            bmscolor, VK_PIPELINE_STAGE_2_NONE,
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+            bmscolor, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
         dvz_barrier_image_access(bmscolor, 0, VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT);
         dvz_barrier_image_layout(
             bmscolor, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
 
-        DvzBarrierImage* bmsdepth =
-            dvz_barriers_image(&barriers, dvz_image_handle(msdepth, 0));
+        DvzBarrierImage* bmsdepth = dvz_barriers_image(&barriers, dvz_image_handle(msdepth, 0));
         dvz_barrier_image_stage(
             bmsdepth, VK_PIPELINE_STAGE_2_NONE,
             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
                 VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
-        dvz_barrier_image_access(
-            bmsdepth, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        dvz_barrier_image_access(bmsdepth, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
         dvz_barrier_image_layout(
             bmsdepth, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
         dvz_barrier_image_aspect(
@@ -739,8 +727,7 @@ int test_technique_compute_graphics(TstContext* suite, const TstCase* tstitem)
     // Initialize fixtures.
     DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
-    DvzFixtureOffscreen* off =
-        dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);
 
     DvzDevice* device = dvz_fixture_gpu_device(gpu);
@@ -808,8 +795,7 @@ int test_technique_compute_graphics(TstContext* suite, const TstCase* tstitem)
     uint32_t* vs_spv = dvz_test_shader_load("hello_compute.vert.spv", &vs_size);
     uint32_t* fs_spv = dvz_test_shader_load("hello_compute.frag.spv", &fs_size);
 
-    DvzGraphics* graphics =
-        dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
+    DvzGraphics* graphics = dvz_fixture_offscreen_graphics(off, vs_size, vs_spv, fs_size, fs_spv);
     ANN(graphics);
 
     // One color attachment, no depth/stencil needed
@@ -896,8 +882,7 @@ int test_technique_picking(TstContext* suite, const TstCase* tstitem)
     // Initialize fixtures.
     DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
-    DvzFixtureOffscreen* off =
-        dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);
 
     DvzDevice* device = dvz_fixture_gpu_device(gpu);
@@ -1013,8 +998,7 @@ int test_technique_picking(TstContext* suite, const TstCase* tstitem)
     dvz_graphics_vertex_attr(gfx_color, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
 
     dvz_graphics_viewport(
-        gfx_color, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
-        DVZ_GRAPHICS_FLAGS_DYNAMIC);
+        gfx_color, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(
         gfx_color, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
 
@@ -1050,8 +1034,7 @@ int test_technique_picking(TstContext* suite, const TstCase* tstitem)
     dvz_graphics_vertex_attr(gfx_pick, 0, 1, VK_FORMAT_R32_UINT, offsetof(Vertex, id));
 
     dvz_graphics_viewport(
-        gfx_pick, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
-        DVZ_GRAPHICS_FLAGS_DYNAMIC);
+        gfx_pick, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(
         gfx_pick, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_layout(gfx_pick, dvz_slots_handle(slots));
@@ -1191,8 +1174,7 @@ int test_technique_wboit(TstContext* suite, const TstCase* tstitem)
     // -----------------------------------------------------------------------------------------
     DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
     ANN(gpu);
-    DvzFixtureOffscreen* off =
-        dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
+    DvzFixtureOffscreen* off = dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
     ANN(off);
 
     DvzDevice* device = dvz_fixture_gpu_device(gpu);
@@ -1334,8 +1316,7 @@ int test_technique_wboit(TstContext* suite, const TstCase* tstitem)
         // Vertex input: binding 0, pos (loc 0), color (loc 1).
         dvz_graphics_vertex_binding(
             g_accum, 0, (DvzSize)sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
-        dvz_graphics_vertex_attr(
-            g_accum, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos));
+        dvz_graphics_vertex_attr(g_accum, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos));
         dvz_graphics_vertex_attr(
             g_accum, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, color));
 
@@ -1656,331 +1637,6 @@ int test_technique_wboit(TstContext* suite, const TstCase* tstitem)
     dvz_graphics_destroy(g_comp);
     dvz_graphics_free(g_accum);
     dvz_graphics_free(g_comp);
-    uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
-    dvz_fixture_offscreen_destroy(off);
-    dvz_fixture_gpu_destroy(gpu);
-
-    return err_count > 0;
-}
-
-
-
-int test_technique_ssao(TstContext* suite, const TstCase* tstitem)
-{
-    ANN(suite);
-    ANN(tstitem);
-
-    // Initialize fixtures (device, allocator, main color/depth, commands, etc.).
-    DvzFixtureGpu* gpu = dvz_fixture_gpu(suite);
-    ANN(gpu);
-    DvzFixtureOffscreen* off =
-        dvz_fixture_offscreen(gpu, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
-    ANN(off);
-
-    DvzDevice* device = dvz_fixture_gpu_device(gpu);
-    DvzVma* allocator = dvz_fixture_gpu_alloc(gpu);
-    ANN(device);
-    ANN(allocator);
-
-
-    // Offscreen depth image (to be sampled by SSAO pass).
-
-    DvzImages* depth_img = dvz_images_create_wrapper();
-    DvzImageViews* depth_view = dvz_image_views_create_wrapper();
-    ANN(depth_img);
-    ANN(depth_view);
-    dvz_images(device, allocator, VK_IMAGE_TYPE_2D, 1, depth_img);
-    dvz_images_format(depth_img, VK_FORMAT_D32_SFLOAT);
-    dvz_images_size(depth_img, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 1);
-    dvz_images_usage(
-        depth_img, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-    AT(dvz_images_create(depth_img) == 0);
-
-    dvz_image_views(depth_img, depth_view);
-    dvz_image_views_type(depth_view, VK_IMAGE_VIEW_TYPE_2D);
-    dvz_image_views_aspect(depth_view, VK_IMAGE_ASPECT_DEPTH_BIT);
-    dvz_image_views_mip(depth_view, 0, 1);
-    dvz_image_views_layers(depth_view, 0, 1);
-    dvz_image_views_create(depth_view);
-
-    // Sampler for depth texture.
-    DvzSampler* sampler = dvz_sampler_create_wrapper();
-    ANN(sampler);
-    dvz_sampler(device, sampler);
-    dvz_sampler_min_filter(sampler, VK_FILTER_NEAREST);
-    dvz_sampler_mag_filter(sampler, VK_FILTER_NEAREST);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_anisotropy(sampler, 1.0f);
-    AT(dvz_sampler_create(sampler) == 0);
-
-
-    // PASS 1: depth-only pipeline writing depth into depth_img.
-
-    DvzGraphics* depth_graphics = dvz_graphics_create_wrapper();
-    ANN(depth_graphics);
-    {
-        dvz_graphics(device, depth_graphics);
-
-        // Shaders.
-        DvzSize vs_size = 0, fs_size = 0;
-        uint32_t* vs_spv = dvz_test_shader_load("fullscreen.vert.spv", &vs_size);
-        uint32_t* fs_spv = dvz_test_shader_load("ssao_depth.frag.spv", &fs_size);
-
-        DvzShader* vs = dvz_shader_create_wrapper();
-        DvzShader* fs = dvz_shader_create_wrapper();
-        ANN(vs);
-        ANN(fs);
-        dvz_shader(device, vs_size, vs_spv, vs);
-        dvz_shader(device, fs_size, fs_spv, fs);
-
-        dvz_graphics_shader(depth_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
-        dvz_graphics_shader(depth_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
-
-        // Attachments: dummy fixture color + our offscreen depth attachment format.
-        dvz_graphics_attachment_color(depth_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
-        dvz_graphics_attachment_depth(depth_graphics, VK_FORMAT_D32_SFLOAT);
-
-        // No blending, simple fullscreen triangles.
-        dvz_graphics_blend_color(
-            depth_graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-                VK_COLOR_COMPONENT_A_BIT);
-        dvz_graphics_primitive(
-            depth_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
-
-        // Viewport/scissor fixed.
-        dvz_graphics_viewport(
-            depth_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
-            DVZ_GRAPHICS_FLAGS_FIXED);
-        dvz_graphics_scissor(
-            depth_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT,
-            DVZ_GRAPHICS_FLAGS_FIXED);
-
-        // Depth test/write ON.
-        dvz_graphics_depth(
-            depth_graphics, false, true, VK_COMPARE_OP_LESS_OR_EQUAL, DVZ_GRAPHICS_FLAGS_FIXED);
-
-        // Slots: none (no descriptors for pass 1).
-        DvzSlots* slots = dvz_slots_create_wrapper();
-        ANN(slots);
-        dvz_slots(device, slots);
-        AT(dvz_slots_create(slots) == 0);
-        dvz_graphics_layout(depth_graphics, dvz_slots_handle(slots));
-
-        AT(dvz_graphics_create(depth_graphics) == 0);
-
-        // Cleanup.
-        dvz_slots_destroy(slots);
-        dvz_slots_free(slots);
-        dvz_shader_destroy(vs);
-        dvz_shader_destroy(fs);
-        dvz_shader_free(vs);
-        dvz_shader_free(fs);
-        dvz_free(vs_spv);
-        dvz_free(fs_spv);
-    }
-
-    // Rendering for depth pass: color = fixture color (ignored), depth = depth_img.
-    DvzRendering* depth_rendering = dvz_rendering_create_wrapper();
-    ANN(depth_rendering);
-    {
-        DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);
-        dvz_rendering_area(depth_rendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
-
-        // Color (dummy, uses the fixture main color image, but we don't care about its content here).
-        DvzAttachment* catt = dvz_rendering_color(depth_rendering, 0);
-        dvz_attachment_image(
-            catt, dvz_image_views_handle(color_view, 0),
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        dvz_attachment_ops(
-            catt, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-
-        // Depth.
-        DvzAttachment* datt = dvz_rendering_depth(depth_rendering);
-        dvz_attachment_image(
-            datt, dvz_image_views_handle(depth_view, 0), VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-        dvz_attachment_ops(datt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-        dvz_attachment_clear(datt, (VkClearValue){.depthStencil = {1.0f, 0}});
-    }
-
-
-    // PASS 2: SSAO pipeline, sampling depth_img and writing AO to the fixture color target.
-
-    DvzGraphics* ssao_graphics = dvz_graphics_create_wrapper();
-    DvzSlots* ssao_slots = dvz_slots_create_wrapper();
-    ANN(ssao_graphics);
-    ANN(ssao_slots);
-    DvzDescriptors* ssao_desc = dvz_descriptors_create_wrapper();
-    ANN(ssao_desc);
-    {
-        dvz_graphics(device, ssao_graphics);
-
-        // Shaders.
-        DvzSize vs_size = 0, fs_size = 0;
-        uint32_t* vs_spv = dvz_test_shader_load("fullscreen.vert.spv", &vs_size);
-        uint32_t* fs_spv = dvz_test_shader_load("ssao.frag.spv", &fs_size);
-
-        DvzShader* vs = dvz_shader_create_wrapper();
-        DvzShader* fs = dvz_shader_create_wrapper();
-        ANN(vs);
-        ANN(fs);
-        dvz_shader(device, vs_size, vs_spv, vs);
-        dvz_shader(device, fs_size, fs_spv, fs);
-
-        dvz_graphics_shader(ssao_graphics, VK_SHADER_STAGE_VERTEX_BIT, dvz_shader_handle(vs));
-        dvz_graphics_shader(ssao_graphics, VK_SHADER_STAGE_FRAGMENT_BIT, dvz_shader_handle(fs));
-
-        // Color attachment: fixture main color.
-        dvz_graphics_attachment_color(ssao_graphics, 0, VK_FORMAT_R8G8B8A8_UNORM);
-
-        // No depth testing here (pure post-process).
-        dvz_graphics_depth(
-            ssao_graphics, false, false, VK_COMPARE_OP_ALWAYS, DVZ_GRAPHICS_FLAGS_FIXED);
-
-        dvz_graphics_blend_color(
-            ssao_graphics, 0, VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
-                VK_COLOR_COMPONENT_A_BIT);
-
-        dvz_graphics_primitive(
-            ssao_graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
-
-        dvz_graphics_viewport(
-            ssao_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT, 0, 1,
-            DVZ_GRAPHICS_FLAGS_FIXED);
-        dvz_graphics_scissor(
-            ssao_graphics, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT,
-            DVZ_GRAPHICS_FLAGS_FIXED);
-
-        // Descriptor set: combined image sampler for depthTex (set=0, binding=0).
-        dvz_slots(device, ssao_slots);
-        dvz_slots_binding(
-            ssao_slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-            VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-        AT(dvz_slots_create(ssao_slots) == 0);
-        dvz_graphics_layout(ssao_graphics, dvz_slots_handle(ssao_slots));
-
-        AT(dvz_graphics_create(ssao_graphics) == 0);
-
-        // Descriptors.
-        dvz_descriptors(ssao_slots, ssao_desc);
-        dvz_descriptors_image(
-            ssao_desc, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            dvz_image_views_handle(depth_view, 0), dvz_sampler_handle(sampler));
-
-        dvz_shader_destroy(vs);
-        dvz_shader_destroy(fs);
-        dvz_shader_free(vs);
-        dvz_shader_free(fs);
-        dvz_free(vs_spv);
-        dvz_free(fs_spv);
-    }
-
-    // Rendering for SSAO pass: color attachment = fixture main image, no depth/stencil.
-    DvzRendering* ssao_rendering = dvz_rendering_create_wrapper();
-    ANN(ssao_rendering);
-    {
-        DvzImageViews* color_view = dvz_fixture_offscreen_color_view(off);
-        dvz_rendering_area(ssao_rendering, 0, 0, DVZ_FIXTURE_WIDTH, DVZ_FIXTURE_HEIGHT);
-
-        DvzAttachment* catt = dvz_rendering_color(ssao_rendering, 0);
-        dvz_attachment_image(
-            catt, dvz_image_views_handle(color_view, 0),
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        dvz_attachment_ops(catt, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-        dvz_attachment_clear(catt, (VkClearValue){.color = {.float32 = {0, 0, 0, 1}}});
-    }
-
-
-    // Command buffer recording.
-
-    DvzCommands* cmds = dvz_fixture_offscreen_cmds(off);
-    ANN(cmds);
-    DvzBarriers* offscreen_barriers = dvz_fixture_offscreen_barriers(off);
-
-    dvz_cmd_begin(cmds);
-    // Ensure fixture color/depth attachments are transitioned before use in this test.
-    dvz_cmd_barriers(cmds, offscreen_barriers);
-
-    // Transition depth_img to DEPTH_STENCIL_ATTACHMENT_OPTIMAL for pass 1.
-    {
-        DvzBarriers barriers = {0};
-        dvz_barriers(&barriers);
-        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(depth_img, 0));
-        dvz_barrier_image_stage(
-            bimg, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
-            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT |
-                VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT);
-        dvz_barrier_image_access(bimg, 0, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-        dvz_barrier_image_layout(
-            bimg, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL);
-        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
-        dvz_barrier_image_mip(bimg, 0, 1);
-        dvz_barrier_image_layers(bimg, 0, 1);
-        dvz_cmd_barriers(cmds, &barriers);
-    }
-
-    // PASS 1: depth rendering.
-    dvz_cmd_rendering_begin(cmds, depth_rendering);
-    dvz_cmd_bind_graphics(cmds, depth_graphics);
-    dvz_cmd_draw(cmds, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds);
-
-    // Transition depth_img to SHADER_READ_ONLY_OPTIMAL for SSAO sampling.
-    {
-        DvzBarriers barriers = {0};
-        dvz_barriers(&barriers);
-        DvzBarrierImage* bimg = dvz_barriers_image(&barriers, dvz_image_handle(depth_img, 0));
-        dvz_barrier_image_stage(
-            bimg, VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT,
-            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
-        dvz_barrier_image_access(
-            bimg, VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-            VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
-        dvz_barrier_image_layout(
-            bimg, VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        dvz_barrier_image_aspect(bimg, VK_IMAGE_ASPECT_DEPTH_BIT);
-        dvz_barrier_image_mip(bimg, 0, 1);
-        dvz_barrier_image_layers(bimg, 0, 1);
-        dvz_cmd_barriers(cmds, &barriers);
-    }
-
-    // PASS 2: SSAO rendering into the fixture main color image.
-    dvz_cmd_rendering_begin(cmds, ssao_rendering);
-    dvz_cmd_bind_graphics(cmds, ssao_graphics);
-    dvz_cmd_bind_descriptors(cmds, VK_PIPELINE_BIND_POINT_GRAPHICS, ssao_desc, 0, 1, 0, NULL);
-    dvz_cmd_draw(cmds, 0, 3, 0, 1);
-    dvz_cmd_rendering_end(cmds);
-
-    dvz_cmd_end(cmds);
-    dvz_cmd_submit(cmds);
-
-    // Screenshot: the fixture color target now contains AO.
-    dvz_fixture_offscreen_png(off, "build/technique_ssao.png");
-
-
-    // Cleanup.
-
-    dvz_graphics_destroy(depth_graphics);
-    dvz_graphics_destroy(ssao_graphics);
-    dvz_graphics_free(depth_graphics);
-    dvz_graphics_free(ssao_graphics);
-
-    dvz_image_views_destroy(depth_view);
-    dvz_image_views_free(depth_view);
-    dvz_images_destroy(depth_img);
-    dvz_images_free(depth_img);
-    dvz_sampler_destroy(sampler);
-    dvz_sampler_free(sampler);
-    dvz_descriptors_free(ssao_desc);
-    dvz_rendering_free(depth_rendering);
-    dvz_rendering_free(ssao_rendering);
-
-    dvz_slots_destroy(ssao_slots);
-    dvz_slots_free(ssao_slots);
-
     uint32_t err_count = dvz_gpu_ctx_error_count(dvz_fixture_gpu_ctx(gpu));
     dvz_fixture_offscreen_destroy(off);
     dvz_fixture_gpu_destroy(gpu);

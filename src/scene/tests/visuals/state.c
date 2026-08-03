@@ -30,8 +30,8 @@
  * @param out_max output maximum per dimension
  * @return whether extents were available
  */
-static bool _scene_visuals_overlay_extents(
-    const DvzVisual* overlay, float out_min[3], float out_max[3])
+static bool
+_scene_visuals_overlay_extents(const DvzVisual* overlay, float out_min[3], float out_max[3])
 {
     ANN(overlay);
     ANN(out_min);
@@ -157,9 +157,9 @@ int test_scene_json(TstContext* suite, const TstCase* item)
     (void)suite;
     (void)item;
 
-    DvzScene*  scene  = dvz_scene();
+    DvzScene* scene = dvz_scene();
     DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
-    DvzPanel*  panel  = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
     DvzVisual* visual = dvz_point(scene, 0);
 
     vec3 positions[2] = {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}};
@@ -196,17 +196,23 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     ANN(image);
 
     vec3 positions[4] = {
-        {-0.5f, -0.5f, 0.0f}, {-0.5f, 0.5f, 0.0f},
-        { 0.5f, -0.5f, 0.0f}, { 0.5f, 0.5f, 0.0f},
+        {-0.5f, -0.5f, 0.0f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
     };
     vec2 texcoords[4] = {
-        {0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 0.0f}, {1.0f, 1.0f},
+        {0.0f, 0.0f},
+        {0.0f, 1.0f},
+        {1.0f, 0.0f},
+        {1.0f, 1.0f},
     };
     AT(dvz_visual_set_data(image, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(image, "texcoords", texcoords, 4) == 0);
 
     DvzSampledField* field = dvz_sampled_field(
-        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+        scene, &(DvzSampledFieldDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
                    .dim = DVZ_FIELD_DIM_2D,
                    .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
                    .semantic = DVZ_FIELD_SEMANTIC_COLOR,
@@ -217,7 +223,9 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
     ANN(field);
     uint8_t base[4 * 4 * 4] = {0};
     AT(dvz_sampled_field_set_data(
-        field, &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base, .bytes_per_row = 4 * 4, .rows_per_image = 4}) == DVZ_OK);
+           field, &(DvzFieldDataView){
+                      DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = base,
+                      .bytes_per_row = 4 * 4, .rows_per_image = 4}) == DVZ_OK);
     AT(dvz_visual_set_field(image, "field", field) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, image, NULL) == 0);
 
@@ -230,13 +238,19 @@ int test_scene_json_includes_field_dirty_metadata(TstContext* suite, const TstCa
 
     uint8_t patch[2 * 4] = {1, 2, 3, 4, 5, 6, 7, 8};
     AT(dvz_sampled_field_update_region(
-        field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
-        &(DvzFieldDataView){DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2 * 4, .rows_per_image = 1}) == DVZ_OK);
+           field, (DvzFieldRegion){.x = 1, .y = 2, .z = 0, .width = 2, .height = 1, .depth = 1},
+           &(DvzFieldDataView){
+               DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView), .data = patch, .bytes_per_row = 2 * 4,
+               .rows_per_image = 1}) == DVZ_OK);
 
     char* json = dvz_scene_json(scene);
     ANN(json);
-    AT(strstr(json, "\"dirty\":{\"pending\":true,\"full\":false,\"region\":{\"x\":1,\"y\":2,\"z\":0,\"width\":2,\"height\":1,\"depth\":1}}") != NULL);
-    AT(strstr(json, "\"field_state\":{\"pending\":true,\"full\":false,\"region\":{\"x\":1,\"y\":2,\"z\":0,\"width\":2,\"height\":1,\"depth\":1}}") != NULL);
+    AT(strstr(
+           json, "\"dirty\":{\"pending\":true,\"full\":false,\"region\":{\"x\":1,\"y\":2,\"z\":0,"
+                 "\"width\":2,\"height\":1,\"depth\":1}}") != NULL);
+    AT(strstr(
+           json, "\"field_state\":{\"pending\":true,\"full\":false,\"region\":{\"x\":1,\"y\":2,"
+                 "\"z\":0,\"width\":2,\"height\":1,\"depth\":1}}") != NULL);
     dvz_scene_json_destroy(json);
 
     dvz_scene_destroy(scene);
@@ -271,7 +285,9 @@ int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const Ts
     DvzIndex indices[3] = {0, 1, 2};
 
     DvzSceneBuffer* buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc), .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
     ANN(buffer);
     AT(dvz_scene_buffer_set_data(buffer, indices, sizeof(indices)) == DVZ_OK);
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
@@ -293,8 +309,6 @@ int test_scene_json_includes_buffer_binding_metadata(TstContext* suite, const Ts
     dvz_scene_destroy(scene);
     return 0;
 }
-
-
 
 
 
@@ -362,10 +376,9 @@ int test_scene_visual_attr_source_and_mutability_metadata(TstContext* suite, con
     AT(dvz_visual_attr_source(visual, "position") == DVZ_VISUAL_ATTR_SOURCE_PER_ITEM);
     AT(dvz_visual_attr_mutability(visual, "position") == DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC);
 
-    AT(dvz_visual_set_attr_mutability(
-           visual, "position", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING) == 0);
-    AT(dvz_visual_attr_mutability(visual, "position") ==
-       DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
+    AT(dvz_visual_set_attr_mutability(visual, "position", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING) ==
+       0);
+    AT(dvz_visual_attr_mutability(visual, "position") == DVZ_VISUAL_ATTR_MUTABILITY_STREAMING);
 
     AT(dvz_visual_set_attr_source(visual, "color", DVZ_VISUAL_ATTR_SOURCE_CONSTANT) == 0);
     AT(dvz_visual_attr_source(visual, "color") == DVZ_VISUAL_ATTR_SOURCE_CONSTANT);
@@ -512,8 +525,8 @@ int test_scene_visual_data_view(TstContext* suite, const TstCase* item)
     vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}};
     float sizes[2] = {6.0f, 12.0f};
 
-    AT(dvz_visual_set_attr_mutability(
-           visual, "position", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING) == 0);
+    AT(dvz_visual_set_attr_mutability(visual, "position", DVZ_VISUAL_ATTR_MUTABILITY_STREAMING) ==
+       0);
     AT(dvz_visual_set_data(visual, "position", positions, 2) == 0);
     AT(dvz_visual_set_data(visual, "diameter_px", sizes, 2) == 0);
 
@@ -576,8 +589,8 @@ int test_scene_visual_item_range_api(TstContext* suite, const TstCase* item)
     vec3 positions[4] = {
         {-0.75f, 0.0f, 0.0f},
         {-0.25f, 0.0f, 0.0f},
-        { 0.25f, 0.0f, 0.0f},
-        { 0.75f, 0.0f, 0.0f},
+        {0.25f, 0.0f, 0.0f},
+        {0.75f, 0.0f, 0.0f},
     };
     AT(dvz_visual_set_data(visual, "position", positions, 4) == 0);
 
@@ -640,8 +653,7 @@ int test_scene_visual_scalar_color_attr_format(TstContext* suite, const TstCase*
 
     AT(dvz_visual_attr_format(point, "color") == DVZ_VISUAL_ATTR_FORMAT_RGBA_U8);
     AT(dvz_visual_attr_format(point, "position") == DVZ_VISUAL_ATTR_FORMAT_DEFAULT);
-    AT(dvz_visual_set_attr_format(
-           point, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32) == 0);
+    AT(dvz_visual_set_attr_format(point, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32) == 0);
     AT(dvz_visual_attr_format(point, "color") == DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
 
     vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}};
@@ -661,14 +673,12 @@ int test_scene_visual_scalar_color_attr_format(TstContext* suite, const TstCase*
 
     tst_log_capture_begin(suite);
     AT_EXPECTED_ERROR_STRICT(
-        suite,
-        dvz_visual_set_attr_format(point, "color", DVZ_VISUAL_ATTR_FORMAT_RGBA_U8) == -1);
+        suite, dvz_visual_set_attr_format(point, "color", DVZ_VISUAL_ATTR_FORMAT_RGBA_U8) == -1);
     AT(_captured_log_contains(suite, "format cannot change after payload attachment"));
 
     tst_log_capture_begin(suite);
     AT_EXPECTED_ERROR_STRICT(
-        suite,
-        dvz_visual_set_attr_format(mesh, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32) == -1);
+        suite, dvz_visual_set_attr_format(mesh, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32) == -1);
     AT(_captured_log_contains(suite, "does not support format"));
 
     dvz_scene_destroy(scene);
@@ -719,9 +729,9 @@ int test_scene_scalar_color_emits_rgba_upload(TstContext* suite, const TstCase* 
 
     DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_GRAY);
     ANN(colormap);
-    DvzScale* scale =
-        dvz_scale(scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
-                            .kind = DVZ_SCALE_CONTINUOUS});
+    DvzScale* scale = dvz_scale(
+        scene,
+        &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc), .kind = DVZ_SCALE_CONTINUOUS});
     ANN(scale);
     AT(dvz_scale_set_domain(scale, 0.0, 1.0) == DVZ_OK);
     AT(dvz_scale_set_colormap(scale, colormap) == DVZ_OK);
@@ -916,16 +926,40 @@ int test_scene_visual_bounds_mesh_instance_transform(TstContext* suite, const Ts
     vec3 positions[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 2.0f, 3.0f}};
     float transforms[2][16] = {
         {
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f,
         },
         {
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            10.0f, -1.0f, 2.0f, 1.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f,
+            0.0f,
+            10.0f,
+            -1.0f,
+            2.0f,
+            1.0f,
         },
     };
     AT(dvz_visual_set_data(mesh, "position", positions, 2) == 0);
@@ -1398,10 +1432,8 @@ int test_scene_panel_bounds_overlay_emit_runtime(TstContext* suite, const TstCas
     DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(dvz_diagnostic_report_count(&report) == 0);
     ANN(stream);
-    AT(_stream_has_render_pipeline_label_part(
-        stream, "_pipe_segmentg_blend_depth"));
-    AT(_stream_has_render_pipeline_label_part(
-        stream, "_pipe_segmentg_blend_depth_gt_depth"));
+    AT(_stream_has_render_pipeline_label_part(stream, "_pipe_segmentg_blend_depth"));
+    AT(_stream_has_render_pipeline_label_part(stream, "_pipe_segmentg_blend_depth_gt_depth"));
 
     bool found_front_pipeline = false;
     bool found_occluded_pipeline = false;
@@ -1505,10 +1537,11 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
         {1.0f, 0.0f},
         {0.0f, 1.0f},
     };
-    mat4 transforms[1] = {{{1.0f, 0.0f, 0.0f, 0.0f},
-                           {0.0f, 1.0f, 0.0f, 0.0f},
-                           {0.0f, 0.0f, 1.0f, 0.0f},
-                           {0.0f, 0.0f, 0.0f, 1.0f}}};
+    mat4 transforms[1] = {
+        {{1.0f, 0.0f, 0.0f, 0.0f},
+         {0.0f, 1.0f, 0.0f, 0.0f},
+         {0.0f, 0.0f, 1.0f, 0.0f},
+         {0.0f, 0.0f, 0.0f, 1.0f}}};
 
     DvzVisualDataUpdate mesh_updates[] = {
         {.attr_name = "position", .data = positions, .item_count = 3},
@@ -1694,11 +1727,10 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
         {0.0, 1.0},
     };
     AT(dvz_polygon_set_geometry(
-           polygon,
-           &(DvzPolygonDesc){
-               DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-               .outer = {.xy = outer, .count = 4},
-           }) == 0);
+           polygon, &(DvzPolygonDesc){
+                        DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+                        .outer = {.xy = outer, .count = 4},
+                    }) == 0);
 
     const DvzColor fill_color = {20, 40, 200, 255};
     const DvzColor stroke_color = {240, 220, 40, 255};
@@ -1707,7 +1739,8 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     AT(dvz_polygon_set_stroke_width_px(polygon, 3.0f) == 0);
     AT(dvz_polygon_set_id(polygon, 42) == 0);
     AT(polygon->user_id == 42);
-    AT(dvz_polygon_set_stroke_caps(polygon, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) == 0);
+    AT(dvz_polygon_set_stroke_caps(polygon, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_TRIANGLE_OUT) ==
+       0);
     AT(dvz_polygon_set_stroke_join(polygon, DVZ_PATH_JOIN_BEVEL, 3.0f) == 0);
     DvzPolygonStyle style = dvz_polygon_style();
     style.fill_color = fill_color;
@@ -1868,17 +1901,15 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
         {2.0, 1.0},
     };
     const uint32_t left_index = dvz_polygons_add_region(
-        set,
-        &(DvzPolygonDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-            .outer = {.xy = left, .count = 4},
-        });
+        set, &(DvzPolygonDesc){
+                 DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+                 .outer = {.xy = left, .count = 4},
+             });
     const uint32_t right_index = dvz_polygons_add_region(
-        set,
-        &(DvzPolygonDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-            .outer = {.xy = right, .count = 4},
-        });
+        set, &(DvzPolygonDesc){
+                 DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+                 .outer = {.xy = right, .count = 4},
+             });
     AT(left_index == 0);
     AT(right_index == 1);
 
@@ -2064,7 +2095,8 @@ int test_scene_graph_composite(TstContext* suite, const TstCase* item)
     AT(dvz_composite_visual_count(composite) == 3);
     AT(dvz_panel_add_composite(
            panel, composite,
-           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 7}) == 0);
+           &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc), .z_layer = 7}) ==
+       0);
     AT(panel->visual_count == 3);
     AT(dvz_panel_add_composite(panel, composite, NULL) == 0);
     AT(panel->visual_count == 3);
@@ -2246,12 +2278,10 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
 
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(mesh, "diameter_px", diameters, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(point, "normal", positions, 1) == -1);
-    AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_data(primitive, "radius", diameters, 1) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(primitive, "radius", diameters, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_visual_set_data(sphere, "pixel_size_px", diameters, 1) == -1);
-    AT_EXPECTED_ERROR_STRICT(
-        suite, dvz_visual_set_data(point, "item_state", item_state, 0) == -1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(point, "item_state", item_state, 0) == -1);
 
     DvzVisualDataUpdate mismatch[] = {
         {.attr_name = "position", .data = positions, .item_count = 1},
@@ -2265,7 +2295,8 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
 
 
 
-int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite, const TstCase* item)
+int test_scene_point_external_position_buffer_emits_no_upload(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2279,7 +2310,8 @@ int test_scene_point_external_position_buffer_emits_no_upload(TstContext* suite,
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
 
-    DvzSceneBufferDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+    DvzSceneBufferDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
         .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX,
         .stride = sizeof(vec3),
         .byte_size = 3 * sizeof(vec3),
@@ -2353,9 +2385,10 @@ int test_scene_point_storage_position_buffer_emits_usage(TstContext* suite, cons
         {-0.75f, -0.75f, 0.0f},
         {-0.5f, -0.5f, 0.0f},
         {+0.5f, -0.5f, 0.0f},
-        { 0.0f, +0.5f, 0.0f},
+        {0.0f, +0.5f, 0.0f},
     };
-    DvzSceneBufferDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+    DvzSceneBufferDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
         .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
         .stride = sizeof(vec3),
     };
@@ -2385,8 +2418,7 @@ int test_scene_point_storage_position_buffer_emits_usage(TstContext* suite, cons
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         ANN(cmd);
-        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
-            cmd->u.set_vertex_buffer.slot == 0)
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER && cmd->u.set_vertex_buffer.slot == 0)
         {
             position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
             AT(cmd->u.set_vertex_buffer.offset == 0);
@@ -2487,11 +2519,13 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 
     DvzPanelBackgroundDesc background_desc = dvz_panel_background_desc();
     background_desc.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_background(panel, &background_desc) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_panel_set_background(panel, &background_desc) == DVZ_ERROR);
 
     background_desc = dvz_panel_background_desc();
     background_desc.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_background(panel, &background_desc) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_panel_set_background(panel, &background_desc) == DVZ_ERROR);
 
     DvzPanelBorderDesc border_desc = dvz_panel_border_desc();
     border_desc.struct_size = 0;
@@ -2525,13 +2559,13 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
     msaa.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_msaa(panel, &msaa) == DVZ_ERROR);
 
-    DvzSsaoDesc ssao = dvz_ssao_desc();
-    ssao.struct_size = 0;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ssao(panel, &ssao) == DVZ_ERROR);
+    DvzAoDesc gtao = dvz_ao_desc();
+    gtao.struct_size = 0;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ao(panel, &gtao) == DVZ_ERROR);
 
-    ssao = dvz_ssao_desc();
-    ssao.flags = 1;
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ssao(panel, &ssao) == DVZ_ERROR);
+    gtao = dvz_ao_desc();
+    gtao.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_set_ao(panel, &gtao) == DVZ_ERROR);
 
     DvzVolumeOcclusionDesc volume_occlusion = dvz_volume_occlusion_desc();
     volume_occlusion.struct_size = DVZ_STRUCT_SIZE(DvzVolumeOcclusionDesc) - 1;
@@ -2596,8 +2630,7 @@ int test_scene_descriptor_abi_rejects_invalid_structs(TstContext* suite, const T
 }
 
 
-int test_scene_compute_point_position_buffer_emits_drp2(
-    TstContext* suite, const TstCase* item)
+int test_scene_compute_point_position_buffer_emits_drp2(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -2614,10 +2647,11 @@ int test_scene_compute_point_position_buffer_emits_drp2(
     vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {+0.5f, -0.5f, 0.0f},
-        { 0.0f, +0.5f, 0.0f},
+        {0.0f, +0.5f, 0.0f},
     };
     DvzSceneBuffer* position = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX | DVZ_SCENE_BUFFER_USAGE_STORAGE,
                    .stride = sizeof(vec3),
                    .byte_size = sizeof(positions),
@@ -2628,7 +2662,8 @@ int test_scene_compute_point_position_buffer_emits_drp2(
 
     vec4 params = {0.0f, 0.0f, 3.0f, 0.0f};
     DvzSceneBuffer* param = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
                    .usage = DVZ_SCENE_BUFFER_USAGE_STORAGE,
                    .stride = sizeof(vec4),
                    .byte_size = sizeof(params),
@@ -2653,7 +2688,8 @@ int test_scene_compute_point_position_buffer_emits_drp2(
         "    positions.x[3u * i + 0u] += 0.0;\n"
         "}\n";
     DvzSceneCompute* compute = dvz_scene_compute(
-        scene, &(DvzSceneComputeDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneComputeDesc),
+        scene, &(DvzSceneComputeDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneComputeDesc),
                    .label = "test_compute_points",
                    .shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL,
                    .shader_source = shader,
@@ -2687,8 +2723,7 @@ int test_scene_compute_point_position_buffer_emits_drp2(
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         ANN(cmd);
-        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
-            cmd->u.set_vertex_buffer.slot == 0)
+        if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER && cmd->u.set_vertex_buffer.slot == 0)
             position_buffer_id = cmd->u.set_vertex_buffer.buffer_id;
         found_compute_pipeline =
             found_compute_pipeline || cmd->type == DVZ_DRP2_COMMAND_CREATE_COMPUTE_PIPELINE;
@@ -2759,7 +2794,7 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     vec3 positions[3] = {
         {-0.5f, -0.5f, 0.0f},
         {+0.5f, -0.5f, 0.0f},
-        { 0.0f, +0.5f, 0.0f},
+        {0.0f, +0.5f, 0.0f},
     };
     uint64_t position_bytes = sizeof(positions);
 
@@ -2781,7 +2816,8 @@ int test_scene_point_external_position_buffer_executes(TstContext* suite, const 
     DvzVisual* visual = dvz_point(scene, 0);
     ANN(visual);
 
-    DvzSceneBufferDesc desc = {DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+    DvzSceneBufferDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
         .usage = DVZ_SCENE_BUFFER_USAGE_VERTEX,
         .stride = sizeof(vec3),
         .byte_size = position_bytes,
@@ -2970,8 +3006,7 @@ int test_scene_rejects_mismatched_point_attribute_counts(TstContext* suite, cons
     ANN(visual);
 
     float positions[2 * 3] = {
-        -0.25f, 0.00f, 0.0f,
-         0.25f, 0.00f, 0.0f,
+        -0.25f, 0.00f, 0.0f, 0.25f, 0.00f, 0.0f,
     };
     DvzColor color = {255, 0, 0, 255};
 
@@ -2997,9 +3032,7 @@ int test_scene_point_visual_resizes_existing_attributes(TstContext* suite, const
     ANN(visual);
 
     float positions3[3 * 3] = {
-        -0.50f, 0.00f, 0.0f,
-         0.00f, 0.00f, 0.0f,
-         0.50f, 0.00f, 0.0f,
+        -0.50f, 0.00f, 0.0f, 0.00f, 0.00f, 0.0f, 0.50f, 0.00f, 0.0f,
     };
     DvzColor colors3[3] = {
         {255, 0, 0, 255},
@@ -3009,8 +3042,7 @@ int test_scene_point_visual_resizes_existing_attributes(TstContext* suite, const
     float sizes3[3] = {3.0f, 4.0f, 5.0f};
 
     float positions2[2 * 3] = {
-        -0.25f, 0.00f, 0.0f,
-         0.25f, 0.00f, 0.0f,
+        -0.25f, 0.00f, 0.0f, 0.25f, 0.00f, 0.0f,
     };
     DvzColor colors2[2] = {
         {255, 255, 0, 255},

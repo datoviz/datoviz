@@ -93,6 +93,7 @@ struct DvzWindowMetricsInputs
     DvzExtent native_size;
     DvzExtent framebuffer_size;
     DvzScaleXY content_scale;
+    uint32_t refresh_rate_hz;
     DvzHiDpiPolicy requested_policy;
     uint64_t previous_generation;
 };
@@ -102,7 +103,7 @@ struct DvzWindowMetricsInputs
 struct DvzWindow
 {
     DvzWindowHost* host;
-    DvzWindowBackendSlot* backend_slot;
+    uint32_t backend_index;
     void* backend_handle;
     void* backend_payload;
     DvzInputRouter* router;

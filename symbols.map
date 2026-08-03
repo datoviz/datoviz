@@ -41,6 +41,7 @@ dvz_annotation_desc
 dvz_annotation_destroy
 dvz_annotation_label
 dvz_annotation_set_format
+dvz_ao_desc
 dvz_app
 dvz_app_capture_config
 dvz_app_capture_config_from_env
@@ -548,7 +549,6 @@ dvz_frame_plan_packet_result_resource_version
 dvz_frame_plan_packet_result_status
 dvz_frame_plan_readback
 dvz_frame_plan_render
-dvz_frame_plan_render_pass_role
 dvz_frame_plan_render_visual
 dvz_frame_plan_upload
 dvz_frame_plan_upload_bytes
@@ -886,6 +886,7 @@ dvz_panel_get_padding
 dvz_panel_get_reserve
 dvz_panel_inner_rect_px
 dvz_panel_plot_rect_px
+dvz_panel_set_ao
 dvz_panel_set_background
 dvz_panel_set_background_color
 dvz_panel_set_border
@@ -898,7 +899,6 @@ dvz_panel_set_msaa
 dvz_panel_set_padding
 dvz_panel_set_reserve
 dvz_panel_set_scene_occlusion
-dvz_panel_set_ssao
 dvz_panel_set_view2d
 dvz_panel_set_volume_occluder
 dvz_panel_view2d_extent
@@ -1109,7 +1109,6 @@ dvz_slots_set_layout
 dvz_sphere
 dvz_sphere_set_mode
 dvz_splat
-dvz_ssao_desc
 dvz_standard_material_desc
 dvz_stream_attach_sink
 dvz_stream_attach_sink_name

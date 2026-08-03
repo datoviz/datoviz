@@ -1820,34 +1820,31 @@ typedef struct DvzSceneEdlTechniqueState
 } DvzSceneEdlTechniqueState;
 
 
-typedef struct DvzSceneSsaoUniform
+typedef struct DvzSceneAoUniform
 {
+    mat4 proj;
     mat4 inv_proj;
-    mat4 view;
     float viewport[4];
-    float params[4];
-    float params2[4];
-    float params3[4];
-} DvzSceneSsaoUniform;
+    float extent[4];
+    float appearance[4];
+    float sampling[4];
+    int32_t mode[4];
+} DvzSceneAoUniform;
 
 
 
-typedef struct DvzSceneSsaoTechniqueState
+typedef struct DvzSceneAoTechniqueState
 {
     bool enabled;
     float radius;
-    float strength;
-    float bias;
-    float power;
+    float intensity;
+    float thickness;
     float min_visibility;
-    float blur_radius;
-    float blur_depth_sigma;
-    float blur_normal_sigma;
-    uint32_t sample_count;
-    bool blur_enabled;
-    bool debug_view;
-    DvzSceneSsaoUniform uniform;
-} DvzSceneSsaoTechniqueState;
+    DvzAoQuality quality;
+    DvzAoDebugMode debug_mode;
+    bool denoise_enabled;
+    DvzSceneAoUniform uniform;
+} DvzSceneAoTechniqueState;
 
 
 typedef struct DvzSceneMsaaTechniqueState
@@ -1863,7 +1860,7 @@ typedef struct DvzSceneTechniqueState
 {
     DvzSceneGBufferTechniqueState gbuffer;
     DvzSceneEdlTechniqueState edl;
-    DvzSceneSsaoTechniqueState ssao;
+    DvzSceneAoTechniqueState ao;
     DvzSceneMsaaTechniqueState msaa;
 } DvzSceneTechniqueState;
 

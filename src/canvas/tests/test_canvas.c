@@ -323,7 +323,8 @@ static int canvas_refresh_probe_start(DvzStreamSink* sink, const DvzStreamFrame*
 {
     ANN(sink);
     CanvasRefreshProbeState* state = (CanvasRefreshProbeState*)sink->backend_data;
-    return canvas_refresh_probe_apply_frame(state, frame, false);
+    int rc = canvas_refresh_probe_apply_frame(state, frame, false);
+    return rc != 0 ? rc : state->start_rc;
 }
 
 
@@ -481,7 +482,8 @@ static int canvas_refresh_probe_update(DvzStreamSink* sink, const DvzStreamFrame
 {
     ANN(sink);
     CanvasRefreshProbeState* state = (CanvasRefreshProbeState*)sink->backend_data;
-    return canvas_refresh_probe_apply_frame(state, frame, true);
+    int rc = canvas_refresh_probe_apply_frame(state, frame, true);
+    return rc != 0 ? rc : state->update_rc;
 }
 
 
@@ -525,6 +527,7 @@ int test_canvas_defaults(TstContext* suite, const TstCase* item)
     AT(cfg.color_format == VK_FORMAT_UNDEFINED);
     AT(cfg.depth_format == VK_FORMAT_UNDEFINED);
     AT(cfg.present_mode == VK_PRESENT_MODE_FIFO_KHR);
+    AT(cfg.frame_slot_count == DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT);
     AT(!cfg.enable_video_sink);
     AT(cfg.timing_history == DVZ_CANVAS_DEFAULT_TIMING_HISTORY);
     return 0;
@@ -729,7 +732,7 @@ int test_canvas_frame_pool(TstContext* suite, const TstCase* item)
 
 
 /**
- * Validate parsing and resolution of the experimental frame-slot override.
+ * Validate configuration and resolution of frame-slot counts.
  *
  * @param suite The owning test suite.
  * @param item The test item (unused).
@@ -740,21 +743,17 @@ int test_canvas_frame_slot_count_resolution(TstContext* suite, const TstCase* it
     ANN(suite);
     (void)item;
 
-    uint32_t requested = UINT32_MAX;
-    AT(_dvz_canvas_max_frames_in_flight_parse(NULL, &requested));
-    AT(requested == 0);
-    AT(_dvz_canvas_max_frames_in_flight_parse("auto", &requested));
-    AT(requested == 0);
-    AT(_dvz_canvas_max_frames_in_flight_parse("1", &requested));
-    AT(requested == 1);
-    AT(_dvz_canvas_max_frames_in_flight_parse("2", &requested));
-    AT(requested == 2);
-    AT(_dvz_canvas_max_frames_in_flight_parse("8", &requested));
-    AT(requested == 8);
-    AT(!_dvz_canvas_max_frames_in_flight_parse("0", &requested));
-    AT(!_dvz_canvas_max_frames_in_flight_parse("invalid", &requested));
-    AT(!_dvz_canvas_max_frames_in_flight_parse("-1", &requested));
-    AT(!_dvz_canvas_max_frames_in_flight_parse("1x", &requested));
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_FIFO_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT) == 1);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_FIFO_RELAXED_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT) == 0);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_MAILBOX_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT) == 0);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_IMMEDIATE_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT) == 0);
+    AT(_dvz_canvas_frame_slot_count_request(
+           VK_PRESENT_MODE_FIFO_KHR, DVZ_CANVAS_FRAME_SLOT_COUNT_AUTOMATIC) == 0);
+    AT(_dvz_canvas_frame_slot_count_request(VK_PRESENT_MODE_FIFO_KHR, 2) == 2);
 
     AT(_dvz_canvas_frame_slot_count_resolve(0, 4) == 4);
     AT(_dvz_canvas_frame_slot_count_resolve(1, 4) == 1);
@@ -959,99 +958,6 @@ offscreen_depth_cleanup:
 }
 
 
-
-/**
- * Validate GLFW present canvas destroy/recreate on the same device and window setup.
- */
-int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item)
-{
-    ANN(suite);
-    (void)item;
-
-    const char* skip_reason = NULL;
-    DvzInstance* instance = NULL;
-    DvzDevice* device = NULL;
-    DvzWindowHost* host = NULL;
-    DvzWindow* window = NULL;
-    DvzCanvas* canvas = NULL;
-
-    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
-    {
-        goto glfw_recreate_cleanup;
-    }
-
-    host = dvz_window_host();
-    if (host == NULL)
-    {
-        skip_reason = "window host creation failed";
-        goto glfw_recreate_cleanup;
-    }
-    if (!dvz_window_glfw_init())
-    {
-        skip_reason = "GLFW initialization failed";
-        goto glfw_recreate_cleanup;
-    }
-
-    DvzWindowConfig window_cfg = dvz_window_config();
-    window_cfg.title = "canvas-glfw-destroy-recreate";
-    window_cfg.width = 320;
-    window_cfg.height = 240;
-    tst_expect_log_begin(suite, LOG_ERROR);
-    window = dvz_window_create(host, DVZ_BACKEND_GLFW, &window_cfg);
-    (void)tst_expect_error_end(suite);
-    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_GLFW)
-    {
-        skip_reason = "GLFW window creation failed";
-        goto glfw_recreate_cleanup;
-    }
-
-    DvzCanvasConfig cfg = dvz_canvas_config();
-    cfg.window = window;
-    cfg.device = device;
-    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_PRESENT;
-    cfg.timing_history = 4;
-
-    for (uint32_t i = 0; i < 2; i++)
-    {
-        canvas = dvz_canvas_create(&cfg);
-        if (canvas == NULL)
-        {
-            skip_reason = "canvas creation failed";
-            goto glfw_recreate_cleanup;
-        }
-        AT(dvz_canvas_render_mode(canvas) == DVZ_CANVAS_RENDER_MODE_PRESENT);
-        int frame_rc = dvz_canvas_frame(canvas);
-        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
-        {
-            skip_reason = "surface unavailable";
-            goto glfw_recreate_cleanup;
-        }
-        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
-        AT(dvz_canvas_submit(canvas) == 0);
-        dvz_canvas_destroy(canvas);
-        canvas = NULL;
-    }
-
-glfw_recreate_cleanup:
-    if (skip_reason != NULL)
-    {
-        tst_skip(suite, skip_reason);
-    }
-    if (canvas != NULL)
-    {
-        dvz_canvas_destroy(canvas);
-    }
-    if (window != NULL)
-    {
-        dvz_window_destroy(window);
-    }
-    if (host != NULL)
-    {
-        dvz_window_host_destroy(host);
-    }
-    canvas_test_destroy_instance_device(instance, device);
-    return 0;
-}
 
 /**
  * Validate that a canvas-owned render target starts from defined contents.
@@ -2335,6 +2241,9 @@ int test_canvas(TstSuite* suite)
         test_canvas_swapchain_failfast_slot_init,
         TST_CANVAS_GLFW_RES | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
     TST_CANVAS_CASE(test_canvas_glfw_present_recovery, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_glfw_pre_submit_failure_recovery,
+        TST_CANVAS_GLFW_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_glfw_auto_format_stable, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(

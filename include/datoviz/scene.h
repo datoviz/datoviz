@@ -1283,26 +1283,25 @@ DVZ_EXPORT DvzResult dvz_panel_set_msaa(DvzPanel* panel, const DvzMsaaDesc* desc
 
 
 /**
- * Return default screen-space ambient occlusion options.
+ * Return default ambient-occlusion options.
  *
- * @return SSAO descriptor
+ * @return ambient-occlusion descriptor
  */
-DVZ_EXPORT DvzSsaoDesc dvz_ssao_desc(void);
+DVZ_EXPORT DvzAoDesc dvz_ao_desc(void);
 
 
 /**
- * Configure screen-space ambient occlusion for one panel.
+ * Configure ambient occlusion for one panel.
  *
- * SSAO renders eligible opaque normal-producing visuals through an internal G-buffer, computes an
- * occlusion texture from panel depth and normals, optionally blurs it, and composites the result
- * into the panel output. Pass NULL to disable SSAO on the panel. Descriptor values are clamped to
- * implementation-supported ranges.
+ * AO evaluates deterministic view-space visibility from the coherent opaque surface record and
+ * applies it only to eligible ambient or indirect diffuse lighting. Pass NULL to disable AO on the
+ * panel. Descriptor values are clamped to implementation-supported ranges.
  *
  * @param panel the panel
- * @param desc SSAO descriptor, or NULL to disable
- * @return DVZ_OK if the panel SSAO state was updated, DVZ_ERROR otherwise
+ * @param desc AO descriptor, or NULL to disable
+ * @return DVZ_OK if the panel AO state was updated, DVZ_ERROR otherwise
  */
-DVZ_EXPORT DvzResult dvz_panel_set_ssao(DvzPanel* panel, const DvzSsaoDesc* desc);
+DVZ_EXPORT DvzResult dvz_panel_set_ao(DvzPanel* panel, const DvzAoDesc* desc);
 
 
 /**

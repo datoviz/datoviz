@@ -172,6 +172,14 @@ void _state_init(ConverterState* state);
 
 void _state_destroy(ConverterState* state);
 
+bool _emitter_state_clone(
+    const DvzFramePlanEmitter* emitter, DvzFramePlanEmitter* candidate);
+
+void _emitter_state_commit(
+    DvzFramePlanEmitter* emitter, DvzFramePlanEmitter* candidate);
+
+void _emitter_state_discard(DvzFramePlanEmitter* candidate);
+
 uint64_t _emitter_next_transient_id(DvzFramePlanEmitter* emitter);
 
 DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* key);

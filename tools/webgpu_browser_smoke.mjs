@@ -1015,7 +1015,10 @@ async function main() {
           { label: 'McHenrys Peak Terrain Relief', limitations: ['MSAA', '4x sample count'] },
         ],
         ['showcases_svg_tiger', { label: 'SVG Tiger', limitations: ['MSAA', 'single-sampled'] }],
-        ['showcases_protein', { label: 'Protein', limitations: ['SSAO', 'ambient-occlusion'] }],
+        [
+          'showcases_protein',
+          { label: 'Protein', limitations: ['ambient occlusion', 'ambient-occlusion'] },
+        ],
         ['visuals_sphere', { label: 'Sphere', limitations: ['MSAA', 'alpha-to-coverage'] }],
         ['showcases_point_cloud', { label: 'Point Cloud · local development' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
@@ -1422,7 +1425,7 @@ async function main() {
         'Protein',
         'webgpu_live_protein.png',
         'protein',
-        ['SSAO', 'ambient-occlusion'],
+        ['ambient occlusion', 'ambient-occlusion'],
       ],
     ];
     for (const [id, label, filename, shortLabel, limitations] of promotedLiveRoutes) {

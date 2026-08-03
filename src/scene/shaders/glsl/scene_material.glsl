@@ -3,6 +3,13 @@
 
 #include "color.glsl"
 
+#ifdef DVZ_AMBIENT_VISIBILITY
+#include "common.glsl"
+
+layout(set = 3, binding = 0) uniform texture2D ambientVisibilityTex;
+layout(set = 3, binding = 1) uniform sampler ambientVisibilitySamp;
+#endif
+
 layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 lightDir;
     vec4 params;
@@ -16,7 +23,23 @@ layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 depthCueExtra;
 } material;
 
-vec4 evaluateSceneMaterialLinearItem(vec4 linearItemColor, vec3 normal, vec3 worldPos, vec3 cameraPos)
+float sceneAmbientVisibility()
+{
+#ifdef DVZ_AMBIENT_VISIBILITY
+    vec2 viewportExtent = max(viewport.rect.zw, vec2(1.0));
+    vec2 localUv = (gl_FragCoord.xy - viewport.rect.xy) / viewportExtent;
+    ivec2 productExtent = textureSize(sampler2D(ambientVisibilityTex, ambientVisibilitySamp), 0);
+    vec2 halfTexel = 0.5 / max(vec2(productExtent), vec2(1.0));
+    localUv = clamp(localUv, halfTexel, vec2(1.0) - halfTexel);
+    return clamp(
+        texture(sampler2D(ambientVisibilityTex, ambientVisibilitySamp), localUv).r, 0.0, 1.0);
+#else
+    return 1.0;
+#endif
+}
+
+vec4 evaluateSceneMaterialLinearItemWithAmbientVisibility(
+    vec4 linearItemColor, vec3 normal, vec3 worldPos, vec3 cameraPos, float ambientVisibility)
 {
     int model = int(material.model.x + 0.5);
     float opacity = clamp(material.model.y, 0.0, 1.0);
@@ -56,21 +79,36 @@ vec4 evaluateSceneMaterialLinearItem(vec4 linearItemColor, vec3 normal, vec3 wor
         float shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
         float spec = pow(max(dot(n, h), 0.0), shininess) * specularStrength;
         float rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rimStrength;
-        vec3 diffuse = base * (0.04 + (1.0 - metallic) * lambert);
+        float visibility = clamp(ambientVisibility, 0.0, 1.0);
+        vec3 diffuse = base * (0.04 * visibility + (1.0 - metallic) * lambert);
         vec3 rgb = diffuse + vec3(spec + rim) + emissive;
         return vec4(clamp(rgb, 0.0, 1.0), alpha);
     }
 
     float spec = pow(max(dot(n, h), 0.0), max(material.params.w, 1.0));
-    vec3 rgb = base * (material.params.x + material.params.y * lambert) +
+    float visibility = clamp(ambientVisibility, 0.0, 1.0);
+    vec3 rgb = base * (material.params.x * visibility + material.params.y * lambert) +
                vec3(material.params.z * spec);
     return vec4(clamp(rgb, 0.0, 1.0), alpha);
 }
 
+vec4 evaluateSceneMaterialLinearItem(vec4 linearItemColor, vec3 normal, vec3 worldPos, vec3 cameraPos)
+{
+    return evaluateSceneMaterialLinearItemWithAmbientVisibility(
+        linearItemColor, normal, worldPos, cameraPos, sceneAmbientVisibility());
+}
+
+vec4 evaluateSceneMaterialWithAmbientVisibility(
+    vec4 itemColor, vec3 normal, vec3 worldPos, vec3 cameraPos, float ambientVisibility)
+{
+    return evaluateSceneMaterialLinearItemWithAmbientVisibility(
+        semanticColorToLinear(itemColor), normal, worldPos, cameraPos, ambientVisibility);
+}
+
 vec4 evaluateSceneMaterial(vec4 itemColor, vec3 normal, vec3 worldPos, vec3 cameraPos)
 {
-    return evaluateSceneMaterialLinearItem(
-        semanticColorToLinear(itemColor), normal, worldPos, cameraPos);
+    return evaluateSceneMaterialWithAmbientVisibility(
+        itemColor, normal, worldPos, cameraPos, sceneAmbientVisibility());
 }
 
 float depthCueCoordinate(vec3 cue)

@@ -55,4 +55,3 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
    exploratory pressure on visuals, resources, and frame planning.
 4. [DEPTH_OF_FIELD_POSTPROCESS.md](DEPTH_OF_FIELD_POSTPROCESS.md): DoF remains active
    postprocess/showcase design pressure.
-5. [RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md](RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md): review-draft typed render products, centralized technique composition, semantic MSAA resolves, and ambient-visibility architecture prompted by issue #137; implementation requires the explicit maintainer decision gate.

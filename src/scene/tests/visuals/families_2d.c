@@ -15,12 +15,186 @@
 /*************************************************************************************************/
 
 #include "common.h"
+#include "_visual_pipeline_internal.h"
 
 
 
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
+
+/**
+ * Return the nearest positive analytic ray/sphere intersection distance.
+ *
+ * @param origin ray origin
+ * @param direction normalized ray direction
+ * @param center sphere center
+ * @param radius sphere radius
+ * @param distance output intersection distance
+ * @return whether the ray has a positive intersection
+ */
+static bool _test_sphere_nearest_hit(
+    const vec3 origin, const vec3 direction, const vec3 center, float radius, float* distance)
+{
+    ANN(distance);
+    vec3 oc = {
+        origin[0] - center[0], origin[1] - center[1], origin[2] - center[2]};
+    float b = oc[0] * direction[0] + oc[1] * direction[1] + oc[2] * direction[2];
+    float c = oc[0] * oc[0] + oc[1] * oc[1] + oc[2] * oc[2] - radius * radius;
+    float discriminant = b * b - c;
+    if (discriminant < 0.0f)
+        return false;
+    float root = sqrtf(fmaxf(discriminant, 0.0f));
+    float near_distance = -b - root;
+    float far_distance = -b + root;
+    *distance = near_distance > 1e-6f ? near_distance : far_distance;
+    return *distance > 1e-6f;
+}
+
+
+
+/**
+ * Verify the shared GLSL sphere contract and characterize its projection-independent root choice.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_sphere_analytic_shader_contract(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const DvzSceneBuiltinShader fragment_shaders[] = {
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_A2C,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_PICK,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32,
+    };
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(fragment_shaders); i++)
+    {
+        const char* source = _builtin_shader_glsl(fragment_shaders[i], true);
+        ANN(source);
+        AT(strstr(source, "struct DvzSphereHit") != NULL);
+        AT(strstr(source, "bool sphereIntersect(") != NULL);
+        AT(strstr(source, "sphereIntersect(fragCenterView, fragRadius, fragSpriteRadiusPx, hit)") !=
+           NULL);
+        AT(strstr(source, "gl_FragDepth = hit.deviceDepth;") != NULL);
+        AT(strstr(source, "hit.deviceDepth < 0.0 || hit.deviceDepth > 1.0") != NULL);
+    }
+
+    const DvzSceneBuiltinShader vertex_shaders[] = {
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_ITEM_STATE,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER,
+        DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32,
+    };
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(vertex_shaders); i++)
+    {
+        const char* source = _builtin_shader_glsl(vertex_shaders[i], false);
+        ANN(source);
+        AT(strstr(source, "float sphereProjectedRadiusPx(") != NULL);
+        AT(strstr(source, "sphereProjectedRadiusPx(centerView.xyz, radius)") != NULL);
+    }
+
+    const char* ordinary = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE, true);
+    const char* capture = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, true);
+    ANN(ordinary);
+    ANN(capture);
+    AT(strstr(ordinary, "hit.coverage * fragColor.a <= coverageThreshold") != NULL);
+    AT(strstr(capture, "float coverage = hit.coverage * fragColor.a;") != NULL);
+    AT(strstr(capture, "coverage = 1.0;") != NULL);
+    AT(strstr(capture, "outDepth = vec4(hit.linearDepth") != NULL);
+    AT(strstr(capture, "outNormal = vec4(hit.normalView") != NULL);
+    AT(strstr(ordinary, "layout(location = 1) out float outSurfaceDepth;") != NULL);
+    AT(strstr(ordinary, "writeSurfaceDepth(hit.linearDepth);") != NULL);
+
+    const DvzSceneBuiltinShader device_depth_shaders[] = {
+        DVZ_SCENE_BUILTIN_SHADER_POINT,
+        DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE,
+        DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE,
+        DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE,
+        DVZ_SCENE_BUILTIN_SHADER_POINT_ITEM_STATE,
+        DVZ_SCENE_BUILTIN_SHADER_PIXEL,
+        DVZ_SCENE_BUILTIN_SHADER_PIXEL_DEPTH_CUE,
+        DVZ_SCENE_BUILTIN_SHADER_PIXEL_ITEM_STATE,
+        DVZ_SCENE_BUILTIN_SHADER_MARKER,
+        DVZ_SCENE_BUILTIN_SHADER_MARKER_BITMAP,
+        DVZ_SCENE_BUILTIN_SHADER_MARKER_DISTANCE,
+        DVZ_SCENE_BUILTIN_SHADER_SEGMENT,
+        DVZ_SCENE_BUILTIN_SHADER_PATH,
+        DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE,
+        DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT,
+        DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED,
+        DVZ_SCENE_BUILTIN_SHADER_SPLAT,
+    };
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(device_depth_shaders); i++)
+    {
+        const char* source = _builtin_shader_glsl(device_depth_shaders[i], true);
+        ANN(source);
+        AT(strstr(source, "layout(location = 1) out float outSurfaceDepth;") != NULL);
+        AT(strstr(source, "writeSurfaceDepthFromDevice();") != NULL);
+    }
+
+    const char* edl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_EDL_RESOLVE, true);
+    ANN(edl);
+    AT(strstr(edl, "validSurfaceDepth(center)") != NULL);
+    AT(strstr(edl, "neighbor - center") != NULL);
+    AT(strstr(edl, "edl.invProj * clip") == NULL);
+
+    DvzSceneVisualDesc surface_visual = {
+        .kind = DVZ_SCENE_VISUAL_DESC_SPHERE,
+        .depth_test_enabled = true,
+    };
+    DvzSceneVisualShaderDesc surface_shader = {0};
+    dvz_strlcpy(surface_shader.vertex_key, "_vs_surface", sizeof(surface_shader.vertex_key));
+    dvz_strlcpy(surface_shader.fragment_key, "_fs_surface", sizeof(surface_shader.fragment_key));
+    dvz_strlcpy(surface_shader.pipeline_key, "_pipe_surface", sizeof(surface_shader.pipeline_key));
+    surface_shader.fragment_glsl = ordinary;
+    char* surface_variant = NULL;
+    bool segment_coverage_blend = false;
+    AT(_scene_visual_shader_desc_apply_pass_policy(
+        &surface_visual, DVZ_SCENE_WORK_PROVIDER_OPAQUE, DVZ_ALPHA_OPAQUE,
+        DVZ_CONTROLLER_APPLY, false, true, false, false, true, 1, false, false, false,
+        &surface_shader, &surface_variant, &segment_coverage_blend));
+    ANN(surface_variant);
+    AT(strstr(surface_shader.fragment_key, "_surface_z") != NULL);
+    AT(strstr(surface_shader.pipeline_key, "_surface_z") != NULL);
+    AT(strstr(surface_variant, "#define DVZ_SURFACE_DEPTH_OUTPUT 1") != NULL);
+    _shader_glsl_variant_destroy(surface_variant);
+
+    // Perspective ray through an off-axis center selects the front surface.
+    vec3 perspective_origin = {0.0f, 0.0f, 0.0f};
+    vec3 off_axis_center = {1.0f, 0.5f, -5.0f};
+    vec3 perspective_direction = {1.0f, 0.5f, -5.0f};
+    glm_vec3_normalize(perspective_direction);
+    float distance = 0.0f;
+    AT(_test_sphere_nearest_hit(
+        perspective_origin, perspective_direction, off_axis_center, 1.0f, &distance));
+    AC(distance, glm_vec3_norm(off_axis_center) - 1.0f, 1e-5f);
+
+    // Orthographic rays retain their per-fragment origin and select the same front surface.
+    vec3 ortho_origin = {1.0f, 0.5f, 0.0f};
+    vec3 ortho_direction = {0.0f, 0.0f, -1.0f};
+    AT(_test_sphere_nearest_hit(
+        ortho_origin, ortho_direction, off_axis_center, 1.0f, &distance));
+    AC(distance, 4.0f, 1e-5f);
+
+    // When the camera is inside the sphere, the negative near root is rejected for the positive
+    // exit root.
+    vec3 inside_origin = {1.0f, 0.5f, -5.0f};
+    AT(_test_sphere_nearest_hit(
+        inside_origin, ortho_direction, off_axis_center, 1.0f, &distance));
+    AC(distance, 1.0f, 1e-5f);
+
+    vec3 miss_origin = {2.01f, 0.5f, 0.0f};
+    AT(!_test_sphere_nearest_hit(
+        miss_origin, ortho_direction, off_axis_center, 1.0f, &distance));
+    return 0;
+}
+
+
 
 int test_scene_point_emit_glsl_executes(TstContext* suite, const TstCase* item)
 {
@@ -310,7 +484,7 @@ int test_scene_segment_emit_glsl(TstContext* suite, const TstCase* item)
     AT(_scene_emit_panel_render(figure, 0, plan, "figure_0"));
     const DvzFramePlanNode* render = dvz_frame_plan_node_get(plan, 0);
     ANN(render);
-    AT(dvz_frame_plan_render_pass_role(render) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(_frame_plan_render_pass_role(render) == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
     AT(render->u.render.visual_count == 1);
     AT(render->u.render.visual_metadata[0].renderable_kind == DVZ_RENDERABLE_STROKE_QUAD);
     AT(

@@ -125,40 +125,33 @@ bool example_gui_edl(DvzGui* gui, DvzExampleGuiEdlControls* controls)
 
 
 /**
- * Show reusable SSAO controls used by depth-rich examples.
+ * Show reusable ambient-occlusion controls used by depth-rich examples.
  *
  * @param gui GUI overlay
- * @param controls SSAO controls edited in place
- * @return whether an SSAO field changed
+ * @param controls AO controls edited in place
+ * @return whether an AO field changed
  */
-bool example_gui_ssao(DvzGui* gui, DvzExampleGuiSsaoControls* controls)
+bool example_gui_ao(DvzGui* gui, DvzExampleGuiAoControls* controls)
 {
     ANN(gui);
     ANN(controls);
     bool changed = false;
-    const float min_samples = controls->min_samples > 0.0f ? controls->min_samples : 4.0f;
-    const float max_samples = _control_max(controls->max_samples, 32.0f);
-    const float blur_radius_max = _control_max(controls->blur_radius_max, 16.0f);
-
-    changed |= dvz_gui_checkbox(gui, "Enable SSAO", &controls->enabled);
+    changed |= dvz_gui_checkbox(gui, "Enable AO", &controls->enabled);
     changed |= dvz_gui_slider_float(gui, "Radius", &controls->radius, 0.05f, 4.0f);
-    changed |= dvz_gui_slider_float(gui, "Strength", &controls->strength, 0.0f, 16.0f);
-    changed |= dvz_gui_slider_float(gui, "Bias", &controls->bias, 0.0f, 0.12f);
-    changed |= dvz_gui_slider_float(gui, "Power", &controls->power, 0.1f, 8.0f);
+    changed |= dvz_gui_slider_float(gui, "Intensity", &controls->intensity, 0.0f, 8.0f);
+    changed |= dvz_gui_slider_float(gui, "Thickness", &controls->thickness, 0.001f, 2.0f);
     changed |= dvz_gui_slider_float(gui, "Min visibility", &controls->min_visibility, 0.0f, 1.0f);
-    changed |= dvz_gui_slider_float(gui, "Samples", &controls->samples, min_samples, max_samples);
-    changed |= dvz_gui_checkbox(gui, "Blur", &controls->blur);
-    changed |=
-        dvz_gui_slider_float(gui, "Blur radius", &controls->blur_radius, 1.0f, blur_radius_max);
-    if (controls->show_blur_sigmas)
-    {
-        changed |=
-            dvz_gui_slider_float(gui, "Depth sigma", &controls->blur_depth_sigma, 0.01f, 2.5f);
-        changed |=
-            dvz_gui_slider_float(gui, "Normal sigma", &controls->blur_normal_sigma, 0.01f, 1.0f);
-    }
+    changed |= dvz_gui_slider_float(gui, "Quality", &controls->quality, 0.0f, 3.0f);
     if (controls->show_debug_view)
-        changed |= dvz_gui_checkbox(gui, "Raw SSAO", &controls->debug_view);
+    {
+        bool debug_view = controls->debug_mode == DVZ_AO_DEBUG_VISIBILITY;
+        if (dvz_gui_checkbox(gui, "Visibility debug view", &debug_view))
+        {
+            controls->debug_mode =
+                debug_view ? DVZ_AO_DEBUG_VISIBILITY : DVZ_AO_DEBUG_NONE;
+            changed = true;
+        }
+    }
     return changed;
 }
 

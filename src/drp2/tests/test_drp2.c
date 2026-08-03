@@ -131,6 +131,7 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_begin_render_pass_descriptor_rects);
     TST_CASE(test_drp2_begin_render_pass_multi_color_attachments);
     TST_CASE(test_drp2_begin_render_pass_attachment_ops);
+    TST_CASE(test_drp2_begin_render_pass_resolve_json);
     TST_CASE(test_drp2_begin_render_pass_attachment_ops_validation);
     TST_CASE(test_drp2_begin_render_pass_named_depth_validation);
     TST_CASE(test_drp2_render_pipeline_rejects_depth_color_target);

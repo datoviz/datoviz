@@ -1,5 +1,6 @@
 #version 450
 
+#include "common.glsl"
 #include "color.glsl"
 
 layout(set = 3, binding = 0) uniform texture2D prevDepthMinMax;
@@ -15,8 +16,8 @@ void main()
     vec2 prev = texelFetch(sampler2D(prevDepthMinMax, samp), uv, 0).rg;
     float nearDepth = -prev.r;
     float farDepth = prev.g;
-    float z = gl_FragCoord.z;
-    float eps = 1e-3;
+    float z = positiveLinearViewDepth(gl_FragCoord.z);
+    float eps = max(1e-5, max(nearDepth, farDepth) * 1e-5);
 
     if (farDepth < nearDepth - eps || z < nearDepth - eps || z > farDepth + eps)
         discard;

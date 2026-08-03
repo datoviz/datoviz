@@ -773,7 +773,6 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
     DvzFrameGraphPass opaque = {0};
     dvz_strlcpy(opaque.id, "panel0.opaque", sizeof(opaque.id));
     dvz_strlcpy(opaque.panel_id, "panel.0", sizeof(opaque.panel_id));
-    dvz_strlcpy(opaque.work_label, "opaque", sizeof(opaque.work_label));
     opaque.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     AT(dvz_frame_graph_pass_color_attachment(&opaque, &rt_clear));
     AT(dvz_frame_graph_pass_depth_attachment(&opaque, &depth_write));
@@ -788,7 +787,6 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
     DvzFrameGraphPass init = {0};
     dvz_strlcpy(init.id, "panel0.peel.init", sizeof(init.id));
     dvz_strlcpy(init.panel_id, "panel.0", sizeof(init.panel_id));
-    dvz_strlcpy(init.work_label, "depth_peel_init", sizeof(init.work_label));
     init.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     for (uint32_t i = 0; i < 3; i++)
     {
@@ -811,7 +809,6 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
         DvzFrameGraphPass iter = {0};
         dvz_snprintf(iter.id, sizeof(iter.id), "panel0.peel.iter.%u", iter_idx);
         dvz_strlcpy(iter.panel_id, "panel.0", sizeof(iter.panel_id));
-        dvz_strlcpy(iter.work_label, "depth_peel_iter", sizeof(iter.work_label));
         iter.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
         AT(dvz_frame_graph_pass_read(&iter, read_depth, DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
         for (uint32_t i = 0; i < 3; i++)
@@ -838,7 +835,6 @@ static int _depth_peel_frame_plan_graph(DvzFramePlan** out)
     DvzFrameGraphPass composite = {0};
     dvz_strlcpy(composite.id, "panel0.peel.composite", sizeof(composite.id));
     dvz_strlcpy(composite.panel_id, "panel.0", sizeof(composite.panel_id));
-    dvz_strlcpy(composite.work_label, "depth_peel_composite", sizeof(composite.work_label));
     composite.kind = DVZ_FRAME_GRAPH_PASS_RENDER;
     AT(dvz_frame_graph_pass_read(
         &composite, "panel0.peel.front_accum", DVZ_FRAME_GRAPH_ACCESS_SAMPLED));
@@ -1636,6 +1632,81 @@ int test_frame_plan_emit_drp2_static_render_glsl(TstContext* suite, const TstCas
 }
 
 
+int test_frame_plan_emit_drp2_defaults_missing_mvp_to_identity(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.default-mvp", 16);
+    ANN(plan);
+
+    AT(dvz_frame_plan_upload(plan, "point-position", 0, 3 * 3 * sizeof(float), "position"));
+    AT(dvz_frame_plan_upload(plan, "point-color", 0, 3 * sizeof(DvzColor), "color"));
+    AT(dvz_frame_plan_upload(plan, "point-size", 0, 3 * sizeof(float), "size"));
+    AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.point.0"));
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+    metadata.renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
+    metadata.vertex_count = 3;
+    metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    dvz_strlcpy(metadata.position_id, "point-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
+    dvz_strlcpy(metadata.size_id, "point-size", sizeof(metadata.size_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    bool found_mvp = false;
+    bool found_draw = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        ANN(command);
+        if (
+            command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            command->u.write_buffer.size == sizeof(DvzMVP))
+        {
+            const DvzMVP* mvp = (const DvzMVP*)command->u.write_buffer.data_raw;
+            ANN(mvp);
+            for (uint32_t axis = 0; axis < 4; axis++)
+            {
+                AC(mvp->model[axis][axis], 1.0f, 1e-6f);
+                AC(mvp->view[axis][axis], 1.0f, 1e-6f);
+                AC(mvp->proj[axis][axis], 1.0f, 1e-6f);
+            }
+            found_mvp = true;
+        }
+        else if (command->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            AT(command->u.draw.vertex_count == 3);
+            AT(command->u.draw.instance_count == 1);
+            found_draw = true;
+        }
+    }
+    AT(found_mvp);
+    AT(found_draw);
+
+    _test_scene_stream_destroy(stream);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    return 0;
+}
+
+
 static int test_frame_plan_emitter_rejects_untyped_visual_metadata(
     TstContext* suite, const TstCase* item)
 {
@@ -1671,6 +1742,93 @@ static int test_frame_plan_emitter_rejects_untyped_visual_metadata(
     dvz_frame_plan_destroy(plan);
     return 0;
 }
+
+
+
+/**
+ * Ensure a failed emission cannot consume persistent emitter state before a corrected retry.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_frame_plan_emitter_failure_rolls_back_state(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    DvzFramePlanEmitter* fresh = dvz_frame_plan_emitter();
+    ANN(emitter);
+    ANN(fresh);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.runtime.transaction", 17);
+    ANN(plan);
+    AT(dvz_frame_plan_upload(plan, "buf.retry.position", 0, 16, "point.position"));
+    AT(dvz_frame_plan_render(plan, "panel.retry", "target.panel.retry.color", false));
+    AT(dvz_frame_plan_render_visual(plan, "visual.retry"));
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.max_color_sample_count = 4;
+    caps.max_depth_sample_count = 2;
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    DvzDrp2CommandStream* failed =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    AT(failed == NULL);
+    AT(dvz_diagnostic_report_error_count(&report) >= 1);
+
+    AT(!emitter->handshake_sent);
+    AT(emitter->resources.count == 0);
+    AT(emitter->resources.next_id == DRP2_ID_RESOURCE_BASE);
+    AT(emitter->objects.count == 0);
+    AT(emitter->objects.next_id == DRP2_EMITTER_OBJECT_ID_BASE);
+    AT(emitter->next_transient_id == DRP2_RUNTIME_TRANSIENT_ID_BASE);
+    AT(emitter->max_color_sample_count == 16);
+    AT(emitter->max_depth_sample_count == 16);
+    AT(emitter->mvp_panel_count == 0);
+    AT(emitter->viewport_panel_count == 0);
+    AT(emitter->volume_count == 0);
+    AT(emitter->labels_count == 0);
+
+    DvzFramePlanVisualMeta metadata = {0};
+    metadata.buffer_index = UINT32_MAX;
+    metadata.topology = UINT32_MAX;
+    dvz_strlcpy(metadata.position_id, "buf.retry.position", sizeof(metadata.position_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* retry =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    ANN(retry);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* expected =
+        dvz_frame_plan_emitter_emit_drp2(fresh, plan, &caps, &report, &cfg);
+    ANN(expected);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    char* retry_json = dvz_drp2_stream_json(retry, "emitter_transaction_retry");
+    char* expected_json = dvz_drp2_stream_json(expected, "emitter_transaction_retry");
+    ANN(retry_json);
+    ANN(expected_json);
+    AT(strcmp(retry_json, expected_json) == 0);
+
+    dvz_drp2_stream_json_destroy(expected_json);
+    dvz_drp2_stream_json_destroy(retry_json);
+    _test_scene_stream_destroy(expected);
+    _test_scene_stream_destroy(retry);
+    dvz_frame_plan_destroy(plan);
+    dvz_frame_plan_emitter_destroy(fresh);
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
 
 
 int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(TstContext* suite, const TstCase* item)
@@ -3283,7 +3441,7 @@ int test_frame_plan_emitter_wgsl_missing_source_preflight(
     dvz_diagnostic_report_init(&report);
     DvzSceneResolvedShader resolved = {0};
     AT(!_scene_runtime_shader_resolve(
-        &shader, &desc, DVZ_FRAME_PLAN_RENDER_PASS_PICKING, DVZ_SCENE_SHADER_FORMAT_WGSL,
+        &shader, &desc, DVZ_SCENE_WORK_PROVIDER_OPAQUE, DVZ_SCENE_SHADER_FORMAT_WGSL,
         &resolved, &report));
     AT(dvz_diagnostic_report_count(&report) == 1);
 
@@ -3291,7 +3449,7 @@ int test_frame_plan_emitter_wgsl_missing_source_preflight(
     ANN(message);
     AT(strstr(message, "scene runtime shader validation failed") != NULL);
     AT(strstr(message, "visual=point") != NULL);
-    AT(strstr(message, "pass=picking") != NULL);
+    AT(strstr(message, "provider=opaque") != NULL);
     AT(strstr(message, "format=wgsl") != NULL);
     AT(strstr(message, "stage=vertex") != NULL);
     AT(strstr(message, "key=_vs_missing_wgsl") != NULL);
@@ -3544,8 +3702,10 @@ int test_scene_frame_plan_emit(TstSuite* suite)
 
     TST_CASE(test_frame_plan_emit_drp2_static_render);
     TST_CASE(test_frame_plan_emit_drp2_static_render_glsl);
+    TST_CASE(test_frame_plan_emit_drp2_defaults_missing_mvp_to_identity);
     TST_CASE(test_frame_plan_emit_drp2_split_packets);
     TST_CASE(test_frame_plan_emitter_rejects_untyped_visual_metadata);
+    TST_CASE(test_frame_plan_emitter_failure_rolls_back_state);
     TST_CASE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TST_CASE(test_frame_plan_emit_drp2_rejects_small_caps);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE

@@ -53,6 +53,7 @@ typedef struct DvzVideoEncoder
     DvzDevice* device;
     DvzVideoEncoderConfig cfg;
     bool started;
+    bool output_failed;
     uint32_t frame_idx;
 
     VkImage image;

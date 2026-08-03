@@ -206,6 +206,8 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas);
 
 int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame);
 
+void dvz_canvas_swapchain_abort_acquired(DvzCanvas* canvas);
+
 int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value);
 
 bool dvz_canvas_depth_format_valid(VkFormat format);
@@ -227,7 +229,8 @@ void dvz_canvas_depth_destroy(
 
 void dvz_canvas_swapchain_mark_out_of_date(DvzCanvas* canvas);
 
-bool _dvz_canvas_max_frames_in_flight_parse(const char* value, uint32_t* requested_slot_count);
+uint32_t _dvz_canvas_frame_slot_count_request(
+    VkPresentModeKHR present_mode, uint32_t configured_slot_count);
 
 uint32_t _dvz_canvas_frame_slot_count_resolve(
     uint32_t requested_slot_count, uint32_t image_count);

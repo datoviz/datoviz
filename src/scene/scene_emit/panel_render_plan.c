@@ -13,6 +13,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <string.h>
 
 #include "_assertions.h"
@@ -175,12 +176,13 @@ static bool _scene_draw_contract_needs_depth(const DvzSceneDrawContract* contrac
 
 static bool _scene_panel_render_plan_append(
     DvzPanelRenderVisualPlan* dst, uint32_t* count, DvzVisual* visual, DvzPanelAttach* attach,
-    uint32_t visual_index)
+    uint32_t visual_index, uint32_t authored_order, const DvzSceneVisualPassCaps* caps)
 {
     ANN(dst);
     ANN(count);
     ANN(visual);
     ANN(attach);
+    ANN(caps);
     if (*count >= DVZ_SCENE_MAX_VISUALS)
         return false;
     dst[*count] = (DvzPanelRenderVisualPlan){
@@ -188,6 +190,9 @@ static bool _scene_panel_render_plan_append(
         .attach = attach,
         .visual_index = visual_index,
         .blend_group = DVZ_PANEL_RENDER_INVALID_INDEX,
+        .authored_order = authored_order,
+        .layer = caps->layer,
+        .caps = *caps,
     };
     (*count)++;
     return true;
@@ -207,9 +212,26 @@ static bool _scene_panel_render_plan_append_transparent_pass(
 
 
 
+static uint32_t _scene_panel_render_plan_layer_phase(DvzSceneVisualLayer layer)
+{
+    switch (layer)
+    {
+    case DVZ_SCENE_VISUAL_LAYER_TRANSPARENT:
+        return 0;
+    case DVZ_SCENE_VISUAL_LAYER_VOLUME:
+        return 1;
+    case DVZ_SCENE_VISUAL_LAYER_OVERLAY:
+        return 2;
+    default:
+        return 3;
+    }
+}
+
+
+
 static bool _scene_panel_render_plan_classify_transparent(
     DvzPanelRenderPlan* out, DvzVisual* visual, DvzPanelAttach* attach, uint32_t visual_index,
-    const DvzSceneVisualPassCaps* caps)
+    uint32_t authored_order, const DvzSceneVisualPassCaps* caps)
 {
     ANN(out);
     ANN(visual);
@@ -243,10 +265,20 @@ static bool _scene_panel_render_plan_classify_transparent(
     if (caps->draws_in_transparent_blend_pass)
     {
         bool start_blended_pass = out->blended_group_count == 0;
+        if (!start_blended_pass && out->transparent_pass_count > 0)
+            start_blended_pass = out->transparent_passes[out->transparent_pass_count - 1].kind !=
+                                 DVZ_PANEL_RENDER_TRANSPARENT_BLENDED;
         if (!start_blended_pass)
         {
             uint32_t prev = out->blended_group_count - 1;
             start_blended_pass = out->blended_writes_depth[prev] != draw_writes_depth;
+            if (!start_blended_pass && out->blended_visual_count > 0)
+            {
+                DvzSceneVisualLayer previous_layer =
+                    out->blended_visuals[out->blended_visual_count - 1].layer;
+                start_blended_pass = _scene_panel_render_plan_layer_phase(previous_layer) !=
+                                     _scene_panel_render_plan_layer_phase(caps->layer);
+            }
         }
         if (start_blended_pass)
         {
@@ -258,7 +290,8 @@ static bool _scene_panel_render_plan_classify_transparent(
             out->blended_group_count++;
         }
         if (!_scene_panel_render_plan_append(
-                out->blended_visuals, &out->blended_visual_count, visual, attach, visual_index))
+                out->blended_visuals, &out->blended_visual_count, visual, attach, visual_index,
+                authored_order, caps))
             return false;
         uint32_t group = out->blended_group_count - 1;
         DvzPanelRenderVisualPlan* planned = &out->blended_visuals[out->blended_visual_count - 1];
@@ -272,27 +305,100 @@ static bool _scene_panel_render_plan_classify_transparent(
 
     if (caps->draws_in_depth_peel_pass)
     {
-        if (out->depth_peel_visual_count == 0 &&
-            !_scene_panel_render_plan_append_transparent_pass(
-                out, DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL, 0))
-            return false;
+        bool start_depth_peel_pass = out->depth_peel_group_count == 0;
+        if (!start_depth_peel_pass && out->transparent_pass_count > 0)
+            start_depth_peel_pass =
+                out->transparent_passes[out->transparent_pass_count - 1].kind !=
+                DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL;
+        if (start_depth_peel_pass)
+        {
+            if (out->depth_peel_group_count >= DVZ_SCENE_MAX_RENDER_VISUALS ||
+                !_scene_panel_render_plan_append_transparent_pass(
+                    out, DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL,
+                    out->depth_peel_group_count))
+                return false;
+            out->depth_peel_group_count++;
+        }
         if (!_scene_panel_render_plan_append(
                 out->depth_peel_visuals, &out->depth_peel_visual_count, visual, attach,
-                visual_index))
+                visual_index, authored_order, caps))
             return false;
+        out->depth_peel_visuals[out->depth_peel_visual_count - 1].blend_group =
+            out->depth_peel_group_count - 1;
         out->transparent_needs_depth =
             out->transparent_needs_depth || caps->needs_depth_attachment;
         return true;
     }
 
-    if (out->wboit_visual_count == 0 && !_scene_panel_render_plan_append_transparent_pass(
-                                            out, DVZ_PANEL_RENDER_TRANSPARENT_WBOIT, 0))
-        return false;
+    bool start_wboit_pass = out->wboit_group_count == 0;
+    if (!start_wboit_pass && out->transparent_pass_count > 0)
+        start_wboit_pass = out->transparent_passes[out->transparent_pass_count - 1].kind !=
+                           DVZ_PANEL_RENDER_TRANSPARENT_WBOIT;
+    if (start_wboit_pass)
+    {
+        if (out->wboit_group_count >= DVZ_SCENE_MAX_RENDER_VISUALS ||
+            !_scene_panel_render_plan_append_transparent_pass(
+                out, DVZ_PANEL_RENDER_TRANSPARENT_WBOIT, out->wboit_group_count))
+            return false;
+        out->wboit_group_count++;
+    }
     if (!_scene_panel_render_plan_append(
-            out->wboit_visuals, &out->wboit_visual_count, visual, attach, visual_index))
+            out->wboit_visuals, &out->wboit_visual_count, visual, attach, visual_index,
+            authored_order, caps))
         return false;
+    out->wboit_visuals[out->wboit_visual_count - 1].blend_group = out->wboit_group_count - 1;
     out->transparent_needs_depth = out->transparent_needs_depth || caps->needs_depth_attachment;
     return true;
+}
+
+
+
+static uint32_t _scene_panel_render_plan_phase_bucket(
+    const DvzPanelRenderPlan* plan, const DvzPanelRenderTransparentPassPlan* pass)
+{
+    ANN(plan);
+    ANN(pass);
+    if (pass->kind != DVZ_PANEL_RENDER_TRANSPARENT_BLENDED)
+        return 0;
+    uint32_t layers = 0;
+    for (uint32_t i = 0; i < plan->blended_visual_count; i++)
+    {
+        const DvzPanelRenderVisualPlan* visual = &plan->blended_visuals[i];
+        if (visual->blend_group == pass->index && visual->layer < 32)
+            layers |= 1u << (uint32_t)visual->layer;
+    }
+    const uint32_t transparent = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_TRANSPARENT;
+    const uint32_t volume = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_VOLUME;
+    const uint32_t overlay = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_OVERLAY;
+    if (layers == transparent)
+        return 0;
+    if (layers == volume)
+        return 1;
+    if (layers == overlay)
+        return 2;
+    return 3;
+}
+
+
+
+static void _scene_panel_render_plan_order_phases(DvzPanelRenderPlan* plan)
+{
+    ANN(plan);
+    DvzPanelRenderTransparentPassPlan ordered[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
+    uint32_t count = 0;
+    for (uint32_t bucket = 0; bucket < 4; bucket++)
+    {
+        for (uint32_t i = 0; i < plan->transparent_pass_count; i++)
+        {
+            if (_scene_panel_render_plan_phase_bucket(plan, &plan->transparent_passes[i]) ==
+                bucket)
+                ordered[count++] = plan->transparent_passes[i];
+        }
+    }
+    ASSERT(count == plan->transparent_pass_count);
+    dvz_memcpy(
+        plan->transparent_passes, sizeof(plan->transparent_passes), ordered,
+        sizeof(plan->transparent_passes));
 }
 
 
@@ -306,17 +412,39 @@ static bool _scene_panel_render_plan_classify_transparent(
  * @param out output panel render plan
  * @return whether the plan was built
  */
-bool _scene_panel_render_plan_build(
+static bool _scene_panel_render_plan_build_mutable(
     DvzFigure* figure, uint32_t panel_index, const char* figure_id, DvzPanelRenderPlan* out)
 {
     ANN(figure);
     ANN(figure_id);
     ANN(out);
     ASSERT(panel_index < figure->panel_count);
-    memset(out, 0, sizeof(*out));
-
     DvzPanel* panel = &figure->panels[panel_index];
     dvz_snprintf(out->panel_id, sizeof(out->panel_id), "%s_p%u", figure_id, panel_index);
+    float panel_x = 0.0f;
+    float panel_y = 0.0f;
+    float panel_width = 0.0f;
+    float panel_height = 0.0f;
+    _scene_panel_pixel_rect(panel, &panel_x, &panel_y, &panel_width, &panel_height);
+    const float scale_x =
+        figure->device_scale_x > 0.0f ? figure->device_scale_x * figure->render_scale : 1.0f;
+    const float scale_y =
+        figure->device_scale_y > 0.0f ? figure->device_scale_y * figure->render_scale : 1.0f;
+    const float x0 = panel_x * scale_x;
+    const float y0 = panel_y * scale_y;
+    const float x1 = (panel_x + panel_width) * scale_x;
+    const float y1 = (panel_y + panel_height) * scale_y;
+    out->origin_x = (int32_t)floorf(x0);
+    out->origin_y = (int32_t)floorf(y0);
+    const int32_t outer_x = (int32_t)ceilf(x1);
+    const int32_t outer_y = (int32_t)ceilf(y1);
+    out->width = outer_x > out->origin_x ? (uint32_t)(outer_x - out->origin_x) : 0;
+    out->height = outer_y > out->origin_y ? (uint32_t)(outer_y - out->origin_y) : 0;
+    out->render_scale = figure->render_scale > 0.0f ? figure->render_scale : 1.0f;
+    out->local_to_target[0] = 1.0f;
+    out->local_to_target[1] = 1.0f;
+    out->local_to_target[2] = (float)out->origin_x;
+    out->local_to_target[3] = (float)out->origin_y;
     out->drawable_count = _scene_panel_drawable_visual_count(figure, panel);
     _scene_panel_visual_order(panel, out->order);
 
@@ -324,11 +452,11 @@ bool _scene_panel_render_plan_build(
     out->scene_occlusion_enabled = _scene_panel_has_visible_scene_occlusion_target(panel);
     out->volume_occlusion_enabled = _scene_panel_has_visible_volume_occlusion_target(panel);
     out->gbuffer_enabled = _scene_technique_gbuffer_enabled(figure->scene, panel);
-    out->ssao_state = _scene_technique_ssao_state(figure->scene, panel);
+    out->ao_state = _scene_technique_ao_state(figure->scene, panel);
     out->msaa_state = _scene_technique_msaa_state(figure->scene, panel);
     out->edl_state = _scene_technique_edl_state(figure->scene, panel);
-    out->ssao_enabled = out->ssao_state != NULL && out->ssao_state->enabled;
-    out->gbuffer_required = out->gbuffer_enabled || out->ssao_enabled;
+    out->ao_enabled = out->ao_state != NULL && out->ao_state->enabled;
+    out->gbuffer_required = out->gbuffer_enabled || out->ao_enabled;
     out->edl_enabled = out->edl_state != NULL && out->edl_state->enabled;
 
     if (out->volume_occlusion_enabled)
@@ -357,19 +485,25 @@ bool _scene_panel_render_plan_build(
         if (!_figure_visual_index(figure, visual, &vidx))
             continue;
 
-        if (out->scene_occlusion_enabled && visual->scene_occluder)
-        {
-            if (!_scene_panel_render_plan_append(
-                    out->scene_occlusion, &out->scene_occlusion_count, visual, attach, vidx))
-                return false;
-        }
-
         DvzSceneVisualPassCaps caps = {0};
         if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
             continue;
+        if (!_scene_panel_render_plan_append(
+                out->visuals, &out->visual_count, visual, attach, vidx, k, &caps))
+            return false;
+
+        if (out->scene_occlusion_enabled && visual->scene_occluder)
+        {
+            if (!_scene_panel_render_plan_append(
+                    out->scene_occlusion, &out->scene_occlusion_count, visual, attach, vidx, k,
+                    &caps))
+                return false;
+        }
+
         if (!caps.draws_in_opaque_pass)
         {
-            if (!_scene_panel_render_plan_classify_transparent(out, visual, attach, vidx, &caps))
+            if (!_scene_panel_render_plan_classify_transparent(
+                    out, visual, attach, vidx, k, &caps))
                 return false;
             continue;
         }
@@ -378,17 +512,50 @@ bool _scene_panel_render_plan_build(
             _scene_technique_gbuffer_plan_add_visual(&out->gbuffer, visual, attach))
         {
             if (!_scene_panel_render_plan_append(
-                    out->gbuffer_visuals, &out->gbuffer_visual_count, visual, attach, vidx))
+                    out->gbuffer_visuals, &out->gbuffer_visual_count, visual, attach, vidx, k,
+                    &caps))
                 return false;
         }
 
         if (!_scene_panel_render_plan_append(
-                out->opaque_visuals, &out->opaque_visual_count, visual, attach, vidx))
+                out->opaque_visuals, &out->opaque_visual_count, visual, attach, vidx, k, &caps))
             return false;
         bool edl_depth_visual = out->edl_enabled && caps.eligible_for_depth_postprocess;
         out->opaque_needs_depth = out->opaque_needs_depth || caps.writes_depth || edl_depth_visual;
         out->edl_has_depth_producer = out->edl_has_depth_producer || edl_depth_visual;
     }
 
+    _scene_panel_render_plan_order_phases(out);
+
+    return true;
+}
+
+
+
+/**
+ * Build and atomically publish one immutable panel composition snapshot.
+ *
+ * @param figure the parent figure
+ * @param panel_index the panel index within the figure
+ * @param figure_id the stable figure identifier
+ * @param caps the active capability snapshot
+ * @param report optional diagnostic report
+ * @param out output panel render plan, unchanged on failure
+ * @return whether planning and composition succeeded
+ */
+bool _scene_panel_render_plan_build(
+    DvzFigure* figure, uint32_t panel_index, const char* figure_id,
+    const DvzCapabilitySnapshot* caps, DvzDiagnosticReport* report, DvzPanelRenderPlan* out)
+{
+    ANN(figure);
+    ANN(figure_id);
+    ANN(out);
+
+    DvzPanelRenderPlan draft = {0};
+    if (!_scene_panel_render_plan_build_mutable(figure, panel_index, figure_id, &draft))
+        return false;
+    if (!_scene_panel_composition_resolve(&draft, caps, &draft.composition, report))
+        return false;
+    *out = draft;
     return true;
 }

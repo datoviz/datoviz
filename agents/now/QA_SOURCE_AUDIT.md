@@ -1,6 +1,6 @@
 # Incremental C QA Handoff
 
-Status: active incremental source audit completed through `input`; the remaining campaign and two-lane render coordination were approved on 2026-08-02. Updated: 2026-08-02.
+Status: completed exploratory source audit integrated with the RC3 render-product and pacing head. Updated: 2026-08-03.
 
 This handoff records the current static-analysis, sanitizer, lifetime, bounds, and corruption-prevention pass. It is development evidence for the RC3 release-quality lane, not final exact-artifact or platform-matrix proof.
 
@@ -225,12 +225,46 @@ After the last module, rerun the frozen locally available matrix from the exact 
 | Runtime shader compiler | Confirmed `shader` is active through DRP2 pipeline creation and downstream vklite/scene runtime use. Hardened runtime-library path construction and result cleanup; corrected first-use concurrency coverage; added null, empty, malformed, default-entry-point, provider-missing, provider-incompatible, diagnostic ownership, and double-destroy cases. | `badf143a4` |
 | Sanitizer configuration | Made validation-layer exclusion durable in Linux ASan, MSan, and TSan recipe configuration. Explicitly reset ASan and TSan caches to `ON`, rebuilt through the recipes, and verified both caches resolved to `DVZ_USE_VALIDATION:BOOL=OFF`. | `a5a3073ec` |
 | Input | Confirmed the synchronous router is active through window backends, canvas, controllers, scene, and WASM. Hardened subscription growth against overflow and allocation failure, preserved live arrays after failed growth, prevented removed callbacks from running later in the same dispatch, avoided callback-ID reuse after wrap, handled constructor and dispatch allocation failure, and rejected corrupting duplicate presses and backwards click timestamps. Added focused callback lifetime, allocation-failure, and gesture regressions. | `e710ea15f` |
+| Math statistics | Confirmed the active math source set and corrected handoff drift: the public umbrella is `include/datoviz/dvzmath.h`, there is no standalone `test_parallel.c`, and parallel coverage lives in `test_stats.c`. Removed four duplicate exported statistics implementations from `parallel.c`, preserving the documented zero-count `dvz_range()` no-op in the sole `stats.c` implementation, and added focused range, extrema, clipping, and equal-bound normalization coverage. | `c157b2cfb` |
+| Math boxes | Added the missing documented non-null output assertion to `dvz_box_inverse()` and regression coverage for nonpositive extent passthrough, empty and strategy-specific merges, ordinary one-dimensional and polygon normalization, and ordinary inverse mappings. Degenerate source/target axes, non-finite inputs, overlapping buffers, and initialization of untouched `vec3` components remain explicit contract questions; this checkpoint does not change them. | `c0005f0f6` |
+| Math easing | Corrected `DVZ_EASING_IN_SINE`, which had duplicated out-sine, and added midpoint coverage that distinguishes both curves. | `4b7250561` |
+| DRP2 and vklite bounds | Corrected render-pass resolve JSON to the active flat schema, made target zero disable resolve, and made graphics/compute specialization-constant bounds overflow-safe. | `a9d3e29b0` |
+| Stream and video ownership | Rolled back partially created sinks, preserved caller ownership of imported semaphore FDs, propagated sink-stop failures, and latched encoder write/mux/flush failures through submit and stop. | `1ff4bc01f`, `26ac18493` |
+| Window registry lifetime | Replaced live windows' realloc-sensitive backend-slot pointers with stable indices and covered registry growth after window creation. | `5e9b5d8b6` |
+| Canvas acquired-frame recovery | Added safe abandonment and swapchain recreation after post-acquire preparation failures, including stream start/update failure recovery. | `37cb1e216` |
+| App draw recovery | Made attachment, emission, and artifact failures observable to `dvz_view_render_once()` while preserving retry demand and avoiding successful-frame accounting. | `9a3b0af79` |
 
 Focused normal tests, relevant sanitizer runs, per-file static analysis, `just build`, `just spec-check`, and `git diff --check` were used throughout the checkpoints where applicable. There is no retained machine-readable campaign report, so final RC3 evidence must rerun the frozen matrix from exact release artifacts.
 
-## Latest Confirmed State
+## Final Integrated Evidence
 
-At `e710ea15f` on the Linux NVIDIA RTX 5090 host:
+At exact integrated head `545c99379` on Linux with NVIDIA GeForce RTX 5090, Vulkan 1.4.328, clang-tidy 18.1.3, cppcheck 2.13.0, CMake 3.28.3, and Ninja 1.11.1:
+
+- `just build` and validation-enabled `just test` passed 1,128/1,128 tests with no failures or skips; the matrix includes 727 scene, 127 DRP2, 47 vklite, 42 canvas, 41 app, 30 vk, 24 window, seven stream, and five video cases.
+- `just test-drp2-contract` passed 95/95, `just drp2-fixtures` passed 125/125, `just test-runtime-vklite` passed 100/100, `just test-slow` passed 34/34, and `just spec-check` passed all fixture, scheduler, query, architecture, shader ABI, and visual-boundary guards.
+- `just present-check --frames 120` passed blank, scene DRP2 full/cached, 10k scene, scatter-1, scatter, and deterministic pan/zoom with zero reported stutters and zero steady swapchain recreations.
+- `just webgpu-check` passed build, data, fixture, preflight, scenario, and runner gates with the approved choropleth data; live browser cases were skipped because this headless host loses its WebGPU instance.
+- `just ctypes-check` and `just ctypes-smoke` passed generation freshness, 16 generator tests, policy, facade, ABI validation for 201 records, and raw smoke. Example manifests, generated docs, docs build/status/snippets, How-To snippets, and the three-step Vulkan course check/smoke passed against the final integrated head.
+- Full-tree `just analyze` completed with 1,709 existing advisory diagnostics, dominated by padding and insecure-API portability checks; the apparent DRP2 null-copy report was inspected and is path-infeasible because the payload helper rejects null or zero payloads. Full-tree cppcheck completed with its known incomplete-configuration parser error and false constant-condition results; no new actionable touched-path defect was identified.
+- The ASan/UBSan/LSan build was verified with `DVZ_USE_VALIDATION:BOOL=OFF`. The complete Window CPU module passed 24/24, and focused registry-growth, DRP2 resolve, Stream stop, and Video output-error tests passed without a sanitizer report. Vulkan-backed Canvas and specialization-constant children stalled during provider/driver teardown without a report and are inconclusive; their validation-enabled normal counterparts pass in the exact-head native matrix.
+- `git diff --check` passed, the render worktree was clean before evidence-document updates, and no protected `data` or generated binary payload was added by the QA commits.
+
+## Earlier Confirmed State
+
+At `4b7250561` on the Linux NVIDIA RTX 5090 host:
+
+- Normal `just build` and `just test math` passed; math selected 15/15 tests.
+- The focused math lane passed 15/15 under ASan/UBSan/LSan with `DVZ_USE_VALIDATION:BOOL=OFF`; the runtime emitted the host's existing sanitizer interceptor warnings without a sanitizer finding.
+- Focused `clang-tidy` on `stats.c` and `parallel.c` emitted no user-code diagnostic. Focused `cppcheck` emitted only its configuration-count notice.
+- `just spec-check` passed through the main worktree's existing `.venv`, including 125/125 DRP2 fixtures, WebGPU fixtures/preflight, scheduler tests, and scene source guards. The first invocation with system Python was an environment failure because `/usr/bin/python3` lacks `pytest`, not a repository failure.
+- `git diff --check` passed before the implementation checkpoint.
+- The focused normal box selection passed 7/7 including its direct scene query consumer, while the exact ASan/UBSan/LSan `math/box` group passed 6/6 with validation disabled and no sanitizer finding. The broad `just atest box` selector was stopped after its six box cases passed because it also selected and stalled in an unrelated GPU scene-query case.
+- Focused `clang-tidy` on `box.c` and `test_box.c` emitted no user-code diagnostic, and focused `cppcheck` emitted no diagnostic.
+- The sine-easing case passed normally and under ASan/UBSan/LSan with validation disabled; focused `clang-tidy` and `cppcheck` emitted no user-code diagnostic. The full normal math lane remained 15/15, `just build`, `just spec-check`, and `git diff --check` passed.
+
+The remaining math inventory found no active production caller for the entropy-seeded PRNG and confirmed that OpenMP is hard-disabled by the current build. Reproducible PRNG construction and OpenMP process/thread semantics require explicit API decisions before changes. Active scene track construction and evaluation accept non-finite inputs, do not validate all public enums or unsupported tangent fields, and step interpolation misses the final inclusive non-repeating endpoint; these are recorded for the scene interaction contract rather than folded into the math checkpoint.
+
+Previous input checkpoint evidence at `e710ea15f`:
 
 - Normal `just build` passed, and `just test input` passed 19/19 selected input and related scene/GUI tests with validation disabled.
 - The focused input binary passed 10/10 tests under ASan/UBSan/LSan without a report.
@@ -243,17 +277,13 @@ At `e710ea15f` on the Linux NVIDIA RTX 5090 host:
 ## Known Limitations
 
 - TSan shader smoke and downstream ASan DRP2 shader execution stall inside the dynamically loaded, non-instrumented shaderc provider. Bounded runs were terminated without a sanitizer or race report. These runs are inconclusive, not passes, and the first-use concurrency test must not be weakened to avoid the provider issue.
-- Vulkan validation has intentionally not been exercised in this campaign. It remains a separate RC3 gate after known validation-layer defects and leaks are dispositioned or suppressed with evidence.
-- No full-tree `just analyze`, complete `just test`, MSan, Valgrind, long-loop, installed-package, source-archive, wheel, hosted-platform, or physical-platform campaign has been claimed here.
+- Validation-enabled native Vulkan, WSI, runtime, slow/recovery, and bounded presentation lanes passed separately from sanitizers. Vulkan-backed sanitizer children remain inconclusive because they stall during non-instrumented provider/driver teardown without a sanitizer report.
+- Full-tree clang-tidy and cppcheck were run, but their advisory/configuration noise is recorded rather than claimed as zero-diagnostic static analysis. MSan, Valgrind, exact installed-package, source-archive, wheel, hosted-platform, and new physical-platform proof remain release gates outside this exploratory source campaign.
 - Input TSan was not run because the public router contract is synchronous and the production caller audit found no supported Datoviz-owned concurrent access path. This is a deliberate non-applicable disposition, not evidence for concurrent router use.
-- `scene` and `window` received a teardown fix only; they still need full module audits later. The Vulkan-facing foundation (`window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, `scene`, and `app`) should be approached only after the smaller CPU-oriented modules because ownership and provider noise require more careful matrices.
+- Physical Windows, macOS, AMD, and Intel coverage remains governed by the RC3 platform matrix; this campaign's new exact-head hardware evidence is Linux/NVIDIA only.
 
-## Approved Restart Sequence
+## Completion State
 
-1. The maintainer approved the remaining campaign contract, render-product proposal, and two-lane orchestration handoff without edits on 2026-08-02.
-2. Begin with the `math` numeric-helper checkpoint, apply the module-entry drift check, and proceed through only the pre-landing slices in Temporary Two-Lane Coordination while the separate render lane runs.
-3. After the render branch lands, consume its cumulative landing manifest, rerun only the mechanically invalidated completed slices, and execute every deferred module/slice in dependency order. Do not infer that unchanged directories retain valid conclusions when shared contracts moved.
-4. Keep this document current after each checkpoint: condense completed queue text into evidence when detail is no longer useful, preserve limitations, and leave the next exact restart point unambiguous.
-5. At campaign completion, provide the maintainer a consolidated report of commits, findings, clean audited areas, tests and tools, limitations, remaining risks, integration options, and final worktree status.
+The approved exploratory campaign is complete and its fixes are integrated locally on `refactor/rc3-render-products`. Remaining work is release evidence rather than another source-audit restart: exact immutable source/wheel/provider artifacts, supported hosted Linux and Windows validation, missing physical-platform proof or approved exceptions, and publication actions under the repository approval rules.
 
 For final RC3 release evidence, convert this exploratory sequence into a frozen matrix with exact commit/artifact identity, commands, tool versions, configurations, pass/fail/skip totals, timeouts, suppressions, provider versions, GPU/driver identity, and explicit exclusions.

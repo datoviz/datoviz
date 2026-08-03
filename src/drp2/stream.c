@@ -2011,7 +2011,8 @@ bool dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
     command->u.begin_render_pass.color_attachments[attachment_index].resolve_texture_id =
         resolve_texture_id;
     command->u.begin_render_pass.color_attachments[attachment_index].resolve_mode =
-        resolve_mode == 0 ? VK_RESOLVE_MODE_AVERAGE_BIT : resolve_mode;
+        resolve_texture_id == 0 ? 0 :
+                                  (resolve_mode == 0 ? VK_RESOLVE_MODE_AVERAGE_BIT : resolve_mode);
     return true;
 }
 

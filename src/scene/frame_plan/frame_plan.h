@@ -24,25 +24,56 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY 8
-#define DVZ_FRAME_PLAN_INITIAL_VISUAL_CAPACITY 4
-#define DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY 16
-#define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY 16
-#define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES 8
-#define DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS 4
-#define DVZ_FRAME_PLAN_ASCII_COMPACT 0x01u
-#define DVZ_FRAME_PLAN_ASCII_VERBOSE 0x02u
-#define DVZ_FRAME_PLAN_ASCII_SHOW_UPLOADS 0x04u
-#define DVZ_FRAME_PLAN_ASCII_SHOW_READBACKS 0x08u
-#define DVZ_FRAME_PLAN_ASCII_ASCII_ONLY 0x10u
-#define DVZ_FRAME_PLAN_ASCII_MAX_WIDTH_120 0x20u
-#define DVZ_SCENE_LABELS_LOOKUP_CAPACITY 65u
+#define DVZ_FRAME_PLAN_INITIAL_NODE_CAPACITY             8
+#define DVZ_FRAME_PLAN_INITIAL_VISUAL_CAPACITY           4
+#define DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY   16
+#define DVZ_FRAME_PLAN_INITIAL_GRAPH_PASS_CAPACITY       16
+#define DVZ_FRAME_PLAN_INITIAL_PRODUCT_CAPACITY          16
+#define DVZ_FRAME_PLAN_INITIAL_PRODUCT_USE_CAPACITY      32
+#define DVZ_FRAME_PLAN_INITIAL_COMPOSITION_CAPACITY      4
+#define DVZ_FRAME_PLAN_MAX_GRAPH_ACCESSES                8
+#define DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS       4
+#define DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES             (DVZ_SCENE_MAX_RENDER_VISUALS + 16)
+#define DVZ_PANEL_COMPOSITION_MAX_PASSES                 (DVZ_SCENE_MAX_RENDER_VISUALS + 64)
+#define DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE 16
+#define DVZ_PANEL_COMPOSITION_MAX_SCRATCH_RESOURCES      16
+#define DVZ_PANEL_COMPOSITION_MAX_WORK_BINDINGS          8
+#define DVZ_FRAME_PLAN_ASCII_COMPACT                     0x01u
+#define DVZ_FRAME_PLAN_ASCII_VERBOSE                     0x02u
+#define DVZ_FRAME_PLAN_ASCII_SHOW_UPLOADS                0x04u
+#define DVZ_FRAME_PLAN_ASCII_SHOW_READBACKS              0x08u
+#define DVZ_FRAME_PLAN_ASCII_ASCII_ONLY                  0x10u
+#define DVZ_FRAME_PLAN_ASCII_MAX_WIDTH_120               0x20u
+#define DVZ_SCENE_LABELS_LOOKUP_CAPACITY                 65u
 
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE = 0,
+    DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER,
+    DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE,
+    DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION,
+    DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION,
+    DVZ_FRAME_PLAN_RENDER_PASS_GTAO,
+    DVZ_FRAME_PLAN_RENDER_PASS_GTAO_DENOISE,
+    DVZ_FRAME_PLAN_RENDER_PASS_GTAO_VISIBILITY_PRESENTATION,
+    DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE,
+    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION,
+    DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND,
+    DVZ_FRAME_PLAN_RENDER_PASS_WBOIT_RESOLVE,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_ITER,
+    DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE,
+    DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION,
+    DVZ_FRAME_PLAN_RENDER_PASS_PICKING,
+} DvzFramePlanRenderPassRole;
+
+
 
 typedef enum
 {
@@ -126,6 +157,527 @@ typedef enum
 
 typedef enum
 {
+    DVZ_RENDER_PRODUCT_NONE = 0,
+    DVZ_RENDER_PRODUCT_SCENE_COLOR,
+    DVZ_RENDER_PRODUCT_SURFACE_DEPTH,
+    DVZ_RENDER_PRODUCT_SURFACE_NORMAL,
+    DVZ_RENDER_PRODUCT_SURFACE_COVERAGE,
+    DVZ_RENDER_PRODUCT_OBJECT_ID,
+    DVZ_RENDER_PRODUCT_AMBIENT_VISIBILITY,
+    DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH,
+    DVZ_RENDER_PRODUCT_TRANSPARENT_ACCUMULATION,
+    DVZ_RENDER_PRODUCT_TRANSPARENT_TRANSMITTANCE,
+    DVZ_RENDER_PRODUCT_TRANSPARENT_PEEL_DEPTH,
+    DVZ_RENDER_PRODUCT_VOLUME_FIRST_HIT_DEPTH,
+    DVZ_RENDER_PRODUCT_PRESENTATION_COLOR,
+} DvzRenderProductKind;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_DOMAIN_NONE = 0,
+    DVZ_RENDER_PRODUCT_DOMAIN_PANEL,
+    DVZ_RENDER_PRODUCT_DOMAIN_VIEW,
+    DVZ_RENDER_PRODUCT_DOMAIN_SCENE,
+    DVZ_RENDER_PRODUCT_DOMAIN_QUERY,
+    DVZ_RENDER_PRODUCT_DOMAIN_PRESENTATION,
+} DvzRenderProductDomain;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_EXTENT_NONE = 0,
+    DVZ_RENDER_PRODUCT_EXTENT_ABSOLUTE,
+    DVZ_RENDER_PRODUCT_EXTENT_TARGET_RELATIVE,
+    DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE,
+    DVZ_RENDER_PRODUCT_EXTENT_SOURCE_RELATIVE,
+} DvzRenderProductExtentPolicy;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_ROUND_NONE = 0,
+    DVZ_RENDER_PRODUCT_ROUND_FLOOR,
+    DVZ_RENDER_PRODUCT_ROUND_CEIL,
+    DVZ_RENDER_PRODUCT_ROUND_NEAREST,
+    DVZ_RENDER_PRODUCT_ROUND_OUTWARD,
+} DvzRenderProductRoundingPolicy;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_FORMAT_NONE = 0,
+    DVZ_RENDER_PRODUCT_FORMAT_LINEAR_COLOR,
+    DVZ_RENDER_PRODUCT_FORMAT_DEPTH_FLOAT,
+    DVZ_RENDER_PRODUCT_FORMAT_NORMAL_FLOAT,
+    DVZ_RENDER_PRODUCT_FORMAT_COVERAGE,
+    DVZ_RENDER_PRODUCT_FORMAT_UINT_ID,
+    DVZ_RENDER_PRODUCT_FORMAT_SCALAR_FLOAT,
+    DVZ_RENDER_PRODUCT_FORMAT_VECTOR2_FLOAT,
+    DVZ_RENDER_PRODUCT_FORMAT_PRESENTATION_COLOR,
+} DvzRenderProductFormatClass;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_SAMPLES_NONE = 0,
+    DVZ_RENDER_PRODUCT_SAMPLES_SINGLE,
+    DVZ_RENDER_PRODUCT_SAMPLES_MULTISAMPLE,
+    DVZ_RENDER_PRODUCT_SAMPLES_RESOLVED,
+} DvzRenderProductSampleDomain;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_RESOLVE_NONE = 0,
+    DVZ_RENDER_PRODUCT_RESOLVE_LINEAR_COLOR,
+    DVZ_RENDER_PRODUCT_RESOLVE_NEAREST_VALID_DEPTH,
+    DVZ_RENDER_PRODUCT_RESOLVE_WINNING_NORMAL,
+    DVZ_RENDER_PRODUCT_RESOLVE_COVERAGE_FRACTION,
+    DVZ_RENDER_PRODUCT_RESOLVE_WINNING_ID,
+    DVZ_RENDER_PRODUCT_RESOLVE_VISIBILITY,
+} DvzRenderProductResolvePolicy;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_COORDINATES_NONE = 0,
+    DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL,
+    DVZ_RENDER_PRODUCT_COORDINATES_VIEW,
+    DVZ_RENDER_PRODUCT_COORDINATES_SCENE,
+    DVZ_RENDER_PRODUCT_COORDINATES_TARGET,
+    DVZ_RENDER_PRODUCT_COORDINATES_WORLD,
+    DVZ_RENDER_PRODUCT_COORDINATES_CLIP,
+    DVZ_RENDER_PRODUCT_COORDINATES_NDC,
+    DVZ_RENDER_PRODUCT_COORDINATES_FRAMEBUFFER_PIXEL,
+    DVZ_RENDER_PRODUCT_COORDINATES_NOT_APPLICABLE,
+} DvzRenderProductCoordinateSpace;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_ENCODING_NONE = 0,
+    DVZ_RENDER_PRODUCT_ENCODING_LINEAR_SCENE_COLOR,
+    DVZ_RENDER_PRODUCT_ENCODING_LINEAR_VIEW_DEPTH,
+    DVZ_RENDER_PRODUCT_ENCODING_VIEW_NORMAL,
+    DVZ_RENDER_PRODUCT_ENCODING_UNIT_VISIBILITY,
+    DVZ_RENDER_PRODUCT_ENCODING_INTEGER_ID,
+    DVZ_RENDER_PRODUCT_ENCODING_COVERAGE,
+    DVZ_RENDER_PRODUCT_ENCODING_PREMULTIPLIED_ACCUMULATION,
+    DVZ_RENDER_PRODUCT_ENCODING_UNIT_TRANSMITTANCE,
+    DVZ_RENDER_PRODUCT_ENCODING_PRESENTATION_TRANSFER,
+} DvzRenderProductEncoding;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_ALPHA_NONE = 0,
+    DVZ_RENDER_PRODUCT_ALPHA_OPAQUE,
+    DVZ_RENDER_PRODUCT_ALPHA_STRAIGHT,
+    DVZ_RENDER_PRODUCT_ALPHA_PREMULTIPLIED,
+} DvzRenderProductAlpha;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_COVERAGE_NONE = 0,
+    DVZ_RENDER_PRODUCT_COVERAGE_BINARY,
+    DVZ_RENDER_PRODUCT_COVERAGE_SAMPLE_FRACTION,
+    DVZ_RENDER_PRODUCT_COVERAGE_WINNING_SAMPLE,
+} DvzRenderProductCoverage;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_VALIDITY_NONE = 0,
+    DVZ_RENDER_PRODUCT_VALIDITY_FULL_EXTENT,
+    DVZ_RENDER_PRODUCT_VALIDITY_EXPLICIT_COVERAGE,
+    DVZ_RENDER_PRODUCT_VALIDITY_BACKGROUND_VALUE,
+    DVZ_RENDER_PRODUCT_VALIDITY_INTEGER_SENTINEL,
+} DvzRenderProductValidity;
+
+
+
+typedef enum
+{
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_NONE = 0,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_ANY_DEFINED,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_FULL_EXTENT,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_EXPLICIT_COVERAGE,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_BACKGROUND_VALUE,
+    DVZ_RENDER_PRODUCT_VALIDITY_REQUIREMENT_INTEGER_SENTINEL,
+} DvzRenderProductValidityRequirement;
+
+
+
+typedef struct DvzRenderProductId
+{
+    uint32_t value;
+} DvzRenderProductId;
+
+
+
+typedef struct DvzFramePlanPassId
+{
+    uint32_t value;
+} DvzFramePlanPassId;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_TECHNIQUE_NONE = 0,
+    DVZ_SCENE_TECHNIQUE_SCENE_OCCLUSION,
+    DVZ_SCENE_TECHNIQUE_VOLUME_OCCLUSION,
+    DVZ_SCENE_TECHNIQUE_SURFACE_CAPTURE,
+    DVZ_SCENE_TECHNIQUE_SURFACE_RESOLVE,
+    DVZ_SCENE_TECHNIQUE_AMBIENT_VISIBILITY,
+    DVZ_SCENE_TECHNIQUE_OPAQUE_SHADING,
+    DVZ_SCENE_TECHNIQUE_GTAO_VISIBILITY_PRESENTATION,
+    DVZ_SCENE_TECHNIQUE_EDL,
+    DVZ_SCENE_TECHNIQUE_TRANSPARENT_BLEND,
+    DVZ_SCENE_TECHNIQUE_WBOIT,
+    DVZ_SCENE_TECHNIQUE_DEPTH_PEEL,
+    DVZ_SCENE_TECHNIQUE_VOLUME_SHADING,
+    DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE,
+    DVZ_SCENE_TECHNIQUE_PRESENTATION,
+} DvzSceneTechniqueId;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_PHASE_NONE = 0,
+    DVZ_SCENE_PHASE_SURFACE_CAPTURE,
+    DVZ_SCENE_PHASE_SURFACE_ANALYSIS,
+    DVZ_SCENE_PHASE_OPAQUE_SHADING,
+    DVZ_SCENE_PHASE_SURFACE_POSTPROCESS,
+    DVZ_SCENE_PHASE_TRANSPARENT_SHADING,
+    DVZ_SCENE_PHASE_VOLUME_SHADING,
+    DVZ_SCENE_PHASE_SCENE_POSTPROCESS,
+    DVZ_SCENE_PHASE_OVERLAY,
+    DVZ_SCENE_PHASE_PRESENTATION,
+    DVZ_SCENE_PHASE_QUERY,
+} DvzSceneTechniquePhase;
+
+
+
+typedef enum
+{
+    DVZ_SCENE_TECHNIQUE_FALLBACK_NONE = 0,
+    DVZ_SCENE_TECHNIQUE_FALLBACK_DISABLE_OPTIONAL,
+    DVZ_SCENE_TECHNIQUE_FALLBACK_REDUCE_SAMPLES,
+} DvzSceneTechniqueFallback;
+
+
+
+typedef DvzFramePlanPassId DvzSceneCompositionPassId;
+
+typedef struct DvzSceneTechniqueInstanceId
+{
+    uint32_t value;
+} DvzSceneTechniqueInstanceId;
+
+typedef struct DvzSceneScratchResourceId
+{
+    uint32_t value;
+} DvzSceneScratchResourceId;
+
+typedef enum
+{
+    DVZ_SCENE_WORK_NONE = 0,
+    DVZ_SCENE_WORK_VISUAL_DRAWS,
+    DVZ_SCENE_WORK_FULLSCREEN,
+    DVZ_SCENE_WORK_COMPUTE,
+} DvzSceneWorkClass;
+
+/* Stable provider identities deliberately replace runtime pipeline/shader names. */
+typedef enum
+{
+    DVZ_SCENE_WORK_PROVIDER_NONE = 0,
+    DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION,
+    DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION,
+    DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE,
+    DVZ_SCENE_WORK_PROVIDER_SURFACE_RESOLVE,
+    DVZ_SCENE_WORK_PROVIDER_GTAO,
+    DVZ_SCENE_WORK_PROVIDER_GTAO_DENOISE,
+    DVZ_SCENE_WORK_PROVIDER_OPAQUE,
+    DVZ_SCENE_WORK_PROVIDER_GTAO_VISIBILITY_PRESENTATION,
+    DVZ_SCENE_WORK_PROVIDER_EDL,
+    DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND,
+    DVZ_SCENE_WORK_PROVIDER_WBOIT_ACCUMULATION,
+    DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE,
+    DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT,
+    DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION,
+    DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_COMPOSITE,
+    DVZ_SCENE_WORK_PROVIDER_PRESENTATION,
+} DvzSceneWorkProviderKey;
+
+typedef enum
+{
+    DVZ_SCENE_RESOURCE_REF_NONE = 0,
+    DVZ_SCENE_RESOURCE_REF_PRODUCT,
+    DVZ_SCENE_RESOURCE_REF_SCRATCH,
+    DVZ_SCENE_RESOURCE_REF_EXTERNAL,
+} DvzSceneResourceRefKind;
+
+typedef enum
+{
+    DVZ_SCENE_SCRATCH_NONE = 0,
+    DVZ_SCENE_SCRATCH_SCENE_OCCLUSION_DEVICE_DEPTH,
+    DVZ_SCENE_SCRATCH_VOLUME_OCCLUSION_DEVICE_DEPTH,
+    DVZ_SCENE_SCRATCH_Z_ONLY_DEPTH,
+    DVZ_SCENE_SCRATCH_SURFACE_NORMAL_LEGACY,
+    DVZ_SCENE_SCRATCH_SURFACE_DEPTH,
+    DVZ_SCENE_SCRATCH_FORWARD_DEPTH,
+    DVZ_SCENE_SCRATCH_PEEL_FORWARD_DEPTH,
+    DVZ_SCENE_SCRATCH_GTAO_RAW,
+    DVZ_SCENE_SCRATCH_GTAO_DENOISE,
+    DVZ_SCENE_SCRATCH_WBOIT_WEIGHT,
+    DVZ_SCENE_SCRATCH_PEEL_BACK_ACCUM,
+    DVZ_SCENE_SCRATCH_PEEL_DEPTH_PING,
+    DVZ_SCENE_SCRATCH_PEEL_DEPTH_PONG,
+    DVZ_SCENE_SCRATCH_EDL_COLOR,
+    DVZ_SCENE_SCRATCH_EDL_DEPTH,
+} DvzSceneScratchKind;
+
+typedef enum
+{
+    DVZ_SCENE_WORK_BINDING_NONE = 0,
+    DVZ_SCENE_WORK_BINDING_ATTACHMENT,
+    DVZ_SCENE_WORK_BINDING_SAMPLED,
+    DVZ_SCENE_WORK_BINDING_STORAGE,
+} DvzSceneWorkBindingUsage;
+
+typedef enum
+{
+    DVZ_SCENE_WORK_ACCESS_NONE = 0,
+    DVZ_SCENE_WORK_ACCESS_READ,
+    DVZ_SCENE_WORK_ACCESS_WRITE,
+    DVZ_SCENE_WORK_ACCESS_READ_WRITE,
+} DvzSceneWorkAccess;
+
+typedef enum
+{
+    DVZ_SCENE_AUXILIARY_NONE = 0,
+    DVZ_SCENE_AUXILIARY_EDL_PARAMS,
+    DVZ_SCENE_AUXILIARY_GTAO_PARAMS,
+} DvzSceneAuxiliaryKind;
+
+typedef struct DvzSceneAuxiliaryBinding
+{
+    uint32_t byte_offset;
+    uint32_t byte_size;
+    DvzSceneAuxiliaryKind kind;
+    uint32_t upload_node_index;
+    uint32_t set;
+    uint32_t binding;
+} DvzSceneAuxiliaryBinding;
+
+typedef enum
+{
+    DVZ_SCENE_ATTACHMENT_LOAD_NONE = 0,
+    DVZ_SCENE_ATTACHMENT_LOAD_CLEAR,
+    DVZ_SCENE_ATTACHMENT_LOAD_LOAD,
+    DVZ_SCENE_ATTACHMENT_LOAD_DONT_CARE,
+} DvzSceneAttachmentLoad;
+
+typedef enum
+{
+    DVZ_SCENE_ATTACHMENT_STORE_NONE = 0,
+    DVZ_SCENE_ATTACHMENT_STORE_STORE,
+    DVZ_SCENE_ATTACHMENT_STORE_DONT_CARE,
+} DvzSceneAttachmentStore;
+
+typedef enum
+{
+    DVZ_SCENE_CLEAR_VALUE_NONE = 0,
+    DVZ_SCENE_CLEAR_VALUE_LITERAL,
+    DVZ_SCENE_CLEAR_VALUE_FRAME,
+} DvzSceneClearValueKind;
+
+typedef enum
+{
+    DVZ_SCENE_SCRATCH_LIFETIME_NONE = 0,
+    DVZ_SCENE_SCRATCH_LIFETIME_PASS,
+    DVZ_SCENE_SCRATCH_LIFETIME_TECHNIQUE,
+    DVZ_SCENE_SCRATCH_LIFETIME_FRAME,
+} DvzSceneScratchLifetime;
+
+typedef enum
+{
+    DVZ_SCENE_SCRATCH_SCOPE_NONE = 0,
+    DVZ_SCENE_SCRATCH_SCOPE_PANEL,
+    DVZ_SCENE_SCRATCH_SCOPE_TECHNIQUE,
+    DVZ_SCENE_SCRATCH_SCOPE_PASS,
+} DvzSceneScratchScope;
+
+typedef struct DvzSceneScratchResource
+{
+    DvzSceneScratchResourceId id;
+    DvzSceneTechniqueInstanceId technique_instance_id;
+    DvzSceneScratchScope scope;
+    DvzSceneScratchKind kind;
+    uint32_t format;
+    DvzRenderProductFormatClass format_class;
+    DvzRenderProductExtentPolicy extent_policy;
+    DvzRenderProductSampleDomain sample_domain;
+    uint32_t sample_count;
+    uint32_t usage_mask;
+    DvzSceneScratchLifetime lifetime;
+} DvzSceneScratchResource;
+
+typedef struct DvzSceneWorkBinding
+{
+    DvzSceneResourceRefKind ref_kind;
+    DvzRenderProductId product_id;
+    DvzSceneScratchResourceId scratch_id;
+    DvzSceneWorkBindingUsage usage;
+    DvzSceneWorkAccess access;
+    uint32_t slot;
+    uint32_t set;
+    uint32_t binding;
+    DvzSceneAttachmentLoad load;
+    DvzSceneAttachmentStore store;
+    bool clear;
+    DvzSceneClearValueKind clear_value_kind;
+    bool depth_attachment;
+    float clear_value[4];
+    DvzSceneResourceRefKind load_source_ref_kind;
+    DvzRenderProductId load_source_product_id;
+    DvzSceneScratchResourceId load_source_scratch_id;
+} DvzSceneWorkBinding;
+
+
+
+typedef struct DvzSceneGraphRealization
+{
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    DvzSceneResourceRefKind ref_kind;
+    DvzRenderProductId product_id;
+    DvzSceneScratchResourceId scratch_id;
+    uint32_t graph_resource_index;
+} DvzSceneGraphRealization;
+
+
+
+typedef struct DvzSceneResolvedTechnique
+{
+    DvzSceneTechniqueInstanceId instance_id;
+    DvzSceneTechniqueId id;
+    uint32_t version;
+    DvzSceneTechniquePhase phase;
+    uint32_t must_follow_phase_mask;
+    uint64_t input_product_mask;
+    uint64_t output_product_mask;
+    uint32_t input_count;
+    DvzRenderProductKind inputs[DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE];
+    DvzRenderProductId input_ids[DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE];
+    uint32_t output_count;
+    DvzRenderProductKind outputs[DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE];
+    DvzRenderProductId output_ids[DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE];
+    uint32_t participating_layer_mask;
+    uint32_t required_capability_mask;
+    uint32_t missing_capability_mask;
+    uint32_t capability_adaptations;
+    DvzSceneTechniqueFallback fallback;
+    uint32_t expansion_flags;
+    uint32_t authored_order_begin;
+    uint32_t authored_order_end;
+} DvzSceneResolvedTechnique;
+
+
+
+typedef struct DvzSceneResolvedPass
+{
+    DvzSceneCompositionPassId id;
+    DvzSceneTechniqueInstanceId technique_instance_id;
+    DvzSceneTechniqueId technique_id;
+    DvzSceneTechniquePhase phase;
+    DvzFramePlanRenderPassRole role;
+    uint32_t ordinal;
+    uint32_t authored_order_begin;
+    uint32_t authored_order_end;
+    uint32_t work_index;
+    DvzSceneWorkClass work_class;
+    DvzSceneWorkProviderKey provider;
+    DvzRenderProductCoordinateSpace coordinate_space;
+    bool viewport_panel_local;
+    bool scissor_panel_local;
+    uint32_t sample_count;
+    DvzRenderProductResolvePolicy resolve_policy;
+    bool alpha_to_coverage;
+    uint32_t visual_layer_filter;
+    uint32_t visual_order_begin;
+    uint32_t visual_order_end;
+    uint32_t dispatch_x;
+    uint32_t dispatch_y;
+    uint32_t dispatch_z;
+    uint32_t binding_count;
+    DvzSceneWorkBinding bindings[DVZ_PANEL_COMPOSITION_MAX_WORK_BINDINGS];
+    uint32_t auxiliary_binding_count;
+    DvzSceneAuxiliaryBinding auxiliary_bindings[2];
+} DvzSceneResolvedPass;
+
+
+
+typedef struct DvzPanelCompositionSnapshot
+{
+    bool valid;
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    int32_t origin_x;
+    int32_t origin_y;
+    uint32_t width;
+    uint32_t height;
+    float render_scale;
+    float local_to_target[4];
+    uint64_t required_product_mask;
+    DvzCapabilitySnapshot capabilities;
+    uint32_t available_capability_mask;
+    uint32_t disabled_optional_technique_mask;
+    uint32_t requested_sample_count;
+    uint32_t effective_sample_count;
+    bool alpha_to_coverage;
+    uint64_t work_declaration_fingerprint;
+    uint32_t technique_count;
+    DvzSceneResolvedTechnique techniques[DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES];
+    uint32_t scratch_resource_count;
+    DvzSceneScratchResource scratch_resources[DVZ_PANEL_COMPOSITION_MAX_SCRATCH_RESOURCES];
+    uint32_t pass_count;
+    DvzSceneResolvedPass passes[DVZ_PANEL_COMPOSITION_MAX_PASSES];
+} DvzPanelCompositionSnapshot;
+
+
+
+typedef struct DvzSurfaceRecordId
+{
+    uint32_t value;
+} DvzSurfaceRecordId;
+
+
+
+typedef struct DvzRenderProductConsumer
+{
+    DvzRenderProductId product_id;
+    uint32_t pass_index;
+    DvzRenderProductValidityRequirement validity_requirement;
+} DvzRenderProductConsumer;
+
+
+
+typedef enum
+{
     DVZ_FRAME_GRAPH_PASS_NONE = 0,
     DVZ_FRAME_GRAPH_PASS_RENDER,
     DVZ_FRAME_GRAPH_PASS_COMPUTE,
@@ -195,6 +747,51 @@ typedef struct DvzFrameGraphResource
 
 
 
+typedef struct DvzRenderProductContract
+{
+    DvzRenderProductId id;
+    char diagnostic_label[DVZ_SCENE_LABEL_SIZE];
+    uint32_t version;
+    DvzRenderProductKind kind;
+    DvzRenderProductDomain domain;
+    char panel_id[DVZ_SCENE_LABEL_SIZE];
+    char view_id[DVZ_SCENE_LABEL_SIZE];
+    char camera_id[DVZ_SCENE_LABEL_SIZE];
+    char projection_id[DVZ_SCENE_LABEL_SIZE];
+    DvzRenderProductExtentPolicy extent_policy;
+    DvzRenderProductRoundingPolicy rounding_policy;
+    int32_t origin_x;
+    int32_t origin_y;
+    uint32_t width;
+    uint32_t height;
+    float render_scale;
+    float local_to_target[4];
+    DvzRenderProductFormatClass format_class;
+    uint32_t concrete_format;
+    DvzRenderProductSampleDomain sample_domain;
+    uint32_t sample_count;
+    DvzRenderProductResolvePolicy resolve_policy;
+    DvzRenderProductCoordinateSpace coordinate_space;
+    DvzRenderProductEncoding encoding;
+    DvzRenderProductAlpha alpha;
+    DvzRenderProductCoverage coverage;
+    DvzRenderProductValidity validity;
+    DvzRenderProductId validity_product_id;
+    bool has_background_value;
+    float background_value[4];
+    bool has_integer_sentinel;
+    uint64_t integer_sentinel;
+    uint32_t required_usage_flags;
+    DvzFrameGraphResourceLifetime lifetime;
+    uint32_t resource_index;
+    DvzRenderProductId source_product_id;
+    DvzSurfaceRecordId surface_record_id;
+    uint32_t producer_pass_index;
+    uint32_t capability_adaptations;
+} DvzRenderProductContract;
+
+
+
 typedef struct DvzFrameGraphAccess
 {
     char resource_id[DVZ_SCENE_LABEL_SIZE];
@@ -231,6 +828,8 @@ typedef struct DvzFrameGraphRect
 typedef struct DvzFrameGraphPass
 {
     char id[DVZ_SCENE_LABEL_SIZE];
+    bool has_composition_pass;
+    DvzFramePlanPassId composition_pass_id;
     DvzFrameGraphPassKind kind;
     char panel_id[DVZ_SCENE_LABEL_SIZE];
     bool has_viewport;
@@ -248,7 +847,6 @@ typedef struct DvzFrameGraphPass
     bool has_stencil_attachment;
     DvzFrameGraphAttachment stencil_attachment;
     bool alpha_to_coverage;
-    char work_label[DVZ_SCENE_LABEL_SIZE];
 } DvzFrameGraphPass;
 
 
@@ -361,8 +959,13 @@ typedef struct DvzFramePlanVisualMeta
     char draw_contract_id[DVZ_SCENE_LABEL_SIZE];
     uint32_t draw_depth_policy;
     uint32_t draw_blend_policy;
+    uint32_t draw_blend_mode;
     uint32_t draw_shader_feature_mask;
     uint32_t draw_bind_group_layout_mask;
+    bool draw_overlay_composite;
+    bool draw_has_raster_state;
+    uint32_t draw_cull_mode;
+    uint32_t draw_front_face;
     char draw_volume_occlusion_resource_id[DVZ_SCENE_LABEL_SIZE];
     char draw_volume_occlusion_producer_pass_id[DVZ_SCENE_LABEL_SIZE];
     uint32_t draw_volume_occlusion_bind_set;
@@ -433,7 +1036,7 @@ struct DvzFramePlanNode
             char data_tag[DVZ_SCENE_LABEL_SIZE];
             const void* data; /* optional: if non-NULL, actual bytes to upload */
             void* owned_data;
-            bool external; /* register only; resource is provided by the live runtime */
+            bool external;         /* register only; resource is provided by the live runtime */
             uint32_t buffer_usage; /* optional DRP2 buffer-usage mask (0 = vertex default) */
             uint32_t item_stride;  /* optional element stride, used by index buffers */
             /* Optional primitive topology hint, propagated to the converter resource entry.
@@ -478,6 +1081,10 @@ struct DvzFramePlanNode
             DvzFramePlanVisualMeta* visual_metadata;
             bool picking;
             DvzFramePlanRenderPassRole pass_role;
+            bool has_composition_pass;
+            DvzFramePlanPassId composition_pass_id;
+            bool has_graph_pass_index;
+            uint32_t graph_pass_index;
             bool has_pass_contract;
             char pass_contract_id[DVZ_SCENE_LABEL_SIZE];
             DvzPanelDesc desc;
@@ -486,7 +1093,8 @@ struct DvzFramePlanNode
             bool has_viewport;
             DvzSceneViewportUniform viewport;
             bool has_mvp;
-            DvzMVP apply_mvp;  /* panel APPLY MVP from panzoom/arcball; identity MVP for FIXED computed by converter */
+            DvzMVP apply_mvp; /* panel APPLY MVP from panzoom/arcball; identity MVP for FIXED
+                                 computed by converter */
             DvzControllerMode* controller_modes; /* parallel to visuals[] */
             DvzMVP* visual_mvp;
             bool* visual_has_mvp;
@@ -538,6 +1146,18 @@ struct DvzFramePlan
     uint32_t graph_pass_capacity;
     uint32_t graph_pass_count;
     DvzFrameGraphPass* graph_passes;
+    uint32_t product_capacity;
+    uint32_t product_count;
+    DvzRenderProductContract* products;
+    uint32_t product_use_capacity;
+    uint32_t product_use_count;
+    DvzRenderProductConsumer* product_uses;
+    uint32_t composition_capacity;
+    uint32_t composition_count;
+    DvzPanelCompositionSnapshot* compositions;
+    uint32_t realization_capacity;
+    uint32_t realization_count;
+    DvzSceneGraphRealization* realizations;
 };
 
 
@@ -545,6 +1165,8 @@ struct DvzFramePlan
 /*************************************************************************************************/
 /*  Internal helpers                                                                            */
 /*************************************************************************************************/
+
+DvzFramePlanRenderPassRole _frame_plan_render_pass_role(const DvzFramePlanNode* node);
 
 bool dvz_frame_plan_render_panel(
     DvzFramePlan* plan, const char* panel_id, const char* render_target_id, bool picking,
@@ -597,6 +1219,19 @@ bool dvz_frame_graph_pass_depth_attachment(
     DvzFrameGraphPass* pass, const DvzFrameGraphAttachment* attachment);
 
 bool dvz_frame_plan_graph_validate(const DvzFramePlan* plan, DvzDiagnosticReport* report);
+
+bool dvz_frame_plan_product(DvzFramePlan* plan, const DvzRenderProductContract* product);
+
+bool dvz_frame_plan_product_consumer(
+    DvzFramePlan* plan, DvzRenderProductId product_id, uint32_t pass_index,
+    DvzRenderProductValidityRequirement validity_requirement);
+
+uint32_t dvz_frame_plan_product_count(const DvzFramePlan* plan);
+
+const DvzRenderProductContract*
+dvz_frame_plan_product_get(const DvzFramePlan* plan, uint32_t index);
+
+bool dvz_frame_plan_products_validate(const DvzFramePlan* plan, DvzDiagnosticReport* report);
 
 char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan);
 

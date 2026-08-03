@@ -71,6 +71,7 @@ int test_window_headless(TstContext* suite, const TstCase* item)
     DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
     ANN(window);
     AT(dvz_window_backend_type(window) == DVZ_BACKEND_OFFSCREEN);
+    AT(dvz_window_metrics(window)->refresh_rate_hz == 0);
     dvz_window_host_destroy(host);
     return 0;
 }
@@ -142,6 +143,40 @@ int test_window_frame_requests(TstContext* suite, const TstCase* item)
     AT(dvz_window_frame_pending(window));
     dvz_window_host_poll(host);
     AT(!dvz_window_frame_pending(window));
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+int test_window_backend_registration_preserves_live_windows(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    ANN(window);
+    AT(dvz_window_backend_type(window) == DVZ_BACKEND_OFFSCREEN);
+
+    uint32_t initial_capacity = host->backend_capacity;
+    for (uint32_t i = 0; i <= initial_capacity; i++)
+    {
+        DvzWindowBackend backend = {
+            .name = "inert-test-backend",
+            .type = (DvzBackend)(100 + i),
+        };
+        dvz_window_host_register_backend(host, &backend);
+    }
+    AT(host->backend_capacity > initial_capacity);
+    AT(dvz_window_backend_type(window) == DVZ_BACKEND_OFFSCREEN);
+    dvz_window_host_request_frame(host, window);
+    AT(dvz_window_frame_pending(window));
+    AT(!dvz_window_should_close(window));
+
+    dvz_window_destroy(window);
     dvz_window_host_destroy(host);
     return 0;
 }
@@ -383,6 +418,30 @@ int test_window_metrics_disabled_policy(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Verify metrics retain an available monitor refresh rate.
+ */
+int test_window_metrics_refresh_rate(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowMetricsInputs inputs = {
+        .requested_logical_size = {.width = 640, .height = 480},
+        .native_size = {.width = 640, .height = 480},
+        .framebuffer_size = {.width = 640, .height = 480},
+        .content_scale = {.x = 1.0f, .y = 1.0f},
+        .refresh_rate_hz = 144,
+        .requested_policy = DVZ_HIDPI_AUTO,
+    };
+    DvzWindowMetrics metrics = {0};
+    _dvz_window_metrics_resolve(&inputs, &metrics);
+    AT(metrics.refresh_rate_hz == 144);
+    return 0;
+}
+
+
+
+/**
  * Verify public metrics query tracks backend resize emissions.
  */
 int test_window_metrics_query_updates_on_resize(TstContext* suite, const TstCase* item)
@@ -395,6 +454,10 @@ int test_window_metrics_query_updates_on_resize(TstContext* suite, const TstCase
 
     const DvzWindowMetrics* metrics = dvz_window_metrics(window);
     ANN(metrics);
+    DvzWindowMetrics emitted = *metrics;
+    emitted.refresh_rate_hz = 144;
+    _dvz_window_backend_emit_metrics(window, &emitted);
+    metrics = dvz_window_metrics(window);
     uint64_t generation = metrics->generation;
 
     dvz_window_backend_emit_resize(window, 800, 600, 400, 300, 2.0f, 2.0f);
@@ -403,6 +466,7 @@ int test_window_metrics_query_updates_on_resize(TstContext* suite, const TstCase
     AT(metrics->logical_size.width == 400);
     AT(metrics->surface_size.width == 800);
     AT(metrics->render_size.width == 800);
+    AT(metrics->refresh_rate_hz == 144);
     AC(metrics->device_scale.x, 2.0f, 1e-6f);
 
     dvz_window_host_destroy(host);
@@ -471,6 +535,7 @@ int test_window(TstSuite* suite)
     TST_CASE(test_window_config_rejects_invalid_abi);
     TST_CASE(test_window_resize_events);
     TST_CASE(test_window_frame_requests);
+    TST_CASE(test_window_backend_registration_preserves_live_windows);
     TST_CASE(test_window_wait_hooks_headless);
     TST_CASE(test_window_effective_scale_override);
     TST_CASE(test_window_effective_scale_framebuffer_ratio);
@@ -479,6 +544,7 @@ int test_window(TstSuite* suite)
     TST_CASE(test_window_metrics_framebuffer_policy);
     TST_CASE(test_window_metrics_native_window_policy);
     TST_CASE(test_window_metrics_disabled_policy);
+    TST_CASE(test_window_metrics_refresh_rate);
     TST_CASE(test_window_metrics_query_updates_on_resize);
     TST_CASE(test_window_fallback);
     TST_CASE(test_window_wrap_create);

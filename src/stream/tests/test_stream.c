@@ -38,10 +38,12 @@ typedef struct StreamMockSinkState
     int update_count;
     int stop_count;
     int destroy_count;
+    int create_rc;
     int start_rc;
     int restart_rc;
     int fail_start_on_count;
     int submit_rc;
+    int stop_rc;
 } StreamMockSinkState;
 
 
@@ -74,7 +76,7 @@ static int _stream_mock_create(DvzStreamSink* sink, const void* config)
     ANN(state);
     sink->backend_data = state;
     state->create_count++;
-    return 0;
+    return state->create_rc;
 }
 
 
@@ -125,7 +127,7 @@ static int _stream_mock_stop(DvzStreamSink* sink)
     StreamMockSinkState* state = (StreamMockSinkState*)sink->backend_data;
     ANN(state);
     state->stop_count++;
-    return 0;
+    return state->stop_rc;
 }
 
 
@@ -263,6 +265,40 @@ int test_stream_start_rollback_on_sink_failure(TstContext* suite, const TstCase*
     AT(fail_state.destroy_count == 1);
 
     tst_log_capture_end(suite);
+    dvz_stream_sink_registry_destroy(registry);
+    return 0;
+}
+
+
+
+int test_stream_attach_rolls_back_failed_create(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    ANN(suite);
+
+    DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
+    ANN(registry);
+
+    DvzStreamConfig cfg = dvz_stream_config();
+    DvzStream* stream = dvz_stream_create(NULL, registry, &cfg);
+    ANN(stream);
+
+    StreamMockSinkState state = {.create_rc = -7};
+    DvzStreamSinkBackend backend = {
+        .name = "mock_create_failure",
+        .probe = _stream_mock_probe,
+        .create = _stream_mock_create,
+        .destroy = _stream_mock_destroy,
+    };
+
+    tst_expect_error_begin(suite);
+    AT(dvz_stream_attach_sink(stream, &backend, &state) == -1);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(state.create_count == 1);
+    AT(state.destroy_count == 1);
+
+    dvz_stream_destroy(stream);
+    AT(state.destroy_count == 1);
     dvz_stream_sink_registry_destroy(registry);
     return 0;
 }
@@ -418,6 +454,43 @@ int test_stream_update_restart_failure_stops_stream(TstContext* suite, const Tst
 
 
 
+int test_stream_stop_returns_first_error(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    ANN(suite);
+
+    DvzStreamSinkRegistry* registry = dvz_stream_sink_registry_create();
+    ANN(registry);
+    DvzStream* stream = dvz_stream_create(NULL, registry, NULL);
+    ANN(stream);
+
+    StreamMockSinkState first = {.stop_rc = -7};
+    StreamMockSinkState second = {.stop_rc = -9};
+    DvzStreamSinkBackend backend = {
+        .name = "mock_stop_error",
+        .probe = _stream_mock_probe,
+        .create = _stream_mock_create,
+        .start = _stream_mock_start,
+        .submit = _stream_mock_submit,
+        .stop = _stream_mock_stop,
+        .destroy = _stream_mock_destroy,
+    };
+    AT(dvz_stream_attach_sink(stream, &backend, &first) == 0);
+    AT(dvz_stream_attach_sink(stream, &backend, &second) == 0);
+    DvzStreamFrame frame = {0};
+    AT(dvz_stream_start(stream, &frame) == 0);
+    AT(dvz_stream_stop(stream) == -7);
+    AT(first.stop_count == 1);
+    AT(second.stop_count == 1);
+    AT(dvz_stream_stop(stream) == 0);
+
+    dvz_stream_destroy(stream);
+    dvz_stream_sink_registry_destroy(registry);
+    return 0;
+}
+
+
+
 int test_stream_attach_sink_name_prefers_requested_then_auto(TstContext* suite, const TstCase* item)
 {
     (void)item;
@@ -487,9 +560,11 @@ int test_stream(TstSuite* suite)
     const char* tags = "stream";
     TST_MODULE(suite, tags);
     TST_CASE(test_stream_attach_video);
+    TST_CASE(test_stream_attach_rolls_back_failed_create);
     TST_CASE(test_stream_start_rollback_on_sink_failure);
     TST_CASE(test_stream_submit_returns_first_error);
     TST_CASE(test_stream_update_restart_failure_stops_stream);
+    TST_CASE(test_stream_stop_returns_first_error);
     TST_CASE(test_stream_attach_sink_name_prefers_requested_then_auto);
     return 0;
 }

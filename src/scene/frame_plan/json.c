@@ -20,8 +20,8 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
-#include "internal.h"
 #include "_json.h"
+#include "internal.h"
 
 
 
@@ -90,16 +90,18 @@ static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
         return "opaque";
     case DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER:
         return "gbuffer";
+    case DVZ_FRAME_PLAN_RENDER_PASS_SURFACE_RESOLVE:
+        return "surface_resolve";
     case DVZ_FRAME_PLAN_RENDER_PASS_VOLUME_OCCLUSION:
         return "volume_occlusion";
     case DVZ_FRAME_PLAN_RENDER_PASS_SCENE_OCCLUSION:
         return "scene_occlusion";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO:
-        return "ssao";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_BLUR:
-        return "ssao_blur";
-    case DVZ_FRAME_PLAN_RENDER_PASS_SSAO_COMPOSITE:
-        return "ssao_composite";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO:
+        return "gtao";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO_DENOISE:
+        return "gtao_denoise";
+    case DVZ_FRAME_PLAN_RENDER_PASS_GTAO_VISIBILITY_PRESENTATION:
+        return "gtao_visibility_presentation";
     case DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE:
         return "edl_resolve";
     case DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_ACCUMULATION:
@@ -114,6 +116,8 @@ static const char* _render_pass_role_name(DvzFramePlanRenderPassRole role)
         return "depth_peel_iter";
     case DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_COMPOSITE:
         return "depth_peel_composite";
+    case DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION:
+        return "presentation";
     case DVZ_FRAME_PLAN_RENDER_PASS_PICKING:
         return "picking";
     default:
@@ -364,7 +368,8 @@ static void _json_append_graph_resource_usage(JsonBuilder* builder, uint32_t usa
  * @param builder JSON builder
  * @param resource graph resource descriptor
  */
-static void _json_append_graph_resource(JsonBuilder* builder, const DvzFrameGraphResource* resource)
+static void
+_json_append_graph_resource(JsonBuilder* builder, const DvzFrameGraphResource* resource)
 {
     ANN(builder);
     ANN(resource);
@@ -389,6 +394,117 @@ static void _json_append_graph_resource(JsonBuilder* builder, const DvzFrameGrap
     _json_append(builder, ", \"lifetime\": ");
     _json_append_escaped_string(builder, _graph_lifetime_name(resource->lifetime));
     _json_append(builder, " }");
+}
+
+
+
+/** Append one semantic render-product contract. */
+static void _json_append_product(
+    JsonBuilder* builder, const DvzFramePlan* plan, const DvzRenderProductContract* product)
+{
+    ANN(builder);
+    ANN(plan);
+    ANN(product);
+    _json_append(builder, "{ \"id\": %" PRIu32 ", \"label\": ", product->id.value);
+    _json_append_escaped_string(builder, product->diagnostic_label);
+    _json_append(builder, ", \"version\": %" PRIu32 ", \"kind\": ", product->version);
+    _json_append_escaped_string(builder, _frame_plan_product_kind_name(product->kind));
+    _json_append(builder, ", \"domain\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_domain_name(product->domain));
+    _json_append(builder, ", \"panel_id\": ");
+    _json_append_escaped_string(builder, product->panel_id);
+    _json_append(builder, ", \"view_id\": ");
+    _json_append_escaped_string(builder, product->view_id);
+    _json_append(builder, ", \"camera_id\": ");
+    _json_append_escaped_string(builder, product->camera_id);
+    _json_append(builder, ", \"projection_id\": ");
+    _json_append_escaped_string(builder, product->projection_id);
+    _json_append(builder, ", \"extent\": { \"policy\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_extent_name(product->extent_policy));
+    _json_append(builder, ", \"rounding\": ");
+    _json_append_escaped_string(
+        builder, _frame_plan_product_rounding_name(product->rounding_policy));
+    _json_append(
+        builder,
+        ", \"origin\": { \"x\": %" PRId32 ", \"y\": %" PRId32 " }, \"width\": %" PRIu32
+        ", \"height\": %" PRIu32 ", \"render_scale\": %.9g, \"local_to_target\": [%.9g, %.9g, "
+        "%.9g, %.9g] }, \"format_class\": ",
+        product->origin_x, product->origin_y, product->width, product->height,
+        (double)product->render_scale, (double)product->local_to_target[0],
+        (double)product->local_to_target[1], (double)product->local_to_target[2],
+        (double)product->local_to_target[3]);
+    _json_append_escaped_string(builder, _frame_plan_product_format_name(product->format_class));
+    _json_append(
+        builder,
+        ", \"concrete_format\": %" PRIu32 ", \"sample_domain\": ", product->concrete_format);
+    _json_append_escaped_string(builder, _frame_plan_product_samples_name(product->sample_domain));
+    _json_append(
+        builder, ", \"sample_count\": %" PRIu32 ", \"resolve_policy\": ", product->sample_count);
+    _json_append_escaped_string(
+        builder, _frame_plan_product_resolve_name(product->resolve_policy));
+    _json_append(builder, ", \"coordinate_space\": ");
+    _json_append_escaped_string(
+        builder, _frame_plan_product_coordinates_name(product->coordinate_space));
+    _json_append(builder, ", \"encoding\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_encoding_name(product->encoding));
+    _json_append(builder, ", \"alpha\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_alpha_name(product->alpha));
+    _json_append(builder, ", \"coverage\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_coverage_name(product->coverage));
+    _json_append(builder, ", \"validity\": ");
+    _json_append_escaped_string(builder, _frame_plan_product_validity_name(product->validity));
+    _json_append(
+        builder,
+        ", \"validity_product_id\": %" PRIu32
+        ", \"has_background_value\": %s, \"background_value\": [%.9g, %.9g, %.9g, %.9g], "
+        "\"has_integer_sentinel\": %s, \"integer_sentinel\": %" PRIu64,
+        product->validity_product_id.value, product->has_background_value ? "true" : "false",
+        (double)product->background_value[0], (double)product->background_value[1],
+        (double)product->background_value[2], (double)product->background_value[3],
+        product->has_integer_sentinel ? "true" : "false", product->integer_sentinel);
+    _json_append(builder, ", \"required_accesses\": ");
+    _json_append_graph_resource_usage(builder, product->required_usage_flags);
+    _json_append(builder, ", \"lifetime\": ");
+    _json_append_escaped_string(builder, _graph_lifetime_name(product->lifetime));
+    _json_append(
+        builder,
+        ", \"resource_index\": %" PRIu32 ", \"source_product_id\": %" PRIu32
+        ", \"surface_record_id\": %" PRIu32 ", \"producer_pass_index\": %" PRIu32,
+        product->resource_index, product->source_product_id.value,
+        product->surface_record_id.value, product->producer_pass_index);
+    _json_append(builder, ", \"resource_label\": ");
+    _json_append_escaped_string(
+        builder, product->resource_index < plan->graph_resource_count
+                     ? plan->graph_resources[product->resource_index].id
+                     : "");
+    _json_append(builder, ", \"producer_pass_label\": ");
+    _json_append_escaped_string(
+        builder, product->producer_pass_index < plan->graph_pass_count
+                     ? plan->graph_passes[product->producer_pass_index].id
+                     : "");
+    _json_append(builder, ", \"consumers\": [");
+    bool has_consumer = false;
+    for (uint32_t i = 0; i < plan->product_use_count; i++)
+    {
+        const DvzRenderProductConsumer* use = &plan->product_uses[i];
+        if (use->product_id.value != product->id.value)
+            continue;
+        if (has_consumer)
+            _json_append(builder, ", ");
+        _json_append(
+            builder, "{ \"pass_index\": %" PRIu32 ", \"validity_requirement\": ", use->pass_index);
+        _json_append_escaped_string(
+            builder, _frame_plan_product_validity_requirement_name(use->validity_requirement));
+        _json_append(builder, ", \"pass_label\": ");
+        _json_append_escaped_string(
+            builder, use->pass_index < plan->graph_pass_count
+                         ? plan->graph_passes[use->pass_index].id
+                         : "");
+        _json_append(builder, " }");
+        has_consumer = true;
+    }
+    _json_append(
+        builder, "], \"capability_adaptations\": %" PRIu32 " }", product->capability_adaptations);
 }
 
 
@@ -500,6 +616,9 @@ static void _json_append_graph_pass(JsonBuilder* builder, const DvzFrameGraphPas
     ANN(pass);
     _json_append(builder, "{ \"id\": ");
     _json_append_escaped_string(builder, pass->id);
+    if (pass->has_composition_pass)
+        _json_append(
+            builder, ", \"composition_pass_id\": %" PRIu32, pass->composition_pass_id.value);
     _json_append(builder, ", \"kind\": ");
     _json_append_escaped_string(builder, _graph_pass_kind_name(pass->kind));
     _json_append(builder, ", \"panel_id\": ");
@@ -538,11 +657,6 @@ static void _json_append_graph_pass(JsonBuilder* builder, const DvzFrameGraphPas
     }
     if (pass->alpha_to_coverage)
         _json_append(builder, ", \"alpha_to_coverage\": true");
-    if (pass->work_label[0] != '\0')
-    {
-        _json_append(builder, ", \"work\": ");
-        _json_append_escaped_string(builder, pass->work_label);
-    }
     _json_append(builder, " }");
 }
 
@@ -562,7 +676,8 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
     switch (node->type)
     {
     case DVZ_FRAME_PLAN_NODE_UPLOAD:
-        _json_append(builder, "{ \"type\": \"%s\", \"resource_id\": ", _node_type_name(node->type));
+        _json_append(
+            builder, "{ \"type\": \"%s\", \"resource_id\": ", _node_type_name(node->type));
         _json_append_escaped_string(builder, node->u.upload.resource_id);
         _json_append(
             builder, ", \"byte_offset\": %" PRIu64 ", \"byte_size\": %" PRIu64 ", \"data_tag\": ",
@@ -575,8 +690,8 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
             _json_append(
                 builder,
                 ", \"texture\": { \"origin_x\": %" PRIu32 ", \"origin_y\": %" PRIu32
-                ", \"origin_z\": %" PRIu32 ", \"width\": %" PRIu32
-                ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32,
+                ", \"origin_z\": %" PRIu32 ", \"width\": %" PRIu32 ", \"height\": %" PRIu32
+                ", \"depth\": %" PRIu32,
                 node->u.upload.texture_origin_x, node->u.upload.texture_origin_y,
                 node->u.upload.texture_origin_z, node->u.upload.texture_width,
                 node->u.upload.texture_height, texture_depth);
@@ -592,8 +707,7 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
                 _json_append_escaped_string(
                     builder, _color_role_name(node->u.upload.metadata.color_role));
             }
-            if (node->u.upload.texture_alloc_width > 0 &&
-                node->u.upload.texture_alloc_height > 0)
+            if (node->u.upload.texture_alloc_width > 0 && node->u.upload.texture_alloc_height > 0)
             {
                 _json_append(
                     builder,
@@ -611,8 +725,9 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append(builder, "{ \"type\": \"%s\", \"shader_key\": ", _node_type_name(node->type));
         _json_append_escaped_string(builder, node->u.compute.shader_key);
         _json_append(
-            builder, ", \"dispatch\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32
-                     ", \"z\": %" PRIu32 " }, \"reads\": ",
+            builder,
+            ", \"dispatch\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32 ", \"z\": %" PRIu32
+            " }, \"reads\": ",
             node->u.compute.dispatch[0], node->u.compute.dispatch[1], node->u.compute.dispatch[2]);
         _json_append_string_array(builder, node->u.compute.read_count, node->u.compute.reads);
         _json_append(builder, ", \"writes\": ");
@@ -626,6 +741,13 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append_escaped_string(builder, node->u.render.render_target_id);
         _json_append(builder, ", \"pass_role\": ");
         _json_append_escaped_string(builder, _render_pass_role_name(node->u.render.pass_role));
+        if (node->u.render.has_composition_pass)
+            _json_append(
+                builder, ", \"composition_pass_id\": %" PRIu32,
+                node->u.render.composition_pass_id.value);
+        if (node->u.render.has_graph_pass_index)
+            _json_append(
+                builder, ", \"graph_pass_index\": %" PRIu32, node->u.render.graph_pass_index);
         _json_append(builder, ", \"visuals\": ");
         _json_append_string_array(
             builder, node->u.render.visual_count,
@@ -648,26 +770,26 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append(
             builder,
             ", \"direction\": \"%s\", \"src_attachment_index\": %" PRIu32
-            ", \"src_origin\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32
-            ", \"z\": %" PRIu32 " }, \"src_offset\": %" PRIu64
-            ", \"extent\": { \"width\": %" PRIu32
+            ", \"src_origin\": { \"x\": %" PRIu32 ", \"y\": %" PRIu32 ", \"z\": %" PRIu32
+            " }, \"src_offset\": %" PRIu64 ", \"extent\": { \"width\": %" PRIu32
             ", \"height\": %" PRIu32 ", \"depth\": %" PRIu32 " }, \"format\": %" PRIu32
             ", \"bytes_per_texel\": %" PRIu32 ", \"bytes_per_row\": %" PRIu64
             ", \"rows_per_image\": %" PRIu32 ", \"dst_origin\": { \"x\": %" PRIu32
             ", \"y\": %" PRIu32 ", \"z\": %" PRIu32 " }, \"dst_offset\": %" PRIu64
             ", \"byte_size\": %" PRIu64 ", \"request_id\": %" PRIu64 " }",
-            node->u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE ? "buffer_to_texture" :
-                                                                         "texture_to_buffer",
+            node->u.copy.direction == DVZ_FRAME_PLAN_COPY_BUFFER_TO_TEXTURE ? "buffer_to_texture"
+                                                                            : "texture_to_buffer",
             node->u.copy.src_attachment_index, node->u.copy.src_origin[0],
             node->u.copy.src_origin[1], node->u.copy.src_origin[2], node->u.copy.src_offset,
-            node->u.copy.extent[0], node->u.copy.extent[1], node->u.copy.extent[2], node->u.copy.format,
-            node->u.copy.bytes_per_texel, node->u.copy.bytes_per_row,
+            node->u.copy.extent[0], node->u.copy.extent[1], node->u.copy.extent[2],
+            node->u.copy.format, node->u.copy.bytes_per_texel, node->u.copy.bytes_per_row,
             node->u.copy.rows_per_image, node->u.copy.dst_origin[0], node->u.copy.dst_origin[1],
             node->u.copy.dst_origin[2], node->u.copy.dst_offset, node->u.copy.byte_size,
             node->u.copy.request_id);
         break;
     case DVZ_FRAME_PLAN_NODE_READBACK:
-        _json_append(builder, "{ \"type\": \"%s\", \"resource_id\": ", _node_type_name(node->type));
+        _json_append(
+            builder, "{ \"type\": \"%s\", \"resource_id\": ", _node_type_name(node->type));
         _json_append_escaped_string(builder, node->u.readback.resource_id);
         _json_append(builder, ", \"request_id\": ");
         _json_append_escaped_string(builder, node->u.readback.request_id);
@@ -680,6 +802,88 @@ static void _json_append_node(JsonBuilder* builder, const DvzFramePlanNode* node
         _json_append(builder, "{ \"type\": \"none\" }");
         break;
     }
+}
+
+
+
+static void
+_json_append_composition(JsonBuilder* builder, const DvzPanelCompositionSnapshot* composition)
+{
+    ANN(builder);
+    ANN(composition);
+    _json_append(builder, "{ \"panel_id\": ");
+    _json_append_escaped_string(builder, composition->panel_id);
+    _json_append(
+        builder,
+        ", \"geometry\": { \"origin_x\": %d, \"origin_y\": %d, \"width\": %" PRIu32
+        ", \"height\": %" PRIu32
+        ", \"render_scale\": %.9g, \"local_to_target\": [%.9g, %.9g, %.9g, %.9g] }"
+        ", \"work_fingerprint\": \"0x%016" PRIx64 "\", \"scratch_resources\": [",
+        composition->origin_x, composition->origin_y, composition->width, composition->height,
+        (double)composition->render_scale, (double)composition->local_to_target[0],
+        (double)composition->local_to_target[1], (double)composition->local_to_target[2],
+        (double)composition->local_to_target[3], composition->work_declaration_fingerprint);
+    for (uint32_t i = 0; i < composition->scratch_resource_count; i++)
+    {
+        const DvzSceneScratchResource* scratch = &composition->scratch_resources[i];
+        _json_append(
+            builder,
+            "%s{ \"id\": %" PRIu32 ", \"technique_instance_id\": %" PRIu32
+            ", \"scope\": %u, \"kind\": %u, \"format\": %u, \"format_class\": %u"
+            ", \"extent\": %u, \"sample_domain\": %u, \"sample_count\": %" PRIu32
+            ", \"usage\": %u, \"lifetime\": %u }",
+            i > 0 ? ", " : "", scratch->id.value, scratch->technique_instance_id.value,
+            (uint32_t)scratch->scope, (uint32_t)scratch->kind, scratch->format,
+            (uint32_t)scratch->format_class, (uint32_t)scratch->extent_policy,
+            (uint32_t)scratch->sample_domain, scratch->sample_count, scratch->usage_mask,
+            (uint32_t)scratch->lifetime);
+    }
+    _json_append(builder, "], \"passes\": [");
+    for (uint32_t i = 0; i < composition->pass_count; i++)
+    {
+        const DvzSceneResolvedPass* pass = &composition->passes[i];
+        _json_append(
+            builder,
+            "%s{ \"id\": %" PRIu32 ", \"work_index\": %" PRIu32
+            ", \"work_class\": %u, \"provider\": %u, \"coordinates\": %u"
+            ", \"sample_count\": %" PRIu32 ", \"resolve\": %u, \"alpha_to_coverage\": %s"
+            ", \"bindings\": [",
+            i > 0 ? ", " : "", pass->id.value, pass->work_index, (uint32_t)pass->work_class,
+            (uint32_t)pass->provider, (uint32_t)pass->coordinate_space, pass->sample_count,
+            (uint32_t)pass->resolve_policy, pass->alpha_to_coverage ? "true" : "false");
+        for (uint32_t j = 0; j < pass->binding_count; j++)
+        {
+            const DvzSceneWorkBinding* binding = &pass->bindings[j];
+            _json_append(
+                builder,
+                "%s{ \"ref\": %u, \"product\": %" PRIu32 ", \"scratch\": %" PRIu32
+                ", \"usage\": %u, \"access\": %u, \"slot\": %" PRIu32 ", \"set\": %" PRIu32
+                ", \"binding\": %" PRIu32
+                ", \"load\": %u, \"store\": %u, \"clear\": %s, \"clear_kind\": %u"
+                ", \"depth_attachment\": %s, \"load_source_ref\": %u"
+                ", \"load_source_product\": %" PRIu32 ", \"load_source_scratch\": %" PRIu32 " }",
+                j > 0 ? ", " : "", (uint32_t)binding->ref_kind, binding->product_id.value,
+                binding->scratch_id.value, (uint32_t)binding->usage, (uint32_t)binding->access,
+                binding->slot, binding->set, binding->binding, (uint32_t)binding->load,
+                (uint32_t)binding->store, binding->clear ? "true" : "false",
+                (uint32_t)binding->clear_value_kind, binding->depth_attachment ? "true" : "false",
+                (uint32_t)binding->load_source_ref_kind, binding->load_source_product_id.value,
+                binding->load_source_scratch_id.value);
+        }
+        _json_append(builder, "], \"auxiliary_bindings\": [");
+        for (uint32_t j = 0; j < pass->auxiliary_binding_count; j++)
+        {
+            const DvzSceneAuxiliaryBinding* binding = &pass->auxiliary_bindings[j];
+            _json_append(
+                builder,
+                "%s{ \"kind\": %u, \"upload_node\": %" PRIu32 ", \"set\": %" PRIu32
+                ", \"binding\": %" PRIu32 ", \"offset\": %" PRIu32 ", \"size\": %" PRIu32 " }",
+                j > 0 ? ", " : "", (uint32_t)binding->kind, binding->upload_node_index,
+                binding->set, binding->binding, binding->byte_offset, binding->byte_size);
+        }
+        _json_append(builder, "] }");
+    }
+    _json_append(builder, "] }");
 }
 
 
@@ -704,11 +908,10 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
         return NULL;
 
     _json_append(
-        &builder,
-        "{\n"
-        "  \"frame_plan_schema\": \"0.1\",\n"
-        "  \"frame_plan\": {\n"
-        "    \"figure_id\": ");
+        &builder, "{\n"
+                  "  \"frame_plan_schema\": \"0.2\",\n"
+                  "  \"frame_plan\": {\n"
+                  "    \"figure_id\": ");
     _json_append_escaped_string(&builder, plan->figure_id);
     _json_append(
         &builder,
@@ -725,10 +928,29 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
     }
 
     _json_append(
-        &builder,
-        "    ],\n"
-        "    \"graph\": {\n"
-        "      \"resources\": [\n");
+        &builder, "    ],\n"
+                  "    \"products\": [\n");
+    for (uint32_t i = 0; i < plan->product_count; i++)
+    {
+        _json_append(&builder, "      ");
+        _json_append_product(&builder, plan, &plan->products[i]);
+        _json_append(&builder, "%s\n", i + 1 < plan->product_count ? "," : "");
+    }
+
+    _json_append(
+        &builder, "    ],\n"
+                  "    \"compositions\": [\n");
+    for (uint32_t i = 0; i < plan->composition_count; i++)
+    {
+        _json_append(&builder, "      ");
+        _json_append_composition(&builder, &plan->compositions[i]);
+        _json_append(&builder, "%s\n", i + 1 < plan->composition_count ? "," : "");
+    }
+
+    _json_append(
+        &builder, "    ],\n"
+                  "    \"graph\": {\n"
+                  "      \"resources\": [\n");
     for (uint32_t i = 0; i < plan->graph_resource_count; i++)
     {
         _json_append(&builder, "        ");
@@ -737,9 +959,8 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
     }
 
     _json_append(
-        &builder,
-        "      ],\n"
-        "      \"passes\": [\n");
+        &builder, "      ],\n"
+                  "      \"passes\": [\n");
     for (uint32_t i = 0; i < plan->graph_pass_count; i++)
     {
         _json_append(&builder, "        ");
@@ -748,11 +969,10 @@ char* dvz_frame_plan_json(const DvzFramePlan* plan)
     }
 
     _json_append(
-        &builder,
-        "      ]\n"
-        "    }\n"
-        "  }\n"
-        "}\n");
+        &builder, "      ]\n"
+                  "    }\n"
+                  "  }\n"
+                  "}\n");
     if (builder.failed)
     {
         dvz_free(builder.data);
@@ -779,17 +999,22 @@ char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan)
         return NULL;
 
     _json_append(
-        &builder,
-        "{\n"
-        "  \"graph_debug\": {\n"
-        "    \"passes\": [\n");
+        &builder, "{\n"
+                  "  \"graph_debug\": {\n"
+                  "    \"products\": [\n");
+    for (uint32_t i = 0; i < plan->product_count; i++)
+    {
+        _json_append(&builder, "      ");
+        _json_append_product(&builder, plan, &plan->products[i]);
+        _json_append(&builder, "%s\n", i + 1 < plan->product_count ? "," : "");
+    }
+    _json_append(
+        &builder, "    ],\n"
+                  "    \"passes\": [\n");
     for (uint32_t i = 0; i < plan->graph_pass_count; i++)
     {
         const DvzFrameGraphPass* pass = &plan->graph_passes[i];
-        _json_append(
-            &builder,
-            "      { \"index\": %" PRIu32 ", \"id\": ",
-            i);
+        _json_append(&builder, "      { \"index\": %" PRIu32 ", \"id\": ", i);
         _json_append_escaped_string(&builder, pass->id);
         _json_append(&builder, ", \"kind\": ");
         _json_append_escaped_string(&builder, _graph_pass_kind_name(pass->kind));
@@ -815,17 +1040,14 @@ char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan)
 
     uint32_t dependency_count = dvz_frame_plan_graph_dependency_count(plan);
     _json_append(
-        &builder,
-        "    ],\n"
-        "    \"dependencies\": [\n");
+        &builder, "    ],\n"
+                  "    \"dependencies\": [\n");
     for (uint32_t i = 0; i < dependency_count; i++)
     {
         DvzFrameGraphDependency dep = {0};
         if (!dvz_frame_plan_graph_dependency_get(plan, i, &dep))
             continue;
-        _json_append(
-            &builder,
-            "      { \"resource_id\": ");
+        _json_append(&builder, "      { \"resource_id\": ");
         _json_append_escaped_string(&builder, dep.resource_id);
         _json_append(&builder, ", \"producer\": ");
         _json_append_escaped_string(&builder, dep.producer_pass_id);
@@ -838,10 +1060,9 @@ char* dvz_frame_plan_graph_dump(const DvzFramePlan* plan)
         _json_append(&builder, " }%s\n", i + 1 < dependency_count ? "," : "");
     }
     _json_append(
-        &builder,
-        "    ]\n"
-        "  }\n"
-        "}\n");
+        &builder, "    ]\n"
+                  "  }\n"
+                  "}\n");
     if (builder.failed)
     {
         dvz_free(builder.data);

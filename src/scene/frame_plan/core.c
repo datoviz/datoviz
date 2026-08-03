@@ -109,5 +109,9 @@ void dvz_frame_plan_destroy(DvzFramePlan* plan)
     dvz_free(plan->nodes);
     dvz_free(plan->graph_resources);
     dvz_free(plan->graph_passes);
+    dvz_free(plan->products);
+    dvz_free(plan->product_uses);
+    dvz_free(plan->compositions);
+    dvz_free(plan->realizations);
     dvz_free(plan);
 }

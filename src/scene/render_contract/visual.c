@@ -32,32 +32,6 @@
 /*************************************************************************************************/
 
 /**
- * Find the panel attachment for a scene-global visual index.
- *
- * @param panel the panel
- * @param visual_index the scene-global visual index
- * @return the panel attachment, or NULL when absent
- */
-static const DvzPanelAttach* _panel_attach_from_visual_index(
-    const DvzPanel* panel, uint32_t visual_index)
-{
-    ANN(panel);
-    if (panel->figure == NULL || panel->figure->scene == NULL)
-        return NULL;
-
-    for (uint32_t i = 0; i < panel->visual_count; i++)
-    {
-        uint32_t index = 0;
-        if (_figure_visual_index(panel->figure, panel->visuals[i].visual, &index) &&
-            index == visual_index)
-            return &panel->visuals[i];
-    }
-    return NULL;
-}
-
-
-
-/**
  * Apply a stored FramePlan draw-contract snapshot to a resolved draw contract.
  *
  * @param meta stored visual metadata snapshot
@@ -71,16 +45,19 @@ static void _contract_apply_draw_metadata(
     if (!meta->has_draw_contract)
         return;
 
+    draw->visual_type = meta->visual_type;
+    draw->alpha_mode = meta->alpha_mode;
+    draw->blend_mode = (DvzBlendMode)meta->draw_blend_mode;
     draw->depth_policy = meta->draw_depth_policy;
     draw->blend_policy = (DvzSceneBlendPolicy)meta->draw_blend_policy;
     _draw_blend_target_contracts(
         draw->blend_policy, draw->blend_targets, &draw->blend_target_count);
-    DvzSceneDrawFacts facts = {.visual_type = draw->visual_type};
-    _draw_raster_state_contract(
-        &facts, draw->pass_role, &draw->has_raster_state, &draw->cull_mode,
-        &draw->front_face);
+    draw->has_raster_state = meta->draw_has_raster_state;
+    draw->cull_mode = meta->draw_cull_mode;
+    draw->front_face = meta->draw_front_face;
     draw->shader_feature_mask = meta->draw_shader_feature_mask;
     draw->bind_group_layout_mask = meta->draw_bind_group_layout_mask;
+    draw->overlay_composite = meta->draw_overlay_composite;
 
     draw->depth_test = (draw->depth_policy & DVZ_SCENE_DEPTH_POLICY_TEST) != 0;
     draw->depth_write = (draw->depth_policy & DVZ_SCENE_DEPTH_POLICY_WRITE) != 0;
@@ -218,12 +195,9 @@ bool _scene_pass_contract_from_render_ex(
         const DvzFramePlanVisualMeta* meta = &render->u.render.visual_metadata[i];
         if (!meta->has_metadata)
             return false;
-        const DvzPanelAttach* attach = _panel_attach_from_visual_index(panel, meta->visual_index);
-        if (attach == NULL || attach->visual == NULL)
+        if (!meta->has_draw_contract)
             return false;
-        if (!_scene_draw_contract_from_visual(
-                attach->visual, attach, out->role, &out->draws[out->draw_count]))
-            return false;
+        out->draws[out->draw_count].pass_role = out->role;
         _contract_apply_draw_metadata(meta, &out->draws[out->draw_count]);
         const DvzSceneDrawContract* draw = &out->draws[out->draw_count];
         out->needs_common_set = out->needs_common_set || draw->needs_common_set;

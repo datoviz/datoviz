@@ -17,8 +17,7 @@ behavior instead of restating it here.
    backend contract for rich paragraphs, formatted annotations, and bitmap math.
 4. [GRAPH_TECHNIQUES.md](GRAPH_TECHNIQUES.md): implementation-facing graph technique, resource,
    pass, material capability, and runtime guardrail contract.
-5. [OCCLUSION_EFFECTS.md](OCCLUSION_EFFECTS.md): implementation-facing SSAO, scene occlusion,
-   volume occlusion, shader feature, and validation contract.
+5. [OCCLUSION_EFFECTS.md](OCCLUSION_EFFECTS.md): implementation-facing GTAO, scene occlusion, volume occlusion, shader feature, and validation contract.
 6. [TRANSPARENCY_MSAA.md](TRANSPARENCY_MSAA.md): implementation-facing WBOIT, depth peeling,
    MSAA, alpha-to-coverage, and validation contract.
 7. [COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md](COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md):
@@ -46,7 +45,7 @@ behavior instead of restating it here.
 4. Keep current execution order in `agents/now/STATUS.md`; durable text resource contracts live here
    or in `../semantics/TEXT.md`.
 5. Keep graph-backed effects and transparency implementation rules in `GRAPH_TECHNIQUES.md`.
-6. Keep SSAO and occlusion implementation rules in `OCCLUSION_EFFECTS.md`.
+6. Keep GTAO and occlusion implementation rules in `OCCLUSION_EFFECTS.md`.
 7. Keep transparency, depth-peeling, and MSAA implementation rules in `TRANSPARENCY_MSAA.md`.
 8. Use `COLOR_MANAGEMENT_IMPLEMENTATION_PLAN.md` as the color-management audit checklist before
    changing sampled-field texture roles, shader color linearization, render-target color formats, or

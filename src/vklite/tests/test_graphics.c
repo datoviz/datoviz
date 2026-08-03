@@ -20,6 +20,7 @@
 #include "test_vk.h"
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_graphics.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/math/types.h"
 #include "datoviz/vk/gpu_ctx.h"
@@ -45,6 +46,32 @@
 /*************************************************************************************************/
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
+
+int test_vklite_graphics_spec_bounds(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+    DvzGraphics* graphics = dvz_graphics_create_wrapper();
+    ANN(graphics);
+    dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, VK_NULL_HANDLE);
+
+    uint32_t value = 0x12345678;
+    dvz_graphics_spec(graphics, VK_SHADER_STAGE_VERTEX_BIT, 0, UINT64_MAX, 1, &value);
+    AT(graphics->spec_info[0].mapEntryCount == 0);
+    AT(graphics->spec_info[0].dataSize == 0);
+
+    dvz_graphics_spec(
+        graphics, VK_SHADER_STAGE_VERTEX_BIT, 0, DVZ_MAX_SPEC_CONST_SIZE - sizeof(value),
+        sizeof(value), &value);
+    AT(graphics->spec_info[0].mapEntryCount == 1);
+    AT(graphics->spec_info[0].dataSize == DVZ_MAX_SPEC_CONST_SIZE);
+
+    dvz_graphics_free(graphics);
+    return 0;
+}
+
+
 
 int test_vklite_graphics_1(TstContext* suite, const TstCase* tstitem)
 {

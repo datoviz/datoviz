@@ -247,13 +247,25 @@ static int kvazaar_import_semaphore(DvzVideoEncoder* enc, DvzVideoBackendKvazaar
         return -1;
     }
 
+    int import_fd = (int)enc->wait_semaphore_fd;
+#if OS_UNIX
+    import_fd = dup(import_fd);
+    if (import_fd < 0)
+    {
+        log_error("failed to duplicate Vulkan semaphore FD for kvazaar import");
+        vkDestroySemaphore(state->device, state->wait_semaphore, NULL);
+        state->wait_semaphore = VK_NULL_HANDLE;
+        return -1;
+    }
+#endif
+
     VkImportSemaphoreFdInfoKHR import_info = {
         .sType = VK_STRUCTURE_TYPE_IMPORT_SEMAPHORE_FD_INFO_KHR,
         .pNext = NULL,
         .semaphore = state->wait_semaphore,
         .flags = 0,
         .handleType = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT,
-        .fd = enc->wait_semaphore_fd,
+        .fd = import_fd,
     };
     res = vkImportSemaphoreFdKHR(state->device, &import_info);
     if (res != VK_SUCCESS)
@@ -261,15 +273,14 @@ static int kvazaar_import_semaphore(DvzVideoEncoder* enc, DvzVideoBackendKvazaar
         log_error(
             "vkImportSemaphoreFdKHR failed (%d); kvazaar backend cannot wait on GPU timeline",
             res);
+#if OS_UNIX
+        close(import_fd);
+#endif
         vkDestroySemaphore(state->device, state->wait_semaphore, NULL);
         state->wait_semaphore = VK_NULL_HANDLE;
         return -1;
     }
     state->wait_semaphore_ready = true;
-#if OS_UNIX
-    close(enc->wait_semaphore_fd);
-#endif
-    enc->wait_semaphore_fd = -1;
     return 0;
 }
 
@@ -620,11 +631,17 @@ static int kvazaar_emit_sample(
     }
     if (enc->fp)
     {
-        fwrite(buffer, 1, total_size, enc->fp);
+        if (fwrite(buffer, 1, total_size, enc->fp) != total_size)
+        {
+            enc->output_failed = true;
+            dvz_free(buffer);
+            log_error("failed to write kvazaar bitstream sample");
+            return -1;
+        }
     }
     dvz_video_encoder_on_sample(enc, buffer, total_size, file_offset, duration, keyframe);
     dvz_free(buffer);
-    return 0;
+    return enc->output_failed ? -1 : 0;
 }
 
 
