@@ -10,6 +10,8 @@
 
 #include "presentation_policy.h"
 
+#include "_assertions.h"
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +23,24 @@
 /*************************************************************************************************/
 
 #define DVZ_APP_FIFO_LATEST_UNKNOWN_REFRESH_FALLBACK_HZ 60.0
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                     */
+/*************************************************************************************************/
+
+static uint64_t _pacing_period_ns(const DvzAppPacingPolicy* policy)
+{
+    ANN(policy);
+    if (policy->fps_cap <= 0)
+        return 0;
+    double period = 1000000000.0 / policy->fps_cap;
+    if (period >= (double)UINT64_MAX)
+        return UINT64_MAX;
+    uint64_t period_ns = (uint64_t)period;
+    return period_ns > 0 ? period_ns : 1;
+}
 
 
 
@@ -126,6 +146,80 @@ bool _dvz_app_frame_slot_count_env(uint32_t* frame_slot_count)
         return false;
     *frame_slot_count = (uint32_t)parsed;
     return true;
+}
+
+
+
+/**
+ * Resolve native scheduler pacing without consulting the resolved Vulkan present mode.
+ *
+ * @param app_owned_native whether the app owns the native window and event loop
+ * @param immediate_requested whether the caller explicitly requested immediate presentation
+ * @param app_fps_cap explicit positive app FPS cap, or zero
+ * @param refresh_rate_hz active monitor refresh rate, or zero when unavailable
+ * @return resolved pacing policy
+ */
+DvzAppPacingPolicy _dvz_app_pacing_policy_resolve(
+    bool app_owned_native, bool immediate_requested, double app_fps_cap, uint32_t refresh_rate_hz)
+{
+    if (!app_owned_native)
+        return (DvzAppPacingPolicy){.mode = DVZ_APP_PACING_HOST_DRIVEN, .fps_cap = 0};
+    if (app_fps_cap > 0)
+        return (DvzAppPacingPolicy){.mode = DVZ_APP_PACING_FIXED, .fps_cap = app_fps_cap};
+    if (immediate_requested)
+        return (DvzAppPacingPolicy){.mode = DVZ_APP_PACING_UNBOUNDED, .fps_cap = 0};
+    return (DvzAppPacingPolicy){
+        .mode = DVZ_APP_PACING_REFRESH,
+        .fps_cap = refresh_rate_hz > 0 ? (double)refresh_rate_hz
+                                       : DVZ_APP_FIFO_LATEST_UNKNOWN_REFRESH_FALLBACK_HZ,
+    };
+}
+
+
+
+/**
+ * Return whether a pacing policy admits a frame at the current scheduler time.
+ *
+ * @param policy resolved pacing policy
+ * @param next_frame_ns next deadline, or zero before the first submitted frame
+ * @param now_ns current scheduler timestamp
+ * @return whether a frame may be submitted now
+ */
+bool _dvz_app_pacing_policy_admits(
+    const DvzAppPacingPolicy* policy, uint64_t next_frame_ns, uint64_t now_ns)
+{
+    ANN(policy);
+    return policy->fps_cap <= 0 || next_frame_ns == 0 || now_ns >= next_frame_ns;
+}
+
+
+
+/**
+ * Advance a pacing deadline after a successfully submitted frame.
+ *
+ * Keep an on-time deadline phase-stable. When the scheduler misses a deadline, resume one full
+ * period after the completed frame instead of generating catch-up submissions.
+ *
+ * @param policy resolved pacing policy
+ * @param next_frame_ns previous deadline, or zero before the first submitted frame
+ * @param now_ns completion timestamp
+ * @return next deadline, or zero for unbounded and host-driven policies
+ */
+uint64_t _dvz_app_pacing_policy_advance(
+    const DvzAppPacingPolicy* policy, uint64_t next_frame_ns, uint64_t now_ns)
+{
+    ANN(policy);
+    uint64_t period_ns = _pacing_period_ns(policy);
+    if (period_ns == 0)
+        return 0;
+
+    if (next_frame_ns > 0 && UINT64_MAX - next_frame_ns >= period_ns)
+    {
+        uint64_t deadline = next_frame_ns + period_ns;
+        if (deadline > now_ns)
+            return deadline;
+    }
+    return UINT64_MAX - now_ns >= period_ns ? now_ns + period_ns : UINT64_MAX;
 }
 
 

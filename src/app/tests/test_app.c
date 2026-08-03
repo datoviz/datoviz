@@ -331,10 +331,47 @@ static int test_app_presentation_policy_env_overrides(TstContext* suite, const T
 
 
 
-static int test_app_presentation_policy_effective_fps_cap(TstContext* suite, const TstCase* item)
+static int test_app_presentation_policy_pacing(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     ANN(item);
+
+    DvzAppPacingPolicy policy = {0};
+    const uint32_t refresh_rates[] = {60, 75, 120, 144};
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(refresh_rates); i++)
+    {
+        policy = _dvz_app_pacing_policy_resolve(true, false, 0, refresh_rates[i]);
+        AT(policy.mode == DVZ_APP_PACING_REFRESH);
+        AT(policy.fps_cap == (double)refresh_rates[i]);
+    }
+    policy = _dvz_app_pacing_policy_resolve(true, false, 0, 0);
+    AT(policy.mode == DVZ_APP_PACING_REFRESH);
+    AT(policy.fps_cap == 60.0);
+    DvzAppPacingPolicy fifo_latest_fallback =
+        _dvz_app_pacing_policy_resolve(true, false, 0, 144);
+    DvzAppPacingPolicy ordinary_fifo_fallback =
+        _dvz_app_pacing_policy_resolve(true, false, 0, 144);
+    AT(fifo_latest_fallback.mode == ordinary_fifo_fallback.mode);
+    AT(fifo_latest_fallback.fps_cap == ordinary_fifo_fallback.fps_cap);
+    policy = _dvz_app_pacing_policy_resolve(true, true, 144.0, 60);
+    AT(policy.mode == DVZ_APP_PACING_FIXED);
+    AT(policy.fps_cap == 144.0);
+    policy = _dvz_app_pacing_policy_resolve(true, true, 0, 60);
+    AT(policy.mode == DVZ_APP_PACING_UNBOUNDED);
+    AT(policy.fps_cap == 0);
+    policy = _dvz_app_pacing_policy_resolve(false, false, 144.0, 60);
+    AT(policy.mode == DVZ_APP_PACING_HOST_DRIVEN);
+    AT(policy.fps_cap == 0);
+
+    policy = _dvz_app_pacing_policy_resolve(true, false, 60.0, 0);
+    uint64_t deadline = _dvz_app_pacing_policy_advance(&policy, 0, 1000);
+    AT(deadline == 16667666);
+    AT(!_dvz_app_pacing_policy_admits(&policy, deadline, deadline - 1));
+    AT(_dvz_app_pacing_policy_admits(&policy, deadline, deadline));
+    AT(_dvz_app_pacing_policy_advance(&policy, deadline, deadline) == 33334332);
+    AT(_dvz_app_pacing_policy_advance(&policy, deadline, deadline + 3 * 16666666) ==
+       deadline + 3 * 16666666 + 16666666);
+    AT(_dvz_app_pacing_policy_advance(&policy, UINT64_MAX - 1, UINT64_MAX - 1) == UINT64_MAX);
 
     AT(_dvz_app_view_effective_fps_cap(144.0, VK_PRESENT_MODE_FIFO_KHR, 60) == 144.0);
     AT(_dvz_app_view_effective_fps_cap(0, VK_PRESENT_MODE_FIFO_KHR, 60) == 0);
@@ -1628,7 +1665,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_config_env_fps_cap);
     TST_CASE(test_app_presentation_policy_defaults);
     TST_CASE(test_app_presentation_policy_env_overrides);
-    TST_CASE(test_app_presentation_policy_effective_fps_cap);
+    TST_CASE(test_app_presentation_policy_pacing);
     TST_CASE(test_app_view_size_policy_resolve);
     TST_CASE(test_app_capture_config_defaults);
     TST_CASE(test_app_abi_rejects_invalid_structs);
