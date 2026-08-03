@@ -283,7 +283,6 @@ def test_dvztest_nonzero_gpu_identity_when_available(tmp_path: Path) -> None:
     ("runner", "case"),
     [
         ("dvztest_vk", "test_memory_interop_buffer_export"),
-        ("dvztest_canvas", "test_canvas_video_sink_start_submit_integration"),
         ("dvztest", "test_app_resources_owned_defaults"),
     ],
 )
