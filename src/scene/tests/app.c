@@ -2780,6 +2780,48 @@ int test_app_offscreen_render_enabled_gate(TstContext* suite, const TstCase* ite
 }
 
 
+int test_app_offscreen_draw_failure_retries(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzFigure* figure = NULL;
+    DvzScene* scene = _app_timer_test_scene(&figure);
+    AT(scene != NULL);
+    ANN(figure);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
+    AT(win != NULL);
+
+    AppRequestFrameProbe request_probe = {0};
+    AT(dvz_view_set_request_frame_callback(
+           win, _app_request_frame_probe_callback, &request_probe) == DVZ_OK);
+
+    _dvz_view_test_force_draw_failure(win, true);
+    tst_expect_error_begin(suite);
+    AT(dvz_view_render_once(win) < 0);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(request_probe.calls == 0);
+    AT(_dvz_view_scheduler_should_render(win, UINT64_MAX));
+
+    _dvz_view_test_force_draw_failure(win, false);
+    AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_view_panel_panzoom_helper(TstContext* suite, const TstCase* item)
 {
     (void)item;
@@ -9808,6 +9850,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_app_run);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_timer_advances_in_render_once);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_render_enabled_gate);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_draw_failure_retries);
     TST_SCENE_APP_SHARED_CASE(test_view_panel_panzoom_helper);
     TST_SCENE_APP_SHARED_CASE(test_view_connects_prebound_panel_controller);
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW

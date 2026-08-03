@@ -274,6 +274,8 @@ struct DvzView
     uint64_t consumed_pointer_sequence;
     bool frame_requested;
     bool dirty;
+    bool draw_failed;
+    bool test_force_draw_failure;
     uint64_t next_frame_ns;
     bool capture_dvzr_enabled;
     bool capture_video_enabled;
@@ -4123,6 +4125,12 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     ANN(win);
     DvzApp* app = win->app;
     ANN(app);
+    if (win->test_force_draw_failure)
+    {
+        log_error("_app_draw forced failure");
+        win->draw_failed = true;
+        return;
+    }
     DvzAppFrameTiming* timing = win->frame_timing.enabled ? &win->frame_timing.current : NULL;
     uint64_t phase_start = 0;
     uint64_t draw_start_ns = 0;
@@ -4139,7 +4147,10 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     }
 
     if (!_app_runtime_recovery_apply(app))
+    {
+        win->draw_failed = true;
         return;
+    }
 
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
@@ -4154,6 +4165,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         if (!_dvz_gui_resolve_viewports(win->gui, _app_resolve_gui_viewport, app))
         {
             log_error("_app_draw failed to resolve strict GUI viewports");
+            win->draw_failed = true;
             return;
         }
     }
@@ -4172,6 +4184,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     if (!dvz_drp2_runtime_attach_frame_target(app->runtime, win->target_id, frame))
     {
         log_error("_app_draw failed to attach canvas frame target");
+        win->draw_failed = true;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         _app_render_gui_frame(win, frame);
 #endif
@@ -4234,6 +4247,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         uint32_t n = dvz_diagnostic_report_count(&report);
         for (uint32_t i = 0; i < n; i++)
             log_error("_app_draw emit failed: %s", dvz_diagnostic_report_get(&report, i));
+        win->draw_failed = true;
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         _app_render_gui_frame(win, frame);
 #endif
@@ -4246,6 +4260,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         stream == NULL)
     {
         log_error("_app_draw failed to create scene frame artifact");
+        win->draw_failed = true;
         dvz_scene_frame_artifact_destroy(artifact);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
         _app_render_gui_frame(win, frame);
@@ -6504,6 +6519,7 @@ int dvz_view_render_once(DvzView* win)
     bool requested_before = win->frame_requested;
     win->dirty = false;
     win->frame_requested = false;
+    win->draw_failed = false;
 
     const bool timing_enabled =
         win->frame_timing.enabled && win->replay_recording == NULL &&
@@ -6532,6 +6548,12 @@ int dvz_view_render_once(DvzView* win)
         if (dvz_canvas_submit(win->canvas) != 0)
         {
             win->dirty = win->dirty || dirty_before;
+            win->frame_requested = win->frame_requested || requested_before;
+            return -1;
+        }
+        if (win->draw_failed)
+        {
+            win->dirty = true;
             win->frame_requested = win->frame_requested || requested_before;
             return -1;
         }
@@ -6577,6 +6599,14 @@ int dvz_view_render_once(DvzView* win)
 #else
     return -1;
 #endif
+}
+
+
+
+void _dvz_view_test_force_draw_failure(DvzView* view, bool force)
+{
+    ANN(view);
+    view->test_force_draw_failure = force;
 }
 
 
