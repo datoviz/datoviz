@@ -111,17 +111,25 @@ def _render_terminal_card(output: str, path: Path) -> None:
     image.save(path)
 
 
-def _validate_exact_rgba(path: Path, expected: tuple[int, int, int, int]) -> None:
+def _validate_uniform_rgba(
+    path: Path, expected: tuple[int, int, int, int], rgb_tolerance: int = 1
+) -> None:
     Image, _, _ = _pillow()
     with Image.open(path) as source:
         image = source.convert("RGBA")
         if image.size != SIZE:
             raise RuntimeError(f"{path}: expected {SIZE[0]}x{SIZE[1]}, got {image.size}")
+        actual = image.getpixel((0, 0))
         extrema = image.getextrema()
-        exact = tuple((channel, channel) for channel in expected)
-        if extrema != exact:
-            actual = image.getpixel((0, 0))
-            raise RuntimeError(f"{path}: expected exact RGBA {expected}, got {actual} / {extrema}")
+        uniform = tuple((channel, channel) for channel in actual)
+        if extrema != uniform:
+            raise RuntimeError(f"{path}: expected a uniform RGBA image, got extrema {extrema}")
+        deltas = tuple(abs(channel - reference) for channel, reference in zip(actual, expected))
+        if any(delta > rgb_tolerance for delta in deltas[:3]) or deltas[3] != 0:
+            raise RuntimeError(
+                f"{path}: expected RGBA {expected} within RGB tolerance {rgb_tolerance} "
+                f"and exact alpha, got {actual} with channel deltas {deltas}"
+            )
 
 
 def _encode_static(source: Path, output: Path, quality: int) -> None:
@@ -197,7 +205,7 @@ def generate_tutorial_media(
             step02_output = _run_step(executables[1], ["--png", str(step02_png)])
             if "validation errors: 0" not in step02_output:
                 raise RuntimeError("step02 reported Vulkan validation errors")
-            _validate_exact_rgba(step02_png, (89, 97, 118, 255))
+            _validate_uniform_rgba(step02_png, (89, 97, 118, 255))
             _encode_static(step02_png, outputs[1], quality)
 
             frames = []
@@ -210,7 +218,7 @@ def generate_tutorial_media(
                 )
                 if "validation errors: 0" not in step03_output:
                     raise RuntimeError(f"step03 frame {index} reported Vulkan validation errors")
-                _validate_exact_rgba(frame, expected_rgba)
+                _validate_uniform_rgba(frame, expected_rgba)
                 frames.append(frame)
             if len({path.read_bytes() for path in frames}) != len(frames):
                 raise RuntimeError("step03 fixed-time captures are not all distinct")

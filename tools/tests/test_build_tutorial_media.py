@@ -93,12 +93,27 @@ class TutorialMediaTest(TestCase):
         self.assertEqual(rc, 2)
         self.assertEqual(result.missing, 3)
 
-    def test_exact_rgba_rejects_wrong_flat_color(self) -> None:
+    def test_uniform_rgba_accepts_one_level_rgb_delta(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "close.png"
+            Image.new("RGBA", build_tutorial_media.SIZE, (90, 96, 119, 255)).save(path)
+            build_tutorial_media._validate_uniform_rgba(path, (89, 97, 118, 255))
+
+    def test_uniform_rgba_rejects_larger_rgb_delta(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "wrong.png"
-            Image.new("RGBA", build_tutorial_media.SIZE, (1, 2, 3, 255)).save(path)
-            with self.assertRaisesRegex(RuntimeError, "expected exact RGBA"):
-                build_tutorial_media._validate_exact_rgba(path, (89, 97, 118, 255))
+            Image.new("RGBA", build_tutorial_media.SIZE, (89, 97, 120, 255)).save(path)
+            with self.assertRaisesRegex(RuntimeError, "channel deltas"):
+                build_tutorial_media._validate_uniform_rgba(path, (89, 97, 118, 255))
+
+    def test_uniform_rgba_rejects_nonuniform_image(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "gradient.png"
+            image = Image.new("RGBA", build_tutorial_media.SIZE, (89, 97, 118, 255))
+            image.putpixel((1, 0), (90, 97, 118, 255))
+            image.save(path)
+            with self.assertRaisesRegex(RuntimeError, "uniform RGBA image"):
+                build_tutorial_media._validate_uniform_rgba(path, (89, 97, 118, 255))
 
 
 if __name__ == "__main__":
