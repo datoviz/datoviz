@@ -103,7 +103,7 @@ struct DvzWindowMetricsInputs
 struct DvzWindow
 {
     DvzWindowHost* host;
-    DvzWindowBackendSlot* backend_slot;
+    uint32_t backend_index;
     void* backend_handle;
     void* backend_payload;
     DvzInputRouter* router;

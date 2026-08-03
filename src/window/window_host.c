@@ -63,8 +63,7 @@ static void _window_array_remove(DvzWindowHost* host, DvzWindow* window);
 
 static void _window_host_clear_windows(DvzWindowHost* host);
 static void _window_wrap_state_clear(DvzWindowHost* host);
-static bool _window_backend_slot_has_window(
-    const DvzWindowHost* host, const DvzWindowBackendSlot* slot);
+static bool _window_backend_slot_has_window(const DvzWindowHost* host, uint32_t backend_index);
 static void _window_host_clear_frame_pending(DvzWindowHost* host);
 static float _window_scale_candidate(float value);
 static uint32_t _window_round_size(float value);
@@ -154,6 +153,16 @@ static DvzWindowBackendSlot* _window_pick_backend(DvzWindowHost* host, DvzBacken
 
 
 
+static DvzWindowBackendSlot* _window_slot(const DvzWindow* window)
+{
+    ANN(window);
+    if (window->host == NULL || window->backend_index >= window->host->backend_count)
+        return NULL;
+    return &window->host->backends[window->backend_index];
+}
+
+
+
 static void _window_array_add(DvzWindowHost* host, DvzWindow* window)
 {
     ANN(host);
@@ -201,14 +210,12 @@ static void _window_host_clear_windows(DvzWindowHost* host)
  * @param slot backend slot to match
  * @return true when at least one window uses the slot
  */
-static bool
-_window_backend_slot_has_window(const DvzWindowHost* host, const DvzWindowBackendSlot* slot)
+static bool _window_backend_slot_has_window(const DvzWindowHost* host, uint32_t backend_index)
 {
     ANN(host);
-    ANN(slot);
     for (uint32_t i = 0; i < host->window_count; i++)
     {
-        if (host->windows[i] != NULL && host->windows[i]->backend_slot == slot)
+        if (host->windows[i] != NULL && host->windows[i]->backend_index == backend_index)
             return true;
     }
     return false;
@@ -759,9 +766,11 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
     ANN(window->router);
     window->gesture_handler = dvz_pointer_gesture_handler(window->router);
     _window_setup_config(window, &chosen);
-    window->backend_slot = slot;
+    window->backend_index = (uint32_t)(slot - host->backends);
     if (!slot->backend.procs.create(&slot->backend, window, &window->config))
     {
+        slot = _window_slot(window);
+        ANN(slot);
         log_error("window creation failed on backend %s", slot->backend.name);
         slot->available = false;
         dvz_pointer_gesture_handler_destroy(window->gesture_handler);
@@ -784,8 +793,9 @@ void dvz_window_destroy(DvzWindow* window)
 {
     if (window == NULL)
         return;
-    if (window->backend_slot != NULL && window->backend_slot->backend.procs.destroy != NULL)
-        window->backend_slot->backend.procs.destroy(&window->backend_slot->backend, window);
+    DvzWindowBackendSlot* slot = _window_slot(window);
+    if (slot != NULL && slot->backend.procs.destroy != NULL)
+        slot->backend.procs.destroy(&slot->backend, window);
     dvz_pointer_gesture_handler_destroy(window->gesture_handler);
     window->gesture_handler = NULL;
     dvz_input_router_destroy(window->router);
@@ -878,7 +888,7 @@ void dvz_window_host_wait(DvzWindowHost* host)
     for (uint32_t i = 0; i < host->backend_count; i++)
     {
         DvzWindowBackendSlot* slot = &host->backends[i];
-        if (!slot->available || !_window_backend_slot_has_window(host, slot))
+        if (!slot->available || !_window_backend_slot_has_window(host, i))
             continue;
         if (slot->backend.procs.wait != NULL)
         {
@@ -919,7 +929,7 @@ void dvz_window_host_wait_timeout(DvzWindowHost* host, double seconds)
     for (uint32_t i = 0; i < host->backend_count; i++)
     {
         DvzWindowBackendSlot* slot = &host->backends[i];
-        if (!slot->available || !_window_backend_slot_has_window(host, slot))
+        if (!slot->available || !_window_backend_slot_has_window(host, i))
             continue;
         if (slot->backend.procs.wait_timeout != NULL)
         {
@@ -964,8 +974,9 @@ void dvz_window_host_request_frame(DvzWindowHost* host, DvzWindow* window)
     ANN(host);
     ANN(window);
     window->frame_pending = true;
-    if (window->backend_slot != NULL && window->backend_slot->backend.procs.request_frame != NULL)
-        window->backend_slot->backend.procs.request_frame(&window->backend_slot->backend, window);
+    DvzWindowBackendSlot* slot = _window_slot(window);
+    if (slot != NULL && slot->backend.procs.request_frame != NULL)
+        slot->backend.procs.request_frame(&slot->backend, window);
 }
 
 
@@ -987,7 +998,8 @@ bool dvz_window_frame_pending(const DvzWindow* window)
 DvzBackend dvz_window_backend_type(const DvzWindow* window)
 {
     ANN(window);
-    return (window->backend_slot != NULL) ? window->backend_slot->backend.type : DVZ_BACKEND_NONE;
+    DvzWindowBackendSlot* slot = _window_slot(window);
+    return slot != NULL ? slot->backend.type : DVZ_BACKEND_NONE;
 }
 
 
@@ -998,10 +1010,10 @@ DvzBackend dvz_window_backend_type(const DvzWindow* window)
 bool dvz_window_should_close(const DvzWindow* window)
 {
     ANN(window);
-    if (window->backend_slot == NULL || window->backend_slot->backend.procs.should_close == NULL)
+    DvzWindowBackendSlot* slot = _window_slot(window);
+    if (slot == NULL || slot->backend.procs.should_close == NULL)
         return false;
-    return window->backend_slot->backend.procs.should_close(
-        &window->backend_slot->backend, window);
+    return slot->backend.procs.should_close(&slot->backend, window);
 }
 
 

@@ -149,6 +149,40 @@ int test_window_frame_requests(TstContext* suite, const TstCase* item)
 
 
 
+int test_window_backend_registration_preserves_live_windows(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    ANN(window);
+    AT(dvz_window_backend_type(window) == DVZ_BACKEND_OFFSCREEN);
+
+    uint32_t initial_capacity = host->backend_capacity;
+    for (uint32_t i = 0; i <= initial_capacity; i++)
+    {
+        DvzWindowBackend backend = {
+            .name = "inert-test-backend",
+            .type = (DvzBackend)(100 + i),
+        };
+        dvz_window_host_register_backend(host, &backend);
+    }
+    AT(host->backend_capacity > initial_capacity);
+    AT(dvz_window_backend_type(window) == DVZ_BACKEND_OFFSCREEN);
+    dvz_window_host_request_frame(host, window);
+    AT(dvz_window_frame_pending(window));
+    AT(!dvz_window_should_close(window));
+
+    dvz_window_destroy(window);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
 /**
  * Ensure headless wait hooks clear pending frame requests without blocking indefinitely.
  */
@@ -501,6 +535,7 @@ int test_window(TstSuite* suite)
     TST_CASE(test_window_config_rejects_invalid_abi);
     TST_CASE(test_window_resize_events);
     TST_CASE(test_window_frame_requests);
+    TST_CASE(test_window_backend_registration_preserves_live_windows);
     TST_CASE(test_window_wait_hooks_headless);
     TST_CASE(test_window_effective_scale_override);
     TST_CASE(test_window_effective_scale_framebuffer_ratio);
