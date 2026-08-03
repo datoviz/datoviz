@@ -60,6 +60,8 @@ App-owned native windows request FIFO latest-ready by default when the build and
 
 Window refresh rate is a runtime metric and may change when a window moves between monitors. An explicit positive app FPS cap overrides refresh-derived pacing. Explicit present-mode and frame-slot overrides remain authoritative. Window reports display facts, app selects scheduling policy, Canvas executes explicit frame-slot configuration, and vklite resolves Vulkan surface capabilities.
 
+Every requested frame in the app-owned native loop passes through per-view scheduler admission, regardless of whether the request comes from continuous interaction, a dirty scene, an event, animation, replay, a posted callback, a query, or another one-shot invalidation. Repeated requests coalesce while a paced view waits, the deadline advances only after a successfully presented frame, and a deferred or failed frame retains its pending state without advancing the cadence. Explicit immediate mode without a cap remains unbounded, fixed-count runs and direct `dvz_view_render_once()` calls remain unpaced, and external surfaces remain host-driven.
+
 
 ## Commit Comparison
 
