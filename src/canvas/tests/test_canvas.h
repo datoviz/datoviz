@@ -46,6 +46,8 @@ int test_canvas_swapchain_failfast_slot_init(TstContext* suite, const TstCase* i
 
 int test_canvas_glfw_present_recovery(TstContext* suite, const TstCase* item);
 
+int test_canvas_glfw_pre_submit_failure_recovery(TstContext* suite, const TstCase* item);
+
 int test_canvas_glfw_auto_format_stable(TstContext* suite, const TstCase* item);
 
 int test_canvas_glfw_present_semaphore_reuse(TstContext* suite, const TstCase* item);

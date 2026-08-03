@@ -323,7 +323,8 @@ static int canvas_refresh_probe_start(DvzStreamSink* sink, const DvzStreamFrame*
 {
     ANN(sink);
     CanvasRefreshProbeState* state = (CanvasRefreshProbeState*)sink->backend_data;
-    return canvas_refresh_probe_apply_frame(state, frame, false);
+    int rc = canvas_refresh_probe_apply_frame(state, frame, false);
+    return rc != 0 ? rc : state->start_rc;
 }
 
 
@@ -481,7 +482,8 @@ static int canvas_refresh_probe_update(DvzStreamSink* sink, const DvzStreamFrame
 {
     ANN(sink);
     CanvasRefreshProbeState* state = (CanvasRefreshProbeState*)sink->backend_data;
-    return canvas_refresh_probe_apply_frame(state, frame, true);
+    int rc = canvas_refresh_probe_apply_frame(state, frame, true);
+    return rc != 0 ? rc : state->update_rc;
 }
 
 
@@ -2239,6 +2241,9 @@ int test_canvas(TstSuite* suite)
         test_canvas_swapchain_failfast_slot_init,
         TST_CANVAS_GLFW_RES | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
     TST_CANVAS_CASE(test_canvas_glfw_present_recovery, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_glfw_pre_submit_failure_recovery,
+        TST_CANVAS_GLFW_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_glfw_auto_format_stable, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(

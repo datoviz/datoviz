@@ -2399,22 +2399,51 @@ int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame)
         return acquire_status_rc;
     }
 
-    state->frame_index = (state->frame_index + 1) % state->slot_count;
+    state->active_slot = slot;
+    state->active_slot_index = slot_idx;
     if (canvas_slot_bind_acquired_image(state, slot, slot_idx, image_index) != 0)
     {
+        dvz_canvas_swapchain_abort_acquired(canvas);
         return -1;
     }
 
     if (canvas_slot_begin_recording(state, slot) != 0)
     {
+        dvz_canvas_swapchain_abort_acquired(canvas);
         return -1;
     }
 
-    state->active_slot = slot;
-    state->active_slot_index = slot_idx;
+    state->frame_index = (state->frame_index + 1) % state->slot_count;
     canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_ACQUIRED, "acquire success");
     canvas_frame_from_slot(state, slot, frame);
     return 0;
+}
+
+
+
+/**
+ * Abandon an acquired image after a pre-submit frame failure.
+ *
+ * The selected fence was reset before acquisition and the image cannot be returned directly to the
+ * presentation engine. Force a swapchain recreate before the next acquire instead of reusing the
+ * unsignaled slot or retaining the acquired image.
+ *
+ * @param canvas canvas whose active acquisition must be abandoned
+ */
+void dvz_canvas_swapchain_abort_acquired(DvzCanvas* canvas)
+{
+    if (canvas == NULL || canvas->swapchain == NULL)
+        return;
+    DvzCanvasSwapchain* state = canvas->swapchain;
+    if (state->active_slot == NULL)
+        return;
+    canvas_clear_active_slot(state);
+    if (state->runtime_state != DVZ_CANVAS_PRESENT_STATE_FATAL_DEVICE_LOST)
+    {
+        state->dirty = true;
+        canvas_runtime_transition(
+            state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "abandoned acquired frame");
+    }
 }
 
 

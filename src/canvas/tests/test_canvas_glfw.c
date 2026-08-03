@@ -810,6 +810,115 @@ int test_canvas_swapchain_failfast_slot_init(TstContext* suite, const TstCase* i
 
 
 /**
+ * Ensure stream failures after image acquisition force safe swapchain recreation.
+ *
+ * @param suite The owning test suite.
+ * @param item The test item (unused).
+ * @return 0 on success.
+ */
+int test_canvas_glfw_pre_submit_failure_recovery(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {0};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+    CanvasGlfwClearContext clear_ctx = {
+        .device = fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    CanvasRefreshProbeState probe = {
+        .start_rc = -1,
+        .latest_memory_fd = -1,
+        .latest_wait_semaphore_fd = -1,
+    };
+    AT(dvz_stream_attach_sink(canvas->stream, &CANVAS_REFRESH_PROBE_BACKEND, &probe) == 0);
+
+    bool start_failed = false;
+    tst_log_capture_begin(suite);
+    tst_expect_error_begin(suite);
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc < 0);
+        start_failed = true;
+        break;
+    }
+    AT(tst_expect_error_end(suite) == 0);
+    AT(start_failed);
+    AT(
+        dvz_canvas_present_runtime_state(canvas) ==
+        DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE);
+
+    probe.start_rc = 0;
+    bool first_submit = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        first_submit = true;
+        break;
+    }
+    AT(first_submit);
+
+    probe.update_rc = -1;
+    dvz_canvas_swapchain_mark_out_of_date(canvas);
+    bool update_failed = false;
+    tst_expect_error_begin(suite);
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc < 0);
+        update_failed = true;
+        break;
+    }
+    AT(tst_expect_error_end(suite) == 0);
+    AT(update_failed);
+    AT(
+        dvz_canvas_present_runtime_state(canvas) ==
+        DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE);
+
+    probe.update_rc = 0;
+    bool resumed = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_submit(canvas) == 0);
+        resumed = true;
+        break;
+    }
+    AT(resumed);
+    tst_log_capture_end(suite);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
  * Validate explicit out-of-date recovery on GLFW: recreate and resume frame submissions.
  *
  * @param suite The owning test suite.

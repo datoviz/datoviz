@@ -206,6 +206,8 @@ void dvz_canvas_swapchain_destroy(DvzCanvas* canvas);
 
 int dvz_canvas_swapchain_acquire(DvzCanvas* canvas, DvzStreamFrame* frame);
 
+void dvz_canvas_swapchain_abort_acquired(DvzCanvas* canvas);
+
 int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value);
 
 bool dvz_canvas_depth_format_valid(VkFormat format);

@@ -1707,6 +1707,25 @@ void dvz_canvas_set_draw_callback(DvzCanvas* canvas, DvzCanvasDraw callback, voi
 
 
 /**
+ * Restore the canvas runtime after frame preparation fails before submission.
+ *
+ * @param canvas canvas whose prepared frame failed
+ * @param reason transition reason used for offscreen diagnostics
+ * @return -1 for direct propagation from dvz_canvas_frame()
+ */
+static int canvas_abort_prepared_frame(DvzCanvas* canvas, const char* reason)
+{
+    ANN(canvas);
+    if (canvas_is_offscreen_mode(canvas))
+        canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_READY, reason);
+    else
+        dvz_canvas_swapchain_abort_acquired(canvas);
+    return -1;
+}
+
+
+
+/**
  * Acquire the next frame and execute the registered draw callback.
  *
  * @param canvas canvas to update
@@ -1733,7 +1752,7 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         if (!frame)
         {
             log_error("canvas frame pool unavailable");
-            return -1;
+            return canvas_abort_prepared_frame(canvas, "frame pool unavailable");
         }
         canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING, "frame begin");
         if (canvas_offscreen_prepare_frame(canvas, frame) != 0)
@@ -1772,13 +1791,13 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         (!canvas->stream_started || frame->handles_dirty);
     if (needs_video_sync_refresh && canvas_prepare_video_wait_semaphore_fd(canvas, frame) != 0)
     {
-        return -1;
+        return canvas_abort_prepared_frame(canvas, "video wait handle preparation failed");
     }
 
     bool stream_was_started = canvas->stream_started;
     if (dvz_canvas_stream_start(canvas, frame) != 0)
     {
-        return -1;
+        return canvas_abort_prepared_frame(canvas, "stream start failed");
     }
     // If the stream starts on this frame, sinks consumed the frame in start(); otherwise a handle
     // refresh must be propagated through update() before the next submit().
@@ -1793,8 +1812,9 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         {
             if (dvz_stream_update(canvas->stream, frame) != 0)
             {
+                canvas->stream_started = false;
                 log_error("failed to refresh offscreen canvas stream frame handles");
-                return -1;
+                return canvas_abort_prepared_frame(canvas, "stream update failed");
             }
             frame->handles_dirty = false;
         }
@@ -1808,8 +1828,9 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     {
         if (dvz_stream_update(canvas->stream, frame) != 0)
         {
+            canvas->stream_started = false;
             log_error("failed to refresh canvas stream frame handles");
-            return -1;
+            return canvas_abort_prepared_frame(canvas, "stream update failed");
         }
         dvz_canvas_swapchain_handles_refreshed(canvas);
         frame->handles_dirty = false;
