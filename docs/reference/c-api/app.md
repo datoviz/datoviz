@@ -740,7 +740,7 @@ int dvz_canvas_capture_png(
 | `canvas` | [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 | `path` | `const` `char` * | output file path |
 
-_Declared in `include/datoviz/canvas.h`:358._
+_Declared in `include/datoviz/canvas.h`:366._
 
 #### `dvz_canvas_capture_rgba()` { #dvz_canvas_capture_rgba .dvz-api-function }
 
@@ -767,7 +767,7 @@ int dvz_canvas_capture_rgba(
 | `out_height` | `uint32_t` * | destination height in pixels |
 | `out_rgba` | `uint8_t` ** | destination pointer receiving an allocated sRGB RGBA8 buffer |
 
-_Declared in `include/datoviz/canvas.h`:343._
+_Declared in `include/datoviz/canvas.h`:351._
 
 #### `dvz_canvas_capture_rgba_into()` { #dvz_canvas_capture_rgba_into .dvz-api-function }
 
@@ -796,7 +796,7 @@ int dvz_canvas_capture_rgba_into(
 | `out_rgba` | `uint8_t` * | destination buffer receiving sRGB RGBA8 pixels |
 | `out_size_bytes` | [`DvzSize`](runtime-math.md#type-dvzsize) | size of `out_rgba` in bytes |
 
-_Declared in `include/datoviz/canvas.h`:322._
+_Declared in `include/datoviz/canvas.h`:330._
 
 #### `dvz_canvas_config()` { #dvz_canvas_config .dvz-api-function }
 
@@ -818,7 +818,7 @@ DvzCanvasConfig dvz_canvas_config(void);
 
 Related: [`dvz_canvas_create()`](#dvz_canvas_create).
 
-_Declared in `include/datoviz/canvas.h`:154._
+_Declared in `include/datoviz/canvas.h`:162._
 
 #### `dvz_canvas_configure_gpu_ctx()` { #dvz_canvas_configure_gpu_ctx .dvz-api-function }
 
@@ -846,7 +846,7 @@ DvzResult dvz_canvas_configure_gpu_ctx(
 | `render_mode` | [`DvzCanvasRenderMode`](app.md#type-dvzcanvasrendermode) | intended Canvas render mode |
 | `config` | [`DvzGpuCtxConfig`](runtime-vulkan.md#type-dvzgpuctxconfig) * | caller-owned GPU-context configuration to augment |
 
-_Declared in `include/datoviz/canvas.h`:181._
+_Declared in `include/datoviz/canvas.h`:189._
 
 #### `dvz_canvas_configure_live_image_sink()` { #dvz_canvas_configure_live_image_sink .dvz-api-function }
 
@@ -867,7 +867,7 @@ int dvz_canvas_configure_live_image_sink(
 | `enable` | `_Bool` | true to enable, false to detach the sink |
 | `cfg` | `const` [`DvzCanvasLiveImageSinkConfig`](app.md#type-dvzcanvasliveimagesinkconfig) * | required configuration when enabling, ignored when disabling |
 
-_Declared in `include/datoviz/canvas.h`:385._
+_Declared in `include/datoviz/canvas.h`:393._
 
 #### `dvz_canvas_configure_video_sink()` { #dvz_canvas_configure_video_sink .dvz-api-function }
 
@@ -888,7 +888,7 @@ int dvz_canvas_configure_video_sink(
 | `enable` | `_Bool` | true to enable, false to detach an existing sink |
 | `cfg` | `const` [`DvzVideoSinkConfig`](app.md#type-dvzvideosinkconfig) * | optional configuration passed to the sink (NULL uses defaults) |
 
-_Declared in `include/datoviz/canvas.h`:372._
+_Declared in `include/datoviz/canvas.h`:380._
 
 #### `dvz_canvas_create()` { #dvz_canvas_create .dvz-api-function }
 
@@ -911,7 +911,7 @@ DvzCanvas * dvz_canvas_create(
 
 Related: [`dvz_canvas_destroy()`](#dvz_canvas_destroy).
 
-_Declared in `include/datoviz/canvas.h`:197._
+_Declared in `include/datoviz/canvas.h`:205._
 
 #### `dvz_canvas_destroy()` { #dvz_canvas_destroy .dvz-api-function }
 
@@ -929,7 +929,7 @@ void dvz_canvas_destroy(
 
 Related: [`dvz_canvas_create()`](#dvz_canvas_create).
 
-_Declared in `include/datoviz/canvas.h`:206._
+_Declared in `include/datoviz/canvas.h`:214._
 
 #### `dvz_canvas_frame()` { #dvz_canvas_frame .dvz-api-function }
 
@@ -946,7 +946,7 @@ int dvz_canvas_frame(
 | return | `int` | DVZ_CANVAS_FRAME_READY when a frame is ready, DVZ_CANVAS_FRAME_WAIT_SURFACE when the surface is unavailable, or a negative error code when acquisition fails |
 | `canvas` | [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 
-_Declared in `include/datoviz/canvas.h`:239._
+_Declared in `include/datoviz/canvas.h`:247._
 
 #### `dvz_canvas_frame_format()` { #dvz_canvas_frame_format .dvz-api-function }
 
@@ -967,7 +967,7 @@ VkFormat dvz_canvas_frame_format(
 | return | `VkFormat` | resolved frame format, or VK_FORMAT_UNDEFINED while unavailable |
 | `canvas` | `const` [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 
-_Declared in `include/datoviz/canvas.h`:273._
+_Declared in `include/datoviz/canvas.h`:281._
 
 #### `dvz_canvas_input()` { #dvz_canvas_input .dvz-api-function }
 
@@ -984,7 +984,7 @@ DvzInputRouter * dvz_canvas_input(
 | return | [`DvzInputRouter`](app.md#type-dvzinputrouter) * | the borrowed router, valid until the canvas window is destroyed, or NULL when absent |
 | `canvas` | [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas owning the router |
 
-_Declared in `include/datoviz/canvas.h`:304._
+_Declared in `include/datoviz/canvas.h`:312._
 
 #### `dvz_canvas_live_image_sink_config()` { #dvz_canvas_live_image_sink_config .dvz-api-function }
 
@@ -998,7 +998,7 @@ DvzCanvasLiveImageSinkConfig dvz_canvas_live_image_sink_config(void);
 | --- | --- | --- |
 | return | [`DvzCanvasLiveImageSinkConfig`](app.md#type-dvzcanvasliveimagesinkconfig) | a configuration with no callback or user data |
 
-_Declared in `include/datoviz/canvas.h`:162._
+_Declared in `include/datoviz/canvas.h`:170._
 
 #### `dvz_canvas_offscreen_runtime_state()` { #dvz_canvas_offscreen_runtime_state .dvz-api-function }
 
@@ -1015,7 +1015,7 @@ DvzCanvasOffscreenRuntimeState dvz_canvas_offscreen_runtime_state(
 | return | [`DvzCanvasOffscreenRuntimeState`](app.md#type-dvzcanvasoffscreenruntimestate) | offscreen runtime state, or UNINITIALIZED when unavailable |
 | `canvas` | `const` [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 
-_Declared in `include/datoviz/canvas.h`:294._
+_Declared in `include/datoviz/canvas.h`:302._
 
 #### `dvz_canvas_present_runtime_state()` { #dvz_canvas_present_runtime_state .dvz-api-function }
 
@@ -1032,7 +1032,7 @@ DvzCanvasPresentRuntimeState dvz_canvas_present_runtime_state(
 | return | [`DvzCanvasPresentRuntimeState`](app.md#type-dvzcanvaspresentruntimestate) | present runtime state, or UNINITIALIZED when unavailable |
 | `canvas` | `const` [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 
-_Declared in `include/datoviz/canvas.h`:283._
+_Declared in `include/datoviz/canvas.h`:291._
 
 #### `dvz_canvas_render_mode()` { #dvz_canvas_render_mode .dvz-api-function }
 
@@ -1049,7 +1049,7 @@ DvzCanvasRenderMode dvz_canvas_render_mode(
 | return | [`DvzCanvasRenderMode`](app.md#type-dvzcanvasrendermode) | render mode currently used by the canvas |
 | `canvas` | `const` [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 
-_Declared in `include/datoviz/canvas.h`:259._
+_Declared in `include/datoviz/canvas.h`:267._
 
 #### `dvz_canvas_set_draw_callback()` { #dvz_canvas_set_draw_callback .dvz-api-function }
 
@@ -1079,7 +1079,7 @@ void dvz_canvas_set_draw_callback(
 | `callback` | [`DvzCanvasDraw`](app.md#type-dvzcanvasdraw) | draw callback (NULL removes the callback) |
 | `user_data` | `void` * | borrowed opaque pointer supplied to the callback on every invocation |
 
-_Declared in `include/datoviz/canvas.h`:228._
+_Declared in `include/datoviz/canvas.h`:236._
 
 #### `dvz_canvas_stream()` { #dvz_canvas_stream .dvz-api-function }
 
@@ -1099,7 +1099,7 @@ DvzStream * dvz_canvas_stream(
 | return | [`DvzStream`](app.md#type-dvzstream) * | the borrowed underlying stream, or NULL when unavailable |
 | `canvas` | [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 
-_Declared in `include/datoviz/canvas.h`:399._
+_Declared in `include/datoviz/canvas.h`:407._
 
 #### `dvz_canvas_submit()` { #dvz_canvas_submit .dvz-api-function }
 
@@ -1116,7 +1116,7 @@ int dvz_canvas_submit(
 | return | `int` | 0 when submission succeeds, <0 when the stream submission fails |
 | `canvas` | [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 
-_Declared in `include/datoviz/canvas.h`:249._
+_Declared in `include/datoviz/canvas.h`:257._
 
 #### `dvz_canvas_timings()` { #dvz_canvas_timings .dvz-api-function }
 
@@ -1138,7 +1138,7 @@ const DvzFrameTiming * dvz_canvas_timings(
 | `canvas` | `const` [`DvzCanvas`](app.md#type-dvzcanvas) * | canvas handle |
 | `count` | `size_t` * | optional output receiving the number of readable samples |
 
-_Declared in `include/datoviz/canvas.h`:413._
+_Declared in `include/datoviz/canvas.h`:421._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -1166,12 +1166,13 @@ _Declared in `include/datoviz/canvas.h`:413._
         VkFormat color_format;
         VkFormat depth_format;
         VkPresentModeKHR present_mode;
+        uint32_t frame_slot_count;
         _Bool enable_video_sink;
         size_t timing_history;
     };
     ```
 
-    _Declared in `include/datoviz/canvas.h`:60._
+    _Declared in `include/datoviz/canvas.h`:66._
 
 <a id="type-dvzcanvasdraw"></a>
 
@@ -1181,7 +1182,7 @@ _Declared in `include/datoviz/canvas.h`:413._
     typedef void (*)(DvzCanvas *, const DvzStreamFrame *, void *) DvzCanvasDraw;
     ```
 
-    _Declared in `include/datoviz/canvas.h`:133._
+    _Declared in `include/datoviz/canvas.h`:141._
 
 <a id="type-dvzcanvasflags"></a>
 
@@ -1223,7 +1224,7 @@ _Declared in `include/datoviz/canvas.h`:413._
     typedef int (*)(const DvzCanvasLiveImageFrame *, void *) DvzCanvasLiveImageCallback;
     ```
 
-    _Declared in `include/datoviz/canvas.h`:117._
+    _Declared in `include/datoviz/canvas.h`:125._
 
 <a id="type-dvzcanvasliveimageframe"></a>
 
@@ -1246,7 +1247,7 @@ _Declared in `include/datoviz/canvas.h`:413._
     };
     ```
 
-    _Declared in `include/datoviz/canvas.h`:99._
+    _Declared in `include/datoviz/canvas.h`:107._
 
 <a id="type-dvzcanvasliveimagesinkconfig"></a>
 
@@ -1261,7 +1262,7 @@ _Declared in `include/datoviz/canvas.h`:413._
     };
     ```
 
-    _Declared in `include/datoviz/canvas.h`:123._
+    _Declared in `include/datoviz/canvas.h`:131._
 
 <a id="type-dvzcanvasoffscreenruntimestate"></a>
 
@@ -1325,7 +1326,7 @@ _Declared in `include/datoviz/canvas.h`:413._
     };
     ```
 
-    _Declared in `include/datoviz/canvas.h`:77._
+    _Declared in `include/datoviz/canvas.h`:85._
 
 ## Display Sizing { #display-sizing }
 
@@ -6365,6 +6366,7 @@ _Declared in `include/datoviz/window/backend.h`:259._
         DvzScaleXY framebuffer_scale;
         DvzScaleXY device_scale;
         DvzScaleXY native_to_logical;
+        uint32_t refresh_rate_hz;
         DvzHiDpiPolicy active_hidpi_policy;
         uint64_t generation;
     };
@@ -6388,4 +6390,4 @@ _Declared in `include/datoviz/window/backend.h`:259._
     };
     ```
 
-    _Declared in `include/datoviz/window/types.h`:108._
+    _Declared in `include/datoviz/window/types.h`:109._
