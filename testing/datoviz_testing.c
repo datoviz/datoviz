@@ -16,6 +16,8 @@
 
 #include <stdlib.h>
 
+#include "datoviz_testing.h"
+
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"

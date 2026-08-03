@@ -56,8 +56,9 @@ EXTERN_C_OFF
 #define ANN(x)                                                                                    \
     do                                                                                            \
     {                                                                                             \
-        assert((x) != NULL);                                                                      \
-        ASSERT((x) != NULL);                                                                      \
-        DVZ_ASSUME((x) != NULL);                                                                  \
+        const bool _dvz_ann_valid = (x) != NULL;                                                  \
+        assert(_dvz_ann_valid);                                                                   \
+        ASSERT(_dvz_ann_valid);                                                                   \
+        DVZ_ASSUME(_dvz_ann_valid);                                                               \
     } while (0)
 #endif
