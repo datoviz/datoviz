@@ -222,6 +222,7 @@ examples are explicitly included in the public v0.4 API. The staged scenario-run
 | Scenario | Reason |
 | --- | --- |
 | `compute_and_custom_shaders` | Mandelbrot, Gray-Scott, and GPU particles need scene-level compute/custom material resources. |
+| `showcases_box3d_dynamics` | Optional Box3D rigid-body showcase pressure-tests dynamic mesh instancing, fixed-step simulation, sparse transform synchronization, physics diagnostics, and example-only external dependency policy. |
 | `tokamak_hep_field_lines` | Needs field-line paths/tubes, complex event geometry, vector fields, labels, picking, and domain data policy. |
 | `geo_trajectories_regions_events` | Migration, choropleth, earthquakes, and flight tracks need geographic transforms, topology helpers, timelines, and LOD. |
 | `many_labels_and_splats_full` | Needs label LOD/collision or full Gaussian-splat asset pipelines beyond first slices. |

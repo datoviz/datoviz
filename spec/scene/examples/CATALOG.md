@@ -72,6 +72,7 @@ As of 2026-06-05, the public C manifest has runnable `v0.4 required` entries for
 | `gray_scott` | `later` | [scenarios/later/COMPUTE_AND_CUSTOM_SHADERS.md](scenarios/later/COMPUTE_AND_CUSTOM_SHADERS.md) |
 | `mandelbrot` | `later` | [scenarios/later/COMPUTE_AND_CUSTOM_SHADERS.md](scenarios/later/COMPUTE_AND_CUSTOM_SHADERS.md) |
 | `gpu_particles` | `later` | [scenarios/later/COMPUTE_AND_CUSTOM_SHADERS.md](scenarios/later/COMPUTE_AND_CUSTOM_SHADERS.md) |
+| `showcases_box3d_dynamics` | `later` | [scenarios/later/BOX3D_DYNAMICS.md](scenarios/later/BOX3D_DYNAMICS.md) |
 | `geo_trajectories_regions_events` | `later` | [scenarios/later/GEOSPATIAL_AND_PHYSICS_LATER.md](scenarios/later/GEOSPATIAL_AND_PHYSICS_LATER.md) |
 | `tokamak_hep_field_lines` | `later` | [scenarios/later/GEOSPATIAL_AND_PHYSICS_LATER.md](scenarios/later/GEOSPATIAL_AND_PHYSICS_LATER.md) |
 | `many_labels` | `later` | [scenarios/later/GEOSPATIAL_AND_PHYSICS_LATER.md](scenarios/later/GEOSPATIAL_AND_PHYSICS_LATER.md) |
