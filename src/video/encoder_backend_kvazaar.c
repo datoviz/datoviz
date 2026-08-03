@@ -631,11 +631,17 @@ static int kvazaar_emit_sample(
     }
     if (enc->fp)
     {
-        fwrite(buffer, 1, total_size, enc->fp);
+        if (fwrite(buffer, 1, total_size, enc->fp) != total_size)
+        {
+            enc->output_failed = true;
+            dvz_free(buffer);
+            log_error("failed to write kvazaar bitstream sample");
+            return -1;
+        }
     }
     dvz_video_encoder_on_sample(enc, buffer, total_size, file_offset, duration, keyframe);
     dvz_free(buffer);
-    return 0;
+    return enc->output_failed ? -1 : 0;
 }
 
 

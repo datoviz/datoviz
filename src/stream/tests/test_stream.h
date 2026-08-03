@@ -41,6 +41,7 @@ int test_stream_submit_returns_first_error(TstContext* suite, const TstCase* ite
 
 
 int test_stream_update_restart_failure_stops_stream(TstContext* suite, const TstCase* item);
+int test_stream_stop_returns_first_error(TstContext* suite, const TstCase* item);
 
 
 

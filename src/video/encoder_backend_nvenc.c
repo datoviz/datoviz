@@ -936,7 +936,11 @@ static void nvenc_write_spspps(NvEncCtx* nctx, DvzVideoEncoder* enc, DvzVideoBac
     {
         if (enc->fp)
         {
-            fwrite(header, 1, header_size, enc->fp);
+            if (fwrite(header, 1, header_size, enc->fp) != header_size)
+            {
+                enc->output_failed = true;
+                return;
+            }
         }
         dvz_video_encoder_on_sample(enc, header, header_size, NVENC_INVALID_OFFSET, 0, true);
     }
@@ -980,11 +984,18 @@ static void nvenc_encode_frame(
     }
     if (enc->fp)
     {
-        fwrite(lb.bitstreamBufferPtr, 1, lb.bitstreamSizeInBytes, enc->fp);
+        if (fwrite(lb.bitstreamBufferPtr, 1, lb.bitstreamSizeInBytes, enc->fp) !=
+            lb.bitstreamSizeInBytes)
+        {
+            enc->output_failed = true;
+        }
     }
-    dvz_video_encoder_on_sample(
-        enc, (const uint8_t*)lb.bitstreamBufferPtr, (uint32_t)lb.bitstreamSizeInBytes,
-        sample_offset, duration, frame_idx == 0);
+    if (!enc->output_failed)
+    {
+        dvz_video_encoder_on_sample(
+            enc, (const uint8_t*)lb.bitstreamBufferPtr, (uint32_t)lb.bitstreamSizeInBytes,
+            sample_offset, duration, frame_idx == 0);
+    }
 
     NVENC_API_CALL(g_nvenc.nvEncUnlockBitstream(nctx->hEncoder, state->bitstream));
 }

@@ -111,6 +111,7 @@ static void video_encoder_release(DvzVideoEncoder* enc)
     enc->memory_fd = -1;
     enc->wait_semaphore_fd = -1;
     enc->started = false;
+    enc->output_failed = false;
     enc->frame_idx = 0;
 }
 
@@ -218,6 +219,7 @@ int dvz_video_encoder_start(
     }
 
     int rc = 0;
+    enc->output_failed = false;
     enc->mux = enc->cfg.mux;
     enc->mp4_frame_duration_num = 90000;
     enc->mp4_frame_duration_den = enc->cfg.fps > 0 ? enc->cfg.fps : 1;
@@ -258,6 +260,11 @@ int dvz_video_encoder_start(
     }
 
     enc->frame_idx = 0;
+    if (enc->output_failed)
+    {
+        rc = -1;
+        goto fail;
+    }
     enc->started = true;
     return 0;
 
@@ -271,11 +278,13 @@ fail:
 int dvz_video_encoder_submit(DvzVideoEncoder* enc, uint64_t wait_value)
 {
     ANN(enc);
-    if (!enc->started || !enc->backend || !enc->backend->submit)
+    if (!enc->started || enc->output_failed || !enc->backend || !enc->backend->submit)
     {
         return -1;
     }
     int rc = enc->backend->submit(enc, wait_value);
+    if (rc == 0 && enc->output_failed)
+        rc = -1;
     if (rc == 0)
     {
         enc->frame_idx += 1;
@@ -307,11 +316,13 @@ int dvz_video_encoder_submit_rgba(
         log_error("invalid CPU frame dimensions for video submission");
         return -1;
     }
-    if (!enc->started || !enc->backend || !enc->backend->submit_rgba)
+    if (!enc->started || enc->output_failed || !enc->backend || !enc->backend->submit_rgba)
     {
         return -1;
     }
     int rc = enc->backend->submit_rgba(enc, rgba, width, height, stride, wait_value);
+    if (rc == 0 && enc->output_failed)
+        rc = -1;
     if (rc == 0)
     {
         enc->frame_idx += 1;
@@ -328,18 +339,24 @@ int dvz_video_encoder_stop(DvzVideoEncoder* enc)
         return 0;
     }
 
+    int rc = enc->output_failed ? -1 : 0;
     if (enc->started && enc->backend && enc->backend->stop)
     {
-        enc->backend->stop(enc);
+        int backend_rc = enc->backend->stop(enc);
+        if (backend_rc != 0 && rc == 0)
+            rc = backend_rc;
     }
     if (enc->mux == DVZ_VIDEO_MUX_MP4_POST && enc->fp)
     {
-        fflush(enc->fp);
-        dvz_video_encoder_mux_post(enc);
-        dvz_video_file_seek64(enc->fp, 0, SEEK_END);
+        if (fflush(enc->fp) != 0 && rc == 0)
+            rc = -1;
+        if (dvz_video_encoder_mux_post(enc) != 0 && rc == 0)
+            rc = -1;
+        if (dvz_video_file_seek64(enc->fp, 0, SEEK_END) != 0 && rc == 0)
+            rc = -1;
     }
     video_encoder_release(enc);
-    return 0;
+    return rc;
 }
 
 
@@ -375,6 +392,8 @@ void dvz_video_encoder_on_sample(
         return;
     }
     dvz_video_encoder_mux_sample(enc, data, size, duration);
+    if (enc->output_failed)
+        return;
     if (file_offset != UINT64_MAX)
     {
         dvz_video_encoder_record_sample(enc, file_offset, size, duration);

@@ -430,17 +430,20 @@ int dvz_stream_stop(DvzStream* stream)
         return 0;
     }
 
+    int rc = 0;
     for (size_t i = 0; i < stream->sink_count; ++i)
     {
         DvzStreamSink* sink = &stream->sinks[i];
         if (sink->started && sink->backend && sink->backend->stop)
         {
-            sink->backend->stop(sink);
+            int sink_rc = sink->backend->stop(sink);
+            if (sink_rc != 0 && rc == 0)
+                rc = sink_rc;
         }
         sink->started = false;
     }
     stream->started = false;
-    return 0;
+    return rc;
 }
 
 

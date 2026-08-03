@@ -71,6 +71,7 @@ int test_video(TstSuite* suite)
     TST_VIDEO_CASE(
         test_video_offline_headless_encode, TST_RES_VIDEO | TST_RES_FILESYSTEM,
         TST_ISOLATION_PROCESS, 0);
+    TST_CASE(test_video_output_errors_propagate);
 
     return 0;
 }

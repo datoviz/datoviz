@@ -231,6 +231,7 @@ void dvz_video_encoder_mux_sample(
     int err = _mp4_h26x_write_datoviz_sample(enc->mp4_writer, enc, data, size, duration);
     if (err != MP4E_STATUS_OK)
     {
+        enc->output_failed = true;
         log_error("minimp4 streaming failed with status %d", err);
         mp4_h26x_write_close(enc->mp4_writer);
         MP4E_close(enc->mp4_mux);
@@ -260,6 +261,7 @@ void dvz_video_encoder_record_sample(
             (DvzMuxSample*)dvz_realloc(enc->mux_samples, new_cap * sizeof(DvzMuxSample));
         if (!samples)
         {
+            enc->output_failed = true;
             log_error("failed to grow mux sample buffer");
             return;
         }
