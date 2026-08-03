@@ -28,6 +28,10 @@ int test_stream_attach_video(TstContext* suite, const TstCase* item);
 
 
 
+int test_stream_attach_rolls_back_failed_create(TstContext* suite, const TstCase* item);
+
+
+
 int test_stream_start_rollback_on_sink_failure(TstContext* suite, const TstCase* item);
 
 

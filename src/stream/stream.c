@@ -258,6 +258,8 @@ int dvz_stream_attach_sink(
     if (backend->create && backend->create(sink, config) != 0)
     {
         log_error("failed to create frame sink '%s'", backend->name ? backend->name : "?");
+        if (backend->destroy)
+            backend->destroy(sink);
         stream->sink_count -= 1;
         dvz_memset(sink, sizeof(*sink), 0, sizeof(*sink));
         return -1;
