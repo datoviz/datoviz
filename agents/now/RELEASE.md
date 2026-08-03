@@ -24,6 +24,8 @@ Preserve old v0.3 `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, mak
 
 Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, local Apple Silicon split-package proof, and the R1-R9 render-product/GTAO/public-AO implementation. The render-product checkpoints, exact-head validation, landing evidence, and affected-QA manifest are committed and pushed on `refactor/rc3-render-products`. The approved follow-up refreshed the AO gallery reference, added the prepared choropleth data, validated the full GLFW lane under Xvfb, and passed the full WebGPU scenario with explicit panel-local and presentation semantics through integration head `a6203eba1`.
 
+The scheduler-pacing chain and exploratory source-audit fixes are integrated locally through `545c99379`. This head passes the complete 1,128-case native matrix, affected DRP2/vklite/recovery/presentation gates, practical CPU sanitizer checks, full-tree static-analysis disposition, WebGPU, bindings, documentation, example-manifest, and course checks. Vulkan-backed sanitizer teardown remains inconclusive, and exact artifact/host/platform proof remains separate.
+
 Remaining RC3 deliverables:
 
 1. Execute and verify the branch cutover.
@@ -31,7 +33,7 @@ Remaining RC3 deliverables:
 3. Publish compatible Vulkan-enabled Qt and PyQt packages, then build and validate exact split `libdatoviz`, `datoviz`, and `datoviz-qtbridge` artifacts on supported hosted platforms.
 4. Prove the rewritten course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
 5. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, conda layouts, optional-provider diagnostics, third-party notices, and checksum/signing policy.
-6. Run or explicitly disposition static analysis, memory/UB checks where practical, Vulkan validation, long-running loops, docs, gallery, example, WebGPU, query/readback, compute, recovery, and package gates.
+6. Freeze the exact RC3 candidate, carry forward the completed local source-quality evidence, and run the remaining gallery/media, immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
 7. Freeze RC3 notes, known issues, validation evidence, artifacts, and feedback request only after the exact release scope is fixed.
 
 Hosted Linux and Windows exact-artifact validation is mandatory for RC3. Physical Linux and Windows should be restored when suitable machines are available; unavailable hardware remains an exclusion. Final requires the missing physical proof or an explicit maintainer-approved exception.

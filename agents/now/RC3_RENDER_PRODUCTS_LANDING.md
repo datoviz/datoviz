@@ -160,6 +160,13 @@ Scheduler-pacing convergence evidence against `f1ceff301`:
 - `just present-check --frames 120` passes blank, scene DRP2 full/cached paths, 10k scene, scatter, and deterministic pan/zoom cases with zero steady swapchain recreations or reported stutters. `just spec-check` passes all specification, fixture, scheduler, query, architecture, and visual-boundary guards.
 - The RelWithDebInfo deterministic pan/zoom sample with immediate presentation completes 600 frames at 6474.21 FPS on NVIDIA GeForce RTX 5090. The earlier physical Linux/X11 acceptance of the identical pacing chain found production default, uncapped immediate, and ordinary FIFO with one slot smooth; integration introduced no pacing-code changes.
 
+Final source-audit convergence evidence against `545c99379`:
+
+- Seven clean QA commits harden DRP2 resolve serialization, specialization bounds, sink and semaphore ownership, live window backend lookup, abandoned Canvas acquisition recovery, App draw retry semantics, and video output-error propagation. They were cherry-picked without changing the approved `data` gitlink.
+- `just build` and the validation-enabled full native matrix pass 1,128/1,128 with no failures or skips; DRP2 contract passes 95/95, fixtures 125/125, runtime-vklite 100/100, slow/recovery 34/34, and all seven 120-frame presentation paths pass.
+- Specifications, shader ABI, source guards, WebGPU, bindings, example manifests, generated documentation, docs build/snippets/status, and the Vulkan course check/smoke pass at the final integrated head. WebGPU browser-live cases remain headless-instance skips rather than hardware passes.
+- Full-tree clang-tidy and cppcheck completed with their recorded advisory/configuration noise. Validation-off ASan/UBSan/LSan passed the complete Window CPU module and the focused non-driver regressions; Vulkan-backed sanitizer teardown stalls remain inconclusive and are not reported as passes.
+
 Remaining landing limitations:
 
 - Physical Windows, macOS, AMD, Intel, and WebGPU browser hardware evidence is outside this local NVIDIA/Linux worktree and remains governed by the RC3 release matrix.
