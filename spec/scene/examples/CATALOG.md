@@ -64,6 +64,7 @@ As of 2026-06-05, the public C manifest has runnable `v0.4 required` entries for
 | `textured_surface_full_workflow` | `v0.5` | [scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md](scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md) |
 | `finite_element_stress` | `v0.5` | [scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md](scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md) |
 | `crystal_phonon` | `v0.5` | [scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md](scenarios/v05/SCIENTIFIC_3D_AND_FIELDS.md) |
+| `showcases_city_photomesh` | `v0.5` | [scenarios/v05/CITY_PHOTOMESH_SHOWCASE.md](scenarios/v05/CITY_PHOTOMESH_SHOWCASE.md) |
 | `large_labels_segmentation` | `v0.5` | [scenarios/v05/NAPARI_PRESSURE_TESTS.md](scenarios/v05/NAPARI_PRESSURE_TESTS.md) |
 | `multiview_linked_orthoslices` | `v0.5` | [scenarios/v05/NAPARI_PRESSURE_TESTS.md](scenarios/v05/NAPARI_PRESSURE_TESTS.md) |
 | `volume_clipping_3d` | `v0.5` | [scenarios/v05/NAPARI_PRESSURE_TESTS.md](scenarios/v05/NAPARI_PRESSURE_TESTS.md) |

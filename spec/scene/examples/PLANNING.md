@@ -212,6 +212,7 @@ examples are explicitly included in the public v0.4 API. The staged scenario-run
 | `galaxy_labels` | large star cache, label overlay, marker/sprite polish | Keep C version engine-focused. |
 | `wind_projections` | projection transforms, vector visual, graticule/coastline helpers | v0.4 wind field is the subset. |
 | `textured_surface_full_workflow` | terrain/planet/Mars asset cache, camera-path polish, optional overlays | Follows the v0.4 `textured_planet.c` retained textured-mesh proof; real Mars DEM terrain remains outside the v0.4 slice. |
+| `showcases_city_photomesh` | source-gated city photomesh preparation, multi-atlas mesh tiles, bounded GPU-memory policy, and fly/turntable capture | Post-RC3, non-blocking design for an inspected and legally cleared Helsinki crop; fixed 1M/10M profiles precede streaming LOD, and no large data or gallery media is implied. |
 | `finite_element_stress` | mesh scalar fields, selection, colorbar, isolines | Applied mesh/field target. |
 | `crystal_phonon` | sphere/mesh animation, selection, labels | Materials-science showcase after sphere/text/animation polish. |
 
