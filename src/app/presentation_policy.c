@@ -225,6 +225,46 @@ uint64_t _dvz_app_pacing_policy_advance(
 
 
 /**
+ * Resolve the earliest scheduler admission deadline across pending view requests.
+ *
+ * Host-driven views do not participate in the native scheduler. A zero deadline means at least one
+ * scheduler-owned view is immediately eligible.
+ *
+ * @param count request count
+ * @param requests request array, or NULL when count is zero
+ * @param now_ns current scheduler timestamp
+ * @param[out] deadline_ns earliest future deadline, or zero when immediately eligible
+ * @return whether at least one scheduler-owned view needs a frame
+ */
+bool _dvz_app_pacing_requests_deadline(
+    uint32_t count, const DvzAppPacingRequest* requests, uint64_t now_ns,
+    uint64_t* deadline_ns)
+{
+    if (deadline_ns == NULL || (count > 0 && requests == NULL))
+        return false;
+    *deadline_ns = 0;
+    bool has_work = false;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        const DvzAppPacingRequest* request = &requests[i];
+        if (!request->needs_frame || request->policy.mode == DVZ_APP_PACING_HOST_DRIVEN)
+            continue;
+        has_work = true;
+        if (_dvz_app_pacing_policy_admits(
+                &request->policy, request->next_frame_ns, now_ns))
+        {
+            *deadline_ns = 0;
+            return true;
+        }
+        if (*deadline_ns == 0 || request->next_frame_ns < *deadline_ns)
+            *deadline_ns = request->next_frame_ns;
+    }
+    return has_work;
+}
+
+
+
+/**
  * Resolve the effective continuous-frame cap for one view.
  *
  * @param app_fps_cap explicit app FPS cap, or zero

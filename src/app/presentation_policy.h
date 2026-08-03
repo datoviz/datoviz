@@ -45,6 +45,15 @@ typedef struct DvzAppPacingPolicy
 } DvzAppPacingPolicy;
 
 
+/** Pending frame admission state for one scheduler view. */
+typedef struct DvzAppPacingRequest
+{
+    bool needs_frame;
+    DvzAppPacingPolicy policy;
+    uint64_t next_frame_ns;
+} DvzAppPacingRequest;
+
+
 
 /*************************************************************************************************/
 /*  Functions                                                                                   */
@@ -69,6 +78,11 @@ bool _dvz_app_pacing_policy_admits(
 /** Advance a paced deadline after a successfully submitted frame. */
 uint64_t _dvz_app_pacing_policy_advance(
     const DvzAppPacingPolicy* policy, uint64_t next_frame_ns, uint64_t now_ns);
+
+/** Resolve the earliest admission deadline across pending view requests. */
+bool _dvz_app_pacing_requests_deadline(
+    uint32_t count, const DvzAppPacingRequest* requests, uint64_t now_ns,
+    uint64_t* deadline_ns);
 
 double _dvz_app_view_effective_fps_cap(
     double app_fps_cap, VkPresentModeKHR present_mode, uint32_t refresh_rate_hz);

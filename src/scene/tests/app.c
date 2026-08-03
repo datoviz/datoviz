@@ -2199,11 +2199,11 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
 
-    AT(_dvz_view_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, 0));
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    if (_dvz_view_scheduler_should_render(win, false, 0))
+    if (_dvz_view_scheduler_should_render(win, 0))
         AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_view_scheduler_should_render(win, false, 0));
+    AT(!_dvz_view_scheduler_should_render(win, 0));
 
     AppRequestFrameProbe request_probe = {0};
     AT(dvz_view_set_request_frame_callback(
@@ -2213,16 +2213,16 @@ int test_app_offscreen_scheduler_sees_scene_dirty_without_request(
     AT(dvz_visual_set_data(visual, "size", updated_size, 1) == 0);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
-    AT(_dvz_view_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, 0));
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_view_scheduler_should_render(win, false, 0));
+    AT(!_dvz_view_scheduler_should_render(win, 0));
 
     dvz_visual_set_visible(visual, false);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
-    AT(_dvz_view_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, 0));
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_view_scheduler_should_render(win, false, 0));
+    AT(!_dvz_view_scheduler_should_render(win, 0));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
@@ -2323,19 +2323,19 @@ int test_app_offscreen_interaction_demand_is_view_scoped(TstContext* suite, cons
 
     AT(dvz_view_render_once(win0) == DVZ_CANVAS_FRAME_READY);
     AT(dvz_view_render_once(win1) == DVZ_CANVAS_FRAME_READY);
-    if (_dvz_view_scheduler_should_render(win0, false, 0))
+    if (_dvz_view_scheduler_should_render(win0, 0))
         AT(dvz_view_render_once(win0) == DVZ_CANVAS_FRAME_READY);
-    if (_dvz_view_scheduler_should_render(win1, false, 0))
+    if (_dvz_view_scheduler_should_render(win1, 0))
         AT(dvz_view_render_once(win1) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_view_scheduler_should_render(win1, false, 0));
+    AT(!_dvz_view_scheduler_should_render(win1, 0));
     AT(!_dvz_app_has_continuous_work(app));
 
     panzoom0->interacting = true;
     AT(_dvz_app_has_continuous_work(app));
     AT(_dvz_view_has_continuous_work(win0));
     AT(!_dvz_view_has_continuous_work(win1));
-    AT(_dvz_view_scheduler_should_render(win0, _dvz_view_has_continuous_work(win0), 0));
-    AT(!_dvz_view_scheduler_should_render(win1, _dvz_view_has_continuous_work(win1), 0));
+    AT(_dvz_view_scheduler_should_render(win0, 0));
+    AT(!_dvz_view_scheduler_should_render(win1, 0));
 
     panzoom0->interacting = false;
     AT(!_dvz_app_has_continuous_work(app));
@@ -2422,9 +2422,9 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
     DvzView* win = dvz_view_offscreen(app, figure, 64, 64);
     AT(win != NULL);
     AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    if (_dvz_view_scheduler_should_render(win, false, 0))
+    if (_dvz_view_scheduler_should_render(win, 0))
         AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
-    AT(!_dvz_view_scheduler_should_render(win, false, 0));
+    AT(!_dvz_view_scheduler_should_render(win, 0));
 
     AppRequestFrameProbe request_probe = {0};
     dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
@@ -2434,14 +2434,14 @@ int test_app_offscreen_query_requests_notify_hosted_callback(
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 1}) == 0);
     AT(request_probe.calls == 1);
     AT(request_probe.last_window == win);
-    AT(_dvz_view_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, 0));
 
     AT(dvz_panel_query_px(
            panel, 32.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 2}) == 0);
     AT(request_probe.calls == 2);
     AT(request_probe.last_window == win);
-    AT(_dvz_view_scheduler_should_render(win, false, 0));
+    AT(_dvz_view_scheduler_should_render(win, 0));
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

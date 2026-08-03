@@ -399,6 +399,56 @@ static int test_app_presentation_policy_pacing(TstContext* suite, const TstCase*
 
 
 
+static int test_app_presentation_policy_scheduler_admission(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzAppPacingPolicy paced = _dvz_app_pacing_policy_resolve(true, false, 60.0, 0);
+    DvzAppPacingPolicy unbounded = _dvz_app_pacing_policy_resolve(true, true, 0, 60);
+    DvzAppPacingPolicy host_driven = _dvz_app_pacing_policy_resolve(false, false, 0, 60);
+    uint64_t deadline = 0;
+
+    DvzAppPacingRequest burst = {.needs_frame = true, .policy = paced};
+    AT(_dvz_app_pacing_requests_deadline(1, &burst, 1000, &deadline));
+    AT(deadline == 0);
+    burst.next_frame_ns = _dvz_app_pacing_policy_advance(&paced, 0, 1000);
+    AT(_dvz_app_pacing_requests_deadline(1, &burst, 2000, &deadline));
+    AT(deadline == burst.next_frame_ns);
+    AT(_dvz_app_pacing_requests_deadline(
+        1, &burst, burst.next_frame_ns, &deadline));
+    AT(deadline == 0);
+
+    burst.needs_frame = false;
+    AT(!_dvz_app_pacing_requests_deadline(1, &burst, 2000, &deadline));
+    AT(deadline == 0);
+    burst.needs_frame = true;
+
+    DvzAppPacingRequest requests[] = {
+        burst,
+        {.needs_frame = true, .policy = paced, .next_frame_ns = burst.next_frame_ns + 1000},
+        {.needs_frame = true, .policy = host_driven},
+    };
+    AT(_dvz_app_pacing_requests_deadline(
+        DVZ_ARRAY_COUNT(requests), requests, 2000, &deadline));
+    AT(deadline == burst.next_frame_ns);
+
+    requests[1].policy = unbounded;
+    AT(_dvz_app_pacing_requests_deadline(
+        DVZ_ARRAY_COUNT(requests), requests, 2000, &deadline));
+    AT(deadline == 0);
+
+    requests[0].needs_frame = false;
+    requests[1].needs_frame = false;
+    AT(!_dvz_app_pacing_requests_deadline(
+        DVZ_ARRAY_COUNT(requests), requests, 2000, &deadline));
+    AT(deadline == 0);
+    return 0;
+}
+
+
+
 static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -1666,6 +1716,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_presentation_policy_defaults);
     TST_CASE(test_app_presentation_policy_env_overrides);
     TST_CASE(test_app_presentation_policy_pacing);
+    TST_CASE(test_app_presentation_policy_scheduler_admission);
     TST_CASE(test_app_view_size_policy_resolve);
     TST_CASE(test_app_capture_config_defaults);
     TST_CASE(test_app_abi_rejects_invalid_structs);
