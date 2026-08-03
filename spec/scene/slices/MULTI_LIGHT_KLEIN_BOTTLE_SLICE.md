@@ -1,6 +1,6 @@
 # Multi-Light Klein Bottle Slice
 
-Status: RC2 candidate; not an RC2 blocker.
+Status: optional v0.4+ scene-owned multi-light slice; not an RC3 or RC4 release blocker. Updated: 2026-08-03.
 
 This slice adds the smallest coherent scene-lighting extension needed to reproduce the Glumpy
 checkerboard Klein bottle with three colored lights. It turns the existing future light-object
@@ -244,7 +244,7 @@ portable contract to make a smoke pass.
 
 ## Non-Goals
 
-This RC2 candidate does not include:
+This optional slice does not include:
 
 1. shadows;
 2. spot lights;

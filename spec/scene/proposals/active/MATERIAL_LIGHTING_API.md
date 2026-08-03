@@ -31,25 +31,22 @@ payload. Scene-owned light objects and panel light sets described below remain f
 current runtime still uses compact material/light-direction fields rather than a full reusable
 light-object API.
 
-The implementation-ready RC2 candidate is
+The optional post-RC3 implementation candidate is
 [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](../../slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md). It uses a
 three-colored-light checkerboard Klein bottle as the pressure test for scene-owned lights,
 panel-local light sets, two-sided surface lighting, shared example presets, and native/WebGPU
-parity. This work is optional for RC2 and is not a release blocker.
+parity. This work is not an RC3 or RC4 release blocker.
 
 
 ## Existing Grounding In The Repo
 
 Relevant context already exists here:
 
-1. mesh shading direction:
-   [MESH_SHADING_DESIGN.md](MESH_SHADING_DESIGN.md)
-2. mesh visual ownership split:
-   [MESH_API_DESIGN.md](MESH_API_DESIGN.md)
+1. mesh shading direction: [MESH_SHADING_DESIGN.md](../promoted/MESH_SHADING_DESIGN.md)
+2. mesh visual ownership split: [MESH_API_DESIGN.md](../promoted/MESH_API_DESIGN.md)
 3. older broad lighting note:
    [spec/scene/semantics/LIGHTING.md](../../semantics/LIGHTING.md)
-4. v0.3 shader reference:
-   [v0.3/include/datoviz/scene/glsl/lighting.glsl](../../../../v0.3/include/datoviz/scene/glsl/lighting.glsl)
+4. v0.3 shader reference: removed `include/datoviz/scene/glsl/lighting.glsl`, retained in Git history.
 
 This note records the active recommendation where those sources are still too broad or too tied to
 older assumptions.

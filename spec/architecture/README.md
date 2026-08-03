@@ -8,8 +8,7 @@ but still normative enough to guide implementation and tests.
 
 1. [MODULE_LAYERS.md](MODULE_LAYERS.md): source-module dependency layers, promotion rules, and
    reusable subsystem boundaries.
-2. [SCENE_SPLIT_REFACTOR_PLAN.md](SCENE_SPLIT_REFACTOR_PLAN.md): concrete plan for promoting
-   scene-independent primitives out of the retained scene layer.
+2. [SCENE_SPLIT_REFACTOR_PLAN.md](SCENE_SPLIT_REFACTOR_PLAN.md): implemented controller/internal-scene boundary plus durable criteria for optional future primitive promotion.
 3. [EXTERNAL_DEPENDENCIES.md](EXTERNAL_DEPENDENCIES.md): policy for optional third-party
    dependencies such as UI integration layers.
 4. [SHADER_TOOLCHAIN.md](SHADER_TOOLCHAIN.md): build-time `glslc`, runtime shaderc, SPIR-V validation, public compilation API, packaging, and RC3/RC4 proof contract.

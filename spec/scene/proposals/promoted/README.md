@@ -59,4 +59,6 @@ specialized `spec/scene/` documents listed below.
     `../../semantics/TRANSPARENCY.md`, and `../../pipeline/FRAME_PLAN.md`.
 15. [SCREEN_SPACE_EFFECTS_DESIGN.md](SCREEN_SPACE_EFFECTS_DESIGN.md) ->
     `../../semantics/EFFECTS.md` and `../../implementation/GRAPH_TECHNIQUES.md`.
-16. [RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md](RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) -> `../../implementation/GRAPH_TECHNIQUES.md`, `../../implementation/OCCLUSION_EFFECTS.md`, `../../implementation/TRANSPARENCY_MSAA.md`, `../../semantics/EFFECTS.md`, and the DRP2 specifications.
+16. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md) and [RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md](RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md) -> `../../pipeline/FRAME_PLAN.md`, `../../implementation/GRAPH_TECHNIQUES.md`, `../../implementation/OCCLUSION_EFFECTS.md`, `../../implementation/TRANSPARENCY_MSAA.md`, `../../semantics/EFFECTS.md`, and the DRP2 specifications.
+17. [VISUAL_ITEM_RANGES.md](VISUAL_ITEM_RANGES.md) -> installed scene headers, visual state/lowering, and query tests; the retained point-range slice is implemented.
+18. [COMPUTE_GRAPHICS_INTEROP.md](COMPUTE_GRAPHICS_INTEROP.md) -> the DRP2 synchronization contract, scene compute API, WebGPU fixtures, and the experimental GPU particle showcase; broader compute and CUDA facilities remain outside the portable slice.

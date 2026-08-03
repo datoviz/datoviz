@@ -1,6 +1,6 @@
 # WASM/WebGPU Parity Plan
 
-Status: active v0.4 RC plan. Updated: 2026-07-16.
+Status: implemented v0.4 experimental-subset contract; further native/WebGPU parity is deferred and non-blocking. Updated: 2026-08-03.
 
 This file defines the route from the current experimental WASM/WebGPU subset to "good enough" v0.4
 RC browser support. It is not a full Vulkan/WebGPU parity promise.
@@ -32,10 +32,9 @@ Current source-of-truth files:
 4. `docs/reference/webgpu-subset.md`: public supported subset.
 5. `docs/examples/webgpu-matrix.md`: generated public matrix.
 
-As of 2026-07-19:
+The manifest and generated public matrix are the live count authority. The implemented RC subset includes:
 
-1. Manifest counts: `89 webgpu-live`, with remaining examples explicitly classified as
-   `webgpu-planned`, `webgpu-deferred`, `native-only`, or non-public lab material.
+1. Remaining examples are explicitly classified as `webgpu-live`, `webgpu-planned`, `webgpu-deferred`, `native-only`, or non-public lab material; do not copy a hand-maintained route count into this contract.
 2. Live routes cover basic scene, timer animation, triangulation, builtin shapes 2D/3D, isolines,
    animation tracks, OBJ loading, picking, pixel/sphere/mesh selection, image probe, compute buffer
    animation, GPU particle smoke, standalone visual-family routes, panel single/grid/multi/linked
@@ -170,9 +169,9 @@ workflows, volume-heavy examples, splats, marker symbol-set atlas parity, and po
 techniques.
 
 
-## Next Coverage Program
+## Deferred Coverage Program
 
-Execute the remaining browser work in this order:
+If future parity work is explicitly promoted, use this order:
 
 1. **Stabilize browser evidence.** Complete: picking smoke asserts resolved visual output,
    `webgpu-browser-smoke` supports per-route filtering, and the ten routes promoted on 2026-07-11
@@ -217,8 +216,8 @@ canonical C scenario
 
 | Area | RC status | Next action |
 | --- | --- | --- |
-| Core visual families | current | promote standalone gallery examples for every current family |
-| Annotations/layout | current/rc-target | promote composed showcases |
+| Core visual families | current | keep canonical routes, manifests, diagnostics, and smoke coverage synchronized |
+| Annotations/layout | current broad slice | preserve composed showcase coverage |
 | Query/readback | current narrow slice | keep picking/selection/probe evidence; defer full query parity |
 | Compute | compact proof and particle route current | keep particle budget/evidence current |
 | Controllers | panzoom/arcball/fly/turntable examples current | keep broader native controller parity deferred |

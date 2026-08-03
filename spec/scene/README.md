@@ -13,8 +13,7 @@ The scene layer should remain pure high-level logic:
 ## Status
 
 - Status: active specification with multiple implementation slices in `src/scene`.
-- Implementation priority: prove the declared v0.4 surface for RC1, especially release examples,
-  WebGPU/WASM experimental scope, Python binding, API/status labeling, and v0.3 visible parity.
+- Implementation priority: preserve the integrated RC3 render-product, runtime, binding, WebGPU, and release-proof contracts while exact candidate artifacts and hosted/physical platform gates are completed; optional feature expansion must follow the active release queue.
 - Primary constraint: do not let scene design leak backend details into its public API.
 
 Current source implementation is intentionally smaller than this spec. It includes scene, figure,
@@ -39,8 +38,7 @@ families and interactions are already implemented.
    behavior.
 6. [pipeline/README.md](pipeline/README.md): resource, transform, invalidation, frame-plan, and
    lifecycle contracts.
-7. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md):
-   active scene emission artifact refactor plan.
+7. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md): implemented scene emission artifact architecture and retained migration rationale.
 
 
 ## Directory Layout

@@ -20,6 +20,15 @@ In hosted or offline modes the application drives the loop directly with
 GLFW loop.
 
 
+## Frame Demand And Scheduler Ownership
+
+Controllers own interaction or future motion state, figures aggregate scene frame demand, the app scheduler decides whether and when each view is eligible to render, Canvas owns frame resources and submission, and vklite resolves presentation capabilities. One active view must wake the host loop without making unrelated clean views continuously eligible.
+
+Idle figures request no frames. A one-shot mutation requests one successful frame. Active controller interaction requests frames continuously at the configured presentation cadence; release preserves the final requested frame and then returns to idle. Explicit continuous scheduling, frame callbacks, animation, replay, fixed-count rendering, direct render-once calls, and externally hosted surfaces retain their distinct contracts.
+
+Frame demand and presentation pacing are separate. Demand answers whether another frame is needed; per-view scheduler admission coalesces requests and applies the chosen cadence. See [`../../testing/INTERACTION_LATENCY.md`](../../testing/INTERACTION_LATENCY.md) for the refresh-paced FIFO latest-ready policy, capability fallbacks, environment overrides, and benchmark contract.
+
+
 ## High-Level Flow
 
 1. ingest events,

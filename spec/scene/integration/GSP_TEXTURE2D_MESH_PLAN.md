@@ -1,10 +1,8 @@
 # GSP Texture2D Field-Sampling Integration Plan
 
-Status: post-RC1 proposal; RC2 candidate, not a release blocker. Updated: 2026-07-12.
+Status: optional post-RC3 GSP Texture2D integration proposal; not an RC3 or RC4 release blocker. Updated: 2026-08-03.
 
-Purpose: record the Datoviz-side changes needed for GSP to advertise strict unlit RGBA8
-Texture2D mesh rendering, and use that pressure to promote a general field-slot sampling API after
-RC1. Reassess for RC2 after RC1 feedback; defer again if it would put RC2 stabilization at risk.
+Purpose: record the Datoviz-side changes needed for GSP to advertise strict unlit RGBA8 Texture2D mesh rendering and use that pressure to promote a general field-slot sampling API. Promote this work only after current release gates and a concrete GSP adapter consumer justify it.
 
 
 ## Boundary

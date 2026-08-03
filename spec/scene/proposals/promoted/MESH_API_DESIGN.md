@@ -59,8 +59,7 @@ The authoritative mesh rules now live in:
 
 1. [Visual Family: mesh](../../visuals/MESH.md) for implemented attributes, parameters, resource
    expectations, instancing, and mesh semantics;
-2. [Mesh Shading Design](MESH_SHADING_DESIGN.md) and
-   [Material Lighting API](MATERIAL_LIGHTING_API.md) for remaining lighting/material staging;
+2. [Mesh Shading Design](MESH_SHADING_DESIGN.md) and [Material Lighting API](../active/MATERIAL_LIGHTING_API.md) for remaining lighting/material staging;
 3. [Geometry Utilities](../../semantics/GEOMETRY_UTILITIES.md) for CPU geometry generation and
    preprocessing;
 4. [Transform Pipeline](../../pipeline/TRANSFORM_PIPELINE.md) for local/object, model, view,

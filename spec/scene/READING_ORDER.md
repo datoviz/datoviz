@@ -130,8 +130,7 @@ Current implementation orientation:
 4. [ROADMAP.md](ROADMAP.md): compact backlog, release-proof order, and post-v0.4 direction.
 5. [Scene visual boundary contract][scene-visual-boundary-contract]: active visual-family
    architecture guardrails and validation contract.
-6. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md):
-   active scene emission artifact refactor plan.
+6. [implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md](implementation/FRAME_ARTIFACT_REFACTOR_PLAN.md): implemented scene emission artifact architecture and retained migration rationale.
 7. [implementation/SCENE_CODE_SPLIT_ROADMAP.md](implementation/SCENE_CODE_SPLIT_ROADMAP.md):
    retired pointer for the completed broad scene source split.
 8. [core/RUNTIME_BOUNDARY.md](core/RUNTIME_BOUNDARY.md): active scene -> FramePlan -> DRP2 ->

@@ -1,6 +1,6 @@
 # RC3 Render Products Affected-QA Manifest
 
-Status: completed affected-QA record through final local integrated head `545c99379`. Updated: 2026-08-03.
+Status: completed affected-QA record at validated head `545c99379`, integrated into `v0.4-dev` by `2d83d0b63`. Updated: 2026-08-03.
 
 Use the revision boundary and exact path inventory in [RC3_RENDER_PRODUCTS_LANDING.md](RC3_RENDER_PRODUCTS_LANDING.md). A row is complete only when its result is recorded against the final integrated head; checkpoint results establish feasibility but do not close the final row.
 

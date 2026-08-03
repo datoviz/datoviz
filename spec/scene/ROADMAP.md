@@ -9,27 +9,9 @@ and [../../agents/now/STATUS.md](../../agents/now/STATUS.md), not this file alon
 
 ## Release Proof First
 
-RC1 work should stay focused on:
+RC1 and RC2 are closed. RC3 work should preserve the integrated scene, render-product, pacing, WebGPU, binding, and tutorial-foundation contracts while the branch cutover, provider publication, exact artifact, hosted-platform, documentation-review, and remaining physical-platform gates complete. RC4 owns course chapters 4-15 and installed-package proof; final v0.4.0 owns feedback disposition, final media, reproducible artifacts, citation metadata, and publication.
 
-1. WebGPU/WASM experimental subset and diagnostics;
-2. v0.3 visible capability audit with fix/defer/external disposition;
-3. public API/status labels;
-4. compact example proof with validation notes;
-5. retained textured mesh, Python binding, text, axes, labels, colorbars, scale bars, queries, and
-   app/offscreen paths kept in validation;
-6. experimental compute+graphics proof with explicit DRP2 synchronization and a C-first gallery
-   target.
-
-High-payoff showcase order:
-
-1. gallery proof pass for protein, LiDAR, brain, labels, textured mesh or terrain/planet,
-   colorbars/legends, and capture paths;
-2. vector visual pressure with a wind-field or displacement showcase;
-3. raw label-id query hardening under transforms, larger fields, and request churn;
-4. one explanatory layout proof combining axes, colorbar, categorical legend, scale bar, and panel
-   reserves;
-5. GPU particle-advection proof for compute-to-render interop;
-6. experimental splat showcase only after release-proof lanes are stable.
+The backlog below is informative pressure, not an active release queue. Optional scene features, showcase polish, GSP Texture2D integration, multi-light support, and broader WebGPU parity must not delay the gates in [`../../agents/now/STATUS.md`](../../agents/now/STATUS.md).
 
 
 ## Visual And Example Backlog
@@ -96,9 +78,7 @@ Preserved direction:
 
 ## Runtime, WebGPU, WASM, And Packaging
 
-Durable browser/runtime direction lives in [integration/WEBGPU_WASM.md](integration/WEBGPU_WASM.md)
-and [../drp2/roadmap/WEBGPU.md](../drp2/roadmap/WEBGPU.md). The active compute-to-render slice is
-tracked in [proposals/active/COMPUTE_GRAPHICS_INTEROP.md](proposals/active/COMPUTE_GRAPHICS_INTEROP.md).
+Durable browser/runtime direction lives in [integration/WEBGPU_WASM.md](integration/WEBGPU_WASM.md) and [../drp2/roadmap/WEBGPU.md](../drp2/roadmap/WEBGPU.md). The implemented experimental compute-to-render slice and its remaining non-portable boundaries are recorded in [proposals/promoted/COMPUTE_GRAPHICS_INTEROP.md](proposals/promoted/COMPUTE_GRAPHICS_INTEROP.md).
 
 Preserved direction:
 

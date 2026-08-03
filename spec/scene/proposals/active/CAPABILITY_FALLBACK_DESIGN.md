@@ -31,8 +31,7 @@ Useful existing context:
    [TRANSPARENCY_WBOIT_DESIGN.md](../promoted/TRANSPARENCY_WBOIT_DESIGN.md)
 3. promoted picking rationale:
    [PICKING_DESIGN.md](../promoted/PICKING_DESIGN.md)
-4. active ray-tracing note:
-   [RAY_TRACING_FORWARD_COMPAT.md](RAY_TRACING_FORWARD_COMPAT.md)
+4. future ray-tracing note: [RAY_TRACING_FORWARD_COMPAT.md](../future/RAY_TRACING_FORWARD_COMPAT.md)
 5. current release status and validation notes:
    [agents/now/STATUS.md](../../../../agents/now/STATUS.md)
 

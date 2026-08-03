@@ -1,6 +1,6 @@
 # Qt/PyQt macOS Vulkan Handoff
 
-Status: local implementation and Apple Silicon proof complete; upstream review and package publication block the RC3 provider gate. Updated: 2026-08-01.
+Status: local implementation and Apple Silicon proof complete; upstream review and package publication block the RC3 provider gate. Updated: 2026-08-03.
 
 This handoff records the verified local Qt, PyQt, and Datoviz provider artifacts; the published feedstock pull requests; the expected dependency-order CI failures; and the remaining maintainer and exact-artifact sequence. Upstream feedstock work remains in sibling repositories, not the Datoviz source tree.
 
@@ -14,7 +14,7 @@ Read [../../AGENTS.md](../../AGENTS.md), [START.md](START.md), [STATUS.md](STATU
 
 ## Current Upstream State
 
-- [qt-main-feedstock PR #406](https://github.com/conda-forge/qt-main-feedstock/pull/406), head `70aa3faa6cae09715c65811eb0b5b45a2342f7cb`, enables Qt Vulkan on macOS with `libvulkan-headers`, `libvulkan-loader`, and `moltenvk`; bumps Qt 6.11.1 from build 1 to build 2; adds compile and package guards; is fully green across Linux, macOS ARM64 and x86-64, Windows, lint, and skip checks; and is ready for maintainer review.
+- [qt-main-feedstock PR #406](https://github.com/conda-forge/qt-main-feedstock/pull/406), head `36d761a20ad74615a5189bc69510be92ec4dc5d8`, enables Qt Vulkan on macOS with `libvulkan-headers`, `libvulkan-loader`, and `moltenvk`; bumps Qt 6.11.1 from build 1 to build 2; adds compile and package guards; is open, mergeable, non-draft, and awaiting maintainer review. The latest head incorporates review feedback, rerenders the feedstock, passes its GitHub build workflow and linter, and supersedes the earlier validated head recorded in Git history.
 - [pyqt-feedstock PR #186](https://github.com/conda-forge/pyqt-feedstock/pull/186), head `c8d45d0ff21f6a18824e16a1abfb46dffaa027b4`, builds PyQt6 6.11.0 against Qt 6.11.1, makes `libvulkan-headers` available to native and cross builds, exports the header path for SIP feature probes, removes the cross-build `PyQt_Vulkan` disable, adds a `QVulkanInstance` regression test, and bumps build 2 to build 3. It remains a draft until its macOS matrix can use published Qt build 2.
 - PyQt PR #186 passes all five Windows jobs. All five native macOS x86-64 jobs build against currently published non-Vulkan Qt and fail the new package test because `QVulkanInstance` is absent. All five cross-built macOS ARM64 jobs generate the Vulkan binding surface but fail compiling `<qvulkaninstance.h>` because that header is absent from the currently published target Qt package. The compiler already includes the target `include/qt6/QtGui` directory, so adding another include path is not the fix.
 - No additional PyQt recipe change is justified from the current failures. The next meaningful PyQt CI run must occur after conda-forge publishes Qt 6.11.1 build 2 for both macOS architectures.

@@ -56,7 +56,7 @@ The authoritative rules now live in:
 
 1. [Geometry Utilities](../../semantics/GEOMETRY_UTILITIES.md) for generator, triangulation,
    curve, SDF/MSDF, dependency, and resource-mapping contracts;
-2. [Polygon And PSLG API Design](POLYGON_PSLG_API_DESIGN.md) for the active polygon, polygon-set,
+2. [Polygon And PSLG API Design](../active/POLYGON_PSLG_API_DESIGN.md) for the active polygon, polygon-set,
    mesh-upload-helper, and PSLG public API shape decisions;
 3. [Visual Family: mesh](../../visuals/MESH.md) for how generated geometry is consumed by scene
    mesh resources and visuals;

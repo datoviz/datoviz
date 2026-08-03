@@ -24,8 +24,7 @@ There is already broad future-facing guidance here:
    [spec/scene/validation/ADAPTATION.md](../../validation/ADAPTATION.md)
 2. lighting forward-compatibility:
    [spec/scene/semantics/LIGHTING.md](../../semantics/LIGHTING.md)
-3. active material/light direction:
-   [MATERIAL_LIGHTING_API.md](MATERIAL_LIGHTING_API.md)
+3. active material/light direction: [MATERIAL_LIGHTING_API.md](../active/MATERIAL_LIGHTING_API.md)
 
 This note narrows the implications for the active v0.4 design set.
 

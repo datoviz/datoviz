@@ -1,6 +1,6 @@
 # RC3 Render Products Landing Manifest
 
-Status: R1-R9 implementation, landing evidence, the approved data/headless-presentation/WebGPU follow-up, and scheduler-pacing convergence are complete and validated on `refactor/rc3-render-products`; the scheduler convergence is committed locally but not pushed. Updated: 2026-08-03.
+Status: completed R1-R9 implementation and convergence record; validated head `545c99379` is integrated into `v0.4-dev` by merge commit `2d83d0b63`. Updated: 2026-08-03.
 
 ## Revision Boundary
 
@@ -14,6 +14,8 @@ Status: R1-R9 implementation, landing evidence, the approved data/headless-prese
 - Validated follow-up integration head: `a6203eba1`.
 - Scheduler-pacing convergence parent: `36c6e638f`.
 - Validated scheduler-pacing convergence code head: `f1ceff301`.
+- Final source-audit convergence head: `545c99379`.
+- Active-branch merge commit: `2d83d0b63`.
 
 Ordered render commits after `c657845f1`:
 
@@ -63,7 +65,7 @@ The authoritative implementation path set is `git diff --name-only c657845f1..c0
 | Examples and authored callers | `examples/c/CMakeLists.txt`, `MANIFEST.yaml`, `example_gui_controls.c`, `example_gui_controls.h`, `example_tuner.c`, `example_tuner.h`, `features/README.md`, `features/technique_ao.c`, `lab/protein_viewer.c`, `legacy/visuals/sphere.c`, `showcases/protein.c`, `start/scatter.c`, `examples/python/gallery/features/technique_ao.py`, `examples/python/gallery/showcases/protein.py`, `examples/webgpu/live_examples.js`, `tools/check_example_manifests.py`; deleted `examples/c/legacy/tools/frame_plan_graph_debug.c` |
 | Generated/public documentation | `docs/reference/c-api/{app,drp2,frame-plan,runtime-utilities,runtime-vklite,runtime-vulkan,scene,techniques,types,visuals}.md`, `docs/examples/capabilities.json`, `examples.json`, `features.md`, `navigation.yaml`, `validation-gallery.md`, `webgpu-matrix.md`, `docs/examples/gallery/features/features_technique_ao.md`, `features_technique_edl.md`, `features_technique_msaa.md`, `docs/examples/gallery/showcases/showcases_protein.md`, `docs/architecture/pbr_materials_roadmap.md`, `scene_techniques_materials.md`, `docs/how-to/depth-blending.md`, `spec/docs/EXAMPLE_COVERAGE.md` |
 | Authoritative scene specifications and proposal history | `spec/scene/examples/TECHNIQUES.md`, `spec/scene/implementation/GRAPH_TECHNIQUES.md`, `OCCLUSION_EFFECTS.md`, `README.md`, `TRANSPARENCY_MSAA.md`, `spec/scene/semantics/EFFECTS.md`, `spec/scene/validation/RENDER_CONFORMANCE.md`, `spec/scene/proposals/active/README.md`, `spec/scene/proposals/promoted/README.md`, and the move of `RENDER_PRODUCTS_AND_TECHNIQUE_COMPOSITION.md` from `proposals/active/` to `proposals/promoted/` |
-| Active execution records | `agents/now/HANDOFF_RC3_RENDER_QA_ORCHESTRATION.md`, `HANDOFF_RENDER_PRODUCTS_REFACTOR.md`, `RELEASE.md`, `START.md`, `STATUS.md`, this manifest, and `RC3_RENDER_PRODUCTS_AFFECTED_QA.md` |
+| Release records | `agents/now/RELEASE.md`, `START.md`, `STATUS.md`, this manifest, `RC3_RENDER_PRODUCTS_AFFECTED_QA.md`, and `QA_SOURCE_AUDIT.md`; the completed orchestration handoffs remain in Git history |
 
 The exact R9 delta committed by `c0eada723` was:
 

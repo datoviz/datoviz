@@ -1,7 +1,6 @@
 # Spec Index
 
-This directory contains normative design material for v0.4 contracts and features, including some
-surfaces that now have partial implementations.
+This directory contains normative design material for v0.4 contracts and features, including implemented contracts, active proposals, informative roadmaps, and historical decisions whose authority is identified by their owning indexes.
 
 Use `spec/` for contracts that should drive implementation and tests.
 Do not use it for execution planning or broad architecture essays.
@@ -56,6 +55,4 @@ Current entrypoint:
 just spec-check
 ```
 
-At the moment this validates the DRP2 fixture corpus and the DRP2 fixture-runner tests.
-Scene spec changes that alter implemented behavior should also run the narrowest relevant
-`just test scene` filter, because the scene spec now has multiple active source slices.
+This validates API status metadata, DRP2 command metadata and fixtures, the WASM bridge and WebGPU fixture path, scheduler behavior, scene query and architecture source guards, and the visual-family boundary. `just spec-check` also runs shader ABI and visual-boundary entry-point checks through the `just` dependency graph. Scene spec changes that alter implemented behavior should additionally run the narrowest relevant `just test scene` filter.

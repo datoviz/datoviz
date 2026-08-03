@@ -30,10 +30,7 @@ Active rules moved to:
    [`../../validation/DIAGNOSTICS.md`](../../validation/DIAGNOSTICS.md) for validation and
    diagnostic reporting.
 
-Current implementation grounding includes public visual subrange updates in
-[`../../../../include/datoviz/scene.h`](../../../../include/datoviz/scene.h), dirty-range tracking
-in [`../../../../src/scene/_scene.h`](../../../../src/scene/_scene.h), and upload emission in
-[`../../../../src/scene/scene.c`](../../../../src/scene/scene.c).
+Current implementation grounding includes public visual subrange updates in [`../../../../include/datoviz/scene.h`](../../../../include/datoviz/scene.h), retained visual state in [`../../../../src/scene/core/_scene.h`](../../../../src/scene/core/_scene.h), and upload emission in [`../../../../src/scene/scene_emit/uploads.c`](../../../../src/scene/scene_emit/uploads.c).
 
 
 ## Rationale To Preserve

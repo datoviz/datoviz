@@ -24,12 +24,10 @@ Clarify the boundary between:
 
 Useful current context:
 
-1. active geometry note:
-   [GEOM_DESIGN.md](GEOM_DESIGN.md)
+1. promoted geometry note: [GEOM_DESIGN.md](../promoted/GEOM_DESIGN.md)
 2. promoted resource-update rationale:
    [RESOURCE_UPDATE_DESIGN.md](../promoted/RESOURCE_UPDATE_DESIGN.md)
-3. active volume note:
-   [VOLUME_DESIGN.md](VOLUME_DESIGN.md)
+3. promoted volume note: [VOLUME_DESIGN.md](../promoted/VOLUME_DESIGN.md)
 4. current release status and validation notes:
    [agents/now/STATUS.md](../../../../agents/now/STATUS.md)
 

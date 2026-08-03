@@ -1,6 +1,6 @@
 # Native Test GPU Selection Handoff
 
-Status: automated implementation and Linux multi-GPU validation complete; physical Windows AMD/NVIDIA validation remains pending. Updated: 2026-08-01.
+Status: automated implementation and Linux plus source-checkout Windows AMD/NVIDIA validation complete; visible Windows asymmetry and exact-candidate physical proof remain. Updated: 2026-08-03.
 
 ## Implemented Contract
 
@@ -19,16 +19,14 @@ Linux multi-GPU validation is green, including distinct device identity, direct 
 
 A future `--gpu all` should enumerate once in the parent and launch one isolated run per GPU, preserving identity in each result set. Stable UUID, LUID, vendor/device, or name selectors may follow numeric selection but are not required for v0.4.
 
-## Remaining Physical Windows Campaign
+## Remaining Physical Windows Work
 
-On the AMD/NVIDIA laptop:
+The symmetric source-checkout matrices are complete. On the AMD/NVIDIA laptop, repeat only the affected visible and exact-candidate scopes described in [HANDOFF_WINDOWS_VALIDATION.md](HANDOFF_WINDOWS_VALIDATION.md):
 
-1. Run `--list-gpus` and record actual ordering, names, vendor/device IDs, APIs, and drivers.
-2. Run identical focused Debug scopes with `--gpu 0` and `--gpu 1`, keeping separate output directories and reports.
-3. Cover vk, vklite, DRP2, Canvas, scene, app, GUI, capture, applicable video, and `dvz_live_canvas` offscreen/GLFW paths.
-4. Run Release scopes without relying on `DVZ_LOG_LEVEL`.
-5. Keep intentional enumeration, production-default, invalid-index, CPU-only, CUDA/UUID, and encoder cases separate according to their exemption policy.
-6. Compare known AMD failures with NVIDIA and preserve exact test totals, skips, crash codes, validation messages, presentation behavior, and selected-device metadata.
-7. Optionally cross-check each selected-index run with `VK_LOADER_DRIVERS_SELECT`; a mismatch is evidence to investigate, not a reason to restore hard-coded device zero.
+1. Preserve separate output directories, reports, and selected-device metadata for GPU 0 and GPU 1.
+2. Repeat affected Release GLFW live-canvas rendering after relevant runtime changes, resolving the earlier AMD blank frame and NVIDIA single-point result.
+3. Run the exact installed-candidate scopes on both usable GPUs once the source bundle and wheel are frozen.
+4. Keep intentional enumeration, production-default, invalid-index, CPU-only, CUDA/UUID, and encoder cases separate according to their exemption policy.
+5. Optionally cross-check each selected-index run with `VK_LOADER_DRIVERS_SELECT`; a mismatch is evidence to investigate, not a reason to restore hard-coded device zero.
 
 Do not mix physical result payloads, generated binaries, `data`, or unrelated portability changes into code commits.

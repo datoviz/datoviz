@@ -1,6 +1,6 @@
 # Interaction Latency Benchmark
 
-Status: active implementation contract.
+Status: implemented interaction-pacing and benchmark contract. Updated: 2026-08-03.
 
 
 ## Purpose
@@ -115,3 +115,17 @@ The implementation is complete when it has:
 5. a manual sanity check where ordinary multi-slot FIFO reports worse freshness than immediate or capped latest-ready on hardware that exhibits the original symptom.
 
 Do not add latency assertions to ordinary CI. CI should validate output shape and invariants; per-machine comparisons should classify performance regressions.
+
+
+## Accepted Implementation Evidence
+
+The frame-demand, frame-slot, presentation-policy, and scheduler-admission slices are complete. The implementation checkpoints are `0f413c3fb`, `5930352c1`, `427f00ae6`, `8781de956`, `c49e98e1a`, `f29a538c2`, `a7d612206`, `44307644a`, `c84466fb3`, `c239d26fd`, `f0fbd872e`, `340b0b4a1`, and `94f5bce26`; the integrated validation head is `545c99379`.
+
+Physical Linux/X11 testing on an NVIDIA RTX 5090 established that ordinary FIFO could sustain the display cadence while showing stale controller states, whereas explicit immediate and refresh-capped FIFO latest-ready were responsive. The accepted one-slot ordinary-FIFO fallback reduced Linux p95 input-to-submit freshness from approximately 116 ms with four slots and 83 ms with two slots to 66 ms with one slot. These are CPU submission proxies plus qualitative physical evidence, not input-to-photon measurements.
+
+Physical Windows 11 testing on an AMD Radeon 780M found one, two, and automatic three-slot ordinary FIFO statistically neutral in the measured proxy and subjectively smooth. The production default, explicit uncapped immediate, and explicit one-slot FIFO paths rendered correctly, returned to zero idle rendering after release, resized, and closed normally. Exact-candidate and additional physical-platform proof remain release gates.
+
+
+## Deferred Motion Demand
+
+Smooth wheel or inertial motion should remain controller-owned. A controller may expose a future `MOTION` demand bit while advancing toward a target from elapsed presentation time; repeated input retargets the existing motion, drag takes ownership or cancels it, completion snaps to the target, requests the final frame, clears demand, and returns the scheduler to idle. The scheduler should observe only that another frame is required and must not own the motion integrator.

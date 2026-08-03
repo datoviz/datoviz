@@ -25,24 +25,20 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
 
 1. [ASSET_BOUNDARY_DESIGN.md](ASSET_BOUNDARY_DESIGN.md): asset/source/cache boundary still
    influencing resource and data policy.
-2. [COMPUTE_GRAPHICS_INTEROP.md](COMPUTE_GRAPHICS_INTEROP.md): v0.4 experimental
-   compute-to-render and optional native CUDA interop slice.
-3. [CAPABILITY_FALLBACK_DESIGN.md](CAPABILITY_FALLBACK_DESIGN.md): fallback knobs and diagnostics
+2. [CAPABILITY_FALLBACK_DESIGN.md](CAPABILITY_FALLBACK_DESIGN.md): fallback knobs and diagnostics
    still need final promotion into validation/adaptation specs.
-4. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md): shared
+3. [SCIENTIFIC_COORDINATE_NORMALIZATION.md](SCIENTIFIC_COORDINATE_NORMALIZATION.md): shared
    normalization-frame and coordinate readback gaps still need final promotion.
-5. [UNITS_AND_TIME_FORMAT_API.md](UNITS_AND_TIME_FORMAT_API.md): shared unit ladders, duration
+4. [UNITS_AND_TIME_FORMAT_API.md](UNITS_AND_TIME_FORMAT_API.md): shared unit ladders, duration
    formatting, datetime axes, and scale-bar/axis unit API.
-6. [POLYGON_PSLG_API_DESIGN.md](POLYGON_PSLG_API_DESIGN.md): polygon/PSLG API remains unsettled.
-7. [RENDER_CONTRACT_RESOLVER.md](RENDER_CONTRACT_RESOLVER.md): render-contract resolution remains
-   an active API and planning question.
-8. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
+5. [POLYGON_PSLG_API_DESIGN.md](POLYGON_PSLG_API_DESIGN.md): polygon/PSLG API remains unsettled.
+6. [VISUAL_COMMAND_STREAM.md](VISUAL_COMMAND_STREAM.md): visual command stream remains active
    design pressure.
-9. [VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md](VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md):
+7. [VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md](VISUAL_LOCAL_TRANSFORM_AND_ARCBALL_TARGET.md):
    retained visual-local transform and arcball model/camera target semantics for the textured
    planet cleanup.
-10. [ARBITRARY_CLIP_MASKS.md](ARBITRARY_CLIP_MASKS.md): post-RC1 retained polygon clip masks,
-    stencil lowering, query parity, and backend-neutral scene API direction.
+8. [ARBITRARY_CLIP_MASKS.md](ARBITRARY_CLIP_MASKS.md): post-RC1 retained polygon clip masks,
+   stencil lowering, query parity, and backend-neutral scene API direction.
 
 
 ## Visual And Render-Mode Pressure

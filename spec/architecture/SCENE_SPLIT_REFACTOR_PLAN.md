@@ -1,6 +1,6 @@
 # Scene Split Refactor Plan
 
-> **Status:** active architecture plan
+> **Status:** implemented controller extraction and internal scene modularization boundary; color, field, text, and geometry promotions remain optional evaluations
 > **Created on:** 2026-05-27
 > **Scope:** durable source-tree, public API, and test-structure direction for splitting reusable
 > pieces out of the current `scene` subsystem.
@@ -17,8 +17,7 @@ The refactor goal is to make those reusable pieces scene-independent while keepi
 `datoviz` shared library. The source tree should express reusable lower layers through module
 targets, public headers, and focused tests rather than by putting every helper under `scene`.
 
-This document is the source-of-truth split plan. Slice-specific execution notes should stay in the
-active status docs or the nearest durable spec; completed implementation history belongs in git.
+This document retains the source-of-truth promotion tests and module boundary. The controller extraction and broad internal scene split have landed; remaining module candidates are not active release work unless a concrete second consumer promotes them through `agents/now/STATUS.md`. Completed implementation history belongs in Git.
 
 
 ## Non-Goals
