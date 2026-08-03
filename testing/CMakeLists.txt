@@ -73,6 +73,8 @@ if(TARGET datoviz_vk AND TARGET datoviz_volk)
         PRIVATE datoviz_common datoviz_vk datoviz_volk datoviz_testing_gpu_selection
     )
 
+    target_compile_definitions(datoviz_testing_gpu PRIVATE DVZ_HAS_TEST_GPU_ADAPTER=1)
+
     if(_dvz_compile_definitions)
         target_compile_definitions(datoviz_testing_gpu PUBLIC ${_dvz_compile_definitions})
     endif()

@@ -278,7 +278,7 @@ docs-generate:
 docs-check-generated:
     @python3 tools/check_generated_docs.py
 
-docs-build-check:
+docs-build-check: build
     @mkdir -p build/gallery-webp/v0.4 build/vulkan-course-media build-wasm-scene/wasm
     @python3 -m unittest tools/tests/test_build_gallery_webp.py
     @python3 -m unittest tools/tests/test_build_tutorial_media.py
