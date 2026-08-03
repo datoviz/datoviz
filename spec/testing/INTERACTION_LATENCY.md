@@ -63,6 +63,38 @@ Window refresh rate is a runtime metric and may change when a window moves betwe
 Every requested frame in the app-owned native loop passes through per-view scheduler admission, regardless of whether the request comes from continuous interaction, a dirty scene, an event, animation, replay, a posted callback, a query, or another one-shot invalidation. Repeated requests coalesce while a paced view waits, the deadline advances only after a successfully presented frame, and a deferred or failed frame retains its pending state without advancing the cadence. Explicit immediate mode without a cap remains unbounded, fixed-count runs and direct `dvz_view_render_once()` calls remain unpaced, and external surfaces remain host-driven.
 
 
+## App Presentation Environment Overrides
+
+The app layer recognizes these process-wide environment overrides for app-owned native windows:
+
+| Variable | Accepted values | Meaning when unset |
+| --- | --- | --- |
+| `DVZ_PRESENT_MODE` | `fifo`, `fifo-latest`, `mailbox`, or `immediate` | Prefer refresh-paced FIFO latest-ready, with capability fallback to mailbox and then FIFO. |
+| `DVZ_FPS_CAP` | A positive FPS value such as `60` or `144.5` | No explicit fixed-rate cap. The default native policy may still pace to monitor refresh; explicit immediate mode is unbounded. `0` is invalid and is ignored with a warning. |
+| `DVZ_MAX_FRAMES_IN_FLIGHT` | `auto` or a positive integer | Use the present-mode default: one frame slot for ordinary FIFO and one slot per swapchain image for other modes. `auto` explicitly requests one slot per swapchain image. |
+| `DVZ_APP_SCHEDULE` | `on_demand` or `continuous` | Use on-demand scheduling. This controls whether frames are requested, independently of pacing admission. |
+
+To request uncapped immediate presentation on POSIX, omit `DVZ_FPS_CAP` or explicitly remove an inherited value:
+
+```sh
+env -u DVZ_FPS_CAP DVZ_PRESENT_MODE=immediate ./build/examples/c/start/scatter
+```
+
+To request a fixed 60 FPS cap:
+
+```sh
+DVZ_FPS_CAP=60 ./build/examples/c/start/scatter
+```
+
+In PowerShell, remove an inherited cap before requesting immediate presentation:
+
+```powershell
+Remove-Item Env:DVZ_FPS_CAP -ErrorAction SilentlyContinue
+$env:DVZ_PRESENT_MODE = "immediate"
+& .\build-msvc\examples\c\start\Release\scatter.exe
+```
+
+
 ## Commit Comparison
 
 Extend `tools/compare_present_benchmarks.py` with a latency workload while preserving the existing paired, randomized, same-machine methodology. Store raw samples and aggregate metrics in the JSON report. Compare latency using paired p95 deltas with an independently configurable threshold; do not combine latency and throughput into one scalar score.

@@ -148,8 +148,10 @@ Physical Windows testing also found `fifo-latest` with `DVZ_FPS_CAP=60` smooth a
 Run the deterministic benchmark workload to ensure it still owns explicit continuous frames:
 
 ```sh
-DVZ_PRESENT_MODE=immediate DVZ_SCATTER_BENCHMARK=panzoom-v1 ./build-profile/examples/c/start/scatter --benchmark 600
+env -u DVZ_FPS_CAP DVZ_PRESENT_MODE=immediate DVZ_SCATTER_BENCHMARK=panzoom-v1 ./build-profile/examples/c/start/scatter --benchmark 600
 ```
+
+`DVZ_FPS_CAP` accepts only positive values; do not use `DVZ_FPS_CAP=0` to request uncapped rendering because it is invalid and ignored with a warning. Unset the variable instead. The full environment-variable contract, accepted values, defaults, and PowerShell form are recorded in [INTERACTION_LATENCY.md](../../spec/testing/INTERACTION_LATENCY.md#app-presentation-environment-overrides).
 
 The requirements line must include `frame-callbacks`, the output must include `scenario_benchmark_workload: panzoom-v1`, and all requested frames must complete.
 
