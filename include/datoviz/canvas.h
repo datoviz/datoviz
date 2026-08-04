@@ -56,6 +56,9 @@ typedef struct DvzDevice DvzDevice;
 // Allocate one frame slot for every swapchain image, regardless of presentation mode.
 #define DVZ_CANVAS_FRAME_SLOT_COUNT_AUTOMATIC UINT32_MAX
 
+// Report a requested presentation-mode fallback as a warning rather than informational output.
+#define DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT (1u << 0)
+
 
 
 /*************************************************************************************************/
@@ -66,6 +69,7 @@ typedef struct DvzDevice DvzDevice;
 typedef struct
 {
     uint32_t struct_size;
+    // Use DVZ_CANVAS_CONFIG_* flags.
     uint32_t flags;
     DvzWindow* window;
     DvzDevice* device;

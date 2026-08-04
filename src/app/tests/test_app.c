@@ -309,6 +309,11 @@ static int test_app_presentation_policy_env_overrides(TstContext* suite, const T
     AT(tst_setenv("DVZ_PRESENT_MODE", "mailbox") == 0);
     AT(_dvz_app_present_mode_env(&present_mode));
     AT(present_mode == VK_PRESENT_MODE_MAILBOX_KHR);
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    AT(tst_setenv("DVZ_PRESENT_MODE", "fifo-latest") == 0);
+    AT(_dvz_app_present_mode_env(&present_mode));
+    AT(present_mode == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR);
+#endif
     AT(tst_setenv("DVZ_PRESENT_MODE", "invalid") == 0);
     AT(!_dvz_app_present_mode_env(&present_mode));
 

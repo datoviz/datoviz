@@ -4054,6 +4054,7 @@ static void _app_canvas_config_apply_presentation_policy(
     if (_dvz_app_present_mode_env(&present_mode))
     {
         ccfg->present_mode = present_mode;
+        ccfg->flags |= DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT;
     }
     else
     {

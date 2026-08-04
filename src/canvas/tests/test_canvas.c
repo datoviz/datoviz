@@ -545,7 +545,7 @@ int test_canvas_config_rejects_invalid_abi(TstContext* suite, const TstCase* ite
     AT_EXPECTED_ERROR_STRICT(suite, dvz_canvas_create(&cfg) == NULL);
 
     cfg = dvz_canvas_config();
-    cfg.flags = 1;
+    cfg.flags = 2;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_canvas_create(&cfg) == NULL);
 
     cfg = dvz_canvas_config();

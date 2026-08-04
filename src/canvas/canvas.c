@@ -45,7 +45,7 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-#define DVZ_CANVAS_CONFIG_KNOWN_FLAGS 0u
+#define DVZ_CANVAS_CONFIG_KNOWN_FLAGS DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT
 #define DVZ_CANVAS_LIVE_IMAGE_SINK_CONFIG_KNOWN_FLAGS 0u
 
 

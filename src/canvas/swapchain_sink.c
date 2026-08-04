@@ -317,6 +317,44 @@ static VkFormat canvas_frame_format(const DvzCanvas* canvas)
 
 
 
+static const char* canvas_present_mode_name(VkPresentModeKHR mode)
+{
+    switch (mode)
+    {
+    case VK_PRESENT_MODE_IMMEDIATE_KHR:
+        return "immediate";
+    case VK_PRESENT_MODE_MAILBOX_KHR:
+        return "mailbox";
+    case VK_PRESENT_MODE_FIFO_KHR:
+        return "fifo";
+    case VK_PRESENT_MODE_FIFO_RELAXED_KHR:
+        return "fifo-relaxed";
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    case VK_PRESENT_MODE_FIFO_LATEST_READY_KHR:
+        return "fifo-latest";
+#endif
+    default:
+        return "unknown";
+    }
+}
+
+
+
+static const char* canvas_frame_slot_policy_name(
+    const DvzCanvas* canvas, VkPresentModeKHR present_mode)
+{
+    ANN(canvas);
+    if (
+        present_mode == VK_PRESENT_MODE_FIFO_KHR &&
+        canvas->cfg.frame_slot_count == DVZ_CANVAS_FRAME_SLOT_COUNT_PRESENT_MODE_DEFAULT)
+    {
+        return "one frame slot";
+    }
+    return "configured frame slots";
+}
+
+
+
 static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
 {
     ANN(canvas);
@@ -336,8 +374,19 @@ static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
         VkPresentModeKHR fallback = VK_PRESENT_MODE_FIFO_KHR;
         if (canvas->swapchain != NULL && canvas->swapchain->surface_wrapper != NULL)
             fallback = dvz_surface_preferred_present_mode(canvas->swapchain->surface_wrapper);
-        log_warn(
-            "FIFO latest-ready present mode unavailable; falling back to present mode %d", fallback);
+        const char* message = "fifo-latest unavailable; using %s (%s)";
+        if (canvas->cfg.flags & DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT)
+        {
+            log_warn(
+                message, canvas_present_mode_name(fallback),
+                canvas_frame_slot_policy_name(canvas, fallback));
+        }
+        else
+        {
+            log_debug(
+                message, canvas_present_mode_name(fallback),
+                canvas_frame_slot_policy_name(canvas, fallback));
+        }
         return fallback;
     }
 #endif
