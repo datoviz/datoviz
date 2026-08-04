@@ -26,10 +26,9 @@ making v0.4 implementation depend on speculative public APIs.
 
 ## Field And Domain Roadmaps
 
-1. [FIELD_VISUALIZATION_ROADMAP.md](FIELD_VISUALIZATION_ROADMAP.md): vector, tensor,
-   categorical-label, sparse, and bricked field directions.
-2. [DOMAIN_RESOURCE_ROADMAP.md](DOMAIN_RESOURCE_ROADMAP.md): tracks, trajectories, ensembles,
-   uncertainty, and molecular or structural-biology resources.
+1. [SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md](SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md): staged optional RC4 sampler and sparse-update foundations followed by v0.5+ binding-local views, streaming handoff, and GPU field-displaced structured meshes.
+2. [FIELD_VISUALIZATION_ROADMAP.md](FIELD_VISUALIZATION_ROADMAP.md): vector, tensor, categorical-label, sparse, and bricked field directions.
+3. [DOMAIN_RESOURCE_ROADMAP.md](DOMAIN_RESOURCE_ROADMAP.md): tracks, trajectories, ensembles, uncertainty, and molecular or structural-biology resources.
 
 
 ## Resource Management And Frame-Plan Pressure

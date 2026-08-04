@@ -65,6 +65,8 @@ Structured-grid provenance may be retained for height-only updates, normal recom
 column edge overlays, contours, scalar isolines, and future LOD. Rendering still uses indexed
 triangles.
 
+After v0.4, rapidly changing structured surfaces should prefer a GPU field-displacement mesh variant: regular grid topology and planar coordinates remain resident while the vertex shader samples a scalar `DvzSampledField` for height. Binding-local logical field views provide scrolling or periodic origin without rewriting geometry, and the same field may drive both image and mesh consumers. This remains mesh behavior rather than a separate surface visual family; bounds, normals, picking, probing, material participation, capability fallback, and export must be specified before promotion. See [`../proposals/future/SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md`](../proposals/future/SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md).
+
 ## Per-Vertex Attributes
 
 | Attribute | Type | Sources | Required | Notes |

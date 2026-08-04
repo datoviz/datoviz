@@ -23,6 +23,13 @@ Datoviz already has the right foundation for regular sampled data:
 This note records future field directions without duplicating the active `SampledField` contract.
 
 
+## Logical Views, Periodic Domains, And Rolling Updates
+
+Regular scalar and color fields also need reusable logical views over stable physical storage, complete sampler addressing, and sparse update-region tracking. These capabilities serve periodic simulations, scrolling acquisition, tiled domains, atlases, rolling histories, and structured height fields without introducing use-case-specific ring resources.
+
+The staged design, release boundaries, and GPU field-displaced structured-mesh direction live in [`SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md`](SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md). This roadmap treats those foundations as shared infrastructure for later scalar, vector, tensor, categorical, sparse, and bricked field consumers.
+
+
 ## Vector Fields
 
 ### Simple Examples
