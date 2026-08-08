@@ -29,7 +29,7 @@ The validated implementation head passes the complete 1,128-case native matrix, 
 Remaining RC3 deliverables:
 
 1. Execute and verify the branch cutover.
-2. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates; complete the final shader-tool embedding cleanup requested by the original author on focused successor PR #136, validate and merge it after confirmation, then resolve PR #132.
+2. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates; focused successor PR #136 is clean and fully green at `f3b47dbf5`, so obtain contributor confirmation, merge it with explicit approval, then close PR #132 as superseded with separately approved public text.
 3. Publish compatible Vulkan-enabled Qt and PyQt packages, then build and validate exact split `libdatoviz`, `datoviz`, and `datoviz-qtbridge` artifacts on supported hosted platforms.
 4. Prove the rewritten course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
 5. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, conda layouts, optional-provider diagnostics, third-party notices, and checksum/signing policy.
