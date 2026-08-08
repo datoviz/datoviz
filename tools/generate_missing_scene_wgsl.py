@@ -163,7 +163,7 @@ def main() -> int:
     wgsl_dir = args.wgsl_dir.resolve()
     jobs = _scan_jobs(glsl_dir, wgsl_dir)
     tools = Tools(
-        glslc=_discover_tool(args.glslc, "GLSLC", "glslc"),
+        glslc=_discover_tool(args.glslc, "DVZ_GLSLC", "glslc"),
         glslang_validator=_discover_tool(
             args.glslang_validator, "GLSLANG_VALIDATOR", "glslangValidator"
         ),

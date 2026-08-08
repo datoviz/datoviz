@@ -8,21 +8,41 @@ option(
     "Fail configuration when glslc is unavailable for required native shader products"
     OFF)
 
-set(GLSLC "${GLSLC}" CACHE FILEPATH "Path to the glslc shader compiler")
-if(NOT GLSLC AND DEFINED ENV{DVZ_GLSLC} AND EXISTS "$ENV{DVZ_GLSLC}")
-    set(GLSLC "$ENV{DVZ_GLSLC}" CACHE FILEPATH "Path to the glslc shader compiler" FORCE)
+set(DVZ_GLSLC_EXECUTABLE "" CACHE FILEPATH "Optional path to the glslc shader compiler")
+if(DVZ_GLSLC_EXECUTABLE AND NOT EXISTS "${DVZ_GLSLC_EXECUTABLE}")
+    message(
+        FATAL_ERROR
+        "Configured DVZ_GLSLC_EXECUTABLE does not exist: ${DVZ_GLSLC_EXECUTABLE}")
 endif()
-if(NOT GLSLC)
+if(NOT DVZ_GLSLC_EXECUTABLE
+        AND DEFINED ENV{DVZ_GLSLC}
+        AND NOT "$ENV{DVZ_GLSLC}" STREQUAL "")
+    if(NOT EXISTS "$ENV{DVZ_GLSLC}")
+        message(
+            FATAL_ERROR
+            "Configured DVZ_GLSLC environment path does not exist: $ENV{DVZ_GLSLC}")
+    endif()
+    set(
+        DVZ_GLSLC_EXECUTABLE
+        "$ENV{DVZ_GLSLC}"
+        CACHE FILEPATH "Optional path to the glslc shader compiler" FORCE)
+endif()
+if(NOT DVZ_GLSLC_EXECUTABLE)
     find_program(
         _dvz_glslc
         NAMES glslc
-        HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" "$ENV{VULKAN_SDK}/Bin")
+        HINTS "$ENV{VULKAN_SDK}/bin" "$ENV{VULKAN_SDK}/Bin"
+        NO_CACHE)
     if(_dvz_glslc)
-        set(GLSLC "${_dvz_glslc}" CACHE FILEPATH "Path to the glslc shader compiler" FORCE)
+        set(
+            DVZ_GLSLC_EXECUTABLE
+            "${_dvz_glslc}"
+            CACHE FILEPATH "Optional path to the glslc shader compiler" FORCE)
     endif()
 endif()
-if(GLSLC AND NOT EXISTS "${GLSLC}")
-    message(FATAL_ERROR "Configured GLSLC path does not exist: ${GLSLC}")
+if(DVZ_GLSLC_EXECUTABLE)
+    add_executable(dvz_glslc_tool IMPORTED)
+    set_target_properties(dvz_glslc_tool PROPERTIES IMPORTED_LOCATION "${DVZ_GLSLC_EXECUTABLE}")
 endif()
 
 set(DVZ_SPIRV_VAL_EXECUTABLE "" CACHE FILEPATH "Path to the spirv-val validator")
@@ -36,7 +56,8 @@ if(DVZ_VALIDATE_SPIRV AND NOT DVZ_SPIRV_VAL_EXECUTABLE)
     find_program(
         _dvz_spirv_val
         NAMES spirv-val
-        HINTS "$ENV{VULKAN_SDK}/bin" "$ENV{VULKAN_SDK}/Bin")
+        HINTS "$ENV{VULKAN_SDK}/bin" "$ENV{VULKAN_SDK}/Bin"
+        NO_CACHE)
     if(_dvz_spirv_val)
         set(
             DVZ_SPIRV_VAL_EXECUTABLE
@@ -54,6 +75,50 @@ if(DVZ_VALIDATE_SPIRV AND NOT DVZ_SPIRV_VAL_EXECUTABLE)
     message(FATAL_ERROR "DVZ_VALIDATE_SPIRV=ON requires spirv-val.")
 endif()
 
+
+
+function(dvz_validate_shader_configuration)
+    if(DVZ_GLSLC_EXECUTABLE)
+        return()
+    endif()
+
+    set(_dvz_required_products)
+    if(DVZ_REQUIRE_PRECOMPILED_SHADERS)
+        list(APPEND _dvz_required_products "DVZ_REQUIRE_PRECOMPILED_SHADERS=ON")
+    endif()
+    if(DVZ_BUILD_TESTING)
+        list(APPEND _dvz_required_products "native test fixtures")
+    endif()
+
+    if(_dvz_required_products)
+        list(JOIN _dvz_required_products ", " _dvz_required_products_text)
+        message(
+            FATAL_ERROR
+            "glslc is required by ${_dvz_required_products_text}. Install it from the Vulkan SDK "
+            "or a platform shaderc/glslc package, ensure it is on PATH, or set "
+            "DVZ_GLSLC_EXECUTABLE to its full path.")
+    endif()
+
+    if(DVZ_BUILD_SCENE)
+        if(NOT DVZ_HAS_SHADERC)
+            message(
+                FATAL_ERROR
+                "DVZ_BUILD_SCENE=ON requires either glslc for embedded SPIR-V or runtime shaderc "
+                "for the embedded-GLSL fallback. Install glslc from the Vulkan SDK or a platform "
+                "shaderc/glslc package, set DVZ_GLSLC_EXECUTABLE, or enable an available shaderc "
+                "provider with DVZ_ENABLE_SHADERC.")
+        endif()
+        message(
+            WARNING
+            "glslc not found — scene built-in shaders will use the runtime GLSL fallback. A "
+            "compatible shaderc provider must be discoverable when the scene creates pipelines.")
+    else()
+        message(STATUS "glslc not found; no enabled Datoviz product requires it")
+    endif()
+endfunction()
+
+
+
 function(dvz_compile_glsl)
     set(_one_value_args SOURCE OUTPUT STAGE PROFILE)
     set(_multi_value_args INCLUDE_DIRS DEPENDS)
@@ -64,8 +129,10 @@ function(dvz_compile_glsl)
             message(FATAL_ERROR "dvz_compile_glsl() requires ${_required}.")
         endif()
     endforeach()
-    if(NOT GLSLC)
-        message(FATAL_ERROR "dvz_compile_glsl() requires glslc; set GLSLC or DVZ_GLSLC.")
+    if(NOT TARGET dvz_glslc_tool)
+        message(
+            FATAL_ERROR
+            "dvz_compile_glsl() requires glslc; set DVZ_GLSLC_EXECUTABLE or DVZ_GLSLC.")
     endif()
 
     if(DVZ_SHADER_PROFILE STREQUAL "graphics")
@@ -104,7 +171,7 @@ function(dvz_compile_glsl)
         OUTPUT "${DVZ_SHADER_OUTPUT}"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${_output_dir}"
         COMMAND
-            "${GLSLC}"
+            dvz_glslc_tool
             ${_target_args}
             "-fshader-stage=${DVZ_SHADER_STAGE}"
             ${_include_args}

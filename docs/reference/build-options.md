@@ -70,9 +70,9 @@ dependency across supported distributions.
 
 ## Shader Tools
 
-`glslc` and shaderc serve different build paths. One shared CMake helper uses `glslc` for scene, Canvas, and native test shaders with the named graphics profile (Vulkan 1.0 and SPIR-V 1.0) or compute profile (Vulkan 1.3 and SPIR-V 1.6). Set the `GLSLC` cache path or `DVZ_GLSLC` environment variable to select an explicit compiler. Canvas and native shader fixtures require `glslc`; scene-only developer configurations may retain the embedded-GLSL runtime fallback when `DVZ_REQUIRE_PRECOMPILED_SHADERS=OFF`.
+`glslc` and shaderc serve different build paths. One shared CMake helper uses `glslc` for scene and native test shaders with the named graphics profile (Vulkan 1.0 and SPIR-V 1.0) or compute profile (Vulkan 1.3 and SPIR-V 1.6). Set the `DVZ_GLSLC_EXECUTABLE` cache path or `DVZ_GLSLC` environment variable to select an explicit compiler; discovery otherwise checks the active Vulkan SDK and `PATH`. Canvas has no built-in shader compilation dependency. Native shader fixtures require `glslc`, while scene-only developer configurations may retain the embedded-GLSL runtime fallback when `DVZ_REQUIRE_PRECOMPILED_SHADERS=OFF` and the runtime shaderc adapter is available.
 
-`DVZ_VALIDATE_SPIRV=ON` discovers `spirv-val` through `DVZ_SPIRV_VAL_EXECUTABLE`, `DVZ_SPIRV_VAL`, the Vulkan SDK, or `PATH` and validates each generated file against its profile environment. CI and release builds enable both validation and required precompilation. `glslangValidator` is optional and is not used by the normal native scene, Canvas, or fixture build.
+`DVZ_VALIDATE_SPIRV=ON` discovers `spirv-val` through `DVZ_SPIRV_VAL_EXECUTABLE`, `DVZ_SPIRV_VAL`, the Vulkan SDK, or `PATH` and validates each generated file against its profile environment. CI and release builds enable both validation and required precompilation. `glslangValidator` is optional and is not used by the normal native scene or fixture build.
 
 Runtime shaderc remains independent: `DVZ_ENABLE_SHADERC=AUTO` enables runtime GLSL compilation when shaderc headers and a loadable provider are found, while `ON` makes their absence a configuration error. Release-wheel builds require and package shaderc so installed external-shader consumers do not depend on a developer-machine provider.
 

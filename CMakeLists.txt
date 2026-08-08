@@ -156,6 +156,8 @@ else()
         "-DDVZ_ENABLE_SHADERC=ON to require it for release wheels.")
 endif()
 
+dvz_validate_shader_configuration()
+
 if(DVZ_ENABLE_GPROF)
     add_compile_options(
         $<$<COMPILE_LANGUAGE:C>:-pg>
@@ -431,7 +433,7 @@ set(DVZ_EMBED_RESOURCES_SCRIPT "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmak
 set(DVZ_EMBED_TEXT_RESOURCES_SCRIPT "${PROJECT_SOURCE_DIR}/cmake/embed_text_resources.cmake")
 
 set(SHADERS_C "${CMAKE_BINARY_DIR}/_shaders.c")
-if(GLSLC)
+if(DVZ_GLSLC_EXECUTABLE)
     set(SPIRV_DIR       "${CMAKE_BINARY_DIR}/shaders")
     file(MAKE_DIRECTORY "${SPIRV_DIR}")
 
@@ -480,10 +482,6 @@ if(GLSLC)
     set(DVZ_HAS_PRECOMPILED_SHADERS 1)
     set(DVZ_SHADERS_C "${SHADERS_C}")
 else()
-    if(DVZ_REQUIRE_PRECOMPILED_SHADERS)
-        message(FATAL_ERROR "DVZ_REQUIRE_PRECOMPILED_SHADERS=ON requires glslc.")
-    endif()
-    message(WARNING "glslc not found — builtin shaders will use runtime GLSL compilation.")
     add_custom_command(
         OUTPUT  "${SHADERS_C}"
         COMMAND "${CMAKE_COMMAND}"
@@ -803,7 +801,7 @@ message(STATUS "DVZ_INSTALL: ${DVZ_INSTALL}")
 message(STATUS "DVZ_VENDORED_DEPS: ${DVZ_VENDORED_DEPS}")
 message(STATUS "DVZ_ENABLE_QT_BRIDGE: ${DVZ_ENABLE_QT_BRIDGE}")
 message(STATUS "DVZ_HAS_QT_BRIDGE: ${DVZ_HAS_QT_BRIDGE}")
-message(STATUS "GLSLC: ${GLSLC}")
+message(STATUS "DVZ_GLSLC_EXECUTABLE: ${DVZ_GLSLC_EXECUTABLE}")
 message(STATUS "DVZ_VALIDATE_SPIRV: ${DVZ_VALIDATE_SPIRV}")
 message(STATUS "DVZ_SPIRV_VAL_EXECUTABLE: ${DVZ_SPIRV_VAL_EXECUTABLE}")
 

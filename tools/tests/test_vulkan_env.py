@@ -56,8 +56,25 @@ class VulkanEnvironmentTest(unittest.TestCase):
 
             bash = shutil.which('bash')
             self.assertIsNotNone(bash)
+            reported_names = (
+                'VULKAN_SDK VK_ICD_FILENAMES VK_LAYER_PATH VK_DRIVER_FILES '
+                'VK_ADD_DRIVER_FILES VK_LOADER_DRIVERS_SELECT VK_LOADER_DRIVERS_DISABLE '
+                'VK_ROOT DYLD_LIBRARY_PATH DYLD_FALLBACK_LIBRARY_PATH'
+            )
             result = subprocess.run(  # noqa: S603
-                [bash, '-c', 'source "$1"; env -0', 'bash', str(SCRIPT)],
+                [
+                    bash,
+                    '-c',
+                    'export DYLD_LIBRARY_PATH=/stale/dyld; '
+                    'export DYLD_FALLBACK_LIBRARY_PATH=/stale/fallback; '
+                    'source "$1"; '
+                    'for name in $2; do '
+                    'if [ "${!name+x}" = x ]; then printf "%s=%s\\0" "$name" "${!name}"; fi; '
+                    'done',
+                    'bash',
+                    str(SCRIPT),
+                    reported_names,
+                ],
                 check=True,
                 capture_output=True,
                 env=env,

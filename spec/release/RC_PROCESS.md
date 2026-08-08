@@ -43,7 +43,7 @@ Exit criteria:
 2. generated C reference, captured artifacts, RC feedback triage, attribution, and gallery review are complete;
 3. Qt/PyQt hosting has a tested packaged `datoviz_qtbridge` provider, preferably conda-first, without adding Qt to the base wheel;
 4. the tutorial-enabling Canvas, vklite, shader-file, depth-attachment, OBJ-UV, and controller contracts are implemented from executable chapter spikes, documented, binding-validated where applicable, and proven through installed CMake consumers;
-5. native scene, Canvas, test, and example shaders share one `glslc` build helper and named target-profile policy, normal builds no longer require `glslangValidator`, release products contain precompiled SPIR-V, and generated SPIR-V passes release/CI validation;
+5. native scene, test, and example shaders share one `glslc` build helper and named target-profile policy, Canvas has no built-in shader compiler dependency, normal builds no longer require `glslangValidator`, release products contain precompiled SPIR-V, and generated SPIR-V passes release/CI validation;
 6. runtime shaderc is a focused thread-safe capability outside DRP2 pipeline code with a typed public availability, diagnostic, file, profile, and ownership contract; official packages guarantee its provider while disabled source builds preserve precompiled-SPIR-V rendering;
 7. rewritten course chapters 1-3 are published with standalone installed-consumer, deterministic offscreen, bounded live GLFW, source-synchronization, and generated-preview proof;
 8. packaging, licenses, generated artifacts, release notes, and the non-tutorial documentation surface are final candidates;

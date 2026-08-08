@@ -7,6 +7,7 @@ PREFIX="$WORKDIR/prefix"
 PACKAGE_BUILD="$WORKDIR/cmake-package-build"
 FETCH_BUILD="$WORKDIR/fetchcontent-build"
 FETCH_PREEXISTING_GLFW_BUILD="$WORKDIR/fetchcontent-preexisting-glfw-build"
+CANVAS_NO_GLSLC_BUILD="$WORKDIR/canvas-no-glslc-build"
 DATOVIZ_BUILD="$WORKDIR/datoviz-build"
 
 rm -rf "$WORKDIR"
@@ -51,6 +52,7 @@ cmake -S "$ROOT/examples/c/integration/fetchcontent" -B "$FETCH_PREEXISTING_GLFW
     -DCMAKE_BUILD_TYPE=Release \
     -DDATOVIZ_FETCHCONTENT_SOURCE_DIR="$ROOT" \
     -DDATOVIZ_FETCHCONTENT_PRELOAD_GLFW=ON \
+    -DDATOVIZ_FETCHCONTENT_PRELOAD_GLSLC_VARIABLES=ON \
     -DDVZ_BUILD_GUI=OFF \
     -DDVZ_ENABLE_QT_BRIDGE=OFF \
     -DDVZ_ENABLE_CUDA=OFF >/dev/null
@@ -60,5 +62,47 @@ cmake --build "$FETCH_PREEXISTING_GLFW_BUILD" \
 LD_LIBRARY_PATH="$FETCH_PREEXISTING_GLFW_BUILD/_deps/datoviz-build/src:${LD_LIBRARY_PATH:-}" \
 DYLD_LIBRARY_PATH="$FETCH_PREEXISTING_GLFW_BUILD/_deps/datoviz-build/src:${DYLD_LIBRARY_PATH:-}" \
     "$FETCH_PREEXISTING_GLFW_BUILD/datoviz_fetchcontent_example"
+
+echo "Building Canvas without glslc..."
+GLSLC_IGNORE_PATHS=""
+_dvz_old_ifs=$IFS
+IFS=:
+for _dvz_path_dir in ${PATH:-} "${VULKAN_SDK:-}/bin" "${VULKAN_SDK:-}/Bin"; do
+    if [ -n "$_dvz_path_dir" ] && [ -x "$_dvz_path_dir/glslc" ]; then
+        if [ -n "$GLSLC_IGNORE_PATHS" ]; then
+            GLSLC_IGNORE_PATHS="$GLSLC_IGNORE_PATHS;$_dvz_path_dir"
+        else
+            GLSLC_IGNORE_PATHS="$_dvz_path_dir"
+        fi
+    fi
+done
+IFS=$_dvz_old_ifs
+
+(
+    unset VULKAN_SDK DVZ_GLSLC
+    cmake -S "$ROOT" -B "$CANVAS_NO_GLSLC_BUILD" -GNinja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_IGNORE_PATH="$GLSLC_IGNORE_PATHS" \
+        -DDVZ_BUILD_CONTROLLER=OFF \
+        -DDVZ_BUILD_CANVAS=ON \
+        -DDVZ_BUILD_DRP2=OFF \
+        -DDVZ_BUILD_SCENE=OFF \
+        -DDVZ_BUILD_APP=OFF \
+        -DDVZ_BUILD_GUI=OFF \
+        -DDVZ_BUILD_TESTING=OFF \
+        -DDVZ_BUILD_EXAMPLES=OFF \
+        -DDVZ_INSTALL=OFF \
+        -DDVZ_WITH_FREETYPE=OFF \
+        -DDVZ_WITH_MSDF_ATLAS=OFF \
+        -DDVZ_WITH_MSDF_SVG=OFF \
+        -DDVZ_ENABLE_SHADERC=OFF \
+        -DDVZ_ENABLE_QT_BRIDGE=OFF \
+        -DDVZ_ENABLE_CUDA=OFF >/dev/null
+)
+if grep -Eq '^DVZ_GLSLC_EXECUTABLE:FILEPATH=.+glslc' "$CANVAS_NO_GLSLC_BUILD/CMakeCache.txt"; then
+    echo "Canvas no-glslc smoke unexpectedly discovered glslc" >&2
+    exit 1
+fi
+cmake --build "$CANVAS_NO_GLSLC_BUILD" --target datoviz_canvas_layer >/dev/null
 
 echo "C integration smoke passed: $WORKDIR"

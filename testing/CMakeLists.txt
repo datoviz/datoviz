@@ -179,10 +179,6 @@ file(GLOB DVZ_VKLITE_TEST_SHADERS
 if(DVZ_VKLITE_TEST_SHADERS)
     file(MAKE_DIRECTORY "${DVZ_TEST_SPIRV_DIR}")
 
-    if(NOT GLSLC)
-        message(FATAL_ERROR "glslc is required to compile vklite test shaders; set GLSLC or DVZ_GLSLC.")
-    endif()
-
     set(DVZ_VKLITE_TEST_SPIRV_OUTPUTS)
 
     foreach(_dvz_shader ${DVZ_VKLITE_TEST_SHADERS})
