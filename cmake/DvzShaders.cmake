@@ -7,6 +7,10 @@ option(
     DVZ_REQUIRE_PRECOMPILED_SHADERS
     "Fail configuration when glslc is unavailable for required native shader products"
     OFF)
+option(
+    DVZ_GLSLC_AUTO_DISCOVERY
+    "Discover glslc from the Vulkan SDK and PATH when no explicit compiler is configured"
+    ON)
 
 set(DVZ_GLSLC_EXECUTABLE "" CACHE FILEPATH "Optional path to the glslc shader compiler")
 if(DVZ_GLSLC_EXECUTABLE AND NOT EXISTS "${DVZ_GLSLC_EXECUTABLE}")
@@ -27,7 +31,7 @@ if(NOT DVZ_GLSLC_EXECUTABLE
         "$ENV{DVZ_GLSLC}"
         CACHE FILEPATH "Optional path to the glslc shader compiler" FORCE)
 endif()
-if(NOT DVZ_GLSLC_EXECUTABLE)
+if(NOT DVZ_GLSLC_EXECUTABLE AND DVZ_GLSLC_AUTO_DISCOVERY)
     find_program(
         _dvz_glslc
         NAMES glslc

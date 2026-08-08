@@ -64,25 +64,10 @@ DYLD_LIBRARY_PATH="$FETCH_PREEXISTING_GLFW_BUILD/_deps/datoviz-build/src:${DYLD_
     "$FETCH_PREEXISTING_GLFW_BUILD/datoviz_fetchcontent_example"
 
 echo "Building Canvas without glslc..."
-GLSLC_IGNORE_PATHS=""
-_dvz_old_ifs=$IFS
-IFS=:
-for _dvz_path_dir in ${PATH:-} "${VULKAN_SDK:-}/bin" "${VULKAN_SDK:-}/Bin"; do
-    if [ -n "$_dvz_path_dir" ] && [ -x "$_dvz_path_dir/glslc" ]; then
-        if [ -n "$GLSLC_IGNORE_PATHS" ]; then
-            GLSLC_IGNORE_PATHS="$GLSLC_IGNORE_PATHS;$_dvz_path_dir"
-        else
-            GLSLC_IGNORE_PATHS="$_dvz_path_dir"
-        fi
-    fi
-done
-IFS=$_dvz_old_ifs
-
 (
     unset VULKAN_SDK DVZ_GLSLC
     cmake -S "$ROOT" -B "$CANVAS_NO_GLSLC_BUILD" -GNinja \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_IGNORE_PATH="$GLSLC_IGNORE_PATHS" \
         -DDVZ_BUILD_CONTROLLER=OFF \
         -DDVZ_BUILD_CANVAS=ON \
         -DDVZ_BUILD_DRP2=OFF \
@@ -96,6 +81,7 @@ IFS=$_dvz_old_ifs
         -DDVZ_WITH_MSDF_ATLAS=OFF \
         -DDVZ_WITH_MSDF_SVG=OFF \
         -DDVZ_ENABLE_SHADERC=OFF \
+        -DDVZ_GLSLC_AUTO_DISCOVERY=OFF \
         -DDVZ_ENABLE_QT_BRIDGE=OFF \
         -DDVZ_ENABLE_CUDA=OFF >/dev/null
 )

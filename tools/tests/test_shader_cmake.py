@@ -16,28 +16,15 @@ ROOT = Path(__file__).resolve().parents[2]
 class ShaderCMakeTest(unittest.TestCase):
     """Validate missing and explicitly configured glslc behavior."""
 
-    def _run_cmake(self, *args: str, hide_glslc: bool = False) -> subprocess.CompletedProcess[str]:
+    def _run_cmake(self, *args: str) -> subprocess.CompletedProcess[str]:
         cmake = shutil.which('cmake')
         self.assertIsNotNone(cmake)
         env = os.environ.copy()
+        env.pop('DVZ_GLSLC', None)
         command = [cmake, '-S', str(ROOT)]
 
         with tempfile.TemporaryDirectory() as tmp:
             command.extend(['-B', tmp])
-            if hide_glslc:
-                ignored_dirs = []
-                sdk = env.pop('VULKAN_SDK', '')
-                env.pop('DVZ_GLSLC', None)
-                candidates = env.get('PATH', '').split(os.pathsep)
-                if sdk:
-                    candidates.extend([str(Path(sdk) / 'bin'), str(Path(sdk) / 'Bin')])
-                for candidate in candidates:
-                    directory = Path(candidate)
-                    if any((directory / name).is_file() for name in ('glslc', 'glslc.exe')):
-                        resolved = str(directory.resolve())
-                        if resolved not in ignored_dirs:
-                            ignored_dirs.append(resolved)
-                command.append(f'-DCMAKE_IGNORE_PATH={";".join(ignored_dirs)}')
             command.extend(args)
             return subprocess.run(  # noqa: S603
                 command, capture_output=True, env=env, text=True, check=False
@@ -58,8 +45,9 @@ class ShaderCMakeTest(unittest.TestCase):
             '-DDVZ_BUILD_SCENE=ON',
             '-DDVZ_BUILD_APP=OFF',
             '-DDVZ_BUILD_GUI=OFF',
+            '-DDVZ_BUILD_EXAMPLES=OFF',
             '-DDVZ_ENABLE_SHADERC=OFF',
-            hide_glslc=True,
+            '-DDVZ_GLSLC_AUTO_DISCOVERY=OFF',
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn(
@@ -74,8 +62,9 @@ class ShaderCMakeTest(unittest.TestCase):
             '-DDVZ_BUILD_SCENE=OFF',
             '-DDVZ_BUILD_APP=OFF',
             '-DDVZ_BUILD_GUI=OFF',
+            '-DDVZ_BUILD_EXAMPLES=OFF',
             '-DDVZ_ENABLE_SHADERC=OFF',
-            hide_glslc=True,
+            '-DDVZ_GLSLC_AUTO_DISCOVERY=OFF',
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('glslc is required by native test fixtures', result.stderr)

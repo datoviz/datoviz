@@ -35,7 +35,7 @@ The implemented native shader pipeline uses one reusable CMake helper based on `
 
 The helper must:
 
-1. discover `glslc` from `DVZ_GLSLC_EXECUTABLE`, `DVZ_GLSLC`, the Vulkan SDK, or `PATH` without reading or creating generic parent-project cache variables;
+1. discover `glslc` from `DVZ_GLSLC_EXECUTABLE`, `DVZ_GLSLC`, the Vulkan SDK, or `PATH` without reading or creating generic parent-project cache variables, with a namespaced switch to disable automatic SDK and `PATH` discovery for hermetic configurations;
 2. accept an explicit shader stage, source, include directories, target profile, output, and dependencies;
 3. use deterministic flags and rebuild when source or declared includes change;
 4. expose generated SPIR-V as target dependencies rather than relying on build order;
