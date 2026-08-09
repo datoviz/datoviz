@@ -2,6 +2,8 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const saveData = navigator.connection && navigator.connection.saveData;
   const localPreview = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+  const localVideoManifest = "/assets/gallery/v0.4/local-video-assets.json";
+  let localVideoUrls = null;
   const localCacheKey = Date.now().toString(36);
   const mediaUrl = (value) => {
     if (!localPreview) return value;
@@ -80,6 +82,11 @@
   const setActive = (card, active) => {
     const video = card.querySelector("video.dvz-gallery-video");
     if (!video) return;
+    const source = video.querySelector("source[data-src]");
+    if (localPreview) {
+      const sourceUrl = source ? new URL(source.dataset.src, window.location.href).pathname : "";
+      if (!localVideoUrls || !localVideoUrls.has(sourceUrl)) return;
+    }
     if (!card.querySelector(".dvz-gallery-video-control")) addControl(card, video);
     if (active) {
       loadCard(card);
@@ -91,16 +98,33 @@
     }
   };
 
-  if (!("IntersectionObserver" in window)) {
-    document.querySelectorAll("[data-gallery-lazy]").forEach((card) => setActive(card, true));
-    return;
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      setActive(entry.target, entry.isIntersecting);
+  const observeCards = () => {
+    if (!("IntersectionObserver" in window)) {
+      document.querySelectorAll("[data-gallery-lazy]").forEach((card) => setActive(card, true));
+      return;
     }
-  }, { rootMargin: "400px 0px" });
 
-  document.querySelectorAll("[data-gallery-lazy]").forEach((card) => observer.observe(card));
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        setActive(entry.target, entry.isIntersecting);
+      }
+    }, { rootMargin: "400px 0px" });
+
+    document.querySelectorAll("[data-gallery-lazy]").forEach((card) => observer.observe(card));
+  };
+
+  if (localPreview) {
+    fetch(mediaUrl(localVideoManifest))
+      .then((response) => response.json())
+      .then((payload) => {
+        localVideoUrls = new Set(payload.available || []);
+        observeCards();
+      })
+      .catch(() => {
+        localVideoUrls = new Set();
+        observeCards();
+      });
+  } else {
+    observeCards();
+  }
 })();
