@@ -37,11 +37,11 @@ Datoviz gives you an explicit retained scene model rather than a high-level plot
 </article>
 <article class="dvz-showcase">
 <div class="dvz-gallery-media">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_brain_volume/" aria-label="Open the Allen mouse brain example"></a>
-  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Allen mouse brain volume rendering with anatomical mesh overlays" loading="lazy">
+  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_cortical_activity/" aria-label="Open the human cortical activity example"></a>
+  <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human cortical activity projected onto a brain mesh" loading="lazy">
 </div>
-<h3><a href="examples/gallery/showcases/showcases_brain_volume/">Allen mouse brain</a></h3>
-<p>An anatomical volume with interactive slices and structure meshes.</p>
+<h3><a href="examples/gallery/showcases/showcases_cortical_activity/">Human cortical activity</a></h3>
+<p>Time-varying MEG activity projected onto a human cortical surface.</p>
 </article>
 <article class="dvz-showcase">
 <div class="dvz-gallery-media">
