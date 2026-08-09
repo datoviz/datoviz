@@ -323,6 +323,10 @@ docs-assets:
     @python3 tools/build_gallery_webp.py --require-image-dir --quiet-missing
 #
 
+docs-video-assets:
+    @python3 tools/compare_gallery_media.py --site-video-previews --write-site-assets
+#
+
 serve: docs-assets wasm-scene-build-if-needed
     #!/usr/bin/env bash
     set -euo pipefail
@@ -356,6 +360,12 @@ serve: docs-assets wasm-scene-build-if-needed
     if [ "$port" != "$start_port" ]; then
         echo "Port ${host}:${start_port} is busy; serving docs on ${host}:${port}."
     fi
+
+    echo "Generating local gallery MP4 previews in the background; progress: build/docs-video-assets.log"
+    python3 tools/compare_gallery_media.py --site-video-previews --write-site-assets \
+        > build/docs-video-assets.log 2>&1 &
+    media_pid=$!
+    trap 'kill "$media_pid" 2>/dev/null || true' EXIT INT TERM
 
     uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve -a "${host}:${port}"
 #

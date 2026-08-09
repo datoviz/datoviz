@@ -151,6 +151,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--preferred-kind", default=DEFAULT_PREFERRED_KIND)
     parser.add_argument("--webm", action="store_true", help="also encode a VP9 WebM candidate")
     parser.add_argument("--all-animated", action="store_true", help="compare every animated preview")
+    parser.add_argument(
+        "--site-video-previews",
+        action="store_true",
+        help="encode only manifest-declared MP4 gallery cards for local documentation",
+    )
     parser.add_argument("--no-manifest-card", action="store_true", help="ignore media.preview.card")
     parser.add_argument("--dry-run", action="store_true", help="list selected inputs without encoding")
     parser.add_argument(
@@ -394,7 +399,10 @@ def output_fps(preview: object, profile: EncodingProfile) -> int:
 def selected_previews(args: argparse.Namespace) -> list[object]:
     ids = split_values(args.id)
     lanes = split_values(args.lane)
-    if not ids and not lanes and not args.all_animated:
+    if args.site_video_previews:
+        site_ids = {example_id for _, example_id in site_video_keys(args.manifest)}
+        ids = ids & site_ids if ids else site_ids
+    elif not ids and not lanes and not args.all_animated:
         ids = set(DEFAULT_CANDIDATE_IDS)
     selected = []
     for preview in gallery_frames.collect_previews(

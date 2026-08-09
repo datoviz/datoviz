@@ -316,3 +316,47 @@ def test_comparison_input_hash_tracks_profile_and_frames(tmp_path: Path) -> None
     )
 
     assert len({first, second, third}) == 3
+
+
+def test_selected_previews_limits_docs_assets_to_manifest_mp4_cards(monkeypatch) -> None:
+    previews = [
+        type("Preview", (), {"id": "webp", "lane": "features"})(),
+        type("Preview", (), {"id": "video", "lane": "showcases"})(),
+    ]
+    args = Namespace(
+        id=[],
+        lane=[],
+        all_animated=False,
+        site_video_previews=True,
+        manifest=Path("manifest.yaml"),
+    )
+    manifest = {
+        "examples": [
+            {
+                "id": "webp",
+                "category": "feature",
+                "media": {"preview": {"kind": "animated-webp"}},
+            },
+            {
+                "id": "video",
+                "category": "showcase",
+                "media": {
+                    "preview": {
+                        "kind": "animated-webp",
+                        "card": {"preferred": "video-mp4"},
+                    }
+                },
+            },
+        ]
+    }
+    monkeypatch.setattr(media.gallery_media, "load_manifest", lambda unused: manifest)
+    collected_ids = []
+
+    def collect(unused_manifest, unused_build_dir, ids, unused_lanes):
+        collected_ids.extend(ids)
+        return [preview for preview in previews if preview.id in ids]
+
+    monkeypatch.setattr(media.gallery_frames, "collect_previews", collect)
+
+    assert media.selected_previews(args) == [previews[1]]
+    assert collected_ids == ["video"]
