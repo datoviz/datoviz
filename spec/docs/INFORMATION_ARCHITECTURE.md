@@ -33,6 +33,7 @@ docs/
   index.md
   start/
   examples/
+  community/
   how-to/
   reference/
   explanation/   # exposed under Advanced / Architecture
@@ -43,20 +44,19 @@ docs/
 This is a compact, Datoviz-specific structure:
 
 1. `start/` gives immediate orientation and first render.
-2. `examples/` is a first-class pillar because examples are executable release proof, gallery
-   content, screenshots, and the best input for coding agents.
-3. `how-to/` explains task workflows and points to canonical examples instead of duplicating them.
-4. `reference/` provides exact facts, tables, signatures, attributes, statuses, and limits.
-5. `explanation/`, `advanced/`, and `contributors/` are exposed through **Advanced**, not as the
-   main user path.
-6. Contributor and release-maintainer docs remain reachable, but they are secondary to the public
-   user path.
+2. `examples/` is a first-class pillar because examples are executable release proof, gallery content, screenshots, and the best input for coding agents.
+3. `community/` presents independently maintained projects built with Datoviz without treating them as release evidence.
+4. `how-to/` explains task workflows and points to canonical examples instead of duplicating them.
+5. `reference/` provides exact facts, tables, signatures, attributes, statuses, and limits.
+6. `explanation/`, `advanced/`, and `contributors/` are exposed through **Advanced**, not as the main user path.
+7. Contributor and release-maintainer docs remain reachable, but they are secondary to the public user path.
 
 Page roles should stay distinct:
 
 | Page type | Purpose |
 | --- | --- |
 | Examples | executable truth and release proof |
+| Community projects | curated discovery of independently maintained applications, libraries, and research tools |
 | Reference | exact facts, status, signatures, attributes, and limits |
 | How-to | practical task workflows that adapt examples to real code |
 | Explanation | concepts, architecture, and tradeoffs |
@@ -169,6 +169,17 @@ Examples are a public documentation pillar, not an appendix. The rule is:
    minimal examples.
 
 Detailed coverage rules are in [EXAMPLE_COVERAGE.md](EXAMPLE_COVERAGE.md).
+
+
+## Community Projects
+
+Purpose: show how independent developers use Datoviz in real applications without expanding the release-tested example catalog.
+
+Community projects remain distinct from Datoviz examples and gallery showcases. Each entry should identify the external maintainer, link to the canonical project, describe the Datoviz use case, state that compatibility and support are independent, and record the source and permission basis for reproduced media.
+
+Store one optimized preview per listed project under `docs/images/community/<project>/`. Prefer WebP for raster previews, keep the normal per-file limit defined in `agents/rules/REPO_HYGIENE.md`, and do not route this media through the generated gallery pipeline. The project author retains ownership, and the public page must provide visible attribution.
+
+Expose the first community-project page as the top-level **Community** navigation entry so its external ownership boundary remains clear. Expand that entry into a section with project, submission, and other community pages only when the additional content exists.
 
 
 ## How-To

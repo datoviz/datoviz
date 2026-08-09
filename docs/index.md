@@ -70,6 +70,25 @@ Datoviz gives you an explicit retained scene model rather than a high-level plot
 <p class="dvz-text-links"><a href="examples/">Explore the complete gallery →</a></p>
 
 
+## Built with Datoviz { .dvz-home-heading }
+
+Discover independent applications and research tools created by the Datoviz community.
+
+<div class="dvz-showcase-grid">
+<article class="dvz-showcase">
+<div class="dvz-gallery-media">
+  <a class="dvz-gallery-media-target" href="community/projects/#jackoviz" aria-label="Open the jackoviz community project"></a>
+  <img class="dvz-gallery-poster" src="images/community/jackoviz/spectrogram-3d.webp" alt="Real-time 3D audio spectrogram rendered by jackoviz" loading="lazy">
+</div>
+<p><span class="dvz-status-label dvz-status-label--external">Community project</span></p>
+<h3><a href="community/projects/#jackoviz">jackoviz</a></h3>
+<p>Real-time audio analysis with JACK, FFTW3, and interactive 2D and 3D Datoviz views.</p>
+</article>
+</div>
+
+<p class="dvz-text-links"><a href="community/projects/">Explore projects built with Datoviz →</a></p>
+
+
 ## Start building { .dvz-home-heading }
 
 <div class="dvz-language-grid">

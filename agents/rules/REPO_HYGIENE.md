@@ -59,6 +59,15 @@ Delete obsolete agent notes once their useful facts are captured in code, tests,
 history.
 
 
+## Documentation Images
+
+Small, intentional public documentation images may be committed under `docs/images/`. Prefer SVG for diagrams and WebP for raster images, and do not commit a raw capture when an optimized derivative is sufficient.
+
+Committed raster documentation images should normally be no larger than 200 KB each. Larger exact assets require the user's explicit approval in the current turn. Generated gallery media remains in its existing generation and publication pipeline rather than being copied into `docs/images/`.
+
+Externally authored images require a recorded source, author attribution, license or permission basis, and a clear ownership boundary. Store community-project media under `docs/images/community/<project>/` and keep it separate from validated Datoviz gallery assets.
+
+
 ## Vendored Code
 
 Treat vendored code as read-only by default. Do not modify `external/` unless the task explicitly

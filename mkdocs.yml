@@ -262,6 +262,7 @@ nav:
     - 1. Setup: 'gpu-graphics/01-setup.md'
     - 2. Your first window: 'gpu-graphics/02-window.md'
     - 3. How a frame works: 'gpu-graphics/03-frame.md'
+  - Community: 'community/projects.md'
   - News: 'blog/index.md'
 not_in_nav: |
   _old/*
