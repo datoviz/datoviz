@@ -10,13 +10,6 @@ directly use one generated `ctypes` binding: `import datoviz as dvz` is the norm
 documented NumPy array adaptation, and `datoviz.raw` is the exact pointer/count call form for the
 same binding.
 
-<div class="dvz-context-strip">
-  <span>Scene API recommended</span>
-  <span>Python and C</span>
-  <span>Browser subset experimental</span>
-  <span>Runtime layers unstable</span>
-</div>
-
 <div class="dvz-entry-map" aria-label="Datoviz integration layer decision map">
   <div class="dvz-entry-map__item dvz-entry-map__item--external">
     <span class="dvz-status-label dvz-status-label--external">external / work in progress</span>

@@ -4,14 +4,6 @@ Datoviz uses a small set of explicit objects to turn scientific arrays into an i
 an image. Learn these names once; the same workflow appears in Python, C, examples, and the API
 reference.
 
-<div class="dvz-context-strip">
-  <span>Python and C</span>
-  <span>Native Vulkan</span>
-  <span>WebGPU subset</span>
-  <span>About 5 minutes</span>
-</div>
-
-
 ## The object model
 
 <div class="dvz-object-diagram" role="group" aria-label="A scene contains a figure; the figure contains one or more panels; a panel contains visuals and a controller; each visual receives named data arrays">
@@ -120,25 +112,3 @@ Start with [panzoom](../how-to/use-panzoom.md) for 2D data or a
 [3D controller](../how-to/3d-navigation.md) for spatial scenes. Use the
 [coordinate-system guide](../how-to/coordinate-systems.md) before mixing overlays, labels, images,
 and 3D geometry.
-
-
-## Choose the next page
-
-<div class="dvz-section-grid">
-  <a class="dvz-section-card" href="../quickstart/">
-    <strong>Build the first scene</strong>
-    <span>Run a complete Python or C scatter example with no external data.</span>
-  </a>
-  <a class="dvz-section-card" href="../../examples/">
-    <strong>Find a close example</strong>
-    <span>Start from executable source for a visual, feature, or scientific composition.</span>
-  </a>
-  <a class="dvz-section-card" href="../../how-to/choose-a-visual-family/">
-    <strong>Represent your data</strong>
-    <span>Choose between points, markers, paths, images, meshes, volumes, and other families.</span>
-  </a>
-  <a class="dvz-section-card" href="../../reference/">
-    <strong>Look up an exact contract</strong>
-    <span>Check attributes, signatures, lifetimes, platform support, and feature status.</span>
-  </a>
-</div>

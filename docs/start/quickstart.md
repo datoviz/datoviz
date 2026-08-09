@@ -1,12 +1,5 @@
 # Quickstart: Rendering in 10 minutes
 
-<div class="dvz-context-strip">
-  <span>Complete Python and C programs</span>
-  <span>10,000 points</span>
-  <span>Interactive panzoom</span>
-  <span>No external data</span>
-</div>
-
 **Prerequisite:** Datoviz v0.4 installed from source or from PyPI with `python -m pip install --pre datoviz==0.4.0rc2`. Check [Install](install.md) for platform details.
 
 This page builds one complete visualization: 10,000 random points in an interactive window. You can

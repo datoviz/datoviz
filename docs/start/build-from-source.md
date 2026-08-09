@@ -2,13 +2,6 @@
 
 Use the source path for the current development branch, C/C++ integration before packages are published, or Datoviz contribution work. For a published Python package, return to [Install](install.md).
 
-<div class="dvz-context-strip">
-  <span>Development checkout</span>
-  <span>macOS, Linux, Windows, provisional FreeBSD</span>
-  <span>Vulkan toolchain</span>
-  <span>About 15–30 minutes</span>
-</div>
-
 The shortest route is: install the platform prerequisites below, clone with submodules, run `just build`, then run one focused test and the scatter example. Build commands on this page are complete shell commands; the CMake fragments linked from the integration guide are excerpts.
 
 ## Prerequisites

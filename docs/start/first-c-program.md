@@ -3,13 +3,6 @@
 This page is a compact C walkthrough for the same scene structure used throughout the v0.4
 examples. It creates one figure, one panel, one point visual, and one native window.
 
-<div class="dvz-context-strip">
-  <span>C11</span>
-  <span>Native window</span>
-  <span>Complete source linked</span>
-  <span>Call-order excerpt below</span>
-</div>
-
 The canonical complete program is `examples/docs/quickstart.c`, displayed in the C tab of the
 [Quickstart](quickstart.md). It includes data creation, headers, result checks, lifecycle cleanup,
 and the bounded-frame option used by automated checks.

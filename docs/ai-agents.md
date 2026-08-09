@@ -5,14 +5,6 @@ v0.4 is a release candidate and may still change before the final release, so us
 documentation and executable examples as evidence. Do not rely on model memory, v0.3 tutorials, or
 plausible-looking function names.
 
-<div class="dvz-context-strip">
-  <span>Canonical agent entry point</span>
-  <span>Datoviz v0.4 only</span>
-  <span>Python or C</span>
-  <span>Verify before generating</span>
-</div>
-
-
 ## What Datoviz v0.4 is
 
 Datoviz v0.4 is a GPU scientific-visualization engine. Its main public workflow is: create a scene,

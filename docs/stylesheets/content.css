@@ -147,24 +147,6 @@
     line-height: 1.5;
 }
 
-.md-typeset .dvz-context-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin: 0.8rem 0 1.3rem;
-}
-
-.md-typeset .dvz-context-strip span {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid rgba(76, 201, 240, 0.22);
-    border-radius: 999px;
-    color: var(--md-default-fg-color--light);
-    background: rgba(76, 201, 240, 0.05);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-}
-
 .md-typeset .dvz-step-flow {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
