@@ -53,7 +53,7 @@ binding.
 
 <div class="dvz-public-actions" markdown="1">
 [View Examples](../examples/showcases.md){ .md-button .md-button--primary }
-[Read the Docs](../start/what-is-datoviz.md){ .md-button }
+[Read the Docs](../start/index.md){ .md-button }
 </div>
 
 <div class="dvz-public-proof" markdown="1">

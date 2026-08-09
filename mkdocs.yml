@@ -102,13 +102,12 @@ nav:
   - Home: 'index.md'
   - Get Started:
     - Overview: 'start/index.md'
-    - What is Datoviz?: 'start/what-is-datoviz.md'
     - Install: 'start/install.md'
-    - Build from source: 'start/build-from-source.md'
-    - Quickstart: 'start/quickstart.md'
+    - Python quickstart: 'start/quickstart.md'
     - First C program: 'start/first-c-program.md'
     - Core concepts: 'start/core-concepts.md'
     - Choose your layer: 'start/choose-your-layer.md'
+    - Build from source: 'start/build-from-source.md'
     - AI-assisted workflow: 'start/ai-workflow.md'
     - AI agents: 'ai-agents.md'
   - Examples:
