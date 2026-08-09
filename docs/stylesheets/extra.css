@@ -286,6 +286,15 @@ img[alt*=gpuopen] {
 }
 
 /* ── Docs homepage ──────────────────────────────────────────────────────── */
+.md-typeset .dvz-home-lead {
+    max-width: 48rem;
+    margin: 0 0 0.7rem;
+    color: #f0f6fc;
+    font-size: 1.25rem;
+    font-weight: 650;
+    line-height: 1.45;
+}
+
 .md-typeset .dvz-home-meta {
     margin: 1.1rem 0;
     color: var(--dvz-muted);
@@ -369,7 +378,7 @@ img[alt*=gpuopen] {
 }
 
 .dvz-home-hero {
-    margin: 1.5rem 0 2.5rem;
+    margin: 1.2rem 0 2.5rem;
 }
 
 /* ── Release posts ─────────────────────────────────────────────────────── */
@@ -456,6 +465,11 @@ img[alt*=gpuopen] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.5rem 3rem;
     margin: 1.4rem 0 1.5rem;
+}
+
+.dvz-feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
 }
 
 .dvz-language-grid section,
@@ -619,6 +633,10 @@ img[alt*=gpuopen] {
     flex-wrap: wrap;
     gap: 0.5rem 1.2rem;
     margin: 1.2rem 0;
+}
+
+.dvz-home-actions--final {
+    margin-top: 1.6rem;
 }
 
 @media screen and (max-width: 760px) {
