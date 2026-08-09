@@ -36,9 +36,12 @@ Datoviz gives you an explicit retained scene model rather than a high-level plot
 <p>Large colorized LiDAR data with fly navigation and depth enhancement.</p>
 </article>
 <article class="dvz-showcase">
-<div class="dvz-gallery-media">
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_cortical_activity/" aria-label="Open the human cortical activity example"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human cortical activity projected onto a brain mesh" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true" poster="assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp">
+    <source data-src="assets/gallery/v0.4/showcases/showcases_cortical_activity.mp4" type="video/mp4">
+  </video>
 </div>
 <h3><a href="examples/gallery/showcases/showcases_cortical_activity/">Human cortical activity</a></h3>
 <p>Time-varying MEG activity projected onto a human cortical surface.</p>
