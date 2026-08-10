@@ -33,7 +33,7 @@ The parent gitlink and checked-out `data` submodule both point to `a9542d20f2d29
 
 GitHub has no Pages deployment or configured environments for this repository. No Actions runs were queued or in progress during the audit. The active CircleCI webhook has broad repository events but no checked-in `.circleci` configuration; verify delivery after the rename without changing the hook. The scheduled nightly-pruning workflow follows the default branch and requires no authored branch-filter change.
 
-Open PRs #132 and #136 both target `v0.4-dev`; verify that GitHub retargets both to the renamed `main`. PR #132 remains open while the original author's feedback on #136 is pending.
+Open PRs #132 and #136 both target `v0.4-dev`; verify that GitHub retargets both to the renamed `main`. PR #132 remains open while the original author's final shader-tool embedding feedback on #136 is addressed and validated.
 
 Two active rulesets apply deletion and non-fast-forward protection: `prevent-force-push-main` follows `~DEFAULT_BRANCH`, while `protect-v0.4-dev` explicitly names `refs/heads/v0.4-dev`. There are no required-status-check or review rules. After the rename, keep the default-branch ruleset on new `main` and repurpose the explicit ruleset as `protect-v0.3-maintenance` so the preserved v0.3 line receives the same deletion and force-push protection.
 

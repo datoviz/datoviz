@@ -334,7 +334,7 @@ jobs:
             "-DDVZ_MIMALLOC_SOURCE=OFF",
             "-DDVZ_BUILD_TESTING=OFF",
             "-DDVZ_BUILD_EXAMPLES=OFF",
-            "-DGLSLC=$env:DVZ_GLSLC",
+            "-DDVZ_GLSLC_EXECUTABLE=$env:DVZ_GLSLC",
             "-DDVZ_SPIRV_VAL_EXECUTABLE=$env:DVZ_SPIRV_VAL",
             "-DDVZ_VALIDATE_SPIRV=ON",
             "-DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"

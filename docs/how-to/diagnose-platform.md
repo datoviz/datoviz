@@ -233,6 +233,17 @@ the environment. If the message still appears, check that `VULKAN_SDK` is export
 On Linux the loader is a system library, `libvulkan.so.1`, supplied by your distribution's Vulkan
 runtime package; install that rather than setting variables.
 
+### Conflicting macOS Vulkan environments
+
+When a source checkout inherits driver selectors or loader paths from another Vulkan installation, opt into a clean SDK environment before reproducing the failure:
+
+```sh
+export DVZ_VULKAN_SANITIZE_ENV=1
+source tools/vulkan-env.sh
+```
+
+This mode removes inherited Vulkan driver selection, `VK_ROOT`, and direct `DYLD_LIBRARY_PATH` overrides, selects the active SDK's MoltenVK manifest, and restricts `DYLD_FALLBACK_LIBRARY_PATH` to that SDK. Directly sourcing the script without this opt-in preserves the existing environment-merging behavior.
+
 ## Prepare a platform report
 
 ```text

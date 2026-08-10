@@ -33,10 +33,12 @@
 
 // Time utils.
 #if CC_MSVC
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
 
-// MSVC defines this in winsock2.h!?
+// Windows SDK headers may already provide timeval through winsock.h or winsock2.h.
 #if !defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
 typedef struct timeval
 {

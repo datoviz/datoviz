@@ -1,6 +1,6 @@
 # Shader Toolchain And Runtime Compilation
 
-Status: implemented v0.4 architecture and release contract. Official-package and supported-platform proof remain RC3 gates; RC4 owns exact-artifact course proof and freeze. Updated: 2026-08-01.
+Status: implemented v0.4 architecture and release contract. Official-package and supported-platform proof remain RC3 gates; RC4 owns exact-artifact course proof and freeze. Updated: 2026-08-08.
 
 ## Decision
 
@@ -12,7 +12,7 @@ Use one coherent Shaderc-based path:
 
 | Role | Required tool | Contract |
 | --- | --- | --- |
-| Build Datoviz-owned native shaders | `glslc` | Compile scene, Canvas, test, and example GLSL to deterministic SPIR-V before embedding or packaging. |
+| Build Datoviz-owned native shaders | `glslc` | Compile scene, test, and example GLSL to deterministic SPIR-V before embedding or packaging. Canvas has no built-in shader compiler dependency. |
 | Compile external user and tutorial shaders at runtime | `libshaderc` | Lazily compile GLSL to owned SPIR-V through a public Datoviz API with availability and diagnostics. |
 | Validate generated SPIR-V | `spirv-val` | Validate build products in CI and release lanes without making ordinary consumer startup depend on the validator. |
 | Optional compiler cross-checks and specialized workflows | `glslangValidator` | Keep optional; do not require it for the normal native Datoviz build after the `glslc` consolidation. |
@@ -31,11 +31,11 @@ External user shaders and tutorial shaders remain separate files compiled at app
 
 ## Build-System Contract
 
-The implemented native shader pipeline uses one reusable CMake helper based on `glslc`. Scene shaders, Canvas shaders, native shader fixtures, and applicable examples share discovery, target-profile flags, dependency tracking, output naming, diagnostics, and optional validation.
+The implemented native shader pipeline uses one reusable CMake helper based on `glslc`. Scene shaders, native shader fixtures, and applicable examples share discovery, target-profile flags, dependency tracking, output naming, diagnostics, and optional validation. Canvas uses Vulkan copy/blit operations and has no built-in shader compilation path.
 
 The helper must:
 
-1. discover `glslc` from an explicit cache path, the Vulkan SDK, or `PATH`;
+1. discover `glslc` from `DVZ_GLSLC_EXECUTABLE`, `DVZ_GLSLC`, the Vulkan SDK, or `PATH` without reading or creating generic parent-project cache variables, with a namespaced switch to disable automatic SDK and `PATH` discovery for hermetic configurations;
 2. accept an explicit shader stage, source, include directories, target profile, output, and dependencies;
 3. use deterministic flags and rebuild when source or declared includes change;
 4. expose generated SPIR-V as target dependencies rather than relying on build order;
@@ -43,7 +43,7 @@ The helper must:
 6. fail release builds when required precompiled shaders cannot be produced;
 7. keep an explicitly diagnosed developer fallback where policy allows it.
 
-Canvas imposes no independent `glslangValidator` requirement on normal native source builds. Specialized WebGPU, validation, or contributor workflows may continue to discover it separately.
+Canvas imposes no command-line shader compiler requirement on normal native source builds. Specialized WebGPU, validation, or contributor workflows may continue to discover their own tools separately.
 
 Build-time and runtime compilation use named target profiles from one documented policy:
 
@@ -108,7 +108,7 @@ Implemented local proof covers items 1-7 below. RC3 still requires official-pack
 2. tests for empty source, invalid stage, malformed GLSL, real source filenames, absent provider, incompatible provider where practical, and correct result cleanup;
 3. a concurrency test or equivalent proof for first-use initialization;
 4. equivalent profile selection in build-time and runtime compilation;
-5. scene, Canvas, fixture, and example shader builds through the shared `glslc` helper;
+5. scene, fixture, and example shader builds through the shared `glslc` helper, with a separate Canvas build proving no command-line shader compiler dependency;
 6. `spirv-val` proof for generated shader products in hosted CI and release lanes;
 7. source-build proof with runtime compilation enabled and disabled;
 8. installed CMake-consumer proof against official packages;

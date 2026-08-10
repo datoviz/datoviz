@@ -1,6 +1,6 @@
 # Datoviz v0.4 Dispatch
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-02.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-08.
 
 Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file identifies only the current route; durable contracts belong in `spec/`, public guidance belongs in `docs/`, and completed evidence belongs in release records and Git history.
 
@@ -22,7 +22,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 2. Read [RELEASE.md](RELEASE.md) for the remaining RC3, RC4, and final gates.
 3. Use [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md) for the audited pending `main`/`v0.3-maintenance` transition; external push, rename, and ruleset operations require explicit approval of the exact actions.
 4. Use [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md) for the rewritten course execution queue and [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for its durable contract.
-5. Read [DOCUMENTATION.md](DOCUMENTATION.md) before public documentation, generated-reference, gallery, attribution, or release-communication work.
+5. Read [DOCUMENTATION.md](DOCUMENTATION.md) before public documentation, generated-reference, gallery, attribution, release-communication work, or the pending PR #136 confirmation, merge, PR #132 disposition, and branch-cleanup sequence.
 6. Use [C_DISTRIBUTION.md](C_DISTRIBUTION.md) and [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for C/C++ packaging and exact-artifact work.
 7. Use [QT_MACOS_VULKAN_HANDOFF.md](QT_MACOS_VULKAN_HANDOFF.md) for the externally blocked Qt/PyQt provider sequence.
 8. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) for the implemented visual pilot; obtain maintainer review before broad rollout.

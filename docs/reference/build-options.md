@@ -50,7 +50,7 @@ inconsistent combinations instead of silently building a partial API.
 | Option | Default | Meaning |
 | --- | --- | --- |
 | `DVZ_VENDORED_DEPS` | `ON` | Prefer bundled third-party source trees when source mode is `AUTO`. Set to `OFF` to prefer supported dependencies from the host package manager. |
-| `DVZ_WITH_GLFW` | `ON` | Enable the GLFW window backend. With `DVZ_VENDORED_DEPS=OFF`, CMake looks for a system `glfw3` package. If absent, non-GUI builds fall back to the headless backend; GUI builds fail because ImGui needs GLFW. |
+| `DVZ_WITH_GLFW` | `ON` | Enable the GLFW window backend. An embedding project's existing `glfw::glfw` or `glfw` target takes precedence over dependency discovery. With `DVZ_VENDORED_DEPS=OFF`, CMake otherwise looks for a system `glfw3` package. If absent, non-GUI builds fall back to the headless backend; GUI builds fail because ImGui needs GLFW. |
 | `DVZ_MIMALLOC_SOURCE` | `AUTO` | Select mimalloc source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. `AUTO` follows `DVZ_VENDORED_DEPS`, falling back to the other source when needed. |
 | `DVZ_CGLM_SOURCE` | `AUTO` | Select cglm source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. cglm is required by the active math stack, so `OFF` is currently rejected. |
 | `DVZ_KVAZAAR_SOURCE` | `AUTO` | Select Kvazaar source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. `OFF` disables the optional software HEVC backend. |
@@ -70,9 +70,9 @@ dependency across supported distributions.
 
 ## Shader Tools
 
-`glslc` and shaderc serve different build paths. One shared CMake helper uses `glslc` for scene, Canvas, and native test shaders with the named graphics profile (Vulkan 1.0 and SPIR-V 1.0) or compute profile (Vulkan 1.3 and SPIR-V 1.6). Set the `GLSLC` cache path or `DVZ_GLSLC` environment variable to select an explicit compiler. Canvas and native shader fixtures require `glslc`; scene-only developer configurations may retain the embedded-GLSL runtime fallback when `DVZ_REQUIRE_PRECOMPILED_SHADERS=OFF`.
+`glslc` and shaderc serve different build paths. One shared CMake helper uses `glslc` for scene and native test shaders with the named graphics profile (Vulkan 1.0 and SPIR-V 1.0) or compute profile (Vulkan 1.3 and SPIR-V 1.6). Set the `DVZ_GLSLC_EXECUTABLE` cache path or `DVZ_GLSLC` environment variable to select an explicit compiler; discovery otherwise checks the active Vulkan SDK and `PATH`, and hermetic configurations may disable that search with `DVZ_GLSLC_AUTO_DISCOVERY=OFF`. Canvas has no built-in shader compilation dependency. Native shader fixtures require `glslc`, while scene-only developer configurations may retain the embedded-GLSL runtime fallback when `DVZ_REQUIRE_PRECOMPILED_SHADERS=OFF` and the runtime shaderc adapter is available.
 
-`DVZ_VALIDATE_SPIRV=ON` discovers `spirv-val` through `DVZ_SPIRV_VAL_EXECUTABLE`, `DVZ_SPIRV_VAL`, the Vulkan SDK, or `PATH` and validates each generated file against its profile environment. CI and release builds enable both validation and required precompilation. `glslangValidator` is optional and is not used by the normal native scene, Canvas, or fixture build.
+`DVZ_VALIDATE_SPIRV=ON` discovers `spirv-val` through `DVZ_SPIRV_VAL_EXECUTABLE`, `DVZ_SPIRV_VAL`, the Vulkan SDK, or `PATH` and validates each generated file against its profile environment. CI and release builds enable both validation and required precompilation. `glslangValidator` is optional and is not used by the normal native scene or fixture build.
 
 Runtime shaderc remains independent: `DVZ_ENABLE_SHADERC=AUTO` enables runtime GLSL compilation when shaderc headers and a loadable provider are found, while `ON` makes their absence a configuration error. Release-wheel builds require and package shaderc so installed external-shader consumers do not depend on a developer-machine provider.
 
