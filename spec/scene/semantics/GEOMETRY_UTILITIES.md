@@ -63,6 +63,8 @@ Generators produce ordinary indexed geometry payloads.
 | `dvz_geometry_surface_grid` | rows/cols, height/color arrays, origin, basis, height policy, normals, metadata | implemented with row/column provenance and height updates; richer update helpers remain future work |
 | `dvz_geometry_obj` | path, fallback color | Wavefront `v`, `vt`, `vn`, and polygon faces with independent or negative indices; faces are triangulated as fans |
 
+A `DvzGeometry` upload through `dvz_mesh_set_geometry()` is a complete replacement, not a capacity-only update. A successful replacement publishes coherent vertex attributes, indices, logical counts, draw metadata, and resource-version state for the next validated frame plan when the new geometry grows, shrinks, or retains the previous size. Topology changes do not require panel or visual recreation.
+
 
 ## Derived Mesh Overlays
 

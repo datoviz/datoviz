@@ -18,6 +18,7 @@ selection state, or animation timing.
    controller semantics.
 7. [EVENT_CALLBACKS.md](EVENT_CALLBACKS.md): callback delivery and observer semantics.
 8. [ANIMATION.md](ANIMATION.md): scene clocks, timelines, easing, and video export coordination.
+9. [KEYBOARD_INPUT.md](KEYBOARD_INPUT.md): physical key identity and layout-aware Unicode text input.
 
 
 ## Active Proposal Inputs

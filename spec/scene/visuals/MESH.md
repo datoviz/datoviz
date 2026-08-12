@@ -92,6 +92,8 @@ term. `lighting = flat` ignores normals.
 Invalid indices are validation errors. Replacing the index buffer updates all visuals referencing
 the resource on the next validated frame plan.
 
+Successful geometry replacement updates the active index count and every dependent draw count even when retained allocation capacity exceeds the new logical size. Emission must not clamp stale draw metadata to hide a mismatch; stale counts are a retained-state invalidation defect. Replacing a mesh with smaller or larger topology does not require panel, visual, or scene recreation.
+
 ## Visual Parameters
 
 | Parameter | Type | Default | Applies to | Notes |

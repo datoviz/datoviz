@@ -34,6 +34,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 14. Use [RC3_RENDER_PRODUCTS_LANDING.md](RC3_RENDER_PRODUCTS_LANDING.md) and [RC3_RENDER_PRODUCTS_AFFECTED_QA.md](RC3_RENDER_PRODUCTS_AFFECTED_QA.md) for final render integration and affected QA. The removed R0-R9 orchestration handoffs remain available in Git history; current semantic authority lives in the specialized specifications.
 15. Use [../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md) and [NEXT_STEPS.md](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/NEXT_STEPS.md) for the planned non-blocking RC4 Windows/NVIDIA CUDA/Vulkan interop lane.
 16. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
+17. Use [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) for the approved physical-key/text-input API split and coherent mesh-geometry replacement work.
 
 ## Guardrails
 
