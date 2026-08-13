@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-08-03.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-08-13.
 
 Use [STATUS.md](STATUS.md) for current blockers, [DOCUMENTATION.md](DOCUMENTATION.md) for documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable release policy.
 
@@ -25,6 +25,8 @@ Preserve old v0.3 `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, mak
 Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, local Apple Silicon split-package proof, and the R1-R9 render-product/GTAO/public-AO implementation. The approved AO gallery, choropleth, GLFW/Xvfb, WebGPU, scheduler-pacing, and exploratory source-audit follow-ups are integrated and pushed into `v0.4-dev`; `545c99379` is the exact validated implementation head and `2d83d0b63` is the active-branch merge commit.
 
 The validated implementation head passes the complete 1,128-case native matrix, affected DRP2/vklite/recovery/presentation gates, practical CPU sanitizer checks, full-tree static-analysis disposition, WebGPU, bindings, documentation, example-manifest, and course checks. Vulkan-backed sanitizer teardown remains inconclusive, and exact artifact/host/platform proof remains separate.
+
+Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) and [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md). Resolve #140's scene-buffer lifecycle and coherent mesh replacement before freezing the next candidate, and complete #139's physical-key/committed-text split before chapter-5 input proof. #138 remains benchmark-first and non-blocking; optional RC4 sampled-field foundations and post-v0.4 GPU displacement retain the boundaries below.
 
 Remaining RC3 deliverables:
 

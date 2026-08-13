@@ -32,6 +32,7 @@ stage participation, or target usage changes.
 | `SceneStructureDirty` | object set or panel membership changed | revalidate, rebuild plan, maybe materialize runtime objects |
 | `VisualPropsDirty` | semantic visual property changed | style update, variant reselection, draw contribution refresh |
 | `ResourceDataDirty` | source/derived content changed | upload, possible normalization, possible count/topology update |
+| `ResourceLifecycleDirty` | resource created, recreated incompatibly, or retired | plan resource declaration or retirement emission |
 | `NormalizationDirty` | Stage A data-to-visual output is stale | recompute/upload visual-space resources |
 | `PanelTransformDirty` | panzoom, camera, viewport, or framing changed | recompute panel transforms and redraw |
 | `AxisLayoutDirty` | tick/label coverage or density is stale | regenerate/upload affected axis resources |
@@ -62,6 +63,7 @@ changes that affect stage participation, target usage, or routing do invalidate 
 | Change | Usually invalidates | May invalidate | Should not usually invalidate |
 |---|---|---|---|
 | source data write | resource, normalization, upload | plan if counts/topology/stages change | panel transform state |
+| resource retirement | resource lifecycle, plan | binding/readback routing | unrelated live resource contents |
 | style or parameter change | visual props, small upload | plan if variant/stages/targets change | source data |
 | panel pan/zoom | `PanelTransformDirty` | `AxisLayoutDirty` | source uploads, normalization |
 | 3D camera move | `PanelTransformDirty` | view-dependent `FramePlanDirty`, 3D axis layout | normalized resources |
@@ -108,6 +110,15 @@ Do not rebuild it solely for current panel transforms, resource subrange uploads
 that stay within the same variant and node topology.
 
 
+## Resource Lifecycle Propagation
+
+Resource creation, incompatible recreation, and retirement are structural changes even when no visible draw changes. A retired resource remains pending until a successfully emitted plan records its destruction; failed planning, validation, or conversion must not clear that pending state.
+
+Frame-local absence is not retirement. Hidden panels, disabled visual contribution, capability fallback, and temporary nonparticipation may omit resource use from one frame while the semantic resource remains live. Retirement must originate from explicit owner lifecycle state.
+
+Content revision, descriptor revision, logical extent revision, and lifecycle revision are distinct concepts even if one implementation stores them compactly. Capacity-only changes must not masquerade as logical count changes, while logical extent changes must invalidate every draw, query, picking, and export count derived from that resource.
+
+
 ## Redraw Versus Rebuild
 
 Redraw is scheduling. Invalidation is dependency state. Upload is an execution consequence.
@@ -124,6 +135,7 @@ Diagnostics and tests should expose:
 3. axes with layout dirtiness and why;
 4. whether the `FramePlan` cache was reused or rebuilt;
 5. uploads emitted and their source dirty scopes.
+6. resources created, recreated, retired, and awaiting committed destruction.
 
 
 ## Implementation Direction

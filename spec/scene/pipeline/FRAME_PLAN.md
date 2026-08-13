@@ -27,6 +27,7 @@ inspectable/serializable for tests.
 6. It describes logical work and dependencies, not backend command-buffer mechanics.
 7. It is deterministic for a given scene state, input event set, and capability record.
 8. Upload work for scene resources is emitted through the plan, not a parallel execution path.
+9. Resource retirement is explicit plan data and commits only with successful scene-to-DRP2 conversion.
 
 ## Minimum Shape
 
@@ -37,6 +38,7 @@ A valid first-slice plan contains:
 | Metadata | frame index, scene revision, capability snapshot, validation/adaptation summary, target panels, flags |
 | Targets | logical color/depth/picking/offscreen/transient targets |
 | Resources | stable logical resource ids referenced this frame |
+| Retirements | stable logical resource ids whose semantic lifetimes ended and whose backend objects must be destroyed safely |
 | Nodes | ordered `UploadNode`, `ComputeNode`, `RenderNode`, `CopyNode`, `ReadbackNode` entries |
 | Dependencies | explicit edges or topological order plus read/write sets |
 | Readbacks | deterministic producer-visible request descriptors |
@@ -75,6 +77,10 @@ Resources are referenced by stable scene ids. Each referenced resource records:
 
 Producer-side hints may mark resources immutable/dynamic, shared/panel-local, or transient/
 persistent. These guide planning and validation only.
+
+Logical resource identity remains stable across content replacement and compatible backend reallocation. The plan carries logical extent separately from allocation intent; draw and dispatch semantics must not be reconstructed from backend capacity.
+
+Retirement records identify explicitly retired semantic resources. They are not inferred from absence in the current frame. Conversion orders destruction after all uses represented by the committed stream and delegates physical deferred-destruction safety to DRP2/runtime ownership. If conversion fails, the producer retains the retirement for a later plan.
 
 Derived resources must be classified as one of:
 
@@ -180,6 +186,7 @@ DRP2 conversion:
 | Render | render-pass commands and draws |
 | Copy | DRP2 copy commands |
 | Readback | `QueueSubmit.readbacks` and reply routing metadata |
+| Retirement | DRP2 destroy commands for committed semantic retirement |
 
 The converter owns exact command spelling, id assignment, and omission of already-created runtime
 objects.
@@ -193,4 +200,5 @@ The first IR is acceptable only if it can represent:
 3. picking pass plus single-pixel readback;
 4. offscreen rendering plus deterministic image readback;
 5. one compute-assisted visual path followed by rendering;
-6. a compute dispatch whose dimensions change between emitted frames.
+6. a compute dispatch whose dimensions change between emitted frames;
+7. grow, shrink, destroy, and same-slot recreation without confusing logical extent, capacity, or identity.

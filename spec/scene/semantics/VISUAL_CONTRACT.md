@@ -69,6 +69,22 @@ canonical in [`../pipeline/RESOURCE_MODEL.md`](../pipeline/RESOURCE_MODEL.md); p
 rules are in [`../pipeline/ATTRIBUTE_SOURCES.md`](../pipeline/ATTRIBUTE_SOURCES.md).
 
 
+## Coherent Full Replacement
+
+A successful full visual-data or mesh-geometry replacement is one semantic transaction. Every replaced facet, optional index binding, logical count, draw parameter, dirty revision, and next validated `FramePlan` must describe the same new payload whether storage grows, shrinks, preserves capacity, or becomes empty.
+
+Rules:
+
+1. Validation and required allocation complete before any externally observable visual state commits.
+2. Failure leaves the prior renderable state intact.
+3. Indexed-to-nonindexed replacement explicitly removes the old index binding; nonindexed-to-indexed replacement installs the new binding atomically.
+4. Owned resources retain semantic identity across compatible content replacement and capacity changes rather than being destroyed and recreated for every write.
+5. Draw, vertex, index, and instance counts use logical extent, never retained allocation capacity.
+6. Runtime draw validation remains strict; implementations must not clamp inconsistent counts to hide producer-state defects.
+
+The initial v0.4 correction may use an internal retained geometry transaction. It does not require publication of a new scene-owned geometry-resource API before partial-update, sharing, optional-facet, and lifetime semantics are settled.
+
+
 ## Active Item Range
 
 A visual may expose an optional active item range over its logical item domain. This is retained

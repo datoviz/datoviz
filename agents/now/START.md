@@ -1,6 +1,6 @@
 # Datoviz v0.4 Dispatch
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-02.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-13.
 
 Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file identifies only the current route; durable contracts belong in `spec/`, public guidance belongs in `docs/`, and completed evidence belongs in release records and Git history.
 
@@ -35,6 +35,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 15. Use [../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md) and [NEXT_STEPS.md](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/NEXT_STEPS.md) for the planned non-blocking RC4 Windows/NVIDIA CUDA/Vulkan interop lane.
 16. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
 17. Use [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) for the approved physical-key/text-input API split and coherent mesh-geometry replacement work.
+18. Use [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md) for the benchmark-first rolling-field/structured-surface performance lane and its strict RC4 versus post-v0.4 boundary.
 
 ## Guardrails
 

@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-03.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-13.
 
 Keep this file current and short. Durable behavior belongs in `spec/`; completed campaign detail belongs in Git history, release assets, and tagged documentation.
 
@@ -20,7 +20,7 @@ Interaction pacing, presentation policy, and scheduler admission are implemented
 
 The issue #137 render-product lane is complete through R9: typed panel-local products, coherent surface/MSAA semantics, product-driven EDL/transparency/volume composition, deterministic material-aware GTAO, the semantic AO public API, legacy-path cleanup, and authoritative specifications are integrated into `v0.4-dev`. The approved AO gallery, choropleth, GLFW/Xvfb, WebGPU, scheduler-pacing, and exploratory source-audit follow-ups are also integrated and pushed; `545c99379` is the exact validated implementation head and `2d83d0b63` is the merge commit on the active branch.
 
-Issues #139 and #140 have approved contracts and an implementation handoff in [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md). The remaining work is a distinct physical-key/layout-aware-text input path and a regression-backed fix for stale mesh index draw counts after geometry shrink.
+Issues #139 and #140 have audited contracts and an implementation handoff in [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md). The remaining work is a committed UTF-8 input path distinct from physical keys and a lifecycle-backed mesh replacement fix covering logical extent, stable scene-buffer identity, explicit retirement, and atomic indexed/nonindexed transitions. Issue #138 has a separate benchmark-first, non-blocking performance handoff in [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md); GPU-displaced structured surfaces remain post-v0.4.
 
 The validated implementation head builds and passes 1,128/1,128 validation-enabled native tests, 95/95 DRP2 contract tests, 125/125 fixtures, 100/100 runtime-vklite, 34/34 slow/recovery cases, all seven bounded presentation paths, specifications, WebGPU, bindings, example manifests, generated docs/snippets/build, and the Vulkan course smoke. Full-tree static analysis is dispositioned; CPU sanitizer coverage is green for the new non-driver fixes, while Vulkan-backed sanitizer teardown remains inconclusive. Exact candidate artifact and platform proof remain separate release gates.
 

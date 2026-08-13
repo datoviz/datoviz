@@ -26,6 +26,8 @@ Scene resources provide:
 4. Visuals reference resources declaratively; resources do not expose Vulkan, Metal, WebGPU,
    swapchain, command-buffer, or synchronization internals.
 5. One logical scene resource may lower to zero, one, or many DRP2 resources at emission time.
+6. Allocation capacity is never a semantic item, vertex, index, instance, texel, or draw count.
+7. Resource retirement is explicit scene state; it is not inferred from omission in one rendered frame.
 
 
 ## Taxonomy
@@ -190,6 +192,38 @@ buffer after the call. `static` does not imply pointer borrowing; borrowed/zero-
 separate explicit lifetime contract. `streaming` uses scene-owned staging/mapped memory and should
 not require a source-buffer copy each frame. A `static` resource must not be rewritten after initial
 upload without redeclaring it as `dynamic` or `streaming`.
+
+
+## Identity, Extent, And Lifecycle
+
+Every persistent scene resource has one immutable semantic identity for one logical lifetime. Array indices, reusable storage slots, addresses, human-readable resource keys, backend object ids, and allocation handles are not semantic identity. Reusing a scene slot after destruction creates a new identity.
+
+Resource size has two independent meanings:
+
+| Property | Meaning |
+|---|---|
+| logical extent | currently valid bytes/items/vertices/indices/instances/texels visible to scene semantics |
+| allocation capacity | backend storage reserved for possible reuse without reallocation |
+
+Every successful full replacement replaces logical extent, including replacement with zero items. Draw, dispatch, query, picking, export, and validation counts come from logical extent or explicit semantic metadata, never retained allocation capacity. Capacity may grow, remain larger after shrink, or be pooled without changing logical identity or extent.
+
+Persistent resources follow this logical lifecycle:
+
+```text
+created -> live/revised -> retired -> emitted destruction -> registry reclamation
+```
+
+Rules:
+
+1. Content and compatible capacity changes preserve semantic identity.
+2. A backend allocation may be recreated under the same runtime object id when the runtime contract safely refreshes dependent bindings and retires the former physical object.
+3. Destroying a semantic resource marks it retired; its owner must not reuse that identity for another resource.
+4. Retirement propagates transactionally through `FramePlan` and scene-to-DRP2 emission. Failed planning or emission leaves retirement pending rather than losing it.
+5. Physical destruction obeys runtime submission and borrowed-handle safety. Scene retirement does not bypass DRP2/vklite deferred destruction.
+6. Registry reclamation occurs only after the retirement has been committed to the execution stream.
+7. A temporarily hidden, inactive, or unreferenced resource remains live until its semantic owner retires it.
+
+The v0.4 implementation may migrate resource kinds incrementally, starting with scene buffers, but every migrated kind must follow the same identity, extent, ownership, and retirement contract. Allocation pooling remains an internal policy below semantic identity.
 
 
 ## Dirty Tracking

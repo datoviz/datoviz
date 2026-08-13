@@ -14,24 +14,26 @@ Native and hosted backends must normalize the same physical key to the same `Dvz
 
 ## Text Input Events
 
-Layout-aware input is a separate Unicode code-point stream. The v0.4 public surface adds `DvzTextInputEvent`, `DvzTextInputCallback`, `DVZ_INPUT_EVENT_TEXT`, `dvz_input_subscribe_text()`, `dvz_input_emit_text()`, `dvz_text_emit()`, and `dvz_view_emit_text()` alongside the physical keyboard path.
+Layout-aware input is a separate committed UTF-8 stream. The v0.4 public surface adds `DvzInputTextEvent`, `DvzInputTextCallback`, `DVZ_INPUT_EVENT_TEXT`, `dvz_input_subscribe_text()`, `dvz_input_emit_text()`, and hosted injection through `dvz_view_emit_text()` alongside the physical keyboard path.
 
-Each text event carries one Unicode scalar value and borrowed backend/application user data. Backends emit committed text in order and may emit zero, one, or several code points for one physical key action. Text events have no release state and do not promise a one-to-one relationship with physical keys.
+`DvzInputTextEvent` carries a borrowed UTF-8 byte span, its byte size, a modifier snapshot, and borrowed backend/application user data. Dispatch is synchronous, so the byte span remains valid only until the emit call returns. Each event preserves one host commit boundary and may contain one or several Unicode scalar values. Text events have no release state and do not promise a one-to-one relationship with physical keys.
 
 Applications use text events for unmodified commands presented as characters, including `m`, `w`, or `r`, and for ordinary text entry. Physical keyboard events remain the correct path for key state and positional controls. General remappable shortcuts and composed editing commands are outside this focused v0.4 addition.
+
+The API has two injection layers only: `dvz_input_emit_text()` dispatches a complete event through a router, while `dvz_view_emit_text()` lets a hosted adapter inject a UTF-8 commit into a view. There is no `dvz_text_input_emit()` or `dvz_text_emit()` helper; the `dvz_text_*` namespace remains reserved for scene text rendering.
 
 ## Backend Requirements
 
 - GLFW routes its Unicode character callback into the input router unless an installed raw integration callback consumes the event.
-- Hosted adapters route committed host text through `dvz_view_emit_text()` and preserve Unicode scalar order.
-- The Qt adapter derives text from `QKeyEvent::text()` on key press and auto-repeat, decodes the returned UTF-16 string correctly, and does not emit text on release.
-- GUI capture may consume text before Datoviz application routing, consistently with physical keyboard capture.
+- Hosted adapters route complete committed UTF-8 spans through `dvz_view_emit_text()` and preserve host commit boundaries.
+- The Qt adapter derives ordinary committed text from `QKeyEvent::text()` on key press and auto-repeat, converts it to valid UTF-8, and does not emit text on release. Composition/preedit and full IME behavior are outside this v0.4 slice unless `QInputMethodEvent::commitString()` is implemented and tested separately.
+- GUI integration feeds its own text input first and suppresses application routing only when the GUI owns keyboard/text capture; raw, GUI, and application paths must not duplicate a commit.
 - Synthetic router and hosted events use the same public path as backend events.
 
 ## Validation
 
-- Router tests cover subscription, unsubscription, union-event delivery, callback mutation safety, and non-ASCII code points.
+- Router tests cover subscription, unsubscription, union-event delivery, callback mutation safety, borrowed-span lifetime, malformed UTF-8 rejection, non-ASCII commits, multiple scalars, and modifier snapshots.
 - GLFW coverage proves that the physical key callback and character callback remain distinct and that GUI consumption prevents duplicate delivery.
-- Hosted coverage proves ordered text delivery independently of physical key identity.
-- Qt coverage proves text decoding, repeat behavior, release suppression, and separation from `nativeScanCode()`/physical mapping.
+- Hosted coverage proves ordered UTF-8 commit delivery independently of physical key identity.
+- Qt coverage proves UTF-8 conversion, repeat behavior, release suppression, and separation from native scan-code physical mapping. Unrepresentable physical keys produce `DVZ_KEY_UNKNOWN` rather than layout-generated text masquerading as a key identity.
 - Public header and binding changes require `just ctypes`, `just ctypes-check`, focused input tests, `just build`, and `git diff --check`.

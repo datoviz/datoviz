@@ -1,6 +1,6 @@
 > **Execution Status**
 > - **Status:** `STAGED ROADMAP / OPTIONAL RC4 FOUNDATIONS AND v0.5+ FEATURES`
-> - **Updated on:** `2026-08-04`
+> - **Updated on:** `2026-08-13`
 > - **Purpose:** define reusable sampling, logical-view, incremental-update, streaming, and structured-surface capabilities motivated by rolling sampled data without introducing a waterfall-specific resource or runtime path.
 > - **Release boundary:** RC3 remains feature-frozen; sampler-addressing and multi-region-update foundations may land as non-blocking RC4 work before the API freeze; logical field views, asynchronous streaming extensions, and GPU-displaced structured surfaces remain post-v0.4 work.
 
@@ -67,6 +67,8 @@ The remaining gaps relevant to this roadmap are:
 RC3 does not take new runtime implementation from this roadmap. Its only permitted work is to preserve this decision, keep public limitations honest, and define fixtures or measurements that future work can use.
 
 RC3 must not gain a new resource class, shader variant, public streaming API, or alternate renderer path for this use case.
+
+Issue #138 is the current performance pressure test. Before retaining an optimization, measure release and debug builds separately around acquisition/history updates, height mutation, normal generation, F64-to-F32 conversion, FramePlan and command construction, bytes uploaded per resource, submission, and GPU time. Near-term application and v0.4 work may skip inactive panels, keep topology resident, avoid unchanged index uploads, use existing regional field updates, and benchmark an O(vertices) regular-grid CPU normal kernel against the generic reference. It must not add a one-off public fast-update API, a parallel renderer/runtime path, or imply that RC4 foundations deliver the post-v0.4 GPU-displaced surface.
 
 ## Milestone 2: Optional RC4 Sampler Completion
 
