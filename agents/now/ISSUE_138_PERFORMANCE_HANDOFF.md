@@ -1,6 +1,6 @@
 # Issue #138 Performance Handoff
 
-Status: audited staged handoff for the active `v0.4-dev` line and post-v0.4 roadmap. Updated: 2026-08-13.
+Status: local baseline and bounded near-term corrections complete; optional RC4 and post-v0.4 scope remains deferred. Updated: 2026-08-13.
 
 This handoff covers [issue #138](https://github.com/datoviz/datoviz/issues/138), motivated by Philippe Strauss's rolling sampled-field and structured-surface measurements. It is a performance investigation and architecture pressure test, not an RC3 correctness blocker. Follow the durable release boundary in [../../spec/scene/proposals/future/SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md](../../spec/scene/proposals/future/SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md).
 
@@ -78,4 +78,4 @@ Promote the retained internal geometry boundary to a public scene-owned resource
 
 ## Completion And GitHub Follow-Up
 
-#138 should remain open through the baseline and bounded near-term corrections. Report measurements and eliminated work precisely; do not promise that RC4 foundations deliver GPU-displaced 3D streaming. GitHub comments, closure, or roadmap commitments remain separate publication actions requiring explicit approval.
+The local baseline and bounded near-term corrections are complete. #138 remains open pending an approved GitHub follow-up; the retained evidence reports eliminated work without promising that optional RC4 foundations deliver GPU-displaced 3D streaming. GitHub comments, closure, or roadmap commitments remain separate publication actions requiring explicit approval.
