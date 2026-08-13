@@ -221,6 +221,46 @@ static void _key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 
 
+/** Forward one GLFW Unicode scalar as a hosted UTF-8 commit. */
+static void _char_callback(GLFWwindow* window, unsigned int codepoint)
+{
+    DvzView* view = _hosted_view(window);
+    if (view == NULL || codepoint > 0x10ffffu ||
+        (codepoint >= 0xd800u && codepoint <= 0xdfffu))
+        return;
+    char utf8[4] = {0};
+    uint32_t byte_size = 0;
+    if (codepoint <= 0x7fu)
+    {
+        utf8[0] = (char)codepoint;
+        byte_size = 1;
+    }
+    else if (codepoint <= 0x7ffu)
+    {
+        utf8[0] = (char)(0xc0u | (codepoint >> 6));
+        utf8[1] = (char)(0x80u | (codepoint & 0x3fu));
+        byte_size = 2;
+    }
+    else if (codepoint <= 0xffffu)
+    {
+        utf8[0] = (char)(0xe0u | (codepoint >> 12));
+        utf8[1] = (char)(0x80u | ((codepoint >> 6) & 0x3fu));
+        utf8[2] = (char)(0x80u | (codepoint & 0x3fu));
+        byte_size = 3;
+    }
+    else
+    {
+        utf8[0] = (char)(0xf0u | (codepoint >> 18));
+        utf8[1] = (char)(0x80u | ((codepoint >> 12) & 0x3fu));
+        utf8[2] = (char)(0x80u | ((codepoint >> 6) & 0x3fu));
+        utf8[3] = (char)(0x80u | (codepoint & 0x3fu));
+        byte_size = 4;
+    }
+    (void)dvz_view_emit_text(view, utf8, byte_size, DVZ_KEY_MODIFIER_NONE);
+}
+
+
+
 /**
  * Forward GLFW framebuffer resize events to Datoviz through the hosted input API.
  *
@@ -448,6 +488,7 @@ int main(int argc, char** argv)
     glfwSetMouseButtonCallback(window, _mouse_button_callback);
     glfwSetScrollCallback(window, _scroll_callback);
     glfwSetKeyCallback(window, _key_callback);
+    glfwSetCharCallback(window, _char_callback);
     glfwSetFramebufferSizeCallback(window, _framebuffer_size_callback);
     glfwSetWindowContentScaleCallback(window, _content_scale_callback);
     _emit_resize(window, view);

@@ -29,27 +29,41 @@ _QTBRIDGE_ENV = 'DATOVIZ_QTBRIDGE_LIBRARY'
 _qt_bridge = None
 
 
-_KEY_MAP = {
-    Qt.Key.Key_Space: dvz.DvzKeyCode.DVZ_KEY_SPACE,
-    Qt.Key.Key_Escape: dvz.DvzKeyCode.DVZ_KEY_ESCAPE,
-    Qt.Key.Key_Return: dvz.DvzKeyCode.DVZ_KEY_ENTER,
-    Qt.Key.Key_Enter: dvz.DvzKeyCode.DVZ_KEY_ENTER,
-    Qt.Key.Key_Tab: dvz.DvzKeyCode.DVZ_KEY_TAB,
-    Qt.Key.Key_Backspace: dvz.DvzKeyCode.DVZ_KEY_BACKSPACE,
-    Qt.Key.Key_Insert: dvz.DvzKeyCode.DVZ_KEY_INSERT,
-    Qt.Key.Key_Delete: dvz.DvzKeyCode.DVZ_KEY_DELETE,
-    Qt.Key.Key_Right: dvz.DvzKeyCode.DVZ_KEY_RIGHT,
-    Qt.Key.Key_Left: dvz.DvzKeyCode.DVZ_KEY_LEFT,
-    Qt.Key.Key_Down: dvz.DvzKeyCode.DVZ_KEY_DOWN,
-    Qt.Key.Key_Up: dvz.DvzKeyCode.DVZ_KEY_UP,
-    Qt.Key.Key_PageUp: dvz.DvzKeyCode.DVZ_KEY_PAGE_UP,
-    Qt.Key.Key_PageDown: dvz.DvzKeyCode.DVZ_KEY_PAGE_DOWN,
-    Qt.Key.Key_Home: dvz.DvzKeyCode.DVZ_KEY_HOME,
-    Qt.Key.Key_End: dvz.DvzKeyCode.DVZ_KEY_END,
-    Qt.Key.Key_Shift: dvz.DvzKeyCode.DVZ_KEY_LEFT_SHIFT,
-    Qt.Key.Key_Control: dvz.DvzKeyCode.DVZ_KEY_LEFT_CONTROL,
-    Qt.Key.Key_Alt: dvz.DvzKeyCode.DVZ_KEY_LEFT_ALT,
-    Qt.Key.Key_Meta: dvz.DvzKeyCode.DVZ_KEY_LEFT_SUPER,
+_NATIVE_SCAN_MAP = {
+    1: dvz.DVZ_KEY_ESCAPE,
+    2: dvz.DVZ_KEY_1,
+    3: dvz.DVZ_KEY_2,
+    4: dvz.DVZ_KEY_3,
+    5: dvz.DVZ_KEY_4,
+    6: dvz.DVZ_KEY_5,
+    7: dvz.DVZ_KEY_6,
+    8: dvz.DVZ_KEY_7,
+    9: dvz.DVZ_KEY_8,
+    10: dvz.DVZ_KEY_9,
+    11: dvz.DVZ_KEY_0,
+    14: dvz.DVZ_KEY_BACKSPACE,
+    15: dvz.DVZ_KEY_TAB,
+    **dict(zip(range(16, 26), (dvz.DVZ_KEY_Q, dvz.DVZ_KEY_W, dvz.DVZ_KEY_E, dvz.DVZ_KEY_R, dvz.DVZ_KEY_T, dvz.DVZ_KEY_Y, dvz.DVZ_KEY_U, dvz.DVZ_KEY_I, dvz.DVZ_KEY_O, dvz.DVZ_KEY_P))),
+    28: dvz.DVZ_KEY_ENTER,
+    29: dvz.DVZ_KEY_LEFT_CONTROL,
+    **dict(zip(range(30, 39), (dvz.DVZ_KEY_A, dvz.DVZ_KEY_S, dvz.DVZ_KEY_D, dvz.DVZ_KEY_F, dvz.DVZ_KEY_G, dvz.DVZ_KEY_H, dvz.DVZ_KEY_J, dvz.DVZ_KEY_K, dvz.DVZ_KEY_L))),
+    42: dvz.DVZ_KEY_LEFT_SHIFT,
+    **dict(zip(range(44, 51), (dvz.DVZ_KEY_Z, dvz.DVZ_KEY_X, dvz.DVZ_KEY_C, dvz.DVZ_KEY_V, dvz.DVZ_KEY_B, dvz.DVZ_KEY_N, dvz.DVZ_KEY_M))),
+    54: dvz.DVZ_KEY_RIGHT_SHIFT,
+    56: dvz.DVZ_KEY_LEFT_ALT,
+    57: dvz.DVZ_KEY_SPACE,
+    97: dvz.DVZ_KEY_RIGHT_CONTROL,
+    100: dvz.DVZ_KEY_RIGHT_ALT,
+    102: dvz.DVZ_KEY_HOME,
+    103: dvz.DVZ_KEY_UP,
+    104: dvz.DVZ_KEY_PAGE_UP,
+    105: dvz.DVZ_KEY_LEFT,
+    106: dvz.DVZ_KEY_RIGHT,
+    107: dvz.DVZ_KEY_END,
+    108: dvz.DVZ_KEY_DOWN,
+    109: dvz.DVZ_KEY_PAGE_DOWN,
+    110: dvz.DVZ_KEY_INSERT,
+    111: dvz.DVZ_KEY_DELETE,
 }
 
 
@@ -264,14 +278,13 @@ def _button(button) -> int:
 
 
 def _key(event: QKeyEvent) -> int:
-    key = Qt.Key(event.key())
-    if Qt.Key.Key_A <= key <= Qt.Key.Key_Z:
-        return int(dvz.DvzKeyCode.DVZ_KEY_A) + int(key) - int(Qt.Key.Key_A)
-    if Qt.Key.Key_0 <= key <= Qt.Key.Key_9:
-        return int(dvz.DvzKeyCode.DVZ_KEY_0) + int(key) - int(Qt.Key.Key_0)
-    if Qt.Key.Key_F1 <= key <= Qt.Key.Key_F25:
-        return int(dvz.DvzKeyCode.DVZ_KEY_F1) + int(key) - int(Qt.Key.Key_F1)
-    return int(_KEY_MAP.get(key, dvz.DvzKeyCode.DVZ_KEY_UNKNOWN))
+    platform = QApplication.platformName().lower()
+    scan_code = int(event.nativeScanCode())
+    if platform.startswith('xcb'):
+        scan_code -= 8
+    elif not platform.startswith('wayland'):
+        return int(dvz.DVZ_KEY_UNKNOWN)
+    return int(_NATIVE_SCAN_MAP.get(scan_code, dvz.DVZ_KEY_UNKNOWN))
 
 
 class DatovizWindow(QWindow):
@@ -543,9 +556,13 @@ class DatovizWindow(QWindow):
         if not self._view:
             return
         key = _key(event)
-        if key == int(dvz.DvzKeyCode.DVZ_KEY_UNKNOWN):
+        mods = _mods(event.modifiers())
+        dvz.dvz_view_emit_key(self._view, event_type, key, mods)
+        if event_type == dvz.DvzKeyboardEventType.DVZ_KEYBOARD_EVENT_RELEASE:
             return
-        dvz.dvz_view_emit_key(self._view, event_type, key, _mods(event.modifiers()))
+        text = event.text().encode('utf-8')
+        if text:
+            dvz.dvz_view_emit_text(self._view, text, len(text), mods)
 
     def _render_once(self) -> None:
         if self._released or self._app is None:

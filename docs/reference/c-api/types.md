@@ -269,6 +269,8 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzInputResizeEvent`](app.md#type-dvzinputresizeevent) | record | App, Window, And I/O API | `include/datoviz/input/router.h` |
 | [`DvzInputRouter`](app.md#type-dvzinputrouter) | typedef | App, Window, And I/O API | `include/datoviz/input/router.h` |
 | [`DvzInputScaleEvent`](app.md#type-dvzinputscaleevent) | record | App, Window, And I/O API | `include/datoviz/input/router.h` |
+| [`DvzInputTextCallback`](app.md#type-dvzinputtextcallback) | typedef | App, Window, And I/O API | `include/datoviz/input/router.h` |
+| [`DvzInputTextEvent`](app.md#type-dvzinputtextevent) | record | App, Window, And I/O API | `include/datoviz/input/router.h` |
 | [`DvzInstance`](runtime-vulkan.md#type-dvzinstance) | typedef | Vulkan Foundation API | `include/datoviz/vk/instance.h` |
 | [`DvzInstanceConfig`](runtime-vulkan.md#type-dvzinstanceconfig) | record | Vulkan Foundation API | `include/datoviz/vk/instance.h` |
 | [`DvzInstanceFlags`](runtime-vulkan.md#type-dvzinstanceflags) | enum | Vulkan Foundation API | `include/datoviz/vk/instance.h` |

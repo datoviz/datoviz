@@ -35,6 +35,7 @@ typedef enum DvzInputEventType
     DVZ_INPUT_EVENT_KEYBOARD,
     DVZ_INPUT_EVENT_RESIZE,
     DVZ_INPUT_EVENT_SCALE,
+    DVZ_INPUT_EVENT_TEXT,
 } DvzInputEventType;
 
 
@@ -52,6 +53,7 @@ typedef enum DvzCallbackIdSpecial
 
 typedef struct DvzInputResizeEvent DvzInputResizeEvent;
 typedef struct DvzInputScaleEvent DvzInputScaleEvent;
+typedef struct DvzInputTextEvent DvzInputTextEvent;
 typedef struct DvzInputEvent DvzInputEvent;
 typedef struct DvzInputRouter DvzInputRouter;
 
@@ -61,6 +63,7 @@ typedef void (*DvzPointerCallback)(DvzInputRouter*, const DvzPointerEvent*, void
 typedef void (*DvzKeyboardCallback)(DvzInputRouter*, const DvzKeyboardEvent*, void*);
 typedef void (*DvzResizeCallback)(DvzInputRouter*, const DvzInputResizeEvent*, void*);
 typedef void (*DvzScaleCallback)(DvzInputRouter*, const DvzInputScaleEvent*, void*);
+typedef void (*DvzInputTextCallback)(DvzInputRouter*, const DvzInputTextEvent*, void*);
 typedef void (*DvzInputCallback)(DvzInputRouter*, const DvzInputEvent*, void*);
 
 
@@ -89,6 +92,17 @@ struct DvzInputScaleEvent
 
 
 
+/** One synchronously borrowed committed UTF-8 span. */
+struct DvzInputTextEvent
+{
+    const char* utf8;
+    uint32_t byte_size;
+    int mods;
+    void* user_data;
+};
+
+
+
 struct DvzInputEvent
 {
     DvzInputEventType type;
@@ -98,6 +112,7 @@ struct DvzInputEvent
         DvzKeyboardEvent keyboard;
         DvzInputResizeEvent resize;
         DvzInputScaleEvent scale;
+        DvzInputTextEvent text;
     } content;
 };
 
@@ -196,6 +211,34 @@ DVZ_EXPORT DvzCallbackId dvz_input_subscribe_keyboard(
  * @param event event borrowed for the duration of the call; must not be NULL
  */
 DVZ_EXPORT void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event);
+
+
+
+/**
+ * Subscribe to committed UTF-8 text events.
+ *
+ * @param router target router; must not be NULL
+ * @param callback callback invoked synchronously; must not be NULL
+ * @param user_data borrowed opaque pointer; may be NULL
+ * @return subscription id, or `DVZ_CALLBACK_ID_NONE` on failure
+ */
+DVZ_EXPORT DvzCallbackId dvz_input_subscribe_text(
+    DvzInputRouter* router, DvzInputTextCallback callback, void* user_data);
+
+
+
+/**
+ * Emit one committed UTF-8 span synchronously.
+ *
+ * The event and its UTF-8 bytes are borrowed only until this call returns. Empty or malformed
+ * UTF-8 spans are rejected without dispatch.
+ *
+ * @param router target router; must not be NULL
+ * @param event borrowed committed-text event; must not be NULL
+ * @return `DVZ_OK` on dispatch, `DVZ_ERROR` on invalid input
+ */
+DVZ_EXPORT DvzResult
+dvz_input_emit_text(DvzInputRouter* router, const DvzInputTextEvent* event);
 
 
 

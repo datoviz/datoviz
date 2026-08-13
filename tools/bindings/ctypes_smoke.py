@@ -475,6 +475,7 @@ def _check_input_event_layout(dvz) -> None:
         'keyboard',
         'resize',
         'scale',
+        'text',
     ]
 
     event = dvz.DvzInputEvent()

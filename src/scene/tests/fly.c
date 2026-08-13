@@ -470,6 +470,9 @@ int test_fly_router_keyboard_updates_key_state(TstContext* suite, const TstCase*
     dvz_input_emit_keyboard(router, &press);
     AT(_dvz_figure_fly_update(figure, 0.5));
 
+    DvzInputTextEvent text = {.utf8 = "z", .byte_size = 1};
+    AT(dvz_input_emit_text(router, &text) == DVZ_OK);
+
     vec3 pos = {0};
     dvz_fly_get_position(fly, pos);
     AC(pos[2], 2.8f, 1e-5f);

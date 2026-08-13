@@ -59,6 +59,7 @@ typedef struct InputEventsState
     DvzCallbackId input_subscription_id;
     uint32_t pointer_count;
     uint32_t keyboard_count;
+    uint32_t text_count;
     uint32_t resize_count;
     bool verbose;
 } InputEventsState;
@@ -448,6 +449,14 @@ static void _input_events_event(DvzInputRouter* router, const DvzInputEvent* eve
     case DVZ_INPUT_EVENT_KEYBOARD:
         _input_events_keyboard(&event->content.keyboard, state);
         break;
+    case DVZ_INPUT_EVENT_TEXT:
+        state->text_count++;
+        if (state->verbose)
+            printf(
+                "text bytes=%u value=%.*s mods=0x%x\n", event->content.text.byte_size,
+                (int)event->content.text.byte_size, event->content.text.utf8,
+                event->content.text.mods);
+        break;
     case DVZ_INPUT_EVENT_RESIZE:
         _input_events_resize(&event->content.resize, state);
         break;
@@ -588,11 +597,17 @@ static int _run_synthetic(void)
     EXAMPLE_CHECK(
         dvz_view_emit_key(view, DVZ_KEYBOARD_EVENT_RELEASE, DVZ_KEY_A, DVZ_KEY_MODIFIER_NONE) == 0,
         "dvz_view_emit_key(release) failed");
+    const char commit[] = "é";
+    EXAMPLE_CHECK(
+        dvz_view_emit_text(
+            view, commit, (uint32_t)(sizeof(commit) - 1), DVZ_KEY_MODIFIER_NONE) == 0,
+        "dvz_view_emit_text() failed");
 
     EXAMPLE_CHECK(
         dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY, "dvz_view_render_once() failed");
     EXAMPLE_CHECK(
-        state.pointer_count >= 3 && state.keyboard_count == 2 && state.resize_count >= 1,
+        state.pointer_count >= 3 && state.keyboard_count == 2 && state.text_count == 1 &&
+            state.resize_count >= 1,
         "input event callbacks did not receive the emitted events");
 
     _unsubscribe_events(router, &state);

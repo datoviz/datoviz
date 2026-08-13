@@ -45,6 +45,7 @@ def test_pointer_event_wrapper_layout_matches_c_abi():
         'DvzInputEvent': dvz.DvzInputEvent,
         'DvzInputResizeEvent': dvz.DvzInputResizeEvent,
         'DvzInputScaleEvent': dvz.DvzInputScaleEvent,
+        'DvzInputTextEvent': dvz.DvzInputTextEvent,
         'DvzKeyboardEvent': dvz.DvzKeyboardEvent,
         'DvzPointerWheelEvent': dvz.DvzPointerWheelEvent,
         'DvzPointerDragEvent': dvz.DvzPointerDragEvent,
@@ -62,6 +63,7 @@ def test_pointer_event_wrapper_layout_matches_c_abi():
     assert hasattr(dvz.DvzInputEventContent, 'keyboard')
     assert hasattr(dvz.DvzInputEventContent, 'resize')
     assert hasattr(dvz.DvzInputEventContent, 'scale')
+    assert hasattr(dvz.DvzInputEventContent, 'text')
 
 
 @pytest.mark.skipif(not _library_exists(), reason='libdatoviz has not been built')
@@ -169,6 +171,10 @@ def test_host_input_family_dispatch(monkeypatch):
         def on_resize(ev):
             seen.append(("resize", ev.framebuffer_width, ev.window_width))
 
+        @view.text()
+        def on_text(ev):
+            seen.append(("text", ev.text, ev.utf8, ev.mods))
+
         @view.scale()
         async def on_scale(ev):
             seen.append(("scale", ev.content_scale_x, ev.content_scale_y))
@@ -183,15 +189,19 @@ def test_host_input_family_dispatch(monkeypatch):
             )
             resize = dvz.DvzInputResizeEvent(800, 600, 400, 300, 2.0, 2.0)
             dvz.dvz_input_emit_resize(router, ctypes.byref(resize))
+            utf8 = "é".encode('utf-8')
+            text = dvz.DvzInputTextEvent(utf8, len(utf8), 5, None)
+            dvz.dvz_input_emit_text(router, ctypes.byref(text))
             scale = dvz.DvzInputScaleEvent(1.5, 1.25)
             dvz.dvz_input_emit_scale(router, ctypes.byref(scale))
             for _ in range(20):
-                if len(seen) == 3:
+                if len(seen) == 4:
                     break
                 await asyncio.sleep(0.01)
             assert seen == [
                 ("key", dvz.DvzKeyCode.DVZ_KEY_A, 3),
                 ("resize", 800, 400),
+                ("text", "é", "é".encode('utf-8'), 5),
                 ("scale", 1.5, 1.25),
             ]
         finally:

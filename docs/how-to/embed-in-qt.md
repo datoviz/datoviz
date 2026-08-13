@@ -111,10 +111,11 @@ Forward host events through the public hosted app API:
 | mouse move, press, release | `dvz_view_emit_pointer()` |
 | wheel | `dvz_view_emit_wheel()` |
 | key press, release, repeat | `dvz_view_emit_key()` |
+| committed UTF-8 text on press or repeat | `dvz_view_emit_text()` |
 
-Qt should schedule rendering with `QWindow::requestUpdate()`, then call `dvz_view_render_once()`
-from the update path. Widget callbacks should mutate retained scene state, request a frame, and let
-Datoviz render through the existing view.
+Physical keys must come from a tested native scan-code mapping; when Qt cannot provide physical identity, emit `DVZ_KEY_UNKNOWN` instead of substituting `QKeyEvent::key()`. Route nonempty `QKeyEvent::text()` separately on press and repeat, with no text event on release.
+
+Qt should schedule rendering with `QWindow::requestUpdate()`, then call `dvz_view_render_once()` from the update path. Widget callbacks should mutate retained scene state, request a frame, and let Datoviz render through the existing view.
 
 
 ## Surface teardown

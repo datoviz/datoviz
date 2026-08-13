@@ -126,6 +126,7 @@ layout_records:
     - DvzFramePlanEmitConfig
     - DvzFramePlanUploadDesc
     - DvzInputEvent
+    - DvzInputTextEvent
     - DvzPointerWheelEvent
     - DvzPointerDragEvent
     - DvzPointerEventUnion

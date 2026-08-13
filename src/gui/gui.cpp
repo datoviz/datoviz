@@ -119,6 +119,7 @@ struct DvzGui
     ImGuiID dock_nodes[4];
     ImGuiID docked_window_hashes[DVZ_GUI_MAX_DOCKED_WINDOWS];
     uint32_t docked_window_hash_count;
+    int glfw_mods;
     ImFont* font_regular;
     ImFont* font_mono;
     VkFormat color_format;
@@ -1153,7 +1154,8 @@ static bool _gui_want_capture_mouse(DvzGui* gui)
 static bool _gui_want_capture_keyboard(DvzGui* gui)
 {
     _gui_set_current(gui);
-    return ImGui::GetIO().WantCaptureKeyboard;
+    const ImGuiIO& io = ImGui::GetIO();
+    return io.WantCaptureKeyboard || io.WantTextInput;
 }
 
 
@@ -1178,6 +1180,55 @@ static bool _gui_viewport_forward_key(DvzGui* gui, int key, int action, int mods
         return false;
 
     return dvz_view_emit_key(viewport->source, type, (DvzKeyCode)key, mods) == 0;
+}
+
+
+
+static uint32_t _gui_utf8_encode(uint32_t codepoint, char out[4])
+{
+    if (codepoint <= 0x7fu)
+    {
+        out[0] = (char)codepoint;
+        return 1;
+    }
+    if (codepoint <= 0x7ffu)
+    {
+        out[0] = (char)(0xc0u | (codepoint >> 6));
+        out[1] = (char)(0x80u | (codepoint & 0x3fu));
+        return 2;
+    }
+    if (codepoint >= 0xd800u && codepoint <= 0xdfffu)
+        return 0;
+    if (codepoint <= 0xffffu)
+    {
+        out[0] = (char)(0xe0u | (codepoint >> 12));
+        out[1] = (char)(0x80u | ((codepoint >> 6) & 0x3fu));
+        out[2] = (char)(0x80u | (codepoint & 0x3fu));
+        return 3;
+    }
+    if (codepoint <= 0x10ffffu)
+    {
+        out[0] = (char)(0xf0u | (codepoint >> 18));
+        out[1] = (char)(0x80u | ((codepoint >> 12) & 0x3fu));
+        out[2] = (char)(0x80u | ((codepoint >> 6) & 0x3fu));
+        out[3] = (char)(0x80u | (codepoint & 0x3fu));
+        return 4;
+    }
+    return 0;
+}
+
+
+
+static bool _gui_viewport_forward_text(DvzGui* gui, uint32_t codepoint)
+{
+    ANN(gui);
+    DvzGuiViewport* viewport = gui->keyboard_viewport;
+    if (viewport == NULL || viewport->source == NULL || !viewport->keyboard_focused)
+        return false;
+    char utf8[4] = {};
+    uint32_t byte_size = _gui_utf8_encode(codepoint, utf8);
+    return byte_size > 0 &&
+           dvz_view_emit_text(viewport->source, utf8, byte_size, gui->glfw_mods) == DVZ_OK;
 }
 
 
@@ -1304,6 +1355,7 @@ _gui_glfw_key(DvzWindow* window, int key, int scancode, int action, int mods, vo
     (void)window;
     DvzGui* gui = (DvzGui*)user_data;
     ANN(gui);
+    gui->glfw_mods = mods;
     _gui_set_current(gui);
     ImGui_ImplGlfw_KeyCallback(gui->glfw_window, key, scancode, action, mods);
     _gui_request_frame(gui);
@@ -1331,7 +1383,9 @@ static bool _gui_glfw_char(DvzWindow* window, uint32_t codepoint, void* user_dat
     _gui_set_current(gui);
     ImGui_ImplGlfw_CharCallback(gui->glfw_window, codepoint);
     _gui_request_frame(gui);
-    return true;
+    if (_gui_want_capture_keyboard(gui))
+        return true;
+    return _gui_viewport_forward_text(gui, codepoint);
 }
 
 

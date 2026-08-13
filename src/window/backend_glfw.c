@@ -20,6 +20,7 @@
 #include "_log.h"
 #include "datoviz/input/keyboard.h"
 #include "datoviz/input/pointer.h"
+#include "datoviz/input/router.h"
 #include "datoviz/window.h"
 #include "window_internal.h"
 
@@ -594,6 +595,7 @@ static void _glfw_key_callback(GLFWwindow* handle, int key, int scancode, int ac
     DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
+    window->glfw_mods = mods;
     if (window->glfw_input_callbacks.key != NULL &&
         window->glfw_input_callbacks.key(
             window, key, scancode, action, mods, window->glfw_input_user_data))
@@ -617,14 +619,65 @@ static void _glfw_key_callback(GLFWwindow* handle, int key, int scancode, int ac
 
 
 
+static uint32_t _glfw_utf8_encode(uint32_t codepoint, char out[4])
+{
+    ANN(out);
+    if (codepoint <= 0x7fu)
+    {
+        out[0] = (char)codepoint;
+        return 1;
+    }
+    if (codepoint <= 0x7ffu)
+    {
+        out[0] = (char)(0xc0u | (codepoint >> 6));
+        out[1] = (char)(0x80u | (codepoint & 0x3fu));
+        return 2;
+    }
+    if (codepoint >= 0xd800u && codepoint <= 0xdfffu)
+        return 0;
+    if (codepoint <= 0xffffu)
+    {
+        out[0] = (char)(0xe0u | (codepoint >> 12));
+        out[1] = (char)(0x80u | ((codepoint >> 6) & 0x3fu));
+        out[2] = (char)(0x80u | (codepoint & 0x3fu));
+        return 3;
+    }
+    if (codepoint <= 0x10ffffu)
+    {
+        out[0] = (char)(0xf0u | (codepoint >> 18));
+        out[1] = (char)(0x80u | ((codepoint >> 12) & 0x3fu));
+        out[2] = (char)(0x80u | ((codepoint >> 6) & 0x3fu));
+        out[3] = (char)(0x80u | (codepoint & 0x3fu));
+        return 4;
+    }
+    return 0;
+}
+
+
+
 static void _glfw_char_callback(GLFWwindow* handle, unsigned int codepoint)
 {
     DvzWindow* window = _glfw_window(handle);
     if (window == NULL)
         return;
-    if (window->glfw_input_callbacks.character != NULL)
-        (void)window->glfw_input_callbacks.character(
-            window, (uint32_t)codepoint, window->glfw_input_user_data);
+    if (window->glfw_input_callbacks.character != NULL &&
+        window->glfw_input_callbacks.character(
+            window, (uint32_t)codepoint, window->glfw_input_user_data))
+        return;
+    DvzInputRouter* router = dvz_window_backend_router(window);
+    if (router == NULL)
+        return;
+    char utf8[4] = {0};
+    uint32_t byte_size = _glfw_utf8_encode((uint32_t)codepoint, utf8);
+    if (byte_size == 0)
+        return;
+    DvzInputTextEvent event = {
+        .utf8 = utf8,
+        .byte_size = byte_size,
+        .mods = window->glfw_mods,
+        .user_data = dvz_window_user_data(window),
+    };
+    (void)dvz_input_emit_text(router, &event);
 }
 
 

@@ -290,6 +290,7 @@ SYNTHETIC_RECORD_FIELDS = {
         ('keyboard', 'DvzKeyboardEvent'),
         ('resize', 'DvzInputResizeEvent'),
         ('scale', 'DvzInputScaleEvent'),
+        ('text', 'DvzInputTextEvent'),
     ],
 }
 
@@ -1290,6 +1291,8 @@ def generate(
     for name, fields in SYNTHETIC_RECORD_FIELDS.items():
         lines.append(f'{name}._fields_ = [\n')
         for field_name, ctype in fields:
+            if ctype not in records:
+                continue
             lines.append(f"    ('{field_name}', {ctype}),\n")
         lines.append(']\n\n\n')
 

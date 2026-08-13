@@ -54,9 +54,9 @@ static void on_input(DvzInputRouter* router, const DvzInputEvent* event, void* u
         /* Read event->content.pointer.pos, button, mods, and gesture type. */
         break;
 
-    case DVZ_INPUT_EVENT_KEYBOARD:
-        if (event->content.keyboard.type == DVZ_KEYBOARD_EVENT_PRESS &&
-            event->content.keyboard.key == DVZ_KEY_O)
+    case DVZ_INPUT_EVENT_TEXT:
+        if (event->content.text.mods == DVZ_KEY_MODIFIER_NONE &&
+            event->content.text.byte_size == 1 && event->content.text.utf8[0] == 'o')
             state->show_overlay = !state->show_overlay;
         break;
 
@@ -85,9 +85,10 @@ The related example uses this same route:
 
 | Stream | Subscribe with | Use for |
 | --- | --- | --- |
-| Routed input | `dvz_input_subscribe_event()` | Most application callbacks; pointer, keyboard, resize, scale, and high-level pointer gestures in one stream. |
+| Routed input | `dvz_input_subscribe_event()` | Most application callbacks; pointer, physical keyboard, committed text, resize, scale, and high-level pointer gestures in one stream. |
 | Raw pointer | `dvz_input_subscribe_pointer()` | Backend-normalized position, button, and wheel events before gesture interpretation. |
-| Keyboard | `dvz_input_subscribe_keyboard()` | Keyboard-only consumers that do not need routed pointer, resize, or scale events. |
+| Keyboard | `dvz_input_subscribe_keyboard()` | Physical press/repeat/release state, positional controls, and navigation keys. |
+| Text | `dvz_input_subscribe_text()` | Layout-aware committed UTF-8 characters and ordinary text entry. |
 | Resize | `dvz_input_subscribe_resize()` | Resize-only consumers and late-bound layout state. |
 
 Use `dvz_input_subscribe_event()` when you need click, double-click, drag-start, drag, or drag-stop
@@ -106,6 +107,7 @@ dvz_view_emit_pointer(
     DVZ_KEY_MODIFIER_NONE);
 dvz_view_emit_wheel(view, x, y, width, height, 0.0f, +1.0f, DVZ_KEY_MODIFIER_NONE);
 dvz_view_emit_key(view, DVZ_KEYBOARD_EVENT_PRESS, DVZ_KEY_A, DVZ_KEY_MODIFIER_NONE);
+dvz_view_emit_text(view, "é", 2, DVZ_KEY_MODIFIER_NONE);
 ```
 
 The synthetic path works with offscreen views, so it can run in automated checks without opening a
@@ -117,8 +119,9 @@ native GLFW window.
 Input events are native-only in the current feature example. Browser interaction is handled by the
 WebGPU route and should not be copied from GLFW callback code.
 
-Callbacks run synchronously on the emitting thread. Keep callback state owned by the application,
-and unsubscribe before destroying that state or the view.
+Callbacks run synchronously on the emitting thread. A text event's UTF-8 span is borrowed only until the emit call returns, so copy it inside the callback when it must be retained. Keep callback state owned by the application, and unsubscribe before destroying that state or the view.
+
+`DVZ_KEY_*` printable names identify physical positions on the standard US layout. Use physical keyboard events for held state and positional controls; use committed text for character-labelled commands and text entry.
 
 `dvz_view_input()` returns a view-owned router. Do not destroy it. Unsubscribe while the view and
 router are still alive; a callback id is meaningful only to the router that created it.

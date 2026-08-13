@@ -53,5 +53,8 @@ The adapter forwards Qt events through the hosted app API:
 - mouse move/press/release: `dvz_view_emit_pointer()`
 - wheel: `dvz_view_emit_wheel()`
 - key press/release/repeat: `dvz_view_emit_key()`
+- committed key text on press/repeat: `dvz_view_emit_text()`
+
+The adapter maps physical keys from Qt native scan codes where the platform mapping is known and emits `DVZ_KEY_UNKNOWN` otherwise. Layout-aware `QKeyEvent::text()` is routed separately as UTF-8 and never emitted on release.
 
 Wheel events are normalized to abstract wheel steps. Qt `angleDelta()` is divided by `120.0`; when only `pixelDelta()` is available, that is also divided by `120.0` before any example-level sensitivity is applied.

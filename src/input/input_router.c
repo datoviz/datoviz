@@ -46,6 +46,15 @@ typedef struct DvzKeyboardSubscription
 
 
 
+typedef struct DvzTextSubscription
+{
+    DvzCallbackId id;
+    DvzInputTextCallback callback;
+    void* user_data;
+} DvzTextSubscription;
+
+
+
 typedef struct DvzEventSubscription
 {
     DvzCallbackId id;
@@ -82,6 +91,10 @@ struct DvzInputRouter
     DvzKeyboardSubscription* keyboard_subs;
     uint32_t keyboard_count;
     uint32_t keyboard_capacity;
+
+    DvzTextSubscription* text_subs;
+    uint32_t text_count;
+    uint32_t text_capacity;
 
     DvzEventSubscription* event_subs;
     uint32_t event_count;
@@ -148,6 +161,9 @@ static bool _subscription_active(const DvzInputRouter* router, DvzCallbackId id)
     for (uint32_t i = 0; i < router->keyboard_count; i++)
         if (router->keyboard_subs[i].id == id)
             return true;
+    for (uint32_t i = 0; i < router->text_count; i++)
+        if (router->text_subs[i].id == id)
+            return true;
     for (uint32_t i = 0; i < router->event_count; i++)
         if (router->event_subs[i].id == id)
             return true;
@@ -206,6 +222,24 @@ _remove_keyboard_sub(DvzInputRouter* router, DvzCallbackId id)
             router->keyboard_count--;
             if (i != router->keyboard_count)
                 router->keyboard_subs[i] = router->keyboard_subs[router->keyboard_count];
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+static bool _remove_text_sub(DvzInputRouter* router, DvzCallbackId id)
+{
+    ANN(router);
+    for (uint32_t i = 0; i < router->text_count; i++)
+    {
+        if (router->text_subs[i].id == id)
+        {
+            router->text_count--;
+            if (i != router->text_count)
+                router->text_subs[i] = router->text_subs[router->text_count];
             return true;
         }
     }
@@ -411,6 +445,56 @@ static void _emit_union_keyboard(DvzInputRouter* router, const DvzKeyboardEvent*
 
 
 
+static bool _utf8_valid(const char* utf8, uint32_t byte_size)
+{
+    if (utf8 == NULL || byte_size == 0)
+        return false;
+    uint32_t i = 0;
+    while (i < byte_size)
+    {
+        uint8_t b0 = (uint8_t)utf8[i++];
+        if (b0 <= 0x7f)
+            continue;
+
+        uint32_t codepoint = 0;
+        uint32_t continuation_count = 0;
+        if (b0 >= 0xc2 && b0 <= 0xdf)
+        {
+            codepoint = b0 & 0x1fu;
+            continuation_count = 1;
+        }
+        else if (b0 >= 0xe0 && b0 <= 0xef)
+        {
+            codepoint = b0 & 0x0fu;
+            continuation_count = 2;
+        }
+        else if (b0 >= 0xf0 && b0 <= 0xf4)
+        {
+            codepoint = b0 & 0x07u;
+            continuation_count = 3;
+        }
+        else
+            return false;
+
+        if (continuation_count > byte_size - i)
+            return false;
+        for (uint32_t j = 0; j < continuation_count; j++)
+        {
+            uint8_t continuation = (uint8_t)utf8[i++];
+            if ((continuation & 0xc0u) != 0x80u)
+                return false;
+            codepoint = (codepoint << 6) | (continuation & 0x3fu);
+        }
+        if ((continuation_count == 2 && codepoint < 0x800u) ||
+            (continuation_count == 3 && codepoint < 0x10000u) || codepoint > 0x10ffffu ||
+            (codepoint >= 0xd800u && codepoint <= 0xdfffu))
+            return false;
+    }
+    return true;
+}
+
+
+
 static void _emit_union_resize(DvzInputRouter* router, const DvzInputResizeEvent* event)
 {
     DvzInputEvent ev = {0};
@@ -450,6 +534,8 @@ void dvz_input_router_destroy(DvzInputRouter* router)
         dvz_free(router->pointer_subs);
     if (router->keyboard_subs != NULL)
         dvz_free(router->keyboard_subs);
+    if (router->text_subs != NULL)
+        dvz_free(router->text_subs);
     if (router->event_subs != NULL)
         dvz_free(router->event_subs);
     if (router->resize_subs != NULL)
@@ -486,6 +572,8 @@ bool dvz_input_unsubscribe(DvzInputRouter* router, DvzCallbackId id)
     if (_remove_pointer_sub(router, id))
         return true;
     if (_remove_keyboard_sub(router, id))
+        return true;
+    if (_remove_text_sub(router, id))
         return true;
     if (_remove_event_sub(router, id))
         return true;
@@ -532,6 +620,73 @@ void dvz_input_emit_keyboard(DvzInputRouter* router, const DvzKeyboardEvent* eve
     ANN(event);
     _dispatch_keyboard_subs(router, event);
     _emit_union_keyboard(router, event);
+}
+
+
+
+DvzCallbackId dvz_input_subscribe_text(
+    DvzInputRouter* router, DvzInputTextCallback callback, void* user_data)
+{
+    if (router == NULL || callback == NULL)
+        return DVZ_CALLBACK_ID_NONE;
+    if (router->text_count == UINT32_MAX ||
+        !_ensure_capacity(
+            sizeof(DvzTextSubscription), (void**)&router->text_subs, &router->text_capacity,
+            router->text_count + 1))
+        return DVZ_CALLBACK_ID_NONE;
+    DvzCallbackId id = _next_callback_id(router);
+    router->text_subs[router->text_count++] = (DvzTextSubscription){id, callback, user_data};
+    return id;
+}
+
+
+
+DvzResult dvz_input_emit_text(DvzInputRouter* router, const DvzInputTextEvent* event)
+{
+    if (router == NULL || event == NULL || !_utf8_valid(event->utf8, event->byte_size))
+        return DVZ_ERROR;
+
+    uint32_t text_count = router->text_count;
+    uint32_t event_count = router->event_count;
+    DvzTextSubscription* text_subs = NULL;
+    DvzEventSubscription* event_subs = NULL;
+    if (text_count > 0)
+    {
+        text_subs = (DvzTextSubscription*)dvz_calloc(text_count, sizeof(DvzTextSubscription));
+        if (text_subs == NULL)
+            return DVZ_ERROR;
+        size_t bytes = sizeof(DvzTextSubscription) * text_count;
+        dvz_memcpy(text_subs, bytes, router->text_subs, bytes);
+    }
+    if (event_count > 0)
+    {
+        event_subs = (DvzEventSubscription*)dvz_calloc(event_count, sizeof(DvzEventSubscription));
+        if (event_subs == NULL)
+        {
+            dvz_free(text_subs);
+            return DVZ_ERROR;
+        }
+        size_t bytes = sizeof(DvzEventSubscription) * event_count;
+        dvz_memcpy(event_subs, bytes, router->event_subs, bytes);
+    }
+
+    for (uint32_t i = 0; i < text_count; i++)
+    {
+        DvzTextSubscription* sub = &text_subs[i];
+        if (sub->callback != NULL && _subscription_active(router, sub->id))
+            sub->callback(router, event, sub->user_data);
+    }
+    DvzInputEvent union_event = {.type = DVZ_INPUT_EVENT_TEXT};
+    union_event.content.text = *event;
+    for (uint32_t i = 0; i < event_count; i++)
+    {
+        DvzEventSubscription* sub = &event_subs[i];
+        if (sub->callback != NULL && _subscription_active(router, sub->id))
+            sub->callback(router, &union_event, sub->user_data);
+    }
+    dvz_free(text_subs);
+    dvz_free(event_subs);
+    return DVZ_OK;
 }
 
 

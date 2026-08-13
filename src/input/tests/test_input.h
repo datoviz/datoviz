@@ -34,6 +34,14 @@ int test_router_growth_failure(TstContext* suite, const TstCase* item);
 
 int test_keyboard_modifiers(TstContext* suite, const TstCase* item);
 
+int test_text_router_delivery(TstContext* suite, const TstCase* item);
+
+int test_text_router_rejects_malformed_utf8(TstContext* suite, const TstCase* item);
+
+int test_text_router_separates_keyboard_actions(TstContext* suite, const TstCase* item);
+
+int test_text_router_subscription_mutation(TstContext* suite, const TstCase* item);
+
 int test_pointer_gestures(TstContext* suite, const TstCase* item);
 
 int test_pointer_gesture_invalid_sequences(TstContext* suite, const TstCase* item);

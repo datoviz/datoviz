@@ -5433,6 +5433,41 @@ dvz_view_emit_key(DvzView* win, DvzKeyboardEventType type, DvzKeyCode key, int m
 
 
 
+/**
+ * Emit one hosted committed UTF-8 span for a view.
+ *
+ * @param win view receiving the event
+ * @param utf8 committed UTF-8 bytes
+ * @param byte_size number of bytes in the commit
+ * @param mods keyboard modifier snapshot
+ * @return 0 on success, negative on error
+ */
+DvzResult dvz_view_emit_text(DvzView* win, const char* utf8, uint32_t byte_size, int mods)
+{
+    ANN(win);
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    if (win->canvas == NULL)
+        return DVZ_ERROR;
+    DvzInputRouter* router = dvz_canvas_input(win->canvas);
+    if (router == NULL)
+        return DVZ_ERROR;
+    DvzInputTextEvent event = {
+        .utf8 = utf8,
+        .byte_size = byte_size,
+        .mods = mods,
+        .user_data = win->window != NULL ? dvz_window_user_data(win->window) : NULL,
+    };
+    if (dvz_input_emit_text(router, &event) != DVZ_OK)
+        return DVZ_ERROR;
+    dvz_view_request_frame(win);
+    return DVZ_OK;
+#else
+    return DVZ_ERROR;
+#endif
+}
+
+
+
 
 struct DvzCanvas* dvz_view_canvas(DvzView* win)
 {

@@ -580,6 +580,23 @@ DVZ_EXPORT DvzResult
 dvz_view_emit_key(DvzView* view, DvzKeyboardEventType type, DvzKeyCode key, int mods);
 
 
+
+/**
+ * Emit one hosted committed UTF-8 span for a view.
+ *
+ * Dispatch is synchronous and @p utf8 is borrowed only until this call returns.
+ *
+ * @param view the view
+ * @param utf8 committed UTF-8 bytes
+ * @param byte_size number of bytes in the commit
+ * @param mods keyboard modifier snapshot
+ * @return 0 on success, negative on invalid input or unavailable routing
+ */
+DVZ_EXPORT DvzResult
+dvz_view_emit_text(DvzView* view, const char* utf8, uint32_t byte_size, int mods);
+
+
+
 /**
  * Return the underlying DvzCanvas for a window.
  *

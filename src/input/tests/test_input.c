@@ -86,6 +86,43 @@ typedef struct
 
 
 
+typedef struct
+{
+    const char* utf8;
+    uint32_t byte_size;
+    int mods;
+    void* event_user_data;
+    char copied[32];
+    uint32_t count;
+} TextRecorder;
+
+
+
+typedef struct
+{
+    DvzCallbackId self_id;
+    DvzCallbackId removed_id;
+    uint32_t self_calls;
+    uint32_t remover_calls;
+    uint32_t removed_calls;
+    uint32_t follower_calls;
+    uint32_t added_calls;
+    DvzCallbackId added_id;
+    bool self_unsubscribe_ok;
+    bool remove_ok;
+    bool added;
+} TextMutationRecorder;
+
+
+
+typedef struct
+{
+    uint32_t keyboard_count;
+    uint32_t text_count;
+} TextKeyboardRecorder;
+
+
+
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
@@ -258,6 +295,116 @@ _removed_pointer(DvzInputRouter* router, const DvzPointerEvent* event, void* use
     ANN(user_data);
     RemovalRecorder* recorder = user_data;
     recorder->removed_calls++;
+}
+
+
+
+static void _record_text(DvzInputRouter* router, const DvzInputTextEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    TextRecorder* recorder = user_data;
+    recorder->utf8 = event->utf8;
+    recorder->byte_size = event->byte_size;
+    recorder->mods = event->mods;
+    recorder->event_user_data = event->user_data;
+    if (event->byte_size >= sizeof(recorder->copied))
+        return;
+    memcpy(recorder->copied, event->utf8, event->byte_size);
+    recorder->copied[event->byte_size] = '\0';
+    recorder->count++;
+}
+
+
+
+static void _record_text_union(
+    DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    if (event->type != DVZ_INPUT_EVENT_TEXT)
+        return;
+    _record_text(router, &event->content.text, user_data);
+}
+
+
+
+static void _unsubscribe_text(DvzInputRouter* router, const DvzInputTextEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    TextMutationRecorder* recorder = user_data;
+    recorder->self_calls++;
+    recorder->self_unsubscribe_ok = dvz_input_unsubscribe(router, recorder->self_id);
+}
+
+
+
+static void _remove_later_text(
+    DvzInputRouter* router, const DvzInputTextEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    TextMutationRecorder* recorder = user_data;
+    recorder->remover_calls++;
+    recorder->remove_ok = dvz_input_unsubscribe(router, recorder->removed_id);
+}
+
+
+
+static void _removed_text(DvzInputRouter* router, const DvzInputTextEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    TextMutationRecorder* recorder = user_data;
+    recorder->removed_calls++;
+}
+
+
+
+static void _added_text(DvzInputRouter* router, const DvzInputTextEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    TextMutationRecorder* recorder = user_data;
+    recorder->added_calls++;
+}
+
+
+
+static void _add_text_during_dispatch(
+    DvzInputRouter* router, const DvzInputTextEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    TextMutationRecorder* recorder = user_data;
+    recorder->follower_calls++;
+    if (!recorder->added)
+    {
+        recorder->added_id = dvz_input_subscribe_text(router, _added_text, recorder);
+        recorder->added = true;
+    }
+}
+
+
+
+static void _record_keyboard_or_text(
+    DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    ANN(user_data);
+    TextKeyboardRecorder* recorder = user_data;
+    if (event->type == DVZ_INPUT_EVENT_KEYBOARD)
+        recorder->keyboard_count++;
+    else if (event->type == DVZ_INPUT_EVENT_TEXT)
+        recorder->text_count++;
 }
 
 
@@ -494,6 +641,165 @@ int test_keyboard_modifiers(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Deliver UTF-8 commits through direct and union subscriptions without copying their source span.
+ */
+int test_text_router_delivery(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    TextRecorder direct = {0};
+    TextRecorder union_recorder = {0};
+    int marker = 42;
+    AT(dvz_input_subscribe_text(router, _record_text, &direct) != DVZ_CALLBACK_ID_NONE);
+    AT(dvz_input_subscribe_event(router, _record_text_union, &union_recorder) !=
+       DVZ_CALLBACK_ID_NONE);
+
+    const char* commits[] = {"a", "\xC3\xA9", "\xC3\xA9\xF0\x9F\x99\x82"};
+    const uint32_t sizes[] = {1, 2, 6};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        DvzInputTextEvent event = {
+            .utf8 = commits[i],
+            .byte_size = sizes[i],
+            .mods = DVZ_KEY_MODIFIER_SHIFT | DVZ_KEY_MODIFIER_ALT,
+            .user_data = &marker,
+        };
+        AT(dvz_input_emit_text(router, &event) == DVZ_OK);
+        AT(direct.count == i + 1);
+        AT(union_recorder.count == i + 1);
+        AT(direct.utf8 == commits[i]);
+        AT(union_recorder.utf8 == commits[i]);
+        AT(direct.byte_size == sizes[i]);
+        AT(union_recorder.byte_size == sizes[i]);
+        AT(direct.mods == event.mods);
+        AT(union_recorder.mods == event.mods);
+        AT(direct.event_user_data == &marker);
+        AT(union_recorder.event_user_data == &marker);
+        AT(memcmp(direct.copied, commits[i], sizes[i]) == 0);
+        AT(memcmp(union_recorder.copied, commits[i], sizes[i]) == 0);
+    }
+
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
+ * Reject invalid and empty UTF-8 commits without notifying subscribers.
+ */
+int test_text_router_rejects_malformed_utf8(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    TextRecorder recorder = {0};
+    AT(dvz_input_subscribe_text(router, _record_text, &recorder) != DVZ_CALLBACK_ID_NONE);
+
+    const char invalid_lead[] = "\xC3\x28";
+    const char invalid_overlong[] = "\xC0\xAF";
+    const DvzInputTextEvent invalid_events[] = {
+        {.utf8 = invalid_lead, .byte_size = sizeof(invalid_lead) - 1},
+        {.utf8 = invalid_overlong, .byte_size = sizeof(invalid_overlong) - 1},
+        {.utf8 = "", .byte_size = 0},
+        {.utf8 = NULL, .byte_size = 1},
+    };
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        AT(dvz_input_emit_text(router, &invalid_events[i]) == DVZ_ERROR);
+        AT(recorder.count == 0);
+    }
+
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
+ * Keep committed text independent from physical press, repeat, and release events.
+ */
+int test_text_router_separates_keyboard_actions(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    TextKeyboardRecorder recorder = {0};
+    AT(dvz_input_subscribe_event(router, _record_keyboard_or_text, &recorder) !=
+       DVZ_CALLBACK_ID_NONE);
+
+    DvzKeyboardEvent key = {.key = DVZ_KEY_W, .mods = DVZ_KEY_MODIFIER_CONTROL};
+    key.type = DVZ_KEYBOARD_EVENT_PRESS;
+    dvz_input_emit_keyboard(router, &key);
+    AT(dvz_input_emit_text(
+           router, &(DvzInputTextEvent){.utf8 = "w", .byte_size = 1, .mods = key.mods}) ==
+       DVZ_OK);
+    key.type = DVZ_KEYBOARD_EVENT_REPEAT;
+    dvz_input_emit_keyboard(router, &key);
+    AT(dvz_input_emit_text(
+           router, &(DvzInputTextEvent){.utf8 = "w", .byte_size = 1, .mods = key.mods}) ==
+       DVZ_OK);
+    key.type = DVZ_KEYBOARD_EVENT_RELEASE;
+    dvz_input_emit_keyboard(router, &key);
+
+    AT(recorder.keyboard_count == 3);
+    AT(recorder.text_count == 2);
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
+ * Preserve text-dispatch semantics when subscriptions mutate during a callback.
+ */
+int test_text_router_subscription_mutation(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzInputRouter* router = dvz_input_router();
+    ANN(router);
+    TextMutationRecorder recorder = {0};
+    recorder.self_id = dvz_input_subscribe_text(router, _unsubscribe_text, &recorder);
+    AT(recorder.self_id != DVZ_CALLBACK_ID_NONE);
+    AT(dvz_input_subscribe_text(router, _add_text_during_dispatch, &recorder) !=
+       DVZ_CALLBACK_ID_NONE);
+    AT(dvz_input_subscribe_text(router, _remove_later_text, &recorder) != DVZ_CALLBACK_ID_NONE);
+    recorder.removed_id = dvz_input_subscribe_text(router, _removed_text, &recorder);
+    AT(recorder.removed_id != DVZ_CALLBACK_ID_NONE);
+
+    DvzInputTextEvent event = {.utf8 = "x", .byte_size = 1};
+    AT(dvz_input_emit_text(router, &event) == DVZ_OK);
+    AT(recorder.self_calls == 1);
+    AT(recorder.self_unsubscribe_ok);
+    AT(recorder.follower_calls == 1);
+    AT(recorder.remover_calls == 1);
+    AT(recorder.remove_ok);
+    AT(recorder.removed_calls == 0);
+    AT(recorder.added_calls == 0);
+    AT(recorder.added_id != DVZ_CALLBACK_ID_NONE);
+
+    AT(dvz_input_emit_text(router, &event) == DVZ_OK);
+    AT(recorder.self_calls == 1);
+    AT(recorder.follower_calls == 2);
+    AT(recorder.remover_calls == 2);
+    AT(recorder.added_calls == 1);
+
+    dvz_input_router_destroy(router);
+    return 0;
+}
+
+
+
+/**
  * Confirm gesture detection emits clicks, double-clicks, and drags.
  */
 int test_pointer_gestures(TstContext* suite, const TstCase* item)
@@ -688,6 +994,10 @@ int test_input(TstSuite* suite)
     TST_CASE(test_router_remove_later_callback);
     TST_CASE(test_router_growth_failure);
     TST_CASE(test_keyboard_modifiers);
+    TST_CASE(test_text_router_delivery);
+    TST_CASE(test_text_router_rejects_malformed_utf8);
+    TST_CASE(test_text_router_separates_keyboard_actions);
+    TST_CASE(test_text_router_subscription_mutation);
     TST_CASE(test_pointer_gestures);
     TST_CASE(test_pointer_gesture_invalid_sequences);
     TST_CASE(test_pointer_wheel);

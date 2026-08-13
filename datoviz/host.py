@@ -70,6 +70,16 @@ class KeyboardEvent:
 
 
 @dataclass(frozen=True)
+class TextEvent:
+    """Copied committed UTF-8 event passed to Python host handlers."""
+
+    text: str
+    utf8: bytes
+    mods: int
+    user_data: int | None
+
+
+@dataclass(frozen=True)
 class ResizeEvent:
     """Copied resize event passed to Python host handlers."""
 
@@ -142,6 +152,17 @@ def _copy_keyboard_event(event_ptr) -> KeyboardEvent:
     )
 
 
+def _copy_text_event(event_ptr) -> TextEvent:
+    event = event_ptr.contents
+    utf8 = ctypes.string_at(event.utf8, event.byte_size)
+    return TextEvent(
+        text=utf8.decode('utf-8'),
+        utf8=utf8,
+        mods=int(event.mods),
+        user_data=event.user_data,
+    )
+
+
 def _copy_resize_event(event_ptr) -> ResizeEvent:
     event = event_ptr.contents
     return ResizeEvent(
@@ -199,14 +220,17 @@ class _InputAdapter:
         self._closed = False
         self._pointer_handlers: dict[str, list[Handler]] = {}
         self._keyboard_handlers: dict[str, list[Handler]] = {}
+        self._text_handlers: list[Handler] = []
         self._resize_handlers: list[Handler] = []
         self._scale_handlers: list[Handler] = []
         self._pointer_callback = self._on_pointer
         self._keyboard_callback = self._on_keyboard
+        self._text_callback = self._on_text
         self._resize_callback = self._on_resize
         self._scale_callback = self._on_scale
         self._pointer_subscription_id = 0
         self._keyboard_subscription_id = 0
+        self._text_subscription_id = 0
         self._resize_subscription_id = 0
         self._scale_subscription_id = 0
 
@@ -252,6 +276,18 @@ class _InputAdapter:
 
         return decorator
 
+    def text(self):
+        """Register a handler for layout-aware committed text."""
+
+        self._assert_open()
+        self._ensure_text_subscribed()
+
+        def decorator(func: Handler) -> Handler:
+            self._text_handlers.append(func)
+            return func
+
+        return decorator
+
     def scale(self):
         """Register a handler for content-scale events."""
 
@@ -273,16 +309,20 @@ class _InputAdapter:
             raw.dvz_input_unsubscribe(self.router, self._pointer_subscription_id)
         if self._keyboard_subscription_id:
             raw.dvz_input_unsubscribe(self.router, self._keyboard_subscription_id)
+        if self._text_subscription_id:
+            raw.dvz_input_unsubscribe(self.router, self._text_subscription_id)
         if self._resize_subscription_id:
             raw.dvz_input_unsubscribe(self.router, self._resize_subscription_id)
         if self._scale_subscription_id:
             raw.dvz_input_unsubscribe(self.router, self._scale_subscription_id)
         self._pointer_handlers.clear()
         self._keyboard_handlers.clear()
+        self._text_handlers.clear()
         self._resize_handlers.clear()
         self._scale_handlers.clear()
         self._pointer_subscription_id = 0
         self._keyboard_subscription_id = 0
+        self._text_subscription_id = 0
         self._resize_subscription_id = 0
         self._scale_subscription_id = 0
         self._closed = True
@@ -307,6 +347,12 @@ class _InputAdapter:
         if not self._resize_subscription_id:
             self._resize_subscription_id = raw.dvz_input_subscribe_resize(
                 self.router, self._resize_callback, None
+            )
+
+    def _ensure_text_subscribed(self) -> None:
+        if not self._text_subscription_id:
+            self._text_subscription_id = raw.dvz_input_subscribe_text(
+                self.router, self._text_callback, None
             )
 
     def _ensure_scale_subscribed(self) -> None:
@@ -338,6 +384,11 @@ class _InputAdapter:
     def _on_resize(self, _router, event_ptr, _user_data) -> None:
         event = _copy_resize_event(event_ptr)
         for handler in list(self._resize_handlers):
+            self._host._schedule(handler, event)
+
+    def _on_text(self, _router, event_ptr, _user_data) -> None:
+        event = _copy_text_event(event_ptr)
+        for handler in list(self._text_handlers):
             self._host._schedule(handler, event)
 
     def _on_scale(self, _router, event_ptr, _user_data) -> None:
@@ -542,4 +593,5 @@ __all__ = [
     'PointerEvent',
     'ResizeEvent',
     'ScaleEvent',
+    'TextEvent',
 ]
