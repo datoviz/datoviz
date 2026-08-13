@@ -295,6 +295,8 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(start scatter start/scatter.c)
 
     dvz_add_example(lab axis_lattice_smoke lab/axis_lattice_smoke.c)
+    dvz_add_example(lab rolling_field_bench lab/rolling_field_bench.c)
+    target_include_directories(example_c_lab_rolling_field_bench PRIVATE ${PROJECT_SOURCE_DIR}/src/drp2)
     dvz_add_example(lab point_stress lab/point_stress.c)
     dvz_add_example(lab protein_viewer lab/protein_viewer.c)
     dvz_add_example(lab record_dvzr lab/record_dvzr.c)
