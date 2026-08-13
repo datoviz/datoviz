@@ -27,6 +27,8 @@
 
 bool _scene_mesh_visual_lowering(const DvzVisual* visual, DvzVisualLowering* out);
 
+void _scene_mesh_visual_set_default_color(DvzVisual* visual, bool is_default);
+
 bool _scene_mesh_visual_desc_from_metadata(
     DvzFramePlanEmitter* emitter, const DvzFramePlanVisualMeta* meta, DvzSceneVisualDesc* out,
     const char** error);

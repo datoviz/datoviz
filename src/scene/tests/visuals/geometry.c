@@ -26,6 +26,115 @@ static int _scene_textured_mesh_sampling_executes(TstContext* suite);
 
 
 
+/**
+ * Allocate a small valid triangle-list geometry for mesh replacement tests.
+ *
+ * @param vertex_count number of vertices
+ * @param index_count number of triangle-list indices, or zero for nonindexed geometry
+ * @return owned geometry, or NULL on allocation failure
+ */
+static DvzGeometry* _mesh_replacement_geometry(uint32_t vertex_count, uint32_t index_count)
+{
+    DvzGeometry* geometry = dvz_geometry(vertex_count, index_count);
+    if (geometry == NULL)
+        return NULL;
+
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        geometry->positions[i][0] = (double)i / (double)vertex_count;
+        geometry->positions[i][1] = (i % 2 == 0) ? -0.5 : 0.5;
+        geometry->positions[i][2] = 0.0;
+        geometry->normals[i][2] = 1.0;
+        geometry->colors[i] = (DvzColor){255, 255, 255, 255};
+    }
+    for (uint32_t i = 0; i < index_count; i++)
+        geometry->indices[i] = i % vertex_count;
+    return geometry;
+}
+
+
+
+/**
+ * Return whether a stream contains one draw with the requested geometry counts.
+ *
+ * @param stream emitted scene stream
+ * @param indexed whether the expected draw is indexed
+ * @param count expected vertex or index count
+ * @param instance_count expected instance count
+ * @return whether the draw was found
+ */
+static bool _stream_has_mesh_draw(
+    const DvzDrp2CommandStream* stream, bool indexed, uint32_t count, uint32_t instance_count)
+{
+    ANN(stream);
+
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (indexed && command->type == DVZ_DRP2_COMMAND_DRAW_INDEXED)
+        {
+            if (
+                command->u.draw_indexed.index_count == count &&
+                command->u.draw_indexed.instance_count == instance_count)
+            {
+                return true;
+            }
+        }
+        if (!indexed && command->type == DVZ_DRP2_COMMAND_DRAW)
+        {
+            if (
+                command->u.draw.vertex_count == count &&
+                command->u.draw.instance_count == instance_count)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
+static uint32_t _stream_destroy_buffer_count(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command->type == DVZ_DRP2_COMMAND_DESTROY_BUFFER)
+            count++;
+    }
+    return count;
+}
+
+
+
+/**
+ * Emit the current figure state with the standard GLSL scene fixture configuration.
+ *
+ * @param figure figure to emit
+ * @return owned command stream
+ */
+static DvzDrp2CommandStream* _emit_mesh_replacement_stream(DvzFigure* figure)
+{
+    ANN(figure);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig config = dvz_frame_plan_emit_config();
+    config.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &config);
+    if (dvz_diagnostic_report_count(&report) != 0)
+    {
+        _test_scene_stream_destroy(stream);
+        return NULL;
+    }
+    return stream;
+}
+
+
+
 static int _scene_primitive_emit_executes(
     TstContext* suite, DvzPrimitiveTopology topology, uint32_t vertex_count)
 {
@@ -624,6 +733,249 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(TstContext* suite, 
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+int test_scene_mesh_geometry_replacement_uses_logical_index_count(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    DvzGeometry* large = _mesh_replacement_geometry(9, 9);
+    DvzGeometry* small = _mesh_replacement_geometry(3, 3);
+    DvzGeometry* large_again = _mesh_replacement_geometry(12, 12);
+    ANN(large);
+    ANN(small);
+    ANN(large_again);
+
+    AT(dvz_mesh_set_geometry(mesh, large) == 0);
+    DvzDrp2CommandStream* stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 9, 1));
+    _test_scene_stream_destroy(stream);
+
+    AT(dvz_mesh_set_geometry(mesh, small) == 0);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 3, 1));
+    _test_scene_stream_destroy(stream);
+
+    DvzSceneBuffer* index_buffer = _visual_family_state(mesh)->buffer;
+    ANN(index_buffer);
+    uint64_t retained_capacity = index_buffer->capacity;
+    AT(dvz_scene_buffer_set_data(index_buffer, NULL, 0) == DVZ_OK);
+    AT(index_buffer->capacity == retained_capacity);
+    stream = _emit_mesh_replacement_stream(figure);
+    AT(stream == NULL);
+    AT(dvz_scene_buffer_set_data(index_buffer, small->indices, 3 * sizeof(DvzIndex)) == DVZ_OK);
+
+    AT(dvz_mesh_set_geometry(mesh, large_again) == 0);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 12, 1));
+    _test_scene_stream_destroy(stream);
+
+    dvz_geometry_destroy(large);
+    dvz_geometry_destroy(small);
+    dvz_geometry_destroy(large_again);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_mesh_geometry_replacement_switches_indexing(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    DvzGeometry* indexed = _mesh_replacement_geometry(3, 3);
+    DvzGeometry* nonindexed = _mesh_replacement_geometry(6, 0);
+    DvzGeometry* indexed_again = _mesh_replacement_geometry(4, 6);
+    ANN(indexed);
+    ANN(nonindexed);
+    ANN(indexed_again);
+
+    AT(dvz_mesh_set_geometry(mesh, indexed) == 0);
+    DvzSceneBuffer* first_index_buffer = _visual_family_state(mesh)->buffer;
+    ANN(first_index_buffer);
+    DvzId first_index_id = first_index_buffer->id;
+    DvzDrp2CommandStream* stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 3, 1));
+    _test_scene_stream_destroy(stream);
+
+    AT(dvz_mesh_set_geometry(mesh, nonindexed) == 0);
+    AT(scene->buffer_retirement_count == 1);
+    uint32_t emitter_count_before_failure = scene->emitter->resources.count;
+    DvzCapabilitySnapshot invalid_caps = dvz_capability_snapshot();
+    invalid_caps.max_texture_dimension_2d = 1;
+    DvzDiagnosticReport invalid_report;
+    dvz_diagnostic_report_init(&invalid_report);
+    DvzFramePlanEmitConfig invalid_config = dvz_frame_plan_emit_config();
+    invalid_config.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* failed_stream =
+        _test_scene_emit_stream_ex(figure, &invalid_caps, &invalid_report, &invalid_config);
+    AT(failed_stream == NULL);
+    AT(scene->buffer_retirement_count == 1);
+    AT(scene->emitter->resources.count == emitter_count_before_failure);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, false, 6, 1));
+    AT(_stream_destroy_buffer_count(stream) == 1);
+    AT(_visual_family_state(mesh)->buffer == NULL);
+    AT(scene->buffer_retirement_count == 0);
+    _test_scene_stream_destroy(stream);
+
+    AT(dvz_mesh_set_geometry(mesh, indexed_again) == 0);
+    AT(_visual_family_state(mesh)->buffer == first_index_buffer);
+    AT(_visual_family_state(mesh)->buffer->id != first_index_id);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 6, 1));
+    AT(_stream_destroy_buffer_count(stream) == 0);
+    _test_scene_stream_destroy(stream);
+
+    uint32_t live_resource_count = scene->emitter->resources.count;
+    for (uint32_t i = 0; i < 8; i++)
+    {
+        AT(dvz_mesh_set_geometry(mesh, nonindexed) == 0);
+        stream = _emit_mesh_replacement_stream(figure);
+        ANN(stream);
+        AT(_stream_destroy_buffer_count(stream) == 1);
+        _test_scene_stream_destroy(stream);
+        AT(scene->emitter->resources.count + 1 == live_resource_count);
+
+        AT(dvz_mesh_set_geometry(mesh, indexed_again) == 0);
+        stream = _emit_mesh_replacement_stream(figure);
+        ANN(stream);
+        AT(_stream_destroy_buffer_count(stream) == 0);
+        _test_scene_stream_destroy(stream);
+        AT(scene->emitter->resources.count == live_resource_count);
+    }
+
+    dvz_geometry_destroy(indexed);
+    dvz_geometry_destroy(nonindexed);
+    dvz_geometry_destroy(indexed_again);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_mesh_instance_count_shrink_uses_logical_extent(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+
+    vec3 positions[4] = {
+        {-0.5f, -0.5f, 0.0f},
+        {-0.5f, 0.5f, 0.0f},
+        {0.5f, -0.5f, 0.0f},
+        {0.5f, 0.5f, 0.0f},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    float transforms[3][16] = {
+        {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -0.5f, 0, 0, 1},
+        {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, +0.0f, 0, 0, 1},
+        {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, +0.5f, 0, 0, 1},
+    };
+
+    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
+                   .stride = sizeof(DvzIndex),
+               });
+    ANN(index_buffer);
+    AT(dvz_scene_buffer_set_data(index_buffer, indices, sizeof(indices)) == DVZ_OK);
+    AT(dvz_visual_set_data(mesh, "position", positions, 4) == 0);
+    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
+    AT(dvz_visual_set_data(mesh, "instance_transform", transforms, 3) == 0);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+    DvzDrp2CommandStream* stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 6, 3));
+    _test_scene_stream_destroy(stream);
+
+    AT(dvz_visual_set_data(mesh, "instance_transform", transforms, 1) == 0);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 6, 1));
+    _test_scene_stream_destroy(stream);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_mesh_geometry_replacement_failure_rolls_back(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    DvzGeometry* retained = _mesh_replacement_geometry(3, 3);
+    DvzGeometry* invalid = _mesh_replacement_geometry(4, 3);
+    ANN(retained);
+    ANN(invalid);
+    invalid->indices[2] = 4;
+
+    AT(dvz_mesh_set_geometry(mesh, retained) == 0);
+    AT(dvz_mesh_set_geometry(mesh, invalid) == -1);
+
+    DvzVisualDataView position = {0};
+    AT(dvz_visual_data(mesh, "position", &position) == 0);
+    AT(position.item_count == 3);
+    DvzDrp2CommandStream* stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 3, 1));
+    _test_scene_stream_destroy(stream);
+
+    dvz_geometry_destroy(retained);
+    dvz_geometry_destroy(invalid);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 
 int test_scene_mesh_instance_transform_emits_instanced_draw(TstContext* suite, const TstCase* item)

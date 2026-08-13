@@ -57,6 +57,10 @@ int test_scene_graph(TstSuite* suite)
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_primitive_line_strip_glsl_executes);
     TST_CASE(test_scene_primitive_triangle_list_emit_wgsl);
     TST_CASE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
+    TST_CASE(test_scene_mesh_geometry_replacement_uses_logical_index_count);
+    TST_CASE(test_scene_mesh_geometry_replacement_switches_indexing);
+    TST_CASE(test_scene_mesh_instance_count_shrink_uses_logical_extent);
+    TST_CASE(test_scene_mesh_geometry_replacement_failure_rolls_back);
     TST_CASE(test_scene_mesh_instance_transform_emits_instanced_draw);
     TST_CASE(test_scene_mesh_emits_depth_attachment);
     TST_CASE(test_scene_textured_mesh_emits_texture_pipeline);

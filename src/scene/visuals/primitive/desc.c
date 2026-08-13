@@ -67,8 +67,8 @@ bool _scene_primitive_visual_desc_from_metadata(
     {
         out->vbuf_ids[out->vbuf_count++] = instance_transform_id;
         out->has_instance_transform = true;
-        uint64_t transform_bytes = _scene_visual_desc_resource_size(emitter, instance_transform_id);
-        uint64_t instance_count = transform_bytes / (16 * sizeof(float));
+        uint64_t instance_count =
+            _resource_logical_item_count(&emitter->resources, instance_transform_id);
         if (instance_count == 0 || instance_count > UINT32_MAX)
         {
             if (error != NULL)

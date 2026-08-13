@@ -165,6 +165,20 @@ bool _scene_mesh_visual_after_attr_set(DvzVisual* visual, const char* attr_name,
 
 
 /**
+ * Set whether the retained mesh color payload is the generated default.
+ *
+ * @param visual the mesh visual
+ * @param is_default whether the current color payload is generated
+ */
+void _scene_mesh_visual_set_default_color(DvzVisual* visual, bool is_default)
+{
+    ANN(visual);
+    _visual_family_state(visual)->mesh_default_color = is_default;
+}
+
+
+
+/**
  * Apply stroke-family dense attribute side effects.
  *
  * @param visual the visual

@@ -17,7 +17,11 @@
 #include "_alloc.h"
 #include "_overflow.h"
 #include "_scene.h"
+#include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
+#include "domain/buffer_internal.h"
+#include "visuals/bindings_internal.h"
+#include "visuals/mesh/internal.h"
 
 #include <float.h>
 #include <math.h>
@@ -200,6 +204,7 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
     vec3* positions = (vec3*)dvz_calloc(vertex_count, sizeof(vec3));
     vec3* normals = NULL;
     vec2* texcoords = NULL;
+    DvzColor* default_colors = NULL;
     if (positions == NULL)
         return -1;
 
@@ -222,16 +227,24 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
         _mesh_geometry_copy_dvec2(texcoords, &geometry->texcoords[0][0], vertex_count);
     }
 
+    const DvzColor* colors = geometry->colors;
+    if (colors == NULL)
+    {
+        default_colors = (DvzColor*)dvz_malloc((DvzSize)vertex_count * sizeof(DvzColor));
+        if (default_colors == NULL)
+            goto cleanup;
+        dvz_memset(
+            default_colors, (DvzSize)vertex_count * sizeof(DvzColor), 255,
+            (DvzSize)vertex_count * sizeof(DvzColor));
+        colors = default_colors;
+    }
+
     DvzVisualDataUpdate updates[4] = {
+        {.attr_name = "color", .data = colors, .item_count = vertex_count},
         {.attr_name = "position", .data = positions, .item_count = vertex_count},
     };
-    uint32_t update_count = 1;
+    uint32_t update_count = 2;
 
-    if (geometry->colors != NULL)
-    {
-        updates[update_count++] = (DvzVisualDataUpdate){
-            .attr_name = "color", .data = geometry->colors, .item_count = vertex_count};
-    }
     if (normals != NULL)
     {
         updates[update_count++] = (DvzVisualDataUpdate){
@@ -243,13 +256,68 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
             .attr_name = "texcoords", .data = texcoords, .item_count = vertex_count};
     }
 
-    if (dvz_visual_set_data_many(visual, updates, update_count) != 0)
-        goto cleanup;
-    if (
-        geometry->index_count > 0 &&
-        dvz_visual_set_index_data(visual, geometry->indices, geometry->index_count) != 0)
+    DvzSceneBuffer* prepared_index = NULL;
+    void* prepared_index_data = NULL;
+    uint64_t prepared_index_capacity = 0;
+    bool prepared_index_is_new = false;
+    uint64_t index_byte_size = 0;
+    if (geometry->index_count > 0)
     {
+        if (_dvz_mul_u64_overflows(geometry->index_count, sizeof(DvzIndex), &index_byte_size))
+            goto cleanup;
+        const DvzVisualBinding* binding =
+            _visual_binding_const(visual, DVZ_VISUAL_BINDING_BUFFER);
+        DvzSceneBuffer* current = binding != NULL ? (DvzSceneBuffer*)binding->resource : NULL;
+        if (
+            current != NULL && binding != NULL && binding->owned &&
+            current->desc.usage == DVZ_SCENE_BUFFER_USAGE_INDEX &&
+            current->desc.stride == sizeof(DvzIndex))
+        {
+            prepared_index = current;
+        }
+        else
+        {
+            DvzSceneBufferDesc desc = dvz_scene_buffer_desc();
+            desc.usage = DVZ_SCENE_BUFFER_USAGE_INDEX;
+            desc.stride = sizeof(DvzIndex);
+            prepared_index = dvz_scene_buffer(visual->scene, &desc);
+            if (prepared_index == NULL)
+                goto cleanup;
+            prepared_index_is_new = true;
+        }
+        if (
+            _scene_buffer_prepare_data(
+                prepared_index, geometry->indices, index_byte_size, &prepared_index_data,
+                &prepared_index_capacity) != DVZ_OK)
+        {
+            if (prepared_index_is_new)
+                _scene_buffer_reset(prepared_index);
+            goto cleanup;
+        }
+    }
+
+    if (dvz_visual_set_data_many(visual, updates, update_count) != 0)
+    {
+        dvz_free(prepared_index_data);
+        if (prepared_index_is_new)
+            _scene_buffer_reset(prepared_index);
         goto cleanup;
+    }
+    _scene_mesh_visual_set_default_color(visual, geometry->colors == NULL);
+
+    if (prepared_index != NULL)
+    {
+        if (prepared_index_is_new)
+            _scene_release_visual_buffer(visual);
+        _scene_buffer_commit_data(
+            prepared_index, prepared_index_data, index_byte_size, prepared_index_capacity);
+        _visual_binding_assign(
+            visual, DVZ_VISUAL_BINDING_BUFFER, "index", prepared_index, true);
+        _scene_notify_visual_changed(visual);
+    }
+    else
+    {
+        _scene_release_visual_buffer(visual);
     }
 
     out = 0;
@@ -258,5 +326,6 @@ cleanup:
     dvz_free(positions);
     dvz_free(normals);
     dvz_free(texcoords);
+    dvz_free(default_colors);
     return out;
 }

@@ -459,6 +459,18 @@ int test_scene_primitive_triangle_list_emit_wgsl(TstContext* suite, const TstCas
 int test_scene_mesh_indexed_default_color_emits_draw_indexed(
     TstContext* suite, const TstCase* item);
 
+int test_scene_mesh_geometry_replacement_uses_logical_index_count(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_mesh_geometry_replacement_switches_indexing(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_mesh_instance_count_shrink_uses_logical_extent(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_mesh_geometry_replacement_failure_rolls_back(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_mesh_instance_transform_emits_instanced_draw(
     TstContext* suite, const TstCase* item);
 
