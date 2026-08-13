@@ -107,9 +107,13 @@ int test_device_2(TstContext* suite, const TstCase* tstitem)
     // Queue requests.
     DvzQueueCaps qc = {0};
     AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
+    DvzQueues queues = {0};
+    dvz_queues(&qc, &queues);
+    AT(queues.queue_count > 0);
+    const DvzQueue* main_queue = &queues.queues[DVZ_QUEUE_MAIN];
+    AT(main_queue->is_set);
     dvz_device_config_set_gpu_index(&dcfg, gpu_index);
-    dvz_device_config_request_queue(&dcfg, 0, 1);
-    dvz_device_config_request_queue(&dcfg, 1, 1);
+    dvz_device_config_request_queue(&dcfg, main_queue->family_idx, 1);
 
     // Features.
     VkPhysicalDeviceFeatures features10 = {0};
