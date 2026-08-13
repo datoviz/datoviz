@@ -23,6 +23,8 @@ Filenames beginning with `_` are legal in this codebase. Keep the existing `_dvz
 convention, but avoid introducing reserved identifiers such as double-underscore names or
 underscore-capital names.
 
+Windows portability: never use the bare identifier `small` in C or C++ code that may include Windows SDK headers. The Windows SDK's `rpcndr.h` defines `small` as `char`; use a descriptive identifier such as `small_geometry`.
+
 
 ## Function Documentation
 

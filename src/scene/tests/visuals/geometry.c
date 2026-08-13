@@ -816,10 +816,10 @@ int test_scene_mesh_geometry_replacement_uses_logical_index_count(
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     DvzGeometry* large = _mesh_replacement_geometry(9, 9);
-    DvzGeometry* small = _mesh_replacement_geometry(3, 3);
+    DvzGeometry* small_geometry = _mesh_replacement_geometry(3, 3);
     DvzGeometry* large_again = _mesh_replacement_geometry(12, 12);
     ANN(large);
-    ANN(small);
+    ANN(small_geometry);
     ANN(large_again);
 
     AT(dvz_mesh_set_geometry(mesh, large) == 0);
@@ -828,7 +828,7 @@ int test_scene_mesh_geometry_replacement_uses_logical_index_count(
     AT(_stream_has_mesh_draw(stream, true, 9, 1));
     _test_scene_stream_destroy(stream);
 
-    AT(dvz_mesh_set_geometry(mesh, small) == 0);
+    AT(dvz_mesh_set_geometry(mesh, small_geometry) == 0);
     stream = _emit_mesh_replacement_stream(figure);
     ANN(stream);
     AT(_stream_has_mesh_draw(stream, true, 3, 1));
@@ -841,7 +841,8 @@ int test_scene_mesh_geometry_replacement_uses_logical_index_count(
     AT(index_buffer->capacity == retained_capacity);
     stream = _emit_mesh_replacement_stream(figure);
     AT(stream == NULL);
-    AT(dvz_scene_buffer_set_data(index_buffer, small->indices, 3 * sizeof(DvzIndex)) == DVZ_OK);
+    AT(dvz_scene_buffer_set_data(
+           index_buffer, small_geometry->indices, 3 * sizeof(DvzIndex)) == DVZ_OK);
 
     AT(dvz_mesh_set_geometry(mesh, large_again) == 0);
     stream = _emit_mesh_replacement_stream(figure);
@@ -850,7 +851,7 @@ int test_scene_mesh_geometry_replacement_uses_logical_index_count(
     _test_scene_stream_destroy(stream);
 
     dvz_geometry_destroy(large);
-    dvz_geometry_destroy(small);
+    dvz_geometry_destroy(small_geometry);
     dvz_geometry_destroy(large_again);
     dvz_scene_destroy(scene);
     return 0;
