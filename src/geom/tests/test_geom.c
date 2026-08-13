@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "test_geom.h"
+#include "_alloc.h"
 #include "_assertions.h"
 #include "datoviz/geom.h"
 #include "testing.h"
@@ -297,6 +298,12 @@ int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
     AC(grid->grid_col_basis[0], 2.0, EPS);
     AC(grid->grid_height_axis[2], 1.0, EPS);
     AC(grid->grid_height_scale, 2.0, EPS);
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        AC(grid->normals[i][0], 0.0, EPS);
+        AC(grid->normals[i][1], 0.0, EPS);
+        AC(grid->normals[i][2], 1.0, EPS);
+    }
 
     double updated[4] = {0.0, 1.0, 2.0, 3.0};
     AT(dvz_geometry_surface_grid_update_heights(grid, updated, 4) == 0);
@@ -309,6 +316,13 @@ int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
     AC(grid->positions[3][0], 12.0, EPS);
     AC(grid->positions[3][1], 23.0, EPS);
     AC(grid->positions[3][2], 36.0, EPS);
+    const double normal_length = sqrt(136.0);
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        AC(grid->normals[i][0], -6.0 / normal_length, EPS);
+        AC(grid->normals[i][1], -8.0 / normal_length, EPS);
+        AC(grid->normals[i][2], +6.0 / normal_length, EPS);
+    }
 
     AT(dvz_geometry_surface_grid_update_heights(grid, updated, 3) == -1);
     DvzGeometry* plane = dvz_geometry_plane(NULL);
@@ -316,6 +330,73 @@ int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem)
     AT(dvz_geometry_surface_grid_update_heights(plane, updated, 4) == -1);
 
     dvz_geometry_destroy(plane);
+    dvz_geometry_destroy(grid);
+    return 0;
+}
+
+
+
+int test_geometry_surface_grid_normals_reference(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+
+    enum
+    {
+        ROWS = 5,
+        COLS = 6,
+        COUNT = ROWS * COLS,
+    };
+    double heights[COUNT] = {0};
+    for (uint32_t row = 0; row < ROWS; row++)
+    {
+        for (uint32_t col = 0; col < COLS; col++)
+            heights[row * COLS + col] = 0.08 * sin(0.4 * col) + 0.05 * cos(0.3 * row);
+    }
+
+    DvzGeometrySurfaceGridDesc desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),
+        .rows = ROWS,
+        .cols = COLS,
+        .heights = heights,
+        .col_basis = {1.0, 0.2, 0.1},
+        .row_basis = {0.3, 1.0, -0.1},
+        .height_axis = {0.1, -0.2, 1.0},
+        .height_scale = 1.4,
+    };
+    DvzGeometry* grid = dvz_geometry_surface_grid(&desc);
+    ANN(grid);
+    dvec3 reference[COUNT] = {0};
+    dvz_memcpy(reference, sizeof(reference), grid->normals, sizeof(reference));
+
+    AT(dvz_geometry_surface_grid_update_heights(grid, heights, COUNT) == DVZ_OK);
+    for (uint32_t i = 0; i < COUNT; i++)
+    {
+        const double dot = reference[i][0] * grid->normals[i][0] +
+                           reference[i][1] * grid->normals[i][1] +
+                           reference[i][2] * grid->normals[i][2];
+        AT(dot > 0.995);
+    }
+    dvz_geometry_destroy(grid);
+
+    double flat[4] = {0};
+    desc = (DvzGeometrySurfaceGridDesc){
+        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySurfaceGridDesc),
+        .rows = 2,
+        .cols = 2,
+        .heights = flat,
+        .col_basis = {1.0, 0.0, 0.0},
+        .row_basis = {1.0, 0.0, 0.0},
+    };
+    grid = dvz_geometry_surface_grid(&desc);
+    ANN(grid);
+    AT(dvz_geometry_surface_grid_update_heights(grid, flat, 4) == DVZ_OK);
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        AC(grid->normals[i][0], 0.0, EPS);
+        AC(grid->normals[i][1], 0.0, EPS);
+        AC(grid->normals[i][2], 1.0, EPS);
+    }
     dvz_geometry_destroy(grid);
     return 0;
 }
@@ -1033,6 +1114,7 @@ int test_geom(TstSuite* suite)
     TST_CASE(test_geometry_plane);
     TST_CASE(test_geometry_surface_grid);
     TST_CASE(test_geometry_surface_grid_update);
+    TST_CASE(test_geometry_surface_grid_normals_reference);
     TST_CASE(test_geometry_sphere);
     TST_CASE(test_geometry_builtin_shapes);
     TST_CASE(test_geometry_count_overflow);

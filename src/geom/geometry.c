@@ -868,6 +868,65 @@ static void _geom_surface_grid_update_position(
 
 
 
+/**
+ * Compute finite-difference normals for a retained structured surface grid.
+ *
+ * Column and row tangents use centered differences in the interior and one-sided differences at
+ * boundaries. Their cross product follows the grid's indexed-triangle orientation. A locally
+ * degenerate basis uses the generic geometry fallback normal.
+ *
+ * @param geometry surface-grid geometry with updated positions
+ * @return DVZ_OK on success, DVZ_ERROR on invalid grid provenance
+ */
+static DvzResult _geom_surface_grid_compute_normals(DvzGeometry* geometry)
+{
+    ANN(geometry);
+    if (
+        geometry->positions == NULL || geometry->normals == NULL || geometry->grid_rows < 2 ||
+        geometry->grid_cols < 2)
+    {
+        return DVZ_ERROR;
+    }
+
+    const uint32_t rows = geometry->grid_rows;
+    const uint32_t cols = geometry->grid_cols;
+    for (uint32_t row = 0; row < rows; row++)
+    {
+        const uint32_t row0 = row > 0 ? row - 1 : row;
+        const uint32_t row1 = row + 1 < rows ? row + 1 : row;
+        for (uint32_t col = 0; col < cols; col++)
+        {
+            const uint32_t col0 = col > 0 ? col - 1 : col;
+            const uint32_t col1 = col + 1 < cols ? col + 1 : col;
+            const double* p_col0 = geometry->positions[row * cols + col0];
+            const double* p_col1 = geometry->positions[row * cols + col1];
+            const double* p_row0 = geometry->positions[row0 * cols + col];
+            const double* p_row1 = geometry->positions[row1 * cols + col];
+            const dvec3 col_tangent = {
+                p_col1[0] - p_col0[0],
+                p_col1[1] - p_col0[1],
+                p_col1[2] - p_col0[2],
+            };
+            const dvec3 row_tangent = {
+                p_row1[0] - p_row0[0],
+                p_row1[1] - p_row0[1],
+                p_row1[2] - p_row0[2],
+            };
+            dvec3* normal = &geometry->normals[row * cols + col];
+            _geom_dvec3_cross(col_tangent, row_tangent, *normal);
+            if (!_geom_dvec3_normalize(*normal))
+            {
+                (*normal)[0] = 0.0;
+                (*normal)[1] = 0.0;
+                (*normal)[2] = 1.0;
+            }
+        }
+    }
+    return DVZ_OK;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -1955,7 +2014,7 @@ DvzResult dvz_geometry_surface_grid_update_heights(
         }
     }
 
-    return dvz_geometry_compute_normals(geometry);
+    return _geom_surface_grid_compute_normals(geometry);
 }
 
 

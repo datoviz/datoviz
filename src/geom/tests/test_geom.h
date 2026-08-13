@@ -35,6 +35,7 @@ int test_geometry_plane(TstContext* suite, const TstCase* tstitem);
 int test_geometry_surface_grid(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_surface_grid_update(TstContext* suite, const TstCase* tstitem);
+int test_geometry_surface_grid_normals_reference(TstContext* suite, const TstCase* tstitem);
 
 int test_geometry_sphere(TstContext* suite, const TstCase* tstitem);
 

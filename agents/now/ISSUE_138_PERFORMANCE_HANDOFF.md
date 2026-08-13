@@ -48,6 +48,12 @@ On 2026-08-13, the `surface` lab mode compared committed baseline `c3f041919` wi
 
 This evidence supports retaining exact byte-identical index deduplication in `dvz_mesh_set_geometry()`. Equal-length changed index data remains a required upload and is covered separately by deterministic tests.
 
+### Local regular-grid normal evidence
+
+The same host and release configuration compared the retained-index baseline using generic triangle accumulation with the finite-difference structured-grid kernel. Each side used five samples of 20 warm-up plus 200 measured frames. The baseline median spent 5.0956 ms updating heights and 121.4057 ms generating generic normals, or 126.5013 ms combined; the structured kernel's combined median was 54.4380 ms, a 57.0% reduction. Mesh conversion, command shape, and upload bytes remain unchanged by this kernel.
+
+Deterministic coverage compares orientation with the generic reference at dot product greater than 0.995 on a smooth non-orthogonal grid, exercises centered and one-sided boundary differences, and verifies the established positive-Z fallback for a degenerate basis. This evidence supports retaining the internal kernel only for geometry carrying valid surface-grid provenance; generic geometry continues to use triangle accumulation.
+
 ## Checkpoint 2: Optional RC4 Foundations
 
 Sampler addressing and bounded sparse-region tracking may land only as the non-blocking generic sampled-field work already authorized in the release plan. These foundations do not by themselves make the 3D surface GPU-driven and must not delay required RC4 course work.

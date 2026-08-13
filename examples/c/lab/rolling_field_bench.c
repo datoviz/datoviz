@@ -9,9 +9,10 @@
  * Build: just example-c lab/rolling_field_bench
  * Run:   ./build/examples/c/lab/rolling_field_bench --mode 2d --warmup 16 --frames 240
  *
- * Modes are a one-row 2D field (1d), a 2D field, and a 3D field. The benchmark intentionally
- * emits FramePlan upload nodes but does not submit them: it measures retained mutation, upload
- * packing, and command shape independently from presentation and GPU execution.
+ * Modes are a one-row 2D field (1d), a 2D field, a 3D field, and a retained surface grid. The
+ * benchmark intentionally emits FramePlan upload nodes but does not submit them: it measures
+ * retained mutation, upload packing, and command shape independently from presentation and GPU
+ * execution.
  */
 
 #include <inttypes.h>
@@ -55,8 +56,6 @@ typedef struct BenchStats
     uint64_t acquisition_ns;
     uint64_t mutation_ns;
     uint64_t emit_ns;
-    uint64_t normals_ns;
-    uint64_t height_mutation_ns;
     uint64_t mesh_commit_ns;
     uint64_t upload_bytes;
     uint64_t upload_commands;
@@ -170,26 +169,6 @@ static void _count_stream_writes(const DvzDrp2CommandStream* stream, BenchStats*
 }
 
 
-static void _surface_positions(DvzGeometry* geometry, const double* heights)
-{
-    for (uint32_t row = 0; row < geometry->grid_rows; row++)
-    {
-        for (uint32_t col = 0; col < geometry->grid_cols; col++)
-        {
-            const uint32_t index = row * geometry->grid_cols + col;
-            const double height = heights[index] * geometry->grid_height_scale;
-            for (uint32_t axis = 0; axis < 3; axis++)
-            {
-                geometry->positions[index][axis] = geometry->grid_origin[axis] +
-                                                   (double)col * geometry->grid_col_basis[axis] +
-                                                   (double)row * geometry->grid_row_basis[axis] +
-                                                   height * geometry->grid_height_axis[axis];
-            }
-        }
-    }
-}
-
-
 static int _run_surface(const BenchConfig* cfg)
 {
     const uint32_t count = SURFACE_ROWS * SURFACE_COLS;
@@ -236,13 +215,9 @@ static int _run_surface(const BenchConfig* cfg)
         if (timed)
             stats.acquisition_ns += _elapsed(start);
         start = dvz_time_monotonic_ns();
-        _surface_positions(geometry, heights);
+        ok = dvz_geometry_surface_grid_update_heights(geometry, heights, count) == DVZ_OK;
         if (timed)
-            stats.height_mutation_ns += _elapsed(start);
-        start = dvz_time_monotonic_ns();
-        ok = dvz_geometry_compute_normals(geometry) == DVZ_OK;
-        if (timed)
-            stats.normals_ns += _elapsed(start);
+            stats.mutation_ns += _elapsed(start);
         start = dvz_time_monotonic_ns();
         ok = ok && dvz_mesh_set_geometry(mesh, geometry) == DVZ_OK;
         if (timed)
@@ -266,14 +241,14 @@ static int _run_surface(const BenchConfig* cfg)
     printf(
         "rolling_field_bench: mode=surface rows=%u cols=%u warmup=%u frames=%u "
         "cadence=%u active_frames=%" PRIu64 " parked_frames=%" PRIu64 " "
-        "acquisition_ms=%.4f height_mutation_ms=%.4f normals_ms=%.4f "
+        "acquisition_ms=%.4f height_normal_ms=%.4f "
         "mesh_commit_ms=%.4f semantic_emit_ms=%.4f buffer_write_commands=%" PRIu64 " "
         "buffer_write_bytes=%" PRIu64 " index_write_commands=%" PRIu64 " "
         "index_write_bytes=%" PRIu64 "\n",
         SURFACE_ROWS, SURFACE_COLS, cfg->warmup, cfg->frames, cfg->cadence, active,
         stats.parked_frames, (double)stats.acquisition_ns * 1e-6,
-        (double)stats.height_mutation_ns * 1e-6, (double)stats.normals_ns * 1e-6,
-        (double)stats.mesh_commit_ns * 1e-6, (double)stats.emit_ns * 1e-6,
+        (double)stats.mutation_ns * 1e-6, (double)stats.mesh_commit_ns * 1e-6,
+        (double)stats.emit_ns * 1e-6,
         stats.upload_commands, stats.upload_bytes, stats.index_write_commands,
         stats.index_write_bytes);
     dvz_geometry_destroy(geometry);
