@@ -295,8 +295,6 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(start scatter start/scatter.c)
 
     dvz_add_example(lab axis_lattice_smoke lab/axis_lattice_smoke.c)
-    dvz_add_example(lab rolling_field_bench lab/rolling_field_bench.c)
-    target_include_directories(example_c_lab_rolling_field_bench PRIVATE ${PROJECT_SOURCE_DIR}/src/drp2)
     dvz_add_example(lab point_stress lab/point_stress.c)
     dvz_add_example(lab protein_viewer lab/protein_viewer.c)
     dvz_add_example(lab record_dvzr lab/record_dvzr.c)
@@ -305,6 +303,9 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(lab text_msdf_diagnostics lab/text_msdf_diagnostics.c)
     dvz_add_example(lab text_msdf_lab lab/text_msdf_lab.c)
 endif()
+
+dvz_add_example(lab rolling_field_bench lab/rolling_field_bench.c)
+target_include_directories(example_c_lab_rolling_field_bench PRIVATE ${PROJECT_SOURCE_DIR}/src/drp2)
 
 if(DVZ_HAS_CUDA AND CMAKE_SYSTEM_NAME STREQUAL "Linux" AND TARGET datoviz_vklite)
     dvz_add_example(advanced cuda_external_buffer advanced/cuda_external_buffer.c)
