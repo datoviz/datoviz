@@ -29,6 +29,7 @@
 #include "core/_scene_resource_key.h"
 #include "buffer_internal.h"
 #include "field_internal.h"
+#include "frame_plan/emit.h"
 #include "visuals/bindings_internal.h"
 #include "_visual_internal.h"
 
@@ -99,6 +100,68 @@ void _scene_buffer_reset(DvzSceneBuffer* buffer)
 }
 
 
+
+/**
+ * Allocate and copy a complete scene-buffer payload without mutating the buffer.
+ *
+ * @param buffer the target buffer
+ * @param data the packed payload
+ * @param byte_size the logical payload size
+ * @param out_data output prepared allocation
+ * @param out_capacity output allocation capacity
+ * @return DVZ_OK on success, DVZ_ERROR on error
+ */
+DvzResult _scene_buffer_prepare_data(
+    const DvzSceneBuffer* buffer, const void* data, uint64_t byte_size, void** out_data,
+    uint64_t* out_capacity)
+{
+    ANN(buffer);
+    ANN(out_data);
+    ANN(out_capacity);
+    if (byte_size == 0 || data == NULL || byte_size % buffer->desc.stride != 0)
+        return DVZ_ERROR;
+
+    uint64_t capacity = buffer->capacity > byte_size ? buffer->capacity : byte_size;
+    void* prepared = dvz_malloc(capacity);
+    if (prepared == NULL)
+        return DVZ_ERROR;
+    dvz_memcpy(prepared, capacity, data, byte_size);
+    *out_data = prepared;
+    *out_capacity = capacity;
+    return DVZ_OK;
+}
+
+
+
+/**
+ * Commit a payload prepared by _scene_buffer_prepare_data().
+ *
+ * @param buffer the target buffer
+ * @param data the prepared allocation
+ * @param byte_size the logical payload size
+ * @param capacity the allocation capacity
+ */
+void _scene_buffer_commit_data(
+    DvzSceneBuffer* buffer, void* data, uint64_t byte_size, uint64_t capacity)
+{
+    ANN(buffer);
+    ANN(data);
+    ASSERT(byte_size > 0 && capacity >= byte_size);
+    bool extent_changed = buffer->desc.byte_size != byte_size;
+    dvz_free(buffer->data);
+    buffer->data = data;
+    buffer->capacity = capacity;
+    buffer->desc.byte_size = byte_size;
+    buffer->content_revision =
+        buffer->content_revision == UINT64_MAX ? 1 : buffer->content_revision + 1;
+    if (extent_changed)
+        buffer->extent_revision =
+            buffer->extent_revision == UINT64_MAX ? 1 : buffer->extent_revision + 1;
+    buffer->dirty = true;
+    _scene_notify_buffer_changed(buffer);
+}
+
+
 /**
  * Allocate one free scene-buffer slot from a scene.
  *
@@ -145,18 +208,16 @@ DvzSceneBuffer* dvz_scene_buffer(DvzScene* scene, const DvzSceneBufferDesc* desc
         log_error("scene buffer stride must be non-zero");
         return NULL;
     }
-    if (scene->buffer_count >= DVZ_SCENE_MAX_BUFFERS)
-    {
-        log_error("maximum scene buffer count reached");
-        return NULL;
-    }
     DvzSceneBuffer* buffer = _scene_alloc_buffer_slot(scene);
     if (buffer == NULL)
     {
         log_error("maximum scene buffer count reached");
         return NULL;
     }
+    buffer->id = _scene_next_id(scene);
     buffer->desc = *desc;
+    buffer->capacity = desc->byte_size;
+    buffer->lifecycle_revision = 1;
     return buffer;
 }
 
@@ -207,6 +268,35 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
                 }
             }
         }
+        for (uint32_t i = 0; i < scene->compute_count; i++)
+        {
+            DvzSceneCompute* compute = &scene->computes[i];
+            if (compute->scene != scene)
+                continue;
+            for (uint32_t bi = 0; bi < compute->binding_count; bi++)
+            {
+                if (compute->bindings[bi].active && compute->bindings[bi].buffer == buffer)
+                {
+                    compute->bindings[bi].active = false;
+                    compute->bindings[bi].buffer = NULL;
+                }
+            }
+        }
+    }
+    if (scene != NULL)
+    {
+        char key[DVZ_SCENE_LABEL_SIZE];
+        bool realized = _scene_resource_key_buffer(buffer->id, key, sizeof(key)) &&
+                        scene->emitter != NULL &&
+                        _resource_lookup_id(&scene->emitter->resources, key) != 0;
+        if (realized)
+        {
+            ASSERT(scene->buffer_retirement_count < DVZ_SCENE_MAX_BUFFER_RETIREMENTS);
+            DvzSceneBufferRetirement* retirement =
+                &scene->buffer_retirements[scene->buffer_retirement_count++];
+            retirement->id = buffer->id;
+            retirement->lifecycle_revision = buffer->lifecycle_revision + 1;
+        }
     }
     _scene_buffer_reset(buffer);
 }
@@ -224,12 +314,13 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
 DvzResult dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, uint64_t byte_size)
 {
     ANN(buffer);
-    ANN(data);
+    if (buffer == NULL || buffer->scene == NULL)
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(buffer->scene, "replace scene buffer data"))
         return DVZ_ERROR;
-    if (byte_size == 0)
+    if (byte_size > 0 && data == NULL)
     {
-        log_error("scene buffer payload size must be non-zero");
+        log_error("scene buffer payload data must be non-NULL for a non-zero size");
         return DVZ_ERROR;
     }
     if (byte_size % buffer->desc.stride != 0)
@@ -239,22 +330,25 @@ DvzResult dvz_scene_buffer_set_data(DvzSceneBuffer* buffer, const void* data, ui
             buffer->desc.stride);
         return DVZ_ERROR;
     }
-    if (buffer->data != NULL && buffer->desc.byte_size != byte_size)
+    if (byte_size > 0 && (buffer->data == NULL || byte_size > buffer->capacity))
     {
-        dvz_free(buffer->data);
-        buffer->data = NULL;
-    }
-    if (buffer->data == NULL)
-    {
-        buffer->data = dvz_malloc(byte_size);
-        if (buffer->data == NULL)
+        uint64_t capacity = buffer->capacity > byte_size ? buffer->capacity : byte_size;
+        void* grown = dvz_realloc(buffer->data, capacity);
+        if (grown == NULL)
         {
-            log_error("scene buffer allocation failed for %" PRIu64 " bytes", byte_size);
+            log_error("scene buffer allocation failed for %" PRIu64 " bytes", capacity);
             return DVZ_ERROR;
         }
+        buffer->data = grown;
+        buffer->capacity = capacity;
     }
-    dvz_memcpy(buffer->data, byte_size, data, byte_size);
+    if (byte_size > 0)
+        dvz_memcpy(buffer->data, buffer->capacity, data, byte_size);
+    bool extent_changed = buffer->desc.byte_size != byte_size;
     buffer->desc.byte_size = byte_size;
+    buffer->content_revision = buffer->content_revision == UINT64_MAX ? 1 : buffer->content_revision + 1;
+    if (extent_changed)
+        buffer->extent_revision = buffer->extent_revision == UINT64_MAX ? 1 : buffer->extent_revision + 1;
     buffer->dirty = true;
     _scene_notify_buffer_changed(buffer);
     return DVZ_OK;
@@ -293,10 +387,9 @@ bool dvz_scene_buffer_resource_key(const DvzSceneBuffer* buffer, char* out, size
     if (buffer == NULL || buffer->scene == NULL || out_size == 0)
         return false;
 
-    uint32_t idx = _scene_buffer_index(buffer->scene, buffer);
-    if (idx == UINT32_MAX)
+    if (_scene_buffer_index(buffer->scene, buffer) == UINT32_MAX)
         return false;
-    return _scene_resource_key_buffer(idx, out, out_size);
+    return _scene_resource_key_buffer(buffer->id, out, out_size);
 }
 
 
@@ -377,6 +470,16 @@ DvzResult dvz_visual_set_index_data(
     {
         log_error("visual index data byte size overflow for index_count=%u", index_count);
         return -1;
+    }
+
+    DvzVisualFamilyState* state = _visual_family_state(visual);
+    const DvzVisualBinding* current =
+        _visual_binding_const(visual, DVZ_VISUAL_BINDING_BUFFER);
+    if (state->buffer != NULL && current != NULL && current->owned &&
+        state->buffer->desc.usage == DVZ_SCENE_BUFFER_USAGE_INDEX &&
+        state->buffer->desc.stride == sizeof(DvzIndex))
+    {
+        return dvz_scene_buffer_set_data(state->buffer, indices, byte_size) == DVZ_OK ? 0 : -1;
     }
 
     DvzSceneBufferDesc desc = dvz_scene_buffer_desc();

@@ -429,7 +429,6 @@ int test_frame_plan_render_visual_metadata(TstContext* suite, const TstCase* ite
     upload_meta.visual_type = DVZ_VISUAL_TYPE_POINT;
     upload_meta.visual_index = 0;
     upload_meta.buffer_index = UINT32_MAX;
-
     AT(dvz_frame_plan_upload(plan, "opaque-position", 0, 3 * 3 * sizeof(float), ""));
     upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;
     AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
@@ -1152,6 +1151,7 @@ int test_frame_plan_draw_resource_validation_rejects_short_position(
     upload_meta.visual_type = DVZ_VISUAL_TYPE_POINT;
     upload_meta.visual_index = 0;
     upload_meta.buffer_index = UINT32_MAX;
+    upload_meta.has_logical_extent = true;
 
     AT(dvz_frame_plan_upload(plan, "point-position", 0, 3 * 3 * sizeof(float), ""));
     upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;

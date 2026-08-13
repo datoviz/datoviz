@@ -45,6 +45,7 @@
 #define DVZ_FRAME_PLAN_ASCII_ASCII_ONLY                  0x10u
 #define DVZ_FRAME_PLAN_ASCII_MAX_WIDTH_120               0x20u
 #define DVZ_SCENE_LABELS_LOOKUP_CAPACITY                 65u
+#define DVZ_FRAME_PLAN_MAX_RETIREMENTS                   128u
 
 
 
@@ -867,6 +868,7 @@ typedef struct DvzFrameGraphDependency
 typedef struct DvzFramePlanUploadMeta
 {
     bool has_metadata;
+    bool has_logical_extent;
     DvzFramePlanResourceKind kind;
     DvzFramePlanResourceRole role;
     DvzColorRole color_role;
@@ -875,6 +877,14 @@ typedef struct DvzFramePlanUploadMeta
     uint32_t buffer_index;
     uint64_t logical_item_count;
 } DvzFramePlanUploadMeta;
+
+
+typedef struct DvzFramePlanRetirement
+{
+    char resource_id[DVZ_SCENE_LABEL_SIZE];
+    DvzFramePlanResourceKind kind;
+    uint64_t lifecycle_revision;
+} DvzFramePlanRetirement;
 
 
 
@@ -1158,6 +1168,8 @@ struct DvzFramePlan
     uint32_t realization_capacity;
     uint32_t realization_count;
     DvzSceneGraphRealization* realizations;
+    uint32_t retirement_count;
+    DvzFramePlanRetirement retirements[DVZ_FRAME_PLAN_MAX_RETIREMENTS];
 };
 
 
@@ -1187,6 +1199,10 @@ bool dvz_frame_plan_render_visual_metadata(
 bool dvz_frame_plan_render_metadata_complete(const DvzFramePlan* plan);
 
 bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUploadMeta* metadata);
+
+bool _frame_plan_retire_resource(
+    DvzFramePlan* plan, const char* resource_id, DvzFramePlanResourceKind kind,
+    uint64_t lifecycle_revision);
 
 bool dvz_frame_plan_graph_resource(DvzFramePlan* plan, const DvzFrameGraphResource* resource);
 

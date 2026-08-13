@@ -1583,7 +1583,7 @@ int test_scene_mesh_typed_data_upload(TstContext* suite, const TstCase* item)
 
 
 /**
- * Check copied index data convenience upload and helper-owned buffer replacement.
+ * Check copied index data convenience upload and retained helper-owned buffer replacement.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -1613,13 +1613,22 @@ int test_scene_visual_index_data_upload(TstContext* suite, const TstCase* item)
     AT(stored[5] == 3);
 
     DvzSceneBuffer* old_buffer = _visual_family_state(mesh)->buffer;
+    DvzId old_id = old_buffer->id;
+    uint64_t old_capacity = old_buffer->capacity;
     DvzIndex updated[3] = {0, 2, 1};
     AT(dvz_visual_set_index_data(mesh, updated, 3) == 0);
-    AT(_visual_family_state(mesh)->buffer != old_buffer);
-    AT(old_buffer->scene == NULL);
+    AT(_visual_family_state(mesh)->buffer == old_buffer);
+    AT(old_buffer->id == old_id);
+    AT(old_buffer->capacity == old_capacity);
     AT(_visual_family_state(mesh)->buffer->desc.byte_size == sizeof(updated));
     stored = _visual_family_state(mesh)->buffer->data;
     AT(stored[1] == 2);
+
+    AT(dvz_scene_buffer_set_data(old_buffer, NULL, 0) == DVZ_OK);
+    AT(old_buffer->desc.byte_size == 0);
+    AT(old_buffer->capacity == old_capacity);
+    AT(old_buffer->id == old_id);
+    AT(dvz_scene_buffer_set_data(old_buffer, updated, sizeof(updated)) == DVZ_OK);
 
     AT(dvz_visual_set_index_data(primitive, indices, 3) == 0);
     AT(_visual_family_state(primitive)->buffer != NULL);

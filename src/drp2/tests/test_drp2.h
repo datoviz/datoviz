@@ -174,6 +174,8 @@ int test_drp2_runtime_rejects_use_after_destroy(TstContext* suite, const TstCase
 
 int test_drp2_runtime_rejects_destroy_buffer_referenced_by_work(
     TstContext* suite, const TstCase* item);
+int test_drp2_runtime_allows_destroy_buffer_after_submit(
+    TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_rejects_destroy_texture_referenced_by_work(
     TstContext* suite, const TstCase* item);

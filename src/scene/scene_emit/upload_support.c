@@ -86,29 +86,6 @@ DvzFramePlanResourceRole _scene_attr_frame_plan_role(const char* attr_name)
 
 
 /**
- * Return the scene-buffer index backing one visual attribute, when present.
- *
- * @param figure the parent figure
- * @param visual the visual
- * @param attr_name the attribute name
- * @return the scene-buffer index, or UINT32_MAX when absent
- */
-static uint32_t
-_scene_attr_buffer_index(const DvzFigure* figure, const DvzVisual* visual, const char* attr_name)
-{
-    ANN(figure);
-    ANN(figure->scene);
-    ANN(visual);
-    ANN(attr_name);
-    int attr_idx = _attr_index(visual, attr_name);
-    if (attr_idx < 0 || visual->attrs[attr_idx].buffer == NULL)
-        return UINT32_MAX;
-    return _scene_buffer_index(figure->scene, visual->attrs[attr_idx].buffer);
-}
-
-
-
-/**
  * Return whether one visual has CPU-side data for an attribute.
  *
  * @param visual the visual
@@ -160,9 +137,9 @@ bool _scene_attr_resource_key(
     ANN(visual);
     ANN(attr_name);
     ANN(out_key);
-    uint32_t buffer_idx = _scene_attr_buffer_index(figure, visual, attr_name);
-    if (buffer_idx != UINT32_MAX)
-        return _scene_resource_key_buffer(buffer_idx, out_key, out_size);
+    int attr_idx = _attr_index(visual, attr_name);
+    if (attr_idx >= 0 && visual->attrs[attr_idx].buffer != NULL)
+        return _scene_resource_key_buffer(visual->attrs[attr_idx].buffer->id, out_key, out_size);
     return _scene_visual_attr_resource_key(
         figure, visual, visual_index, attr_name, out_key, out_size);
 }
@@ -258,6 +235,7 @@ bool _scene_attach_upload_metadata(
     metadata.visual_index = visual_index;
     metadata.buffer_index = buffer_index;
     metadata.logical_item_count = logical_item_count;
+    metadata.has_logical_extent = true;
     return dvz_frame_plan_upload_metadata(plan, &metadata);
 }
 
@@ -592,7 +570,7 @@ void _scene_emit_visual_dense_attr_uploads(
                 continue;
             char buffer_resource_id[128];
             if (!_scene_resource_key_buffer(
-                    buffer_idx, buffer_resource_id, sizeof(buffer_resource_id)))
+                    attr->buffer->id, buffer_resource_id, sizeof(buffer_resource_id)))
                 continue;
             bool has_cpu_data = attr->buffer->data != NULL;
             if ((has_cpu_data && attr->buffer->dirty) || !has_cpu_data)
@@ -676,7 +654,9 @@ void _scene_emit_visual_index_buffer_upload(
         return;
 
     char buffer_resource_id[128];
-    if (!_scene_resource_key_buffer(buffer_idx, buffer_resource_id, sizeof(buffer_resource_id)))
+    if (!_scene_resource_key_buffer(
+            _visual_family_state(visual)->buffer->id, buffer_resource_id,
+            sizeof(buffer_resource_id)))
         return;
     dvz_frame_plan_upload_bytes(
         plan, buffer_resource_id, 0, _visual_family_state(visual)->buffer->desc.byte_size, "index",

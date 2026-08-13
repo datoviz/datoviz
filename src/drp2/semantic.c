@@ -600,6 +600,23 @@ static bool _pipeline_uses_shader(const Drp2Object* object, uint64_t shader_modu
 
 
 
+static bool _has_pending_work(const Drp2RuntimeState* state)
+{
+    ANN(state);
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        const Drp2Object* object = &state->objects[i];
+        if (object->destroyed)
+            continue;
+        if (object->kind == DRP2_OBJECT_ENCODER || object->kind == DRP2_OBJECT_RENDER_PASS ||
+            object->kind == DRP2_OBJECT_COMPUTE_PASS || object->kind == DRP2_OBJECT_COMMAND_BUFFER)
+            return true;
+    }
+    return false;
+}
+
+
+
 static DvzDrp2ValidationResult _validate_destroy_object(
     Drp2RuntimeState* state, uint64_t id, Drp2ObjectKind kind, uint32_t command_index)
 {
@@ -607,7 +624,9 @@ static DvzDrp2ValidationResult _validate_destroy_object(
     Drp2Object* object = _drp2_find_any_object(state, id);
     if (object == NULL || object->destroyed || object->kind != kind)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (object->referenced_by_work || object->open || object->submitted)
+    bool referenced_by_live_work = object->referenced_by_work &&
+                                   (kind != DRP2_OBJECT_BUFFER || _has_pending_work(state));
+    if (referenced_by_live_work || object->open || object->submitted)
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
     if (kind == DRP2_OBJECT_SHADER_VERTEX || kind == DRP2_OBJECT_SHADER_FRAGMENT ||

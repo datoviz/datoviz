@@ -1780,6 +1780,31 @@ int test_drp2_runtime_rejects_destroy_buffer_referenced_by_work(TstContext* suit
 
 
 
+int test_drp2_runtime_allows_destroy_buffer_after_submit(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(stream, 2, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 3, 1, 0, 2, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 3, 4));
+    AT(dvz_drp2_stream_queue_submit(stream, 4, 5));
+    AT(dvz_drp2_stream_destroy_buffer(stream, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_rejects_destroy_texture_referenced_by_work(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

@@ -119,8 +119,19 @@ static bool _draw_packet_resource_count(
     ANN(out_count);
 
     uint64_t logical_count = _resource_logical_item_count(state, id);
-    if (logical_count > 0)
+    if (_resource_has_logical_extent(state, id))
     {
+        if (logical_count == 0)
+        {
+            char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
+            dvz_snprintf(
+                message, sizeof(message),
+                "scene draw resource validation failed: visual=%s role=%s resource_id=%" PRIu64
+                " logical_item_count=0",
+                _scene_visual_desc_kind_name(kind), role, id);
+            _diagnostic(report, message);
+            return false;
+        }
         *out_count = logical_count;
         return true;
     }

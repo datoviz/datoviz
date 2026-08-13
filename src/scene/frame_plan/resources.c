@@ -145,3 +145,29 @@ bool dvz_frame_plan_upload_metadata(DvzFramePlan* plan, const DvzFramePlanUpload
     node->u.upload.metadata.has_metadata = true;
     return true;
 }
+
+
+
+/**
+ * Append one explicit persistent-resource retirement.
+ *
+ * @param plan the FramePlan
+ * @param resource_id the immutable semantic resource key
+ * @param kind the resource kind
+ * @param lifecycle_revision the retirement lifecycle revision
+ * @return whether the retirement was appended
+ */
+bool _frame_plan_retire_resource(
+    DvzFramePlan* plan, const char* resource_id, DvzFramePlanResourceKind kind,
+    uint64_t lifecycle_revision)
+{
+    if (plan == NULL || resource_id == NULL || resource_id[0] == '\0' ||
+        plan->retirement_count >= DVZ_FRAME_PLAN_MAX_RETIREMENTS)
+        return false;
+    DvzFramePlanRetirement* retirement = &plan->retirements[plan->retirement_count++];
+    _frame_plan_copy_label(
+        retirement->resource_id, sizeof(retirement->resource_id), resource_id);
+    retirement->kind = kind;
+    retirement->lifecycle_revision = lifecycle_revision;
+    return true;
+}

@@ -443,6 +443,36 @@ ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new
 
 
 /**
+ * Remove one persistent resource entry after committed retirement.
+ *
+ * @param state the converter state
+ * @param key the semantic resource key
+ * @return whether an entry was removed
+ */
+bool _resource_remove(ConverterState* state, const char* key)
+{
+    ANN(state);
+    ANN(key);
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        if (strcmp(state->resources[i].key, key) != 0)
+            continue;
+        if (i + 1 < state->count)
+        {
+            dvz_memmove(
+                &state->resources[i], (state->count - i) * sizeof(ResourceId),
+                &state->resources[i + 1], (state->count - i - 1) * sizeof(ResourceId));
+        }
+        state->count--;
+        dvz_memset(&state->resources[state->count], sizeof(ResourceId), 0, sizeof(ResourceId));
+        return true;
+    }
+    return false;
+}
+
+
+
+/**
  * Ensure a persisted resource has enough byte capacity.
  *
  * @param state the converter state
@@ -467,9 +497,6 @@ bool _resource_ensure_byte_size(
     if (required_size <= resource->byte_size)
         return true;
 
-    if (state->next_id == UINT64_MAX)
-        return false;
-    resource->id = state->next_id++;
     resource->byte_size = required_size;
     *needs_create = true;
     return true;
@@ -627,6 +654,23 @@ uint64_t _resource_logical_item_count(const ConverterState* state, uint64_t id)
         if (state->resources[i].id == id)
             return state->resources[i].logical_item_count;
     return 0;
+}
+
+
+
+/**
+ * Return whether a resource has an explicit logical extent.
+ *
+ * @param state the converter state
+ * @param id the DRP2 resource id
+ * @return whether logical_item_count is authoritative, including when it is zero
+ */
+bool _resource_has_logical_extent(const ConverterState* state, uint64_t id)
+{
+    for (uint32_t i = 0; i < state->count; i++)
+        if (state->resources[i].id == id)
+            return state->resources[i].has_logical_extent;
+    return false;
 }
 
 

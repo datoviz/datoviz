@@ -49,6 +49,7 @@
 #define DVZ_SCENE_MAX_GRAPHS     64
 #define DVZ_SCENE_MAX_FIELDS     128
 #define DVZ_SCENE_MAX_BUFFERS    128
+#define DVZ_SCENE_MAX_BUFFER_RETIREMENTS 128
 #define DVZ_SCENE_MAX_COMPUTES   64
 #define DVZ_SCENE_MAX_SCALES     64
 #define DVZ_SCENE_MAX_COLORMAPS  64
@@ -1421,10 +1422,22 @@ struct DvzSampledField
 struct DvzSceneBuffer
 {
     DvzScene* scene;
+    DvzId id;
     DvzSceneBufferDesc desc;
     void* data;
+    uint64_t capacity;
+    uint64_t content_revision;
+    uint64_t extent_revision;
+    uint64_t lifecycle_revision;
     bool dirty;
 };
+
+
+typedef struct DvzSceneBufferRetirement
+{
+    DvzId id;
+    uint64_t lifecycle_revision;
+} DvzSceneBufferRetirement;
 
 
 typedef struct DvzSceneComputeBinding
@@ -2141,6 +2154,9 @@ struct DvzScene
 
     uint32_t buffer_count;
     DvzSceneBuffer buffers[DVZ_SCENE_MAX_BUFFERS];
+
+    uint32_t buffer_retirement_count;
+    DvzSceneBufferRetirement buffer_retirements[DVZ_SCENE_MAX_BUFFER_RETIREMENTS];
 
     uint32_t compute_count;
     DvzSceneCompute computes[DVZ_SCENE_MAX_COMPUTES];

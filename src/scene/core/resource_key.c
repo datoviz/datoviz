@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <stdarg.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -99,14 +100,14 @@ bool _scene_resource_key_visual(uint32_t visual_index, char* out, size_t out_siz
 /**
  * Format a retained scene-buffer id.
  *
- * @param buffer_index the scene-local buffer index
+ * @param buffer_id the immutable scene-buffer identity
  * @param out the output key buffer
  * @param out_size the output buffer capacity
  * @return whether the key was written without truncation
  */
-bool _scene_resource_key_buffer(uint32_t buffer_index, char* out, size_t out_size)
+bool _scene_resource_key_buffer(DvzId buffer_id, char* out, size_t out_size)
 {
-    return _format_key(out, out_size, "b%u", buffer_index);
+    return _format_key(out, out_size, "b%" PRIu64, buffer_id);
 }
 
 
@@ -312,25 +313,25 @@ bool _scene_visual_texture_resource_key(
  * @param figure the figure being emitted
  * @param visual the visual to identify
  * @param visual_index the figure-local visual index
- * @param buffer_index the scene-local buffer index
+ * @param buffer_id the immutable scene-buffer identity
  * @param out the output key buffer
  * @param out_size the output buffer capacity
  * @return whether the key was written
  */
 bool _scene_visual_indexed_resource_key(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index,
-    uint32_t buffer_index, char* out, size_t out_size)
+    DvzId buffer_id, char* out, size_t out_size)
 {
     char visual_id[128] = {0};
     if (_scene_colorbar_visual_resource_key(figure, visual, visual_id, sizeof(visual_id)))
     {
-        return _format_key(out, out_size, "%s#index=b%u", visual_id, buffer_index);
+        return _format_key(out, out_size, "%s#index=b%" PRIu64, visual_id, buffer_id);
     }
     if (_scene_legend_visual_resource_key(figure, visual, visual_id, sizeof(visual_id)))
     {
-        return _format_key(out, out_size, "%s#index=b%u", visual_id, buffer_index);
+        return _format_key(out, out_size, "%s#index=b%" PRIu64, visual_id, buffer_id);
     }
-    return _scene_resource_key_visual_indexed(visual_index, buffer_index, out, out_size);
+    return _scene_resource_key_visual_indexed(visual_index, buffer_id, out, out_size);
 }
 
 
@@ -339,15 +340,15 @@ bool _scene_visual_indexed_resource_key(
  * Format an encoded visual id carrying a shared index-buffer id.
  *
  * @param visual_index the figure-local visual index
- * @param buffer_index the scene-local buffer index
+ * @param buffer_id the immutable scene-buffer identity
  * @param out the output key buffer
  * @param out_size the output buffer capacity
  * @return whether the key was written without truncation
  */
 bool _scene_resource_key_visual_indexed(
-    uint32_t visual_index, uint32_t buffer_index, char* out, size_t out_size)
+    uint32_t visual_index, DvzId buffer_id, char* out, size_t out_size)
 {
-    return _format_key(out, out_size, "v%u#index=b%u", visual_index, buffer_index);
+    return _format_key(out, out_size, "v%u#index=b%" PRIu64, visual_index, buffer_id);
 }
 
 

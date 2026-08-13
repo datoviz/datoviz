@@ -229,8 +229,17 @@ bool _scene_visual_frame_plan_metadata(
     if (buffer_index != UINT32_MAX)
     {
         metadata->buffer_index = buffer_index;
+        if (_visual_family_state(visual)->buffer->desc.stride > 0)
+        {
+            uint64_t index_count = _visual_family_state(visual)->buffer->desc.byte_size /
+                                   _visual_family_state(visual)->buffer->desc.stride;
+            if (index_count > UINT32_MAX)
+                return false;
+            metadata->index_count = (uint32_t)index_count;
+        }
         if (!_scene_resource_key_buffer(
-                buffer_index, metadata->index_id, sizeof(metadata->index_id)))
+                _visual_family_state(visual)->buffer->id, metadata->index_id,
+                sizeof(metadata->index_id)))
             return false;
     }
     if (stroke)

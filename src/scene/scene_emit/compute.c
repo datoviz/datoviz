@@ -33,13 +33,13 @@
 /*************************************************************************************************/
 
 static bool _scene_emit_compute_buffer_upload(
-    DvzFramePlan* plan, DvzSceneBuffer* buffer, uint32_t buffer_idx)
+    DvzFramePlan* plan, DvzSceneBuffer* buffer)
 {
     ANN(plan);
     ANN(buffer);
 
     char resource_id[DVZ_SCENE_LABEL_SIZE];
-    if (!_scene_resource_key_buffer(buffer_idx, resource_id, sizeof(resource_id)))
+    if (!_scene_resource_key_buffer(buffer->id, resource_id, sizeof(resource_id)))
         return false;
 
     bool has_cpu_data = buffer->data != NULL;
@@ -88,7 +88,7 @@ bool _scene_emit_compute_passes(
                 return false;
             if (!emitted_buffers[buffer_idx])
             {
-                if (!_scene_emit_compute_buffer_upload(plan, binding->buffer, buffer_idx))
+                if (!_scene_emit_compute_buffer_upload(plan, binding->buffer))
                     return false;
                 emitted_buffers[buffer_idx] = true;
             }
@@ -122,7 +122,7 @@ bool _scene_emit_compute_passes(
             dst->byte_offset = binding->byte_offset;
             dst->byte_size = binding->byte_size;
             if (!_scene_resource_key_buffer(
-                    buffer_idx, dst->resource_id, sizeof(dst->resource_id)))
+                    binding->buffer->id, dst->resource_id, sizeof(dst->resource_id)))
                 return false;
 
             if (binding->access == DVZ_SCENE_COMPUTE_ACCESS_READ)

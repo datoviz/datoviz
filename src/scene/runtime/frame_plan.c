@@ -27,6 +27,7 @@
 #include "datoviz/drp2.h"
 #include "datoviz/drp2/stream.h"
 #include "datoviz/scene.h"
+#include "core/frame_artifact_internal.h"
 #include "render_contract/render_contract.h"
 
 
@@ -51,6 +52,37 @@ static bool _runtime_emit_config_validate(
     {
         _diagnostic(report, "invalid DvzFramePlanEmitConfig ABI prologue");
         return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Emit explicit persistent-resource retirements and reclaim their converter entries.
+ *
+ * @param emitter the candidate emitter
+ * @param stream the destination stream
+ * @param plan the FramePlan
+ * @return whether all known retirements were emitted
+ */
+static bool _emitter_emit_retirements(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(plan);
+    for (uint32_t i = 0; i < plan->retirement_count; i++)
+    {
+        const DvzFramePlanRetirement* retirement = &plan->retirements[i];
+        ResourceId* resource = _resource_find(&emitter->resources, retirement->resource_id);
+        if (resource == NULL)
+            continue;
+        if (retirement->kind != DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER ||
+            !dvz_drp2_stream_destroy_buffer(stream, resource->id))
+            return false;
+        if (!_resource_remove(&emitter->resources, retirement->resource_id))
+            return false;
     }
     return true;
 }
@@ -174,6 +206,8 @@ static DvzDrp2CommandStream* _frame_plan_emitter_emit_drp2_candidate(
               : _emitter_emit_plain_renders(
                     emitter, stream, plan, fallback_vertex_buffer_ids, fallback_vertex_buffer_count,
                     readback_copy, cfg, report));
+    if (ok)
+        ok = _emitter_emit_retirements(emitter, stream, plan);
     if (!ok)
     {
         _diagnostic(report, "failed to emit runtime DRP2 stream");
@@ -224,6 +258,13 @@ DvzDrp2CommandStream* dvz_frame_plan_emitter_emit_drp2(
         _frame_plan_emitter_emit_drp2_candidate(&candidate, plan, caps, report, cfg);
     if (stream == NULL)
     {
+        _emitter_state_discard(&candidate);
+        return NULL;
+    }
+
+    if (!_scene_freeze_stream_payloads(stream))
+    {
+        dvz_drp2_stream_destroy(stream);
         _emitter_state_discard(&candidate);
         return NULL;
     }

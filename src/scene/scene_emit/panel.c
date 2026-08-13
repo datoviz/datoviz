@@ -599,7 +599,8 @@ static bool _scene_append_visual_to_render_pass(
     if (buffer_idx != UINT32_MAX)
     {
         if (!_scene_visual_indexed_resource_key(
-                figure, visual, visual_index, buffer_idx, visual_id, sizeof(visual_id)))
+                figure, visual, visual_index, _visual_family_state(visual)->buffer->id, visual_id,
+                sizeof(visual_id)))
             return false;
     }
     else

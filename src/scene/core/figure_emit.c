@@ -30,6 +30,7 @@
 #include "../../drp2/_stream.h"
 #include "render_contract/render_contract.h"
 #include "_scene.h"
+#include "core/_scene_resource_key.h"
 #include "annotation/prepare_internal.h"
 #include "core/figure_emit_internal.h"
 #include "core/frame_artifact_internal.h"
@@ -46,6 +47,24 @@
 /*************************************************************************************************/
 
 static bool _scene_visual_dirty_material_emits_upload(const DvzVisual* visual);
+
+
+static bool _scene_append_buffer_retirements(const DvzScene* scene, DvzFramePlan* plan)
+{
+    ANN(scene);
+    ANN(plan);
+    for (uint32_t i = 0; i < scene->buffer_retirement_count; i++)
+    {
+        const DvzSceneBufferRetirement* retirement = &scene->buffer_retirements[i];
+        char resource_id[DVZ_SCENE_LABEL_SIZE] = {0};
+        if (!_scene_resource_key_buffer(retirement->id, resource_id, sizeof(resource_id)) ||
+            !_frame_plan_retire_resource(
+                plan, resource_id, DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER,
+                retirement->lifecycle_revision))
+            return false;
+    }
+    return true;
+}
 
 
 
@@ -746,6 +765,13 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     if (plan == NULL)
         return NULL;
 
+    if (!_scene_append_buffer_retirements(figure->scene, plan))
+    {
+        (void)dvz_diagnostic_report_add(report, "scene buffer retirement planning failed");
+        dvz_frame_plan_destroy(plan);
+        return NULL;
+    }
+
     _scene_emit_visual_uploads(figure, plan, report);
     if (!_scene_emit_compute_passes(figure, plan, report))
     {
@@ -810,7 +836,10 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
         stream = NULL;
     }
     if (stream != NULL)
+    {
+        figure->scene->buffer_retirement_count = 0;
         _scene_commit_emit_success(figure);
+    }
     if (figure->emit_timing_enabled)
     {
         timing->emit_ns = dvz_time_monotonic_ns() - phase_start;

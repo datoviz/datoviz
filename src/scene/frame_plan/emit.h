@@ -99,7 +99,9 @@ struct ResourceId
     uint64_t id;
     char data_tag[DVZ_SCENE_LABEL_SIZE]; /* attribute name, e.g. "position", "color", "size" */
     uint64_t byte_size;                  /* total bytes uploaded to this buffer               */
+    uint64_t logical_byte_size;          /* current semantic byte extent                      */
     uint64_t logical_item_count;          /* logical items covered by the current payload      */
+    bool has_logical_extent;              /* logical extent is explicit, including zero        */
     uint32_t usage;                      /* DRP2 buffer usage flags                           */
     uint32_t item_stride;                /* optional element stride (index buffers)          */
     uint32_t topology;                   /* primitive topology hint (UINT32_MAX = unset)      */
@@ -201,6 +203,8 @@ ResourceId* _resource_find(ConverterState* state, const char* key);
 
 ResourceId* _resource_entry(ConverterState* state, const char* key, bool* is_new);
 
+bool _resource_remove(ConverterState* state, const char* key);
+
 bool _resource_ensure_byte_size(
     ConverterState* state, ResourceId* resource, uint64_t required_size, bool* needs_create);
 
@@ -221,6 +225,8 @@ uint64_t _resource_byte_size(const ConverterState* state, uint64_t id);
 uint32_t _resource_usage(const ConverterState* state, uint64_t id);
 
 uint64_t _resource_logical_item_count(const ConverterState* state, uint64_t id);
+
+bool _resource_has_logical_extent(const ConverterState* state, uint64_t id);
 
 uint32_t _resource_item_stride(const ConverterState* state, uint64_t id);
 

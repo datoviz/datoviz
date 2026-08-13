@@ -188,6 +188,7 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_runtime_validate_destroy_unused_buffer);
     TST_CASE(test_drp2_runtime_rejects_use_after_destroy);
     TST_CASE(test_drp2_runtime_rejects_destroy_buffer_referenced_by_work);
+    TST_CASE(test_drp2_runtime_allows_destroy_buffer_after_submit);
     TST_CASE(test_drp2_runtime_rejects_destroy_texture_referenced_by_work);
     TST_CASE(test_drp2_runtime_rejects_destroy_submitted_render_pipeline);
     TST_CASE(test_drp2_runtime_rejects_destroy_live_shader_module);

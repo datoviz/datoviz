@@ -92,7 +92,7 @@ static bool _scene_emit_external_sampled_field_texture_copy(
     char buffer_resource_id[128];
     uint32_t texture_format = 0;
     if (buffer_index == UINT32_MAX ||
-        !_scene_resource_key_buffer(buffer_index, buffer_resource_id, sizeof(buffer_resource_id)) ||
+        !_scene_resource_key_buffer(buffer->id, buffer_resource_id, sizeof(buffer_resource_id)) ||
         !_field_format_texture_format(field->desc.format, &texture_format))
     {
         return false;
