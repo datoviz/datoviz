@@ -2908,7 +2908,10 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
 
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
-    if (!dvz_window_glfw_init())
+    tst_expect_error_begin(suite);
+    const bool glfw_initialized = dvz_window_glfw_init();
+    (void)tst_expect_error_end(suite);
+    if (!glfw_initialized)
     {
         log_warn("test_app_external_surface_release_waits skipped: GLFW could not initialize");
         tst_skip(suite, "GLFW could not initialize");

@@ -129,9 +129,10 @@ int test_alloc_aligned(TstContext* suite, const TstCase* tstitem)
 
     DvzPointer empty = dvz_aligned_repeat(0, pattern, 4, alignment);
     AT(empty.pointer == NULL);
-    log_set_quiet(1);
-    DvzPointer overflow = dvz_aligned_repeat(UINT64_MAX / 2u + 1u, pattern, 2, 0);
-    log_set_quiet(0);
+    DvzPointer overflow = {0};
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        (overflow = dvz_aligned_repeat(UINT64_MAX / 2u + 1u, pattern, 2, 0)).pointer == NULL);
     AT(overflow.pointer == NULL);
 
     return 0;

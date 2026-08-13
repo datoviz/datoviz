@@ -631,7 +631,7 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
 
     if (status != fpng::FPNG_DECODE_SUCCESS)
     {
-        dvz_fprintf(stderr, "Failed to decode PNG image\n");
+        log_error("failed to decode PNG image");
         return NULL;
     }
 
@@ -644,7 +644,7 @@ dvz_load_png(const void* bytes, DvzSize size_bytes, uint32_t* width, uint32_t* h
     uint8_t* output = (uint8_t*)dvz_malloc(image_data.size());
     if (output == NULL)
     {
-        dvz_fprintf(stderr, "Failed to allocate memory for the decoded image\n");
+        log_error("failed to allocate memory for the decoded image");
         return NULL;
     }
 

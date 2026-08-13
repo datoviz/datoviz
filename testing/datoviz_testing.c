@@ -91,6 +91,7 @@ void dvz_testing_install_log_adapter(TstSuite* suite)
     adapter.user_data = NULL;
     adapter.error_level = LOG_ERROR;
     tst_suite_set_log_adapter(suite, &adapter);
+    tst_set_strict_unexpected_errors(suite, true);
 
     // Every Datoviz runner emits the same run shape. GPU-capable runners replace this adapter.
     TstRunAdapter run_adapter = {0};

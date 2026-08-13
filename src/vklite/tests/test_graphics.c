@@ -57,7 +57,9 @@ int test_vklite_graphics_spec_bounds(TstContext* suite, const TstCase* tstitem)
     dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, VK_NULL_HANDLE);
 
     uint32_t value = 0x12345678;
+    tst_expect_error_begin(suite);
     dvz_graphics_spec(graphics, VK_SHADER_STAGE_VERTEX_BIT, 0, UINT64_MAX, 1, &value);
+    AT(tst_expect_error_end(suite) == 0);
     AT(graphics->spec_info[0].mapEntryCount == 0);
     AT(graphics->spec_info[0].dataSize == 0);
 

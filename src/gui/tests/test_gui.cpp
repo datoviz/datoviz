@@ -418,7 +418,9 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     }
 
     GuiTestGpuResources gpu_resources = {};
+    tst_expect_error_begin(suite);
     const char* gpu_skip = _gui_test_gpu_resources_create(suite, &gpu_resources);
+    (void)tst_expect_error_end(suite);
     if (gpu_skip != NULL)
     {
         tst_skip(suite, gpu_skip);
@@ -442,8 +444,10 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     }
 
     DvzView* source_win = dvz_view_offscreen(app, source_figure, 160, 120);
+    tst_expect_error_begin(suite);
     DvzView* host_win =
         dvz_view_window(app, host_figure, 640, 480, "test_gui_viewport_resize_hidden_smoke");
+    (void)tst_expect_error_end(suite);
     if (source_win == NULL || host_win == NULL)
     {
         log_warn("test_gui_viewport_resize_hidden_smoke skipped: view creation failed");
@@ -575,7 +579,9 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     for (uint32_t i = 0; i < 2; i++)
     {
         GuiTestGpuResources gpu_resources = {};
+        tst_expect_error_begin(suite);
         const char* gpu_skip = _gui_test_gpu_resources_create(suite, &gpu_resources);
+        (void)tst_expect_error_end(suite);
         if (gpu_skip != NULL)
         {
             tst_skip(suite, gpu_skip);
@@ -599,7 +605,9 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
 
         const char* title =
             i == 0 ? "test_gui_null_font_defaults" : "test_gui_explicit_font_defaults";
+        tst_expect_error_begin(suite);
         DvzView* win = dvz_view_window(app, figure, 320, 240, title);
+        (void)tst_expect_error_end(suite);
         if (win == NULL)
         {
             log_warn("test_gui_config_inherits_app_font_defaults skipped: view creation failed");
@@ -658,7 +666,9 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     }
 
     GuiTestGpuResources gpu_resources = {};
+    tst_expect_error_begin(suite);
     const char* gpu_skip = _gui_test_gpu_resources_create(suite, &gpu_resources);
+    (void)tst_expect_error_end(suite);
     if (gpu_skip != NULL)
     {
         tst_skip(suite, gpu_skip);
@@ -684,8 +694,10 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
         return 0;
     }
 
+    tst_expect_error_begin(suite);
     DvzView* host_win =
         dvz_view_window(app, host_figure, 640, 480, "test_gui_multi_viewport_input_routers");
+    (void)tst_expect_error_end(suite);
     if (host_win == NULL)
     {
         log_warn("test_gui_multi_viewport_input_routers skipped: GLFW window creation failed");

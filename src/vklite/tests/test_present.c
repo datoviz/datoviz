@@ -237,11 +237,15 @@ static void _present_log_loader_env(void)
  * Create a GLFW-backed Vulkan fixture for vklite presentation tests.
  *
  * @param fixture fixture to initialize
+ * @param gpu_index selected Vulkan physical-device index
+ * @param suite active test context used to scope optional initialization errors
  * @return true when the fixture is ready, false when test should skip
  */
-static bool _present_fixture_create(DvzVklitePresentFixture* fixture, uint32_t gpu_index)
+static bool _present_fixture_create_impl(
+    DvzVklitePresentFixture* fixture, uint32_t gpu_index, TstContext* suite)
 {
     ANN(fixture);
+    ANN(suite);
     dvz_memset(fixture, sizeof(*fixture), 0, sizeof(*fixture));
 
 #if !DVZ_HAS_GLFW
@@ -257,7 +261,10 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture, uint32_t g
         return false;
     }
 
-    if (!dvz_window_glfw_init())
+    tst_expect_error_begin(suite);
+    const bool glfw_initialized = dvz_window_glfw_init();
+    (void)tst_expect_error_end(suite);
+    if (!glfw_initialized)
     {
         log_warn("vklite present tests skipped because GLFW could not initialize");
         return false;
@@ -384,6 +391,11 @@ static bool _present_fixture_create(DvzVklitePresentFixture* fixture, uint32_t g
     return true;
 #endif
 }
+
+
+
+#define _present_fixture_create(fixture, gpu_index)                                      \
+    _present_fixture_create_impl((fixture), (gpu_index), suite)
 
 
 

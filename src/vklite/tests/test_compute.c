@@ -120,7 +120,9 @@ int test_vklite_compute_spec_bounds(TstContext* suite, const TstCase* tstitem)
     ANN(compute);
 
     uint32_t value = 0x12345678;
+    tst_expect_error_begin(suite);
     dvz_compute_spec(compute, 0, UINT64_MAX, 1, &value);
+    AT(tst_expect_error_end(suite) == 0);
     AT(compute->spec_info.mapEntryCount == 0);
     AT(compute->spec_info.dataSize == 0);
 

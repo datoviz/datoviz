@@ -106,8 +106,8 @@ int test_png_1(TstContext* suite, const TstCase* tstitem)
 
     decoded_width = 42;
     decoded_height = 42;
-    decoded = dvz_load_png(out, 8, &decoded_width, &decoded_height);
-    AT(decoded == NULL);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, (decoded = dvz_load_png(out, 8, &decoded_width, &decoded_height)) == NULL);
     AT(decoded_width == 0);
     AT(decoded_height == 0);
     dvz_free(out);
@@ -155,8 +155,8 @@ int test_ppm_io(TstContext* suite, const TstCase* tstitem)
     AT(rc == 0);
     width = 42;
     height = 42;
-    image = dvz_read_ppm(filename, &width, &height);
-    AT(image == NULL);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, (image = dvz_read_ppm(filename, &width, &height)) == NULL);
     AT(width == 0);
     AT(height == 0);
 
@@ -204,8 +204,7 @@ int test_gzip_io(TstContext* suite, const TstCase* tstitem)
     rc = dvz_write_bytes(filename, "wb", sizeof(member), member);
     AT(rc == 0);
     size = 42;
-    raw = dvz_read_gz(filename, &size);
-    AT(raw == NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, (raw = dvz_read_gz(filename, &size)) == NULL);
     AT(size == 0);
 
     rc = remove(filename);
@@ -308,8 +307,8 @@ int test_parse_npy(TstContext* suite, const TstCase* tstitem)
 
     // File-based failures must reset the size output and close the opened file.
     DvzSize invalid_size = 42;
-    parsed = dvz_read_npy(__FILE__, &invalid_size);
-    AT(parsed == NULL);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, (parsed = dvz_read_npy(__FILE__, &invalid_size)) == NULL);
     AT(invalid_size == 0);
 
     dvz_free(buffer);

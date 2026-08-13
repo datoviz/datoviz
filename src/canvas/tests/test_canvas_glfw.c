@@ -222,13 +222,15 @@ static void canvas_glfw_keyboard_callback(
  * @param fixture fixture storage to initialize
  * @param gpu_index selected Vulkan physical-device index
  * @param[out] skipped true when the environment cannot run the fixture and the test should skip
+ * @param suite active test context used to scope optional initialization errors
  * @return 0 on success, -1 on setup failure
  */
-static int canvas_glfw_fixture_create(
-    CanvasGlfwFixture* fixture, uint32_t gpu_index, bool* skipped)
+static int _canvas_glfw_fixture_create(
+    CanvasGlfwFixture* fixture, uint32_t gpu_index, bool* skipped, TstContext* suite)
 {
     ANN(fixture);
     ANN(skipped);
+    ANN(suite);
 
     *skipped = false;
     uint32_t frame_slot_count = fixture->frame_slot_count;
@@ -247,7 +249,10 @@ static int canvas_glfw_fixture_create(
     fixture->host = dvz_window_host();
     ANN(fixture->host);
 
-    if (!dvz_window_glfw_init())
+    tst_expect_error_begin(suite);
+    const bool glfw_initialized = dvz_window_glfw_init();
+    (void)tst_expect_error_end(suite);
+    if (!glfw_initialized)
     {
         *skipped = true;
         log_warn("canvas glfw fixture unavailable because GLFW could not initialize");
@@ -362,6 +367,11 @@ static int canvas_glfw_fixture_create(
     return 0;
 #endif
 }
+
+
+
+#define canvas_glfw_fixture_create(fixture, gpu_index, skipped)                              \
+    _canvas_glfw_fixture_create((fixture), (gpu_index), (skipped), suite)
 
 
 
@@ -2480,7 +2490,10 @@ int test_canvas_glfw(TstContext* suite, const TstCase* item)
     dvz_instance_config_request_extension(&icfg, VK_KHR_SURFACE_EXTENSION_NAME);
 
     // Additional ones for glfw.
-    if (!dvz_window_glfw_init())
+    tst_expect_error_begin(suite);
+    const bool glfw_initialized = dvz_window_glfw_init();
+    (void)tst_expect_error_end(suite);
+    if (!glfw_initialized)
     {
         skip_reason = "GLFW could not initialize";
         log_warn("canvas glfw test skipped because GLFW could not initialize");

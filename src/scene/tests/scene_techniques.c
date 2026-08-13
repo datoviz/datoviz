@@ -677,7 +677,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         _frame_plan_composition_work_fingerprint(&invalid_graph_work);
     generic_graph = dvz_frame_plan("composition.generic-graph-slot", 0);
     ANN(generic_graph);
-    AT(!_scene_panel_composition_lower_graph(generic_graph, &invalid_graph_work, NULL));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_panel_composition_lower_graph(generic_graph, &invalid_graph_work, NULL));
     AT(generic_graph->graph_resource_count == 0);
     AT(generic_graph->graph_pass_count == 0);
     dvz_frame_plan_destroy(generic_graph);
@@ -694,7 +695,8 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         _frame_plan_composition_work_fingerprint(&invalid_graph_work);
     generic_graph = dvz_frame_plan("composition.generic-graph-msaa-load", 0);
     ANN(generic_graph);
-    AT(!_scene_panel_composition_lower_graph(generic_graph, &invalid_graph_work, NULL));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_panel_composition_lower_graph(generic_graph, &invalid_graph_work, NULL));
     AT(generic_graph->graph_resource_count == 0);
     AT(generic_graph->graph_pass_count == 0);
     dvz_frame_plan_destroy(generic_graph);
@@ -1917,7 +1919,8 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     AT(dvz_frame_graph_pass_color_attachment(&seeded, &seeded_attachment));
     AT(dvz_frame_plan_graph_pass(plan, &seeded));
     dvz_diagnostic_report_init(&report);
-    AT(!_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
     AT(_frame_plan_composition_get(plan, "figure_0_p0") == NULL);
     bool found = false;
     for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
@@ -1939,7 +1942,8 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     dvz_strlcpy(seeded.id, "figure_0_p0.seeded.typed.duplicate", sizeof(seeded.id));
     AT(dvz_frame_plan_graph_pass(plan, &seeded));
     dvz_diagnostic_report_init(&report);
-    AT(!_scene_bind_panel_composition(plan, "figure_0_p0", snapshot, &report));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_bind_panel_composition(plan, "figure_0_p0", snapshot, &report));
     found = false;
     for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
     {
@@ -1956,7 +1960,8 @@ int test_scene_panel_composition_binding_is_one_to_one(TstContext* suite, const 
     plan->nodes[0].u.render.has_composition_pass = true;
     plan->nodes[0].u.render.composition_pass_id = (DvzFramePlanPassId){1};
     dvz_diagnostic_report_init(&report);
-    AT(!_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
     found = false;
     for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
     {
@@ -2128,7 +2133,8 @@ int test_scene_panel_graph_failure_reports_specific_diagnostic(
 
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
-    AT(!_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_emit_panel_render_ex(figure, 0, plan, "figure_0", &report));
     AT(dvz_diagnostic_report_count(&report) > 0);
     bool found_incompatible_resource = false;
     for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
