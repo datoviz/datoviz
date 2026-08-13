@@ -110,6 +110,70 @@ static uint32_t _stream_destroy_buffer_count(const DvzDrp2CommandStream* stream)
 
 
 
+static uint64_t _stream_index_buffer_id(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command->type == DVZ_DRP2_COMMAND_SET_INDEX_BUFFER)
+            return command->u.set_index_buffer.buffer_id;
+    }
+    return 0;
+}
+
+
+
+static uint32_t _stream_buffer_command_count(
+    const DvzDrp2CommandStream* stream, DvzDrp2CommandType type, uint64_t buffer_id)
+{
+    ANN(stream);
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command->type != type)
+            continue;
+        if (
+            (type == DVZ_DRP2_COMMAND_CREATE_BUFFER &&
+             command->u.create_buffer.id == buffer_id) ||
+            (type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+             command->u.write_buffer.buffer_id == buffer_id) ||
+            (type == DVZ_DRP2_COMMAND_DESTROY_BUFFER &&
+             command->u.destroy_buffer.buffer_id == buffer_id))
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
+
+
+static bool _stream_writes_bound_vertex_buffer(const DvzDrp2CommandStream* stream)
+{
+    ANN(stream);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* write = dvz_drp2_stream_get(stream, i);
+        if (write->type != DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            continue;
+        for (uint32_t j = 0; j < dvz_drp2_stream_count(stream); j++)
+        {
+            const DvzDrp2Command* bind = dvz_drp2_stream_get(stream, j);
+            if (
+                bind->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
+                bind->u.set_vertex_buffer.buffer_id == write->u.write_buffer.buffer_id)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
 /**
  * Emit the current figure state with the standard GLSL scene fixture configuration.
  *
@@ -788,6 +852,78 @@ int test_scene_mesh_geometry_replacement_uses_logical_index_count(
     dvz_geometry_destroy(large);
     dvz_geometry_destroy(small);
     dvz_geometry_destroy(large_again);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_mesh_geometry_unchanged_indices_skip_upload(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+
+    DvzGeometry* initial = _mesh_replacement_geometry(4, 6);
+    DvzGeometry* positions_changed = _mesh_replacement_geometry(4, 6);
+    DvzGeometry* indices_changed = _mesh_replacement_geometry(4, 6);
+    ANN(initial);
+    ANN(positions_changed);
+    ANN(indices_changed);
+    positions_changed->positions[0][0] = -0.75;
+    indices_changed->positions[0][0] = +0.75;
+    const DvzIndex altered[6] = {0, 2, 1, 2, 3, 1};
+    memcpy(indices_changed->indices, altered, sizeof(altered));
+
+    AT(dvz_mesh_set_geometry(mesh, initial) == DVZ_OK);
+    DvzDrp2CommandStream* stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    const uint64_t index_buffer_id = _stream_index_buffer_id(stream);
+    AT(index_buffer_id != 0);
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_CREATE_BUFFER, index_buffer_id) == 1);
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_WRITE_BUFFER, index_buffer_id) == 1);
+    _test_scene_stream_destroy(stream);
+
+    AT(dvz_mesh_set_geometry(mesh, positions_changed) == DVZ_OK);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_index_buffer_id(stream) == index_buffer_id);
+    AT(_stream_writes_bound_vertex_buffer(stream));
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_CREATE_BUFFER, index_buffer_id) == 0);
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_WRITE_BUFFER, index_buffer_id) == 0);
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_DESTROY_BUFFER, index_buffer_id) == 0);
+    _test_scene_stream_destroy(stream);
+
+    AT(dvz_mesh_set_geometry(mesh, indices_changed) == DVZ_OK);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_index_buffer_id(stream) == index_buffer_id);
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_CREATE_BUFFER, index_buffer_id) == 0);
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_WRITE_BUFFER, index_buffer_id) == 1);
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_DESTROY_BUFFER, index_buffer_id) == 0);
+    _test_scene_stream_destroy(stream);
+
+    dvz_geometry_destroy(initial);
+    dvz_geometry_destroy(positions_changed);
+    dvz_geometry_destroy(indices_changed);
     dvz_scene_destroy(scene);
     return 0;
 }

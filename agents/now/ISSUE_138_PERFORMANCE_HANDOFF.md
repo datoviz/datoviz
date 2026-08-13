@@ -33,6 +33,21 @@ Do not add a public `surface_grid_fast_update()` helper, parallel presentation/r
 
 Commit boundary: each retained optimization has before/after evidence, deterministic correctness coverage, and no per-frame index upload.
 
+### Local retained-index evidence
+
+On 2026-08-13, the `surface` lab mode compared committed baseline `c3f041919` with exact unchanged-index deduplication on an Intel Core i9-14900K Linux host. Both builds used CMake `Release`, disabled GUI, GLFW, validation, and mimalloc, and ran five samples of 20 warm-up plus 200 measured frames on the fixed 128x128 surface. The lab stops after semantic DRP2 emission, so these results contain no submission or GPU time.
+
+| Metric, five-run median or deterministic count | Baseline | Candidate | Change |
+| --- | ---: | ---: | ---: |
+| Mesh conversion/commit time | 35.2912 ms | 32.4428 ms | -8.1% |
+| Semantic emission time | 49.8358 ms | 40.1163 ms | -19.5% |
+| Buffer write commands | 1,400 | 1,200 | -14.3% |
+| Buffer write bytes | 195,428,800 | 118,009,600 | -39.6% |
+| Index write commands | 200 | 0 | -100% |
+| Index write bytes | 77,419,200 | 0 | -100% |
+
+This evidence supports retaining exact byte-identical index deduplication in `dvz_mesh_set_geometry()`. Equal-length changed index data remains a required upload and is covered separately by deterministic tests.
+
 ## Checkpoint 2: Optional RC4 Foundations
 
 Sampler addressing and bounded sparse-region tracking may land only as the non-blocking generic sampled-field work already authorized in the release plan. These foundations do not by themselves make the 3D surface GPU-driven and must not delay required RC4 course work.

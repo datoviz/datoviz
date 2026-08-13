@@ -26,6 +26,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 
 
 
@@ -148,6 +149,23 @@ static void _mesh_geometry_copy_dvec2(vec2* out, const double* in, uint32_t coun
 
 
 
+/**
+ * Return whether an owned index buffer already contains the requested payload.
+ *
+ * @param buffer candidate retained index buffer
+ * @param indices requested packed indices
+ * @param byte_size requested logical byte size
+ * @return whether the retained payload is byte-identical
+ */
+static bool _mesh_geometry_indices_unchanged(
+    const DvzSceneBuffer* buffer, const DvzIndex* indices, uint64_t byte_size)
+{
+    return buffer != NULL && indices != NULL && buffer->data != NULL &&
+           buffer->desc.byte_size == byte_size && memcmp(buffer->data, indices, byte_size) == 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -260,6 +278,7 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
     void* prepared_index_data = NULL;
     uint64_t prepared_index_capacity = 0;
     bool prepared_index_is_new = false;
+    bool index_unchanged = false;
     uint64_t index_byte_size = 0;
     if (geometry->index_count > 0)
     {
@@ -274,6 +293,8 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
             current->desc.stride == sizeof(DvzIndex))
         {
             prepared_index = current;
+            index_unchanged =
+                _mesh_geometry_indices_unchanged(current, geometry->indices, index_byte_size);
         }
         else
         {
@@ -286,6 +307,7 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
             prepared_index_is_new = true;
         }
         if (
+            !index_unchanged &&
             _scene_buffer_prepare_data(
                 prepared_index, geometry->indices, index_byte_size, &prepared_index_data,
                 &prepared_index_capacity) != DVZ_OK)
@@ -305,7 +327,7 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
     }
     _scene_mesh_visual_set_default_color(visual, geometry->colors == NULL);
 
-    if (prepared_index != NULL)
+    if (prepared_index != NULL && !index_unchanged)
     {
         if (prepared_index_is_new)
             _scene_release_visual_buffer(visual);
@@ -314,6 +336,10 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
         _visual_binding_assign(
             visual, DVZ_VISUAL_BINDING_BUFFER, "index", prepared_index, true);
         _scene_notify_visual_changed(visual);
+    }
+    else if (prepared_index != NULL)
+    {
+        ASSERT(!prepared_index_is_new);
     }
     else
     {
