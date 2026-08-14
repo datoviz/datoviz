@@ -1,15 +1,13 @@
 # Multi-Light Klein Bottle Slice
 
-Status: optional v0.4+ scene-owned multi-light slice; not an RC3 or RC4 release blocker. Updated: 2026-08-03.
+Status: optional v0.4+ expansion after the required RC3 lighting foundation; point lights, two-sided lighting, and the showcase are not RC3 or RC4 release blockers. Updated: 2026-08-15.
 
 This slice adds the smallest coherent scene-lighting extension needed to reproduce the Glumpy
 checkerboard Klein bottle with three colored lights. It turns the existing future light-object
 model into an implementation-ready work packet and uses the Klein bottle as its native/WebGPU
 pressure test.
 
-The semantic sources of truth remain
-[LIGHTING.md](../semantics/LIGHTING.md) and
-[MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md).
+The required ownership and shader boundary lands first through [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md). The semantic sources of truth remain [LIGHTING.md](../semantics/LIGHTING.md) and [MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md).
 
 
 ## Reference

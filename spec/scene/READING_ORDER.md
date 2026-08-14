@@ -41,19 +41,20 @@ Read the scene spec in this order during review.
 5. [semantics/SCALES.md](semantics/SCALES.md): color, size, and opacity scale objects and colormap
    model.
 6. [semantics/LIGHTING.md](semantics/LIGHTING.md): scene-level lighting model and upgrade path.
-7. [semantics/AXES.md](semantics/AXES.md): axes and tick semantics.
-8. [semantics/ANNOTATIONS.md](semantics/ANNOTATIONS.md): labels, guides, probes, overlays, and
+7. [slices/RC3_LIGHTING_FOUNDATION_SLICE.md](slices/RC3_LIGHTING_FOUNDATION_SLICE.md): required pre-RC3 ownership, shader decomposition, and GTAO integration work packet.
+8. [semantics/AXES.md](semantics/AXES.md): axes and tick semantics.
+9. [semantics/ANNOTATIONS.md](semantics/ANNOTATIONS.md): labels, guides, probes, overlays, and
    callouts.
-9. [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md): explanatory mapping
+10. [semantics/LEGENDS_AND_COLORBARS.md](semantics/LEGENDS_AND_COLORBARS.md): explanatory mapping
    semantics.
-10. [semantics/TEXT.md](semantics/TEXT.md): text content, placement, resources, and DPI behavior.
-11. [slices/TEXT_RENDERING_SLICE.md](slices/TEXT_RENDERING_SLICE.md): first rendered text work
+11. [semantics/TEXT.md](semantics/TEXT.md): text content, placement, resources, and DPI behavior.
+12. [slices/TEXT_RENDERING_SLICE.md](slices/TEXT_RENDERING_SLICE.md): first rendered text work
     packet.
-12. [implementation/TEXT_SHAPING_ATLAS.md](implementation/TEXT_SHAPING_ATLAS.md): text shaping,
+13. [implementation/TEXT_SHAPING_ATLAS.md](implementation/TEXT_SHAPING_ATLAS.md): text shaping,
     layout, atlas, cache, and DRP2 emission contract.
-13. [slices/ANNOTATION_LABEL_SLICE.md](slices/ANNOTATION_LABEL_SLICE.md): first rendered label
+14. [slices/ANNOTATION_LABEL_SLICE.md](slices/ANNOTATION_LABEL_SLICE.md): first rendered label
     annotation work packet.
-14. [slices/COLORBAR_RENDERING_SLICE.md](slices/COLORBAR_RENDERING_SLICE.md): first rendered
+15. [slices/COLORBAR_RENDERING_SLICE.md](slices/COLORBAR_RENDERING_SLICE.md): first rendered
     colorbar work packet.
 
 

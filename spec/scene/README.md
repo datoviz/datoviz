@@ -13,7 +13,7 @@ The scene layer should remain pure high-level logic:
 ## Status
 
 - Status: active specification with multiple implementation slices in `src/scene`.
-- Implementation priority: preserve the integrated RC3 render-product, runtime, binding, WebGPU, and release-proof contracts while exact candidate artifacts and hosted/physical platform gates are completed; optional feature expansion must follow the active release queue.
+- Implementation priority: complete the required [RC3 lighting foundation](slices/RC3_LIGHTING_FOUNDATION_SLICE.md), preserve the integrated render-product, runtime, binding, WebGPU, and release-proof contracts, and keep broader optional feature expansion behind the active release queue.
 - Primary constraint: do not let scene design leak backend details into its public API.
 
 Current source implementation is intentionally smaller than this spec. It includes scene, figure,

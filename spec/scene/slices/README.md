@@ -27,7 +27,8 @@ slice.
 2. [ANNOTATION_LABEL_SLICE.md](ANNOTATION_LABEL_SLICE.md): first rendered label annotation path.
 3. [COLORBAR_RENDERING_SLICE.md](COLORBAR_RENDERING_SLICE.md): first rendered continuous colorbar.
 4. [LEGEND_SLICE.md](LEGEND_SLICE.md): deferred categorical/discrete legend boundary.
-5. [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md): optional v0.4+ scene-owned multi-light rendering and checkerboard Klein-bottle pressure test.
+5. [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md): required pre-RC3 scene-owned ambient/directional lighting, direct/indirect shader decomposition, and correct GTAO consumption.
+6. [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md): optional point-light, two-sided-lighting, and checkerboard Klein-bottle expansion after the required lighting foundation.
 
 
 ## Feature Readiness Matrix
@@ -44,6 +45,7 @@ slice.
 | Discrete legend | yes, broad | no active public handle | no | no | no | no | none | [LEGEND_SLICE.md](LEGEND_SLICE.md) |
 | Scale bar measurement | yes | yes, `dvz_scale_bar()` | yes | 2D and 3D first slices active | no | raster capture only | formatting, realization, stream, and churn tests | release validation smoke |
 | Dimension measurement | proposal only | no dedicated public handle | no | no | no | no | none | after label and text slices |
+| Lighting foundation | approved required slice | descriptor names pending API review | material-owned compatibility state only | current visual-owned Phong/Standard path | n/a | raster capture only | current material/GTAO tests; semantic split pending | [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md) before RC3 freeze |
 
 
 ## Slice Template
@@ -64,10 +66,11 @@ Each implementation slice should answer these questions before code starts:
 
 Use this order unless a concrete user task changes priority:
 
-1. Prove text, axes, colorbars, label annotations, and scale bars in the RC1 example/fixture set.
-2. Finish data/world text placement and depth policy where release examples require it.
-3. Harden shared panel-edge layout across axes, colorbars, legends, annotations, and readouts.
-4. Decide whether rendered pinned readouts are required for RC1; otherwise defer richer readout UI.
-5. Define and implement `DvzLegend` only after categorical scale labels and ordering are concrete.
+1. Complete [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md) before the next release-candidate freeze.
+2. Prove text, axes, colorbars, label annotations, and scale bars in the release example/fixture set.
+3. Finish data/world text placement and depth policy where release examples require it.
+4. Harden shared panel-edge layout across axes, colorbars, legends, annotations, and readouts.
+5. Decide whether rendered pinned readouts are required; otherwise defer richer readout UI.
+6. Define and implement `DvzLegend` only after categorical scale labels and ordering are concrete.
 
-The multi-light Klein-bottle slice remains optional feature work and is not an RC3 or RC4 release blocker.
+Point-light evaluation, two-sided lighting, and the multi-light Klein-bottle showcase remain optional feature work and are not RC3 or RC4 release blockers.

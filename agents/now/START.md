@@ -1,6 +1,6 @@
 # Datoviz v0.4 Dispatch
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-13.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-15.
 
 Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file identifies only the current route; durable contracts belong in `spec/`, public guidance belongs in `docs/`, and completed evidence belongs in release records and Git history.
 
@@ -36,6 +36,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 16. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
 17. Use [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) for the approved physical-key/text-input API split and coherent mesh-geometry replacement work.
 18. Use [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md) for the benchmark-first rolling-field/structured-surface performance lane and its strict RC4 versus post-v0.4 boundary.
+19. Before freezing the next release candidate, implement and validate [RC3_LIGHTING_FOUNDATION_SLICE.md](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md). This required slice moves light ownership from materials to scene-owned panel light sets and makes GTAO consume only explicit indirect illumination; do not expand it into full PBR or the optional multi-light showcase.
 
 ## Guardrails
 

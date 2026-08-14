@@ -1,6 +1,6 @@
 > **Execution Status**
-> - **Status:** `PARTIALLY IMPLEMENTED MATERIAL SLICE; RC2 LIGHT-OBJECT CANDIDATE PLANNED`
-> - **Updated on:** `2026-07-16`
+> - **Status:** `PARTIALLY IMPLEMENTED MATERIAL SLICE; RC3 LIGHTING FOUNDATION REQUIRED`
+> - **Updated on:** `2026-08-15`
 > - **Purpose:** define the intended v0.4 scene-facing material and lighting object model for mesh
 >   and future lit visual families.
 
@@ -31,11 +31,9 @@ payload. Scene-owned light objects and panel light sets described below remain f
 current runtime still uses compact material/light-direction fields rather than a full reusable
 light-object API.
 
-The optional post-RC3 implementation candidate is
-[MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](../../slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md). It uses a
-three-colored-light checkerboard Klein bottle as the pressure test for scene-owned lights,
-panel-local light sets, two-sided surface lighting, shared example presets, and native/WebGPU
-parity. This work is not an RC3 or RC4 release blocker.
+The required pre-RC3 ownership and shader boundary is [RC3_LIGHTING_FOUNDATION_SLICE.md](../../slices/RC3_LIGHTING_FOUNDATION_SLICE.md). It moves ambient and directional lighting into scene-owned panel light sets, removes material-owned light direction, separates direct and indirect shader contributions, and makes GTAO consume only indirect diffuse illumination without implementing full PBR.
+
+The broader optional implementation candidate remains [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](../../slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md). It adds point lights, the three-colored-light checkerboard Klein bottle, two-sided surface lighting, shared example presets, and broader native/WebGPU pressure testing. Those additions are not an RC3 or RC4 release blocker.
 
 
 ## Existing Grounding In The Repo

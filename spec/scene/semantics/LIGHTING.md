@@ -5,12 +5,9 @@ This document defines the scene-level lighting model for Datoviz v0.4.
 
 ## Purpose
 
-The current active lighting slice provides per-visual material, Phong and standard surface
-shading, view-dependent limb shading, and depth-cue controls for 3D-capable visual families.
+The current active lighting slice provides per-visual material, Phong and standard surface shading, view-dependent limb shading, and depth-cue controls for 3D-capable visual families.
 
-It is intentionally simple for v0.4 — covering the most common scientific visualization needs
-— while being designed to extend cleanly to physically-based rendering (PBR) and hardware
-ray tracing in future versions.
+It is intentionally simple for v0.4—covering the most common scientific visualization needs—while being designed to extend cleanly to physically-based rendering (PBR) and hardware ray tracing in future versions. The required pre-RC3 ownership and direct/indirect separation is specified in [RC3_LIGHTING_FOUNDATION_SLICE.md](../slices/RC3_LIGHTING_FOUNDATION_SLICE.md).
 
 
 ## Current Active Model
@@ -35,8 +32,7 @@ visual family exists.
 
 ## Core Rule
 
-Lighting is currently visual-owned, not scene-owned. Scene-owned ambient, directional, and point
-lights are future API work and must not be described as required for the active v0.4 slice.
+Lighting is currently visual-owned, not scene-owned. Before the next release candidate, ambient and directional lighting must move to scene-owned objects selected by panel-local light sets, and material-owned light direction must be removed. Point-light evaluation and the broader multi-light showcase remain additive follow-up work.
 
 ## Linear-Light Arithmetic
 
