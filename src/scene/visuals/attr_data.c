@@ -30,6 +30,7 @@
 #include "_visual_family.h"
 #include "_visual_internal.h"
 #include "datoviz/scene.h"
+#include "mesh/internal.h"
 #include "registry/registry.h"
 #include "sample_profile.h"
 #include "text/text_internal.h"
