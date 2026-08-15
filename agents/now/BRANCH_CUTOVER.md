@@ -1,6 +1,6 @@
 # Post-RC2 Branch Cutover
 
-Status: external cutover complete; reconciliation, fresh-clone proof, and CI verification in progress. Updated: 2026-08-15.
+Status: complete. Updated: 2026-08-15.
 
 ## Goal
 
@@ -28,6 +28,12 @@ The maintainer approved the exact cutover operations on 2026-08-15. Immediately 
 | unchanged `data` gitlink | `a9542d20f2d29aecb9518738f6b7ba1914b63997` |
 
 GitHub did not move the default branch atomically with the second rename: it briefly retained the now-missing `v0.4-dev` name. The approved fallback explicitly set `default_branch=main`, after which both PRs targeted `main`. Ruleset `17684715` continues to protect `~DEFAULT_BRANCH`; ruleset `19166518` is now named `protect-v0.3-maintenance` and targets `refs/heads/v0.3-maintenance`. Both branches report protected with deletion and non-fast-forward rules, and neither branch tip changed during the operation.
+
+## Verification Record
+
+The reconciliation landed in `5c5d5320f`, and CI correction commits `c2bb1389e` and `d3d7142f0` made push-mode wheel reuse safe across the renamed branch boundary. A fresh unqualified shallow clone checked out `main` at the expected tip with `data` uninitialized, while a fresh `--branch v0.3-maintenance` clone checked out exact preserved v0.3 tip `c1725df786dfdb7849f4a0d2928968aabfe002ec`. CircleCI accepted every reconciliation push with HTTP 200.
+
+Exact validation head `d3d7142f0ec5ceb0f1cb7508f247d428c22e7afb` passed [Test run 31900610395](https://github.com/datoviz/datoviz/actions/runs/31900610395) on Linux, macOS, and Windows and [Wheel conformance run 31900601977](https://github.com/datoviz/datoviz/actions/runs/31900601977). Local validation passed generated-gallery drift, example manifests, strict documentation build, specifications and 125 DRP2 fixtures, 16 release-conformance tests, and `git diff --check`. Final verification confirmed `main`, `v0.3-maintenance`, `dev`, both RC tag commits, both PR bases, both rulesets, and the unchanged `data` gitlink all match the approved targets; no remote `v0.4-dev` parent branch remains.
 
 ## Audited Snapshot
 
