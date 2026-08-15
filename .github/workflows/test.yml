@@ -2,9 +2,6 @@ name: "Test"
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - v0.4-dev
   pull_request:
     branches:
       - v0.4-dev
