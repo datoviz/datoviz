@@ -64,3 +64,35 @@ check-docs-status: docs-status-check
 
 # Also compile/run Quickstart fixtures and validate generated API/status facts.
 check-doc-snippets: check-howto-snippets vulkan-course-check quickstart-check docs-api-check docs-status-check
+
+# Build the developer-only deterministic MSDF atlas generator.
+text-atlas-generator-build:
+    cmake --build build --target datoviz_text_atlas_generate
+
+# Generate an untracked canonical Source Sans product directory.
+text-atlas-generate output_dir primary="assets/runtime/fonts/SourceSans3-Regular.ttf": text-atlas-generator-build
+    build/src/scene/datoviz_text_atlas_generate --primary "{{primary}}" --output-dir "{{output_dir}}"
+
+# Validate an approved deterministic MSDF atlas manifest and textual include.
+text-atlas-check manifest include_root=".":
+    python3 tools/check_text_atlas_manifest.py --manifest "{{manifest}}" --repo-root . --include-root "{{include_root}}"
+
+# Serialize an untracked C++ product directory into candidate manifest/include files.
+text-atlas-serialize input_dir output_dir:
+    python3 tools/check_text_atlas_manifest.py --serialize --input-dir "{{input_dir}}" --output-dir "{{output_dir}}" --repo-root .
+
+# Regenerate and serialize twice, then require exact byte identity.
+text-atlas-repro-check primary="assets/runtime/fonts/SourceSans3-Regular.ttf": text-atlas-generator-build
+    #!/usr/bin/env bash
+    set -euo pipefail
+    atlas_tmp=$(mktemp -d)
+    trap 'rm -rf "$atlas_tmp"' EXIT
+    for run in a b; do
+        build/src/scene/datoviz_text_atlas_generate --primary "{{primary}}" --output-dir "$atlas_tmp/$run/product"
+        python3 tools/check_text_atlas_manifest.py --serialize --input-dir "$atlas_tmp/$run/product" --output-dir "$atlas_tmp/$run/candidate" --repo-root .
+    done
+    for file in product.json atlas_32.rgba atlas_64.rgba atlas_128.rgba; do
+        cmp "$atlas_tmp/a/product/$file" "$atlas_tmp/b/product/$file"
+    done
+    cmp "$atlas_tmp/a/candidate/default_msdf_atlas.json" "$atlas_tmp/b/candidate/default_msdf_atlas.json"
+    cmp "$atlas_tmp/a/candidate/text_default_msdf_atlas.inc" "$atlas_tmp/b/candidate/text_default_msdf_atlas.inc"

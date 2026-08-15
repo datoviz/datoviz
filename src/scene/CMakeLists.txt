@@ -79,6 +79,26 @@ endif()
 
 add_library(datoviz_scene OBJECT ${SCENE_SRC})
 
+# The canonical atlas generator is a developer tool. It deliberately compiles the pure CPU product
+# layer directly and remains excluded from ordinary library builds.
+add_executable(datoviz_text_atlas_generate EXCLUDE_FROM_ALL
+    ${PROJECT_SOURCE_DIR}/tools/text_atlas_generate.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/text/text_atlas_product.cpp)
+target_compile_features(datoviz_text_atlas_generate PRIVATE cxx_std_17)
+target_compile_definitions(
+    datoviz_text_atlas_generate PRIVATE
+    DVZ_HAS_MSDF_ATLAS=${DVZ_HAS_MSDF_ATLAS}
+    DVZ_TEXT_ATLAS_GENERATOR_SYSTEM_NAME="${CMAKE_SYSTEM_NAME}"
+    DVZ_TEXT_ATLAS_GENERATOR_SYSTEM_PROCESSOR="${CMAKE_SYSTEM_PROCESSOR}")
+target_include_directories(datoviz_text_atlas_generate PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/common
+    ${PROJECT_SOURCE_DIR}/external
+    ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(
+    datoviz_text_atlas_generate PRIVATE datoviz_common ${DVZ_TEXT_ATLAS_LIBS})
+set_property(GLOBAL APPEND PROPERTY DVZ_ALL_TARGETS datoviz_text_atlas_generate)
+
 if(TARGET datoviz_shaders)
     add_dependencies(datoviz_scene datoviz_shaders)
 endif()
