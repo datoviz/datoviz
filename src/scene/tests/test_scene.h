@@ -1324,6 +1324,14 @@ int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
 
 int test_scene_text_font_source_identity(TstContext* suite, const TstCase* item);
 
+int test_scene_text_atlas_product_defaults(TstContext* suite, const TstCase* item);
+
+int test_scene_text_atlas_product_builds_source_ascii(TstContext* suite, const TstCase* item);
+
+int test_scene_text_atlas_product_is_deterministic(TstContext* suite, const TstCase* item);
+
+int test_scene_text_atlas_product_budget_failure_is_empty(TstContext* suite, const TstCase* item);
+
 int test_scene_text_atlas_capacity_failure_rolls_back(
     TstContext* suite, const TstCase* item);
 

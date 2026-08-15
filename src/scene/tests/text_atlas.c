@@ -14,7 +14,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <limits.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "_alloc.h"
 #include "_assertions.h"
@@ -28,6 +30,7 @@
 #include "helpers.h"
 #include "annotation/prepare_internal.h"
 #include "text/internal.h"
+#include "text/text_atlas_product_internal.h"
 #include "text/text_internal.h"
 #include "test_scene.h"
 #include "testing.h"
@@ -112,6 +115,49 @@ static uint32_t _green_text_pixel_count(const uint8_t* pixels, uint32_t width, u
             count++;
     }
     return count;
+}
+
+
+
+/**
+ * Load the built-in Source Sans 3 face into a product-builder font view.
+ *
+ * @param out_scene output owning scene
+ * @param out_primary output borrowed Source Sans 3 font view
+ * @return whether the built-in font bytes are available
+ */
+static bool _text_atlas_product_source_view(
+    DvzScene** out_scene, DvzTextAtlasFontView* out_primary)
+{
+    ANN(out_scene);
+    ANN(out_primary);
+    *out_scene = dvz_scene();
+    if (*out_scene == NULL)
+        return false;
+
+    DvzFontDesc desc = dvz_font_desc();
+    desc.family = "Source Sans 3";
+    desc.style = "Regular";
+    DvzFont* font = dvz_font(*out_scene, &desc);
+    if (font == NULL || !_scene_font_ensure_bytes(font))
+    {
+        dvz_scene_destroy(*out_scene);
+        *out_scene = NULL;
+        return false;
+    }
+    if (font->face_index > INT32_MAX)
+    {
+        dvz_scene_destroy(*out_scene);
+        *out_scene = NULL;
+        return false;
+    }
+    *out_primary = (DvzTextAtlasFontView){
+        .bytes = (const uint8_t*)font->ttf_bytes,
+        .size = font->ttf_size,
+        .face_index = (int32_t)font->face_index,
+        .load_flags = 0,
+    };
+    return true;
 }
 
 
@@ -314,6 +360,199 @@ int test_scene_text_font_source_identity(TstContext* suite, const TstCase* item)
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+/**
+ * Verify CPU atlas-product defaults are bounded and deterministic.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_atlas_product_defaults(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzTextAtlasProductBudget budget = _text_atlas_product_budget_default();
+    AT(budget.max_glyphs == 256u);
+    AT(budget.max_dimension == 4096u);
+    AT(budget.max_rgba_bytes == 64ull * 1024ull * 1024ull);
+
+    DvzTextAtlasProductParams params = _text_atlas_product_params_default();
+    AT(params.thread_count == 8u);
+    AT(params.fallback_codepoint == (uint32_t)'?');
+    AT(params.edge_coloring_seed == 0);
+    AC(params.max_corner_angle, 3.0, 1e-12);
+    AC(params.miter_limit, 1.0, 1e-12);
+    AT(params.overlap_support);
+    AT(params.scanline_pass);
+    AT(params.preprocess_geometry);
+    AT(params.enable_kerning);
+    return 0;
+}
+
+
+
+/**
+ * Verify the CPU product builder validates a complete Source Sans 3 ASCII atlas.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_atlas_product_builds_source_ascii(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    if (!_text_atlas_product_msdf_available())
+    {
+        tst_skip(suite, "MSDF atlas generation unavailable");
+        return 0;
+    }
+
+    DvzScene* scene = NULL;
+    DvzTextAtlasFontView primary = {0};
+    AT(_text_atlas_product_source_view(&scene, &primary));
+    uint32_t codepoints[96] = {0};
+    for (uint32_t i = 0; i < 95; i++)
+        codepoints[i] = 0x20u + i;
+    codepoints[95] = 0x10FFFFu;
+    DvzTextAtlasSpec spec = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 32.0f);
+    DvzTextAtlasProductBudget budget = _text_atlas_product_budget_default();
+    DvzTextAtlasProductParams params = _text_atlas_product_params_default();
+    DvzTextAtlasProduct product = {0};
+
+    AT(_text_atlas_product_build_msdf(
+        &primary, NULL, &spec, codepoints, 96, &budget, &params, &product));
+    AT(_text_atlas_product_validate(&product, &budget));
+    AT(product.coverage_count == 96);
+    AT(product.fallback_mapping_count == 1);
+    AT(product.glyph_count > 0);
+    for (uint32_t i = 0; i < 95; i++)
+    {
+        AT(product.coverage[i].requested_codepoint == codepoints[i]);
+        AT(product.coverage[i].resolved_codepoint == codepoints[i]);
+        AT(product.coverage[i].kind == DVZ_TEXT_ATLAS_PRODUCT_COVERAGE_EXACT);
+        AT(product.coverage[i].font_role == DVZ_TEXT_ATLAS_PRODUCT_FONT_PRIMARY);
+    }
+    AT(product.coverage[95].requested_codepoint == 0x10FFFFu);
+    AT(product.coverage[95].resolved_codepoint == (uint32_t)'?');
+    AT(product.coverage[95].kind == DVZ_TEXT_ATLAS_PRODUCT_COVERAGE_FALLBACK);
+    AT(product.coverage[95].font_role == DVZ_TEXT_ATLAS_PRODUCT_FONT_PRIMARY);
+
+    _text_atlas_product_destroy(&product);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify one-thread CPU atlas products are byte-identical across two builds.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_atlas_product_is_deterministic(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    if (!_text_atlas_product_msdf_available())
+    {
+        tst_skip(suite, "MSDF atlas generation unavailable");
+        return 0;
+    }
+
+    DvzScene* scene = NULL;
+    DvzTextAtlasFontView primary = {0};
+    AT(_text_atlas_product_source_view(&scene, &primary));
+    const uint32_t codepoints[] = {0x20u, 0x41u, 0x42u, 0x61u, 0x62u, 0x7Eu};
+    DvzTextAtlasSpec spec = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 32.0f);
+    DvzTextAtlasProductBudget budget = _text_atlas_product_budget_default();
+    DvzTextAtlasProductParams params = _text_atlas_product_params_default();
+    params.thread_count = 1;
+    DvzTextAtlasProduct first = {0};
+    DvzTextAtlasProduct second = {0};
+
+    AT(_text_atlas_product_build_msdf(
+        &primary, NULL, &spec, codepoints, 6, &budget, &params, &first));
+    AT(_text_atlas_product_build_msdf(
+        &primary, NULL, &spec, codepoints, 6, &budget, &params, &second));
+    AT(_text_atlas_product_validate(&first, &budget));
+    AT(_text_atlas_product_validate(&second, &budget));
+    AT(first.width == second.width);
+    AT(first.height == second.height);
+    AT(first.glyph_count == second.glyph_count);
+    AT(first.coverage_count == second.coverage_count);
+    AT(first.fallback_mapping_count == second.fallback_mapping_count);
+    AT(first.rgba_size == second.rgba_size);
+    AC(first.em_px, second.em_px, 1e-6f);
+    AC(first.distance_range_px, second.distance_range_px, 1e-6f);
+    AC(first.ascent, second.ascent, 1e-6f);
+    AC(first.descent, second.descent, 1e-6f);
+    AC(first.line_gap, second.line_gap, 1e-6f);
+    AC(first.line_height, second.line_height, 1e-6f);
+    AT(memcmp(first.rgba, second.rgba, (size_t)first.rgba_size) == 0);
+    AT(memcmp(
+           first.glyphs, second.glyphs,
+           (size_t)first.glyph_count * sizeof(DvzTextAtlasGlyph)) == 0);
+    AT(memcmp(
+           first.coverage, second.coverage,
+           (size_t)first.coverage_count * sizeof(DvzTextAtlasProductCoverage)) == 0);
+
+    _text_atlas_product_destroy(&second);
+    _text_atlas_product_destroy(&first);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify a CPU atlas product budget failure leaves the output object empty.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_atlas_product_budget_failure_is_empty(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    if (!_text_atlas_product_msdf_available())
+    {
+        tst_skip(suite, "MSDF atlas generation unavailable");
+        return 0;
+    }
+
+    DvzScene* scene = NULL;
+    DvzTextAtlasFontView primary = {0};
+    AT(_text_atlas_product_source_view(&scene, &primary));
+    const uint32_t codepoints[] = {0x20u, 0x41u};
+    DvzTextAtlasSpec spec = _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_MSDF, 32.0f);
+    DvzTextAtlasProductBudget budget = _text_atlas_product_budget_default();
+    budget.max_dimension = 1;
+    DvzTextAtlasProductParams params = _text_atlas_product_params_default();
+    DvzTextAtlasProduct product = {0};
+
+    AT(!_text_atlas_product_build_msdf(
+        &primary, NULL, &spec, codepoints, 2, &budget, &params, &product));
+    AT(product.rgba == NULL);
+    AT(product.glyphs == NULL);
+    AT(product.coverage == NULL);
+    AT(product.width == 0);
+    AT(product.height == 0);
+    AT(product.glyph_count == 0);
+    AT(product.coverage_count == 0);
+    AT(product.rgba_size == 0);
+
+    _text_atlas_product_destroy(&product);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 
 /**
@@ -639,6 +878,10 @@ int test_scene_text_atlas(TstSuite* suite)
     TST_CASE(test_scene_text_msdf_shader_uses_rgb_distance);
     TST_CASE(test_scene_text_legacy_roboto_msdf_uses_embedded_atlas);
     TST_CASE(test_scene_text_font_source_identity);
+    TST_CASE(test_scene_text_atlas_product_defaults);
+    TST_CASE(test_scene_text_atlas_product_builds_source_ascii);
+    TST_CASE(test_scene_text_atlas_product_is_deterministic);
+    TST_CASE(test_scene_text_atlas_product_budget_failure_is_empty);
     TST_CASE(test_scene_text_atlas_capacity_failure_rolls_back);
     TST_CASE(test_scene_text_scientific_fallback_all_backends);
     TST_CASE(test_scene_text_public_font_atlas_api);
