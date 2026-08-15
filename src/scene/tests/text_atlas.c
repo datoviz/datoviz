@@ -283,6 +283,99 @@ int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
 
 
 /**
+ * Verify built-in and custom-path fonts have distinct resolved source identities.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_font_source_identity(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+
+    DvzFontDesc built_in_desc = dvz_font_desc();
+    built_in_desc.family = "Source Sans 3";
+    built_in_desc.style = "Regular";
+    DvzFont* built_in = dvz_font(scene, &built_in_desc);
+    ANN(built_in);
+    AT(built_in->source_id == DVZ_FONT_SOURCE_SOURCE_SANS_3_REGULAR);
+
+    DvzFontDesc custom_desc = built_in_desc;
+    custom_desc.path = "assets/runtime/fonts/SourceSans3-Regular.ttf";
+    DvzFont* custom = dvz_font(scene, &custom_desc);
+    ANN(custom);
+    AT(custom->source_id == DVZ_FONT_SOURCE_CUSTOM_FILE);
+    AT(custom->source_id != built_in->source_id);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify over-capacity requests fail without mutating an existing atlas realization.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_atlas_capacity_failure_rolls_back(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFontDesc desc = dvz_font_desc();
+    desc.family = "Source Sans 3";
+    desc.style = "Regular";
+    DvzFont* font = dvz_font(scene, &desc);
+    ANN(font);
+
+    DvzTextAtlasSpec spec =
+        _scene_text_atlas_spec(DVZ_TEXT_ATLAS_BACKEND_STB_SDF, 32.0f);
+    AT(_scene_text_atlas_ensure_string(font, &spec, "ASCII"));
+    DvzTextAtlas* initial = _scene_text_atlas_get(font, &spec);
+    ANN(initial);
+    const DvzSampledField* initial_field = initial->field;
+    uint64_t initial_generation = initial->generation;
+    uint32_t initial_glyph_count = initial->glyph_count;
+    const DvzTextAtlasGlyph* initial_a = _scene_text_atlas_glyph(initial, 'A');
+    ANN(initial_a);
+    DvzTextAtlasGlyph a = *initial_a;
+
+    char encoded[200][3] = {{0}};
+    const char* strings[200] = {0};
+    for (uint32_t i = 0; i < 200; i++)
+    {
+        uint32_t codepoint = 0x0100u + i;
+        encoded[i][0] = (char)(0xC0u | (codepoint >> 6));
+        encoded[i][1] = (char)(0x80u | (codepoint & 0x3Fu));
+        strings[i] = encoded[i];
+    }
+    AT_EXPECTED_ERROR_STRICT(
+        suite, !_scene_text_atlas_ensure_strings(font, &spec, strings, 200));
+
+    DvzTextAtlas* realized = _scene_text_atlas_get(font, &spec);
+    AT(realized == initial);
+    AT(realized->field == initial_field);
+    AT(realized->generation == initial_generation);
+    AT(realized->glyph_count == initial_glyph_count);
+    const DvzTextAtlasGlyph* realized_a = _scene_text_atlas_glyph(realized, 'A');
+    ANN(realized_a);
+    AT(realized_a->glyph_id == a.glyph_id);
+    AC(realized_a->advance, a.advance, 1e-6f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Verify Source scene text falls back to Noto Sans Math for scientific symbols.
  *
  * @param suite the active test suite
@@ -545,6 +638,8 @@ int test_scene_text_atlas(TstSuite* suite)
 
     TST_CASE(test_scene_text_msdf_shader_uses_rgb_distance);
     TST_CASE(test_scene_text_legacy_roboto_msdf_uses_embedded_atlas);
+    TST_CASE(test_scene_text_font_source_identity);
+    TST_CASE(test_scene_text_atlas_capacity_failure_rolls_back);
     TST_CASE(test_scene_text_scientific_fallback_all_backends);
     TST_CASE(test_scene_text_public_font_atlas_api);
     TST_SCENE_TEXT_ATLAS_GPU_CASE(test_scene_text_atlas_utf8_runtime_readback);

@@ -1321,21 +1321,22 @@ static DvzTextAtlasSpec _text_atlas_fallback_spec(const DvzTextAtlasSpec* spec)
 
 
 /**
- * Find an existing atlas cache slot for one spec.
+ * Find an existing atlas cache entry for one requested spec.
  *
  * @param font the font
  * @param spec atlas spec
- * @return pointer to the matching font-owned atlas cache slot, or NULL
+ * @return matching font-owned atlas cache entry, or NULL
  */
-static DvzTextAtlas** _text_atlas_find_slot(DvzFont* font, const DvzTextAtlasSpec* spec)
+static DvzTextAtlasCacheEntry* _text_atlas_find_entry(
+    DvzFont* font, const DvzTextAtlasSpec* spec)
 {
     ANN(font);
     ANN(spec);
     for (uint32_t i = 0; i < font->atlas_count && i < DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT; i++)
     {
-        DvzTextAtlas* atlas = font->atlases[i];
-        if (atlas != NULL && _text_atlas_spec_equal(&atlas->spec, spec))
-            return &font->atlases[i];
+        DvzTextAtlasCacheEntry* entry = &font->atlas_entries[i];
+        if (entry->active && _text_atlas_spec_equal(&entry->request_spec, spec))
+            return entry;
     }
     return NULL;
 }
@@ -1343,7 +1344,7 @@ static DvzTextAtlas** _text_atlas_find_slot(DvzFont* font, const DvzTextAtlasSpe
 
 
 /**
- * Find an existing atlas cache entry for one spec without mutating the font.
+ * Find an existing realized atlas for one requested spec without mutating the font.
  *
  * @param font the font
  * @param spec atlas spec
@@ -1356,9 +1357,9 @@ static const DvzTextAtlas* _text_atlas_find_const(
     ANN(spec);
     for (uint32_t i = 0; i < font->atlas_count && i < DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT; i++)
     {
-        const DvzTextAtlas* atlas = font->atlases[i];
-        if (atlas != NULL && _text_atlas_spec_equal(&atlas->spec, spec))
-            return atlas;
+        const DvzTextAtlasCacheEntry* entry = &font->atlas_entries[i];
+        if (entry->active && _text_atlas_spec_equal(&entry->request_spec, spec))
+            return entry->atlas;
     }
     return NULL;
 }
@@ -1366,25 +1367,30 @@ static const DvzTextAtlas* _text_atlas_find_const(
 
 
 /**
- * Find or allocate an atlas cache slot for one spec.
+ * Find or allocate an atlas cache entry for one requested spec.
  *
  * @param font the font
  * @param spec atlas spec
- * @return pointer to a font-owned atlas cache slot, or NULL when the cache is full
+ * @return font-owned atlas cache entry, or NULL when the cache is full
  */
-static DvzTextAtlas** _text_atlas_acquire_slot(DvzFont* font, const DvzTextAtlasSpec* spec)
+static DvzTextAtlasCacheEntry* _text_atlas_acquire_entry(
+    DvzFont* font, const DvzTextAtlasSpec* spec)
 {
     ANN(font);
     ANN(spec);
-    DvzTextAtlas** slot = _text_atlas_find_slot(font, spec);
-    if (slot != NULL)
-        return slot;
+    DvzTextAtlasCacheEntry* entry = _text_atlas_find_entry(font, spec);
+    if (entry != NULL)
+        return entry;
     if (font->atlas_count >= DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT)
     {
         log_error("text atlas cache is full");
         return NULL;
     }
-    return &font->atlases[font->atlas_count++];
+    entry = &font->atlas_entries[font->atlas_count++];
+    dvz_memset(entry, sizeof(DvzTextAtlasCacheEntry), 0, sizeof(DvzTextAtlasCacheEntry));
+    entry->request_spec = *spec;
+    entry->active = true;
+    return entry;
 }
 
 
@@ -1515,11 +1521,19 @@ static bool _text_atlas_replace_field_data(DvzSampledField* field, const DvzSamp
     ANN(src);
     if (src->data == NULL)
         return false;
-    if (field->desc.width != src->desc.width || field->desc.height != src->desc.height ||
-        field->desc.depth != src->desc.depth || field->desc.format != src->desc.format ||
-        field->desc.dim != src->desc.dim)
+    if (field->desc.format != src->desc.format || field->desc.dim != src->desc.dim ||
+        field->desc.depth != src->desc.depth)
     {
         return false;
+    }
+    if (field->desc.width != src->desc.width || field->desc.height != src->desc.height)
+    {
+        DvzFieldDataView view = dvz_field_data_view();
+        view.data = src->data;
+        view.bytes_per_row = (uint64_t)src->desc.width * 4u;
+        view.rows_per_image = src->desc.height;
+        return dvz_sampled_field_resize(
+                   field, src->desc.width, src->desc.height, src->desc.depth, &view) == DVZ_OK;
     }
     DvzFieldRegion region = {};
     if (_text_atlas_changed_region(field, src, &region))
@@ -2403,28 +2417,33 @@ static bool _text_atlas_store(DvzFont* font, const DvzTextAtlasSpec* spec, DvzTe
     ANN(font);
     ANN(spec);
     ANN(atlas);
-    DvzTextAtlas** slot = _text_atlas_acquire_slot(font, spec);
-    if (slot == NULL)
+    DvzTextAtlasCacheEntry* entry = _text_atlas_acquire_entry(font, spec);
+    if (entry == NULL)
         return false;
-    if (*slot != NULL && (*slot)->field != NULL && atlas->field != NULL &&
-        _text_atlas_replace_field_data((*slot)->field, atlas->field))
+    if (entry->atlas == NULL)
     {
-        DvzSampledField* field = (*slot)->field;
-        DvzSampledField* temporary_field = atlas->field;
-        (*slot)->field = NULL;
-        atlas->field = field;
-        _scene_text_atlas_destroy(*slot);
-        dvz_sampled_field_destroy(temporary_field);
-        *slot = atlas;
         font->version++;
         atlas->generation = font->version;
+        entry->atlas = atlas;
         return true;
     }
-    if (*slot != NULL)
-        _scene_text_atlas_destroy(*slot);
-    *slot = atlas;
+
+    DvzTextAtlas* realized = entry->atlas;
+    if (realized->field == NULL || atlas->field == NULL ||
+        !_text_atlas_replace_field_data(realized->field, atlas->field))
+    {
+        return false;
+    }
+
+    DvzSampledField* stable_field = realized->field;
+    DvzSampledField* temporary_field = atlas->field;
+    uint64_t generation = font->version + 1u;
+    *realized = *atlas;
+    realized->field = stable_field;
+    realized->generation = generation;
+    atlas->field = temporary_field;
+    _scene_text_atlas_destroy(atlas);
     font->version++;
-    atlas->generation = font->version;
     return true;
 }
 
@@ -2448,10 +2467,10 @@ static bool _text_atlas_ensure_exact_set(
         return false;
 
     DvzTextAtlasBuildSet set = *requested_set;
-    DvzTextAtlas** slot = _text_atlas_find_slot(font, spec);
-    DvzTextAtlas* existing = slot != NULL ? *slot : NULL;
+    DvzTextAtlasCacheEntry* entry = _text_atlas_find_entry(font, spec);
+    DvzTextAtlas* existing = entry != NULL ? entry->atlas : NULL;
     if (!_text_atlas_build_set_add_existing(&set, existing))
-        return existing != NULL && existing->field != NULL;
+        return false;
     if (_text_atlas_contains_set(existing, &set))
     {
         log_trace(
@@ -2477,19 +2496,35 @@ static bool _text_atlas_ensure_exact_set(
         if (_text_atlas_store(font, spec, atlas))
             return true;
         _scene_text_atlas_destroy(atlas);
-        return existing != NULL && existing->field != NULL;
+        return false;
     }
 
     atlas = NULL;
     log_debug(
         "text atlas: building backend atlas backend=%d em=%.3f range=%.3f glyphs=%u",
         (int)spec->backend, (double)spec->em_px, (double)spec->distance_range_px, set.count);
-    if (!_text_atlas_build_backend(font, spec, &set, &atlas))
-        return existing != NULL && existing->field != NULL;
+    if (_text_atlas_build_backend(font, spec, &set, &atlas))
+    {
+        if (_text_atlas_store(font, spec, atlas))
+            return true;
+        _scene_text_atlas_destroy(atlas);
+        return false;
+    }
+
+    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_STB_SDF)
+        return false;
+    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
+        log_debug("MSDF atlas generation failed; falling back to SDF atlas");
+    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
+        log_debug("FreeType bitmap atlas generation failed; falling back to SDF atlas");
+    DvzTextAtlasSpec fallback = _text_atlas_fallback_spec(spec);
+    atlas = NULL;
+    if (!_text_atlas_build_backend(font, &fallback, &set, &atlas))
+        return false;
     if (!_text_atlas_store(font, spec, atlas))
     {
         _scene_text_atlas_destroy(atlas);
-        return existing != NULL && existing->field != NULL;
+        return false;
     }
     return true;
 }
@@ -2510,16 +2545,7 @@ static bool _text_atlas_ensure_set(
     ANN(font);
     ANN(spec);
     ANN(requested_set);
-    if (_text_atlas_ensure_exact_set(font, spec, requested_set))
-        return true;
-    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_MSDF)
-        log_debug("MSDF atlas generation failed; falling back to SDF atlas");
-    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP)
-        log_debug("FreeType bitmap atlas generation failed; falling back to SDF atlas");
-    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_STB_SDF)
-        return false;
-    DvzTextAtlasSpec fallback = _text_atlas_fallback_spec(spec);
-    return _text_atlas_ensure_exact_set(font, &fallback, requested_set);
+    return _text_atlas_ensure_exact_set(font, spec, requested_set);
 }
 
 
@@ -2626,13 +2652,7 @@ const DvzTextAtlas* dvz_font_atlas(const DvzFont* font, const DvzTextAtlasSpec* 
 {
     if (font == NULL || spec == NULL)
         return NULL;
-    const DvzTextAtlas* atlas = _text_atlas_find_const(font, spec);
-    if (atlas != NULL)
-        return atlas;
-    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_STB_SDF)
-        return NULL;
-    DvzTextAtlasSpec fallback = _text_atlas_fallback_spec(spec);
-    return _text_atlas_find_const(font, &fallback);
+    return _text_atlas_find_const(font, spec);
 }
 
 
@@ -2762,14 +2782,8 @@ DvzTextAtlas* _scene_text_atlas_get(DvzFont* font, const DvzTextAtlasSpec* spec)
 {
     ANN(font);
     ANN(spec);
-    DvzTextAtlas** slot = _text_atlas_find_slot(font, spec);
-    if (slot != NULL)
-        return *slot;
-    if (spec->backend == DVZ_TEXT_ATLAS_BACKEND_STB_SDF)
-        return NULL;
-    DvzTextAtlasSpec fallback = _text_atlas_fallback_spec(spec);
-    slot = _text_atlas_find_slot(font, &fallback);
-    return slot != NULL ? *slot : NULL;
+    DvzTextAtlasCacheEntry* entry = _text_atlas_find_entry(font, spec);
+    return entry != NULL ? entry->atlas : NULL;
 }
 
 
@@ -2830,7 +2844,7 @@ bool _scene_text_atlas_ensure_strings(
     if (!_text_atlas_build_set_add_default(&set))
         return false;
     if (!_text_atlas_build_set_add_strings(&set, strings, count))
-        log_debug("text atlas request exceeded glyph capacity; using the accepted subset");
+        return false;
     return _text_atlas_ensure_set(font, spec, &set);
 }
 
@@ -2898,8 +2912,9 @@ void _scene_font_release(DvzFont* font)
         return;
     for (uint32_t i = 0; i < font->atlas_count && i < DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT; i++)
     {
-        _scene_text_atlas_destroy(font->atlases[i]);
-        font->atlases[i] = NULL;
+        DvzTextAtlasCacheEntry* entry = &font->atlas_entries[i];
+        _scene_text_atlas_destroy(entry->atlas);
+        dvz_memset(entry, sizeof(DvzTextAtlasCacheEntry), 0, sizeof(DvzTextAtlasCacheEntry));
     }
     font->atlas_count = 0;
     if (font->ttf_bytes != NULL)

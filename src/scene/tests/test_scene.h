@@ -1320,6 +1320,11 @@ int test_scene_text_msdf_shader_uses_rgb_distance(TstContext* suite, const TstCa
 int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
     TstContext* suite, const TstCase* item);
 
+int test_scene_text_font_source_identity(TstContext* suite, const TstCase* item);
+
+int test_scene_text_atlas_capacity_failure_rolls_back(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_text_scientific_fallback_all_backends(TstContext* suite, const TstCase* item);
 
 int test_scene_text_public_font_atlas_api(TstContext* suite, const TstCase* item);

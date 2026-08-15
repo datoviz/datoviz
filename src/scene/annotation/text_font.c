@@ -48,6 +48,37 @@ static bool _font_desc_validate(const DvzFontDesc* desc)
 
 
 /**
+ * Resolve the immutable private source selected by one font descriptor.
+ *
+ * @param desc the font descriptor
+ * @return resolved private source identity
+ */
+static DvzFontSourceId _font_source_id(const DvzFontDesc* desc)
+{
+    ANN(desc);
+    if (desc->path != NULL && desc->path[0] != '\0')
+        return DVZ_FONT_SOURCE_CUSTOM_FILE;
+
+    const char* family = desc->family != NULL ? desc->family : "";
+    const char* style = desc->style != NULL ? desc->style : "";
+    if (strcmp(family, "Source Code Pro") == 0)
+        return DVZ_FONT_SOURCE_SOURCE_CODE_PRO_REGULAR;
+    if (strcmp(family, "Noto Sans Math") == 0)
+        return DVZ_FONT_SOURCE_NOTO_SANS_MATH_REGULAR;
+    if (strcmp(family, "Source Sans 3") == 0 || family[0] == '\0')
+    {
+        if (strcmp(style, "Bold") == 0)
+            return DVZ_FONT_SOURCE_SOURCE_SANS_3_BOLD;
+        if (strcmp(style, "Italic") == 0)
+            return DVZ_FONT_SOURCE_SOURCE_SANS_3_ITALIC;
+        if (strcmp(style, "Bold Italic") == 0)
+            return DVZ_FONT_SOURCE_SOURCE_SANS_3_BOLD_ITALIC;
+    }
+    return DVZ_FONT_SOURCE_SOURCE_SANS_3_REGULAR;
+}
+
+
+/**
  * Return the scene default SDF font, creating it lazily.
  *
  * @param scene the scene
@@ -168,6 +199,7 @@ DvzFont* dvz_font(DvzScene* scene, const DvzFontDesc* desc)
     font->scene = scene;
     font->face_index = desc->face_index;
     font->flags = desc->font_flags;
+    font->source_id = _font_source_id(desc);
     font->version = 1;
     if (desc->path != NULL)
         dvz_strlcpy(font->path, desc->path, sizeof(font->path));

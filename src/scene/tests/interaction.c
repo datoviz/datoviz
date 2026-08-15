@@ -4483,6 +4483,7 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
     DvzTextAtlas* atlas = text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, sizes[0]);
     ANN(atlas);
     ANN(atlas->field);
+    AT(atlas == initial_atlas);
     AT(atlas->glyph_count > initial_glyph_count);
     AT(atlas->generation > initial_generation);
     AT(atlas->field == initial_field);

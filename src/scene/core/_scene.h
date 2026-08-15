@@ -1139,6 +1139,29 @@ struct DvzOverlayCard
 };
 
 
+typedef enum
+{
+    DVZ_FONT_SOURCE_NONE = 0,
+    DVZ_FONT_SOURCE_SOURCE_SANS_3_REGULAR,
+    DVZ_FONT_SOURCE_SOURCE_SANS_3_BOLD,
+    DVZ_FONT_SOURCE_SOURCE_SANS_3_ITALIC,
+    DVZ_FONT_SOURCE_SOURCE_SANS_3_BOLD_ITALIC,
+    DVZ_FONT_SOURCE_SOURCE_CODE_PRO_REGULAR,
+    DVZ_FONT_SOURCE_NOTO_SANS_MATH_REGULAR,
+    DVZ_FONT_SOURCE_CUSTOM_FILE,
+} DvzFontSourceId;
+
+
+typedef struct DvzTextAtlasCacheEntry DvzTextAtlasCacheEntry;
+
+struct DvzTextAtlasCacheEntry
+{
+    DvzTextAtlasSpec request_spec;
+    DvzTextAtlas* atlas;
+    bool active;
+};
+
+
 struct DvzFont
 {
     DvzScene* scene;
@@ -1147,10 +1170,11 @@ struct DvzFont
     char style[DVZ_SCENE_LABEL_SIZE];
     uint32_t face_index;
     uint32_t flags;
+    DvzFontSourceId source_id;
     uint64_t version;
     void* ttf_bytes;
     uint64_t ttf_size;
-    DvzTextAtlas* atlases[DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT];
+    DvzTextAtlasCacheEntry atlas_entries[DVZ_SCENE_MAX_TEXT_ATLASES_PER_FONT];
     uint32_t atlas_count;
 };
 
