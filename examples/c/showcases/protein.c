@@ -529,13 +529,20 @@ static bool _setup_camera(DvzPanel* panel, DvzCameraDesc* out_desc, DvzCamera** 
     ANN(out_camera);
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
-    camera_desc.view.eye[0] = 0.18f;
+    camera_desc.projection.type = DVZ_CAMERA_PERSPECTIVE;
+    camera_desc.view.eye[0] = 0.519f;
     camera_desc.view.eye[1] = -0.08f;
     camera_desc.view.eye[2] = 2.95f;
+    camera_desc.view.target[0] = 0.0f;
+    camera_desc.view.target[1] = 0.0f;
+    camera_desc.view.target[2] = 0.0f;
+    camera_desc.view.up[0] = 0.0f;
     camera_desc.view.up[1] = 1.0f;
+    camera_desc.view.up[2] = 0.0f;
     camera_desc.projection.fov_y = 0.57f;
     camera_desc.projection.near_clip = 0.05f;
     camera_desc.projection.far_clip = 100.0f;
+    camera_desc.projection.ortho_height = 0.0f;
     if (dvz_panel_set_camera_desc(panel, &camera_desc) != 0)
         return false;
 
@@ -566,9 +573,23 @@ static bool _setup_material(ProteinState* state, DvzVisual* spheres, DvzVisual* 
 
     state->sphere_material = dvz_material_desc();
     state->sphere_material.model = DVZ_MATERIAL_MODEL_STANDARD;
-    state->sphere_material.standard.roughness = 0.36f;
-    state->sphere_material.standard.specular = 0.68f;
-    state->sphere_material.standard.rim_strength = 0.12f;
+    state->sphere_material.alpha_mode = DVZ_ALPHA_OPAQUE;
+    state->sphere_material.opacity = 1.0f;
+    state->sphere_material.base_color_factor[0] = 1.0f;
+    state->sphere_material.base_color_factor[1] = 1.0f;
+    state->sphere_material.base_color_factor[2] = 1.0f;
+    state->sphere_material.base_color_factor[3] = 1.0f;
+    state->sphere_material.phong.ambient = 0.24f;
+    state->sphere_material.phong.diffuse = 0.82f;
+    state->sphere_material.phong.specular = 0.24f;
+    state->sphere_material.phong.shininess = 26.0f;
+    state->sphere_material.standard.roughness = 0.404f;
+    state->sphere_material.standard.specular = 0.659f;
+    state->sphere_material.standard.metallic = 0.0f;
+    state->sphere_material.standard.emissive[0] = 0.0f;
+    state->sphere_material.standard.emissive[1] = 0.0f;
+    state->sphere_material.standard.emissive[2] = 0.0f;
+    state->sphere_material.standard.rim_strength = 0.074f;
     return dvz_visual_set_material(spheres, &state->sphere_material) == 0 &&
            dvz_visual_set_material(selection, &state->sphere_material) == 0;
 }
@@ -890,11 +911,11 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 #ifndef DVZ_EXAMPLE_NO_MAIN
     state->ao = (DvzExampleGuiAoControls){
         .enabled = true,
-        .radius = 0.95f,
-        .intensity = 2.35f,
-        .thickness = 0.045f,
-        .min_visibility = 0.24f,
-        .quality = (float)DVZ_AO_QUALITY_HIGH,
+        .radius = 1.296f,
+        .intensity = 5.899f,
+        .thickness = 0.367f,
+        .min_visibility = 0.157f,
+        .quality = (float)DVZ_AO_QUALITY_ULTRA,
         .debug_mode = DVZ_AO_DEBUG_NONE,
     };
     example_tuner_ao(&state->tuner, "Ambient occlusion", panel, &state->ao);
@@ -907,12 +928,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         dvz_scenario_bind_controller(ctx, panel, arcball_controller, DVZ_DIM_MASK_XYZ) == 0,
         "dvz_scenario_bind_controller() failed");
-    vec3 arcball_angles = {+0.790430f, -0.651732f, +0.810104f};
+    vec3 arcball_angles = {+0.753992f, -1.025966f, +2.442009f};
     vec2 arcball_pan = {0.0f, 0.0f};
     dvz_arcball_initial(arcball, arcball_angles);
     example_tuner_camera_ref(&state->tuner, "Camera", panel, camera, &camera_desc);
     example_tuner_arcball(
-        &state->tuner, "Arcball", arcball, arcball_angles, 1.0f, arcball_pan);
+        &state->tuner, "Arcball", arcball, arcball_angles, 0.904839f, arcball_pan);
     example_tuner_material(&state->tuner, "Atom material", spheres, &state->sphere_material);
 
     const float rotation_speed = _rotation_speed(ctx);

@@ -19,7 +19,9 @@ DEFAULT_PDB_ID = "6m0j"
 DEFAULT_BUNDLE = Path("data/examples/proteins/1ubq/prepared")
 ATOM_SCALE = 0.52
 ROTATION_SPEED_RAD_PER_SEC = 0.18
-INITIAL_ANGLES = (ctypes.c_float * 3)(0.790430, -0.651732, 0.810104)
+INITIAL_ANGLES = (ctypes.c_float * 3)(0.753992, -1.025966, 2.442009)
+INITIAL_ZOOM = 0.904839
+INITIAL_PAN = (ctypes.c_float * 2)(0.0, 0.0)
 PANEL_BG = dvz.DvzColor(22, 27, 34, 255)
 GRID = dvz.DvzColor(48, 54, 61, 160)
 TEXT = dvz.DvzColor(201, 209, 217, 255)
@@ -145,23 +147,25 @@ def _selected_atom(atoms: ProteinAtoms) -> int:
 
 def _setup_camera(panel) -> None:
     camera = dvz.dvz_camera_desc()
-    camera.view.eye[:] = (0.18, -0.08, 2.95)
+    camera.projection.type = dvz.DVZ_CAMERA_PERSPECTIVE
+    camera.view.eye[:] = (0.519, -0.08, 2.95)
     camera.view.target[:] = (0.0, 0.0, 0.0)
     camera.view.up[:] = (0.0, 1.0, 0.0)
     camera.projection.fov_y = 0.57
     camera.projection.near_clip = 0.05
     camera.projection.far_clip = 100.0
+    camera.projection.ortho_height = 0.0
     if dvz.dvz_panel_set_camera_desc(panel, ctypes.byref(camera)) != 0:
         raise RuntimeError("dvz_panel_set_camera_desc() failed")
 
 
 def _set_ao(panel) -> None:
     desc = dvz.dvz_ao_desc()
-    desc.radius = 0.95
-    desc.intensity = 2.35
-    desc.thickness = 0.045
-    desc.min_visibility = 0.24
-    desc.quality = dvz.DVZ_AO_QUALITY_HIGH
+    desc.radius = 1.296
+    desc.intensity = 5.899
+    desc.thickness = 0.367
+    desc.min_visibility = 0.157
+    desc.quality = dvz.DVZ_AO_QUALITY_ULTRA
     desc.debug_mode = dvz.DVZ_AO_DEBUG_NONE
     if dvz.dvz_panel_set_ao(panel, ctypes.byref(desc)) != 0:
         raise RuntimeError("dvz_panel_set_ao() failed")
@@ -170,9 +174,18 @@ def _set_ao(panel) -> None:
 def _material():
     material = dvz.dvz_material_desc()
     material.model = dvz.DVZ_MATERIAL_MODEL_STANDARD
-    material.standard.roughness = 0.36
-    material.standard.specular = 0.68
-    material.standard.rim_strength = 0.12
+    material.alpha_mode = dvz.DVZ_ALPHA_OPAQUE
+    material.opacity = 1.0
+    material.base_color_factor[:] = (1.0, 1.0, 1.0, 1.0)
+    material.phong.ambient = 0.24
+    material.phong.diffuse = 0.82
+    material.phong.specular = 0.24
+    material.phong.shininess = 26.0
+    material.standard.roughness = 0.404
+    material.standard.specular = 0.659
+    material.standard.metallic = 0.0
+    material.standard.emissive[:] = (0.0, 0.0, 0.0)
+    material.standard.rim_strength = 0.074
     return material
 
 
@@ -377,6 +390,10 @@ def _configure_view(view, scene, panel) -> None:
         raise RuntimeError("dvz_controller_arcball() failed")
     if dvz.dvz_arcball_initial(arcball, INITIAL_ANGLES) != 0:
         raise RuntimeError("dvz_arcball_initial() failed")
+    if dvz.dvz_arcball_zoom(arcball, INITIAL_ZOOM) != 0:
+        raise RuntimeError("dvz_arcball_zoom() failed")
+    if dvz.dvz_arcball_pan(arcball, INITIAL_PAN) != 0:
+        raise RuntimeError("dvz_arcball_pan() failed")
 
 
 def _run(scene, figure, panel, state: ProteinState) -> None:
