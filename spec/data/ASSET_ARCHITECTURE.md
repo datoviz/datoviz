@@ -17,7 +17,7 @@ The current `data` submodule mixes five lifecycles: build-critical fonts, generi
 
 The active checked-out data tree is about 81 MiB: approximately 8 MiB of reusable assets, 47 MiB of prepared example datasets, and 26 MiB of gallery media. The current tree has 161 LFS files totaling about 84 MiB with a largest file of about 24 MiB, while reachable LFS objects across repository refs total about 0.9 GiB. GitHub billing nevertheless reports a much larger historical LFS footprint because replaced and orphaned binary versions remain associated with the repositories. The storage and bandwidth failure is therefore history amplification, not an active payload-size problem.
 
-At plan approval, the source build depended on two fonts from the submodule and release-source construction reached into it for ten fonts. Those font and source-package defects are now resolved through the admitted Source/Noto family and deterministic Source atlas products in the parent repository. Generic file-I/O tests still depend on an Earth texture and an Allen Institute NumPy array, WebGPU publishing still stages selected data bundles from the submodule, and gallery capture still writes generated PNG files back into it; those remaining ownership defects are not reasons to preserve the submodule.
+At plan approval, the source build depended on two fonts from the submodule, release-source construction reached into it for ten fonts, and generic file-I/O tests depended on an Earth texture and an Allen Institute NumPy array. Those core defects are now resolved through the admitted Source/Noto family, deterministic Source atlas products, and source-defined hermetic JPEG/NPY fixtures in the parent repository. Core test and wheel workflows initialize only source dependency submodules and contain no LFS hydration path. WebGPU publishing still stages selected data bundles from the submodule, and gallery capture still writes generated PNG files back into it; those remaining ownership defects are not reasons to preserve the submodule.
 
 ## Required Properties
 
@@ -295,10 +295,10 @@ Exit gate: every current path has one declared destination or explicit retiremen
 
 1. Complete: admit the exact approved Source Sans 3 Regular, Bold, Italic, and Bold Italic faces, Source Code Pro Regular, and Noto Sans Math scientific fallback with license, provenance, coverage, and digest records in `assets/runtime/fonts/`.
 2. Complete: replace the temporary legacy admission manifest atomically, preserve Regular, Bold, Italic, Bold Italic, Mono, visible fallback, and custom file-font behavior, and keep the old mixed-version files only in the frozen legacy snapshot rather than active parent Git.
-3. Replace the Earth JPEG and Allen NumPy generic file-I/O tests with intentionally tiny fixtures.
+3. Complete: replace the Earth JPEG and Allen NumPy generic file-I/O tests with intentionally tiny source-defined fixtures.
 4. Generate colormap/runtime derivatives from committed declarative sources where applicable.
 5. Define hermetic `docs-check` behavior and move data-backed WebGPU staging and reviewed gallery consumption to `site-release` or equivalent publication validation.
-6. Remove data materialization from CMake, source-bundle construction, wheel generation, core CI, and hermetic documentation checks.
+6. Complete for authored core paths: remove data materialization from CMake, source-bundle construction, wheel generation, core CI, and hermetic documentation checks; hosted execution remains part of exact-candidate proof.
 7. Add a no-data source/build/test/package/docs-check smoke that leaves the submodule uninitialized.
 
 Exit gate: ordinary source and installed-library use is offline and self-contained; core CI has no Git LFS step or asset download.

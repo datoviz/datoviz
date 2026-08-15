@@ -38,9 +38,9 @@ int test_read_npy(TstContext* suite, const TstCase* tstitem);
 
 int test_read_text(TstContext* suite, const TstCase* tstitem);
 
-int test_jpeg_bytes_earth(TstContext* suite, const TstCase* tstitem);
+int test_jpeg_bytes_fixture(TstContext* suite, const TstCase* tstitem);
 
-int test_jpeg_file_earth(TstContext* suite, const TstCase* tstitem);
+int test_jpeg_file_fixture(TstContext* suite, const TstCase* tstitem);
 
 
 

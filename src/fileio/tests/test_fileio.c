@@ -33,8 +33,32 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define EARTH_TEXTURE_PATH "data/assets/textures/world.200412.3x5400x2700.jpg"
-#define NPY_FIXTURE_PATH "data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy"
+static const uint8_t TINY_JPEG[] = {
+    0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xdb, 0x00, 0x43,
+    0x00, 0x03, 0x02, 0x02, 0x03, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x04,
+    0x03, 0x03, 0x04, 0x05, 0x08, 0x05, 0x05, 0x04, 0x04, 0x05, 0x0a, 0x07,
+    0x07, 0x06, 0x08, 0x0c, 0x0a, 0x0c, 0x0c, 0x0b, 0x0a, 0x0b, 0x0b, 0x0d,
+    0x0e, 0x12, 0x10, 0x0d, 0x0e, 0x11, 0x0e, 0x0b, 0x0b, 0x10, 0x16, 0x10,
+    0x11, 0x13, 0x14, 0x15, 0x15, 0x15, 0x0c, 0x0f, 0x17, 0x18, 0x16, 0x14,
+    0x18, 0x12, 0x14, 0x15, 0x14, 0xff, 0xdb, 0x00, 0x43, 0x01, 0x03, 0x04,
+    0x04, 0x05, 0x04, 0x05, 0x09, 0x05, 0x05, 0x09, 0x14, 0x0d, 0x0b, 0x0d,
+    0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14,
+    0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14,
+    0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14,
+    0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14,
+    0x14, 0x14, 0xff, 0xc0, 0x00, 0x11, 0x08, 0x00, 0x02, 0x00, 0x02, 0x03,
+    0x01, 0x11, 0x00, 0x02, 0x11, 0x01, 0x03, 0x11, 0x01, 0xff, 0xc4, 0x00,
+    0x14, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0xff, 0xc4, 0x00, 0x14, 0x10,
+    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xc4, 0x00, 0x14, 0x01, 0x01, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x07, 0xff, 0xc4, 0x00, 0x14, 0x11, 0x01, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0xff, 0xda, 0x00, 0x0c, 0x03, 0x01, 0x00, 0x02, 0x11, 0x03, 0x11,
+    0x00, 0x3f, 0x00, 0x22, 0x2d, 0x8b, 0xdf, 0xff, 0xd9,
+};
 
 
 
@@ -43,20 +67,23 @@
 /*************************************************************************************************/
 
 /**
- * Return whether a fixture file exists.
+ * Build a unique path for one temporary fixture.
  *
- * @param path file path
- * @return whether the file can be opened for reading
+ * @param suite active test suite
+ * @param suffix fixture suffix including extension
+ * @param path output path
+ * @param path_size output path size
+ * @return whether the path was created
  */
-static bool _file_exists(const char* path)
+static bool _fixture_path(
+    const TstContext* suite, const char* suffix, char* path, size_t path_size)
 {
+    ANN(suite);
+    ANN(suffix);
     ANN(path);
-
-    FILE* fp = fopen(path, "rb");
-    if (fp == NULL)
-        return false;
-    fclose(fp);
-    return true;
+    char name[128] = {0};
+    int rc = dvz_snprintf(name, sizeof(name), "dvztest-fileio-%p-%s", (const void*)suite, suffix);
+    return rc >= 0 && (size_t)rc < sizeof(name) && tst_tmp_path(name, path, path_size) == 0;
 }
 
 
@@ -321,72 +348,77 @@ int test_read_npy(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    if (!_file_exists(NPY_FIXTURE_PATH))
-    {
-        tst_skip(suite, "NPY fixture missing");
-        return 0;
-    }
+    const char header[] = "{'descr': '|u1', 'fortran_order': False, 'shape': (6,), }";
+    const uint8_t expected[] = {1, 2, 3, 5, 8, 13};
+    const size_t header_body_len = strlen(header);
+    const size_t header_padded_len = ((header_body_len + 1 + 15) / 16) * 16;
+    const size_t total_size = 10 + header_padded_len + sizeof(expected);
+    uint8_t* buffer = (uint8_t*)dvz_calloc(total_size, 1);
+    ANN(buffer);
+    dvz_memcpy(buffer, total_size, "\x93NUMPY", 6);
+    buffer[6] = 1;
+    uint16_t header_len = (uint16_t)header_padded_len;
+    dvz_memcpy(buffer + 8, sizeof(header_len), &header_len, sizeof(header_len));
+    dvz_memset(buffer + 10, total_size - 10, ' ', header_padded_len);
+    dvz_memcpy(buffer + 10, total_size - 10, header, header_body_len);
+    buffer[10 + header_padded_len - 1] = '\n';
+    dvz_memcpy(
+        buffer + 10 + header_padded_len, sizeof(expected), expected, sizeof(expected));
+
+    char path[256] = {0};
+    AT(_fixture_path(suite, "tiny.npy", path, sizeof(path)));
+    AT(dvz_write_bytes(path, "wb", total_size, buffer) == 0);
+    dvz_free(buffer);
 
     DvzSize size = 0;
-    void* payload = dvz_read_npy(NPY_FIXTURE_PATH, &size);
+    void* payload = dvz_read_npy(path, &size);
     AT(payload != NULL);
-    AT(size == 420196);
+    AT(size == sizeof(expected));
+    AT(memcmp(payload, expected, sizeof(expected)) == 0);
     dvz_free(payload);
+    AT(remove(path) == 0);
     return 0;
 }
 
 
 
-int test_jpeg_bytes_earth(TstContext* suite, const TstCase* tstitem)
+int test_jpeg_bytes_fixture(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    if (!_file_exists(EARTH_TEXTURE_PATH))
-    {
-        tst_skip(suite, "earth JPEG fixture missing");
-        return 0;
-    }
-
-    DvzSize size = 0;
-    unsigned char* bytes = (unsigned char*)dvz_read_file(EARTH_TEXTURE_PATH, &size);
-    AT(bytes != NULL);
-    AT(size > 0);
-
     uint32_t width = 0;
     uint32_t height = 0;
-    uint8_t* rgba = dvz_load_jpeg(bytes, size, &width, &height);
+    uint8_t* rgba = dvz_load_jpeg(TINY_JPEG, sizeof(TINY_JPEG), &width, &height);
     AT(rgba != NULL);
-    AT(width == 5400);
-    AT(height == 2700);
+    AT(width == 2);
+    AT(height == 2);
     AT(rgba[3] == 255);
-    AT(rgba[4 * ((size_t)width * (height / 2u) + (width / 2u)) + 3] == 255);
+    AT(rgba[7] == 255);
 
     dvz_free(rgba);
-    dvz_free(bytes);
     return 0;
 }
 
 
 
-int test_jpeg_file_earth(TstContext* suite, const TstCase* tstitem)
+int test_jpeg_file_fixture(TstContext* suite, const TstCase* tstitem)
 {
     ANN(suite);
 
-    if (!_file_exists(EARTH_TEXTURE_PATH))
-    {
-        tst_skip(suite, "earth JPEG fixture missing");
-        return 0;
-    }
+    char path[256] = {0};
+    AT(_fixture_path(suite, "tiny.jpg", path, sizeof(path)));
+    AT(dvz_write_bytes(path, "wb", sizeof(TINY_JPEG), TINY_JPEG) == 0);
 
     uint32_t width = 0;
     uint32_t height = 0;
-    uint8_t* rgba = dvz_read_jpeg(EARTH_TEXTURE_PATH, &width, &height);
+    uint8_t* rgba = dvz_read_jpeg(path, &width, &height);
     AT(rgba != NULL);
-    AT(width == 5400);
-    AT(height == 2700);
+    AT(width == 2);
+    AT(height == 2);
     AT(rgba[3] == 255);
 
     dvz_free(rgba);
+    AT(remove(path) == 0);
     return 0;
 }
 
@@ -419,8 +451,8 @@ int test_fileio(TstSuite* suite)
     TST_CASE(test_gzip_io);
 
     TST_GROUP("jpeg");
-    TST_CASE(test_jpeg_bytes_earth);
-    TST_CASE(test_jpeg_file_earth);
+    TST_CASE(test_jpeg_bytes_fixture);
+    TST_CASE(test_jpeg_file_fixture);
 
     TST_GROUP("npy");
     TST_CASE(test_parse_npy);

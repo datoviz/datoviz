@@ -16,10 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          submodules: recursive
-      - name: Verify embedded font assets
-        run: bash tools/materialize_lfs_assets.sh release
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -47,7 +43,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          submodules: recursive
+          submodules: false
+      - name: Initialize source dependencies
+        shell: bash
+        run: >-
+          git submodule update --init --recursive
+          external/cglm external/cimgui external/glfw external/kvazaar external/mimalloc
+          external/msdf-atlas-gen
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
