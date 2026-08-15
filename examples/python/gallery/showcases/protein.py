@@ -17,7 +17,7 @@ from examples.python.gallery import common as ex
 
 DEFAULT_PDB_ID = "6m0j"
 DEFAULT_BUNDLE = Path("data/examples/proteins/1ubq/prepared")
-ATOM_SCALE = 0.4
+ATOM_SCALE = 0.52
 ROTATION_SPEED_RAD_PER_SEC = 0.18
 INITIAL_ANGLES = (ctypes.c_float * 3)(0.790430, -0.651732, 0.810104)
 PANEL_BG = dvz.DvzColor(22, 27, 34, 255)
@@ -157,10 +157,10 @@ def _setup_camera(panel) -> None:
 
 def _set_ao(panel) -> None:
     desc = dvz.dvz_ao_desc()
-    desc.radius = 0.72
-    desc.intensity = 1.82
-    desc.thickness = 0.028
-    desc.min_visibility = 0.42
+    desc.radius = 0.95
+    desc.intensity = 2.35
+    desc.thickness = 0.045
+    desc.min_visibility = 0.24
     desc.quality = dvz.DVZ_AO_QUALITY_HIGH
     desc.debug_mode = dvz.DVZ_AO_DEBUG_NONE
     if dvz.dvz_panel_set_ao(panel, ctypes.byref(desc)) != 0:
@@ -345,7 +345,14 @@ def _build_scene(path: Path | None = None):
     atoms = _load_atoms(path)
     state = ProteinState(atoms)
     scene, figure, panel = ex.scene_panel()
-    ex.set_panel_directional_light(scene, panel, (0.25, 0.65, 0.72))
+    directional = ex.set_panel_directional_light(scene, panel, (0.25, 0.65, 0.72))
+    ambient = dvz.dvz_scene_default_ambient(scene)
+    if (
+        not ambient
+        or dvz.dvz_light_set_intensity(ambient, 0.50) != 0
+        or dvz.dvz_light_set_intensity(directional, 0.72) != 0
+    ):
+        raise RuntimeError("failed to configure protein lights")
     dvz.dvz_panel_set_background_color(panel, PANEL_BG)
     _setup_camera(panel)
     _set_ao(panel)

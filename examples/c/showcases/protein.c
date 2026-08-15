@@ -67,7 +67,7 @@
 #define DEFAULT_BUNDLE_PATH         "data/examples/proteins/6m0j/prepared"
 #define LEGACY_FALLBACK_BUNDLE_PATH "data/examples/proteins/1ubq/prepared"
 #define ROTATION_SPEED_RAD_PER_SEC  0.18f
-#define DEFAULT_ATOM_SCALE          0.4f
+#define DEFAULT_ATOM_SCALE          0.52f
 #define SCENARIO_FPS                60.0
 
 static const float TAU = 6.28318530718f;
@@ -862,7 +862,17 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(ctx->figure != NULL && panel != NULL, "scene setup failed");
     const float light_direction[3] = {0.25f, 0.65f, 0.72f};
-    EXAMPLE_CHECK(example_panel_directional_light(ctx->scene, panel, light_direction), "failed to configure protein light");
+    DvzLightDesc directional_desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+    memcpy(directional_desc.direction, light_direction, sizeof(light_direction));
+    directional_desc.intensity = 0.72f;
+    DvzLight* directional = dvz_light(ctx->scene, &directional_desc);
+    DvzLight* ambient = dvz_scene_default_ambient(ctx->scene);
+    EXAMPLE_CHECK(
+        ambient != NULL && dvz_light_set_intensity(ambient, 0.50f) == DVZ_OK &&
+            directional != NULL,
+        "failed to configure protein lights");
+    DvzLight* lights[2] = {ambient, directional};
+    EXAMPLE_CHECK(dvz_panel_set_lights(panel, lights, 2) == DVZ_OK, "failed to assign protein lights");
     example_tuner_figure(&state->tuner, ctx->figure);
     example_graphite_cyan_set_panel_background(panel);
 
@@ -880,10 +890,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 #ifndef DVZ_EXAMPLE_NO_MAIN
     state->ao = (DvzExampleGuiAoControls){
         .enabled = true,
-        .radius = 0.72f,
-        .intensity = 1.82f,
-        .thickness = 0.028f,
-        .min_visibility = 0.42f,
+        .radius = 0.95f,
+        .intensity = 2.35f,
+        .thickness = 0.045f,
+        .min_visibility = 0.24f,
         .quality = (float)DVZ_AO_QUALITY_HIGH,
         .debug_mode = DVZ_AO_DEBUG_NONE,
     };
