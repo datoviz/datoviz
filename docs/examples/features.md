@@ -625,7 +625,7 @@ This example shows probing a scalar image at a marked data position.
 
 `features`
 
-This example compares the same sphere cluster under three material and light configurations.
+This example compares the same sphere cluster under three panel-owned light configurations.
 
 </div>
 

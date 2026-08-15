@@ -9,7 +9,7 @@
 </div>
 </nav>
 
-This example compares the same sphere cluster under three scene-owned light and material configurations.
+This example compares the same sphere cluster under three panel-owned light configurations.
 
 ## Preview
 
@@ -47,7 +47,7 @@ object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 
-Each panel uploads the same sphere position, radius, and color arrays, but changes its ordered directional-light set alongside roughness, specular, and rim-strength material values. Rotate any panel in the live preview and the linked arcball controllers keep the views aligned, making it easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
+Each panel uploads the same sphere position, radius, and color arrays, but selects its own directional light while changing roughness, specular, and rim_strength. Rotate any panel in the live preview and the linked arcball controllers keep the views aligned, making it easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
 
 ## Source
 

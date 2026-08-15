@@ -333,7 +333,7 @@ This example shows contour isolines over a scalar field.
 
 `features`
 
-This example compares the same sphere cluster under three material and light configurations.
+This example compares the same sphere cluster under three panel-owned light configurations.
 
 </div>
 
