@@ -16742,6 +16742,10 @@ else:
     dvz_font.__doc__ = """/**
  * Create a scene-owned font resource.
  *
+ * Descriptor strings are copied before return. A nonempty `path` selects the font file; `family`
+ * and `style` provide identity and diagnostics but do not perform platform font discovery. The
+ * scene owns the returned resource.
+ *
  * @param scene the scene
  * @param desc the font descriptor
  * @return the font
@@ -16759,7 +16763,8 @@ else:
  * Return the font atlas matching a spec.
  *
  * The returned atlas is owned by the font's scene and remains valid until the font or scene is
- * destroyed. When the requested renderer falls back internally, this function returns the fallback
+ * destroyed. Every text or glyph visual that borrows the atlas must therefore remain within that
+ * lifetime. When the requested renderer falls back internally, this function returns the fallback
  * atlas.
  *
  * @param font the font
@@ -16846,6 +16851,10 @@ else:
     dvz_font_desc.__doc__ = """/**
  * Return an empty font descriptor.
  *
+ * Set `path` to select a font file. `family` and `style` are copied as diagnostic identity and do
+ * not perform operating-system font discovery. `face_index` selects a face in a font collection.
+ * `font_flags` is reserved for loader policy; no portable public flag bits are defined yet.
+ *
  * @return default font descriptor
  */"""
     dvz_font_desc.argtypes = []
@@ -16859,6 +16868,10 @@ except AttributeError:
 else:
     dvz_font_destroy.__doc__ = """/**
  * Destroy a font resource.
+ *
+ * The caller must first destroy or detach every text object, annotation, text block, atlas, and
+ * glyph visual that borrows the font or one of its atlases. Destroying the scene releases all
+ * remaining fonts after dependent scene objects.
  *
  * @param font the font
  */"""
@@ -29861,6 +29874,10 @@ else:
     dvz_text_set_style.__doc__ = """/**
  * Set the style of a retained text object.
  *
+ * `style->font`, when non-NULL, is borrowed and must belong to the same scene as `text`. It must
+ * remain alive until the text is destroyed or another style is selected. Bold, italic, and
+ * underline currently record style intent; they do not discover or synthesize alternate faces.
+ *
  * @param text the text object
  * @param style the style descriptor, or NULL for defaults
  * @return 0 on success, -1 on error
@@ -29878,7 +29895,9 @@ else:
  * Return the default retained text style.
  *
  * The returned style leaves `size_px` unresolved as 0.0f; retained text resolves that value from
- * the owning scene font defaults. Set a positive `size_px` to force an explicit text size.
+ * the owning scene font defaults. It also leaves `font` as NULL so font-backed renderers resolve
+ * the owning scene sans default lazily. Set a positive `size_px` or an explicit scene-owned `font`
+ * to override those defaults.
  *
  * @return default text style
  */"""

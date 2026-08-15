@@ -3233,6 +3233,10 @@ _Declared in `include/datoviz/scene/fly.h`:37._
 
 Create a scene-owned font resource.
 
+Descriptor strings are copied before return. A nonempty `path` selects the font file; `family`
+and `style` provide identity and diagnostics but do not perform platform font discovery. The
+scene owns the returned resource.
+
 ```c
 DvzFont * dvz_font(
     DvzScene * scene,
@@ -3246,11 +3250,15 @@ DvzFont * dvz_font(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `desc` | `const` [`DvzFontDesc`](runtime-utilities.md#type-dvzfontdesc) * | the font descriptor |
 
-_Declared in `include/datoviz/scene/text.h`:69._
+_Declared in `include/datoviz/scene/text.h`:75._
 
 #### `dvz_font_destroy()` { #dvz_font_destroy .dvz-api-function }
 
 Destroy a font resource.
+
+The caller must first destroy or detach every text object, annotation, text block, atlas, and
+glyph visual that borrows the font or one of its atlases. Destroying the scene releases all
+remaining fonts after dependent scene objects.
 
 ```c
 void dvz_font_destroy(
@@ -3262,7 +3270,7 @@ void dvz_font_destroy(
 | --- | --- | --- |
 | `font` | [`DvzFont`](scene.md#type-dvzfont) * | the font |
 
-_Declared in `include/datoviz/scene/text.h`:77._
+_Declared in `include/datoviz/scene/text.h`:87._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3285,7 +3293,8 @@ _Declared in `include/datoviz/scene/text.h`:77._
 Return the font atlas matching a spec.
 
 The returned atlas is owned by the font's scene and remains valid until the font or scene is
-destroyed. When the requested renderer falls back internally, this function returns the fallback
+destroyed. Every text or glyph visual that borrows the atlas must therefore remain within that
+lifetime. When the requested renderer falls back internally, this function returns the fallback
 atlas.
 
 ```c
@@ -3301,7 +3310,7 @@ const DvzTextAtlas * dvz_font_atlas(
 | `font` | `const` [`DvzFont`](scene.md#type-dvzfont) * | the font |
 | `spec` | `const` [`DvzTextAtlasSpec`](scene.md#type-dvztextatlasspec) * | requested atlas spec |
 
-_Declared in `include/datoviz/scene/text.h`:137._
+_Declared in `include/datoviz/scene/text.h`:148._
 
 #### `dvz_font_atlas_ensure()` { #dvz_font_atlas_ensure .dvz-api-function }
 
@@ -3320,7 +3329,7 @@ _Bool dvz_font_atlas_ensure(
 | `font` | [`DvzFont`](scene.md#type-dvzfont) * | the font |
 | `spec` | `const` [`DvzTextAtlasSpec`](scene.md#type-dvztextatlasspec) * | requested atlas spec |
 
-_Declared in `include/datoviz/scene/text.h`:97._
+_Declared in `include/datoviz/scene/text.h`:107._
 
 #### `dvz_font_atlas_ensure_string()` { #dvz_font_atlas_ensure_string .dvz-api-function }
 
@@ -3341,7 +3350,7 @@ _Bool dvz_font_atlas_ensure_string(
 | `spec` | `const` [`DvzTextAtlasSpec`](scene.md#type-dvztextatlasspec) * | requested atlas spec |
 | `string` | `const` `char` * | the UTF-8 string |
 
-_Declared in `include/datoviz/scene/text.h`:109._
+_Declared in `include/datoviz/scene/text.h`:119._
 
 #### `dvz_font_atlas_ensure_strings()` { #dvz_font_atlas_ensure_strings .dvz-api-function }
 
@@ -3364,7 +3373,7 @@ _Bool dvz_font_atlas_ensure_strings(
 | `strings` | `const` `char` *`const` * | UTF-8 strings |
 | `count` | `uint32_t` | string count |
 
-_Declared in `include/datoviz/scene/text.h`:121._
+_Declared in `include/datoviz/scene/text.h`:131._
 
 ## Format { #format }
 
@@ -10001,7 +10010,7 @@ DvzText * dvz_text(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `flags` | `uint32_t` | creation flags |
 
-_Declared in `include/datoviz/scene/text.h`:182._
+_Declared in `include/datoviz/scene/text.h`:193._
 
 #### `dvz_text_destroy()` { #dvz_text_destroy .dvz-api-function }
 
@@ -10017,7 +10026,7 @@ void dvz_text_destroy(
 | --- | --- | --- |
 | `text` | [`DvzText`](scene.md#type-dvztext) * | the text object |
 
-_Declared in `include/datoviz/scene/text.h`:199._
+_Declared in `include/datoviz/scene/text.h`:210._
 
 #### `dvz_text_id()` { #dvz_text_id .dvz-api-function }
 
@@ -10034,7 +10043,7 @@ DvzId dvz_text_id(
 | return | [`DvzId`](runtime-math.md#type-dvzid) | the scene-local identity, or DVZ_ID_NONE when text is NULL or destroyed |
 | `text` | `const` [`DvzText`](scene.md#type-dvztext) * | the text object |
 
-_Declared in `include/datoviz/scene/text.h`:191._
+_Declared in `include/datoviz/scene/text.h`:202._
 
 #### `dvz_text_layout()` { #dvz_text_layout .dvz-api-function }
 
@@ -10048,7 +10057,7 @@ DvzTextLayout dvz_text_layout(void);
 | --- | --- | --- |
 | return | [`DvzTextLayout`](scene.md#type-dvztextlayout) | default text layout |
 
-_Declared in `include/datoviz/scene/text.h`:59._
+_Declared in `include/datoviz/scene/text.h`:61._
 
 #### `dvz_text_placement()` { #dvz_text_placement .dvz-api-function }
 
@@ -10066,7 +10075,7 @@ DvzTextPlacement dvz_text_placement(void);
 | --- | --- | --- |
 | return | [`DvzTextPlacement`](scene.md#type-dvztextplacement) | default text placement |
 
-_Declared in `include/datoviz/scene/text.h`:51._
+_Declared in `include/datoviz/scene/text.h`:53._
 
 #### `dvz_text_set_anchors()` { #dvz_text_set_anchors .dvz-api-function }
 
@@ -10089,7 +10098,7 @@ DvzResult dvz_text_set_anchors(
 | `anchors` | `const` `float` (*)[2] | normalized text anchors |
 | `item_count` | `uint32_t` | number of anchors |
 
-_Declared in `include/datoviz/scene/text.h`:302._
+_Declared in `include/datoviz/scene/text.h`:313._
 
 #### `dvz_text_set_angles()` { #dvz_text_set_angles .dvz-api-function }
 
@@ -10112,7 +10121,7 @@ DvzResult dvz_text_set_angles(
 | `angles` | `const` `float` * | rotation angles in radians |
 | `item_count` | `uint32_t` | number of angles |
 
-_Declared in `include/datoviz/scene/text.h`:341._
+_Declared in `include/datoviz/scene/text.h`:352._
 
 #### `dvz_text_set_colors()` { #dvz_text_set_colors .dvz-api-function }
 
@@ -10135,7 +10144,7 @@ DvzResult dvz_text_set_colors(
 | `colors` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) * | text colors |
 | `item_count` | `uint32_t` | number of colors |
 
-_Declared in `include/datoviz/scene/text.h`:328._
+_Declared in `include/datoviz/scene/text.h`:339._
 
 #### `dvz_text_set_items()` { #dvz_text_set_items .dvz-api-function }
 
@@ -10160,7 +10169,7 @@ DvzResult dvz_text_set_items(
 | `items` | `const` [`DvzTextItem`](scene.md#type-dvztextitem) * | text items to copy, or NULL when `item_count` is 0 |
 | `item_count` | `uint32_t` | number of text items |
 
-_Declared in `include/datoviz/scene/text.h`:214._
+_Declared in `include/datoviz/scene/text.h`:225._
 
 #### `dvz_text_set_layout()` { #dvz_text_set_layout .dvz-api-function }
 
@@ -10179,7 +10188,7 @@ DvzResult dvz_text_set_layout(
 | `text` | [`DvzText`](scene.md#type-dvztext) * | the text object |
 | `layout` | `const` [`DvzTextLayout`](scene.md#type-dvztextlayout) * | the layout descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/text.h`:245._
+_Declared in `include/datoviz/scene/text.h`:256._
 
 #### `dvz_text_set_offsets()` { #dvz_text_set_offsets .dvz-api-function }
 
@@ -10202,7 +10211,7 @@ DvzResult dvz_text_set_offsets(
 | `offsets` | `const` `float` (*)[2] | logical-pixel offsets |
 | `item_count` | `uint32_t` | number of offsets |
 
-_Declared in `include/datoviz/scene/text.h`:288._
+_Declared in `include/datoviz/scene/text.h`:299._
 
 #### `dvz_text_set_placement()` { #dvz_text_set_placement .dvz-api-function }
 
@@ -10221,7 +10230,7 @@ DvzResult dvz_text_set_placement(
 | `text` | [`DvzText`](scene.md#type-dvztext) * | the text object |
 | `placement` | `const` [`DvzTextPlacement`](scene.md#type-dvztextplacement) * | the placement descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/text.h`:361._
+_Declared in `include/datoviz/scene/text.h`:376._
 
 #### `dvz_text_set_position()` { #dvz_text_set_position .dvz-api-function }
 
@@ -10240,7 +10249,7 @@ DvzResult dvz_text_set_position(
 | `text` | [`DvzText`](scene.md#type-dvztext) * | the text object |
 | `position` | `const` `double`[3] | the position in the current placement mode |
 
-_Declared in `include/datoviz/scene/text.h`:235._
+_Declared in `include/datoviz/scene/text.h`:246._
 
 #### `dvz_text_set_positions()` { #dvz_text_set_positions .dvz-api-function }
 
@@ -10263,7 +10272,7 @@ DvzResult dvz_text_set_positions(
 | `positions` | `const` `double` (*)[3] | positions in the current placement mode |
 | `item_count` | `uint32_t` | number of positions |
 
-_Declared in `include/datoviz/scene/text.h`:274._
+_Declared in `include/datoviz/scene/text.h`:285._
 
 #### `dvz_text_set_renderer()` { #dvz_text_set_renderer .dvz-api-function }
 
@@ -10282,7 +10291,7 @@ DvzResult dvz_text_set_renderer(
 | `text` | [`DvzText`](scene.md#type-dvztext) * | the text object |
 | `renderer` | [`DvzTextRenderer`](scene.md#type-dvztextrenderer) | renderer selection |
 
-_Declared in `include/datoviz/scene/text.h`:371._
+_Declared in `include/datoviz/scene/text.h`:386._
 
 #### `dvz_text_set_sizes()` { #dvz_text_set_sizes .dvz-api-function }
 
@@ -10305,7 +10314,7 @@ DvzResult dvz_text_set_sizes(
 | `sizes_px` | `const` `float` * | logical-pixel text sizes |
 | `item_count` | `uint32_t` | number of sizes |
 
-_Declared in `include/datoviz/scene/text.h`:315._
+_Declared in `include/datoviz/scene/text.h`:326._
 
 #### `dvz_text_set_string()` { #dvz_text_set_string .dvz-api-function }
 
@@ -10324,7 +10333,7 @@ DvzResult dvz_text_set_string(
 | `text` | [`DvzText`](scene.md#type-dvztext) * | the text object |
 | `string` | `const` `char` * | the string, or NULL to clear |
 
-_Declared in `include/datoviz/scene/text.h`:225._
+_Declared in `include/datoviz/scene/text.h`:236._
 
 #### `dvz_text_set_strings()` { #dvz_text_set_strings .dvz-api-function }
 
@@ -10348,11 +10357,15 @@ DvzResult dvz_text_set_strings(
 | `strings` | `const` `char` *`const` * | UTF-8 strings to copy |
 | `item_count` | `uint32_t` | number of strings |
 
-_Declared in `include/datoviz/scene/text.h`:260._
+_Declared in `include/datoviz/scene/text.h`:271._
 
 #### `dvz_text_set_style()` { #dvz_text_set_style .dvz-api-function }
 
 Set the style of a retained text object.
+
+`style->font`, when non-NULL, is borrowed and must belong to the same scene as `text`. It must
+remain alive until the text is destroyed or another style is selected. Bold, italic, and
+underline currently record style intent; they do not discover or synthesize alternate faces.
 
 ```c
 DvzResult dvz_text_set_style(
@@ -10367,14 +10380,16 @@ DvzResult dvz_text_set_style(
 | `text` | [`DvzText`](scene.md#type-dvztext) * | the text object |
 | `style` | `const` [`DvzTextStyle`](scene.md#type-dvztextstyle) * | the style descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/text.h`:351._
+_Declared in `include/datoviz/scene/text.h`:366._
 
 #### `dvz_text_style()` { #dvz_text_style .dvz-api-function }
 
 Return the default retained text style.
 
 The returned style leaves `size_px` unresolved as 0.0f; retained text resolves that value from
-the owning scene font defaults. Set a positive `size_px` to force an explicit text size.
+the owning scene font defaults. It also leaves `font` as NULL so font-backed renderers resolve
+the owning scene sans default lazily. Set a positive `size_px` or an explicit scene-owned `font`
+to override those defaults.
 
 ```c
 DvzTextStyle dvz_text_style(void);
@@ -10384,7 +10399,7 @@ DvzTextStyle dvz_text_style(void);
 | --- | --- | --- |
 | return | [`DvzTextStyle`](scene.md#type-dvztextstyle) | default text style |
 
-_Declared in `include/datoviz/scene/text.h`:39._
+_Declared in `include/datoviz/scene/text.h`:41._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -10543,7 +10558,7 @@ const DvzSampledField * dvz_text_atlas_field(
 | return | `const` [`DvzSampledField`](scene.md#type-dvzsampledfield) * | sampled atlas field, or NULL |
 | `atlas` | `const` [`DvzTextAtlas`](scene.md#type-dvztextatlas) * | the text atlas |
 
-_Declared in `include/datoviz/scene/text.h`:158._
+_Declared in `include/datoviz/scene/text.h`:169._
 
 #### `dvz_text_atlas_glyph()` { #dvz_text_atlas_glyph .dvz-api-function }
 
@@ -10562,7 +10577,7 @@ const DvzTextAtlasGlyph * dvz_text_atlas_glyph(
 | `atlas` | `const` [`DvzTextAtlas`](scene.md#type-dvztextatlas) * | the text atlas |
 | `codepoint` | `uint32_t` | Unicode codepoint |
 
-_Declared in `include/datoviz/scene/text.h`:169._
+_Declared in `include/datoviz/scene/text.h`:180._
 
 #### `dvz_text_atlas_info()` { #dvz_text_atlas_info .dvz-api-function }
 
@@ -10579,7 +10594,7 @@ DvzTextAtlasInfo dvz_text_atlas_info(
 | return | [`DvzTextAtlasInfo`](scene.md#type-dvztextatlasinfo) | atlas metadata; zeroed when atlas is NULL |
 | `atlas` | `const` [`DvzTextAtlas`](scene.md#type-dvztextatlas) * | the text atlas |
 
-_Declared in `include/datoviz/scene/text.h`:146._
+_Declared in `include/datoviz/scene/text.h`:157._
 
 #### `dvz_text_atlas_spec()` { #dvz_text_atlas_spec .dvz-api-function }
 
@@ -10598,7 +10613,7 @@ DvzTextAtlasSpec dvz_text_atlas_spec(
 | `renderer` | [`DvzTextRenderer`](scene.md#type-dvztextrenderer) | requested text renderer |
 | `size_px` | `float` | rendered text size in logical pixels |
 
-_Declared in `include/datoviz/scene/text.h`:87._
+_Declared in `include/datoviz/scene/text.h`:97._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 

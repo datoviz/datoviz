@@ -319,7 +319,4 @@ it to ImGui. In v0.4 this call is backend-agnostic from the scene side.
 
 ### ImGui Font System
 
-ImGui uses its own font atlas, independent of `DvzFont` / `DvzAtlas`.
-Datoviz bundles Roboto Regular and Bold as the default ImGui fonts.
-These are used only for ImGui widget text, not for `glyph` visual rendering.
-The two font systems are parallel and do not share resources.
+ImGui uses its own font atlas, independent of scene `DvzFont` and `DvzTextAtlas` resources. The current native fallback embeds Karla Regular for UI text and Cousine Regular for monospace text, while configured application font paths may override them. Scene defaults and ImGui defaults may follow the same family policy, but matching paths or family names never imply shared atlas, glyph packing, GPU resources, or lifetime. The target ownership and default-family migration are specified in [../../data/FONT_ARCHITECTURE.md](../../data/FONT_ARCHITECTURE.md), and the public C font functions are documented in the generated scene and runtime-utilities API references.

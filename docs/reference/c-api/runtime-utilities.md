@@ -298,11 +298,15 @@ DvzFontDefaults dvz_font_defaults(void);
 | --- | --- | --- |
 | return | [`DvzFontDefaults`](runtime-utilities.md#type-dvzfontdefaults) | default font policy |
 
-_Declared in `include/datoviz/font.h`:86._
+_Declared in `include/datoviz/font.h`:90._
 
 #### `dvz_font_desc()` { #dvz_font_desc .dvz-api-function }
 
 Return an empty font descriptor.
+
+Set `path` to select a font file. `family` and `style` are copied as diagnostic identity and do
+not perform operating-system font discovery. `face_index` selects a face in a font collection.
+`font_flags` is reserved for loader policy; no portable public flag bits are defined yet.
 
 ```c
 DvzFontDesc dvz_font_desc(void);
@@ -312,7 +316,7 @@ DvzFontDesc dvz_font_desc(void);
 | --- | --- | --- |
 | return | [`DvzFontDesc`](runtime-utilities.md#type-dvzfontdesc) | default font descriptor |
 
-_Declared in `include/datoviz/font.h`:75._
+_Declared in `include/datoviz/font.h`:79._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 

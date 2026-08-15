@@ -70,6 +70,10 @@ EXTERN_C_ON
 /**
  * Return an empty font descriptor.
  *
+ * Set `path` to select a font file. `family` and `style` are copied as diagnostic identity and do
+ * not perform operating-system font discovery. `face_index` selects a face in a font collection.
+ * `font_flags` is reserved for loader policy; no portable public flag bits are defined yet.
+ *
  * @return default font descriptor
  */
 DVZ_EXPORT DvzFontDesc dvz_font_desc(void);
