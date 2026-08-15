@@ -1,4 +1,11 @@
+import sys
 from pathlib import Path
+
+
+sys.path.insert(0, str(Path(__file__).parents[1]))
+
+import build_examples_manifest
+import build_gallery
 
 
 ROOT = Path(__file__).parents[2]
@@ -34,3 +41,23 @@ def test_fileio_tests_use_hermetic_fixtures():
 
 def test_obsolete_lfs_materializer_is_absent():
     assert not (ROOT / "tools/materialize_lfs_assets.sh").exists()
+
+
+def test_generated_gallery_contract_does_not_require_capture_files(tmp_path):
+    manifest = build_gallery.load_manifest(build_gallery.DEFAULT_MANIFEST)
+    example = next(
+        example
+        for example in build_gallery.collect_examples(manifest)
+        if example.screenshot_expected
+    )
+    block = build_gallery.media_block(
+        "index.md",
+        example,
+        tmp_path / "absent-gallery",
+        build_gallery.DEFAULT_IMAGE_URL_BASE,
+    )
+    assert "Screenshot pending" not in block
+    assert build_gallery.image_url(
+        "index.md", example, build_gallery.DEFAULT_IMAGE_URL_BASE, "webp"
+    ) in block
+    assert build_examples_manifest._media_fields(example)["screenshot"]["status"] == "available"

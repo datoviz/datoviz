@@ -665,19 +665,20 @@ def video_media_block(
 def media_block(
     page_path: str | Path,
     example: Example,
-    image_dir: Path,
+    _image_dir: Path,
     image_url_base: str,
     image_format: str = DEFAULT_IMAGE_FORMAT,
     href: str = "",
 ) -> str:
-    image = gallery_media.gallery_png_path(example, image_dir)
-    if image.exists():
+    # Documentation generation is hermetic: the manifest declares whether reviewed media is part
+    # of the public gallery contract, while capture and site-publication checks validate bytes.
+    if example.screenshot_expected:
         if preferred_preview_media(example) == "video-mp4":
             return video_media_block(page_path, example, image_url_base, href=href)
         markdown = f"![{example.title}]({image_url(page_path, example, image_url_base, image_format)})"
         return f"[{markdown}]({href})" if href else markdown
-    label = "Screenshot pending" if example.screenshot_expected else "No screenshot"
-    modifier = "pending" if example.screenshot_expected else "not-required"
+    label = "No screenshot"
+    modifier = "not-required"
     return (
         f'<div class="dvz-gallery-placeholder dvz-gallery-placeholder--{modifier}" '
         f'role="img" aria-label="{label} for {example.title}">'

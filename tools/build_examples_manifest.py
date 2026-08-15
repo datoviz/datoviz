@@ -41,9 +41,7 @@ def _media_fields(example: build_gallery.Example) -> dict[str, Any]:
     screenshot_expected = "screenshot" in example.validation
     source = build_gallery.DEFAULT_IMAGE_DIR / example.lane / f"{example.id}.png"
     site_asset = f"{build_gallery.DEFAULT_IMAGE_URL_BASE}/{example.lane}/{example.id}.webp"
-    status = "available" if screenshot_expected and source.exists() else "pending"
-    if not screenshot_expected:
-        status = "not-required"
+    status = "available" if screenshot_expected else "not-required"
     return {
         "screenshot": {
             "expected": screenshot_expected,

@@ -297,7 +297,7 @@ Exit gate: every current path has one declared destination or explicit retiremen
 2. Complete: replace the temporary legacy admission manifest atomically, preserve Regular, Bold, Italic, Bold Italic, Mono, visible fallback, and custom file-font behavior, and keep the old mixed-version files only in the frozen legacy snapshot rather than active parent Git.
 3. Complete: replace the Earth JPEG and Allen NumPy generic file-I/O tests with intentionally tiny source-defined fixtures.
 4. Generate colormap/runtime derivatives from committed declarative sources where applicable.
-5. Define hermetic `docs-check` behavior and move data-backed WebGPU staging and reviewed gallery consumption to `site-release` or equivalent publication validation.
+5. Complete for core documentation: generated gallery pages and the machine-readable example inventory derive media publication intent from the source manifest and no longer inspect a local capture tree; actual gallery bytes remain the responsibility of capture and future `site-release` publication validation. Moving data-backed WebGPU staging and reviewed gallery consumption to that publication lane remains Phase 4 work.
 6. Complete for authored core paths: remove data materialization from CMake, source-bundle construction, wheel generation, core CI, and hermetic documentation checks; hosted execution remains part of exact-candidate proof.
 7. Add a no-data source/build/test/package/docs-check smoke that leaves the submodule uninitialized.
 
