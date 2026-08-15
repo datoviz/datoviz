@@ -856,10 +856,9 @@ static int setup_source_scene(DvzScene* scene, TextLabSource* source)
     source->text = _scene_text_visual(scene, 0);
     if (source->text == NULL)
         return -1;
-    DvzVisualAttachDesc attach = {
-        .z_layer = 4,
-        .controller_mode = DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL,
-    };
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = 4;
+    attach.controller_mode = DVZ_CONTROLLER_APPLY_ISOTROPIC_LOCAL;
     if (dvz_panel_add_visual(source->panel, source->text, &attach) != 0)
         return -1;
     return 0;

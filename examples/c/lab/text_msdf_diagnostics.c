@@ -322,10 +322,10 @@ static int render_case(
         dvz_scene_destroy(scene);
         return -1;
     }
-    DvzVisualAttachDesc attach = {
-        .z_layer = 1,
-        .controller_mode = DVZ_CONTROLLER_FIXED,
-    };
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.z_layer = 1;
+    attach.controller_mode = DVZ_CONTROLLER_FIXED;
+    attach.coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL;
     if (dvz_panel_add_visual(panel, text, &attach) != 0)
     {
         dvz_scene_destroy(scene);
