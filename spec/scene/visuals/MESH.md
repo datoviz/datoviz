@@ -235,13 +235,13 @@ visual support, dynamic index updates, and hidden edge-distance payloads.
 
 ## PBR Forward Compatibility
 
-The v0.4 material model is Blinn-Phong (`ambient`, `diffuse`, `specular`, `shininess`,
-`emissive`). The parameter block reserves:
+The v0.4 material model supports the classic Blinn-Phong model and the compact Standard model. Standard currently evaluates a non-energy-conserving Blinn-Phong approximation: `roughness` maps to highlight exponent, `specular` is a nonnegative white highlight multiplier, `metallic` scales diffuse response, `emissive` is independent of lighting, and `rim_strength` is an additive artistic view-dependent term. Material evaluation is linear-light; color factors and emissive values follow the scene sRGB-to-linear policy.
+
+The parameter block therefore carries:
 
 | Reserved field | Future role | v0.4 value |
 |---|---|---|
-| `metallic` | PBR metallic factor | zero, ignored |
-| `roughness` | PBR roughness factor | zero, ignored |
+| `metallic` | Standard diffuse suppression factor; future PBR metallic factor | active, default `0` |
+| `roughness` | Standard highlight-width control; future PBR roughness factor | active, default `0.62` |
 
-A future `normal_map` texture slot may share `texcoords` with the diffuse texture. See
-`../semantics/LIGHTING.md` for the PBR/ray tracing upgrade path.
+A future `normal_map` texture slot may share `texcoords` with the diffuse texture. See `../semantics/LIGHTING.md` for the PBR/ray tracing upgrade path.

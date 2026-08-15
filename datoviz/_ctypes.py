@@ -22486,8 +22486,8 @@ else:
  * Return default visual material options.
  *
  * The default material is the fast Phong model with opaque alpha, full opacity, a white base-color
- * factor, light direction `(-0.45, 0.35, 0.82)`, ambient `0.24`, diffuse `0.82`, specular
- * `0.24`, and shininess `26`.
+ * factor, ambient `0.24`, diffuse `0.82`, specular `0.24`, and shininess `26`. Light direction
+ * and energy come from the scene/panel light set, not from this material descriptor.
  *
  * @return default material descriptor
  */"""
@@ -28308,8 +28308,12 @@ else:
  * Return default standard visual material options.
  *
  * The descriptor uses `DVZ_MATERIAL_MODEL_STANDARD` with opaque alpha, full opacity, a white
- * base-color factor, light direction `(-0.45, 0.35, 0.82)`, roughness `0.62`, specular `0.34`,
- * metallic `0`, no emissive contribution, and rim contribution `0.10`.
+ * base-color factor, roughness `0.62`, specular `0.34`, metallic `0`, no emissive contribution,
+ * and rim contribution `0.10`. Standard is a compact, non-energy-conserving approximation rather
+ * than a physically based BRDF: roughness maps to a Blinn-Phong exponent, specular is an unbounded
+ * white highlight strength, metallic suppresses diffuse only, emissive is independent of lights,
+ * and rim is an artistic view-dependent additive term. Values are interpreted in linear-light
+ * material evaluation; color factors and emissive inputs use the scene sRGB-to-linear policy.
  *
  * @return default standard material descriptor
  */"""
@@ -32584,8 +32588,12 @@ else:
     dvz_visual_set_material.__doc__ = """/**
  * Set the shared material parameters for a primitive, mesh, or sphere visual.
  *
- * Phong, standard, and view-dependent limb models map to the shared material shader payload. Pass
- * NULL to restore default material parameters.
+ * Phong, standard, and view-dependent limb models map to the shared material shader payload. For
+ * standard materials, `roughness` is clamped to [0, 1] and controls highlight width, `specular` is
+ * a nonnegative highlight multiplier, `metallic` is clamped to [0, 1] and scales diffuse response,
+ * `emissive` is an unlit RGB contribution, and `rim_strength` is a nonnegative artistic edge term.
+ * These controls describe the current approximation and are not a promise of PBR energy
+ * conservation. Pass NULL to restore default material parameters.
  *
  * @param visual the visual
  * @param desc the material descriptor, or NULL to restore defaults

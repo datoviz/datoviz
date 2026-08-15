@@ -209,9 +209,9 @@ Unless a family spec states otherwise:
 5. Hover picking follows latest-request-wins semantics.
 
 
-## Standard Lighting Parameters
+## Classic Phong Lighting Parameters
 
-Used by families that support Phong shading (`mesh`, `sphere`).
+Used by families that support classic Phong shading (`mesh`, `sphere`).
 Applies when the family's `lighting` variant axis is set to `phong`.
 Ignored when `lighting = flat`.
 
@@ -260,6 +260,21 @@ Phong specular exponent. Higher values produce tighter highlights.
 | Mutability | `dynamic` |
 
 Self-emission factor. At `1.0` the surface appears fully lit regardless of light positions.
+
+
+## Standard Material Parameters
+
+The `standard` material model is available to the shared lit visual families and is currently a compact, non-energy-conserving Blinn-Phong approximation, not a physically based BRDF. It consumes the panel-local scene light set; materials do not contain light direction or placement.
+
+| Field | Current semantics |
+|---|---|
+| `roughness` | Clamped to `[0, 1]`; maps inversely to the Blinn-Phong highlight exponent, so larger values broaden highlights. |
+| `specular` | Nonnegative white highlight multiplier; it is not a bounded dielectric F0. |
+| `metallic` | Clamped to `[0, 1]`; suppresses diffuse response but does not yet tint or conserve specular energy. |
+| `emissive` | RGB self-emission independent of scene lights and ambient visibility. |
+| `rim_strength` | Nonnegative additive, view-dependent artistic edge contribution. |
+
+Material color factors and emissive values follow the scene sRGB-to-linear policy. Lighting and material evaluation return linear radiance; display encoding and tone mapping are outside the material model. These semantics are intentionally stable for v0.4 while a future GGX-based PBR implementation is developed.
 
 
 ## Standard Stage Participation

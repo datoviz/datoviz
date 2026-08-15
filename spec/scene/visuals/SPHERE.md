@@ -202,8 +202,7 @@ v0.4 renames: `emit` → `emissive`.
 
 The v0.4 shading model for sphere impostors uses Blinn-Phong.
 
-The visual parameter block reserves `metallic` and `roughness` fields (zero-initialized, ignored in v0.4)
-for future PBR support, following the same pattern as `mesh`.
+The visual parameter block carries `metallic` and `roughness` fields for the shared Standard material approximation. `metallic` suppresses diffuse response and `roughness` controls highlight width; neither currently provides energy-conserving PBR behavior. Their values remain forward compatible with the future PBR path, following the same material contract as `mesh`.
 A future `normal_map` texture slot is also reserved.
 See `../semantics/LIGHTING.md` for the full upgrade path.
 

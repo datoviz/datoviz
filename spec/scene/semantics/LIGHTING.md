@@ -52,6 +52,8 @@ The default handles are available through `dvz_scene_default_ambient()` and `dvz
 
 Phong `ambient` remains a classic-material multiplier for indirect diffuse response. Ambient radiance itself comes from the panel's ambient lights. Standard indirect diffuse derives from base color and metallic response and never reads Phong fields. Emissive response remains independent of light sources and ambient visibility.
 
+`DVZ_MATERIAL_MODEL_STANDARD` is a compact v0.4 approximation, not an energy-conserving PBR BRDF. Roughness maps inversely to a Blinn-Phong highlight exponent, specular is a nonnegative white highlight multiplier rather than a dielectric F0, metallic suppresses diffuse without tinting specular, emissive is an independent semantic-sRGB contribution converted to linear light, and rim strength is an artistic additive edge term. A future GGX-based model may reuse the ownership and direct/indirect composition boundaries, but it must not silently claim that these approximation semantics were already physically based.
+
 The limb model is a lightweight surface approximation for thin translucent shells, not volumetric atmospheric scattering. It uses mesh normals, camera direction, and the first active directional light to shape silhouette alpha and the day/night terminator. Limb evaluation bypasses ambient visibility.
 
 ## Direct And Indirect Composition
@@ -94,6 +96,8 @@ Visual families declare lighting participation through generic lowering facts. D
 ## PBR Upgrade Path
 
 Scene-owned ambient and directional lights remain valid inputs for a future energy-conserving BRDF. Replacing the current standard approximation with metallic/roughness PBR changes material evaluation, not light ownership or panel selection.
+
+Before that replacement, the PBR contract must define dielectric F0 or index-of-refraction semantics, metallic specular tint, roughness remapping and floor behavior, energy conservation, the status of the artistic rim term, and native GLSL/WGSL conformance trends. The replacement should land as an explicitly reviewed semantic change rather than an undocumented reinterpretation of the v0.4 Standard approximation.
 
 Future image-based lighting may add an HDR environment resource, irradiance convolution, prefiltered specular data, and a BRDF lookup table. Those resources augment panel lighting and feed the existing indirect term. They do not belong in `DvzMaterialDesc`.
 

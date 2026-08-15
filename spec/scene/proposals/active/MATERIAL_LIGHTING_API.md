@@ -1,5 +1,5 @@
 > **Execution Status**
-> - **Status:** `PARTIALLY IMPLEMENTED MATERIAL SLICE; RC3 LIGHTING FOUNDATION REQUIRED`
+> - **Status:** `MATERIAL SLICE AND RC3 LIGHTING FOUNDATION IMPLEMENTED; PBR DEFERRED`
 > - **Updated on:** `2026-08-15`
 > - **Purpose:** define the intended v0.4 scene-facing material and lighting object model for mesh
 >   and future lit visual families.
@@ -22,16 +22,9 @@ Define a material and lighting model that:
 
 ## Current Implementation State
 
-As of `2026-05-17`, the first material slice is active. `DvzMaterialDesc` and
-`dvz_visual_set_material()` provide a value-descriptor material API for primitive, mesh, and sphere
-visuals; Phong and standard models lower through shared material shader helpers. The old
-primitive-specific shading wrapper has been removed from the v0.4 public API in favor of explicit
-material descriptors. Depth cueing remains a separate typed setter that composes with the material
-payload. Scene-owned light objects and panel light sets described below remain future design; the
-current runtime still uses compact material/light-direction fields rather than a full reusable
-light-object API.
+As of `2026-08-15`, `DvzMaterialDesc` and `dvz_visual_set_material()` provide a value-descriptor material API for primitive, mesh, and sphere visuals. Phong, Standard, and limb models lower through shared material shader helpers; depth cueing remains a separate typed setter that composes with the material payload. Scene-owned ambient and directional lights, panel-local ordered light sets, shared light payloads, material/light ownership separation, and direct-versus-indirect composition are implemented. Materials no longer contain light direction.
 
-The required pre-RC3 ownership and shader boundary is [RC3_LIGHTING_FOUNDATION_SLICE.md](../../slices/RC3_LIGHTING_FOUNDATION_SLICE.md). It moves ambient and directional lighting into scene-owned panel light sets, removes material-owned light direction, separates direct and indirect shader contributions, and makes GTAO consume only indirect diffuse illumination without implementing full PBR.
+The completed pre-RC3 ownership and shader boundary is [RC3_LIGHTING_FOUNDATION_SLICE.md](../../slices/RC3_LIGHTING_FOUNDATION_SLICE.md). The active Standard model remains a compact, non-energy-conserving approximation: roughness controls a Blinn-Phong-style highlight exponent, metallic suppresses diffuse only, and specular remains a white artistic strength. A true GGX metallic/roughness BRDF, material texture set, HDR scene color, tone mapping, and image-based lighting remain explicitly deferred.
 
 The broader optional implementation candidate remains [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](../../slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md). It adds point lights, the three-colored-light checkerboard Klein bottle, two-sided surface lighting, shared example presets, and broader native/WebGPU pressure testing. Those additions are not an RC3 or RC4 release blocker.
 
