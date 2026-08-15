@@ -148,6 +148,22 @@ static int _test_set_phong_material(
 
 
 
+/**
+ * Set the scene default ambient light intensity for lighting-independent render fixtures.
+ *
+ * @param scene the scene
+ * @param intensity ambient light intensity
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+static DvzResult _test_set_ambient_intensity(DvzScene* scene, float intensity)
+{
+    ANN(scene);
+    DvzLight* ambient = dvz_scene_default_ambient(scene);
+    return ambient != NULL ? dvz_light_set_intensity(ambient, intensity) : DVZ_ERROR;
+}
+
+
+
 typedef struct
 {
     uint32_t calls;
@@ -6136,6 +6152,7 @@ int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, con
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
+    AT(_test_set_ambient_intensity(scene, 1.0f) == DVZ_OK);
 
     DvzVisual* near_visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     DvzVisual* far_visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
@@ -6230,6 +6247,7 @@ int test_app_offscreen_lit_primitive_depth_cue_darkens_far(TstContext* suite, co
     ANN(figure);
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     ANN(panel);
+    AT(_test_set_ambient_intensity(scene, 1.0f) == DVZ_OK);
     DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
     ANN(visual);
 
@@ -7073,6 +7091,7 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
+    AT(_test_set_ambient_intensity(scene, 1.0f) == DVZ_OK);
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     DvzVisual* image = dvz_image(scene, 0);
