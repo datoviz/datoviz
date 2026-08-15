@@ -112,6 +112,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_multi_panel_reuses_fixed_pipeline_and_bind_group_state);
     TST_CASE(test_scene_multi_panel_glsl_emits_viewport_scissor_commands);
     TST_CASE(test_scene_overlapping_depth_panels_glsl_clear_depth);
+    TST_CASE(test_scene_panel_light_ownership_and_lifecycle);
     TST_CASE(test_scene_rejects_cross_scene_visual);
     TST_CASE(test_scene_rejects_unsupported_point_attribute);
     TST_CASE(test_scene_visual_alpha_mode);

@@ -61,6 +61,12 @@ smoke_symbols:
   - dvz_annotation_id
   - dvz_controller_id
   - dvz_scene_destroy
+  - dvz_light_desc
+  - dvz_light
+  - dvz_light_set_desc
+  - dvz_light_destroy
+  - dvz_panel_set_lights
+  - dvz_panel_reset_lights
   - dvz_figure
   - dvz_figure_validate
   - dvz_panel_desc
@@ -143,6 +149,7 @@ layout_records:
     - DvzCameraView
     - DvzCameraProjection
     - DvzCameraDesc
+    - DvzLightDesc
     - DvzPhongMaterial
     - DvzStandardMaterial
     - DvzMaterialDesc
@@ -467,6 +474,11 @@ skipped_functions:
       reason: >
         User-facing material descriptor default is safe to return by value now that
         DvzMaterialDesc and its nested material records are generated ctypes layouts.
+    dvz_light_desc:
+      disposition: emit
+      reason: >
+        User-facing scene-light defaults are safe to return by value because the complete
+        DvzLightDesc ABI layout is generated.
     dvz_phong_material_desc:
       disposition: emit
       reason: >

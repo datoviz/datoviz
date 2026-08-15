@@ -43,6 +43,7 @@
 #define DVZ_SCENE_MAX_GRID_COLS  32
 #define DVZ_SCENE_MAX_PANELS     64
 #define DVZ_SCENE_MAX_VISUALS    256
+#define DVZ_SCENE_MAX_LIGHTS     64
 #define DVZ_SCENE_MAX_COMPOSITES 128
 #define DVZ_SCENE_MAX_POLYGONS   64
 #define DVZ_SCENE_MAX_POLYGON_SETS 32
@@ -319,6 +320,7 @@ typedef struct DvzScene   DvzScene;
 typedef struct DvzFigure  DvzFigure;
 typedef struct DvzGrid    DvzGrid;
 typedef struct DvzPanel   DvzPanel;
+typedef struct DvzLight   DvzLight;
 typedef struct DvzPanelAttach DvzPanelAttach;
 typedef struct DvzVisual  DvzVisual;
 typedef struct DvzVisualFamilyOps DvzVisualFamilyOps;
@@ -1934,6 +1936,27 @@ struct DvzAxis
 /*  DvzPanel                                                                                    */
 /*************************************************************************************************/
 
+typedef struct DvzScenePanelLights
+{
+    DvzLight* items[DVZ_SCENE_MAX_PANEL_LIGHTS];
+    uint32_t count;
+    bool explicit_set;
+    bool gpu_dirty;
+    uint64_t revision;
+} DvzScenePanelLights;
+
+
+struct DvzLight
+{
+    DvzScene* scene;
+    DvzId id;
+    DvzLightDesc desc;
+    uint64_t revision;
+    DvzPanel** panels;
+    uint32_t panel_count;
+    uint32_t panel_capacity;
+};
+
 /* Per-visual attachment state on a panel. Stored alongside the visual pointer in the
  * panel's visuals array so the converter can sort by z_layer and choose APPLY vs FIXED MVP. */
 struct DvzPanelAttach
@@ -1960,6 +1983,7 @@ struct DvzPanel
     DvzGrid* grid;     /* optional owner grid for retained layout */
     DvzGridCell grid_cell;
     DvzSceneTechniqueState techniques;
+    DvzScenePanelLights lights;
 
     uint32_t       visual_count;
     DvzPanelAttach visuals[DVZ_SCENE_MAX_VISUALS];
@@ -2118,6 +2142,11 @@ struct DvzScene
     DvzSceneTechniqueState techniques;
     DvzFontDefaults font_defaults;
 
+    uint32_t light_count;
+    DvzLight lights[DVZ_SCENE_MAX_LIGHTS];
+    DvzLight* default_ambient_light;
+    DvzLight* default_directional_light;
+
     DvzSceneClock clock;
 
     uint32_t animation_count;
@@ -2255,3 +2284,12 @@ struct DvzScene
         bool force_readback_download_failure;
     } test;
 };
+
+
+void _scene_lights_init(DvzScene* scene);
+
+void _scene_lights_destroy_all(DvzScene* scene);
+
+void _scene_panel_lights_init(DvzPanel* panel);
+
+void _scene_panel_lights_detach(DvzPanel* panel);

@@ -290,12 +290,14 @@ DvzScene* dvz_scene(void)
     scene->caps = dvz_capability_snapshot();
     _scene_technique_state_init(&scene->techniques);
     scene->font_defaults = dvz_font_defaults();
+    _scene_lights_init(scene);
     scene->clock.mode = DVZ_SCENE_CLOCK_REALTIME;
     scene->clock.fps = 60.0;
     _scene_request_executor_init(&scene->query_executor);
     scene->emitter = dvz_frame_plan_emitter();
     if (scene->emitter == NULL)
     {
+        _scene_lights_destroy_all(scene);
         dvz_free(scene);
         return NULL;
     }
@@ -428,6 +430,7 @@ void dvz_scene_destroy(DvzScene* scene)
         scene->overlays[i].scene = NULL;
     for (uint32_t i = 0; i < scene->controller_count; i++)
         _scene_controller_destroy(&scene->controllers[i]);
+    _scene_lights_destroy_all(scene);
     _scene_request_executor_destroy(&scene->query_executor);
     if (scene->emitter != NULL)
     {
@@ -512,6 +515,7 @@ static void _scene_panel_reset(DvzPanel* panel, bool detach_grid)
         return;
     if (detach_grid && panel->grid != NULL)
         (void)_scene_grid_detach_panel(panel->grid, panel);
+    _scene_panel_lights_detach(panel);
     (void)dvz_panel_connect_input(panel, NULL);
     panel->panzoom = NULL;
     panel->arcball = NULL;
@@ -826,6 +830,7 @@ DvzPanel* dvz_panel(DvzFigure* figure, const DvzPanelDesc* desc)
     panel->view3d_revision = 1;
     panel->active_view_kind = DVZ_PANEL_VIEW_KIND_NONE;
     _scene_technique_state_init(&panel->techniques);
+    _scene_panel_lights_init(panel);
     panel->visual_count = 0;
     panel->bounds_visual = NULL;
     panel->bounds_occluded_visual = NULL;

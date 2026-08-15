@@ -37,6 +37,7 @@
 #define DVZ_SCENE_MAX_RENDER_VISUALS 128
 #define DVZ_SCENE_MAX_DIAGNOSTICS 16
 #define DVZ_SCENE_DIAGNOSTIC_SIZE 256
+#define DVZ_SCENE_MAX_PANEL_LIGHTS 8
 
 
 
@@ -59,6 +60,7 @@ typedef struct DvzScene             DvzScene;
 typedef struct DvzFigure            DvzFigure;
 typedef struct DvzGrid              DvzGrid;
 typedef struct DvzPanel             DvzPanel;
+typedef struct DvzLight             DvzLight;
 typedef struct DvzPanelFrameSnapshot DvzPanelFrameSnapshot;
 typedef struct DvzVisual            DvzVisual;
 typedef struct DvzSceneCompute      DvzSceneCompute;
@@ -965,6 +967,18 @@ struct DvzSceneBufferDesc
     uint64_t byte_size;
 };
 typedef struct DvzSceneBufferDesc DvzSceneBufferDesc;
+
+
+struct DvzLightDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    DvzLightType type;
+    float color[3];
+    float intensity;
+    float direction[3];
+};
+typedef struct DvzLightDesc DvzLightDesc;
 
 
 typedef enum

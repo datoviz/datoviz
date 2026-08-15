@@ -110,6 +110,99 @@ DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
 
 
 /**
+ * Return default options for one scene-owned light type.
+ *
+ * Ambient lights default to white linear color at intensity `0.15`. Directional lights default to
+ * white linear color at intensity `1` with direction `(-0.45, 0.35, 0.82)` normalized.
+ *
+ * @param type the light type
+ * @return default light descriptor
+ */
+DVZ_EXPORT DvzLightDesc dvz_light_desc(DvzLightType type);
+
+
+/**
+ * Create a reusable scene-owned light.
+ *
+ * The initial active types are ambient and directional. Directional vectors are normalized during
+ * validation. The scene destroys every remaining light automatically.
+ *
+ * @param scene the owning scene
+ * @param desc the light descriptor
+ * @return the light, or NULL on validation or capacity failure
+ */
+DVZ_EXPORT DvzLight* dvz_light(DvzScene* scene, const DvzLightDesc* desc);
+
+
+/**
+ * Replace all semantic fields of a scene-owned light.
+ *
+ * Every panel referencing the light is invalidated after a successful update.
+ *
+ * @param light the light
+ * @param desc the replacement descriptor
+ * @return DVZ_OK on success, DVZ_ERROR on validation failure
+ */
+DVZ_EXPORT DvzResult dvz_light_set_desc(DvzLight* light, const DvzLightDesc* desc);
+
+
+/**
+ * Set a light's linear RGB color.
+ *
+ * @param light the light
+ * @param color finite nonnegative linear RGB values
+ * @return DVZ_OK on success, DVZ_ERROR on validation failure
+ */
+DVZ_EXPORT DvzResult dvz_light_set_color(DvzLight* light, const float color[3]);
+
+
+/**
+ * Set a light's nonnegative intensity.
+ *
+ * @param light the light
+ * @param intensity finite nonnegative intensity
+ * @return DVZ_OK on success, DVZ_ERROR on validation failure
+ */
+DVZ_EXPORT DvzResult dvz_light_set_intensity(DvzLight* light, float intensity);
+
+
+/**
+ * Set and normalize a directional light vector pointing toward the light source.
+ *
+ * @param light the directional light
+ * @param direction finite nonzero world-space direction
+ * @return DVZ_OK on success, DVZ_ERROR on validation or type failure
+ */
+DVZ_EXPORT DvzResult dvz_light_set_direction(DvzLight* light, const float direction[3]);
+
+
+/**
+ * Destroy a scene-owned light and remove it from every affected panel light set.
+ *
+ * @param light the light
+ */
+DVZ_EXPORT void dvz_light_destroy(DvzLight* light);
+
+
+/**
+ * Return the scene's default ambient light, if it remains active.
+ *
+ * @param scene the scene
+ * @return the default ambient light, or NULL
+ */
+DVZ_EXPORT DvzLight* dvz_scene_default_ambient(DvzScene* scene);
+
+
+/**
+ * Return the scene's default directional light, if it remains active.
+ *
+ * @param scene the scene
+ * @return the default directional light, or NULL
+ */
+DVZ_EXPORT DvzLight* dvz_scene_default_directional(DvzScene* scene);
+
+
+/**
  * Serialize the scene to a JSON string.
  *
  * The JSON document contains the full scene graph: figures, panels, visuals, and attribute data
@@ -647,6 +740,31 @@ DVZ_EXPORT DvzResult dvz_panel_set_desc(DvzPanel* panel, const DvzPanelDesc* des
  * @return the panel
  */
 DVZ_EXPORT DvzPanel* dvz_panel_full(DvzFigure* figure);
+
+
+/**
+ * Replace a panel's ordered light set.
+ *
+ * At most `DVZ_SCENE_MAX_PANEL_LIGHTS` active same-scene lights may be supplied. An empty set is
+ * explicit and disables lighting contributions. The complete candidate is validated before the
+ * current set changes.
+ *
+ * @param panel the panel
+ * @param lights ordered light handles, or NULL when count is zero
+ * @param count number of light handles
+ * @return DVZ_OK on success, DVZ_ERROR on validation failure
+ */
+DVZ_EXPORT DvzResult
+dvz_panel_set_lights(DvzPanel* panel, DvzLight* const* lights, uint32_t count);
+
+
+/**
+ * Restore a panel's inherited scene-default light set.
+ *
+ * @param panel the panel
+ * @return DVZ_OK on success, DVZ_ERROR when the panel is inactive
+ */
+DVZ_EXPORT DvzResult dvz_panel_reset_lights(DvzPanel* panel);
 
 
 /**

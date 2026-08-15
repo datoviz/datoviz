@@ -2112,6 +2112,15 @@ DVZ_LEGEND_PLACEMENT_ATTACHED = DvzLegendPlacementMode.DVZ_LEGEND_PLACEMENT_ATTA
 DVZ_LEGEND_PLACEMENT_DETACHED = DvzLegendPlacementMode.DVZ_LEGEND_PLACEMENT_DETACHED
 
 
+class DvzLightType(CtypesEnum):
+    DVZ_LIGHT_AMBIENT = 0
+    DVZ_LIGHT_DIRECTIONAL = 1
+
+
+DVZ_LIGHT_AMBIENT = DvzLightType.DVZ_LIGHT_AMBIENT
+DVZ_LIGHT_DIRECTIONAL = DvzLightType.DVZ_LIGHT_DIRECTIONAL
+
+
 class DvzLogLevel(CtypesEnum):
     DVZ_LOG_LEVEL_ERROR = 0
     DVZ_LOG_LEVEL_WARNING = 1
@@ -4154,6 +4163,14 @@ class DvzLegendDesc(ctypes.Structure):
     pass
 
 
+class DvzLight(ctypes.Structure):
+    pass
+
+
+class DvzLightDesc(ctypes.Structure):
+    pass
+
+
 class DvzLimbMaterial(ctypes.Structure):
     pass
 
@@ -6127,6 +6144,16 @@ DvzLegendDesc._fields_ = [
     ('text_renderer', ctypes.c_int),
     ('placement', DvzPlacement),
     ('legend_flags', ctypes.c_uint32),
+]
+
+
+DvzLightDesc._fields_ = [
+    ('struct_size', ctypes.c_uint32),
+    ('flags', ctypes.c_uint32),
+    ('type', ctypes.c_int),
+    ('color', (ctypes.c_float * 3)),
+    ('intensity', ctypes.c_float),
+    ('direction', (ctypes.c_float * 3)),
 ]
 
 
@@ -22132,6 +22159,123 @@ else:
 
 
 try:
+    dvz_light = dvz.dvz_light
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_light')
+else:
+    dvz_light.__doc__ = """/**
+ * Create a reusable scene-owned light.
+ *
+ * The initial active types are ambient and directional. Directional vectors are normalized during
+ * validation. The scene destroys every remaining light automatically.
+ *
+ * @param scene the owning scene
+ * @param desc the light descriptor
+ * @return the light, or NULL on validation or capacity failure
+ */"""
+    dvz_light.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzLightDesc)]
+    dvz_light.restype = ctypes.POINTER(DvzLight)
+
+
+try:
+    dvz_light_desc = dvz.dvz_light_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_light_desc')
+else:
+    dvz_light_desc.__doc__ = """/**
+ * Return default options for one scene-owned light type.
+ *
+ * Ambient lights default to white linear color at intensity `0.15`. Directional lights default to
+ * white linear color at intensity `1` with direction `(-0.45, 0.35, 0.82)` normalized.
+ *
+ * @param type the light type
+ * @return default light descriptor
+ */"""
+    dvz_light_desc.argtypes = [ctypes.c_int]
+    dvz_light_desc.restype = DvzLightDesc
+
+
+try:
+    dvz_light_destroy = dvz.dvz_light_destroy
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_light_destroy')
+else:
+    dvz_light_destroy.__doc__ = """/**
+ * Destroy a scene-owned light and remove it from every affected panel light set.
+ *
+ * @param light the light
+ */"""
+    dvz_light_destroy.argtypes = [ctypes.POINTER(DvzLight)]
+    dvz_light_destroy.restype = None
+
+
+try:
+    dvz_light_set_color = dvz.dvz_light_set_color
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_light_set_color')
+else:
+    dvz_light_set_color.__doc__ = """/**
+ * Set a light's linear RGB color.
+ *
+ * @param light the light
+ * @param color finite nonnegative linear RGB values
+ * @return DVZ_OK on success, DVZ_ERROR on validation failure
+ */"""
+    dvz_light_set_color.argtypes = [ctypes.POINTER(DvzLight), (ctypes.c_float * 3)]
+    dvz_light_set_color.restype = ctypes.c_int32
+
+
+try:
+    dvz_light_set_desc = dvz.dvz_light_set_desc
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_light_set_desc')
+else:
+    dvz_light_set_desc.__doc__ = """/**
+ * Replace all semantic fields of a scene-owned light.
+ *
+ * Every panel referencing the light is invalidated after a successful update.
+ *
+ * @param light the light
+ * @param desc the replacement descriptor
+ * @return DVZ_OK on success, DVZ_ERROR on validation failure
+ */"""
+    dvz_light_set_desc.argtypes = [ctypes.POINTER(DvzLight), ctypes.POINTER(DvzLightDesc)]
+    dvz_light_set_desc.restype = ctypes.c_int32
+
+
+try:
+    dvz_light_set_direction = dvz.dvz_light_set_direction
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_light_set_direction')
+else:
+    dvz_light_set_direction.__doc__ = """/**
+ * Set and normalize a directional light vector pointing toward the light source.
+ *
+ * @param light the directional light
+ * @param direction finite nonzero world-space direction
+ * @return DVZ_OK on success, DVZ_ERROR on validation or type failure
+ */"""
+    dvz_light_set_direction.argtypes = [ctypes.POINTER(DvzLight), (ctypes.c_float * 3)]
+    dvz_light_set_direction.restype = ctypes.c_int32
+
+
+try:
+    dvz_light_set_intensity = dvz.dvz_light_set_intensity
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_light_set_intensity')
+else:
+    dvz_light_set_intensity.__doc__ = """/**
+ * Set a light's nonnegative intensity.
+ *
+ * @param light the light
+ * @param intensity finite nonnegative intensity
+ * @return DVZ_OK on success, DVZ_ERROR on validation failure
+ */"""
+    dvz_light_set_intensity.argtypes = [ctypes.POINTER(DvzLight), ctypes.c_float]
+    dvz_light_set_intensity.restype = ctypes.c_int32
+
+
+try:
     dvz_limb_material_desc = dvz.dvz_limb_material_desc
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_limb_material_desc')
@@ -23426,6 +23570,21 @@ else:
 
 
 try:
+    dvz_panel_reset_lights = dvz.dvz_panel_reset_lights
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_panel_reset_lights')
+else:
+    dvz_panel_reset_lights.__doc__ = """/**
+ * Restore a panel's inherited scene-default light set.
+ *
+ * @param panel the panel
+ * @return DVZ_OK on success, DVZ_ERROR when the panel is inactive
+ */"""
+    dvz_panel_reset_lights.argtypes = [ctypes.POINTER(DvzPanel)]
+    dvz_panel_reset_lights.restype = ctypes.c_int32
+
+
+try:
     dvz_panel_resolve_frame = dvz.dvz_panel_resolve_frame
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_panel_resolve_frame')
@@ -23644,6 +23803,27 @@ else:
  */"""
     dvz_panel_set_edl.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(DvzEdlDesc)]
     dvz_panel_set_edl.restype = ctypes.c_int32
+
+
+try:
+    dvz_panel_set_lights = dvz.dvz_panel_set_lights
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_panel_set_lights')
+else:
+    dvz_panel_set_lights.__doc__ = """/**
+ * Replace a panel's ordered light set.
+ *
+ * At most `DVZ_SCENE_MAX_PANEL_LIGHTS` active same-scene lights may be supplied. An empty set is
+ * explicit and disables lighting contributions. The complete candidate is validated before the
+ * current set changes.
+ *
+ * @param panel the panel
+ * @param lights ordered light handles, or NULL when count is zero
+ * @param count number of light handles
+ * @return DVZ_OK on success, DVZ_ERROR on validation failure
+ */"""
+    dvz_panel_set_lights.argtypes = [ctypes.POINTER(DvzPanel), ctypes.POINTER(ctypes.POINTER(DvzLight)), ctypes.c_uint32]
+    dvz_panel_set_lights.restype = ctypes.c_int32
 
 
 try:
@@ -26894,6 +27074,36 @@ else:
  */"""
     dvz_scene_compute_set_dispatch.argtypes = [ctypes.POINTER(DvzSceneCompute), ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
     dvz_scene_compute_set_dispatch.restype = ctypes.c_int32
+
+
+try:
+    dvz_scene_default_ambient = dvz.dvz_scene_default_ambient
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scene_default_ambient')
+else:
+    dvz_scene_default_ambient.__doc__ = """/**
+ * Return the scene's default ambient light, if it remains active.
+ *
+ * @param scene the scene
+ * @return the default ambient light, or NULL
+ */"""
+    dvz_scene_default_ambient.argtypes = [ctypes.POINTER(DvzScene)]
+    dvz_scene_default_ambient.restype = ctypes.POINTER(DvzLight)
+
+
+try:
+    dvz_scene_default_directional = dvz.dvz_scene_default_directional
+except AttributeError:
+    _MISSING_FUNCTIONS.append('dvz_scene_default_directional')
+else:
+    dvz_scene_default_directional.__doc__ = """/**
+ * Return the scene's default directional light, if it remains active.
+ *
+ * @param scene the scene
+ * @return the default directional light, or NULL
+ */"""
+    dvz_scene_default_directional.argtypes = [ctypes.POINTER(DvzScene)]
+    dvz_scene_default_directional.restype = ctypes.POINTER(DvzLight)
 
 
 try:
@@ -33517,7 +33727,7 @@ else:
     dvz_write_ppm.restype = ctypes.c_int
 
 
-_DATOVIZ_CTYPES_LAYOUT_RECORDS[:0] = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAoDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBounds', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2ExternalBufferTimelineDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldGeometry', 'DvzFieldRegion', 'DvzFieldSamplingDesc', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideHit', 'DvzGuideLayout', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInputTextEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzLimbMaterial', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzStandardMaterial', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomEval', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonRing', 'DvzPolygonDesc', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzShaderCompileRequest', 'DvzShaderCompileResult', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
+_DATOVIZ_CTYPES_LAYOUT_RECORDS[:0] = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAoDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzColor', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBounds', 'DvzBox', 'DvzCameraView', 'DvzCameraProjection', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzPlacement', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2ExternalBufferTimelineDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldGeometry', 'DvzFieldRegion', 'DvzFieldSamplingDesc', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzQueueCaps', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzRect', 'DvzGuideHit', 'DvzGuideLayout', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzQueryResult', 'DvzHoverState', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInputTextEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzLightDesc', 'DvzLimbMaterial', 'DvzMarkerStyle', 'DvzPhongMaterial', 'DvzStandardMaterial', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBackgroundDesc', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView3DDesc', 'DvzPanzoomDesc', 'DvzPanzoomEval', 'DvzPanzoomState', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerWheelEvent', 'DvzPointerEventUnion', 'DvzPointerEvent', 'DvzPolygonRing', 'DvzPolygonDesc', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueue', 'DvzQueues', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzShaderCompileRequest', 'DvzShaderCompileResult', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasSpec', 'DvzTextAtlasInfo', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackendProcs', 'DvzWindowBackend', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics', 'DvzInputEvent']
 _POLICY_UNSUPPORTED_FUNCTIONS = {'dvz_barriers': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_buffer': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_buffer_count': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_capacity': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_dependency_flags': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_flags': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_image': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_image_count': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_memory': 'requires unsupported concrete record DvzBarriers', 'dvz_barriers_memory_count': 'requires unsupported concrete record DvzBarriers', 'dvz_canvas_configure_gpu_ctx': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_cmd_barriers': 'requires unsupported concrete record DvzBarriers', 'dvz_device_config': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_config_enable_canvas_extensions': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_config_request_extension': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_config_request_queue': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_config_set_features10': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_config_set_features11': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_config_set_features12': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_config_set_features13': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_config_set_gpu_index': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_device_create': 'requires unsupported concrete record DvzDeviceConfig', 'dvz_drp2_render_pass_desc': 'requires unsupported concrete record DvzDrp2RenderPassDesc', 'dvz_drp2_runtime_attach_frame_target': 'requires unsupported concrete record DvzStreamFrame', 'dvz_drp2_runtime_copy_texture_to_frame': 'requires unsupported concrete record DvzStreamFrame', 'dvz_drp2_stream_begin_render_pass_desc': 'requires unsupported concrete record DvzDrp2RenderPassDesc', 'dvz_gpu_ctx': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config_add_instance_extension': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config_alloc': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config_enable_canvas_extensions': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config_features10': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config_features12': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config_features13': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config_gpu': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_gpu_ctx_config_validation': 'requires unsupported concrete record DvzGpuCtxConfig', 'dvz_stream_start': 'requires unsupported concrete record DvzStreamFrame', 'dvz_stream_update': 'requires unsupported concrete record DvzStreamFrame', 'dvz_view_external_surface': 'requires unsupported concrete record DvzWindowExternalSurfaceInfo', 'dvz_view_update_external_surface': 'requires unsupported concrete record DvzWindowExternalSurfaceInfo', 'dvz_window_external_surface_info': 'requires unsupported concrete record DvzWindowExternalSurfaceInfo', 'dvz_window_wrap_attach_surface': 'requires unsupported concrete record DvzWindowExternalSurfaceInfo', 'dvz_window_wrap_update_surface': 'requires unsupported concrete record DvzWindowExternalSurfaceInfo'}
 _UNSUPPORTED_FUNCTIONS.update(_POLICY_UNSUPPORTED_FUNCTIONS)
 _FUNCTION_LAYOUT_DEPENDENCIES = {'dvz_arcball_mvp': ['DvzMVP'], 'dvz_camera_mvp': ['DvzMVP'], 'dvz_ffi_visual_transform_desc': ['DvzVisualTransformDesc'], 'dvz_panel_frame_info': ['DvzPanelFrameInfo'], 'dvz_panel_view2d_state': ['DvzPanelView2DState'], 'dvz_panel_view3d_state': ['DvzPanelView3DState'], 'dvz_panzoom_mvp': ['DvzMVP'], 'dvz_panzoom_resolve': ['DvzMVP', 'DvzPanzoomResolved'], 'dvz_visual_set_transform_desc': ['DvzVisualTransformDesc'], 'dvz_visual_transform_desc': ['DvzVisualTransformDesc']}
@@ -33528,9 +33738,9 @@ for _function_name, _required_records in _FUNCTION_LAYOUT_DEPENDENCIES.items():
         globals().pop(f"_{_function_name}", None)
         _UNSUPPORTED_FUNCTIONS[_function_name] = "requires unavailable ABI-exact concrete record layout(s): " + ", ".join(_missing_records)
 del _function_name, _required_records, _missing_records
-_GENERATED_FUNCTION_COUNT = 1532
+_GENERATED_FUNCTION_COUNT = 1543
 _SKIPPED_FUNCTIONS = ['dvz_attachment_clear', 'dvz_cmd_rendering_default', 'dvz_cmd_set_viewport_scissor', 'dvz_surface_capabilities', 'dvz_surface_extent', 'dvz_surface_preferred_format', 'dvz_swapchain_extent']
-_DATOVIZ_CTYPES_DECLARED_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAoDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBounds', 'DvzBox', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCameraProjection', 'DvzCameraView', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzColor', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2ExternalBufferTimelineDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldGeometry', 'DvzFieldRegion', 'DvzFieldSamplingDesc', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzGuideHit', 'DvzGuideLayout', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzHoverState', 'DvzInputEvent', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInputTextEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzLimbMaterial', 'DvzMVP', 'DvzMarkerStyle', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelFrameInfo', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView2DState', 'DvzPanelView3DDesc', 'DvzPanelView3DState', 'DvzPanzoomDesc', 'DvzPanzoomEval', 'DvzPanzoomResolved', 'DvzPanzoomState', 'DvzPhongMaterial', 'DvzPlacement', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerEvent', 'DvzPointerEventUnion', 'DvzPointerWheelEvent', 'DvzPolygonDesc', 'DvzPolygonRing', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueryResult', 'DvzQueue', 'DvzQueueCaps', 'DvzQueues', 'DvzRect', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzShaderCompileRequest', 'DvzShaderCompileResult', 'DvzStandardMaterial', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasInfo', 'DvzTextAtlasSpec', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVisualTransformDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackend', 'DvzWindowBackendProcs', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics']
-_CONCRETE_RECORD_DISPOSITIONS = {'DvzAnimPhaseDesc': 'layout', 'DvzAnimTimerDesc': 'layout', 'DvzAnnotationDesc': 'layout', 'DvzAoDesc': 'layout', 'DvzAppCaptureConfig': 'layout', 'DvzAppConfig': 'layout', 'DvzAppResources': 'layout', 'DvzArcballDesc': 'layout', 'DvzArcballState': 'layout', 'DvzAxisStyle': 'layout', 'DvzAxisTickPolicy': 'layout', 'DvzAxisTicks': 'layout', 'DvzBandDesc': 'layout', 'DvzBarriers': 'unsupported', 'DvzBarsDesc': 'layout', 'DvzBezierTessellationDesc': 'layout', 'DvzBounds': 'layout', 'DvzBox': 'layout', 'DvzCameraDesc': 'layout', 'DvzCameraMotionDesc': 'layout', 'DvzCameraProjection': 'layout', 'DvzCameraView': 'layout', 'DvzCanvasConfig': 'layout', 'DvzCanvasLiveImageFrame': 'pointer-opaque', 'DvzCanvasLiveImageSinkConfig': 'layout', 'DvzCapabilitySnapshot': 'layout', 'DvzColor': 'layout', 'DvzColorbarDesc': 'layout', 'DvzColorbarTicks': 'layout', 'DvzColormapDesc': 'layout', 'DvzColormapStop': 'layout', 'DvzDepthCueDesc': 'layout', 'DvzDeviceConfig': 'unsupported', 'DvzDeviceQueueRequest': 'layout', 'DvzDiagnosticReport': 'layout', 'DvzDrp2BindGroupEntry': 'layout', 'DvzDrp2BindGroupLayoutEntry': 'layout', 'DvzDrp2ColorAttachment': 'unsupported', 'DvzDrp2ExternalBufferDesc': 'layout', 'DvzDrp2ExternalBufferTimelineDesc': 'layout', 'DvzDrp2PacketInfo': 'layout', 'DvzDrp2RecordedFrame': 'layout', 'DvzDrp2RecordingInfo': 'layout', 'DvzDrp2RenderPassDesc': 'unsupported', 'DvzDrp2RenderPipelineDesc': 'layout', 'DvzDrp2RuntimeConfig': 'layout', 'DvzDrp2TextureDesc': 'layout', 'DvzDrp2ValidationResult': 'layout', 'DvzEdlDesc': 'layout', 'DvzExtent': 'layout', 'DvzFieldDataView': 'layout', 'DvzFieldGeometry': 'layout', 'DvzFieldRegion': 'layout', 'DvzFieldSamplingDesc': 'layout', 'DvzFlyDesc': 'layout', 'DvzFontDefaults': 'layout', 'DvzFontDesc': 'layout', 'DvzFormatDesc': 'layout', 'DvzFramePlanCopyDesc': 'layout', 'DvzFramePlanEmitConfig': 'layout', 'DvzFramePlanUploadDesc': 'layout', 'DvzFrameTiming': 'layout', 'DvzGeometry': 'pointer-opaque', 'DvzGeometryArrowDesc': 'layout', 'DvzGeometryBounds': 'layout', 'DvzGeometryConeDesc': 'layout', 'DvzGeometryContours': 'layout', 'DvzGeometryCubeDesc': 'layout', 'DvzGeometryCylinderDesc': 'layout', 'DvzGeometryDiscDesc': 'layout', 'DvzGeometryEdges': 'layout', 'DvzGeometryObjDesc': 'layout', 'DvzGeometryPlaneDesc': 'layout', 'DvzGeometryRegularPolygonDesc': 'layout', 'DvzGeometrySectorDesc': 'layout', 'DvzGeometrySphereDesc': 'layout', 'DvzGeometryStarDesc': 'layout', 'DvzGeometrySurfaceGridDesc': 'layout', 'DvzGeometryTorusDesc': 'layout', 'DvzGpuCtxConfig': 'unsupported', 'DvzGpuInfo': 'layout', 'DvzGraphEdgeStyle': 'layout', 'DvzGridCell': 'layout', 'DvzGuiConfig': 'layout', 'DvzGuiViewportConfig': 'layout', 'DvzGuideHit': 'layout', 'DvzGuideLayout': 'layout', 'DvzGuideLineDesc': 'layout', 'DvzGuideSpanDesc': 'layout', 'DvzHoverDesc': 'layout', 'DvzHoverState': 'layout', 'DvzInputEvent': 'layout', 'DvzInputResizeEvent': 'layout', 'DvzInputScaleEvent': 'layout', 'DvzInputTextEvent': 'layout', 'DvzInstanceConfig': 'layout', 'DvzInteropBufferExport': 'layout', 'DvzInteropBufferExportConfig': 'layout', 'DvzItemInteractionDesc': 'layout', 'DvzItemRange': 'layout', 'DvzItemStateVisualStyle': 'layout', 'DvzKeyboardEvent': 'layout', 'DvzKeyboardModifierState': 'layout', 'DvzLabelDesc': 'layout', 'DvzLabelsState': 'layout', 'DvzLegendDesc': 'layout', 'DvzLimbMaterial': 'layout', 'DvzMVP': 'conditional-layout', 'DvzMarkerStyle': 'layout', 'DvzMaterialDesc': 'layout', 'DvzMsaaDesc': 'layout', 'DvzOrientationGizmoDesc': 'layout', 'DvzOverlayCardDesc': 'layout', 'DvzOverlayCardStyle': 'layout', 'DvzOverlayRichTextDesc': 'layout', 'DvzPanelAxes2DDesc': 'layout', 'DvzPanelBackgroundDesc': 'layout', 'DvzPanelBackgroundGradient': 'layout', 'DvzPanelBackgroundImage': 'layout', 'DvzPanelBorderDesc': 'layout', 'DvzPanelDesc': 'layout', 'DvzPanelFrameInfo': 'conditional-layout', 'DvzPanelReserve': 'layout', 'DvzPanelView2DDesc': 'layout', 'DvzPanelView2DState': 'conditional-layout', 'DvzPanelView3DDesc': 'layout', 'DvzPanelView3DState': 'conditional-layout', 'DvzPanzoomDesc': 'layout', 'DvzPanzoomEval': 'layout', 'DvzPanzoomResolved': 'conditional-layout', 'DvzPanzoomState': 'layout', 'DvzPhongMaterial': 'layout', 'DvzPlacement': 'layout', 'DvzPointStyleDesc': 'layout', 'DvzPointerDragEvent': 'layout', 'DvzPointerEvent': 'layout', 'DvzPointerEventUnion': 'layout', 'DvzPointerWheelEvent': 'layout', 'DvzPolygonDesc': 'layout', 'DvzPolygonRing': 'layout', 'DvzPolygonStyle': 'layout', 'DvzQueryRequest': 'layout', 'DvzQueryResult': 'layout', 'DvzQueue': 'layout', 'DvzQueueCaps': 'layout', 'DvzQueues': 'layout', 'DvzRect': 'layout', 'DvzReferenceGridDesc': 'layout', 'DvzRenderedContribution': 'layout', 'DvzResolvedViewSize': 'layout', 'DvzSampledFieldDesc': 'layout', 'DvzScaleBarDesc': 'layout', 'DvzScaleCategory': 'layout', 'DvzScaleDesc': 'layout', 'DvzScaleXY': 'layout', 'DvzSceneBufferDesc': 'layout', 'DvzSceneComputeDesc': 'layout', 'DvzSceneOcclusionDesc': 'layout', 'DvzSelectionDesc': 'layout', 'DvzSelectionItem': 'layout', 'DvzSelectionVisualStyle': 'layout', 'DvzShaderCompileRequest': 'layout', 'DvzShaderCompileResult': 'layout', 'DvzStandardMaterial': 'layout', 'DvzStreamConfig': 'layout', 'DvzStreamFrame': 'unsupported', 'DvzStreamSinkBackend': 'layout', 'DvzSwapchainConfig': 'layout', 'DvzSymbolImageDesc': 'layout', 'DvzTessellatedPath': 'pointer-opaque', 'DvzTextAtlasGlyph': 'pointer-opaque', 'DvzTextAtlasInfo': 'layout', 'DvzTextAtlasSpec': 'layout', 'DvzTextItem': 'layout', 'DvzTextLayout': 'layout', 'DvzTextPlacement': 'layout', 'DvzTextStyle': 'layout', 'DvzTrackCircle2Desc': 'layout', 'DvzTrackCircle3Desc': 'layout', 'DvzTrackConstantDesc': 'layout', 'DvzTrackKeyframesDesc': 'layout', 'DvzTrackLinearDesc': 'layout', 'DvzTrackRotationDesc': 'layout', 'DvzTransformMotionDesc': 'layout', 'DvzTriangulationDesc': 'layout', 'DvzTurntableDesc': 'layout', 'DvzVectorStyle': 'layout', 'DvzVideoEncoderConfig': 'layout', 'DvzVideoSinkConfig': 'layout', 'DvzViewDesc': 'layout', 'DvzViewSizeDesc': 'layout', 'DvzVisualAttachDesc': 'layout', 'DvzVisualAttrInfo': 'layout', 'DvzVisualDataUpdate': 'layout', 'DvzVisualDataView': 'layout', 'DvzVisualShaderDesc': 'layout', 'DvzVisualTransformDesc': 'conditional-layout', 'DvzVolumeAlphaStop': 'layout', 'DvzVolumeOcclusionDesc': 'layout', 'DvzVolumeState': 'pointer-opaque', 'DvzWindowBackend': 'layout', 'DvzWindowBackendProcs': 'layout', 'DvzWindowConfig': 'layout', 'DvzWindowExternalSurfaceInfo': 'unsupported', 'DvzWindowGlfwInputCallbacks': 'layout', 'DvzWindowMetrics': 'layout', 'DvzWindowSurface': 'pointer-opaque'}
+_DATOVIZ_CTYPES_DECLARED_LAYOUT_RECORDS = ['DvzAnimPhaseDesc', 'DvzAnimTimerDesc', 'DvzAnnotationDesc', 'DvzAoDesc', 'DvzAppCaptureConfig', 'DvzAppConfig', 'DvzAppResources', 'DvzArcballDesc', 'DvzArcballState', 'DvzAxisStyle', 'DvzAxisTickPolicy', 'DvzAxisTicks', 'DvzBandDesc', 'DvzBarsDesc', 'DvzBezierTessellationDesc', 'DvzBounds', 'DvzBox', 'DvzCameraDesc', 'DvzCameraMotionDesc', 'DvzCameraProjection', 'DvzCameraView', 'DvzCanvasConfig', 'DvzCanvasLiveImageSinkConfig', 'DvzCapabilitySnapshot', 'DvzColor', 'DvzColorbarDesc', 'DvzColorbarTicks', 'DvzColorf', 'DvzColormapDesc', 'DvzColormapStop', 'DvzDataDomain', 'DvzDepthCueDesc', 'DvzDeviceQueueRequest', 'DvzDiagnosticReport', 'DvzDrp2BindGroupEntry', 'DvzDrp2BindGroupLayoutEntry', 'DvzDrp2ColorTarget', 'DvzDrp2ExternalBufferDesc', 'DvzDrp2ExternalBufferTimelineDesc', 'DvzDrp2PacketInfo', 'DvzDrp2RecordedFrame', 'DvzDrp2RecordingInfo', 'DvzDrp2RenderPipelineDesc', 'DvzDrp2RuntimeConfig', 'DvzDrp2TextureDesc', 'DvzDrp2ValidationResult', 'DvzEdlDesc', 'DvzExtent', 'DvzFieldDataView', 'DvzFieldGeometry', 'DvzFieldRegion', 'DvzFieldSamplingDesc', 'DvzFlyDesc', 'DvzFontDefaults', 'DvzFontDesc', 'DvzFormatDesc', 'DvzFramePlanCopyDesc', 'DvzFramePlanEmitConfig', 'DvzFramePlanUploadDesc', 'DvzFrameTiming', 'DvzGeometryArrowDesc', 'DvzGeometryBounds', 'DvzGeometryConeDesc', 'DvzGeometryContourSegment', 'DvzGeometryContours', 'DvzGeometryCubeDesc', 'DvzGeometryCylinderDesc', 'DvzGeometryDiscDesc', 'DvzGeometryEdge', 'DvzGeometryEdges', 'DvzGeometryObjDesc', 'DvzGeometryPlaneDesc', 'DvzGeometryRegularPolygonDesc', 'DvzGeometrySectorDesc', 'DvzGeometrySphereDesc', 'DvzGeometryStarDesc', 'DvzGeometrySurfaceGridDesc', 'DvzGeometryTorusDesc', 'DvzGpuInfo', 'DvzGraphEdgeStyle', 'DvzGridCell', 'DvzGuiConfig', 'DvzGuiViewportConfig', 'DvzGuideHit', 'DvzGuideLayout', 'DvzGuideLineDesc', 'DvzGuideSpanDesc', 'DvzHoverDesc', 'DvzHoverState', 'DvzInputEvent', 'DvzInputResizeEvent', 'DvzInputScaleEvent', 'DvzInputTextEvent', 'DvzInstanceConfig', 'DvzInteropBufferExport', 'DvzInteropBufferExportConfig', 'DvzItemInteractionDesc', 'DvzItemRange', 'DvzItemStateVisualStyle', 'DvzKeyboardEvent', 'DvzKeyboardModifierState', 'DvzLabelDesc', 'DvzLabelsState', 'DvzLegendDesc', 'DvzLightDesc', 'DvzLimbMaterial', 'DvzMVP', 'DvzMarkerStyle', 'DvzMaterialDesc', 'DvzMsaaDesc', 'DvzOrientationGizmoDesc', 'DvzOverlayCardDesc', 'DvzOverlayCardStyle', 'DvzOverlayRichTextDesc', 'DvzPanelAxes2DDesc', 'DvzPanelBackgroundDesc', 'DvzPanelBackgroundGradient', 'DvzPanelBackgroundImage', 'DvzPanelBorderDesc', 'DvzPanelDesc', 'DvzPanelFrameInfo', 'DvzPanelReserve', 'DvzPanelView2DDesc', 'DvzPanelView2DState', 'DvzPanelView3DDesc', 'DvzPanelView3DState', 'DvzPanzoomDesc', 'DvzPanzoomEval', 'DvzPanzoomResolved', 'DvzPanzoomState', 'DvzPhongMaterial', 'DvzPlacement', 'DvzPointStyleDesc', 'DvzPointerDragEvent', 'DvzPointerEvent', 'DvzPointerEventUnion', 'DvzPointerWheelEvent', 'DvzPolygonDesc', 'DvzPolygonRing', 'DvzPolygonStyle', 'DvzQueryRequest', 'DvzQueryResult', 'DvzQueue', 'DvzQueueCaps', 'DvzQueues', 'DvzRect', 'DvzReferenceGridDesc', 'DvzRenderedContribution', 'DvzResolvedViewSize', 'DvzSampledFieldDesc', 'DvzScaleBarDesc', 'DvzScaleCategory', 'DvzScaleDesc', 'DvzScaleXY', 'DvzSceneBufferDesc', 'DvzSceneComputeDesc', 'DvzSceneOcclusionDesc', 'DvzSelectionDesc', 'DvzSelectionItem', 'DvzSelectionVisualStyle', 'DvzShaderCompileRequest', 'DvzShaderCompileResult', 'DvzStandardMaterial', 'DvzStreamConfig', 'DvzStreamSink', 'DvzStreamSinkBackend', 'DvzStreamSinkRequest', 'DvzSwapchainConfig', 'DvzSymbolImageDesc', 'DvzTextAtlasInfo', 'DvzTextAtlasSpec', 'DvzTextItem', 'DvzTextLayout', 'DvzTextPlacement', 'DvzTextStyle', 'DvzTime', 'DvzTrackCircle2Desc', 'DvzTrackCircle3Desc', 'DvzTrackConstantDesc', 'DvzTrackKeyframesDesc', 'DvzTrackLinearDesc', 'DvzTrackRotationDesc', 'DvzTransformMotionDesc', 'DvzTriangulationDesc', 'DvzTurntableDesc', 'DvzVectorStyle', 'DvzVideoEncoderConfig', 'DvzVideoSinkConfig', 'DvzViewDesc', 'DvzViewSizeDesc', 'DvzVisualAttachDesc', 'DvzVisualAttrInfo', 'DvzVisualDataUpdate', 'DvzVisualDataView', 'DvzVisualShaderDesc', 'DvzVisualTransformDesc', 'DvzVolumeAlphaStop', 'DvzVolumeOcclusionDesc', 'DvzWindowBackend', 'DvzWindowBackendProcs', 'DvzWindowConfig', 'DvzWindowGlfwInputCallbacks', 'DvzWindowMetrics']
+_CONCRETE_RECORD_DISPOSITIONS = {'DvzAnimPhaseDesc': 'layout', 'DvzAnimTimerDesc': 'layout', 'DvzAnnotationDesc': 'layout', 'DvzAoDesc': 'layout', 'DvzAppCaptureConfig': 'layout', 'DvzAppConfig': 'layout', 'DvzAppResources': 'layout', 'DvzArcballDesc': 'layout', 'DvzArcballState': 'layout', 'DvzAxisStyle': 'layout', 'DvzAxisTickPolicy': 'layout', 'DvzAxisTicks': 'layout', 'DvzBandDesc': 'layout', 'DvzBarriers': 'unsupported', 'DvzBarsDesc': 'layout', 'DvzBezierTessellationDesc': 'layout', 'DvzBounds': 'layout', 'DvzBox': 'layout', 'DvzCameraDesc': 'layout', 'DvzCameraMotionDesc': 'layout', 'DvzCameraProjection': 'layout', 'DvzCameraView': 'layout', 'DvzCanvasConfig': 'layout', 'DvzCanvasLiveImageFrame': 'pointer-opaque', 'DvzCanvasLiveImageSinkConfig': 'layout', 'DvzCapabilitySnapshot': 'layout', 'DvzColor': 'layout', 'DvzColorbarDesc': 'layout', 'DvzColorbarTicks': 'layout', 'DvzColormapDesc': 'layout', 'DvzColormapStop': 'layout', 'DvzDepthCueDesc': 'layout', 'DvzDeviceConfig': 'unsupported', 'DvzDeviceQueueRequest': 'layout', 'DvzDiagnosticReport': 'layout', 'DvzDrp2BindGroupEntry': 'layout', 'DvzDrp2BindGroupLayoutEntry': 'layout', 'DvzDrp2ColorAttachment': 'unsupported', 'DvzDrp2ExternalBufferDesc': 'layout', 'DvzDrp2ExternalBufferTimelineDesc': 'layout', 'DvzDrp2PacketInfo': 'layout', 'DvzDrp2RecordedFrame': 'layout', 'DvzDrp2RecordingInfo': 'layout', 'DvzDrp2RenderPassDesc': 'unsupported', 'DvzDrp2RenderPipelineDesc': 'layout', 'DvzDrp2RuntimeConfig': 'layout', 'DvzDrp2TextureDesc': 'layout', 'DvzDrp2ValidationResult': 'layout', 'DvzEdlDesc': 'layout', 'DvzExtent': 'layout', 'DvzFieldDataView': 'layout', 'DvzFieldGeometry': 'layout', 'DvzFieldRegion': 'layout', 'DvzFieldSamplingDesc': 'layout', 'DvzFlyDesc': 'layout', 'DvzFontDefaults': 'layout', 'DvzFontDesc': 'layout', 'DvzFormatDesc': 'layout', 'DvzFramePlanCopyDesc': 'layout', 'DvzFramePlanEmitConfig': 'layout', 'DvzFramePlanUploadDesc': 'layout', 'DvzFrameTiming': 'layout', 'DvzGeometry': 'pointer-opaque', 'DvzGeometryArrowDesc': 'layout', 'DvzGeometryBounds': 'layout', 'DvzGeometryConeDesc': 'layout', 'DvzGeometryContours': 'layout', 'DvzGeometryCubeDesc': 'layout', 'DvzGeometryCylinderDesc': 'layout', 'DvzGeometryDiscDesc': 'layout', 'DvzGeometryEdges': 'layout', 'DvzGeometryObjDesc': 'layout', 'DvzGeometryPlaneDesc': 'layout', 'DvzGeometryRegularPolygonDesc': 'layout', 'DvzGeometrySectorDesc': 'layout', 'DvzGeometrySphereDesc': 'layout', 'DvzGeometryStarDesc': 'layout', 'DvzGeometrySurfaceGridDesc': 'layout', 'DvzGeometryTorusDesc': 'layout', 'DvzGpuCtxConfig': 'unsupported', 'DvzGpuInfo': 'layout', 'DvzGraphEdgeStyle': 'layout', 'DvzGridCell': 'layout', 'DvzGuiConfig': 'layout', 'DvzGuiViewportConfig': 'layout', 'DvzGuideHit': 'layout', 'DvzGuideLayout': 'layout', 'DvzGuideLineDesc': 'layout', 'DvzGuideSpanDesc': 'layout', 'DvzHoverDesc': 'layout', 'DvzHoverState': 'layout', 'DvzInputEvent': 'layout', 'DvzInputResizeEvent': 'layout', 'DvzInputScaleEvent': 'layout', 'DvzInputTextEvent': 'layout', 'DvzInstanceConfig': 'layout', 'DvzInteropBufferExport': 'layout', 'DvzInteropBufferExportConfig': 'layout', 'DvzItemInteractionDesc': 'layout', 'DvzItemRange': 'layout', 'DvzItemStateVisualStyle': 'layout', 'DvzKeyboardEvent': 'layout', 'DvzKeyboardModifierState': 'layout', 'DvzLabelDesc': 'layout', 'DvzLabelsState': 'layout', 'DvzLegendDesc': 'layout', 'DvzLightDesc': 'layout', 'DvzLimbMaterial': 'layout', 'DvzMVP': 'conditional-layout', 'DvzMarkerStyle': 'layout', 'DvzMaterialDesc': 'layout', 'DvzMsaaDesc': 'layout', 'DvzOrientationGizmoDesc': 'layout', 'DvzOverlayCardDesc': 'layout', 'DvzOverlayCardStyle': 'layout', 'DvzOverlayRichTextDesc': 'layout', 'DvzPanelAxes2DDesc': 'layout', 'DvzPanelBackgroundDesc': 'layout', 'DvzPanelBackgroundGradient': 'layout', 'DvzPanelBackgroundImage': 'layout', 'DvzPanelBorderDesc': 'layout', 'DvzPanelDesc': 'layout', 'DvzPanelFrameInfo': 'conditional-layout', 'DvzPanelReserve': 'layout', 'DvzPanelView2DDesc': 'layout', 'DvzPanelView2DState': 'conditional-layout', 'DvzPanelView3DDesc': 'layout', 'DvzPanelView3DState': 'conditional-layout', 'DvzPanzoomDesc': 'layout', 'DvzPanzoomEval': 'layout', 'DvzPanzoomResolved': 'conditional-layout', 'DvzPanzoomState': 'layout', 'DvzPhongMaterial': 'layout', 'DvzPlacement': 'layout', 'DvzPointStyleDesc': 'layout', 'DvzPointerDragEvent': 'layout', 'DvzPointerEvent': 'layout', 'DvzPointerEventUnion': 'layout', 'DvzPointerWheelEvent': 'layout', 'DvzPolygonDesc': 'layout', 'DvzPolygonRing': 'layout', 'DvzPolygonStyle': 'layout', 'DvzQueryRequest': 'layout', 'DvzQueryResult': 'layout', 'DvzQueue': 'layout', 'DvzQueueCaps': 'layout', 'DvzQueues': 'layout', 'DvzRect': 'layout', 'DvzReferenceGridDesc': 'layout', 'DvzRenderedContribution': 'layout', 'DvzResolvedViewSize': 'layout', 'DvzSampledFieldDesc': 'layout', 'DvzScaleBarDesc': 'layout', 'DvzScaleCategory': 'layout', 'DvzScaleDesc': 'layout', 'DvzScaleXY': 'layout', 'DvzSceneBufferDesc': 'layout', 'DvzSceneComputeDesc': 'layout', 'DvzSceneOcclusionDesc': 'layout', 'DvzSelectionDesc': 'layout', 'DvzSelectionItem': 'layout', 'DvzSelectionVisualStyle': 'layout', 'DvzShaderCompileRequest': 'layout', 'DvzShaderCompileResult': 'layout', 'DvzStandardMaterial': 'layout', 'DvzStreamConfig': 'layout', 'DvzStreamFrame': 'unsupported', 'DvzStreamSinkBackend': 'layout', 'DvzSwapchainConfig': 'layout', 'DvzSymbolImageDesc': 'layout', 'DvzTessellatedPath': 'pointer-opaque', 'DvzTextAtlasGlyph': 'pointer-opaque', 'DvzTextAtlasInfo': 'layout', 'DvzTextAtlasSpec': 'layout', 'DvzTextItem': 'layout', 'DvzTextLayout': 'layout', 'DvzTextPlacement': 'layout', 'DvzTextStyle': 'layout', 'DvzTrackCircle2Desc': 'layout', 'DvzTrackCircle3Desc': 'layout', 'DvzTrackConstantDesc': 'layout', 'DvzTrackKeyframesDesc': 'layout', 'DvzTrackLinearDesc': 'layout', 'DvzTrackRotationDesc': 'layout', 'DvzTransformMotionDesc': 'layout', 'DvzTriangulationDesc': 'layout', 'DvzTurntableDesc': 'layout', 'DvzVectorStyle': 'layout', 'DvzVideoEncoderConfig': 'layout', 'DvzVideoSinkConfig': 'layout', 'DvzViewDesc': 'layout', 'DvzViewSizeDesc': 'layout', 'DvzVisualAttachDesc': 'layout', 'DvzVisualAttrInfo': 'layout', 'DvzVisualDataUpdate': 'layout', 'DvzVisualDataView': 'layout', 'DvzVisualShaderDesc': 'layout', 'DvzVisualTransformDesc': 'conditional-layout', 'DvzVolumeAlphaStop': 'layout', 'DvzVolumeOcclusionDesc': 'layout', 'DvzVolumeState': 'pointer-opaque', 'DvzWindowBackend': 'layout', 'DvzWindowBackendProcs': 'layout', 'DvzWindowConfig': 'layout', 'DvzWindowExternalSurfaceInfo': 'unsupported', 'DvzWindowGlfwInputCallbacks': 'layout', 'DvzWindowMetrics': 'layout', 'DvzWindowSurface': 'pointer-opaque'}
 _CONCRETE_RECORD_POLICY = {'DvzGeometry': {'disposition': 'pointer-opaque', 'provenance': ['native-returned', 'native-owned-input']}, 'DvzTessellatedPath': {'disposition': 'pointer-opaque', 'provenance': ['native-returned', 'native-owned-input']}, 'DvzTextAtlasGlyph': {'disposition': 'pointer-opaque', 'provenance': ['native-returned']}, 'DvzVolumeState': {'disposition': 'pointer-opaque', 'provenance': ['native-returned']}, 'DvzWindowSurface': {'disposition': 'pointer-opaque', 'provenance': ['native-returned']}, 'DvzCanvasLiveImageFrame': {'disposition': 'pointer-opaque', 'provenance': ['callback-borrowed:DvzCanvasLiveImageCallback']}, 'DvzBarriers': {'disposition': 'unsupported', 'provenance': []}, 'DvzDeviceConfig': {'disposition': 'unsupported', 'provenance': []}, 'DvzGpuCtxConfig': {'disposition': 'unsupported', 'provenance': []}, 'DvzDrp2ColorAttachment': {'disposition': 'unsupported', 'provenance': []}, 'DvzDrp2RenderPassDesc': {'disposition': 'unsupported', 'provenance': []}, 'DvzStreamFrame': {'disposition': 'unsupported', 'provenance': ['callback-borrowed:DvzCanvasDraw']}, 'DvzWindowExternalSurfaceInfo': {'disposition': 'unsupported', 'provenance': []}}
 __all__ = [name for name in globals() if name.startswith(('dvz_', 'Dvz', 'DVZ_'))]

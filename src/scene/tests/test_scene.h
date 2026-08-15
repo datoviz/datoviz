@@ -676,6 +676,8 @@ int test_scene_multi_panel_glsl_emits_viewport_scissor_commands(
 
 int test_scene_overlapping_depth_panels_glsl_clear_depth(TstContext* suite, const TstCase* item);
 
+int test_scene_panel_light_ownership_and_lifecycle(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_point_depth_orders_overlap(TstContext* suite, const TstCase* item);

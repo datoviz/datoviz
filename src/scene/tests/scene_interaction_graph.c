@@ -2566,3 +2566,88 @@ int test_scene_overlapping_depth_panels_glsl_clear_depth(TstContext* suite, cons
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+
+int test_scene_panel_light_ownership_and_lifecycle(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    DvzScene* other_scene = dvz_scene();
+    ANN(scene);
+    ANN(other_scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    ANN(left);
+    ANN(right);
+
+    DvzLight* ambient = dvz_scene_default_ambient(scene);
+    DvzLight* directional = dvz_scene_default_directional(scene);
+    ANN(ambient);
+    ANN(directional);
+    AT(left->lights.count == 2);
+    AT(right->lights.count == 2);
+    AT(!left->lights.explicit_set);
+    AT(ambient->panel_count == 2);
+    AT(directional->panel_count == 2);
+
+    DvzLightDesc directional_desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+    directional_desc.direction[0] = 3.0f;
+    directional_desc.direction[1] = 0.0f;
+    directional_desc.direction[2] = 4.0f;
+    DvzLight* custom = dvz_light(scene, &directional_desc);
+    ANN(custom);
+    AC(custom->desc.direction[0], 0.6f, 1e-6f);
+    AC(custom->desc.direction[2], 0.8f, 1e-6f);
+
+    DvzLight* left_lights[1] = {custom};
+    AT(dvz_panel_set_lights(left, left_lights, 1) == DVZ_OK);
+    AT(left->lights.count == 1);
+    AT(left->lights.items[0] == custom);
+    AT(left->lights.explicit_set);
+    AT(custom->panel_count == 1);
+    AT(ambient->panel_count == 1);
+    AT(directional->panel_count == 1);
+
+    uint64_t revision = left->lights.revision;
+    AT(dvz_light_set_intensity(custom, 2.0f) == DVZ_OK);
+    AT(left->lights.revision > revision);
+    AT(left->lights.gpu_dirty);
+
+    DvzLight* duplicates[2] = {custom, custom};
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_panel_set_lights(left, duplicates, 2) == DVZ_ERROR);
+    AT(left->lights.count == 1);
+    AT(left->lights.items[0] == custom);
+
+    DvzLightDesc other_desc = dvz_light_desc(DVZ_LIGHT_AMBIENT);
+    DvzLight* other = dvz_light(other_scene, &other_desc);
+    ANN(other);
+    DvzLight* cross_scene[1] = {other};
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_panel_set_lights(left, cross_scene, 1) == DVZ_ERROR);
+    AT(left->lights.items[0] == custom);
+
+    DvzLight* too_many[DVZ_SCENE_MAX_PANEL_LIGHTS + 1] = {0};
+    AT(dvz_panel_set_lights(left, too_many, DVZ_SCENE_MAX_PANEL_LIGHTS + 1) == DVZ_ERROR);
+
+    dvz_light_destroy(custom);
+    AT(left->lights.count == 0);
+    AT(left->lights.explicit_set);
+    AT(custom->scene == NULL);
+    AT(dvz_panel_reset_lights(left) == DVZ_OK);
+    AT(left->lights.count == 2);
+    AT(!left->lights.explicit_set);
+    AT(ambient->panel_count == 2);
+    AT(directional->panel_count == 2);
+
+    dvz_panel_destroy(left);
+    AT(ambient->panel_count == 1);
+    AT(directional->panel_count == 1);
+
+    dvz_scene_destroy(other_scene);
+    dvz_scene_destroy(scene);
+    return 0;
+}
