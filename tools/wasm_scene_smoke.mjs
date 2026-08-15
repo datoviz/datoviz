@@ -1688,11 +1688,18 @@ function expectTerrainReliefScenarioStreamShape(stream, label) {
     mesh.multisample?.sample_count === 4,
     `${label}: expected capability-lowered 4-sample mesh pipeline`,
   );
+  const renderPasses = commandsOf(stream, "BeginRenderPass");
   requireOk(
-    commandsOf(stream, "BeginRenderPass").some(
-      (pass) => pass.color_attachments?.[0]?.resolve_target?.texture_id === 0,
+    renderPasses.some(
+      (pass) =>
+        (pass.color_attachments?.[0]?.resolve_target_texture_id ??
+          pass.color_attachments?.[0]?.resolve_target?.texture_id ?? 0) > 0,
     ),
-    `${label}: expected MSAA resolve to browser presentation target`,
+    `${label}: expected MSAA resolve to panel-local presentation texture`,
+  );
+  requireOk(
+    renderPasses.some((pass) => pass.color_attachments?.[0]?.texture_id === 0),
+    `${label}: expected explicit browser presentation pass`,
   );
   requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected orthoimage upload`);
   requireOk(

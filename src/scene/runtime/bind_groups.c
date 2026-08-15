@@ -149,7 +149,7 @@ bool _resolve_material_bind_group_layout(
             {
                 .binding = DVZ_SCENE_SHADER_BINDING_PANEL_LIGHTS,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
-                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
                 .access = DVZ_DRP2_BINDING_ACCESS_READ,
             },
         };
@@ -199,7 +199,7 @@ bool _resolve_item_state_style_bind_group_layout(
             {
                 .binding = DVZ_SCENE_SHADER_BINDING_PANEL_LIGHTS,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
-                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
                 .access = DVZ_DRP2_BINDING_ACCESS_READ,
             },
         };

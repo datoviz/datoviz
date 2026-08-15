@@ -12,7 +12,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-WGSL_DIR = REPO_ROOT / "src" / "scene" / "wgsl"
+WGSL_DIR = REPO_ROOT / "src" / "scene" / "shaders" / "wgsl"
 
 BUFFER_USAGE = [
     (0x0001, "COPY_SRC"),
