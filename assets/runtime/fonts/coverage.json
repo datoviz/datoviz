@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "primary_role": "sans_regular",
+  "fallback_roles": ["scientific_fallback"],
+  "missing_glyph": "U+003F",
+  "required_primary_strings": [
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    "αβγδεζηθικλμνξοπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ",
+    "°µμÅΩ%‰′″⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉"
+  ],
+  "required_combined_ranges": [
+    "U+2190-U+21FF",
+    "U+2200-U+22FF",
+    "U+25A0-U+25FF",
+    "U+27F0-U+27FF",
+    "U+2900-U+297F",
+    "U+2A00-U+2AFF",
+    "U+1D400-U+1D7FF"
+  ],
+  "required_combined_strings": [
+    "∀∃∄∅∆∇∈∉∋∌∏∑−∓∕∗∘∙√∛∜∝∞∟∠∡∢∣∥∧∨∩∪∫∬∭∮∴∵∼≃≅≈≠≡≤≥≪≫⊂⊃⊄⊅⊆⊇⊕⊗⊥⋅⌈⌉⌊⌋⟨⟩",
+    "←↑→↓↔↕↖↗↘↙⇐⇑⇒⇓⇔↦↩↪⟵⟶⟷⟸⟹⟺",
+    "•◦○●□■△▲▽▼◇◆★☆✓✔✗✘"
+  ],
+  "canonical_replacements": {
+    "U+2103": "°C",
+    "U+2109": "°F",
+    "U+212B": "Å"
+  },
+  "explicitly_not_promised": [
+    "U+FFFD",
+    "emoji",
+    "broad_script_fallback",
+    "miscellaneous_pictograms"
+  ]
+}

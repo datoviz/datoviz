@@ -1,101 +1,101 @@
 {
   "schema_version": 1,
-  "purpose": "behavior-preserving v0.4 font extraction",
-  "legacy_source": {
-    "repository": "https://github.com/datoviz/data",
-    "commit": "a9542d20f2d29aecb9518738f6b7ba1914b63997",
-    "path_prefix": "assets/fonts/"
+  "purpose": "v0.4 built-in font family and scientific Unicode fallback",
+  "policy": {
+    "modified_fonts": false,
+    "subsetting": false,
+    "missing_glyph": "U+003F",
+    "platform_font_discovery": false
+  },
+  "sources": {
+    "source_sans_3": {
+      "repository": "https://github.com/adobe-fonts/source-sans",
+      "tag": "3.052R",
+      "commit": "ed1808970eb3c7301c9a523bee26473ba0bb62fa",
+      "path_prefix": "TTF/",
+      "license_path": "LICENSES/SourceSans3-OFL-1.1.md",
+      "license_sha256": "937d1985d2d6d003b6efdfa47e098b96c69d55395175f154d7f56410c942f978"
+    },
+    "source_code_pro": {
+      "repository": "https://github.com/adobe-fonts/source-code-pro",
+      "tag": "2.042R-u/1.062R-i/1.026R-vf",
+      "commit": "d3f1a5962cde503f9409c21e58527611d4a19ef1",
+      "path_prefix": "TTF/",
+      "license_path": "LICENSES/SourceCodePro-OFL-1.1.md",
+      "license_sha256": "0b2c3168605cb4f3ba54cf3cf2003f67ff894c66484c75702007f23eda92c353"
+    },
+    "noto_sans_math": {
+      "repository": "https://github.com/notofonts/math",
+      "tag": "NotoSansMath-v3.000",
+      "commit": "00e9941d95b2a355399a66f3990ffde6e4985676",
+      "release_asset": "NotoSansMath-v3.000.zip",
+      "release_asset_size": 2498094,
+      "release_asset_sha256": "ac351837b41f8a897f020b97fb0f075ad574c1e9669fb5839ada1f92fd748356",
+      "archive_path": "NotoSansMath/full/ttf/NotoSansMath-Regular.ttf",
+      "license_path": "LICENSES/NotoSansMath-OFL-1.1.txt",
+      "license_sha256": "352df177a2ccb42595b3c278c20837e11dd5496859b9dee03329fcc14f67c2a0"
+    }
   },
   "files": [
     {
-      "name": "DroidSans.ttf",
-      "size": 190044,
-      "sha256": "4e2371bc0e4cf6983342e150412f140da79d674c9be0b56458401f581072ecd3",
-      "family": "Droid Sans",
+      "path": "SourceSans3-Regular.ttf",
+      "role": "sans_regular",
+      "source": "source_sans_3",
+      "size": 431196,
+      "sha256": "4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f",
+      "family": "Source Sans 3",
       "style": "Regular",
-      "font_version": "1.00 build 113",
-      "license": "Apache-2.0"
+      "font_version": "3.052"
     },
     {
-      "name": "Inconsolata-Regular.ttf",
-      "size": 97864,
-      "sha256": "04bce5eef6ecc84bd9d14bc99143dfdb1949177db54dbd52252c7b6284c2f9d9",
-      "family": "Inconsolata",
-      "style": "Regular",
-      "font_version": "3.001",
-      "license": "OFL-1.1"
-    },
-    {
-      "name": "Roboto-Black.ttf",
-      "size": 147424,
-      "sha256": "59cc48c96047bb30b250bb287f06906e468e49f92832bd473447d13a602aee61",
-      "family": "Roboto Black",
-      "style": "Regular",
-      "font_version": "3.009; 2024",
-      "license": "OFL-1.1"
-    },
-    {
-      "name": "Roboto-Bold.ttf",
-      "size": 146768,
-      "sha256": "deb990e241954e1af87c6033d40a76cf0f48e0d112541794526051ac4a3ee2c8",
-      "family": "Roboto",
+      "path": "SourceSans3-Bold.ttf",
+      "role": "sans_bold",
+      "source": "source_sans_3",
+      "size": 428176,
+      "sha256": "9214b9d95e4231c609802815c2646c98174e2102d0d37f88978a7f8e71006e6a",
+      "family": "Source Sans 3",
       "style": "Bold",
-      "font_version": "3.009; 2024",
-      "license": "OFL-1.1"
+      "font_version": "3.052"
     },
     {
-      "name": "Roboto-BoldItalic.ttf",
-      "size": 532860,
-      "sha256": "40083ed54338397cf49d2c49f59eddcd963a30fdb301813d4bd3abbb37a13d12",
-      "family": "Roboto",
-      "style": "Bold Italic",
-      "font_version": "2.001047; 2015",
-      "license": "Apache-2.0"
-    },
-    {
-      "name": "Roboto-Italic.ttf",
-      "size": 533388,
-      "sha256": "fa0b17bb4aaac4a1b2ee149dd4ca3b55e97d3077aa6ba9bb02541b316e7c46ce",
-      "family": "Roboto",
+      "path": "SourceSans3-It.ttf",
+      "role": "sans_italic",
+      "source": "source_sans_3",
+      "size": 315812,
+      "sha256": "192afd78f0f54a3c69eaf02d43f4d9a821e9d6110e41d3d25d61a7385cd580e4",
+      "family": "Source Sans 3",
       "style": "Italic",
-      "font_version": "2.001047; 2015",
-      "license": "Apache-2.0"
+      "font_version": "3.052"
     },
     {
-      "name": "Roboto-Light.ttf",
-      "size": 146056,
-      "sha256": "4b2e824beab63c438c2849bd6e1d4f6708cba5a5c5f3dbe8d5af7e9682ed9373",
-      "family": "Roboto Light",
-      "style": "Regular",
-      "font_version": "3.009; 2024",
-      "license": "OFL-1.1"
+      "path": "SourceSans3-BoldIt.ttf",
+      "role": "sans_bold_italic",
+      "source": "source_sans_3",
+      "size": 318700,
+      "sha256": "7978291fc1bf314db887e0366853b33c5cf2e964c7b95cfb9ce403a6ec46a842",
+      "family": "Source Sans 3",
+      "style": "Bold Italic",
+      "font_version": "3.052"
     },
     {
-      "name": "Roboto-Medium.ttf",
-      "size": 162588,
-      "sha256": "8559132c89ad51d8a2ba5b171887a44a7ba93776e205f553573de228e64b45f8",
-      "family": "Roboto Medium",
+      "path": "SourceCodePro-Regular.ttf",
+      "role": "mono_regular",
+      "source": "source_code_pro",
+      "size": 210312,
+      "sha256": "74bd80d3e42a08517cd7e1108ba3d86f2da29ac0f3065be95e0357956ab9db37",
+      "family": "Source Code Pro",
       "style": "Regular",
-      "font_version": "2.001152; 2014",
-      "license": "Apache-2.0"
+      "font_version": "2.042"
     },
     {
-      "name": "Roboto-Regular.ttf",
-      "size": 146004,
-      "sha256": "dbd285b518e398832f6f4a736109c355ce25a49546bfce41bab256c9ef7e56eb",
-      "family": "Roboto",
+      "path": "NotoSansMath-Regular.ttf",
+      "role": "scientific_fallback",
+      "source": "noto_sans_math",
+      "size": 1015684,
+      "sha256": "7283c396e9b22699bb542d9631030dc804a7e5b954f193d8f8f5b5f1162fbc61",
+      "family": "Noto Sans Math",
       "style": "Regular",
-      "font_version": "3.009; 2024",
-      "license": "OFL-1.1"
-    },
-    {
-      "name": "RobotoMono-Medium.ttf",
-      "size": 87172,
-      "sha256": "f1c247bde0eed1e58e3b9eee89b2188dc5dfa44b8c2716044556662dd70cb7b1",
-      "family": "Roboto Mono Medium",
-      "style": "Regular",
-      "font_version": "3.000",
-      "license": "Apache-2.0"
+      "font_version": "3.000"
     }
   ]
 }

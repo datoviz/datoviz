@@ -36,7 +36,7 @@ The source build currently depends on two fonts from the submodule, generic file
 
 | Binary class | Identity or authoritative source | Local/runtime location | Delivery rule |
 | --- | --- | --- | --- |
-| Built-in scene and GUI fonts | Ordinary Git under `assets/runtime/fonts/` in `datoviz/datoviz` | Embedded defaults or installed runtime resources | Admit one complete reviewed family preserving Regular/Bold/Italic/BoldItalic/Mono roles; do not copy obsolete legacy faces as an intermediate state |
+| Built-in scene and GUI fonts | Ordinary Git under `assets/runtime/fonts/` in `datoviz/datoviz` | Embedded defaults or installed runtime resources | Admit one complete reviewed family preserving Regular/Bold/Italic/BoldItalic/Mono roles plus a scientific fallback; do not copy obsolete legacy faces as an intermediate state |
 | Future optional font faces | User path or optional published bundle | User-selected path or verified asset cache | Never an undeclared dependency of core text rendering |
 | Tiny decoder and format fixtures | Ordinary Git under `testing/fixtures/` | Source/test checkout only | Generated where practical; otherwise intentionally minimal |
 | Declarative colormap sources | Ordinary Git under `assets/runtime/colormaps/` | Generated/embedded runtime atlas | Generated atlases are build products unless an exact shipped derivative is justified |
@@ -72,6 +72,7 @@ assets/
       SourceSans3-It.ttf
       SourceSans3-BoldIt.ttf
       SourceCodePro-Regular.ttf
+      NotoSansMath-Regular.ttf
     colormaps/
       colormaps.csv
   catalog/
@@ -90,7 +91,7 @@ tools/
   assets/
 ```
 
-The font independence slice admits the complete reviewed Source family directly while preserving the five functional roles, offline behavior, visible fallback, and custom file-font escape hatch. It does not copy the ten mixed-version legacy files into active parent Git first. Committing exact upstream font files is preferable to committing only generated C arrays because the originals preserve provenance, avoid generated-source churn, and allow release tooling to regenerate exact embedded payloads.
+The font independence slice admits the complete reviewed Source family and Noto scientific fallback directly while preserving the five primary roles, offline behavior, visible fallback, and custom file-font escape hatch. It does not copy the ten mixed-version legacy files into active parent Git first. Committing exact upstream font files is preferable to committing only generated C arrays because the originals preserve provenance, avoid generated-source churn, and allow release tooling to regenerate exact embedded payloads.
 
 The long-term built-in family, custom-font ownership, coverage policy, generated products, and staged default migration are specified in [FONT_ARCHITECTURE.md](FONT_ARCHITECTURE.md).
 
@@ -266,7 +267,7 @@ If redistribution is not clearly permitted, the catalog contains preparation ins
 
 The parent branch cutover and asset migration are related but must not become one irreversible operation.
 
-Before renaming `v0.4-dev` to `main`, land the minimum core-independence slice on the active v0.4 line: admit the complete reviewed Source family and preserve the five current font roles and custom-font behavior, replace external generic test inputs, split hermetic documentation checks from full site publication, remove `data` from core build/test/package requirements, and prove a fresh checkout with the submodule uninitialized. This prevents the branch-cutover fresh-clone gate from depending on a blocked LFS service. The exact font admission and resolver are part of that independence slice; optional asset downloading remains outside it.
+Before renaming `v0.4-dev` to `main`, land the minimum core-independence slice on the active v0.4 line: admit the complete reviewed Source family and Noto scientific fallback, preserve the five primary font roles and custom-font behavior, replace external generic test inputs, split hermetic documentation checks from full site publication, remove `data` from core build/test/package requirements, and prove a fresh checkout with the submodule uninitialized. This prevents the branch-cutover fresh-clone gate from depending on a blocked LFS service. The exact font admission and resolver are part of that independence slice; optional asset downloading remains outside it.
 
 Then execute the existing audited parent transition without changing data history:
 
@@ -292,7 +293,7 @@ Exit gate: every current path has one declared destination or explicit retiremen
 
 ### Phase 1: make core source independent
 
-1. Admit the exact approved Source Sans 3 Regular, Bold, Italic, and Bold Italic faces plus Source Code Pro Regular with license, provenance, coverage, and digest records in `assets/runtime/fonts/`.
+1. Admit the exact approved Source Sans 3 Regular, Bold, Italic, and Bold Italic faces, Source Code Pro Regular, and Noto Sans Math scientific fallback with license, provenance, coverage, and digest records in `assets/runtime/fonts/`.
 2. Replace the temporary legacy admission manifest atomically, preserve Regular, Bold, Italic, Bold Italic, Mono, visible fallback, and custom file-font behavior, and keep the old mixed-version files only in the frozen legacy snapshot rather than active parent Git.
 3. Replace the Earth JPEG and Allen NumPy generic file-I/O tests with intentionally tiny fixtures.
 4. Generate colormap/runtime derivatives from committed declarative sources where applicable.
@@ -373,7 +374,7 @@ The target decisions are:
 
 1. Use `datoviz/assets`, not `datoviz/datoviz-assets`.
 2. Keep regular Datoviz library use completely independent of optional assets.
-3. Preserve the five built-in font roles and custom-font behavior during core extraction; admit the reviewed Source family directly rather than preserving every historical font file.
+3. Preserve the five primary font roles, scientific fallback, and custom-font behavior during core extraction; admit the reviewed Source/Noto family directly rather than preserving every historical font file.
 4. Use ordinary Git for small stable required resources and tiny test fixtures.
 5. Make the parent catalog plus full deterministic archive SHA-256 authoritative; use immutable GitHub Release assets as the initial primary origin with exact-byte mirror and backup support.
 6. Batch independently content-addressed dataset archives into immutable publication releases; use one release per reviewed gallery snapshot.

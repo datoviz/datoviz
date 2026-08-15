@@ -5,9 +5,9 @@
 
 ## Decision
 
-Datoviz must provide useful, deterministic text without a network, an initialized `data` submodule, platform font discovery, or application configuration. The built-in family has five required face roles: sans regular, sans bold, sans italic, sans bold-italic, and mono regular. Every required role remains available to ordinary library users and offline rich-text paths.
+Datoviz must provide useful, deterministic text without a network, an initialized `data` submodule, platform font discovery, or application configuration. The built-in family has five required face roles: sans regular, sans bold, sans italic, sans bold-italic, and mono regular. A sixth scientific fallback role supplies mathematical and technical codepoints absent from the selected primary face. Every required role remains available to ordinary library users and offline rich-text paths.
 
-The preferred long-term built-in family is the complete unmodified static Source Sans 3 regular, bold, italic, and bold-italic faces plus Source Code Pro regular. The switch is admitted only after exact files, upstream revisions, SHA-256 digests, file sizes, OFL texts, font metadata, and clean-build evidence receive maintainer approval. Until that gate passes, the current Roboto-family behavior remains authoritative.
+The approved long-term built-in family is the complete unmodified static Source Sans 3 regular, bold, italic, and bold-italic faces plus Source Code Pro regular, with unmodified Noto Sans Math regular as the scientific fallback. Exact files, upstream revisions, SHA-256 digests, sizes, OFL texts, font metadata, and coverage policy live under `assets/runtime/fonts/`. The consumer switch remains incomplete until clean-build and rendering evidence passes; until then, current runtime lookup behavior remains authoritative.
 
 Do not subset the initial Source payload. Full upstream faces preserve their Reserved Font Names, coverage, provenance, and reproducibility. A later subset requires measured artifact or runtime benefit, replacement of every user-facing Reserved Font Name in the modified font, deterministic generation, exact license handling, and regression evidence.
 
@@ -38,7 +38,8 @@ font family
 ├── sans bold
 ├── sans italic
 ├── sans bold-italic
-└── mono regular
+├── mono regular
+└── scientific fallback
 ```
 
 Each role resolves to one immutable font source:
@@ -115,13 +116,13 @@ Fix retained text so an explicitly selected `DvzTextStyle.font` reaches the batc
 
 ### Stage 2: direct Source admission
 
-Present the exact five official Source files, hashes, sizes, metadata, licenses, coverage report, compressed artifact impact, and proposed parent-repository paths for maintainer approval. After approval, admit the complete unmodified Source family directly into `assets/runtime/fonts/`; do not first copy the ten mixed-version legacy fonts into active parent Git.
+Present the exact five official Source files and one scientific fallback, including hashes, sizes, metadata, licenses, coverage report, compressed artifact impact, and proposed parent-repository paths for maintainer approval. After approval, admit the complete unmodified family directly into `assets/runtime/fonts/`; do not first copy the ten mixed-version legacy fonts into active parent Git.
 
 The admission replaces the temporary legacy manifest atomically. Exact legacy bytes remain recoverable from the frozen `datoviz/data` snapshot and Git history, but they are not an intermediate runtime architecture.
 
 ### Stage 3: unified resolver and consumer switch
 
-Add one internal family/source resolver with the five explicit roles. Route scene defaults, rich-text face selection, ImGui default policy, embedded-resource generation, the default MSDF atlas, source releases, packages, and tests through it while keeping backend atlases separate. Preserve file-path custom fonts and switch every default consumer together so no partial Source/Roboto/Karla state ships.
+Add one internal family/source resolver with the six explicit roles. Route scene defaults, per-codepoint scientific fallback, rich-text face selection, ImGui default policy, embedded-resource generation, the default MSDF atlas, source releases, packages, and tests through it while keeping backend atlases separate. Preserve file-path custom fonts and switch every default consumer together so no partial Source/Roboto/Karla state ships.
 
 ### Stage 4: independence and rendering proof
 
@@ -138,7 +139,7 @@ Add HarfBuzz shaping, BiDi, script/language/features, explicit fallback chains, 
 The v0.4 font architecture is ready when:
 
 1. ordinary build, install, package, scene text, and ImGui use require neither `data` nor network access;
-2. all five built-in roles work offline and select real faces;
+2. all six built-in roles work offline and select real faces;
 3. custom file fonts work on the main retained-text path and remain supported after the default switch;
 4. ownership and destruction cannot leave dangling font references or exhaust slots silently;
 5. source identity, licenses, coverage, generated products, and drift checks are complete;

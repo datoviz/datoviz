@@ -109,6 +109,6 @@ scene-visual-boundary-check:
     @python3 tools/check_scene_visual_boundaries.py
 #
 
-spec-check: shader-abi-check scene-visual-boundary-check
+spec-check: shader-abi-check scene-visual-boundary-check font-assets-check
     @python3 tasks/spec_check.py
 #

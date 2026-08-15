@@ -7,6 +7,10 @@ check-staged:
     python3 tools/check_staged_payloads.py
 #
 
+font-assets-check:
+    python3 tools/check_runtime_fonts.py
+#
+
 install-git-hooks:
     #!/usr/bin/env sh
     set -e
