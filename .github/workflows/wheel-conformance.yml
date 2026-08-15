@@ -32,6 +32,7 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
+      available: ${{ steps.candidate.outputs.available }}
       wheel_run_id: ${{ steps.candidate.outputs.wheel_run_id }}
       artifact_commit: ${{ steps.candidate.outputs.artifact_commit }}
       version: ${{ steps.candidate.outputs.version }}
@@ -43,9 +44,44 @@ jobs:
           REQUESTED_VERSION: ${{ inputs.version }}
         run: |
           if [[ -z "$REQUESTED_RUN_ID" ]]; then
-            REQUESTED_RUN_ID=$(gh api \
-              "repos/${{ github.repository }}/actions/workflows/wheels.yml/runs?branch=$GITHUB_REF_NAME&status=success&per_page=1" \
-              --jq '.workflow_runs[0].id // empty')
+            required_artifacts=(
+              wheel-linux-x86_64
+              wheel-linux-aarch64
+              wheel-macos-arm64
+              wheel-macos-x86_64
+              wheel-windows-AMD64
+              wheel-windows-ARM64
+            )
+            while IFS=$'\t' read -r candidate_id candidate_sha; do
+              comparison_status=$(gh api \
+                "repos/${{ github.repository }}/compare/${candidate_sha}...${GITHUB_SHA}" \
+                --jq .status 2>/dev/null || true)
+              if [[ "$comparison_status" != "ahead" && "$comparison_status" != "identical" ]]; then
+                continue
+              fi
+              artifacts=$(gh api \
+                "repos/${{ github.repository }}/actions/runs/${candidate_id}/artifacts?per_page=100")
+              complete=true
+              for artifact_name in "${required_artifacts[@]}"; do
+                if ! jq -e --arg name "$artifact_name" \
+                  '.artifacts[] | select(.name == $name and .expired == false)' \
+                  <<<"$artifacts" >/dev/null; then
+                  complete=false
+                  break
+                fi
+              done
+              if [[ "$complete" == "true" ]]; then
+                REQUESTED_RUN_ID=$candidate_id
+                break
+              fi
+            done < <(gh api \
+              "repos/${{ github.repository }}/actions/workflows/wheels.yml/runs?status=success&per_page=100" \
+              --jq '.workflow_runs[] | [.id, .head_sha] | @tsv')
+            if [[ -z "$REQUESTED_RUN_ID" ]]; then
+              echo "available=false" >> "$GITHUB_OUTPUT"
+              echo "No successful Wheels run in the current commit ancestry has a complete unexpired wheel set; push-triggered conformance is skipped." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
           fi
           test -n "$REQUESTED_RUN_ID"
           candidate=$(gh api "repos/${{ github.repository }}/actions/runs/$REQUESTED_RUN_ID")
@@ -60,6 +96,7 @@ jobs:
               python3 -c 'import sys, tomllib; print(tomllib.loads(sys.stdin.read())["project"]["version"])')
           fi
           test -n "$REQUESTED_VERSION"
+          echo "available=true" >> "$GITHUB_OUTPUT"
           echo "wheel_run_id=$REQUESTED_RUN_ID" >> "$GITHUB_OUTPUT"
           echo "artifact_commit=$artifact_commit" >> "$GITHUB_OUTPUT"
           echo "version=$REQUESTED_VERSION" >> "$GITHUB_OUTPUT"
@@ -67,6 +104,7 @@ jobs:
   conformance:
     name: "Conformance / ${{ matrix.machine_id }}"
     needs: prepare
+    if: needs.prepare.outputs.available == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -216,7 +254,7 @@ jobs:
 
   report:
     name: "Build conformance report"
-    if: always() && needs.prepare.result == 'success'
+    if: always() && needs.prepare.result == 'success' && needs.prepare.outputs.available == 'true'
     needs: [prepare, conformance]
     runs-on: ubuntu-latest
     steps:
