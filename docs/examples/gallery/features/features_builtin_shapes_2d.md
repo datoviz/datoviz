@@ -63,9 +63,9 @@ The panel uses equal-aspect data coordinates, then uploads generated geometry fo
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/builtin_shapes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_2d.c)
+    - Source: [`examples/c/features/builtin_shapes_2d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/builtin_shapes_2d.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/builtin_shapes_2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_2d.py)
+    - Python source: [`examples/python/gallery/features/builtin_shapes_2d.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/builtin_shapes_2d.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_builtin_shapes_2d"><code>examples/webgpu/live.html?id=features_builtin_shapes_2d</code></a>

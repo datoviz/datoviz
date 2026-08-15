@@ -63,9 +63,9 @@ A single cube geometry is reused with an instance_transform array for a 6x4x2 fi
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/selection_mesh_instances.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_mesh_instances.c)
+    - Source: [`examples/c/features/selection_mesh_instances.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/selection_mesh_instances.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/selection_mesh_instances.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_mesh_instances.py)
+    - Python source: [`examples/python/gallery/features/selection_mesh_instances.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/selection_mesh_instances.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_selection_mesh_instances"><code>examples/webgpu/live.html?id=features_selection_mesh_instances</code></a>

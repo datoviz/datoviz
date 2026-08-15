@@ -63,9 +63,9 @@ A scene owns one figure, one full panel, and one point visual. The point visual 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/basic_scene.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/basic_scene.c)
+    - Source: [`examples/c/features/basic_scene.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/basic_scene.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/basic_scene.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/basic_scene.py)
+    - Python source: [`examples/python/gallery/features/basic_scene.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/basic_scene.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_basic_scene"><code>examples/webgpu/live.html?id=features_basic_scene</code></a>

@@ -63,9 +63,9 @@ The path visual uploads 96 time samples whose X positions span 0 to 250 and whos
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/scalebar_units.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c)
+    - Source: [`examples/c/features/scalebar_units.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/scalebar_units.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/scalebar_units.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/scalebar_units.py)
+    - Python source: [`examples/python/gallery/features/scalebar_units.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/scalebar_units.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_scalebar_units"><code>examples/webgpu/live.html?id=features_scalebar_units</code></a>

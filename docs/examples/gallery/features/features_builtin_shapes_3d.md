@@ -63,9 +63,9 @@ The scene uses geometry builders for common solids such as a cube, sphere, cylin
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c)
+    - Source: [`examples/c/features/builtin_shapes_3d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/builtin_shapes_3d.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/builtin_shapes_3d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_3d.py)
+    - Python source: [`examples/python/gallery/features/builtin_shapes_3d.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/builtin_shapes_3d.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_builtin_shapes_3d"><code>examples/webgpu/live.html?id=features_builtin_shapes_3d</code></a>

@@ -63,9 +63,9 @@ A path visual uploads position, color, and linewidth arrays for a signal, and th
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/guide_lines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_lines.c)
+    - Source: [`examples/c/features/guide_lines.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/guide_lines.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/guide_lines.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_lines.py)
+    - Python source: [`examples/python/gallery/features/guide_lines.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/guide_lines.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_guide_lines"><code>examples/webgpu/live.html?id=features_guide_lines</code></a>

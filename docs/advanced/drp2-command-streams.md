@@ -143,11 +143,11 @@ evidence level separately.
 
 Use the DRP2 authority order rather than this overview when details conflict:
 
-- [Authority and source order](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/AUTHORITY.md)
-- [Layer 1 contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/LAYER1.md)
-- [Active commands](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/COMMANDS.md)
-- [Lifetimes and state](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/LIFETIMES.md)
-- [Binary packets](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/PACKETS.md)
-- [Errors](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/ERRORS.md)
-- [Capabilities](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/CAPABILITIES.md)
-- [Conformance](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/CONFORMANCE.md)
+- [Authority and source order](https://github.com/datoviz/datoviz/blob/main/spec/drp2/AUTHORITY.md)
+- [Layer 1 contract](https://github.com/datoviz/datoviz/blob/main/spec/drp2/LAYER1.md)
+- [Active commands](https://github.com/datoviz/datoviz/blob/main/spec/drp2/COMMANDS.md)
+- [Lifetimes and state](https://github.com/datoviz/datoviz/blob/main/spec/drp2/LIFETIMES.md)
+- [Binary packets](https://github.com/datoviz/datoviz/blob/main/spec/drp2/PACKETS.md)
+- [Errors](https://github.com/datoviz/datoviz/blob/main/spec/drp2/ERRORS.md)
+- [Capabilities](https://github.com/datoviz/datoviz/blob/main/spec/drp2/CAPABILITIES.md)
+- [Conformance](https://github.com/datoviz/datoviz/blob/main/spec/drp2/CONFORMANCE.md)

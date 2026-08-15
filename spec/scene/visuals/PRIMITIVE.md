@@ -10,7 +10,7 @@ Shared attribute and behavioral definitions are in `SHARED_ATTRIBUTES.md`.
 
 > **v0.3 note**: this family was called `basic` in v0.3.
 >
-> **v0.4-dev implementation**: landed. `dvz_primitive(scene, topology, flags)` supports
+> **v0.4 implementation**: landed. `dvz_primitive(scene, topology, flags)` supports
 > `POINT_LIST`, `LINE_LIST`, `LINE_STRIP`, `TRIANGLE_LIST`, `TRIANGLE_STRIP` with `position` +
 > `color` attributes, optional `normal`, optional index-buffer binding, and GPU item picking.
 > `size` parameter for `point_list` topology and scalar color modes are not yet wired up.

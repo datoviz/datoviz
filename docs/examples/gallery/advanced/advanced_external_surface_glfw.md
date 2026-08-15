@@ -55,7 +55,7 @@ This workflow is useful when a scientific application already owns its native ev
     - Category: `advanced`
     - Lane: `advanced`
     - Status: `experimental`
-    - Source: [`examples/c/advanced/external_surface_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/external_surface_glfw.c)
+    - Source: [`examples/c/advanced/external_surface_glfw.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/external_surface_glfw.c)
     - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: external Vulkan surfaces are native host-integration objects

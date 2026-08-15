@@ -6,7 +6,7 @@ handoffs.
 
 ## Branch Policy
 
-Datoviz v0.4-dev is not constrained by v0.3 API or ABI compatibility. Prefer architecture,
+Datoviz v0.4 is not constrained by v0.3 API or ABI compatibility. Prefer architecture,
 correctness, maintainability, and testability even when that breaks old APIs.
 
 Keep prose short and decision-oriented. When refactoring, update useful comments that become stale;

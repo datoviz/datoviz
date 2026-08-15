@@ -99,13 +99,13 @@ The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The publishe
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `experimental`
-    - Source: [`examples/c/showcases/svg_tiger.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger.c)
+    - Source: [`examples/c/showcases/svg_tiger.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/svg_tiger.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/svg_tiger.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/svg_tiger.py)
+    - Python source: [`examples/python/gallery/showcases/svg_tiger.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/svg_tiger.py)
     - Python adaptation: Available
-    - Prepared path model source: [`examples/c/showcases/svg_tiger_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger_model.c)
-    - Prepared path model header source: [`examples/c/showcases/svg_tiger_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger_model.h)
-    - SVG preparation tool source: [`tools/data/prepare_svg_tiger.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_svg_tiger.py)
+    - Prepared path model source: [`examples/c/showcases/svg_tiger_model.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/svg_tiger_model.c)
+    - Prepared path model header source: [`examples/c/showcases/svg_tiger_model.h`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/svg_tiger_model.h)
+    - SVG preparation tool source: [`tools/data/prepare_svg_tiger.py`](https://github.com/datoviz/datoviz/blob/main/tools/data/prepare_svg_tiger.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_svg_tiger"><code>examples/webgpu/live.html?id=showcases_svg_tiger</code></a>
     - Browser capability tags: `mesh`, `path`, `polygon-triangulation`, `panzoom`

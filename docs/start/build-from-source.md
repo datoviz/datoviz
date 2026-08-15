@@ -86,7 +86,7 @@ Install Ubuntu, open its shell, and follow the Linux instructions above. On curr
 Clone the active branch and initialize its recorded submodule revisions:
 
 ```sh
-git clone --branch v0.4-dev https://github.com/datoviz/datoviz.git
+git clone --branch main https://github.com/datoviz/datoviz.git
 cd datoviz
 git submodule update --init --recursive
 ```

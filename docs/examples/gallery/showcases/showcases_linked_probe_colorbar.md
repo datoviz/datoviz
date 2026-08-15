@@ -66,9 +66,9 @@ This workflow is useful for inspecting transformed measurements while preserving
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `supported`
-    - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c)
+    - Source: [`examples/c/showcases/linked_probe_colorbar.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/linked_probe_colorbar.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/linked_probe_colorbar.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/linked_probe_colorbar.py)
+    - Python source: [`examples/python/gallery/showcases/linked_probe_colorbar.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/linked_probe_colorbar.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_linked_probe_colorbar"><code>examples/webgpu/live.html?id=showcases_linked_probe_colorbar</code></a>

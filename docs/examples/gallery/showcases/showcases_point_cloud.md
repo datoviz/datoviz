@@ -104,9 +104,9 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `supported`
-    - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c)
+    - Source: [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/point_cloud.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/point_cloud.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/point_cloud.py)
+    - Python source: [`examples/python/gallery/showcases/point_cloud.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/point_cloud.py)
     - Python adaptation: Available
     - Browser support: Deferred
     - Browser note: the browser route renders a prepared 500k-point subset locally, but the source LiDAR dataset is third-party (Inertial Labs RESEPI sample data, all rights reserved) and cannot be redistributed as a public web data bundle

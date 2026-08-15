@@ -59,9 +59,9 @@ The application hosts a GUI window while a separate Datoviz figure renders a sma
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c)
+    - Source: [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_viewport.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/features/gui_viewport.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_viewport.py)
+    - Python source: [`examples/python/gallery/features/gui_viewport.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/gui_viewport.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: dockable GUI viewports require native ImGui and an offscreen native source view

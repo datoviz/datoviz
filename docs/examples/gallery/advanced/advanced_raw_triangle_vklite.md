@@ -61,7 +61,7 @@ NOTE: this example intentionally uses an offscreen canvas. Hosted onscreen integ
     - Category: `advanced`
     - Lane: `advanced`
     - Status: `experimental`
-    - Source: [`examples/c/advanced/raw_triangle_vklite.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_vklite.c)
+    - Source: [`examples/c/advanced/raw_triangle_vklite.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/raw_triangle_vklite.c)
     - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: raw vklite command recording is a native runtime example

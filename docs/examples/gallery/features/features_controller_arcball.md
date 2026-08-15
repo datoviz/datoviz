@@ -69,9 +69,9 @@ A colored cube mesh and XZ reference grid make rotation easy to see, and the con
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c)
+    - Source: [`examples/c/features/controller_arcball.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/controller_arcball.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/controller_arcball.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_arcball.py)
+    - Python source: [`examples/python/gallery/features/controller_arcball.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/controller_arcball.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_controller_arcball"><code>examples/webgpu/live.html?id=features_controller_arcball</code></a>

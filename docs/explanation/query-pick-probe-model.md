@@ -68,6 +68,6 @@ evidence that a rendered GPU probe path is supported.
 
 ## Sources of truth
 
-- [GPU query system](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/interaction/GPU_QUERY_SYSTEM.md)
-- [Picking semantics](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/interaction/PICKING.md)
-- [Selection semantics](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/interaction/SELECTION.md)
+- [GPU query system](https://github.com/datoviz/datoviz/blob/main/spec/scene/interaction/GPU_QUERY_SYSTEM.md)
+- [Picking semantics](https://github.com/datoviz/datoviz/blob/main/spec/scene/interaction/PICKING.md)
+- [Selection semantics](https://github.com/datoviz/datoviz/blob/main/spec/scene/interaction/SELECTION.md)

@@ -1,6 +1,6 @@
-# Architecture (v0.4-dev)
+# Architecture (v0.4)
 
-This document describes the current Datoviz v0.4-dev architecture.
+This document describes the current Datoviz v0.4 architecture on `main`.
 
 It replaces older v0.3-era descriptions and focuses on what is currently built, linked, and tested.
 
@@ -22,7 +22,7 @@ It replaces older v0.3-era descriptions and focuses on what is currently built, 
 - Unified test framework and runner: `testing/`
 - Vendored dependencies: `external/` (treated as read-only unless explicitly required)
 
-The v0.3 code lives in `v0.3/` and is not part of the active v0.4-dev architecture.
+The v0.3 code lives in `v0.3/` and is not part of the active v0.4 architecture.
 
 
 ## Active modules in libdatoviz
@@ -47,7 +47,7 @@ The root source build (`src/CMakeLists.txt`) currently brings these modules into
 These are added as subdirectories and linked into the shared target as object-library components.
 
 Scaffolding modules (for example `color`, `wasm`, text/gui, and broader renderer/client layers) exist but are
-not part of the active v0.4-dev link surface unless explicitly activated.
+not part of the active v0.4 link surface unless explicitly activated.
 
 
 ## Build topology
@@ -70,7 +70,7 @@ This includes OS/compiler feature flags, validation toggles, and Vulkan configur
 - Shared internals: `src/common/_*.h`
 - Module internals: files within each `src/<module>/` directory
 
-In v0.4-dev, public headers still rely on shared internal macros/utilities from `src/common`, so module and test
+In v0.4, public headers still rely on shared internal macros/utilities from `src/common`, so module and test
 targets keep `src/common` on include paths.
 
 

@@ -58,7 +58,7 @@ The point visual reads its position attribute from a scene buffer that is also b
     - Category: `feature`
     - Lane: `features`
     - Status: `experimental`
-    - Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c)
+    - Source: [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/compute_buffer_animation.c)
     - Approved adaptation starter: `no`
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_compute_buffer_animation"><code>examples/webgpu/live.html?id=features_compute_buffer_animation</code></a>

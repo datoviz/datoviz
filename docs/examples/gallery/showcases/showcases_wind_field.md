@@ -72,9 +72,9 @@ This workflow is useful for geophysical or fluid-like data where scalar magnitud
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `supported`
-    - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c)
+    - Source: [`examples/c/showcases/wind_field.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/wind_field.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/wind_field.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/wind_field.py)
+    - Python source: [`examples/python/gallery/showcases/wind_field.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/wind_field.py)
     - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_wind_field"><code>examples/webgpu/live.html?id=showcases_wind_field</code></a>

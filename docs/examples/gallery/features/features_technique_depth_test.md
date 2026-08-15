@@ -69,9 +69,9 @@ Both panels upload the same eight large point sprites at the corners of a small 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c)
+    - Source: [`examples/c/features/technique_depth_test.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_depth_test.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/technique_depth_test.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_depth_test.py)
+    - Python source: [`examples/python/gallery/features/technique_depth_test.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_depth_test.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_technique_depth_test"><code>examples/webgpu/live.html?id=features_technique_depth_test</code></a>

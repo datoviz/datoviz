@@ -70,7 +70,7 @@ packet appeared. Timing alone cannot distinguish an unnecessary upload from slow
 
 ## Sources of truth
 
-- [Invalidation contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/INVALIDATION_AND_CACHING.md)
-- [FramePlan contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/FRAME_PLAN.md)
-- [DRP2 packet phases](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/PACKETS.md)
+- [Invalidation contract](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/INVALIDATION_AND_CACHING.md)
+- [FramePlan contract](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/FRAME_PLAN.md)
+- [DRP2 packet phases](https://github.com/datoviz/datoviz/blob/main/spec/drp2/PACKETS.md)
 - [Profile rendering performance](../how-to/profile-performance.md)

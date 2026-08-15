@@ -75,6 +75,6 @@ Do not duplicate this mapping in host code when a scene query provides it.
 
 ## Sources of truth
 
-- [Transform pipeline](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/TRANSFORM_PIPELINE.md)
-- [Panel layout](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/core/PANEL_LAYOUT.md)
+- [Transform pipeline](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/TRANSFORM_PIPELINE.md)
+- [Panel layout](https://github.com/datoviz/datoviz/blob/main/spec/scene/core/PANEL_LAYOUT.md)
 - [Query model](query-pick-probe-model.md)

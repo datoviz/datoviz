@@ -58,7 +58,7 @@ changing one panel must not invalidate a shared normalized point array used by a
 
 ## Sources of truth
 
-- [Scene resource model](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/RESOURCE_MODEL.md)
-- [Attribute sources and mutability](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/ATTRIBUTE_SOURCES.md)
+- [Scene resource model](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/RESOURCE_MODEL.md)
+- [Attribute sources and mutability](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/ATTRIBUTE_SOURCES.md)
 - [Invalidation and caching](invalidation-and-caching.md)
 - [GPU resource ownership](gpu-resource-ownership.md)

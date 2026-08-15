@@ -1,6 +1,6 @@
 # Post-RC2 Branch Cutover
 
-Status: read-only preflight complete; external branch operations and the reconciliation push require approval of the exact actions. Updated: 2026-08-03.
+Status: external cutover complete; reconciliation, fresh-clone proof, and CI verification in progress. Updated: 2026-08-15.
 
 ## Goal
 
@@ -8,11 +8,26 @@ Preserve the old v0.3 `main` line as `v0.3-maintenance`, rename the active v0.4 
 
 ## Current State
 
-- GitHub default and remote HEAD: `v0.4-dev`.
-- Active v0.4 development branch: `v0.4-dev`.
-- Old v0.3 branch: `main`.
-- Intended v0.3 maintenance branch: not yet created.
+- GitHub default and remote HEAD: `main`.
+- Active v0.4 development branch: `main`.
+- Preserved old v0.3 branch: protected `v0.3-maintenance`.
+- Open PRs #132 and #136: retargeted to `main` with their head SHAs unchanged.
 - Additional `dev` branch: legacy v0.3.6-development history; retain unchanged and frozen through the cutover.
+
+## Execution Record
+
+The maintainer approved the exact cutover operations on 2026-08-15. Immediately before mutation, the worktree was clean, no Actions runs were queued or active, and all audited mutable refs and settings matched the approval snapshot below.
+
+| Ref or setting | Executed value |
+| --- | --- |
+| pre-cutover active v0.4 tip | `9cd3b0eee44928cd3602db48f79a3cb4ae31918e` |
+| preserved `v0.3-maintenance` tip | `c1725df786dfdb7849f4a0d2928968aabfe002ec` |
+| unchanged `dev` tip | `8857bb6b3a769c3c128f13e85c687362982f2a4e` |
+| `v0.4.0rc1^{commit}` | `12da2a6019c2e73bf29734eed482fffcd1e376b3` |
+| `v0.4.0rc2^{commit}` | `8a3bd75096bb1124707d2fd547de512c20211c85` |
+| unchanged `data` gitlink | `a9542d20f2d29aecb9518738f6b7ba1914b63997` |
+
+GitHub did not move the default branch atomically with the second rename: it briefly retained the now-missing `v0.4-dev` name. The approved fallback explicitly set `default_branch=main`, after which both PRs targeted `main`. Ruleset `17684715` continues to protect `~DEFAULT_BRANCH`; ruleset `19166518` is now named `protect-v0.3-maintenance` and targets `refs/heads/v0.3-maintenance`. Both branches report protected with deletion and non-fast-forward rules, and neither branch tip changed during the operation.
 
 ## Audited Snapshot
 

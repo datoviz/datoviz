@@ -63,10 +63,10 @@ The straight field uses position, vector, color, and width arrays, while the cur
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c)
+    - Source: [`examples/c/visuals/vector.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/vector.c)
     - Approved adaptation starter: `yes`
     - Reference: [Vector visual family](../../../reference/visual-families/vector.md)
-    - Python source: [`examples/python/gallery/visuals/vector.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/vector.py)
+    - Python source: [`examples/python/gallery/visuals/vector.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/vector.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_vector"><code>examples/webgpu/live.html?id=visuals_vector</code></a>

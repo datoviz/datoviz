@@ -58,7 +58,7 @@ Five category IDs are assigned labels, colors, and marker shapes, then the marke
     - Category: `feature`
     - Lane: `features`
     - Status: `experimental`
-    - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c)
+    - Source: [`examples/c/features/legend_categorical.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/legend_categorical.c)
     - Approved adaptation starter: `no`
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_legend_categorical"><code>examples/webgpu/live.html?id=features_legend_categorical</code></a>

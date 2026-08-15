@@ -69,9 +69,9 @@ The lit cube and XZ grid provide a stable reference frame while the controller o
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/controller_turntable.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c)
+    - Source: [`examples/c/features/controller_turntable.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/controller_turntable.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/controller_turntable.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_turntable.py)
+    - Python source: [`examples/python/gallery/features/controller_turntable.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/controller_turntable.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_controller_turntable"><code>examples/webgpu/live.html?id=features_controller_turntable</code></a>

@@ -58,7 +58,7 @@ Each visible character in "Datoviz Atlas cafe" is built from explicit positions,
     - Category: `visual`
     - Lane: `visuals`
     - Status: `experimental`
-    - Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c)
+    - Source: [`examples/c/visuals/glyph.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/glyph.c)
     - Approved adaptation starter: `no`
     - Reference: [Font Atlas Glyphs visual family](../../../reference/visual-families/glyph.md)
     - Browser support: Live in browser

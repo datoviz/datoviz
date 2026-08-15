@@ -63,10 +63,10 @@ The cube geometry supplies vertices, indices, normals, and per-face colors to th
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c)
+    - Source: [`examples/c/visuals/mesh.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/mesh.c)
     - Approved adaptation starter: `yes`
     - Reference: [Mesh visual family](../../../reference/visual-families/mesh.md)
-    - Python source: [`examples/python/gallery/visuals/mesh.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/mesh.py)
+    - Python source: [`examples/python/gallery/visuals/mesh.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/mesh.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_mesh"><code>examples/webgpu/live.html?id=visuals_mesh</code></a>

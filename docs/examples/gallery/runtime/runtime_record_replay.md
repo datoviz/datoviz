@@ -55,7 +55,7 @@ This experimental workflow is useful when you need visual regression artifacts o
     - Category: `runtime`
     - Lane: `runtime`
     - Status: `experimental`
-    - Source: [`examples/c/runtime/record_replay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/record_replay.c)
+    - Source: [`examples/c/runtime/record_replay.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/record_replay.c)
     - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: DVZR app recording and replay use native runtime capture plumbing

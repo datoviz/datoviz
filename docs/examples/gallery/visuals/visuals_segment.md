@@ -63,10 +63,10 @@ Start and end position arrays define each segment, while color and width arrays 
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c)
+    - Source: [`examples/c/visuals/segment.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/segment.c)
     - Approved adaptation starter: `yes`
     - Reference: [Segment visual family](../../../reference/visual-families/segment.md)
-    - Python source: [`examples/python/gallery/visuals/segment.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/segment.py)
+    - Python source: [`examples/python/gallery/visuals/segment.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/segment.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_segment"><code>examples/webgpu/live.html?id=visuals_segment</code></a>

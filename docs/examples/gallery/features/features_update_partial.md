@@ -63,9 +63,9 @@ The visual initially uploads six points with position, color, and diameter_px ar
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/update_partial.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c)
+    - Source: [`examples/c/features/update_partial.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/update_partial.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/update_partial.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/update_partial.py)
+    - Python source: [`examples/python/gallery/features/update_partial.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/update_partial.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_update_partial"><code>examples/webgpu/live.html?id=features_update_partial</code></a>

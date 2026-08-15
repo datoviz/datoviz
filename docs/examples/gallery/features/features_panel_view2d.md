@@ -69,9 +69,9 @@ Both panels draw the same unit circle path and styled X/Y axes. The left panel u
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c)
+    - Source: [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_view2d.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/panel_view2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_view2d.py)
+    - Python source: [`examples/python/gallery/features/panel_view2d.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_view2d.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_view2d"><code>examples/webgpu/live.html?id=features_panel_view2d</code></a>

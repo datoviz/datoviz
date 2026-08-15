@@ -69,9 +69,9 @@ The texture pixels are generated as a 1024x512 color field, attached to the mesh
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c)
+    - Source: [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/mesh_texture.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/mesh_texture.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/mesh_texture.py)
+    - Python source: [`examples/python/gallery/features/mesh_texture.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/mesh_texture.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_mesh_texture"><code>examples/webgpu/live.html?id=features_mesh_texture</code></a>

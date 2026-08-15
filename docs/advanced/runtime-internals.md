@@ -129,7 +129,7 @@ affects live canvas execution rather than fixture translation alone.
 
 ## Sources of truth
 
-- [Scene runtime boundary](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/core/RUNTIME_BOUNDARY.md)
-- [DRP2 reading order](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/READING_ORDER.md)
+- [Scene runtime boundary](https://github.com/datoviz/datoviz/blob/main/spec/scene/core/RUNTIME_BOUNDARY.md)
+- [DRP2 reading order](https://github.com/datoviz/datoviz/blob/main/spec/drp2/READING_ORDER.md)
 - [DRP2 runtime API](../reference/c-api/runtime.md)
 - [GPU resource ownership](../explanation/gpu-resource-ownership.md)

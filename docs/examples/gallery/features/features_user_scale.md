@@ -64,9 +64,9 @@ The panel combines a data-space path, outlined markers, axes, and panzoom. The p
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c)
+    - Source: [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/user_scale.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/user_scale.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/user_scale.py)
+    - Python source: [`examples/python/gallery/features/user_scale.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/user_scale.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: the user-scale control is a native ImGui slider on a Datoviz app view

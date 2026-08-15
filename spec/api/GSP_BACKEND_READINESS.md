@@ -32,7 +32,7 @@ The highest-value pre-RC changes are:
 7. Hosted-loop primitives stable enough for later GUI/interactive backends.
 
 
-## 0.1 Current v0.4-dev integration update
+## 0.1 Current v0.4 integration update
 
 The current branch is closer to this plan than the original draft assumed:
 

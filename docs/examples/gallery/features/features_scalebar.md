@@ -63,9 +63,9 @@ Five data-space points mark a simple ruler from 0 to 8 along X, while the scale 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c)
+    - Source: [`examples/c/features/scalebar.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/scalebar.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/scalebar.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/scalebar.py)
+    - Python source: [`examples/python/gallery/features/scalebar.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/scalebar.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_scalebar"><code>examples/webgpu/live.html?id=features_scalebar</code></a>

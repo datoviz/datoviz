@@ -59,7 +59,7 @@ Both panels upload the same depth-rich point cloud with position, color, and siz
     - Category: `feature`
     - Lane: `features`
     - Status: `experimental`
-    - Source: [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c)
+    - Source: [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_edl.c)
     - Approved adaptation starter: `no`
     - Browser support: Deferred
     - Browser capability tags: `depth-postprocess`

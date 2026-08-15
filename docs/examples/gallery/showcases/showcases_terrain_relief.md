@@ -87,11 +87,11 @@ Uv run tools/data/prepare_terrain_relief.py
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `experimental`
-    - Source: [`examples/c/showcases/terrain_relief.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c)
+    - Source: [`examples/c/showcases/terrain_relief.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/terrain_relief.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/terrain_relief.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/terrain_relief.py)
+    - Python source: [`examples/python/gallery/showcases/terrain_relief.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/terrain_relief.py)
     - Python adaptation: Available
-    - Data preparation source: [`tools/data/prepare_terrain_relief.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/tools/data/prepare_terrain_relief.py)
+    - Data preparation source: [`tools/data/prepare_terrain_relief.py`](https://github.com/datoviz/datoviz/blob/main/tools/data/prepare_terrain_relief.py)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_terrain_relief"><code>examples/webgpu/live.html?id=showcases_terrain_relief</code></a>
     - Browser note: the portable scenario fetches the versioned USGS/USDA terrain bundle before creation

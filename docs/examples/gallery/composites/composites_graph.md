@@ -63,9 +63,9 @@ Node arrays provide positions, semantic IDs, community colors, and sizes; edge a
     - Category: `composite`
     - Lane: `composites`
     - Status: `supported`
-    - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c)
+    - Source: [`examples/c/composites/graph.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/composites/graph.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/composites/graph.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/graph.py)
+    - Python source: [`examples/python/gallery/composites/graph.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/composites/graph.py)
     - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composites_graph"><code>examples/webgpu/live.html?id=composites_graph</code></a>

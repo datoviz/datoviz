@@ -3,7 +3,7 @@ run-name: "Wheel conformance · Wheels ${{ inputs.wheel_run_id || github.event.w
 
 on:
   push:
-    branches: [v0.4-dev]
+    branches: [main]
     paths:
       - ".github/workflows/wheel-conformance.yml"
       - "tools/release_wheels/conformance.py"

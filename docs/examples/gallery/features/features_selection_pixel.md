@@ -63,9 +63,9 @@ The 40x24 grid uploads position, color, and pixel_size_px arrays generated from 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c)
+    - Source: [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/selection_pixel.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/selection_pixel.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_pixel.py)
+    - Python source: [`examples/python/gallery/features/selection_pixel.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/selection_pixel.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_selection_pixel"><code>examples/webgpu/live.html?id=features_selection_pixel</code></a>

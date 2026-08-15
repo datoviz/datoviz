@@ -63,9 +63,9 @@ Four control points define the curve. The tessellated path uploads position, col
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c)
+    - Source: [`examples/c/features/bezier_curve_path.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/bezier_curve_path.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/bezier_curve_path.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bezier_curve_path.py)
+    - Python source: [`examples/python/gallery/features/bezier_curve_path.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/bezier_curve_path.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_bezier_curve_path"><code>examples/webgpu/live.html?id=features_bezier_curve_path</code></a>

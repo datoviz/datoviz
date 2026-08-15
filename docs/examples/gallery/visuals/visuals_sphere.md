@@ -68,10 +68,10 @@ Positions locate the sphere centers, radii control physical size, and colors dis
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c)
+    - Source: [`examples/c/visuals/sphere.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/sphere.c)
     - Approved adaptation starter: `yes`
     - Reference: [Sphere visual family](../../../reference/visual-families/sphere.md)
-    - Python source: [`examples/python/gallery/visuals/sphere.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/sphere.py)
+    - Python source: [`examples/python/gallery/visuals/sphere.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/sphere.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_sphere"><code>examples/webgpu/live.html?id=visuals_sphere</code></a>

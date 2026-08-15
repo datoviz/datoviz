@@ -69,9 +69,9 @@ The main scene is a lit cube controlled by an arcball, and the orientation gizmo
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c)
+    - Source: [`examples/c/features/orientation_gizmo.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/orientation_gizmo.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/orientation_gizmo.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/orientation_gizmo.py)
+    - Python source: [`examples/python/gallery/features/orientation_gizmo.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/orientation_gizmo.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_orientation_gizmo"><code>examples/webgpu/live.html?id=features_orientation_gizmo</code></a>

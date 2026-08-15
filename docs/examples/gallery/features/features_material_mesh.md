@@ -69,9 +69,9 @@ All three panels use the same colored cube geometry, while the material descript
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c)
+    - Source: [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/material_mesh.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/material_mesh.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/material_mesh.py)
+    - Python source: [`examples/python/gallery/features/material_mesh.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/material_mesh.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_material_mesh"><code>examples/webgpu/live.html?id=features_material_mesh</code></a>

@@ -63,9 +63,9 @@ The same point visual receives new position, color, and diameter_px arrays on ea
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c)
+    - Source: [`examples/c/features/timer_animation.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/timer_animation.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/timer_animation.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/timer_animation.py)
+    - Python source: [`examples/python/gallery/features/timer_animation.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/timer_animation.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_timer_animation"><code>examples/webgpu/live.html?id=features_timer_animation</code></a>

@@ -4,7 +4,7 @@ project(datoviz_fetchcontent_example C)
 include(FetchContent)
 
 set(DATOVIZ_FETCHCONTENT_SOURCE_DIR "" CACHE PATH "Optional local Datoviz source checkout")
-set(DATOVIZ_FETCHCONTENT_TAG "v0.4-dev" CACHE STRING "Datoviz Git tag or ref for FetchContent")
+set(DATOVIZ_FETCHCONTENT_TAG "main" CACHE STRING "Datoviz Git tag or ref for FetchContent")
 
 if(DATOVIZ_FETCHCONTENT_SOURCE_DIR)
     FetchContent_Declare(datoviz

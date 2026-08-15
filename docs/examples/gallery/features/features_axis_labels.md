@@ -63,9 +63,9 @@ The panel has explicit x and y domains, matching tick policies, grid lines, and 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c)
+    - Source: [`examples/c/features/axis_labels.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/axis_labels.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/axis_labels.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axis_labels.py)
+    - Python source: [`examples/python/gallery/features/axis_labels.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/axis_labels.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_axis_labels"><code>examples/webgpu/live.html?id=features_axis_labels</code></a>

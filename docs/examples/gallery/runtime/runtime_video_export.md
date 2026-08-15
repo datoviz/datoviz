@@ -54,7 +54,7 @@ This runtime workflow is the reproducible offscreen video-export path: the scene
     - Category: `runtime`
     - Lane: `runtime`
     - Status: `experimental`
-    - Source: [`examples/c/runtime/video_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c)
+    - Source: [`examples/c/runtime/video_export.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/video_export.c)
     - Approved adaptation starter: `yes`
     - Browser support: Native only
     - Browser note: video export uses native app/canvas capture backends, including CPU readback and optional external/NVENC paths

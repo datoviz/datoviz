@@ -83,9 +83,9 @@ Promote: `python tools/data/prepare_us_state_choropleth.py --output data/example
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `supported`
-    - Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c)
+    - Source: [`examples/c/showcases/choropleth.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/choropleth.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/choropleth.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/choropleth.py)
+    - Python source: [`examples/python/gallery/showcases/choropleth.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/choropleth.py)
     - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_choropleth"><code>examples/webgpu/live.html?id=showcases_choropleth</code></a>

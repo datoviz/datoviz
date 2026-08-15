@@ -63,9 +63,9 @@ The axis triad uses red for X, green for Y, and blue for Z, with labels and a re
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c)
+    - Source: [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/coordinate_system.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/coordinate_system.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/coordinate_system.py)
+    - Python source: [`examples/python/gallery/features/coordinate_system.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/coordinate_system.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_coordinate_system"><code>examples/webgpu/live.html?id=features_coordinate_system</code></a>

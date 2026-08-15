@@ -64,9 +64,9 @@ Both panels upload the same uniformly colored 5x5x5 sphere lattice, but only the
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c)
+    - Source: [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_depth_cue.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/technique_depth_cue.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_depth_cue.py)
+    - Python source: [`examples/python/gallery/features/technique_depth_cue.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_depth_cue.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Deferred
     - Browser capability tags: `depth-cue`

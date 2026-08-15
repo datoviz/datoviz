@@ -63,10 +63,10 @@ Each primitive supplies positions, colors, and group IDs, then chooses a line or
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c)
+    - Source: [`examples/c/visuals/primitive.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/primitive.c)
     - Approved adaptation starter: `yes`
     - Reference: [Primitive visual family](../../../reference/visual-families/primitive.md)
-    - Python source: [`examples/python/gallery/visuals/primitive.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/primitive.py)
+    - Python source: [`examples/python/gallery/visuals/primitive.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/primitive.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_primitive"><code>examples/webgpu/live.html?id=visuals_primitive</code></a>

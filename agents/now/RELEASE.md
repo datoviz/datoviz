@@ -18,7 +18,7 @@ Do not replay RC1 or RC2 execution instructions. Audit their tagged releases, as
 
 ## 1. Post-RC2 Branch Cutover
 
-Preserve old v0.3 `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, make the renamed v0.4 line the GitHub default, and reconcile live branch-specific automation and guidance. Do not merge incompatible histories, rewrite commits, move tags, or force-update RC refs. Follow [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md).
+The external cutover is complete: old v0.3 `main` is preserved as protected `v0.3-maintenance`, the former `v0.4-dev` is the protected default `main`, both open PR bases moved to `main`, and no histories, tags, or release refs changed. Complete reconciliation CI and fresh-clone verification under [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md).
 
 ## 2. RC3 Documentation, Packaging, Quality, And Course Foundation
 
@@ -30,7 +30,7 @@ Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_
 
 Remaining RC3 deliverables:
 
-1. Execute and verify the branch cutover.
+1. Finish reconciliation CI and fresh-clone proof for the executed branch cutover.
 2. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates; await the original author's feedback on focused successor PR #136 before resolving PR #132.
 3. Publish compatible Vulkan-enabled Qt and PyQt packages, then build and validate exact split `libdatoviz`, `datoviz`, and `datoviz-qtbridge` artifacts on supported hosted platforms.
 4. Prove the rewritten course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.

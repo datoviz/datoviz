@@ -60,9 +60,9 @@ Use this as the beginner native-app template when you want Datoviz to own the GL
     - Category: `runtime`
     - Lane: `runtime`
     - Status: `supported`
-    - Source: [`examples/c/runtime/app_glfw.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c)
+    - Source: [`examples/c/runtime/app_glfw.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/app_glfw.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/runtime/app_glfw.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/app_glfw.py)
+    - Python source: [`examples/python/gallery/runtime/app_glfw.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/runtime/app_glfw.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: direct GLFW app lifecycle is native-only

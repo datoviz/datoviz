@@ -63,9 +63,9 @@ The scalar field is sampled on a regular grid, and CPU contour extraction turns 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c)
+    - Source: [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/isolines.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/isolines.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/isolines.py)
+    - Python source: [`examples/python/gallery/features/isolines.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/isolines.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_isolines"><code>examples/webgpu/live.html?id=features_isolines</code></a>

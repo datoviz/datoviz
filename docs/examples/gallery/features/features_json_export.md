@@ -53,7 +53,7 @@ The live view is intentionally small, with three point items whose position, col
     - Category: `feature`
     - Lane: `features`
     - Status: `experimental`
-    - Source: [`examples/c/features/json_export.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/json_export.c)
+    - Source: [`examples/c/features/json_export.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/json_export.c)
     - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: scene JSON is a native diagnostic/fixture surface, not a live browser route

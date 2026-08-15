@@ -64,9 +64,9 @@ Both panels draw the same translated cube cluster with linked arcball controls, 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c)
+    - Source: [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_msaa.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/technique_msaa.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_msaa.py)
+    - Python source: [`examples/python/gallery/features/technique_msaa.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_msaa.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Deferred
     - Browser capability tags: `multisample`

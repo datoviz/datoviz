@@ -63,9 +63,9 @@ The left panel uploads a point ring with position, color, and diameter_px arrays
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c)
+    - Source: [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_multi.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/panel_multi.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_multi.py)
+    - Python source: [`examples/python/gallery/features/panel_multi.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_multi.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_multi"><code>examples/webgpu/live.html?id=features_panel_multi</code></a>

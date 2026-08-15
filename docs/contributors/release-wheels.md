@@ -262,7 +262,7 @@ uploaded candidate.
 After the upload, verify the package-index path against the exact successful Wheels run:
 
 ```sh
-gh workflow run package-index-verification.yml --ref v0.4-dev \
+gh workflow run package-index-verification.yml --ref main \
   -f index=testpypi \
   -f version=0.4.0rc2 \
   -f wheel_run_id=<wheels-run-id>
@@ -270,7 +270,7 @@ gh workflow run package-index-verification.yml --ref v0.4-dev \
 
 `workflow_dispatch` requires the workflow file to exist on the repository default branch. Before
 that is true for a release branch, commit
-`.github/package-index-verification-request.json` on `v0.4-dev` with the equivalent request:
+`.github/package-index-verification-request.json` on `main` with the equivalent request:
 
 ```json
 {

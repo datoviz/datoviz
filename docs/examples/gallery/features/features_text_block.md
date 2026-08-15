@@ -63,9 +63,9 @@ The text object keeps style, layout, placement, and the whole paragraph string t
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c)
+    - Source: [`examples/c/features/text_block.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/text_block.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/text_block.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/text_block.py)
+    - Python source: [`examples/python/gallery/features/text_block.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/text_block.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_text_block"><code>examples/webgpu/live.html?id=features_text_block</code></a>

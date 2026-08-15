@@ -51,7 +51,7 @@ Consumer transitions are explicit. `dvz_interop_buffer_wait_timeline()` covers v
 
 ## Native proof
 
-[`examples/c/advanced/cuda_external_buffer.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/cuda_external_buffer.c) is the end-to-end C proof. It imports the exported buffer and timeline semaphore with the CUDA Runtime API, writes a fullscreen triangle with `cudaMemcpyAsync()`, signals value 1 on the CUDA stream, renders from the same Vulkan buffer through DRP2, and verifies a red readback pixel.
+[`examples/c/advanced/cuda_external_buffer.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/cuda_external_buffer.c) is the end-to-end C proof. It imports the exported buffer and timeline semaphore with the CUDA Runtime API, writes a fullscreen triangle with `cudaMemcpyAsync()`, signals value 1 on the CUDA stream, renders from the same Vulkan buffer through DRP2, and verifies a red readback pixel.
 
 ```sh
 just example-c advanced/cuda_external_buffer

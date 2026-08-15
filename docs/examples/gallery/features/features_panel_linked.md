@@ -63,9 +63,9 @@ Both panels plot deterministic path data over the same X domain but use differen
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c)
+    - Source: [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_linked.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/panel_linked.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_linked.py)
+    - Python source: [`examples/python/gallery/features/panel_linked.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_linked.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_linked"><code>examples/webgpu/live.html?id=features_panel_linked</code></a>

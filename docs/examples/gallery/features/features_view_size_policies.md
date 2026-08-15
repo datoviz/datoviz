@@ -58,9 +58,9 @@ Pass --policy pixel, host, reference, or physical to choose framebuffer pixels, 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/view_size_policies.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c)
+    - Source: [`examples/c/features/view_size_policies.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/view_size_policies.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/view_size_policies.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/view_size_policies.py)
+    - Python source: [`examples/python/gallery/features/view_size_policies.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/view_size_policies.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: demonstrates native window, framebuffer, and physical-size policies

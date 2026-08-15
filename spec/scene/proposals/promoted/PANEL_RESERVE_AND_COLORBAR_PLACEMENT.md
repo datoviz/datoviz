@@ -12,7 +12,7 @@ goal is deliberately small: reserve a fixed number of pixels on any side of a pa
 colorbars in that reserved band, and support detached colorbars with explicit anchored pixel
 placement.
 
-Implementation status: the v0.4-dev public scene API now exposes fixed pixel panel reserves,
+Implementation status: the v0.4 public scene API now exposes fixed pixel panel reserves,
 plot-rectangle queries in figure pixels, attached colorbar pixel reserves and geometry fields, and
 detached colorbar placement in panel or figure pixel space.
 

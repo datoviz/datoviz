@@ -63,9 +63,9 @@ The three columns use the same acute V, zigzag, open star, and closed star subpa
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c)
+    - Source: [`examples/c/features/path_join.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/path_join.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/path_join.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/path_join.py)
+    - Python source: [`examples/python/gallery/features/path_join.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/path_join.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_path_join"><code>examples/webgpu/live.html?id=features_path_join</code></a>

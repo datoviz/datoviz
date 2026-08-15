@@ -63,10 +63,10 @@ Each row reuses position, symbol, color, size, edge color, and angle arrays to s
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c)
+    - Source: [`examples/c/visuals/marker.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/marker.c)
     - Approved adaptation starter: `yes`
     - Reference: [Marker visual family](../../../reference/visual-families/marker.md)
-    - Python source: [`examples/python/gallery/visuals/marker.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/marker.py)
+    - Python source: [`examples/python/gallery/visuals/marker.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/marker.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_marker"><code>examples/webgpu/live.html?id=visuals_marker</code></a>

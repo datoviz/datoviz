@@ -63,9 +63,9 @@ Three triangle groups share one primitive visual, with position and normal array
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c)
+    - Source: [`examples/c/features/alpha_blending.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/alpha_blending.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/alpha_blending.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/alpha_blending.py)
+    - Python source: [`examples/python/gallery/features/alpha_blending.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/alpha_blending.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_alpha_blending"><code>examples/webgpu/live.html?id=features_alpha_blending</code></a>

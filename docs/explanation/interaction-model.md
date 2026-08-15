@@ -65,6 +65,6 @@ the durable owner of controllers, visuals, selections, and query policy.
 
 ## Sources of truth
 
-- [Controller contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/interaction/CONTROLLERS.md)
-- [Thread-safety contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/integration/THREAD_SAFETY.md)
+- [Controller contract](https://github.com/datoviz/datoviz/blob/main/spec/scene/interaction/CONTROLLERS.md)
+- [Thread-safety contract](https://github.com/datoviz/datoviz/blob/main/spec/scene/integration/THREAD_SAFETY.md)
 - [Queries, picking, and probing](query-pick-probe-model.md)

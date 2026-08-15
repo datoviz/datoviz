@@ -3,7 +3,7 @@ run-name: "Physical evidence · Wheels ${{ inputs.wheel_run_id || 'RC branch req
 
 on:
   push:
-    branches: [v0.4-dev]
+    branches: [main]
     paths:
       - ".github/physical-evidence-request.json"
       - ".github/workflows/physical-evidence-intake.yml"

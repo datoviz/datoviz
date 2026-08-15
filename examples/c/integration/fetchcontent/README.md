@@ -8,7 +8,7 @@ cmake --build build
 ./build/datoviz_fetchcontent_example
 ```
 
-The default remote ref is `v0.4-dev` while v0.4 release candidates are being prepared. Override
+The default remote ref is `main` while v0.4 release candidates are being prepared. Override
 `DATOVIZ_FETCHCONTENT_TAG` once a final release tag is available.
 
 For local Datoviz development, avoid fetching from Git and point the example at a checkout:

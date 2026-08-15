@@ -1,6 +1,6 @@
 # Datoviz
 
-[![Build and test](https://github.com/datoviz/datoviz/actions/workflows/test.yml/badge.svg?branch=v0.4-dev)](https://github.com/datoviz/datoviz/actions/workflows/test.yml)
+[![Build and test](https://github.com/datoviz/datoviz/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/datoviz/datoviz/actions/workflows/test.yml)
 [![Documentation](https://img.shields.io/badge/docs-datoviz.org-2563eb)](https://datoviz.org/)
 [![Python 3.10–3.14](https://img.shields.io/badge/python-3.10%E2%80%933.14-3776ab)](https://datoviz.org/start/install/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-22c55e)](LICENSE)
@@ -87,7 +87,7 @@ Continue with the annotated [Quickstart](https://datoviz.org/start/quickstart/) 
 
 ## v0.4 Release Status
 
-The `v0.4-dev` branch is the active v0.4 release-candidate line. The native C and Python/NumPy
+The `main` branch is the active v0.4 release-candidate line. The native C and Python/NumPy
 paths are release-facing; experimental and deferred surfaces remain explicitly labeled throughout
 the documentation.
 
@@ -131,7 +131,7 @@ shader tools, and a Vulkan-capable runtime. Clone the active branch with its sub
 and test:
 
 ```sh
-git clone --branch v0.4-dev --recursive https://github.com/datoviz/datoviz.git
+git clone --branch main --recursive https://github.com/datoviz/datoviz.git
 cd datoviz
 just build
 just test

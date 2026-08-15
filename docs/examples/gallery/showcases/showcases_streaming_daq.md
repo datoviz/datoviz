@@ -84,12 +84,12 @@ Control: --live opens a left-docked GUI; space pauses; R resets acquisition; F r
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `experimental`
-    - Source: [`examples/c/showcases/streaming_daq.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq.c)
+    - Source: [`examples/c/showcases/streaming_daq.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/streaming_daq.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/streaming_daq.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/streaming_daq.py)
+    - Python source: [`examples/python/gallery/showcases/streaming_daq.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/streaming_daq.py)
     - Python adaptation: Available
-    - Acquisition model source: [`examples/c/showcases/streaming_daq_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq_model.c)
-    - Acquisition model header source: [`examples/c/showcases/streaming_daq_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq_model.h)
+    - Acquisition model source: [`examples/c/showcases/streaming_daq_model.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/streaming_daq_model.c)
+    - Acquisition model header source: [`examples/c/showcases/streaming_daq_model.h`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/streaming_daq_model.h)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_streaming_daq"><code>examples/webgpu/live.html?id=showcases_streaming_daq</code></a>
     - Browser note: the browser scenario uses the shared deterministic acquisition model while the native live route additionally enables its producer thread and ImGui controls

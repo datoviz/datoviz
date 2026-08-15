@@ -69,9 +69,9 @@ The path visual uploads position, color, and linewidth arrays in compact numeric
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c)
+    - Source: [`examples/c/features/datetime_axis.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/datetime_axis.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/datetime_axis.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/datetime_axis.py)
+    - Python source: [`examples/python/gallery/features/datetime_axis.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/datetime_axis.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_datetime_axis"><code>examples/webgpu/live.html?id=features_datetime_axis</code></a>

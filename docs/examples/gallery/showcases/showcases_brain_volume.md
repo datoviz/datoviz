@@ -78,9 +78,9 @@ Prepare: `python tools/data/prepare_brain_volume.py`
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `prototype`
-    - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c)
+    - Source: [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/brain_volume.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/brain_volume.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/brain_volume.py)
+    - Python source: [`examples/python/gallery/showcases/brain_volume.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/brain_volume.py)
     - Python adaptation: Available
     - Browser support: Planned
     - Browser capability tags: `volume`, `texture-3d`, `arcball`

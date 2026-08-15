@@ -63,9 +63,9 @@ The bar helper uses start, end, and value arrays so each bar has an explicit int
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c)
+    - Source: [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/bars_bands.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/bars_bands.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bars_bands.py)
+    - Python source: [`examples/python/gallery/features/bars_bands.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/bars_bands.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_bars_bands"><code>examples/webgpu/live.html?id=features_bars_bands</code></a>

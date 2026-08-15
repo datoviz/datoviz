@@ -63,9 +63,9 @@ Each row uses the same marker attributes, including position, color, diameter_px
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c)
+    - Source: [`examples/c/features/marker_symbols.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/marker_symbols.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/marker_symbols.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/marker_symbols.py)
+    - Python source: [`examples/python/gallery/features/marker_symbols.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/marker_symbols.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_marker_symbols"><code>examples/webgpu/live.html?id=features_marker_symbols</code></a>

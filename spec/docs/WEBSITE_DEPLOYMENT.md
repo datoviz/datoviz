@@ -17,14 +17,14 @@ The RC1 website cutover is complete:
    repository.
 5. GitHub Pages publishes the root of `datoviz.github.io/main` to `datoviz.org`.
 
-A push to `datoviz/main` or `datoviz/v0.4-dev` does not update the public website. The current
+A push to `datoviz/main` does not update the public website. The current
 publisher must build and validate the site, commit the generated output to
 `datoviz.github.io/main`, and push that deployment commit.
 
 The local post-RC1 command for the active release-candidate branch is:
 
 ```sh
-just docs-publish yes v0.4-dev no
+just docs-publish yes main no
 ```
 
 It requires clean source and website checkouts, builds and validates the WASM scene module, runs a
@@ -45,12 +45,11 @@ deployment, commits it, and pushes `datoviz.github.io/main`.
 
 ## Branch And Version Policy
 
-Through v0.4.0 final, `v0.4-dev` remains the active release-candidate source branch. After the
-controlled final merge:
+Through v0.4.0 final, `main` is the active release-candidate source branch. After the completed controlled branch cutover:
 
-1. `main` becomes the single long-lived integration branch.
+1. `main` is the single long-lived integration branch.
 2. feature branches remain short-lived and merge through pull requests;
-3. `dev` and `v0.4-dev` are retired or frozen rather than kept as parallel integration branches;
+3. `dev` is frozen legacy history and the former `v0.4-dev` name is retired rather than kept as a parallel integration branch;
 4. a `release/0.4` maintenance branch is created only when v0.4 patch work overlaps with v0.5
    development; and
 5. immutable release tags remain the authority for released source and documentation snapshots.

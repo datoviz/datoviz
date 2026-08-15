@@ -267,9 +267,9 @@ If redistribution is not clearly permitted, the catalog contains preparation ins
 
 The parent branch cutover and asset migration are related but must not become one irreversible operation.
 
-Before renaming `v0.4-dev` to `main`, land the minimum core-independence slice on the active v0.4 line: admit the complete reviewed Source family and Noto scientific fallback, preserve the five primary font roles and custom-font behavior, replace external generic test inputs, split hermetic documentation checks from full site publication, remove `data` from core build/test/package requirements, and prove a fresh checkout with the submodule uninitialized. This prevents the branch-cutover fresh-clone gate from depending on a blocked LFS service. The exact font admission and resolver are part of that independence slice; optional asset downloading remains outside it.
+Before the completed rename of `v0.4-dev` to `main`, the minimum core-independence slice landed on the active v0.4 line: the complete reviewed Source family and Noto scientific fallback, five primary font roles and custom-font behavior, source-defined generic test inputs, hermetic documentation checks, and removal of `data` from core build/test/package requirements. This keeps branch-cutover and ordinary CI proof independent of blocked LFS service. Optional asset downloading remains outside that slice.
 
-Then execute the existing audited parent transition without changing data history:
+The audited parent transition then completed without changing data history:
 
 ```text
 datoviz/datoviz: old main -> v0.3-maintenance

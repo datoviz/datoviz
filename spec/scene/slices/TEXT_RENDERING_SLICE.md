@@ -15,7 +15,7 @@ The implementation-facing shaping, layout, atlas, and cache contract lives in
 
 Status: first rendered slice landed.
 
-The first rendered text implementation has landed and the installed v0.4-dev public surface now uses
+The first rendered text implementation has landed and the installed v0.4 public surface now uses
 retained semantic text objects:
 
 1. `dvz_text()` returns a `DvzText*` handle attached to a panel,

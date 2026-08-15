@@ -63,9 +63,9 @@ Both panels upload the same five point positions, colors, and diameter_px values
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c)
+    - Source: [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/visual_transform.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/visual_transform.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visual_transform.py)
+    - Python source: [`examples/python/gallery/features/visual_transform.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/visual_transform.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_visual_transform"><code>examples/webgpu/live.html?id=features_visual_transform</code></a>

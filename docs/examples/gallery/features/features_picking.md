@@ -63,9 +63,9 @@ The marker grid uploads position, color, diameter_px, angle, and shape arrays, i
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/picking.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c)
+    - Source: [`examples/c/features/picking.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/picking.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/picking.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/picking.py)
+    - Python source: [`examples/python/gallery/features/picking.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/picking.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_picking"><code>examples/webgpu/live.html?id=features_picking</code></a>

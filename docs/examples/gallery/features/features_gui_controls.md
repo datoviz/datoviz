@@ -58,9 +58,9 @@ Five point positions are fixed, while GUI sliders and color editors update the c
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/gui_controls.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c)
+    - Source: [`examples/c/features/gui_controls.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_controls.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/gui_controls.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_controls.py)
+    - Python source: [`examples/python/gallery/features/gui_controls.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/gui_controls.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: Datoviz GUI controls require the native ImGui/GLFW app path

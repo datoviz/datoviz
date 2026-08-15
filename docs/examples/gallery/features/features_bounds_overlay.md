@@ -64,9 +64,9 @@ The left panel contains a point cloud with position, color, and diameter arrays,
     - Category: `feature`
     - Lane: `features`
     - Status: `diagnostic`
-    - Source: [`examples/c/features/bounds_overlay.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c)
+    - Source: [`examples/c/features/bounds_overlay.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/bounds_overlay.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/features/bounds_overlay.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bounds_overlay.py)
+    - Python source: [`examples/python/gallery/features/bounds_overlay.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/bounds_overlay.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_bounds_overlay"><code>examples/webgpu/live.html?id=features_bounds_overlay</code></a>

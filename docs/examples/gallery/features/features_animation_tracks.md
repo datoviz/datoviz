@@ -69,9 +69,9 @@ The cube keeps its mesh geometry and material, while a rotation track updates it
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c)
+    - Source: [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/animation_tracks.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/animation_tracks.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/animation_tracks.py)
+    - Python source: [`examples/python/gallery/features/animation_tracks.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/animation_tracks.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_animation_tracks"><code>examples/webgpu/live.html?id=features_animation_tracks</code></a>

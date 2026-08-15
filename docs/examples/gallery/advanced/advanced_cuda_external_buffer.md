@@ -49,7 +49,7 @@ after verifying the linked API reference.
     - Category: `advanced`
     - Lane: `advanced`
     - Status: `experimental`
-    - Source: [`examples/c/advanced/cuda_external_buffer.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/cuda_external_buffer.c)
+    - Source: [`examples/c/advanced/cuda_external_buffer.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/cuda_external_buffer.c)
     - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: CUDA opaque-FD external memory and semaphore interop is Linux/NVIDIA-specific

@@ -535,7 +535,7 @@ examples: add microbubble item-range showcase
 Copy-pasteable prompt:
 
 ```text
-You are working in my local clone of datoviz/datoviz on v0.4-dev, after the retained visual item-range API has landed.
+You are working in my local clone of datoviz/datoviz on main, after the retained visual item-range API has landed.
 
 Implement the native C microbubble showcase described in
 spec/scene/examples/scenarios/MICROBUBBLES.md.

@@ -63,10 +63,10 @@ The positions array lays out the grid, scalar values drive the color scale, and 
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/pixel.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c)
+    - Source: [`examples/c/visuals/pixel.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/pixel.c)
     - Approved adaptation starter: `yes`
     - Reference: [Pixel visual family](../../../reference/visual-families/pixel.md)
-    - Python source: [`examples/python/gallery/visuals/pixel.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/pixel.py)
+    - Python source: [`examples/python/gallery/visuals/pixel.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/pixel.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_pixel"><code>examples/webgpu/live.html?id=visuals_pixel</code></a>

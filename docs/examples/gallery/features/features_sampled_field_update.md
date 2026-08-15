@@ -63,9 +63,9 @@ Both panels sample the same R32_FLOAT field and the same moving highlighted patc
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/sampled_field_update.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_update.c)
+    - Source: [`examples/c/features/sampled_field_update.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/sampled_field_update.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/sampled_field_update.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/sampled_field_update.py)
+    - Python source: [`examples/python/gallery/features/sampled_field_update.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/sampled_field_update.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_sampled_field_update"><code>examples/webgpu/live.html?id=features_sampled_field_update</code></a>

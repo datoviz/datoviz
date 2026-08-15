@@ -63,9 +63,9 @@ Three separate point visuals are created so the middle red point can use dvz_vis
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/visibility.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c)
+    - Source: [`examples/c/features/visibility.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/visibility.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/visibility.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visibility.py)
+    - Python source: [`examples/python/gallery/features/visibility.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/visibility.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_visibility"><code>examples/webgpu/live.html?id=features_visibility</code></a>

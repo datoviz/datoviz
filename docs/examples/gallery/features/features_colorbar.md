@@ -63,9 +63,9 @@ A 192 by 144 float field is uploaded as an R32 sampled field, and the image visu
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/colorbar.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c)
+    - Source: [`examples/c/features/colorbar.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/colorbar.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/colorbar.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colorbar.py)
+    - Python source: [`examples/python/gallery/features/colorbar.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/colorbar.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_colorbar"><code>examples/webgpu/live.html?id=features_colorbar</code></a>

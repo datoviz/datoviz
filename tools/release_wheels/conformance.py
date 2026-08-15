@@ -1335,7 +1335,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     submit_parser = subparsers.add_parser('submit', help='submit approved physical evidence')
     submit_parser.add_argument('--evidence-dir', type=Path, required=True)
     submit_parser.add_argument('--package', default='ghcr.io/datoviz/datoviz-release-evidence')
-    submit_parser.add_argument('--ref', default='v0.4-dev')
+    submit_parser.add_argument('--ref', default='main')
     submit_parser.add_argument('--confirm', default='no')
 
     physical_parser = subparsers.add_parser(

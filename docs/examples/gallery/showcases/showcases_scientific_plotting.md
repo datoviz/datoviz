@@ -66,9 +66,9 @@ This workflow is useful when a paper-style diagnostic figure needs multiple coor
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `supported`
-    - Source: [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c)
+    - Source: [`examples/c/showcases/scientific_plotting.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/scientific_plotting.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/scientific_plotting.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/scientific_plotting.py)
+    - Python source: [`examples/python/gallery/showcases/scientific_plotting.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/scientific_plotting.py)
     - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_scientific_plotting"><code>examples/webgpu/live.html?id=showcases_scientific_plotting</code></a>

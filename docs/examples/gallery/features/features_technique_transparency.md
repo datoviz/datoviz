@@ -64,9 +64,9 @@ Each panel draws two translucent cube meshes with the same geometry, transforms,
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c)
+    - Source: [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_transparency.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/technique_transparency.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_transparency.py)
+    - Python source: [`examples/python/gallery/features/technique_transparency.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_transparency.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Deferred
     - Browser capability tags: `wboit`, `depth-peeling`

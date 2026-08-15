@@ -60,9 +60,9 @@ This is the runtime path to copy for reproducible batch figures, tests, and docu
     - Category: `runtime`
     - Lane: `runtime`
     - Status: `supported`
-    - Source: [`examples/c/runtime/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c)
+    - Source: [`examples/c/runtime/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/offscreen_capture.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/runtime/offscreen_capture.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/offscreen_capture.py)
+    - Python source: [`examples/python/gallery/runtime/offscreen_capture.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/runtime/offscreen_capture.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: writes a native offscreen PNG through the app capture path

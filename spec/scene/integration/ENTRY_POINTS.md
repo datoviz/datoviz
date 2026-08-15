@@ -1,4 +1,4 @@
-# Integration entry points for advanced users (v0.4-dev)
+# Integration entry points for advanced users (v0.4)
 
 This document defines practical low-level and hybrid integration lanes for users who do not want the
 full scene-system overhead, while still leveraging Datoviz runtime building blocks.

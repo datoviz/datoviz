@@ -78,4 +78,4 @@ Canonical coding-agent instructions: https://datoviz.org/ai-agents/
 8. When current sources disagree, prefer generated API/reference contracts, then executable example
    pages and sources, then How-To guidance, then Advanced explanation.
 
-Source repository: https://github.com/datoviz/datoviz/tree/v0.4-dev
+Source repository: https://github.com/datoviz/datoviz/tree/main

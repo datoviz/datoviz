@@ -63,10 +63,10 @@ Positions hold the sampled curves, colors and widths vary per sample, and the su
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c)
+    - Source: [`examples/c/visuals/path.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/path.c)
     - Approved adaptation starter: `yes`
     - Reference: [Path visual family](../../../reference/visual-families/path.md)
-    - Python source: [`examples/python/gallery/visuals/path.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/path.py)
+    - Python source: [`examples/python/gallery/visuals/path.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/path.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_path"><code>examples/webgpu/live.html?id=visuals_path</code></a>

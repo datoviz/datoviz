@@ -63,7 +63,7 @@ views. External providers may add stricter teardown order; follow their integrat
 
 ## Sources of truth
 
-- [Scene runtime boundary](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/core/RUNTIME_BOUNDARY.md)
-- [DRP2 lifetimes](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/LIFETIMES.md)
-- [DRP2 packet artifact boundary](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/PACKETS.md)
+- [Scene runtime boundary](https://github.com/datoviz/datoviz/blob/main/spec/scene/core/RUNTIME_BOUNDARY.md)
+- [DRP2 lifetimes](https://github.com/datoviz/datoviz/blob/main/spec/drp2/LIFETIMES.md)
+- [DRP2 packet artifact boundary](https://github.com/datoviz/datoviz/blob/main/spec/drp2/PACKETS.md)
 - [Compute and graphics](../reference/compute-graphics.md)

@@ -64,9 +64,9 @@ Both panels render the same irregular, multi-lobed aggregate of variable-sized s
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/technique_ao.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ao.c)
+    - Source: [`examples/c/features/technique_ao.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_ao.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/technique_ao.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_ao.py)
+    - Python source: [`examples/python/gallery/features/technique_ao.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_ao.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Deferred
     - Browser capability tags: `gbuffer`, `depth-postprocess`

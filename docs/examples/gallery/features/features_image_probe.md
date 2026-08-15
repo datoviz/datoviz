@@ -63,9 +63,9 @@ A synthetic microscopy-like float field is uploaded as an R32 sampled image and 
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c)
+    - Source: [`examples/c/features/image_probe.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/image_probe.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/image_probe.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/image_probe.py)
+    - Python source: [`examples/python/gallery/features/image_probe.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/image_probe.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_image_probe"><code>examples/webgpu/live.html?id=features_image_probe</code></a>

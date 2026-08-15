@@ -58,9 +58,9 @@ The native app registers input callbacks and prints event details for pointer mo
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/input_events.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/input_events.c)
+    - Source: [`examples/c/features/input_events.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/input_events.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/input_events.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/input_events.py)
+    - Python source: [`examples/python/gallery/features/input_events.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/input_events.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: demonstrates native hosted event injection APIs

@@ -30,7 +30,7 @@ hide:
 
 <nav class="dvz-public-nav" aria-label="Landing navigation">
 <a class="dvz-public-nav__brand" href="./">Datoviz</a>
-<span>v0.4-dev</span>
+<span>v0.4 RC</span>
 <a href="../examples/">Examples</a>
 <a href="../">Docs</a>
 <a href="https://github.com/datoviz/datoviz">GitHub</a>

@@ -1,7 +1,7 @@
 # Physical Release Validation
 
 Use this procedure for every release candidate and final release. Durable requirements live in the
-[`PHYSICAL_VALIDATION.md` specification](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/release/PHYSICAL_VALIDATION.md);
+[`PHYSICAL_VALIDATION.md` specification](https://github.com/datoviz/datoviz/blob/main/spec/release/PHYSICAL_VALIDATION.md);
 current candidate state and pending machine work live in `agents/now/`.
 
 

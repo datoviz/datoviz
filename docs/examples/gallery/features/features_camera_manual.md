@@ -63,9 +63,9 @@ The camera descriptor sets eye, target, up, field of view, and near/far clip pla
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/camera_manual.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c)
+    - Source: [`examples/c/features/camera_manual.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/camera_manual.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/camera_manual.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/camera_manual.py)
+    - Python source: [`examples/python/gallery/features/camera_manual.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/camera_manual.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_camera_manual"><code>examples/webgpu/live.html?id=features_camera_manual</code></a>

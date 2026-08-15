@@ -1,6 +1,6 @@
 # GSP Visual Family Mapping
 
-Status: informative v0.4-dev adapter mapping. `spec/scene/` remains the authority for scene
+Status: informative v0.4 adapter mapping. `spec/scene/` remains the authority for scene
 semantics; public headers remain the authority for callable C APIs.
 
 This file records the Datoviz-owned visual-family mapping a GSP adapter can use without reading
@@ -33,7 +33,7 @@ not GSP protocol ids.
 
 ## Other Active Families
 
-These families are active in v0.4-dev and may be useful to GSP later, but they are not required for
+These families are active in v0.4 and may be useful to GSP later, but they are not required for
 the first compatibility slice.
 
 | Family | Constructor | Required data/resources | Query support | Adapter note |

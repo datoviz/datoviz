@@ -69,9 +69,9 @@ A 64-point ring uploads position, color, and diameter_px arrays inside a [-1, 1]
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c)
+    - Source: [`examples/c/features/panzoom.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panzoom.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/panzoom.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panzoom.py)
+    - Python source: [`examples/python/gallery/features/panzoom.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panzoom.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panzoom"><code>examples/webgpu/live.html?id=features_panzoom</code></a>

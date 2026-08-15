@@ -28,7 +28,7 @@ semantic and should not expose glyph atlas internals.
 
 ## Current Implementation Status
 
-The current v0.4-dev implementation has visible glyph rendering, but its public text entry point is
+The current v0.4 implementation has visible glyph rendering, but its public text entry point is
 still being migrated:
 
 1. `dvz_glyph()` is installed as a low-level `DvzVisual*` constructor,

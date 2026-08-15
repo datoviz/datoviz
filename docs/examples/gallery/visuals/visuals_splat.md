@@ -53,7 +53,7 @@ Positions place each splat, colors set the tint, sigma gives the two screen-spac
     - Category: `visual`
     - Lane: `visuals`
     - Status: `experimental`
-    - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c)
+    - Source: [`examples/c/visuals/splat.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/splat.c)
     - Approved adaptation starter: `no`
     - Reference: [Splat visual family](../../../reference/visual-families/splat.md)
     - Browser support: Deferred

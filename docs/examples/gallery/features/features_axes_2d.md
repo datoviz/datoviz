@@ -63,9 +63,9 @@ The path visual receives arrays for data-space position, color, and linewidth, t
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c)
+    - Source: [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/axes_2d.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/axes_2d.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axes_2d.py)
+    - Python source: [`examples/python/gallery/features/axes_2d.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/axes_2d.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_axes_2d"><code>examples/webgpu/live.html?id=features_axes_2d</code></a>

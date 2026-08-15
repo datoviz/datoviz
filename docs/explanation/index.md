@@ -42,5 +42,5 @@ native Vulkan or browser WebGPU         backend execution
 The durable design contracts live in `spec/scene/` and `spec/drp2/` in the repository. Installed
 headers and generated reference pages remain authoritative for public names that already exist;
 specs may also describe future pressure and must not be read as feature-status claims. Start with
-the [Scene spec authority](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/AUTHORITY.md)
+the [Scene spec authority](https://github.com/datoviz/datoviz/blob/main/spec/scene/AUTHORITY.md)
 before changing a cross-layer contract.

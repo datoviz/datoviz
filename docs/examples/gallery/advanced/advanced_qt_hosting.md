@@ -55,9 +55,9 @@ after verifying the linked API reference.
     - Category: `advanced`
     - Lane: `advanced`
     - Status: `supported`
-    - Source: [`examples/qt/qt_hosting.cpp`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/qt/qt_hosting.cpp)
+    - Source: [`examples/qt/qt_hosting.cpp`](https://github.com/datoviz/datoviz/blob/main/examples/qt/qt_hosting.cpp)
     - Approved adaptation starter: `no`
-    - PyQt source: [`examples/python/qt/hosted_pyqt.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/qt/hosted_pyqt.py)
+    - PyQt source: [`examples/python/qt/hosted_pyqt.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/qt/hosted_pyqt.py)
     - Browser support: Native only
     - Browser note: Qt and PyQt hosting use native toolkit windows and an optional bridge provider
     - Browser capability tags: `native-view`, `external-surface`, `qt`, `optional-provider`

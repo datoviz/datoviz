@@ -60,9 +60,9 @@ This workflow is useful for scientific tools that need a coarse overview beside 
     - Category: `runtime`
     - Lane: `runtime`
     - Status: `supported`
-    - Source: [`examples/c/runtime/multi_window.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/multi_window.c)
+    - Source: [`examples/c/runtime/multi_window.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/multi_window.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/runtime/multi_window.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/multi_window.py)
+    - Python source: [`examples/python/gallery/runtime/multi_window.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/runtime/multi_window.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Native only
     - Browser note: multiple native GLFW windows are native-only

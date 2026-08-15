@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - v0.4-dev
+      - main
 
 env:
   DVZ_LOG_LEVEL: 2

@@ -74,7 +74,7 @@ in verbose debug text but are not required application semantics.
 
 ## Sources of truth
 
-- [Normative runtime boundary](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/core/RUNTIME_BOUNDARY.md)
-- [Scene authority and source order](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/AUTHORITY.md)
-- [DRP2 capabilities](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/CAPABILITIES.md)
+- [Normative runtime boundary](https://github.com/datoviz/datoviz/blob/main/spec/scene/core/RUNTIME_BOUNDARY.md)
+- [Scene authority and source order](https://github.com/datoviz/datoviz/blob/main/spec/scene/AUTHORITY.md)
+- [DRP2 capabilities](https://github.com/datoviz/datoviz/blob/main/spec/drp2/CAPABILITIES.md)
 - [Frame lifecycle](frame-lifecycle.md)

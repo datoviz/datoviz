@@ -1,6 +1,6 @@
 # Datoviz Gallery Visual Identity Style Guide (Draft)
 
-> Status: draft for v0.4-dev examples/gallery work.
+> Status: draft for v0.4 examples/gallery work.
 
 ## 1) Purpose
 

@@ -3,7 +3,7 @@ run-name: "Package index verification · ${{ inputs.index }} · ${{ inputs.versi
 
 on:
   push:
-    branches: [v0.4-dev]
+    branches: [main]
     paths:
       - ".github/package-index-verification-request.json"
   workflow_dispatch:

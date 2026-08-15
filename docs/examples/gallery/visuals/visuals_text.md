@@ -63,10 +63,10 @@ Each text item provides a string, x/y data position, font size, angle, and color
     - Category: `visual`
     - Lane: `visuals`
     - Status: `supported`
-    - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c)
+    - Source: [`examples/c/visuals/text.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/text.c)
     - Approved adaptation starter: `yes`
     - Reference: [Text visual family](../../../reference/visual-families/text.md)
-    - Python source: [`examples/python/gallery/visuals/text.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/text.py)
+    - Python source: [`examples/python/gallery/visuals/text.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/text.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=visuals_text"><code>examples/webgpu/live.html?id=visuals_text</code></a>

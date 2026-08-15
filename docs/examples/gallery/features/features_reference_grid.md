@@ -63,9 +63,9 @@ The grid is attached to the XZ plane, shifted downward on Y, and configured with
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/reference_grid.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c)
+    - Source: [`examples/c/features/reference_grid.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/reference_grid.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/reference_grid.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/reference_grid.py)
+    - Python source: [`examples/python/gallery/features/reference_grid.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/reference_grid.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_reference_grid"><code>examples/webgpu/live.html?id=features_reference_grid</code></a>

@@ -53,4 +53,4 @@ This fragment assumes an existing CMake project. The integration guide contains 
 
 ## Other installation paths
 
-Use [Build from source](build-from-source.md) when you need the current `v0.4-dev` code, want to contribute to Datoviz, or do not have a suitable published package. To inspect browser support without installing native Datoviz, open a `webgpu-live` route from [Examples](../examples/index.md); browser support is an experimental [WebGPU subset](../reference/webgpu-subset.md).
+Use [Build from source](build-from-source.md) when you need the current `main` code, want to contribute to Datoviz, or do not have a suitable published package. To inspect browser support without installing native Datoviz, open a `webgpu-live` route from [Examples](../examples/index.md); browser support is an experimental [WebGPU subset](../reference/webgpu-subset.md).

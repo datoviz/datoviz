@@ -388,7 +388,7 @@ publish confirm='no' source_branch='main' seed_legacy='no':
         exit 1
     fi
     case "$current_branch" in
-        main|v0.4-dev) ;;
+        main) ;;
         *)
             echo "Refusing docs publish from unsupported branch '$current_branch'." >&2
             exit 1

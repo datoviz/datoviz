@@ -90,12 +90,12 @@ The density-wave equations and rendering composition are adapted from Nicolas P.
     - Category: `showcase`
     - Lane: `showcases`
     - Status: `supported`
-    - Source: [`examples/c/showcases/galaxy.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy.c)
+    - Source: [`examples/c/showcases/galaxy.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/galaxy.c)
     - Approved adaptation starter: `no`
-    - Python source: [`examples/python/gallery/showcases/galaxy.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/galaxy.py)
+    - Python source: [`examples/python/gallery/showcases/galaxy.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/galaxy.py)
     - Python adaptation: Available
-    - Density-wave model source: [`examples/c/showcases/galaxy_model.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy_model.c)
-    - Density-wave model header source: [`examples/c/showcases/galaxy_model.h`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy_model.h)
+    - Density-wave model source: [`examples/c/showcases/galaxy_model.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/galaxy_model.c)
+    - Density-wave model header source: [`examples/c/showcases/galaxy_model.h`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/galaxy_model.h)
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_galaxy"><code>examples/webgpu/live.html?id=showcases_galaxy</code></a>
     - Browser capability tags: `point`, `marker`, `symbol-set`, `glyph-atlas`, `alpha-blending`, `frame-callbacks`, `arcball`

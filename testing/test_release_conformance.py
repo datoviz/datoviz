@@ -381,7 +381,7 @@ def test_submit_physical_passes_oras_a_relative_archive(
     args = Namespace(
         evidence_dir=evidence_dir,
         package='ghcr.io/datoviz/evidence',
-        ref='v0.4-dev',
+        ref='main',
         confirm='yes',
     )
 

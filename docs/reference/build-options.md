@@ -128,7 +128,7 @@ include(FetchContent)
 
 FetchContent_Declare(datoviz
     GIT_REPOSITORY https://github.com/datoviz/datoviz.git
-    GIT_TAG v0.4-dev  # replace with an exact release tag or commit when available
+    GIT_TAG main  # replace with an exact release tag or commit when available
 )
 
 FetchContent_MakeAvailable(datoviz)
@@ -138,7 +138,7 @@ target_link_libraries(my_datoviz_app PRIVATE datoviz::datoviz)
 ```
 
 FetchContent builds Datoviz from source and still needs the native toolchain and SDK dependencies.
-For the current RC sources, pin `v0.4-dev` or a known commit. After an RC or final tag is published,
+For the current RC sources, pin `main` or a known commit. After an RC or final tag is published,
 pin the exact release tag you tested. For installed-user workflows after packages are published,
 prefer `find_package(datoviz)` from a wheel or package-manager install.
 

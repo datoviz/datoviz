@@ -66,8 +66,8 @@ wrapper to bypass a missing contract.
 
 ## Sources of truth
 
-- [Scene runtime boundary](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/core/RUNTIME_BOUNDARY.md)
-- [FramePlan contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/FRAME_PLAN.md)
-- [Frame lifecycle contract](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/FRAME_LIFECYCLE.md)
-- [DRP2 authority](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/drp2/AUTHORITY.md)
+- [Scene runtime boundary](https://github.com/datoviz/datoviz/blob/main/spec/scene/core/RUNTIME_BOUNDARY.md)
+- [FramePlan contract](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/FRAME_PLAN.md)
+- [Frame lifecycle contract](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/FRAME_LIFECYCLE.md)
+- [DRP2 authority](https://github.com/datoviz/datoviz/blob/main/spec/drp2/AUTHORITY.md)
 - [Runtime internals](../advanced/runtime-internals.md)

@@ -6,9 +6,9 @@ Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file i
 
 ## Current Position
 
-Datoviz `v0.4.0rc2` is published and closed. The active source branch and GitHub default remain `v0.4-dev`; the next release milestone is RC3.
+Datoviz `v0.4.0rc2` is published and closed. The active source branch and GitHub default are now `main`; the next release milestone is RC3.
 
-The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, local Qt bridge proof, and required scene-owned lighting foundation are implemented. RC3 remains blocked on branch cutover, exact package proof, maintainer documentation/media decisions, final release-quality gates, and publication of compatible Qt/PyQt provider packages.
+The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, local Qt bridge proof, and required scene-owned lighting foundation are implemented. The branch cutover is complete pending final reconciliation CI evidence. RC3 remains blocked on exact package proof, maintainer documentation/media decisions, final release-quality gates, and publication of compatible Qt/PyQt provider packages.
 
 The active runtime path is:
 
@@ -20,7 +20,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 
 1. Read [STATUS.md](STATUS.md) for current blockers and decisions.
 2. Read [RELEASE.md](RELEASE.md) for the remaining RC3, RC4, and final gates.
-3. Use [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md) for the audited pending `main`/`v0.3-maintenance` transition; external push, rename, and ruleset operations require explicit approval of the exact actions.
+3. Use [BRANCH_CUTOVER.md](BRANCH_CUTOVER.md) for the executed `main`/`v0.3-maintenance` transition and its final verification evidence.
 4. Use [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md) for the rewritten course execution queue and [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for its durable contract.
 5. Read [DOCUMENTATION.md](DOCUMENTATION.md) before public documentation, generated-reference, gallery, attribution, or release-communication work.
 6. Use [C_DISTRIBUTION.md](C_DISTRIBUTION.md) and [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for C/C++ packaging and exact-artifact work.

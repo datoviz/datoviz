@@ -27,7 +27,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/basic_scene.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/basic_scene.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/basic_scene.c",
       "page": "gallery/features/features_basic_scene.md",
       "summary": "This example shows the smallest scene with a point visual.",
       "validation": "smoke+screenshot",
@@ -62,7 +62,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_basic_scene",
       "primary_feature": "scene",
       "python_source": "examples/python/gallery/features/basic_scene.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/basic_scene.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/basic_scene.py",
       "python_status": "manual"
     },
     {
@@ -73,7 +73,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/panel_single.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_single.c",
       "page": "gallery/features/features_panel_single.md",
       "summary": "This example creates one explicit panel rectangle inside a figure.",
       "validation": "smoke+screenshot",
@@ -110,7 +110,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_single",
       "primary_feature": "panel-single",
       "python_source": "examples/python/gallery/features/panel_single.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_single.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_single.py",
       "python_status": "manual"
     },
     {
@@ -121,7 +121,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/panel_grid.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_grid.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_grid.c",
       "page": "gallery/features/features_panel_grid.md",
       "summary": "This example arranges four independent panels in a 2x2 figure grid.",
       "validation": "smoke+screenshot",
@@ -158,7 +158,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_grid",
       "primary_feature": "panel-grid",
       "python_source": "examples/python/gallery/features/panel_grid.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_grid.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_grid.py",
       "python_status": "manual"
     },
     {
@@ -169,7 +169,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/panel_multi.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_multi.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_multi.c",
       "page": "gallery/features/features_panel_multi.md",
       "summary": "This example shows two panels with independent data, domains, and panzoom state.",
       "validation": "smoke+interaction+screenshot",
@@ -210,7 +210,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_multi",
       "primary_feature": "multi-panel",
       "python_source": "examples/python/gallery/features/panel_multi.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_multi.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_multi.py",
       "python_status": "manual"
     },
     {
@@ -221,7 +221,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/panel_linked.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_linked.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_linked.c",
       "page": "gallery/features/features_panel_linked.md",
       "summary": "This example links the X panzoom extent of two stacked signal panels.",
       "validation": "smoke+interaction+screenshot",
@@ -262,7 +262,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_linked",
       "primary_feature": "linked-panels",
       "python_source": "examples/python/gallery/features/panel_linked.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_linked.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_linked.py",
       "python_status": "direct-engine"
     },
     {
@@ -273,7 +273,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/axes_2d.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axes_2d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/axes_2d.c",
       "page": "gallery/features/features_axes_2d.md",
       "summary": "This example shows a 2D data path with axes, ticks, and grid lines.",
       "validation": "smoke+screenshot",
@@ -314,7 +314,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_axes_2d",
       "primary_feature": "axes-2d",
       "python_source": "examples/python/gallery/features/axes_2d.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axes_2d.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/axes_2d.py",
       "python_status": "manual"
     },
     {
@@ -325,7 +325,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/coordinate_system.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/coordinate_system.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/coordinate_system.c",
       "page": "gallery/features/features_coordinate_system.md",
       "summary": "This example shows the Datoviz 3D coordinate convention.",
       "validation": "smoke+screenshot",
@@ -366,7 +366,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_coordinate_system",
       "primary_feature": "coordinate-system",
       "python_source": "examples/python/gallery/features/coordinate_system.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/coordinate_system.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/coordinate_system.py",
       "python_status": "direct-engine"
     },
     {
@@ -377,7 +377,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/axis_labels.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/axis_labels.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/axis_labels.c",
       "page": "gallery/features/features_axis_labels.md",
       "summary": "This example shows axis titles and tick-label layout around a plotting panel.",
       "validation": "smoke+screenshot",
@@ -416,7 +416,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_axis_labels",
       "primary_feature": "axis-labels",
       "python_source": "examples/python/gallery/features/axis_labels.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/axis_labels.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/axis_labels.py",
       "python_status": "direct-engine"
     },
     {
@@ -427,7 +427,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/sampled_field_update.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/sampled_field_update.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/sampled_field_update.c",
       "page": "gallery/features/features_sampled_field_update.md",
       "summary": "This example reuses one sampled scalar field in two image visuals while updating patches.",
       "validation": "smoke+screenshot",
@@ -468,7 +468,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_sampled_field_update",
       "primary_feature": "sampled-field-update",
       "python_source": "examples/python/gallery/features/sampled_field_update.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/sampled_field_update.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/sampled_field_update.py",
       "python_status": "direct-engine"
     },
     {
@@ -479,7 +479,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/text_block.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/text_block.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/text_block.c",
       "page": "gallery/features/features_text_block.md",
       "summary": "This example renders a multiline text object at a stable screen position.",
       "validation": "smoke+screenshot",
@@ -516,7 +516,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_text_block",
       "primary_feature": "text-block",
       "python_source": "examples/python/gallery/features/text_block.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/text_block.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/text_block.py",
       "python_status": "direct-engine"
     },
     {
@@ -527,7 +527,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/overlay_card.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/overlay_card.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/overlay_card.c",
       "page": "gallery/features/features_overlay_card.md",
       "summary": "This example places a screen-space readout card above a simple data trace.",
       "validation": "smoke+screenshot",
@@ -566,7 +566,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_overlay_card",
       "primary_feature": "overlay-card",
       "python_source": "examples/python/gallery/features/overlay_card.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/overlay_card.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/overlay_card.py",
       "python_status": "direct-engine"
     },
     {
@@ -577,7 +577,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/controller_arcball.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_arcball.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/controller_arcball.c",
       "page": "gallery/features/features_controller_arcball.md",
       "summary": "This example shows an arcball controller rotating a 3D view.",
       "validation": "smoke+interaction+screenshot",
@@ -616,7 +616,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_controller_arcball",
       "primary_feature": "controller-arcball",
       "python_source": "examples/python/gallery/features/controller_arcball.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_arcball.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/controller_arcball.py",
       "python_status": "direct-engine"
     },
     {
@@ -627,7 +627,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/camera_manual.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/camera_manual.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/camera_manual.c",
       "page": "gallery/features/features_camera_manual.md",
       "summary": "This example shows explicit perspective-camera setup for a 3D scene.",
       "validation": "smoke+interaction+screenshot",
@@ -668,7 +668,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_camera_manual",
       "primary_feature": "camera-manual",
       "python_source": "examples/python/gallery/features/camera_manual.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/camera_manual.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/camera_manual.py",
       "python_status": "direct-engine"
     },
     {
@@ -679,7 +679,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/orientation_gizmo.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/orientation_gizmo.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/orientation_gizmo.c",
       "page": "gallery/features/features_orientation_gizmo.md",
       "summary": "This example adds a small orientation widget to a 3D panel.",
       "validation": "smoke+interaction+screenshot",
@@ -720,7 +720,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_orientation_gizmo",
       "primary_feature": "orientation-gizmo",
       "python_source": "examples/python/gallery/features/orientation_gizmo.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/orientation_gizmo.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/orientation_gizmo.py",
       "python_status": "direct-engine"
     },
     {
@@ -731,7 +731,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/reference_grid.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/reference_grid.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/reference_grid.c",
       "page": "gallery/features/features_reference_grid.md",
       "summary": "This example adds a ground-plane reference grid to a 3D scene.",
       "validation": "smoke+interaction+screenshot",
@@ -770,7 +770,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_reference_grid",
       "primary_feature": "reference-grid",
       "python_source": "examples/python/gallery/features/reference_grid.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/reference_grid.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/reference_grid.py",
       "python_status": "direct-engine"
     },
     {
@@ -781,7 +781,7 @@
       "stage": "v0.4_required",
       "status": "diagnostic",
       "source": "examples/c/features/bounds_overlay.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bounds_overlay.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/bounds_overlay.c",
       "page": "gallery/features/features_bounds_overlay.md",
       "summary": "This example shows diagnostic bounds overlays for 2D and 3D visuals.",
       "validation": "smoke+screenshot",
@@ -828,7 +828,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_bounds_overlay",
       "primary_feature": "bounds-overlay",
       "python_source": "examples/python/gallery/features/bounds_overlay.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bounds_overlay.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/bounds_overlay.py",
       "python_status": "direct-engine"
     },
     {
@@ -839,7 +839,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/controller_fly.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_fly.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/controller_fly.c",
       "page": "gallery/features/features_controller_fly.md",
       "summary": "This example shows fly-style camera navigation through a 3D scene.",
       "validation": "smoke+interaction+screenshot",
@@ -878,7 +878,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_controller_fly",
       "primary_feature": "controller-fly",
       "python_source": "examples/python/gallery/features/controller_fly.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_fly.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/controller_fly.py",
       "python_status": "direct-engine"
     },
     {
@@ -889,7 +889,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/controller_turntable.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/controller_turntable.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/controller_turntable.c",
       "page": "gallery/features/features_controller_turntable.md",
       "summary": "This example shows world-up orbiting with a turntable controller.",
       "validation": "smoke+interaction+screenshot",
@@ -928,7 +928,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_controller_turntable",
       "primary_feature": "controller-turntable",
       "python_source": "examples/python/gallery/features/controller_turntable.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/controller_turntable.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/controller_turntable.py",
       "python_status": "direct-engine"
     },
     {
@@ -939,7 +939,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/mesh_texture.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/mesh_texture.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/mesh_texture.c",
       "page": "gallery/features/features_mesh_texture.md",
       "summary": "This example maps an RGBA8 sampled field onto a UV sphere mesh.",
       "validation": "smoke+interaction+screenshot",
@@ -982,7 +982,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_mesh_texture",
       "primary_feature": "mesh-texture",
       "python_source": "examples/python/gallery/features/mesh_texture.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/mesh_texture.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/mesh_texture.py",
       "python_status": "direct-engine"
     },
     {
@@ -993,7 +993,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/material_mesh.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/material_mesh.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/material_mesh.c",
       "page": "gallery/features/features_material_mesh.md",
       "summary": "This example compares cube meshes rendered with different material models and parameters.",
       "validation": "smoke+screenshot",
@@ -1034,7 +1034,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_material_mesh",
       "primary_feature": "material-mesh",
       "python_source": "examples/python/gallery/features/material_mesh.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/material_mesh.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/material_mesh.py",
       "python_status": "direct-engine"
     },
     {
@@ -1045,7 +1045,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/lighting.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/lighting.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/lighting.c",
       "page": "gallery/features/features_lighting.md",
       "summary": "This example compares the same sphere cluster under three panel-owned light configurations.",
       "validation": "smoke+screenshot",
@@ -1086,7 +1086,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_lighting",
       "primary_feature": "lighting",
       "python_source": "examples/python/gallery/features/lighting.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/lighting.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/lighting.py",
       "python_status": "direct-engine"
     },
     {
@@ -1097,7 +1097,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/user_scale.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/user_scale.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/user_scale.c",
       "page": "gallery/features/features_user_scale.md",
       "summary": "This example shows how one user-scale value affects screen-space visual sizes and axes.",
       "validation": "smoke+interaction+screenshot",
@@ -1137,7 +1137,7 @@
       },
       "primary_feature": "user-scale",
       "python_source": "examples/python/gallery/features/user_scale.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/user_scale.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/user_scale.py",
       "python_status": "direct-engine"
     },
     {
@@ -1148,7 +1148,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/gui_controls.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_controls.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_controls.c",
       "page": "gallery/features/features_gui_controls.md",
       "summary": "This example shows Datoviz GUI controls updating a point visual.",
       "validation": "smoke+interaction+screenshot",
@@ -1182,7 +1182,7 @@
       },
       "primary_feature": "gui-controls",
       "python_source": "examples/python/gallery/features/gui_controls.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_controls.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/gui_controls.py",
       "python_status": "direct-engine"
     },
     {
@@ -1193,7 +1193,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/gui_viewport.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_viewport.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_viewport.c",
       "page": "gallery/features/features_gui_viewport.md",
       "summary": "This example shows a Datoviz render viewport embedded inside a GUI window.",
       "validation": "smoke+interaction+screenshot",
@@ -1229,7 +1229,7 @@
       },
       "primary_feature": "gui-viewport",
       "python_source": "examples/python/gallery/features/gui_viewport.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_viewport.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/gui_viewport.py",
       "python_status": "direct-engine"
     },
     {
@@ -1240,7 +1240,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/gui_cimgui.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/gui_cimgui.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_cimgui.c",
       "page": "gallery/features/features_gui_cimgui.md",
       "summary": "This example shows raw cimgui widgets controlling a Datoviz visual.",
       "validation": "smoke+interaction+screenshot",
@@ -1274,7 +1274,7 @@
       },
       "primary_feature": "gui-cimgui",
       "python_source": "examples/python/gallery/features/gui_cimgui.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/gui_cimgui.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/gui_cimgui.py",
       "python_status": "direct-engine"
     },
     {
@@ -1285,7 +1285,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/animation_tracks.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/animation_tracks.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/animation_tracks.c",
       "page": "gallery/features/features_animation_tracks.md",
       "summary": "This example shows scene animation tracks driving a cube and camera.",
       "validation": "smoke+interaction+screenshot",
@@ -1326,7 +1326,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_animation_tracks",
       "primary_feature": "animation-tracks",
       "python_source": "examples/python/gallery/features/animation_tracks.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/animation_tracks.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/animation_tracks.py",
       "python_status": "direct-engine"
     },
     {
@@ -1337,7 +1337,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/features/compute_buffer_animation.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/compute_buffer_animation.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/compute_buffer_animation.c",
       "page": "gallery/features/features_compute_buffer_animation.md",
       "summary": "This example shows a compute pass updating point positions.",
       "validation": "smoke+screenshot",
@@ -1392,7 +1392,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/features/technique_edl.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_edl.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_edl.c",
       "page": "gallery/features/features_technique_edl.md",
       "summary": "This example compares a dense 3D point cloud with and without Eye-Dome Lighting.",
       "validation": "smoke+screenshot",
@@ -1432,7 +1432,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/technique_ao.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_ao.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_ao.c",
       "page": "gallery/features/features_technique_ao.md",
       "summary": "This example compares a synthetic molecular aggregate with and without ambient occlusion.",
       "validation": "smoke+screenshot",
@@ -1466,7 +1466,7 @@
       },
       "primary_feature": "ao",
       "python_source": "examples/python/gallery/features/technique_ao.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_ao.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_ao.py",
       "python_status": "direct-engine"
     },
     {
@@ -1477,7 +1477,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/technique_msaa.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_msaa.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_msaa.c",
       "page": "gallery/features/features_technique_msaa.md",
       "summary": "This example compares single-sample rendering with 8x multisample antialiasing.",
       "validation": "smoke+screenshot",
@@ -1509,7 +1509,7 @@
       },
       "primary_feature": "msaa",
       "python_source": "examples/python/gallery/features/technique_msaa.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_msaa.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_msaa.py",
       "python_status": "direct-engine"
     },
     {
@@ -1520,7 +1520,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/technique_depth_cue.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_cue.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_depth_cue.c",
       "page": "gallery/features/features_technique_depth_cue.md",
       "summary": "This example compares a plain 3D sphere lattice with depth-dependent fading.",
       "validation": "smoke+screenshot",
@@ -1552,7 +1552,7 @@
       },
       "primary_feature": "depth-cue",
       "python_source": "examples/python/gallery/features/technique_depth_cue.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_depth_cue.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_depth_cue.py",
       "python_status": "direct-engine"
     },
     {
@@ -1563,7 +1563,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/technique_transparency.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_transparency.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_transparency.c",
       "page": "gallery/features/features_technique_transparency.md",
       "summary": "This example compares three transparency techniques on the same overlapping cubes.",
       "validation": "smoke+screenshot",
@@ -1597,7 +1597,7 @@
       },
       "primary_feature": "transparency-order",
       "python_source": "examples/python/gallery/features/technique_transparency.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_transparency.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_transparency.py",
       "python_status": "direct-engine"
     },
     {
@@ -1608,7 +1608,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/guide_lines.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_lines.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/guide_lines.c",
       "page": "gallery/features/features_guide_lines.md",
       "summary": "This example shows movable horizontal and vertical guide lines.",
       "validation": "smoke+screenshot",
@@ -1647,7 +1647,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_guide_lines",
       "primary_feature": "guide-lines",
       "python_source": "examples/python/gallery/features/guide_lines.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_lines.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/guide_lines.py",
       "python_status": "direct-engine"
     },
     {
@@ -1658,7 +1658,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/guide_spans.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/guide_spans.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/guide_spans.c",
       "page": "gallery/features/features_guide_spans.md",
       "summary": "This example shows movable guide spans for highlighting data ranges.",
       "validation": "smoke+screenshot",
@@ -1697,7 +1697,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_guide_spans",
       "primary_feature": "guide-spans",
       "python_source": "examples/python/gallery/features/guide_spans.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/guide_spans.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/guide_spans.py",
       "python_status": "direct-engine"
     },
     {
@@ -1708,7 +1708,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/bars_bands.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bars_bands.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/bars_bands.c",
       "page": "gallery/features/features_bars_bands.md",
       "summary": "This example shows bars and an uncertainty band in one 2D panel.",
       "validation": "smoke+screenshot",
@@ -1749,7 +1749,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_bars_bands",
       "primary_feature": "bars-bands",
       "python_source": "examples/python/gallery/features/bars_bands.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bars_bands.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/bars_bands.py",
       "python_status": "direct-engine"
     },
     {
@@ -1760,7 +1760,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/runtime/app_glfw.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/app_glfw.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/app_glfw.c",
       "page": "gallery/runtime/runtime_app_glfw.md",
       "summary": "This example opens a native GLFW window for a small point scene.",
       "validation": "smoke+interaction",
@@ -1794,7 +1794,7 @@
       },
       "primary_runtime": "app-glfw",
       "python_source": "examples/python/gallery/runtime/app_glfw.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/app_glfw.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/runtime/app_glfw.py",
       "python_status": "direct-engine"
     },
     {
@@ -1805,7 +1805,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/runtime/multi_window.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/multi_window.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/multi_window.c",
       "page": "gallery/runtime/runtime_multi_window.md",
       "summary": "This example drives two independent native GLFW windows from one Datoviz app.",
       "validation": "smoke+interaction",
@@ -1841,7 +1841,7 @@
       },
       "primary_runtime": "multi-window",
       "python_source": "examples/python/gallery/runtime/multi_window.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/multi_window.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/runtime/multi_window.py",
       "python_status": "direct-engine"
     },
     {
@@ -1852,7 +1852,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/runtime/offscreen_capture.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/offscreen_capture.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/offscreen_capture.c",
       "page": "gallery/runtime/runtime_offscreen_capture.md",
       "summary": "This example renders a point scene offscreen and writes one PNG.",
       "validation": "smoke+screenshot",
@@ -1886,7 +1886,7 @@
       },
       "primary_runtime": "offscreen-capture",
       "python_source": "examples/python/gallery/runtime/offscreen_capture.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/runtime/offscreen_capture.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/runtime/offscreen_capture.py",
       "python_status": "direct-engine"
     },
     {
@@ -1897,7 +1897,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/input_events.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/input_events.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/input_events.c",
       "page": "gallery/features/features_input_events.md",
       "summary": "This example shows native keyboard, pointer, wheel, and resize events.",
       "validation": "smoke+interaction",
@@ -1933,7 +1933,7 @@
       },
       "primary_feature": "input-events",
       "python_source": "examples/python/gallery/features/input_events.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/input_events.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/input_events.py",
       "python_status": "direct-engine"
     },
     {
@@ -1944,7 +1944,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/view_size_policies.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/view_size_policies.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/view_size_policies.c",
       "page": "gallery/features/features_view_size_policies.md",
       "summary": "This example demonstrates how requested view size policies resolve to real view sizes.",
       "validation": "smoke+interaction",
@@ -1984,7 +1984,7 @@
       },
       "primary_feature": "view-size-policy",
       "python_source": "examples/python/gallery/features/view_size_policies.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/view_size_policies.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/view_size_policies.py",
       "python_status": "direct-engine"
     },
     {
@@ -1995,7 +1995,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/runtime/record_replay.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/record_replay.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/record_replay.c",
       "page": "gallery/runtime/runtime_record_replay.md",
       "summary": "This example records the DRP2 frame stream from an offscreen view and replays it",
       "validation": "smoke+capture",
@@ -2037,7 +2037,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/visual_transform.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visual_transform.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/visual_transform.c",
       "page": "gallery/features/features_visual_transform.md",
       "summary": "This example compares raw point data with a visual-local affine transform.",
       "validation": "smoke+screenshot",
@@ -2076,7 +2076,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_visual_transform",
       "primary_feature": "visual-transform",
       "python_source": "examples/python/gallery/features/visual_transform.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visual_transform.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/visual_transform.py",
       "python_status": "direct-engine"
     },
     {
@@ -2087,7 +2087,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/panel_view2d.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_view2d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_view2d.c",
       "page": "gallery/features/features_panel_view2d.md",
       "summary": "This example animates the widths of free and equal-aspect 2D panels.",
       "validation": "smoke+animation+screenshot",
@@ -2126,7 +2126,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_view2d",
       "primary_feature": "panel-view2d",
       "python_source": "examples/python/gallery/features/panel_view2d.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_view2d.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_view2d.py",
       "python_status": "direct-engine"
     },
     {
@@ -2137,7 +2137,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/features/json_export.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/json_export.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/json_export.c",
       "page": "gallery/features/features_json_export.md",
       "summary": "This example writes a scene to a compact JSON diagnostic file.",
       "validation": "smoke+stdout",
@@ -2179,7 +2179,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/bezier_curve_path.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/bezier_curve_path.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/bezier_curve_path.c",
       "page": "gallery/features/features_bezier_curve_path.md",
       "summary": "This example shows a cubic Bezier curve tessellated into a path.",
       "validation": "smoke+screenshot",
@@ -2218,7 +2218,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_bezier_curve_path",
       "primary_feature": "bezier-curve-path",
       "python_source": "examples/python/gallery/features/bezier_curve_path.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/bezier_curve_path.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/bezier_curve_path.py",
       "python_status": "direct-engine"
     },
     {
@@ -2229,7 +2229,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/path_join.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/path_join.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/path_join.c",
       "page": "gallery/features/features_path_join.md",
       "summary": "This example compares miter, round, and bevel joins on difficult stroked paths.",
       "validation": "smoke+screenshot",
@@ -2264,7 +2264,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_path_join",
       "primary_feature": "path-join",
       "python_source": "examples/python/gallery/features/path_join.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/path_join.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/path_join.py",
       "python_status": "direct-engine"
     },
     {
@@ -2275,7 +2275,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/panel_linked_axes.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/panel_linked_axes.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/panel_linked_axes.c",
       "page": "gallery/showcases/showcases_panel_linked_axes.md",
       "summary": "This example builds linked time-series panels with shared axes behavior.",
       "validation": "smoke+interaction+screenshot",
@@ -2323,7 +2323,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_panel_linked_axes",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_panel_linked_axes",
       "python_source": "examples/python/gallery/showcases/panel_linked_axes.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/panel_linked_axes.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/panel_linked_axes.py",
       "python_status": "direct-engine"
     },
     {
@@ -2334,7 +2334,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/linked_probe_colorbar.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/linked_probe_colorbar.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/linked_probe_colorbar.c",
       "page": "gallery/showcases/showcases_linked_probe_colorbar.md",
       "summary": "This example links two image panels with a probe readout and colorbar.",
       "validation": "smoke+readback+interaction+screenshot",
@@ -2386,7 +2386,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_linked_probe_colorbar",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_linked_probe_colorbar",
       "python_source": "examples/python/gallery/showcases/linked_probe_colorbar.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/linked_probe_colorbar.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/linked_probe_colorbar.py",
       "python_status": "direct-engine"
     },
     {
@@ -2397,7 +2397,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/scientific_plotting.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scientific_plotting.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/scientific_plotting.c",
       "page": "gallery/showcases/showcases_scientific_plotting.md",
       "summary": "This example composes common scientific plot elements in one figure.",
       "validation": "smoke+screenshot",
@@ -2449,7 +2449,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_scientific_plotting",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_scientific_plotting",
       "python_source": "examples/python/gallery/showcases/scientific_plotting.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/scientific_plotting.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/scientific_plotting.py"
     },
     {
       "id": "showcases_streaming_daq",
@@ -2459,7 +2459,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/showcases/streaming_daq.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/streaming_daq.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/streaming_daq.c",
       "page": "gallery/showcases/showcases_streaming_daq.md",
       "summary": "This example renders a simulated real-time data acquisition system.",
       "validation": "smoke+interaction+screenshot+video+performance",
@@ -2516,7 +2516,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_streaming_daq",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_streaming_daq",
       "python_source": "examples/python/gallery/showcases/streaming_daq.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/streaming_daq.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/streaming_daq.py"
     },
     {
       "id": "features_scalebar",
@@ -2526,7 +2526,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/scalebar.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/scalebar.c",
       "page": "gallery/features/features_scalebar.md",
       "summary": "This example attaches a metric length scale bar to a 2D panel.",
       "validation": "smoke+screenshot",
@@ -2565,7 +2565,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_scalebar",
       "primary_feature": "scale-bar",
       "python_source": "examples/python/gallery/features/scalebar.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/scalebar.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/scalebar.py",
       "python_status": "direct-engine"
     },
     {
@@ -2576,7 +2576,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/scalebar_units.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/scalebar_units.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/scalebar_units.c",
       "page": "gallery/features/features_scalebar_units.md",
       "summary": "This example uses duration units for a scale bar on a time-series panel.",
       "validation": "smoke+screenshot",
@@ -2615,7 +2615,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_scalebar_units",
       "primary_feature": "scalebar-units",
       "python_source": "examples/python/gallery/features/scalebar_units.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/scalebar_units.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/scalebar_units.py",
       "python_status": "direct-engine"
     },
     {
@@ -2626,7 +2626,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/scalebar_measurement.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/scalebar_measurement.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/scalebar_measurement.c",
       "page": "gallery/showcases/showcases_scalebar_measurement.md",
       "summary": "This example compares scale bars across overview, detail, and 3D views.",
       "validation": "smoke+screenshot",
@@ -2673,7 +2673,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_scalebar_measurement",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_scalebar_measurement",
       "python_source": "examples/python/gallery/showcases/scalebar_measurement.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/scalebar_measurement.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/scalebar_measurement.py"
     },
     {
       "id": "features_colorbar",
@@ -2683,7 +2683,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/colorbar.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colorbar.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/colorbar.c",
       "page": "gallery/features/features_colorbar.md",
       "summary": "This example shows a scalar image and a continuous colorbar.",
       "validation": "smoke+screenshot",
@@ -2729,7 +2729,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_colorbar",
       "primary_feature": "colorbar",
       "python_source": "examples/python/gallery/features/colorbar.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colorbar.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/colorbar.py",
       "python_status": "manual"
     },
     {
@@ -2740,7 +2740,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/colormap_scale.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/colormap_scale.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/colormap_scale.c",
       "page": "gallery/features/features_colormap_scale.md",
       "summary": "This example shows scalar point values mapped through a custom colormap.",
       "validation": "smoke+screenshot",
@@ -2777,7 +2777,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_colormap_scale",
       "primary_feature": "colormap-scale",
       "python_source": "examples/python/gallery/features/colormap_scale.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/colormap_scale.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/colormap_scale.py",
       "python_status": "manual"
     },
     {
@@ -2788,7 +2788,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/annotation_readout.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/annotation_readout.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/annotation_readout.c",
       "page": "gallery/features/features_annotation_readout.md",
       "summary": "This example shows a text annotation anchored to one data point.",
       "validation": "smoke+screenshot",
@@ -2829,7 +2829,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_annotation_readout",
       "primary_feature": "annotation-readout",
       "python_source": "examples/python/gallery/features/annotation_readout.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/annotation_readout.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/annotation_readout.py",
       "python_status": "direct-engine"
     },
     {
@@ -2840,7 +2840,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/update_partial.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_partial.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/update_partial.c",
       "page": "gallery/features/features_update_partial.md",
       "summary": "This example moves only part of a point visual's position array.",
       "validation": "smoke+screenshot",
@@ -2879,7 +2879,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_update_partial",
       "primary_feature": "update-partial",
       "python_source": "examples/python/gallery/features/update_partial.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/update_partial.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/update_partial.py",
       "python_status": "direct-engine"
     },
     {
@@ -2890,7 +2890,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/update_visual_data.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/update_visual_data.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/update_visual_data.c",
       "page": "gallery/features/features_update_visual_data.md",
       "summary": "This example replaces all arrays on one point visual.",
       "validation": "smoke+screenshot",
@@ -2931,7 +2931,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_update_visual_data",
       "primary_feature": "update-visual-data",
       "python_source": "examples/python/gallery/features/update_visual_data.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/update_visual_data.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/update_visual_data.py",
       "python_status": "direct-engine"
     },
     {
@@ -2942,7 +2942,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/visibility.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/visibility.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/visibility.c",
       "page": "gallery/features/features_visibility.md",
       "summary": "This example toggles one visual on and off without changing its data arrays.",
       "validation": "smoke+screenshot",
@@ -2981,7 +2981,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_visibility",
       "primary_feature": "visibility",
       "python_source": "examples/python/gallery/features/visibility.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/visibility.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/visibility.py",
       "python_status": "direct-engine"
     },
     {
@@ -2992,7 +2992,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/technique_depth_test.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/technique_depth_test.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_depth_test.c",
       "page": "gallery/features/features_technique_depth_test.md",
       "summary": "This example compares overlapping 3D points with depth testing enabled and disabled.",
       "validation": "smoke+screenshot",
@@ -3031,7 +3031,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_technique_depth_test",
       "primary_feature": "depth-test",
       "python_source": "examples/python/gallery/features/technique_depth_test.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/technique_depth_test.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_depth_test.py",
       "python_status": "direct-engine"
     },
     {
@@ -3042,7 +3042,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/alpha_blending.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/alpha_blending.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/alpha_blending.c",
       "page": "gallery/features/features_alpha_blending.md",
       "summary": "This example shows translucent triangles composited in draw order.",
       "validation": "smoke+screenshot",
@@ -3079,7 +3079,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_alpha_blending",
       "primary_feature": "alpha-blending",
       "python_source": "examples/python/gallery/features/alpha_blending.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/alpha_blending.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/alpha_blending.py",
       "python_status": "direct-engine"
     },
     {
@@ -3090,7 +3090,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/panel_background.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_background.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_background.c",
       "page": "gallery/features/features_panel_background.md",
       "summary": "This example shows a custom panel background behind a foreground primitive.",
       "validation": "smoke+screenshot",
@@ -3127,7 +3127,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_background",
       "primary_feature": "panel-background",
       "python_source": "examples/python/gallery/features/panel_background.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_background.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_background.py",
       "python_status": "direct-engine"
     },
     {
@@ -3138,7 +3138,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/panzoom.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panzoom.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panzoom.c",
       "page": "gallery/features/features_panzoom.md",
       "summary": "This example binds a 2D panzoom controller to a point visual in data coordinates.",
       "validation": "smoke+interaction+screenshot",
@@ -3177,7 +3177,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_panzoom",
       "primary_feature": "controller-panzoom",
       "python_source": "examples/python/gallery/features/panzoom.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panzoom.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panzoom.py",
       "python_status": "direct-engine"
     },
     {
@@ -3188,7 +3188,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/image_probe.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/image_probe.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/image_probe.c",
       "page": "gallery/features/features_image_probe.md",
       "summary": "This example shows probing a scalar image at a marked data position.",
       "validation": "smoke+readback+screenshot",
@@ -3231,7 +3231,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_image_probe",
       "primary_feature": "image-probe",
       "python_source": "examples/python/gallery/features/image_probe.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/image_probe.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/image_probe.py",
       "python_status": "direct-engine"
     },
     {
@@ -3242,7 +3242,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/picking.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/picking.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/picking.c",
       "page": "gallery/features/features_picking.md",
       "summary": "This example demonstrates item-level marker hover and click selection.",
       "validation": "smoke+interaction+screenshot",
@@ -3283,7 +3283,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_picking",
       "primary_feature": "picking",
       "python_source": "examples/python/gallery/features/picking.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/picking.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/picking.py",
       "python_status": "direct-engine"
     },
     {
@@ -3294,7 +3294,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/selection_pixel.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_pixel.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/selection_pixel.c",
       "page": "gallery/features/features_selection_pixel.md",
       "summary": "This example queries and selects individual cells in a pixel grid.",
       "validation": "smoke+interaction+screenshot",
@@ -3337,7 +3337,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_selection_pixel",
       "primary_feature": "selection-pixel",
       "python_source": "examples/python/gallery/features/selection_pixel.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_pixel.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/selection_pixel.py",
       "python_status": "direct-engine"
     },
     {
@@ -3348,7 +3348,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/selection_sphere.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_sphere.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/selection_sphere.c",
       "page": "gallery/features/features_selection_sphere.md",
       "summary": "This example queries and selects individual raycast spheres in a 3D cluster.",
       "validation": "smoke+interaction+screenshot",
@@ -3389,7 +3389,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_selection_sphere",
       "primary_feature": "selection-sphere",
       "python_source": "examples/python/gallery/features/selection_sphere.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_sphere.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/selection_sphere.py",
       "python_status": "direct-engine"
     },
     {
@@ -3400,7 +3400,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/selection_mesh_instances.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/selection_mesh_instances.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/selection_mesh_instances.c",
       "page": "gallery/features/features_selection_mesh_instances.md",
       "summary": "This example queries and selects individual instances of one mesh visual.",
       "validation": "smoke+interaction+screenshot",
@@ -3441,7 +3441,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_selection_mesh_instances",
       "primary_feature": "selection-mesh-instances",
       "python_source": "examples/python/gallery/features/selection_mesh_instances.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/selection_mesh_instances.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/selection_mesh_instances.py",
       "python_status": "direct-engine"
     },
     {
@@ -3452,7 +3452,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/isolines.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/isolines.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/isolines.c",
       "page": "gallery/features/features_isolines.md",
       "summary": "This example shows contour isolines over a scalar field.",
       "validation": "smoke+screenshot",
@@ -3493,7 +3493,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_isolines",
       "primary_feature": "isolines",
       "python_source": "examples/python/gallery/features/isolines.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/isolines.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/isolines.py",
       "python_status": "direct-engine"
     },
     {
@@ -3504,7 +3504,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/builtin_shapes_2d.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_2d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/builtin_shapes_2d.c",
       "page": "gallery/features/features_builtin_shapes_2d.md",
       "summary": "This example shows built-in 2D geometry rendered as meshes.",
       "validation": "smoke+screenshot",
@@ -3541,7 +3541,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_builtin_shapes_2d",
       "primary_feature": "builtin-shapes-2d",
       "python_source": "examples/python/gallery/features/builtin_shapes_2d.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_2d.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/builtin_shapes_2d.py",
       "python_status": "direct-engine"
     },
     {
@@ -3552,7 +3552,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/builtin_shapes_3d.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/builtin_shapes_3d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/builtin_shapes_3d.c",
       "page": "gallery/features/features_builtin_shapes_3d.md",
       "summary": "This example shows built-in 3D geometry rendered as lit meshes.",
       "validation": "smoke+screenshot",
@@ -3591,7 +3591,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_builtin_shapes_3d",
       "primary_feature": "builtin-shapes-3d",
       "python_source": "examples/python/gallery/features/builtin_shapes_3d.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/builtin_shapes_3d.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/builtin_shapes_3d.py",
       "python_status": "direct-engine"
     },
     {
@@ -3602,7 +3602,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/obj_loading.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/obj_loading.c",
       "page": "gallery/features/features_obj_loading.md",
       "summary": "This example loads a Wavefront OBJ fixture and displays it as a mesh.",
       "validation": "smoke+screenshot",
@@ -3641,7 +3641,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_obj_loading",
       "primary_feature": "obj-loading",
       "python_source": "examples/python/gallery/features/obj_loading.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/obj_loading.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/obj_loading.py",
       "python_status": "direct-engine"
     },
     {
@@ -3652,7 +3652,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/probe_labels.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/probe_labels.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/probe_labels.c",
       "page": "gallery/features/features_probe_labels.md",
       "summary": "This example queries categorical label IDs from a generated label image.",
       "validation": "smoke+readback+screenshot",
@@ -3695,7 +3695,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_probe_labels",
       "primary_feature": "probe-labels",
       "python_source": "examples/python/gallery/features/probe_labels.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/probe_labels.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/probe_labels.py",
       "python_status": "direct-engine"
     },
     {
@@ -3706,7 +3706,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/datetime_axis.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/datetime_axis.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/datetime_axis.c",
       "page": "gallery/features/features_datetime_axis.md",
       "summary": "This example shows UTC datetime labels on a numeric data axis.",
       "validation": "smoke+screenshot",
@@ -3755,7 +3755,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_datetime_axis",
       "primary_feature": "datetime-axis",
       "python_source": "examples/python/gallery/features/datetime_axis.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/datetime_axis.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/datetime_axis.py",
       "python_status": "direct-engine"
     },
     {
@@ -3766,7 +3766,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/timer_animation.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/timer_animation.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/timer_animation.c",
       "page": "gallery/features/features_timer_animation.md",
       "summary": "This example updates point attributes every frame from scenario time.",
       "validation": "smoke+screenshot",
@@ -3803,7 +3803,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_timer_animation",
       "primary_feature": "timer-animation",
       "python_source": "examples/python/gallery/features/timer_animation.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/timer_animation.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/timer_animation.py",
       "python_status": "direct-engine"
     },
     {
@@ -3814,7 +3814,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/features/marker_symbols.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/marker_symbols.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/marker_symbols.c",
       "page": "gallery/features/features_marker_symbols.md",
       "summary": "This example compares several ways to define marker glyphs in one symbol set.",
       "validation": "smoke+screenshot",
@@ -3865,7 +3865,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=features_marker_symbols",
       "primary_feature": "marker-symbols",
       "python_source": "examples/python/gallery/features/marker_symbols.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/marker_symbols.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/marker_symbols.py",
       "python_status": "direct-engine"
     },
     {
@@ -3876,7 +3876,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/features/legend_categorical.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/legend_categorical.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/legend_categorical.c",
       "page": "gallery/features/features_legend_categorical.md",
       "summary": "This example shows how one categorical scale drives both marker colors and a legend.",
       "validation": "smoke+screenshot",
@@ -3930,7 +3930,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/runtime/video_export.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/runtime/video_export.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/video_export.c",
       "page": "gallery/runtime/runtime_video_export.md",
       "summary": "This example records a deterministic offscreen point animation to video.",
       "validation": "smoke+optional-video",
@@ -3977,7 +3977,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/point.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/point.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/point.c",
       "page": "gallery/visuals/visuals_point.md",
       "summary": "This example renders a 2D scatter plot with per-point color and diameter.",
       "validation": "smoke+screenshot",
@@ -4018,7 +4018,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_point",
       "primary_visual": "point",
       "python_source": "examples/python/gallery/visuals/point.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/point.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/point.py",
       "python_status": "manual"
     },
     {
@@ -4029,7 +4029,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/pixel.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/pixel.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/pixel.c",
       "page": "gallery/visuals/visuals_pixel.md",
       "summary": "This example renders a regular grid of independent screen-aligned pixels.",
       "validation": "smoke+screenshot",
@@ -4070,7 +4070,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_pixel",
       "primary_visual": "pixel",
       "python_source": "examples/python/gallery/visuals/pixel.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/pixel.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/pixel.py",
       "python_status": "manual"
     },
     {
@@ -4081,7 +4081,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/marker.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/marker.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/marker.c",
       "page": "gallery/visuals/visuals_marker.md",
       "summary": "This example compares marker symbols, sizes, strokes, fills, and rotations.",
       "validation": "smoke+screenshot",
@@ -4122,7 +4122,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_marker",
       "primary_visual": "marker",
       "python_source": "examples/python/gallery/visuals/marker.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/marker.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/marker.py",
       "python_status": "manual"
     },
     {
@@ -4133,7 +4133,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/primitive.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/primitive.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/primitive.c",
       "page": "gallery/visuals/visuals_primitive.md",
       "summary": "This example compares basic primitive topologies.",
       "validation": "smoke+screenshot",
@@ -4174,7 +4174,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_primitive",
       "primary_visual": "primitive",
       "python_source": "examples/python/gallery/visuals/primitive.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/primitive.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/primitive.py",
       "python_status": "manual"
     },
     {
@@ -4185,7 +4185,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/segment.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/segment.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/segment.c",
       "page": "gallery/visuals/visuals_segment.md",
       "summary": "This example draws independent line segments with different cap styles.",
       "validation": "smoke+screenshot",
@@ -4226,7 +4226,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_segment",
       "primary_visual": "segment",
       "python_source": "examples/python/gallery/visuals/segment.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/segment.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/segment.py",
       "python_status": "manual"
     },
     {
@@ -4237,7 +4237,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/vector.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/vector.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/vector.c",
       "page": "gallery/visuals/visuals_vector.md",
       "summary": "This example compares straight vector arrows with curved vector paths.",
       "validation": "smoke+screenshot",
@@ -4281,7 +4281,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_vector",
       "primary_visual": "vector",
       "python_source": "examples/python/gallery/visuals/vector.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/vector.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/vector.py",
       "python_status": "manual"
     },
     {
@@ -4292,7 +4292,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/path.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/path.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/path.c",
       "page": "gallery/visuals/visuals_path.md",
       "summary": "This example draws several continuous signals with one path visual.",
       "validation": "smoke+screenshot",
@@ -4333,7 +4333,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_path",
       "primary_visual": "path",
       "python_source": "examples/python/gallery/visuals/path.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/path.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/path.py",
       "python_status": "manual"
     },
     {
@@ -4344,7 +4344,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/image.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/image.c",
       "page": "gallery/visuals/visuals_image.md",
       "summary": "This example displays a generated scalar field as a 2D image.",
       "validation": "smoke+screenshot",
@@ -4388,7 +4388,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_image",
       "primary_visual": "image",
       "python_source": "examples/python/gallery/visuals/image.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/image.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/image.py",
       "python_status": "manual"
     },
     {
@@ -4399,7 +4399,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/image_rgba.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/image_rgba.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/image_rgba.c",
       "page": "gallery/visuals/visuals_image_rgba.md",
       "summary": "This example displays a generated RGBA image as a 2D sampled field.",
       "validation": "smoke+screenshot",
@@ -4447,7 +4447,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_image_rgba",
       "primary_visual": "image",
       "python_source": "examples/python/gallery/visuals/image_rgba.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/image_rgba.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/image_rgba.py",
       "python_status": "manual"
     },
     {
@@ -4458,7 +4458,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/mesh.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/mesh.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/mesh.c",
       "page": "gallery/visuals/visuals_mesh.md",
       "summary": "This example renders a lit indexed cube mesh in a 3D scene.",
       "validation": "smoke+screenshot",
@@ -4502,7 +4502,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_mesh",
       "primary_visual": "mesh",
       "python_source": "examples/python/gallery/visuals/mesh.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/mesh.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/mesh.py",
       "python_status": "manual"
     },
     {
@@ -4513,7 +4513,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/sphere.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/sphere.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/sphere.c",
       "page": "gallery/visuals/visuals_sphere.md",
       "summary": "This example displays a 3D cluster of raycast impostor spheres.",
       "validation": "smoke+screenshot",
@@ -4561,7 +4561,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_sphere",
       "primary_visual": "sphere",
       "python_source": "examples/python/gallery/visuals/sphere.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/sphere.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/sphere.py",
       "python_status": "manual"
     },
     {
@@ -4572,7 +4572,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/visuals/splat.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/splat.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/splat.c",
       "page": "gallery/visuals/visuals_splat.md",
       "summary": "This example renders Gaussian splats as translucent ellipses.",
       "validation": "smoke+screenshot",
@@ -4622,7 +4622,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/text.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/text.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/text.c",
       "page": "gallery/visuals/visuals_text.md",
       "summary": "This example places semantic text items in data coordinates.",
       "validation": "smoke+screenshot",
@@ -4665,7 +4665,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_text",
       "primary_visual": "text",
       "python_source": "examples/python/gallery/visuals/text.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/text.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/text.py",
       "python_status": "manual"
     },
     {
@@ -4676,7 +4676,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/visuals/glyph.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/glyph.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/glyph.c",
       "page": "gallery/visuals/visuals_glyph.md",
       "summary": "This example renders text by submitting low-level glyph atlas quads directly.",
       "validation": "smoke+screenshot",
@@ -4732,7 +4732,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/labels.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/labels.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/labels.c",
       "page": "gallery/visuals/visuals_labels.md",
       "summary": "This example turns an integer sampled field into categorical image labels.",
       "validation": "smoke+screenshot",
@@ -4776,7 +4776,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=visuals_labels",
       "primary_visual": "labels",
       "python_source": "examples/python/gallery/visuals/labels.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/labels.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/labels.py"
     },
     {
       "id": "visuals_volume",
@@ -4786,7 +4786,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/visuals/volume.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/visuals/volume.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/visuals/volume.c",
       "page": "gallery/visuals/visuals_volume.md",
       "summary": "This example volume-renders a generated 3D gyroid scalar field.",
       "validation": "smoke+screenshot",
@@ -4831,7 +4831,7 @@
       },
       "primary_visual": "volume",
       "python_source": "examples/python/gallery/visuals/volume.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/visuals/volume.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/visuals/volume.py"
     },
     {
       "id": "composites_polygon",
@@ -4841,7 +4841,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/composites/polygon.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/composites/polygon.c",
       "page": "gallery/composites/composites_polygon.md",
       "summary": "This example compares one holed polygon with a multi-region polygon set.",
       "validation": "smoke+screenshot",
@@ -4890,7 +4890,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=composites_polygon",
       "primary_composite": "polygon",
       "python_source": "examples/python/gallery/composites/polygon.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/polygon.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/composites/polygon.py"
     },
     {
       "id": "composites_graph",
@@ -4900,7 +4900,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/composites/graph.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/graph.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/composites/graph.c",
       "page": "gallery/composites/composites_graph.md",
       "summary": "This example builds a small graph composite.",
       "validation": "smoke+screenshot",
@@ -4949,7 +4949,7 @@
       "webgpu_site_route": "/examples/webgpu/live.html?id=composites_graph",
       "primary_composite": "graph",
       "python_source": "examples/python/gallery/composites/graph.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/graph.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/composites/graph.py"
     },
     {
       "id": "showcases_choropleth",
@@ -4959,7 +4959,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/choropleth.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/choropleth.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/choropleth.c",
       "page": "gallery/showcases/showcases_choropleth.md",
       "summary": "This example renders contiguous U.S. population density as polygon-set data.",
       "validation": "smoke+screenshot+manual",
@@ -5028,7 +5028,7 @@
         "topology": "each shapefile ring is rendered as one polygon-set region; interior holes are not preserved"
       },
       "python_source": "examples/python/gallery/showcases/choropleth.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/choropleth.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/choropleth.py"
     },
     {
       "id": "showcases_protein",
@@ -5038,7 +5038,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/protein.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/protein.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/protein.c",
       "page": "gallery/showcases/showcases_protein.md",
       "summary": "This example renders a prepared PDB structure as colored sphere impostors.",
       "validation": "smoke+screenshot+manual",
@@ -5110,7 +5110,7 @@
         "size": "atom radii scaled for sphere impostors"
       },
       "python_source": "examples/python/gallery/showcases/protein.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/protein.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/protein.py"
     },
     {
       "id": "showcases_wind_field",
@@ -5120,7 +5120,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/wind_field.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/wind_field.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/wind_field.c",
       "page": "gallery/showcases/showcases_wind_field.md",
       "summary": "This example combines a synthetic wind-speed field with vectors and streamlines.",
       "validation": "smoke+screenshot",
@@ -5170,7 +5170,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_wind_field",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_wind_field",
       "python_source": "examples/python/gallery/showcases/wind_field.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/wind_field.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/wind_field.py"
     },
     {
       "id": "showcases_galaxy",
@@ -5180,7 +5180,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/galaxy.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/galaxy.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/galaxy.c",
       "page": "gallery/showcases/showcases_galaxy.md",
       "summary": "This example renders an animated density-wave spiral galaxy.",
       "validation": "smoke+screenshot",
@@ -5251,7 +5251,7 @@
         "provenance": "The orbital model is adapted from Glumpy's galaxy_simulation.py and preserves its BSD notice in galaxy_model.c. Stellar colors use the public-domain specrend reference values."
       },
       "python_source": "examples/python/gallery/showcases/galaxy.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/galaxy.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/galaxy.py"
     },
     {
       "id": "showcases_svg_tiger",
@@ -5261,7 +5261,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/showcases/svg_tiger.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/svg_tiger.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/svg_tiger.c",
       "page": "gallery/showcases/showcases_svg_tiger.md",
       "summary": "This example renders the classic colored tiger from prepared SVG paths.",
       "validation": "smoke+screenshot",
@@ -5336,7 +5336,7 @@
         "provenance": "The artwork comes from Nicolas P. Rougier's Glumpy example gallery. The preparation tool verifies the pinned Glumpy source hash, resolves Glumpy-compatible inherited paint, flattens M/L/C/Z paths with adaptive De Casteljau subdivision, and writes prepared path records. Datoviz triangulates fills with Earcut and renders outlines as retained paths."
       },
       "python_source": "examples/python/gallery/showcases/svg_tiger.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/svg_tiger.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/svg_tiger.py"
     },
     {
       "id": "showcases_gpu_particle_smoke",
@@ -5346,7 +5346,7 @@
       "stage": "v0.4_required",
       "status": "experimental",
       "source": "examples/c/showcases/gpu_particle_smoke.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/gpu_particle_smoke.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/gpu_particle_smoke.c",
       "page": "gallery/showcases/showcases_gpu_particle_smoke.md",
       "summary": "This example uses scene compute buffers to animate particle smoke.",
       "validation": "smoke+screenshot",
@@ -5395,7 +5395,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_gpu_particle_smoke",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_gpu_particle_smoke",
       "python_source": "examples/python/gallery/showcases/gpu_particle_smoke.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/gpu_particle_smoke.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/gpu_particle_smoke.py"
     },
     {
       "id": "showcases_spherical_harmonics",
@@ -5405,7 +5405,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/spherical_harmonics.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/spherical_harmonics.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/spherical_harmonics.c",
       "page": "gallery/showcases/showcases_spherical_harmonics.md",
       "summary": "This example turns a real spherical-harmonic blend into a lit mesh.",
       "validation": "smoke+interaction+screenshot",
@@ -5463,7 +5463,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_spherical_harmonics",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_spherical_harmonics",
       "python_source": "examples/python/gallery/showcases/spherical_harmonics.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/spherical_harmonics.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/spherical_harmonics.py"
     },
     {
       "id": "showcases_surface_grid",
@@ -5473,7 +5473,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/surface_grid.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/surface_grid.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/surface_grid.c",
       "page": "gallery/showcases/showcases_surface_grid.md",
       "summary": "This example turns a generated height field into a lit mesh and wireframe.",
       "validation": "smoke+screenshot",
@@ -5518,7 +5518,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=showcases_surface_grid",
       "webgpu_site_route": "/examples/webgpu/live.html?id=showcases_surface_grid",
       "python_source": "examples/python/gallery/showcases/surface_grid.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/surface_grid.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/surface_grid.py"
     },
     {
       "id": "showcases_terrain_relief",
@@ -5528,7 +5528,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/showcases/terrain_relief.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/terrain_relief.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/terrain_relief.c",
       "page": "gallery/showcases/showcases_terrain_relief.md",
       "summary": "This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.",
       "validation": "smoke+interaction+screenshot+video",
@@ -5624,7 +5624,7 @@
         "geometry": "physical UTM aspect ratio with 1.35x vertical exaggeration"
       },
       "python_source": "examples/python/gallery/showcases/terrain_relief.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/terrain_relief.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/terrain_relief.py"
     },
     {
       "id": "showcases_cortical_activity",
@@ -5634,7 +5634,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/showcases/cortical_activity.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/cortical_activity.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/cortical_activity.c",
       "page": "gallery/showcases/showcases_cortical_activity.md",
       "summary": "This example animates a human auditory dSPM estimate on cortex.",
       "validation": "smoke+interaction+screenshot+video+performance",
@@ -5728,7 +5728,7 @@
         "time": "0 to 240 ms after the left-ear tone, linearly interpolated between source-estimate frames; the initial frame is paused at a tuned 106 ms near the strongest response"
       },
       "python_source": "examples/python/gallery/showcases/cortical_activity.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/cortical_activity.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/cortical_activity.py"
     },
     {
       "id": "showcases_brain_volume",
@@ -5738,7 +5738,7 @@
       "stage": "v0.4_required",
       "status": "prototype",
       "source": "examples/c/showcases/brain_volume.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/brain_volume.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/brain_volume.c",
       "page": "gallery/showcases/showcases_brain_volume.md",
       "summary": "This example renders a prepared Allen mouse brain volume with a visible slice.",
       "validation": "smoke+screenshot",
@@ -5791,7 +5791,7 @@
         "provenance": "Prepared from Allen CCF anatomical and annotation volumes plus selected structure meshes into a compact RGBA volume consumed by the C showcase. The committed file is a prepared data-submodule artifact; upstream Allen terms remain the source license boundary."
       },
       "python_source": "examples/python/gallery/showcases/brain_volume.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/brain_volume.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/brain_volume.py"
     },
     {
       "id": "showcases_point_cloud",
@@ -5801,7 +5801,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/point_cloud.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/point_cloud.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/point_cloud.c",
       "page": "gallery/showcases/showcases_point_cloud.md",
       "summary": "This example renders a prepared RGB LiDAR point cloud with direct colors.",
       "validation": "smoke+screenshot",
@@ -5866,7 +5866,7 @@
         "provenance": "The preparation tool downloads the named RGB LAZ source through its public Stitch3D viewer, deterministically samples up to six million points with seed 12345, centers and aligns the scan while preserving metric aspect ratio, retains the measured RGB variation with documented display grading, and writes cache-only native and browser records. Prepared payloads are not redistributed."
       },
       "python_source": "examples/python/gallery/showcases/point_cloud.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/point_cloud.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/point_cloud.py"
     },
     {
       "id": "showcases_textured_planet",
@@ -5876,7 +5876,7 @@
       "stage": "v0.4_required",
       "status": "supported",
       "source": "examples/c/showcases/textured_planet.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/showcases/textured_planet.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/textured_planet.c",
       "page": "gallery/showcases/showcases_textured_planet.md",
       "summary": "This example combines a textured Earth with real catalogued orbital debris.",
       "validation": "smoke+screenshot",
@@ -5974,7 +5974,7 @@
         "galaxy": "continuous equirectangular reprojection of the 2MASS Hammer infrared map in galactic coordinates"
       },
       "python_source": "examples/python/gallery/showcases/textured_planet.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/showcases/textured_planet.py"
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/textured_planet.py"
     },
     {
       "id": "advanced_raw_triangle_vklite",
@@ -5984,7 +5984,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/advanced/raw_triangle_vklite.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_vklite.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/raw_triangle_vklite.c",
       "page": "gallery/advanced/advanced_raw_triangle_vklite.md",
       "summary": "This example draws one RGB triangle with manual vklite commands.",
       "validation": "smoke+png",
@@ -6032,7 +6032,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/advanced/raw_triangle_drp2.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_drp2.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/raw_triangle_drp2.c",
       "page": "gallery/advanced/advanced_raw_triangle_drp2.md",
       "summary": "This example renders one triangle from a hand-written DRP2 command stream.",
       "validation": "smoke+png",
@@ -6080,7 +6080,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/advanced/cuda_external_buffer.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/cuda_external_buffer.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/cuda_external_buffer.c",
       "page": "gallery/advanced/advanced_cuda_external_buffer.md",
       "summary": "This example shares a Datoviz-owned Vulkan vertex buffer with CUDA.",
       "validation": "linux-nvidia-smoke",
@@ -6130,7 +6130,7 @@
       "stage": "v0.4_experimental",
       "status": "experimental",
       "source": "examples/c/advanced/external_surface_glfw.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/external_surface_glfw.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/external_surface_glfw.c",
       "page": "gallery/advanced/advanced_external_surface_glfw.md",
       "summary": "This example embeds a Datoviz view inside a host-owned GLFW surface.",
       "validation": "native-smoke",
@@ -6180,7 +6180,7 @@
       "stage": "v0.4_optional_provider",
       "status": "supported",
       "source": "examples/qt/qt_hosting.cpp",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/qt/qt_hosting.cpp",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/qt/qt_hosting.cpp",
       "page": "gallery/advanced/advanced_qt_hosting.md",
       "summary": "This example hosts a Datoviz Vulkan scene in live Qt Widgets.",
       "validation": "optional-native-smoke+screenshot",
@@ -6234,7 +6234,7 @@
       "stage": "",
       "status": "supported",
       "source": "examples/c/start/scatter.c",
-      "source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/start/scatter.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/start/scatter.c",
       "page": "../start/quickstart.md",
       "summary": "This example renders a quickstart scatter plot with 10 000 random colored points.",
       "validation": "smoke+screenshot",
@@ -6272,7 +6272,7 @@
       "webgpu_route": "examples/webgpu/live.html?id=start_scatter",
       "webgpu_site_route": "/examples/webgpu/live.html?id=start_scatter",
       "python_source": "examples/python/gallery/start/scatter.py",
-      "python_source_url": "https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/start/scatter.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/start/scatter.py",
       "python_status": "manual"
     }
   ]

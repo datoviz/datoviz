@@ -63,9 +63,9 @@ The left shape uses outer and hole coordinate rings plus fill, stroke, width, jo
     - Category: `composite`
     - Lane: `composites`
     - Status: `supported`
-    - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/composites/polygon.c)
+    - Source: [`examples/c/composites/polygon.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/composites/polygon.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/composites/polygon.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/composites/polygon.py)
+    - Python source: [`examples/python/gallery/composites/polygon.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/composites/polygon.py)
     - Python adaptation: Available
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=composites_polygon"><code>examples/webgpu/live.html?id=composites_polygon</code></a>

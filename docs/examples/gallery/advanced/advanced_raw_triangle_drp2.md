@@ -57,7 +57,7 @@ Raw_triangle_drp2.png
     - Category: `advanced`
     - Lane: `advanced`
     - Status: `experimental`
-    - Source: [`examples/c/advanced/raw_triangle_drp2.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/advanced/raw_triangle_drp2.c)
+    - Source: [`examples/c/advanced/raw_triangle_drp2.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/raw_triangle_drp2.c)
     - Approved adaptation starter: `no`
     - Browser support: Native only
     - Browser note: hand-written DRP2 native execution is a low-level runtime example

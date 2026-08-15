@@ -77,7 +77,7 @@ with backend text retained only as diagnostic detail.
 
 ## Sources of truth
 
-- [Frame lifecycle specification](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/FRAME_LIFECYCLE.md)
-- [FramePlan specification](https://github.com/datoviz/datoviz/blob/v0.4-dev/spec/scene/pipeline/FRAME_PLAN.md)
+- [Frame lifecycle specification](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/FRAME_LIFECYCLE.md)
+- [FramePlan specification](https://github.com/datoviz/datoviz/blob/main/spec/scene/pipeline/FRAME_PLAN.md)
 - [Frame artifact public contract](../reference/c-api/scene.md)
 - [Scene to runtime boundary](scene-to-runtime-boundary.md)

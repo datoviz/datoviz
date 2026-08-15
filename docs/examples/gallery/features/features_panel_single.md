@@ -63,9 +63,9 @@ The panel is placed with normalized x, y, width, and height values instead of fi
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/panel_single.c)
+    - Source: [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_single.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/panel_single.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/panel_single.py)
+    - Python source: [`examples/python/gallery/features/panel_single.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_single.py)
     - Python adaptation: Available; manually maintained direct-engine example
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_single"><code>examples/webgpu/live.html?id=features_panel_single</code></a>

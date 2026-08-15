@@ -63,9 +63,9 @@ The example writes a compact OBJ file, loads it through dvz_geometry_obj(), assi
     - Category: `feature`
     - Lane: `features`
     - Status: `supported`
-    - Source: [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/c/features/obj_loading.c)
+    - Source: [`examples/c/features/obj_loading.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/obj_loading.c)
     - Approved adaptation starter: `yes`
-    - Python source: [`examples/python/gallery/features/obj_loading.py`](https://github.com/datoviz/datoviz/blob/v0.4-dev/examples/python/gallery/features/obj_loading.py)
+    - Python source: [`examples/python/gallery/features/obj_loading.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/obj_loading.py)
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../../webgpu/live.html?id=features_obj_loading"><code>examples/webgpu/live.html?id=features_obj_loading</code></a>
