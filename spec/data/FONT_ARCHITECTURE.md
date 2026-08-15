@@ -108,6 +108,22 @@ Every embedded font or generated atlas product records:
 
 Cached downloads must be accepted only after their expected hash is verified. A generated MSDF atlas identity includes the exact font digest, glyph set, generator version, and all generation parameters.
 
+## RC3 MSDF Atlas Architecture
+
+The RC3 atlas refactor separates a pure CPU atlas-product builder from scene and GPU realization. The builder consumes a resolved immutable font source, a canonical glyph set, and a generation recipe, and returns pixels, metrics, glyph records, coverage, and product identity. It must not create a scene, sampled field, GPU resource, or cache entry. The developer serializer and runtime generator consume this same product layer so generated and runtime products cannot diverge by construction.
+
+The realization layer owns persistent request slots. Each slot retains a stable `DvzTextAtlas` and a stable resizable `DvzSampledField` for the resource lifetime; rebuilding or extending a product updates those objects without invalidating documented pointers. A completed CPU product is installed transactionally. Failed generation or extension leaves the previous realization untouched, and a failed partial MSDF result must never shadow a complete SDF fallback.
+
+Atlas cache identity uses a private resolved source identity, not a family-name string. The built-in Source Sans 3 source has a stable identity such as `SOURCE_SANS_3_REGULAR`; custom paths, memory sources, face indices, and load parameters remain distinct identities and must not collide with the built-in cache. Generated product identity records the source digest and face/load parameters needed to reproduce the product; runtime cache selection uses the already resolved internal source identity without repeatedly hashing embedded bytes.
+
+Coverage is strict at the product boundary: `ensure()` succeeds only when every requested codepoint is represented or is explicitly mapped to the documented visible `?` fallback. Fallback selection is transactional across backends and must resolve a complete product before replacing the active one. Atlas dimensions, allocation sizes, and extension growth are bounded by explicit budgets. The implementation must not use repeated whole-atlas doubling as an unbounded extension policy.
+
+The default scene seed is printable ASCII. Scientific and technical glyphs remain demand-driven for scene text, while ImGui may use its separately declared bounded preload policy. RC3 retains the existing 32/4, 64/8, and 128/16 atlas products; changing that size policy requires measurements and a separate post-RC3 decision.
+
+The developer-only generator is excluded from ordinary library builds and writes the recipe and generated include at `assets/runtime/text/default_msdf_atlas.json` and `src/scene/text/generated/text_default_msdf_atlas.inc`. The generated include remains textual for RC3. Generation commands must report source digests, backend and dependency versions, dimensions, byte sizes, timings, coverage, and output hashes. Exact generated payloads are not replaced until the maintainer approves the exact manifest and include; the approval is a checkpoint after candidate products have been generated twice and compared.
+
+Reproducibility has two levels. Canonical byte identity is required in a pinned Linux generation environment whose toolchain and dependencies are recorded in the recipe. Other supported platforms must provide portable structural and rendering equivalence, including matching coverage, metrics within the declared tolerance, bounds, and focused visual regressions; universal cross-platform byte identity is not promised.
+
 ## Migration Sequence
 
 ### Stage 1: correctness and ownership — complete
@@ -132,7 +148,7 @@ If the direct migration cannot be completed cleanly before v0.4 API freeze, reta
 
 ### Post-v0.4
 
-Add HarfBuzz shaping, BiDi, script/language/features, explicit fallback chains, optional platform discovery, face-and-glyph-ID atlas keys, run segmentation, color emoji, persistent caches, and variable-font controls only through independent reviewed slices.
+Add HarfBuzz shaping, BiDi, script/language/features, explicit fallback chains, optional platform discovery, face-and-glyph-ID atlas keys, run segmentation, color emoji, persistent disk caches, binary atlas containers, font subsetting, multi-page stable-UV allocation, and variable-font controls only through independent reviewed slices. Full scientific-range preloading and a change to the 32/64/128 size policy also remain deferred until measurements justify them.
 
 ## Acceptance
 
