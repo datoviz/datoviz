@@ -1,5 +1,9 @@
 # Datoviz v0.4 Data Repository Strategy
 
+> **Status:** implemented transitional policy; superseded as a target architecture by [ASSET_ARCHITECTURE.md](ASSET_ARCHITECTURE.md)
+
+This document describes the currently implemented v0.4 data-submodule model and remains relevant while that model exists. New architectural work must follow the no-LFS ownership and migration target in `ASSET_ARCHITECTURE.md`; do not expand the submodule or treat its Git LFS policy as the final Datoviz boundary.
+
 ## Summary
 
 Datoviz v0.4 should keep using the existing `datoviz/data` repository, but the v0.4
