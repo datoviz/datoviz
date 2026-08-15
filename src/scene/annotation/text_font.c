@@ -65,7 +65,7 @@ static DvzFont* _text_default_sdf_font(DvzScene* scene)
         .font_flags = scene->font_defaults.sans_font_flags,
     };
     if (desc.family == NULL || desc.family[0] == '\0')
-        desc.family = "Roboto";
+        desc.family = "Source Sans 3";
     if (desc.style == NULL || desc.style[0] == '\0')
         desc.style = "Regular";
     for (uint32_t i = 0; i < scene->font_count; i++)
@@ -191,4 +191,3 @@ void dvz_font_destroy(DvzFont* font)
         return;
     _scene_font_release(font);
 }
-

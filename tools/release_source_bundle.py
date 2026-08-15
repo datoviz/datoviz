@@ -26,16 +26,12 @@ REQUIRED_GENERATED_FILES = (
     "datoviz/_array_facade.py",
 )
 REQUIRED_DATA_FILES = (
-    "data/assets/fonts/DroidSans.ttf",
-    "data/assets/fonts/Inconsolata-Regular.ttf",
-    "data/assets/fonts/Roboto-Black.ttf",
-    "data/assets/fonts/Roboto-Bold.ttf",
-    "data/assets/fonts/Roboto-BoldItalic.ttf",
-    "data/assets/fonts/Roboto-Italic.ttf",
-    "data/assets/fonts/Roboto-Light.ttf",
-    "data/assets/fonts/Roboto-Medium.ttf",
-    "data/assets/fonts/Roboto-Regular.ttf",
-    "data/assets/fonts/RobotoMono-Medium.ttf",
+    "assets/runtime/fonts/NotoSansMath-Regular.ttf",
+    "assets/runtime/fonts/SourceCodePro-Regular.ttf",
+    "assets/runtime/fonts/SourceSans3-Bold.ttf",
+    "assets/runtime/fonts/SourceSans3-BoldIt.ttf",
+    "assets/runtime/fonts/SourceSans3-It.ttf",
+    "assets/runtime/fonts/SourceSans3-Regular.ttf",
 )
 
 

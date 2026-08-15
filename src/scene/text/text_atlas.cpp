@@ -17,6 +17,7 @@
 #include <float.h>
 #include <limits.h>
 #include <math.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <vector>
 
@@ -181,6 +182,8 @@ static float _text_atlas_sdf_em_px(float size_px);
 static float _text_atlas_msdf_range_px(float em_px);
 static float _text_atlas_sdf_range_px(float em_px);
 static bool _text_sdf_font_bytes(DvzFont* font);
+static void* _text_sdf_load_builtin_font(const DvzFont* font, DvzSize* out_size);
+static void* _text_sdf_load_scientific_fallback(DvzSize* out_size);
 static bool _text_atlas_upload_rgba(
     const DvzFont* font, DvzTextAtlas* atlas, uint8_t* rgba, uint32_t width, uint32_t height);
 static bool _text_atlas_changed_region(
@@ -250,18 +253,54 @@ static bool _text_msdf_build_atlas(
         return false;
     }
 
+    DvzSize fallback_size = 0;
+    void* fallback_bytes = _text_sdf_load_scientific_fallback(&fallback_size);
+    msdfgen::FontHandle* fallback_font = NULL;
+    if (fallback_bytes != NULL && fallback_size > 0)
+    {
+#if OS_WINDOWS
+        fallback_font = msdfgen::loadFontData(
+            ft, (const unsigned char*)fallback_bytes, (int)fallback_size);
+#else
+        fallback_font = msdfgen::loadFontData(
+            ft, (const unsigned char*)fallback_bytes, fallback_size);
+#endif
+    }
+    auto cleanup_fonts = [&]() {
+        if (fallback_font != NULL)
+            msdfgen::destroyFont(fallback_font);
+        dvz_free(fallback_bytes);
+        msdfgen::destroyFont(msdf_font);
+        msdfgen::deinitializeFreetype(ft);
+    };
+
     std::vector<msdf_atlas::GlyphGeometry> glyphs;
     msdf_atlas::FontGeometry font_geometry(&glyphs);
     msdf_atlas::Charset charset;
+    msdf_atlas::Charset fallback_charset;
     const uint32_t glyph_count = set->count;
     for (uint32_t i = 0; i < glyph_count; i++)
-        charset.add(set->codepoints[i]);
+    {
+        msdfgen::GlyphIndex glyph_index;
+        uint32_t codepoint = set->codepoints[i];
+        if (msdfgen::getGlyphIndex(glyph_index, msdf_font, codepoint))
+            charset.add(codepoint);
+        else if (
+            fallback_font != NULL &&
+            msdfgen::getGlyphIndex(glyph_index, fallback_font, codepoint))
+            fallback_charset.add(codepoint);
+    }
 
-    if (font_geometry.loadCharset(msdf_font, 1.0, charset) <= 0 || glyphs.empty())
+    int loaded = font_geometry.loadCharset(msdf_font, 1.0, charset);
+    if (fallback_font != NULL && fallback_charset.size() > 0)
+    {
+        msdf_atlas::FontGeometry fallback_geometry(&glyphs);
+        loaded += fallback_geometry.loadCharset(fallback_font, 1.0, fallback_charset);
+    }
+    if (loaded <= 0 || glyphs.empty())
     {
         log_error("failed to load MSDF charset");
-        msdfgen::destroyFont(msdf_font);
-        msdfgen::deinitializeFreetype(ft);
+        cleanup_fonts();
         return false;
     }
 
@@ -281,8 +320,7 @@ static bool _text_msdf_build_atlas(
     if (packer.pack(glyphs.data(), (int)glyphs.size()) != 0)
     {
         log_error("failed to pack MSDF atlas");
-        msdfgen::destroyFont(msdf_font);
-        msdfgen::deinitializeFreetype(ft);
+        cleanup_fonts();
         return false;
     }
 
@@ -292,8 +330,7 @@ static bool _text_msdf_build_atlas(
     if (width <= 0 || height <= 0)
     {
         log_error("MSDF atlas has invalid dimensions");
-        msdfgen::destroyFont(msdf_font);
-        msdfgen::deinitializeFreetype(ft);
+        cleanup_fonts();
         return false;
     }
 
@@ -314,8 +351,7 @@ static bool _text_msdf_build_atlas(
         _dvz_mul_u64_overflows(pixel_count, 4u, &byte_size) || byte_size > SIZE_MAX)
     {
         log_error("MSDF atlas byte size overflow");
-        msdfgen::destroyFont(msdf_font);
-        msdfgen::deinitializeFreetype(ft);
+        cleanup_fonts();
         return false;
     }
 
@@ -326,8 +362,7 @@ static bool _text_msdf_build_atlas(
         log_error("MSDF atlas allocation failed");
         dvz_free(rgba);
         dvz_free(atlas);
-        msdfgen::destroyFont(msdf_font);
-        msdfgen::deinitializeFreetype(ft);
+        cleanup_fonts();
         return false;
     }
 
@@ -455,8 +490,7 @@ static bool _text_msdf_build_atlas(
 
     bool ok = _text_atlas_upload_rgba(font, atlas, rgba, atlas_width, atlas_height);
     dvz_free(rgba);
-    msdfgen::destroyFont(msdf_font);
-    msdfgen::deinitializeFreetype(ft);
+    cleanup_fonts();
     if (!ok)
     {
         _scene_text_atlas_destroy(atlas);
@@ -866,7 +900,7 @@ static void* _text_sdf_load_default_font(DvzSize* out_size)
     ANN(out_size);
 #if defined(DVZ_HAS_EMBEDDED_FONTS) && DVZ_HAS_EMBEDDED_FONTS
     DvzSize embedded_size = 0;
-    const unsigned char* embedded = dvz_resource_font("Roboto_Regular", &embedded_size);
+    const unsigned char* embedded = dvz_resource_font("SourceSans3_Regular", &embedded_size);
     if (embedded != NULL && embedded_size > 0)
     {
         void* bytes = dvz_malloc((DvzSize)embedded_size);
@@ -878,24 +912,106 @@ static void* _text_sdf_load_default_font(DvzSize* out_size)
         }
     }
 #endif
-    const char* paths[] = {
-        "data/assets/fonts/Roboto-Regular.ttf",
-        "data/assets/fonts/Roboto-Medium.ttf",
-        "external/cimgui/imgui/misc/fonts/Roboto-Medium.ttf",
-    };
-    for (uint32_t i = 0; i < (uint32_t)(sizeof(paths) / sizeof(paths[0])); i++)
+    DvzSize size = 0;
+    void* bytes = dvz_read_file("assets/runtime/fonts/SourceSans3-Regular.ttf", &size);
+    if (bytes != NULL && size > 0)
     {
-        DvzSize size = 0;
-        void* bytes = dvz_read_file(paths[i], &size);
-        if (bytes != NULL && size > 0)
+        *out_size = size;
+        return bytes;
+    }
+    dvz_free(bytes);
+    return NULL;
+}
+
+
+/**
+ * Load one admitted built-in font from embedded resources or the source tree.
+ *
+ * @param font requested scene font identity
+ * @param out_size output byte size
+ * @return owned TTF bytes, or NULL when the built-in role is unavailable
+ */
+static void* _text_sdf_load_builtin_font(const DvzFont* font, DvzSize* out_size)
+{
+    ANN(font);
+    ANN(out_size);
+    const char* resource = NULL;
+    const char* path = NULL;
+    if (font->family[0] == '\0' || strcmp(font->family, "Source Sans 3") == 0)
+    {
+        if (strcmp(font->style, "Bold") == 0)
         {
-            *out_size = size;
+            resource = "SourceSans3_Bold";
+            path = "assets/runtime/fonts/SourceSans3-Bold.ttf";
+        }
+        else if (strcmp(font->style, "Italic") == 0)
+        {
+            resource = "SourceSans3_It";
+            path = "assets/runtime/fonts/SourceSans3-It.ttf";
+        }
+        else if (strcmp(font->style, "Bold Italic") == 0)
+        {
+            resource = "SourceSans3_BoldIt";
+            path = "assets/runtime/fonts/SourceSans3-BoldIt.ttf";
+        }
+        else
+        {
+            resource = "SourceSans3_Regular";
+            path = "assets/runtime/fonts/SourceSans3-Regular.ttf";
+        }
+    }
+    else if (strcmp(font->family, "Source Code Pro") == 0)
+    {
+        resource = "SourceCodePro_Regular";
+        path = "assets/runtime/fonts/SourceCodePro-Regular.ttf";
+    }
+    else if (strcmp(font->family, "Noto Sans Math") == 0)
+    {
+        resource = "NotoSansMath_Regular";
+        path = "assets/runtime/fonts/NotoSansMath-Regular.ttf";
+    }
+    if (resource == NULL || path == NULL)
+        return _text_sdf_load_default_font(out_size);
+
+#if defined(DVZ_HAS_EMBEDDED_FONTS) && DVZ_HAS_EMBEDDED_FONTS
+    DvzSize embedded_size = 0;
+    const unsigned char* embedded = dvz_resource_font(resource, &embedded_size);
+    if (embedded != NULL && embedded_size > 0)
+    {
+        void* bytes = dvz_malloc(embedded_size);
+        if (bytes != NULL)
+        {
+            dvz_memcpy(bytes, (size_t)embedded_size, embedded, (size_t)embedded_size);
+            *out_size = embedded_size;
             return bytes;
         }
-        if (bytes != NULL)
-            dvz_free(bytes);
     }
-    return NULL;
+#endif
+    DvzSize size = 0;
+    void* bytes = dvz_read_file(path, &size);
+    if (bytes == NULL || size == 0)
+    {
+        dvz_free(bytes);
+        return NULL;
+    }
+    *out_size = size;
+    return bytes;
+}
+
+
+/**
+ * Load the built-in scientific fallback font.
+ *
+ * @param out_size output byte size
+ * @return owned TTF bytes, or NULL when the fallback is unavailable
+ */
+static void* _text_sdf_load_scientific_fallback(DvzSize* out_size)
+{
+    ANN(out_size);
+    DvzFont fallback = {};
+    snprintf(fallback.family, sizeof(fallback.family), "%s", "Noto Sans Math");
+    snprintf(fallback.style, sizeof(fallback.style), "%s", "Regular");
+    return _text_sdf_load_builtin_font(&fallback, out_size);
 }
 
 
@@ -917,7 +1033,7 @@ static bool _text_sdf_font_bytes(DvzFont* font)
     if (font->path[0] != '\0')
         bytes = dvz_read_file(font->path, &size);
     else
-        bytes = _text_sdf_load_default_font(&size);
+        bytes = _text_sdf_load_builtin_font(font, &size);
 
     if (bytes == NULL || size == 0)
     {
@@ -997,7 +1113,7 @@ static bool _text_sdf_init_font(const DvzFont* font, stbtt_fontinfo* out_info)
 
 
 /**
- * Return whether one font is the built-in Roboto Regular default.
+ * Return whether one font matches the legacy baked Roboto Regular atlas.
  *
  * @param font the scene font
  * @return whether embedded default atlas data may be used
@@ -1511,13 +1627,35 @@ static bool _text_ft_build_bitmap_atlas(
         return false;
     }
 
+    DvzSize fallback_size = 0;
+    void* fallback_bytes = _text_sdf_load_scientific_fallback(&fallback_size);
+    FT_Face fallback_face = NULL;
+    if (fallback_bytes != NULL && fallback_size > 0)
+    {
+        if (FT_New_Memory_Face(
+                library, (const FT_Byte*)fallback_bytes, (FT_Long)fallback_size, 0,
+                &fallback_face) != 0)
+            fallback_face = NULL;
+    }
+    auto cleanup_faces = [&]() {
+        if (fallback_face != NULL)
+            FT_Done_Face(fallback_face);
+        FT_Done_Face(face);
+        dvz_free(fallback_bytes);
+        FT_Done_FreeType(library);
+    };
+
     float em_px = spec->em_px > 0.0f ? spec->em_px : DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
     if (FT_Set_Pixel_Sizes(face, 0, (FT_UInt)em_px) != 0)
     {
         log_error("failed to set FreeType pixel size");
-        FT_Done_Face(face);
-        FT_Done_FreeType(library);
+        cleanup_faces();
         return false;
+    }
+    if (fallback_face != NULL && FT_Set_Pixel_Sizes(fallback_face, 0, (FT_UInt)em_px) != 0)
+    {
+        FT_Done_Face(fallback_face);
+        fallback_face = NULL;
     }
 
     const uint32_t glyph_count = set->count;
@@ -1526,20 +1664,29 @@ static bool _text_ft_build_bitmap_atlas(
     int glyph_lefts[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     int glyph_tops[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     float glyph_advances[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    bool glyph_fallbacks[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     uint32_t cell_width = 1;
     uint32_t cell_height = 1;
 
     for (uint32_t i = 0; i < glyph_count; i++)
     {
         uint32_t codepoint = set->codepoints[i];
-        if (FT_Load_Char(face, (FT_ULong)codepoint, FT_LOAD_DEFAULT) != 0 ||
-            FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL) != 0)
+        FT_Face selected = face;
+        if (
+            FT_Get_Char_Index(face, (FT_ULong)codepoint) == 0 && fallback_face != NULL &&
+            FT_Get_Char_Index(fallback_face, (FT_ULong)codepoint) != 0)
+        {
+            selected = fallback_face;
+            glyph_fallbacks[i] = true;
+        }
+        if (FT_Load_Char(selected, (FT_ULong)codepoint, FT_LOAD_DEFAULT) != 0 ||
+            FT_Render_Glyph(selected->glyph, FT_RENDER_MODE_NORMAL) != 0)
             continue;
-        glyph_widths[i] = (uint32_t)face->glyph->bitmap.width;
-        glyph_heights[i] = (uint32_t)face->glyph->bitmap.rows;
-        glyph_lefts[i] = face->glyph->bitmap_left;
-        glyph_tops[i] = face->glyph->bitmap_top;
-        glyph_advances[i] = (float)face->glyph->advance.x / 64.0f;
+        glyph_widths[i] = (uint32_t)selected->glyph->bitmap.width;
+        glyph_heights[i] = (uint32_t)selected->glyph->bitmap.rows;
+        glyph_lefts[i] = selected->glyph->bitmap_left;
+        glyph_tops[i] = selected->glyph->bitmap_top;
+        glyph_advances[i] = (float)selected->glyph->advance.x / 64.0f;
         if (glyph_widths[i] > cell_width)
             cell_width = glyph_widths[i];
         if (glyph_heights[i] > cell_height)
@@ -1560,8 +1707,7 @@ static bool _text_ft_build_bitmap_atlas(
         height64 > UINT32_MAX || byte_size > SIZE_MAX)
     {
         log_error("text FreeType atlas dimensions overflow");
-        FT_Done_Face(face);
-        FT_Done_FreeType(library);
+        cleanup_faces();
         return false;
     }
 
@@ -1574,8 +1720,7 @@ static bool _text_ft_build_bitmap_atlas(
         log_error("text FreeType atlas allocation failed");
         dvz_free(rgba);
         dvz_free(atlas);
-        FT_Done_Face(face);
-        FT_Done_FreeType(library);
+        cleanup_faces();
         return false;
     }
 
@@ -1600,7 +1745,8 @@ static bool _text_ft_build_bitmap_atlas(
         uint32_t codepoint = set->codepoints[i];
         DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
         glyph->codepoint = codepoint;
-        glyph->glyph_id = (uint32_t)FT_Get_Char_Index(face, (FT_ULong)codepoint);
+        FT_Face selected = glyph_fallbacks[i] ? fallback_face : face;
+        glyph->glyph_id = (uint32_t)FT_Get_Char_Index(selected, (FT_ULong)codepoint);
         if (glyph->glyph_id == 0 && codepoint != DVZ_TEXT_SDF_FALLBACK)
         {
             atlas->missing_glyph_count++;
@@ -1642,10 +1788,10 @@ static bool _text_ft_build_bitmap_atlas(
 
         if (glyph_widths[i] == 0 || glyph_heights[i] == 0)
             continue;
-        if (FT_Load_Char(face, (FT_ULong)codepoint, FT_LOAD_DEFAULT) != 0 ||
-            FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL) != 0)
+        if (FT_Load_Char(selected, (FT_ULong)codepoint, FT_LOAD_DEFAULT) != 0 ||
+            FT_Render_Glyph(selected->glyph, FT_RENDER_MODE_NORMAL) != 0)
             continue;
-        _text_ft_copy_bitmap(rgba, atlas_width, x, y, &face->glyph->bitmap);
+        _text_ft_copy_bitmap(rgba, atlas_width, x, y, &selected->glyph->bitmap);
     }
     for (uint32_t i = 0; i < glyph_count; i++)
     {
@@ -1655,8 +1801,7 @@ static bool _text_ft_build_bitmap_atlas(
 
     bool ok = _text_atlas_upload_rgba(font, atlas, rgba, atlas_width, atlas_height);
     dvz_free(rgba);
-    FT_Done_Face(face);
-    FT_Done_FreeType(library);
+    cleanup_faces();
     if (!ok)
     {
         _scene_text_atlas_destroy(atlas);
@@ -1697,6 +1842,17 @@ static bool _text_sdf_build_atlas(
     if (!_text_sdf_init_font(font, &info))
         return false;
 
+    DvzSize fallback_size = 0;
+    void* fallback_bytes = _text_sdf_load_scientific_fallback(&fallback_size);
+    stbtt_fontinfo fallback_info = {};
+    bool fallback_available = false;
+    if (fallback_bytes != NULL && fallback_size > 0 && fallback_size <= INT32_MAX)
+    {
+        const unsigned char* bytes = (const unsigned char*)fallback_bytes;
+        int offset = stbtt_GetFontOffsetForIndex(bytes, 0);
+        fallback_available = offset >= 0 && stbtt_InitFont(&fallback_info, bytes, offset) != 0;
+    }
+
     const float em_px = spec->em_px > 0.0f ? spec->em_px : DVZ_TEXT_ATLAS_DEFAULT_EM_PX;
     const float distance_range_px = spec->distance_range_px > 0.0f
                                         ? spec->distance_range_px
@@ -1709,6 +1865,8 @@ static bool _text_sdf_build_atlas(
     uint32_t glyph_heights[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     int glyph_xoffs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     int glyph_yoffs[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    float glyph_scales[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
+    bool glyph_fallbacks[DVZ_SCENE_TEXT_ATLAS_MAX_GLYPHS] = {};
     uint32_t cell_width = 1;
     uint32_t cell_height = 1;
 
@@ -1719,9 +1877,21 @@ static bool _text_sdf_build_atlas(
         int xoff = 0;
         int yoff = 0;
         uint32_t codepoint = set->codepoints[i];
+        stbtt_fontinfo* selected = &info;
+        float selected_scale = scale;
+        if (
+            stbtt_FindGlyphIndex(&info, (int)codepoint) == 0 && fallback_available &&
+            stbtt_FindGlyphIndex(&fallback_info, (int)codepoint) != 0)
+        {
+            selected = &fallback_info;
+            selected_scale = stbtt_ScaleForPixelHeight(&fallback_info, em_px);
+            glyph_fallbacks[i] = true;
+        }
         unsigned char* sdf = stbtt_GetCodepointSDF(
-            &info, scale, (int)codepoint, padding, (unsigned char)DVZ_TEXT_SDF_ONEDGE,
+            selected, selected_scale, (int)codepoint, padding,
+            (unsigned char)DVZ_TEXT_SDF_ONEDGE,
             _text_sdf_pixel_dist_scale(distance_range_px), &width, &height, &xoff, &yoff);
+        glyph_scales[i] = selected_scale;
         if (sdf == NULL || width <= 0 || height <= 0)
             continue;
         glyph_sdfs[i] = sdf;
@@ -1752,6 +1922,7 @@ static bool _text_sdf_build_atlas(
         for (uint32_t i = 0; i < glyph_count; i++)
             if (glyph_sdfs[i] != NULL)
                 stbtt_FreeSDF(glyph_sdfs[i], NULL);
+        dvz_free(fallback_bytes);
         return false;
     }
 
@@ -1767,6 +1938,7 @@ static bool _text_sdf_build_atlas(
         for (uint32_t i = 0; i < glyph_count; i++)
             if (glyph_sdfs[i] != NULL)
                 stbtt_FreeSDF(glyph_sdfs[i], NULL);
+        dvz_free(fallback_bytes);
         return false;
     }
 
@@ -1795,7 +1967,9 @@ static bool _text_sdf_build_atlas(
         uint32_t codepoint = set->codepoints[i];
         DvzTextAtlasGlyph* glyph = &atlas->glyphs[i];
         glyph->codepoint = codepoint;
-        glyph->glyph_id = (uint32_t)stbtt_FindGlyphIndex(&info, (int)codepoint);
+        stbtt_fontinfo* selected = glyph_fallbacks[i] ? &fallback_info : &info;
+        float selected_scale = glyph_scales[i] > 0.0f ? glyph_scales[i] : scale;
+        glyph->glyph_id = (uint32_t)stbtt_FindGlyphIndex(selected, (int)codepoint);
         if (glyph->glyph_id == 0 && codepoint != DVZ_TEXT_SDF_FALLBACK)
         {
             atlas->missing_glyph_count++;
@@ -1803,9 +1977,9 @@ static bool _text_sdf_build_atlas(
         }
         int advance = 0;
         int left_bearing = 0;
-        stbtt_GetCodepointHMetrics(&info, (int)codepoint, &advance, &left_bearing);
+        stbtt_GetCodepointHMetrics(selected, (int)codepoint, &advance, &left_bearing);
         (void)left_bearing;
-        glyph->advance = (float)advance * scale;
+        glyph->advance = (float)advance * selected_scale;
         if (glyph_sdfs[i] == NULL)
         {
             glyph->valid = glyph->advance > 0.0f;
@@ -1853,6 +2027,7 @@ static bool _text_sdf_build_atlas(
     for (uint32_t i = 0; i < glyph_count; i++)
         if (glyph_sdfs[i] != NULL)
             stbtt_FreeSDF(glyph_sdfs[i], NULL);
+    dvz_free(fallback_bytes);
 
     bool ok = _text_atlas_upload_rgba(font, atlas, rgba, atlas_width, atlas_height);
     dvz_free(rgba);

@@ -30,11 +30,9 @@ jobs:
         uses: actions/cache/restore@v6
         with:
           path: |
-            data/assets/fonts/Roboto-Regular.ttf
-            data/assets/fonts/RobotoMono-Medium.ttf
             data/assets/textures/world.200412.3x5400x2700.jpg
             data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy
-          key: test-assets-v1-${{ hashFiles('tools/materialize_lfs_assets.sh', 'data/assets/fonts/Roboto-Regular.ttf', 'data/assets/fonts/RobotoMono-Medium.ttf', 'data/assets/textures/world.200412.3x5400x2700.jpg', 'data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy') }}
+          key: test-assets-v2-${{ hashFiles('tools/materialize_lfs_assets.sh', 'data/assets/textures/world.200412.3x5400x2700.jpg', 'data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy') }}
       - name: Materialize test assets after cache miss
         if: steps.test-assets-cache.outputs.cache-hit != 'true'
         shell: bash
@@ -47,8 +45,6 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: |
-            data/assets/fonts/Roboto-Regular.ttf
-            data/assets/fonts/RobotoMono-Medium.ttf
             data/assets/textures/world.200412.3x5400x2700.jpg
             data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy
           key: ${{ steps.test-assets-cache.outputs.cache-primary-key }}
@@ -57,8 +53,6 @@ jobs:
         with:
           name: test-assets
           path: |
-            data/assets/fonts/Roboto-Regular.ttf
-            data/assets/fonts/RobotoMono-Medium.ttf
             data/assets/textures/world.200412.3x5400x2700.jpg
             data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy
           compression-level: 0

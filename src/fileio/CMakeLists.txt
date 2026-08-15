@@ -4,7 +4,13 @@
 
 file(GLOB FILEIO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
 list(APPEND FILEIO_SRC "${PROJECT_SOURCE_DIR}/external/fpng.cpp")
+if(DVZ_HAS_EMBEDDED_FONTS AND DVZ_FONTS_C)
+    list(APPEND FILEIO_SRC "${DVZ_FONTS_C}")
+endif()
 add_library(datoviz_fileio OBJECT ${FILEIO_SRC})
+if(DVZ_HAS_EMBEDDED_FONTS AND TARGET datoviz_fonts)
+    add_dependencies(datoviz_fileio datoviz_fonts)
+endif()
 
 set_property(
     SOURCE ${PROJECT_SOURCE_DIR}/external/fpng.cpp

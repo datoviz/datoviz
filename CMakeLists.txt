@@ -555,10 +555,14 @@ endif()
 
 set(DVZ_HAS_EMBEDDED_FONTS 0)
 set(DVZ_FONTS_C "")
-if(DVZ_BUILD_SCENE)
+if(DVZ_BUILD_SCENE OR DVZ_BUILD_GUI)
     set(FONT_SOURCES
-        "${PROJECT_SOURCE_DIR}/data/assets/fonts/Roboto-Regular.ttf"
-        "${PROJECT_SOURCE_DIR}/data/assets/fonts/RobotoMono-Medium.ttf"
+        "${PROJECT_SOURCE_DIR}/assets/runtime/fonts/SourceSans3-Regular.ttf"
+        "${PROJECT_SOURCE_DIR}/assets/runtime/fonts/SourceSans3-Bold.ttf"
+        "${PROJECT_SOURCE_DIR}/assets/runtime/fonts/SourceSans3-It.ttf"
+        "${PROJECT_SOURCE_DIR}/assets/runtime/fonts/SourceSans3-BoldIt.ttf"
+        "${PROJECT_SOURCE_DIR}/assets/runtime/fonts/SourceCodePro-Regular.ttf"
+        "${PROJECT_SOURCE_DIR}/assets/runtime/fonts/NotoSansMath-Regular.ttf"
     )
     set(FONTS_C "${CMAKE_BINARY_DIR}/_fonts.c")
     string(REPLACE ";" "\\;" _font_list_escaped "${FONT_SOURCES}")

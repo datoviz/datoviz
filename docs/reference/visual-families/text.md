@@ -59,6 +59,26 @@ collection, the per-property setters require exactly the current item count.
 - Current examples pass `flags = 0`. Destroy explicitly with `dvz_text_destroy()` when removing the
   retained text before panel/scene teardown.
 
+## Fonts And Scientific Glyphs
+
+Datoviz works offline without font configuration: retained text defaults to embedded Source Sans 3, monospace consumers default to Source Code Pro, and mathematical or technical codepoints missing from Source fall back per glyph to embedded Noto Sans Math. Unsupported codepoints render with the visible `?` fallback. Font family names do not trigger platform font discovery.
+
+To use a custom TTF or compatible OpenType face, create a scene-owned font from an explicit path and select it in the text style:
+
+```c
+DvzFontDesc font_desc = dvz_font_desc();
+font_desc.path = "/absolute/or/application-owned/font.ttf";
+font_desc.face_index = 0;
+DvzFont* font = dvz_font(scene, &font_desc);
+
+DvzTextStyle style = dvz_text_style();
+style.font = font;
+style.size_px = 18.0f;
+dvz_text_set_style(text, &style);
+```
+
+Datoviz copies descriptor strings and loads the selected file into scene-owned storage when the font is first used. Keep the font alive while text objects or atlases refer to it; scene teardown releases remaining fonts after their dependents. A custom primary face still uses the built-in Noto Sans Math scientific fallback when needed.
+
 ## Verified Usage Pattern
 
 Create the panel-owned object, configure descriptors returned by the default helpers, populate an

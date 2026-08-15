@@ -24,6 +24,7 @@
 #include "_log.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
+#include "datoviz/fileio/fileio.h"
 #include "datoviz/gui.h"
 #include "datoviz/imgui.h"
 #include "datoviz/input/pointer.h"
@@ -85,6 +86,31 @@ static bool _gui_smoke_available(void)
 #else
     return false;
 #endif
+}
+
+
+/**
+ * Check that the build-generated GUI font resources are present and non-empty.
+ *
+ * @param suite test context
+ * @param item test case descriptor
+ * @return zero on success
+ */
+int test_gui_embedded_font_resources(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    const char* names[] = {
+        "SourceSans3_Regular", "SourceSans3_Bold",     "SourceSans3_It",
+        "SourceSans3_BoldIt",  "SourceCodePro_Regular", "NotoSansMath_Regular"};
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        DvzSize size = 0;
+        const unsigned char* bytes = dvz_resource_font(names[i], &size);
+        AT(bytes != NULL);
+        AT(size > 1024);
+    }
+    return 0;
 }
 
 
@@ -788,6 +814,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_imgui_public_header);
     TST_CASE(test_gui_viewport_config_defaults);
     TST_CASE(test_gui_config_font_defaults);
+    TST_CASE(test_gui_embedded_font_resources);
     TST_CASE(test_gui_widget_wrapper_symbols);
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);

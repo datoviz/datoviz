@@ -17,7 +17,6 @@
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "_alloc.h"
@@ -377,6 +376,8 @@ struct DvzTextBlockFtCtx
     FT_Library library;
     FT_Face faces[DVZ_TEXT_BLOCK_FACE_COUNT];
     DvzFont* fonts[DVZ_TEXT_BLOCK_FACE_COUNT];
+    FT_Face fallback_face;
+    DvzFont* fallback_font;
     bool owns_library;
     float scale;
     float ascender;
@@ -403,77 +404,6 @@ struct DvzTextBlockLayoutItem
 
 
 static uint8_t _text_block_ft_coverage(const FT_Bitmap* bitmap, uint32_t x, uint32_t y);
-
-
-/**
- * Return whether one path can be read as a font file.
- *
- * @param path filesystem path
- * @return whether the file exists and has non-zero length
- */
-static bool _text_block_font_path_available(const char* path)
-{
-    if (path == NULL || path[0] == '\0')
-        return false;
-
-    FILE* fp = fopen(path, "rb");
-    if (fp == NULL)
-        return false;
-    int seek_rc = fseek(fp, 0, SEEK_END);
-    long size = seek_rc == 0 ? ftell(fp) : 0;
-    fclose(fp);
-    return size > 0;
-}
-
-
-/**
- * Return the repository default path for a known font face.
- *
- * @param family font family
- * @param style font style
- * @return path, or NULL when no deterministic file is known
- */
-static const char* _text_block_known_font_path(const char* family, const char* style)
-{
-    if (family == NULL || family[0] == '\0')
-        family = "Roboto";
-    if (style == NULL || style[0] == '\0')
-        style = "Regular";
-
-    if (strcmp(family, "Roboto") == 0)
-    {
-        if (strcmp(style, "Regular") == 0)
-            return "data/assets/fonts/Roboto-Regular.ttf";
-        if (strcmp(style, "Bold") == 0)
-            return "data/assets/fonts/Roboto-Bold.ttf";
-        if (strcmp(style, "Italic") == 0)
-            return "data/assets/fonts/Roboto-Italic.ttf";
-        if (strcmp(style, "Bold Italic") == 0)
-            return "data/assets/fonts/Roboto-BoldItalic.ttf";
-        if (strcmp(style, "Medium") == 0)
-            return "data/assets/fonts/Roboto-Medium.ttf";
-        if (strcmp(style, "Medium Italic") == 0)
-            return "data/assets/fonts/Roboto-MediumItalic.ttf";
-        if (strcmp(style, "Light") == 0)
-            return "data/assets/fonts/Roboto-Light.ttf";
-        if (strcmp(style, "Light Italic") == 0)
-            return "data/assets/fonts/Roboto-LightItalic.ttf";
-        if (strcmp(style, "Black") == 0)
-            return "data/assets/fonts/Roboto-Black.ttf";
-        if (strcmp(style, "Black Italic") == 0)
-            return "data/assets/fonts/Roboto-BlackItalic.ttf";
-    }
-    if (strcmp(family, "Roboto Mono") == 0 || strcmp(family, "RobotoMono") == 0)
-    {
-        if (strcmp(style, "Regular") == 0 || strcmp(style, "Medium") == 0)
-            return "data/assets/fonts/RobotoMono-Medium.ttf";
-    }
-    if (strcmp(family, "Inconsolata") == 0 && strcmp(style, "Regular") == 0)
-        return "data/assets/fonts/Inconsolata-Regular.ttf";
-    if (strcmp(family, "Droid Sans") == 0 && strcmp(style, "Regular") == 0)
-        return "data/assets/fonts/DroidSans.ttf";
-    return NULL;
-}
 
 
 /**
@@ -551,7 +481,7 @@ _text_block_resolve_font_slot(DvzScene* scene, const DvzTextBlockLayout* layout,
     const char* family = scene->font_defaults.sans_family != NULL &&
                                  scene->font_defaults.sans_family[0] != '\0' ?
                              scene->font_defaults.sans_family :
-                             "Roboto";
+                             "Source Sans 3";
     const char* style = "Regular";
     if (slot == DVZ_TEXT_BLOCK_FACE_BOLD)
         style = "Bold";
@@ -565,13 +495,6 @@ _text_block_resolve_font_slot(DvzScene* scene, const DvzTextBlockLayout* layout,
         slot == DVZ_TEXT_BLOCK_FACE_REGULAR && scene->font_defaults.sans_path != NULL &&
         scene->font_defaults.sans_path[0] != '\0')
         path = scene->font_defaults.sans_path;
-    else if (slot != DVZ_TEXT_BLOCK_FACE_REGULAR)
-        path = _text_block_known_font_path(family, style);
-    if (slot != DVZ_TEXT_BLOCK_FACE_REGULAR && path == NULL)
-        return NULL;
-    if (path != NULL && !_text_block_font_path_available(path))
-        return NULL;
-
     DvzFontDesc desc = {
         DVZ_STRUCT_INIT_FIELDS(DvzFontDesc),
         .face_index = scene->font_defaults.sans_face_index,
@@ -803,6 +726,21 @@ static bool _text_block_ft_open(DvzTextBlock* block, float scale, DvzTextBlockFt
         out->fonts[i] = font;
     }
 
+    DvzFontDesc fallback_desc = {
+        DVZ_STRUCT_INIT_FIELDS(DvzFontDesc), .family = "Noto Sans Math", .style = "Regular"};
+    out->fallback_font = _text_block_get_font(block->layout.scene, &fallback_desc);
+    if (out->fallback_font != NULL && _scene_font_ensure_bytes(out->fallback_font) &&
+        FT_New_Memory_Face(
+            out->library, (const FT_Byte*)out->fallback_font->ttf_bytes,
+            (FT_Long)out->fallback_font->ttf_size, 0, &out->fallback_face) == 0)
+    {
+        if (FT_Set_Pixel_Sizes(out->fallback_face, 0, (FT_UInt)font_px) != 0)
+        {
+            FT_Done_Face(out->fallback_face);
+            out->fallback_face = NULL;
+        }
+    }
+
     FT_Face face = out->faces[DVZ_TEXT_BLOCK_FACE_REGULAR];
     if (face == NULL)
     {
@@ -841,6 +779,8 @@ static void _text_block_ft_close(DvzTextBlockFtCtx* ctx)
             ctx->faces[i] = NULL;
         }
     }
+    if (ctx->fallback_face != NULL)
+        FT_Done_Face(ctx->fallback_face);
     if (ctx->owns_library)
         FT_Done_FreeType(ctx->library);
     dvz_memset(ctx, sizeof(DvzTextBlockFtCtx), 0, sizeof(DvzTextBlockFtCtx));
@@ -1089,6 +1029,16 @@ static bool _text_block_measure_freetype(DvzTextBlock* block, DvzColor text_colo
         if (item_face == NULL)
             continue;
         item->glyph_index = FT_Get_Char_Index(item_face, (FT_ULong)cp);
+        if (item->glyph_index == 0 && ctx.fallback_face != NULL)
+        {
+            FT_UInt fallback_glyph = FT_Get_Char_Index(ctx.fallback_face, (FT_ULong)cp);
+            if (fallback_glyph != 0)
+            {
+                item->face_slot = DVZ_TEXT_BLOCK_FACE_COUNT;
+                item->glyph_index = fallback_glyph;
+                item_face = ctx.fallback_face;
+            }
+        }
         if (item->glyph_index == 0 && !item->whitespace)
         {
             _text_block_diag(block, "missing text block glyph", start);
@@ -1248,9 +1198,10 @@ static bool _text_block_rasterize_freetype(
         if (!block->layout_visible[i])
             continue;
         uint32_t face_slot = block->layout_face_slot[i];
-        if (face_slot >= DVZ_TEXT_BLOCK_FACE_COUNT || ctx.faces[face_slot] == NULL)
+        FT_Face face = face_slot == DVZ_TEXT_BLOCK_FACE_COUNT ? ctx.fallback_face :
+                                                               (face_slot < DVZ_TEXT_BLOCK_FACE_COUNT ? ctx.faces[face_slot] : NULL);
+        if (face == NULL)
             continue;
-        FT_Face face = ctx.faces[face_slot];
         if (FT_Load_Glyph(face, block->layout_glyph_index[i], FT_LOAD_DEFAULT) != 0 ||
             FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL) != 0)
         {

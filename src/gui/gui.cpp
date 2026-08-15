@@ -26,6 +26,7 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/canvas.h"
+#include "datoviz/fileio/fileio.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/window/backend.h"
 
@@ -37,7 +38,6 @@
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "gui_fonts.inc"
 
 
 
@@ -666,15 +666,48 @@ static void _gui_load_fonts(DvzGui* gui)
         gui->font_regular = io.Fonts->AddFontFromFileTTF(
             defaults.sans_path, font_size, &regular_config, io.Fonts->GetGlyphRangesDefault());
     if (gui->font_regular == NULL)
-        gui->font_regular = io.Fonts->AddFontFromMemoryCompressedTTF(
-            dvz_gui_font_karla_regular_compressed_data,
-            (int)dvz_gui_font_karla_regular_compressed_size, font_size, &regular_config,
-            io.Fonts->GetGlyphRangesDefault());
+    {
+        ImFontConfig embedded_config = regular_config;
+        embedded_config.FontDataOwnedByAtlas = false;
+        DvzSize size = 0;
+        const unsigned char* bytes = dvz_resource_font("SourceSans3_Regular", &size);
+        if (bytes != NULL && size > 0 && size <= INT_MAX)
+            gui->font_regular = io.Fonts->AddFontFromMemoryTTF(
+                const_cast<void*>((const void*)bytes), (int)size, font_size, &embedded_config,
+                io.Fonts->GetGlyphRangesDefault());
+    }
     if (gui->font_regular == NULL)
     {
-        log_error("Dear ImGui failed to load the embedded Karla font");
+        log_error("Dear ImGui failed to load the embedded Source Sans 3 font");
         gui->font_regular = io.Fonts->AddFontDefault();
     }
+
+    // Merge only bounded scientific ranges into the regular UI font.
+    static const ImWchar scientific_ranges[] = {
+        0x0370, 0x03FF, // Greek and Coptic
+        0x1D00, 0x1D7F, // phonetic extensions and superscript modifiers
+        0x2070, 0x209F, // superscripts and subscripts
+        0x2100, 0x214F, // letterlike symbols
+        0x2190, 0x21FF, // arrows
+        0x2200, 0x22FF, // mathematical operators
+        0x2300, 0x23FF, // technical symbols
+        0x25A0, 0x25FF, // geometric shapes
+        0x27C0, 0x27FF, // supplemental mathematical operators
+        0x2900, 0x297F, // supplemental arrows
+        0x2980, 0x29FF, // miscellaneous mathematical symbols
+        0x2A00, 0x2AFF, // supplemental mathematical operators
+        0,
+    };
+    ImFontConfig math_config = {};
+    math_config.MergeMode = true;
+    math_config.OversampleH = 2;
+    math_config.OversampleV = 1;
+    math_config.FontDataOwnedByAtlas = false;
+    DvzSize math_size = 0;
+    const unsigned char* math_bytes = dvz_resource_font("NotoSansMath_Regular", &math_size);
+    if (gui->font_regular != NULL && math_bytes != NULL && math_size > 0 && math_size <= INT_MAX)
+        io.Fonts->AddFontFromMemoryTTF(
+            const_cast<void*>((const void*)math_bytes), (int)math_size, font_size, &math_config, scientific_ranges);
 
     ImFontConfig mono_config = {};
     mono_config.OversampleH = 2;
@@ -683,12 +716,18 @@ static void _gui_load_fonts(DvzGui* gui)
         gui->font_mono = io.Fonts->AddFontFromFileTTF(
             defaults.mono_path, mono_font_size, &mono_config, io.Fonts->GetGlyphRangesDefault());
     if (gui->font_mono == NULL)
-        gui->font_mono = io.Fonts->AddFontFromMemoryCompressedTTF(
-            dvz_gui_font_cousine_regular_compressed_data,
-            (int)dvz_gui_font_cousine_regular_compressed_size, mono_font_size, &mono_config,
-            io.Fonts->GetGlyphRangesDefault());
+    {
+        ImFontConfig embedded_config = mono_config;
+        embedded_config.FontDataOwnedByAtlas = false;
+        DvzSize size = 0;
+        const unsigned char* bytes = dvz_resource_font("SourceCodePro_Regular", &size);
+        if (bytes != NULL && size > 0 && size <= INT_MAX)
+            gui->font_mono = io.Fonts->AddFontFromMemoryTTF(
+                const_cast<void*>((const void*)bytes), (int)size, mono_font_size, &embedded_config,
+                io.Fonts->GetGlyphRangesDefault());
+    }
     if (gui->font_mono == NULL)
-        log_error("Dear ImGui failed to load the embedded Cousine font");
+        log_error("Dear ImGui failed to load the embedded Source Code Pro font");
 
     if (gui->font_regular != NULL)
         io.FontDefault = gui->font_regular;

@@ -3484,6 +3484,8 @@ int test_scene_font_defaults(TstContext* suite, const TstCase* item)
     DvzFontDefaults built_in = dvz_font_defaults();
     DvzTextStyle default_style = dvz_text_style();
     AT(default_style.size_px == 0.0f);
+    AT(strcmp(built_in.sans_family, "Source Sans 3") == 0);
+    AT(strcmp(built_in.mono_family, "Source Code Pro") == 0);
     AT(strcmp(defaults.sans_family, built_in.sans_family) == 0);
     AT(defaults.text_size_px == built_in.text_size_px);
 
@@ -5126,20 +5128,39 @@ int test_scene_text_block_measure(TstContext* suite, const TstCase* item)
     _scene_text_block_init(&italic, "<i>italic</i>");
     AT(_scene_text_block_parse(&italic) == 0);
     AT(_scene_text_block_measure(&italic, &ft_layout) == 0);
-    if (italic.layout_fonts[DVZ_TEXT_BLOCK_FACE_ITALIC] != NULL)
-    {
-        AT((italic.layout_style_flags[0] & DVZ_TEXT_BLOCK_STYLE_ITALIC) != 0);
-    }
-    else
-    {
-        AT((italic.layout_style_flags[0] & DVZ_TEXT_BLOCK_STYLE_ITALIC) == 0);
-        AT(italic.diagnostic[0] != '\0');
-    }
+    AT(italic.layout_fonts[DVZ_TEXT_BLOCK_FACE_ITALIC] != NULL);
+    AT((italic.layout_style_flags[0] & DVZ_TEXT_BLOCK_STYLE_ITALIC) != 0);
+
+    DvzTextBlock bold_italic = {0};
+    _scene_text_block_init(&bold_italic, "<b><i>both</i></b>");
+    AT(_scene_text_block_parse(&bold_italic) == 0);
+    AT(_scene_text_block_measure(&bold_italic, &ft_layout) == 0);
+    AT(bold_italic.layout_fonts[DVZ_TEXT_BLOCK_FACE_BOLD_ITALIC] != NULL);
+    AT(bold_italic.layout_face_slot[0] == DVZ_TEXT_BLOCK_FACE_BOLD_ITALIC);
+    AT(
+        (bold_italic.layout_style_flags[0] &
+         (DVZ_TEXT_BLOCK_STYLE_BOLD | DVZ_TEXT_BLOCK_STYLE_ITALIC)) ==
+        (DVZ_TEXT_BLOCK_STYLE_BOLD | DVZ_TEXT_BLOCK_STYLE_ITALIC));
+
+    DvzTextBlock scientific = {0};
+    _scene_text_block_init(&scientific, "\xE2\x88\x87 \xE2\x88\x9D \xE2\x88\x88");
+    AT(_scene_text_block_parse(&scientific) == 0);
+    AT(_scene_text_block_measure(&scientific, &ft_layout) == 0);
+    AT(scientific.layout_glyph_count == 3);
+    AT(scientific.diagnostic[0] == '\0');
+    AT(scientific.layout_face_slot[0] == DVZ_TEXT_BLOCK_FACE_COUNT);
+    AT(scientific.layout_face_slot[1] == DVZ_TEXT_BLOCK_FACE_COUNT);
+    AT(scientific.layout_face_slot[2] == DVZ_TEXT_BLOCK_FACE_COUNT);
+    AT(scientific.layout_glyph_index[0] != 0);
+    AT(scientific.layout_glyph_index[1] != 0);
+    AT(scientific.layout_glyph_index[2] != 0);
 
     _scene_text_block_destroy(&narrow);
     _scene_text_block_destroy(&wide);
     _scene_text_block_destroy(&bold);
     _scene_text_block_destroy(&italic);
+    _scene_text_block_destroy(&bold_italic);
+    _scene_text_block_destroy(&scientific);
     dvz_scene_destroy(scene);
 #endif
 

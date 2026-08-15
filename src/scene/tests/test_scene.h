@@ -1317,7 +1317,10 @@ int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const T
 
 int test_scene_text_msdf_shader_uses_rgb_distance(TstContext* suite, const TstCase* item);
 
-int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const TstCase* item);
+int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
+    TstContext* suite, const TstCase* item);
+
+int test_scene_text_scientific_fallback_all_backends(TstContext* suite, const TstCase* item);
 
 int test_scene_text_public_font_atlas_api(TstContext* suite, const TstCase* item);
 

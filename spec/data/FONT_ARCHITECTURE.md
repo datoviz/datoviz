@@ -1,30 +1,30 @@
 # Datoviz Font Architecture
 
-> **Status:** target contract for v0.4 font ownership and default-family migration
+> **Status:** implemented consumer contract pending clean-build, rendering, packaging, and legacy-cache proof
 > **Scope:** scene text, rich text blocks, ImGui, embedded resources, custom fonts, glyph coverage, licensing, and deterministic generation
 
 ## Decision
 
 Datoviz must provide useful, deterministic text without a network, an initialized `data` submodule, platform font discovery, or application configuration. The built-in family has five required face roles: sans regular, sans bold, sans italic, sans bold-italic, and mono regular. A sixth scientific fallback role supplies mathematical and technical codepoints absent from the selected primary face. Every required role remains available to ordinary library users and offline rich-text paths.
 
-The approved long-term built-in family is the complete unmodified static Source Sans 3 regular, bold, italic, and bold-italic faces plus Source Code Pro regular, with unmodified Noto Sans Math regular as the scientific fallback. Exact files, upstream revisions, SHA-256 digests, sizes, OFL texts, font metadata, and coverage policy live under `assets/runtime/fonts/`. The consumer switch remains incomplete until clean-build and rendering evidence passes; until then, current runtime lookup behavior remains authoritative.
+The approved long-term built-in family is the complete unmodified static Source Sans 3 regular, bold, italic, and bold-italic faces plus Source Code Pro regular, with unmodified Noto Sans Math regular as the scientific fallback. Exact files, upstream revisions, SHA-256 digests, sizes, OFL texts, font metadata, and coverage policy live under `assets/runtime/fonts/`. The native consumer switch is implemented; clean-build, rendering, source-package, and installed-consumer evidence remains required before release acceptance.
 
 Do not subset the initial Source payload. Full upstream faces preserve their Reserved Font Names, coverage, provenance, and reproducibility. A later subset requires measured artifact or runtime benefit, replacement of every user-facing Reserved Font Name in the modified font, deterministic generation, exact license handling, and regression evidence.
 
-## Current v0.4 Reality
+## Implemented v0.4 Reality
 
-The current implementation is split across several mechanisms:
+The current implementation uses these mechanisms:
 
-1. scene defaults identify Roboto and Roboto Mono through `DvzFontDefaults`;
-2. the build embeds Roboto Regular and Roboto Mono Medium from `data/assets/fonts/`;
-3. rich text resolves regular, bold, italic, and bold-italic through repository-relative font paths;
-4. the default MSDF atlas is a generated derivative of Roboto Regular;
-5. ImGui embeds Karla Regular and Cousine Regular in a separate generated C payload;
+1. `DvzFontDefaults` selects Source Sans 3 and Source Code Pro without file paths;
+2. one build-generated file-I/O resource embeds all six admitted parent-repository fonts when scene or GUI support is enabled;
+3. ordinary retained scene text loads Source glyphs on demand and falls back per codepoint to Noto Sans Math in the MSDF, FreeType bitmap, and STB SDF atlas builders;
+4. rich text resolves real Source regular, bold, italic, and bold-italic faces and uses Noto Sans Math for missing scientific codepoints;
+5. ImGui uses Source Sans 3 regular and Source Code Pro regular, merges a bounded Noto Sans Math scientific range into its UI atlas, and still accepts configured sans and mono file paths;
 6. callers may create a scene-owned `DvzFont` from `DvzFontDesc.path` and select it with `DvzTextStyle.font`;
-7. `family`, `style`, and `font_flags` are not platform discovery or a complete face resolver today;
-8. bold, italic, and underline fields are style intent, but the retained glyph path does not yet resolve bold or italic to alternate faces automatically;
-9. scene text loads requested glyphs on demand, while ImGui builds a separate preloaded atlas;
-10. unsupported atlas codepoints currently fall back visibly to `?`.
+7. `family`, `style`, and `font_flags` remain metadata and built-in-role selectors, not operating-system font discovery;
+8. scene text and ImGui share immutable embedded bytes through file-I/O resources but retain independent atlas packing and GPU lifetime;
+9. unsupported atlas codepoints still fall back visibly to `?`;
+10. the tracked baked MSDF payload remains a legacy Roboto-only optimization and is not selected by the Source default; Source MSDF atlases are generated at runtime until that legacy product is removed or replaced through a separately approved generated-payload change.
 
 Specifications and public documentation must distinguish this implemented behavior from later shaping, fallback-chain, and family-resolution targets.
 
@@ -92,7 +92,7 @@ Derived consumers are:
 
 Scene glyph loading remains demand-driven. ImGui may preload a bounded scientific set, but that policy must not force the scene atlas to preload the same range.
 
-Use canonical text such as `Å` and `°C` where appropriate rather than compatibility characters. Do not promise U+FFFD unless the selected faces and fallback contract actually provide it. Required mathematical or scientific glyphs absent from the built-in family must produce the documented visible fallback until an explicit fallback-chain feature lands.
+Use canonical text such as `Å` and `°C` where appropriate rather than compatibility characters. Do not promise U+FFFD unless the selected faces and fallback contract actually provide it. Required mathematical or scientific glyphs absent from Source Sans 3 are resolved from Noto Sans Math. Codepoints absent from both built-ins produce the documented visible `?` fallback.
 
 ## Generated Products
 
@@ -110,23 +110,23 @@ Cached downloads must be accepted only after their expected hash is verified. A 
 
 ## Migration Sequence
 
-### Stage 1: correctness and ownership
+### Stage 1: correctness and ownership — complete
 
 Fix retained text so an explicitly selected `DvzTextStyle.font` reaches the batched glyph realization path. Specify font destruction and dependent-resource behavior, remove permanent slot leakage, and test cross-scene rejection, font switching, teardown, and atlas identity.
 
-### Stage 2: direct Source admission
+### Stage 2: direct Source admission — complete
 
 Present the exact five official Source files and one scientific fallback, including hashes, sizes, metadata, licenses, coverage report, compressed artifact impact, and proposed parent-repository paths for maintainer approval. After approval, admit the complete unmodified family directly into `assets/runtime/fonts/`; do not first copy the ten mixed-version legacy fonts into active parent Git.
 
 The admission replaces the temporary legacy manifest atomically. Exact legacy bytes remain recoverable from the frozen `datoviz/data` snapshot and Git history, but they are not an intermediate runtime architecture.
 
-### Stage 3: unified resolver and consumer switch
+### Stage 3: role resolution and consumer switch — complete for native consumers
 
-Add one internal family/source resolver with the six explicit roles. Route scene defaults, per-codepoint scientific fallback, rich-text face selection, ImGui default policy, embedded-resource generation, the default MSDF atlas, source releases, packages, and tests through it while keeping backend atlases separate. Preserve file-path custom fonts and switch every default consumer together so no partial Source/Roboto/Karla state ships.
+Route scene defaults, per-codepoint scientific fallback, rich-text face selection, ImGui default policy, embedded-resource generation, source releases, packages, and tests through the six admitted roles while keeping backend atlases separate. Preserve file-path custom fonts and switch every active default consumer together so no partial Source/Roboto/Karla state ships. The legacy baked Roboto MSDF optimization is isolated from the Source default and requires a later explicit generated-payload disposition.
 
-### Stage 4: independence and rendering proof
+### Stage 4: independence and rendering proof — in progress
 
-Prove a clean offline build with the submodule uninitialized. Validate all five real face roles, visible fallback, custom file fonts, scene and ImGui captures, content-scale/DPI changes, deterministic generated products, source archives, wheels, installed consumers, and license packaging before removing active legacy font lookup paths.
+Prove a clean offline build with the submodule uninitialized. Validate all five real face roles, scientific and visible fallback, custom file fonts, scene and ImGui captures, content-scale/DPI changes, source archives, wheels, installed consumers, and license packaging. Separately approve and validate removal or Source regeneration of the legacy baked Roboto atlas payload.
 
 If the direct migration cannot be completed cleanly before v0.4 API freeze, retain the current default family from the legacy snapshot rather than committing an incomplete Source family or importing obsolete legacy files into active parent Git.
 

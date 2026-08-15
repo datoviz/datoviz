@@ -208,13 +208,14 @@ int test_scene_text_msdf_shader_uses_rgb_distance(TstContext* suite, const TstCa
 
 
 /**
- * Verify default Roboto ASCII MSDF atlases use embedded cached payloads.
+ * Verify legacy Roboto ASCII MSDF atlases still use embedded cached payloads.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const TstCase* item)
+int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
+    TstContext* suite, const TstCase* item)
 {
     ANN(suite);
     (void)item;
@@ -277,6 +278,55 @@ int test_scene_text_default_msdf_uses_embedded_atlas(TstContext* suite, const Ts
 #else
     tst_skip(suite, "zlib unavailable");
 #endif
+    return 0;
+}
+
+
+/**
+ * Verify Source scene text falls back to Noto Sans Math for scientific symbols.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_scientific_fallback_all_backends(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFontDesc desc = dvz_font_desc();
+    desc.family = "Source Sans 3";
+    desc.style = "Regular";
+    DvzFont* font = dvz_font(scene, &desc);
+    ANN(font);
+
+    const char* scientific = "\xE2\x88\x87 \xE2\x88\x9D \xE2\x88\x88";
+    const uint32_t codepoints[] = {0x2207u, 0x221Du, 0x2208u};
+    const DvzTextAtlasBackend backends[] = {
+        DVZ_TEXT_ATLAS_BACKEND_MSDF,
+        DVZ_TEXT_ATLAS_BACKEND_FREETYPE_BITMAP,
+        DVZ_TEXT_ATLAS_BACKEND_STB_SDF,
+    };
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        DvzTextAtlasSpec spec = _scene_text_atlas_spec(backends[i], 32.0f);
+        AT(_scene_text_atlas_ensure_string(font, &spec, scientific));
+        DvzTextAtlas* atlas = _scene_text_atlas_get(font, &spec);
+        ANN(atlas);
+        AT(atlas->missing_glyph_count == 0);
+        for (uint32_t j = 0; j < 3; j++)
+        {
+            DvzTextAtlasGlyph* glyph = _scene_text_atlas_glyph(atlas, codepoints[j]);
+            ANN(glyph);
+            AT(glyph->codepoint == codepoints[j]);
+            AT(glyph->valid);
+            AT(glyph->glyph_id != 0);
+        }
+    }
+
+    dvz_scene_destroy(scene);
     return 0;
 }
 
@@ -494,7 +544,8 @@ int test_scene_text_atlas(TstSuite* suite)
     TST_GROUP("text-atlas");
 
     TST_CASE(test_scene_text_msdf_shader_uses_rgb_distance);
-    TST_CASE(test_scene_text_default_msdf_uses_embedded_atlas);
+    TST_CASE(test_scene_text_legacy_roboto_msdf_uses_embedded_atlas);
+    TST_CASE(test_scene_text_scientific_fallback_all_backends);
     TST_CASE(test_scene_text_public_font_atlas_api);
     TST_SCENE_TEXT_ATLAS_GPU_CASE(test_scene_text_atlas_utf8_runtime_readback);
 
