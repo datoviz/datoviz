@@ -7211,6 +7211,260 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
     return 0;
 }
 
+/**
+ * Render one controlled Standard-material primitive fixture.
+ *
+ * @param suite test context used for shared app resources
+ * @param material material descriptor
+ * @param color per-vertex semantic color
+ * @param ambient_intensity scene ambient light intensity
+ * @param directional_intensity scene directional light intensity
+ * @return captured RGBA buffer, or skipped=true when no app context is available
+ */
+static AppRgbaCapture _app_standard_material_capture(
+    TstContext* suite, const DvzMaterialDesc* material, DvzColor color,
+    float ambient_intensity, float directional_intensity)
+{
+    ANN(suite);
+    ANN(material);
+    AppRgbaCapture out = {0};
+
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+        return out;
+    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    if (figure == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    if (panel == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzLight* ambient = dvz_scene_default_ambient(scene);
+    DvzLight* directional = dvz_scene_default_directional(scene);
+    if (ambient == NULL || directional == NULL ||
+        dvz_light_set_intensity(ambient, ambient_intensity) != DVZ_OK ||
+        dvz_light_set_intensity(directional, directional_intensity) != DVZ_OK)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.view.eye[2] = 3.0f;
+    if (dvz_panel_set_camera_desc(panel, &camera) != DVZ_OK)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+
+    DvzVisual* visual = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    if (visual == NULL)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    vec3 positions[6] = {
+        {-0.8f, -0.8f, 0.0f}, {-0.8f, +0.8f, 0.0f}, {+0.8f, -0.8f, 0.0f},
+        {+0.8f, -0.8f, 0.0f}, {-0.8f, +0.8f, 0.0f}, {+0.8f, +0.8f, 0.0f},
+    };
+    vec3 normals[6] = {
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+    };
+    DvzColor colors[6] = {color, color, color, color, color, color};
+    if (dvz_visual_set_data(visual, "position", positions, 6) != DVZ_OK ||
+        dvz_visual_set_data(visual, "normal", normals, 6) != DVZ_OK ||
+        dvz_visual_set_data(visual, "color", colors, 6) != DVZ_OK ||
+        dvz_visual_set_material(visual, material) != DVZ_OK ||
+        dvz_panel_add_visual(panel, visual, NULL) != DVZ_OK)
+    {
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 0, 255));
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        out.skipped = true;
+        out.skip_reason = "GPU context creation failed";
+        dvz_scene_destroy(scene);
+        return out;
+    }
+    DvzView* view = dvz_view_offscreen(app, figure, 96, 96);
+    if (view != NULL)
+    {
+        DvzCanvas* canvas = dvz_view_canvas(view);
+        if (canvas != NULL)
+        {
+            dvz_app_run(app, 1);
+            if (dvz_canvas_capture_rgba(canvas, &out.width, &out.height, &out.rgba) != DVZ_OK)
+                out.rgba = NULL;
+        }
+    }
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return out;
+}
+
+
+
+/**
+ * Ensure Standard roughness changes the off-axis specular response.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_standard_roughness_changes_highlight(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzMaterialDesc sharp_material = dvz_standard_material_desc();
+    sharp_material.standard.roughness = 0.05f;
+    sharp_material.standard.specular = 0.50f;
+    sharp_material.standard.rim_strength = 0.0f;
+    DvzMaterialDesc broad_material = sharp_material;
+    broad_material.standard.roughness = 0.95f;
+    DvzColor black = {0, 0, 0, 255};
+    AppRgbaCapture sharp =
+        _app_standard_material_capture(suite, &sharp_material, black, 0.0f, 0.5f);
+    AppRgbaCapture broad =
+        _app_standard_material_capture(suite, &broad_material, black, 0.0f, 0.5f);
+    if (sharp.skipped || broad.skipped)
+    {
+        dvz_free(sharp.rgba);
+        dvz_free(broad.rgba);
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    ANN(sharp.rgba);
+    ANN(broad.rgba);
+    AT(sharp.width == 96 && sharp.height == 96);
+    AT(broad.width == sharp.width && broad.height == sharp.height);
+    const uint8_t* sharp_center =
+        _pixel_at(sharp.rgba, sharp.width, sharp.height, sharp.width / 2, sharp.height / 2);
+    const uint8_t* broad_center =
+        _pixel_at(broad.rgba, broad.width, broad.height, broad.width / 2, broad.height / 2);
+    AT(broad_center[0] > sharp_center[0] + 40);
+
+    dvz_free(broad.rgba);
+    dvz_free(sharp.rgba);
+    return 0;
+}
+
+
+
+/**
+ * Ensure Standard metallic suppresses the approximation's diffuse response.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_standard_metallic_suppresses_diffuse(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzMaterialDesc dielectric_material = dvz_standard_material_desc();
+    dielectric_material.standard.specular = 0.0f;
+    dielectric_material.standard.metallic = 0.0f;
+    dielectric_material.standard.rim_strength = 0.0f;
+    DvzMaterialDesc metallic_material = dielectric_material;
+    metallic_material.standard.metallic = 1.0f;
+    DvzColor warm = {210, 130, 70, 255};
+    AppRgbaCapture dielectric =
+        _app_standard_material_capture(suite, &dielectric_material, warm, 0.0f, 0.5f);
+    AppRgbaCapture metallic =
+        _app_standard_material_capture(suite, &metallic_material, warm, 0.0f, 0.5f);
+    if (dielectric.skipped || metallic.skipped)
+    {
+        dvz_free(dielectric.rgba);
+        dvz_free(metallic.rgba);
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    ANN(dielectric.rgba);
+    ANN(metallic.rgba);
+    AT(dielectric.width == 96 && dielectric.height == 96);
+    AT(metallic.width == dielectric.width && metallic.height == dielectric.height);
+    const uint8_t* dielectric_center = _pixel_at(
+        dielectric.rgba, dielectric.width, dielectric.height, dielectric.width / 2,
+        dielectric.height / 2);
+    const uint8_t* metallic_center = _pixel_at(
+        metallic.rgba, metallic.width, metallic.height, metallic.width / 2,
+        metallic.height / 2);
+    AT(dielectric_center[0] > metallic_center[0] + 60);
+
+    dvz_free(metallic.rgba);
+    dvz_free(dielectric.rgba);
+    return 0;
+}
+
+
+
+/**
+ * Ensure Standard emissive remains visible when scene lights are disabled.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_app_offscreen_standard_emissive_survives_unlit_scene(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzMaterialDesc dark_material = dvz_standard_material_desc();
+    dark_material.standard.specular = 0.0f;
+    dark_material.standard.rim_strength = 0.0f;
+    DvzMaterialDesc emissive_material = dark_material;
+    emissive_material.standard.emissive[0] = 0.80f;
+    emissive_material.standard.emissive[1] = 0.10f;
+    emissive_material.standard.emissive[2] = 0.05f;
+    DvzColor black = {0, 0, 0, 255};
+    AppRgbaCapture dark =
+        _app_standard_material_capture(suite, &dark_material, black, 0.0f, 0.0f);
+    AppRgbaCapture emissive =
+        _app_standard_material_capture(suite, &emissive_material, black, 0.0f, 0.0f);
+    if (dark.skipped || emissive.skipped)
+    {
+        dvz_free(dark.rgba);
+        dvz_free(emissive.rgba);
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    ANN(dark.rgba);
+    ANN(emissive.rgba);
+    AT(dark.width == 96 && dark.height == 96);
+    AT(emissive.width == dark.width && emissive.height == dark.height);
+    const uint8_t* dark_center =
+        _pixel_at(dark.rgba, dark.width, dark.height, dark.width / 2, dark.height / 2);
+    const uint8_t* emissive_center = _pixel_at(
+        emissive.rgba, emissive.width, emissive.height, emissive.width / 2,
+        emissive.height / 2);
+    AT(dark_center[0] < 4);
+    AT(emissive_center[0] > dark_center[0] + 150);
+    AT(emissive_center[0] > emissive_center[1] + 100);
+
+    dvz_free(emissive.rgba);
+    dvz_free(dark.rgba);
+    return 0;
+}
+
 
 /**
  * Ensure app-owned request execution stays steady across repeated query frames.
@@ -9921,6 +10175,9 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_field_partial_update_changes_region);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_lit_primitive_depth_cue_darkens_far);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_standard_roughness_changes_highlight);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_standard_metallic_suppresses_diffuse);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_standard_emissive_survives_unlit_scene);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_renders_nonblank);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_rotated_mesh_depth_orders_faces);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_camera_arcball_mesh_renders_cube);

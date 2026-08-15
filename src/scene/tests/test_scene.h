@@ -566,6 +566,12 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
 int test_app_offscreen_lit_primitive_depth_orders_overlap(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_lit_primitive_depth_cue_darkens_far(TstContext* suite, const TstCase* item);
+int test_app_offscreen_standard_roughness_changes_highlight(
+    TstContext* suite, const TstCase* item);
+int test_app_offscreen_standard_metallic_suppresses_diffuse(
+    TstContext* suite, const TstCase* item);
+int test_app_offscreen_standard_emissive_survives_unlit_scene(
+    TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_mesh_renders_nonblank(TstContext* suite, const TstCase* item);
 
