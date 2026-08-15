@@ -113,21 +113,21 @@ Cached downloads must be accepted only after their expected hash is verified. A 
 
 Fix retained text so an explicitly selected `DvzTextStyle.font` reaches the batched glyph realization path. Specify font destruction and dependent-resource behavior, remove permanent slot leakage, and test cross-scene rejection, font switching, teardown, and atlas identity.
 
-### Stage 2: behavior-preserving extraction
+### Stage 2: direct Source admission
 
-Move every currently required font face and license from `data` to `assets/runtime/fonts/` in ordinary parent Git. Preserve regular, bold, italic, bold-italic, mono, rich-text resolution, fallback behavior, and the current generated atlas. Update build, source-release, package, test, and runtime lookup paths together. Prove a clean offline build with the submodule uninitialized.
+Present the exact five official Source files, hashes, sizes, metadata, licenses, coverage report, compressed artifact impact, and proposed parent-repository paths for maintainer approval. After approval, admit the complete unmodified Source family directly into `assets/runtime/fonts/`; do not first copy the ten mixed-version legacy fonts into active parent Git.
 
-This stage must not switch default families, prune faces, modify font bytes, update the `data` gitlink, or redesign the public API.
+The admission replaces the temporary legacy manifest atomically. Exact legacy bytes remain recoverable from the frozen `datoviz/data` snapshot and Git history, but they are not an intermediate runtime architecture.
 
-### Stage 3: internal family resolver
+### Stage 3: unified resolver and consumer switch
 
-Add one internal family/source resolver with the five explicit roles. Route scene defaults, rich-text face selection, and ImGui default policy through it while keeping backend atlases separate. Preserve file-path custom fonts.
+Add one internal family/source resolver with the five explicit roles. Route scene defaults, rich-text face selection, ImGui default policy, embedded-resource generation, the default MSDF atlas, source releases, packages, and tests through it while keeping backend atlases separate. Preserve file-path custom fonts and switch every default consumer together so no partial Source/Roboto/Karla state ships.
 
-### Stage 4: Source default admission
+### Stage 4: independence and rendering proof
 
-Present the exact five official Source files, hashes, sizes, metadata, licenses, coverage report, compressed artifact impact, regeneration evidence, ImGui captures, scene captures, DPI tests, and fallback tests for maintainer approval. After approval, commit the binaries and deterministic derivatives in a focused change and switch all default consumers together.
+Prove a clean offline build with the submodule uninitialized. Validate all five real face roles, visible fallback, custom file fonts, scene and ImGui captures, content-scale/DPI changes, deterministic generated products, source archives, wheels, installed consumers, and license packaging before removing active legacy font lookup paths.
 
-If this stage cannot be completed cleanly before v0.4 API freeze, retain the current default family rather than shipping a partial Source migration.
+If the direct migration cannot be completed cleanly before v0.4 API freeze, retain the current default family from the legacy snapshot rather than committing an incomplete Source family or importing obsolete legacy files into active parent Git.
 
 ### Post-v0.4
 
