@@ -34,7 +34,7 @@ The validated implementation head builds and passes 1,128/1,128 validation-enabl
 | Qt/PyQt provider | Local Qt 6.11.1 build 2, PyQt6 6.11.0 build 3, split Datoviz packages, Vulkan instance, Cocoa surface, and hosted rendering proof are green. | Merge and publish Qt build 2, rerun and publish compatible PyQt, then build and validate exact split Datoviz artifacts on supported hosted platforms. |
 | Distribution | RC2 wheel and package-index campaigns are complete; reusable source, wheel, conda, and vcpkg tooling exists. The checkout-backed Windows `x64-windows` overlay and standalone Debug/Release CMake consumers pass on the physical MSVC machine. | Validate the exact final RC3 source/wheel/provider artifacts, release-source vcpkg URL and SHA512, conda layouts, third-party notices, and checksum/signing decisions. |
 | Release quality | The integrated render, pacing, and exploratory source-audit head passes the locally available static-analysis, practical CPU sanitizer, validation-enabled Vulkan/native, recovery, bounded presentation, docs, example-manifest, course, binding, specification, and WebGPU gates. | Freeze the exact RC3 candidate and run immutable source-archive, wheel, installed-consumer, hosted Linux/Windows, provider, remaining gallery/media, and physical-platform gates; record unavailable hardware and Vulkan-sanitizer limitations explicitly. |
-| Lighting foundation | The render-product architecture and panel-local `ambient_visibility` product are integrated, but active lights remain packed into per-visual material state and Standard AO currently lacks an explicit indirect-light source. | Complete [RC3_LIGHTING_FOUNDATION_SLICE.md](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md): scene-owned panel light sets, separate panel-light payload, removal of material-owned light direction, direct/indirect shader decomposition, and semantic native/WGSL GTAO tests. |
+| Lighting foundation | Complete at validated implementation head `8fd98715e`: scene-owned ambient/directional lights, panel-local ordered sets, one shared panel payload, material/light ownership separation, explicit direct/indirect shader composition, and native/WGSL validation are integrated. | Carry the completed slice into the exact RC3 candidate and rerun its focused native and browser checks on supported hosted environments. |
 
 Hosted Linux and Windows exact-artifact proof is mandatory for RC3. Physical Linux and Windows proof should be restored when hardware is available; final v0.4.0 requires that proof or an explicit maintainer-approved exception.
 
@@ -50,7 +50,7 @@ Final v0.4.0 resolves or records RC4 feedback, regenerates final media, passes r
 
 ## Optional Candidates
 
-- GSP Texture2D mesh integration, point-light evaluation, and the full multi-light Klein-bottle slice remain optional. The narrower scene-owned ambient/directional lighting foundation is required before the next release candidate.
+- GSP Texture2D mesh integration, point-light evaluation, and the full multi-light Klein-bottle slice remain optional. The required narrower scene-owned ambient/directional lighting foundation is complete.
 - Hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, and broad visual polish must not delay required release gates.
 - Point-cloud public WebGPU redistribution remains delisted without redistribution permission.
 

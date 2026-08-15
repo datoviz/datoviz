@@ -22,7 +22,7 @@ Preserve old v0.3 `main` as `v0.3-maintenance`, rename `v0.4-dev` to `main`, mak
 
 ## 2. RC3 Documentation, Packaging, Quality, And Course Foundation
 
-Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, local Apple Silicon split-package proof, and the R1-R9 render-product/GTAO/public-AO implementation. The approved AO gallery, choropleth, GLFW/Xvfb, WebGPU, scheduler-pacing, and exploratory source-audit follow-ups are integrated and pushed into `v0.4-dev`; `545c99379` is the exact validated implementation head and `2d83d0b63` is the active-branch merge commit.
+Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, local Apple Silicon split-package proof, the R1-R9 render-product/GTAO/public-AO implementation, and the required scene-owned lighting foundation. The lighting slice is validated at implementation head `8fd98715e`; earlier integrated render and source-audit evidence remains recorded at its own exact heads.
 
 The validated implementation head passes the complete 1,128-case native matrix, affected DRP2/vklite/recovery/presentation gates, practical CPU sanitizer checks, full-tree static-analysis disposition, WebGPU, bindings, documentation, example-manifest, and course checks. Vulkan-backed sanitizer teardown remains inconclusive, and exact artifact/host/platform proof remains separate.
 
@@ -37,11 +37,9 @@ Remaining RC3 deliverables:
 5. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, conda layouts, optional-provider diagnostics, third-party notices, and checksum/signing policy.
 6. Freeze the exact RC3 candidate, carry forward the completed local source-quality evidence, and run the remaining gallery/media, immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
 7. Freeze RC3 notes, known issues, validation evidence, artifacts, and feedback request only after the exact release scope is fixed.
-8. Complete [RC3_LIGHTING_FOUNDATION_SLICE.md](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md) before candidate freeze: scene-owned ambient/directional lights, panel-local light sets, a separate panel-light payload, removal of material-owned light direction, explicit direct/indirect shader composition, and GTAO modulation of indirect diffuse only.
-
 Hosted Linux and Windows exact-artifact validation is mandatory for RC3. Physical Linux and Windows should be restored when suitable machines are available; unavailable hardware remains an exclusion. Final requires the missing physical proof or an explicit maintainer-approved exception.
 
-Optional RC3 candidates must not delay these gates: GSP Texture2D mesh integration, point-light evaluation, the full multi-light Klein-bottle showcase, hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, or broad visual polish. The narrower lighting foundation required by item 8 is not optional.
+Optional RC3 candidates must not delay these gates: GSP Texture2D mesh integration, point-light evaluation, the full multi-light Klein-bottle showcase, hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, or broad visual polish. The narrower required lighting foundation is complete and must remain covered by exact-candidate validation.
 
 ## 3. RC4 Course And Installed Developer Experience
 

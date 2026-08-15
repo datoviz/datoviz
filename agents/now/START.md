@@ -8,7 +8,7 @@ Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file i
 
 Datoviz `v0.4.0rc2` is published and closed. The active source branch and GitHub default remain `v0.4-dev`; the next release milestone is RC3.
 
-The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, and local Qt bridge proof are implemented. RC3 remains blocked on branch cutover, exact package proof, maintainer documentation/media decisions, final release-quality gates, and publication of compatible Qt/PyQt provider packages.
+The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, local Qt bridge proof, and required scene-owned lighting foundation are implemented. RC3 remains blocked on branch cutover, exact package proof, maintainer documentation/media decisions, final release-quality gates, and publication of compatible Qt/PyQt provider packages.
 
 The active runtime path is:
 
@@ -36,7 +36,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 16. Read [../../spec/scene/README.md](../../spec/scene/README.md), [../../spec/drp2/README.md](../../spec/drp2/README.md), or the binding policies before changing those boundaries.
 17. Use [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) for the approved physical-key/text-input API split and coherent mesh-geometry replacement work.
 18. Use [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md) for the benchmark-first rolling-field/structured-surface performance lane and its strict RC4 versus post-v0.4 boundary.
-19. Before freezing the next release candidate, implement and validate [RC3_LIGHTING_FOUNDATION_SLICE.md](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md). This required slice moves light ownership from materials to scene-owned panel light sets and makes GTAO consume only explicit indirect illumination; do not expand it into full PBR or the optional multi-light showcase.
+19. The required [RC3_LIGHTING_FOUNDATION_SLICE.md](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md) is complete at validated implementation head `8fd98715e`. Preserve its scene-owned panel-light and direct/indirect contracts during candidate validation; do not expand it into full PBR or the optional multi-light showcase.
 
 ## Guardrails
 

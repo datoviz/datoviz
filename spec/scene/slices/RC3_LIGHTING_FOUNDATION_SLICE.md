@@ -1,6 +1,6 @@
 # RC3 Lighting Foundation Slice
 
-Status: required before the next release candidate; approved architecture, implementation pending. Updated: 2026-08-15.
+Status: complete at validated implementation head `8fd98715e`. Updated: 2026-08-15.
 
 This slice makes the smallest pre-final lighting correction that prevents a later PBR rearchitecture. It separates panel lighting from visual materials and separates direct from indirect illumination in the shared shader contract. It does not implement full PBR, image-based lighting, or the optional multi-light showcase.
 
@@ -107,6 +107,8 @@ git diff --check
 ```
 
 Run the relevant native offscreen GTAO examples and available WebGPU/browser smoke in addition to this minimum. Record unavailable environment-dependent validation honestly.
+
+Validation at `8fd98715e` passed the full scene suite, native ambient-only/directional-only GTAO semantics, shader ABI checks, generated ctypes and ABI checks, specification checks, WebGPU fixture and WASM stream smoke, and visual inspection of the native lighting gallery capture. Browser smoke compiled the WGSL lighting path after the reserved payload-field regression was fixed; actual headless WebGPU submission remained skipped because the local browser instance was lost before queue submission.
 
 ## Acceptance
 
