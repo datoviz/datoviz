@@ -52,7 +52,12 @@ jobs:
               wheel-windows-AMD64
               wheel-windows-ARM64
             )
+            declare -A seen_candidate_sha=()
             while IFS=$'\t' read -r candidate_id candidate_sha; do
+              if [[ -n "${seen_candidate_sha[$candidate_sha]:-}" ]]; then
+                continue
+              fi
+              seen_candidate_sha[$candidate_sha]=1
               comparison_status=$(gh api \
                 "repos/${{ github.repository }}/compare/${candidate_sha}...${GITHUB_SHA}" \
                 --jq .status 2>/dev/null || true)
@@ -75,7 +80,7 @@ jobs:
                 break
               fi
             done < <(gh api \
-              "repos/${{ github.repository }}/actions/workflows/wheels.yml/runs?status=success&per_page=100" \
+              "repos/${{ github.repository }}/actions/workflows/wheels.yml/runs?branch=${GITHUB_REF_NAME}&status=success&per_page=100" \
               --jq '.workflow_runs[] | [.id, .head_sha] | @tsv')
             if [[ -z "$REQUESTED_RUN_ID" ]]; then
               echo "available=false" >> "$GITHUB_OUTPUT"
