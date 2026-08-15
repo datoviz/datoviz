@@ -118,6 +118,8 @@ def _failures() -> list[str]:
         failures.append("GLSL ScenePanelLights is not declared at set 1 binding 4")
     if "@group(1) @binding(4) var<uniform> panel_lights: ScenePanelLights;" not in wgsl_material:
         failures.append("WGSL ScenePanelLights is not declared at group 1 binding 4")
+    if "active_count: vec4u" not in wgsl_material:
+        failures.append("WGSL ScenePanelLights active-count lane is missing or uses an invalid name")
     for text, language in [(glsl_material, "GLSL"), (wgsl_material, "WGSL")]:
         if "SceneLight" not in text or "ScenePanelLights" not in text:
             failures.append(f"{language} panel-light payload declarations are incomplete")

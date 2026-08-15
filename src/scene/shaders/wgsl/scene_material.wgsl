@@ -19,7 +19,7 @@ struct SceneLight {
 }
 
 struct ScenePanelLights {
-    active: vec4u,
+    active_count: vec4u,
     lights: array<SceneLight, 8>,
 }
 
@@ -29,7 +29,7 @@ struct ScenePanelLights {
 fn scene_ambient_radiance() -> vec3f {
     var radiance = vec3f(0.0);
     for (var i = 0u; i < 8u; i++) {
-        if (i >= panel_lights.active.x) {
+        if (i >= panel_lights.active_count.x) {
             break;
         }
         let light = panel_lights.lights[i];
@@ -43,7 +43,7 @@ fn scene_ambient_radiance() -> vec3f {
 fn scene_phong_direct(base: vec3f, n: vec3f, v: vec3f) -> vec3f {
     var direct = vec3f(0.0);
     for (var i = 0u; i < 8u; i++) {
-        if (i >= panel_lights.active.x) {
+        if (i >= panel_lights.active_count.x) {
             break;
         }
         let light = panel_lights.lights[i];
@@ -68,7 +68,7 @@ fn scene_standard_direct(base: vec3f, n: vec3f, v: vec3f) -> vec3f {
     let shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
     var direct = vec3f(0.0);
     for (var i = 0u; i < 8u; i++) {
-        if (i >= panel_lights.active.x) {
+        if (i >= panel_lights.active_count.x) {
             break;
         }
         let light = panel_lights.lights[i];
@@ -87,7 +87,7 @@ fn scene_standard_direct(base: vec3f, n: vec3f, v: vec3f) -> vec3f {
 
 fn scene_primary_directional() -> vec3f {
     for (var i = 0u; i < 8u; i++) {
-        if (i >= panel_lights.active.x) {
+        if (i >= panel_lights.active_count.x) {
             break;
         }
         if (i32(panel_lights.lights[i].direction_type.w + 0.5) == 1) {
