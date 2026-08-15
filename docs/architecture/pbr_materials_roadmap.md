@@ -1,347 +1,126 @@
 # PBR Materials Roadmap
 
-Date: 2026-05-16
+Status: lighting foundation implemented; full PBR deferred. Updated: 2026-08-15.
 
-This note records a long-term direction for physically based rendering (PBR) in the v0.4 scene
-stack, plus small near-term steps that make the path easier without committing Datoviz to a full
-PBR renderer now.
-
-The main architectural position is:
-
-```text
-PBR is a material model, not a visual family.
-```
-
-A visual family answers what geometry or data is drawn. A material model answers how a surface
-interacts with light. PBR should therefore attach to geometry-like visuals through the same
-retained material path that already serves unlit, Phong, depth cueing, WBOIT, depth peeling, and
-G-buffer planning.
-
+Datoviz treats physically based rendering as a material model applied to eligible surface visuals, not as a separate visual family or renderer. The active runtime remains `scene frame plans -> DRP2 command streams -> vklite runtime -> canvas/stream execution`.
 
 ## Current Position
 
-The active scene stack already has several useful foundations:
+The low-regret foundation required before a physically based BRDF is implemented:
 
-1. `DvzMaterialDesc` exists as the public material descriptor.
-2. `DVZ_MATERIAL_MODEL_STANDARD` exists as the first standard material intent.
-3. `DvzStandardMaterial` already carries roughness, specular, metallic, emissive, and rim fields.
-4. `src/scene/glsl/scene_material.glsl` centralizes material evaluation for lit visual shaders.
-5. Mesh, primitive, and sphere visuals can use the shared material path.
-6. Sphere impostors have analytic normals, making them a good uniform-material PBR target.
-7. Mesh and primitive visuals can participate in normal/depth G-buffer and AO paths when normals
-   are available.
-8. Visual pass capability resolution is centralized in `src/scene/visual_pipeline.c`.
-
-The current `STANDARD` shader branch should be treated as an approximate standard material, not as
-complete PBR. That is acceptable. The important part is preserving a stable user intent so the
-implementation can become physically based later without changing common user code.
-
-
-## Long-Term Goal
-
-The long-term goal is a standard metallic-roughness material model that can support scientific
-surface rendering, molecular surfaces, meshes imported from external assets, sphere impostors, and
-future tube/path geometry.
-
-The target material feature set is:
-
-1. uniform material factors:
-   - base color factor;
-   - opacity;
-   - metallic;
-   - roughness;
-   - emissive factor;
-   - optional occlusion strength;
-2. optional material texture maps:
-   - base color;
-   - metallic-roughness;
-   - normal;
-   - emissive;
-   - occlusion;
-3. correct linear-space lighting and sRGB handling;
-4. direct-light physically based BRDF, likely Cook-Torrance with GGX distribution;
-5. optional image-based lighting later:
-   - irradiance map;
-   - prefiltered environment map;
-   - BRDF lookup texture;
-6. compatibility with existing scene effects:
-   - depth cueing as a post-material modifier;
-   - AO through G-buffer normals/depth;
-   - WBOIT and depth peeling for transparent materials;
-   - object-id and outline passes later.
-
-
-## Visual Families
+1. `DvzMaterialDesc` and `dvz_visual_set_material()` provide one retained material path for primitive, mesh, and sphere visuals.
+2. `DVZ_MATERIAL_MODEL_UNLIT`, `DVZ_MATERIAL_MODEL_PHONG`, `DVZ_MATERIAL_MODEL_STANDARD`, and the limb model lower through shared GLSL and WGSL helpers in `src/scene/shaders/{glsl,wgsl}/scene_material.*`.
+3. Scene-owned ambient and directional lights, panel-local ordered light sets, useful scene defaults, reverse-reference invalidation, and one shared per-panel GPU payload are implemented.
+4. Materials contain surface response only; light direction, color, placement, and energy are panel-light state.
+5. Shared material evaluation separates direct illumination, indirect diffuse illumination, emissive output, and ambient visibility. GTAO modulates only indirect diffuse.
+6. Standard material factors have explicit v0.4 semantics and focused offscreen trends for roughness, metallic, and emissive response.
+7. Mesh UV attributes and a textured mesh path exist. Material texture sets, tangents, and normal mapping do not.
+8. Material-aware pass capability, surface normal/depth products, GTAO, WBOIT, and depth peeling already use the unified scene/FramePlan/DRP2 architecture.
 
-PBR should first support visuals whose fragments represent surfaces with meaningful normals.
+The completed release-gate boundary and its validation evidence are recorded in [`../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md`](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md). The normative active semantics are [`../../spec/scene/semantics/LIGHTING.md`](../../spec/scene/semantics/LIGHTING.md).
 
-### Mesh
+## What `STANDARD` Means In v0.4
 
-Mesh should be the primary PBR target. It naturally supports indexed surfaces, vertex normals,
-UVs, tangents, material texture maps, and imported asset workflows.
+`DVZ_MATERIAL_MODEL_STANDARD` is the stable standard metallic-roughness material intent, but its v0.4 shader is deliberately not an energy-conserving PBR BRDF.
 
-The long-term mesh path should support:
+Current behavior is:
 
-1. positions;
-2. indices;
-3. normals;
-4. UV coordinates;
-5. optional tangents for normal mapping;
-6. optional vertex colors;
-7. material factors and material texture maps.
+1. roughness maps inversely to a Blinn-Phong-style highlight exponent;
+2. specular is a nonnegative white artistic strength, not dielectric F0;
+3. metallic suppresses diffuse response but does not tint specular response;
+4. emissive is independent of scene lighting and ambient visibility;
+5. rim strength is an additive artistic view-dependent term;
+6. material evaluation is linear-light, while the current normalized scene-color attachments may clamp radiance on storage.
 
-### Sphere
+A true GGX implementation must land as an explicit semantic change with native GLSL/WGSL trend tests. Documentation must not call the v0.4 approximation physically based.
 
-Sphere impostors are a strong second target. They have analytic normals and are useful for atoms,
-particles, markers, and other dense scientific scenes.
+## Release Boundary
 
-Initial sphere PBR should stay factor-only. Texture maps should not be designed around sphere
-impostors, because mesh is the more representative material-texture case.
+The lighting foundation is complete and required for RC3. Full PBR, point lights, the RGB Klein-bottle showcase, material texture maps, HDR scene color, tone mapping, and image-based lighting are optional and must not delay RC3 or RC4.
 
-### Primitive
+Until the exact v0.4 candidate is secure, the rendering lane is validation and preservation work:
 
-Primitive triangle visuals can use the same material path when normals are available. This is useful
-for low-level tests and simple user geometry, but primitive should not become a parallel mesh
-renderer. If a surface needs indices, UVs, tangents, and material maps, mesh should be the canonical
-family.
+1. keep the panel-light and material ownership split intact;
+2. retain direct/indirect and GTAO-isolation regressions;
+3. keep the Standard approximation documented and tested consistently;
+4. rerun native and browser shader checks on exact candidates;
+5. fix measured regressions without expanding the material feature set.
 
-### Future Tube Or Surface-Like Families
+## Long-Term Target
 
-The future [`tube`](../../spec/scene/visuals/TUBE.md) visual could benefit from PBR-style lighting
-for streamlines, bonds, neurites, paths, and trajectory geometry. Plain line and `path` visuals
-should remain non-PBR unless they are rendered as tube or ribbon surfaces with meaningful normals.
+The target is a metallic-roughness material model for scientific surfaces, molecular meshes, imported assets, sphere impostors, and future tube or ribbon surfaces with meaningful normals.
 
-### Non-PBR Families
+The target feature set is:
 
-Image, point, pixel, and volume visuals should not expose PBR in the usual surface-material sense.
-They may use lighting-like effects, depth cueing, transfer functions, EDL, AO, or gradient
-shading, but those are separate scientific visualization techniques rather than surface PBR.
+1. uniform base color, opacity, metallic, roughness, emissive, and optional occlusion-strength factors;
+2. direct-light Cook-Torrance evaluation with GGX distribution, a documented dielectric F0 or index-of-refraction convention, energy conservation, metallic specular tint, and explicit roughness remapping;
+3. optional semantic texture maps for base color, metallic-roughness, normal, emissive, and occlusion;
+4. tangent-space normal mapping using a validated `vec4` tangent convention with handedness;
+5. HDR linear scene color followed by explicit exposure and tone mapping;
+6. optional image-based lighting with environment radiance, diffuse irradiance, prefiltered specular radiance, and a BRDF lookup resource;
+7. compatibility with GTAO, depth cueing, WBOIT, depth peeling, picking, query, and future outline passes through existing graph products rather than material-specific renderer forks.
 
+## Visual-Family Scope
 
-## Public API Direction
+Mesh is the primary PBR target because it supports indexed geometry, normals, UVs, tangents, vertex colors, and imported asset workflows. Primitive may use the same factor-only path when normals are present. Sphere impostors are a strong factor-only target because they provide analytic normals; texture-map architecture must not be designed around spheres.
 
-Keep the public API declarative and material-centered:
+Image, point, pixel, text, and volume visuals do not become PBR surfaces. They may use depth cues, transfer functions, EDL, AO, gradient shading, or other scientific techniques under their own contracts. Paths should use surface lighting only when represented as future tube or ribbon geometry with meaningful normals.
 
-```c
-DvzMaterialDesc mat = dvz_material_desc();
-mat.model = DVZ_MATERIAL_MODEL_STANDARD;
-mat.base_color_factor[0] = 0.8f;
-mat.base_color_factor[1] = 0.7f;
-mat.base_color_factor[2] = 0.6f;
-mat.base_color_factor[3] = 1.0f;
-mat.standard.metallic = 0.0f;
-mat.standard.roughness = 0.45f;
-dvz_visual_set_material(mesh, &mat);
-```
+## Ordered Implementation Lanes
 
-Do not add a separate `DvzPbrMaterial` or `dvz_visual_set_pbr()` path unless the existing material
-descriptor proves insufficient. The existing `DVZ_MATERIAL_MODEL_STANDARD` enum should carry the
-long-term standard metallic-roughness intent.
+These lanes are additive and should be promoted independently only after the preceding contract is stable.
 
-If material texture maps become public, prefer semantic slots over shader-specific names:
+### 1. HDR Scene Color And Presentation
 
-```c
-dvz_visual_set_field(mesh, "base_color", base_color_field);
-dvz_visual_set_field(mesh, "metallic_roughness", metallic_roughness_field);
-dvz_visual_set_field(mesh, "normal", normal_field);
-dvz_visual_set_field(mesh, "emissive", emissive_field);
-dvz_visual_set_field(mesh, "occlusion", occlusion_field);
-```
+Define a floating-point scene-color product, exposure, tone mapping, output encoding, capture semantics, and adaptation for backends that cannot honor the preferred format. Material evaluation must continue returning linear radiance and must not own display transforms.
 
-The important early decision is the slot vocabulary and the separation between material factors and
-optional sampled-field resources.
+### 2. Factor-Only Direct GGX
 
+Specify the direct-light equations early, but land and tune the production evaluator only after the HDR output contract is available. Define dielectric F0, metallic tint, roughness floor/remapping, energy conservation, rim behavior, multiple-direct-light accumulation, color ranges, and compatibility expectations for existing Standard users. Implement the same equations in GLSL and WGSL for mesh, normal-bearing primitive, and sphere. Keep texture maps and image-based lighting disabled.
 
-## New Visual Family Question
+### 3. Material Resources
 
-Do not add a PBR visual family. PBR should be a material model that applies to eligible visual
-families.
+Add a material-resource layer distinct from uniform material factors. Start with semantic `base_color` and `metallic_roughness` sampled-field slots. Resource identity, bind-layout selection, cache invalidation, serialization, and missing-map fallback must be explicit and backend-neutral.
 
-A future `surface` visual family may be worth considering only if it represents a genuinely higher
-level retained surface object distinct from mesh. For now, mesh should remain the canonical indexed
-surface family. Convenience builders can lower into mesh:
+### 4. Tangents And Normal Mapping
 
-```text
-shape -> mesh
-heightfield -> mesh
-gltf primitive -> mesh
-molecular surface -> mesh
-```
+Add validated per-vertex `vec4` tangents only when the normal-map path is implemented end to end. Specify tangent generation, handedness, mirrored UVs, absent tangents, nonuniform transforms, and native/WGSL parity before enabling the semantic `normal` map slot.
 
-Reserve new visual families for different rendering representations, such as sphere impostors,
-tubes, volumes, text, glyphs, or other families with distinct geometry generation and pass
-capabilities.
+### 5. Remaining Maps
 
+Add emissive and occlusion maps after the binding architecture is stable. Texture occlusion is material-local authored data and remains distinct from panel-local screen-space ambient visibility; their combination must be specified rather than inferred.
 
-## Near-Term Future-Proofing
+### 6. Environment Lighting
 
-These steps are useful now because they establish stable attachment points while avoiding a large
-renderer commitment.
+Add panel- or scene-scoped HDR environment resources, diffuse irradiance, prefiltered specular radiance, and a BRDF lookup table. These resources feed the existing indirect term and do not belong in `DvzMaterialDesc`.
 
-### Clarify `DVZ_MATERIAL_MODEL_STANDARD`
+### 7. Import And Asset Workflows
 
-Document `DVZ_MATERIAL_MODEL_STANDARD` as the standard metallic-roughness material intent, even if
-the current shader remains approximate.
+Lower glTF or other external assets into the existing mesh, material-factor, material-resource, sampler, and texture contracts. Importers consume renderer architecture; they do not define a parallel material system.
 
-This gives users and internals a stable target:
+## Independent Optional Lighting Lane
 
-```text
-UNLIT      color/emissive only
-PHONG      compatibility/simple lighting
-STANDARD   future physically based metallic-roughness path
-```
+Point-light evaluation, attenuation, two-sided lighting, and the RGB Klein-bottle showcase remain the separate [`../../spec/scene/slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md`](../../spec/scene/slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md). They reuse the implemented scene-owned light and panel-payload architecture but are not prerequisites for a factor-only directional GGX evaluator.
 
-The implementation can then evolve from approximate lighting to real GGX/direct-light PBR without
-renaming the public API.
+## Architectural Guardrails
 
-### Add Mesh UV Attribute Support
-
-Add `"texcoords"` support to mesh visuals before material texture sampling is implemented. This is
-the highest-leverage small data-model step for future PBR.
-
-The first form can reuse the generic dense data API:
-
-```c
-dvz_visual_set_data(mesh, "texcoords", uv, vertex_count);
-```
-
-A typed convenience wrapper can come later:
-
-```c
-dvz_mesh_texcoords(mesh, first, count, uv);
-```
-
-Even if no PBR shader samples material maps yet, UV support should be validated, serialized,
-tracked in visual resources, and visible to pipeline capability logic.
-
-### Reserve Tangent Attribute Semantics
-
-Normal mapping requires tangent-space data. Reserve this mesh attribute convention:
-
-```text
-"tangent" vec4f
-```
-
-The `xyz` components hold the tangent direction. The `w` component holds handedness. This matches
-common asset pipelines and glTF practice.
-
-Datoviz does not need to generate tangents immediately. It only needs to avoid choosing a different
-shape later.
-
-### Reserve Material Texture Slot Names
-
-Reserve the semantic slot vocabulary now:
-
-```text
-base_color
-metallic_roughness
-normal
-emissive
-occlusion
-```
-
-This can start as internal validation and documentation before becoming a public binding API.
-Stable names will make future shader, serialization, and import work less disruptive.
-
-### Split Material Factors From Material Resources Internally
-
-The current retained material state is mostly uniform-factor state. Future PBR needs two related
-but distinct concepts:
-
-```text
-material factors
-  scalar/vector values uploaded through a small uniform buffer
-
-material resources
-  optional sampled textures or fields bound by semantic material slot
-```
-
-Internally, this suggests keeping something like:
-
-```c
-visual->material        /* model, alpha, factors, depth cue, versions */
-visual->material_maps   /* optional resources for base_color, normal, etc. */
-```
-
-This keeps `dvz_visual_set_material()` simple while leaving room for texture maps and importers.
-
-### Make Pipeline Capabilities Material-Aware
-
-Visual pass capability resolution should gradually include material facts, not just visual-family
-facts. Useful questions include:
-
-1. does the visual have normals?
-2. does the material need lighting?
-3. does the material need UVs?
-4. does the material need tangents?
-5. does the material use sampled maps?
-6. can this visual emit normal/depth G-buffer data?
-7. can this visual participate in AO, WBOIT, depth peeling, object-id, or outline passes?
-
-The long-term selection rule should be:
-
-```text
-visual family + material model + pass kind + available attributes -> shader/pipeline/bind layout
-```
-
-This keeps PBR out of `scene_emit.c` special cases.
-
-### Keep A Material Shader Library Boundary
-
-Continue treating `scene_material.glsl` and the matching WGSL material include as the owner of
-material evaluation.
-
-The material shader boundary should eventually expose:
-
-```text
-evaluate_unlit()
-evaluate_phong()
-evaluate_standard()
-apply_depth_cue()
-```
-
-The standard evaluator can first remain approximate, then move to a real BRDF once the data model
-and pipeline selection are ready.
-
-
-## Suggested Implementation Slices
-
-An incremental path that keeps risk low:
-
-1. Documentation and naming:
-   - clarify `DVZ_MATERIAL_MODEL_STANDARD`;
-   - document reserved material texture slots;
-   - document mesh UV and tangent conventions.
-2. Mesh attribute groundwork:
-   - accept mesh `"texcoords"` dense data;
-   - reserve mesh `"tangent"` validation, or explicitly reject it with a future-facing diagnostic;
-   - include UV presence in visual descriptors.
-3. Internal resource model:
-   - add a small internal material-map slot table;
-   - do not sample maps yet;
-   - make serialization/debug output preserve material intent.
-4. Direct-light standard material:
-   - replace the approximate standard shader branch with GGX direct-light evaluation;
-   - support mesh, primitive-with-normals, and sphere;
-   - keep texture maps disabled.
-5. Texture-map support:
-   - add base-color and metallic-roughness maps first;
-   - add normal maps only after tangent support is validated;
-   - add emissive and occlusion maps after the binding path is stable.
-6. Environment lighting:
-   - add irradiance/prefilter/BRDF-LUT resources;
-   - keep this optional and panel- or scene-scoped.
-7. Import and asset workflows:
-   - lower external assets into existing mesh/material/texture slots;
-   - avoid making importers define renderer architecture.
-
-
-## Things To Avoid For Now
-
-1. Do not create a `pbr` visual family.
-2. Do not introduce a second mesh or surface renderer path.
-3. Do not expose a public `DvzMaterial*` object until shared material ownership is needed.
-4. Do not design material textures around sphere impostors.
-5. Do not add image-based lighting before direct-light standard material evaluation is clean.
-6. Do not let PBR-specific conditionals accumulate in scene emission; route them through material
-   state, pass capabilities, shader descriptors, and technique planning.
+1. Do not add a `pbr` visual family, second mesh renderer, or backend-specific scene-light model.
+2. Do not move light placement, direction, color, environment resources, exposure, or tone mapping into `DvzMaterialDesc`.
+3. Do not reinterpret Standard fields silently or claim physical correctness without explicit equations and conformance tests.
+4. Do not add image-based lighting before direct-light and HDR output semantics are defined.
+5. Do not accumulate PBR switches in scene emission; lower material, attribute, resource, pass, and capability facts through the existing visual pipeline.
+6. Do not conflate authored occlusion maps, GTAO ambient visibility, shadows, or transparency.
+7. Do not make PBR expansion a v0.4 release blocker without an explicit maintainer scope decision.
+
+## Readiness Checklist For A Promoted PBR Slice
+
+A future implementation slice is ready only when it specifies:
+
+1. exact public semantics and compatibility treatment;
+2. GLSL/WGSL equations and toleranced conformance trends;
+3. required attributes, sampled resources, bind layouts, and cache identity;
+4. linear-light, HDR storage, exposure, tone-mapping, and capture boundaries;
+5. interaction with GTAO, transparency, depth cueing, and render products;
+6. capability adaptation and diagnostics;
+7. representative mesh, sphere, metallic, dielectric, roughness, emissive, and mixed-light fixtures;
+8. release scope and proof that it does not create another runtime path.

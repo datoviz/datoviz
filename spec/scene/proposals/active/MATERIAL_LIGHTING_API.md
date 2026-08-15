@@ -1,337 +1,104 @@
 > **Execution Status**
-> - **Status:** `MATERIAL SLICE AND RC3 LIGHTING FOUNDATION IMPLEMENTED; PBR DEFERRED`
+> - **Status:** `MATERIAL API AND RC3 LIGHTING FOUNDATION IMPLEMENTED; FULL PBR DEFERRED`
 > - **Updated on:** `2026-08-15`
-> - **Purpose:** define the intended v0.4 scene-facing material and lighting object model for mesh
->   and future lit visual families.
+> - **Purpose:** preserve the implemented ownership decisions and define the additive boundary for future material and lighting work.
 
-# Material and Lighting API
+# Material And Lighting API
 
-This note narrows the larger lighting and mesh-shading discussion into the active scene-facing API
-decisions needed before the first mesh family lands.
+## Current Contract
 
+Datoviz separates three kinds of state:
 
-## Objective
+1. lights are explicit scene-owned reusable objects;
+2. panels select bounded ordered sets of those lights;
+3. visuals own material response and shading intent.
 
-Define a material and lighting model that:
+This is implemented for ambient and directional lights, panel defaults and overrides, primitive/mesh/sphere materials, shared native/WGSL evaluation, and material-aware GTAO. The exact release-gate implementation and evidence are recorded in [`../../slices/RC3_LIGHTING_FOUNDATION_SLICE.md`](../../slices/RC3_LIGHTING_FOUNDATION_SLICE.md); normative behavior lives in [`../../semantics/LIGHTING.md`](../../semantics/LIGHTING.md).
 
-1. supports the first lit mesh slice now,
-2. stays compatible with future lit spheres and similar 3D families,
-3. avoids dragging the old v0.3 light/material packing into v0.4,
-4. leaves room for texture bindings, WBOIT, and later PBR growth.
+## Implemented Public Shape
 
+Lighting uses one descriptor-oriented lifecycle:
 
-## Current Implementation State
+```c
+DvzLightDesc desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+desc.direction[0] = -0.45f;
+desc.direction[1] = +0.35f;
+desc.direction[2] = +0.82f;
+DvzLight* light = dvz_light(scene, &desc);
 
-As of `2026-08-15`, `DvzMaterialDesc` and `dvz_visual_set_material()` provide a value-descriptor material API for primitive, mesh, and sphere visuals. Phong, Standard, and limb models lower through shared material shader helpers; depth cueing remains a separate typed setter that composes with the material payload. Scene-owned ambient and directional lights, panel-local ordered light sets, shared light payloads, material/light ownership separation, and direct-versus-indirect composition are implemented. Materials no longer contain light direction.
+DvzLight* lights[] = {light};
+dvz_panel_set_lights(panel, lights, 1);
+```
 
-The completed pre-RC3 ownership and shader boundary is [RC3_LIGHTING_FOUNDATION_SLICE.md](../../slices/RC3_LIGHTING_FOUNDATION_SLICE.md). The active Standard model remains a compact, non-energy-conserving approximation: roughness controls a Blinn-Phong-style highlight exponent, metallic suppresses diffuse only, and specular remains a white artistic strength. A true GGX metallic/roughness BRDF, material texture set, HDR scene color, tone mapping, and image-based lighting remain explicitly deferred.
+The public API provides `dvz_light_set_desc()`, focused color/intensity/direction setters, explicit destruction, `dvz_panel_set_lights()`, `dvz_panel_reset_lights()`, and access to the scene default ambient and directional handles. Descriptors, duplicate handles, capacity, cross-scene references, mutation, destruction, and repeated emission are validated.
 
-The broader optional implementation candidate remains [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](../../slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md). It adds point lights, the three-colored-light checkerboard Klein bottle, two-sided surface lighting, shared example presets, and broader native/WebGPU pressure testing. Those additions are not an RC3 or RC4 release blocker.
+Materials use value descriptors rather than scene-owned material handles:
 
+```c
+DvzMaterialDesc material = dvz_standard_material_desc();
+material.standard.roughness = 0.45f;
+material.standard.specular = 0.50f;
+material.standard.metallic = 0.0f;
+dvz_visual_set_material(mesh, &material);
+```
 
-## Existing Grounding In The Repo
+`DvzMaterialDesc` contains model, alpha, opacity, base color, and model-specific response. It contains no light placement, direction, color, or energy.
 
-Relevant context already exists here:
+## Ownership And Invalidation
 
-1. mesh shading direction: [MESH_SHADING_DESIGN.md](../promoted/MESH_SHADING_DESIGN.md)
-2. mesh visual ownership split: [MESH_API_DESIGN.md](../promoted/MESH_API_DESIGN.md)
-3. older broad lighting note:
-   [spec/scene/semantics/LIGHTING.md](../../semantics/LIGHTING.md)
-4. v0.3 shader reference: removed `include/datoviz/scene/glsl/lighting.glsl`, retained in Git history.
+Lights belong to one scene. Panels hold ordered references and inherit a useful scene default set until explicitly overridden. Cross-scene and duplicate references are rejected. Light mutation or destruction invalidates only affected panels through reverse references; no dangling handle survives into a frame plan.
 
-This note records the active recommendation where those sources are still too broad or too tied to
-older assumptions.
+Materials remain visual-owned because one geometry resource may be rendered with different response in different visuals and panels. Transient selection/highlight state remains separate from the base material.
 
+## Active Light Types
 
-## Core Recommendation
+Ambient lights contribute constant indirect irradiance. Directional lights contribute world-space parallel direct illumination. The panel payload reserves position and attenuation lanes, but point and spot evaluation is not active.
 
-Separate:
+Point lights, attenuation, two-sided lighting, and the RGB Klein-bottle showcase are the optional [`../../slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md`](../../slices/MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md). They extend the implemented ownership and payload rather than reopening it.
 
-1. light objects,
-2. panel light sets,
-3. visual-owned material state.
+## Material Models
 
-Recommended ownership:
+The active models are unlit, Phong, Standard, and limb. Depth cueing remains a separate typed effect that composes with material output.
 
-1. lights are explicit scene-owned reusable objects,
-2. panels choose which lights affect them,
-3. lit visuals own materials and shading mode,
-4. visuals do not own lights directly by default.
+Phong retains classic ambient, diffuse, specular, and shininess response. Its ambient field is a material response multiplier; panel ambient lights own indirect radiance.
 
-This is the cleanest model for multi-panel scenes.
+Standard is the long-term metallic-roughness intent but remains a compact non-energy-conserving v0.4 approximation. Roughness maps to a Blinn-Phong-style exponent, specular is a white artistic multiplier, metallic suppresses diffuse, emissive is independent, and rim strength is artistic. Standard never reads Phong fields.
 
+Limb is a thin-shell presentation model using surface normal, camera direction, and the first directional light. It is not atmospheric scattering and bypasses ambient visibility.
 
-## Why Panel-Local Light Sets
+## Direct, Indirect, And GTAO Boundary
 
-The active light set should be panel-local, not implicitly one global scene lighting state.
+Shared GLSL and WGSL evaluation follows:
 
-Reasons:
+```text
+direct = evaluate_direct_lighting(material, panel_lights, surface)
+indirect_diffuse = evaluate_indirect_diffuse(material, panel_lights, surface)
+linear_radiance = emissive + direct + ambient_visibility * indirect_diffuse
+```
 
-1. different panels may show the same object from different scientific presentation angles,
-2. one panel may want neutral inspection lighting while another wants more dramatic depth cues,
-3. this matches panel-owned camera state better than global scene-only light binding,
-4. it avoids making later browser/export adaptation depend on hidden global state.
+GTAO affects only indirect diffuse. Direct diffuse, direct specular, emissive, unlit, limb, transparent, volume, and overlay contributions remain independent unless a later semantic contract explicitly opts in.
 
-Recommended rule:
+## GPU And Runtime Boundary
 
-1. lights are scene-owned objects,
-2. each panel selects a light set from those scene-owned lights,
-3. panels may fall back to a default light set if not configured explicitly.
+Each panel lowers its active lights into one normalized fixed-capacity uniform payload with an explicit active count. Compatible material-facing visuals share the panel buffer through set 1 binding 4; material uploads do not contain duplicate light state. Bind-group cache identity includes panel-light resource identity.
 
+The payload and shader contract are shared by native GLSL and WebGPU WGSL. Scene occlusion and GTAO/depth-peel bindings keep their existing set 2 and set 3 roles. No lighting feature creates another scene, renderer, presentation, or backend-specific ownership path.
 
-## Material Ownership
+## Transparency And Render Products
 
-Material state belongs to the visual, not the mesh resource and not the panel.
-
-Why:
-
-1. one geometry resource may be reused by multiple visuals,
-2. different panels may want different material presentation for the same geometry,
-3. opacity and shading mode are visual concerns that interact with picking and transparency.
-
-This matches the mesh API design note and should remain stable across lit visual families.
-
-
-## First Lit Material Model
-
-The first active material model should be classic lit, explicit, and small.
-
-Recommended Phase-1 fields:
-
-1. `base_color`
-2. `ambient`
-3. `diffuse`
-4. `specular`
-5. `shininess`
-6. `emission`
-7. `opacity`
-
-Recommendation:
-
-1. keep this as an explicit semantic material object or descriptor,
-2. do not encode it as raw `mat4` blocks in the public API,
-3. do not pretend it is already a full asset-material system.
-
-
-## Base Color Policy
-
-The role of `base_color` should be explicit.
-
-Recommended rule:
-
-1. `base_color` modulates the primary surface color contribution,
-2. vertex color and texture albedo, when present, combine with `base_color`,
-3. specular color remains explicit and is not inferred from `base_color`,
-4. opacity comes from material opacity multiplied by any alpha present in surface color inputs.
-
-This keeps the first model simple without baking in one monolithic color-source rule forever.
-
-
-## Light Types
-
-The first active light types should be:
-
-1. ambient
-2. directional
-3. point
-
-That is enough for the current scientific 3D slice.
-
-I would not introduce spot lights in the first pass unless an actual use case appears.
-
-
-## Light Data Shape
-
-The public light model should use explicit semantic fields.
-
-Recommended conceptual shape:
-
-1. light type
-2. color
-3. intensity
-4. direction for directional lights
-5. position for point lights
-6. attenuation parameters for point lights later if needed
-
-Do not preserve v0.3-style `mat4` packing as a public-facing model.
-
-
-## Default Lighting Policy
-
-The scene should provide useful defaults without forcing user configuration for every 3D example.
-
-Recommended default:
-
-1. one ambient light,
-2. one directional light,
-3. each new 3D panel inherits a default light set unless overridden.
-
-This gives a sane out-of-the-box result for the first colored cube example while still allowing
-panel-level control.
-
-
-## Light Count Policy
-
-Keep the first active light count intentionally small.
-
-Recommendation:
-
-1. guarantee support for at least one ambient plus a small fixed array of directional/point lights,
-2. start with a panel light set size of 4 practical lights if that fits current runtime wiring,
-3. reject or diagnose overflow rather than silently changing semantics.
-
-This is enough for the active rendering goals and keeps the first UBO model straightforward.
-
-
-## Coordinate Space Convention
-
-Lighting conventions should be explicit now.
-
-Recommended first implementation:
-
-1. lighting is computed in world space,
-2. object/model transforms move geometry into world space,
-3. panel camera/view/projection transforms then apply normally,
-4. directional lights are expressed in world-space direction,
-5. point lights are expressed in world-space position.
-
-Do not recompute camera inverse per vertex if panel camera position can be supplied directly.
-
-
-## Shading Model Selection
-
-The scene-facing API should distinguish material state from shading model choice.
-
-Recommended first shading modes:
-
-1. `unlit`
-2. `classic_lit`
-
-Deferred:
-
-1. `pbr`
-2. contour/isoline-specific surface modes
-
-This matters because not every mesh-like visual should be forced into lit shading, and some
-annotation or helper geometry may intentionally be unlit.
-
-
-## Relationship To Transparency
-
-Opacity is material data, but transparency is also a render-mode decision.
-
-Recommended split:
-
-1. material owns `opacity`,
-2. visual/render state owns `opaque` versus `transparent_wboit`,
-3. frame-plan/runtime decide the pass structure.
-
-Do not make “opacity < 1” the whole transparency API.
-
-
-## Relationship To Screen-Space Techniques
-
-Material fields may feed optional techniques, but the techniques own their pass structure:
-
-1. bloom should use explicit emissive or high-intensity color policy, not infer glow from every
-   bright albedo by accident;
-2. outlines and selection highlights should override presentation without mutating base material;
-3. depth-of-field, SSAO, EDL, WBOIT, and depth peeling consume graph resources emitted by the
-   material pass instead of adding material-specific render paths.
-
-
-## Relationship To Textures
-
-Texture bindings should be separate resources referenced by the visual/material path.
-
-Recommended near-term policy:
-
-1. Phase 1 can be color-only,
-2. later add albedo texture binding cleanly,
-3. sampler and texture remain explicit scene resources,
-4. material/shading state decides how those resources are interpreted.
-
-This avoids making textures part of mesh resource identity.
-
-
-## Relationship To Picking And Highlighting
-
-Material/lighting state should not own picking identity, but it should be compatible with
-highlighting overlays.
-
-Recommendation:
-
-1. picking results resolve to visual/object and face/item identities,
-2. highlight or selection styling can modify material-like presentation,
-3. the base material object remains distinct from transient highlight state.
-
-This avoids coupling selection mechanics to permanent material mutation.
-
+Material owns opacity and alpha mode; graph and visual state own opaque, WBOIT, and depth-peeling pass structure. Surface normal/depth products and ambient visibility are graph resources, not hidden material state. Selection and highlighting may alter presentation without mutating the retained base material.
 
 ## Future PBR Growth
 
-The API should leave room for PBR without pretending PBR is implemented now.
+The implemented Standard descriptor and lighting ownership are designed to support a later physically based evaluator without a new `DvzPbrMaterial` or `pbr` visual family. The authoritative ordered roadmap is [`../../../../docs/architecture/pbr_materials_roadmap.md`](../../../../docs/architecture/pbr_materials_roadmap.md).
 
-Recommended reserved growth path:
+Before replacing the Standard evaluator, specify dielectric F0 or index of refraction, metallic tint, roughness mapping, energy conservation, rim compatibility, HDR output, and GLSL/WGSL conformance. Material textures then require a resource layer separate from factors, followed by tangent validation for normal maps. Environment lighting remains panel- or scene-scoped and feeds indirect illumination; it does not belong in `DvzMaterialDesc`.
 
-1. add `metallic`
-2. add `roughness`
-3. add `emissive_color`
-4. later add normal-map and metallic-roughness texture bindings
+## Guardrails
 
-Recommendation:
-
-1. reserve semantic room in the material model now,
-2. do not freeze the first classic-lit struct in a way that makes PBR a second incompatible API,
-3. do not overbuild full PBR machinery before the current 3D slice and WBOIT path are working.
-
-
-## Relationship To Existing `spec/scene/semantics/LIGHTING.md`
-
-The broad lighting note is still useful, but I would tighten one design point for active work:
-
-1. keep scene-owned light objects,
-2. move the active light-set binding decision to the panel level,
-3. keep material ownership on visuals,
-4. treat the broad note as strategic context rather than the exact active contract.
-
-This is the main place where I would be stricter than the earlier high-level document.
-
-
-## Initial Public API Direction
-
-The exact names can still move, but the conceptual surface should look like:
-
-1. create/update/destroy light objects,
-2. assign a set of lights to a panel,
-3. set a visual material,
-4. set a visual shading mode.
-
-Likely conceptual calls:
-
-1. `dvz_light_*`
-2. `dvz_panel_set_lights(...)`
-3. `dvz_mesh_set_material(...)`
-4. `dvz_mesh_set_shading_mode(...)`
-
-For other future lit families, the same pattern should hold.
-
-
-## Immediate Scope Recommendation
-
-The narrowest useful first implementation slice is:
-
-1. classic-lit material object on mesh visuals,
-2. ambient plus directional default light set,
-3. panel-local selection of the active light set,
-4. explicit `unlit` and `classic_lit` shading modes,
-5. opacity field present from the start even if the first mesh example is opaque.
-
-
-## Explicit Non-Goals For The First Slice
-
-1. full multi-material assets,
-2. every possible light type,
-3. automatic physically based energy calibration,
-4. texture/material combinatorics beyond the first actual need,
-5. full PBR implementation.
+1. Do not restore material-owned light direction or keep dual lighting authority.
+2. Do not add a second material setter, PBR visual family, mesh renderer, or backend-specific scene-light model.
+3. Do not silently reinterpret Standard as physically based.
+4. Do not conflate opacity with pass selection, authored occlusion maps with GTAO, or environment lighting with material factors.
+5. Do not add point lights, material maps, HDR/tonemapping, or image-based lighting to a release gate without explicit promotion.
+6. Preserve one scene-to-FramePlan-to-DRP2-to-vklite runtime path.

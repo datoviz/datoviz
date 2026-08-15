@@ -62,8 +62,7 @@ Preserved direction:
 2. DoF is showcase-oriented postprocess, not a scientific default;
 3. outline, edge enhancement, and bloom need explicit identity, composition, export, and scissor
    policy before public API;
-4. SSAO quality work should improve depth reconstruction, kernels, rotation, blur, and tuning
-   without replacing the graph path;
+4. preserve the implemented material-aware GTAO path, edge-aware denoising, ambient-only consumption, and deterministic resize/panel behavior; further estimator or tuning work requires measured regressions rather than a return to black-overlay SSAO;
 5. MSAA hardening should cover sample-count serialization, vklite resolve lowering, sphere
    alpha-to-coverage, and comparison examples;
 6. non-volume consumers of volume occlusion should start with primitive or unlit mesh and verify

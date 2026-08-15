@@ -385,10 +385,7 @@ Vector and 3D line-family direction:
 6. Bitmap/SDF/MSDF marker modes and shared marker/glyph atlas infrastructure.
 7. Dashes, arrow caps, and marker attachments for segment/path.
 
-Workers are not alone in the codebase. Each lane must preserve unrelated user edits, avoid reverting
-other workers' changes, and coordinate around shared files such as `include/datoviz/scene.h`,
-`src/scene/_scene.h`, `src/scene/visual.c`, `src/scene/visual_pipeline.c`, shader registry files, and
-scene tests.
+Workers are not alone in the codebase. Each lane must preserve unrelated user edits, avoid reverting other workers' changes, and coordinate around shared files such as `include/datoviz/scene.h`, `src/scene/core/_scene.h`, the modules under `src/scene/visuals/` and `src/scene/runtime/`, shader registry files, and scene tests.
 
 
 ## Validation Baseline

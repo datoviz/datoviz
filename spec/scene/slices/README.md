@@ -27,7 +27,7 @@ slice.
 2. [ANNOTATION_LABEL_SLICE.md](ANNOTATION_LABEL_SLICE.md): first rendered label annotation path.
 3. [COLORBAR_RENDERING_SLICE.md](COLORBAR_RENDERING_SLICE.md): first rendered continuous colorbar.
 4. [LEGEND_SLICE.md](LEGEND_SLICE.md): deferred categorical/discrete legend boundary.
-5. [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md): required pre-RC3 scene-owned ambient/directional lighting, direct/indirect shader decomposition, and correct GTAO consumption.
+5. [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md): completed RC3 scene-owned ambient/directional lighting, direct/indirect shader decomposition, and correct GTAO consumption.
 6. [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md): optional point-light, two-sided-lighting, and checkerboard Klein-bottle expansion after the required lighting foundation.
 
 
@@ -45,7 +45,7 @@ slice.
 | Discrete legend | yes, broad | no active public handle | no | no | no | no | none | [LEGEND_SLICE.md](LEGEND_SLICE.md) |
 | Scale bar measurement | yes | yes, `dvz_scale_bar()` | yes | 2D and 3D first slices active | no | raster capture only | formatting, realization, stream, and churn tests | release validation smoke |
 | Dimension measurement | proposal only | no dedicated public handle | no | no | no | no | none | after label and text slices |
-| Lighting foundation | approved required slice | descriptor names pending API review | material-owned compatibility state only | current visual-owned Phong/Standard path | n/a | raster capture only | current material/GTAO tests; semantic split pending | [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md) before RC3 freeze |
+| Lighting foundation | yes | yes, descriptor-oriented scene lights and panel sets | scene-owned lights, panel-local ordered sets, visual-owned materials | ambient/directional lighting through shared GLSL/WGSL material evaluation | n/a | raster capture only | lifecycle, sharing, cross-panel, GTAO isolation, shader ABI, Standard trends | preserve through exact-candidate validation; optional point lights remain separate |
 
 
 ## Slice Template
@@ -66,7 +66,7 @@ Each implementation slice should answer these questions before code starts:
 
 Use this order unless a concrete user task changes priority:
 
-1. Complete [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md) before the next release-candidate freeze.
+1. Carry the completed [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md) through exact-candidate native and browser validation without expanding it into full PBR.
 2. Prove text, axes, colorbars, label annotations, and scale bars in the release example/fixture set.
 3. Finish data/world text placement and depth policy where release examples require it.
 4. Harden shared panel-edge layout across axes, colorbars, legends, annotations, and readouts.

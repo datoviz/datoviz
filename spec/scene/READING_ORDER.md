@@ -41,7 +41,7 @@ Read the scene spec in this order during review.
 5. [semantics/SCALES.md](semantics/SCALES.md): color, size, and opacity scale objects and colormap
    model.
 6. [semantics/LIGHTING.md](semantics/LIGHTING.md): scene-level lighting model and upgrade path.
-7. [slices/RC3_LIGHTING_FOUNDATION_SLICE.md](slices/RC3_LIGHTING_FOUNDATION_SLICE.md): required pre-RC3 ownership, shader decomposition, and GTAO integration work packet.
+7. [slices/RC3_LIGHTING_FOUNDATION_SLICE.md](slices/RC3_LIGHTING_FOUNDATION_SLICE.md): completed RC3 ownership, shader decomposition, and GTAO integration work packet with validation evidence.
 8. [semantics/AXES.md](semantics/AXES.md): axes and tick semantics.
 9. [semantics/ANNOTATIONS.md](semantics/ANNOTATIONS.md): labels, guides, probes, overlays, and
    callouts.

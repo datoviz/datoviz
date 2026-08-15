@@ -4,6 +4,8 @@ Status: complete at validated implementation head `8fd98715e`. Updated: 2026-08-
 
 This slice makes the smallest pre-final lighting correction that prevents a later PBR rearchitecture. It separates panel lighting from visual materials and separates direct from indirect illumination in the shared shader contract. It does not implement full PBR, image-based lighting, or the optional multi-light showcase.
 
+The requirements and sequence below are retained as completion evidence. They describe the implemented contract, not pending RC3 work.
+
 The semantic sources of truth remain [LIGHTING.md](../semantics/LIGHTING.md), [MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md), and [OCCLUSION_EFFECTS.md](../implementation/OCCLUSION_EFFECTS.md).
 
 ## Required Decisions

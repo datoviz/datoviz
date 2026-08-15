@@ -27,8 +27,7 @@ Current implemented pieces that advanced techniques should reuse:
 5. graph-backed opaque-depth, WBOIT, depth-peeling, blended-volume, G-buffer, EDL, AO, AO blur,
    and MSAA paths;
 6. request-time point picking and image probing through auxiliary DRP2 streams;
-7. built-in GLSL/WGSL shader registry support, with visual-family shader selection centralized in
-   `src/scene/visual_pipeline.c`;
+7. built-in GLSL/WGSL shader registry support, with visual-family shader selection routed through `src/scene/visuals/` and runtime preparation in `src/scene/runtime/render_emit_prepare.c`;
 8. public `DvzMaterialDesc` material values for primitive, mesh, and sphere visuals, backed by
    shared material shader evaluation.
 
@@ -40,7 +39,7 @@ is no heap-allocated public `DvzMaterial` object today. The closest current conc
 2. `DvzMaterialDesc`, `DvzSceneMaterialState`, and `DvzSceneMaterialParams`;
 3. `DvzVolumeState` for volume-specific opacity, sampling, render mode, steps, and clipping;
 4. `DvzScale` / `DvzColormap` bindings for scalar-to-color mapping;
-5. per-family shader and pipeline descriptors in `visual_pipeline.c`.
+5. per-family shader and pipeline descriptors under `src/scene/visuals/`.
 
 Those pieces now form the first material system, but they are deliberately narrow. The remaining
 policy questions are where material fields apply beyond primitive/mesh/sphere, when G-buffer output

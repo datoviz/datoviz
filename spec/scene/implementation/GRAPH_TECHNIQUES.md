@@ -167,7 +167,7 @@ is an internal compatibility layer split across:
 3. `DvzMaterialDesc` and `dvz_visual_set_material()` for typed material fields;
 4. `DvzVolumeState`;
 5. scale and colormap bindings;
-6. family-specific shader, pipeline, and bind descriptors in `src/scene/visual_pipeline.c`.
+6. family-specific shader, pipeline, and bind descriptors under `src/scene/visuals/`.
 
 Technique eligibility must come from explicit visual pass capabilities resolved from visual family,
 material state, attributes, alpha mode, and controller mode. New technique conditionals should use

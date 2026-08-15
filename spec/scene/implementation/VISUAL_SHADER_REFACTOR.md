@@ -6,10 +6,9 @@ Keep this file in sync when adding visual families, shader variants, or bind-gro
 ## Current flow
 
 1. Retained visuals write typed metadata and resources into a `DvzFramePlan`.
-2. `src/scene/visual_pipeline.c` resolves a `DvzSceneVisualDesc` from metadata/resources.
-3. The same file resolves shader identity, vertex layout, pass capabilities, and bind requirements.
-4. `src/scene/frame_plan_runtime.c` emits DRP2 resources, shader modules, bind-group layouts,
-   pipelines, bind groups, and draw commands.
+2. `src/scene/visuals/desc.c` and the family modules under `src/scene/visuals/` resolve a `DvzSceneVisualDesc` from metadata/resources.
+3. The family modules resolve shader identity, vertex layout, pass capabilities, and bind requirements, while `src/scene/runtime/render_emit_prepare.c` prepares the runtime pipeline contract.
+4. The modules under `src/scene/runtime/` emit DRP2 resources, shader modules, bind-group layouts, pipelines, bind groups, and draw commands.
 5. Runtime execution stays below DRP2/vklite/canvas; scene must not own swapchain or command-buffer
    lifetimes.
 

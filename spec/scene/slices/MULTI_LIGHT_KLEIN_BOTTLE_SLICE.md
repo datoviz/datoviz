@@ -2,12 +2,9 @@
 
 Status: optional v0.4+ expansion after the required RC3 lighting foundation; point lights, two-sided lighting, and the showcase are not RC3 or RC4 release blockers. Updated: 2026-08-15.
 
-This slice adds the smallest coherent scene-lighting extension needed to reproduce the Glumpy
-checkerboard Klein bottle with three colored lights. It turns the existing future light-object
-model into an implementation-ready work packet and uses the Klein bottle as its native/WebGPU
-pressure test.
+This slice adds the smallest coherent extension to the implemented scene-lighting foundation needed to reproduce the Glumpy checkerboard Klein bottle with three colored point lights. It reuses the existing light lifecycle, panel sets, shared GPU payload, and native/WGSL material boundary, and uses the Klein bottle as its pressure test.
 
-The required ownership and shader boundary lands first through [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md). The semantic sources of truth remain [LIGHTING.md](../semantics/LIGHTING.md) and [MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md).
+The required ownership and shader boundary are complete through [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md). The semantic sources of truth remain [LIGHTING.md](../semantics/LIGHTING.md) and [MATERIAL_LIGHTING_API.md](../proposals/active/MATERIAL_LIGHTING_API.md).
 
 
 ## Reference
@@ -52,49 +49,17 @@ documentation may describe the preset as Mathematica-like or three-point-inspire
 
 ### Public Scene API
 
-Before implementation, finalize a descriptor-oriented API for:
-
-1. creating ambient, directional, and point lights in a scene;
-2. updating light type-specific position or direction, linear color, intensity, and point-light
-   attenuation;
-3. destroying a light explicitly while retaining scene-owned cleanup;
-4. assigning, replacing, and clearing a bounded light set on a panel;
-5. querying or restoring the default panel light set.
-
-The exact names require a public-API review before code starts. Prefer one `DvzLightDesc` creation
-path plus focused setters over constructor proliferation. Do not retain `light_direction` as
-material-owned state once explicit panel lights become authoritative; migrate current examples and
-decide the RC-to-final compatibility treatment explicitly.
+The descriptor-oriented ambient/directional lifecycle, focused setters, explicit destruction, bounded panel sets, defaults, and reset behavior are implemented. This slice must extend that surface only for point-light position and attenuation, with a focused public-API review of the new fields and setters. It must not create another light constructor family or restore material-owned light state.
 
 
 ### Retained State And Invalidation
 
-Add retained state for:
-
-1. scene-owned light identity and lifetime;
-2. validated semantic light descriptors;
-3. panel-local ordered light references;
-4. a packed panel-light payload or stable shared light-set resource;
-5. light and panel dirty state;
-6. reverse references sufficient to invalidate every affected panel after a light update or
-   destroy.
-
-Reject cross-scene panel/light references. Destroying a referenced light must remove or invalidate
-that reference deterministically before the next frame plan; it must never leave a dangling handle.
+Scene-owned identity, panel-local ordered references, a shared packed payload, dirty state, reverse-reference invalidation, cross-scene rejection, and deterministic destruction are implemented. Extend the existing descriptor validation and payload population for position and attenuation without changing those ownership rules or invalidating unrelated panels.
 
 
 ### Frame Plan, DRP2, And Shader ABI
 
-The scene should lower panel lights into one normalized lighting payload consumed by lit draw
-contracts. The implementation must:
-
-1. keep light uploads distinct from per-visual material uploads;
-2. use a fixed-capacity GPU representation with an explicit active count;
-3. carry light type, world-space position or direction, linear color, intensity, and attenuation;
-4. bind the payload through generic lit-visual lowering facts rather than concrete-family checks;
-5. share the payload across lit visuals in the same panel when practical;
-6. update GLSL and WGSL material evaluation together;
-7. add capability diagnostics if a backend cannot honor the declared light set.
+The scene already lowers each panel set into one normalized fixed-capacity payload, keeps its upload separate from material uploads, shares it across compatible visuals, binds it through generic lowering facts, and checks the GLSL/WGSL ABI. This slice activates the reserved position and attenuation lanes, adds point-light evaluation to both shader languages, and preserves the existing resource and cache identity.
 
 Phong and standard materials should sum ambient, diffuse, and specular contributions from the
 active lights. A point light with zero attenuation must support the non-decaying behavior used by
@@ -118,16 +83,7 @@ pipeline code.
 
 ### Default Compatibility
 
-Panels without an explicit light set must retain a useful neutral result. During migration:
-
-1. define the default ambient and directional lights explicitly;
-2. compare the new default against current material examples and screenshots;
-3. migrate `examples/c/features/lighting.c`, `material_mesh.c`, `mesh_texture.c`, and their Python
-   mirrors to the final ownership model;
-4. remove obsolete material-owned light state only after examples, generated bindings, and public
-   docs use panel lights.
-
-This is v0.4 architecture work, not a v0.3 compatibility exercise.
+Useful default ambient and directional lights, migrated examples and bindings, and removal of material-owned light direction are complete. Adding point-light support must leave that default appearance unchanged and add new behavior only when a panel explicitly selects point lights.
 
 
 ## Shared Example Preset
@@ -258,8 +214,8 @@ This optional slice does not include:
 
 The slice is complete when:
 
-1. public scene-owned lights and panel-local light sets have reviewed semantics and bindings;
-2. current one-light examples retain intentional default appearance after migration;
+1. the existing scene-owned light and panel-set API has reviewed point-position and attenuation extensions;
+2. current ambient/directional examples retain their intentional default appearance;
 3. at least eight lights are accepted and overflow is diagnosed;
 4. GLSL and WGSL produce the same three-colored-light contract;
 5. two-sided lighting correctly supports the Klein surface;
