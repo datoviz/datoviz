@@ -86,7 +86,7 @@ DvzAoDesc dvz_ao_desc(void);
 | --- | --- | --- |
 | return | [`DvzAoDesc`](techniques.md#type-dvzaodesc) | ambient-occlusion descriptor |
 
-_Declared in `include/datoviz/scene.h`:1290._
+_Declared in `include/datoviz/scene.h`:1408._
 
 #### `dvz_panel_set_ao()` { #dvz_panel_set_ao .dvz-api-function }
 
@@ -109,7 +109,7 @@ DvzResult dvz_panel_set_ao(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `desc` | `const` [`DvzAoDesc`](techniques.md#type-dvzaodesc) * | AO descriptor, or NULL to disable |
 
-_Declared in `include/datoviz/scene.h`:1304._
+_Declared in `include/datoviz/scene.h`:1422._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -143,7 +143,7 @@ _Declared in `include/datoviz/scene.h`:1304._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:876._
+    _Declared in `include/datoviz/scene/types.h`:878._
 
 <a id="type-dvzaoquality"></a>
 
@@ -176,7 +176,7 @@ DvzEdlDesc dvz_edl_desc(void);
 | --- | --- | --- |
 | return | [`DvzEdlDesc`](techniques.md#type-dvzedldesc) | EDL descriptor |
 
-_Declared in `include/datoviz/scene.h`:1255._
+_Declared in `include/datoviz/scene.h`:1373._
 
 #### `dvz_panel_set_edl()` { #dvz_panel_set_edl .dvz-api-function }
 
@@ -199,7 +199,7 @@ DvzResult dvz_panel_set_edl(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `desc` | `const` [`DvzEdlDesc`](techniques.md#type-dvzedldesc) * | EDL descriptor, or NULL to disable |
 
-_Declared in `include/datoviz/scene.h`:1269._
+_Declared in `include/datoviz/scene.h`:1387._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -217,7 +217,7 @@ _Declared in `include/datoviz/scene.h`:1269._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:854._
+    _Declared in `include/datoviz/scene/types.h`:856._
 
 ## Multisample Antialiasing { #multisample-antialiasing }
 
@@ -235,7 +235,7 @@ DvzMsaaDesc dvz_msaa_desc(void);
 | --- | --- | --- |
 | return | [`DvzMsaaDesc`](techniques.md#type-dvzmsaadesc) | MSAA descriptor with 4x samples and alpha-to-coverage enabled |
 
-_Declared in `include/datoviz/scene.h`:600._
+_Declared in `include/datoviz/scene.h`:693._
 
 #### `dvz_panel_set_msaa()` { #dvz_panel_set_msaa .dvz-api-function }
 
@@ -257,7 +257,7 @@ DvzResult dvz_panel_set_msaa(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `desc` | `const` [`DvzMsaaDesc`](techniques.md#type-dvzmsaadesc) * | MSAA descriptor, or NULL to disable |
 
-_Declared in `include/datoviz/scene.h`:1282._
+_Declared in `include/datoviz/scene.h`:1400._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -275,7 +275,7 @@ _Declared in `include/datoviz/scene.h`:1282._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:865._
+    _Declared in `include/datoviz/scene/types.h`:867._
 
 ## Scene Occlusion { #scene-occlusion }
 
@@ -302,7 +302,7 @@ DvzResult dvz_panel_set_scene_occlusion(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `desc` | `const` [`DvzSceneOcclusionDesc`](techniques.md#type-dvzsceneocclusiondesc) * | scene occlusion descriptor, or NULL to disable |
 
-_Declared in `include/datoviz/scene.h`:1347._
+_Declared in `include/datoviz/scene.h`:1465._
 
 #### `dvz_scene_occlusion_desc()` { #dvz_scene_occlusion_desc .dvz-api-function }
 
@@ -316,7 +316,7 @@ DvzSceneOcclusionDesc dvz_scene_occlusion_desc(void);
 | --- | --- | --- |
 | return | [`DvzSceneOcclusionDesc`](techniques.md#type-dvzsceneocclusiondesc) | scene-occlusion descriptor |
 
-_Declared in `include/datoviz/scene.h`:1332._
+_Declared in `include/datoviz/scene.h`:1450._
 
 #### `dvz_visual_set_scene_occluded()` { #dvz_visual_set_scene_occluded .dvz-api-function }
 
@@ -335,7 +335,7 @@ DvzResult dvz_visual_set_scene_occluded(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
 | `enabled` | `_Bool` | whether the visual should be attenuated by scene occlusion |
 
-_Declared in `include/datoviz/scene.h`:1860._
+_Declared in `include/datoviz/scene.h`:1978._
 
 #### `dvz_visual_set_scene_occluder()` { #dvz_visual_set_scene_occluder .dvz-api-function }
 
@@ -354,7 +354,7 @@ DvzResult dvz_visual_set_scene_occluder(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
 | `enabled` | `_Bool` | whether the visual should act as a scene occluder |
 
-_Declared in `include/datoviz/scene.h`:1850._
+_Declared in `include/datoviz/scene.h`:1968._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -373,7 +373,7 @@ _Declared in `include/datoviz/scene.h`:1850._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:902._
+    _Declared in `include/datoviz/scene/types.h`:904._
 
 ## Volume Occlusion { #volume-occlusion }
 
@@ -398,7 +398,7 @@ DvzResult dvz_panel_set_volume_occluder(
 | `volume` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual attached to the same panel, or NULL to disable |
 | `desc` | `const` [`DvzVolumeOcclusionDesc`](techniques.md#type-dvzvolumeocclusiondesc) * | volume occlusion descriptor, or NULL to disable |
 
-_Declared in `include/datoviz/scene.h`:1323._
+_Declared in `include/datoviz/scene.h`:1441._
 
 #### `dvz_visual_set_volume_occluded()` { #dvz_visual_set_volume_occluded .dvz-api-function }
 
@@ -417,7 +417,7 @@ DvzResult dvz_visual_set_volume_occluded(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
 | `enabled` | `_Bool` | whether the visual should sample panel volume occlusion |
 
-_Declared in `include/datoviz/scene.h`:1840._
+_Declared in `include/datoviz/scene.h`:1958._
 
 #### `dvz_volume_occlusion_desc()` { #dvz_volume_occlusion_desc .dvz-api-function }
 
@@ -431,7 +431,7 @@ DvzVolumeOcclusionDesc dvz_volume_occlusion_desc(void);
 | --- | --- | --- |
 | return | [`DvzVolumeOcclusionDesc`](techniques.md#type-dvzvolumeocclusiondesc) | volume-occlusion descriptor |
 
-_Declared in `include/datoviz/scene.h`:1312._
+_Declared in `include/datoviz/scene.h`:1430._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -450,4 +450,4 @@ _Declared in `include/datoviz/scene.h`:1312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:890._
+    _Declared in `include/datoviz/scene/types.h`:892._

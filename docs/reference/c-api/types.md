@@ -295,6 +295,9 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzLegend`](scene.md#type-dvzlegend) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzLegendDesc`](scene.md#type-dvzlegenddesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzLegendPlacementMode`](scene.md#type-dvzlegendplacementmode) | enum | Scene API | `include/datoviz/scene/enums.h` |
+| [`DvzLight`](scene.md#type-dvzlight) | typedef | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzLightDesc`](scene.md#type-dvzlightdesc) | record | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzLightType`](scene.md#type-dvzlighttype) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzLimbMaterial`](visuals.md#type-dvzlimbmaterial) | record | Visuals And Composites API | `include/datoviz/scene/types.h` |
 | [`DvzLinkChannel`](scene.md#type-dvzlinkchannel) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzLogLevel`](runtime-utilities.md#type-dvzloglevel) | enum | Common And Utility API | `include/datoviz/common/functions.h` |

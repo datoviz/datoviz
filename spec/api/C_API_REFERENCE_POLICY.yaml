@@ -163,6 +163,7 @@ pages:
       - label
       - labels
       - legend
+      - light
       - link
       - linear
       - orbit
@@ -204,6 +205,11 @@ pages:
         - DvzBuiltinColormap
       Datetime:
         - DvzDateTime*
+      Lighting:
+        - DvzLight*
+        - dvz_light*
+        - dvz_panel_*lights
+        - dvz_scene_default_*
       Guide Line:
         - DvzGuideLine*
       Guide Span:

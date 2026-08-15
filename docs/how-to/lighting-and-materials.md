@@ -1,6 +1,6 @@
 # Use Lighting and Materials
 
-Make 3D surfaces readable with normals, material attributes, and lights.
+Make 3D surfaces readable with normals, material attributes, and scene-owned lights.
 
 !!! info "At a glance"
 
@@ -11,9 +11,7 @@ Make 3D surfaces readable with normals, material attributes, and lights.
 
 ## Task workflow
 
-Choose a visual family that supports material parameters, provide the geometry attributes required
-by that family, set a material descriptor, and verify depth testing with a 3D camera or controller.
-Use the gallery examples for complete runnable programs.
+Choose a visual family that supports material parameters, provide the geometry attributes required by that family, set a material descriptor, attach an ordered light set to the panel, and verify depth testing with a 3D camera or controller. Use the gallery examples for complete runnable programs.
 
 `dvz_visual_set_material()` applies shared surface material parameters to primitive, mesh, and
 sphere visuals. It is not a general style setter for every visual family.
@@ -52,9 +50,7 @@ Start from one of the descriptor helpers, then override only the fields that mat
 | `dvz_phong_material_desc()` | Phong | Direct control over classic ADS lighting. |
 | `dvz_standard_material_desc()` | Standard | Roughness, specular strength, metallic, emissive, rim strength. |
 
-All material descriptors also include `opacity`, `alpha_mode`, `base_color_factor`, and
-`light_direction`. Pass `NULL` to `dvz_visual_set_material()` to restore default material
-parameters.
+All material descriptors also include `opacity`, `alpha_mode`, and `base_color_factor`. Lighting is scene state rather than material state: create `DvzLight` objects and assign them to a panel with `dvz_panel_set_lights()`. Pass `NULL` to `dvz_visual_set_material()` to restore default material parameters.
 
 The current standard model is retained as standard material state, then lowered to the active
 shader payload. Treat it as the recommended route for roughness, metallic, emissive, and rim-style
@@ -92,9 +88,6 @@ dvz_visual_set_data(mesh, "normal", normal, vertex_count);
 dvz_visual_set_data(mesh, "color", color, vertex_count);
 
 DvzMaterialDesc material = dvz_standard_material_desc();
-material.light_direction[0] = -0.45f;
-material.light_direction[1] = +0.35f;
-material.light_direction[2] = +0.82f;
 material.standard.roughness = 0.62f;
 material.standard.specular = 0.34f;
 material.standard.rim_strength = 0.10f;
@@ -102,6 +95,14 @@ dvz_visual_set_material(mesh, &material);
 dvz_visual_set_depth_test(mesh, true);
 
 dvz_panel_add_visual(panel, mesh, NULL);
+
+DvzLightDesc light_desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+light_desc.direction[0] = -0.45f;
+light_desc.direction[1] = +0.35f;
+light_desc.direction[2] = +0.82f;
+DvzLight* light = dvz_light(scene, &light_desc);
+DvzLight* lights[] = {dvz_scene_default_ambient(scene), light};
+dvz_panel_set_lights(panel, lights, 2);
 ```
 
 For indexed meshes, also upload the index buffer with the mesh API used by the canonical mesh
@@ -144,8 +145,7 @@ their documented copy rules; the scene owns the visual after construction.
 - Depth testing should usually be enabled for opaque lit surfaces. Combine lighting, alpha, and
   transparency deliberately; transparent surfaces follow a different rendering path than opaque
   material surfaces.
-- `light_direction` is a direction vector used by the material shader. Keep it finite and
-  non-zero; normalize it yourself if you need predictable cross-example comparisons.
+- Directional lights use a finite, non-zero direction vector. The panel light set is ordered, capped by `DVZ_SCENE_MAX_PANEL_LIGHTS`, and inherited from the scene defaults until explicitly replaced.
 - WebGPU support covers the promoted material and lighting gallery routes, but advanced material
   behavior should still be checked against the current backend status before relying on parity.
 

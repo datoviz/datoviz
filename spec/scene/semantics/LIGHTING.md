@@ -2,210 +2,101 @@
 
 This document defines the scene-level lighting model for Datoviz v0.4.
 
-
 ## Purpose
 
-The current active lighting slice provides per-visual material, Phong and standard surface shading, view-dependent limb shading, and depth-cue controls for 3D-capable visual families.
+The active lighting foundation separates reusable scene-owned light sources from visual-owned material response. It supports panel-local ambient and directional lighting, Phong and standard surface shading, view-dependent limb shading, depth cue controls, and panel-local GTAO ambient visibility.
 
-It is intentionally simple for v0.4—covering the most common scientific visualization needs—while being designed to extend cleanly to physically-based rendering (PBR) and hardware ray tracing in future versions. The required pre-RC3 ownership and direct/indirect separation is specified in [RC3_LIGHTING_FOUNDATION_SLICE.md](../slices/RC3_LIGHTING_FOUNDATION_SLICE.md).
+The model is intentionally compact for v0.4 while preserving additive extension points for point lights, physically based BRDFs, environment lighting, shadows, and ray tracing. The release-gate scope is specified in [RC3_LIGHTING_FOUNDATION_SLICE.md](../slices/RC3_LIGHTING_FOUNDATION_SLICE.md).
 
+## Core Ownership Rule
 
-## Current Active Model
+Lights are scene-owned reusable objects. Panels select bounded ordered light sets. Materials are visual-owned and contain only surface-response parameters; they do not own light direction, placement, color, or energy.
 
-The active implementation does not expose scene-owned light handles yet. Shading state is carried by
-the visual/material block and emitted with the visual pipeline.
+A newly created panel inherits the scene's default ambient and directional lights. An explicit panel set overrides that inheritance until `dvz_panel_reset_lights()` restores the defaults.
 
-Current supported concepts:
+## Active Light Types
 
-1. per-visual material state,
-2. Phong/Blinn-Phong and standard coefficients for lit primitive/mesh/sphere-style shader paths,
-3. a view- and light-dependent limb material for thin translucent shells,
-4. depth cueing for point, pixel, primitive, mesh, and sphere visuals,
-5. shader selection based on the visual family, material state, and available attributes.
+### Ambient Light
 
-The limb model is a lightweight surface approximation, not volumetric atmospheric scattering. It
-uses mesh normals, the camera direction, and the material light direction to concentrate alpha near
-silhouettes, taper it smoothly at the geometry boundary, and fade it across a configurable
-day/night terminator. The geometry remains an ordinary primitive or mesh; no atmosphere-specific
-visual family exists.
+An ambient light contributes constant indirect irradiance with no direction. Its RGB color and nonnegative intensity are accumulated with other active ambient lights.
 
+### Directional Light
 
-## Core Rule
+A directional light contributes parallel direct illumination. Its direction is a finite nonzero vector pointing toward the light source and is normalized by the API. Its RGB color and nonnegative intensity scale direct diffuse and specular response.
 
-Lighting is currently visual-owned, not scene-owned. Before the next release candidate, ambient and directional lighting must move to scene-owned objects selected by panel-local light sets, and material-owned light direction must be removed. Point-light evaluation and the broader multi-light showcase remain additive follow-up work.
+### Deferred Point And Spot Lights
+
+The normalized GPU payload reserves position and attenuation lanes, but point and spot evaluation are not active in this release gate. Adding them must extend the scene-light model without moving light authority back into materials.
+
+## Public Lifecycle
+
+Create ambient and directional lights through one descriptor path:
+
+```c
+DvzLightDesc desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+desc.direction[0] = -0.45f;
+desc.direction[1] = +0.35f;
+desc.direction[2] = +0.82f;
+DvzLight* light = dvz_light(scene, &desc);
+```
+
+Update lights with `dvz_light_set_color()`, `dvz_light_set_intensity()`, and `dvz_light_set_direction()`. Destroy them explicitly with `dvz_light_destroy()` or implicitly with the owning scene.
+
+Assign an ordered panel set with `dvz_panel_set_lights(panel, lights, count)`. A panel accepts at most `DVZ_SCENE_MAX_PANEL_LIGHTS` active handles, currently 8. Duplicate handles and cross-scene handles are rejected. Light mutation and destruction invalidate only panels that reference the light through maintained reverse references.
+
+The default handles are available through `dvz_scene_default_ambient()` and `dvz_scene_default_directional()`.
+
+## Material Boundary
+
+`DvzMaterialDesc` contains model, alpha, opacity, base color, and model-specific response controls. It has no light direction.
+
+Phong `ambient` remains a classic-material multiplier for indirect diffuse response. Ambient radiance itself comes from the panel's ambient lights. Standard indirect diffuse derives from base color and metallic response and never reads Phong fields. Emissive response remains independent of light sources and ambient visibility.
+
+The limb model is a lightweight surface approximation for thin translucent shells, not volumetric atmospheric scattering. It uses mesh normals, camera direction, and the first active directional light to shape silhouette alpha and the day/night terminator. Limb evaluation bypasses ambient visibility.
+
+## Direct And Indirect Composition
+
+Shared GLSL and WGSL material evaluation follows this contract:
+
+```text
+direct = evaluate_direct_lighting(material, panel_lights, surface)
+indirect_diffuse = evaluate_indirect_diffuse(material, panel_lights, surface)
+linear_radiance = emissive + direct + ambient_visibility * indirect_diffuse
+```
+
+GTAO affects only indirect diffuse illumination. It does not darken direct diffuse, direct specular, emissive, unlit, limb, transparent, volume, or overlay contributions.
+
+## GPU And Runtime Contract
+
+Each panel lowers its active set into one fixed-capacity uniform payload containing an explicit active count and normalized light records. Compatible material-facing visuals share that buffer through set 1 binding 4; light data is not copied into per-visual material uploads.
+
+The runtime keeps scene occlusion and GTAO/depth-peel bindings in their existing set 2 and set 3 lanes. Bind-group cache identity includes the panel-light buffer identity so persistent groups cannot retain another panel's lighting.
 
 ## Linear-Light Arithmetic
 
-Lighting calculations are performed in linear RGB. Material colors, light colors, ambient/diffuse/
-specular terms, and texture colors must be linearized before lighting if they originate from
-sRGB-authored scene values or `srgb_color` textures.
-
-The output of lighting remains linear until the final display or standard image-export encode. PBR
-or future physically based shading paths must also assume linear-light arithmetic.
+Lighting calculations are performed in linear RGB. Scene-authored sRGB colors and `srgb_color` textures are linearized before lighting. Material evaluation returns linear radiance and does not own display encoding or tone mapping. Existing normalized attachment formats may clamp on storage until an HDR scene-color product is introduced.
 
 See [COLOR_MANAGEMENT.md](COLOR_MANAGEMENT.md).
-
-
-## Future Scene-Owned Lights
-
-The following model remains the planned direction once the scene grows first-class light handles.
-
-
-### Light Source Types
-
-Three types cover v0.4 scientific visualization needs.
-
-
-#### Ambient Light
-
-Global fill light with no direction.
-
-```text
-light = dvz_light_ambient(scene, color, intensity)
-```
-
-| Parameter | Type | Description |
-|---|---|---|
-| `color` | `vec3` (RGB) | light color, typically white `{1, 1, 1}` |
-| `intensity` | `float` | contribution scale, `[0, 1]` typical range |
-
-One ambient light is created by default at `intensity = 0.15`.
-
-
-#### Directional Light
-
-Parallel rays from a fixed direction, as if from a distant source.
-
-```text
-light = dvz_light_directional(scene, direction, color, intensity)
-```
-
-| Parameter | Type | Description |
-|---|---|---|
-| `direction` | `vec3` | unit vector pointing **toward** the light source |
-| `color` | `vec3` (RGB) | light color |
-| `intensity` | `float` | contribution scale |
-
-One directional light is created by default at direction `{1, 1, 1}` (normalized), white,
-`intensity = 1.0`.
-This gives a reasonable default appearance for 3D visuals without any user configuration.
-
-
-#### Point Light
-
-Radiates equally in all directions from a position in scene space.
-
-```text
-light = dvz_light_point(scene, position, color, intensity, attenuation)
-```
-
-| Parameter | Type | Description |
-|---|---|---|
-| `position` | `vec3` | position in `VisualSpace` |
-| `color` | `vec3` (RGB) | light color |
-| `intensity` | `float` | contribution scale |
-| `attenuation` | `float` | distance falloff coefficient |
-
-
-### Default Lighting
-
-A newly created scene has one ambient and one directional light at neutral settings.
-3D visuals are usable without any lighting configuration.
-
-The default lights may be retrieved and modified:
-
-```text
-dvz_scene_default_ambient(scene)      // returns the default ambient handle
-dvz_scene_default_directional(scene)  // returns the default directional handle
-```
-
-
-### Light Count Limit
-
-The scene supports up to a fixed maximum number of simultaneous light sources.
-The minimum guaranteed limit is 8.
-This bound exists to keep GPU uniform buffers simple and predictable.
-Exceeding the limit produces a diagnostic and the excess lights are ignored.
-
-
-### Lifecycle
-
-```text
-dvz_light_set_intensity(light, intensity)   // update intensity at any time
-dvz_light_set_color(light, color)
-dvz_light_set_direction(light, direction)   // directional only
-dvz_light_set_position(light, position)     // point only
-dvz_light_destroy(light)                    // explicit release
-```
-
-All lights are destroyed when the scene is destroyed.
-Changing any light property marks the scene dirty and triggers a redraw for affected panels.
-
 
 ## Which Families Consume Lighting
 
 | Family | Lighting support |
 |---|---|
-| `primitive` | active when normals/material shader path are present |
-| `mesh` | active — per-visual Phong/Blinn-Phong material state |
-| `sphere` | planned/partial — impostor shading uses the same material direction |
-| `volume` | active first slice for volume state; gradient/transfer lighting remains spec work |
-| `point`, `pixel` | active depth cueing |
-| `marker`, `path`, `segment`, `glyph`, `image` | no current light contribution |
+| `primitive` | Active when normals and the lit material shader path are present |
+| `mesh` | Active for normal-bearing material and textured-material paths |
+| `sphere` | Active through the shared material evaluator |
+| `point`, `pixel`, `marker` | Material/depth-cue paths may bind the panel payload; unlit output receives no light contribution |
+| `path`, `segment`, `glyph`, `image` | No active light contribution |
+| `volume` | Gradient and transfer-function lighting remain separate future work |
 
-Visual families declare their lighting participation in their family contracts.
-A family that does not declare lighting support receives no light contribution. Depth cueing is a
-separate material effect and may apply to families that do not consume Phong lighting.
+Visual families declare lighting participation through generic lowering facts. Depth cueing is a separate material effect and may apply to families that do not consume light contributions.
 
+## PBR Upgrade Path
 
-## Future Development: Physically-Based Rendering (PBR)
+Scene-owned ambient and directional lights remain valid inputs for a future energy-conserving BRDF. Replacing the current standard approximation with metallic/roughness PBR changes material evaluation, not light ownership or panel selection.
 
-The v0.4 lighting model uses a Blinn-Phong shading model (ambient + diffuse + specular).
+Future image-based lighting may add an HDR environment resource, irradiance convolution, prefiltered specular data, and a BRDF lookup table. Those resources augment panel lighting and feed the existing indirect term. They do not belong in `DvzMaterialDesc`.
 
-The design is intentionally forward-compatible with PBR:
+## Hardware Ray Tracing Upgrade Path
 
-1. **Light source types are valid in PBR** — ambient, directional, and point lights exist in
-   energy-conserving PBR models. Adding PBR does not require changing the light source API.
-   Only the light contribution computation in shaders changes.
-
-2. **Material fields are reserved for PBR** — the `mesh` and `sphere` visual parameter blocks carry
-   reserved `metallic` and `roughness` fields, zero-initialized and unused in v0.4.
-   Activating PBR rendering in a future version uses these fields without changing the public
-   API surface.
-
-3. **Image-based lighting (IBL)** — PBR typically uses an HDR environment map as a complex
-   ambient source. A future scene-level resource `dvz_scene_set_env_map(scene, hdr_texture)`
-   would complement the existing light handles without replacing them.
-
-4. **Upgrade path** — switching a scene from Phong to PBR should require only a capability
-   flag change, not a scene rebuild. The scene API and material fields are the same; the
-   shader selection is a capability adaptation decision.
-
-See `visuals/MESH.md` and `visuals/SPHERE.md` for the reserved PBR material fields.
-
-
-## Future Development: Hardware Ray Tracing
-
-Hardware ray tracing (Vulkan Ray Tracing extension) is a rendering paradigm change, not a
-lighting model change.
-
-The scene layer is already forward-compatible because:
-
-1. **The scene API does not change** — the scene layer emits a `FramePlan`; whether a node in
-   that plan executes as rasterization or ray tracing is a runtime/DRP2 decision.
-
-2. **`RayTraceNode` as a future `FramePlan` node type** — a future `RayTraceNode` would
-   replace `RenderNode` for ray-traced visuals. The scene emits it when ray tracing is
-   requested and available. See `pipeline/FRAME_PLAN.md`.
-
-3. **Capability adaptation governs the switch** — ray tracing capability is detected at
-   runtime. `validation/ADAPTATION.md` governs whether a visual falls back to rasterization
-   or requires ray tracing. The user policy is declarative; the scene does not hard-code
-   rendering paths.
-
-4. **Acceleration structures (BVH)** — construction and management of BVH acceleration
-   structures is a DRP2-side concern. The scene layer does not need to know about it.
-
-5. **Lighting with ray tracing** — ray-traced lighting (shadows, global illumination,
-   reflections) uses the same scene-owned light sources. No API change is needed at the
-   scene level.
+Ray tracing changes runtime execution rather than scene-light ownership. A future ray-trace FramePlan node, acceleration structures, and capability adaptation may consume the same scene-owned lights for direct visibility, shadows, reflections, and global illumination without changing the public light lifecycle.

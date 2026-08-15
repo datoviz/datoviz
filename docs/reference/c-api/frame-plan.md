@@ -173,7 +173,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:118._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:223._
+    _Declared in `include/datoviz/scene/types.h`:225._
 
 ## Diagnostic { #diagnostic }
 
@@ -321,7 +321,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:127._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:254._
+    _Declared in `include/datoviz/scene/types.h`:256._
 
 ## Emission { #emission }
 
@@ -504,7 +504,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:506._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:262._
+    _Declared in `include/datoviz/scene/types.h`:264._
 
 <a id="type-dvzframeplanemitter"></a>
 
@@ -514,7 +514,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:506._
     typedef struct DvzFramePlanEmitter DvzFramePlanEmitter;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:49._
+    _Declared in `include/datoviz/scene/types.h`:50._
 
 ## Frame { #frame }
 
@@ -985,7 +985,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:297._
     typedef struct DvzFramePlan DvzFramePlan;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:51._
+    _Declared in `include/datoviz/scene/types.h`:52._
 
 <a id="type-dvzframeplancopydesc"></a>
 
@@ -1023,7 +1023,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:297._
     typedef struct DvzFramePlanNode DvzFramePlanNode;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:52._
+    _Declared in `include/datoviz/scene/types.h`:53._
 
 <a id="type-dvzframeplannodetype"></a>
 
