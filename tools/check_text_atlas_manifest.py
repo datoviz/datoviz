@@ -47,6 +47,12 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _json_sha256(value: Any) -> str:
+    """Hash one value using canonical compact JSON."""
+    data = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
+    return _sha256(data)
+
+
 def _f32(value: Any) -> str:
     """Format a binary32 value as a round-trippable C floating constant."""
     text = format(float(value), ".9g")
@@ -181,7 +187,23 @@ def _serialize_final_products(neutral: dict[str, Any], input_dir: Path, output_d
         encoded = base64.b64encode(compressed).decode("ascii")
         include_lines.extend(f'"{encoded[offset:offset + 120]}"' for offset in range(0, len(encoded), 120))
         include_lines += [";", ""]
-        manifest_products.append({**product, "rgba": {**rgba, "sha256": _sha256(raw)}, "compressed": {"size": len(compressed), "sha256": _sha256(compressed)}, "include_symbol": f"{prefix}_RGBA_Z_B64"})
+        manifest_products.append(
+            {
+                "requested": product["requested"],
+                "backend": product["backend"],
+                "encoding": product["encoding"],
+                "dimensions": dims,
+                "metrics": metrics,
+                "glyph_count": len(glyph_records),
+                "coverage_count": len(coverage),
+                "fallback_mapping_count": 0,
+                "glyph_records_sha256": _json_sha256(glyph_records),
+                "coverage_records_sha256": _json_sha256(coverage),
+                "rgba": {**rgba, "sha256": _sha256(raw)},
+                "compressed": {"size": len(compressed), "sha256": _sha256(compressed)},
+                "include_symbol": f"{prefix}_RGBA_Z_B64",
+            }
+        )
     include_bytes = ("\n".join(include_lines) + "\n").encode("utf8")
     include_path = output_dir / "src/scene/text/generated/text_default_msdf_atlas.inc"
     include_path.parent.mkdir(parents=True, exist_ok=True)
@@ -385,7 +407,13 @@ def validate_manifest(manifest_path: Path, repo_root: Path, include_root: Path |
     for size in sizes:
         actual = parsed[size]
         product = by_size[size]
-        for field in ("metrics", "glyphs", "coverage", "rgba", "compressed"):
+        for field in (
+            "metrics",
+            "glyph_records_sha256",
+            "coverage_records_sha256",
+            "rgba",
+            "compressed",
+        ):
             _required(product, field, f"product {size}")
         constants = actual.get("constants", {})
         codepoints = actual.get("codepoints", [])
@@ -423,22 +451,14 @@ def validate_manifest(manifest_path: Path, repo_root: Path, include_root: Path |
             metric_value = _required(product["metrics"], metric, f"product {size} metrics")
             if _bits_hex(constants.get(constant)) != _bits_hex(metric_value):
                 raise ManifestError(f"atlas size {size} metric {metric} differs from include")
-        glyph_records = product["glyphs"]
-        coverage = product["coverage"]
-        if int(product.get("glyph_count", -1)) != len(glyph_records) or len(glyph_records) != len(glyphs):
-            raise ManifestError(f"atlas size {size} glyph records are inconsistent")
-        if int(product.get("coverage_count", -1)) != len(coverage) or len(coverage) != len(glyphs):
-            raise ManifestError(f"atlas size {size} coverage records are inconsistent")
+        if int(product.get("glyph_count", -1)) != len(glyphs):
+            raise ManifestError(f"atlas size {size} glyph count is inconsistent")
+        if int(product.get("coverage_count", -1)) != len(glyphs):
+            raise ManifestError(f"atlas size {size} coverage count is inconsistent")
         if int(product.get("fallback_mapping_count", -1)) != 0:
             raise ManifestError(f"atlas size {size} unexpectedly uses fallback mappings")
-        for index, item in enumerate(coverage):
-            if (
-                int(item.get("requested_codepoint", -1)) != glyphs[index]
-                or int(item.get("resolved_codepoint", -1)) != glyphs[index]
-                or item.get("kind") != "exact"
-                or item.get("font_role") != "primary"
-            ):
-                raise ManifestError(f"atlas size {size} coverage record {index} is inconsistent")
+        _check_string(product["glyph_records_sha256"], f"product {size}.glyph_records_sha256")
+        _check_string(product["coverage_records_sha256"], f"product {size}.coverage_records_sha256")
         rgba_record = _required(product, "rgba", f"product {size}")
         if rgba_record.get("pixel_format") != "rgba8" or rgba_record.get("row_order") != "top_to_bottom":
             raise ManifestError(f"atlas size {size} RGBA encoding differs from manifest")
