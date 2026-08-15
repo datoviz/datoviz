@@ -1295,6 +1295,7 @@ struct DvzAnnotation
     DvzTextLayoutMetrics metrics;
     DvzVisual* visual;
     uint64_t visual_version;
+    uint64_t visual_atlas_generation;
     DvzRect visual_panel_rect;
     bool visual_panel_rect_set;
     DvzScaleBarDesc scalebar;

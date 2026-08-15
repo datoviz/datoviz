@@ -4514,6 +4514,83 @@ int test_scene_text_font_atlas_expands_for_utf8(TstContext* suite, const TstCase
 }
 
 
+
+/**
+ * Verify retained annotation labels reuse and refresh glyph geometry with atlas generations.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_annotation_text_tracks_atlas_generation(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    ANN(panel);
+
+    DvzAnnotation* ascii = dvz_annotation_label(
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "ASCII"});
+    ANN(ascii);
+    AT(dvz_annotation_set_style(
+           ascii,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 24.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           ascii,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_TOP_LEFT,
+           }) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    DvzTextAtlas* atlas = text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, 24.0f);
+    ANN(atlas);
+    ANN(ascii->visual);
+    AT(ascii->visual_atlas_generation == atlas->generation);
+    uint64_t initial_generation = atlas->generation;
+    int texcoords_idx = _attr_index(ascii->visual, "texcoords");
+    AT(texcoords_idx >= 0);
+    uint64_t stable_version = ascii->visual->attrs[texcoords_idx].version;
+
+    _scene_prepare_text_visuals(figure);
+    AT(ascii->visual->attrs[texcoords_idx].version == stable_version);
+
+    DvzAnnotation* utf8 = dvz_annotation_label(
+        panel, &(DvzLabelDesc){DVZ_STRUCT_INIT_FIELDS(DvzLabelDesc), .text = "caf\xC3\xA9"});
+    ANN(utf8);
+    AT(dvz_annotation_set_style(
+           utf8,
+           &(DvzTextStyle){DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+               .size_px = 24.0f,
+               .renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS,
+           }) == 0);
+    AT(dvz_annotation_set_placement(
+           utf8,
+           &(DvzTextPlacement){DVZ_STRUCT_INIT_FIELDS(DvzTextPlacement),
+               .mode = DVZ_TEXT_PLACEMENT_SCREEN,
+               .anchor = DVZ_SCENE_ANCHOR_PANEL_BOTTOM_LEFT,
+           }) == 0);
+
+    _scene_prepare_text_visuals(figure);
+    DvzTextAtlas* expanded_atlas = text_test_atlas(scene, DVZ_TEXT_ATLAS_BACKEND_MSDF, 24.0f);
+    ANN(expanded_atlas);
+    AT(expanded_atlas == atlas);
+    AT(expanded_atlas->generation > initial_generation);
+    AT(ascii->visual_atlas_generation == expanded_atlas->generation);
+    AT(ascii->visual->attrs[texcoords_idx].version > stable_version);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Verify unavailable glyphs are counted and resolve to the explicit fallback glyph.
  *
@@ -5376,6 +5453,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_text_auto_renderer_selection);
     TST_CASE(test_scene_text_msdf_atlas_spec_scales_range);
     TST_CASE(test_scene_text_font_atlas_expands_for_utf8);
+    TST_CASE(test_scene_annotation_text_tracks_atlas_generation);
     TST_CASE(test_scene_text_font_atlas_missing_glyph_fallback);
     TST_CASE(test_scene_text_many_labels_render_plan);
     TST_CASE(test_scene_text_panzoom_glyph_anchor_coordinates);

@@ -72,6 +72,7 @@ static bool _annotation_prepare_visual(DvzFigure* figure, DvzAnnotation* annotat
     proxy.metrics = annotation->metrics;
     proxy.visual = annotation->visual;
     proxy.visual_version = annotation->visual_version;
+    proxy.visual_atlas_generation = annotation->visual_atlas_generation;
     proxy.visual_panel_rect = annotation->visual_panel_rect;
     proxy.visual_panel_rect_set = annotation->visual_panel_rect_set;
 
@@ -79,6 +80,7 @@ static bool _annotation_prepare_visual(DvzFigure* figure, DvzAnnotation* annotat
     annotation->metrics = proxy.metrics;
     annotation->visual = proxy.visual;
     annotation->visual_version = proxy.visual_version;
+    annotation->visual_atlas_generation = proxy.visual_atlas_generation;
     annotation->visual_panel_rect = proxy.visual_panel_rect;
     annotation->visual_panel_rect_set = proxy.visual_panel_rect_set;
     if (ok)
