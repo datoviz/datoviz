@@ -85,6 +85,39 @@ int _scene_text_visual_set_renderer(DvzVisual* visual, DvzTextRenderer renderer)
 
 
 /**
+ * Select the borrowed scene font used by an internal batched text visual.
+ *
+ * @param visual text visual
+ * @param font scene-owned font, or NULL for the scene default
+ * @return 0 on success, -1 on error
+ */
+int _scene_text_visual_set_font(DvzVisual* visual, DvzFont* font)
+{
+    ANN(visual);
+    if (visual->type != DVZ_VISUAL_TYPE_TEXT)
+    {
+        log_error("setting a text font requires a text visual");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate text font"))
+        return -1;
+    if (font != NULL && font->scene != visual->scene)
+    {
+        log_error("cannot bind a font from a different scene");
+        return -1;
+    }
+    if (_visual_family_state(visual)->text.font != font)
+    {
+        _visual_family_state(visual)->text.font = font;
+        _visual_family_state(visual)->text.font_version++;
+        _scene_notify_visual_changed(visual);
+    }
+    return 0;
+}
+
+
+
+/**
  * Resolve a generated adornment text renderer to a supported internal renderer.
  *
  * @param renderer requested renderer

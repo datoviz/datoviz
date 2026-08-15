@@ -1250,6 +1250,7 @@ struct DvzScaleBarRealization
     DvzColor label_color;
     float label_angle;
     DvzTextRenderer renderer;
+    DvzFont* label_font;
 };
 
 
@@ -1645,6 +1646,8 @@ struct DvzTextVisualState
     uint64_t strings_version;
     DvzTextRenderer renderer;
     uint64_t renderer_version;
+    DvzFont* font;
+    uint64_t font_version;
     DvzTextLayout layout;
     uint64_t layout_version;
     DvzTextGlyphSpan* spans;

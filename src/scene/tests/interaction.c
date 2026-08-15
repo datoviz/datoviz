@@ -3574,6 +3574,72 @@ int test_scene_text_sdf_default_font(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Check that retained text preserves an explicitly selected font through batched realization.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_text_custom_font_propagation(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzFontDesc desc_a = dvz_font_desc();
+    desc_a.family = "Custom A";
+    desc_a.style = "Regular";
+    DvzFont* font_a = dvz_font(scene, &desc_a);
+    ANN(font_a);
+    DvzFontDesc desc_b = dvz_font_desc();
+    desc_b.family = "Custom B";
+    desc_b.style = "Regular";
+    DvzFont* font_b = dvz_font(scene, &desc_b);
+    ANN(font_b);
+
+    DvzText* text = dvz_text(panel, 0);
+    ANN(text);
+    DvzTextStyle style = dvz_text_style();
+    style.font = font_a;
+    style.size_px = 18.0f;
+    style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    AT(dvz_text_set_style(text, &style) == 0);
+    AT(dvz_text_set_string(text, "A") == 0);
+
+    _scene_prepare_text_visuals(figure);
+    ANN(text->visual);
+    AT(_visual_family_state(text->visual)->text.font == font_a);
+    DvzVisual* glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    ANN(glyph);
+    DvzTextAtlasSpec spec = dvz_text_atlas_spec(DVZ_TEXT_RENDERER_MSDF_ATLAS, style.size_px);
+    const DvzTextAtlas* atlas_a = dvz_font_atlas(font_a, &spec);
+    ANN(atlas_a);
+    AT(dvz_text_atlas_field(atlas_a) == _visual_family_state(glyph)->field);
+
+    style.font = font_b;
+    AT(dvz_text_set_style(text, &style) == 0);
+    _scene_prepare_text_visuals(figure);
+    AT(_visual_family_state(text->visual)->text.font == font_b);
+    glyph = _visual_family_state(text->visual)->text.glyph_visual;
+    ANN(glyph);
+    const DvzTextAtlas* atlas_b = dvz_font_atlas(font_b, &spec);
+    ANN(atlas_b);
+    AT(atlas_b != atlas_a);
+    AT(dvz_text_atlas_field(atlas_b) == _visual_family_state(glyph)->field);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_text_semantic_object_realization(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -5278,6 +5344,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_scalebar_2d_3d_stream_order);
     TST_CASE(test_scene_font_defaults);
     TST_CASE(test_scene_text_sdf_default_font);
+    TST_CASE(test_scene_text_custom_font_propagation);
     TST_CASE(test_scene_text_semantic_object_realization);
     TST_CASE(test_scene_text_preserves_long_strings);
     TST_CASE(test_scene_text_batched_collection_items);

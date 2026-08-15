@@ -271,6 +271,8 @@ static bool _text_prepare_batched_visual(DvzFigure* figure, DvzText* text)
     }
     if (_scene_text_visual_set_renderer(text->visual, text->style.renderer) != 0)
         return false;
+    if (_scene_text_visual_set_font(text->visual, text->style.font) != 0)
+        return false;
     if (!_text_sync_glyph_visual_attach(text->panel, text->visual, &attach, NULL))
         return false;
 
@@ -733,6 +735,7 @@ static uint64_t _text_visual_version(const DvzVisual* visual)
     ANN(visual);
     uint64_t version = _visual_family_state(visual)->text.strings_version +
                        _visual_family_state(visual)->text.renderer_version +
+                       _visual_family_state(visual)->text.font_version +
                        _visual_family_state(visual)->text.layout_version;
     for (uint32_t i = 0; i < visual->attr_count; i++)
         version += visual->attrs[i].version;
@@ -752,6 +755,7 @@ static uint64_t _text_visual_layout_version(const DvzVisual* visual)
     ANN(visual);
     uint64_t version = _visual_family_state(visual)->text.strings_version +
                        _visual_family_state(visual)->text.renderer_version +
+                       _visual_family_state(visual)->text.font_version +
                        _visual_family_state(visual)->text.layout_version;
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
@@ -932,6 +936,7 @@ bool _text_visual_prepare(
     spec_size_px *= screen_scale;
     DvzTextStyle backend_style = {
         DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+        .font = _visual_family_state(visual)->text.font,
         .size_px = spec_size_px,
         .renderer = renderer,
     };
@@ -945,7 +950,7 @@ bool _text_visual_prepare(
     {
         DvzTextStyle atlas_style = {
             DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
-            .font = NULL,
+            .font = _visual_family_state(visual)->text.font,
             .size_px = backend_style.size_px,
             .renderer = renderer,
         };
@@ -1090,6 +1095,7 @@ bool _text_visual_prepare(
     {
         DvzTextStyle style = {
             DVZ_STRUCT_INIT_FIELDS(DvzTextStyle),
+            .font = _visual_family_state(visual)->text.font,
             .size_px = (sizes != NULL ? sizes[i] : 12.0f) * screen_scale,
             .renderer = renderer,
             .color = {255, 255, 255, 255},

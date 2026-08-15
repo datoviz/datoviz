@@ -682,7 +682,8 @@ static bool _scalebar_label_layout_equal(
            memcmp(a->label_anchor, b->label_anchor, sizeof(a->label_anchor)) == 0 &&
            a->label_size == b->label_size &&
            memcmp(&a->label_color, &b->label_color, sizeof(a->label_color)) == 0 &&
-           a->label_angle == b->label_angle && a->renderer == b->renderer;
+           a->label_angle == b->label_angle && a->renderer == b->renderer &&
+           a->label_font == b->label_font;
 }
 
 
@@ -812,6 +813,7 @@ static bool _scalebar_prepare_overlay_visual(
         _scalebar_positive_or_default(label_style->size_px, DVZ_SCALEBAR_LABEL_SIZE_PX);
     resolved.renderer =
         label_style->renderer != 0 ? label_style->renderer : DVZ_TEXT_RENDERER_MSDF_ATLAS;
+    resolved.label_font = label_style->font;
     resolved.label_position[0] = horizontal ? 0.5f * (x0 + x1) : x1;
     resolved.label_position[1] = horizontal ? y0 : 0.5f * (y0 + y1);
     float label_gap = DVZ_SCALEBAR_LABEL_GAP_PX;
@@ -869,6 +871,8 @@ static bool _scalebar_prepare_overlay_visual(
         };
         if (_visual_family_state(annotation->visual)->text.renderer != resolved.renderer &&
             _scene_text_visual_set_renderer(annotation->visual, resolved.renderer) != 0)
+            return false;
+        if (_scene_text_visual_set_font(annotation->visual, resolved.label_font) != 0)
             return false;
         if (dvz_visual_set_strings(annotation->visual, "text", labels, 1) != 0 ||
             dvz_visual_set_data_many(annotation->visual, text_updates, 5) != 0)
