@@ -373,6 +373,22 @@ bool _scene_resource_key_panel_graph(
 
 
 /**
+ * Format the persistent light-buffer id for one panel.
+ *
+ * @param panel_id the encoded panel id
+ * @param out the output key buffer
+ * @param out_size the output buffer capacity
+ * @return whether the key was written without truncation
+ */
+bool _scene_resource_key_panel_lights(const char* panel_id, char* out, size_t out_size)
+{
+    ANN(panel_id);
+    return _format_key(out, out_size, "%s.lights", panel_id);
+}
+
+
+
+/**
  * Split an encoded visual id with an optional shared index-buffer suffix.
  *
  * @param encoded the encoded visual id

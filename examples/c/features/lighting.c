@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example compares the same sphere cluster under three material and light configurations.
+/* This example compares the same sphere cluster under three panel-owned light configurations.
  *
  * What to look for: each panel uploads the same sphere position, radius, and color arrays, but
- * changes the material light_direction, roughness, specular, and rim_strength values. Rotate any
- * panel in the live preview and the linked arcball controllers keep the views aligned, making it
- * easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
+ * selects its own directional light while changing roughness, specular, and rim_strength. Rotate
+ * any panel in the live preview and the linked arcball controllers keep the views aligned, making
+ * it easier to compare matte lighting, glossy highlights, and rim emphasis on identical data.
  *
  * Scenario: features_lighting
  * Style: features, graphite_cyan, 1280x720 window target
@@ -57,6 +57,7 @@ typedef struct LightingState
 {
     DvzVisual* visuals[3];
     DvzMaterialDesc materials[3];
+    DvzLight* lights[3];
     DvzArcball* arcball;
     ExampleTuner tuner;
 } LightingState;
@@ -76,7 +77,7 @@ DvzScenarioSpec dvz_example_lighting_scenario(void);
 /*************************************************************************************************/
 
 /**
- * Add one sphere visual with deterministic positions and one material/light variant.
+ * Add one sphere visual with deterministic positions and one material variant.
  *
  * @param scene scene owning the visual
  * @param panel panel receiving the visual
@@ -195,25 +196,16 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_tuner_figure(&state->tuner, ctx->figure);
 
     state->materials[0] = dvz_standard_material_desc();
-    state->materials[0].light_direction[0] = +0.34f;
-    state->materials[0].light_direction[1] = +0.46f;
-    state->materials[0].light_direction[2] = +0.82f;
     state->materials[0].standard.roughness = 0.86f;
     state->materials[0].standard.specular = 0.12f;
     state->materials[0].standard.rim_strength = 0.05f;
 
     state->materials[1] = dvz_standard_material_desc();
-    state->materials[1].light_direction[0] = +0.12f;
-    state->materials[1].light_direction[1] = +0.70f;
-    state->materials[1].light_direction[2] = +0.62f;
     state->materials[1].standard.roughness = 0.42f;
     state->materials[1].standard.specular = 0.60f;
     state->materials[1].standard.rim_strength = 0.18f;
 
     state->materials[2] = dvz_standard_material_desc();
-    state->materials[2].light_direction[0] = +0.62f;
-    state->materials[2].light_direction[1] = +0.18f;
-    state->materials[2].light_direction[2] = +0.76f;
     state->materials[2].standard.roughness = 0.24f;
     state->materials[2].standard.specular = 0.78f;
     state->materials[2].standard.rim_strength = 0.42f;
@@ -222,6 +214,12 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzController* controllers[3] = {0};
     const char* labels[3] = {"Matte key light", "Glossy side light", "Rim highlight"};
     DvzPanel* panels[3] = {0};
+    DvzLight* ambient = dvz_scene_default_ambient(ctx->scene);
+    const vec3 light_directions[3] = {
+        {+0.34f, +0.46f, +0.82f},
+        {+0.12f, +0.70f, +0.62f},
+        {+0.62f, +0.18f, +0.76f},
+    };
     const DvzPanelDesc panel_descs[3] = {
         {.x = 0.0000f, .y = 0.0f, .width = 0.3340f, .height = 1.0f},
         {.x = 0.3330f, .y = 0.0f, .width = 0.3340f, .height = 1.0f},
@@ -233,6 +231,23 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         if (panel == NULL)
             return false;
         panels[i] = panel;
+        DvzLightDesc light_desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+        light_desc.direction[0] = light_directions[i][0];
+        light_desc.direction[1] = light_directions[i][1];
+        light_desc.direction[2] = light_directions[i][2];
+        state->lights[i] = dvz_light(ctx->scene, &light_desc);
+        if (state->lights[i] == NULL)
+            return false;
+        DvzLight* panel_lights[2] = {state->lights[i], NULL};
+        uint32_t light_count = 1;
+        if (ambient != NULL)
+        {
+            panel_lights[0] = ambient;
+            panel_lights[1] = state->lights[i];
+            light_count = 2;
+        }
+        if (dvz_panel_set_lights(panel, panel_lights, light_count) != DVZ_OK)
+            return false;
         example_graphite_cyan_set_panel_background(panel);
         if (!_add_lighting_label(panel, labels[i]))
             return false;

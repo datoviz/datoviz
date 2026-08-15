@@ -774,12 +774,6 @@ static void _material_print(FILE* fp, const ExampleTunerMaterial* state)
         "material.base_color_factor[2] = %.6ff; material.base_color_factor[3] = %.6ff;\n",
         material->base_color_factor[0], material->base_color_factor[1],
         material->base_color_factor[2], material->base_color_factor[3]);
-    dvz_fprintf(
-        fp,
-        "material.light_direction[0] = %+.6ff; material.light_direction[1] = %+.6ff; "
-        "material.light_direction[2] = %+.6ff;\n",
-        material->light_direction[0], material->light_direction[1],
-        material->light_direction[2]);
     dvz_fprintf(fp, "material.phong.ambient = %.6ff;\n", material->phong.ambient);
     dvz_fprintf(fp, "material.phong.diffuse = %.6ff;\n", material->phong.diffuse);
     dvz_fprintf(fp, "material.phong.specular = %.6ff;\n", material->phong.specular);
@@ -1268,10 +1262,6 @@ static bool _material_gui(DvzGui* gui, void* user)
 
     changed |= dvz_gui_slider_float(gui, "Opacity", &material->opacity, 0.0f, 1.0f);
     changed |= dvz_gui_color_edit4(gui, "Base color", material->base_color_factor, 0);
-
-    if (material->model != DVZ_MATERIAL_MODEL_UNLIT)
-        changed |=
-            dvz_gui_slider_float3(gui, "Light direction", material->light_direction, -1.0f, +1.0f);
 
     if (material->model == DVZ_MATERIAL_MODEL_PHONG)
     {

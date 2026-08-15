@@ -12,6 +12,18 @@ SCENE_SHADER_DIR = REPO_ROOT / "src" / "scene" / "shaders"
 GLSL_DIR = SCENE_SHADER_DIR / "glsl"
 WGSL_DIR = SCENE_SHADER_DIR / "wgsl"
 
+MATERIAL_FIELDS = [
+    "params",
+    "model",
+    "base_color_factor",
+    "standard_params",
+    "emissive_rim",
+    "limb_params",
+    "depth_cue",
+    "depth_cue_color",
+    "depth_cue_extra",
+]
+
 # WGSL variants intentionally supported by the current WebGPU-oriented scene slice.
 SUPPORTED_WGSL_SHADER_PAIRS = [
     "fixture",
@@ -78,6 +90,37 @@ def _failures() -> list[str]:
     for rel in ["common.wgsl", "scene_material.wgsl"]:
         if not (WGSL_DIR / rel).exists():
             failures.append(f"missing WGSL shared file: {rel}")
+
+    glsl_material = (GLSL_DIR / "scene_material.glsl").read_text(encoding="utf8")
+    wgsl_material = (WGSL_DIR / "scene_material.wgsl").read_text(encoding="utf8")
+    glsl_fields = [
+        "params",
+        "model",
+        "baseColorFactor",
+        "standardParams",
+        "emissiveRim",
+        "limbParams",
+        "depthCue",
+        "depthCueColor",
+        "depthCueExtra",
+    ]
+    if any(
+        glsl_material.find(field) >= glsl_material.find(next_field)
+        for field, next_field in zip(glsl_fields, glsl_fields[1:])
+    ):
+        failures.append("GLSL SceneMaterial field order does not match the C payload")
+    if any(
+        wgsl_material.find(field) >= wgsl_material.find(next_field)
+        for field, next_field in zip(MATERIAL_FIELDS, MATERIAL_FIELDS[1:])
+    ):
+        failures.append("WGSL SceneMaterial field order does not match the C payload")
+    if "layout(set = 1, binding = 4) uniform ScenePanelLights" not in glsl_material:
+        failures.append("GLSL ScenePanelLights is not declared at set 1 binding 4")
+    if "@group(1) @binding(4) var<uniform> panel_lights: ScenePanelLights;" not in wgsl_material:
+        failures.append("WGSL ScenePanelLights is not declared at group 1 binding 4")
+    for text, language in [(glsl_material, "GLSL"), (wgsl_material, "WGSL")]:
+        if "SceneLight" not in text or "ScenePanelLights" not in text:
+            failures.append(f"{language} panel-light payload declarations are incomplete")
 
     for name in COMMON_GLSL_VERTEX_SHADERS:
         text = (GLSL_DIR / name).read_text(encoding="utf8")

@@ -78,7 +78,6 @@ def _surface_material():
     material.phong.diffuse = 0.72
     material.phong.specular = 0.22
     material.phong.shininess = 40.0
-    material.light_direction[:] = (-0.32, -0.58, -0.74)
     return material
 
 
@@ -160,6 +159,7 @@ def _build_scene():
 
     try:
         scene, figure, panel = ex.scene_panel()
+        ex.set_panel_directional_light(scene, panel, (-0.32, -0.58, -0.74))
         dvz.dvz_panel_set_background_color(panel, PANEL_BG)
         _setup_camera(panel)
         _add_surface(scene, panel, geometry)

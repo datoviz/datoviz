@@ -2651,3 +2651,72 @@ int test_scene_panel_light_ownership_and_lifecycle(TstContext* suite, const TstC
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+
+int test_scene_panel_light_upload_is_shared(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    DvzPanel* left = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 0.5f, 1.0f});
+    DvzPanel* right = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
+    ANN(left);
+    ANN(right);
+
+    DvzVisual* left_a = _local_transform_audit_visual(scene, DVZ_VISUAL_TYPE_SPHERE);
+    DvzVisual* left_b = _local_transform_audit_visual(scene, DVZ_VISUAL_TYPE_SPHERE);
+    DvzVisual* right_a = _local_transform_audit_visual(scene, DVZ_VISUAL_TYPE_SPHERE);
+    ANN(left_a);
+    ANN(left_b);
+    ANN(right_a);
+    AT(dvz_panel_add_visual(left, left_a, NULL) == 0);
+    AT(dvz_panel_add_visual(left, left_b, NULL) == 0);
+    AT(dvz_panel_add_visual(right, right_a, NULL) == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+    caps.max_vertex_buffers = 16;
+    caps.max_bind_groups = 4;
+    caps.max_buffer_size = 256 * 1024 * 1024;
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    ANN(stream);
+
+    uint64_t light_buffers[3] = {0};
+    uint32_t light_binding_count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+            continue;
+        for (uint32_t j = 0; j < cmd->u.create_bind_group.entry_count; j++)
+        {
+            const DvzDrp2BindGroupEntry* entry = &cmd->u.create_bind_group.entries[j];
+            if (
+                entry->binding != DVZ_SCENE_SHADER_BINDING_PANEL_LIGHTS ||
+                entry->size != sizeof(DvzScenePanelLightsGpu))
+                continue;
+            AT(light_binding_count < DVZ_ARRAY_COUNT(light_buffers));
+            light_buffers[light_binding_count++] = entry->resource_id;
+        }
+    }
+    AT(light_binding_count == 3);
+    AT(light_buffers[0] != 0);
+    uint32_t same_pairs = 0;
+    for (uint32_t i = 0; i < light_binding_count; i++)
+    {
+        for (uint32_t j = i + 1; j < light_binding_count; j++)
+            same_pairs += light_buffers[i] == light_buffers[j] ? 1 : 0;
+    }
+    AT(same_pairs == 1);
+
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    return 0;
+}

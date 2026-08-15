@@ -59,7 +59,6 @@ static inline int _scene_visuals_bounds_expect(
  * Apply a Phong material while preserving the current visual alpha mode.
  *
  * @param visual the visual
- * @param light_direction material light direction
  * @param ambient ambient coefficient
  * @param diffuse diffuse coefficient
  * @param specular specular coefficient
@@ -67,16 +66,11 @@ static inline int _scene_visuals_bounds_expect(
  * @return 0 on success, -1 on error
  */
 static inline int _scene_visuals_set_phong_material(
-    DvzVisual* visual, const float light_direction[3], float ambient, float diffuse,
-    float specular, float shininess)
+    DvzVisual* visual, float ambient, float diffuse, float specular, float shininess)
 {
     ANN(visual);
-    ANN(light_direction);
     DvzMaterialDesc material = dvz_phong_material_desc();
     material.alpha_mode = dvz_visual_alpha_mode(visual);
-    material.light_direction[0] = light_direction[0];
-    material.light_direction[1] = light_direction[1];
-    material.light_direction[2] = light_direction[2];
     material.phong.ambient = ambient;
     material.phong.diffuse = diffuse;
     material.phong.specular = specular;

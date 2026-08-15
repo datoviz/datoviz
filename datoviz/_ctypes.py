@@ -6216,7 +6216,6 @@ DvzMaterialDesc._fields_ = [
     ('alpha_mode', ctypes.c_int),
     ('opacity', ctypes.c_float),
     ('base_color_factor', (ctypes.c_float * 4)),
-    ('light_direction', (ctypes.c_float * 3)),
     ('phong', DvzPhongMaterial),
     ('standard', DvzStandardMaterial),
     ('limb', DvzLimbMaterial),

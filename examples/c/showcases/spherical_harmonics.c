@@ -1201,6 +1201,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    const float light_direction[3] = {-0.48f, +0.62f, +0.72f};
+    EXAMPLE_CHECK(example_panel_directional_light(ctx->scene, panel, light_direction), "failed to configure spherical-harmonics light");
     example_graphite_cyan_set_panel_background(panel);
 
     DvzCameraDesc camera = example_default_3d_camera_desc(1.35f);
@@ -1217,9 +1219,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(geometry_result == DVZ_OK, "dvz_mesh_set_geometry() failed");
 
     state->material = example_default_standard_material_desc();
-    state->material.light_direction[0] = -0.48f;
-    state->material.light_direction[1] = +0.62f;
-    state->material.light_direction[2] = +0.72f;
     state->material.standard.roughness = 0.58f;
     state->material.standard.specular = 0.16f;
     state->material.standard.rim_strength = 0.12f;

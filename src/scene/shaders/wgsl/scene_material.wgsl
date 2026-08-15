@@ -1,7 +1,6 @@
 #include "color.wgsl"
 
 struct SceneMaterial {
-    light_direction: vec4f,
     params: vec4f,
     model: vec4f,
     base_color_factor: vec4f,
@@ -13,7 +12,90 @@ struct SceneMaterial {
     depth_cue_extra: vec4f,
 }
 
+struct SceneLight {
+    color_intensity: vec4f,
+    direction_type: vec4f,
+    position_attenuation: vec4f,
+}
+
+struct ScenePanelLights {
+    active: vec4u,
+    lights: array<SceneLight, 8>,
+}
+
 @group(1) @binding(0) var<uniform> material: SceneMaterial;
+@group(1) @binding(4) var<uniform> panel_lights: ScenePanelLights;
+
+fn scene_ambient_radiance() -> vec3f {
+    var radiance = vec3f(0.0);
+    for (var i = 0u; i < 8u; i++) {
+        if (i >= panel_lights.active.x) {
+            break;
+        }
+        let light = panel_lights.lights[i];
+        if (i32(light.direction_type.w + 0.5) == 0) {
+            radiance += light.color_intensity.rgb * light.color_intensity.w;
+        }
+    }
+    return radiance;
+}
+
+fn scene_phong_direct(base: vec3f, n: vec3f, v: vec3f) -> vec3f {
+    var direct = vec3f(0.0);
+    for (var i = 0u; i < 8u; i++) {
+        if (i >= panel_lights.active.x) {
+            break;
+        }
+        let light = panel_lights.lights[i];
+        if (i32(light.direction_type.w + 0.5) != 1) {
+            continue;
+        }
+        let radiance = light.color_intensity.rgb * light.color_intensity.w;
+        let l = normalize(light.direction_type.xyz);
+        let h = normalize(l + v);
+        let lambert = max(dot(n, l), 0.0);
+        let specular = pow(max(dot(n, h), 0.0), max(material.params.w, 1.0));
+        direct += radiance *
+            (base * material.params.y * lambert + vec3f(material.params.z * specular));
+    }
+    return direct;
+}
+
+fn scene_standard_direct(base: vec3f, n: vec3f, v: vec3f) -> vec3f {
+    let roughness = clamp(material.standard_params.x, 0.0, 1.0);
+    let specular_strength = max(material.standard_params.y, 0.0);
+    let metallic = clamp(material.standard_params.z, 0.0, 1.0);
+    let shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
+    var direct = vec3f(0.0);
+    for (var i = 0u; i < 8u; i++) {
+        if (i >= panel_lights.active.x) {
+            break;
+        }
+        let light = panel_lights.lights[i];
+        if (i32(light.direction_type.w + 0.5) != 1) {
+            continue;
+        }
+        let radiance = light.color_intensity.rgb * light.color_intensity.w;
+        let l = normalize(light.direction_type.xyz);
+        let h = normalize(l + v);
+        let lambert = max(dot(n, l), 0.0);
+        let specular = pow(max(dot(n, h), 0.0), shininess) * specular_strength;
+        direct += radiance * (base * (1.0 - metallic) * lambert + vec3f(specular));
+    }
+    return direct;
+}
+
+fn scene_primary_directional() -> vec3f {
+    for (var i = 0u; i < 8u; i++) {
+        if (i >= panel_lights.active.x) {
+            break;
+        }
+        if (i32(panel_lights.lights[i].direction_type.w + 0.5) == 1) {
+            return normalize(panel_lights.lights[i].direction_type.xyz);
+        }
+    }
+    return vec3f(0.0, 0.0, 1.0);
+}
 
 fn evaluate_scene_material_linear_item_with_ambient_visibility(
     linear_item_color: vec4f,
@@ -29,13 +111,13 @@ fn evaluate_scene_material_linear_item_with_ambient_visibility(
     let base = linear_item_color.rgb * linear_base_color.rgb;
     let alpha = linear_item_color.a * linear_base_color.a * opacity;
     if (model == 0) {
-        return vec4f(clamp(base + emissive, vec3f(0.0), vec3f(1.0)), alpha);
+        return vec4f(base + emissive, alpha);
     }
 
     let n = normalize(normal);
-    let l = normalize(material.light_direction.xyz);
     let v = normalize(camera_position - world_position);
     if (model == 3) {
+        let l = scene_primary_directional();
         let falloff = max(material.limb_params.x, 0.01);
         let sun_bias = material.limb_params.y;
         let terminator_width = max(material.limb_params.z, 1e-4);
@@ -44,32 +126,26 @@ fn evaluate_scene_material_linear_item_with_ambient_visibility(
         let peak_facing = 2.0 / (falloff + 2.0);
         let peak = peak_facing * peak_facing * pow(1.0 - peak_facing, falloff);
         let limb = facing * facing * pow(1.0 - facing, falloff) / max(peak, 1e-6);
-        let sunlight = smoothstep(
-            -terminator_width, terminator_width, dot(n, l) + sun_bias);
+        let sunlight = smoothstep(-terminator_width, terminator_width, dot(n, l) + sun_bias);
         let illumination = mix(night_factor, 1.0, sunlight);
-        return vec4f(clamp(base, vec3f(0.0), vec3f(1.0)), alpha * limb * illumination);
-    }
-    let h = normalize(l + v);
-    let lambert = max(dot(n, l), 0.0);
-    if (model == 2) {
-        let roughness = clamp(material.standard_params.x, 0.0, 1.0);
-        let specular_strength = max(material.standard_params.y, 0.0);
-        let metallic = clamp(material.standard_params.z, 0.0, 1.0);
-        let rim_strength = max(material.standard_params.w, 0.0);
-        let shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
-        let specular = pow(max(dot(n, h), 0.0), shininess) * specular_strength;
-        let rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rim_strength;
-        let visibility = clamp(ambient_visibility, 0.0, 1.0);
-        let diffuse = base * (0.04 * visibility + (1.0 - metallic) * lambert);
-        let rgb = diffuse + vec3f(specular + rim) + emissive;
-        return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), alpha);
+        return vec4f(base, alpha * limb * illumination);
     }
 
-    let specular = pow(max(dot(n, h), 0.0), max(material.params.w, 1.0));
     let visibility = clamp(ambient_visibility, 0.0, 1.0);
-    let rgb = base * (material.params.x * visibility + material.params.y * lambert) +
-        vec3f(material.params.z * specular);
-    return vec4f(clamp(rgb, vec3f(0.0), vec3f(1.0)), alpha);
+    let ambient_radiance = scene_ambient_radiance();
+    if (model == 2) {
+        let metallic = clamp(material.standard_params.z, 0.0, 1.0);
+        let rim_strength = max(material.standard_params.w, 0.0);
+        let rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rim_strength;
+        let indirect = base * (1.0 - metallic) * ambient_radiance;
+        let rgb = emissive + scene_standard_direct(base, n, v) +
+            visibility * indirect + vec3f(rim);
+        return vec4f(rgb, alpha);
+    }
+
+    let indirect = base * material.params.x * ambient_radiance;
+    let rgb = emissive + scene_phong_direct(base, n, v) + visibility * indirect;
+    return vec4f(rgb, alpha);
 }
 
 fn evaluate_scene_material_linear_item(
@@ -121,7 +197,6 @@ fn depth_cue_factor(cue: vec3f) -> f32 {
     if (mode == 0 || strength <= 0.0) {
         return 0.0;
     }
-
     let denom = max(material.depth_cue.y - material.depth_cue.x, 1e-6);
     let coord = depth_cue_coordinate(cue);
     var t = clamp((coord - material.depth_cue.x) / denom, 0.0, 1.0);

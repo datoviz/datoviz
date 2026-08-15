@@ -91,9 +91,6 @@ typedef struct DvzExampleVisualSpin
 #define EXAMPLE_CONTROLLER_GRID_ORIGIN_Y -0.55f
 #define EXAMPLE_CONTROLLER_CUBE_SIZE     1.10
 
-#define EXAMPLE_DEFAULT_LIGHT_DIRECTION_X -0.45f
-#define EXAMPLE_DEFAULT_LIGHT_DIRECTION_Y +0.35f
-#define EXAMPLE_DEFAULT_LIGHT_DIRECTION_Z +0.82f
 
 
 
@@ -139,6 +136,9 @@ DvzCameraDesc example_controller_camera_desc(void);
 DvzMaterialDesc example_default_phong_material_desc(void);
 
 DvzMaterialDesc example_default_standard_material_desc(void);
+
+bool example_panel_directional_light(
+    DvzScene* scene, DvzPanel* panel, const float direction[3]);
 
 bool example_configure_equal_aspect_panel(
     DvzPanel* panel,

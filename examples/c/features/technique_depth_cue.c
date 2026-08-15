@@ -183,9 +183,6 @@ static bool _add_sphere_lattice(
         return false;
 
     DvzMaterialDesc material = dvz_standard_material_desc();
-    material.light_direction[0] = -0.32f;
-    material.light_direction[1] = +0.55f;
-    material.light_direction[2] = +0.76f;
     material.standard.roughness = 0.46f;
     material.standard.specular = 0.44f;
     material.standard.rim_strength = 0.18f;
@@ -269,6 +266,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         return false;
     example_graphite_cyan_set_panel_background(plain);
     example_graphite_cyan_set_panel_background(cued);
+    const float light_direction[3] = {-0.32f, +0.55f, +0.76f};
+    if (!example_panel_directional_light(ctx->scene, plain, light_direction) ||
+        !example_panel_directional_light(ctx->scene, cued, light_direction))
+        return false;
 
     DvzTextStyle label_style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
     label_style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;

@@ -55,6 +55,7 @@ def _build_scene():
         raise RuntimeError("dvz_geometry_surface_grid() failed")
 
     scene, figure, panel = ex.scene_panel()
+    ex.set_panel_directional_light(scene, panel, (-0.38, +0.76, +0.52))
     dvz.dvz_panel_set_background_color(panel, dvz.DvzColor(6, 9, 10, 255))
     camera = dvz.dvz_camera_desc()
     camera.view.eye[:] = (+4.95, +3.95, +5.70)
@@ -72,7 +73,6 @@ def _build_scene():
     finally:
         dvz.dvz_geometry_destroy(geometry)
     material = dvz.dvz_phong_material_desc()
-    material.light_direction[:] = (-0.38, +0.76, +0.52)
     material.phong.ambient = 0.734
     material.phong.diffuse = 0.454
     material.phong.specular = 0.049

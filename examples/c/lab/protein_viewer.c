@@ -816,9 +816,6 @@ static void _apply_material(ProteinExampleState* state)
     ANN(state);
 
     DvzMaterialDesc material = dvz_material_desc();
-    material.light_direction[0] = 0.25f;
-    material.light_direction[1] = 0.65f;
-    material.light_direction[2] = 0.72f;
     if (state->standard_material)
     {
         material.model = DVZ_MATERIAL_MODEL_STANDARD;
@@ -1129,6 +1126,8 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel_full(figure);
     DvzVisual* spheres = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     EXAMPLE_CHECK(figure != NULL && panel != NULL && spheres != NULL, "scene setup failed");
+    const float light_direction[3] = {0.25f, 0.65f, 0.72f};
+    EXAMPLE_CHECK(example_panel_directional_light(scene, panel, light_direction), "failed to configure protein light");
     DvzVisual* ribbon = NULL;
     DvzSceneBuffer* ribbon_index_buffer = NULL;
     DvzExampleVisualSpin sphere_spin = {0};
@@ -1158,9 +1157,6 @@ int main(int argc, char** argv)
     EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(spheres) failed");
 
     DvzMaterialDesc sphere_material = dvz_phong_material_desc();
-    sphere_material.light_direction[0] = 0.25f;
-    sphere_material.light_direction[1] = 0.65f;
-    sphere_material.light_direction[2] = 0.72f;
     sphere_material.phong.ambient = 0.20f;
     sphere_material.phong.diffuse = 0.76f;
     sphere_material.phong.specular = 0.55f;
@@ -1204,9 +1200,6 @@ int main(int argc, char** argv)
         EXAMPLE_CHECK(rc == 0, "dvz_panel_add_visual(ribbon) failed");
 
         DvzMaterialDesc ribbon_material = dvz_phong_material_desc();
-        ribbon_material.light_direction[0] = 0.25f;
-        ribbon_material.light_direction[1] = 0.65f;
-        ribbon_material.light_direction[2] = 0.72f;
         ribbon_material.phong.ambient = 0.26f;
         ribbon_material.phong.diffuse = 0.78f;
         ribbon_material.phong.specular = 0.35f;

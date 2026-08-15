@@ -870,6 +870,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         return false;
+    const float light_direction[3] = {-0.35f, +0.55f, +0.75f};
+    if (!example_panel_directional_light(ctx->scene, panel, light_direction))
+        return false;
     example_graphite_cyan_set_panel_background(panel);
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.projection.type = 0;
@@ -1134,9 +1137,6 @@ static void _load_material_preset(CorticalActivityState* state, int preset)
     if (preset == 1)
     {
         state->material = dvz_standard_material_desc();
-        state->material.light_direction[0] = -0.28f;
-        state->material.light_direction[1] = +0.62f;
-        state->material.light_direction[2] = +0.73f;
         state->material.standard.roughness = 0.72f;
         state->material.standard.specular = 0.12f;
         state->material.standard.rim_strength = 0.06f;
@@ -1144,9 +1144,6 @@ static void _load_material_preset(CorticalActivityState* state, int preset)
     else if (preset == 2)
     {
         state->material = dvz_phong_material_desc();
-        state->material.light_direction[0] = -0.52f;
-        state->material.light_direction[1] = +0.38f;
-        state->material.light_direction[2] = +0.76f;
         state->material.phong.ambient = 0.34f;
         state->material.phong.diffuse = 0.82f;
         state->material.phong.specular = 0.18f;
@@ -1167,9 +1164,6 @@ static void _load_material_preset(CorticalActivityState* state, int preset)
         state->material.base_color_factor[1] = 1.0f;
         state->material.base_color_factor[2] = 1.0f;
         state->material.base_color_factor[3] = 1.0f;
-        state->material.light_direction[0] = -0.35f;
-        state->material.light_direction[1] = +0.55f;
-        state->material.light_direction[2] = +0.75f;
         state->material.phong.ambient = 0.225f;
         state->material.phong.diffuse = 0.864f;
         state->material.phong.specular = 0.129f;

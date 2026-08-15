@@ -622,6 +622,10 @@ static bool _scene_append_visual_to_render_pass(
     }
     metadata.clip_rect = _scene_visual_clip_rect(panel, visual, attach);
     metadata.viewport_rect = _scene_visual_viewport_rect(panel, visual, attach);
+    if (!_scene_resource_key_panel_lights(
+            node->u.render.panel_id, metadata.panel_lights_id,
+            sizeof(metadata.panel_lights_id)))
+        return false;
     if (metadata.has_volume && volume_occlusion == NULL)
     {
         metadata.volume_occluded = false;

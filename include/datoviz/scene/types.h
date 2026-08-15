@@ -1040,7 +1040,6 @@ struct DvzMaterialDesc
     DvzAlphaMode alpha_mode;
     float opacity;
     float base_color_factor[4];
-    float light_direction[3];
     DvzPhongMaterial phong;
     DvzStandardMaterial standard;
     DvzLimbMaterial limb;

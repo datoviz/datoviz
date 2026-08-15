@@ -47,6 +47,56 @@
 /*************************************************************************************************/
 
 /**
+ * Resolve the neutral default panel-light payload used by hand-authored FramePlans.
+ *
+ * @param emitter frame-plan emitter carrying persistent object identities
+ * @param stream destination DRP2 command stream
+ * @param out_id resolved buffer id
+ * @return whether the buffer was resolved
+ */
+static bool _resolve_default_panel_lights(
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id)
+{
+    ANN(emitter);
+    ANN(stream);
+    ANN(out_id);
+
+    bool is_new = false;
+    uint64_t id = _obj_id(emitter, "_buf_default_panel_lights_v1", &is_new);
+    if (id == 0)
+        return false;
+    if (is_new)
+    {
+        DvzScenePanelLightsGpu payload = {.active_count = 2};
+        DvzLightDesc ambient = dvz_light_desc(DVZ_LIGHT_AMBIENT);
+        DvzLightDesc directional = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+        const DvzLightDesc* lights[2] = {&ambient, &directional};
+        for (uint32_t i = 0; i < 2; i++)
+        {
+            payload.lights[i].color_intensity[0] = lights[i]->color[0];
+            payload.lights[i].color_intensity[1] = lights[i]->color[1];
+            payload.lights[i].color_intensity[2] = lights[i]->color[2];
+            payload.lights[i].color_intensity[3] = lights[i]->intensity;
+            payload.lights[i].direction_type[0] = lights[i]->direction[0];
+            payload.lights[i].direction_type[1] = lights[i]->direction[1];
+            payload.lights[i].direction_type[2] = lights[i]->direction[2];
+            payload.lights[i].direction_type[3] = (float)lights[i]->type;
+        }
+        uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                         DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+        if (!dvz_drp2_stream_create_buffer(stream, id, sizeof(payload), usage) ||
+            !dvz_drp2_stream_write_buffer_bytes(stream, id, 0, sizeof(payload), &payload))
+        {
+            return false;
+        }
+    }
+    *out_id = id;
+    return true;
+}
+
+
+
+/**
  * Emit the exact DRP2 color-target state for one resolved blend policy.
  *
  * @param stream destination DRP2 command stream
@@ -375,6 +425,16 @@ bool _emitter_prepare_render_multi(
             bind.uses_volume_set1 = false;
         if (!pipeline.needs_scene_occlusion_layout)
             bind.uses_scene_occlusion_set2 = false;
+        if (
+            bind.panel_light_buffer_id == 0 &&
+            (bind.uses_material_set1 || bind.uses_item_state_style_set1 ||
+             bind.uses_textured_mesh_set1) &&
+            !_resolve_default_panel_lights(emitter, stream, &bind.panel_light_buffer_id))
+        {
+            _diagnostic(report, "default panel lights buffer resolution failed");
+            ok = false;
+            break;
+        }
         if (ok && is_new)
         {
             uint64_t material_bgl_id = 0;
@@ -606,7 +666,9 @@ bool _emitter_prepare_render_multi(
         /* Visual-specific bind groups. */
         if (bind.uses_item_state_style_set1)
         {
-            if (bind.material_buffer_id == 0 || bind.item_state_style_buffer_id == 0)
+            if (
+                bind.material_buffer_id == 0 || bind.panel_light_buffer_id == 0 ||
+                bind.item_state_style_buffer_id == 0)
             {
                 _diagnostic(report, "item-state render missing style or material params buffer");
                 ok = false;
@@ -621,7 +683,8 @@ bool _emitter_prepare_render_multi(
             uint64_t item_state_style_bg_id = 0;
             ok = ok && _resolve_item_state_style_bind_group(
                            emitter, stream, item_state_style_bgl_id, bind.material_buffer_id,
-                           bind.item_state_style_buffer_id, &item_state_style_bg_id);
+                           bind.panel_light_buffer_id, bind.item_state_style_buffer_id,
+                           &item_state_style_bg_id);
             vis_bg_set1 = item_state_style_bg_id;
         }
         else if (bind.uses_material_set1)
@@ -632,10 +695,17 @@ bool _emitter_prepare_render_multi(
                 ok = false;
                 break;
             }
-            char material_bg_key[64];
+            if (bind.material_buffer_id == 0 || bind.panel_light_buffer_id == 0)
+            {
+                _diagnostic(report, "material render missing params or panel lights buffer");
+                ok = false;
+                break;
+            }
+            char material_bg_key[96];
             dvz_snprintf(
-                material_bg_key, sizeof(material_bg_key), "_bg_material_params_%" PRIu64,
-                bind.material_buffer_id);
+                material_bg_key, sizeof(material_bg_key),
+                "_bg_material_params_%" PRIu64 "_l%" PRIu64, bind.material_buffer_id,
+                bind.panel_light_buffer_id);
             uint64_t material_bg_id = _obj_id(emitter, material_bg_key, &is_new);
             if (material_bg_id == 0)
             {
@@ -643,9 +713,28 @@ bool _emitter_prepare_render_multi(
                 break;
             }
             if (ok && is_new)
-                ok = ok && dvz_drp2_stream_create_uniform_bind_group(
-                               stream, material_bg_id, material_bgl_id, bind.material_buffer_id, 0,
-                               sizeof(DvzSceneMaterialParams));
+            {
+                DvzDrp2BindGroupEntry entries[2] = {
+                    {
+                        .binding = DVZ_SCENE_SHADER_BINDING_MATERIAL_PARAMS,
+                        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                        .resource_id = bind.material_buffer_id,
+                        .offset = 0,
+                        .size = sizeof(DvzSceneMaterialParams),
+                    },
+                    {
+                        .binding = DVZ_SCENE_SHADER_BINDING_PANEL_LIGHTS,
+                        .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                        .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                        .resource_id = bind.panel_light_buffer_id,
+                        .offset = 0,
+                        .size = sizeof(DvzScenePanelLightsGpu),
+                    },
+                };
+                ok = ok && dvz_drp2_stream_create_bind_group_entries(
+                               stream, material_bg_id, material_bgl_id, 2, entries);
+            }
             vis_bg_set1 = material_bg_id;
         }
         if (bind.uses_image_set1 && bind.uses_textured_mesh_set1)
@@ -655,7 +744,7 @@ bool _emitter_prepare_render_multi(
                 ok = false;
                 break;
             }
-            if (bind.material_buffer_id == 0)
+            if (bind.material_buffer_id == 0 || bind.panel_light_buffer_id == 0)
             {
                 _diagnostic(report, "textured mesh render missing material params buffer");
                 ok = false;
@@ -685,7 +774,8 @@ bool _emitter_prepare_render_multi(
             ok = ok &&
                  _resolve_textured_mesh_bind_group(
                      emitter, stream, textured_mesh_bgl_id, bind.material_buffer_id,
-                     bind.image_texture_id, *mesh_sampler_id, bind.image_color_role, &mesh_bg_id);
+                     bind.panel_light_buffer_id, bind.image_texture_id, *mesh_sampler_id,
+                     bind.image_color_role, &mesh_bg_id);
             vis_bg_set1 = mesh_bg_id;
         }
         else if (bind.uses_image_set1)

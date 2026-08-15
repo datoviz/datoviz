@@ -29,8 +29,6 @@
 
 bool _scene_visual_has_attr_data(const DvzVisual* visual, const char* attr_name);
 
-bool _scene_visual_needs_material_params(const DvzVisual* visual);
-
 bool _scene_attr_resource_key(
     const DvzFigure* figure, const DvzVisual* visual, uint32_t visual_index, const char* attr_name,
     char* out_key, size_t out_size);

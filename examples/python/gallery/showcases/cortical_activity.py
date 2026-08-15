@@ -102,6 +102,7 @@ def _build_scene():
     normals = _normals(data.positions, data.indices)
     peak_time = float(data.times[np.unravel_index(np.argmax(data.values), data.values.shape)[0]])
     scene, figure, panel = ex.scene_panel()
+    ex.set_panel_directional_light(scene, panel, (-0.35, +0.55, +0.75))
     camera = dvz.dvz_camera_desc()
     camera.view.eye[:] = (-0.125, +1.0, +2.0)
     camera.view.target[:] = (0.0, 0.0, 0.0)
@@ -112,7 +113,6 @@ def _build_scene():
     dvz.dvz_visual_set_data_many(mesh, {"position": data.positions, "normal": normals, "color": _colors(data, peak_time)})
     dvz.dvz_visual_set_index_data(mesh, data.indices)
     material = dvz.dvz_phong_material_desc()
-    material.light_direction[:] = (-0.35, +0.55, +0.75)
     material.phong.ambient = 0.225
     material.phong.diffuse = 0.864
     material.phong.specular = 0.129

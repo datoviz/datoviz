@@ -28,6 +28,11 @@
 void _scene_emit_visual_uploads(
     DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report);
 
+bool _scene_visual_needs_material_params(const DvzVisual* visual);
+
+void _scene_emit_panel_light_uploads(
+    DvzFigure* figure, DvzFramePlan* plan, const char* figure_id, DvzDiagnosticReport* report);
+
 bool _scene_emit_compute_passes(
     DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report);
 

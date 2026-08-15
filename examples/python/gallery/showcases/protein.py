@@ -170,7 +170,6 @@ def _set_ao(panel) -> None:
 def _material():
     material = dvz.dvz_material_desc()
     material.model = dvz.DVZ_MATERIAL_MODEL_STANDARD
-    material.light_direction[:] = (0.25, 0.65, 0.72)
     material.standard.roughness = 0.36
     material.standard.specular = 0.68
     material.standard.rim_strength = 0.12
@@ -346,6 +345,7 @@ def _build_scene(path: Path | None = None):
     atoms = _load_atoms(path)
     state = ProteinState(atoms)
     scene, figure, panel = ex.scene_panel()
+    ex.set_panel_directional_light(scene, panel, (0.25, 0.65, 0.72))
     dvz.dvz_panel_set_background_color(panel, PANEL_BG)
     _setup_camera(panel)
     _set_ao(panel)

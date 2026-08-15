@@ -109,6 +109,13 @@ typedef struct
 typedef struct
 {
     DvzWasmApiScene* owner;
+    DvzLight* light;
+} DvzWasmApiLight;
+
+
+typedef struct
+{
+    DvzWasmApiScene* owner;
     DvzSceneBuffer* buffer;
 } DvzWasmApiBuffer;
 
@@ -190,6 +197,12 @@ static inline DvzWasmApiPanel* _panel(uint32_t handle)
 static inline DvzWasmApiVisual* _visual(uint32_t handle)
 {
     return (DvzWasmApiVisual*)(uintptr_t)handle;
+}
+
+
+static inline DvzWasmApiLight* _light(uint32_t handle)
+{
+    return (DvzWasmApiLight*)(uintptr_t)handle;
 }
 
 

@@ -138,6 +138,79 @@ uint32_t dvz_wasm_api_panel_full(uint32_t figure_handle)
 
 
 EMSCRIPTEN_KEEPALIVE
+uint32_t dvz_wasm_api_light(
+    uint32_t scene_handle, uint32_t type, float color_r, float color_g, float color_b,
+    float intensity, float direction_x, float direction_y, float direction_z)
+{
+    DvzWasmApiScene* scene = _scene(scene_handle);
+    if (scene == NULL || scene->scene == NULL)
+        return 0;
+    _clear_payload(scene);
+    DvzWasmApiLight* light = (DvzWasmApiLight*)calloc(1, sizeof(DvzWasmApiLight));
+    if (light == NULL)
+        return _fail_handle(scene, "WASM light wrapper allocation failed");
+    DvzLightDesc desc = dvz_light_desc((DvzLightType)type);
+    desc.color[0] = color_r;
+    desc.color[1] = color_g;
+    desc.color[2] = color_b;
+    desc.intensity = intensity;
+    desc.direction[0] = direction_x;
+    desc.direction[1] = direction_y;
+    desc.direction[2] = direction_z;
+    light->owner = scene;
+    light->light = dvz_light(scene->scene, &desc);
+    if (light->light == NULL || !_remember(scene, light))
+    {
+        if (light->light != NULL)
+            dvz_light_destroy(light->light);
+        free(light);
+        return _fail_handle(scene, "WASM light creation failed");
+    }
+    return _handle(light);
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_panel_set_lights(
+    uint32_t panel_handle, const uint32_t* light_handles, uint32_t count)
+{
+    DvzWasmApiPanel* panel = _panel(panel_handle);
+    if (panel == NULL || panel->owner == NULL || panel->panel == NULL)
+        return -1;
+    if (count > DVZ_SCENE_MAX_PANEL_LIGHTS || (count > 0 && light_handles == NULL))
+        return _fail(panel->owner, "invalid WASM panel light set");
+    DvzLight* lights[DVZ_SCENE_MAX_PANEL_LIGHTS] = {0};
+    for (uint32_t i = 0; i < count; i++)
+    {
+        DvzWasmApiLight* light = _light(light_handles[i]);
+        if (light == NULL || light->owner != panel->owner || light->light == NULL)
+            return _fail(panel->owner, "invalid WASM light handle");
+        lights[i] = light->light;
+    }
+    _clear_payload(panel->owner);
+    return dvz_panel_set_lights(panel->panel, lights, count) == DVZ_OK
+               ? 0
+               : _fail(panel->owner, "WASM panel light assignment failed");
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
+int dvz_wasm_api_panel_reset_lights(uint32_t panel_handle)
+{
+    DvzWasmApiPanel* panel = _panel(panel_handle);
+    if (panel == NULL || panel->owner == NULL || panel->panel == NULL)
+        return -1;
+    _clear_payload(panel->owner);
+    return dvz_panel_reset_lights(panel->panel) == DVZ_OK
+               ? 0
+               : _fail(panel->owner, "WASM panel light reset failed");
+}
+
+
+
+EMSCRIPTEN_KEEPALIVE
 uint32_t dvz_wasm_api_visual(uint32_t scene_handle, uint32_t visual_type, uint32_t flags)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
@@ -710,9 +783,9 @@ int dvz_wasm_api_visual_set_labels_s32(
 EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_visual_set_material(
     uint32_t visual_handle, uint32_t model, float opacity, float base_r, float base_g,
-    float base_b, float base_a, float light_x, float light_y, float light_z, float ambient,
-    float diffuse, float specular, float shininess, float roughness, float standard_specular,
-    float metallic, float emissive_r, float emissive_g, float emissive_b, float rim_strength)
+    float base_b, float base_a, float ambient, float diffuse, float specular, float shininess,
+    float roughness, float standard_specular, float metallic, float emissive_r, float emissive_g,
+    float emissive_b, float rim_strength)
 {
     DvzWasmApiVisual* visual = _visual(visual_handle);
     if (visual == NULL || visual->owner == NULL || visual->visual == NULL)
@@ -729,9 +802,6 @@ int dvz_wasm_api_visual_set_material(
     material.base_color_factor[1] = base_g;
     material.base_color_factor[2] = base_b;
     material.base_color_factor[3] = base_a;
-    material.light_direction[0] = light_x;
-    material.light_direction[1] = light_y;
-    material.light_direction[2] = light_z;
     material.phong.ambient = ambient;
     material.phong.diffuse = diffuse;
     material.phong.specular = specular;

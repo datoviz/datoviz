@@ -102,6 +102,8 @@ static const char* _resource_role_tag(DvzFramePlanResourceRole role)
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_PRIMITIVE_SHADING:
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_MATERIAL_PARAMS:
         return "material_params";
+    case DVZ_FRAME_PLAN_RESOURCE_ROLE_PANEL_LIGHTS:
+        return "panel_lights";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE:
         return "item_state";
     case DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE_STYLE:

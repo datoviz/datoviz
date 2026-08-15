@@ -583,6 +583,27 @@ static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel)
 
 
 /**
+ * Return whether a panel currently needs its shared light payload.
+ *
+ * @param panel the panel to inspect
+ * @return whether a visible material visual consumes panel lights
+ */
+static bool _scene_panel_needs_lights(const DvzPanel* panel)
+{
+    if (panel == NULL)
+        return false;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzVisual* visual = panel->visuals[i].visual;
+        if (visual != NULL && visual->visible && _scene_visual_needs_material_params(visual))
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
  * Clear dirty scene state after one successful figure emit.
  *
  * @param figure the emitted figure
@@ -594,6 +615,12 @@ static void _scene_commit_emit_success(DvzFigure* figure)
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
     {
         DvzPanel* panel = &figure->panels[pi];
+        if (panel->lights.gpu_upload_pending)
+        {
+            panel->lights.gpu_dirty = false;
+            panel->lights.gpu_realized = true;
+            panel->lights.gpu_upload_pending = false;
+        }
         for (uint32_t vi = 0; vi < panel->visual_count; vi++)
         {
             DvzVisual* visual = panel->visuals[vi].visual;
@@ -685,6 +712,7 @@ bool _scene_figure_has_pending_render_work(const DvzFigure* figure)
     {
         const DvzPanel* panel = &figure->panels[i];
         if (
+            (panel->lights.gpu_dirty && _scene_panel_needs_lights(panel)) ||
             _scene_panel_has_pending_visual_work(panel) ||
             _scene_panel_has_pending_adornment_work(panel))
         {
@@ -773,6 +801,7 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
     }
 
     _scene_emit_visual_uploads(figure, plan, report);
+    _scene_emit_panel_light_uploads(figure, plan, figure_id, report);
     if (!_scene_emit_compute_passes(figure, plan, report))
     {
         (void)dvz_diagnostic_report_add(report, "scene compute FramePlan emission failed");

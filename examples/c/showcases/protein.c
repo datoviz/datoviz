@@ -566,9 +566,6 @@ static bool _setup_material(ProteinState* state, DvzVisual* spheres, DvzVisual* 
 
     state->sphere_material = dvz_material_desc();
     state->sphere_material.model = DVZ_MATERIAL_MODEL_STANDARD;
-    state->sphere_material.light_direction[0] = 0.25f;
-    state->sphere_material.light_direction[1] = 0.65f;
-    state->sphere_material.light_direction[2] = 0.72f;
     state->sphere_material.standard.roughness = 0.36f;
     state->sphere_material.standard.specular = 0.68f;
     state->sphere_material.standard.rim_strength = 0.12f;
@@ -864,6 +861,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(ctx->figure != NULL && panel != NULL, "scene setup failed");
+    const float light_direction[3] = {0.25f, 0.65f, 0.72f};
+    EXAMPLE_CHECK(example_panel_directional_light(ctx->scene, panel, light_direction), "failed to configure protein light");
     example_tuner_figure(&state->tuner, ctx->figure);
     example_graphite_cyan_set_panel_background(panel);
 

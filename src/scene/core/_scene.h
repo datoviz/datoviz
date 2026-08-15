@@ -1468,7 +1468,6 @@ typedef struct DvzSceneMaterialParams DvzSceneMaterialParams;
 
 struct DvzSceneMaterialParams
 {
-    float light_direction[4];
     float params[4];
     float model[4];
     float base_color_factor[4];
@@ -1512,7 +1511,6 @@ struct DvzSceneMaterialState
     DvzAlphaMode alpha_mode;
     float opacity;
     float base_color_factor[4];
-    float light_direction[4];
     float ambient;
     float diffuse;
     float specular;
@@ -1942,8 +1940,26 @@ typedef struct DvzScenePanelLights
     uint32_t count;
     bool explicit_set;
     bool gpu_dirty;
+    bool gpu_realized;
+    bool gpu_upload_pending;
     uint64_t revision;
 } DvzScenePanelLights;
+
+
+typedef struct DvzSceneLightGpu
+{
+    float color_intensity[4];
+    float direction_type[4];
+    float position_attenuation[4];
+} DvzSceneLightGpu;
+
+
+typedef struct DvzScenePanelLightsGpu
+{
+    uint32_t active_count;
+    uint32_t _padding[3];
+    DvzSceneLightGpu lights[DVZ_SCENE_MAX_PANEL_LIGHTS];
+} DvzScenePanelLightsGpu;
 
 
 struct DvzLight

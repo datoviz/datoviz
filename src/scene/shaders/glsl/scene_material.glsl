@@ -10,8 +10,11 @@ layout(set = 3, binding = 0) uniform texture2D ambientVisibilityTex;
 layout(set = 3, binding = 1) uniform sampler ambientVisibilitySamp;
 #endif
 
+#define DVZ_SCENE_MAX_PANEL_LIGHTS 8
+#define DVZ_SCENE_LIGHT_AMBIENT 0
+#define DVZ_SCENE_LIGHT_DIRECTIONAL 1
+
 layout(set = 1, binding = 0) uniform SceneMaterial {
-    vec4 lightDir;
     vec4 params;
     vec4 model;
     vec4 baseColorFactor;
@@ -22,6 +25,17 @@ layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 depthCueColor;
     vec4 depthCueExtra;
 } material;
+
+struct SceneLight {
+    vec4 colorIntensity;
+    vec4 directionType;
+    vec4 positionAttenuation;
+};
+
+layout(set = 1, binding = 4) uniform ScenePanelLights {
+    uvec4 lightCount;
+    SceneLight lights[DVZ_SCENE_MAX_PANEL_LIGHTS];
+} panelLights;
 
 float sceneAmbientVisibility()
 {
@@ -38,23 +52,90 @@ float sceneAmbientVisibility()
 #endif
 }
 
+vec3 sceneAmbientRadiance()
+{
+    vec3 radiance = vec3(0.0);
+    int count = min(int(panelLights.lightCount.x), DVZ_SCENE_MAX_PANEL_LIGHTS);
+    for (int i = 0; i < count; i++)
+    {
+        SceneLight light = panelLights.lights[i];
+        if (int(light.directionType.w + 0.5) == DVZ_SCENE_LIGHT_AMBIENT)
+            radiance += light.colorIntensity.rgb * light.colorIntensity.w;
+    }
+    return radiance;
+}
+
+vec3 scenePhongDirect(vec3 base, vec3 n, vec3 v)
+{
+    vec3 direct = vec3(0.0);
+    int count = min(int(panelLights.lightCount.x), DVZ_SCENE_MAX_PANEL_LIGHTS);
+    for (int i = 0; i < count; i++)
+    {
+        SceneLight light = panelLights.lights[i];
+        if (int(light.directionType.w + 0.5) != DVZ_SCENE_LIGHT_DIRECTIONAL)
+            continue;
+        vec3 radiance = light.colorIntensity.rgb * light.colorIntensity.w;
+        vec3 l = normalize(light.directionType.xyz);
+        vec3 h = normalize(l + v);
+        float lambert = max(dot(n, l), 0.0);
+        float spec = pow(max(dot(n, h), 0.0), max(material.params.w, 1.0));
+        direct += radiance *
+                  (base * material.params.y * lambert + vec3(material.params.z * spec));
+    }
+    return direct;
+}
+
+vec3 sceneStandardDirect(vec3 base, vec3 n, vec3 v)
+{
+    float roughness = clamp(material.standardParams.x, 0.0, 1.0);
+    float specularStrength = max(material.standardParams.y, 0.0);
+    float metallic = clamp(material.standardParams.z, 0.0, 1.0);
+    float shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
+    vec3 direct = vec3(0.0);
+    int count = min(int(panelLights.lightCount.x), DVZ_SCENE_MAX_PANEL_LIGHTS);
+    for (int i = 0; i < count; i++)
+    {
+        SceneLight light = panelLights.lights[i];
+        if (int(light.directionType.w + 0.5) != DVZ_SCENE_LIGHT_DIRECTIONAL)
+            continue;
+        vec3 radiance = light.colorIntensity.rgb * light.colorIntensity.w;
+        vec3 l = normalize(light.directionType.xyz);
+        vec3 h = normalize(l + v);
+        float lambert = max(dot(n, l), 0.0);
+        float spec = pow(max(dot(n, h), 0.0), shininess) * specularStrength;
+        direct += radiance * (base * (1.0 - metallic) * lambert + vec3(spec));
+    }
+    return direct;
+}
+
+vec3 scenePrimaryDirectional()
+{
+    int count = min(int(panelLights.lightCount.x), DVZ_SCENE_MAX_PANEL_LIGHTS);
+    for (int i = 0; i < count; i++)
+    {
+        if (int(panelLights.lights[i].directionType.w + 0.5) == DVZ_SCENE_LIGHT_DIRECTIONAL)
+            return normalize(panelLights.lights[i].directionType.xyz);
+    }
+    return vec3(0.0, 0.0, 1.0);
+}
+
 vec4 evaluateSceneMaterialLinearItemWithAmbientVisibility(
     vec4 linearItemColor, vec3 normal, vec3 worldPos, vec3 cameraPos, float ambientVisibility)
 {
     int model = int(material.model.x + 0.5);
     float opacity = clamp(material.model.y, 0.0, 1.0);
     vec4 linearBaseColor = semanticColorToLinear(material.baseColorFactor);
-    vec3 emissive = srgbToLinear(clamp(material.emissiveRim.rgb, 0.0, 1.0));
+    vec3 emissive = srgbToLinear(material.emissiveRim.rgb);
     vec3 base = linearItemColor.rgb * linearBaseColor.rgb;
     float alpha = linearItemColor.a * linearBaseColor.a * opacity;
     if (model == 0)
-        return vec4(clamp(base + emissive, 0.0, 1.0), alpha);
+        return vec4(base + emissive, alpha);
 
     vec3 n = normalize(normal);
-    vec3 l = normalize(material.lightDir.xyz);
     vec3 v = normalize(cameraPos - worldPos);
     if (model == 3)
     {
+        vec3 l = scenePrimaryDirectional();
         float falloff = max(material.limbParams.x, 0.01);
         float sunBias = material.limbParams.y;
         float terminatorWidth = max(material.limbParams.z, 1e-4);
@@ -63,33 +144,26 @@ vec4 evaluateSceneMaterialLinearItemWithAmbientVisibility(
         float peakFacing = 2.0 / (falloff + 2.0);
         float peak = peakFacing * peakFacing * pow(1.0 - peakFacing, falloff);
         float limb = facing * facing * pow(1.0 - facing, falloff) / max(peak, 1e-6);
-        float sunlight = smoothstep(
-            -terminatorWidth, terminatorWidth, dot(n, l) + sunBias);
+        float sunlight = smoothstep(-terminatorWidth, terminatorWidth, dot(n, l) + sunBias);
         float illumination = mix(nightFactor, 1.0, sunlight);
-        return vec4(clamp(base, 0.0, 1.0), alpha * limb * illumination);
-    }
-    vec3 h = normalize(l + v);
-    float lambert = max(dot(n, l), 0.0);
-    if (model == 2)
-    {
-        float roughness = clamp(material.standardParams.x, 0.0, 1.0);
-        float specularStrength = max(material.standardParams.y, 0.0);
-        float metallic = clamp(material.standardParams.z, 0.0, 1.0);
-        float rimStrength = max(material.standardParams.w, 0.0);
-        float shininess = max(1.0, 128.0 * (1.0 - roughness) + 1.0);
-        float spec = pow(max(dot(n, h), 0.0), shininess) * specularStrength;
-        float rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rimStrength;
-        float visibility = clamp(ambientVisibility, 0.0, 1.0);
-        vec3 diffuse = base * (0.04 * visibility + (1.0 - metallic) * lambert);
-        vec3 rgb = diffuse + vec3(spec + rim) + emissive;
-        return vec4(clamp(rgb, 0.0, 1.0), alpha);
+        return vec4(base, alpha * limb * illumination);
     }
 
-    float spec = pow(max(dot(n, h), 0.0), max(material.params.w, 1.0));
     float visibility = clamp(ambientVisibility, 0.0, 1.0);
-    vec3 rgb = base * (material.params.x * visibility + material.params.y * lambert) +
-               vec3(material.params.z * spec);
-    return vec4(clamp(rgb, 0.0, 1.0), alpha);
+    vec3 ambientRadiance = sceneAmbientRadiance();
+    if (model == 2)
+    {
+        float metallic = clamp(material.standardParams.z, 0.0, 1.0);
+        float rimStrength = max(material.standardParams.w, 0.0);
+        float rim = pow(1.0 - max(dot(n, v), 0.0), 2.0) * rimStrength;
+        vec3 indirect = base * (1.0 - metallic) * ambientRadiance;
+        vec3 rgb = emissive + sceneStandardDirect(base, n, v) + visibility * indirect + vec3(rim);
+        return vec4(rgb, alpha);
+    }
+
+    vec3 indirect = base * material.params.x * ambientRadiance;
+    vec3 rgb = emissive + scenePhongDirect(base, n, v) + visibility * indirect;
+    return vec4(rgb, alpha);
 }
 
 vec4 evaluateSceneMaterialLinearItem(vec4 linearItemColor, vec3 normal, vec3 worldPos, vec3 cameraPos)
@@ -127,7 +201,6 @@ float depthCueFactor(vec3 cue)
     int mode = int(material.depthCue.w + 0.5);
     if (mode == 0 || strength <= 0.0)
         return 0.0;
-
     float denom = max(material.depthCue.y - material.depthCue.x, 1e-6);
     float coord = depthCueCoordinate(cue);
     float t = clamp((coord - material.depthCue.x) / denom, 0.0, 1.0);

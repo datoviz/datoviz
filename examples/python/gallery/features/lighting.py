@@ -18,19 +18,16 @@ SPHERE_COUNT = 9
 
 def _materials():
     matte = dvz.dvz_standard_material_desc()
-    matte.light_direction[:] = (0.34, 0.46, 0.82)
     matte.standard.roughness = 0.86
     matte.standard.specular = 0.12
     matte.standard.rim_strength = 0.05
 
     glossy = dvz.dvz_standard_material_desc()
-    glossy.light_direction[:] = (0.12, 0.70, 0.62)
     glossy.standard.roughness = 0.42
     glossy.standard.specular = 0.60
     glossy.standard.rim_strength = 0.18
 
     rim = dvz.dvz_standard_material_desc()
-    rim.light_direction[:] = (0.62, 0.18, 0.76)
     rim.standard.roughness = 0.24
     rim.standard.specular = 0.78
     rim.standard.rim_strength = 0.42
@@ -120,9 +117,11 @@ def _build_scene():
     materials = _materials()
     panel_rects = ((0.000, 0.0, 0.334, 1.0), (0.333, 0.0, 0.334, 1.0), (0.666, 0.0, 0.334, 1.0))
     panels = []
-    for label, material, rect in zip(LABELS, materials, panel_rects, strict=True):
+    directions = ((0.34, 0.46, 0.82), (0.12, 0.70, 0.62), (0.62, 0.18, 0.76))
+    for label, material, direction, rect in zip(LABELS, materials, directions, panel_rects, strict=True):
         panel = ex.panel_rect(figure, *rect)
         ex.manual_camera(panel)
+        ex.set_panel_directional_light(scene, panel, direction)
         _add_label(panel, label)
         _add_lit_spheres(scene, panel, material)
         panels.append(panel)

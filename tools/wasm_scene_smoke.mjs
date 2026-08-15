@@ -416,6 +416,8 @@ async function expectBrowserWrapperPacketRuntime() {
   requireOk(source.includes("_dvz_wasm_api_axis_set_grid"), "browser wrapper cannot enable axis grids");
   requireOk(source.includes("_dvz_wasm_api_axis_set_label"), "browser wrapper cannot set axis labels");
   requireOk(source.includes("_dvz_wasm_api_visual_set_material"), "browser wrapper cannot set materials");
+  requireOk(source.includes("_dvz_wasm_api_light"), "browser wrapper cannot create scene lights");
+  requireOk(source.includes("_dvz_wasm_api_panel_set_lights"), "browser wrapper cannot assign panel lights");
   requireOk(source.includes("_dvz_wasm_api_visual_set_segment_caps"), "browser wrapper cannot set segment caps");
   requireOk(source.includes("_dvz_wasm_api_visual_set_path_caps"), "browser wrapper cannot set path caps");
   requireOk(source.includes("_dvz_wasm_api_visual_set_path_join"), "browser wrapper cannot set path joins");
@@ -2279,7 +2281,6 @@ function setStandardMaterial(Module, visual, label, roughness = 0.42, metallic =
       DVZ_MATERIAL_MODEL_STANDARD,
       1.0,
       1.05, 0.96, 1.0, 1.0,
-      -0.45, -0.38, 0.8,
       0.24, 0.82, 0.24, 26.0,
       roughness, 0.52, metallic,
       0.0, 0.0, 0.0, 0.16,
@@ -2449,7 +2450,6 @@ try {
         DVZ_MATERIAL_MODEL_STANDARD,
         1.0,
         1.0, 1.0, 1.0, 1.0,
-        -0.45, -0.35, 0.82,
         0.24, 0.82, 0.24, 26.0,
         0.62, 0.34, 0.0,
         0.0, 0.0, 0.0, 0.1,

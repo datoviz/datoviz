@@ -258,7 +258,11 @@ static bool _scene_visual_desc_from_metadata(
             *error = "unsupported typed visual metadata";
         return false;
     }
-    return ops->resolve_desc(emitter, meta, out, error);
+    if (!ops->resolve_desc(emitter, meta, out, error))
+        return false;
+    out->panel_light_buffer_id =
+        _scene_visual_desc_resource(emitter, meta->panel_lights_id);
+    return true;
 }
 
 

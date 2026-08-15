@@ -25,6 +25,8 @@ const DVZ_POINTER_BUTTON_RIGHT = 3;
 const DVZ_MATERIAL_MODEL_UNLIT = 0;
 const DVZ_MATERIAL_MODEL_PHONG = 1;
 const DVZ_MATERIAL_MODEL_STANDARD = 2;
+const DVZ_LIGHT_AMBIENT = 0;
+const DVZ_LIGHT_DIRECTIONAL = 1;
 const DVZ_SEGMENT_CAP_NONE = 0;
 const DVZ_SEGMENT_CAP_ROUND = 1;
 const DVZ_SEGMENT_CAP_TRIANGLE_IN = 2;
@@ -127,6 +129,20 @@ function materialModelCode(model) {
       return DVZ_MATERIAL_MODEL_STANDARD;
     default:
       throw new Error(`unsupported material model ${model}`);
+  }
+}
+
+function lightTypeCode(type) {
+  switch (type) {
+    case "ambient":
+    case DVZ_LIGHT_AMBIENT:
+      return DVZ_LIGHT_AMBIENT;
+    case "directional":
+    case undefined:
+    case DVZ_LIGHT_DIRECTIONAL:
+      return DVZ_LIGHT_DIRECTIONAL;
+    default:
+      throw new Error(`unsupported light type ${type}`);
   }
 }
 
@@ -485,6 +501,47 @@ export class DatovizWasmScene {
     this._requireAlive();
     const panel = this.Module._dvz_wasm_api_panel_full(this.figure);
     return this._requireHandle(panel, "dvz_wasm_api_panel_full failed");
+  }
+
+  light(options = {}) {
+    this._requireAlive();
+    const color = options.color ?? [1, 1, 1];
+    const direction = options.direction ?? [-0.45, 0.35, 0.82];
+    const light = this.Module._dvz_wasm_api_light(
+      this.scene,
+      lightTypeCode(options.type),
+      color[0] ?? 1,
+      color[1] ?? 1,
+      color[2] ?? 1,
+      options.intensity ?? (options.type === "ambient" ? 0.15 : 1),
+      direction[0] ?? -0.45,
+      direction[1] ?? 0.35,
+      direction[2] ?? 0.82,
+    );
+    return this._requireHandle(light, "dvz_wasm_api_light failed");
+  }
+
+  setPanelLights(panel, lights) {
+    this._requireAlive();
+    requireOk(Array.isArray(lights) && lights.length > 0, "panel lights must be a nonempty array");
+    const handles = new Uint32Array(lights);
+    const ptr = allocArray(this.Module, handles);
+    try {
+      this._requireStatus(
+        this.Module._dvz_wasm_api_panel_set_lights(panel, ptr, handles.length),
+        "dvz_wasm_api_panel_set_lights failed",
+      );
+    } finally {
+      this.Module._free(ptr);
+    }
+  }
+
+  resetPanelLights(panel) {
+    this._requireAlive();
+    this._requireStatus(
+      this.Module._dvz_wasm_api_panel_reset_lights(panel),
+      "dvz_wasm_api_panel_reset_lights failed",
+    );
   }
 
   visual(type, flags = 0) {
@@ -1362,7 +1419,6 @@ export class DatovizWasmVisualHandle {
   setMaterial(options = {}) {
     const model = materialModelCode(options.model);
     const base = options.baseColorFactor ?? [1, 1, 1, 1];
-    const light = options.lightDirection ?? [-0.45, -0.35, 0.82];
     const phong = options.phong ?? {};
     const standard = options.standard ?? {};
     const emissive = standard.emissive ?? [0, 0, 0];
@@ -1374,9 +1430,6 @@ export class DatovizWasmVisualHandle {
       base[1] ?? 1,
       base[2] ?? 1,
       base[3] ?? 1,
-      light[0] ?? -0.45,
-      light[1] ?? -0.35,
-      light[2] ?? 0.82,
       phong.ambient ?? 0.24,
       phong.diffuse ?? 0.82,
       phong.specular ?? 0.24,

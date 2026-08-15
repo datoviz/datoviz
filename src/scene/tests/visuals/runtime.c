@@ -346,7 +346,7 @@ int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, con
     AT(dvz_visual_set_buffer(visual, "index", index_buffer) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
     AT(_scene_visuals_set_phong_material(
-           visual, (float[3]){0.0f, 0.0f, 1.0f}, 0.0f, 0.0f, 0.25f, 32.0f) == 0);
+           visual, 0.0f, 0.0f, 0.25f, 32.0f) == 0);
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
@@ -387,7 +387,7 @@ int test_scene_indexed_primitive_material_updates_runtime(TstContext* suite, con
     stream0 = NULL;
 
     AT(_scene_visuals_set_phong_material(
-           visual, (float[3]){0.0f, 0.0f, 1.0f}, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
+           visual, 1.0f, 0.0f, 0.25f, 32.0f) == 0);
 
     DvzDrp2CommandStream* stream1 = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
     ANN(stream1);
@@ -2315,9 +2315,6 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     AT(volume->material.kind == DVZ_MATERIAL_KIND_VOLUME);
     AT(mesh->material.alpha_mode == DVZ_ALPHA_OPAQUE);
     AT(mesh->material.opacity == 1.0f);
-    AT(mesh->material.light_direction[0] == -0.45f);
-    AT(mesh->material.light_direction[1] == +0.35f);
-    AT(mesh->material.light_direction[2] == 0.82f);
     AT(mesh->material.ambient == 0.24f);
     AT(mesh->material.diffuse == 0.82f);
     AT(!mesh->material.depth_cue_enabled);
@@ -2371,15 +2368,9 @@ int test_scene_visual_internal_material_state(TstContext* suite, const TstCase* 
     AT(material_version > 0);
 
     AT(_scene_visuals_set_phong_material(
-           mesh, (float[3]){1.0f, 2.0f, 3.0f}, 0.35f, 0.65f, 0.25f, 32.0f) == 0);
-    AT(_visual_family_state(mesh)->material_params.light_direction[0] == 1.0f);
-    AT(_visual_family_state(mesh)->material_params.light_direction[1] == 2.0f);
-    AT(_visual_family_state(mesh)->material_params.light_direction[2] == 3.0f);
+           mesh, 0.35f, 0.65f, 0.25f, 32.0f) == 0);
     AT(_visual_family_state(mesh)->material_params.params[0] == 0.35f);
     AT(_visual_family_state(mesh)->material_params.params[1] == 0.65f);
-    AT(mesh->material.light_direction[0] == 1.0f);
-    AT(mesh->material.light_direction[1] == 2.0f);
-    AT(mesh->material.light_direction[2] == 3.0f);
     AT(mesh->material.ambient == 0.35f);
     AT(mesh->material.diffuse == 0.65f);
     AT(mesh->material.version > material_version);
@@ -2437,9 +2428,6 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(defaults.opacity == 1.0f);
     AT(defaults.base_color_factor[0] == 1.0f);
     AT(defaults.base_color_factor[3] == 1.0f);
-    AT(defaults.light_direction[0] == -0.45f);
-    AT(defaults.light_direction[1] == +0.35f);
-    AT(defaults.light_direction[2] == 0.82f);
     AT(defaults.phong.ambient == 0.24f);
     AT(defaults.phong.diffuse == 0.82f);
     AT(defaults.phong.specular == 0.24f);
@@ -2476,9 +2464,6 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     phong.alpha_mode = DVZ_ALPHA_WBOIT;
     phong.opacity = 0.5f;
     phong.base_color_factor[0] = 0.75f;
-    phong.light_direction[0] = 1.0f;
-    phong.light_direction[1] = 2.0f;
-    phong.light_direction[2] = 3.0f;
     phong.phong.ambient = 0.15f;
     phong.phong.diffuse = 0.70f;
     phong.phong.specular = 0.40f;
@@ -2490,9 +2475,6 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(mesh->material.alpha_mode == DVZ_ALPHA_WBOIT);
     AT(mesh->material.opacity == 0.5f);
     AT(mesh->material.base_color_factor[0] == 0.75f);
-    AT(mesh->material.light_direction[0] == 1.0f);
-    AT(mesh->material.light_direction[1] == 2.0f);
-    AT(mesh->material.light_direction[2] == 3.0f);
     AT(mesh->material.ambient == 0.15f);
     AT(mesh->material.diffuse == 0.70f);
     AT(mesh->material.specular == 0.40f);
@@ -2575,7 +2557,7 @@ int test_scene_visual_material_setter(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(mesh)->material_params.params[1] == 0.82f);
 
     AT(_scene_visuals_set_phong_material(
-           sphere, (float[3]){0.0f, 1.0f, 0.0f}, 0.3f, 0.6f, 0.2f, 16.0f) == 0);
+           sphere, 0.3f, 0.6f, 0.2f, 16.0f) == 0);
     AT(sphere->material.model == DVZ_MATERIAL_MODEL_PHONG);
     AT(sphere->material.ambient == 0.3f);
     AT(_visual_family_state(sphere)->material_params.params[3] == 16.0f);

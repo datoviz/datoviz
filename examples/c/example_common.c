@@ -544,9 +544,6 @@ DvzCameraDesc example_controller_camera_desc(void)
 DvzMaterialDesc example_default_phong_material_desc(void)
 {
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_X;
-    material.light_direction[1] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_Y;
-    material.light_direction[2] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_Z;
     material.phong.ambient = 0.5f;
     material.phong.diffuse = 0.8f;
     material.phong.specular = 0.3f;
@@ -563,13 +560,37 @@ DvzMaterialDesc example_default_phong_material_desc(void)
 DvzMaterialDesc example_default_standard_material_desc(void)
 {
     DvzMaterialDesc material = dvz_standard_material_desc();
-    material.light_direction[0] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_X;
-    material.light_direction[1] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_Y;
-    material.light_direction[2] = EXAMPLE_DEFAULT_LIGHT_DIRECTION_Z;
     material.standard.roughness = 0.38f;
     material.standard.specular = 0.42f;
     material.standard.rim_strength = 0.26f;
     return material;
+}
+
+
+/**
+ * Assign one panel-owned directional light while retaining the scene ambient light.
+ *
+ * @param scene owning scene
+ * @param panel target panel
+ * @param direction directional-light vector
+ * @return whether the light set was assigned
+ */
+bool example_panel_directional_light(DvzScene* scene, DvzPanel* panel, const float direction[3])
+{
+    ANN(scene);
+    ANN(panel);
+    ANN(direction);
+    DvzLightDesc desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+    desc.direction[0] = direction[0];
+    desc.direction[1] = direction[1];
+    desc.direction[2] = direction[2];
+    DvzLight* directional = dvz_light(scene, &desc);
+    if (directional == NULL)
+        return false;
+    DvzLight* ambient = dvz_scene_default_ambient(scene);
+    DvzLight* lights[2] = {ambient, directional};
+    uint32_t count = ambient != NULL ? 2u : 1u;
+    return dvz_panel_set_lights(panel, lights, count) == DVZ_OK;
 }
 
 

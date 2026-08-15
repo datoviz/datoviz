@@ -10,7 +10,6 @@ layout(location = 3) flat in uint fragId;
 layout(location = 0) out uint outId;
 
 layout(set = 1, binding = 0) uniform SceneMaterial {
-    vec4 lightDir;
     vec4 params;
     vec4 model;
     vec4 baseColorFactor;

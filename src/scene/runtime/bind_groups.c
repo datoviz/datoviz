@@ -134,11 +134,28 @@ bool _resolve_material_bind_group_layout(
     ANN(out_id);
 
     bool is_new = false;
-    uint64_t id = _obj_id(emitter, "_bgl_material_params", &is_new);
+    uint64_t id = _obj_id(emitter, "_bgl_material_params_lights_v1", &is_new);
     if (id == 0)
         return false;
-    if (is_new && !dvz_drp2_stream_create_uniform_bind_group_layout(stream, id))
-        return false;
+    if (is_new)
+    {
+        DvzDrp2BindGroupLayoutEntry entries[2] = {
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_MATERIAL_PARAMS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_PANEL_LIGHTS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
+        };
+        if (!dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 2, entries))
+            return false;
+    }
     *out_id = id;
     return true;
 }
@@ -161,12 +178,12 @@ bool _resolve_item_state_style_bind_group_layout(
     ANN(out_id);
 
     bool is_new = false;
-    uint64_t id = _obj_id(emitter, "_bgl_item_state_style", &is_new);
+    uint64_t id = _obj_id(emitter, "_bgl_item_state_style_lights_v1", &is_new);
     if (id == 0)
         return false;
     if (is_new)
     {
-        DvzDrp2BindGroupLayoutEntry entries[2] = {
+        DvzDrp2BindGroupLayoutEntry entries[3] = {
             {
                 .binding = DVZ_SCENE_SHADER_BINDING_MATERIAL_PARAMS,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
@@ -179,8 +196,14 @@ bool _resolve_item_state_style_bind_group_layout(
                 .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
                 .access = DVZ_DRP2_BINDING_ACCESS_READ,
             },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_PANEL_LIGHTS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
         };
-        if (!dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 2, entries))
+        if (!dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 3, entries))
             return false;
     }
     *out_id = id;

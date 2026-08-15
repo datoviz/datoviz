@@ -43,6 +43,7 @@
 #include "_assertions.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -387,9 +388,6 @@ _add_mesh(DvzScene* scene, DvzPanel* panel, MouseState* state, DvzSampledField* 
         return false;
 
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.30f;
-    material.light_direction[1] = +0.45f;
-    material.light_direction[2] = +0.80f;
     material.phong.ambient = 0.38f;
     material.phong.diffuse = 0.74f;
     material.phong.specular = 0.12f;
@@ -711,6 +709,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
+        goto error;
+    const float light_direction[3] = {-0.30f, +0.45f, +0.80f};
+    if (!example_panel_directional_light(ctx->scene, panel, light_direction))
         goto error;
     example_graphite_cyan_set_panel_background(panel);
 

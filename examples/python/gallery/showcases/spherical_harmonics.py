@@ -141,6 +141,7 @@ def _build_scene():
     basis = _basis(directions)
     positions, normals, colors = _geometry(directions, faces, basis, 0.0)
     scene, figure, panel = ex.scene_panel()
+    ex.set_panel_directional_light(scene, panel, (-0.48, +0.62, +0.72))
 
     camera = dvz.dvz_camera_desc()
     camera.view.eye[:] = (-0.46, +2.20, +3.42)
@@ -160,7 +161,6 @@ def _build_scene():
     if dvz.dvz_visual_set_index_data(mesh, faces.reshape(-1)) != 0:
         raise RuntimeError("dvz_visual_set_index_data() failed")
     material = dvz.dvz_standard_material_desc()
-    material.light_direction[:] = (-0.48, +0.62, +0.72)
     material.standard.roughness = 0.58
     material.standard.specular = 0.16
     material.standard.rim_strength = 0.12

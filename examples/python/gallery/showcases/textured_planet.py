@@ -407,7 +407,6 @@ def _add_galaxy_layer(scene, panel, texture: SkyTexture) -> None:
 
 def _planet_material():
     material = dvz.dvz_phong_material_desc()
-    material.light_direction[:] = SUN_DIR
     material.phong.ambient = 0.075
     material.phong.diffuse = 1.02
     material.phong.specular = 0.025
@@ -473,7 +472,6 @@ def _add_atmosphere(scene, panel):
 
     material = dvz.dvz_limb_material_desc()
     material.opacity = 0.10
-    material.light_direction[:] = SUN_DIR
     material.limb.falloff = 20.0
     material.limb.sun_bias = 0.06
     material.limb.terminator_width = 0.16
@@ -617,6 +615,7 @@ def _add_globe_rotation(scene, visuals, state: GlobeState) -> None:
 
 def _build_scene():
     scene, figure, panel = ex.scene_panel()
+    ex.set_panel_directional_light(scene, panel, SUN_DIR)
     dvz.dvz_panel_set_background_color(panel, PANEL_BG)
     _setup_camera(panel)
     sky_model = _load_sky_model()

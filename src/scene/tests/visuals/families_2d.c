@@ -352,7 +352,7 @@ int test_scene_sphere_mode(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(sphere)->material_params_dirty);
 
     AT(_scene_visuals_set_phong_material(
-           sphere, (float[3]){0.0f, 0.0f, 1.0f}, 0.2f, 0.7f, 0.8f, 64.0f) == 0);
+           sphere, 0.2f, 0.7f, 0.8f, 64.0f) == 0);
     AT(_visual_family_state(sphere)->sphere_mode == DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(_visual_family_state(sphere)->material_params.depth_cue_extra[3] == (float)DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR);
     AT(dvz_sphere_set_mode(sphere, DVZ_SPHERE_MODE_FAST_IMPOSTOR) == 0);

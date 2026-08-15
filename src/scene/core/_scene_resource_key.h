@@ -62,6 +62,8 @@ bool _scene_visual_indexed_resource_key(
 bool _scene_resource_key_panel_graph(
     const char* panel_id, const char* suffix, char* out, size_t out_size);
 
+bool _scene_resource_key_panel_lights(const char* panel_id, char* out, size_t out_size);
+
 void _scene_resource_key_split_visual(
     const char* encoded, char* visual_id, size_t visual_id_size, char* index_id,
     size_t index_id_size);

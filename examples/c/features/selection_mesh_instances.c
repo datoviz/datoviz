@@ -433,6 +433,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     if (panel == NULL)
         goto error;
+    const float light_direction[3] = {+0.32f, -0.50f, +0.80f};
+    if (!example_panel_directional_light(ctx->scene, panel, light_direction))
+        goto error;
     example_graphite_cyan_set_panel_background(panel);
 
     if (example_set_default_3d_camera(panel, 1.4f) == NULL)
@@ -444,9 +447,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM);
 
     DvzMaterialDesc material = example_default_standard_material_desc();
-    material.light_direction[0] = +0.32f;
-    material.light_direction[1] = -0.50f;
-    material.light_direction[2] = +0.80f;
     material.standard.roughness = 0.54f;
     material.standard.specular = 0.28f;
     material.standard.rim_strength = 0.08f;

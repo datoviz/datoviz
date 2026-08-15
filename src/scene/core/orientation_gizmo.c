@@ -978,9 +978,6 @@ DvzOrientationGizmo* dvz_orientation_gizmo(
         goto fail;
 
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = 0.35f;
-    material.light_direction[1] = 0.45f;
-    material.light_direction[2] = 0.82f;
     material.phong.ambient = 0.24f;
     material.phong.diffuse = 0.82f;
     material.phong.specular = 0.38f;

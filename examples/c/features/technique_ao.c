@@ -273,9 +273,6 @@ static bool _add_sphere_cluster(DvzScene* scene, DvzPanel* panel)
         return false;
 
     DvzMaterialDesc material = dvz_standard_material_desc();
-    material.light_direction[0] = -0.38f;
-    material.light_direction[1] = +0.52f;
-    material.light_direction[2] = +0.76f;
     material.standard.roughness = 0.72f;
     material.standard.specular = 0.22f;
     material.standard.rim_strength = 0.10f;
@@ -350,6 +347,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->ao_panel = ao_panel;
     example_graphite_cyan_set_panel_background(plain);
     example_graphite_cyan_set_panel_background(ao_panel);
+    const float light_direction[3] = {-0.38f, +0.52f, +0.76f};
+    if (!example_panel_directional_light(ctx->scene, plain, light_direction) ||
+        !example_panel_directional_light(ctx->scene, ao_panel, light_direction))
+        return false;
 
     DvzTextStyle label_style = example_graphite_cyan_text_style(EXAMPLE_STYLE_TEXT_PANEL_LABEL);
     label_style.renderer = DVZ_TEXT_RENDERER_MSDF_ATLAS;

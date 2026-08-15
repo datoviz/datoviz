@@ -82,6 +82,7 @@ def _add_label(panel, label: bytes) -> None:
 
 
 def _add_sphere_lattice(scene, panel, cue=None) -> None:
+    ex.set_panel_directional_light(scene, panel, (-0.32, 0.55, 0.76))
     sphere = dvz.dvz_sphere(scene, dvz.DVZ_SPHERE_FLAGS_LIGHTING)
     if not sphere:
         raise RuntimeError("dvz_sphere() failed")
@@ -100,7 +101,6 @@ def _add_sphere_lattice(scene, panel, cue=None) -> None:
         raise RuntimeError("dvz_visual_set_data_many(sphere) failed")
 
     material = dvz.dvz_standard_material_desc()
-    material.light_direction[:] = (-0.32, 0.55, 0.76)
     material.standard.roughness = 0.46
     material.standard.specular = 0.44
     material.standard.rim_strength = 0.18

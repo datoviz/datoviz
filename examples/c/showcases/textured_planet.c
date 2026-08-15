@@ -95,9 +95,6 @@ static const float TAU = 6.28318530718f;
 #define ORBIT_CORE_ALPHA    72
 #define GLOBE_VISUAL_COUNT  4
 
-#define SUN_DIR_X -0.80f
-#define SUN_DIR_Y +0.22f
-#define SUN_DIR_Z +0.55f
 
 
 
@@ -885,9 +882,6 @@ static DvzVisual* _create_atmosphere(DvzScene* scene, DvzPanel* panel)
     {
         DvzMaterialDesc material = dvz_limb_material_desc();
         material.opacity = 0.10f;
-        material.light_direction[0] = SUN_DIR_X;
-        material.light_direction[1] = SUN_DIR_Y;
-        material.light_direction[2] = SUN_DIR_Z;
         material.limb.falloff = 20.0f;
         material.limb.sun_bias = 0.06f;
         material.limb.terminator_width = 0.16f;
@@ -1296,6 +1290,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel() failed");
+    const float light_direction[3] = {-0.80f, +0.22f, +0.55f};
+    EXAMPLE_CHECK(example_panel_directional_light(ctx->scene, panel, light_direction), "failed to configure planet light");
 
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.view.eye[0] = -1.229315f;
@@ -1344,9 +1340,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     sphere = NULL;
 
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = SUN_DIR_X;
-    material.light_direction[1] = SUN_DIR_Y;
-    material.light_direction[2] = SUN_DIR_Z;
     material.phong.ambient = 0.075f;
     material.phong.diffuse = 1.02f;
     material.phong.specular = 0.025f;

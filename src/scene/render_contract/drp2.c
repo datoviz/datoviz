@@ -490,9 +490,12 @@ static bool _contract_pipeline_has_layout_label(
 static bool _contract_pipeline_has_material_layout(
     const DvzDrp2CommandStream* stream, const DvzDrp2Command* command)
 {
-    return _contract_pipeline_has_layout_label(stream, command, "_bgl_material_params") ||
-           _contract_pipeline_has_layout_label(stream, command, "_bgl_mesh_textured") ||
-           _contract_pipeline_has_layout_label(stream, command, "_bgl_item_state_style");
+    return _contract_pipeline_has_layout_label(
+               stream, command, "_bgl_material_params_lights_v1") ||
+           _contract_pipeline_has_layout_label(
+               stream, command, "_bgl_mesh_textured_lights_v1") ||
+           _contract_pipeline_has_layout_label(
+               stream, command, "_bgl_item_state_style_lights_v1");
 }
 
 

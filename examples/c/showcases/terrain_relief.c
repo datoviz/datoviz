@@ -491,9 +491,6 @@ static bool _add_skirt(DvzScene* scene, DvzPanel* panel, const DvzGeometry* surf
         return false;
 
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.42f;
-    material.light_direction[1] = +0.72f;
-    material.light_direction[2] = +0.55f;
     material.phong.ambient = 0.36f;
     material.phong.diffuse = 0.58f;
     material.phong.specular = 0.04f;
@@ -532,9 +529,6 @@ static bool _add_base(DvzScene* scene, DvzPanel* panel, float display_depth)
         return false;
 
     DvzMaterialDesc material = dvz_phong_material_desc();
-    material.light_direction[0] = -0.42f;
-    material.light_direction[1] = +0.72f;
-    material.light_direction[2] = +0.55f;
     material.phong.ambient = 0.32f;
     material.phong.diffuse = 0.55f;
     material.phong.specular = 0.08f;
@@ -640,6 +634,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     example_tuner_figure(&state->tuner, ctx->figure);
     DvzPanel* panel = dvz_panel_full(ctx->figure);
     EXAMPLE_CHECK(panel != NULL, "dvz_panel_full() failed");
+    const float light_direction[3] = {-0.38f, +0.76f, +0.52f};
+    EXAMPLE_CHECK(example_panel_directional_light(ctx->scene, panel, light_direction), "failed to configure terrain light");
     example_graphite_cyan_set_panel_background(panel);
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.025f, 0.034f, 0.040f, 1.0f));
 
@@ -674,9 +670,6 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->material.base_color_factor[1] = 1.0f;
     state->material.base_color_factor[2] = 1.0f;
     state->material.base_color_factor[3] = 1.0f;
-    state->material.light_direction[0] = -0.38f;
-    state->material.light_direction[1] = +0.76f;
-    state->material.light_direction[2] = +0.52f;
     state->material.phong.ambient = 0.734f;
     state->material.phong.diffuse = 0.454f;
     state->material.phong.specular = 0.049f;

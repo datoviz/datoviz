@@ -116,6 +116,21 @@ def scene_panel(width: int = WIDTH, height: int = HEIGHT):
     return scene, figure, panel
 
 
+def set_panel_directional_light(scene, panel, direction):
+    """Install one panel-specific directional light while retaining scene ambient light."""
+    desc = dvz.dvz_light_desc(dvz.DVZ_LIGHT_DIRECTIONAL)
+    desc.direction[:] = direction
+    light = dvz.dvz_light(scene, ctypes.byref(desc))
+    if not light:
+        raise RuntimeError("dvz_light() failed")
+    lights = (ctypes.POINTER(dvz.DvzLight) * 2)()
+    lights[0] = dvz.dvz_scene_default_ambient(scene)
+    lights[1] = light
+    if dvz.dvz_panel_set_lights(panel, lights, 2) != 0:
+        raise RuntimeError("dvz_panel_set_lights() failed")
+    return light
+
+
 def panel_rect(figure, x: float, y: float, width: float, height: float):
     desc = dvz.dvz_panel_desc()
     desc.x = x

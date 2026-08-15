@@ -273,7 +273,7 @@ static bool _interaction_stream_has_pipeline_attr(
 
 
 /**
- * Count item-state style bind groups with material and style uniform entries.
+ * Count item-state style bind groups with material, style, and panel-light uniform entries.
  *
  * @param stream the command stream
  * @return number of matching bind groups
@@ -288,13 +288,16 @@ _interaction_stream_item_state_style_bind_group_count(const DvzDrp2CommandStream
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         if (cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
             continue;
-        if (cmd->u.create_bind_group.entry_count != 2)
+        if (cmd->u.create_bind_group.entry_count != 3)
             continue;
         const DvzDrp2BindGroupEntry* material = &cmd->u.create_bind_group.entries[0];
         const DvzDrp2BindGroupEntry* style = &cmd->u.create_bind_group.entries[1];
+        const DvzDrp2BindGroupEntry* lights = &cmd->u.create_bind_group.entries[2];
         if (
             material->binding == 0 && material->size == sizeof(DvzSceneMaterialParams) &&
-            style->binding == 1 && style->size == sizeof(DvzSceneItemStateStyleParams))
+            style->binding == 1 && style->size == sizeof(DvzSceneItemStateStyleParams) &&
+            lights->binding == DVZ_SCENE_SHADER_BINDING_PANEL_LIGHTS &&
+            lights->size == sizeof(DvzScenePanelLightsGpu))
         {
             count++;
         }

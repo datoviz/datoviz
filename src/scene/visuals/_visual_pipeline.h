@@ -125,6 +125,7 @@ typedef struct DvzSceneVisualDesc
     uint32_t vbuf_count;
     uint64_t index_buffer_id;
     uint64_t material_buffer_id;
+    uint64_t panel_light_buffer_id;
     uint64_t item_state_style_buffer_id;
     uint64_t image_texture_id;
     bool image_pixel_space;
@@ -287,6 +288,7 @@ typedef struct DvzSceneVisualBindDesc
     DvzVolumeState volume_state;
     bool uses_material_set1;
     uint64_t material_buffer_id;
+    uint64_t panel_light_buffer_id;
     bool uses_item_state_style_set1;
     uint64_t item_state_style_buffer_id;
     bool uses_scene_occlusion_set2;

@@ -3,6 +3,9 @@ export const demo = {
   label: "WASM 3D arcball",
   build(scene) {
     const panel = scene.panelFull();
+    const ambient = scene.light({ type: "ambient", intensity: 0.15 });
+    const directional = scene.light({ direction: [-0.45, -0.38, 0.8] });
+    scene.setPanelLights(panel, [ambient, directional]);
     scene.setCamera(panel);
     addSpheres(scene, panel);
     addCube(scene, panel);
@@ -68,7 +71,6 @@ function addCube(scene, panel) {
   mesh.setTextureRGBA8(makeCheckerTexture(16, 16), 16, 16);
   mesh.setMaterial({
     model: "standard",
-    lightDirection: [-0.45, -0.38, 0.8],
     standard: { roughness: 0.42, specular: 0.52, metallic: 0.04, rimStrength: 0.16 },
   });
   scene.addVisual(panel, mesh);

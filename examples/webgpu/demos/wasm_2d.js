@@ -3,6 +3,9 @@ export const demo = {
   label: "WASM 2D scene",
   build(scene) {
     const panel = scene.panelFull();
+    const ambient = scene.light({ type: "ambient", intensity: 0.15 });
+    const directional = scene.light({ direction: [-0.35, -0.55, 0.76] });
+    scene.setPanelLights(panel, [ambient, directional]);
     addAxes(scene, panel);
     addPoints(scene, panel);
     addPixels(scene, panel);
@@ -380,7 +383,6 @@ function addMesh(scene, panel) {
   mesh.setMaterial({
     model: "standard",
     baseColorFactor: [1.08, 0.96, 1.0, 1],
-    lightDirection: [-0.35, -0.55, 0.76],
     standard: { roughness: 0.38, specular: 0.55, metallic: 0.08, rimStrength: 0.18 },
   });
   scene.addVisual(panel, mesh);

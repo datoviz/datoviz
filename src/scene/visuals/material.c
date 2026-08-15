@@ -48,9 +48,6 @@ void _material_params_default(DvzSceneMaterialParams* params)
 {
     ANN(params);
     dvz_memset(params, sizeof(DvzSceneMaterialParams), 0, sizeof(DvzSceneMaterialParams));
-    params->light_direction[0] = -0.45f;
-    params->light_direction[1] = +0.35f;
-    params->light_direction[2] = 0.82f;
     params->params[0] = 0.24f;
     params->params[1] = 0.82f;
     params->params[2] = 0.24f;
@@ -89,7 +86,6 @@ DvzMaterialDesc dvz_material_desc(void)
         .alpha_mode = DVZ_ALPHA_OPAQUE,
         .opacity = 1.0f,
         .base_color_factor = {1.0f, 1.0f, 1.0f, 1.0f},
-        .light_direction = {-0.45f, +0.35f, 0.82f},
         .phong = {.ambient = 0.24f, .diffuse = 0.82f, .specular = 0.24f, .shininess = 26.0f},
         .standard = {.roughness = 0.62f, .specular = 0.34f, .rim_strength = 0.10f},
         .limb = {
@@ -330,11 +326,6 @@ bool _material_desc_valid(const DvzMaterialDesc* desc)
     }
     for (uint32_t i = 0; i < 3; i++)
     {
-        if (!isfinite(desc->light_direction[i]))
-        {
-            log_error("material light direction values must be finite");
-            return false;
-        }
         if (!isfinite(desc->standard.emissive[i]) || desc->standard.emissive[i] < 0.0f)
         {
             log_error("standard material emissive values must be finite and nonnegative");
@@ -419,10 +410,6 @@ void _material_state_apply_desc(DvzSceneMaterialState* material, const DvzMateri
     material->opacity = desc->opacity;
     for (uint32_t i = 0; i < 4; i++)
         material->base_color_factor[i] = desc->base_color_factor[i];
-    material->light_direction[0] = desc->light_direction[0];
-    material->light_direction[1] = desc->light_direction[1];
-    material->light_direction[2] = desc->light_direction[2];
-    material->light_direction[3] = 0.0f;
     material->ambient = desc->phong.ambient;
     material->diffuse = desc->phong.diffuse;
     material->specular = desc->phong.specular;
@@ -460,10 +447,6 @@ void _material_params_sync_state(
 {
     ANN(params);
     ANN(material);
-    params->light_direction[0] = material->light_direction[0];
-    params->light_direction[1] = material->light_direction[1];
-    params->light_direction[2] = material->light_direction[2];
-    params->light_direction[3] = material->light_direction[3];
     params->model[0] = (float)material->model;
     params->model[1] = material->opacity;
     params->base_color_factor[0] = material->base_color_factor[0];
