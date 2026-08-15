@@ -924,7 +924,7 @@ static bool _text_sdf_init_font(const DvzFont* font, stbtt_fontinfo* out_info)
 
 
 /**
- * Return whether one font matches the legacy baked Roboto Regular atlas.
+ * Return whether one font matches the baked Source Sans 3 Regular atlas.
  *
  * @param font the scene font
  * @return whether embedded default atlas data may be used
@@ -932,11 +932,8 @@ static bool _text_sdf_init_font(const DvzFont* font, stbtt_fontinfo* out_info)
 static bool _text_default_msdf_font_matches(const DvzFont* font)
 {
     ANN(font);
-    if (font->path[0] != '\0' || font->face_index != 0)
-        return false;
-    bool family = font->family[0] == '\0' || strcmp(font->family, "Roboto") == 0;
-    bool style = font->style[0] == '\0' || strcmp(font->style, "Regular") == 0;
-    return family && style;
+    return font->source_id == DVZ_FONT_SOURCE_SOURCE_SANS_3_REGULAR && font->path[0] == '\0' &&
+           font->face_index == 0;
 }
 
 
@@ -1009,9 +1006,25 @@ static bool _text_default_msdf_build_atlas(
     *out_atlas = NULL;
 #if defined(DVZ_HAS_ZLIB) && DVZ_HAS_ZLIB
     uint32_t index = 0;
-    if (!_text_default_msdf_font_matches(font) || !_text_default_msdf_spec_index(spec, &index) ||
-        !_text_default_msdf_covers_set(set))
+    if (!_text_default_msdf_font_matches(font))
     {
+        log_trace(
+            "text atlas: embedded MSDF skipped reason=source_mismatch source=%d",
+            (int)font->source_id);
+        return false;
+    }
+    if (!_text_default_msdf_spec_index(spec, &index))
+    {
+        log_trace(
+            "text atlas: embedded MSDF skipped reason=spec_mismatch backend=%d em=%.3f "
+            "range=%.3f",
+            (int)spec->backend, (double)spec->em_px, (double)spec->distance_range_px);
+        return false;
+    }
+    if (!_text_default_msdf_covers_set(set))
+    {
+        log_debug(
+            "text atlas: path=runtime reason=request_not_embedded requested_glyphs=%u", set->count);
         return false;
     }
 

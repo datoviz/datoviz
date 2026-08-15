@@ -254,13 +254,13 @@ int test_scene_text_msdf_shader_uses_rgb_distance(TstContext* suite, const TstCa
 
 
 /**
- * Verify legacy Roboto ASCII MSDF atlases still use embedded cached payloads.
+ * Verify Source ASCII MSDF atlases use embedded payloads and extend transactionally at runtime.
  *
  * @param suite the active test suite
  * @param item the active test item
  * @return 0 on success
  */
-int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
+int test_scene_text_source_msdf_uses_embedded_atlas(
     TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -271,10 +271,9 @@ int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
     ANN(scene);
 
     DvzFontDesc desc = dvz_font_desc();
-    desc.family = "Roboto";
-    desc.style = "Regular";
     DvzFont* font = dvz_font(scene, &desc);
     ANN(font);
+    AT(font->source_id == DVZ_FONT_SOURCE_SOURCE_SANS_3_REGULAR);
     AT(font->ttf_bytes == NULL);
     AT(font->ttf_size == 0);
 
@@ -319,6 +318,16 @@ int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
     AT(huge->glyph_count >= 95);
     DvzTextAtlasGlyph* huge_glyph = _scene_text_atlas_glyph(huge, 'L');
     ANN(huge_glyph);
+
+    uint64_t small_generation = small_atlas->generation;
+    AT(_scene_text_atlas_ensure_string(font, &small_spec, "caf\xC3\xA9"));
+    AT(font->ttf_bytes != NULL);
+    AT(font->ttf_size > 0);
+    AT(_scene_text_atlas_get(font, &small_spec) == small_atlas);
+    AT(small_atlas->generation > small_generation);
+    DvzTextAtlasGlyph* extended_glyph = _scene_text_atlas_glyph(small_atlas, 0x00E9);
+    ANN(extended_glyph);
+    AT(extended_glyph->valid);
 
     dvz_scene_destroy(scene);
 #else
@@ -876,7 +885,7 @@ int test_scene_text_atlas(TstSuite* suite)
     TST_GROUP("text-atlas");
 
     TST_CASE(test_scene_text_msdf_shader_uses_rgb_distance);
-    TST_CASE(test_scene_text_legacy_roboto_msdf_uses_embedded_atlas);
+    TST_CASE(test_scene_text_source_msdf_uses_embedded_atlas);
     TST_CASE(test_scene_text_font_source_identity);
     TST_CASE(test_scene_text_atlas_product_defaults);
     TST_CASE(test_scene_text_atlas_product_builds_source_ascii);

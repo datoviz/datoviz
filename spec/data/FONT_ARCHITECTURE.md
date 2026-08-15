@@ -1,13 +1,13 @@
 # Datoviz Font Architecture
 
-> **Status:** implemented native consumer contract pending visual, installed-package, and legacy-cache proof
+> **Status:** implemented native consumer and deterministic atlas contract pending visual and installed-package proof
 > **Scope:** scene text, rich text blocks, ImGui, embedded resources, custom fonts, glyph coverage, licensing, and deterministic generation
 
 ## Decision
 
 Datoviz must provide useful, deterministic text without a network, an initialized `data` submodule, platform font discovery, or application configuration. The built-in family has five required face roles: sans regular, sans bold, sans italic, sans bold-italic, and mono regular. A sixth scientific fallback role supplies mathematical and technical codepoints absent from the selected primary face. Every required role remains available to ordinary library users and offline rich-text paths.
 
-The approved long-term built-in family is the complete unmodified static Source Sans 3 regular, bold, italic, and bold-italic faces plus Source Code Pro regular, with unmodified Noto Sans Math regular as the scientific fallback. Exact files, upstream revisions, SHA-256 digests, sizes, OFL texts, font metadata, and coverage policy live under `assets/runtime/fonts/`. The native consumer switch, an isolated build with `data` absent, and source-bundle inclusion are validated. Scene/ImGui visual review, exact installed-package proof, and the legacy cached-atlas disposition remain required before release acceptance.
+The approved long-term built-in family is the complete unmodified static Source Sans 3 regular, bold, italic, and bold-italic faces plus Source Code Pro regular, with unmodified Noto Sans Math regular as the scientific fallback. Exact files, upstream revisions, SHA-256 digests, sizes, OFL texts, font metadata, and coverage policy live under `assets/runtime/fonts/`. The native consumer switch, deterministic Source atlas admission, an isolated build with `data` absent, and source-bundle inclusion are validated. Scene/ImGui visual review and exact installed-package proof remain required before release acceptance.
 
 Do not subset the initial Source payload. Full upstream faces preserve their Reserved Font Names, coverage, provenance, and reproducibility. A later subset requires measured artifact or runtime benefit, replacement of every user-facing Reserved Font Name in the modified font, deterministic generation, exact license handling, and regression evidence.
 
@@ -24,7 +24,7 @@ The current implementation uses these mechanisms:
 7. `family`, `style`, and `font_flags` remain metadata and built-in-role selectors, not operating-system font discovery;
 8. scene text and ImGui share immutable embedded bytes through file-I/O resources but retain independent atlas packing and GPU lifetime;
 9. unsupported atlas codepoints still fall back visibly to `?`;
-10. the tracked baked MSDF payload remains a legacy Roboto-only optimization and is not selected by the Source default; Source MSDF atlases are generated at runtime until that legacy product is removed or replaced through a separately approved generated-payload change.
+10. printable ASCII for the standard 32/4, 64/8, and 128/16 Source Sans 3 Regular MSDF recipes uses approved deterministic embedded products; non-ASCII requests rebuild the requested slot transactionally at runtime with Source and the scientific fallback.
 
 Specifications and public documentation must distinguish this implemented behavior from later shaping, fallback-chain, and family-resolution targets.
 
@@ -120,7 +120,7 @@ Coverage is strict at the product boundary: `ensure()` succeeds only when every 
 
 The default scene seed is printable ASCII. Scientific and technical glyphs remain demand-driven for scene text, while ImGui may use its separately declared bounded preload policy. RC3 retains the existing 32/4, 64/8, and 128/16 atlas products; changing that size policy requires measurements and a separate post-RC3 decision.
 
-The developer-only generator is excluded from ordinary library builds and writes the recipe and generated include at `assets/runtime/text/default_msdf_atlas.json` and `src/scene/text/generated/text_default_msdf_atlas.inc`. The generated include remains textual for RC3. Generation commands must report source digests, backend and dependency versions, dimensions, byte sizes, timings, coverage, and output hashes. Exact generated payloads are not replaced until the maintainer approves the exact manifest and include; the approval is a checkpoint after candidate products have been generated twice and compared.
+The developer-only generator is excluded from ordinary library builds and writes the recipe and generated include at `assets/runtime/text/default_msdf_atlas.json` and `src/scene/text/generated/text_default_msdf_atlas.inc`. The generated include remains textual for RC3. Generation commands report source digests, backend and dependency versions, dimensions, byte sizes, timings, coverage, and output hashes. The admitted manifest and include were generated twice with byte-identical output and approved as exact payloads; later replacement repeats that explicit review checkpoint.
 
 Reproducibility has two levels. Canonical byte identity is required in a pinned Linux generation environment whose toolchain and dependencies are recorded in the recipe. Other supported platforms must provide portable structural and rendering equivalence, including matching coverage, metrics within the declared tolerance, bounds, and focused visual regressions; universal cross-platform byte identity is not promised.
 
@@ -138,11 +138,11 @@ The admission replaces the temporary legacy manifest atomically. Exact legacy by
 
 ### Stage 3: role resolution and consumer switch — complete for native consumers
 
-Route scene defaults, per-codepoint scientific fallback, rich-text face selection, ImGui default policy, embedded-resource generation, source releases, packages, and tests through the six admitted roles while keeping backend atlases separate. Preserve file-path custom fonts and switch every active default consumer together so no partial Source/Roboto/Karla state ships. The legacy baked Roboto MSDF optimization is isolated from the Source default and requires a later explicit generated-payload disposition.
+Route scene defaults, per-codepoint scientific fallback, rich-text face selection, ImGui default policy, embedded-resource generation, source releases, packages, and tests through the six admitted roles while keeping backend atlases separate. Preserve file-path custom fonts and switch every active default consumer together so no partial Source/Roboto/Karla state ships. The approved deterministic Source Sans 3 ASCII products replace the legacy baked Roboto optimization.
 
 ### Stage 4: independence and rendering proof — independence complete, visual/package proof pending
 
-An isolated source copy with no `data` directory configures and builds the complete scene profile, including GUI, and its Source/Noto atlas, rich-text, and embedded-resource tests pass. The deterministic source bundle contains all six admitted fonts and no legacy `data/assets/fonts` entries. Remaining proof covers scene and ImGui captures, content-scale/DPI changes, exact wheels and installed consumers, and license packaging. Separately approve and validate removal or Source regeneration of the legacy baked Roboto atlas payload.
+An isolated source copy with no `data` directory configures and builds the complete scene profile, including GUI, and its Source/Noto atlas, rich-text, and embedded-resource tests pass. The deterministic source bundle contains all six admitted fonts, the approved Source ASCII atlas products, and no legacy `data/assets/fonts` or baked Roboto atlas entries. Remaining proof covers scene and ImGui captures, content-scale/DPI changes, exact wheels and installed consumers, and license packaging.
 
 If the direct migration cannot be completed cleanly before v0.4 API freeze, retain the current default family from the legacy snapshot rather than committing an incomplete Source family or importing obsolete legacy files into active parent Git.
 

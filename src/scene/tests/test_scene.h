@@ -1319,7 +1319,7 @@ int test_scene_text_font_atlas_missing_glyph_fallback(TstContext* suite, const T
 
 int test_scene_text_msdf_shader_uses_rgb_distance(TstContext* suite, const TstCase* item);
 
-int test_scene_text_legacy_roboto_msdf_uses_embedded_atlas(
+int test_scene_text_source_msdf_uses_embedded_atlas(
     TstContext* suite, const TstCase* item);
 
 int test_scene_text_font_source_identity(TstContext* suite, const TstCase* item);

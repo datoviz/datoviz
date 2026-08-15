@@ -24,7 +24,7 @@ file(GLOB SCENE_TEXT_SRC "${CMAKE_CURRENT_SOURCE_DIR}/text/*.c*")
 find_package(Python COMPONENTS Interpreter REQUIRED)
 
 set(DVZ_TEXT_DEFAULT_MSDF_ATLAS_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/text/text_default_msdf_atlas.inc")
+    "${CMAKE_CURRENT_SOURCE_DIR}/text/generated/text_default_msdf_atlas.inc")
 set(DVZ_TEXT_DEFAULT_MSDF_ATLAS_GENERATED
     "${CMAKE_CURRENT_BINARY_DIR}/text_default_msdf_atlas_generated.inc")
 

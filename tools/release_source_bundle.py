@@ -33,6 +33,10 @@ REQUIRED_DATA_FILES = (
     "assets/runtime/fonts/SourceSans3-It.ttf",
     "assets/runtime/fonts/SourceSans3-Regular.ttf",
 )
+REQUIRED_TEXT_ATLAS_FILES = (
+    "assets/runtime/text/default_msdf_atlas.json",
+    "src/scene/text/generated/text_default_msdf_atlas.inc",
+)
 
 
 def _run(args: list[str], *, cwd: Path = ROOT) -> str:
@@ -117,6 +121,13 @@ def _source_entries(submodules: tuple[str, ...]) -> list[tuple[Path, Path]]:
         src = ROOT / rel
         if not src.is_file():
             raise FileNotFoundError(f"required release asset is missing: {rel}")
+        entries.append((src, rel))
+
+    for rel_text in REQUIRED_TEXT_ATLAS_FILES:
+        rel = Path(rel_text)
+        src = ROOT / rel
+        if not src.is_file():
+            raise FileNotFoundError(f"required text atlas product is missing: {rel}")
         entries.append((src, rel))
 
     # Required generated files may already be tracked. Keep one archive member per path while

@@ -204,6 +204,8 @@ def _serialize_final_products(neutral: dict[str, Any], input_dir: Path, output_d
                 "include_symbol": f"{prefix}_RGBA_Z_B64",
             }
         )
+    while include_lines and include_lines[-1] == "":
+        include_lines.pop()
     include_bytes = ("\n".join(include_lines) + "\n").encode("utf8")
     include_path = output_dir / "src/scene/text/generated/text_default_msdf_atlas.inc"
     include_path.parent.mkdir(parents=True, exist_ok=True)

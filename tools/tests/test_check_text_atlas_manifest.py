@@ -28,13 +28,13 @@ def _bits(value: float) -> str:
 
 
 class TextAtlasManifestTests(unittest.TestCase):
-    def test_existing_legacy_include_is_parseable(self):
-        path = Path(__file__).parents[2] / "src/scene/text/text_default_msdf_atlas.inc"
+    def test_existing_source_include_is_parseable(self):
+        path = Path(__file__).parents[2] / "src/scene/text/generated/text_default_msdf_atlas.inc"
         products = parse_include(path)
         self.assertEqual(set(products), {32, 64, 128})
         self.assertEqual(len(products[32]["codepoints"]), 95)
         self.assertEqual(products[32]["codepoints"][0], 32)
-        self.assertEqual(len(products[32]["raw"]), 228 * 228 * 4)
+        self.assertEqual(len(products[32]["raw"]), 214 * 214 * 4)
 
     def test_serialize_and_validate_neutral_products(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -85,6 +85,7 @@ class TextAtlasManifestTests(unittest.TestCase):
             self.assertEqual(["32", "64", "128"], [str(s) for s in (32, 64, 128)])
             self.assertEqual(len(validate_manifest(manifest, output)), 3)
             self.assertEqual(parse_include(include)[128]["constants"]["WIDTH"], 128)
+            self.assertFalse(include.read_bytes().endswith(b"\n\n"))
 
             tampered = json.loads(manifest.read_text(encoding="utf8"))
             tampered["products"][0]["rgba"]["size"] += 1

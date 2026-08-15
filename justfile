@@ -74,7 +74,7 @@ text-atlas-generate output_dir primary="assets/runtime/fonts/SourceSans3-Regular
     build/src/scene/datoviz_text_atlas_generate --primary "{{primary}}" --output-dir "{{output_dir}}"
 
 # Validate an approved deterministic MSDF atlas manifest and textual include.
-text-atlas-check manifest include_root=".":
+text-atlas-check manifest="assets/runtime/text/default_msdf_atlas.json" include_root=".":
     python3 tools/check_text_atlas_manifest.py --manifest "{{manifest}}" --repo-root . --include-root "{{include_root}}"
 
 # Serialize an untracked C++ product directory into candidate manifest/include files.

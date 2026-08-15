@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "format": "datoviz-msdf-atlas",
+  "product": "default_msdf_atlas",
+  "generation": {
+    "tool": "datoviz_text_atlas_generate",
+    "tool_version": 1,
+    "command_template": "datoviz_text_atlas_generate --primary <font> [--fallback <font>] --output-dir <dir> [recipe options]",
+    "canonical_thread_count": 1,
+    "dependencies": {
+      "msdf_atlas_gen": "1.4.0",
+      "msdfgen": "1.13.0",
+      "freetype": "2.13.2"
+    },
+    "build": {
+      "compiler": "gcc 13.3.0",
+      "system": "Linux",
+      "processor": "x86_64"
+    }
+  },
+  "sources": {
+    "primary": {
+      "path": "assets/runtime/fonts/SourceSans3-Regular.ttf",
+      "byte_size": 431196,
+      "face_index": 0,
+      "load_flags": 0,
+      "size": 431196,
+      "sha256": "4644c81b86ec9caaa76b634889968ed3c4f4f52f054855933acc7c2b21e53b0f"
+    },
+    "fallback": null
+  },
+  "glyph_set": {
+    "name": "printable_ascii",
+    "first_codepoint": 32,
+    "last_codepoint": 126,
+    "count": 95,
+    "codepoints": [
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126
+    ]
+  },
+  "budget": {
+    "max_glyphs": 256,
+    "max_dimension": 4096,
+    "max_rgba_bytes": 67108864
+  },
+  "recipe": {
+    "thread_count": 1,
+    "fallback_codepoint": 63,
+    "edge_coloring_seed": 0,
+    "max_corner_angle": "3",
+    "miter_limit": "1",
+    "overlap_support": true,
+    "scanline_pass": true,
+    "preprocess_geometry": true,
+    "enable_kerning": true
+  },
+  "products": [
+    {
+      "requested": {
+        "em_px_bits": "0x42000000",
+        "distance_range_px_bits": "0x40800000",
+        "flags": 0
+      },
+      "backend": {
+        "name": "msdf",
+        "value": 3
+      },
+      "encoding": {
+        "name": "msdf_rgb",
+        "value": 2
+      },
+      "dimensions": {
+        "width": 214,
+        "height": 214,
+        "channels": 4
+      },
+      "metrics": {
+        "em_px_bits": "0x42000000",
+        "distance_range_px_bits": "0x40800000",
+        "ascent_bits": "0x42000000",
+        "descent_bits": "0xc126e979",
+        "line_gap_bits": "0x27000000",
+        "line_height_bits": "0x4229ba5e"
+      },
+      "glyph_count": 95,
+      "coverage_count": 95,
+      "fallback_mapping_count": 0,
+      "glyph_records_sha256": "0ea850ec33d3a338d3f20a214d20907f8c7a2dff52102bdb1d3ad4c0d9948c34",
+      "coverage_records_sha256": "7cc0b92e7b6bf60e6e7021888812c15dec3295542aa4ad049b5176e49a317730",
+      "rgba": {
+        "filename": "atlas_32.rgba",
+        "size": 183184,
+        "pixel_format": "rgba8",
+        "row_order": "top_to_bottom",
+        "sha256": "46bc1ec395270186e969985032ae755087a360f068b7e015a3ff582b7c55a0e3"
+      },
+      "compressed": {
+        "size": 73110,
+        "sha256": "058f058bab715bc405775af970d96b20fecd507c61a15c3025b54491d9aa0f46"
+      },
+      "include_symbol": "DVZ_TEXT_DEFAULT_MSDF_32_RGBA_Z_B64"
+    },
+    {
+      "requested": {
+        "em_px_bits": "0x42800000",
+        "distance_range_px_bits": "0x41000000",
+        "flags": 0
+      },
+      "backend": {
+        "name": "msdf",
+        "value": 3
+      },
+      "encoding": {
+        "name": "msdf_rgb",
+        "value": 2
+      },
+      "dimensions": {
+        "width": 413,
+        "height": 413,
+        "channels": 4
+      },
+      "metrics": {
+        "em_px_bits": "0x42800000",
+        "distance_range_px_bits": "0x41000000",
+        "ascent_bits": "0x42800000",
+        "descent_bits": "0xc1a6e979",
+        "line_gap_bits": "0x27800000",
+        "line_height_bits": "0x42a9ba5e"
+      },
+      "glyph_count": 95,
+      "coverage_count": 95,
+      "fallback_mapping_count": 0,
+      "glyph_records_sha256": "41e61490fce986e68e38dca986fe43c9d9dd072eb0756b9e5b00752e0ebb5d25",
+      "coverage_records_sha256": "7cc0b92e7b6bf60e6e7021888812c15dec3295542aa4ad049b5176e49a317730",
+      "rgba": {
+        "filename": "atlas_64.rgba",
+        "size": 682276,
+        "pixel_format": "rgba8",
+        "row_order": "top_to_bottom",
+        "sha256": "fdedd2960730b6b9e835513156ab87259164ccf31d910897b47d755e7d622987"
+      },
+      "compressed": {
+        "size": 263126,
+        "sha256": "09eaa5905204d60ff15dde46db59b8b664142dafe9603d4657ed604154155fc2"
+      },
+      "include_symbol": "DVZ_TEXT_DEFAULT_MSDF_64_RGBA_Z_B64"
+    },
+    {
+      "requested": {
+        "em_px_bits": "0x43000000",
+        "distance_range_px_bits": "0x41800000",
+        "flags": 0
+      },
+      "backend": {
+        "name": "msdf",
+        "value": 3
+      },
+      "encoding": {
+        "name": "msdf_rgb",
+        "value": 2
+      },
+      "dimensions": {
+        "width": 817,
+        "height": 817,
+        "channels": 4
+      },
+      "metrics": {
+        "em_px_bits": "0x43004000",
+        "distance_range_px_bits": "0x41800000",
+        "ascent_bits": "0x43004000",
+        "descent_bits": "0xc2273cee",
+        "line_gap_bits": "0x28004000",
+        "line_height_bits": "0x432a0f3b"
+      },
+      "glyph_count": 95,
+      "coverage_count": 95,
+      "fallback_mapping_count": 0,
+      "glyph_records_sha256": "db18534a3efee5d98d3c5b3cb6a40829df43d81c6518dc59b5475ba0361a6f17",
+      "coverage_records_sha256": "7cc0b92e7b6bf60e6e7021888812c15dec3295542aa4ad049b5176e49a317730",
+      "rgba": {
+        "filename": "atlas_128.rgba",
+        "size": 2669956,
+        "pixel_format": "rgba8",
+        "row_order": "top_to_bottom",
+        "sha256": "338abf96945e6535edff81652405e47e1015eccbf36c1fddff062aaeaeb546d8"
+      },
+      "compressed": {
+        "size": 936608,
+        "sha256": "ee8ecca4f8d82a366748318c14acba1d459f387127f975eebe6689ee35aeaf89"
+      },
+      "include_symbol": "DVZ_TEXT_DEFAULT_MSDF_128_RGBA_Z_B64"
+    }
+  ],
+  "include": {
+    "path": "src/scene/text/generated/text_default_msdf_atlas.inc",
+    "sha256": "562b036cc4d284a9996b05fa8aabec627a5eec4a6ad24514f3b5e698a5c5c3b3"
+  }
+}
