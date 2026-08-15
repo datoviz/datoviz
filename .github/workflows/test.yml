@@ -20,8 +20,56 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
+  prepare-test-assets:
+    name: "Prepare test assets"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: false
+          submodules: recursive
+      - name: Restore test asset cache
+        id: test-assets-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            data/assets/fonts/Roboto-Regular.ttf
+            data/assets/fonts/RobotoMono-Medium.ttf
+            data/assets/textures/world.200412.3x5400x2700.jpg
+            data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy
+          key: test-assets-v1-${{ hashFiles('tools/materialize_lfs_assets.sh', 'data/assets/fonts/Roboto-Regular.ttf', 'data/assets/fonts/RobotoMono-Medium.ttf', 'data/assets/textures/world.200412.3x5400x2700.jpg', 'data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy') }}
+      - name: Materialize test assets after cache miss
+        if: steps.test-assets-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: bash tools/materialize_lfs_assets.sh test
+      - name: Verify test assets
+        shell: bash
+        run: bash tools/materialize_lfs_assets.sh test verify
+      - name: Save test asset cache
+        if: steps.test-assets-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            data/assets/fonts/Roboto-Regular.ttf
+            data/assets/fonts/RobotoMono-Medium.ttf
+            data/assets/textures/world.200412.3x5400x2700.jpg
+            data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy
+          key: ${{ steps.test-assets-cache.outputs.cache-primary-key }}
+      - name: Upload test assets
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-assets
+          path: |
+            data/assets/fonts/Roboto-Regular.ttf
+            data/assets/fonts/RobotoMono-Medium.ttf
+            data/assets/textures/world.200412.3x5400x2700.jpg
+            data/examples/allen_ibl/prepared/allen_ibl_mesh_color.npy
+          compression-level: 0
+          retention-days: 1
+
   test-linux:
     name: "Test / Linux"
+    needs: prepare-test-assets
     runs-on: ubuntu-24.04
     env:
       DVZ_CMAKE_ARGS: >-
@@ -32,10 +80,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          lfs: false
           submodules: recursive
-      - name: Materialize submodule LFS assets
+      - name: Download test assets
+        uses: actions/download-artifact@v8
+        with:
+          name: test-assets
+          path: data
+      - name: Verify test assets
         shell: bash
-        run: bash tools/materialize_lfs_assets.sh test
+        run: bash tools/materialize_lfs_assets.sh test verify
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -78,13 +132,20 @@ jobs:
 
   test-macos:
     name: "Test / macOS"
+    needs: prepare-test-assets
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v7
         with:
+          lfs: false
           submodules: recursive
-      - name: Materialize submodule LFS assets
-        run: bash tools/materialize_lfs_assets.sh test
+      - name: Download test assets
+        uses: actions/download-artifact@v8
+        with:
+          name: test-assets
+          path: data
+      - name: Verify test assets
+        run: bash tools/materialize_lfs_assets.sh test verify
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -104,6 +165,7 @@ jobs:
 
   build-windows:
     name: "Build / Windows"
+    needs: prepare-test-assets
     runs-on: windows-latest
     env:
       VCPKG_ROOT: C:/vcpkg
@@ -111,10 +173,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          lfs: false
           submodules: recursive
-      - name: Materialize submodule LFS assets
+      - name: Download test assets
+        uses: actions/download-artifact@v8
+        with:
+          name: test-assets
+          path: data
+      - name: Verify test assets
         shell: bash
-        run: bash tools/materialize_lfs_assets.sh test
+        run: bash tools/materialize_lfs_assets.sh test verify
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64

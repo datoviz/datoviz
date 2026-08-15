@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! git lfs version >/dev/null 2>&1; then
-    echo "git-lfs is required to materialize release assets" >&2
-    exit 2
-fi
-
 profile="${1:-release}"
+mode="${2:-materialize}"
 case "$profile" in
     release|fonts)
         required_paths=(
@@ -23,13 +19,27 @@ case "$profile" in
         )
         ;;
     *)
-        echo "usage: $0 [release|fonts|test]" >&2
+        echo "usage: $0 [release|fonts|test] [materialize|verify]" >&2
         exit 2
         ;;
 esac
 
-include_paths=$(IFS=,; echo "${required_paths[*]}")
-git -C data lfs pull --include="$include_paths"
+case "$mode" in
+    materialize)
+        if ! git lfs version >/dev/null 2>&1; then
+            echo "git-lfs is required to materialize release assets" >&2
+            exit 2
+        fi
+        include_paths=$(IFS=,; echo "${required_paths[*]}")
+        git -C data lfs pull --include="$include_paths"
+        ;;
+    verify)
+        ;;
+    *)
+        echo "usage: $0 [release|fonts|test] [materialize|verify]" >&2
+        exit 2
+        ;;
+esac
 
 for relative_path in "${required_paths[@]}"; do
     path="data/$relative_path"
