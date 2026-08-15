@@ -19,7 +19,7 @@ jobs:
         with:
           submodules: recursive
       - name: Materialize submodule LFS assets
-        run: bash tools/materialize_lfs_assets.sh
+        run: bash tools/materialize_lfs_assets.sh release
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"

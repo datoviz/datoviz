@@ -35,7 +35,7 @@ jobs:
           submodules: recursive
       - name: Materialize submodule LFS assets
         shell: bash
-        run: bash tools/materialize_lfs_assets.sh
+        run: bash tools/materialize_lfs_assets.sh test
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -84,7 +84,7 @@ jobs:
         with:
           submodules: recursive
       - name: Materialize submodule LFS assets
-        run: bash tools/materialize_lfs_assets.sh
+        run: bash tools/materialize_lfs_assets.sh test
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
@@ -114,7 +114,7 @@ jobs:
           submodules: recursive
       - name: Materialize submodule LFS assets
         shell: bash
-        run: bash tools/materialize_lfs_assets.sh
+        run: bash tools/materialize_lfs_assets.sh test
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
