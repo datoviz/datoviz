@@ -94,5 +94,5 @@ text-atlas-repro-check primary="assets/runtime/fonts/SourceSans3-Regular.ttf": t
     for file in product.json atlas_32.rgba atlas_64.rgba atlas_128.rgba; do
         cmp "$atlas_tmp/a/product/$file" "$atlas_tmp/b/product/$file"
     done
-    cmp "$atlas_tmp/a/candidate/default_msdf_atlas.json" "$atlas_tmp/b/candidate/default_msdf_atlas.json"
-    cmp "$atlas_tmp/a/candidate/text_default_msdf_atlas.inc" "$atlas_tmp/b/candidate/text_default_msdf_atlas.inc"
+    cmp "$atlas_tmp/a/candidate/assets/runtime/text/default_msdf_atlas.json" "$atlas_tmp/b/candidate/assets/runtime/text/default_msdf_atlas.json"
+    cmp "$atlas_tmp/a/candidate/src/scene/text/generated/text_default_msdf_atlas.inc" "$atlas_tmp/b/candidate/src/scene/text/generated/text_default_msdf_atlas.inc"

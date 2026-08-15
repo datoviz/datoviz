@@ -183,7 +183,8 @@ def _serialize_final_products(neutral: dict[str, Any], input_dir: Path, output_d
         include_lines += [";", ""]
         manifest_products.append({**product, "rgba": {**rgba, "sha256": _sha256(raw)}, "compressed": {"size": len(compressed), "sha256": _sha256(compressed)}, "include_symbol": f"{prefix}_RGBA_Z_B64"})
     include_bytes = ("\n".join(include_lines) + "\n").encode("utf8")
-    include_path = output_dir / "text_default_msdf_atlas.inc"
+    include_path = output_dir / "src/scene/text/generated/text_default_msdf_atlas.inc"
+    include_path.parent.mkdir(parents=True, exist_ok=True)
     include_path.write_bytes(include_bytes)
     sources = dict(_required(neutral, "sources", "neutral product"))
     for source in sources.values():
@@ -196,8 +197,9 @@ def _serialize_final_products(neutral: dict[str, Any], input_dir: Path, output_d
         if int(source.get("byte_size", -1)) != len(data):
             raise ManifestError(f"source {source.get('path', '<unknown>')} byte_size is inconsistent")
         source["size"], source["sha256"] = len(data), _sha256(data)
-    manifest = {"schema_version": 1, "format": "datoviz-msdf-atlas", "product": "default_msdf_atlas", "generation": neutral["generation"], "sources": sources, "glyph_set": glyph_set, "budget": neutral["budget"], "recipe": recipe, "products": manifest_products, "include": {"path": include_path.name, "sha256": _sha256(include_bytes)}}
-    manifest_path = output_dir / "default_msdf_atlas.json"
+    manifest = {"schema_version": 1, "format": "datoviz-msdf-atlas", "product": "default_msdf_atlas", "generation": neutral["generation"], "sources": sources, "glyph_set": glyph_set, "budget": neutral["budget"], "recipe": recipe, "products": manifest_products, "include": {"path": "src/scene/text/generated/text_default_msdf_atlas.inc", "sha256": _sha256(include_bytes)}}
+    manifest_path = output_dir / "assets/runtime/text/default_msdf_atlas.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf8")
     return manifest_path, include_path
 
