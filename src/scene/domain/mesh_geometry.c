@@ -20,8 +20,8 @@
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
 #include "domain/buffer_internal.h"
+#include "visuals/_visual_internal.h"
 #include "visuals/bindings_internal.h"
-#include "visuals/mesh/internal.h"
 
 #include <float.h>
 #include <math.h>

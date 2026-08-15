@@ -53,6 +53,7 @@ bool _visual_attr_count_consistent(
 DvzVisualBinding* _visual_binding(DvzVisual* visual, DvzVisualBindingKind kind);
 void _visual_bump_version(uint64_t* version);
 bool _mesh_ensure_default_color(DvzVisual* visual, uint32_t item_count);
+void _scene_mesh_visual_set_default_color(DvzVisual* visual, bool is_default);
 void _material_params_default(DvzSceneMaterialParams* params);
 void _material_state_default(DvzSceneMaterialState* material, DvzVisualType visual_type);
 bool _material_visual_supported(DvzVisualType visual_type);
