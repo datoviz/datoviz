@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "purpose": "behavior-preserving v0.4 font extraction",
+  "legacy_source": {
+    "repository": "https://github.com/datoviz/data",
+    "commit": "a9542d20f2d29aecb9518738f6b7ba1914b63997",
+    "path_prefix": "assets/fonts/"
+  },
+  "files": [
+    {
+      "name": "DroidSans.ttf",
+      "size": 190044,
+      "sha256": "4e2371bc0e4cf6983342e150412f140da79d674c9be0b56458401f581072ecd3",
+      "family": "Droid Sans",
+      "style": "Regular",
+      "font_version": "1.00 build 113",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "Inconsolata-Regular.ttf",
+      "size": 97864,
+      "sha256": "04bce5eef6ecc84bd9d14bc99143dfdb1949177db54dbd52252c7b6284c2f9d9",
+      "family": "Inconsolata",
+      "style": "Regular",
+      "font_version": "3.001",
+      "license": "OFL-1.1"
+    },
+    {
+      "name": "Roboto-Black.ttf",
+      "size": 147424,
+      "sha256": "59cc48c96047bb30b250bb287f06906e468e49f92832bd473447d13a602aee61",
+      "family": "Roboto Black",
+      "style": "Regular",
+      "font_version": "3.009; 2024",
+      "license": "OFL-1.1"
+    },
+    {
+      "name": "Roboto-Bold.ttf",
+      "size": 146768,
+      "sha256": "deb990e241954e1af87c6033d40a76cf0f48e0d112541794526051ac4a3ee2c8",
+      "family": "Roboto",
+      "style": "Bold",
+      "font_version": "3.009; 2024",
+      "license": "OFL-1.1"
+    },
+    {
+      "name": "Roboto-BoldItalic.ttf",
+      "size": 532860,
+      "sha256": "40083ed54338397cf49d2c49f59eddcd963a30fdb301813d4bd3abbb37a13d12",
+      "family": "Roboto",
+      "style": "Bold Italic",
+      "font_version": "2.001047; 2015",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "Roboto-Italic.ttf",
+      "size": 533388,
+      "sha256": "fa0b17bb4aaac4a1b2ee149dd4ca3b55e97d3077aa6ba9bb02541b316e7c46ce",
+      "family": "Roboto",
+      "style": "Italic",
+      "font_version": "2.001047; 2015",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "Roboto-Light.ttf",
+      "size": 146056,
+      "sha256": "4b2e824beab63c438c2849bd6e1d4f6708cba5a5c5f3dbe8d5af7e9682ed9373",
+      "family": "Roboto Light",
+      "style": "Regular",
+      "font_version": "3.009; 2024",
+      "license": "OFL-1.1"
+    },
+    {
+      "name": "Roboto-Medium.ttf",
+      "size": 162588,
+      "sha256": "8559132c89ad51d8a2ba5b171887a44a7ba93776e205f553573de228e64b45f8",
+      "family": "Roboto Medium",
+      "style": "Regular",
+      "font_version": "2.001152; 2014",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "Roboto-Regular.ttf",
+      "size": 146004,
+      "sha256": "dbd285b518e398832f6f4a736109c355ce25a49546bfce41bab256c9ef7e56eb",
+      "family": "Roboto",
+      "style": "Regular",
+      "font_version": "3.009; 2024",
+      "license": "OFL-1.1"
+    },
+    {
+      "name": "RobotoMono-Medium.ttf",
+      "size": 87172,
+      "sha256": "f1c247bde0eed1e58e3b9eee89b2188dc5dfa44b8c2716044556662dd70cb7b1",
+      "family": "Roboto Mono Medium",
+      "style": "Regular",
+      "font_version": "3.000",
+      "license": "Apache-2.0"
+    }
+  ]
+}
