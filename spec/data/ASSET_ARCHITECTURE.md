@@ -17,7 +17,7 @@ The current `data` submodule mixes five lifecycles: build-critical fonts, generi
 
 The active checked-out data tree is about 81 MiB: approximately 8 MiB of reusable assets, 47 MiB of prepared example datasets, and 26 MiB of gallery media. The current tree has 161 LFS files totaling about 84 MiB with a largest file of about 24 MiB, while reachable LFS objects across repository refs total about 0.9 GiB. GitHub billing nevertheless reports a much larger historical LFS footprint because replaced and orphaned binary versions remain associated with the repositories. The storage and bandwidth failure is therefore history amplification, not an active payload-size problem.
 
-The source build currently depends on two fonts from the submodule, generic file-I/O tests depend on an Earth texture and an Allen Institute NumPy array, release-source construction reaches into the submodule for ten fonts, WebGPU publishing stages selected data bundles from the submodule, and gallery capture writes generated PNG files back into it. These are ownership defects rather than reasons to preserve the submodule.
+At plan approval, the source build depended on two fonts from the submodule and release-source construction reached into it for ten fonts. Those font and source-package defects are now resolved through the admitted Source/Noto family and deterministic Source atlas products in the parent repository. Generic file-I/O tests still depend on an Earth texture and an Allen Institute NumPy array, WebGPU publishing still stages selected data bundles from the submodule, and gallery capture still writes generated PNG files back into it; those remaining ownership defects are not reasons to preserve the submodule.
 
 ## Required Properties
 
@@ -36,7 +36,7 @@ The source build currently depends on two fonts from the submodule, generic file
 
 | Binary class | Identity or authoritative source | Local/runtime location | Delivery rule |
 | --- | --- | --- | --- |
-| Built-in scene and GUI fonts | Ordinary Git under `assets/runtime/fonts/` in `datoviz/datoviz` | Embedded defaults or installed runtime resources | Admit one complete reviewed family preserving Regular/Bold/Italic/BoldItalic/Mono roles plus a scientific fallback; do not copy obsolete legacy faces as an intermediate state |
+| Built-in scene and GUI fonts | Ordinary Git under `assets/runtime/fonts/` in `datoviz/datoviz` | Embedded defaults | The admitted Source family preserves Regular/Bold/Italic/BoldItalic/Mono roles with Noto Sans Math fallback; obsolete legacy faces were not copied into active parent Git |
 | Future optional font faces | User path or optional published bundle | User-selected path or verified asset cache | Never an undeclared dependency of core text rendering |
 | Tiny decoder and format fixtures | Ordinary Git under `testing/fixtures/` | Source/test checkout only | Generated where practical; otherwise intentionally minimal |
 | Declarative colormap sources | Ordinary Git under `assets/runtime/colormaps/` | Generated/embedded runtime atlas | Generated atlases are build products unless an exact shipped derivative is justified |
@@ -91,7 +91,7 @@ tools/
   assets/
 ```
 
-The font independence slice admits the complete reviewed Source family and Noto scientific fallback directly while preserving the five primary roles, offline behavior, visible fallback, and custom file-font escape hatch. It does not copy the ten mixed-version legacy files into active parent Git first. Committing exact upstream font files is preferable to committing only generated C arrays because the originals preserve provenance, avoid generated-source churn, and allow release tooling to regenerate exact embedded payloads.
+The completed font independence slice admits the complete reviewed Source family and Noto scientific fallback directly while preserving the five primary roles, offline behavior, visible fallback, and custom file-font escape hatch. It did not copy the ten mixed-version legacy files into active parent Git first. Exact upstream font files preserve provenance and allow release tooling to regenerate exact embedded payloads; the separately admitted deterministic Source MSDF products record their source and output identities.
 
 The long-term built-in family, custom-font ownership, coverage policy, generated products, and staged default migration are specified in [FONT_ARCHITECTURE.md](FONT_ARCHITECTURE.md).
 
@@ -293,8 +293,8 @@ Exit gate: every current path has one declared destination or explicit retiremen
 
 ### Phase 1: make core source independent
 
-1. Admit the exact approved Source Sans 3 Regular, Bold, Italic, and Bold Italic faces, Source Code Pro Regular, and Noto Sans Math scientific fallback with license, provenance, coverage, and digest records in `assets/runtime/fonts/`.
-2. Replace the temporary legacy admission manifest atomically, preserve Regular, Bold, Italic, Bold Italic, Mono, visible fallback, and custom file-font behavior, and keep the old mixed-version files only in the frozen legacy snapshot rather than active parent Git.
+1. Complete: admit the exact approved Source Sans 3 Regular, Bold, Italic, and Bold Italic faces, Source Code Pro Regular, and Noto Sans Math scientific fallback with license, provenance, coverage, and digest records in `assets/runtime/fonts/`.
+2. Complete: replace the temporary legacy admission manifest atomically, preserve Regular, Bold, Italic, Bold Italic, Mono, visible fallback, and custom file-font behavior, and keep the old mixed-version files only in the frozen legacy snapshot rather than active parent Git.
 3. Replace the Earth JPEG and Allen NumPy generic file-I/O tests with intentionally tiny fixtures.
 4. Generate colormap/runtime derivatives from committed declarative sources where applicable.
 5. Define hermetic `docs-check` behavior and move data-backed WebGPU staging and reviewed gallery consumption to `site-release` or equivalent publication validation.
@@ -383,7 +383,7 @@ The target decisions are:
 9. Keep networking out of `libdatoviz`; fetch through source/Python tooling and pass native examples an explicit resolved asset root.
 10. Complete only narrow core independence before the parent branch cutover; migrate bundles and gallery afterward without making full submodule removal an automatic RC3/RC4 gate.
 
-Implementation details still requiring focused design are the exact catalog schema location, deterministic archive format and compression parameters, CLI spelling, example asset-root interface, platform cache resolver, mirror and backup operations, generated-core-resource allowlist, long-term font contract, and retention duration for the frozen legacy repository. None changes the ownership boundaries above.
+Implementation details still requiring focused design are the exact catalog schema location, deterministic archive format and compression parameters, CLI spelling, example asset-root interface, platform cache resolver, mirror and backup operations, the broader generated-core-resource allowlist, and retention duration for the frozen legacy repository. The font contract and deterministic default-atlas product are now implemented. None of the remaining details changes the ownership boundaries above.
 
 ## Completion Criteria
 

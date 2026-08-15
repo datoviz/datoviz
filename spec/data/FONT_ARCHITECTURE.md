@@ -1,13 +1,13 @@
 # Datoviz Font Architecture
 
-> **Status:** implemented native consumer and deterministic atlas contract pending visual and installed-package proof
+> **Status:** implemented native consumer and deterministic atlas contract with local visual/source-install proof; final candidate acceptance pending
 > **Scope:** scene text, rich text blocks, ImGui, embedded resources, custom fonts, glyph coverage, licensing, and deterministic generation
 
 ## Decision
 
 Datoviz must provide useful, deterministic text without a network, an initialized `data` submodule, platform font discovery, or application configuration. The built-in family has five required face roles: sans regular, sans bold, sans italic, sans bold-italic, and mono regular. A sixth scientific fallback role supplies mathematical and technical codepoints absent from the selected primary face. Every required role remains available to ordinary library users and offline rich-text paths.
 
-The approved long-term built-in family is the complete unmodified static Source Sans 3 regular, bold, italic, and bold-italic faces plus Source Code Pro regular, with unmodified Noto Sans Math regular as the scientific fallback. Exact files, upstream revisions, SHA-256 digests, sizes, OFL texts, font metadata, and coverage policy live under `assets/runtime/fonts/`. The native consumer switch, deterministic Source atlas admission, an isolated build with `data` absent, and source-bundle inclusion are validated. Scene/ImGui visual review and exact installed-package proof remain required before release acceptance.
+The approved long-term built-in family is the complete unmodified static Source Sans 3 regular, bold, italic, and bold-italic faces plus Source Code Pro regular, with unmodified Noto Sans Math regular as the scientific fallback. Exact files, upstream revisions, SHA-256 digests, sizes, OFL texts, font metadata, and coverage policy live under `assets/runtime/fonts/`. The native consumer switch, deterministic Source atlas admission, an isolated build with `data` absent, source-bundle inclusion, local scene/ImGui captures, and an isolated source-bundle install with CMake and pkg-config consumers are validated. Maintainer visual acceptance and proof from the frozen final RC candidate remain release gates.
 
 Do not subset the initial Source payload. Full upstream faces preserve their Reserved Font Names, coverage, provenance, and reproducibility. A later subset requires measured artifact or runtime benefit, replacement of every user-facing Reserved Font Name in the modified font, deterministic generation, exact license handling, and regression evidence.
 
@@ -140,9 +140,9 @@ The admission replaces the temporary legacy manifest atomically. Exact legacy by
 
 Route scene defaults, per-codepoint scientific fallback, rich-text face selection, ImGui default policy, embedded-resource generation, source releases, packages, and tests through the six admitted roles while keeping backend atlases separate. Preserve file-path custom fonts and switch every active default consumer together so no partial Source/Roboto/Karla state ships. The approved deterministic Source Sans 3 ASCII products replace the legacy baked Roboto optimization.
 
-### Stage 4: independence and rendering proof — independence complete, visual/package proof pending
+### Stage 4: independence and rendering proof — local proof complete, final-candidate proof pending
 
-An isolated source copy with no `data` directory configures and builds the complete scene profile, including GUI, and its Source/Noto atlas, rich-text, and embedded-resource tests pass. The deterministic source bundle contains all six admitted fonts, the approved Source ASCII atlas products, and no legacy `data/assets/fonts` or baked Roboto atlas entries. Remaining proof covers scene and ImGui captures, content-scale/DPI changes, exact wheels and installed consumers, and license packaging.
+An isolated source copy with no `data` directory configures and builds the complete scene profile, including GUI, and its Source/Noto atlas, rich-text, and embedded-resource tests pass. The deterministic source bundle contains all six admitted fonts, their OFL and provenance records, the approved Source ASCII atlas products, and no legacy `data/assets/fonts` or baked Roboto atlas entries. Local scene MSDF captures cover 14/24/64/128 px ASCII and UTF-8 text, the native ImGui capture uses the embedded UI face, and an isolated source-bundle install passes CMake and pkg-config consumers. Remaining release proof covers maintainer capture acceptance, content-scale/DPI changes, exact wheels and installed consumers from the frozen RC candidate, and final license-package inspection.
 
 If the direct migration cannot be completed cleanly before v0.4 API freeze, retain the current default family from the legacy snapshot rather than committing an incomplete Source family or importing obsolete legacy files into active parent Git.
 
