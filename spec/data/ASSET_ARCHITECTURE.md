@@ -92,6 +92,8 @@ tools/
 
 All font files required by current source-build and rich-text behavior are first moved in their original licensed form without changing behavior. Committing original font files is preferable to committing generated C arrays because the originals preserve provenance, avoid generated-source churn, and allow release tooling to regenerate exact embedded payloads. A later explicit public-contract audit may reduce the built-in family, but the branch-cutover independence slice must not combine relocation with font-semantic pruning.
 
+The long-term built-in family, custom-font ownership, coverage policy, generated products, and staged default migration are specified in [FONT_ARCHITECTURE.md](FONT_ARCHITECTURE.md).
+
 ### `datoviz/assets`
 
 The new public repository is the initial publication control plane for optional binary assets. Its Git history contains only text policy, schemas if needed, and a small publication ledger linking each asset release to its producer repository and commit. The actual dataset and gallery archives are GitHub Release assets, not Git blobs and not LFS objects. GitHub is the primary origin, while identity remains the full digest recorded by the parent catalog.

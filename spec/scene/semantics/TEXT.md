@@ -24,6 +24,8 @@ emission live in [../implementation/TEXT_SHAPING_ATLAS.md](../implementation/TEX
 Implementation-facing details for CPU-rasterized rich text blocks and bitmap math fallback live in
 [../implementation/TEXT_BLOCK_BACKENDS.md](../implementation/TEXT_BLOCK_BACKENDS.md).
 
+Built-in font ownership, custom sources, face roles, coverage, licensing, and default-family migration are specified in [../../data/FONT_ARCHITECTURE.md](../../data/FONT_ARCHITECTURE.md).
+
 
 ## Semantic Purpose
 
