@@ -279,7 +279,7 @@ docs-check-generated:
     @python3 tools/check_generated_docs.py
 
 docs-build-check: build
-    @mkdir -p build/gallery-webp/v0.4 build/vulkan-course-media build-wasm-scene/wasm
+    @mkdir -p build/vulkan-course-media build-wasm-scene/wasm
     @python3 -m unittest tools/tests/test_build_gallery_webp.py
     @python3 -m unittest tools/tests/test_build_tutorial_media.py
     @uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict
@@ -366,7 +366,7 @@ serve: docs-assets docs-video-assets-status wasm-scene-build-if-needed
         echo "Port ${host}:${start_port} is busy; serving docs on ${host}:${port}."
     fi
 
-    uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve -a "${host}:${port}"
+    DATOVIZ_DOCS_SITE_ASSETS=1 uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve -a "${host}:${port}"
 #
 
 docs-serve:
@@ -416,7 +416,7 @@ publish confirm='no' source_branch='main' seed_legacy='no':
 
     deploy_tmp=$(mktemp -d)
     trap 'rm -rf "$deploy_tmp"' EXIT
-    uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
+    DATOVIZ_DOCS_SITE_ASSETS=1 uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
         mkdocs build --strict --site-dir "$deploy_tmp/built"
     just wasm-scene-export-check \
         "$deploy_tmp/built/build-wasm-scene/wasm/datoviz_wasm_scene.mjs"

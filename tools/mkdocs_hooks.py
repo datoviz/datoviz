@@ -4,6 +4,7 @@
 # -------------------------------------------------------------------------------------------------
 
 import ast
+import io
 import os
 import shutil
 import sys
@@ -19,6 +20,7 @@ from mkdocs.structure.files import File
 CURDIR = Path(__file__).parent
 ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
+SITE_ASSETS_ENV = 'DATOVIZ_DOCS_SITE_ASSETS'
 # Util functions
 # -------------------------------------------------------------------------------------------------
 
@@ -175,6 +177,50 @@ def build_gallery_nav_sections():
     return sections
 
 
+def prepare_optional_site_assets():
+    """Stage external publication assets only for an explicit site build."""
+    import build_gallery_webp
+    import build_webgpu_data_bundles
+
+    gallery_output = ROOT / 'build/gallery-webp/v0.4'
+    webgpu_output = ROOT / 'build/webgpu-data'
+    if os.environ.get(SITE_ASSETS_ENV) != '1':
+        shutil.rmtree(gallery_output, ignore_errors=True)
+        shutil.rmtree(webgpu_output, ignore_errors=True)
+        stage_hermetic_gallery_placeholders(gallery_output)
+        print(f"mkdocs: external publication assets disabled; set {SITE_ASSETS_ENV}=1 to stage real media")
+        return
+
+    build_gallery_webp.generate_gallery_webp(quiet_missing=False, animated_fallbacks=True)
+    build_webgpu_data_bundles.stage_bundles()
+
+
+def stage_hermetic_gallery_placeholders(output):
+    """Create generated-only stand-ins so strict docs builds can validate publication links."""
+    from PIL import Image, ImageDraw
+    from build_gallery import collect_examples, load_manifest
+
+    image = Image.new('RGB', (640, 360), color=(32, 38, 48))
+    draw = ImageDraw.Draw(image)
+    draw.line((0, 0, 640, 360), fill=(80, 96, 120), width=8)
+    draw.line((0, 360, 640, 0), fill=(80, 96, 120), width=8)
+    draw.text((24, 24), 'MEDIA EXCLUDED FROM HERMETIC BUILD', fill=(220, 226, 235))
+    encoded = io.BytesIO()
+    image.save(encoded, format='WEBP', quality=70, method=6)
+    payload = encoded.getvalue()
+
+    examples = collect_examples(load_manifest(ROOT / 'examples/c/MANIFEST.yaml'))
+    count = 0
+    for example in examples:
+        if not example.screenshot_expected:
+            continue
+        path = Path(output) / example.lane / f'{example.id}.webp'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(payload)
+        count += 1
+    print(f'mkdocs: staged {count} hermetic gallery placeholders')
+
+
 # Hooks
 # -------------------------------------------------------------------------------------------------
 
@@ -227,16 +273,13 @@ def on_pre_build(**kwargs):
     remove_example_docstrings()
     import sys
     sys.path.insert(0, str(CURDIR))
-    import build_gallery_webp
     import build_tutorial_media
-    import build_webgpu_data_bundles
     import gen_start_thumbs
 
-    build_gallery_webp.generate_gallery_webp(quiet_missing=True, animated_fallbacks=True)
+    prepare_optional_site_assets()
     tutorial_rc, _ = build_tutorial_media.generate_tutorial_media(strict=True)
     if tutorial_rc != 0:
         raise RuntimeError("Vulkan tutorial preview generation failed")
-    build_webgpu_data_bundles.stage_bundles()
     gen_start_thumbs.generate()
 
 
