@@ -154,7 +154,11 @@ void dvz_slots_binding(
     ASSERT(set < DVZ_MAX_SETS);
     ASSERT(binding < DVZ_MAX_BINDINGS);
     slots->set_count = DVZ_MAX(set + 1, slots->set_count);
-    slots->binding_counts[set] = DVZ_MAX(binding + 1, slots->binding_counts[set]);
+    if (!slots->binding_configured[set][binding])
+    {
+        slots->binding_configured[set][binding] = true;
+        slots->binding_counts[set]++;
+    }
 
     slots->bindings[set][binding].binding = binding;
     slots->bindings[set][binding].descriptorCount = array_count;
@@ -235,11 +239,20 @@ int dvz_slots_create(DvzSlots* slots)
         uint32_t binding_count = slots->binding_counts[set];
         ASSERT(binding_count <= DVZ_MAX_BINDINGS);
 
+        VkDescriptorSetLayoutBinding bindings[DVZ_MAX_BINDINGS] = {0};
+        uint32_t binding_index = 0;
+        for (uint32_t binding = 0; binding < DVZ_MAX_BINDINGS; binding++)
+        {
+            if (slots->binding_configured[set][binding])
+                bindings[binding_index++] = slots->bindings[set][binding];
+        }
+        ASSERT(binding_index == binding_count);
+
         // Create descriptor set layout.
         VkDescriptorSetLayoutCreateInfo info = {0};
         info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         info.bindingCount = binding_count;
-        info.pBindings = (const VkDescriptorSetLayoutBinding*)&slots->bindings[set];
+        info.pBindings = bindings;
 
         log_trace(
             "creating descriptor set layout for set #%d with %d bindings", set, binding_count);

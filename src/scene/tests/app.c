@@ -4087,6 +4087,15 @@ int test_app_offscreen_mesh_ao_affects_ambient_lighting(TstContext* suite, const
     AT(figure != NULL);
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
+    DvzLightDesc ambient_desc = dvz_light_desc(DVZ_LIGHT_AMBIENT);
+    ambient_desc.color[0] = 1.0f;
+    ambient_desc.color[1] = 0.45f;
+    ambient_desc.color[2] = 0.18f;
+    ambient_desc.intensity = 1.0f;
+    DvzLight* ambient = dvz_light(scene, &ambient_desc);
+    AT(ambient != NULL);
+    DvzLight* ambient_lights[1] = {ambient};
+    AT(dvz_panel_set_lights(panel, ambient_lights, 1) == DVZ_OK);
 
     DvzColor back_color = {188, 196, 205, 255};
     DvzColor front_color = {224, 150, 92, 255};
@@ -4211,6 +4220,7 @@ int test_app_offscreen_sphere_gtao_darkens_contact(TstContext* suite, const TstC
     AppAoQuad back =
         _app_ao_add_quad(scene, panel, -0.86f, +0.86f, -0.74f, +0.70f, -0.05f, back_color);
     AT(back.visual != NULL);
+    AT(_test_set_phong_material(back.visual, 1.0f, 0.0f, 0.0f, 32.0f) == 0);
 
     DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     AT(sphere != NULL);
@@ -4231,6 +4241,7 @@ int test_app_offscreen_sphere_gtao_darkens_contact(TstContext* suite, const TstC
     AT(dvz_visual_set_data(sphere, "position", positions, 4) == 0);
     AT(dvz_visual_set_data(sphere, "color", colors, 4) == 0);
     AT(dvz_visual_set_data(sphere, "radius", radii, 4) == 0);
+    AT(_test_set_phong_material(sphere, 1.0f, 0.0f, 0.0f, 32.0f) == 0);
     AT(dvz_panel_add_visual(panel, sphere, NULL) == 0);
     DvzCameraDesc camera = dvz_camera_desc();
     camera.view.eye[2] = 3.0f;

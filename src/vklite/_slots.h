@@ -32,6 +32,7 @@ struct DvzSlots
 
     uint32_t set_count;
     uint32_t binding_counts[DVZ_MAX_SETS];
+    bool binding_configured[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
     VkDescriptorSetLayoutBinding bindings[DVZ_MAX_SETS][DVZ_MAX_BINDINGS];
 
     uint32_t push_count;

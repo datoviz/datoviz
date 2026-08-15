@@ -49,11 +49,12 @@ int test_vklite_slots_1(TstContext* suite, const TstCase* tstitem)
 
     // Bindings.
     dvz_slots_binding(slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    dvz_slots_binding(slots, 0, 1, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+    dvz_slots_binding(slots, 0, 4, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
     dvz_slots_binding(slots, 1, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     AT(dvz_slots_set_count(slots) == 2);
     AT(dvz_slots_binding_count(slots, 0) == 2);
     AT(dvz_slots_binding_count(slots, 1) == 1);
+    AT(dvz_slots_descriptor_type(slots, 0, 4) == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
     AT(dvz_slots_descriptor_type(slots, 1, 0) == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // Push constants.
