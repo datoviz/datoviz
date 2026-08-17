@@ -1,6 +1,6 @@
 # Qt/PyQt macOS Vulkan Handoff
 
-Status: local implementation and Apple Silicon proof complete; upstream review and package publication block the RC3 provider gate. Updated: 2026-08-03.
+Status: local implementation and Apple Silicon proof complete; Qt is merged but package publication, compatible PyQt, and exact Datoviz artifacts still block the RC3 provider gate. Updated: 2026-08-18.
 
 This handoff records the verified local Qt, PyQt, and Datoviz provider artifacts; the published feedstock pull requests; the expected dependency-order CI failures; and the remaining maintainer and exact-artifact sequence. Upstream feedstock work remains in sibling repositories, not the Datoviz source tree.
 
@@ -14,7 +14,7 @@ Read [../../AGENTS.md](../../AGENTS.md), [START.md](START.md), [STATUS.md](STATU
 
 ## Current Upstream State
 
-- [qt-main-feedstock PR #406](https://github.com/conda-forge/qt-main-feedstock/pull/406), head `36d761a20ad74615a5189bc69510be92ec4dc5d8`, enables Qt Vulkan on macOS with `libvulkan-headers`, `libvulkan-loader`, and `moltenvk`; bumps Qt 6.11.1 from build 1 to build 2; adds compile and package guards; is open, mergeable, non-draft, and awaiting maintainer review. The latest head incorporates review feedback, rerenders the feedstock, passes its GitHub build workflow and linter, and supersedes the earlier validated head recorded in Git history.
+- [qt-main-feedstock PR #406](https://github.com/conda-forge/qt-main-feedstock/pull/406), head `36d761a20ad74615a5189bc69510be92ec4dc5d8`, was merged on 2026-08-17 at merge commit `671db17c3e462e01980e11b7ffd5efceb0b0e366`. It enables Qt Vulkan on macOS with `libvulkan-headers`, `libvulkan-loader`, and `moltenvk`; bumps Qt 6.11.1 from build 1 to build 2; and adds compile and package guards. Post-merge builds are running, and build 2 is not yet published for either macOS architecture.
 - [pyqt-feedstock PR #186](https://github.com/conda-forge/pyqt-feedstock/pull/186), head `c8d45d0ff21f6a18824e16a1abfb46dffaa027b4`, builds PyQt6 6.11.0 against Qt 6.11.1, makes `libvulkan-headers` available to native and cross builds, exports the header path for SIP feature probes, removes the cross-build `PyQt_Vulkan` disable, adds a `QVulkanInstance` regression test, and bumps build 2 to build 3. It remains a draft until its macOS matrix can use published Qt build 2.
 - PyQt PR #186 passes all five Windows jobs. All five native macOS x86-64 jobs build against currently published non-Vulkan Qt and fail the new package test because `QVulkanInstance` is absent. All five cross-built macOS ARM64 jobs generate the Vulkan binding surface but fail compiling `<qvulkaninstance.h>` because that header is absent from the currently published target Qt package. The compiler already includes the target `include/qt6/QtGui` directory, so adding another include path is not the fix.
 - No additional PyQt recipe change is justified from the current failures. The next meaningful PyQt CI run must occur after conda-forge publishes Qt 6.11.1 build 2 for both macOS architectures.
@@ -27,15 +27,22 @@ Read [../../AGENTS.md](../../AGENTS.md), [START.md](START.md), [STATUS.md](STATU
 - The Datoviz split recipe builds `libdatoviz`, `datoviz`, and `datoviz-qtbridge`. The packaged bridge loads as `libdatoviz_qtbridge.dylib`, reports ABI 1 and Qt 6.11.1, reads back the adopted Vulkan instance, and completes the hosted PyQt rendering smoke from a fresh prefix.
 - Local native proof does not substitute for conda-forge publication, the feedstock cross-build matrix, or supported hosted-platform exact-artifact validation.
 
+## Conda Vulkan Runtime Ownership
+
+Conda environments must use the conda-managed Vulkan loader and MoltenVK installation rather than copying the standalone wheel payload into the split packages. `libdatoviz` dynamically loads `libvulkan-loader`, Qt uses the same environment-owned loader, and Qt adopts the Datoviz-created Vulkan instance through the bridge. A normal solved environment must therefore contain one loader and one MoltenVK implementation.
+
+The base `libdatoviz` output must depend on `moltenvk` on macOS independently of the optional Qt provider. Depending only on `libvulkan-loader` supplies entry points but not a Vulkan driver, while relying on `qt6-main` to bring MoltenVK would make base Datoviz rendering accidentally depend on installing the optional bridge. The current conda-forge MoltenVK package installs its relocatable ICD manifest under `$PREFIX/share/vulkan/icd.d/` and declares a macOS 14 minimum; exact package validation must record that provider floor.
+
+Do not claim support for mixing the standalone macOS Datoviz wheel, which carries a private loader, MoltenVK library, and ICD manifest, with conda-managed Qt/PyQt. The supported provider path uses the mutually pinned conda outputs and verifies the resolved loader and driver from a clean prefix.
+
 ## Remaining RC3 Sequence
 
-1. Conda-forge maintainers review and merge Qt PR #406.
-2. Confirm Qt 6.11.1 build 2 is published for `osx-64` and `osx-arm64` and contains the Vulkan-enabled QtGui package surface.
-3. Update PyQt PR #186's stale title and body to describe native and cross-build Vulkan support and the dependency on Qt build 2; obtain explicit approval before editing the public PR.
-4. Restart PyQt PR #186 CI through an explicitly approved conda-forge action or comment, then require green native and cross-built macOS jobs rather than weakening the Vulkan test.
-5. Mark PyQt PR #186 ready for review only after its compatible matrix is green; then wait for maintainer merge and package publication.
-6. Build the Datoviz split packages against the published Qt/PyQt runtime, run exact-artifact bridge, import, Vulkan instance, Cocoa surface, hosted rendering, and missing-provider diagnostics, and add mandatory Linux and Windows hosted proof for RC3.
-7. Do not cut RC3 while this required provider gate is unavailable unless the maintainer explicitly changes release scope and records the exception.
+1. Confirm Qt 6.11.1 build 2 is published for `osx-64` and `osx-arm64` and contains the Vulkan-enabled QtGui package surface.
+2. Restart PyQt PR #186 CI through an explicitly approved conda-forge action or comment, then require green native and cross-built macOS jobs rather than weakening the Vulkan test.
+3. Mark PyQt PR #186 ready for review only after its compatible matrix is green; then wait for maintainer merge and package publication.
+4. Build the Datoviz split packages against the published Qt/PyQt runtime, run a clean-prefix base macOS Vulkan render without Qt, then run exact-artifact bridge, import, loader/driver identity, Vulkan instance, Cocoa surface, hosted rendering, and missing-provider diagnostics.
+5. Add mandatory Linux and Windows hosted proof for RC3.
+6. Do not cut RC3 while this required provider gate is unavailable unless the maintainer explicitly changes release scope and records the exception.
 
 ## Publication Guardrail
 

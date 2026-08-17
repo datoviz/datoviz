@@ -49,9 +49,11 @@ The exact candidate must prove:
 
 1. `libdatoviz`, `datoviz`, and optional `datoviz-qtbridge` outputs use correct dependency names, install paths, run exports, and Windows DLL layout.
 2. Headless base-package tests import `datoviz` and `datoviz.raw` and create/destroy a raw scene without a Vulkan device.
-3. Published Qt exposes the Vulkan-enabled QtGui surface on every claimed target and published PyQt exposes `QVulkanInstance` against that same Qt ABI/runtime.
-4. The bridge imports, diagnoses a missing provider cleanly, creates a Vulkan instance and host surface where supported, and completes hosted rendering from exact packages.
-5. Supported hosted Linux, macOS, and Windows package tests are green before publication.
+3. A clean macOS base-package prefix without Qt or a system Vulkan SDK resolves the conda-managed loader and MoltenVK ICD, creates a Vulkan instance, and completes an offscreen render.
+4. Published Qt exposes the Vulkan-enabled QtGui surface on every claimed target and published PyQt exposes `QVulkanInstance` against that same Qt ABI/runtime.
+5. The macOS Qt-provider prefix resolves one conda-managed Vulkan loader and MoltenVK implementation rather than a standalone-wheel runtime payload.
+6. The bridge imports, diagnoses a missing provider cleanly, creates a Vulkan instance and host surface where supported, and completes hosted rendering from exact packages.
+7. Supported hosted Linux, macOS, and Windows package tests are green before publication.
 
 ## vcpkg Matrix
 
