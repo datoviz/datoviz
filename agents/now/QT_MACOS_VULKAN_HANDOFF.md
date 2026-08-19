@@ -1,6 +1,6 @@
 # Qt/PyQt macOS Vulkan Handoff
 
-Status: local implementation and Apple Silicon proof complete; Vulkan-enabled Qt is published and compatible PyQt baseline CI is green, while ready-transition revalidation, PyQt publication, and exact Datoviz artifacts still block the RC3 provider gate. Updated: 2026-08-19.
+Status: local implementation and Apple Silicon proof complete; Vulkan-enabled Qt is published and compatible PyQt CI is green, while PyQt publication and exact Datoviz artifacts still block the RC3 provider gate. Updated: 2026-08-19.
 
 This handoff records the verified local Qt, PyQt, and Datoviz provider artifacts; the published feedstock pull requests; the expected dependency-order CI failures; and the remaining maintainer and exact-artifact sequence. Upstream feedstock work remains in sibling repositories, not the Datoviz source tree.
 
@@ -15,11 +15,11 @@ Read [../../AGENTS.md](../../AGENTS.md), [START.md](START.md), [STATUS.md](STATU
 ## Current Upstream State
 
 - [qt-main-feedstock PR #406](https://github.com/conda-forge/qt-main-feedstock/pull/406), head `36d761a20ad74615a5189bc69510be92ec4dc5d8`, was merged on 2026-08-17 at merge commit `671db17c3e462e01980e11b7ffd5efceb0b0e366`. It enables Qt Vulkan on macOS with `libvulkan-headers`, `libvulkan-loader`, and `moltenvk`; bumps Qt 6.11.1 from build 1 to build 2; and adds compile and package guards. All five post-merge platform builds passed, and build 2 is published on the conda-forge `main` label, including `qt6-main-6.11.1-pl5321h64d128d_2.conda` for `osx-64` and `qt6-main-6.11.1-pl5321h7775a44_2.conda` for `osx-arm64`.
-- [pyqt-feedstock PR #186](https://github.com/conda-forge/pyqt-feedstock/pull/186), head `7d3e950926e52653ccc4320e137fe7a0355f663c`, builds PyQt6 6.11.0 against Qt 6.11.1, makes `libvulkan-headers` available to native and cross builds, exports the header path for SIP feature probes, removes the cross-build `PyQt_Vulkan` disable, adds a `QVulkanInstance` regression test, and bumps build 2 to build 3. It also resolves the GCC 14.4 activation change from absolute compiler paths to command names by resolving the compiler shims through `command -v` in all four affected build scripts. The PR is ready for review; its merge status is temporarily unstable while the ready-transition validation runs.
+- [pyqt-feedstock PR #186](https://github.com/conda-forge/pyqt-feedstock/pull/186), head `7d3e950926e52653ccc4320e137fe7a0355f663c`, builds PyQt6 6.11.0 against Qt 6.11.1, makes `libvulkan-headers` available to native and cross builds, exports the header path for SIP feature probes, removes the cross-build `PyQt_Vulkan` disable, adds a `QVulkanInstance` regression test, and bumps build 2 to build 3. It also resolves the GCC 14.4 activation change from absolute compiler paths to command names by resolving the compiler shims through `command -v` in all four affected build scripts. The PR is ready for review, cleanly mergeable, and awaiting maintainer review.
 - The superseded PyQt CI run passed all five Windows jobs. Its five native macOS x86-64 jobs used non-Vulkan Qt build 1 and failed because `QVulkanInstance` was absent; its five cross-built macOS ARM64 jobs generated the Vulkan binding surface but could not find `<qvulkaninstance.h>` in the then-published target package. Those failures established the Qt publication dependency and do not justify weakening the regression test.
 - Final PyQt GitHub Actions run [`32184052560`](https://github.com/conda-forge/pyqt-feedstock/actions/runs/32184052560) passed all ten Linux jobs across `linux-64`, `linux-aarch64`, and Python 3.10-3.14. This validates the compiler-shim correction and preserves the Vulkan-enabled recipe on both Linux architectures.
 - Final PyQt Azure build [`1569935`](https://dev.azure.com/conda-forge/84710dde-1620-425b-80d0-4cf5baca359d/_build/results?buildId=1569935) passed all fifteen jobs across native macOS x86-64, cross-built macOS ARM64, Windows x86-64, and Python 3.10-3.14. Together with the successful linter, the complete final matrix is green against the published Qt build-2 artifacts.
-- Marking the PR ready for review started duplicate Azure build [`1570229`](https://dev.azure.com/conda-forge/84710dde-1620-425b-80d0-4cf5baca359d/_build/results?buildId=1570229) across the same fifteen macOS and Windows jobs. The established 25-job result remains valid, but require this ready-transition cycle to finish green before treating the live PR merge state as clean.
+- Marking the PR ready for review started duplicate Azure build [`1570229`](https://dev.azure.com/conda-forge/84710dde-1620-425b-80d0-4cf5baca359d/_build/results?buildId=1570229) across the same fifteen macOS and Windows jobs. All fifteen passed, restoring a clean live PR merge state and independently confirming the earlier Azure result.
 - The historical [qt-main-feedstock PR #170](https://github.com/conda-forge/qt-main-feedstock/pull/170) and [vulkan-headers-feedstock issue #7](https://github.com/conda-forge/vulkan-headers-feedstock/issues/7) explain why macOS Vulkan was previously disabled and why the now-available MoltenVK package removes that packaging limitation.
 
 ## Completed Local Proof
@@ -39,7 +39,7 @@ Do not claim support for mixing the standalone macOS Datoviz wheel, which carrie
 
 ## Remaining RC3 Sequence
 
-1. Require ready-transition Azure build `1570229` to pass, then wait for maintainer review, merge, and publication of PyQt PR #186 without weakening the Vulkan regression test or the cross-build contract.
+1. Wait for maintainer review, merge, and publication of PyQt PR #186 without weakening the Vulkan regression test or the cross-build contract.
 2. Build the Datoviz split packages against the published Qt/PyQt runtime, run a clean-prefix base macOS Vulkan render without Qt, then run exact-artifact bridge, import, loader/driver identity, Vulkan instance, Cocoa surface, hosted rendering, and missing-provider diagnostics.
 3. Add mandatory Linux and Windows hosted proof for RC3.
 4. Do not cut RC3 while this required provider gate is unavailable unless the maintainer explicitly changes release scope and records the exception.
