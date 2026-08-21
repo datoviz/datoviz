@@ -28,6 +28,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzAppConfig`](app.md#type-dvzappconfig) | record | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzAppExitPolicy`](app.md#type-dvzappexitpolicy) | enum | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzAppFlags`](app.md#type-dvzappflags) | enum | App, Window, And I/O API | `include/datoviz/runner/enums.h` |
+| [`DvzAppPresentMode`](app.md#type-dvzapppresentmode) | enum | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzAppResources`](app.md#type-dvzappresources) | record | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzAppScheduleMode`](app.md#type-dvzappschedulemode) | enum | App, Window, And I/O API | `include/datoviz/app.h` |
 | [`DvzArcball`](runtime-controllers.md#type-dvzarcball) | typedef | Low-Level Controllers API | `include/datoviz/controller/arcball.h` |

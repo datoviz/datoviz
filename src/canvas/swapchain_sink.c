@@ -180,6 +180,21 @@ uint32_t _dvz_canvas_frame_slot_count_resolve(
 
 
 /**
+ * Resolve the fallback for an unavailable FIFO-latest request.
+ *
+ * @param explicit_mode whether the application explicitly requested FIFO-latest
+ * @param preferred_present_mode surface-preferred mode for automatic selection
+ * @return FIFO for an explicit request, otherwise the surface-preferred mode
+ */
+VkPresentModeKHR _dvz_canvas_fifo_latest_fallback(
+    bool explicit_mode, VkPresentModeKHR preferred_present_mode)
+{
+    return explicit_mode ? VK_PRESENT_MODE_FIFO_KHR : preferred_present_mode;
+}
+
+
+
+/**
  * Clear the active frame-slot pointer and its explicit index together.
  *
  * @param swapchain canvas swapchain state to update
@@ -371,9 +386,13 @@ static VkPresentModeKHR canvas_select_present_mode(DvzCanvas* canvas)
             canvas->swapchain->surface_wrapper, VK_PRESENT_MODE_FIFO_LATEST_READY_KHR);
     if (requested && (!has_device_extension || !has_surface_mode))
     {
-        VkPresentModeKHR fallback = VK_PRESENT_MODE_FIFO_KHR;
+        VkPresentModeKHR preferred = VK_PRESENT_MODE_FIFO_KHR;
         if (canvas->swapchain != NULL && canvas->swapchain->surface_wrapper != NULL)
-            fallback = dvz_surface_preferred_present_mode(canvas->swapchain->surface_wrapper);
+            preferred = dvz_surface_preferred_present_mode(canvas->swapchain->surface_wrapper);
+        const bool explicit_mode =
+            (canvas->cfg.flags & DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT) != 0;
+        VkPresentModeKHR fallback =
+            _dvz_canvas_fifo_latest_fallback(explicit_mode, preferred);
         const char* message = "fifo-latest unavailable; using %s (%s)";
         if (canvas->cfg.flags & DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT)
         {

@@ -63,9 +63,13 @@ Window refresh rate is a runtime metric and may change when a window moves betwe
 Every requested frame in the app-owned native loop passes through per-view scheduler admission, regardless of whether the request comes from continuous interaction, a dirty scene, an event, animation, replay, a posted callback, a query, or another one-shot invalidation. Repeated requests coalesce while a paced view waits, the deadline advances only after a successfully presented frame, and a deferred or failed frame retains its pending state without advancing the cadence. Explicit immediate mode without a cap remains unbounded, fixed-count runs and direct `dvz_view_render_once()` calls remain unpaced, and external surfaces remain host-driven.
 
 
-## App Presentation Environment Overrides
+## App Presentation Configuration
 
-The app layer recognizes these process-wide environment overrides for app-owned native windows:
+Applications select a presentation policy with `DvzAppConfig.present_mode`. `DVZ_APP_PRESENT_MODE_AUTOMATIC` preserves the Datoviz default: app-owned native windows prefer refresh-paced FIFO latest-ready, external surfaces retain host-driven FIFO unless configured otherwise, and offscreen views ignore presentation mode. Explicit requests are resolved against runtime surface capabilities. An unavailable explicit FIFO-latest request falls back to mandatory FIFO rather than changing to the automatic mailbox preference.
+
+The public app enum keeps Vulkan types out of the high-level configuration and supports automatic, FIFO, FIFO-latest, mailbox, and immediate requests. Presentation mode is a creation-time, app-wide policy; runtime switching and per-view selection are outside this contract.
+
+The app layer also recognizes these process-wide environment overrides. `DVZ_PRESENT_MODE` takes precedence over `DvzAppConfig.present_mode` as a diagnostic override:
 
 | Variable | Accepted values | Meaning when unset |
 | --- | --- | --- |

@@ -235,6 +235,9 @@ uint32_t _dvz_canvas_frame_slot_count_request(
 uint32_t _dvz_canvas_frame_slot_count_resolve(
     uint32_t requested_slot_count, uint32_t image_count);
 
+VkPresentModeKHR _dvz_canvas_fifo_latest_fallback(
+    bool explicit_mode, VkPresentModeKHR preferred_present_mode);
+
 uint32_t _dvz_canvas_swapchain_image_count(const DvzCanvas* canvas);
 
 uint32_t _dvz_canvas_swapchain_slot_count(const DvzCanvas* canvas);

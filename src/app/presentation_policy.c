@@ -65,6 +65,63 @@ VkPresentModeKHR _dvz_app_present_mode_default(void)
 
 
 /**
+ * Map a public app presentation mode to Vulkan.
+ *
+ * @param present_mode public app presentation mode
+ * @return requested Vulkan presentation mode
+ */
+VkPresentModeKHR _dvz_app_present_mode_resolve(DvzAppPresentMode present_mode)
+{
+    switch (present_mode)
+    {
+    case DVZ_APP_PRESENT_MODE_AUTOMATIC:
+        return _dvz_app_present_mode_default();
+    case DVZ_APP_PRESENT_MODE_FIFO:
+        return VK_PRESENT_MODE_FIFO_KHR;
+    case DVZ_APP_PRESENT_MODE_FIFO_LATEST:
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+        return VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
+#else
+        return VK_PRESENT_MODE_FIFO_KHR;
+#endif
+    case DVZ_APP_PRESENT_MODE_MAILBOX:
+        return VK_PRESENT_MODE_MAILBOX_KHR;
+    case DVZ_APP_PRESENT_MODE_IMMEDIATE:
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    default:
+        return _dvz_app_present_mode_default();
+    }
+}
+
+
+
+/**
+ * Resolve an app presentation request, including the diagnostic environment override.
+ *
+ * @param present_mode public app presentation mode
+ * @param prefer_latest_ready whether automatic mode should prefer FIFO-latest
+ * @param[out] explicit_mode whether the resolved mode was explicitly requested
+ * @return requested Vulkan presentation mode
+ */
+VkPresentModeKHR _dvz_app_present_mode_config(
+    DvzAppPresentMode present_mode, bool prefer_latest_ready, bool* explicit_mode)
+{
+    VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
+    bool is_explicit = present_mode != DVZ_APP_PRESENT_MODE_AUTOMATIC;
+    if (is_explicit)
+        resolved = _dvz_app_present_mode_resolve(present_mode);
+    else if (prefer_latest_ready)
+        resolved = _dvz_app_present_mode_default();
+    if (_dvz_app_present_mode_env(&resolved))
+        is_explicit = true;
+    if (explicit_mode != NULL)
+        *explicit_mode = is_explicit;
+    return resolved;
+}
+
+
+
+/**
  * Parse the optional presentation-mode environment override.
  *
  * @param[out] present_mode parsed presentation mode
