@@ -147,10 +147,14 @@ bool _dvz_app_present_mode_parse(const char* value, VkPresentModeKHR* present_mo
         *present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
     else if (strcmp(value, "fifo") == 0)
         *present_mode = VK_PRESENT_MODE_FIFO_KHR;
-#if defined(VK_KHR_present_mode_fifo_latest_ready)
     else if (strcmp(value, "fifo-latest") == 0)
+    {
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
         *present_mode = VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
+#else
+        *present_mode = VK_PRESENT_MODE_FIFO_KHR;
 #endif
+    }
     else
         return false;
     return true;
