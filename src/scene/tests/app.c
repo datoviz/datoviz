@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "../../app/_app.h"
+#include "../../canvas/canvas_internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -2948,6 +2949,7 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
     app_cfg.instance_extensions = extensions;
     app_cfg.enable_canvas_extensions = true;
     app_cfg.enable_glfw_extensions = false;
+    app_cfg.present_mode = DVZ_APP_PRESENT_MODE_MAILBOX;
     DvzApp* app = dvz_app_with_config(scene, &app_cfg);
     if (app == NULL)
     {
@@ -2988,9 +2990,22 @@ int test_app_external_surface_release_waits(TstContext* suite, const TstCase* it
         return 0;
     }
 
+    const char* old_present_mode = getenv("DVZ_PRESENT_MODE");
+    char saved_present_mode[64] = {0};
+    if (old_present_mode != NULL)
+        dvz_snprintf(saved_present_mode, sizeof(saved_present_mode), "%s", old_present_mode);
+    AT(tst_setenv("DVZ_PRESENT_MODE", "fifo") == 0);
     DvzView* win = dvz_ffi_view_external_surface(
         app, figure, (void*)instance, (uint64_t)(uintptr_t)surface, 64, 64, 1.0f, 1.0f, false);
+    if (old_present_mode != NULL)
+        (void)tst_setenv("DVZ_PRESENT_MODE", saved_present_mode);
+    else
+        (void)tst_unsetenv("DVZ_PRESENT_MODE");
     AT(win != NULL);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+    AT(canvas->cfg.present_mode == VK_PRESENT_MODE_FIFO_KHR);
+    AT((canvas->cfg.flags & DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT) != 0);
 
     AppRequestFrameProbe request_probe = {0};
     dvz_view_set_request_frame_callback(win, _app_request_frame_probe_callback, &request_probe);
@@ -10135,8 +10150,8 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_view_connects_prebound_panel_controller);
 #if defined(DVZ_HAS_GLFW) && DVZ_HAS_GLFW
     TST_SCENE_APP_EXEMPT_CASE(
-        test_app_external_surface_release_waits, TST_SCENE_APP_GPU_RES | TST_RES_GLFW,
-        TST_ISOLATION_PROCESS);
+        test_app_external_surface_release_waits,
+        TST_SCENE_APP_GPU_RES | TST_RES_GLFW | TST_RES_ENV, TST_ISOLATION_PROCESS);
 #endif
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_panel_three_visuals_all_drawn);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_orders_overlap);
