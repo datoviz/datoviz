@@ -36,6 +36,8 @@ int test_canvas_frame_pool(TstContext* suite, const TstCase* item);
 
 int test_canvas_frame_slot_count_resolution(TstContext* suite, const TstCase* item);
 
+int test_canvas_fifo_latest_fallback(TstContext* suite, const TstCase* item);
+
 int test_canvas_timings(TstContext* suite, const TstCase* item);
 int test_canvas_offscreen_destroy_recreate(TstContext* suite, const TstCase* item);
 int test_canvas_glfw_destroy_recreate(TstContext* suite, const TstCase* item);

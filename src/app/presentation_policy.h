@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "datoviz/app.h"
 #include "datoviz/canvas.h"
 
 
@@ -61,7 +62,13 @@ typedef struct DvzAppPacingRequest
 
 VkPresentModeKHR _dvz_app_present_mode_default(void);
 
-bool _dvz_app_present_mode_env(VkPresentModeKHR* present_mode);
+VkPresentModeKHR _dvz_app_present_mode_resolve(DvzAppPresentMode present_mode);
+
+VkPresentModeKHR _dvz_app_present_mode_config(
+    DvzAppPresentMode present_mode, bool prefer_latest_ready, bool* explicit_mode,
+    const char** invalid_env_value);
+
+bool _dvz_app_present_mode_parse(const char* value, VkPresentModeKHR* present_mode);
 
 bool _dvz_app_fps_cap_env(double* fps_cap);
 

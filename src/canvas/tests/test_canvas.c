@@ -766,6 +766,29 @@ int test_canvas_frame_slot_count_resolution(TstContext* suite, const TstCase* it
 
 
 /**
+ * Validate automatic and explicit FIFO-latest fallback selection.
+ *
+ * @param suite The owning test suite.
+ * @param item The test item (unused).
+ * @return Zero on success.
+ */
+int test_canvas_fifo_latest_fallback(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    AT(_dvz_canvas_fifo_latest_fallback(false, VK_PRESENT_MODE_MAILBOX_KHR) ==
+       VK_PRESENT_MODE_MAILBOX_KHR);
+    AT(_dvz_canvas_fifo_latest_fallback(false, VK_PRESENT_MODE_FIFO_KHR) ==
+       VK_PRESENT_MODE_FIFO_KHR);
+    AT(_dvz_canvas_fifo_latest_fallback(true, VK_PRESENT_MODE_MAILBOX_KHR) ==
+       VK_PRESENT_MODE_FIFO_KHR);
+    return 0;
+}
+
+
+
+/**
  * Check that timing samples wrap around the configured capacity.
  */
 int test_canvas_timings(TstContext* suite, const TstCase* item)
@@ -2201,6 +2224,8 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(test_canvas_frame_pool, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(
         test_canvas_frame_slot_count_resolution, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(
+        test_canvas_fifo_latest_fallback, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_timings, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(
         test_canvas_offscreen_destroy_recreate, TST_CANVAS_VK_RES, TST_ISOLATION_PROCESS);

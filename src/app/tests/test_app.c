@@ -197,6 +197,7 @@ static int test_app_config_defaults(TstContext* suite, const TstCase* item)
     AT(config.enable_glfw_extensions);
     AT(config.schedule_mode == DVZ_APP_SCHEDULE_ON_DEMAND);
     AT(config.exit_policy == DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED);
+    AT(config.present_mode == DVZ_APP_PRESENT_MODE_AUTOMATIC);
     AT(config.fps_cap == 0);
     DvzFontDefaults fonts = dvz_font_defaults();
     AT(strcmp(config.font_sans_family, fonts.sans_family) == 0);
@@ -279,7 +280,7 @@ static int test_app_presentation_policy_defaults(TstContext* suite, const TstCas
 #endif
     VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
     uint32_t frame_slot_count = 0;
-    AT(!_dvz_app_present_mode_env(&present_mode));
+    AT(!_dvz_app_present_mode_parse(NULL, &present_mode));
     AT(!_dvz_app_frame_slot_count_env(&frame_slot_count));
 
     _test_restore_env(
@@ -307,15 +308,17 @@ static int test_app_presentation_policy_env_overrides(TstContext* suite, const T
 
     VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
     AT(tst_setenv("DVZ_PRESENT_MODE", "mailbox") == 0);
-    AT(_dvz_app_present_mode_env(&present_mode));
+    AT(_dvz_app_present_mode_parse(getenv("DVZ_PRESENT_MODE"), &present_mode));
     AT(present_mode == VK_PRESENT_MODE_MAILBOX_KHR);
-#if defined(VK_KHR_present_mode_fifo_latest_ready)
     AT(tst_setenv("DVZ_PRESENT_MODE", "fifo-latest") == 0);
-    AT(_dvz_app_present_mode_env(&present_mode));
+    AT(_dvz_app_present_mode_parse(getenv("DVZ_PRESENT_MODE"), &present_mode));
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
     AT(present_mode == VK_PRESENT_MODE_FIFO_LATEST_READY_KHR);
+#else
+    AT(present_mode == VK_PRESENT_MODE_FIFO_KHR);
 #endif
     AT(tst_setenv("DVZ_PRESENT_MODE", "invalid") == 0);
-    AT(!_dvz_app_present_mode_env(&present_mode));
+    AT(!_dvz_app_present_mode_parse(getenv("DVZ_PRESENT_MODE"), &present_mode));
 
     uint32_t frame_slot_count = 0;
     AT(tst_setenv("DVZ_MAX_FRAMES_IN_FLIGHT", "auto") == 0);
@@ -331,6 +334,64 @@ static int test_app_presentation_policy_env_overrides(TstContext* suite, const T
         "DVZ_PRESENT_MODE", old_present_mode != NULL ? saved_present_mode : NULL);
     _test_restore_env(
         "DVZ_MAX_FRAMES_IN_FLIGHT", old_frame_slots != NULL ? saved_frame_slots : NULL);
+    return 0;
+}
+
+
+
+static int test_app_presentation_policy_config(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+
+    const char* old_present_mode = getenv("DVZ_PRESENT_MODE");
+    char saved_present_mode[64] = {0};
+    if (old_present_mode != NULL)
+        dvz_snprintf(saved_present_mode, sizeof(saved_present_mode), "%s", old_present_mode);
+    (void)tst_unsetenv("DVZ_PRESENT_MODE");
+
+    bool explicit_mode = true;
+    AT(_dvz_app_present_mode_config(
+           DVZ_APP_PRESENT_MODE_AUTOMATIC, true, &explicit_mode, NULL) ==
+       _dvz_app_present_mode_default());
+    AT(!explicit_mode);
+    AT(_dvz_app_present_mode_config(
+           DVZ_APP_PRESENT_MODE_AUTOMATIC, false, &explicit_mode, NULL) ==
+       VK_PRESENT_MODE_FIFO_KHR);
+    AT(!explicit_mode);
+
+    AT(_dvz_app_present_mode_resolve(DVZ_APP_PRESENT_MODE_FIFO) == VK_PRESENT_MODE_FIFO_KHR);
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+    AT(_dvz_app_present_mode_resolve(DVZ_APP_PRESENT_MODE_FIFO_LATEST) ==
+       VK_PRESENT_MODE_FIFO_LATEST_READY_KHR);
+#else
+    AT(_dvz_app_present_mode_resolve(DVZ_APP_PRESENT_MODE_FIFO_LATEST) ==
+       VK_PRESENT_MODE_FIFO_KHR);
+#endif
+    AT(_dvz_app_present_mode_resolve(DVZ_APP_PRESENT_MODE_MAILBOX) ==
+       VK_PRESENT_MODE_MAILBOX_KHR);
+    AT(_dvz_app_present_mode_resolve(DVZ_APP_PRESENT_MODE_IMMEDIATE) ==
+       VK_PRESENT_MODE_IMMEDIATE_KHR);
+
+    AT(_dvz_app_present_mode_config(DVZ_APP_PRESENT_MODE_FIFO, true, &explicit_mode, NULL) ==
+       VK_PRESENT_MODE_FIFO_KHR);
+    AT(explicit_mode);
+    AT(tst_setenv("DVZ_PRESENT_MODE", "immediate") == 0);
+    const char* invalid_env_value = NULL;
+    AT(_dvz_app_present_mode_config(
+           DVZ_APP_PRESENT_MODE_FIFO, true, &explicit_mode, &invalid_env_value) ==
+       VK_PRESENT_MODE_IMMEDIATE_KHR);
+    AT(explicit_mode);
+    AT(invalid_env_value == NULL);
+    AT(tst_setenv("DVZ_PRESENT_MODE", "invalid") == 0);
+    AT(_dvz_app_present_mode_config(
+           DVZ_APP_PRESENT_MODE_FIFO, false, &explicit_mode, &invalid_env_value) ==
+       VK_PRESENT_MODE_FIFO_KHR);
+    AT(explicit_mode);
+    AT(invalid_env_value != NULL && strcmp(invalid_env_value, "invalid") == 0);
+
+    _test_restore_env(
+        "DVZ_PRESENT_MODE", old_present_mode != NULL ? saved_present_mode : NULL);
     return 0;
 }
 
@@ -550,6 +611,10 @@ static int test_app_abi_rejects_invalid_structs(TstContext* suite, const TstCase
 
     config = dvz_app_config();
     config.flags = 1;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_app_with_config(scene, &config) == NULL);
+
+    config = dvz_app_config();
+    config.present_mode = (DvzAppPresentMode)999;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_app_with_config(scene, &config) == NULL);
 
     DvzAppResources resources = dvz_app_resources();
@@ -1720,6 +1785,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_config_env_fps_cap);
     TST_CASE(test_app_presentation_policy_defaults);
     TST_CASE(test_app_presentation_policy_env_overrides);
+    TST_CASE(test_app_presentation_policy_config);
     TST_CASE(test_app_presentation_policy_pacing);
     TST_CASE(test_app_presentation_policy_scheduler_admission);
     TST_CASE(test_app_view_size_policy_resolve);

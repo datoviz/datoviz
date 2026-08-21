@@ -348,6 +348,16 @@ static bool _app_config_validate(const DvzAppConfig* config)
         log_error("invalid DvzAppConfig exit_policy");
         return false;
     }
+    if (
+        config->present_mode != DVZ_APP_PRESENT_MODE_AUTOMATIC &&
+        config->present_mode != DVZ_APP_PRESENT_MODE_FIFO &&
+        config->present_mode != DVZ_APP_PRESENT_MODE_FIFO_LATEST &&
+        config->present_mode != DVZ_APP_PRESENT_MODE_MAILBOX &&
+        config->present_mode != DVZ_APP_PRESENT_MODE_IMMEDIATE)
+    {
+        log_error("invalid DvzAppConfig present_mode");
+        return false;
+    }
     return true;
 }
 
@@ -434,6 +444,7 @@ static DvzAppConfig _app_config_defaults(void)
     config.enable_glfw_extensions = true;
     config.schedule_mode = DVZ_APP_SCHEDULE_ON_DEMAND;
     config.exit_policy = DVZ_APP_EXIT_WHEN_ALL_WINDOWS_CLOSED;
+    config.present_mode = DVZ_APP_PRESENT_MODE_AUTOMATIC;
     config.fps_cap = 0.0;
     DvzFontDefaults fonts = dvz_font_defaults();
     config.font_sans_path = fonts.sans_path;
@@ -4042,29 +4053,26 @@ static void _app_draw_replay(DvzView* win, const DvzStreamFrame* frame)
 /**
  * Apply the app presentation policy to a present canvas configuration.
  *
+ * @param app_config application configuration containing the requested policy
  * @param ccfg canvas configuration to mutate
+ * @param prefer_latest_ready whether automatic mode should prefer FIFO-latest
  */
 static void _app_canvas_config_apply_presentation_policy(
-    DvzCanvasConfig* ccfg, bool prefer_latest_ready)
+    const DvzAppConfig* app_config, DvzCanvasConfig* ccfg, bool prefer_latest_ready)
 {
+    ANN(app_config);
     ANN(ccfg);
-    if (prefer_latest_ready)
-        ccfg->present_mode = _dvz_app_present_mode_default();
-    VkPresentModeKHR present_mode = ccfg->present_mode;
-    if (_dvz_app_present_mode_env(&present_mode))
-    {
-        ccfg->present_mode = present_mode;
+    bool explicit_mode = false;
+    const char* invalid_present_mode = NULL;
+    ccfg->present_mode = _dvz_app_present_mode_config(
+        app_config->present_mode, prefer_latest_ready, &explicit_mode, &invalid_present_mode);
+    if (explicit_mode)
         ccfg->flags |= DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT;
-    }
-    else
-    {
-        const char* value = getenv("DVZ_PRESENT_MODE");
-        if (value != NULL && value[0] != '\0')
-            log_warn(
-                "ignoring DVZ_PRESENT_MODE='%s' "
-                "(expected fifo|fifo-latest|mailbox|immediate)",
-                value);
-    }
+    if (invalid_present_mode != NULL)
+        log_warn(
+            "ignoring DVZ_PRESENT_MODE='%s' "
+            "(expected fifo|fifo-latest|mailbox|immediate)",
+            invalid_present_mode);
 
     uint32_t frame_slot_count = 0;
     if (_dvz_app_frame_slot_count_env(&frame_slot_count))
@@ -4963,7 +4971,7 @@ _view_create_glfw(
     /* render_mode defaults to DVZ_CANVAS_RENDER_MODE_PRESENT */
     if (dvz_figure_color_pipeline(figure) == DVZ_COLOR_PIPELINE_LEGACY_SRGB_BLEND)
         ccfg.color_format = VK_FORMAT_R8G8B8A8_UNORM;
-    _app_canvas_config_apply_presentation_policy(&ccfg, true);
+    _app_canvas_config_apply_presentation_policy(&app->config, &ccfg, true);
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)
     {
@@ -5058,7 +5066,7 @@ static DvzView* _view_create_external_surface(
     ccfg.device = dvz_gpu_ctx_device(app->gpu_ctx);
     ccfg.depth_format = VK_FORMAT_D32_SFLOAT;
     /* External hosts may not report a refresh rate, so retain Canvas FIFO unless overridden. */
-    _app_canvas_config_apply_presentation_policy(&ccfg, false);
+    _app_canvas_config_apply_presentation_policy(&app->config, &ccfg, false);
     DvzCanvas* canvas = dvz_canvas_create(&ccfg);
     if (canvas == NULL)
     {

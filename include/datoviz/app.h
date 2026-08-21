@@ -80,6 +80,27 @@ typedef enum DvzAppExitPolicy
 } DvzAppExitPolicy;
 
 
+/**
+ * Presentation policy requested by an application for present-capable views.
+ *
+ * The runtime resolves requests against the modes supported by each surface. The
+ * `DVZ_PRESENT_MODE` environment variable remains a diagnostic override.
+ */
+typedef enum DvzAppPresentMode
+{
+    /** Let Datoviz choose its default policy. */
+    DVZ_APP_PRESENT_MODE_AUTOMATIC,
+    /** Wait for the vertical blanking interval. */
+    DVZ_APP_PRESENT_MODE_FIFO,
+    /** Use FIFO-latest-ready when available, falling back to FIFO. */
+    DVZ_APP_PRESENT_MODE_FIFO_LATEST,
+    /** Keep the newest completed frame when the presentation queue is full. */
+    DVZ_APP_PRESENT_MODE_MAILBOX,
+    /** Present immediately when the surface supports it. */
+    DVZ_APP_PRESENT_MODE_IMMEDIATE,
+} DvzAppPresentMode;
+
+
 typedef enum DvzAppCaptureFlags
 {
     DVZ_APP_CAPTURE_NONE = 0,
@@ -154,6 +175,8 @@ struct DvzAppConfig
     float font_ui_size_px;
     float font_mono_size_px;
     float font_text_size_px;
+    /** App-wide presentation request; offscreen views ignore this field. */
+    DvzAppPresentMode present_mode;
 };
 
 

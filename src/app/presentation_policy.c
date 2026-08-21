@@ -65,16 +65,80 @@ VkPresentModeKHR _dvz_app_present_mode_default(void)
 
 
 /**
- * Parse the optional presentation-mode environment override.
+ * Map a public app presentation mode to Vulkan.
  *
+ * @param present_mode public app presentation mode
+ * @return requested Vulkan presentation mode
+ */
+VkPresentModeKHR _dvz_app_present_mode_resolve(DvzAppPresentMode present_mode)
+{
+    switch (present_mode)
+    {
+    case DVZ_APP_PRESENT_MODE_AUTOMATIC:
+        return _dvz_app_present_mode_default();
+    case DVZ_APP_PRESENT_MODE_FIFO:
+        return VK_PRESENT_MODE_FIFO_KHR;
+    case DVZ_APP_PRESENT_MODE_FIFO_LATEST:
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
+        return VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
+#else
+        return VK_PRESENT_MODE_FIFO_KHR;
+#endif
+    case DVZ_APP_PRESENT_MODE_MAILBOX:
+        return VK_PRESENT_MODE_MAILBOX_KHR;
+    case DVZ_APP_PRESENT_MODE_IMMEDIATE:
+        return VK_PRESENT_MODE_IMMEDIATE_KHR;
+    default:
+        return _dvz_app_present_mode_default();
+    }
+}
+
+
+
+/**
+ * Resolve an app presentation request, including the diagnostic environment override.
+ *
+ * @param present_mode public app presentation mode
+ * @param prefer_latest_ready whether automatic mode should prefer FIFO-latest
+ * @param[out] explicit_mode whether the resolved mode was explicitly requested
+ * @param[out] invalid_env_value invalid nonempty environment override, or NULL
+ * @return requested Vulkan presentation mode
+ */
+VkPresentModeKHR _dvz_app_present_mode_config(
+    DvzAppPresentMode present_mode, bool prefer_latest_ready, bool* explicit_mode,
+    const char** invalid_env_value)
+{
+    VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
+    bool is_explicit = present_mode != DVZ_APP_PRESENT_MODE_AUTOMATIC;
+    if (is_explicit)
+        resolved = _dvz_app_present_mode_resolve(present_mode);
+    else if (prefer_latest_ready)
+        resolved = _dvz_app_present_mode_default();
+    const char* value = getenv("DVZ_PRESENT_MODE");
+    const bool env_override_applied = _dvz_app_present_mode_parse(value, &resolved);
+    if (env_override_applied)
+        is_explicit = true;
+    if (explicit_mode != NULL)
+        *explicit_mode = is_explicit;
+    if (invalid_env_value != NULL)
+        *invalid_env_value =
+            value != NULL && value[0] != '\0' && !env_override_applied ? value : NULL;
+    return resolved;
+}
+
+
+
+/**
+ * Parse an optional presentation-mode override value.
+ *
+ * @param value override value, or NULL
  * @param[out] present_mode parsed presentation mode
  * @return true when an override was present and valid
  */
-bool _dvz_app_present_mode_env(VkPresentModeKHR* present_mode)
+bool _dvz_app_present_mode_parse(const char* value, VkPresentModeKHR* present_mode)
 {
     if (present_mode == NULL)
         return false;
-    const char* value = getenv("DVZ_PRESENT_MODE");
     if (value == NULL || value[0] == '\0')
         return false;
     if (strcmp(value, "immediate") == 0)
@@ -83,10 +147,14 @@ bool _dvz_app_present_mode_env(VkPresentModeKHR* present_mode)
         *present_mode = VK_PRESENT_MODE_MAILBOX_KHR;
     else if (strcmp(value, "fifo") == 0)
         *present_mode = VK_PRESENT_MODE_FIFO_KHR;
-#if defined(VK_KHR_present_mode_fifo_latest_ready)
     else if (strcmp(value, "fifo-latest") == 0)
+    {
+#if defined(VK_KHR_present_mode_fifo_latest_ready)
         *present_mode = VK_PRESENT_MODE_FIFO_LATEST_READY_KHR;
+#else
+        *present_mode = VK_PRESENT_MODE_FIFO_KHR;
 #endif
+    }
     else
         return false;
     return true;
