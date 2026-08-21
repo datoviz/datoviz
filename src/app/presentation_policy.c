@@ -101,10 +101,12 @@ VkPresentModeKHR _dvz_app_present_mode_resolve(DvzAppPresentMode present_mode)
  * @param present_mode public app presentation mode
  * @param prefer_latest_ready whether automatic mode should prefer FIFO-latest
  * @param[out] explicit_mode whether the resolved mode was explicitly requested
+ * @param[out] invalid_env_value invalid nonempty environment override, or NULL
  * @return requested Vulkan presentation mode
  */
 VkPresentModeKHR _dvz_app_present_mode_config(
-    DvzAppPresentMode present_mode, bool prefer_latest_ready, bool* explicit_mode)
+    DvzAppPresentMode present_mode, bool prefer_latest_ready, bool* explicit_mode,
+    const char** invalid_env_value)
 {
     VkPresentModeKHR resolved = VK_PRESENT_MODE_FIFO_KHR;
     bool is_explicit = present_mode != DVZ_APP_PRESENT_MODE_AUTOMATIC;
@@ -112,26 +114,31 @@ VkPresentModeKHR _dvz_app_present_mode_config(
         resolved = _dvz_app_present_mode_resolve(present_mode);
     else if (prefer_latest_ready)
         resolved = _dvz_app_present_mode_default();
-    if (_dvz_app_present_mode_env(&resolved))
+    const char* value = getenv("DVZ_PRESENT_MODE");
+    const bool env_override_applied = _dvz_app_present_mode_parse(value, &resolved);
+    if (env_override_applied)
         is_explicit = true;
     if (explicit_mode != NULL)
         *explicit_mode = is_explicit;
+    if (invalid_env_value != NULL)
+        *invalid_env_value =
+            value != NULL && value[0] != '\0' && !env_override_applied ? value : NULL;
     return resolved;
 }
 
 
 
 /**
- * Parse the optional presentation-mode environment override.
+ * Parse an optional presentation-mode override value.
  *
+ * @param value override value, or NULL
  * @param[out] present_mode parsed presentation mode
  * @return true when an override was present and valid
  */
-bool _dvz_app_present_mode_env(VkPresentModeKHR* present_mode)
+bool _dvz_app_present_mode_parse(const char* value, VkPresentModeKHR* present_mode)
 {
     if (present_mode == NULL)
         return false;
-    const char* value = getenv("DVZ_PRESENT_MODE");
     if (value == NULL || value[0] == '\0')
         return false;
     if (strcmp(value, "immediate") == 0)

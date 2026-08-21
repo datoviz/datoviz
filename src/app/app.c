@@ -4063,20 +4063,16 @@ static void _app_canvas_config_apply_presentation_policy(
     ANN(app_config);
     ANN(ccfg);
     bool explicit_mode = false;
+    const char* invalid_present_mode = NULL;
     ccfg->present_mode = _dvz_app_present_mode_config(
-        app_config->present_mode, prefer_latest_ready, &explicit_mode);
+        app_config->present_mode, prefer_latest_ready, &explicit_mode, &invalid_present_mode);
     if (explicit_mode)
         ccfg->flags |= DVZ_CANVAS_CONFIG_PRESENT_MODE_EXPLICIT;
-    VkPresentModeKHR ignored = ccfg->present_mode;
-    if (!_dvz_app_present_mode_env(&ignored))
-    {
-        const char* value = getenv("DVZ_PRESENT_MODE");
-        if (value != NULL && value[0] != '\0')
-            log_warn(
-                "ignoring DVZ_PRESENT_MODE='%s' "
-                "(expected fifo|fifo-latest|mailbox|immediate)",
-                value);
-    }
+    if (invalid_present_mode != NULL)
+        log_warn(
+            "ignoring DVZ_PRESENT_MODE='%s' "
+            "(expected fifo|fifo-latest|mailbox|immediate)",
+            invalid_present_mode);
 
     uint32_t frame_slot_count = 0;
     if (_dvz_app_frame_slot_count_env(&frame_slot_count))
