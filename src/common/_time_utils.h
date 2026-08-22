@@ -23,6 +23,7 @@
 #include <time.h>
 
 #include "_assertions.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/common/macros.h"
 
 
@@ -128,21 +129,6 @@ static inline void dvz_sleep_us(int microseconds)
  * @param milliseconds sleep duration
  */
 static inline void dvz_sleep(int milliseconds) { dvz_sleep_us(milliseconds * 1000); }
-
-
-
-/*************************************************************************************************/
-/*  Monotonic time                                                                               */
-/*************************************************************************************************/
-
-/**
- * Return the current monotonic timestamp in nanoseconds.
- *
- * @return monotonic timestamp in nanoseconds, or zero when unavailable
- */
-EXTERN_C_ON
-DVZ_EXPORT uint64_t dvz_time_monotonic_ns(void);
-EXTERN_C_OFF
 
 
 
