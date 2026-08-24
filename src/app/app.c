@@ -4102,7 +4102,7 @@ static void _app_render_gui_frame(DvzView* win, const DvzStreamFrame* frame)
 
 
 /**
- * Render one GUI viewport source view synchronously during strict GUI viewport resolution.
+ * Synchronize one GUI viewport source view during strict GUI viewport resolution.
  *
  * @param source offscreen source view
  * @param user_data parent app
@@ -4114,6 +4114,8 @@ static int _app_resolve_gui_viewport(DvzView* source, void* user_data)
     DvzApp* app = (DvzApp*)user_data;
     ANN(app);
     dvz_view_set_render_enabled(source, true);
+    if (!_view_needs_frame(source))
+        return 0;
     int rc = dvz_view_render_once(source);
     if (rc != DVZ_CANVAS_FRAME_READY)
         return -1;

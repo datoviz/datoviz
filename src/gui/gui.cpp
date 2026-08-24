@@ -1689,7 +1689,7 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
  * Resolve all visible GUI viewport presentation requests for the current ImGui frame.
  *
  * @param gui GUI overlay
- * @param callback callback rendering one offscreen source view synchronously
+ * @param callback callback synchronizing one offscreen source view when it has pending work
  * @param user_data opaque callback user data
  * @return whether all visible viewport requests were resolved exactly
  */
@@ -1711,13 +1711,10 @@ bool _dvz_gui_resolve_viewports(
 
         _gui_viewport_resize_source(
             viewport, viewport->frame_request_width, viewport->frame_request_height);
-        if (!_gui_viewport_frame_matches_request(viewport))
+        if (callback == NULL || callback(viewport->source, user_data) < 0)
         {
-            if (callback == NULL || callback(viewport->source, user_data) < 0)
-            {
-                ok = false;
-                continue;
-            }
+            ok = false;
+            continue;
         }
         if (!_gui_viewport_frame_matches_request(viewport))
         {
