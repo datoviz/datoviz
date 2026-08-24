@@ -351,25 +351,25 @@ This example queries and selects individual instances of one mesh visual.
 
 </div>
 
-**[Show all 68 feature examples →](features.md)**
+**[Show all 69 feature examples →](features.md)**
 
 ## Runtime And Advanced
 
 Some examples focus on how Datoviz runs rather than on a particular visual result.
 
 - **[Runtime & Capture](runtime.md)** — open windows, render offscreen, capture, record, replay, and export. [Show all 5 runtime examples →](runtime.md)
-- **[Advanced](advanced.md)** — host integration and lower-level DRP2 or vklite workflows. [Show all 5 advanced examples →](advanced.md)
+- **[Advanced](advanced.md)** — host integration and lower-level DRP2 or vklite workflows. [Show all 6 advanced examples →](advanced.md)
 
 ## Choose By Goal
 
 | Goal | Start here | Then browse |
 | --- | --- | --- |
-| Learn the scene → figure → panel → visual workflow | [Basic Scene](gallery/features/features_basic_scene.md) | [68 focused features](features.md) |
+| Learn the scene → figure → panel → visual workflow | [Basic Scene](gallery/features/features_basic_scene.md) | [69 focused features](features.md) |
 | Choose marks, lines, images, meshes, text, or volumes | [Point](gallery/visuals/visuals_point.md) | [18 visuals and composites](visuals.md) |
-| Add axes, interaction, layout, animation, or techniques | [2D Axes](gallery/features/features_axes_2d.md) | [68 focused features](features.md) |
+| Add axes, interaction, layout, animation, or techniques | [2D Axes](gallery/features/features_axes_2d.md) | [69 focused features](features.md) |
 | Open windows, render offscreen, capture, record, or export | [Offscreen Capture](gallery/runtime/runtime_offscreen_capture.md) | [5 runtime examples](runtime.md) |
 | Study complete scientific visualization compositions | [Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md) | [18 showcases](showcases.md) |
-| Integrate a host or use lower-level rendering APIs | [Advanced examples](advanced.md) | [5 advanced examples](advanced.md) |
+| Integrate a host or use lower-level rendering APIs | [Advanced examples](advanced.md) | [6 advanced examples](advanced.md) |
 
 ## Before You Copy An Example
 

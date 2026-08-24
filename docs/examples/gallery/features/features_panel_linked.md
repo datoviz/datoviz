@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_multi/">← Previous: Multiple Panels</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_mixed_2d_3d/">← Previous: Mixed 2D and 3D Panels</a></span>
 <span class="dvz-example-nav__next"><a href="../features_panel_view2d/">Next: Panel View 2D →</a></span>
 </div>
 </nav>
@@ -81,7 +81,7 @@ Both panels plot deterministic path data over the same X domain but use differen
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_panel_multi/">← Previous: Multiple Panels</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_panel_mixed_2d_3d/">← Previous: Mixed 2D and 3D Panels</a></span>
 <span class="dvz-example-nav__next"><a href="../features_panel_view2d/">Next: Panel View 2D →</a></span>
 </div>
 </nav>

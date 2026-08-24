@@ -161,6 +161,7 @@ class Example:
     python_source: str | None
     python_status: str | None
     build_command: str | None
+    smoke_command: str | None
     docs_page: str | None
 
     @property
@@ -513,6 +514,7 @@ def collect_examples(manifest: dict) -> list[Example]:
             python_source=python_source,
             python_status=python_status,
             build_command=str(entry["build_command"]) if entry.get("build_command") else None,
+            smoke_command=str(entry["smoke_command"]) if entry.get("smoke_command") else None,
             docs_page=str(entry["docs_page"]) if entry.get("docs_page") else None,
         )
         examples.append(example)
@@ -710,10 +712,15 @@ def render_source_tabs(example: Example) -> list[str]:
 
 def render_run_and_adapt(example: Example, page_path: str | Path) -> list[str]:
     if example.source.startswith("examples/c/"):
-        executable_name = example.rel_executable
-        run_command = f"`just example-c {executable_name}` (build and run)"
-        executable = f"./build/examples/c/{executable_name}"
-        native_action = f"{run_command}, or rerun `{executable}`"
+        if example.build_command is not None:
+            native_action = f"`{example.build_command}`"
+            if example.smoke_command is not None:
+                native_action += f", then `{example.smoke_command}`"
+        else:
+            executable_name = example.rel_executable
+            run_command = f"`just example-c {executable_name}` (build and run)"
+            executable = f"./build/examples/c/{executable_name}"
+            native_action = f"{run_command}, or rerun `{executable}`"
     else:
         build_command = example.build_command or "just build"
         executable = f"./build/{Path(example.source).with_suffix('').as_posix()}"

@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 115
-- Examples declaring screenshot validation: 104
+- Reviewed public C examples generated for the website: 117
+- Examples declaring screenshot validation: 106
 - Examples that should have video or motion evidence: 8
 
 ## Commands
@@ -33,6 +33,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Single Panel](gallery/features/features_panel_single.md) | [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_single.c) | `supported` | `smoke+screenshot` |
 | [Panel Grid](gallery/features/features_panel_grid.md) | [`examples/c/features/panel_grid.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_grid.c) | `supported` | `smoke+screenshot` |
 | [Multiple Panels](gallery/features/features_panel_multi.md) | [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_multi.c) | `supported` | `smoke+interaction+screenshot` |
+| [Mixed 2D and 3D Panels](gallery/features/features_panel_mixed_2d_3d.md) | [`examples/c/features/panel_mixed_2d_3d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_mixed_2d_3d.c) | `experimental` | `smoke+interaction+screenshot` |
 | [Linked Panels](gallery/features/features_panel_linked.md) | [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_linked.c) | `supported` | `smoke+interaction+screenshot` |
 | [Path With 2D Axes](gallery/features/features_axes_2d.md) | [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/axes_2d.c) | `supported` | `smoke+screenshot` |
 | [Coordinate System](gallery/features/features_coordinate_system.md) | [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/coordinate_system.c) | `supported` | `smoke+screenshot` |
@@ -131,5 +132,6 @@ and should be committed through that submodule, not copied into the main reposit
 | [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md) | [`examples/c/showcases/brain_volume.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/brain_volume.c) | `prototype` | `smoke+screenshot` |
 | [Point Cloud](gallery/showcases/showcases_point_cloud.md) | [`examples/c/showcases/point_cloud.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/point_cloud.c) | `supported` | `smoke+screenshot` |
 | [Textured Planets and Orbital Debris](gallery/showcases/showcases_textured_planet.md) | [`examples/c/showcases/textured_planet.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/showcases/textured_planet.c) | `supported` | `smoke+screenshot` |
+| [Datoviz with ImPlot](gallery/advanced/advanced_gui_implot.md) | [`examples/c/advanced/gui_implot.cpp`](https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/gui_implot.cpp) | `experimental` | `optional-native-smoke+screenshot` |
 | [Qt Hosting](gallery/advanced/advanced_qt_hosting.md) | [`examples/qt/qt_hosting.cpp`](https://github.com/datoviz/datoviz/blob/main/examples/qt/qt_hosting.cpp) | `supported` | `optional-native-smoke+screenshot` |
 | [Scatter Plot](../start/quickstart.md) | [`examples/c/start/scatter.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/start/scatter.c) | `supported` | `smoke+screenshot` |

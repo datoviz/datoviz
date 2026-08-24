@@ -70,6 +70,18 @@ This example shows two panels with independent data, domains, and panzoom state.
 
 <div class="card" markdown="1">
 
+### [Mixed 2D and 3D Panels](gallery/features/features_panel_mixed_2d_3d.md)
+
+[![Mixed 2D and 3D Panels](../assets/gallery/v0.4/features/features_panel_mixed_2d_3d.webp)](gallery/features/features_panel_mixed_2d_3d.md)
+
+`experimental` `features`<br><span>`panel-grid`, `mixed-2d-3d`, `lorenz`, `arcball`, `panzoom`</span>
+
+This example mixes native Datoviz 2D and 3D panels in one figure.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Linked Panels](gallery/features/features_panel_linked.md)
 
 [![Linked Panels](../assets/gallery/v0.4/features/features_panel_linked.webp)](gallery/features/features_panel_linked.md)

@@ -96,6 +96,7 @@ sections:
           - features_panel_single
           - features_panel_grid
           - features_panel_multi
+          - features_panel_mixed_2d_3d
           - features_panel_linked
           - features_panel_view2d
           - features_panel_background
@@ -184,6 +185,7 @@ sections:
         examples:
           - features_panel_grid
           - features_panel_multi
+          - features_panel_mixed_2d_3d
           - features_panel_linked
       - title: Adornments
         examples:
@@ -243,6 +245,7 @@ sections:
       - title: Host Integration
         examples:
           - advanced_external_surface_glfw
+          - advanced_gui_implot
           - advanced_qt_hosting
       - title: GPU Interoperability
         examples:
@@ -250,6 +253,7 @@ sections:
     examples:
       - advanced_cuda_external_buffer
       - advanced_external_surface_glfw
+      - advanced_gui_implot
       - advanced_qt_hosting
       - advanced_raw_triangle_drp2
       - advanced_raw_triangle_vklite
