@@ -27,7 +27,7 @@ Use your configured build environment; Python routes additionally require local 
 
 | Route | Availability | Command or action |
 | --- | --- | --- |
-| C++ | Canonical native source | `cmake -S . -B build-implot -DDVZ_BUILD_IMPLOT_EXAMPLE=ON && cmake --build build-implot --target example_c_advanced_gui_implot`, then `./build-implot/examples/c/advanced/gui_implot --png` |
+| C++ | Canonical native source | `just example-c advanced/gui_implot` (build and run), or rerun `./build/examples/c/advanced/gui_implot` |
 | Python | No verified adaptation on this page | Start from the C source. |
 | Browser | Native only | ImPlot integration uses the native Dear ImGui and GLFW app path |
 
@@ -39,7 +39,7 @@ after verifying the linked API reference.
 
 The left dock contains an arcball-controlled Datoviz viewport showing a Lorenz trajectory. The right dock plots x(t) and z(t) from the same samples through ImPlot in Datoviz's Dear ImGui frame. Compare this immediate-mode integration with features/panel_mixed_2d_3d, where all three views are Datoviz panels.
 
-This example is opt-in because ImPlot is an example-only dependency. CMake fetches the pinned ImPlot v1.0 source by default, or uses DVZ_IMPLOT_SOURCE_DIR when it points at a local checkout.
+ImPlot is an example-only dependency. CMake fetches the pinned ImPlot v1.0 source by default, or uses DVZ_IMPLOT_SOURCE_DIR when it points at a local checkout.
 
 ## Source
 
@@ -60,7 +60,7 @@ This example is opt-in because ImPlot is an example-only dependency. CMake fetch
     - Browser support: Native only
     - Browser note: ImPlot integration uses the native Dear ImGui and GLFW app path
     - Browser capability tags: `gui`, `native-view`, `implot`
-    - Validation: `optional-native-smoke+screenshot`
+    - Validation: `native-smoke+screenshot`
 
     **Tags**
 

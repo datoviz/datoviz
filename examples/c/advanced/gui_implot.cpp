@@ -11,12 +11,12 @@
  * Dear ImGui frame. Compare this immediate-mode integration with features/panel_mixed_2d_3d, where
  * all three views are retained Datoviz panels.
  *
- * This example is opt-in because ImPlot is an example-only dependency. CMake fetches the pinned
- * ImPlot v1.0 source by default, or uses DVZ_IMPLOT_SOURCE_DIR when it points at a local checkout.
+ * ImPlot is an example-only dependency. CMake fetches the pinned ImPlot v1.0 source by default, or
+ * uses DVZ_IMPLOT_SOURCE_DIR when it points at a local checkout.
  *
- * Build:  cmake -S . -B build-implot -DDVZ_BUILD_IMPLOT_EXAMPLE=ON && cmake --build build-implot --target example_c_advanced_gui_implot
- * Run:    ./build-implot/examples/c/advanced/gui_implot
- * Smoke:  ./build-implot/examples/c/advanced/gui_implot --png
+ * Build:  just example-c advanced/gui_implot
+ * Run:    ./build/examples/c/advanced/gui_implot
+ * Smoke:  ./build/examples/c/advanced/gui_implot --png
  */
 
 
