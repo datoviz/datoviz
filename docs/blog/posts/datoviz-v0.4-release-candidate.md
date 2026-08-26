@@ -20,8 +20,8 @@ different platforms and GPUs.
 
 <nav class="dvz-home-actions" aria-label="Release candidate actions">
 <a class="dvz-home-action-primary" href="#try-datoviz-v04">Install RC1 <span aria-hidden="true">→</span></a>
-<a href="../../releases/v0.4.0rc1/">Release notes</a>
-<a href="../../examples/">Browse examples</a>
+<a href="/releases/v0.4.0rc1/">Release notes</a>
+<a href="/examples/">Browse examples</a>
 <a href="https://github.com/datoviz/datoviz/issues">Report an issue</a>
 </nav>
 
