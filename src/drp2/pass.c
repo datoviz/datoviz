@@ -658,6 +658,16 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         }
     }
     target = targets[0];
+    if (command->u.begin_render_pass.has_depth_attachment &&
+        command->u.begin_render_pass.depth_texture_id != 0)
+    {
+        named_depth = _vklite_find(state, command->u.begin_render_pass.depth_texture_id);
+        named_depth_view = _vklite_object_image_view(named_depth);
+        if (named_depth == NULL || named_depth->images == NULL ||
+            named_depth_view == VK_NULL_HANDLE)
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
 
     DvzCommands* cmds = NULL;
     if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
