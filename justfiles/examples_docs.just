@@ -282,7 +282,7 @@ docs-build-check: build
     @mkdir -p build/gallery-webp/v0.4 build/vulkan-course-media build-wasm-scene/wasm
     @python3 -m unittest tools/tests/test_build_gallery_webp.py
     @python3 -m unittest tools/tests/test_build_tutorial_media.py
-    @uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict
+    @DATOVIZ_DOCS_GENERATED_ROOT=build/docs-check-generated uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict --site-dir build/docs-site-check
 
 check-example-manifests:
     @python3 tools/check_example_ids.py

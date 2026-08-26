@@ -21,6 +21,7 @@ CURDIR = Path(__file__).parent
 ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
 SITE_ASSETS_ENV = 'DATOVIZ_DOCS_SITE_ASSETS'
+GENERATED_ROOT_ENV = 'DATOVIZ_DOCS_GENERATED_ROOT'
 # Util functions
 # -------------------------------------------------------------------------------------------------
 
@@ -84,6 +85,25 @@ def copy_tree_if_exists(src, dst, label='asset'):
     shutil.copytree(src_path, dst_path)
 
 
+def generated_root():
+    """Return the generated-asset root for the current documentation build."""
+    value = os.environ.get(GENERATED_ROOT_ENV)
+    if not value:
+        return ROOT / 'build'
+    path = Path(value)
+    return path if path.is_absolute() else ROOT / path
+
+
+def gallery_output_path():
+    """Return the gallery output directory for the current documentation build."""
+    return generated_root() / 'gallery-webp/v0.4'
+
+
+def webgpu_output_path():
+    """Return the WebGPU data output directory for the current documentation build."""
+    return generated_root() / 'webgpu-data'
+
+
 def first_existing_path(*paths):
     for path in paths:
         src_path = ROOT / path
@@ -107,7 +127,7 @@ def copy_webgpu_live_assets(site_dir):
 def copy_gallery_webp_assets(site_dir):
     site = Path(site_dir)
     copy_tree_if_exists(
-        'build/gallery-webp/v0.4', site / 'assets/gallery/v0.4', 'gallery WebP asset'
+        gallery_output_path(), site / 'assets/gallery/v0.4', 'gallery WebP asset'
     )
 
 
@@ -182,8 +202,8 @@ def prepare_optional_site_assets():
     import build_gallery_webp
     import build_webgpu_data_bundles
 
-    gallery_output = ROOT / 'build/gallery-webp/v0.4'
-    webgpu_output = ROOT / 'build/webgpu-data'
+    gallery_output = gallery_output_path()
+    webgpu_output = webgpu_output_path()
     if os.environ.get(SITE_ASSETS_ENV) != '1':
         shutil.rmtree(gallery_output, ignore_errors=True)
         shutil.rmtree(webgpu_output, ignore_errors=True)
@@ -280,7 +300,7 @@ def on_pre_build(**kwargs):
     tutorial_rc, _ = build_tutorial_media.generate_tutorial_media(strict=True)
     if tutorial_rc != 0:
         raise RuntimeError("Vulkan tutorial preview generation failed")
-    gen_start_thumbs.generate()
+    gen_start_thumbs.generate(output_dir=gallery_output_path() / 'thumbs')
 
 
 def on_files(files, config):
@@ -297,7 +317,7 @@ def on_files(files, config):
     add_generated_tree(
         files,
         config,
-        'build/gallery-webp/v0.4',
+        gallery_output_path(),
         'assets/gallery/v0.4',
         'gallery WebP asset',
     )
@@ -308,7 +328,7 @@ def on_files(files, config):
         'assets/gpu-graphics',
         'Vulkan course media asset',
     )
-    add_generated_tree(files, config, 'build/webgpu-data', 'webgpu-data', 'WebGPU data bundle')
+    add_generated_tree(files, config, webgpu_output_path(), 'webgpu-data', 'WebGPU data bundle')
     return files
 
 
