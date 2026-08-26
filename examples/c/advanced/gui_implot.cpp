@@ -223,8 +223,13 @@ static void _draw_plot(
     const char* title, const char* y_label, const double* time, const double* values, double y_min,
     double y_max, const ImVec4& color, float height)
 {
+    ImPlot::PushStyleColor(
+        ImPlotCol_FrameBg, ImGui::GetStyleColorVec4(ImGuiCol_WindowBg));
     if (!ImPlot::BeginPlot(title, ImVec2(-1.0f, height)))
+    {
+        ImPlot::PopStyleColor();
         return;
+    }
 
     ImPlot::SetupAxes("time (s)", y_label);
     ImPlot::SetupAxesLimits(
@@ -234,6 +239,7 @@ static void _draw_plot(
     spec.LineWeight = 2.4f;
     ImPlot::PlotLine(title, time, values, (int)SAMPLE_COUNT, spec);
     ImPlot::EndPlot();
+    ImPlot::PopStyleColor();
 }
 
 
