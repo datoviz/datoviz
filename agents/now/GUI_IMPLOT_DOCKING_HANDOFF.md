@@ -12,7 +12,7 @@ Promote the experimental mixed ImPlot example into official default-on GUI suppo
 
 This work is an optional pre-RC3 implementation lane, not an RC3 release blocker. It may use time while required provider work is externally blocked, but it must not delay exact-candidate freeze, packaging proof, hosted validation, or release publication.
 
-The lane either lands completely before candidate freeze with all affected build, install, package, binding, GUI, and platform gates rerun, or remains deferred. At the cutoff, incomplete work must not be partially merged: retain the experimental default-off source example from PR #145 and move the official integration after RC3.
+The atomic official ImPlot slice and the declarative docking slice are independently admissible, including as two pull requests. Each slice either lands completely before candidate freeze with its affected build, install, package, binding, GUI, and platform gates rerun, or remains deferred. At the cutoff, do not retain a partially admitted dependency, lifecycle, raw surface, or docking implementation. A completed ImPlot slice may remain while docking is deferred, in which case the transitional private example docking and compatibility helper remain explicitly temporary.
 
 Landing the default-on dependency changes the exact candidate and invalidates earlier build/package evidence. Freeze and artifact proof begin only after the complete integration is merged or explicitly deferred.
 
@@ -23,28 +23,36 @@ Landing the default-on dependency changes the exact candidate and invalidates ea
 3. The exact compatible ImGui/cimgui/ImPlot/cimplot source family and license/provenance plan are reviewed before dependency pointers or vendored sources change.
 4. The worktree and staged set exclude unapproved `data`, paper artifacts, runtime binaries, and unrelated user changes.
 
-## Checkpoint 0: Dependency Family And Build Contract
+## Completed Preimplementation Audit
 
-1. Admit one pinned offline ImPlot/cimplot source family compatible with the existing `external/cimgui` and nested ImGui implementation; never compile a second cimgui or ImGui copy.
-2. Replace the example-only option with dependent `DVZ_BUILD_IMPLOT`, defaulting effectively on with GUI and off without GUI.
-3. Export effective `DVZ_HAS_IMPLOT`, implement a clean explicit-off profile, and remove configure-time network access.
-4. Record exact revisions, generated-wrapper provenance, licenses, notices, source-archive contents, and supported override policy.
-5. Prove default-on, explicit-off, offline, shared, static, CMake-package, and pkg-config consumers before committing the dependency checkpoint.
+The 2026-08-27 read-only audit selected this upstream base family:
 
-Commit boundary: pinned family, build targets/options, install/export metadata, notices, and build-profile tests agree without adding runtime context or docking behavior.
+| Layer | Upstream base | Identity |
+| --- | --- | --- |
+| cimgui | `0e533fd0b70f6add19825bea83b66743d5b8d95b` | `1.92.7dock` |
+| Dear ImGui | `f5f6ca07be7ce0ea9eed6c04d55833bac3f6b50b` | `1.92.7-docking` |
+| cimplot | `75a03832860f7832712cb5ad8d6e3ad6b69dd97c` | `v1.0` |
+| ImPlot | `524f9fcd48d76c13fdf94c5ffbba8787a1ff7e39` | `v1.0` |
 
-## Checkpoint 1: ImPlot Context And Raw C Surface
+The current Datoviz cimgui 1.91.9b generated type schema is incompatible with stable cimplot v1.0. The selected stable family passed an out-of-tree raw C `BeginPlot`/`PlotLine`/`EndPlot` frame on local Apple Silicon and as an x86_64 executable under Rosetta; this is feasibility evidence, not a substitute for hosted or physical platform validation.
 
-1. Make each `DvzGui` own one paired `ImPlotContext` when available, created after a current ImGui context and destroyed before it.
-2. Introduce scoped paired-context activation and restoration around Datoviz GUI boundaries and callbacks.
-3. Compile ImPlot and cimplot against the exact Datoviz ImGui/cimgui types and symbols; do not add another renderer or frame lifecycle.
-4. Add guarded `datoviz/implot.h`, install `cimplot.h` only when enabled, and include the wrapper only through the capability-guarded advanced surface.
-5. Keep raw cimplot out of generated ctypes, NumPy adaptation, WASM, and stable `dvz_*` ABI policy.
-6. Add C compile/link, installed-consumer, lifecycle, failure-unwind, multiple-context, recreation, and high-density draw-list tests.
+The Datoviz forks must carry three recorded changes: adapt and regenerate the range-slider extension for Dear ImGui 1.92.7; apply cimplot's `FormatSpec[16]` bounds correction following upstream fix `125034d782adaa43e840c0f1997aba64fbe2043f`; and correct generated Windows export/import/static declaration policy. Both projects remain MIT-licensed, with their nested Dear ImGui and ImPlot licenses included in source and package evidence.
 
-Commit boundary: default-on context ownership and native C access pass focused and installed-package validation with no docking or example-private context remaining in this checkpoint.
+Native Datoviz currently builds a shared library only. General native static packaging is outside this lane; do not claim or create a static-package gate here.
 
-## Checkpoint 2: Declarative Docking Layout
+## Checkpoint 0: Atomic Official ImPlot Slice
+
+1. Fork and pin the audited cimgui/ImGui/cimplot/ImPlot family, including regenerated wrapper provenance and the three bounded patches; never compile a second cimgui or ImGui copy.
+2. Use explicit source targets for Dear ImGui, cimgui, ImPlot, and cimplot, remove configure-time downloads, update CI submodule lists and source-archive ownership, and prove one implementation of each symbol family.
+3. Add dependent `DVZ_BUILD_IMPLOT`, a clean explicit-off profile, and a generated installed build-configuration header whose effective feature state agrees with CMake, pkg-config, and wheel metadata.
+4. Make each `DvzGui` own one paired ImPlot context, add safe paired activation/restoration and destruction, and forbid example-owned manipulation of Datoviz contexts.
+5. Add guarded `datoviz/implot.h`, install the exact raw headers when enabled, keep cimplot out of generated Python/WASM bindings, and implement correct Windows export/import semantics.
+6. Migrate the experimental example away from fetched ImPlot sources and example-owned context while allowing its transitional private docking code to remain until Checkpoint 2.
+7. Prove raw C runtime plotting, context failure unwind and multiple-instance lifecycle, default-on and explicit-off offline builds, native shared CMake and pkg-config consumers, wheel/source packaging, duplicate-symbol absence, Windows exports, and ARM64 coverage where available.
+
+Integration boundary: development may use internal checkpoint commits, but the active release line receives dependency ownership, lifecycle, raw installed surface, minimal example migration, `DVZ_HAS_IMPLOT=1`, removal of the example-only option, and the default-on flip as one coherent unit. Do not merge a dependency-only or advertised symbol-only intermediate state.
+
+## Checkpoint 1: Declarative Docking Layout
 
 1. Split docking into a focused private implementation that exclusively owns `imgui_internal.h`, DockBuilder calls, generated IDs, and persistence lowering.
 2. Add opaque layout and node identities, draft validation, explicit split results, typed initial sizes, stable window keys, and an identity-aware window-begin contract.
@@ -55,11 +63,11 @@ Commit boundary: default-on context ownership and native C access pass focused a
 
 Commit boundary: public code no longer reconstructs private dockspace IDs, and topology/persistence tests pass independently of the ImPlot example.
 
-## Checkpoint 3: Example Migration And Default-On Completion
+## Checkpoint 2: Docking Migration And Completion
 
-1. Migrate the mixed ImPlot example to Datoviz-owned context lifecycle, guarded raw cimplot calls, stable window identity, and the public dock-layout tree.
-2. Remove example-owned ImPlot context management, `imgui_internal.h`, the private dockspace string, and example-specific source configuration.
-3. Remove the old side-slot helper before API freeze when no supported consumer remains.
+1. Migrate the mixed ImPlot example from transitional private docking code to stable window identity and the public dock-layout tree.
+2. Remove `imgui_internal.h` and the private dockspace string from the example; context management and example-specific source configuration were already removed in Checkpoint 0.
+3. Keep the old side-slot helper as a wrapper over the declarative model while `example_tuner.c` or another supported consumer uses it; removal requires a separate migration and API decision.
 4. Regenerate example manifests, documentation, and gallery state; promote media only through the approved canonical pipeline.
 5. Run native interaction, deterministic capture, idle scheduling, bindings, docs, source archive, installed consumer, Linux, macOS, Windows, and exact candidate gates.
 
@@ -67,7 +75,7 @@ Commit boundary: the official default-on integration, migrated example, generate
 
 ## Cutoff Decision
 
-Before RC3 candidate freeze, record one binary decision in [STATUS.md](STATUS.md): integrated and fully validated, or deferred intact until after RC3. Do not carry a partially merged dependency, context, docking, or packaging slice into the exact candidate.
+Before RC3 candidate freeze, record one binary decision for each independently admissible slice in [STATUS.md](STATUS.md): integrated and fully validated, or deferred intact until after RC3. Do not carry a partially merged dependency, context, raw surface, docking model, or packaging slice into the exact candidate.
 
 ## Validation Defaults
 
