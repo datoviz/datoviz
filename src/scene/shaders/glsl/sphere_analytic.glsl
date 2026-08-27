@@ -18,16 +18,11 @@ vec4 sphereProjectDepth(vec4 viewPosition)
     return clip;
 }
 
-void sphereFragmentRay(
-    vec4 centerView, float spriteRadiusPx, out vec3 rayOrigin, out vec3 rayDirection)
+// Build the eye ray through one fragment. `ndc` is the fragment's own position, interpolated
+// across the impostor quad, so the ray never depends on the proxy's size or on where the
+// projected sphere centre landed.
+void sphereFragmentRay(vec2 ndc, out vec3 rayOrigin, out vec3 rayDirection)
 {
-    vec4 centerClip = mvp.proj * centerView;
-    vec2 centerNdc = centerClip.xy / max(abs(centerClip.w), 1e-6);
-    vec2 pointOffset = 2.0 * gl_PointCoord - 1.0;
-    pointOffset.y = -pointOffset.y;
-    vec2 offsetNdc = 2.0 * spriteRadiusPx * pointOffset / max(viewport.rect.zw, vec2(1.0));
-    vec2 ndc = centerNdc + offsetNdc;
-
     mat4 invProj = inverse(mvp.proj);
     vec4 nearHomogeneous = invProj * vec4(ndc, -1.0, 1.0);
     vec4 farHomogeneous = invProj * vec4(ndc, 1.0, 1.0);
@@ -39,12 +34,11 @@ void sphereFragmentRay(
     rayDirection = normalize(ortho ? farView - nearView : nearView);
 }
 
-bool sphereIntersect(
-    vec4 centerView, float radius, float spriteRadiusPx, out DvzSphereHit hit)
+bool sphereIntersect(vec4 centerView, float radius, vec2 ndc, out DvzSphereHit hit)
 {
     vec3 rayOrigin = vec3(0.0);
     vec3 rayDirection = vec3(0.0, 0.0, -1.0);
-    sphereFragmentRay(centerView, spriteRadiusPx, rayOrigin, rayDirection);
+    sphereFragmentRay(ndc, rayOrigin, rayDirection);
 
     vec3 oc = rayOrigin - centerView.xyz;
     float b = dot(oc, rayDirection);
