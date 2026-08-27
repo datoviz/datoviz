@@ -81,7 +81,7 @@ def needs_update(png: Path, webp: Path, force: bool = False) -> bool:
     return png.stat().st_mtime_ns > webp.stat().st_mtime_ns
 
 
-def generate(force: bool = False) -> None:
+def generate(force: bool = False, output_dir: Path | None = None) -> None:
     try:
         from PIL import Image
     except ImportError:
@@ -92,13 +92,14 @@ def generate(force: bool = False) -> None:
         print(f"gen_start_thumbs: source PNG dir not found ({SRC}), skipping")
         return
 
-    OUT.mkdir(parents=True, exist_ok=True)
+    output = output_dir or OUT
+    output.mkdir(parents=True, exist_ok=True)
     updated = 0
     skipped = 0
 
     for name, rel_src, box in THUMBS:
         png = SRC / rel_src
-        webp = OUT / f"{name}.webp"
+        webp = output / f"{name}.webp"
 
         if not png.exists():
             print(f"gen_start_thumbs: missing source {rel_src}, skipping {name}")
