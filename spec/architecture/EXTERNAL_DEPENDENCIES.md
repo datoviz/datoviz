@@ -18,3 +18,5 @@ cimgui.
 Keep `external/cimgui` and its nested `external/cimgui/imgui` checkout compatible. cimgui should be
 generated from the same Dear ImGui version/branch family as the nested ImGui sources, while the
 range-slider requirement is checked against `external/cimgui/imgui/imgui.h`.
+
+The target default-on ImPlot/cimplot extension, paired context ownership, raw native C surface, and declarative docking refactor are governed by [GUI_EXTENSIONS_AND_DOCKING.md](GUI_EXTENSIONS_AND_DOCKING.md). Treat Dear ImGui, cimgui, ImPlot, and cimplot as one pinned dependency family and never introduce a second Dear ImGui implementation.
