@@ -72,7 +72,7 @@ This example shows two panels with independent data, domains, and panzoom state.
 
 ### [Mixed 2D and 3D Panels](gallery/features/features_panel_mixed_2d_3d.md)
 
-[![Mixed 2D and 3D Panels](../assets/gallery/v0.4/features/features_panel_mixed_2d_3d.webp)](gallery/features/features_panel_mixed_2d_3d.md)
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Mixed 2D and 3D Panels"><span>No screenshot</span></div>
 
 `experimental` `features`<br><span>`panel-grid`, `mixed-2d-3d`, `lorenz`, `arcball`, `panzoom`</span>
 

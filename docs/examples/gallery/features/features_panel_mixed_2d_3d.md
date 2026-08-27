@@ -13,7 +13,7 @@ This example mixes native Datoviz 2D and 3D panels in one figure.
 
 ## Preview
 
-![Mixed 2D and 3D Panels](../../../assets/gallery/v0.4/features/features_panel_mixed_2d_3d.webp)
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Mixed 2D and 3D Panels"><span>No screenshot</span></div>
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>No live WebGPU preview</strong>
@@ -57,7 +57,7 @@ The left panel spans both grid rows and shows a Lorenz trajectory with an arcbal
     - Browser support: Deferred
     - Browser note: the mixed 2D/3D controller scenario is not registered in the current browser subset
     - Browser capability tags: `panel-grid`, `path`, `arcball`, `panzoom`
-    - Validation: `smoke+interaction+screenshot`
+    - Validation: `smoke+interaction`
 
     **Tags**
 

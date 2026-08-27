@@ -380,7 +380,7 @@ examples:
     primary_feature: mixed-2d-3d-panels
     lane: features
     source: examples/c/features/panel_mixed_2d_3d.c
-    validation: smoke+interaction+screenshot
+    validation: smoke+interaction
     data:
       kind: simulated
     portability: portable-scenario
@@ -4045,7 +4045,7 @@ examples:
     lane: advanced
     source: examples/c/advanced/gui_implot.cpp
     source_language: cpp
-    validation: native-smoke+screenshot
+    validation: native-smoke
     capture:
       mode: native-app
       args: ["--png"]

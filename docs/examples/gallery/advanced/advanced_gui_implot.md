@@ -13,7 +13,7 @@ This example combines an embedded Datoviz 3D view with ImPlot 2D charts.
 
 ## Preview
 
-![Datoviz with ImPlot](../../../assets/gallery/v0.4/advanced/advanced_gui_implot.webp)
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Datoviz with ImPlot"><span>No screenshot</span></div>
 
 <aside class="dvz-webgpu-unavailable" role="note">
 <strong>Native-only example</strong>
@@ -60,7 +60,7 @@ ImPlot is an example-only dependency. CMake fetches the pinned ImPlot v1.0 sourc
     - Browser support: Native only
     - Browser note: ImPlot integration uses the native Dear ImGui and GLFW app path
     - Browser capability tags: `gui`, `native-view`, `implot`
-    - Validation: `native-smoke+screenshot`
+    - Validation: `native-smoke`
 
     **Tags**
 

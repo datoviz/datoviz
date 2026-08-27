@@ -4113,7 +4113,8 @@ static int _app_resolve_gui_viewport(DvzView* source, void* user_data)
     ANN(source);
     DvzApp* app = (DvzApp*)user_data;
     ANN(app);
-    dvz_view_set_render_enabled(source, true);
+    if (!dvz_view_render_enabled(source))
+        dvz_view_set_render_enabled(source, true);
     if (!_view_needs_frame(source))
         return 0;
     int rc = dvz_view_render_once(source);

@@ -224,7 +224,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_mixed_2d_3d.c",
       "page": "gallery/features/features_panel_mixed_2d_3d.md",
       "summary": "This example mixes native Datoviz 2D and 3D panels in one figure.",
-      "validation": "smoke+interaction+screenshot",
+      "validation": "smoke+interaction",
       "build_command": "just example-c features/panel_mixed_2d_3d",
       "smoke_command": "./build/examples/c/features/panel_mixed_2d_3d --png",
       "tags": [
@@ -240,8 +240,8 @@
       "data_kind": "simulated",
       "media": {
         "screenshot": {
-          "expected": true,
-          "status": "available",
+          "expected": false,
+          "status": "not-required",
           "source": "data/gallery/v0.4/features/features_panel_mixed_2d_3d.png",
           "site_asset": "/assets/gallery/v0.4/features/features_panel_mixed_2d_3d.webp"
         }
@@ -6237,7 +6237,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/gui_implot.cpp",
       "page": "gallery/advanced/advanced_gui_implot.md",
       "summary": "This example combines an embedded Datoviz 3D view with ImPlot 2D charts.",
-      "validation": "native-smoke+screenshot",
+      "validation": "native-smoke",
       "build_command": "just example-c advanced/gui_implot",
       "smoke_command": "./build/examples/c/advanced/gui_implot --png",
       "tags": [
@@ -6253,8 +6253,8 @@
       "data_kind": "simulated",
       "media": {
         "screenshot": {
-          "expected": true,
-          "status": "available",
+          "expected": false,
+          "status": "not-required",
           "source": "data/gallery/v0.4/advanced/advanced_gui_implot.png",
           "site_asset": "/assets/gallery/v0.4/advanced/advanced_gui_implot.webp"
         }

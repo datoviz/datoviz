@@ -24,7 +24,7 @@ This example shares a Datoviz-owned Vulkan vertex buffer with CUDA.
 
 ### [Datoviz with ImPlot](gallery/advanced/advanced_gui_implot.md)
 
-[![Datoviz with ImPlot](../assets/gallery/v0.4/advanced/advanced_gui_implot.webp)](gallery/advanced/advanced_gui_implot.md)
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Datoviz with ImPlot"><span>No screenshot</span></div>
 
 `experimental` `advanced`<br><span>`advanced`, `gui`, `implot`, `host-integration`, `mixed-2d-3d`</span>
 

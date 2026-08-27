@@ -146,6 +146,7 @@ struct DvzGuiViewport
     VkImageView image_view;
     VkExtent2D extent;
     uint64_t resource_generation;
+    uint64_t source_frame_count;
     bool image_valid;
     uint32_t requested_width;
     uint32_t requested_height;
@@ -565,7 +566,8 @@ static void _gui_viewport_set_visible(DvzGuiViewport* viewport, bool visible)
     const bool render_hidden =
         (viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0;
     const bool enabled = visible || !viewport->has_frame || render_hidden;
-    dvz_view_set_render_enabled(viewport->source, enabled);
+    if (dvz_view_render_enabled(viewport->source) != enabled)
+        dvz_view_set_render_enabled(viewport->source, enabled);
 }
 
 
@@ -990,6 +992,7 @@ static int _gui_viewport_live_image_callback(
     viewport->extent = frame->extent;
     viewport->image_valid = true;
     viewport->has_frame = true;
+    viewport->source_frame_count++;
     viewport->stale_frame_count = _gui_viewport_frame_matches_committed(viewport, frame->extent) ?
                                       0 :
                                       viewport->stale_frame_count + 1;
@@ -1871,6 +1874,7 @@ bool _dvz_gui_viewport_debug_state(
     out->displayed_framebuffer_width = viewport->extent.width;
     out->displayed_framebuffer_height = viewport->extent.height;
     out->displayed_resource_generation = viewport->resource_generation;
+    out->source_frame_count = viewport->source_frame_count;
     out->stale_frame_count = viewport->stale_frame_count;
     out->has_frame = viewport->has_frame;
     out->image_valid = viewport->image_valid;
