@@ -213,7 +213,7 @@ static bool _configure_chart(DvzPanel* panel, double y_min, double y_max, const 
     if (dvz_panel_set_reserve(
             panel,
             &(DvzPanelReserve){
-                .left_px = 52.0f, .right_px = 18.0f, .top_px = 18.0f, .bottom_px = 38.0f}) !=
+                .left_px = 0.0f, .right_px = 18.0f, .top_px = 18.0f, .bottom_px = 0.0f}) !=
         DVZ_OK)
         return false;
 
