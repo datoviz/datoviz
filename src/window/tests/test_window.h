@@ -37,6 +37,8 @@ int test_window_backend_registration_preserves_live_windows(
 
 int test_window_wait_hooks_headless(TstContext* suite, const TstCase* item);
 
+int test_window_wait_prefers_interactive_backend(TstContext* suite, const TstCase* item);
+
 int test_window_effective_scale_override(TstContext* suite, const TstCase* item);
 
 int test_window_effective_scale_framebuffer_ratio(TstContext* suite, const TstCase* item);

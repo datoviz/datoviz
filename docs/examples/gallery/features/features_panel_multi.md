@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../features_panel_grid/">← Previous: Panel Grid</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_linked/">Next: Linked Panels →</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_mixed_2d_3d/">Next: Mixed 2D and 3D Panels →</a></span>
 </div>
 </nav>
 
@@ -82,6 +82,6 @@ The left panel uploads a point ring with position, color, and diameter_px arrays
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../features_panel_grid/">← Previous: Panel Grid</a></span>
-<span class="dvz-example-nav__next"><a href="../features_panel_linked/">Next: Linked Panels →</a></span>
+<span class="dvz-example-nav__next"><a href="../features_panel_mixed_2d_3d/">Next: Mixed 2D and 3D Panels →</a></span>
 </div>
 </nav>

@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 115,
+  "example_count": 117,
   "categories": {
-    "advanced": 5,
+    "advanced": 6,
     "composite": 2,
-    "feature": 68,
+    "feature": 69,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -15,7 +15,7 @@
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 17,
+    "experimental": 19,
     "prototype": 1,
     "supported": 96
   },
@@ -137,8 +137,16 @@
         ]
       },
       "simulated": {
-        "count": 3,
+        "count": 5,
         "examples": [
+          {
+            "id": "features_panel_mixed_2d_3d",
+            "title": "Mixed 2D and 3D Panels",
+            "category": "feature",
+            "status": "experimental",
+            "source": "examples/c/features/panel_mixed_2d_3d.c",
+            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+          },
           {
             "id": "showcases_streaming_daq",
             "title": "Streaming DAQ \u00b7 64 channels",
@@ -162,6 +170,14 @@
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
             "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+          },
+          {
+            "id": "advanced_gui_implot",
+            "title": "Datoviz with ImPlot",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/gui_implot.cpp",
+            "page": "gallery/advanced/advanced_gui_implot.md"
           }
         ]
       },
@@ -1490,6 +1506,19 @@
           }
         ]
       },
+      "mixed-2d-3d-panels": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_panel_mixed_2d_3d",
+            "title": "Mixed 2D and 3D Panels",
+            "category": "feature",
+            "status": "experimental",
+            "source": "examples/c/features/panel_mixed_2d_3d.c",
+            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+          }
+        ]
+      },
       "msaa": {
         "count": 1,
         "examples": [
@@ -1989,7 +2018,7 @@
         ]
       },
       "advanced": {
-        "count": 5,
+        "count": 6,
         "examples": [
           {
             "id": "advanced_raw_triangle_vklite",
@@ -2022,6 +2051,14 @@
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
             "page": "gallery/advanced/advanced_external_surface_glfw.md"
+          },
+          {
+            "id": "advanced_gui_implot",
+            "title": "Datoviz with ImPlot",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/gui_implot.cpp",
+            "page": "gallery/advanced/advanced_gui_implot.md"
           },
           {
             "id": "advanced_qt_hosting",
@@ -2113,8 +2150,16 @@
         ]
       },
       "arcball": {
-        "count": 11,
+        "count": 12,
         "examples": [
+          {
+            "id": "features_panel_mixed_2d_3d",
+            "title": "Mixed 2D and 3D Panels",
+            "category": "feature",
+            "status": "experimental",
+            "source": "examples/c/features/panel_mixed_2d_3d.c",
+            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+          },
           {
             "id": "visuals_mesh",
             "title": "Mesh",
@@ -3006,7 +3051,7 @@
         ]
       },
       "gui": {
-        "count": 5,
+        "count": 6,
         "examples": [
           {
             "id": "showcases_streaming_daq",
@@ -3047,6 +3092,14 @@
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
             "page": "gallery/showcases/showcases_textured_planet.md"
+          },
+          {
+            "id": "advanced_gui_implot",
+            "title": "Datoviz with ImPlot",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/gui_implot.cpp",
+            "page": "gallery/advanced/advanced_gui_implot.md"
           }
         ]
       },
@@ -3103,7 +3156,7 @@
         ]
       },
       "host-integration": {
-        "count": 2,
+        "count": 3,
         "examples": [
           {
             "id": "advanced_external_surface_glfw",
@@ -3112,6 +3165,14 @@
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
             "page": "gallery/advanced/advanced_external_surface_glfw.md"
+          },
+          {
+            "id": "advanced_gui_implot",
+            "title": "Datoviz with ImPlot",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/gui_implot.cpp",
+            "page": "gallery/advanced/advanced_gui_implot.md"
           },
           {
             "id": "advanced_qt_hosting",
@@ -3183,6 +3244,19 @@
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
             "page": "gallery/visuals/visuals_image_rgba.md"
+          }
+        ]
+      },
+      "implot": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "advanced_gui_implot",
+            "title": "Datoviz with ImPlot",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/gui_implot.cpp",
+            "page": "gallery/advanced/advanced_gui_implot.md"
           }
         ]
       },
@@ -3261,6 +3335,19 @@
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
             "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+          }
+        ]
+      },
+      "lorenz": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_panel_mixed_2d_3d",
+            "title": "Mixed 2D and 3D Panels",
+            "category": "feature",
+            "status": "experimental",
+            "source": "examples/c/features/panel_mixed_2d_3d.c",
+            "page": "gallery/features/features_panel_mixed_2d_3d.md"
           }
         ]
       },
@@ -3451,6 +3538,27 @@
           }
         ]
       },
+      "mixed-2d-3d": {
+        "count": 2,
+        "examples": [
+          {
+            "id": "features_panel_mixed_2d_3d",
+            "title": "Mixed 2D and 3D Panels",
+            "category": "feature",
+            "status": "experimental",
+            "source": "examples/c/features/panel_mixed_2d_3d.c",
+            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+          },
+          {
+            "id": "advanced_gui_implot",
+            "title": "Datoviz with ImPlot",
+            "category": "advanced",
+            "status": "experimental",
+            "source": "examples/c/advanced/gui_implot.cpp",
+            "page": "gallery/advanced/advanced_gui_implot.md"
+          }
+        ]
+      },
       "molecular": {
         "count": 1,
         "examples": [
@@ -3542,9 +3650,30 @@
           }
         ]
       },
-      "panzoom": {
-        "count": 19,
+      "panel-grid": {
+        "count": 1,
         "examples": [
+          {
+            "id": "features_panel_mixed_2d_3d",
+            "title": "Mixed 2D and 3D Panels",
+            "category": "feature",
+            "status": "experimental",
+            "source": "examples/c/features/panel_mixed_2d_3d.c",
+            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+          }
+        ]
+      },
+      "panzoom": {
+        "count": 20,
+        "examples": [
+          {
+            "id": "features_panel_mixed_2d_3d",
+            "title": "Mixed 2D and 3D Panels",
+            "category": "feature",
+            "status": "experimental",
+            "source": "examples/c/features/panel_mixed_2d_3d.c",
+            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+          },
           {
             "id": "showcases_panel_linked_axes",
             "title": "Linked Panels With Axes",

@@ -567,6 +567,29 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     AT(debug.displayed_framebuffer_width == debug.requested_framebuffer_width);
     AT(debug.displayed_framebuffer_height == debug.requested_framebuffer_height);
 
+    /* Reopen and settle the viewport after its hidden-state and scrollbar transitions. */
+    smoke.frame = 2;
+    AT(dvz_view_render_once(host_win) == DVZ_CANVAS_FRAME_READY);
+    AT(_dvz_gui_viewport_debug_state(smoke.viewport, &debug));
+
+    smoke.frame = 2;
+    AT(dvz_view_render_once(host_win) == DVZ_CANVAS_FRAME_READY);
+    AT(_dvz_gui_viewport_debug_state(smoke.viewport, &debug));
+    uint64_t source_frame_count = debug.source_frame_count;
+
+    /* A stable host frame must not resubmit an idle viewport source. */
+    smoke.frame = 2;
+    AT(dvz_view_render_once(host_win) == DVZ_CANVAS_FRAME_READY);
+    AT(_dvz_gui_viewport_debug_state(smoke.viewport, &debug));
+    AT(debug.source_frame_count == source_frame_count);
+
+    /* Explicit source demand must still produce exactly one submitted frame. */
+    smoke.frame = 2;
+    AT(dvz_view_request_frame(source_win) == 0);
+    AT(dvz_view_render_once(host_win) == DVZ_CANVAS_FRAME_READY);
+    AT(_dvz_gui_viewport_debug_state(smoke.viewport, &debug));
+    AT(debug.source_frame_count == source_frame_count + 1);
+
     uint32_t width = 0;
     uint32_t height = 0;
     uint8_t* rgba = NULL;

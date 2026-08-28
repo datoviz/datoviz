@@ -165,6 +165,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(features panel_single features/panel_single.c)
     dvz_add_example(features panel_grid features/panel_grid.c)
     dvz_add_example(features panel_multi features/panel_multi.c)
+    dvz_add_example(features panel_mixed_2d_3d features/panel_mixed_2d_3d.c)
     dvz_add_example(features panel_linked features/panel_linked.c)
     dvz_add_example(features coordinate_system features/coordinate_system.c)
     dvz_add_example(features axes_2d features/axes_2d.c)
@@ -291,6 +292,43 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(advanced raw_triangle_vklite advanced/raw_triangle_vklite.c)
     dvz_add_example(advanced raw_triangle_drp2 advanced/raw_triangle_drp2.c)
     dvz_add_example(advanced external_surface_glfw advanced/external_surface_glfw.c)
+
+    if(DVZ_BUILD_IMPLOT_EXAMPLE)
+        include(FetchContent)
+        if(DVZ_IMPLOT_SOURCE_DIR)
+            FetchContent_Declare(implot SOURCE_DIR "${DVZ_IMPLOT_SOURCE_DIR}")
+        else()
+            FetchContent_Declare(
+                implot
+                GIT_REPOSITORY https://github.com/epezent/implot.git
+                GIT_TAG 524f9fcd48d76c13fdf94c5ffbba8787a1ff7e39
+                GIT_SHALLOW FALSE
+            )
+        endif()
+        FetchContent_MakeAvailable(implot)
+
+        add_library(datoviz_example_implot STATIC
+            "${implot_SOURCE_DIR}/implot.cpp"
+            "${implot_SOURCE_DIR}/implot_items.cpp"
+        )
+        target_compile_features(datoviz_example_implot PUBLIC cxx_std_17)
+        target_include_directories(datoviz_example_implot
+            PUBLIC "${implot_SOURCE_DIR}"
+            PRIVATE "${PROJECT_SOURCE_DIR}/external/cimgui/imgui"
+        )
+        if(MSVC)
+            target_compile_options(datoviz_example_implot PRIVATE /W0)
+        else()
+            target_compile_options(datoviz_example_implot PRIVATE -w)
+        endif()
+
+        dvz_add_example(advanced gui_implot advanced/gui_implot.cpp)
+        target_link_libraries(example_c_advanced_gui_implot PRIVATE datoviz_example_implot)
+        target_include_directories(example_c_advanced_gui_implot PRIVATE
+            "${implot_SOURCE_DIR}"
+            "${PROJECT_SOURCE_DIR}/external/cimgui/imgui"
+        )
+    endif()
 
     dvz_add_example(start scatter start/scatter.c)
 

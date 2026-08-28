@@ -38,6 +38,14 @@ typedef struct ResizeRecorder
 
 
 
+typedef struct WaitRecorder
+{
+    uint32_t wait_count;
+    uint32_t wait_timeout_count;
+} WaitRecorder;
+
+
+
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
@@ -51,6 +59,62 @@ _window_resize_callback(DvzInputRouter* router, const DvzInputResizeEvent* event
     recorder->resize_count++;
     recorder->width = event->framebuffer_width;
     recorder->height = event->framebuffer_height;
+}
+
+
+
+/**
+ * Create one CPU-only test window.
+ *
+ * @param backend test backend descriptor
+ * @param window window being created
+ * @param config requested window configuration
+ * @return always true
+ */
+static bool _window_wait_backend_create(
+    DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig* config)
+{
+    ANN(backend);
+    ANN(window);
+    ANN(config);
+    return true;
+}
+
+
+
+/**
+ * Record one unbounded wait on the CPU-only test backend.
+ *
+ * @param backend test backend descriptor
+ * @param host host requesting the wait
+ */
+static void _window_wait_backend_wait(DvzWindowBackend* backend, DvzWindowHost* host)
+{
+    ANN(backend);
+    ANN(host);
+    WaitRecorder* recorder = (WaitRecorder*)backend->user_data;
+    ANN(recorder);
+    recorder->wait_count++;
+}
+
+
+
+/**
+ * Record one timeout wait on the CPU-only test backend.
+ *
+ * @param backend test backend descriptor
+ * @param host host requesting the wait
+ * @param seconds requested timeout
+ */
+static void _window_wait_backend_wait_timeout(
+    DvzWindowBackend* backend, DvzWindowHost* host, double seconds)
+{
+    ANN(backend);
+    ANN(host);
+    ASSERT(seconds > 0.0);
+    WaitRecorder* recorder = (WaitRecorder*)backend->user_data;
+    ANN(recorder);
+    recorder->wait_timeout_count++;
 }
 
 
@@ -208,6 +272,48 @@ int test_window_wait_hooks_headless(TstContext* suite, const TstCase* item)
     AT(dvz_window_frame_pending(window));
     dvz_window_host_wait(host);
     AT(!dvz_window_frame_pending(window));
+
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/**
+ * Ensure interactive wait hooks take precedence when offscreen and interactive windows coexist.
+ */
+int test_window_wait_prefers_interactive_backend(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    WaitRecorder recorder = {0};
+    DvzWindowBackend backend = {
+        .name = "window-wait-test",
+        .type = DVZ_BACKEND_QT,
+        .user_data = &recorder,
+        .procs =
+            {
+                .create = _window_wait_backend_create,
+                .wait = _window_wait_backend_wait,
+                .wait_timeout = _window_wait_backend_wait_timeout,
+            },
+    };
+
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    dvz_window_host_register_backend(host, &backend);
+    DvzWindow* offscreen = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    DvzWindow* interactive = dvz_window_create(host, DVZ_BACKEND_QT, NULL);
+    ANN(offscreen);
+    ANN(interactive);
+
+    dvz_window_host_wait_timeout(host, 0.001);
+    AT(recorder.wait_timeout_count == 1);
+    AT(recorder.wait_count == 0);
+
+    dvz_window_host_wait(host);
+    AT(recorder.wait_timeout_count == 1);
+    AT(recorder.wait_count == 1);
 
     dvz_window_host_destroy(host);
     return 0;
@@ -537,6 +643,7 @@ int test_window(TstSuite* suite)
     TST_CASE(test_window_frame_requests);
     TST_CASE(test_window_backend_registration_preserves_live_windows);
     TST_CASE(test_window_wait_hooks_headless);
+    TST_CASE(test_window_wait_prefers_interactive_backend);
     TST_CASE(test_window_effective_scale_override);
     TST_CASE(test_window_effective_scale_framebuffer_ratio);
     TST_CASE(test_window_effective_scale_monitor);

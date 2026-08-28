@@ -18,6 +18,7 @@ release validation.
 | `DVZ_BUILD_GUI` | `ON` | Build the Dear ImGui app overlay layer. |
 | `DVZ_BUILD_TESTING` | `PROJECT_IS_TOP_LEVEL` | Build Datoviz test executables. |
 | `DVZ_BUILD_EXAMPLES` | `PROJECT_IS_TOP_LEVEL` | Build Datoviz example executables. |
+| `DVZ_BUILD_IMPLOT_EXAMPLE` | `OFF` | Fetch pinned ImPlot v1.0 sources and build the Datoviz/ImPlot integration example when enabled. Set `DVZ_IMPLOT_SOURCE_DIR` to use a local ImPlot checkout. |
 | `DVZ_INSTALL` | `PROJECT_IS_TOP_LEVEL` | Add install, CMake package export, pkg-config, and header install rules. |
 
 The module switches are constrained, not independent: scene requires core, controller, and DRP2;

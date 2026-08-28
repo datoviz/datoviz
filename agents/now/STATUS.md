@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-19.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-27.
 
 Keep this file current and short. Durable behavior belongs in `spec/`; completed campaign detail belongs in Git history, release assets, and tagged documentation.
 
@@ -50,6 +50,7 @@ Final v0.4.0 resolves or records RC4 feedback, regenerates final media, passes r
 
 ## Optional Candidates
 
+- Official default-on ImPlot/cimplot integration and the declarative docking refactor are a non-blocking pre-RC3 candidate under [GUI_IMPLOT_DOCKING_HANDOFF.md](GUI_IMPLOT_DOCKING_HANDOFF.md). Implementation begins after PR #145 merges and must either land completely with affected package/platform proof before candidate freeze or defer intact until after RC3; it must not delay required gates.
 - GSP Texture2D mesh integration, point-light evaluation, and the full multi-light Klein-bottle slice remain optional. The required narrower scene-owned ambient/directional lighting foundation is complete.
 - Hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, and broad visual polish must not delay required release gates.
 - Point-cloud public WebGPU redistribution remains delisted without redistribution permission.

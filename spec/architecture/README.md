@@ -13,6 +13,7 @@ but still normative enough to guide implementation and tests.
    dependencies such as UI integration layers.
 4. [SHADER_TOOLCHAIN.md](SHADER_TOOLCHAIN.md): build-time `glslc`, runtime shaderc, SPIR-V validation, public compilation API, packaging, and RC3/RC4 proof contract.
 5. [REACTIVE_APPLICATION_STATE.md](REACTIVE_APPLICATION_STATE.md): exploratory v0.5+ application-state, transaction, endpoint, binding, GUI-projection, and ownership architecture.
+6. [GUI_EXTENSIONS_AND_DOCKING.md](GUI_EXTENSIONS_AND_DOCKING.md): target ImGui/cimgui/ImPlot/cimplot ownership, native C boundary, offline dependency family, and declarative docking layout contract.
 
 
 ## Boundary

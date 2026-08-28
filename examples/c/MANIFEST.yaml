@@ -141,6 +141,7 @@ batches:
     - features_panel_single
     - features_panel_grid
     - features_panel_multi
+    - features_panel_mixed_2d_3d
     - features_panel_linked
     - features_panel_view2d
     - features_view_size_policies
@@ -282,6 +283,7 @@ batches:
     - advanced_raw_triangle_vklite
     - advanced_cuda_external_buffer
     - advanced_external_surface_glfw
+    - advanced_gui_implot
     - advanced_qt_hosting
 
 examples:
@@ -370,6 +372,36 @@ examples:
         - panzoom
         - point
     agent_copy_safe: true
+
+  - id: features_panel_mixed_2d_3d
+    title: Mixed 2D and 3D Panels
+    stage: v0.4_experimental
+    category: feature
+    primary_feature: mixed-2d-3d-panels
+    lane: features
+    source: examples/c/features/panel_mixed_2d_3d.c
+    validation: smoke+interaction
+    data:
+      kind: simulated
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-deferred
+      requirements:
+        - panel-grid
+        - path
+        - arcball
+        - panzoom
+      reason: the mixed 2D/3D controller scenario is not registered in the current browser subset
+    agent_copy_safe: true
+    gallery:
+      card: large
+      status_label: experimental
+    tags:
+      - panel-grid
+      - mixed-2d-3d
+      - lorenz
+      - arcball
+      - panzoom
 
   - id: features_panel_linked
     title: Linked Panels
@@ -4005,6 +4037,39 @@ examples:
       - external-surface
       - glfw
       - host-integration
+
+  - id: advanced_gui_implot
+    title: Datoviz with ImPlot
+    stage: v0.4_experimental
+    category: advanced
+    lane: advanced
+    source: examples/c/advanced/gui_implot.cpp
+    source_language: cpp
+    validation: native-smoke
+    capture:
+      mode: native-app
+      args: ["--png"]
+      reason: ImPlot and the embedded Datoviz viewport are composed in one native GLFW/ImGui view
+    data:
+      kind: simulated
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - gui
+        - native-view
+        - implot
+      reason: ImPlot integration uses the native Dear ImGui and GLFW app path
+    agent_copy_safe: false
+    gallery:
+      card: large
+      status_label: experimental
+    tags:
+      - advanced
+      - gui
+      - implot
+      - host-integration
+      - mixed-2d-3d
 
   - id: advanced_qt_hosting
     title: Qt Hosting
