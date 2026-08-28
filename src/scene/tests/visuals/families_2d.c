@@ -78,8 +78,7 @@ int test_scene_sphere_analytic_shader_contract(TstContext* suite, const TstCase*
         ANN(source);
         AT(strstr(source, "struct DvzSphereHit") != NULL);
         AT(strstr(source, "bool sphereIntersect(") != NULL);
-        AT(strstr(source, "sphereIntersect(fragCenterView, fragRadius, fragSpriteRadiusPx, hit)") !=
-           NULL);
+        AT(strstr(source, "sphereIntersect(fragCenterView, fragRadius, fragNdc, hit)") != NULL);
         AT(strstr(source, "gl_FragDepth = hit.deviceDepth;") != NULL);
         AT(strstr(source, "hit.deviceDepth < 0.0 || hit.deviceDepth > 1.0") != NULL);
     }
@@ -94,8 +93,14 @@ int test_scene_sphere_analytic_shader_contract(TstContext* suite, const TstCase*
     {
         const char* source = _builtin_shader_glsl(vertex_shaders[i], false);
         ANN(source);
-        AT(strstr(source, "float sphereProjectedRadiusPx(") != NULL);
-        AT(strstr(source, "sphereProjectedRadiusPx(centerView.xyz, radius)") != NULL);
+        // Every sphere vertex shader emits an instanced impostor quad spanning the exact
+        // silhouette bounds, never a native point sprite sized by gl_PointSize.
+        AT(strstr(source, "bool sphereSilhouetteNdc(") != NULL);
+        AT(strstr(source, "void sphereQuadVertex(") != NULL);
+        AT(strstr(
+               source, "sphereQuadVertex(centerView.xyz, radius, gl_VertexIndex, clipPosition, ndc)")
+           != NULL);
+        AT(strstr(source, "gl_PointSize =") == NULL);
     }
 
     const char* ordinary = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE, true);
@@ -866,6 +871,17 @@ int test_scene_point_like_lowering_policy(TstContext* suite, const TstCase* item
     AT(_scene_point_like_lowering_desc(
         DVZ_SCENE_POINT_LIKE_PIXEL, DVZ_SCENE_SHADER_FORMAT_WGSL, 3, &lowering));
     AT(lowering.kind == DVZ_SCENE_POINT_LIKE_PIXEL);
+    AT(lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS);
+    AT(lowering.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    AT(lowering.vertex_step_mode == DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+    AT(lowering.draw_vertex_count == 6);
+    AT(lowering.draw_instance_count == 3);
+
+    // Spheres lower to quads on GLSL too: a native point sprite is clamped by
+    // pointSizeRange and clipped by its centre vertex, which crops large spheres.
+    AT(_scene_point_like_lowering_desc(
+        DVZ_SCENE_POINT_LIKE_SPHERE, DVZ_SCENE_SHADER_FORMAT_GLSL, 3, &lowering));
+    AT(lowering.kind == DVZ_SCENE_POINT_LIKE_SPHERE);
     AT(lowering.lowering == DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS);
     AT(lowering.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     AT(lowering.vertex_step_mode == DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);

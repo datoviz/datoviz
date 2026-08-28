@@ -348,7 +348,12 @@ bool _scene_point_like_lowering_desc(
         out, sizeof(DvzScenePointLikeLoweringDesc), 0, sizeof(DvzScenePointLikeLoweringDesc));
     out->kind = kind;
 
-    if (shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL)
+    // Spheres are lowered to quads on every backend, not just WGSL. A native point sprite is
+    // sized by gl_PointSize, which the device clamps to VkPhysicalDeviceLimits::pointSizeRange,
+    // and a point primitive is clipped by its centre vertex. A sphere that is large on screen,
+    // or whose centre leaves the frustum, therefore loses part or all of its silhouette. Quads
+    // have neither limit, so the impostor stays correct at any camera distance or viewport size.
+    if (shader_format == DVZ_SCENE_SHADER_FORMAT_WGSL || kind == DVZ_SCENE_POINT_LIKE_SPHERE)
     {
         out->lowering = DVZ_SCENE_POINT_LIKE_LOWERING_INSTANCED_QUADS;
         out->topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
