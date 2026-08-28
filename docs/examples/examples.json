@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 115,
+  "count": 117,
   "categories": {
-    "advanced": 5,
+    "advanced": 6,
     "composite": 2,
-    "feature": 68,
+    "feature": 69,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -14,7 +14,7 @@
   },
   "statuses": {
     "diagnostic": 1,
-    "experimental": 17,
+    "experimental": 19,
     "prototype": 1,
     "supported": 96
   },
@@ -212,6 +212,60 @@
       "python_source": "examples/python/gallery/features/panel_multi.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/panel_multi.py",
       "python_status": "manual"
+    },
+    {
+      "id": "features_panel_mixed_2d_3d",
+      "title": "Mixed 2D and 3D Panels",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/features/panel_mixed_2d_3d.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_mixed_2d_3d.c",
+      "page": "gallery/features/features_panel_mixed_2d_3d.md",
+      "summary": "This example mixes native Datoviz 2D and 3D panels in one figure.",
+      "validation": "smoke+interaction",
+      "build_command": "just example-c features/panel_mixed_2d_3d",
+      "smoke_command": "./build/examples/c/features/panel_mixed_2d_3d --png",
+      "tags": [
+        "panel-grid",
+        "mixed-2d-3d",
+        "lorenz",
+        "arcball",
+        "panzoom"
+      ],
+      "data": {
+        "kind": "simulated"
+      },
+      "data_kind": "simulated",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/features/features_panel_mixed_2d_3d.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_panel_mixed_2d_3d.webp"
+        }
+      },
+      "webgpu_status": "webgpu-deferred",
+      "webgpu_status_label": "Deferred",
+      "webgpu_requirements": [
+        "panel-grid",
+        "path",
+        "arcball",
+        "panzoom"
+      ],
+      "webgpu_reason": "the mixed 2D/3D controller scenario is not registered in the current browser subset",
+      "webgpu": {
+        "status": "webgpu-deferred",
+        "requirements": [
+          "panel-grid",
+          "path",
+          "arcball",
+          "panzoom"
+        ],
+        "reason": "the mixed 2D/3D controller scenario is not registered in the current browser subset"
+      },
+      "primary_feature": "mixed-2d-3d-panels"
     },
     {
       "id": "features_panel_linked",
@@ -6170,6 +6224,57 @@
           "glfw"
         ],
         "reason": "external Vulkan surfaces are native host-integration objects"
+      }
+    },
+    {
+      "id": "advanced_gui_implot",
+      "title": "Datoviz with ImPlot",
+      "category": "advanced",
+      "lane": "advanced",
+      "stage": "v0.4_experimental",
+      "status": "experimental",
+      "source": "examples/c/advanced/gui_implot.cpp",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/advanced/gui_implot.cpp",
+      "page": "gallery/advanced/advanced_gui_implot.md",
+      "summary": "This example combines an embedded Datoviz 3D view with ImPlot 2D charts.",
+      "validation": "native-smoke",
+      "build_command": "just example-c advanced/gui_implot",
+      "smoke_command": "./build/examples/c/advanced/gui_implot --png",
+      "tags": [
+        "advanced",
+        "gui",
+        "implot",
+        "host-integration",
+        "mixed-2d-3d"
+      ],
+      "data": {
+        "kind": "simulated"
+      },
+      "data_kind": "simulated",
+      "media": {
+        "screenshot": {
+          "expected": false,
+          "status": "not-required",
+          "source": "data/gallery/v0.4/advanced/advanced_gui_implot.png",
+          "site_asset": "/assets/gallery/v0.4/advanced/advanced_gui_implot.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
+      "webgpu_requirements": [
+        "gui",
+        "native-view",
+        "implot"
+      ],
+      "webgpu_reason": "ImPlot integration uses the native Dear ImGui and GLFW app path",
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "gui",
+          "native-view",
+          "implot"
+        ],
+        "reason": "ImPlot integration uses the native Dear ImGui and GLFW app path"
       }
     },
     {

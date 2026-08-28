@@ -64,6 +64,7 @@ static void _window_array_remove(DvzWindowHost* host, DvzWindow* window);
 static void _window_host_clear_windows(DvzWindowHost* host);
 static void _window_wrap_state_clear(DvzWindowHost* host);
 static bool _window_backend_slot_has_window(const DvzWindowHost* host, uint32_t backend_index);
+static DvzWindowBackendSlot* _window_host_wait_slot(DvzWindowHost* host, bool timeout);
 static void _window_host_clear_frame_pending(DvzWindowHost* host);
 static float _window_scale_candidate(float value);
 static uint32_t _window_round_size(float value);
@@ -219,6 +220,40 @@ static bool _window_backend_slot_has_window(const DvzWindowHost* host, uint32_t 
             return true;
     }
     return false;
+}
+
+
+
+/**
+ * Choose an active backend for one blocking host wait.
+ *
+ * Interactive backends take precedence over the offscreen backend so a host containing both a
+ * presented window and an offscreen render target continues to pump native window events.
+ *
+ * @param host host whose active backend should wait for events
+ * @param timeout whether timeout-capable waits may be selected
+ * @return selected backend slot, or NULL when no active backend can wait or poll
+ */
+static DvzWindowBackendSlot* _window_host_wait_slot(DvzWindowHost* host, bool timeout)
+{
+    ANN(host);
+    for (uint32_t pass = 0; pass < 2; pass++)
+    {
+        const bool select_offscreen = pass == 1;
+        for (uint32_t i = 0; i < host->backend_count; i++)
+        {
+            DvzWindowBackendSlot* slot = &host->backends[i];
+            if (!slot->available || !_window_backend_slot_has_window(host, i))
+                continue;
+            if ((slot->backend.type == DVZ_BACKEND_OFFSCREEN) != select_offscreen)
+                continue;
+            if (timeout && slot->backend.procs.wait_timeout != NULL)
+                return slot;
+            if (slot->backend.procs.wait != NULL || slot->backend.procs.poll != NULL)
+                return slot;
+        }
+    }
+    return NULL;
 }
 
 
@@ -885,11 +920,9 @@ void dvz_window_host_poll(DvzWindowHost* host)
 void dvz_window_host_wait(DvzWindowHost* host)
 {
     ANN(host);
-    for (uint32_t i = 0; i < host->backend_count; i++)
+    DvzWindowBackendSlot* slot = _window_host_wait_slot(host, false);
+    if (slot != NULL)
     {
-        DvzWindowBackendSlot* slot = &host->backends[i];
-        if (!slot->available || !_window_backend_slot_has_window(host, i))
-            continue;
         if (slot->backend.procs.wait != NULL)
         {
             slot->backend.procs.wait(&slot->backend, host);
@@ -926,11 +959,9 @@ void dvz_window_host_wait_timeout(DvzWindowHost* host, double seconds)
         return;
     }
 
-    for (uint32_t i = 0; i < host->backend_count; i++)
+    DvzWindowBackendSlot* slot = _window_host_wait_slot(host, true);
+    if (slot != NULL)
     {
-        DvzWindowBackendSlot* slot = &host->backends[i];
-        if (!slot->available || !_window_backend_slot_has_window(host, i))
-            continue;
         if (slot->backend.procs.wait_timeout != NULL)
         {
             slot->backend.procs.wait_timeout(&slot->backend, host, seconds);

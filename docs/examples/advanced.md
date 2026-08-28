@@ -22,6 +22,18 @@ This example shares a Datoviz-owned Vulkan vertex buffer with CUDA.
 
 <div class="card" markdown="1">
 
+### [Datoviz with ImPlot](gallery/advanced/advanced_gui_implot.md)
+
+<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Datoviz with ImPlot"><span>No screenshot</span></div>
+
+`experimental` `advanced`<br><span>`advanced`, `gui`, `implot`, `host-integration`, `mixed-2d-3d`</span>
+
+This example combines an embedded Datoviz 3D view with ImPlot 2D charts.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [External Surface GLFW](gallery/advanced/advanced_external_surface_glfw.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for External Surface GLFW"><span>No screenshot</span></div>

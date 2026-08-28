@@ -2284,7 +2284,8 @@ int test_drp2_runtime_vklite_draws_depth_peeling_shape(TstContext* suite, const 
 
 
 /**
- * Execute a pass that samples a named depth texture while attaching it read-only.
+ * Execute a pass that samples a named depth texture while attaching it read-only after object-table
+ * growth.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -2394,6 +2395,12 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
     };
     AT(dvz_drp2_stream_create_bind_group_entries(stream, 32, 30, 2, bind_entries));
 
+    /* Fill the initial 64-slot table so the first render pass grows it after resolving depth. */
+    for (uint64_t id = 100; id < 151; id++)
+    {
+        AT(dvz_drp2_stream_create_sampler(stream, id));
+    }
+
     AT(dvz_drp2_stream_begin_command_encoder(stream, 70));
     AT(dvz_drp2_stream_begin_render_pass_clear(stream, 71, 70, 50, 0, 0, 0, 1));
     AT(dvz_drp2_stream_begin_render_pass_set_depth_texture(stream, 51, 1.0f));
@@ -2418,6 +2425,7 @@ int test_drp2_runtime_vklite_samples_read_only_active_depth(
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
     AT(result.ok);
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(runtime->vklite_state->capacity > DVZ_DRP2_RUNTIME_INITIAL_OBJECT_CAPACITY);
     AT(drp2_test_vklite_validation_clean(suite, ctx));
 
     uint8_t resolved[4] = {0};

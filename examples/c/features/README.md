@@ -56,6 +56,7 @@ techniques. App lifecycle, capture, recording, replay, and media export examples
 - `panel_single.c`: one explicit panel rectangle with one visual and panel chrome.
 - `panel_grid.c`: four grid-owned panels with clipped panel-local content.
 - `panel_multi.c`: multiple independent panels with panel-local panzoom controllers.
+- `panel_mixed_2d_3d.c`: one arcball-controlled 3D trajectory beside two retained 2D signal panels.
 - `panel_linked.c`: two panels linked on X panzoom extent with independent Y panzoom state.
 - `timer_animation.c`: runner-backed frame animation updating retained point data.
 - `marker_symbols.c`: marker symbol sets with built-in, bitmap, SDF, MSDF, and SVG-path sources.

@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../advanced_external_surface_glfw/">← Previous: External Surface GLFW</a></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_gui_implot/">← Previous: Datoviz with ImPlot</a></span>
 <span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_drp2/">Next: Raw Triangle DRP2 →</a></span>
 </div>
 </nav>
@@ -76,7 +76,7 @@ after verifying the linked API reference.
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../advanced_external_surface_glfw/">← Previous: External Surface GLFW</a></span>
+<span class="dvz-example-nav__previous"><a href="../advanced_gui_implot/">← Previous: Datoviz with ImPlot</a></span>
 <span class="dvz-example-nav__next"><a href="../advanced_raw_triangle_drp2/">Next: Raw Triangle DRP2 →</a></span>
 </div>
 </nav>
