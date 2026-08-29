@@ -659,8 +659,10 @@ static bool _configure_axes(StreamingDaqState* state)
     state->y_axis = dvz_panel_axis(state->panel, DVZ_DIM_Y);
     if (state->x_axis == NULL || state->y_axis == NULL)
         return false;
+    ExampleAxisStyleOptions axis_style = example_graphite_cyan_axis_options();
+    axis_style.y_label_gap_px = 24.0f;
     if (!example_graphite_cyan_apply_axis_style(state->x_axis, false, NULL) ||
-        !example_graphite_cyan_apply_axis_style(state->y_axis, true, NULL))
+        !example_graphite_cyan_apply_axis_style(state->y_axis, true, &axis_style))
     {
         return false;
     }
