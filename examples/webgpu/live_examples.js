@@ -296,6 +296,26 @@ export const LIVE_EXAMPLES = [
     ],
   },
   {
+    id: "showcases_point_cloud",
+    label: "Point Cloud · local development",
+    scenarioId: "showcases_point_cloud",
+    effectLimitations: [
+      {
+        effect: "edl",
+        status: "unavailable",
+        warning: "The desktop example enables eye-dome lighting; the WebGPU route uses direct point rendering.",
+      },
+    ],
+    dataBundles: [
+      {
+        id: "point_cloud",
+        url: "../../webgpu-data/examples/point_cloud/sha256-ad5b997813ca275a/manifest.json",
+        virtualRoot: "data/examples/point_cloud",
+        required: true,
+      },
+    ],
+  },
+  {
     id: "showcases_galaxy",
     label: "Density-Wave Galaxy",
     scenarioId: "showcases_galaxy",

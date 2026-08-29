@@ -321,7 +321,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->tuner = example_tuner("Point cloud settings");
 
     EXAMPLE_CHECK(_load_data(&state->data), "point-cloud data setup failed");
-    dvz_fprintf(stderr, "point_cloud: %u points (prepared real data)\n", state->data.count);
+    dvz_fprintf(stdout, "point_cloud: %u points (prepared real data)\n", state->data.count);
 
     ctx->figure = dvz_figure(ctx->scene, ctx->width, ctx->height, 0);
     EXAMPLE_CHECK(ctx->figure != NULL, "dvz_figure() failed");

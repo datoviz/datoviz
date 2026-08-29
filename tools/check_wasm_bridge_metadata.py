@@ -26,20 +26,22 @@ def _fail(message: str) -> int:
     return 1
 
 
-def _manifest_live_entries(path: Path) -> list[dict[str, Any]]:
+def _manifest_browser_entries(path: Path) -> list[dict[str, Any]]:
     manifest = yaml.safe_load(path.read_text(encoding="utf8")) or {}
     out: list[dict[str, str]] = []
     for entry in manifest.get("examples", []):
         webgpu = entry.get("webgpu") or {}
-        if webgpu.get("status") != "webgpu-live":
+        public_route = str(webgpu.get("route") or "")
+        local_route = str(webgpu.get("local_route") or "")
+        if webgpu.get("status") != "webgpu-live" and not local_route:
             continue
-        route = str(webgpu.get("route") or "")
+        route = public_route or local_route
         if not route:
             continue
         query = parse_qs(urlparse(route).query)
         route_ids = query.get("id", [])
         if len(route_ids) != 1:
-            raise ValueError(f"{entry.get('id')}: webgpu-live route needs one id query: {route}")
+            raise ValueError(f"{entry.get('id')}: WebGPU browser route needs one id query: {route}")
         out.append(
             {
                 "id": str(entry["id"]),
@@ -152,32 +154,32 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--manifest", type=Path, default=MANIFEST_PATH)
     args = parser.parse_args(argv)
 
-    manifest_live = _manifest_live_entries(args.manifest)
+    manifest_browser = _manifest_browser_entries(args.manifest)
     live_js = _live_js_entries(LIVE_EXAMPLES_PATH)
     c_count = _scenario_count_constant(SCENARIO_INTERNAL_PATH)
     c_cases = _scenario_case_count(SCENARIO_C_PATH)
     smoke_ids = _smoke_expected_scenarios(SMOKE_PATH)
 
-    manifest_route_ids = [entry["route_id"] for entry in manifest_live]
-    manifest_scenario_ids = [entry["scenario_id"] for entry in manifest_live]
+    manifest_route_ids = [entry["route_id"] for entry in manifest_browser]
+    manifest_scenario_ids = [entry["scenario_id"] for entry in manifest_browser]
     live_ids = [entry["id"] for entry in live_js]
     live_scenario_ids = [entry["scenario_id"] for entry in live_js]
 
     bad_route_ids = [
-        entry for entry in manifest_live if entry["route_id"] != entry["id"]
+        entry for entry in manifest_browser if entry["route_id"] != entry["id"]
     ]
     if bad_route_ids:
-        return _fail(f"webgpu-live route ids must match example ids: {bad_route_ids}")
+        return _fail(f"WebGPU browser route ids must match example ids: {bad_route_ids}")
     if len(set(manifest_route_ids)) != len(manifest_route_ids):
-        return _fail("duplicate webgpu-live route ids in examples/c/MANIFEST.yaml")
+        return _fail("duplicate WebGPU browser route ids in examples/c/MANIFEST.yaml")
     if set(manifest_route_ids) != set(live_ids):
-        return _fail("examples/webgpu/live_examples.js ids do not match manifest webgpu-live routes")
+        return _fail("examples/webgpu/live_examples.js ids do not match manifest browser routes")
     if set(manifest_scenario_ids) != set(live_scenario_ids):
         return _fail(
             "examples/webgpu/live_examples.js scenario ids do not match manifest webgpu.scenario_id"
         )
     manifest_effects = {
-        entry["id"]: entry["effect_limitations"] for entry in manifest_live
+        entry["id"]: entry["effect_limitations"] for entry in manifest_browser
     }
     live_effects = {entry["id"]: entry["effect_limitations"] for entry in live_js}
     if manifest_effects != live_effects:

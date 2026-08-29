@@ -196,18 +196,19 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
     live_by_route = {entry["id"]: entry["scenario_id"] for entry in live_js}
     for entry in entries:
         webgpu = entry.get("webgpu") or {}
-        if webgpu.get("status") != "webgpu-live":
+        local_route = str(webgpu.get("local_route") or "")
+        if webgpu.get("status") != "webgpu-live" and not local_route:
             continue
-        route = str(webgpu.get("route") or "")
+        route = str(webgpu.get("route") or local_route)
         route_ids = parse_qs(urlparse(route).query).get("id", [])
         if route_ids != [str(entry["id"])]:
-            print(f"{entry['id']}: webgpu-live route must use id={entry['id']}: {route}")
+            print(f"{entry['id']}: WebGPU browser route must use id={entry['id']}: {route}")
             ok = False
             continue
         expected_scenario = live_by_route.get(route_ids[0])
         manifest_scenario = str(webgpu.get("scenario_id") or entry["id"])
         if expected_scenario is None:
-            print(f"{entry['id']}: webgpu-live route missing from live_examples.js")
+            print(f"{entry['id']}: WebGPU browser route missing from live_examples.js")
             ok = False
         elif manifest_scenario != expected_scenario:
             print(
