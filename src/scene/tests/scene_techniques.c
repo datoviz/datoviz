@@ -2823,9 +2823,9 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
-    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.125f, 0.25f, 0.5f, 0.5f});
     AT(panel != NULL);
     AT(dvz_panel_set_msaa(
            panel, &(DvzMsaaDesc){
@@ -2870,7 +2870,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     AT(msaa_color->usage_flags & DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC);
     AT(scene_color->extent_kind == DVZ_FRAME_GRAPH_EXTENT_PANEL);
     AT(scene_color->width == 64);
-    AT(scene_color->height == 64);
+    AT(scene_color->height == 48);
     AT(depth->sample_count == 4);
 
     const DvzFrameGraphPass* pass = dvz_frame_plan_graph_pass_get(plan, 0);
@@ -2896,8 +2896,8 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
     cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
     cfg.color_target_format = DVZ_FORMAT_B8G8R8A8_UNORM;
-    cfg.target_width = 64;
-    cfg.target_height = 64;
+    cfg.target_width = 128;
+    cfg.target_height = 96;
     caps = dvz_capability_snapshot();
     dvz_diagnostic_report_init(&report);
 
@@ -2913,6 +2913,7 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
     bool found_resolve_pass = false;
     bool found_msaa_pipeline = false;
     bool found_sphere_a2c_shader = false;
+    bool found_presentation_mapping = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
@@ -2963,12 +2964,28 @@ int test_scene_msaa_runtime_lowering(TstContext* suite, const TstCase* item)
                                         cmd->u.create_render_pipeline.sample_count == 4 &&
                                         cmd->u.create_render_pipeline.alpha_to_coverage_enabled);
         }
+        else if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+            if (label != NULL && strstr(label, "_buf_presentation_mapping_") != NULL &&
+                cmd->u.write_buffer.size == 4 * sizeof(float))
+            {
+                const float* mapping = (const float*)cmd->u.write_buffer.data_raw;
+                ANN(mapping);
+                AC(mapping[0], 16.0f, 1e-6f);
+                AC(mapping[1], 24.0f, 1e-6f);
+                AC(mapping[2], 64.0f, 1e-6f);
+                AC(mapping[3], 48.0f, 1e-6f);
+                found_presentation_mapping = true;
+            }
+        }
     }
     AT(found_msaa_texture);
     AT(found_depth_texture);
     AT(found_resolve_pass);
     AT(found_msaa_pipeline);
     AT(found_sphere_a2c_shader);
+    AT(found_presentation_mapping);
 
     _test_scene_stream_destroy(stream);
 

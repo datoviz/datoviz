@@ -50,12 +50,10 @@
 
 static const char PRESENTATION_VERTEX_GLSL[] =
     "#version 450\n"
-    "layout(location = 0) out vec2 localUv;\n"
     "void main()\n"
     "{\n"
     "    vec2 p[3] = vec2[](vec2(-1, -1), vec2(3, -1), vec2(-1, 3));\n"
     "    vec2 position = p[gl_VertexIndex];\n"
-    "    localUv = position * 0.5 + 0.5;\n"
     "    gl_Position = vec4(position, 0, 1);\n"
     "}\n";
 
@@ -63,12 +61,13 @@ static const char PRESENTATION_FRAGMENT_GLSL[] =
     "#version 450\n"
     "layout(set = 0, binding = 0) uniform texture2D sourceTex;\n"
     "layout(set = 0, binding = 1) uniform sampler samp;\n"
-    "layout(location = 0) in vec2 localUv;\n"
+    "layout(set = 0, binding = 2) uniform PresentationMapping { vec4 targetRect; };\n"
     "layout(location = 0) out vec4 outColor;\n"
     "void main()\n"
     "{\n"
     "    ivec2 extent = textureSize(sampler2D(sourceTex, samp), 0);\n"
-    "    ivec2 p = clamp(ivec2(localUv * vec2(extent)), ivec2(0), extent - ivec2(1));\n"
+    "    vec2 localPixel = (gl_FragCoord.xy - targetRect.xy) / targetRect.zw * vec2(extent);\n"
+    "    ivec2 p = clamp(ivec2(floor(localPixel)), ivec2(0), extent - ivec2(1));\n"
     "    outColor = texelFetch(sampler2D(sourceTex, samp), p, 0);\n"
     "}\n";
 
@@ -76,7 +75,7 @@ static const char PRESENTATION_ENCODE_FRAGMENT_GLSL[] =
     "#version 450\n"
     "layout(set = 0, binding = 0) uniform texture2D sourceTex;\n"
     "layout(set = 0, binding = 1) uniform sampler samp;\n"
-    "layout(location = 0) in vec2 localUv;\n"
+    "layout(set = 0, binding = 2) uniform PresentationMapping { vec4 targetRect; };\n"
     "layout(location = 0) out vec4 outColor;\n"
     "vec3 linearToSrgb(vec3 value)\n"
     "{\n"
@@ -88,7 +87,8 @@ static const char PRESENTATION_ENCODE_FRAGMENT_GLSL[] =
     "void main()\n"
     "{\n"
     "    ivec2 extent = textureSize(sampler2D(sourceTex, samp), 0);\n"
-    "    ivec2 p = clamp(ivec2(localUv * vec2(extent)), ivec2(0), extent - ivec2(1));\n"
+    "    vec2 localPixel = (gl_FragCoord.xy - targetRect.xy) / targetRect.zw * vec2(extent);\n"
+    "    ivec2 p = clamp(ivec2(floor(localPixel)), ivec2(0), extent - ivec2(1));\n"
     "    vec4 color = texelFetch(sampler2D(sourceTex, samp), p, 0);\n"
     "    outColor = vec4(linearToSrgb(color.rgb), clamp(color.a, 0.0, 1.0));\n"
     "}\n";
@@ -96,38 +96,44 @@ static const char PRESENTATION_ENCODE_FRAGMENT_GLSL[] =
 static const char PRESENTATION_VERTEX_WGSL[] =
     "struct VertexOutput {\n"
     "    @builtin(position) position: vec4f,\n"
-    "    @location(0) local_uv: vec2f,\n"
     "};\n"
     "@vertex fn main(@builtin(vertex_index) index: u32) -> VertexOutput {\n"
     "    var p = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), "
     "vec2f(-1.0, 3.0));\n"
     "    var out: VertexOutput;\n"
     "    out.position = vec4f(p[index], 0.0, 1.0);\n"
-    "    out.local_uv = p[index] * 0.5 + vec2f(0.5);\n"
     "    return out;\n"
     "}\n";
 
 static const char PRESENTATION_FRAGMENT_WGSL[] =
     "@group(0) @binding(0) var source_tex: texture_2d<f32>;\n"
     "@group(0) @binding(1) var samp: sampler;\n"
-    "@fragment fn main(@location(0) local_uv: vec2f) -> @location(0) vec4f {\n"
+    "struct PresentationMapping { target_rect: vec4f };\n"
+    "@group(0) @binding(2) var<uniform> presentation: PresentationMapping;\n"
+    "@fragment fn main(@builtin(position) frag_coord: vec4f) -> @location(0) vec4f {\n"
     "    let extent = vec2i(textureDimensions(source_tex));\n"
-    "    let p = clamp(vec2i(local_uv * vec2f(extent)), vec2i(0), extent - vec2i(1));\n"
+    "    let local_pixel = (frag_coord.xy - presentation.target_rect.xy) / "
+    "presentation.target_rect.zw * vec2f(extent);\n"
+    "    let p = clamp(vec2i(floor(local_pixel)), vec2i(0), extent - vec2i(1));\n"
     "    return textureLoad(source_tex, p, 0);\n"
     "}\n";
 
 static const char PRESENTATION_ENCODE_FRAGMENT_WGSL[] =
     "@group(0) @binding(0) var source_tex: texture_2d<f32>;\n"
     "@group(0) @binding(1) var samp: sampler;\n"
+    "struct PresentationMapping { target_rect: vec4f };\n"
+    "@group(0) @binding(2) var<uniform> presentation: PresentationMapping;\n"
     "fn linear_to_srgb(value: vec3f) -> vec3f {\n"
     "    let clipped = clamp(value, vec3f(0.0), vec3f(1.0));\n"
     "    let lo = vec3f(12.92) * clipped;\n"
     "    let hi = vec3f(1.055) * pow(clipped, vec3f(1.0 / 2.4)) - vec3f(0.055);\n"
     "    return select(hi, lo, clipped <= vec3f(0.0031308));\n"
     "}\n"
-    "@fragment fn main(@location(0) local_uv: vec2f) -> @location(0) vec4f {\n"
+    "@fragment fn main(@builtin(position) frag_coord: vec4f) -> @location(0) vec4f {\n"
     "    let extent = vec2i(textureDimensions(source_tex));\n"
-    "    let p = clamp(vec2i(local_uv * vec2f(extent)), vec2i(0), extent - vec2i(1));\n"
+    "    let local_pixel = (frag_coord.xy - presentation.target_rect.xy) / "
+    "presentation.target_rect.zw * vec2f(extent);\n"
+    "    let p = clamp(vec2i(floor(local_pixel)), vec2i(0), extent - vec2i(1));\n"
     "    let color = textureLoad(source_tex, p, 0);\n"
     "    return vec4f(linear_to_srgb(color.rgb), clamp(color.a, 0.0, 1.0));\n"
     "}\n";
@@ -386,12 +392,31 @@ bool _emitter_prepare_presentation_targets(
     if (is_new)
         ok = dvz_drp2_stream_create_sampler(stream, sampler_id);
 
+    DvzPanelDesc target_rect = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
+    if (target_rect.width <= 0 || target_rect.height <= 0)
+        return false;
+    char params_key[96];
+    dvz_snprintf(
+        params_key, sizeof(params_key), "_buf_presentation_mapping_%s", render->u.render.panel_id);
+    uint64_t params_id = _obj_id(emitter, params_key, &is_new);
+    if (params_id == 0)
+        return false;
+    uint32_t params_usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
+                            DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    if (ok && is_new)
+        ok = dvz_drp2_stream_create_buffer(stream, params_id, 4 * sizeof(float), params_usage);
+    const float mapping[4] = {
+        target_rect.x, target_rect.y, target_rect.width, target_rect.height};
+    if (ok)
+        ok = dvz_drp2_stream_write_buffer_bytes(
+            stream, params_id, 0, sizeof(mapping), mapping);
+
     uint64_t bgl_id = _obj_id(emitter, "_bgl_presentation", &is_new);
     if (bgl_id == 0)
         return false;
     if (ok && is_new)
     {
-        DvzDrp2BindGroupLayoutEntry entries[2] = {
+        DvzDrp2BindGroupLayoutEntry entries[3] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -404,19 +429,26 @@ bool _emitter_prepare_presentation_targets(
                 .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
                 .access = DVZ_DRP2_BINDING_ACCESS_READ,
             },
+            {
+                .binding = 2,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_FRAGMENT,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
         };
-        ok = dvz_drp2_stream_create_bind_group_layout_entries(stream, bgl_id, 2, entries);
+        ok = dvz_drp2_stream_create_bind_group_layout_entries(stream, bgl_id, 3, entries);
     }
 
-    char bg_key[112];
+    char bg_key[144];
     dvz_snprintf(
-        bg_key, sizeof(bg_key), "_bg_presentation_%" PRIu64 "_%" PRIu64, source_id, sampler_id);
+        bg_key, sizeof(bg_key), "_bg_presentation_%" PRIu64 "_%" PRIu64 "_%" PRIu64, source_id,
+        sampler_id, params_id);
     uint64_t bg_id = _obj_id(emitter, bg_key, &is_new);
     if (bg_id == 0)
         return false;
     if (ok && is_new)
     {
-        DvzDrp2BindGroupEntry entries[2] = {
+        DvzDrp2BindGroupEntry entries[3] = {
             {
                 .binding = 0,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_SAMPLED_TEXTURE,
@@ -429,8 +461,16 @@ bool _emitter_prepare_presentation_targets(
                 .resource_kind = DVZ_DRP2_BINDING_RESOURCE_SAMPLER,
                 .resource_id = sampler_id,
             },
+            {
+                .binding = 2,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = params_id,
+                .offset = 0,
+                .size = 4 * sizeof(float),
+            },
         };
-        ok = dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 2, entries);
+        ok = dvz_drp2_stream_create_bind_group_entries(stream, bg_id, bgl_id, 3, entries);
     }
 
     const bool encode = _presentation_needs_encode(cfg);
@@ -474,6 +514,7 @@ bool _emitter_prepare_presentation_targets(
         .render = render,
         .provider = DVZ_SCENE_WORK_PROVIDER_PRESENTATION,
         .color_id = source_id,
+        .params_id = params_id,
         .sampler_id = sampler_id,
         .pipeline_id = pipeline_id,
         .bind_group_layout_id = bgl_id,
