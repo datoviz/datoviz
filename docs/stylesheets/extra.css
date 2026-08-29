@@ -125,6 +125,10 @@ img[alt*=gpuopen] {
     background: #05070a;
 }
 
+.dvz-local-webgpu-tabs[hidden] + .tabbed-set {
+    display: none;
+}
+
 .dvz-webgpu-unavailable {
     display: flex;
     flex-wrap: wrap;

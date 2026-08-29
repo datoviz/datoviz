@@ -20,8 +20,10 @@
       fallback.hidden = true;
     }
     for (const preview of document.querySelectorAll(".dvz-local-webgpu-tabs[hidden]")) {
+      const tabs = preview.nextElementSibling;
+      if (!tabs || !tabs.classList.contains("tabbed-set")) continue;
       preview.hidden = false;
-      const iframe = preview.querySelector("iframe[data-src]");
+      const iframe = tabs.querySelector("iframe[data-src]");
       if (iframe) iframe.src = iframe.dataset.src;
     }
     for (const poster of document.querySelectorAll("img.dvz-gallery-poster[src]")) {

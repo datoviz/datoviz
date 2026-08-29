@@ -899,7 +899,7 @@ def render_preview(
                 f'{html_link(local_route, "Open the local WebGPU example")}.',
             ]
             local_lines = [
-                '<div class="dvz-local-webgpu-tabs" hidden markdown="1">',
+                '<div class="dvz-local-webgpu-tabs" hidden></div>',
                 "",
                 '=== "Screenshot"',
                 "",
@@ -909,7 +909,6 @@ def render_preview(
                 "",
                 *indent_markdown(local_live_lines),
                 "",
-                "</div>",
             ]
         if local_lines:
             fallback_lines = [

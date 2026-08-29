@@ -30,7 +30,7 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 </div>
 
-<div class="dvz-local-webgpu-tabs" hidden markdown="1">
+<div class="dvz-local-webgpu-tabs" hidden></div>
 
 === "Screenshot"
 
@@ -50,7 +50,6 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
     <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open the local WebGPU example</a>.
 
-</div>
 
 ## Run And Adapt
 
