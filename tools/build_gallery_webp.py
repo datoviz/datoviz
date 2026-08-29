@@ -4,8 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
+import os
 import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -15,7 +19,10 @@ import gallery_media
 
 ROOT = gallery_media.ROOT
 DEFAULT_OUTPUT_DIR = ROOT / "build/gallery-webp/v0.4"
+DEFAULT_CACHE_DIR = ROOT / "build/gallery-cache/static-webp"
 DEFAULT_QUALITY = 90
+CACHE_SCHEMA = 1
+STATIC_PROFILE = "gallery-static-webp-v1"
 
 
 @dataclass(frozen=True)
@@ -32,11 +39,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument("--image-dir", type=Path, default=build_gallery.DEFAULT_IMAGE_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--quality", type=int, default=DEFAULT_QUALITY)
     parser.add_argument("--id", action="append", default=[], help="example id; repeat or comma-separate")
     parser.add_argument("--lane", action="append", default=[], help="gallery lane")
     parser.add_argument("--dry-run", action="store_true", help="list conversions without writing WebP files")
-    parser.add_argument("--force", action="store_true", help="rewrite WebP files even when newer than PNGs")
+    parser.add_argument("--force", action="store_true", help="rewrite verified current WebP files")
     parser.add_argument(
         "--animated-fallbacks",
         action="store_true",
@@ -78,13 +86,189 @@ def animated_preview_keys(manifest_data: dict) -> set[tuple[str, str]]:
     return gallery_media.animated_preview_keys(manifest_data)
 
 
-def needs_update(png: Path, webp: Path, force: bool) -> bool:
-    if force or not webp.exists():
-        return True
-    return png.stat().st_mtime_ns > webp.stat().st_mtime_ns
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
-def prune_stale_webp(output_dir: Path, examples: list[build_gallery.Example]) -> int:
+def image_dimensions(path: Path, expected_format: str) -> tuple[int, int]:
+    """Decode an image and return its dimensions after validating its format."""
+    try:
+        from PIL import Image
+    except ImportError as exc:
+        raise RuntimeError("Pillow is required to validate gallery WebP products") from exc
+
+    try:
+        with Image.open(path) as image:
+            if image.format != expected_format:
+                raise ValueError(f"expected {expected_format}, got {image.format or 'unknown'}")
+            dimensions = image.size
+            image.load()
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(f"invalid {expected_format} image {path}: {exc}") from exc
+    return dimensions
+
+
+def implementation_identity() -> str:
+    """Fingerprint implementation inputs that can change the encoded product."""
+    digest = hashlib.sha256()
+    path = Path(__file__).resolve()
+    digest.update(path.name.encode("utf8"))
+    digest.update(b"\0")
+    digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
+def cwebp_identity(cwebp: str) -> str:
+    """Fingerprint the selected encoder binary and its reported version."""
+    result = subprocess.run(
+        [cwebp, "-version"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    executable = Path(cwebp).resolve()
+    payload = {
+        "path": str(executable),
+        "sha256": file_sha256(executable) if executable.is_file() else "",
+        "stdout": result.stdout,
+        "stderr": result.stderr,
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf8")
+    ).hexdigest()
+
+
+def cache_path(webp: Path, output_dir: Path, cache_dir: Path) -> Path:
+    relative = webp.relative_to(output_dir)
+    return cache_dir / relative.parent / f"{relative.stem}.json"
+
+
+def load_cache(path: Path) -> dict:
+    try:
+        payload = json.loads(path.read_text(encoding="utf8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def product_identity(
+    *,
+    source_hash: str,
+    quality: int,
+    profile: str,
+    encoder_identity: str,
+    implementation_hash: str,
+) -> dict[str, str | int]:
+    return {
+        "source_sha256": source_hash,
+        "quality": quality,
+        "profile": profile,
+        "encoder_identity": encoder_identity,
+        "implementation_sha256": implementation_hash,
+    }
+
+
+def identity_hash(identity: dict[str, str | int]) -> str:
+    return hashlib.sha256(
+        json.dumps(identity, sort_keys=True, separators=(",", ":")).encode("utf8")
+    ).hexdigest()
+
+
+def current_cache_hit(
+    webp: Path,
+    record_path: Path,
+    expected_identity: dict[str, str | int],
+    expected_dimensions: tuple[int, int],
+    *,
+    verify_encoder: bool = True,
+) -> tuple[bool, str]:
+    if not webp.exists():
+        return False, "missing output"
+    payload = load_cache(record_path)
+    if payload.get("schema") != CACHE_SCHEMA:
+        return False, "missing or incompatible cache record"
+    recorded_identity = payload.get("identity")
+    if not isinstance(recorded_identity, dict):
+        return False, "invalid cache identity"
+    if payload.get("input_hash") != identity_hash(recorded_identity):
+        return False, "invalid cache identity hash"
+    for key, value in expected_identity.items():
+        if key == "encoder_identity" and not verify_encoder:
+            continue
+        if recorded_identity.get(key) != value:
+            return False, f"stale {key}"
+    if payload.get("dimensions") != list(expected_dimensions):
+        return False, "stale dimensions"
+    try:
+        actual_dimensions = image_dimensions(webp, "WEBP")
+        output_hash = file_sha256(webp)
+    except (OSError, RuntimeError):
+        return False, "invalid output"
+    if actual_dimensions != expected_dimensions:
+        return False, "wrong output dimensions"
+    if payload.get("webp_sha256") != output_hash:
+        return False, "changed outside cache"
+    return True, "current"
+
+
+def atomic_write_json(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    file_descriptor, temporary_name = tempfile.mkstemp(
+        dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
+    )
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(file_descriptor, "w", encoding="utf8") as file:
+            json.dump(payload, file, indent=2, sort_keys=True)
+            file.write("\n")
+            file.flush()
+            os.fsync(file.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def encode_atomic(
+    cwebp: str,
+    png: Path,
+    webp: Path,
+    quality: int,
+    expected_dimensions: tuple[int, int],
+) -> str:
+    """Encode and validate a temporary product before atomically publishing it."""
+    webp.parent.mkdir(parents=True, exist_ok=True)
+    file_descriptor, temporary_name = tempfile.mkstemp(
+        dir=webp.parent, prefix=f".{webp.name}.", suffix=".tmp"
+    )
+    os.close(file_descriptor)
+    temporary = Path(temporary_name)
+    try:
+        subprocess.run(
+            [cwebp, "-quiet", "-q", str(quality), str(png), "-o", str(temporary)],
+            check=True,
+        )
+        dimensions = image_dimensions(temporary, "WEBP")
+        if dimensions != expected_dimensions:
+            raise RuntimeError(
+                f"encoded WebP dimensions are {dimensions[0]}x{dimensions[1]}, expected "
+                f"{expected_dimensions[0]}x{expected_dimensions[1]}"
+            )
+        output_hash = file_sha256(temporary)
+        os.replace(temporary, webp)
+        return output_hash
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def prune_stale_webp(
+    output_dir: Path,
+    examples: list[build_gallery.Example],
+    cache_dir: Path | None = None,
+) -> int:
     valid = {(example.lane, example.id) for example in examples}
     removed = 0
     for lane in gallery_media.DOC_LANES:
@@ -98,6 +282,8 @@ def prune_stale_webp(output_dir: Path, examples: list[build_gallery.Example]) ->
             if (lane, stem) in valid:
                 continue
             webp.unlink()
+            if cache_dir is not None:
+                cache_path(webp, output_dir, cache_dir).unlink(missing_ok=True)
             removed += 1
     return removed
 
@@ -134,6 +320,7 @@ def generate_gallery_webp(
     manifest: Path = gallery_media.DEFAULT_MANIFEST,
     image_dir: Path = build_gallery.DEFAULT_IMAGE_DIR,
     output_dir: Path = DEFAULT_OUTPUT_DIR,
+    cache_dir: Path = DEFAULT_CACHE_DIR,
     quality: int = DEFAULT_QUALITY,
     ids: set[str] | None = None,
     lanes: set[str] | None = None,
@@ -157,6 +344,8 @@ def generate_gallery_webp(
     if cwebp is None and not dry_run:
         print("cwebp not found; install the WebP tools package or rerun with --dry-run")
         return 2, GalleryWebPResult()
+    implementation_hash = implementation_identity()
+    encoder_hash = cwebp_identity(cwebp) if cwebp is not None and not dry_run else ""
 
     manifest_data = gallery_media.load_manifest(manifest)
     all_examples = build_gallery.collect_examples(manifest_data)
@@ -178,7 +367,7 @@ def generate_gallery_webp(
         for example in all_examples
         if "screenshot" in example.validation and example.lane in gallery_media.DOC_LANES
     ]
-    removed = prune_stale_webp(output_dir, valid_for_prune) if can_prune else 0
+    removed = prune_stale_webp(output_dir, valid_for_prune, cache_dir) if can_prune else 0
 
     converted = 0
     skipped = 0
@@ -202,7 +391,29 @@ def generate_gallery_webp(
         if is_animated and animated_fallbacks and webp.exists():
             skipped += 1
             continue
-        if not needs_update(png, webp, force):
+        source_hash = file_sha256(png)
+        source_dimensions = image_dimensions(png, "PNG")
+        profile = (
+            f"{STATIC_PROFILE}:documentation-fallback"
+            if is_animated and animated_fallbacks
+            else STATIC_PROFILE
+        )
+        record_path = cache_path(webp, output_dir, cache_dir)
+        identity = product_identity(
+            source_hash=source_hash,
+            quality=quality,
+            profile=profile,
+            encoder_identity=encoder_hash,
+            implementation_hash=implementation_hash,
+        )
+        cache_hit, _ = current_cache_hit(
+            webp,
+            record_path,
+            identity,
+            source_dimensions,
+            verify_encoder=not dry_run,
+        )
+        if cache_hit and not force:
             skipped += 1
             continue
         converted += 1
@@ -210,10 +421,18 @@ def generate_gallery_webp(
         if dry_run:
             print(f"would convert: {example.id} -> {rel_webp}")
             continue
-        webp.parent.mkdir(parents=True, exist_ok=True)
-        subprocess.run(
-            [cwebp, "-quiet", "-q", str(quality), str(png), "-o", str(webp)],
-            check=True,
+        assert cwebp is not None
+        output_hash = encode_atomic(cwebp, png, webp, quality, source_dimensions)
+        atomic_write_json(
+            record_path,
+            {
+                "schema": CACHE_SCHEMA,
+                "input_hash": identity_hash(identity),
+                "identity": identity,
+                "dimensions": list(source_dimensions),
+                "webp_sha256": output_hash,
+                "path": str(webp.relative_to(ROOT) if webp.is_relative_to(ROOT) else webp),
+            },
         )
 
     result = GalleryWebPResult(
@@ -244,6 +463,7 @@ def main() -> int:
         manifest=args.manifest,
         image_dir=args.image_dir,
         output_dir=args.output_dir,
+        cache_dir=args.cache_dir,
         quality=args.quality,
         ids=ids,
         lanes=lanes,
