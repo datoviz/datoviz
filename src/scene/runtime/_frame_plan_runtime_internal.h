@@ -411,7 +411,7 @@ const SceneRenderBatch* _render_batch_for_node(
     const SceneRenderBatch* batches, uint32_t count, const DvzFramePlanNode* render);
 bool _emitter_emit_wboit_resolve(
     DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneWorkRuntime* runtime);
+    const DvzPanelDesc* viewport, uint64_t render_pass_id, const SceneWorkRuntime* runtime);
 bool _emitter_emit_render_multi(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, const DvzFramePlan* plan,
     const DvzFramePlanNode* render, const DvzFramePlanNode* readback, bool clear,

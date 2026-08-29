@@ -1281,13 +1281,18 @@ static AppSceneOcclusionCapture _app_source_over_scene_occlusion_capture_center(
 
 
 /**
- * Render two WBOIT layers and capture the center pixel.
+ * Render two WBOIT layers and capture one pixel.
  *
  * @param suite test context used for shared app resources
  * @param reverse_order whether the blue layer is added before the red layer
+ * @param panel_desc normalized panel rectangle
+ * @param capture_x capture X coordinate
+ * @param capture_y capture Y coordinate
  * @return captured RGB values, or skipped=true when no app context is available
  */
-static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse_order)
+static AppWboitCapture _app_wboit_capture(
+    TstContext* suite, bool reverse_order, DvzPanelDesc panel_desc, uint32_t capture_x,
+    uint32_t capture_y)
 {
     ANN(suite);
     AppWboitCapture out = {0};
@@ -1300,7 +1305,7 @@ static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse
         dvz_scene_destroy(scene);
         return out;
     }
-    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &panel_desc);
     if (panel == NULL)
     {
         dvz_scene_destroy(scene);
@@ -1366,7 +1371,7 @@ static AppWboitCapture _app_wboit_capture_center(TstContext* suite, bool reverse
     }
     if (rgba != NULL && width == 64 && height == 64)
     {
-        const uint8_t* center = _pixel_at(rgba, width, height, width / 2, height / 2);
+        const uint8_t* center = _pixel_at(rgba, width, height, capture_x, capture_y);
         out.rgb[0] = center[0];
         out.rgb[1] = center[1];
         out.rgb[2] = center[2];
@@ -5698,7 +5703,8 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
 
     TST_SCENE_APP_REQUIRE_VKLITE(suite);
 
-    AppWboitCapture forward = _app_wboit_capture_center(suite, false);
+    AppWboitCapture forward = _app_wboit_capture(
+        suite, false, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f}, 32, 32);
     if (forward.skipped)
     {
         log_warn(
@@ -5706,7 +5712,8 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
         tst_skip(suite, forward.skip_reason);
         return 0;
     }
-    AppWboitCapture reverse = _app_wboit_capture_center(suite, true);
+    AppWboitCapture reverse = _app_wboit_capture(
+        suite, true, (DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f}, 32, 32);
     if (reverse.skipped)
     {
         log_warn(

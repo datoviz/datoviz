@@ -7612,7 +7612,7 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
     AT(scene != NULL);
     DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
     AT(figure != NULL);
-    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f});
     AT(panel != NULL);
 
     DvzVisual* opaque = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
@@ -7694,6 +7694,46 @@ int test_scene_alpha_mode_toggle_refreshes_drp2_contracts(TstContext* suite, con
                                      command->u.begin_render_pass.color_attachment_count == 2);
     }
     AT(wboit_has_accum_pass);
+    uint64_t wboit_resolve_pass_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(wboit); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(wboit, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_SET_PIPELINE)
+            continue;
+        const char* label =
+            dvz_drp2_stream_label(wboit, command->u.set_pipeline.pipeline_id);
+        if (label != NULL && strstr(label, "_pipe_wboit_resolve") != NULL)
+            wboit_resolve_pass_id = command->u.set_pipeline.pass_id;
+    }
+    AT(wboit_resolve_pass_id != 0);
+    bool wboit_resolve_has_local_viewport = false;
+    bool wboit_resolve_has_local_scissor = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(wboit); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(wboit, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_SET_VIEWPORT &&
+            command->u.set_viewport.pass_id == wboit_resolve_pass_id)
+        {
+            AC(command->u.set_viewport.viewport[0], 0.0f, 1e-6f);
+            AC(command->u.set_viewport.viewport[1], 0.0f, 1e-6f);
+            AC(command->u.set_viewport.viewport[2], 32.0f, 1e-6f);
+            AC(command->u.set_viewport.viewport[3], 64.0f, 1e-6f);
+            wboit_resolve_has_local_viewport = true;
+        }
+        if (command->type == DVZ_DRP2_COMMAND_SET_SCISSOR &&
+            command->u.set_scissor.pass_id == wboit_resolve_pass_id)
+        {
+            AC(command->u.set_scissor.scissor[0], 0.0f, 1e-6f);
+            AC(command->u.set_scissor.scissor[1], 0.0f, 1e-6f);
+            AC(command->u.set_scissor.scissor[2], 32.0f, 1e-6f);
+            AC(command->u.set_scissor.scissor[3], 64.0f, 1e-6f);
+            wboit_resolve_has_local_scissor = true;
+        }
+    }
+    AT(wboit_resolve_has_local_viewport);
+    AT(wboit_resolve_has_local_scissor);
     result = dvz_drp2_runtime_execute(runtime, wboit);
     AT(result.ok);
     _test_scene_stream_destroy(wboit);

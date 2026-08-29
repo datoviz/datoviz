@@ -227,24 +227,26 @@ bool _emitter_emit_render_multi_draws(
  *
  * @param stream destination DRP2 command stream.
  * @param render resolve render node.
- * @param cfg emission configuration carrying target extent
+ * @param viewport attachment-local resolve viewport.
  * @param render_pass_id active render-pass id.
  * @param targets WBOIT target ids.
  * @return whether all commands were emitted.
  */
 bool _emitter_emit_wboit_resolve(
     DvzDrp2CommandStream* stream, const DvzFramePlanNode* render,
-    const DvzFramePlanEmitConfig* cfg, uint64_t render_pass_id, const SceneWorkRuntime* runtime)
+    const DvzPanelDesc* viewport, uint64_t render_pass_id, const SceneWorkRuntime* runtime)
 {
     ANN(stream);
     ANN(render);
+    ANN(viewport);
     ANN(runtime);
 
-    DvzPanelDesc viewport = _render_desc_framebuffer_rect(&render->u.render.desc, cfg);
     return dvz_drp2_stream_set_viewport(
-               stream, render_pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
+               stream, render_pass_id, viewport->x, viewport->y, viewport->width,
+               viewport->height) &&
            dvz_drp2_stream_set_scissor(
-               stream, render_pass_id, viewport.x, viewport.y, viewport.width, viewport.height) &&
+               stream, render_pass_id, viewport->x, viewport->y, viewport->width,
+               viewport->height) &&
            dvz_drp2_stream_set_pipeline(stream, render_pass_id, runtime->resolve_pipeline_id) &&
            dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, runtime->resolve_bg_id) &&
            dvz_drp2_stream_draw(stream, render_pass_id, 3, 1, 0, 0);

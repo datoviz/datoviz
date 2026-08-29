@@ -1758,7 +1758,7 @@ bool _emitter_emit_scene_graph_renders(
                      resolve_clear, false, false, &render_rect) &&
                  _stream_apply_graph_color_ops(
                      stream, graph_pass, scene_color_id, &graph_targets) &&
-                 _emitter_emit_wboit_resolve(stream, render, cfg, pass_id, targets) &&
+                 _emitter_emit_wboit_resolve(stream, render, &render_rect, pass_id, targets) &&
                  dvz_drp2_stream_end_render_pass(stream, pass_id);
         }
         else if (provider == DVZ_SCENE_WORK_PROVIDER_PRESENTATION)
