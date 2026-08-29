@@ -24,11 +24,7 @@ Issues #139 and #140 are implemented locally under [ISSUES_139_140_HANDOFF.md](I
 
 The validated implementation head builds and passes 1,128/1,128 validation-enabled native tests, 95/95 DRP2 contract tests, 125/125 fixtures, 100/100 runtime-vklite, 34/34 slow/recovery cases, all seven bounded presentation paths, specifications, WebGPU, bindings, example manifests, generated docs/snippets/build, and the Vulkan course smoke. Full-tree static analysis is dispositioned; CPU sanitizer coverage is green for the new non-driver fixes, while Vulkan-backed sanitizer teardown remains inconclusive. Exact candidate artifact and platform proof remain separate release gates.
 
-## Immediate Data Hygiene Follow-Up
-
-The next agent touching `data` or asset migration must first prepare and land one focused corrective PR. Update the stale `tools/data/DATA_POLICY.md` commands that target the unrelated historical `data:main`; the live transitional branch is the protected `datoviz/data:v0.4-dev`. State that this branch is frozen except for explicitly approved recovery or migration work, require `python3 tools/check_submodule_reachability.py data` before any parent gitlink publication, and record `3c862beb2e9885f5af9dc624dc22a6d5bb856026` as the current frozen v0.4 tip while preserving `a9542d20f2d29aecb9518738f6b7ba1914b63997` as historical cutover evidence.
-
-Keep that PR documentation-only and exclude the `data` gitlink, binary assets, catalog implementation, branch rename, history merge, and broader migration. Validate with `python3 tools/check_submodule_reachability.py data`, the focused documentation checks, `git diff --check`, `git status --short`, and inspection of the staged set. Land through a PR because `Submodule reachability / data` is required on `main`; do not weaken or bypass rulesets `21825397` (`datoviz/data:v0.4-dev` deletion/non-fast-forward protection) or `21825416` (required parent reachability check).
+The missing current `data` commit and LFS payload were recovered at `3c862beb2e9885f5af9dc624dc22a6d5bb856026`. The protected `datoviz/data:v0.4-dev` branch is the frozen transitional v0.4 line; unrelated historical `data:main` remains unchanged. Parent gitlink reachability is enforced on pull requests and `main` by the required `Submodule reachability / data` check, while the durable catalog migration and active-submodule retirement plan remains [ASSET_ARCHITECTURE.md](../../spec/data/ASSET_ARCHITECTURE.md).
 
 ## Remaining RC3 Gates
 
