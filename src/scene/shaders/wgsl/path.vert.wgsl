@@ -29,16 +29,6 @@ const ENDPOINT_END: u32 = 0x02u;
 const HAS_PREV: u32 = 0x04u;
 const HAS_NEXT: u32 = 0x08u;
 
-fn clip_to_pixel(clip: vec4f) -> vec2f {
-    let ndc = clip.xy / max(abs(clip.w), 1e-6);
-    return (ndc * 0.5 + vec2f(0.5)) * viewport.rect.zw;
-}
-
-fn pixel_to_clip(pixel: vec2f, depth: f32) -> vec4f {
-    let ndc = pixel / max(viewport.rect.zw, vec2f(1.0)) * 2.0 - vec2f(1.0);
-    return vec4f(ndc, depth, 1.0);
-}
-
 fn safe_normalize(v: vec2f, fallback: vec2f) -> vec2f {
     let n = length(v);
     if (n <= 1e-6) {
@@ -102,10 +92,10 @@ fn main(input: VertexIn) -> VertexOut {
     let p1_clip = transform(input.position_start);
     let p2_clip = transform(input.position_end);
     let p3_clip = transform(input.position_next);
-    let p0 = clip_to_pixel(p0_clip);
-    let p1 = clip_to_pixel(p1_clip);
-    let p2 = clip_to_pixel(p2_clip);
-    let p3 = clip_to_pixel(p3_clip);
+    let p0 = device_clip_to_top_left_pixel(p0_clip);
+    let p1 = device_clip_to_top_left_pixel(p1_clip);
+    let p2 = device_clip_to_top_left_pixel(p2_clip);
+    let p3 = device_clip_to_top_left_pixel(p3_clip);
 
     var v0 = safe_normalize(p1 - p0, vec2f(1.0, 0.0));
     let v1 = safe_normalize(p2 - p1, v0);
@@ -165,11 +155,8 @@ fn main(input: VertexIn) -> VertexOut {
             output.coord = vec2f(compute_u(p1, p2, pixel), side * half_width);
         }
     }
-    let depth = select(
-        p1_clip.z / max(abs(p1_clip.w), 1e-6),
-        p2_clip.z / max(abs(p2_clip.w), 1e-6),
-        endpoint_end);
-    output.position = pixel_to_clip(pixel, depth);
+    let reference_clip = select(p1_clip, p2_clip, endpoint_end);
+    output.position = top_left_pixel_to_device_clip(pixel, reference_clip);
     output.color = input.color;
     output.bevel_distance = vec2f(-half_width, -half_width);
     output.join_split_distance = 0.0;

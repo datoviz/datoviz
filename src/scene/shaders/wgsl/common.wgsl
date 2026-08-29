@@ -29,3 +29,15 @@ fn transform(position: vec3f) -> vec4f {
     let scene_clip = mvp.proj * mvp.view * mvp.model * vec4f(position, 1.0);
     return scene_clip_to_device_clip(scene_clip);
 }
+
+fn device_clip_to_top_left_pixel(device_clip: vec4f) -> vec2f {
+    let ndc = device_clip.xy / max(abs(device_clip.w), 1e-6);
+    let unit = vec2f(0.5 * ndc.x + 0.5, 0.5 - 0.5 * ndc.y);
+    return unit * viewport.rect.zw;
+}
+
+fn top_left_pixel_to_device_clip(pixel: vec2f, reference_clip: vec4f) -> vec4f {
+    let unit = pixel / max(viewport.rect.zw, vec2f(1.0));
+    let ndc = vec2f(2.0 * unit.x - 1.0, 1.0 - 2.0 * unit.y);
+    return vec4f(ndc * reference_clip.w, reference_clip.z, reference_clip.w);
+}

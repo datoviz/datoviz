@@ -18,10 +18,7 @@ struct FragmentIn {
 @group(0) @binding(0) var<uniform> mvp: MVP;
 
 fn project_depth(view_position: vec4f) -> vec4f {
-    var clip = mvp.proj * view_position;
-    clip.y = -clip.y;
-    clip.z = 0.5 * (clip.z + clip.w);
-    return clip;
+    return scene_clip_to_device_clip(mvp.proj * view_position);
 }
 
 fn raycast_sphere(coord: vec2f, center_view: vec4f, radius: f32) -> vec4f {
@@ -56,7 +53,7 @@ struct FragmentOut {
 
 @fragment
 fn main(input: FragmentIn) -> FragmentOut {
-    let coord = vec2f(input.coord.x, -input.coord.y);
+    let coord = input.coord;
     if (dot(coord, coord) > 1.0) {
         discard;
     }

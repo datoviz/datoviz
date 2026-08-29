@@ -106,6 +106,17 @@ def _failures() -> list[str]:
         or "-scene_clip.y" in wgsl_common
     ):
         failures.append("WGSL scene-to-device clip conversion must lower depth without flipping Y")
+    if (
+        "deviceClipToTopLeftPixel" not in glsl_common
+        or "topLeftPixelToDeviceClip" not in glsl_common
+    ):
+        failures.append("GLSL common shader is missing explicit device-clip/pixel conversion")
+    if (
+        "device_clip_to_top_left_pixel" not in wgsl_common
+        or "top_left_pixel_to_device_clip" not in wgsl_common
+        or "0.5 - 0.5 * ndc.y" not in wgsl_common
+    ):
+        failures.append("WGSL common shader is missing top-left pixel conversion")
 
     for path in GLSL_DIR.glob("*.vert"):
         if path.name in {"fixture.vert", "fullscreen.vert", "texture.vert"}:
@@ -124,6 +135,30 @@ def _failures() -> list[str]:
                 failures.append(
                     f"raw WGSL scene clip bypasses backend conversion: {path.name}:{line_number}"
                 )
+
+    for name in ["path.vert", "path_query_u32.vert", "segment.vert", "segment_query_u32.vert"]:
+        text = (GLSL_DIR / name).read_text(encoding="utf8")
+        if "deviceClipToTopLeftPixel" not in text or "topLeftPixelToDeviceClip" not in text:
+            failures.append(f"GLSL screen-space shader bypasses common pixel conversion: {name}")
+        if "clipToPixel" in text or "pixelToClip" in text:
+            failures.append(f"GLSL screen-space shader redeclares pixel conversion: {name}")
+
+    for name in ["path.vert.wgsl", "segment.vert.wgsl"]:
+        text = (WGSL_DIR / name).read_text(encoding="utf8")
+        if (
+            "device_clip_to_top_left_pixel" not in text
+            or "top_left_pixel_to_device_clip" not in text
+        ):
+            failures.append(f"WGSL screen-space shader bypasses common pixel conversion: {name}")
+        if "fn clip_to_pixel" in text or "fn pixel_to_clip" in text:
+            failures.append(f"WGSL screen-space shader redeclares pixel conversion: {name}")
+
+    for name in ["sphere.frag.wgsl", "sphere_query_u32.frag.wgsl"]:
+        text = (WGSL_DIR / name).read_text(encoding="utf8")
+        if "scene_clip_to_device_clip(mvp.proj * view_position)" not in text:
+            failures.append(f"WGSL sphere depth bypasses backend clip conversion: {name}")
+        if "clip.y = -clip.y" in text or "-input.coord.y" in text:
+            failures.append(f"WGSL sphere shader contains a stale Vulkan Y flip: {name}")
 
     glsl_material = (GLSL_DIR / "scene_material.glsl").read_text(encoding="utf8")
     wgsl_material = (WGSL_DIR / "scene_material.wgsl").read_text(encoding="utf8")

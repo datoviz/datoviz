@@ -18,16 +18,6 @@ struct VertexOut {
 
 const CLIP_EPS: f32 = 1e-5;
 
-fn clip_to_pixel(clip: vec4f) -> vec2f {
-    let ndc = clip.xy / max(clip.w, CLIP_EPS);
-    return (ndc * 0.5 + vec2f(0.5)) * viewport.rect.zw;
-}
-
-fn pixel_to_clip(pixel: vec2f, clip: vec4f) -> vec4f {
-    let ndc = pixel / max(viewport.rect.zw, vec2f(1.0)) * 2.0 - vec2f(1.0);
-    return vec4f(ndc * clip.w, clip.z, clip.w);
-}
-
 fn clip_segment_plane(
     start_clip: ptr<function, vec4f>, end_clip: ptr<function, vec4f>, start_dist: f32,
     end_dist: f32) -> bool {
@@ -122,8 +112,8 @@ fn main(@builtin(vertex_index) vertex_index: u32, input: VertexIn) -> VertexOut 
         return output;
     }
 
-    let start_px = clip_to_pixel(start_clip);
-    let end_px = clip_to_pixel(end_clip);
+    let start_px = device_clip_to_top_left_pixel(start_clip);
+    let end_px = device_clip_to_top_left_pixel(end_clip);
 
     var tangent = end_px - start_px;
     let length_px = length(tangent);
@@ -164,7 +154,7 @@ fn main(@builtin(vertex_index) vertex_index: u32, input: VertexIn) -> VertexOut 
     }
 
     var output: VertexOut;
-    output.position = pixel_to_clip(pixel, clip);
+    output.position = top_left_pixel_to_device_clip(pixel, clip);
     output.color = input.color;
     output.coord = coord;
     output.length_px = length_px;

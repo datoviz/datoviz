@@ -37,18 +37,6 @@ const uint ENDPOINT_END = 0x02u;
 const uint HAS_PREV = 0x04u;
 const uint HAS_NEXT = 0x08u;
 
-vec2 clipToPixel(vec4 clip)
-{
-    vec2 ndc = clip.xy / max(abs(clip.w), 1e-6);
-    return (ndc * 0.5 + 0.5) * viewport.rect.zw;
-}
-
-vec4 pixelToClip(vec2 pixel, float depth)
-{
-    vec2 ndc = pixel / max(viewport.rect.zw, vec2(1.0)) * 2.0 - 1.0;
-    return vec4(ndc, depth, 1.0);
-}
-
 vec2 safeNormalize(vec2 v, vec2 fallback)
 {
     float n = length(v);
@@ -85,10 +73,10 @@ void main()
     vec4 p1Clip = transform(inPositionStart);
     vec4 p2Clip = transform(inPositionEnd);
     vec4 p3Clip = transform(inPositionNext);
-    vec2 p0 = clipToPixel(p0Clip);
-    vec2 p1 = clipToPixel(p1Clip);
-    vec2 p2 = clipToPixel(p2Clip);
-    vec2 p3 = clipToPixel(p3Clip);
+    vec2 p0 = deviceClipToTopLeftPixel(p0Clip);
+    vec2 p1 = deviceClipToTopLeftPixel(p1Clip);
+    vec2 p2 = deviceClipToTopLeftPixel(p2Clip);
+    vec2 p3 = deviceClipToTopLeftPixel(p3Clip);
 
     vec2 v0 = safeNormalize(p1 - p0, vec2(1.0, 0.0));
     vec2 v1 = safeNormalize(p2 - p1, v0);
@@ -152,9 +140,8 @@ void main()
         }
     }
 
-    float depth = endpointEnd ? p2Clip.z / max(abs(p2Clip.w), 1e-6)
-                              : p1Clip.z / max(abs(p1Clip.w), 1e-6);
-    gl_Position = pixelToClip(pixel, depth);
+    vec4 referenceClip = endpointEnd ? p2Clip : p1Clip;
+    gl_Position = topLeftPixelToDeviceClip(pixel, referenceClip);
 
     fragBevelDistance = vec2(-halfWidth);
     fragJoinSplitDistance = 0.0;

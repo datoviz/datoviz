@@ -107,8 +107,8 @@ int test_scene_sphere_analytic_shader_contract(TstContext* suite, const TstCase*
     const char* capture = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER, true);
     ANN(ordinary);
     ANN(capture);
-    AT(strstr(ordinary, "hit.coverage * fragColor.a <= coverageThreshold") != NULL);
-    AT(strstr(capture, "float coverage = hit.coverage * fragColor.a;") != NULL);
+    AT(strstr(ordinary, "hit.coverage <= coverageThreshold") != NULL);
+    AT(strstr(capture, "float coverage = hit.coverage;") != NULL);
     AT(strstr(capture, "coverage = 1.0;") != NULL);
     AT(strstr(capture, "outDepth = vec4(hit.linearDepth") != NULL);
     AT(strstr(capture, "outNormal = vec4(hit.normalView") != NULL);

@@ -26,18 +26,6 @@ layout(location = 3) flat out uint fragId;
 
 const float CLIP_EPS = 1e-5;
 
-vec2 clipToPixel(vec4 clip)
-{
-    vec2 ndc = clip.xy / max(clip.w, CLIP_EPS);
-    return (ndc * 0.5 + 0.5) * viewport.rect.zw;
-}
-
-vec4 pixelToClip(vec2 pixel, vec4 clip)
-{
-    vec2 ndc = pixel / max(viewport.rect.zw, vec2(1.0)) * 2.0 - 1.0;
-    return vec4(ndc * clip.w, clip.z, clip.w);
-}
-
 bool clipSegmentPlane(inout vec4 startClip, inout vec4 endClip, float startDist, float endDist)
 {
     if (startDist < 0.0 && endDist < 0.0)
@@ -85,8 +73,8 @@ void main()
         return;
     }
 
-    vec2 startPx = clipToPixel(startClip);
-    vec2 endPx = clipToPixel(endClip);
+    vec2 startPx = deviceClipToTopLeftPixel(startClip);
+    vec2 endPx = deviceClipToTopLeftPixel(endClip);
 
     vec2 tangent = endPx - startPx;
     float lengthPx = length(tangent);
@@ -130,7 +118,7 @@ void main()
         clip = endClip;
     }
 
-    gl_Position = pixelToClip(pixel, clip);
+    gl_Position = topLeftPixelToDeviceClip(pixel, clip);
     fragLength = lengthPx;
     fragLineWidth = strokeWidth;
     fragId = inId;

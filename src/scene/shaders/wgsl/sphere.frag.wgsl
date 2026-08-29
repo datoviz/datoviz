@@ -20,10 +20,7 @@ fn coverage_threshold(position: vec4f) -> f32 {
 }
 
 fn project_depth(view_position: vec4f) -> vec4f {
-    var clip = mvp.proj * view_position;
-    clip.y = -clip.y;
-    clip.z = 0.5 * (clip.z + clip.w);
-    return clip;
+    return scene_clip_to_device_clip(mvp.proj * view_position);
 }
 
 fn raycast_sphere(coord: vec2f, center_view: vec4f, radius: f32) -> vec4f {
@@ -64,7 +61,7 @@ fn view_to_world_direction(view_direction: vec3f) -> vec3f {
 
 @fragment
 fn main(input: FragmentIn, @builtin(position) frag_position: vec4f) -> FragmentOut {
-    let coord = vec2f(input.coord.x, -input.coord.y);
+    let coord = input.coord;
     let dist = length(coord);
     let coverage = clamp((1.0 - dist) / max(fwidth(dist), 1e-6) + 0.5, 0.0, 1.0);
     if (coverage <= coverage_threshold(frag_position)) {

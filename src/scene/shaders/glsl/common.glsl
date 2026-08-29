@@ -46,6 +46,18 @@ vec4 transform(vec3 pos)
     return sceneClipToDeviceClip(sceneClip);
 }
 
+vec2 deviceClipToTopLeftPixel(vec4 deviceClip)
+{
+    vec2 ndc = deviceClip.xy / max(abs(deviceClip.w), 1e-6);
+    return (0.5 * ndc + 0.5) * viewport.rect.zw;
+}
+
+vec4 topLeftPixelToDeviceClip(vec2 pixel, vec4 referenceClip)
+{
+    vec2 ndc = pixel / max(viewport.rect.zw, vec2(1.0)) * 2.0 - 1.0;
+    return vec4(ndc * referenceClip.w, referenceClip.z, referenceClip.w);
+}
+
 float transform_radius(float radius)
 {
     float sx = length(mvp.model[0].xyz);

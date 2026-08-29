@@ -12,10 +12,7 @@ struct DvzSphereHit
 
 vec4 sphereProjectDepth(vec4 viewPosition)
 {
-    vec4 clip = mvp.proj * viewPosition;
-    clip.y = -clip.y;
-    clip.z = 0.5 * (clip.z + clip.w);
-    return clip;
+    return sceneClipToDeviceClip(mvp.proj * viewPosition);
 }
 
 // Build the eye ray through one fragment. `ndc` is the fragment's own position, interpolated
