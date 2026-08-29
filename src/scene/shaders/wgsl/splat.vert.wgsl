@@ -34,7 +34,7 @@ fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let sigma = max(input.sigma, vec2f(0.000001));
     let extent = CUTOFF_SIGMA * max(sigma.x, sigma.y);
     let corner = quad_corner(vertex_id);
-    let center = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);
+    let center = transform(input.position);
     let viewport_size = max(viewport.rect.zw, vec2f(1.0));
     let ndc_radius = 2.0 * vec2f(extent / viewport_size.x, extent / viewport_size.y);
 

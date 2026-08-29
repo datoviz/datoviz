@@ -28,7 +28,7 @@ fn quad_corner(vertex_id: u32) -> vec2f {
 @vertex
 fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let corner = quad_corner(vertex_id);
-    let center = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);
+    let center = transform(input.position);
     let sprite_size = max(input.size + 4.0, 1.0);
     let radius = vec2f(sprite_size / viewport.rect.z, sprite_size / viewport.rect.w);
 

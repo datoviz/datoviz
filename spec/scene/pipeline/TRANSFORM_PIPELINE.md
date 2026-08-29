@@ -50,6 +50,18 @@ visible to users.
 | `ClipSpace` / `NDC` | final render-facing normalized device coordinates |
 
 
+## Backend Clip And Pixel Boundaries
+
+CPU-authored scene matrices use a right-handed OpenGL clip convention with Cartesian Y and depth in `[-w, +w]`. Built-in vertex shaders must pass every scene-clip position through the shared backend conversion helper exactly once.
+
+| Backend | Scene clip -> device clip |
+|---|---|
+| Vulkan with the positive-height viewport used by Datoviz | `(x, -y, 0.5 * (z + w), w)` |
+| WebGPU | `(x, y, 0.5 * (z + w), w)` |
+
+Framebuffer pixels use a top-left origin on both runtime paths. Panel-local intermediate textures also use top-left texel coordinates. A product presentation pass maps fragment coordinates into source texels from the explicit target rectangle; it must not derive texture orientation from fullscreen-triangle clip coordinates. Browser canvas scaling is a later backend-private presentation boundary and must not compensate for scene, product, or framebuffer orientation.
+
+
 ## Transform Stages
 
 | Stage | Input -> Output | Owner | Invalidated by | Not invalidated by |

@@ -137,7 +137,7 @@ fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let corner = quad_corner(vertex_id);
     let world = mvp.model * vec4f(input.position, 1.0);
     let view = mvp.view * world;
-    let center = mvp.proj * view;
+    let center = scene_clip_to_device_clip(mvp.proj * view);
     let size = apply_item_state_scale(input.size, input.item_state);
     let radius = vec2f(size / viewport.rect.z, size / viewport.rect.w);
 

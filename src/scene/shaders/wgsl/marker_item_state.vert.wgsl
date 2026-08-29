@@ -141,7 +141,7 @@ fn quad_corner(vertex_id: u32) -> vec2f {
 fn main(@builtin(vertex_index) vertex_id: u32, input: VertexIn) -> VertexOut {
     let corner = quad_corner(vertex_id);
     let sprite_scale = max(abs(cos(input.angle)) + abs(sin(input.angle)), 1.0);
-    let center = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);
+    let center = transform(input.position);
     let size = apply_item_state_scale(input.size, input.item_state);
     let radius = vec2f(
         size * sprite_scale / viewport.rect.z, size * sprite_scale / viewport.rect.w);

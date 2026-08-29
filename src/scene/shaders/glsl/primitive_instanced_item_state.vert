@@ -24,9 +24,7 @@ void main()
     vec4 local = vec4(inPos, 1.0);
     local.xyz *= applyItemStateScale(1.0, inItemState);
     vec4 world = model * local;
-    vec4 tr = mvp.proj * mvp.view * world;
-    tr.y = -tr.y;
-    tr.z = 0.5 * (tr.z + tr.w);
+    vec4 tr = sceneClipToDeviceClip(mvp.proj * mvp.view * world);
     gl_Position = tr;
     fragColor = applyItemStateColor(inColor, inItemState);
 }

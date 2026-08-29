@@ -145,7 +145,7 @@ fn main(input: VertexIn) -> VertexOut {
     let scale = apply_item_state_scale(1.0, input.item_state);
     let local = vec4f(input.position * scale, 1.0);
     let world = model * local;
-    let clip = mvp.proj * mvp.view * world;
+    let clip = scene_clip_to_device_clip(mvp.proj * mvp.view * world);
 
     var output: VertexOut;
     output.position = clip;

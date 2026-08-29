@@ -13,7 +13,7 @@ struct VertexOut {
 @vertex
 fn main(input: VertexIn) -> VertexOut {
     var output: VertexOut;
-    output.position = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);
+    output.position = transform(input.position);
     output.uv = input.uv;
     return output;
 }

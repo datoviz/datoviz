@@ -29,7 +29,7 @@ fn main(
     input: VertexIn,
 ) -> VertexOut {
     let corner = quad_corner(vertex_id);
-    let center = mvp.proj * mvp.view * mvp.model * vec4f(input.position, 1.0);
+    let center = transform(input.position);
     let radius = vec2f(input.size / viewport.rect.z, input.size / viewport.rect.w);
 
     var output: VertexOut;

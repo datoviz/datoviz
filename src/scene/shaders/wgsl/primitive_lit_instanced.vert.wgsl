@@ -35,7 +35,7 @@ fn instance_transform(input: VertexIn) -> mat4x4f {
 fn main(input: VertexIn) -> VertexOut {
     let model = mvp.model * instance_transform(input);
     let world = model * vec4f(input.position, 1.0);
-    let clip = mvp.proj * mvp.view * world;
+    let clip = scene_clip_to_device_clip(mvp.proj * mvp.view * world);
 
     var output: VertexOut;
     output.position = clip;

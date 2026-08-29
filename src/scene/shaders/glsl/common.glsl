@@ -33,12 +33,17 @@ layout(set = 0, binding = 1) uniform Viewport {
     vec4 rect;
 } viewport;
 
+vec4 sceneClipToDeviceClip(vec4 sceneClip)
+{
+    sceneClip.y = -sceneClip.y;
+    sceneClip.z = 0.5 * (sceneClip.z + sceneClip.w);
+    return sceneClip;
+}
+
 vec4 transform(vec3 pos)
 {
-    vec4 tr = mvp.proj * mvp.view * mvp.model * vec4(pos, 1.0);
-    tr.y = -tr.y;
-    tr.z = 0.5 * (tr.z + tr.w);
-    return tr;
+    vec4 sceneClip = mvp.proj * mvp.view * mvp.model * vec4(pos, 1.0);
+    return sceneClipToDeviceClip(sceneClip);
 }
 
 float transform_radius(float radius)

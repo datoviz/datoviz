@@ -24,9 +24,7 @@ void main()
         inInstanceTransform3);
     mat4 model = mvp.model * instanceTransform;
     vec4 world = model * vec4(inPos, 1.0);
-    vec4 tr = mvp.proj * mvp.view * world;
-    tr.y = -tr.y;
-    tr.z = 0.5 * (tr.z + tr.w);
+    vec4 tr = sceneClipToDeviceClip(mvp.proj * mvp.view * world);
     gl_Position = tr;
     fragColor = inColor;
     fragWorldPos = world.xyz;

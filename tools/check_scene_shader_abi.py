@@ -91,6 +91,40 @@ def _failures() -> list[str]:
         if not (WGSL_DIR / rel).exists():
             failures.append(f"missing WGSL shared file: {rel}")
 
+    glsl_common = (GLSL_DIR / "common.glsl").read_text(encoding="utf8")
+    wgsl_common = (WGSL_DIR / "common.wgsl").read_text(encoding="utf8")
+    if (
+        "sceneClipToDeviceClip" not in glsl_common
+        or "sceneClip.y = -sceneClip.y" not in glsl_common
+        or "sceneClip.z = 0.5 * (sceneClip.z + sceneClip.w)" not in glsl_common
+    ):
+        failures.append("GLSL scene-to-device clip conversion must lower Y and depth explicitly")
+    if (
+        "scene_clip_to_device_clip" not in wgsl_common
+        or "vec4f(scene_clip.xy, 0.5 * (scene_clip.z + scene_clip.w), scene_clip.w)"
+        not in wgsl_common
+        or "-scene_clip.y" in wgsl_common
+    ):
+        failures.append("WGSL scene-to-device clip conversion must lower depth without flipping Y")
+
+    for path in GLSL_DIR.glob("*.vert"):
+        if path.name in {"fixture.vert", "fullscreen.vert", "texture.vert"}:
+            continue
+        for line_number, line in enumerate(path.read_text(encoding="utf8").splitlines(), start=1):
+            if "mvp.proj *" in line and "sceneClipToDeviceClip" not in line:
+                failures.append(
+                    f"raw GLSL scene clip bypasses backend conversion: {path.name}:{line_number}"
+                )
+
+    for path in WGSL_DIR.glob("*.vert.wgsl"):
+        if path.name in {"fixture.vert.wgsl", "fullscreen.vert.wgsl", "texture.vert.wgsl"}:
+            continue
+        for line_number, line in enumerate(path.read_text(encoding="utf8").splitlines(), start=1):
+            if "mvp.proj *" in line and "scene_clip_to_device_clip" not in line:
+                failures.append(
+                    f"raw WGSL scene clip bypasses backend conversion: {path.name}:{line_number}"
+                )
+
     glsl_material = (GLSL_DIR / "scene_material.glsl").read_text(encoding="utf8")
     wgsl_material = (WGSL_DIR / "scene_material.wgsl").read_text(encoding="utf8")
     glsl_fields = [
