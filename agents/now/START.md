@@ -1,6 +1,6 @@
 # Datoviz v0.4 Dispatch
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-27.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-30.
 
 Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file identifies only the current route; durable contracts belong in `spec/`, public guidance belongs in `docs/`, and completed evidence belongs in release records and Git history.
 
@@ -38,6 +38,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 18. Use [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md) for the benchmark-first rolling-field/structured-surface performance lane and its strict RC4 versus post-v0.4 boundary.
 19. The required [RC3_LIGHTING_FOUNDATION_SLICE.md](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md) is complete at validated implementation head `8fd98715e`. Preserve its scene-owned panel-light and direct/indirect contracts during candidate validation; do not expand it into full PBR or the optional multi-light showcase.
 20. Use [GUI_IMPLOT_DOCKING_HANDOFF.md](GUI_IMPLOT_DOCKING_HANDOFF.md) for the non-blocking pre-RC3 official ImPlot/cimplot and declarative docking lane after PR #145 merges; finish it before candidate freeze or defer it intact without delaying RC3.
+21. Before further `data` or asset-migration work, complete the narrow corrective PR recorded under "Immediate Data Hygiene Follow-Up" in [STATUS.md](STATUS.md); preserve `datoviz/data:v0.4-dev` as the protected frozen v0.4 line and do not rename, merge, or repoint it to the unrelated historical `data:main`.
 
 ## Guardrails
 
