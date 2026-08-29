@@ -1,4 +1,5 @@
 import {
+  canvasMetrics,
   Drp2WebGpuRuntime,
   initWebGPU,
   resizeWebGpuCanvas,
@@ -82,10 +83,10 @@ function positiveInteger(value, fallback) {
 }
 
 function canvasLogicalSize(canvas) {
-  const rect = canvas.getBoundingClientRect();
+  const metrics = canvasMetrics(canvas);
   return {
-    width: positiveInteger(canvas.clientWidth, positiveInteger(rect.width, canvas.width)),
-    height: positiveInteger(canvas.clientHeight, positiveInteger(rect.height, canvas.height)),
+    width: positiveInteger(metrics.cssWidth, canvas.width),
+    height: positiveInteger(metrics.cssHeight, canvas.height),
   };
 }
 
@@ -638,15 +639,17 @@ export class DatovizWasmScene {
 
   resize() {
     this._requireAlive();
-    const resized = resizeWebGpuCanvas(this.canvas, this.gpu.device, this.gpu.context, this.gpu.format);
     const logical = this.logicalSize ?? canvasLogicalSize(this.canvas);
-    const scale = Math.max(1, window.devicePixelRatio || 1);
+    const metrics = canvasMetrics(this.canvas, logical);
+    const resized = resizeWebGpuCanvas(
+      this.canvas, this.gpu.device, this.gpu.context, this.gpu.format, metrics);
     const next = {
-      logicalWidth: logical.width,
-      logicalHeight: logical.height,
-      framebufferWidth: this.canvas.width,
-      framebufferHeight: this.canvas.height,
-      scale,
+      logicalWidth: metrics.logicalWidth,
+      logicalHeight: metrics.logicalHeight,
+      framebufferWidth: metrics.framebufferWidth,
+      framebufferHeight: metrics.framebufferHeight,
+      scaleX: metrics.scaleX,
+      scaleY: metrics.scaleY,
     };
     if (
       !resized &&
@@ -655,7 +658,8 @@ export class DatovizWasmScene {
       this._lastResize.logicalHeight === next.logicalHeight &&
       this._lastResize.framebufferWidth === next.framebufferWidth &&
       this._lastResize.framebufferHeight === next.framebufferHeight &&
-      this._lastResize.scale === next.scale
+      this._lastResize.scaleX === next.scaleX &&
+      this._lastResize.scaleY === next.scaleY
     ) {
       return false;
     }
@@ -668,7 +672,8 @@ export class DatovizWasmScene {
         next.logicalHeight,
         next.framebufferWidth,
         next.framebufferHeight,
-        scale,
+        next.scaleX,
+        next.scaleY,
       ),
       "dvz_wasm_api_resize failed",
     );
@@ -890,21 +895,26 @@ export class DatovizWasmScene {
     const observed = this.canvas.parentElement ?? this.canvas;
     let lastWidth = this.canvas.clientWidth;
     let lastHeight = this.canvas.clientHeight;
-    let lastScale = Math.max(1, window.devicePixelRatio || 1);
-    const observer = new ResizeObserver(() => {
+    let lastPixelRatio = canvasMetrics(this.canvas).pixelRatio;
+    const checkForResize = () => {
       const width = this.canvas.clientWidth;
       const height = this.canvas.clientHeight;
-      const scale = Math.max(1, window.devicePixelRatio || 1);
-      if (width === lastWidth && height === lastHeight && scale === lastScale) {
+      const pixelRatio = canvasMetrics(this.canvas).pixelRatio;
+      if (width === lastWidth && height === lastHeight && pixelRatio === lastPixelRatio) {
         return;
       }
       lastWidth = width;
       lastHeight = height;
-      lastScale = scale;
+      lastPixelRatio = pixelRatio;
       onChange();
-    });
+    };
+    const observer = new ResizeObserver(checkForResize);
     observer.observe(observed);
-    const detach = () => observer.disconnect();
+    window.addEventListener("resize", checkForResize);
+    const detach = () => {
+      observer.disconnect();
+      window.removeEventListener("resize", checkForResize);
+    };
     this._cleanup.push(detach);
     return detach;
   }
@@ -923,12 +933,13 @@ export class DatovizWasmScene {
       };
     }
     const logical = this.logicalSize ?? canvasLogicalSize(this.canvas);
+    const metrics = canvasMetrics(this.canvas, logical);
     const logicalScaleX = rect.width > 0 ? logical.width / rect.width : 1;
     const logicalScaleY = rect.height > 0 ? logical.height / rect.height : 1;
     return {
       x: x * logicalScaleX,
       y: y * logicalScaleY,
-      scale: Math.max(1, window.devicePixelRatio || 1),
+      scale: 0.5 * (metrics.scaleX + metrics.scaleY),
     };
   }
 

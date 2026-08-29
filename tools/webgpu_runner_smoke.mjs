@@ -29,6 +29,9 @@ const fakeCanvas = {
     setProperty() {},
     removeProperty() {},
   },
+  getBoundingClientRect() {
+    return { width: this.clientWidth, height: this.clientHeight };
+  },
 };
 
 globalThis.document = {
@@ -40,6 +43,7 @@ globalThis.document = {
   },
 };
 globalThis.window = {
+  devicePixelRatio: 1,
   location: { search: '', href: 'http://localhost/' },
   history: { replaceState() {} },
 };
@@ -703,6 +707,29 @@ async function smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime) {
 
 
 
+function smokeCanvasMetrics(canvasMetrics) {
+  fakeCanvas.clientWidth = 853;
+  fakeCanvas.clientHeight = 479;
+  window.devicePixelRatio = 1.25;
+  const metrics = canvasMetrics(fakeCanvas, { width: 1280, height: 720 });
+  if (
+    metrics.framebufferWidth !== 1066 ||
+    metrics.framebufferHeight !== 598 ||
+    metrics.scaleX !== 1066 / 1280 ||
+    metrics.scaleY !== 598 / 720 ||
+    metrics.scaleX === metrics.scaleY
+  ) {
+    throw new Error(`canvas metrics did not retain exact per-axis scale: ${JSON.stringify(metrics)}`);
+  }
+  fakeCanvas.clientWidth = 640;
+  fakeCanvas.clientHeight = 480;
+  fakeCanvas.width = 640;
+  fakeCanvas.height = 480;
+  window.devicePixelRatio = 1;
+}
+
+
+
 async function smokeBrowserPresentMsaaResolve(Drp2WebGpuRuntime) {
   observedRenderPassDescriptors = [];
   observedRenderPipelineDescriptors = [];
@@ -923,7 +950,7 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime, executeDrp2Stream
 }
 
 async function main() {
-  const { Drp2WebGpuRuntime, WebGpuDemoSession, executeDrp2Stream } = await import(
+  const { canvasMetrics, Drp2WebGpuRuntime, WebGpuDemoSession, executeDrp2Stream } = await import(
     '../web/drp2/webgpu.js'
   );
 
@@ -1269,6 +1296,7 @@ async function main() {
   }
 
   await smokeRepeatedRuntimeFrames(Drp2WebGpuRuntime);
+  smokeCanvasMetrics(canvasMetrics);
   await smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime);
   await smokeBrowserPresentResizeRetention(Drp2WebGpuRuntime);
   await smokeBrowserPresentMsaaResolve(Drp2WebGpuRuntime);

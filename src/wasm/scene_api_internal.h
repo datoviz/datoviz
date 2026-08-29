@@ -16,6 +16,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -165,7 +166,8 @@ struct DvzWasmApiScene
     uint32_t height;
     uint32_t logical_width;
     uint32_t logical_height;
-    float device_scale;
+    float device_scale_x;
+    float device_scale_y;
     uint32_t color_format;
     bool scenario_active;
 };
@@ -236,4 +238,5 @@ int _fail_upload(DvzWasmApiScene* scene, const char* kind, const char* attr, uin
 bool _remember(DvzWasmApiScene* scene, void* wrapper);
 void _emit_resize(
     DvzWasmApiScene* scene, uint32_t logical_width, uint32_t logical_height,
-    uint32_t framebuffer_width, uint32_t framebuffer_height, float device_scale);
+    uint32_t framebuffer_width, uint32_t framebuffer_height, float device_scale_x,
+    float device_scale_y);

@@ -77,8 +77,8 @@ static DvzFramePlanEmitConfig _wasm_emit_config(const DvzWasmApiScene* scene)
     emit_cfg.color_target_format = scene->color_format;
     emit_cfg.target_width = scene->width;
     emit_cfg.target_height = scene->height;
-    emit_cfg.device_scale_x = scene->device_scale > 0.0f ? scene->device_scale : 1.0f;
-    emit_cfg.device_scale_y = scene->device_scale > 0.0f ? scene->device_scale : 1.0f;
+    emit_cfg.device_scale_x = scene->device_scale_x > 0.0f ? scene->device_scale_x : 1.0f;
+    emit_cfg.device_scale_y = scene->device_scale_y > 0.0f ? scene->device_scale_y : 1.0f;
     return emit_cfg;
 }
 

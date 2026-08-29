@@ -36,7 +36,8 @@ uint32_t dvz_wasm_api_scene(uint32_t width, uint32_t height)
     scene->height = height;
     scene->logical_width = width;
     scene->logical_height = height;
-    scene->device_scale = 1.0f;
+    scene->device_scale_x = 1.0f;
+    scene->device_scale_y = 1.0f;
     scene->color_format = DVZ_FORMAT_R8G8B8A8_UNORM;
     scene->scene = dvz_scene();
     scene->router = dvz_input_router();

@@ -1,5 +1,37 @@
 const configuredCanvasContexts = new WeakMap();
 
+
+
+function positiveNumber(value, fallback) {
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+
+
+export function canvasMetrics(canvas, logicalSize = null) {
+  const rect = canvas.getBoundingClientRect();
+  const cssWidth = positiveNumber(canvas.clientWidth, positiveNumber(rect.width, canvas.width));
+  const cssHeight = positiveNumber(canvas.clientHeight, positiveNumber(rect.height, canvas.height));
+  const pixelRatio = positiveNumber(window.devicePixelRatio, 1);
+  const framebufferWidth = Math.max(1, Math.floor(cssWidth * pixelRatio));
+  const framebufferHeight = Math.max(1, Math.floor(cssHeight * pixelRatio));
+  const logicalWidth = positiveNumber(logicalSize?.width, cssWidth);
+  const logicalHeight = positiveNumber(logicalSize?.height, cssHeight);
+  return {
+    logicalWidth,
+    logicalHeight,
+    cssWidth,
+    cssHeight,
+    displayWidth: rect.width,
+    displayHeight: rect.height,
+    framebufferWidth,
+    framebufferHeight,
+    scaleX: framebufferWidth / logicalWidth,
+    scaleY: framebufferHeight / logicalHeight,
+    pixelRatio,
+  };
+}
+
 function supportedTextureFormats(canvasFormat) {
   const formats = [
     "r8unorm",
@@ -47,10 +79,10 @@ export function runtimeCapabilities(device, canvasFormat, adapter = null) {
   return capabilities;
 }
 
-export function resizeCanvasToDisplaySize(canvas, device, context, format) {
-  const scale = Math.max(1, window.devicePixelRatio || 1);
-  const width = Math.max(1, Math.floor(canvas.clientWidth * scale));
-  const height = Math.max(1, Math.floor(canvas.clientHeight * scale));
+export function resizeCanvasToDisplaySize(canvas, device, context, format, metrics = null) {
+  const snapshot = metrics ?? canvasMetrics(canvas);
+  const width = snapshot.framebufferWidth;
+  const height = snapshot.framebufferHeight;
   const resized = canvas.width !== width || canvas.height !== height;
   const configured = configuredCanvasContexts.get(context) ?? null;
   const needsConfigure = (
@@ -75,8 +107,8 @@ export function resizeCanvasToDisplaySize(canvas, device, context, format) {
   return resized;
 }
 
-export function resizeWebGpuCanvas(canvas, device, context, format) {
-  return resizeCanvasToDisplaySize(canvas, device, context, format);
+export function resizeWebGpuCanvas(canvas, device, context, format, metrics = null) {
+  return resizeCanvasToDisplaySize(canvas, device, context, format, metrics);
 }
 
 export async function initWebGPU(canvas) {

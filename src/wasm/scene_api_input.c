@@ -49,13 +49,16 @@ EMSCRIPTEN_KEEPALIVE
 int dvz_wasm_api_resize(
     uint32_t scene_handle, uint32_t figure_handle, uint32_t logical_width,
     uint32_t logical_height, uint32_t framebuffer_width, uint32_t framebuffer_height,
-    float device_scale)
+    float device_scale_x, float device_scale_y)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
     DvzWasmApiFigure* figure = _figure(figure_handle);
     if (scene == NULL || figure == NULL || figure->owner != scene || figure->figure == NULL ||
         logical_width == 0 || logical_height == 0 || framebuffer_width == 0 ||
-        framebuffer_height == 0)
+        framebuffer_height == 0 || !isfinite(device_scale_x) || device_scale_x <= 0.0f ||
+        !isfinite(device_scale_y) || device_scale_y <= 0.0f ||
+        fabsf((float)logical_width * device_scale_x - (float)framebuffer_width) > 1.0f ||
+        fabsf((float)logical_height * device_scale_y - (float)framebuffer_height) > 1.0f)
     {
         return _fail(scene, "invalid WASM resize request");
     }
@@ -64,24 +67,24 @@ int dvz_wasm_api_resize(
     scene->logical_height = logical_height;
     scene->width = framebuffer_width;
     scene->height = framebuffer_height;
-    scene->device_scale = device_scale > 0.0f ? device_scale : 1.0f;
+    scene->device_scale_x = device_scale_x;
+    scene->device_scale_y = device_scale_y;
     if (scene->scenario_active)
     {
         scene->scenario_ctx.logical_width = logical_width;
         scene->scenario_ctx.logical_height = logical_height;
         scene->scenario_ctx.framebuffer_width = framebuffer_width;
         scene->scenario_ctx.framebuffer_height = framebuffer_height;
-        scene->scenario_ctx.device_scale = scene->device_scale;
+        scene->scenario_ctx.device_scale = 0.5f * (device_scale_x + device_scale_y);
         scene->scenario_ctx.width = logical_width;
         scene->scenario_ctx.height = logical_height;
     }
     dvz_figure_resize(figure->figure, logical_width, logical_height);
     _emit_resize(
         scene, logical_width, logical_height, framebuffer_width, framebuffer_height,
-        scene->device_scale);
+        scene->device_scale_x, scene->device_scale_y);
     if (scene->scenario_active && scene->scenario_spec.event != NULL)
     {
-        const float scale = scene->device_scale > 0.0f ? scene->device_scale : 1.0f;
         const DvzScenarioEvent event = {
             .kind = DVZ_SCENARIO_EVENT_RESIZE,
             .content.resize = {
@@ -89,8 +92,8 @@ int dvz_wasm_api_resize(
                 .framebuffer_height = framebuffer_height,
                 .window_width = logical_width,
                 .window_height = logical_height,
-                .content_scale_x = scale,
-                .content_scale_y = scale,
+                .content_scale_x = scene->device_scale_x,
+                .content_scale_y = scene->device_scale_y,
             },
         };
         scene->scenario_spec.event(&scene->scenario_ctx, &event, scene->scenario_user);

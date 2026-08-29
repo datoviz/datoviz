@@ -4540,16 +4540,36 @@ try {
       interactive.payload !== initial.payload && interactive.size !== initial.size,
       "generic 2D interactive payload did not replace initial payload",
     );
+    const resizedLogicalWidth = smokeSize * 2;
+    const resizedLogicalHeight = smokeSize + 8;
+    const resizedFramebufferWidth = resizedLogicalWidth * 2;
+    const resizedFramebufferHeight = resizedLogicalHeight * 1.5;
     expectStatus(
       Module._dvz_wasm_api_resize(
         scene,
         figure,
-        smokeSize * 2,
-        smokeSize + 8,
-        smokeSize * 4,
-        (smokeSize + 8) * 2,
+        resizedLogicalWidth,
+        resizedLogicalHeight,
+        resizedFramebufferWidth,
+        resizedFramebufferHeight,
         2,
         2,
+      ),
+      -1,
+      "inconsistent per-axis resize",
+    );
+    expectDiagnostics(
+      Module, scene, "invalid WASM resize request", "inconsistent per-axis resize");
+    expectStatus(
+      Module._dvz_wasm_api_resize(
+        scene,
+        figure,
+        resizedLogicalWidth,
+        resizedLogicalHeight,
+        resizedFramebufferWidth,
+        resizedFramebufferHeight,
+        2,
+        1.5,
       ),
       0,
       "api resize",
@@ -4557,6 +4577,22 @@ try {
     expectNoPayload(Module, scene, "resize invalidates 2D payload");
     const resized = emitStream(Module, scene, figure, "generic 2D resized");
     expect2DUpdateStreamShape(resized.stream, "generic 2D resized", 5, { allowSetupCommands: true });
+    const resizedViewports = commandsOf(resized.stream, "SetViewport");
+    const resizedScissors = commandsOf(resized.stream, "SetScissor");
+    requireOk(
+      resizedViewports.every(
+        (command) =>
+          command.width === resizedFramebufferWidth &&
+          command.height === resizedFramebufferHeight),
+      "generic 2D resize did not preserve per-axis viewport scales",
+    );
+    requireOk(
+      resizedScissors.every(
+        (command) =>
+          command.width === resizedFramebufferWidth &&
+          command.height === resizedFramebufferHeight),
+      "generic 2D resize did not preserve per-axis scissor scales",
+    );
     requireOk(
       resized.payload !== interactive.payload,
       "generic 2D resized payload did not replace interactive payload",

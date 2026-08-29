@@ -398,8 +398,7 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser e
 11. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group,
    vertex-buffer, buffer-size, texture-copy alignment, sample-count limits, and color-blending
    support used by scene emission;
-12. resize arguments are framebuffer pixel width/height plus device scale; the bridge derives logical
-   window size for the scene input router;
+12. resize arguments retain logical and framebuffer pixel extents plus exact per-axis framebuffer-to-logical scales; callers derive both scales from the measured extents rather than assuming raw browser DPR, and the bridge rejects inconsistent size tuples;
 13. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
    browsers keep controller math in the scene layer while still using framebuffer-sized targets.
 

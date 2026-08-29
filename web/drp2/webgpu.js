@@ -1,9 +1,11 @@
 import { decodeDrp2PacketSet } from "./packet.js";
 import {
+  canvasMetrics,
   resizeCanvasToDisplaySize,
   runtimeCapabilities,
 } from "./context.js";
 export {
+  canvasMetrics,
   initWebGPU,
   resizeWebGpuCanvas,
   runtimeCapabilities,
