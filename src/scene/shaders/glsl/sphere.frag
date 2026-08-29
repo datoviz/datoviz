@@ -21,7 +21,7 @@ void main()
     DvzSphereHit hit;
     if (!sphereIntersect(fragCenterView, fragRadius, fragNdc, hit))
         discard;
-    if (hit.coverage * fragColor.a <= coverageThreshold(gl_FragCoord.xy))
+    if (hit.coverage <= coverageThreshold(gl_FragCoord.xy))
         discard;
     gl_FragDepth = hit.deviceDepth;
 

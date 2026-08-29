@@ -22,7 +22,7 @@ void main()
     DvzSphereHit hit;
     if (!sphereIntersect(fragCenterView, fragRadius, fragNdc, hit))
         discard;
-    float coverage = hit.coverage * fragColor.a;
+    float coverage = hit.coverage;
 #ifdef DVZ_SURFACE_CAPTURE_A2C
     if (coverage <= 0.0)
         discard;

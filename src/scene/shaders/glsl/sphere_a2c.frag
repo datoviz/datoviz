@@ -24,7 +24,7 @@ void main()
     vec3 normalWorld = normalize(mat3(inverse(mvp.view)) * hit.normalView);
     vec4 shaded = evaluateSceneMaterial(fragColor, normalWorld, surfaceWorld, cameraWorld);
     vec3 cue = vec3(gl_FragDepth, length(cameraWorld - surfaceWorld), length(surfaceWorld));
-    outColor = vec4(applyDepthCue(shaded.rgb, cue), shaded.a * hit.coverage);
+    outColor = vec4(applyDepthCue(shaded.rgb, cue), hit.coverage);
 #ifdef DVZ_SURFACE_DEPTH_OUTPUT
     writeSurfaceDepth(hit.linearDepth);
 #endif

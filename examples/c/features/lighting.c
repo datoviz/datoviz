@@ -107,6 +107,8 @@ static bool _add_lit_spheres(
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_WARNING),
         example_graphite_cyan_color(EXAMPLE_STYLE_COLOR_GRID),
     };
+    for (uint32_t i = 0; i < SPHERE_COUNT; i++)
+        colors[i].a = 255u;
 
     DvzVisual* visual = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
     if (visual == NULL)
