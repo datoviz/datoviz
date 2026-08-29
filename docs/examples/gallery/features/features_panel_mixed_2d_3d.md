@@ -13,12 +13,17 @@ This example mixes native Datoviz 2D and 3D panels in one figure.
 
 ## Preview
 
-<div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Mixed 2D and 3D Panels"><span>No screenshot</span></div>
+=== "Screenshot"
 
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
+    ![Mixed 2D and 3D Panels](../../../assets/gallery/v0.4/features/features_panel_mixed_2d_3d.webp)
+
+=== "Live WebGPU"
+
+    <div class="dvz-webgpu-live" markdown="1">
+    <iframe src="../../../webgpu/live.html?id=features_panel_mixed_2d_3d" title="Mixed 2D and 3D Panels WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    </div>
+
+    <a href="../../../webgpu/live.html?id=features_panel_mixed_2d_3d">Open the live WebGPU example</a>.
 
 ## Run And Adapt
 
@@ -29,7 +34,7 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c features/panel_mixed_2d_3d` (build and run), or rerun `./build/examples/c/features/panel_mixed_2d_3d` |
 | Python | No verified adaptation on this page | Start from the C source. |
-| Browser | Deferred | the mixed 2D/3D controller scenario is not registered in the current browser subset |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=features_panel_mixed_2d_3d">Open live example</a> |
 
 This example is approved as a starting point for user code and coding agents. Keep the
 object lifetimes and data shapes intact while adapting the data and styling.
@@ -54,10 +59,10 @@ The left panel spans both grid rows and shows a Lorenz trajectory with an arcbal
     - Status: `experimental`
     - Source: [`examples/c/features/panel_mixed_2d_3d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_mixed_2d_3d.c)
     - Approved adaptation starter: `yes`
-    - Browser support: Deferred
-    - Browser note: the mixed 2D/3D controller scenario is not registered in the current browser subset
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=features_panel_mixed_2d_3d"><code>examples/webgpu/live.html?id=features_panel_mixed_2d_3d</code></a>
     - Browser capability tags: `panel-grid`, `path`, `arcball`, `panzoom`
-    - Validation: `smoke+interaction`
+    - Validation: `smoke+interaction+screenshot`
 
     **Tags**
 

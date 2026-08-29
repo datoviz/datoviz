@@ -65,6 +65,7 @@ DvzScenarioSpec dvz_example_overlay_card_scenario(void);
 DvzScenarioSpec dvz_example_panel_background_scenario(void);
 DvzScenarioSpec dvz_example_panel_grid_scenario(void);
 DvzScenarioSpec dvz_example_panel_linked_scenario(void);
+DvzScenarioSpec dvz_example_panel_mixed_2d_3d_scenario(void);
 DvzScenarioSpec dvz_example_panel_multi_scenario(void);
 DvzScenarioSpec dvz_example_panel_single_scenario(void);
 DvzScenarioSpec dvz_example_panel_view2d_scenario(void);
@@ -297,6 +298,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_showcase_cortical_activity_scenario();
     case 89:
         return dvz_showcase_point_cloud_scenario();
+    case 90:
+        return dvz_example_panel_mixed_2d_3d_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

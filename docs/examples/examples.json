@@ -224,7 +224,7 @@
       "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_mixed_2d_3d.c",
       "page": "gallery/features/features_panel_mixed_2d_3d.md",
       "summary": "This example mixes native Datoviz 2D and 3D panels in one figure.",
-      "validation": "smoke+interaction",
+      "validation": "smoke+interaction+screenshot",
       "build_command": "just example-c features/panel_mixed_2d_3d",
       "smoke_command": "./build/examples/c/features/panel_mixed_2d_3d --png",
       "tags": [
@@ -240,31 +240,32 @@
       "data_kind": "simulated",
       "media": {
         "screenshot": {
-          "expected": false,
-          "status": "not-required",
+          "expected": true,
+          "status": "available",
           "source": "data/gallery/v0.4/features/features_panel_mixed_2d_3d.png",
           "site_asset": "/assets/gallery/v0.4/features/features_panel_mixed_2d_3d.webp"
         }
       },
-      "webgpu_status": "webgpu-deferred",
-      "webgpu_status_label": "Deferred",
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "panel-grid",
         "path",
         "arcball",
         "panzoom"
       ],
-      "webgpu_reason": "the mixed 2D/3D controller scenario is not registered in the current browser subset",
       "webgpu": {
-        "status": "webgpu-deferred",
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_panel_mixed_2d_3d",
         "requirements": [
           "panel-grid",
           "path",
           "arcball",
           "panzoom"
-        ],
-        "reason": "the mixed 2D/3D controller scenario is not registered in the current browser subset"
+        ]
       },
+      "webgpu_route": "examples/webgpu/live.html?id=features_panel_mixed_2d_3d",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_panel_mixed_2d_3d",
       "primary_feature": "mixed-2d-3d-panels"
     },
     {

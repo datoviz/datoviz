@@ -23,7 +23,7 @@ For normal contributor workflows:
 | --- | --- |
 | Build and test commands | [`docs/contributors/build-and-test.md`](docs/contributors/build-and-test.md) |
 | C style, generated files, and validation expectations | [`docs/contributors/coding-style.md`](docs/contributors/coding-style.md) |
-| Public examples | [`docs/contributors/adding-examples.md`](docs/contributors/adding-examples.md) |
+| Public examples, screenshots, WebGPU, and video | [`docs/contributors/adding-examples.md`](docs/contributors/adding-examples.md) |
 | Visual families | [`docs/contributors/adding-a-visual.md`](docs/contributors/adding-a-visual.md) |
 | Documentation pages | [`docs/contributors/docs-authoring.md`](docs/contributors/docs-authoring.md) |
 | Coding-agent workflows | [`docs/contributors/ai-agents.md`](docs/contributors/ai-agents.md) |

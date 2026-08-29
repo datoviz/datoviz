@@ -380,18 +380,18 @@ examples:
     primary_feature: mixed-2d-3d-panels
     lane: features
     source: examples/c/features/panel_mixed_2d_3d.c
-    validation: smoke+interaction
+    validation: smoke+interaction+screenshot
     data:
       kind: simulated
     portability: portable-scenario
     webgpu:
-      status: webgpu-deferred
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_panel_mixed_2d_3d
       requirements:
         - panel-grid
         - path
         - arcball
         - panzoom
-      reason: the mixed 2D/3D controller scenario is not registered in the current browser subset
     agent_copy_safe: true
     gallery:
       card: large

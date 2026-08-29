@@ -79,6 +79,7 @@ asked.
 3. Read [agents/now/RELEASE.md](agents/now/RELEASE.md) for release sequencing.
 4. Read [spec/scene/README.md](spec/scene/README.md) before changing scene semantics or runtime
    boundaries.
+5. Read [docs/contributors/adding-examples.md](docs/contributors/adding-examples.md) before adding or promoting a public example, screenshot, WebGPU route, animation, or video.
 
 
 ## Build, Test, Code

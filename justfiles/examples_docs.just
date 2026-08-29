@@ -161,6 +161,18 @@ gallery-media-check *args:
     @just check-gallery-media "$@"
 
 
+# Validate one public example without changing canonical data media.
+[positional-arguments]
+example-check id *args:
+    @python3 tools/example_workflow.py check "{{id}}" {{args}}
+
+
+# Promote one public example after explicit approval for its canonical data update.
+[positional-arguments]
+example-promote id *args:
+    @python3 tools/example_workflow.py promote "{{id}}" {{args}}
+
+
 # Generate build-local WebP derivatives for gallery screenshots.
 [positional-arguments]
 gallery-webp *args:

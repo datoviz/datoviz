@@ -1222,6 +1222,22 @@ function expectLinkedPanelScenarioStreamShape(stream, label) {
   expectWriteCommands(stream, label);
 }
 
+function expectMixed2D3DPanelScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectCommandCount(stream, "HelloRenderer", 1, label);
+  expectCommandCount(stream, "RendererHelloReply", 1, label);
+  requireOk(commandsOf(stream, "SetViewport").length >= 3, `${label}: expected three panel viewports`);
+  requireOk(commandsOf(stream, "SetScissor").length >= 3, `${label}: expected three panel scissors`);
+  expectPipeline(stream, `${label} trajectories`, (pipeline) => pipeline.builtin_pipeline === "scene.path");
+  expectPipeline(stream, `${label} panel chrome`, (pipeline) => pipeline.builtin_pipeline === "scene.primitive");
+  expectPipeline(stream, `${label} grids`, (pipeline) => pipeline.builtin_pipeline === "scene.segment");
+  expectPipeline(stream, `${label} labels`, (pipeline) => pipeline.builtin_pipeline === "scene.glyph");
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 3, `${label}: expected three path draws`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: expected glyph atlas upload`);
+  expectWriteCommands(stream, label);
+}
+
 function expectPanzoomScenarioStreamShape(stream, label) {
   expectPanelScenarioStreamShape(stream, label, { minViewports: 1, pointInstances: 64 });
 }
@@ -2515,6 +2531,7 @@ try {
         smokeSize,
         smokeSize,
         1,
+        1,
       ),
       -1,
       "invalid resize",
@@ -2659,6 +2676,7 @@ try {
     "showcases_streaming_daq",
     "showcases_cortical_activity",
     "showcases_point_cloud",
+    "features_panel_mixed_2d_3d",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3568,6 +3586,11 @@ try {
       (stream, label) => expectLinkedPanelScenarioStreamShape(stream, label),
     ],
     [
+      "features_panel_mixed_2d_3d",
+      "mixed 2D/3D panels",
+      (stream, label) => expectMixed2D3DPanelScenarioStreamShape(stream, label),
+    ],
+    [
       "features_text_block",
       "text block",
       (stream, label) => expectTextBlockScenarioStreamShape(stream, label),
@@ -3883,6 +3906,56 @@ try {
       requireOk(figure !== 0, `${label} scenario has no figure`);
       const initial = emitStream(Module, scene, figure, `${label} initial`);
       expectShape(initial.stream, `${label} initial`);
+      if (id === "features_panel_mixed_2d_3d") {
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_PRESS, 320, 360, DVZ_POINTER_BUTTON_LEFT, 0, 1, 100),
+          0,
+          `${label} arcball press`,
+        );
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_MOVE, 360, 330, DVZ_POINTER_BUTTON_LEFT, 0, 1, 116),
+          0,
+          `${label} arcball move`,
+        );
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_RELEASE, 360, 330, DVZ_POINTER_BUTTON_LEFT, 0, 1, 132),
+          0,
+          `${label} arcball release`,
+        );
+        const arcballFrame = emitIncrementalPacketStream(Module, scene, figure, `${label} arcball`);
+        requireOk(
+          arcballFrame.update.decoded.commands.some((command) => command.cmd === "WriteBuffer"),
+          `${label}: arcball interaction emitted no uniform update`,
+        );
+
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_PRESS, 1000, 180, DVZ_POINTER_BUTTON_LEFT, 0, 1, 148),
+          0,
+          `${label} panzoom press`,
+        );
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_MOVE, 1040, 200, DVZ_POINTER_BUTTON_LEFT, 0, 1, 164),
+          0,
+          `${label} panzoom move`,
+        );
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_RELEASE, 1040, 200, DVZ_POINTER_BUTTON_LEFT, 0, 1, 180),
+          0,
+          `${label} panzoom release`,
+        );
+        const panzoomFrame = emitIncrementalPacketStream(Module, scene, figure, `${label} panzoom`);
+        requireOk(
+          panzoomFrame.update.decoded.commands.some((command) => command.cmd === "WriteBuffer"),
+          `${label}: panzoom interaction emitted no uniform update`,
+        );
+        expectNoDiagnostics(Module, scene, `${label} controller diagnostics`);
+      }
       if (
         id === "features_update_partial" ||
         id === "features_update_visual_data" ||
@@ -4475,6 +4548,7 @@ try {
         smokeSize + 8,
         smokeSize * 4,
         (smokeSize + 8) * 2,
+        2,
         2,
       ),
       0,

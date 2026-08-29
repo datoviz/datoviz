@@ -407,6 +407,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "features_panel_linked",
   },
   {
+    id: "features_panel_mixed_2d_3d",
+    label: "Mixed 2D and 3D Panels",
+    scenarioId: "features_panel_mixed_2d_3d",
+  },
+  {
     id: "features_text_block",
     label: "Text Block",
     scenarioId: "features_text_block",

@@ -35,3 +35,7 @@ other boilerplate that is not the feature being shown.
 `../../spec/scene/examples/PLANNING.md`. Required scenarios that are still absent from the manifest
 remain explicit gaps in the planning table; `MIGRATION.md` records the reset and where legacy
 material went.
+
+## Adding A Public Example
+
+Follow the complete [public gallery example workflow](../../docs/contributors/adding-examples.md). Every public example requires a deterministic screenshot and explicit WebGPU classification; add deterministic animation or video when motion or interaction is essential. Use `just example-check <id>` while iterating and `just example-promote <id> --approve-data-update` only after the exact canonical media update is approved.

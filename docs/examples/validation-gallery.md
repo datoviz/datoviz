@@ -9,7 +9,7 @@ generated in Vulkan-capable environments and should not be committed accidentall
 ## Evidence Counts
 
 - Reviewed public C examples generated for the website: 117
-- Examples declaring screenshot validation: 104
+- Examples declaring screenshot validation: 105
 - Examples that should have video or motion evidence: 8
 
 ## Commands
@@ -33,6 +33,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Single Panel](gallery/features/features_panel_single.md) | [`examples/c/features/panel_single.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_single.c) | `supported` | `smoke+screenshot` |
 | [Panel Grid](gallery/features/features_panel_grid.md) | [`examples/c/features/panel_grid.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_grid.c) | `supported` | `smoke+screenshot` |
 | [Multiple Panels](gallery/features/features_panel_multi.md) | [`examples/c/features/panel_multi.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_multi.c) | `supported` | `smoke+interaction+screenshot` |
+| [Mixed 2D and 3D Panels](gallery/features/features_panel_mixed_2d_3d.md) | [`examples/c/features/panel_mixed_2d_3d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_mixed_2d_3d.c) | `experimental` | `smoke+interaction+screenshot` |
 | [Linked Panels](gallery/features/features_panel_linked.md) | [`examples/c/features/panel_linked.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_linked.c) | `supported` | `smoke+interaction+screenshot` |
 | [Path With 2D Axes](gallery/features/features_axes_2d.md) | [`examples/c/features/axes_2d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/axes_2d.c) | `supported` | `smoke+screenshot` |
 | [Coordinate System](gallery/features/features_coordinate_system.md) | [`examples/c/features/coordinate_system.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/coordinate_system.c) | `supported` | `smoke+screenshot` |

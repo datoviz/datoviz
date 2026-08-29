@@ -15,7 +15,7 @@ versions. Runner command expansion should remain evidence-driven and scoped to t
 ## RC Promotion Target
 
 Current fixture proof counts remain the dashboard truth for the low-level runner. The live gallery
-now has 83 promoted routes backed by canonical C examples or portable C scenarios:
+now has 90 promoted routes backed by canonical C examples or portable C scenarios:
 `features_basic_scene`, `features_timer_animation`, `features_builtin_shapes_2d`,
 `features_builtin_shapes_3d`, `features_isolines`,
 `features_animation_tracks`, `features_compute_buffer_animation`, `features_obj_loading`,
@@ -24,7 +24,7 @@ now has 83 promoted routes backed by canonical C examples or portable C scenario
 `features_legend_categorical`, `features_annotation_readout`, `showcases_linked_probe_colorbar`,
 `showcases_scientific_plotting`, `visuals_vector`, `showcases_wind_field`,
 `showcases_gpu_particle_smoke`, `features_panel_single`, `features_panel_grid`, `features_panzoom`,
-`features_axes_2d`, `features_axis_labels`, `features_panel_multi`, `features_panel_linked`,
+`features_axes_2d`, `features_axis_labels`, `features_panel_multi`, `features_panel_linked`, `features_panel_mixed_2d_3d`,
 `features_text_block`, `features_overlay_card`, `features_guide_lines`, `features_guide_spans`,
 `features_bars_bands`, `features_controller_fly`, `features_controller_turntable`,
 `features_sampled_field_update`, `features_colormap_scale`,
@@ -183,6 +183,8 @@ passed with `features_panel_multi`, `features_panel_linked`, `features_text_bloc
 and covered by targeted stream-shape checks; `just webgpu-browser-smoke` exited successfully in
 this shell with the known headless external WebGPU instance-loss skip at `QueueSubmit` for the
 promoted routes; native PNG smokes passed for the examples.
+
+Recorded local mixed-panel promotion proof on 2026-08-29: the canonical `features_panel_mixed_2d_3d` scenario is registered in the 91-scenario WASM table; native PNG capture and `just wasm-scene-smoke` passed, including three-panel WGSL packet shape plus separate arcball and panzoom uniform-update assertions. The filtered browser route reached `QueueSubmit` and then hit the known external headless WebGPU instance-loss diagnostic, so that browser run is a skip rather than visual proof.
 
 Recorded local image/color-scale promotion proof on 2026-06-10: `just wasm-scene-smoke` passed
 with `features_sampled_field_update`, `features_colormap_scale`, and `features_panel_background`

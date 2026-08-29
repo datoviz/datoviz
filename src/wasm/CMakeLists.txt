@@ -56,6 +56,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_background.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_grid.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_linked.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/panel_mixed_2d_3d.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_multi.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_single.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/panel_view2d.c
