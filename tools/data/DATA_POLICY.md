@@ -1,6 +1,7 @@
 # Example Data Policy
 
-This policy covers example-data bundles prepared by `tools/data/*` and stored in the `data` submodule.
+This policy covers example-data bundles prepared by `tools/data/*` and stored in the transitional `data` submodule. The protected `datoviz/data:v0.4-dev` branch is frozen at `3c862beb2e9885f5af9dc624dc22a6d5bb856026` except for explicitly approved recovery or migration work; do not add active datasets or gallery output while the catalog migration is pending, and do not rename, merge, or repoint it to the unrelated historical `data:main` line.
+
 Do not edit scripts or data files when the task is documentation-only.
 
 The canonical v0.4 data-branch strategy is in
@@ -18,8 +19,7 @@ change includes both data and parent-repo references, keep the order explicit:
 2. Return to the parent repository and stage the updated `data` submodule pointer plus any parent-repo
    code or documentation that depends on it.
 3. Commit the parent repository only after the submodule commit exists locally.
-4. Do not push either repository unless the user explicitly asks for a push. If a push is requested later,
-   push the data submodule commit first, then the parent repository commit that references it.
+4. Do not push either repository unless the user explicitly asks for a push. If a push is requested later, push the approved data commit to `datoviz/data:v0.4-dev`, run `python3 tools/check_submodule_reachability.py data` from the parent repository, then push the parent repository commit that references it.
 
 Useful status checks:
 
@@ -65,14 +65,15 @@ being promoted into the data submodule.
 
 Manifests and provenance files are normal text files and should not be stored through LFS.
 
-When a push is eventually requested, upload LFS objects before pushing the parent repository pointer:
+When an explicitly approved recovery or migration push is eventually requested, upload LFS objects and fast-forward the protected v0.4 data branch before publishing the parent repository pointer:
 
 ```bash
 cd data
 git lfs status
-git lfs push origin main
-git push origin main
+git lfs push origin HEAD
+git push origin HEAD:v0.4-dev
 cd ..
+python3 tools/check_submodule_reachability.py data
 git push
 ```
 
