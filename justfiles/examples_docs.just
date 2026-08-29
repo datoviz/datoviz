@@ -331,9 +331,8 @@ docs-video-assets-status: docs-assets
 #
 
 docs-video-assets:
-    @python3 tools/compare_gallery_media.py --site-video-previews --write-site-assets
-    @python3 tools/docs_asset_stage.py --profile local --gallery-products build/gallery-webp/v0.4 --stage-root build/docs-assets/local
-    @python3 tools/check_docs_video_assets.py --output-dir build/docs-assets/local/gallery/v0.4 --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json
+    @just docs-assets
+    @python3 tools/hydrate_docs_video_assets.py --staging-root build/docs-assets/local/gallery/v0.4 --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json --watched-sentinel build/docs-assets/local/.gallery-video-assets.ready --strict
 #
 
 serve: docs-video-assets-status wasm-scene-build-if-needed
@@ -369,6 +368,21 @@ serve: docs-video-assets-status wasm-scene-build-if-needed
     if [ "$port" != "$start_port" ]; then
         echo "Port ${host}:${start_port} is busy; serving docs on ${host}:${port}."
     fi
+
+    echo "Hydrating local gallery videos in the background; progress: build/docs-video-assets.log"
+    (
+        if python3 tools/hydrate_docs_video_assets.py \
+            --staging-root build/docs-assets/local/gallery/v0.4 \
+            --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json \
+            --watched-sentinel build/docs-assets/local/.gallery-video-assets.ready \
+            > build/docs-video-assets.log 2>&1; then
+            echo "Local gallery video hydration finished; the preview will reload automatically."
+        else
+            echo "WARNING: local gallery video hydration failed; see build/docs-video-assets.log." >&2
+        fi
+    ) &
+    media_pid=$!
+    trap 'kill "$media_pid" 2>/dev/null || true; wait "$media_pid" 2>/dev/null || true' EXIT INT TERM
 
     DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/local uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve --watch build/docs-assets/local/.gallery-video-assets.ready -a "${host}:${port}"
 #
@@ -419,6 +433,11 @@ publish confirm='no' source_branch='main' seed_legacy='no':
     just check-gallery-media-freshness
     python3 tools/build_gallery_webp.py --output-dir build/gallery-webp/v0.4 --animated-fallbacks
     python3 tools/gen_start_thumbs.py --output-dir build/gallery-webp/v0.4/thumbs
+    python3 tools/hydrate_docs_video_assets.py \
+        --staging-root build/gallery-webp/v0.4 \
+        --availability-manifest build/docs-assets/publish-video-status.json \
+        --watched-sentinel build/docs-assets/.publish-video-assets.ready \
+        --strict
     python3 tools/docs_asset_stage.py --profile publish --gallery-products build/gallery-webp/v0.4 --stage-root build/docs-assets/publish
 
     deploy_tmp=$(mktemp -d)
