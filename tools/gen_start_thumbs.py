@@ -121,5 +121,6 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--force", action="store_true", help="regenerate even when up to date")
+    parser.add_argument("--output-dir", type=Path, default=OUT)
     args = parser.parse_args()
-    generate(force=args.force)
+    generate(force=args.force, output_dir=args.output_dir)

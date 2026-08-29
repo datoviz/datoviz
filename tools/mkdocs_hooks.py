@@ -4,7 +4,6 @@
 # -------------------------------------------------------------------------------------------------
 
 import ast
-import io
 import os
 import shutil
 import sys
@@ -20,8 +19,7 @@ from mkdocs.structure.files import File
 CURDIR = Path(__file__).parent
 ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
-SITE_ASSETS_ENV = 'DATOVIZ_DOCS_SITE_ASSETS'
-GENERATED_ROOT_ENV = 'DATOVIZ_DOCS_GENERATED_ROOT'
+ASSET_STAGE_ENV = 'DATOVIZ_DOCS_ASSET_STAGE'
 # Util functions
 # -------------------------------------------------------------------------------------------------
 
@@ -85,23 +83,28 @@ def copy_tree_if_exists(src, dst, label='asset'):
     shutil.copytree(src_path, dst_path)
 
 
-def generated_root():
-    """Return the generated-asset root for the current documentation build."""
-    value = os.environ.get(GENERATED_ROOT_ENV)
+def asset_stage_root():
+    """Return the explicit, prebuilt generated-media stage consumed by MkDocs."""
+    value = os.environ.get(ASSET_STAGE_ENV)
     if not value:
-        return ROOT / 'build'
+        raise ValueError(
+            f"{ASSET_STAGE_ENV} is required; prepare a hermetic, local, or publish stage first"
+        )
     path = Path(value)
-    return path if path.is_absolute() else ROOT / path
+    stage = path if path.is_absolute() else ROOT / path
+    if not stage.is_dir():
+        raise FileNotFoundError(f"documentation asset stage not found: {stage}")
+    return stage
 
 
 def gallery_output_path():
-    """Return the gallery output directory for the current documentation build."""
-    return generated_root() / 'gallery-webp/v0.4'
+    """Return the staged gallery directory for the current documentation build."""
+    return asset_stage_root() / 'gallery/v0.4'
 
 
 def webgpu_output_path():
-    """Return the WebGPU data output directory for the current documentation build."""
-    return generated_root() / 'webgpu-data'
+    """Return the staged WebGPU data directory for the current documentation build."""
+    return asset_stage_root() / 'webgpu-data'
 
 
 def first_existing_path(*paths):
@@ -197,50 +200,6 @@ def build_gallery_nav_sections():
     return sections
 
 
-def prepare_optional_site_assets():
-    """Stage external publication assets only for an explicit site build."""
-    import build_gallery_webp
-    import build_webgpu_data_bundles
-
-    gallery_output = gallery_output_path()
-    webgpu_output = webgpu_output_path()
-    if os.environ.get(SITE_ASSETS_ENV) != '1':
-        shutil.rmtree(gallery_output, ignore_errors=True)
-        shutil.rmtree(webgpu_output, ignore_errors=True)
-        stage_hermetic_gallery_placeholders(gallery_output)
-        print(f"mkdocs: external publication assets disabled; set {SITE_ASSETS_ENV}=1 to stage real media")
-        return
-
-    build_gallery_webp.generate_gallery_webp(quiet_missing=False, animated_fallbacks=True)
-    build_webgpu_data_bundles.stage_bundles()
-
-
-def stage_hermetic_gallery_placeholders(output):
-    """Create generated-only stand-ins so strict docs builds can validate publication links."""
-    from PIL import Image, ImageDraw
-    from build_gallery import collect_examples, load_manifest
-
-    image = Image.new('RGB', (640, 360), color=(32, 38, 48))
-    draw = ImageDraw.Draw(image)
-    draw.line((0, 0, 640, 360), fill=(80, 96, 120), width=8)
-    draw.line((0, 360, 640, 0), fill=(80, 96, 120), width=8)
-    draw.text((24, 24), 'MEDIA EXCLUDED FROM HERMETIC BUILD', fill=(220, 226, 235))
-    encoded = io.BytesIO()
-    image.save(encoded, format='WEBP', quality=70, method=6)
-    payload = encoded.getvalue()
-
-    examples = collect_examples(load_manifest(ROOT / 'examples/c/MANIFEST.yaml'))
-    count = 0
-    for example in examples:
-        if not example.screenshot_expected:
-            continue
-        path = Path(output) / example.lane / f'{example.id}.webp'
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(payload)
-        count += 1
-    print(f'mkdocs: staged {count} hermetic gallery placeholders')
-
-
 # Hooks
 # -------------------------------------------------------------------------------------------------
 
@@ -294,13 +253,9 @@ def on_pre_build(**kwargs):
     import sys
     sys.path.insert(0, str(CURDIR))
     import build_tutorial_media
-    import gen_start_thumbs
-
-    prepare_optional_site_assets()
     tutorial_rc, _ = build_tutorial_media.generate_tutorial_media(strict=True)
     if tutorial_rc != 0:
         raise RuntimeError("Vulkan tutorial preview generation failed")
-    gen_start_thumbs.generate(output_dir=gallery_output_path() / 'thumbs')
 
 
 def on_files(files, config):

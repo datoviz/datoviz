@@ -3,7 +3,6 @@ site_url: https://datoviz.org
 repo_url: https://github.com/datoviz/datoviz
 docs_dir: docs
 watch:
-  - build/gallery-webp/v0.4
   - build/vulkan-course-media
   - build-wasm-scene/wasm
   - examples/webgpu

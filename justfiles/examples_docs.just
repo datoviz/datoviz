@@ -279,10 +279,11 @@ docs-check-generated:
     @python3 tools/check_generated_docs.py
 
 docs-build-check: build
-    @mkdir -p build/gallery-webp/v0.4 build/vulkan-course-media build-wasm-scene/wasm
+    @mkdir -p build/vulkan-course-media build-wasm-scene/wasm
     @python3 -m unittest tools/tests/test_build_gallery_webp.py
     @python3 -m unittest tools/tests/test_build_tutorial_media.py
-    @DATOVIZ_DOCS_GENERATED_ROOT=build/docs-check-generated uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict --site-dir build/docs-site-check
+    @python3 tools/docs_asset_stage.py --profile hermetic --stage-root build/docs-assets/hermetic
+    @DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/hermetic uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict --site-dir build/docs-site-check
 
 check-example-manifests:
     @python3 tools/check_example_ids.py
@@ -320,19 +321,22 @@ docs-api-check: check-api-docs
 #
 
 docs-assets:
-    @python3 tools/build_gallery_webp.py --require-image-dir --quiet-missing
+    @python3 tools/build_gallery_webp.py --output-dir build/gallery-webp/v0.4 --require-image-dir --quiet-missing
+    @python3 tools/gen_start_thumbs.py --output-dir build/gallery-webp/v0.4/thumbs
+    @python3 tools/docs_asset_stage.py --profile local --gallery-products build/gallery-webp/v0.4 --stage-root build/docs-assets/local
 #
 
-docs-video-assets-status:
-    @python3 tools/check_docs_video_assets.py
+docs-video-assets-status: docs-assets
+    @python3 tools/check_docs_video_assets.py --output-dir build/docs-assets/local/gallery/v0.4 --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json
 #
 
 docs-video-assets:
     @python3 tools/compare_gallery_media.py --site-video-previews --write-site-assets
-    @python3 tools/check_docs_video_assets.py
+    @python3 tools/docs_asset_stage.py --profile local --gallery-products build/gallery-webp/v0.4 --stage-root build/docs-assets/local
+    @python3 tools/check_docs_video_assets.py --output-dir build/docs-assets/local/gallery/v0.4 --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json
 #
 
-serve: docs-assets docs-video-assets-status wasm-scene-build-if-needed
+serve: docs-video-assets-status wasm-scene-build-if-needed
     #!/usr/bin/env bash
     set -euo pipefail
 
@@ -366,7 +370,7 @@ serve: docs-assets docs-video-assets-status wasm-scene-build-if-needed
         echo "Port ${host}:${start_port} is busy; serving docs on ${host}:${port}."
     fi
 
-    DATOVIZ_DOCS_SITE_ASSETS=1 uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve -a "${host}:${port}"
+    DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/local uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve --watch build/docs-assets/local/.gallery-video-assets.ready -a "${host}:${port}"
 #
 
 docs-serve:
@@ -413,10 +417,13 @@ publish confirm='no' source_branch='main' seed_legacy='no':
     just wasm-scene-build-if-needed
     just wasm-scene-export-check
     just check-gallery-media-freshness
+    python3 tools/build_gallery_webp.py --output-dir build/gallery-webp/v0.4 --animated-fallbacks
+    python3 tools/gen_start_thumbs.py --output-dir build/gallery-webp/v0.4/thumbs
+    python3 tools/docs_asset_stage.py --profile publish --gallery-products build/gallery-webp/v0.4 --stage-root build/docs-assets/publish
 
     deploy_tmp=$(mktemp -d)
     trap 'rm -rf "$deploy_tmp"' EXIT
-    DATOVIZ_DOCS_SITE_ASSETS=1 uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
+    DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/publish uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
         mkdocs build --strict --site-dir "$deploy_tmp/built"
     just wasm-scene-export-check \
         "$deploy_tmp/built/build-wasm-scene/wasm/datoviz_wasm_scene.mjs"
