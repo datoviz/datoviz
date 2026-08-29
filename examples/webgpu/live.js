@@ -19,8 +19,7 @@ function fitCanvasToStage() {
   if (stage === null) return;
   const rect = stage.getBoundingClientRect();
   const scale = Math.min(rect.width / DESIGN_WIDTH, rect.height / DESIGN_HEIGHT);
-  canvas.style.width = `${Math.max(1, Math.floor(DESIGN_WIDTH * scale))}px`;
-  canvas.style.height = `${Math.max(1, Math.floor(DESIGN_HEIGHT * scale))}px`;
+  canvas.style.setProperty("--dvz-stage-scale", Math.max(Number.EPSILON, scale));
 }
 
 fitCanvasToStage();

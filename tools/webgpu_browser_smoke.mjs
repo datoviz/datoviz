@@ -214,12 +214,11 @@ class CdpPage {
     await this.send('Page.enable');
     await this.send('Runtime.enable');
     await this.send('Log.enable');
-    await this.send('Emulation.setDeviceMetricsOverride', {
-      width: CAPTURE_CANVAS_WIDTH,
-      height: CAPTURE_CANVAS_HEIGHT + CAPTURE_PAGE_CHROME_HEIGHT,
-      deviceScaleFactor: CAPTURE_DEVICE_SCALE_FACTOR,
-      mobile: false,
-    });
+    await this.setDeviceMetrics(
+      CAPTURE_CANVAS_WIDTH,
+      CAPTURE_CANVAS_HEIGHT + CAPTURE_PAGE_CHROME_HEIGHT,
+      CAPTURE_DEVICE_SCALE_FACTOR,
+    );
     this.on('Runtime.exceptionThrown', (event) => {
       const detail = event.exceptionDetails;
       this.errors.push(detail.text ?? detail.exception?.description ?? 'Runtime exception');
@@ -236,6 +235,15 @@ class CdpPage {
       if (event.type === 'error') {
         this.consoleErrors.push(event.args.map((arg) => arg.value ?? arg.description).join(' '));
       }
+    });
+  }
+
+  async setDeviceMetrics(width, height, deviceScaleFactor) {
+    await this.send('Emulation.setDeviceMetricsOverride', {
+      width,
+      height,
+      deviceScaleFactor,
+      mobile: false,
     });
   }
 
@@ -340,19 +348,23 @@ class CdpPage {
     if (expectedSize !== null) {
       const expectedWidth = expectedSize.width;
       const expectedHeight = expectedSize.height;
+      const expectedCssWidth = expectedSize.cssWidth ?? expectedWidth;
+      const expectedCssHeight = expectedSize.cssHeight ?? expectedHeight;
+      const expectedDeviceScaleFactor =
+        expectedSize.deviceScaleFactor ?? CAPTURE_DEVICE_SCALE_FACTOR;
       const matches = (
-        metrics.cssWidth === expectedWidth &&
-        metrics.cssHeight === expectedHeight &&
+        metrics.cssWidth === expectedCssWidth &&
+        metrics.cssHeight === expectedCssHeight &&
         metrics.framebufferWidth === expectedWidth &&
         metrics.framebufferHeight === expectedHeight &&
-        metrics.devicePixelRatio === CAPTURE_DEVICE_SCALE_FACTOR
+        metrics.devicePixelRatio === expectedDeviceScaleFactor
       );
       requireOk(
         matches,
         `${path}: unexpected capture canvas metrics: ${JSON.stringify(metrics)}; ` +
-          `expected CSS=${expectedWidth}x${expectedHeight}, ` +
+          `expected CSS=${expectedCssWidth}x${expectedCssHeight}, ` +
           `framebuffer=${expectedWidth}x${expectedHeight}, ` +
-          `DPR=${CAPTURE_DEVICE_SCALE_FACTOR}`,
+          `DPR=${expectedDeviceScaleFactor}`,
       );
     }
     const dataUrl = await this.evaluate(`(() => {
@@ -365,7 +377,7 @@ class CdpPage {
     );
     const buffer = Buffer.from(dataUrl.slice('data:image/png;base64,'.length), 'base64');
     await writeFile(path, buffer);
-    assertPngNonblank(buffer, path);
+    const coverage = assertPngNonblank(buffer, path);
     if (expectedSize !== null) {
       requireOk(
         buffer.readUInt32BE(16) === expectedSize.width &&
@@ -373,6 +385,7 @@ class CdpPage {
         `${path}: PNG dimensions do not match ${expectedSize.width}x${expectedSize.height}`,
       );
     }
+    return coverage;
   }
 
   async dragCanvas(dx, dy) {
@@ -452,6 +465,10 @@ function assertPngNonblank(buffer, label) {
   let previous = null;
   const colors = new Set();
   let brightPixels = 0;
+  let brightMinX = width;
+  let brightMinY = height;
+  let brightMaxX = -1;
+  let brightMaxY = -1;
   for (let y = 0; y < height; y++) {
     const filter = raw[rawOffset++];
     const row = Buffer.from(raw.subarray(rawOffset, rawOffset + stride));
@@ -466,10 +483,84 @@ function assertPngNonblank(buffer, label) {
       colors.add(`${r},${g},${b}`);
       if (r + g + b > 48) {
         brightPixels++;
+        brightMinX = Math.min(brightMinX, x);
+        brightMinY = Math.min(brightMinY, y);
+        brightMaxX = Math.max(brightMaxX, x);
+        brightMaxY = Math.max(brightMaxY, y);
       }
     }
   }
   requireOk(colors.size > 1 && brightPixels > 16, `${label}: screenshot appears blank`);
+  return {
+    width,
+    height,
+    brightPixels,
+    brightBounds: { minX: brightMinX, minY: brightMinY, maxX: brightMaxX, maxY: brightMaxY },
+  };
+}
+
+async function smokeFixedDesignHiDpi(page, path, screenshotPath) {
+  await page.setDeviceMetrics(904, 700, 1.25);
+  const metrics = await page.waitFor(`(() => {
+    const canvas = document.querySelector("#viewport");
+    const scene = window.__datovizWasmScene;
+    if (canvas === null || scene === null || scene === undefined) return false;
+    const rect = canvas.getBoundingClientRect();
+    const point = scene._canvasPoint({ clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 });
+    const value = {
+      clientWidth: canvas.clientWidth,
+      clientHeight: canvas.clientHeight,
+      displayWidth: rect.width,
+      displayHeight: rect.height,
+      framebufferWidth: canvas.width,
+      framebufferHeight: canvas.height,
+      devicePixelRatio: window.devicePixelRatio,
+      scaleX: scene._lastResize?.scaleX,
+      scaleY: scene._lastResize?.scaleY,
+      point,
+    };
+    return canvas.width === 1600 && canvas.height === 900 ? value : false;
+  })()`, 15000);
+  requireOk(
+    metrics.clientWidth === 1280 && metrics.clientHeight === 720,
+    `${path}: transformed canvas lost its fixed logical box: ${JSON.stringify(metrics)}`,
+  );
+  requireOk(
+    metrics.displayWidth < metrics.clientWidth && metrics.displayHeight < metrics.clientHeight,
+    `${path}: fixed canvas was not fitted with a display transform: ${JSON.stringify(metrics)}`,
+  );
+  requireOk(
+    metrics.devicePixelRatio === 1.25 && metrics.scaleX === 1.25 && metrics.scaleY === 1.25,
+    `${path}: HiDPI canvas scale is inconsistent: ${JSON.stringify(metrics)}`,
+  );
+  requireOk(
+    Math.abs(metrics.point.x - 640) < 1e-6 && Math.abs(metrics.point.y - 360) < 1e-6,
+    `${path}: transformed canvas center did not map to figure center: ${JSON.stringify(metrics)}`,
+  );
+  const coverage = await page.screenshotCanvas(
+    screenshotPath.replace('.png', '-hidpi.png'),
+    {
+      width: 1600,
+      height: 900,
+      cssWidth: metrics.displayWidth,
+      cssHeight: metrics.displayHeight,
+      deviceScaleFactor: 1.25,
+    },
+  );
+  requireOk(
+    coverage.brightBounds.maxX >= 0.65 * coverage.width,
+    `${path}: HiDPI rendering remains confined to the left of the canvas: ${JSON.stringify(coverage)}`,
+  );
+  await page.setDeviceMetrics(
+    CAPTURE_CANVAS_WIDTH,
+    CAPTURE_CANVAS_HEIGHT + CAPTURE_PAGE_CHROME_HEIGHT,
+    CAPTURE_DEVICE_SCALE_FACTOR,
+  );
+  await page.waitFor(`(() => {
+    const canvas = document.querySelector("#viewport");
+    return canvas?.width === ${CAPTURE_CANVAS_WIDTH} && canvas?.height === ${CAPTURE_CANVAS_HEIGHT};
+  })()`, 15000);
+  return metrics;
 }
 
 async function createPage(debugPort) {
@@ -633,25 +724,39 @@ async function smokeWasmPage(
     const scene = window.__datovizWasmScene;
     const session = window.__datovizWasmSession;
     const canvas = document.querySelector("#viewport");
+    const stage = document.querySelector("#stage");
     if (scene === undefined || scene === null || scene.scene === 0 || scene.runtime === null) {
       return "missing live scene";
     }
-    if (session === undefined || session === null) {
+    if (session === undefined || session === null || stage === null) {
       return "missing live session";
     }
+    const beforeRect = canvas.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
     const before = {
       width: canvas.width,
       height: canvas.height,
+      clientWidth: canvas.clientWidth,
+      clientHeight: canvas.clientHeight,
+      displayWidth: beforeRect.width,
+      displayHeight: beforeRect.height,
       resource_version: scene.runtime.packetResourceVersion,
       frame_index: scene.runtime.packetFrameIndex,
     };
-    const rect = canvas.getBoundingClientRect();
-    canvas.style.width = Math.max(96, Math.floor(rect.width * 0.75)) + "px";
-    canvas.style.height = Math.max(96, Math.floor(rect.height * 0.75)) + "px";
+    stage.style.width = Math.max(96, Math.floor(stageRect.width * 0.75)) + "px";
+    stage.style.height = Math.max(96, Math.floor(stageRect.height * 0.75)) + "px";
+    stage.style.justifySelf = "center";
+    stage.style.alignSelf = "center";
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    scene.resize();
-    if (canvas.width === before.width && canvas.height === before.height) {
-      return "canvas framebuffer size did not change";
+    const fittedRect = canvas.getBoundingClientRect();
+    if (canvas.clientWidth !== before.clientWidth || canvas.clientHeight !== before.clientHeight) {
+      return "fixed canvas logical box changed during stage fit";
+    }
+    if (canvas.width !== before.width || canvas.height !== before.height) {
+      return "stage fit changed the fixed canvas framebuffer";
+    }
+    if (fittedRect.width >= before.displayWidth || fittedRect.height >= before.displayHeight) {
+      return "stage fit did not shrink the transformed display box";
     }
     await session.render();
     const afterScene = window.__datovizWasmScene;
@@ -661,17 +766,30 @@ async function smokeWasmPage(
     if (afterScene.runtime.packetFrameIndex <= before.frame_index) {
       return "resize packet frame index did not advance";
     }
-    return {
+    const result = {
       before,
       after: {
         width: canvas.width,
         height: canvas.height,
+        clientWidth: canvas.clientWidth,
+        clientHeight: canvas.clientHeight,
+        displayWidth: fittedRect.width,
+        displayHeight: fittedRect.height,
         resource_version: afterScene.runtime.packetResourceVersion,
         frame_index: afterScene.runtime.packetFrameIndex,
       },
     };
+    stage.style.removeProperty("width");
+    stage.style.removeProperty("height");
+    stage.style.removeProperty("justify-self");
+    stage.style.removeProperty("align-self");
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return result;
   })()`);
   requireOk(typeof resizeLifecycle === 'object', `${path}: resize lifecycle failed: ${resizeLifecycle}`);
+  if (path.includes('showcases_terrain_relief')) {
+    await smokeFixedDesignHiDpi(page, path, screenshotPath);
+  }
   await page.dragCanvas(48, 24);
   await page.wheelCanvas(-180);
   const interactiveStatus = await page.waitFor(`(() => {
