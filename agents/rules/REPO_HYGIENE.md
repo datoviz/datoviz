@@ -19,6 +19,8 @@ Do not stage, commit, or push `data` submodule changes or generated/runtime bina
 without explicit user approval for those exact paths in the current turn. Unstaged or untracked
 `data` working-tree state may be ignored only if it remains unstaged and uncommitted.
 
+Before committing or pushing a `data` gitlink, run `python3 tools/check_submodule_reachability.py data`. The exact gitlink commit must already be reachable from the advertised remote branch configured in `.gitmodules`. Publish in this order: commit the `data` change, push its branch, pass the reachability check from the parent repository, then commit and push the parent gitlink. Never rely on a local submodule object cache as proof of remote availability.
+
 Stop-sign paths:
 
 1. staged `data` gitlink updates

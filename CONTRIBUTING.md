@@ -53,6 +53,8 @@ git status --short
 Do not stage, commit, or push the `data` submodule pointer unless the maintainer explicitly approves
 that exact update in the current turn.
 
+Before committing or pushing an approved `data` pointer update, push the `data` commit to its configured remote branch and run `python3 tools/check_submodule_reachability.py data` from the parent repository. A locally available submodule object is not proof that a fresh clone can obtain it.
+
 Do not stage generated/runtime binary payloads such as `libs/vulkan/`, `*.dylib`, `*.so`, `*.dll`,
 `*.npy`, `*.npz`, or `.DS_Store` unless the maintainer explicitly approves those exact files.
 

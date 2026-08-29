@@ -8,30 +8,17 @@ Datoviz v0.4 is a deep rewrite of v0.3, and `main` is now the active v0.4 releas
 
 ## Non-Negotiable Rules
 
-1. Do not preserve v0.3 compatibility at the expense of v0.4 architecture, correctness, or
-   maintainability.
-2. Do not stage, commit, or push changes inside the `data` submodule unless the user explicitly
-   approves that submodule commit or pointer update in the current turn.
-3. Treat staged `data` gitlink updates as stop signs until explicitly approved. Unstaged or
-   untracked `data` working-tree state may be ignored only if it remains unstaged and uncommitted.
-4. Do not stage or commit generated/runtime binary payloads such as `libs/vulkan/`, `*.dylib`,
-   `*.so`, `*.dll`, `*.npy`, `*.npz`, or `.DS_Store` unless the user explicitly approves those
-   exact files in the current turn.
-5. Always run `git diff --check` before finalizing code changes.
-6. Before committing, run `git status --short` and `git diff --cached --stat`; verify the staged set
-   excludes unapproved `data`, generated files, vendored runtime libraries, large binaries, and
-   unrelated user changes.
-7. After changing public headers, exported API, binding policy, or binding generators, refresh and
-   validate local Python bindings with `just ctypes` and `just ctypes-check` before running Python,
-   GSP, or packaging validation.
-8. Pushing commits to `origin/main` is allowed when the user explicitly requests a push in the
-   current turn. All other external publication requires the user's explicit manual approval of the
-   exact final content and publication action first. This includes GitHub comments, reviews, issues,
-   pull requests, releases, pushes to other branches, messages, uploads, and posts. Prepare drafts
-   only until that approval is given; ambiguous instructions such as "do it" do not authorize
-   publication.
+1. Do not preserve v0.3 compatibility at the expense of v0.4 architecture, correctness, or maintainability.
+2. Do not stage, commit, or push changes inside the `data` submodule unless the user explicitly approves that submodule commit or pointer update in the current turn.
+3. Treat staged `data` gitlink updates as stop signs until explicitly approved. Unstaged or untracked `data` working-tree state may be ignored only if it remains unstaged and uncommitted.
+4. Before committing or pushing a `data` gitlink, verify that its exact commit is already reachable from the advertised remote branch recorded in `.gitmodules`; publish the `data` commit first, then the parent gitlink.
+5. Do not stage or commit generated/runtime binary payloads such as `libs/vulkan/`, `*.dylib`, `*.so`, `*.dll`, `*.npy`, `*.npz`, or `.DS_Store` unless the user explicitly approves those exact files in the current turn.
+6. Always run `git diff --check` before finalizing code changes.
+7. Before committing, run `git status --short` and `git diff --cached --stat`; verify the staged set excludes unapproved `data`, generated files, vendored runtime libraries, large binaries, and unrelated user changes.
+8. After changing public headers, exported API, binding policy, or binding generators, refresh and validate local Python bindings with `just ctypes` and `just ctypes-check` before running Python, GSP, or packaging validation.
+9. Pushing commits to `origin/main` is allowed when the user explicitly requests a push in the current turn. All other external publication requires the user's explicit manual approval of the exact final content and publication action first. This includes GitHub comments, reviews, issues, pull requests, releases, pushes to other branches, messages, uploads, and posts. Prepare drafts only until that approval is given; ambiguous instructions such as "do it" do not authorize publication.
    Use the GitHub connector for read-only repository, issue, and pull-request inspection. Use the authenticated `gh` CLI for approved GitHub mutations so public actions appear directly under the maintainer's identity without connector attribution. If `gh` is unavailable, stop and obtain explicit approval before using the connector for a mutation.
-9. Never hard-wrap Markdown prose, including list items. Keep each paragraph or list item on one source line; use line breaks only where Markdown structure requires them, such as headings, blank paragraph separators, separate list or table rows, blockquotes, and fenced code blocks.
+10. Never hard-wrap Markdown prose, including list items. Keep each paragraph or list item on one source line; use line breaks only where Markdown structure requires them, such as headings, blank paragraph separators, separate list or table rows, blockquotes, and fenced code blocks.
 
 More detail: [agents/rules/REPO_HYGIENE.md](agents/rules/REPO_HYGIENE.md).
 
