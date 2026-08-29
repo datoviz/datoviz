@@ -151,8 +151,7 @@ static bool _configure_panel(DvzPanel* panel)
  * @return true on success
  */
 static bool _add_path(
-    DvzScene* scene, DvzPanel* panel, const vec3* positions, DvzColor color,
-    bool data_coordinates)
+    DvzScene* scene, DvzPanel* panel, const void* positions, DvzColor color, bool data_coordinates)
 {
     ANN(scene);
     ANN(panel);

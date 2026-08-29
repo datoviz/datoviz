@@ -668,6 +668,7 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
     int out = 0;
     int memory_fd = -1;
     int semaphore_fd = -1;
+    DvzExternalHandle memory_handle = DVZ_EXTERNAL_HANDLE_INVALID;
     DvzInstance* instance = NULL;
     DvzDevice* device = NULL;
     DvzVma* allocator = NULL;
@@ -784,13 +785,15 @@ int test_drp2_runtime_vklite_draws_cuda_external_vertex_buffer(TstContext* suite
     }
     semaphore_fd = -1;
 
-    dvz_allocator_export(allocator, external->alloc, &memory_fd);
-    if (memory_fd < 0)
+    if (
+        dvz_allocator_export(allocator, external->alloc, &memory_handle) != 0 ||
+        memory_handle == DVZ_EXTERNAL_HANDLE_INVALID)
     {
         log_error("failed to export DRP2 CUDA vertex-buffer memory FD");
         out = 1;
         goto cleanup;
     }
+    memory_fd = (int)memory_handle;
 
     struct cudaExternalMemoryHandleDesc mem_desc = {0};
     mem_desc.type = cudaExternalMemoryHandleTypeOpaqueFd;
