@@ -205,6 +205,29 @@ function mapTopology(topology) {
 
 
 
+function mapCullMode(cullMode) {
+  const normalized = cullMode ?? "none";
+  if (normalized === "none" || normalized === "front" || normalized === "back") {
+    return normalized;
+  }
+  throw new Error(`unsupported WebGPU cull mode: ${cullMode}`);
+}
+
+
+
+function mapFrontFace(frontFace) {
+  const normalized = frontFace ?? "counter-clockwise";
+  if (normalized === "counter-clockwise") {
+    return "ccw";
+  }
+  if (normalized === "clockwise") {
+    return "cw";
+  }
+  throw new Error(`unsupported front face: ${frontFace}`);
+}
+
+
+
 function mapDepthCompare(compare) {
   if (
     compare === undefined ||
@@ -1220,6 +1243,13 @@ function validateShaderCapabilityPreflight(commandIndex, command, capabilities) 
 
 
 function validateRenderPipelineCapabilityPreflight(commandIndex, command, capabilities, canvasFormat) {
+  if (command.raster?.cull_mode === "front-and-back") {
+    unsupportedCapability(
+      commandIndex,
+      command,
+      "WebGPU does not support front-and-back culling",
+    );
+  }
   const colorTargets = command.color_targets ?? [];
   for (const target of colorTargets) {
     const format = colorTargetFormat(canvasFormat, target);
@@ -1451,6 +1481,8 @@ function makePipeline(device, canvasFormat, shaders, bindGroupLayouts, command, 
       },
       primitive: {
         topology: mapTopology(command.topology),
+        cullMode: mapCullMode(command.raster?.cull_mode),
+        frontFace: mapFrontFace(command.raster?.front_face),
       },
       depthStencil: makeDepthStencil(command),
       multisample: {

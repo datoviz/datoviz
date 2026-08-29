@@ -781,6 +781,40 @@ async function smokeBrowserPresentMsaaResolve(Drp2WebGpuRuntime) {
   }
 }
 
+
+
+async function smokeRasterState(executeDrp2Stream) {
+  observedRenderPipelineDescriptors = [];
+  const pipeline = renderPipeline([{ format: 'rgba8unorm', write_mask: ['all'] }]);
+  pipeline.raster = { cull_mode: 'back', front_face: 'clockwise' };
+  await executeDrp2Stream(
+    device,
+    context,
+    'bgra8unorm',
+    { commands: [...header, ...triangleShaders, pipeline] },
+    { canvas: fakeCanvas },
+  );
+  const primitive = observedRenderPipelineDescriptors.at(-1)?.primitive;
+  if (primitive?.cullMode !== 'back' || primitive?.frontFace !== 'cw') {
+    throw new Error(`WebGPU raster state was not applied: ${JSON.stringify(primitive)}`);
+  }
+
+  const unsupported = renderPipeline([{ format: 'rgba8unorm', write_mask: ['all'] }]);
+  unsupported.raster = { cull_mode: 'front-and-back', front_face: 'counter-clockwise' };
+  await expectCapabilityPreflightFailure(
+    executeDrp2Stream,
+    { commands: [...header, ...triangleShaders, unsupported] },
+    'WebGPU does not support front-and-back culling',
+    {
+      commandIndex: 4,
+      cmd: 'CreateRenderPipeline',
+      code: 'DRP2_ERR_UNSUPPORTED_CAPABILITY',
+    },
+  );
+}
+
+
+
 async function smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, paths) {
   if (paths.length === 0) {
     throw new Error('--streams-only needs at least one stream path');
@@ -961,6 +995,7 @@ async function main() {
   }
 
   await smokePacketSessionValidation(Drp2WebGpuRuntime, executeDrp2Stream);
+  await smokeRasterState(executeDrp2Stream);
 
   const manifest = await loadJson('examples/webgpu/fixture_manifest.json');
   for (const entry of manifest.positive) {
