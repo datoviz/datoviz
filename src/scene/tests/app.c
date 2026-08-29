@@ -5734,6 +5734,118 @@ int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, co
 
 
 /**
+ * Ensure WBOIT resolves a panel-local target at a nonzero framebuffer origin.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_wboit_nonzero_panel_origin(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    AppWboitCapture capture = _app_wboit_capture(
+        suite, false, (DvzPanelDesc){0.5f, 0.0f, 0.5f, 1.0f}, 48, 32);
+    if (capture.skipped)
+    {
+        log_warn("test_app_offscreen_wboit_nonzero_panel_origin skipped: GPU context failed");
+        tst_skip(suite, capture.skip_reason);
+        return 0;
+    }
+
+    AT(capture.rgb[0] > 20 || capture.rgb[2] > 20);
+    return 0;
+}
+
+
+/**
+ * Ensure opaque sphere coverage is independent of authored color alpha.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_opaque_sphere_alpha_preserves_coverage(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    dvz_panel_set_background_color(panel, dvz_color_rgb(0, 0, 0));
+
+    DvzVisual* spheres = dvz_sphere(scene, 0);
+    ANN(spheres);
+    AT(dvz_sphere_set_mode(spheres, DVZ_SPHERE_MODE_RAYCAST_IMPOSTOR) == DVZ_OK);
+    vec3 positions[2] = {{-0.45f, 0.0f, 0.0f}, {+0.45f, 0.0f, 0.0f}};
+    float radii[2] = {0.30f, 0.30f};
+    DvzColor colors[2] = {{80, 210, 180, 160}, {80, 210, 180, 255}};
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = 2},
+        {.attr_name = "radius", .data = radii, .item_count = 2},
+        {.attr_name = "color", .data = colors, .item_count = 2},
+    };
+    AT(dvz_visual_set_data_many(spheres, updates, 3) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, spheres, NULL) == DVZ_OK);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn(
+            "test_app_offscreen_opaque_sphere_alpha_preserves_coverage skipped: GPU context "
+            "failed");
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* view = dvz_view_offscreen(app, figure, 96, 64);
+    ANN(view);
+    DvzCanvas* canvas = dvz_view_canvas(view);
+    ANN(canvas);
+    dvz_app_run(app, 1);
+
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba) == DVZ_OK);
+    ANN(rgba);
+    AT(width == 96 && height == 64);
+
+    uint32_t left_count = 0;
+    uint32_t right_count = 0;
+    for (uint32_t y = 16; y < 48; y++)
+    {
+        for (uint32_t x = 8; x < 40; x++)
+        {
+            const uint8_t* left = _pixel_at(rgba, width, height, x, y);
+            const uint8_t* right = _pixel_at(rgba, width, height, x + 48, y);
+            if ((uint32_t)left[0] + left[1] + left[2] > 24)
+                left_count++;
+            if ((uint32_t)right[0] + right[1] + right[2] > 24)
+                right_count++;
+        }
+    }
+    AT(left_count > 100);
+    AT(right_count > 100);
+    AT(abs((int)left_count - (int)right_count) <= 12);
+
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure source-over transparency blends with background but respects opaque depth.
  *
  * @param suite test suite
@@ -10163,6 +10275,8 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_panel_three_visuals_all_drawn);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_wboit_mesh_order_independent_layers);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_wboit_nonzero_panel_origin);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_opaque_sphere_alpha_preserves_coverage);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_mesh_depth_and_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_additive_mesh_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_mesh_two_layers);

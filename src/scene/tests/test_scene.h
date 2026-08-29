@@ -690,6 +690,9 @@ int test_app_offscreen_panel_three_visuals_all_drawn(TstContext* suite, const Ts
 int test_app_offscreen_point_depth_orders_overlap(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_wboit_mesh_order_independent_layers(TstContext* suite, const TstCase* item);
+int test_app_offscreen_wboit_nonzero_panel_origin(TstContext* suite, const TstCase* item);
+int test_app_offscreen_opaque_sphere_alpha_preserves_coverage(
+    TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const TstCase* item);
 
