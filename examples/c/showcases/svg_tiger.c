@@ -131,10 +131,8 @@ static bool _add_fills(DvzScene* scene, DvzPanel* panel, const SvgTigerData* dat
         return false;
     }
 
-    DvzMaterialDesc material = dvz_phong_material_desc();
-    material.phong.ambient = 1.0f;
-    material.phong.diffuse = 0.0f;
-    material.phong.specular = 0.0f;
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_UNLIT;
     int rc = dvz_visual_set_material(mesh, &material);
     if (rc == 0)
         rc = dvz_mesh_set_geometry(mesh, geometry);
