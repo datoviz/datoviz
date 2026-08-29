@@ -369,6 +369,46 @@ serve: docs-video-assets-status wasm-scene-build-if-needed
         echo "Port ${host}:${start_port} is busy; serving docs on ${host}:${port}."
     fi
 
+    media_pid=""
+    server_pid=""
+    cleanup() {
+        if [ -n "$media_pid" ]; then
+            kill "$media_pid" 2>/dev/null || true
+            wait "$media_pid" 2>/dev/null || true
+        fi
+        if [ -n "$server_pid" ]; then
+            kill "$server_pid" 2>/dev/null || true
+            wait "$server_pid" 2>/dev/null || true
+        fi
+    }
+    trap cleanup EXIT INT TERM
+
+    DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/local uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve --watch build/docs-assets/local/.gallery-video-assets.ready -a "${host}:${port}" &
+    server_pid=$!
+
+    python3 - "$host" "$port" "$server_pid" <<'PY'
+    import os
+    import socket
+    import sys
+    import time
+
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+    server_pid = int(sys.argv[3])
+    for _ in range(600):
+        try:
+            with socket.create_connection((host, port), timeout=0.1):
+                break
+        except OSError:
+            try:
+                os.kill(server_pid, 0)
+            except OSError:
+                sys.exit("MkDocs exited before opening its local server socket")
+            time.sleep(0.1)
+    else:
+        sys.exit(f"MkDocs did not open {host}:{port} within 60 seconds")
+    PY
+
     echo "Hydrating local gallery videos in the background; progress: build/docs-video-assets.log"
     (
         if python3 tools/hydrate_docs_video_assets.py \
@@ -382,9 +422,7 @@ serve: docs-video-assets-status wasm-scene-build-if-needed
         fi
     ) &
     media_pid=$!
-    trap 'kill "$media_pid" 2>/dev/null || true; wait "$media_pid" 2>/dev/null || true' EXIT INT TERM
-
-    DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/local uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs serve --watch build/docs-assets/local/.gallery-video-assets.ready -a "${host}:${port}"
+    wait "$server_pid"
 #
 
 docs-serve:
