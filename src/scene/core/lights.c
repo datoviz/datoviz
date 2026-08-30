@@ -479,7 +479,7 @@ void _scene_lights_destroy_all(DvzScene* scene)
 
 
 
-void _scene_panel_lights_init(DvzPanel* panel)
+bool _scene_panel_lights_init(DvzPanel* panel)
 {
     ANN(panel);
     panel->lights = (DvzScenePanelLights){.gpu_dirty = true, .revision = 1};
@@ -487,8 +487,9 @@ void _scene_panel_lights_init(DvzPanel* panel)
     {
         DvzLight* defaults[2] = {0};
         uint32_t count = _scene_default_lights(panel->figure->scene, defaults);
-        (void)_panel_lights_replace(panel, defaults, count, false);
+        return _panel_lights_replace(panel, defaults, count, false);
     }
+    return true;
 }
 
 

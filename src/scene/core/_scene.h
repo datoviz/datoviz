@@ -2334,6 +2334,6 @@ void _scene_lights_init(DvzScene* scene);
 
 void _scene_lights_destroy_all(DvzScene* scene);
 
-void _scene_panel_lights_init(DvzPanel* panel);
+bool _scene_panel_lights_init(DvzPanel* panel);
 
 void _scene_panel_lights_detach(DvzPanel* panel);

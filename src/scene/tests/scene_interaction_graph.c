@@ -43,6 +43,18 @@ static void _grid_destroy_request_frame_callback(DvzFigure* figure, void* user_d
 
 
 
+/**
+ * Reject reverse-edge array growth for allocation-failure coverage.
+ */
+static void* _reject_panel_light_realloc(void* pointer, DvzSize size)
+{
+    (void)pointer;
+    (void)size;
+    return NULL;
+}
+
+
+
 static DvzVisual* _local_transform_audit_visual(DvzScene* scene, DvzVisualType type)
 {
     ANN(scene);
@@ -2648,6 +2660,47 @@ int test_scene_panel_light_ownership_and_lifecycle(TstContext* suite, const TstC
     AT(directional->panel_count == 1);
 
     dvz_scene_destroy(other_scene);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+int test_scene_panel_default_light_allocation_failure_unwinds(
+    TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    ANN(figure);
+    DvzLight* ambient = dvz_scene_default_ambient(scene);
+    DvzLight* directional = dvz_scene_default_directional(scene);
+    ANN(ambient);
+    ANN(directional);
+
+    const DvzAllocator* previous_allocator = dvz_get_allocator();
+    DvzAllocator failing_allocator = {.realloc_fn = _reject_panel_light_realloc};
+    dvz_set_allocator(&failing_allocator);
+    DvzPanel* failed = dvz_panel(figure, NULL);
+    dvz_set_allocator(previous_allocator);
+
+    AT(failed == NULL);
+    AT(figure->panel_count == 0);
+    AT(figure->panels[0].figure == NULL);
+    AT(ambient->panel_count == 0);
+    AT(directional->panel_count == 0);
+
+    DvzPanel* panel = dvz_panel(figure, NULL);
+    ANN(panel);
+    AT(panel == &figure->panels[0]);
+    AT(figure->panel_count == 1);
+    AT(panel->lights.count == 2);
+    AT(ambient->panel_count == 1);
+    AT(directional->panel_count == 1);
+
     dvz_scene_destroy(scene);
     return 0;
 }

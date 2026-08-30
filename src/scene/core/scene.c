@@ -845,7 +845,13 @@ DvzPanel* dvz_panel(DvzFigure* figure, const DvzPanelDesc* desc)
     panel->view3d_revision = 1;
     panel->active_view_kind = DVZ_PANEL_VIEW_KIND_NONE;
     _scene_technique_state_init(&panel->techniques);
-    _scene_panel_lights_init(panel);
+    if (!_scene_panel_lights_init(panel))
+    {
+        _scene_panel_lights_detach(panel);
+        figure->panel_count--;
+        dvz_memset(panel, sizeof(DvzPanel), 0, sizeof(DvzPanel));
+        return NULL;
+    }
     panel->visual_count = 0;
     panel->bounds_visual = NULL;
     panel->bounds_occluded_visual = NULL;
