@@ -264,6 +264,8 @@ void dvz_canvas_swapchain_test_force_acquire_status(DvzCanvas* canvas, int32_t s
 
 void dvz_canvas_swapchain_test_force_present_status(DvzCanvas* canvas, int32_t status);
 
+void dvz_canvas_swapchain_test_force_submit_status(DvzCanvas* canvas, int32_t status);
+
 DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas* canvas);
 
 uint64_t dvz_canvas_swapchain_recreate_count(const DvzCanvas* canvas);

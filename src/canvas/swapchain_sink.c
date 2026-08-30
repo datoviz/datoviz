@@ -126,6 +126,8 @@ struct DvzCanvasSwapchain
     int32_t test_force_recreate_status;
     int32_t test_force_acquire_status;
     int32_t test_force_present_status;
+    int32_t test_force_submit_status;
+    bool test_force_submit_status_set;
 };
 
 
@@ -1351,8 +1353,9 @@ static int canvas_handle_submit_status(DvzCanvasSwapchain* state, int32_t submit
         log_error(
             "failed to submit canvas frame (frame=%u image=%u vk=%d)", state->frame_index,
             state->active_slot->image_index, submit_res);
+        state->dirty = true;
         canvas_clear_active_slot(state);
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "submit failed");
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "submit failed");
         return -1;
     }
     return 0;
@@ -1440,6 +1443,8 @@ static int canvas_handle_acquire_status(
         log_error(
             "failed to acquire swapchain image (frame=%u slot=%u status=%d)", state->frame_index,
             slot_idx, acquire_status);
+        state->dirty = true;
+        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE, "acquire failed");
         return -1;
     }
     return 0;
@@ -1629,8 +1634,17 @@ static int canvas_submit_active_slot(
         VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
 
     VkQueue queue = state->queue;
-    int32_t submit_res =
-        dvz_submit_send(submit, queue, dvz_fence_handle(state->active_slot->in_flight));
+    int32_t submit_res = VK_SUCCESS;
+    if (state->test_force_submit_status_set)
+    {
+        submit_res = state->test_force_submit_status;
+        state->test_force_submit_status_set = false;
+    }
+    else
+    {
+        submit_res =
+            dvz_submit_send(submit, queue, dvz_fence_handle(state->active_slot->in_flight));
+    }
     dvz_submit_free(submit);
     if (canvas_handle_submit_status(state, submit_res) != 0)
     {
@@ -1841,6 +1855,8 @@ int dvz_canvas_swapchain_init(DvzCanvas* canvas)
     canvas->swapchain->test_force_recreate_status = -1;
     canvas->swapchain->test_force_acquire_status = -1;
     canvas->swapchain->test_force_present_status = -1;
+    canvas->swapchain->test_force_submit_status = VK_SUCCESS;
+    canvas->swapchain->test_force_submit_status_set = false;
     canvas->swapchain->surface_wrapper = dvz_surface_create_wrapper();
     ANN(canvas->swapchain->surface_wrapper);
     canvas->swapchain->swapchain_wrapper = dvz_swapchain_create_wrapper();
@@ -2007,6 +2023,24 @@ void dvz_canvas_swapchain_test_force_present_status(DvzCanvas* canvas, int32_t s
         return;
     }
     canvas->swapchain->test_force_present_status = status;
+}
+
+
+
+/**
+ * Force the next swapchain queue submit to return a specific Vulkan status.
+ *
+ * @param canvas canvas whose swapchain test controls are updated
+ * @param status Vulkan status to inject once
+ */
+void dvz_canvas_swapchain_test_force_submit_status(DvzCanvas* canvas, int32_t status)
+{
+    if (!canvas || !canvas->swapchain)
+    {
+        return;
+    }
+    canvas->swapchain->test_force_submit_status = status;
+    canvas->swapchain->test_force_submit_status_set = true;
 }
 
 
