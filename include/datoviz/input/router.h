@@ -315,7 +315,7 @@ DVZ_EXPORT void dvz_input_emit_scale(DvzInputRouter* router, const DvzInputScale
 /**
  * Subscribe to routed union-style input events.
  *
- * This stream carries pointer, keyboard, resize, and scale events in one callback. When a
+ * This stream carries pointer, keyboard, text, resize, and scale events in one callback. When a
  * `DvzPointerGestureHandler` is attached to the router, this stream also receives
  * gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
  *
