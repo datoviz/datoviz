@@ -141,6 +141,24 @@ Windows AMD64 is required. Windows ARM64 execution is required when a native hos
 not execute an ARM64 wheel on an x64 host.
 
 
+## Full Example Review Partition
+
+The definitive pre-freeze example review may be split across four machines. Together these assignments cover all 117 reviewed manifest IDs exactly once:
+
+| Worker | Focus | Review batches | Count |
+| --- | --- | --- | ---: |
+| A | Portable core | 00–05, 11 | 38 |
+| B | Portable graphics | 06–08, 12–15, 17–18 | 40 |
+| C | Native and optional providers | 09, 10, 19, 22 | 22 |
+| D | Prepared data and showcases | 16, 20, 21 | 17 |
+
+Run each assigned batch interactively with `just review <batch> --strict` and record the exact commit, host facts, batch result, and visual observations. Use an isolated capture directory when producing comparison images. Worker D must use a clean `data` checkout and controlled user cache, then repeat one prepared-data example from outside the repository to verify its missing-data diagnostic.
+
+Batch 22 contains three C examples plus the C++ ImPlot and Qt examples. The strict C runner intentionally rejects and names those non-C members instead of silently omitting them. Run the three C entries with `just review 22`, then launch the built ImPlot and Qt executables explicitly on a host configured for those providers; record a skip when a provider was deliberately deferred or unavailable.
+
+This partition complements the fixed interaction set rather than replacing it. Automated frame-bounded runs prove lifecycle behavior, while the maintainer's live review supplies the subjective rendering and interaction decision.
+
+
 ## 4. Record And Return Evidence
 
 Record:
