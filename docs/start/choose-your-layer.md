@@ -1,14 +1,8 @@
 # Choose your layer
 
-Datoviz has several entry points because a Python analysis, native application, browser example,
-and rendering backend need different levels of control. Start with the scene API unless your host
-or task requires a lower layer.
+Datoviz has several entry points because a Python analysis, native application, browser example, and rendering backend need different levels of control. Start with the scene API unless your host or task requires a lower layer.
 
-The high-level plotting layer for the broader GSP/VisPy2 project is still work in progress. Datoviz
-v0.4 is the rendering engine underneath that direction. Today, Python users who want to use Datoviz
-directly use one generated `ctypes` binding: `import datoviz as dvz` is the normal call form with
-documented NumPy array adaptation, and `datoviz.raw` is the exact pointer/count call form for the
-same binding.
+The high-level plotting layer for the broader GSP/VisPy2 project is still in development. Datoviz v0.4 is the rendering engine underneath that work. Python users access Datoviz through a generated `ctypes` binding. The normal form, `import datoviz as dvz`, adapts documented calls for NumPy arrays. `datoviz.raw` exposes the same binding with exact pointer-and-count arguments.
 
 <div class="dvz-entry-map" aria-label="Datoviz integration layer decision map">
   <div class="dvz-entry-map__item dvz-entry-map__item--external">
@@ -84,13 +78,9 @@ Most public C examples follow the same visible sequence:
 
 ## WebGPU in the browser
 
-Some examples have live browser routes using the experimental WebGPU/WASM subset. Use these routes
-to inspect supported examples in a browser or test portability. Do not assume every native Vulkan
-feature is available in WebGPU; each example and status page says whether browser support is live,
-planned, deferred, or native-only.
+Experimental WebGPU support brings a selected subset of Datoviz to web browsers. Use the promoted live routes to inspect supported examples or test portability. WebGPU is not a second implementation of every native Vulkan feature: the example matrix and status page identify which routes are live, planned, deferred, or native-only.
 
-[Browse examples](../examples/index.md) and check the
-[WebGPU subset](../reference/webgpu-subset.md) before choosing a live route.
+[Browse examples](../examples/index.md) and check the [WebGPU subset](../reference/webgpu-subset.md) before choosing a live route.
 
 
 ## Exact Python calls and advanced runtime layers

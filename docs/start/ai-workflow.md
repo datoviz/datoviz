@@ -1,12 +1,8 @@
 # AI-assisted workflow
 
-You can ask a coding assistant to draft a Datoviz example, then verify the result against the same
-examples and reference pages a human reader would use. This is especially useful while the direct
-Python API remains lower-level than a plotting library.
+You can ask a coding assistant to draft a Datoviz example, but treat the result as code that still needs verification. Check it against the same examples and reference pages you would use when writing the program yourself. This matters because the direct Python API is lower-level than a plotting library and assistants may invent familiar-looking plotting calls that Datoviz does not provide.
 
-The canonical instructions and copyable prompt live on [AI Agents Start Here](../ai-agents.md).
-This page only explains how to make your request precise and how to review the result; it does not
-maintain a second copy of the agent contract.
+The canonical instructions and copyable prompt live on [AI Agents Start Here](../ai-agents.md). This page explains how to make your request precise and review the result without duplicating that agent contract.
 
 
 ## Start in three steps
@@ -44,8 +40,7 @@ A useful request states the data, representation, interaction, output, and prefe
 | "make it 3D" | "show 3D points with an arcball controller" |
 | "export it" | "render one frame to a PNG without opening a window" |
 
-Include array shapes and dtypes when they are already known. If they are not known, ask the
-assistant to state the contract it chose before the code.
+Include array shapes and dtypes when you know them. Otherwise, ask the assistant to state the contract it chose before showing the code.
 
 
 ## Review the answer before running it
@@ -53,8 +48,7 @@ assistant to state the contract it chose before the code.
 Check that the answer:
 
 - says whether the code is a complete program or an excerpt;
-- imports `datoviz as dvz` for the normal Python path, unless it explains a need for
-  `datoviz.raw`;
+- imports `datoviz as dvz` for the normal Python path, unless it explains a need for `datoviz.raw`;
 - uses a documented visual family and exact attribute names;
 - gives each array's dtype, shape, and item-count relationship;
 - creates the scene objects, attaches the visual to a panel, and opens a window or captures output;
@@ -67,10 +61,7 @@ For Python, the normal v0.4 starting point is:
 import datoviz as dvz
 ```
 
-Datoviz v0.4 starts from scenes, visuals, and explicit data arrays. It does not provide the old
-high-level Python plotting API. If an answer invents Datoviz methods such as `scatter()` or
-`imshow()`, ask the assistant to restart from a current v0.4 example. High-level plotting belongs to
-GSP/VisPy2 and remains external work in progress.
+Datoviz v0.4 starts from scenes, visuals, and explicit data arrays. It does not provide the old high-level Python plotting API. If an answer invents methods such as `scatter()` or `imshow()`, ask the assistant to restart from a current v0.4 example. High-level plotting belongs to GSP/VisPy2 and remains external work in progress.
 
 
 ## Useful follow-up requests
@@ -89,4 +80,4 @@ Separate the minimal verified Datoviz program from optional extensions. For ever
 its feature status and the example or reference page that supports it.
 ```
 
-This keeps a working base visible when an optional backend or integration feature is uncertain.
+This leaves you with a verified base even when an optional backend or integration feature is uncertain.

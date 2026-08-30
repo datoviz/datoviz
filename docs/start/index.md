@@ -1,6 +1,6 @@
 # Get started
 
-Datoviz is a GPU visualization engine for scientific data. It turns NumPy or C arrays into interactive 2D and 3D scenes, native windows, and offscreen images through the same retained scene model.
+Datoviz is a GPU visualization engine for scientific data. It turns NumPy or C arrays into interactive 2D and 3D scenes, native windows, and offscreen images. The scene stays available after the first frame, so you can update its data, views, and interaction without recreating it.
 
 Datoviz is useful when data is large, changes over time, or needs more rendering control than a plotting function provides. It is an explicit rendering engine rather than a high-level plotting library; for a small conventional chart, a plotting library may be the shorter path.
 
@@ -24,7 +24,7 @@ Datoviz is useful when data is large, changes over time, or needs more rendering
 
 ## After your first window
 
-Read [Core concepts](core-concepts.md) for the scene, figure, panel, visual, data, controller, and view model. Then adapt the closest working [Example](../examples/index.md), use a focused [How-To guide](../how-to/index.md), or consult the [Reference](../reference/index.md) for exact contracts and feature status.
+Read [Core concepts](core-concepts.md) for the scene, figure, panel, visual, data, controller, and view model. Then adapt the closest working [example](../examples/index.md), use a focused [how-to guide](../how-to/index.md), or consult the [reference](../reference/index.md) for exact contracts and feature status.
 
 
 ## Other integration paths

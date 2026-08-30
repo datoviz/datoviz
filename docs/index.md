@@ -2,9 +2,9 @@
 
 <p class="dvz-home-lead">GPU visualization for large, dynamic scientific data.</p>
 
-Datoviz is an open-source C engine with direct Python and NumPy bindings. Build interactive 2D and 3D scenes, native applications, and offscreen renderers on Linux, macOS, and Windows.
+Datoviz is an open-source C engine with Python/NumPy bindings. Use it to build interactive 2D and 3D visualizations, native applications, and offscreen renderers on Linux, macOS, and Windows. Experimental WebGPU support brings a selected subset to web browsers.
 
-Datoviz gives you an explicit retained scene model rather than a high-level plotting interface. Use it when data volume, frequent updates, interaction, or native integration require direct rendering control.
+Datoviz provides direct control over scene objects and rendering rather than a high-level plotting interface. It is intended for applications that handle large datasets, update them frequently, need precise interaction, or integrate visualization into a native application.
 
 <nav class="dvz-home-actions" aria-label="Primary actions">
 <a class="dvz-home-action-primary" href="start/">Get started <span aria-hidden="true">→</span></a>
@@ -72,7 +72,7 @@ Datoviz gives you an explicit retained scene model rather than a high-level plot
 
 ## Built with Datoviz { .dvz-home-heading }
 
-Discover independent applications and research tools created by the Datoviz community.
+These independent applications and research tools use Datoviz as their rendering engine.
 
 <div class="dvz-showcase-grid">
 <article class="dvz-showcase">

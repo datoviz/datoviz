@@ -1,8 +1,6 @@
 # Core concepts
 
-Datoviz uses a small set of explicit objects to turn scientific arrays into an interactive view or
-an image. Learn these names once; the same workflow appears in Python, C, examples, and the API
-reference.
+Datoviz uses a small set of objects to turn scientific arrays into an interactive view or an image. The same object model appears in Python, C, examples, and the API reference.
 
 ## The object model
 
@@ -31,7 +29,7 @@ reference.
 
 | Object | Think of it as | Typical choice |
 | --- | --- | --- |
-| **Scene** | The retained state for one visualization workflow. | Usually one scene for a program or independent visualization. |
+| **Scene** | The objects and data that describe a visualization. The scene remains available after a frame has been drawn. | Usually one scene for a program or independent visualization. |
 | **Figure** | The complete output image, with a width and height in pixels. | One window or captured image usually presents one figure. |
 | **Panel** | A drawing region inside a figure. | Use one full panel first; add a grid only for multiple views. |
 | **Visual** | A collection rendered in one way: points, paths, an image, a mesh, text, or another family. | Group related items of the same family into one visual. |
@@ -39,9 +37,10 @@ reference.
 | **Controller** | Navigation state bound to a panel. | Panzoom for 2D; arcball, fly, or turntable for 3D. |
 | **View or capture** | Where the figure is rendered. | Choose a native window, offscreen capture, or supported embedded host. |
 
-A visual normally represents many related items. For example, use one point visual with 10,000
-positions, colors, and diameters—not 10,000 one-point visuals. Separate visuals when the data needs
-a different visual family, panel, style, coordinate treatment, or update schedule.
+A visual normally represents many related items. For example, use one point visual with 10,000 positions, colors, and diameters—not 10,000 one-point visuals. Separate visuals when the data needs a different visual family, panel, style, coordinate treatment, or update schedule.
+
+!!! important "Batch items into visuals"
+    Datoviz is designed to draw many items through a small number of visuals. Put related points in one point visual, related line segments in one line visual, and so on. Creating one visual per item defeats this batching model and can make a scene much slower.
 
 
 ## The complete workflow
@@ -56,8 +55,7 @@ Most programs follow the same sequence:
 6. Open a window or create an offscreen output.
 7. Run the application or capture the frame.
 
-Uploading data does not place a visual in the figure. The separate panel-attachment step is what
-makes the visual part of that view.
+Uploading data does not place a visual in the figure. The visual becomes part of the view only after you attach it to a panel.
 
 
 ## Data has a contract
@@ -77,8 +75,7 @@ updates, copied data, and external-buffer variants.
 
 ## Retained state and updates
 
-The scene keeps the visualization description after the first frame. Update the arrays, camera,
-controller, visibility, or style that changed; you do not normally rebuild the whole scene.
+The scene and its objects remain available after the first frame. This behavior is called a **retained scene model**. Update the arrays, camera, controller, visibility, or style that changed; you do not normally rebuild the whole scene.
 
 Ordinary `dvz_visual_set_data()` writes copy the supplied array before returning. Advanced borrowed
 or external-buffer APIs have separate lifetime and synchronization rules. See
