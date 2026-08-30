@@ -1,6 +1,6 @@
 # GUI ImPlot And Docking Handoff
 
-Status: entry gate open after PR #145 merged; optional pre-RC3 implementation has not started and still requires an integrate-or-defer decision before candidate freeze. Updated: 2026-08-30.
+Status: deferred intact until after RC3; PR #145 merged and the implementation entry gate remains open for later work. Updated: 2026-08-30.
 
 This handoff routes the implementation of [GUI_EXTENSIONS_AND_DOCKING.md](../../spec/architecture/GUI_EXTENSIONS_AND_DOCKING.md). The durable specification is authoritative; this file owns sequencing, release boundaries, and checkpoint evidence only.
 
@@ -10,11 +10,11 @@ Promote the experimental mixed ImPlot example into official default-on GUI suppo
 
 ## Release Boundary
 
-This work is an optional pre-RC3 implementation lane, not an RC3 release blocker. It may use time while required provider work is externally blocked, but it must not delay exact-candidate freeze, packaging proof, hosted validation, or release publication.
+This work is deferred until after RC3. The current experimental example remains default-off, and RC3 admits no dependency upgrade, paired-context lifecycle, installed raw surface, declarative docking API, or partial migration from this lane.
 
-The atomic official ImPlot slice and the declarative docking slice are independently admissible, including as two pull requests. Each slice either lands completely before candidate freeze with its affected build, install, package, binding, GUI, and platform gates rerun, or remains deferred. At the cutoff, do not retain a partially admitted dependency, lifecycle, raw surface, or docking implementation. A completed ImPlot slice may remain while docking is deferred, in which case the transitional private example docking and compatibility helper remain explicitly temporary.
+The atomic official ImPlot slice and the declarative docking slice remain independently admissible after RC3, including as two pull requests. Each slice must land completely with its affected build, install, package, binding, GUI, and platform gates rerun. A completed ImPlot slice may land while docking remains deferred, in which case the transitional private example docking and compatibility helper remain explicitly temporary.
 
-Landing the default-on dependency changes the exact candidate and invalidates earlier build/package evidence. Freeze and artifact proof begin only after the complete integration is merged or explicitly deferred.
+Landing the default-on dependency changes package contents and invalidates earlier build evidence. Its later release campaign begins only after the complete integration is merged.
 
 ## Entry Conditions
 
@@ -73,9 +73,9 @@ Commit boundary: public code no longer reconstructs private dockspace IDs, and t
 
 Commit boundary: the official default-on integration, migrated example, generated surfaces, and affected release evidence are coherent.
 
-## Cutoff Decision
+## RC3 decision
 
-Before RC3 candidate freeze, record one binary decision for each independently admissible slice in [STATUS.md](STATUS.md): integrated and fully validated, or deferred intact until after RC3. Do not carry a partially merged dependency, context, raw surface, docking model, or packaging slice into the exact candidate.
+Both slices are deferred intact until after RC3. Do not carry a partially merged dependency, context, raw surface, docking model, or packaging slice into the RC3 candidate.
 
 ## Validation Defaults
 

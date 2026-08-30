@@ -8,7 +8,7 @@ Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file i
 
 Datoviz `v0.4.0rc2` is published and closed. The active source branch and GitHub default are now `main`; the next release milestone is RC3.
 
-The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, local Qt bridge proof, required scene-owned lighting foundation, and branch cutover are complete. RC3 remains blocked on exact package proof, maintainer documentation/media decisions, final release-quality gates, and publication of compatible Qt/PyQt provider packages.
+The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, local Qt bridge proof, required scene-owned lighting foundation, and branch cutover are complete. RC3 remains blocked on the final local documentation, WebGPU, example, and multi-machine review; exact package proof; maintainer documentation/media decisions; and final release-quality gates. Official Qt/PyQt provider artifacts are deferred to RC4.
 
 The active runtime path is:
 
@@ -24,7 +24,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 4. Use [VKLITE_GRAPHICS_TUTORIAL.md](VKLITE_GRAPHICS_TUTORIAL.md) for the rewritten course execution queue and [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for its durable contract.
 5. Read [DOCUMENTATION.md](DOCUMENTATION.md) before public documentation, generated-reference, gallery, attribution, or release-communication work.
 6. Use [C_DISTRIBUTION.md](C_DISTRIBUTION.md) and [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for C/C++ packaging and exact-artifact work.
-7. Use [QT_MACOS_VULKAN_HANDOFF.md](QT_MACOS_VULKAN_HANDOFF.md) for the externally blocked Qt/PyQt provider sequence.
+7. Use [QT_MACOS_VULKAN_HANDOFF.md](QT_MACOS_VULKAN_HANDOFF.md) for the RC4 Qt/PyQt provider sequence and completed local proof.
 8. Use [HANDOFF_VISUAL_DOCUMENTATION_PASS.md](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) for the implemented visual pilot; obtain maintainer review before broad rollout.
 9. Use [HANDOFF_GPU_SELECTION.md](HANDOFF_GPU_SELECTION.md) for the implemented GPU-selection contract and remaining physical Windows matrix.
 10. Use [HANDOFF_WINDOWS_VALIDATION.md](HANDOFF_WINDOWS_VALIDATION.md) for the physical Windows machine baseline, remaining AMD/NVIDIA and Qt/vcpkg work, and exact-candidate proof boundary.
@@ -37,7 +37,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 17. Use [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) for the integrated physical-key/text-input API split and coherent mesh-geometry replacement work.
 18. Use [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md) for the benchmark-first rolling-field/structured-surface performance lane and its strict RC4 versus post-v0.4 boundary.
 19. The required [RC3_LIGHTING_FOUNDATION_SLICE.md](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md) is complete at validated implementation head `8fd98715e`. Preserve its scene-owned panel-light and direct/indirect contracts during candidate validation; do not expand it into full PBR or the optional multi-light showcase.
-20. Use [GUI_IMPLOT_DOCKING_HANDOFF.md](GUI_IMPLOT_DOCKING_HANDOFF.md) for the non-blocking pre-RC3 official ImPlot/cimplot and declarative docking lane. PR #145 has merged and the implementation entry gate is open; finish each admitted slice before candidate freeze or defer it intact without delaying RC3.
+20. Use [GUI_IMPLOT_DOCKING_HANDOFF.md](GUI_IMPLOT_DOCKING_HANDOFF.md) for the deferred official ImPlot/cimplot and declarative docking lane. Keep the current experimental example default-off and do not admit a partial slice into RC3.
 21. Use [../../spec/data/ASSET_ARCHITECTURE.md](../../spec/data/ASSET_ARCHITECTURE.md) for the approved no-LFS asset catalog and active-submodule retirement plan. Preserve `datoviz/data:v0.4-dev` as the protected frozen v0.4 line during migration; do not rename, merge, or repoint it to the unrelated historical `data:main`.
 
 ## Guardrails

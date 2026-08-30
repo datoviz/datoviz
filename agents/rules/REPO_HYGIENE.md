@@ -21,6 +21,8 @@ without explicit user approval for those exact paths in the current turn. Unstag
 
 Before committing or pushing a `data` gitlink, run `python3 tools/check_submodule_reachability.py data`. The exact gitlink commit must already be reachable from the advertised remote branch configured in `.gitmodules`. Publish in this order: commit the `data` change, push its branch, pass the reachability check from the parent repository, then commit and push the parent gitlink. Never rely on a local submodule object cache as proof of remote availability.
 
+Before any maintainer direct push to `origin/main`, run `python3 tools/check_submodule_reachability.py data --revision HEAD` in addition to the normal status, staged-stat, and whitespace checks. The `rossant` ruleset bypass applies only to the required reachability status so a verified fast-forward commit can be pushed before its post-push workflow exists. The separate deletion and non-fast-forward rules have no bypass.
+
 Stop-sign paths:
 
 1. staged `data` gitlink updates

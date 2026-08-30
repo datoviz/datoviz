@@ -1,6 +1,6 @@
 # Distribution Release Checklist
 
-Status: active RC3/final release gate. Updated: 2026-08-01.
+Status: active RC3/final release gate. Updated: 2026-08-30.
 
 Use this checklist against the exact candidate commit before live workflows or publication. Current blocker state belongs in [STATUS.md](STATUS.md); distribution decisions belong in [C_DISTRIBUTION.md](C_DISTRIBUTION.md).
 
@@ -43,17 +43,23 @@ The exact candidate campaign must prove:
 6. The rewritten Vulkan course passes against the exact package version newer than RC2.
 7. Native dependency inspection shows no missing or unintended libraries.
 
-## Conda Provider Matrix
+## RC3 conda matrix
 
-The exact candidate must prove:
+The exact RC3 candidate must prove:
 
-1. `libdatoviz`, `datoviz`, and optional `datoviz-qtbridge` outputs use correct dependency names, install paths, run exports, and Windows DLL layout.
+1. The base `libdatoviz` and `datoviz` outputs use correct dependency names, install paths, run exports, and Windows DLL layout.
 2. Headless base-package tests import `datoviz` and `datoviz.raw` and create/destroy a raw scene without a Vulkan device.
 3. A clean macOS base-package prefix without Qt or a system Vulkan SDK resolves the conda-managed loader and MoltenVK ICD, creates a Vulkan instance, and completes an offscreen render.
-4. Published Qt exposes the Vulkan-enabled QtGui surface on every claimed target and published PyQt exposes `QVulkanInstance` against that same Qt ABI/runtime.
-5. The macOS Qt-provider prefix resolves one conda-managed Vulkan loader and MoltenVK implementation rather than a standalone-wheel runtime payload.
-6. The bridge imports, diagnoses a missing provider cleanly, creates a Vulkan instance and host surface where supported, and completes hosted rendering from exact packages.
-7. Supported hosted Linux, macOS, and Windows package tests are green before publication.
+4. Supported hosted base-package tests are green before publication. Official `datoviz-qtbridge` artifacts are deferred to RC4 and are not claimed by RC3.
+
+## RC4 Qt provider matrix
+
+After compatible PyQt publication, the exact provider artifacts must prove:
+
+1. Published Qt exposes the Vulkan-enabled QtGui surface on every claimed target and published PyQt exposes `QVulkanInstance` against that same Qt ABI/runtime.
+2. The macOS Qt-provider prefix resolves one conda-managed Vulkan loader and MoltenVK implementation rather than a standalone-wheel runtime payload.
+3. The bridge imports, diagnoses a missing provider cleanly, creates a Vulkan instance and host surface where supported, and completes hosted rendering from exact packages.
+4. Supported hosted Linux, macOS, and Windows provider tests are green before publication.
 
 ## vcpkg Matrix
 

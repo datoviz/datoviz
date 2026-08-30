@@ -2,14 +2,11 @@
 
 Integrate Datoviz with a Qt application that owns the window and event loop.
 
-Qt hosting is implemented, but it is source-build-only in RC2. It is an advanced native integration
-to configure, and it does not make Qt a dependency of the base Datoviz library. No packaged native
-Qt bridge provider is available in RC2; build or supply the bridge separately. A packaged provider
-is planned for RC3.
+Qt hosting is implemented as an advanced source-build integration and does not make Qt a dependency of the base Datoviz library. Build or supply the native bridge separately. The official conda provider is deferred to RC4 while compatible Vulkan-enabled PyQt publication remains pending.
 
 !!! info "At a glance"
 
-    - **Status:** Implemented; source-build-only in RC2, with a packaged provider planned for RC3.
+    - **Status:** Implemented from source; official conda provider deferred to RC4.
     - **Languages:** C++/Qt and Python/PyQt6 through the optional bridge.
     - **Prerequisites:** Matching Qt development/runtime libraries, Vulkan hosting support, and a built/discoverable bridge.
     - **Result:** Qt owns the window/event loop while Datoviz renders one hosted view and receives forwarded events.

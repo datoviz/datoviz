@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-08-15.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-08-30.
 
 Use [STATUS.md](STATUS.md) for current blockers, [DOCUMENTATION.md](DOCUMENTATION.md) for documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable release policy.
 
@@ -31,14 +31,14 @@ Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_
 Remaining RC3 deliverables:
 
 1. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates; await the original author's feedback on focused successor PR #136 before resolving PR #132.
-2. Publish compatible Vulkan-enabled Qt and PyQt packages, then build and validate exact split `libdatoviz`, `datoviz`, and `datoviz-qtbridge` artifacts on supported hosted platforms.
+2. Complete the final local documentation, WebGPU, native-example, gallery, and multi-machine review in focused batches without admitting deferred dependency work.
 3. Prove the rewritten course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
-4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, conda layouts, optional-provider diagnostics, third-party notices, and checksum/signing policy.
+4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, base conda layouts, third-party notices, and checksum/signing policy.
 5. Freeze the exact RC3 candidate, carry forward the completed local source-quality evidence, and run the remaining gallery/media, immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
 6. Freeze RC3 notes, known issues, validation evidence, artifacts, and feedback request only after the exact release scope is fixed.
 Hosted Linux and Windows exact-artifact validation is mandatory for RC3. Physical Linux and Windows should be restored when suitable machines are available; unavailable hardware remains an exclusion. Final requires the missing physical proof or an explicit maintainer-approved exception.
 
-Optional RC3 candidates must not delay these gates: GSP Texture2D mesh integration, point-light evaluation, the full multi-light Klein-bottle showcase, hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, or broad visual polish. The narrower required lighting foundation is complete and must remain covered by exact-candidate validation.
+Deferred work must not enter the RC3 candidate: the official Qt/PyQt provider artifacts, ImPlot/cimplot integration, declarative docking, GSP Texture2D mesh integration, point-light evaluation, the full multi-light Klein-bottle showcase, hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, and broad visual polish. The narrower required lighting foundation is complete and must remain covered by exact-candidate validation.
 
 ## 3. RC4 Course And Installed Developer Experience
 
@@ -50,6 +50,7 @@ Required deliverables:
 4. Build and run every chapter from exact installed source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`, packaged runtime shaderc, deterministic offscreen proof, and bounded live resize, input, depth, repeated-frame, and shutdown smoke.
 5. Pass Vulkan validation, public-header and binding checks, source synchronization, links, navigation, captures, license review, known-issue review, and supported hosted-platform validation, or record explicit limitations.
 6. Collect and disposition feedback on setup, progression, diagnostics, GPU/driver behavior, resize, input, concepts, ownership, and cleanup.
+7. Complete the official conda Qt/PyQt provider lane after compatible PyQt publication: build exact split `libdatoviz`, `datoviz`, and `datoviz-qtbridge` artifacts and validate the managed Vulkan loader, MoltenVK, `QVulkanInstance`, native surface, hosted rendering, and missing-provider diagnostics from clean prefixes.
 
 The required course uses generated Datoviz geometry and a procedural asymmetric texture. Suzanne and committed binary assets are optional polish only after the course is complete.
 

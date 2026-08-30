@@ -1,12 +1,12 @@
 # Qt/PyQt macOS Vulkan Handoff
 
-Status: local implementation and Apple Silicon proof complete; Vulkan-enabled Qt is published and compatible PyQt CI is green, while PyQt publication and exact Datoviz artifacts still block the RC3 provider gate. Updated: 2026-08-19.
+Status: local implementation and Apple Silicon proof complete; Vulkan-enabled Qt is published and compatible PyQt CI is green; official provider publication and exact Datoviz artifacts are deferred to RC4. Updated: 2026-08-30.
 
 This handoff records the verified local Qt, PyQt, and Datoviz provider artifacts; the published feedstock pull requests; the expected dependency-order CI failures; and the remaining maintainer and exact-artifact sequence. Upstream feedstock work remains in sibling repositories, not the Datoviz source tree.
 
 ## Goal
 
-Deliver a conda-first `datoviz-qtbridge` provider for RC3 without adding Qt or PyQt to the base Datoviz wheel contract. The gate requires published Vulkan-enabled Qt packages, compatible published PyQt bindings, split Datoviz packages built against that managed runtime, and exact-artifact hosted validation.
+Deliver a conda-first `datoviz-qtbridge` provider for RC4 without adding Qt or PyQt to the base Datoviz wheel contract. The provider requires published Vulkan-enabled Qt packages, compatible published PyQt bindings, split Datoviz packages built against that managed runtime, and exact-artifact hosted validation. RC3 retains the source-build bridge with experimental provider wording and does not wait for upstream PyQt publication.
 
 ## Repository Rules
 
@@ -37,12 +37,12 @@ The base `libdatoviz` output must depend on `moltenvk` on macOS independently of
 
 Do not claim support for mixing the standalone macOS Datoviz wheel, which carries a private loader, MoltenVK library, and ICD manifest, with conda-managed Qt/PyQt. The supported provider path uses the mutually pinned conda outputs and verifies the resolved loader and driver from a clean prefix.
 
-## Remaining RC3 Sequence
+## Remaining RC4 sequence
 
 1. Wait for maintainer review, merge, and publication of PyQt PR #186 without weakening the Vulkan regression test or the cross-build contract.
 2. Build the Datoviz split packages against the published Qt/PyQt runtime, run a clean-prefix base macOS Vulkan render without Qt, then run exact-artifact bridge, import, loader/driver identity, Vulkan instance, Cocoa surface, hosted rendering, and missing-provider diagnostics.
-3. Add mandatory Linux and Windows hosted proof for RC3.
-4. Do not cut RC3 while this required provider gate is unavailable unless the maintainer explicitly changes release scope and records the exception.
+3. Add Linux, macOS, and Windows hosted proof for the claimed provider platforms.
+4. Keep this provider lane separate from the base RC3 artifact campaign; upstream latency must not delay RC3.
 
 ## Publication Guardrail
 
