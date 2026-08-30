@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <limits.h>
 #include <string.h>
 #if !OS_WINDOWS
 #include <unistd.h>
@@ -642,7 +643,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     VkBuffer staging_write_buffer = VK_NULL_HANDLE;
     DvzSemaphore* interop_semaphore = NULL;
     cudaExternalSemaphore_t cuda_semaphore = NULL;
-    int fd = -1;
+    DvzExternalHandle fd = DVZ_EXTERNAL_HANDLE_INVALID;
     int semaphore_fd = -1;
 
     /******************* Vulkan setup *******************/
@@ -813,10 +814,15 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     log_trace("data copied");
 
     /******************* Export memory FD *******************/
-    dvz_allocator_export(allocator, alloc, &fd);
-    if (fd < 0)
+    int export_result = dvz_allocator_export(allocator, alloc, &fd);
+    if (
+        export_result != 0 || fd == DVZ_EXTERNAL_HANDLE_INVALID || fd < 0 ||
+        fd > INT_MAX)
     {
-        log_error("Failed to export Vulkan memory FD");
+        log_error(
+            "Failed to export a valid Vulkan memory FD (result %d, handle %" PRIdPTR ")",
+            export_result, fd);
+        out = 1;
         goto cleanup_vulkan;
     }
     else
@@ -828,7 +834,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
     cudaExternalMemory_t cuda_mem = {0};
     struct cudaExternalMemoryHandleDesc handle_desc = {0};
     handle_desc.type = cudaExternalMemoryHandleTypeOpaqueFd;
-    handle_desc.handle.fd = fd;
+    handle_desc.handle.fd = (int)fd;
     handle_desc.size = allocation_size;
 
     cerr = cudaImportExternalMemory(&cuda_mem, &handle_desc);
@@ -838,7 +844,7 @@ int test_memory_cuda_1(TstContext* suite, const TstCase* tstitem)
         goto cleanup_fd;
     }
     // CUDA assumes ownership of the opaque FD after successful import on Linux.
-    fd = -1;
+    fd = DVZ_EXTERNAL_HANDLE_INVALID;
 
     void* cuda_ptr = NULL;
     struct cudaExternalMemoryBufferDesc buf_desc = {0};
@@ -972,8 +978,8 @@ cleanup_cuda_mem:
     cudaDestroyExternalMemory(cuda_mem);
 cleanup_fd:
 #if OS_UNIX
-    if (fd >= 0)
-        close(fd);
+    if (fd >= 0 && fd <= INT_MAX)
+        close((int)fd);
 #endif
 cleanup_vulkan:
     if (cuda_semaphore != NULL)
