@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from pathlib import Path
 import sys
 import tempfile
@@ -101,6 +102,7 @@ class VerifyExistingCaptureTest(unittest.TestCase):
             capture_args=(),
             expected_width=1280,
             expected_height=720,
+            dataset_input_hash="dataset-hash",
         )
 
     def _args(self, root: Path) -> argparse.Namespace:
@@ -115,6 +117,17 @@ class VerifyExistingCaptureTest(unittest.TestCase):
             verify_existing=True,
             skip_nonblank_check=False,
         )
+
+    def test_input_hash_tracks_prepared_dataset_content(self) -> None:
+        example = self._example()
+        first = capture_gallery.input_hash_for(example, "global-hash", Path("build"))
+        changed = capture_gallery.input_hash_for(
+            replace(example, dataset_input_hash="changed-dataset-hash"),
+            "global-hash",
+            Path("build"),
+        )
+
+        self.assertNotEqual(first, changed)
 
     def test_populates_cache_only_for_byte_identical_capture(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

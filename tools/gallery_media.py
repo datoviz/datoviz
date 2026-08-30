@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
+import subprocess
 from typing import Iterable
 
 import yaml
@@ -28,6 +30,83 @@ LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items(
 ANIMATED_WEBP_KIND = "animated-webp"
 CANONICAL_ANIMATION_SIZE = "1280x720"
 MP4_MAX_CRF = 40
+
+
+def prepared_dataset_paths(entry: dict) -> tuple[str, ...]:
+    """Return the manifest-declared prepared input paths for one example."""
+    dataset = entry.get("dataset") or {}
+    if not isinstance(dataset, dict):
+        return ()
+    paths: list[str] = []
+    for key, value in dataset.items():
+        if not str(key).endswith("prepared_path"):
+            continue
+        values = value if isinstance(value, list) else [value]
+        for item in values:
+            paths.extend(part.strip() for part in str(item).split(";") if part.strip())
+    return tuple(paths)
+
+
+def _hash_path_content(digest: "hashlib._Hash", label: str, path: Path) -> None:
+    """Add one file or directory tree to a content digest."""
+    digest.update(label.encode("utf8"))
+    digest.update(b"\0")
+    if not path.exists():
+        digest.update(b"missing\0")
+        return
+
+    files = (
+        [path]
+        if path.is_file()
+        else sorted(child for child in path.rglob("*") if child.is_file())
+    )
+    digest.update(b"file\0" if path.is_file() else b"directory\0")
+    for child in files:
+        name = child.name if path.is_file() else child.relative_to(path).as_posix()
+        digest.update(name.encode("utf8"))
+        digest.update(b"\0")
+        try:
+            with child.open("rb") as stream:
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    digest.update(chunk)
+        except OSError as exc:
+            digest.update(f"unreadable:{type(exc).__name__}".encode("ascii"))
+        digest.update(b"\0")
+
+
+def _data_gitlink(root: Path) -> str:
+    """Return the committed data gitlink when no narrower prepared path is declared."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD:data"],
+            cwd=root,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return "unavailable"
+    value = result.stdout.strip()
+    return value if result.returncode == 0 and value else "unavailable"
+
+
+def prepared_dataset_fingerprint(entry: dict, root: Path = ROOT) -> str:
+    """Fingerprint the narrow prepared inputs that can affect one gallery capture."""
+    paths = prepared_dataset_paths(entry)
+    data = entry.get("data") or {}
+    data_kind = str(data.get("kind", "")) if isinstance(data, dict) else ""
+    if not paths and data_kind != "prepared":
+        return ""
+
+    digest = hashlib.sha256()
+    if paths:
+        for value in paths:
+            path = Path(value)
+            _hash_path_content(digest, value, path if path.is_absolute() else root / path)
+    else:
+        digest.update(b"data-gitlink\0")
+        digest.update(_data_gitlink(root).encode("ascii"))
+    return digest.hexdigest()
 
 
 def load_manifest(path: Path = DEFAULT_MANIFEST) -> dict:

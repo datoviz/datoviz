@@ -34,6 +34,7 @@
 #include "_assertions.h"
 #include "datoviz/fileio.h"
 #include "datoviz/scene.h"
+#include "example_common.h"
 #include "example_style.h"
 #include "runner/scenario_runner.h"
 
@@ -111,11 +112,13 @@ static bool _serialize_scene(DvzScene* scene)
     const bool ok = length > 2u && json[0] == '{' && strstr(json, "\"figures\"") != NULL;
     if (ok)
     {
-        const int rc = dvz_write_bytes(JSON_PATH, "wb", (DvzSize)length, (const uint8_t*)json);
+        char path[1024] = {0};
+        example_outpath(NULL, JSON_PATH, path, sizeof(path));
+        const int rc = dvz_write_bytes(path, "wb", (DvzSize)length, (const uint8_t*)json);
         if (rc == 0)
-            fprintf(stdout, "json_export: wrote ./%s (%zu bytes)\n", JSON_PATH, length);
+            fprintf(stdout, "json_export: wrote %s (%zu bytes)\n", path, length);
         else
-            fprintf(stderr, "json_export: failed to write %s\n", JSON_PATH);
+            fprintf(stderr, "json_export: failed to write %s\n", path);
         dvz_scene_json_destroy(json);
         return rc == 0;
     }

@@ -43,6 +43,7 @@ class AnimatedPreview:
     motion_cycles: float = 1.0
     motion_phase: str = ""
     manifest_input_hash: str = ""
+    dataset_input_hash: str = ""
 
     @property
     def frame_dir(self) -> Path:
@@ -122,6 +123,7 @@ def collect_previews(
                 motion_cycles=motion["cycles"],
                 motion_phase=motion["phase"],
                 manifest_input_hash=capture_manifest_hash(entry),
+                dataset_input_hash=gallery_media.prepared_dataset_fingerprint(entry),
             )
         )
     previews.sort(key=lambda item: (item.lane, item.id))
@@ -281,6 +283,7 @@ def input_hash_for(
         f"{preview.motion_cycles:g}",
         preview.motion_phase,
         preview.manifest_input_hash,
+        preview.dataset_input_hash,
     )
     for field in fields:
         digest.update(field.encode("utf8"))

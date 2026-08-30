@@ -71,6 +71,7 @@ class CaptureExample:
     capture_args: tuple[str, ...]
     expected_width: int
     expected_height: int
+    dataset_input_hash: str = ""
 
     @property
     def rel_executable(self) -> str:
@@ -189,6 +190,7 @@ def input_hash_for(example: CaptureExample, global_hash: str, build_dir: Path) -
         example.capture_reason,
         f"{example.expected_width}x{example.expected_height}",
         str(command_for(example, build_dir)),
+        example.dataset_input_hash,
     )
     for field in fields:
         digest.update(field.encode("utf8"))
@@ -355,6 +357,7 @@ def collect_examples(manifest: dict) -> list[CaptureExample]:
                 capture_args=capture_args,
                 expected_width=expected_width,
                 expected_height=expected_height,
+                dataset_input_hash=gallery_media.prepared_dataset_fingerprint(entry),
             )
         )
     return examples

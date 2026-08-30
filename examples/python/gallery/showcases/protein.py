@@ -16,7 +16,8 @@ from examples.python.gallery import common as ex
 
 
 DEFAULT_PDB_ID = "6m0j"
-DEFAULT_BUNDLE = Path("data/examples/proteins/1ubq/prepared")
+DEFAULT_BUNDLE = Path("data/examples/proteins/6m0j/prepared")
+LEGACY_FALLBACK_BUNDLE = Path("data/examples/proteins/1ubq/prepared")
 ATOM_SCALE = 0.52
 ROTATION_SPEED_RAD_PER_SEC = 0.18
 INITIAL_ANGLES = (ctypes.c_float * 3)(0.753992, -1.025966, 2.442009)
@@ -85,15 +86,17 @@ def _bundle_valid(path: Path) -> bool:
 
 
 def _default_bundle_path() -> Path:
+    if _bundle_valid(DEFAULT_BUNDLE):
+        return DEFAULT_BUNDLE
     cache = _cache_bundle_path(DEFAULT_PDB_ID)
     if cache is not None and _bundle_valid(cache):
         return cache
-    if _bundle_valid(DEFAULT_BUNDLE):
-        return DEFAULT_BUNDLE
+    if _bundle_valid(LEGACY_FALLBACK_BUNDLE):
+        return LEGACY_FALLBACK_BUNDLE
     raise RuntimeError(
         f"failed to load protein bundle at '{DEFAULT_BUNDLE}'\n"
         "prepare one with:\n"
-        "  python tools/data/prepare_protein_arcball.py 1UBQ --regenerate"
+        "  python tools/preprocess_protein.py 6M0J"
     )
 
 

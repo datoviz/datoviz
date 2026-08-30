@@ -917,6 +917,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (!_read_allen_mouse_brain(DEFAULT_DATA_PATH, volume_data))
     {
         dvz_fprintf(stderr, "failed to load %s\n", DEFAULT_DATA_PATH);
+        dvz_fprintf(stderr, "prepare it with `python tools/data/prepare_brain_volume.py`\n");
         goto cleanup;
     }
     if (!_downsample_allen_mouse_brain(volume_data, DEFAULT_DOWNSAMPLE))

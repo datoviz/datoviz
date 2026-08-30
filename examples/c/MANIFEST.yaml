@@ -35,6 +35,7 @@ taxonomy:
     webgpu.requirements: browser capability tags used by website routing and diagnostics
     webgpu.rendering_effects: explicit browser parity for native ambient occlusion, MSAA, EDL, depth cue, WBOIT, or depth peeling
     agent_copy_safe: true only for examples suitable as starting points for generated user code
+    review_exclusions: public examples intentionally withheld from RC gallery generation, with a nonempty reason
   tag_not_folder:
     - workflow
     - scientific
@@ -121,6 +122,12 @@ non_public_examples:
     lane: lab
     source: examples/c/lab/text_msdf_lab.c
     validation: manual
+
+review_exclusions:
+  features_volume_occlusion: experimental render-product diagnostic pending an explicit publication review
+  showcases_embedding_atlas: experimental generated-data showcase pending canonical 1280x720 media review
+  showcases_lipid_brain_atlas: experimental prepared-data showcase pending canonical 1280x720 media and license review
+  showcases_synthetic_mouse: experimental generated-data showcase pending canonical 1280x720 motion-media review
 
 batches:
   review-00-foundation:

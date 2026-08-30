@@ -296,10 +296,10 @@ static bool _default_bundle_path(char* out, size_t out_size)
 {
     ANN(out);
     ProteinBundleLayout layout = {0};
-    if (_cache_bundle_path(DEFAULT_PDB_ID, out, out_size) && _bundle_layout(out, &layout))
-        return true;
     int n = dvz_snprintf(out, out_size, "%s", DEFAULT_BUNDLE_PATH);
     if (n > 0 && (size_t)n < out_size && _bundle_layout(out, &layout))
+        return true;
+    if (_cache_bundle_path(DEFAULT_PDB_ID, out, out_size) && _bundle_layout(out, &layout))
         return true;
     n = dvz_snprintf(out, out_size, "%s", LEGACY_FALLBACK_BUNDLE_PATH);
     return n > 0 && (size_t)n < out_size && _bundle_layout(out, &layout);

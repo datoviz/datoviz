@@ -87,7 +87,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--strict",
         action="store_true",
-        help="fail when a matching manifest entry has no built executable",
+        help=(
+            "fail when a matching manifest entry has no built executable, or when an explicit "
+            "review selection contains a non-runnable entry"
+        ),
     )
     parser.add_argument(
         "--frames",
@@ -309,6 +312,7 @@ def manifest_id_examples(
     examples: list[tuple[str, Path]] = []
     ignored: list[str] = []
     missing: list[str] = []
+    non_runnable: list[str] = []
     seen: set[str] = set()
 
     for example_id in example_ids:
@@ -319,7 +323,9 @@ def manifest_id_examples(
         entry = entries[example_id]
         skip_reason = manifest_entry_skip_reason(entry)
         if skip_reason:
-            ignored.append(skip_reason)
+            message = f"{example_id}: {skip_reason}"
+            ignored.append(message)
+            non_runnable.append(message)
             continue
         rel = manifest_entry_rel(root, entry)
         text = manifest_entry_text(entry, rel)
@@ -332,6 +338,12 @@ def manifest_id_examples(
             examples.append((rel, exe))
         else:
             missing.append(rel)
+
+    if args.strict and non_runnable:
+        details = "\n".join(f"  - {message}" for message in non_runnable)
+        raise ValueError(
+            "strict C example review selection contains non-runnable entries:\n" + details
+        )
 
     return examples, ignored, missing
 
@@ -542,12 +554,18 @@ def main() -> int:
 
     env = os.environ.copy()
     apply_runtime_env(root, env)
+    failures: list[tuple[str, int]] = []
     for index, (rel, exe) in enumerate(examples, 1):
         print(f"[{index}/{len(examples)}] {rel}")
         result = subprocess.run([str(exe), *example_args], cwd=root, env=env, check=False)
         if result.returncode != 0:
             print(f"Example failed: {rel} exited with {result.returncode}", file=sys.stderr)
-            # return result.returncode
+            failures.append((rel, result.returncode))
+    if failures:
+        print(f"\n{len(failures)} C example(s) failed:", file=sys.stderr)
+        for rel, returncode in failures:
+            print(f"  - {rel}: exit {returncode}", file=sys.stderr)
+        return 1
     return 0
 
 

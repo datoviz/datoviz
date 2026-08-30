@@ -101,6 +101,27 @@ def _check_manifest_semantics(manifest_path: Path) -> bool:
         print(error)
         ok = False
     entries = manifest["examples"]
+    entry_ids = {str(entry.get("id")) for entry in entries}
+    reviewed_ids = gallery_media.reviewed_example_ids(manifest)
+    review_exclusions = manifest.get("review_exclusions") or {}
+    if not isinstance(review_exclusions, dict):
+        print("review_exclusions must map example ids to reasons")
+        review_exclusions = {}
+        ok = False
+    excluded_ids = {str(entry_id) for entry_id in review_exclusions}
+    for entry_id, reason in review_exclusions.items():
+        if not str(reason).strip():
+            print(f"{entry_id}: review exclusion requires a nonempty reason")
+            ok = False
+    for entry_id in sorted(reviewed_ids & excluded_ids):
+        print(f"{entry_id}: example cannot be both reviewed and review-excluded")
+        ok = False
+    for entry_id in sorted(excluded_ids - entry_ids):
+        print(f"{entry_id}: review exclusion has no public manifest entry")
+        ok = False
+    for entry_id in sorted(entry_ids - reviewed_ids - excluded_ids):
+        print(f"{entry_id}: public example must belong to a review batch or review_exclusions")
+        ok = False
     sources = {str(entry.get("source")) for entry in entries if entry.get("source")}
     extra_sources = {
         str(extra.get("path"))

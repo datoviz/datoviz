@@ -75,3 +75,31 @@ def test_frame_input_hash_does_not_hash_whole_manifest(tmp_path: Path) -> None:
 
     assert first == second
     assert first != changed
+
+
+def test_frame_input_hash_tracks_prepared_dataset_content(tmp_path: Path) -> None:
+    executable = tmp_path / "example"
+    executable.write_bytes(b"executable")
+    preview = gallery_frames.AnimatedPreview(
+        id="example",
+        title="Example",
+        lane="showcases",
+        source="examples/c/showcases/missing.c",
+        executable=executable,
+        frames=2,
+        fps=30,
+        sample_stride=1,
+        time_scale=1.0,
+        size="1280x720",
+        manifest_input_hash="entry",
+        dataset_input_hash="dataset-a",
+    )
+
+    first = gallery_frames.input_hash_for(preview, tmp_path / "manifest", tmp_path / "frames")
+    changed = gallery_frames.input_hash_for(
+        replace(preview, dataset_input_hash="dataset-b"),
+        tmp_path / "manifest",
+        tmp_path / "frames",
+    )
+
+    assert first != changed
