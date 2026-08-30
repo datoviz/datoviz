@@ -387,6 +387,14 @@ validate_audit()
 }
 
 
+validate_notice_inventory()
+{
+    require python
+    log "Validating third-party license inventory"
+    python "$ROOT/tools/check_third_party_notices.py"
+}
+
+
 validate_source_install()
 {
     require cmake
@@ -534,6 +542,11 @@ main()
             usage
             return 0
             ;;
+    esac
+
+    validate_notice_inventory
+
+    case "$MODE" in
         source-install)
             prepare_workdir
             validate_source_install

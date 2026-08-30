@@ -486,26 +486,39 @@ jobs:
         run: python tools/release_wheels/check_wheel.py --wheel wheelhouse/*.whl --release-build --precompiled-shaders --cmake-consumer --qt-probe optional
 
   windows-python-smoke:
-    name: "Smoke / Windows AMD64 / Python ${{ matrix.python }}"
+    name: "Smoke / Windows ${{ matrix.arch }} / Python ${{ matrix.python }}"
     needs: windows
-    runs-on: windows-latest
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          - {runner: windows-latest, arch: AMD64, artifact: wheel-windows-AMD64, msvc_arch: x64, python_arch: x64, python: "3.10"}
+          - {runner: windows-latest, arch: AMD64, artifact: wheel-windows-AMD64, msvc_arch: x64, python_arch: x64, python: "3.11"}
+          - {runner: windows-latest, arch: AMD64, artifact: wheel-windows-AMD64, msvc_arch: x64, python_arch: x64, python: "3.12"}
+          - {runner: windows-latest, arch: AMD64, artifact: wheel-windows-AMD64, msvc_arch: x64, python_arch: x64, python: "3.13"}
+          - {runner: windows-latest, arch: AMD64, artifact: wheel-windows-AMD64, msvc_arch: x64, python_arch: x64, python: "3.14"}
+          - {runner: windows-11-arm, arch: ARM64, artifact: wheel-windows-ARM64, msvc_arch: arm64, python_arch: arm64, python: "3.11"}
+          - {runner: windows-11-arm, arch: ARM64, artifact: wheel-windows-ARM64, msvc_arch: arm64, python_arch: arm64, python: "3.12"}
+          - {runner: windows-11-arm, arch: ARM64, artifact: wheel-windows-ARM64, msvc_arch: arm64, python_arch: arm64, python: "3.13"}
+          - {runner: windows-11-arm, arch: ARM64, artifact: wheel-windows-ARM64, msvc_arch: arm64, python_arch: arm64, python: "3.14"}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
-          name: wheel-windows-AMD64
+          name: ${{ matrix.artifact }}
           path: wheelhouse
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
+          architecture: ${{ matrix.python_arch }}
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
       - name: Dependencies
         shell: pwsh
         run: |
-          choco install ninja -y
+          choco install cmake ninja -y
           python -m pip install -U pip wheel tomli
       - name: Installed wheel smoke
         shell: pwsh

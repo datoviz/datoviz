@@ -40,6 +40,8 @@ The missing current `data` commit and LFS payload were recovered at `3c862beb2e9
 
 Hosted Linux and Windows exact-artifact proof is mandatory for RC3. Physical Linux and Windows proof should be restored when hardware is available; final v0.4.0 requires that proof or an explicit maintainer-approved exception.
 
+The hosted Windows ARM64 smoke uses native Python 3.11-3.14 because the setup-python provider's current Windows ARM64 manifest has no CPython 3.10 package. AMD64 retains Python 3.10-3.14 coverage; this is a provider-availability exclusion, not a Datoviz compatibility claim.
+
 ## RC4 Gate
 
 RC4 completes rewritten course chapters 4-15 through an interactive textured and lit generated mesh, generates every chapter preview, freezes the tutorial-facing API profile, and proves every chapter from exact installed packages on supported hosted platforms. Generated geometry and a procedural texture are the required path; Suzanne and committed binary tutorial assets are optional polish, not blockers.

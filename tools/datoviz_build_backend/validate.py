@@ -14,6 +14,7 @@ import sys
 import tempfile
 import zipfile
 from base64 import urlsafe_b64encode
+from email.parser import Parser
 from pathlib import Path
 
 from .config import ROOT
@@ -105,10 +106,60 @@ def validate_wheel(wheel: Path) -> None:
         _validate_description_image_urls(metadata)
         _validate_record(zf, f"{dist_info}/RECORD")
         _validate_payload_manifest(zf)
+        _validate_license_payload(zf, dist_info)
+        _validate_license_metadata(zf, dist_info, metadata)
         _validate_macos_runtime(zf, filename_tags)
         forbidden = [name for name in names if "__pycache__" in name or name.endswith(".pyc") or name.endswith(".DS_Store")]
         if forbidden:
             raise RuntimeError(f"{wheel}: forbidden payload entries: {forbidden[:5]}")
+
+
+def _validate_license_payload(zf: zipfile.ZipFile, dist_info: str) -> None:
+    """Require the project license and maintained third-party notice inventory in every wheel."""
+
+    manifest_name = f"{dist_info}/licenses/licenses/THIRD_PARTY_LICENSES.txt"
+    required = {
+        f"{dist_info}/licenses/LICENSE",
+        f"{dist_info}/licenses/licenses/THIRD_PARTY_NOTICES.md",
+        manifest_name,
+    }
+    names = set(zf.namelist())
+    missing = sorted(required - names)
+    if missing:
+        raise RuntimeError(f"wheel license payload is incomplete: {', '.join(missing)}")
+
+    for raw in zf.read(manifest_name).decode("utf8").splitlines():
+        text = raw.strip()
+        if not text or text.startswith("#"):
+            continue
+        path = Path(text)
+        if path.is_absolute() or ".." in path.parts:
+            raise RuntimeError(f"wheel license manifest contains an unsafe path: {text}")
+        required_name = f"{dist_info}/licenses/{path.as_posix()}"
+        if required_name not in names:
+            raise RuntimeError(f"wheel license payload is incomplete: {required_name}")
+
+
+def _validate_license_metadata(zf: zipfile.ZipFile, dist_info: str, metadata: str) -> None:
+    """Require Core Metadata License-File entries to identify every wheel license payload."""
+
+    prefix = f"{dist_info}/licenses/"
+    payloads = {name.removeprefix(prefix) for name in zf.namelist() if name.startswith(prefix)}
+    license_files = Parser().parsestr(metadata).get_all("License-File", [])
+    listed = set(license_files)
+    if len(listed) != len(license_files):
+        raise RuntimeError("wheel metadata contains duplicate License-File entries")
+    if listed != payloads:
+        missing = sorted(payloads - listed)
+        unexpected = sorted(listed - payloads)
+        details = []
+        if missing:
+            details.append(f"missing: {', '.join(missing)}")
+        if unexpected:
+            details.append(f"unexpected: {', '.join(unexpected)}")
+        raise RuntimeError(
+            "wheel License-File metadata does not match license payload: " + "; ".join(details)
+        )
 
 
 def _validate_description_image_urls(metadata: str) -> None:

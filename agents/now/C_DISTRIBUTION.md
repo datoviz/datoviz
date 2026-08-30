@@ -28,6 +28,7 @@ Homebrew, `.deb`, Spack, rpm, conan, Chocolatey, winget, MSYS2, nix, Docker dist
 ## Package Decisions
 
 - Wheels remain the primary installed C/C++ path because they carry the library, headers, CMake files, and Python binding together.
+- CMake does not accept PEP 440 prerelease text such as `0.4.0rc2` in `find_package`. RC wheels expose their numeric release segment for compatible requests such as `find_package(datoviz 0.4 CONFIG REQUIRED)`, while a stable numeric `EXACT` request does not resolve an RC wheel.
 - Windows pip wheels remain MSVC/vcpkg-built; downstream executables copy the Datoviz DLL beside the executable or add the runtime directory to `PATH`.
 - Conda uses dynamic conda-forge dependencies and split native, Python, and optional Qt provider outputs. Qt never becomes a base-wheel dependency.
 - Headless package tests must import `datoviz` and `datoviz.raw` and create/destroy a raw scene without requiring a Vulkan device.

@@ -1,0 +1,18 @@
+# License authorities copied into installed Datoviz C/C++ packages and wheels.
+# Keep paths relative to the repository root. Add a source here whenever a
+# vendored dependency or embedded runtime asset is introduced.
+assets/runtime/fonts/LICENSES/NotoSansMath-OFL-1.1.txt
+assets/runtime/fonts/LICENSES/SourceCodePro-OFL-1.1.md
+assets/runtime/fonts/LICENSES/SourceSans3-OFL-1.1.md
+external/cglm/LICENSE
+external/cimgui/LICENSE
+external/cimgui/imgui/LICENSE.txt
+external/glfw/LICENSE.md
+external/kvazaar/LICENSE
+external/kvazaar/LICENSE.EXT.greatest
+external/kvazaar/src/threadwrapper/LICENSE
+external/mimalloc/LICENSE
+external/msdf-atlas-gen/LICENSE.txt
+external/msdf-atlas-gen/artery-font-format/LICENSE.txt
+external/msdf-atlas-gen/msdfgen/LICENSE.txt
+external/volk/LICENSE.md

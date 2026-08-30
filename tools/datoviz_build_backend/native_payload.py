@@ -5,12 +5,17 @@ from __future__ import annotations
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 from pathlib import Path
 
 from .config import ReleaseWheelConfig, runtime_roots
 from .manifest import PayloadEntry, write_manifest
+from .metadata import project_metadata
+
+
+_CMAKE_RELEASE_VERSION_RE = re.compile(r"^([0-9]+(?:\.[0-9]+)*)")
 
 
 def copy_file(src: Path, dst: Path) -> None:
@@ -126,6 +131,8 @@ def _stage_c_integration(root: Path, package_dir: Path) -> list[PayloadEntry]:
     else:
         subprocess.run(cmd, cwd=root, check=True)
 
+    _write_wheel_cmake_version(root, package_dir)
+
     entries: list[PayloadEntry] = []
     for dst in sorted((package_dir / "include").rglob("*")):
         if dst.is_file():
@@ -133,6 +140,39 @@ def _stage_c_integration(root: Path, package_dir: Path) -> list[PayloadEntry]:
     for dst in sorted((package_dir / "lib" / "cmake" / "datoviz").glob("*.cmake")):
         entries.append(_entry(dst, _wheel_path(package_dir, dst), "cmake", "cmake-consumer"))
     return entries
+
+
+def _write_wheel_cmake_version(root: Path, package_dir: Path) -> None:
+    """Render the wheel CMake package-version file from project metadata."""
+
+    template = root / "cmake" / "DatovizConfigVersion.cmake.wheel"
+    if not template.is_file():
+        raise FileNotFoundError(template)
+    version = str(project_metadata(root)["version"])
+    cmake_version = _cmake_release_version(version)
+    text = template.read_text(encoding="utf8")
+    text = text.replace("@DVZ_WHEEL_CMAKE_VERSION@", cmake_version)
+    text = text.replace(
+        "@DVZ_WHEEL_VERSION_HAS_SUFFIX@", "TRUE" if _version_has_suffix(version) else "FALSE"
+    )
+    config_dir = package_dir / "lib" / "cmake" / "datoviz"
+    for name in ("DatovizConfigVersion.cmake", "datovizConfigVersion.cmake"):
+        (config_dir / name).write_text(text, encoding="utf8")
+
+
+def _cmake_release_version(version: str) -> str:
+    """Return the numeric PEP 440 release segment accepted by CMake's package parser."""
+
+    match = _CMAKE_RELEASE_VERSION_RE.match(version)
+    if match is None:
+        raise ValueError(f"wheel version has no CMake-compatible release segment: {version!r}")
+    return match.group(1)
+
+
+def _version_has_suffix(version: str) -> bool:
+    """Return whether a PEP 440 version has text after its numeric release segment."""
+
+    return _cmake_release_version(version) != version
 
 
 def _stage_native(config: ReleaseWheelConfig, package_dir: Path) -> list[PayloadEntry]:

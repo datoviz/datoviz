@@ -159,15 +159,17 @@ jobs:
             cmake_consumer: true
             examples: true
             setup: windows
+            msvc_arch: x64
           - runner: windows-11-arm
             artifact: wheel-windows-ARM64
             machine_id: cloud-windows-arm64
             execution_class: github-hosted-no-gpu
             render: false
             window: false
-            cmake_consumer: false
-            examples: false
+            cmake_consumer: true
+            examples: true
             setup: windows
+            msvc_arch: arm64
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7
@@ -191,6 +193,14 @@ jobs:
       - name: macOS build tools
         if: matrix.setup == 'macos'
         run: brew install ninja
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: matrix.setup == 'windows'
+        with:
+          arch: ${{ matrix.msvc_arch }}
+      - name: Windows build tools
+        if: matrix.setup == 'windows'
+        shell: pwsh
+        run: choco install cmake ninja -y
       - name: Python tools
         run: python -m pip install --upgrade pip
       - name: Installed-wheel conformance
@@ -225,10 +235,10 @@ jobs:
             command_prefix=(xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" python)
           fi
           if [[ "$CMAKE_CONSUMER" != "true" ]]; then
-            cmake_args=(--no-cmake-consumer --cmake-skip-reason "hosted ARM64 image has no native ARM64 C compiler")
+            cmake_args=(--no-cmake-consumer --cmake-skip-reason "CMake consumer is outside this host profile")
           fi
           if [[ "$EXAMPLES" != "true" ]]; then
-            example_args=(--no-examples --examples-skip-reason "hosted ARM64 image has no native ARM64 C compiler")
+            example_args=(--no-examples --examples-skip-reason "installed examples are outside this host profile")
           fi
           env -u VULKAN_SDK \
             -u VK_ICD_FILENAMES \

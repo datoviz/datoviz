@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import json
+import shutil
+import subprocess
 import zipfile
+from email.parser import Parser
 from pathlib import Path
 
 import pytest
@@ -9,6 +12,7 @@ import pytest
 from tools.datoviz_build_backend import native_payload, repair
 from tools.datoviz_build_backend import wheel as wheel_backend
 from tools.datoviz_build_backend.config import parse_config_settings
+from tools.datoviz_build_backend.license_payload import package_license_paths
 from tools.datoviz_build_backend.manifest import PayloadEntry, write_manifest
 from tools.datoviz_build_backend.native_payload import _stage_native
 from tools.datoviz_build_backend.tags import repair_input_platform_tag, wheel_tags
@@ -18,6 +22,15 @@ from tools.datoviz_build_backend.wheel import build_from_stage, write_wheel_from
 
 def _write_project(root: Path) -> None:
     (root / "README.md").write_text("# Datoviz test\n", encoding="utf8")
+    (root / "LICENSE").write_text("MIT\n", encoding="utf8")
+    licenses = root / "licenses"
+    licenses.mkdir()
+    (licenses / "THIRD_PARTY_NOTICES.md").write_text("notices\n", encoding="utf8")
+    (root / "external").mkdir()
+    (root / "external" / "DEPENDENCY_LICENSE").write_text("dependency license\n", encoding="utf8")
+    (licenses / "THIRD_PARTY_LICENSES.txt").write_text(
+        "external/DEPENDENCY_LICENSE\n", encoding="utf8"
+    )
     (root / "pyproject.toml").write_text(
         """
 [project]
@@ -103,6 +116,113 @@ def test_wheel_cmake_config_requires_c11() -> None:
     config = (root / "cmake" / "DatovizConfig.cmake.wheel").read_text(encoding="utf8")
 
     assert 'INTERFACE_COMPILE_FEATURES "c_std_11"' in config
+
+
+def test_wheel_cmake_config_handles_prerelease_and_stable_exact_versions(
+    tmp_path: Path,
+) -> None:
+    """CMake keeps prerelease compatibility separate from stable exact version requests."""
+
+    cmake = shutil.which("cmake")
+    if cmake is None:
+        pytest.skip("cmake is unavailable")
+
+    root = Path(__file__).resolve().parents[1]
+    package = tmp_path / "datoviz"
+    config_dir = package / "lib" / "cmake" / "datoviz"
+    config_dir.mkdir(parents=True)
+    (package / "include").mkdir()
+    (package / "libdatoviz.so").write_bytes(b"placeholder")
+    for name in ("DatovizConfig.cmake", "datovizConfig.cmake"):
+        shutil.copy2(root / "cmake" / "DatovizConfig.cmake.wheel", config_dir / name)
+    native_payload._write_wheel_cmake_version(root, package)
+
+    version_file = (config_dir / "DatovizConfigVersion.cmake").read_text(encoding="utf8")
+    assert 'set(PACKAGE_VERSION "0.4.0")' in version_file
+    assert "set(DVZ_PACKAGE_VERSION_HAS_SUFFIX TRUE)" in version_file
+
+    accepted = tmp_path / "accepted"
+    accepted.mkdir()
+    (accepted / "CMakeLists.txt").write_text(
+        "cmake_minimum_required(VERSION 3.21)\n"
+        "project(version_acceptance C)\n"
+        "find_package(datoviz 0.4 CONFIG REQUIRED)\n",
+        encoding="utf8",
+    )
+    accepted_result = subprocess.run(
+        [cmake, "-S", str(accepted), "-B", str(accepted / "build"), f"-Ddatoviz_DIR={config_dir}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert accepted_result.returncode == 0, accepted_result.stdout + accepted_result.stderr
+
+    for requested in ("0.4.0", "999"):
+        rejected = tmp_path / f"rejected-{requested}"
+        rejected.mkdir()
+        (rejected / "CMakeLists.txt").write_text(
+            "cmake_minimum_required(VERSION 3.21)\n"
+            "project(version_rejection C)\n"
+            f"find_package(datoviz {requested} EXACT CONFIG REQUIRED)\n",
+            encoding="utf8",
+        )
+        result = subprocess.run(
+            [
+                cmake,
+                "-S",
+                str(rejected),
+                "-B",
+                str(rejected / "build"),
+                f"-Ddatoviz_DIR={config_dir}",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode != 0
+        assert "version" in (result.stdout + result.stderr).lower()
+
+    stable_root = tmp_path / "stable-root"
+    (stable_root / "cmake").mkdir(parents=True)
+    shutil.copy2(root / "cmake" / "DatovizConfigVersion.cmake.wheel", stable_root / "cmake")
+    (stable_root / "pyproject.toml").write_text(
+        "[project]\nname = 'datoviz'\nversion = '0.4.0'\n", encoding="utf8"
+    )
+    stable_package = tmp_path / "stable-package"
+    stable_config_dir = stable_package / "lib" / "cmake" / "datoviz"
+    stable_config_dir.mkdir(parents=True)
+    (stable_package / "include").mkdir()
+    (stable_package / "libdatoviz.so").write_bytes(b"placeholder")
+    for name in ("DatovizConfig.cmake", "datovizConfig.cmake"):
+        shutil.copy2(root / "cmake" / "DatovizConfig.cmake.wheel", stable_config_dir / name)
+    native_payload._write_wheel_cmake_version(stable_root, stable_package)
+    stable_version_file = (stable_config_dir / "DatovizConfigVersion.cmake").read_text(
+        encoding="utf8"
+    )
+    assert "set(DVZ_PACKAGE_VERSION_HAS_SUFFIX FALSE)" in stable_version_file
+
+    stable_consumer = tmp_path / "stable-consumer"
+    stable_consumer.mkdir()
+    (stable_consumer / "CMakeLists.txt").write_text(
+        "cmake_minimum_required(VERSION 3.21)\n"
+        "project(stable_version_acceptance C)\n"
+        "find_package(datoviz 0.4.0 EXACT CONFIG REQUIRED)\n",
+        encoding="utf8",
+    )
+    stable_result = subprocess.run(
+        [
+            cmake,
+            "-S",
+            str(stable_consumer),
+            "-B",
+            str(stable_consumer / "build"),
+            f"-Ddatoviz_DIR={stable_config_dir}",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert stable_result.returncode == 0, stable_result.stdout + stable_result.stderr
 
 
 def test_stage_macos_native_normalizes_vulkan_runtime(
@@ -339,9 +459,23 @@ def test_direct_wheel_writer_validates_record_and_manifest(tmp_path: Path) -> No
     validate_wheel(wheel)
     with zipfile.ZipFile(wheel) as zf:
         names = set(zf.namelist())
+        metadata = Parser().parsestr(
+            zf.read("datoviz-0.4.0.dev0.dist-info/METADATA").decode("utf8")
+        )
     assert "datoviz-0.4.0.dev0.dist-info/METADATA" in names
     assert "datoviz-0.4.0.dev0.dist-info/RECORD" in names
+    assert "datoviz-0.4.0.dev0.dist-info/licenses/LICENSE" in names
+    assert "datoviz-0.4.0.dev0.dist-info/licenses/licenses/THIRD_PARTY_NOTICES.md" in names
+    assert "datoviz-0.4.0.dev0.dist-info/licenses/external/DEPENDENCY_LICENSE" in names
     assert "datoviz/_wheel_payload.json" in names
+    license_files = metadata.get_all("License-File", [])
+    expected = [
+        destination.as_posix() for _, destination in package_license_paths(tmp_path)
+    ]
+    assert license_files == expected
+    assert {f"datoviz-0.4.0.dev0.dist-info/licenses/{path}" for path in license_files} == {
+        path for path in names if ".dist-info/licenses/" in path
+    }
 
 
 def test_wheel_validation_rejects_relative_description_image(tmp_path: Path) -> None:

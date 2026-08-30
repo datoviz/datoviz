@@ -38,7 +38,7 @@ The exact candidate campaign must prove:
 1. Linux `x86_64` and `aarch64` wheels build, repair, inspect, and install.
 2. macOS 15 `x86_64` and `arm64` wheels build, repair, inspect, and install without dishonest lower deployment tags.
 3. Windows AMD64 and ARM64 wheels build, inspect, and install with `datoviz.dll`, `datoviz.lib`, CMake metadata, and required runtime DLLs.
-4. Python 3.10-3.14 clean-install smokes pass on supported hosted platforms.
+4. Python 3.10-3.14 clean-install smokes pass on supported hosted platforms. The native Windows ARM64 setup-python manifest currently supplies 3.11-3.14, while 3.10 remains AMD64-only; keep the ARM64 matrix explicit and do not claim a native 3.10 smoke until the provider publishes it.
 5. Runtime shaderc compilation and the installed CMake consumer pass from each eligible artifact.
 6. The rewritten Vulkan course passes against the exact package version newer than RC2.
 7. Native dependency inspection shows no missing or unintended libraries.

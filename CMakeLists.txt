@@ -756,6 +756,42 @@ if(DVZ_INSTALL AND NOT CMAKE_SKIP_INSTALL_RULES)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/datoviz.pc"
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
     )
+
+    set(_dvz_third_party_license_manifest
+        "${PROJECT_SOURCE_DIR}/licenses/THIRD_PARTY_LICENSES.txt")
+    if(NOT EXISTS "${_dvz_third_party_license_manifest}")
+        message(FATAL_ERROR
+            "Datoviz third-party license manifest is missing: ${_dvz_third_party_license_manifest}")
+    endif()
+    file(STRINGS "${_dvz_third_party_license_manifest}" _dvz_third_party_license_paths)
+    foreach(_dvz_third_party_license_path IN LISTS _dvz_third_party_license_paths)
+        string(STRIP "${_dvz_third_party_license_path}" _dvz_third_party_license_path)
+        if(_dvz_third_party_license_path STREQUAL "" OR _dvz_third_party_license_path MATCHES "^#")
+            continue()
+        endif()
+        if(IS_ABSOLUTE "${_dvz_third_party_license_path}" OR _dvz_third_party_license_path MATCHES "(^|/)\\.\\.(/|$)")
+            message(FATAL_ERROR
+                "Unsafe third-party license manifest path: ${_dvz_third_party_license_path}")
+        endif()
+        set(_dvz_third_party_license_source
+            "${PROJECT_SOURCE_DIR}/${_dvz_third_party_license_path}")
+        if(NOT EXISTS "${_dvz_third_party_license_source}")
+            message(FATAL_ERROR "Third-party license authority is missing: ${_dvz_third_party_license_path}")
+        endif()
+        get_filename_component(_dvz_third_party_license_directory
+            "${_dvz_third_party_license_path}" DIRECTORY)
+        install(FILES "${_dvz_third_party_license_source}"
+            DESTINATION "${CMAKE_INSTALL_DOCDIR}/licenses/${_dvz_third_party_license_directory}"
+        )
+    endforeach()
+    install(FILES "${PROJECT_SOURCE_DIR}/LICENSE"
+        DESTINATION "${CMAKE_INSTALL_DOCDIR}/licenses"
+    )
+    install(FILES
+        "${PROJECT_SOURCE_DIR}/licenses/THIRD_PARTY_NOTICES.md"
+        "${PROJECT_SOURCE_DIR}/licenses/THIRD_PARTY_LICENSES.txt"
+        DESTINATION "${CMAKE_INSTALL_DOCDIR}/licenses/licenses"
+    )
 endif()
 
 # Configuration summary.

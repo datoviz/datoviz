@@ -10,6 +10,7 @@ import zipfile
 from pathlib import Path
 
 from .config import ReleaseWheelConfig, default_platform_tag
+from .license_payload import package_license_paths
 from .metadata import (
     distribution_name,
     entry_points_text,
@@ -66,6 +67,8 @@ def write_wheel_from_stage(stage_dir: Path, dist_dir: Path, platform_tag: str, *
 
     files[f"{dist_info}/METADATA"] = metadata_text(root).encode("utf8")
     files[f"{dist_info}/WHEEL"] = wheel_text(platform_tag).encode("utf8")
+    for source, destination in package_license_paths(root):
+        files[f"{dist_info}/licenses/{destination.as_posix()}"] = source.read_bytes()
     entry_points = entry_points_text(project)
     if entry_points:
         files[f"{dist_info}/entry_points.txt"] = entry_points.encode("utf8")

@@ -5,6 +5,8 @@ from __future__ import annotations
 from email.message import Message
 from pathlib import Path
 
+from .license_payload import package_license_paths
+
 try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 fallback.
@@ -35,7 +37,7 @@ def metadata_text(root: Path) -> str:
 
     project = project_metadata(root)
     msg = Message()
-    msg["Metadata-Version"] = "2.1"
+    msg["Metadata-Version"] = "2.4"
     msg["Name"] = str(project["name"])
     msg["Version"] = str(project["version"])
     if project.get("description"):
@@ -44,6 +46,8 @@ def metadata_text(root: Path) -> str:
         msg["Requires-Python"] = str(project["requires-python"])
     if project.get("license", {}).get("text"):
         msg["License"] = str(project["license"]["text"])
+    for _, destination in package_license_paths(root):
+        msg["License-File"] = destination.as_posix()
     for author in project.get("authors", []):
         if author.get("name"):
             msg["Author"] = str(author["name"])
