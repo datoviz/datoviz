@@ -1,13 +1,13 @@
 # Datoviz v0.4 Documentation Status
 
-Status: RC3 implementation inventory and rewritten course previews complete; maintainer review, exact release artifacts, and publication decisions remain. Updated: 2026-08-01.
+Status: RC3 implementation inventory and rewritten course previews complete; maintainer review, exact release artifacts, and publication decisions remain. Updated: 2026-08-30.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 
 ## Completed RC3 Documentation Work
 
 - The public v0.4 structure, navigation, status vocabulary, Known limitations page, and preserved `/v0.3/` route are implemented.
-- Generated C reference covers all 1,578 exported functions across 13 pages with drift checking.
+- Generated C reference covers all 1,597 exported functions across 13 pages with drift checking.
 - Python guidance covers all 18 NumPy-adapted calls, three generated helpers, exact `datoviz.raw` use, ownership, callbacks, and the GSP/VisPy2 boundary.
 - All 12 real or prepared dataset showcases pass attribution and provenance checks.
 - Gallery tooling enforces canonical `1280x720` animation media, bounded FPS/CRF fallback, encoded-output validation, isolated deterministic parallelism, and capture-worker limits.

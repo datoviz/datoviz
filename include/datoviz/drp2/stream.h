@@ -63,6 +63,9 @@ DVZ_EXPORT uint32_t dvz_drp2_stream_count(const DvzDrp2CommandStream* stream);
 /**
  * Return a command from a DRP2 command stream.
  *
+ * The returned pointer is borrowed from the stream. Any call that appends a command may reallocate
+ * command storage and invalidate it; it is also invalid after the stream is destroyed.
+ *
  * @param stream the command stream
  * @param index the command index
  * @return the command, or NULL when index is out of bounds
@@ -89,6 +92,9 @@ dvz_drp2_stream_set_label(DvzDrp2CommandStream* stream, uint64_t id, const char*
 
 /**
  * Return a debug label attached to a numeric DRP2 id.
+ *
+ * The returned pointer is borrowed from the stream. Any later `dvz_drp2_stream_set_label()` call
+ * may reallocate label storage and invalidate it; it is also invalid after the stream is destroyed.
  *
  * @param stream the command stream
  * @param id the DRP2 object or transient id

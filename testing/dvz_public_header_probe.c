@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "datoviz/common/version.h"
+#include "datoviz/vklite/commands.h"
 
 int main(void)
 {

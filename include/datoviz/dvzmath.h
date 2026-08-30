@@ -27,6 +27,7 @@
 #include "math/anim.h"
 #include "math/arithm.h"
 #include "math/box.h"
+#include "math/parallel.h"
 #include "math/prng.h"
 #include "math/stats.h"
 #include "math/types.h"

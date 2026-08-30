@@ -207,7 +207,7 @@ DvzDrp2CommandType dvz_drp2_command_type(
 | return | [`DvzDrp2CommandType`](drp2.md#type-dvzdrp2commandtype) | the command type |
 | `command` | `const` [`DvzDrp2Command`](drp2.md#type-dvzdrp2command) * | the command |
 
-_Declared in `include/datoviz/drp2/stream.h`:120._
+_Declared in `include/datoviz/drp2/stream.h`:126._
 
 #### `dvz_drp2_render_pass_desc()` { #dvz_drp2_render_pass_desc .dvz-api-function }
 
@@ -225,7 +225,7 @@ DvzDrp2RenderPassDesc dvz_drp2_render_pass_desc(void);
 | --- | --- | --- |
 | return | [`DvzDrp2RenderPassDesc`](drp2.md#type-dvzdrp2renderpassdesc) | initialized descriptor |
 
-_Declared in `include/datoviz/drp2/stream.h`:907._
+_Declared in `include/datoviz/drp2/stream.h`:913._
 
 #### `dvz_drp2_render_pipeline_desc()` { #dvz_drp2_render_pipeline_desc .dvz-api-function }
 
@@ -239,7 +239,7 @@ DvzDrp2RenderPipelineDesc dvz_drp2_render_pipeline_desc(void);
 | --- | --- | --- |
 | return | [`DvzDrp2RenderPipelineDesc`](drp2.md#type-dvzdrp2renderpipelinedesc) | initialized descriptor |
 
-_Declared in `include/datoviz/drp2/stream.h`:358._
+_Declared in `include/datoviz/drp2/stream.h`:364._
 
 #### `dvz_drp2_stream()` { #dvz_drp2_stream .dvz-api-function }
 
@@ -272,7 +272,7 @@ _Bool dvz_drp2_stream_begin_command_encoder(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `id` | `uint64_t` | the encoder id |
 
-_Declared in `include/datoviz/drp2/stream.h`:895._
+_Declared in `include/datoviz/drp2/stream.h`:901._
 
 #### `dvz_drp2_stream_begin_compute_pass()` { #dvz_drp2_stream_begin_compute_pass .dvz-api-function }
 
@@ -293,7 +293,7 @@ _Bool dvz_drp2_stream_begin_compute_pass(
 | `id` | `uint64_t` | the compute pass id |
 | `encoder_id` | `uint64_t` | the encoder id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1098._
+_Declared in `include/datoviz/drp2/stream.h`:1104._
 
 #### `dvz_drp2_stream_begin_render_pass()` { #dvz_drp2_stream_begin_render_pass .dvz-api-function }
 
@@ -316,7 +316,7 @@ _Bool dvz_drp2_stream_begin_render_pass(
 | `encoder_id` | `uint64_t` | the encoder id |
 | `texture_id` | `uint64_t` | the color attachment texture id |
 
-_Declared in `include/datoviz/drp2/stream.h`:931._
+_Declared in `include/datoviz/drp2/stream.h`:937._
 
 #### `dvz_drp2_stream_begin_render_pass_add_color_attachment()` { #dvz_drp2_stream_begin_render_pass_add_color_attachment .dvz-api-function }
 
@@ -345,7 +345,7 @@ _Bool dvz_drp2_stream_begin_render_pass_add_color_attachment(
 | `a` | `float` | clear color alpha channel |
 | `clear` | `_Bool` | whether to clear this attachment at render-pass begin |
 
-_Declared in `include/datoviz/drp2/stream.h`:994._
+_Declared in `include/datoviz/drp2/stream.h`:1000._
 
 #### `dvz_drp2_stream_begin_render_pass_clear()` { #dvz_drp2_stream_begin_render_pass_clear .dvz-api-function }
 
@@ -376,7 +376,7 @@ _Bool dvz_drp2_stream_begin_render_pass_clear(
 | `b` | `float` | blue clear value [0, 1] |
 | `a` | `float` | alpha clear value [0, 1] |
 
-_Declared in `include/datoviz/drp2/stream.h`:949._
+_Declared in `include/datoviz/drp2/stream.h`:955._
 
 #### `dvz_drp2_stream_begin_render_pass_desc()` { #dvz_drp2_stream_begin_render_pass_desc .dvz-api-function }
 
@@ -397,7 +397,7 @@ _Bool dvz_drp2_stream_begin_render_pass_desc(
 
 Related: [`dvz_drp2_stream_begin_render_pass()`](#dvz_drp2_stream_begin_render_pass).
 
-_Declared in `include/datoviz/drp2/stream.h`:917._
+_Declared in `include/datoviz/drp2/stream.h`:923._
 
 #### `dvz_drp2_stream_begin_render_pass_region_clear()` { #dvz_drp2_stream_begin_render_pass_region_clear .dvz-api-function }
 
@@ -443,7 +443,7 @@ _Bool dvz_drp2_stream_begin_render_pass_region_clear(
 | `height` | `float` | normalized height in attachment space [0, 1] |
 | `clear` | `_Bool` | whether to clear the target at render-pass begin |
 
-_Declared in `include/datoviz/drp2/stream.h`:977._
+_Declared in `include/datoviz/drp2/stream.h`:983._
 
 #### `dvz_drp2_stream_begin_render_pass_set_color_attachment_access()` { #dvz_drp2_stream_begin_render_pass_set_color_attachment_access .dvz-api-function }
 
@@ -464,7 +464,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_access(
 | `attachment_index` | `uint32_t` | the color attachment index |
 | `access` | [`DvzDrp2AttachmentAccess`](drp2.md#type-dvzdrp2attachmentaccess) | the attachment access intent |
 
-_Declared in `include/datoviz/drp2/stream.h`:1021._
+_Declared in `include/datoviz/drp2/stream.h`:1027._
 
 #### `dvz_drp2_stream_begin_render_pass_set_color_attachment_ops()` { #dvz_drp2_stream_begin_render_pass_set_color_attachment_ops .dvz-api-function }
 
@@ -487,7 +487,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_ops(
 | `load_op` | [`DvzDrp2AttachmentLoadOp`](drp2.md#type-dvzdrp2attachmentloadop) | the attachment load operation |
 | `store_op` | [`DvzDrp2AttachmentStoreOp`](drp2.md#type-dvzdrp2attachmentstoreop) | the attachment store operation |
 
-_Declared in `include/datoviz/drp2/stream.h`:1008._
+_Declared in `include/datoviz/drp2/stream.h`:1014._
 
 #### `dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve()` { #dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve .dvz-api-function }
 
@@ -510,7 +510,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_color_attachment_resolve(
 | `resolve_texture_id` | `uint64_t` | the single-sample resolve texture id, or 0 to disable resolve |
 | `resolve_mode` | `uint32_t` | backend-native resolve mode, with 0 treated as average |
 
-_Declared in `include/datoviz/drp2/stream.h`:1034._
+_Declared in `include/datoviz/drp2/stream.h`:1040._
 
 #### `dvz_drp2_stream_begin_render_pass_set_depth()` { #dvz_drp2_stream_begin_render_pass_set_depth .dvz-api-function }
 
@@ -530,7 +530,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `clear_depth` | `float` | the depth clear value used when the pass clears attachments |
 
-_Declared in `include/datoviz/drp2/stream.h`:1048._
+_Declared in `include/datoviz/drp2/stream.h`:1054._
 
 #### `dvz_drp2_stream_begin_render_pass_set_depth_access()` { #dvz_drp2_stream_begin_render_pass_set_depth_access .dvz-api-function }
 
@@ -549,7 +549,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_access(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `access` | [`DvzDrp2AttachmentAccess`](drp2.md#type-dvzdrp2attachmentaccess) | the depth attachment access intent |
 
-_Declared in `include/datoviz/drp2/stream.h`:1085._
+_Declared in `include/datoviz/drp2/stream.h`:1091._
 
 #### `dvz_drp2_stream_begin_render_pass_set_depth_ops()` { #dvz_drp2_stream_begin_render_pass_set_depth_ops .dvz-api-function }
 
@@ -570,7 +570,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_ops(
 | `load_op` | [`DvzDrp2AttachmentLoadOp`](drp2.md#type-dvzdrp2attachmentloadop) | the depth attachment load operation |
 | `store_op` | [`DvzDrp2AttachmentStoreOp`](drp2.md#type-dvzdrp2attachmentstoreop) | the depth attachment store operation |
 
-_Declared in `include/datoviz/drp2/stream.h`:1073._
+_Declared in `include/datoviz/drp2/stream.h`:1079._
 
 #### `dvz_drp2_stream_begin_render_pass_set_depth_texture()` { #dvz_drp2_stream_begin_render_pass_set_depth_texture .dvz-api-function }
 
@@ -593,7 +593,7 @@ _Bool dvz_drp2_stream_begin_render_pass_set_depth_texture(
 | `depth_texture_id` | `uint64_t` | the depth attachment texture id, or 0 for transient depth |
 | `clear_depth` | `float` | the depth clear value used when the pass clears attachments |
 
-_Declared in `include/datoviz/drp2/stream.h`:1061._
+_Declared in `include/datoviz/drp2/stream.h`:1067._
 
 #### `dvz_drp2_stream_copy_buffer_to_buffer()` { #dvz_drp2_stream_copy_buffer_to_buffer .dvz-api-function }
 
@@ -622,7 +622,7 @@ _Bool dvz_drp2_stream_copy_buffer_to_buffer(
 | `dst_offset` | `uint64_t` | the destination byte offset |
 | `size` | `uint64_t` | the copied byte size |
 
-_Declared in `include/datoviz/drp2/stream.h`:1317._
+_Declared in `include/datoviz/drp2/stream.h`:1323._
 
 #### `dvz_drp2_stream_copy_buffer_to_texture()` { #dvz_drp2_stream_copy_buffer_to_texture .dvz-api-function }
 
@@ -655,7 +655,7 @@ _Bool dvz_drp2_stream_copy_buffer_to_texture(
 | `bytes_per_row` | `uint32_t` | the source bytes per row |
 | `rows_per_image` | `uint32_t` | the source rows per image |
 
-_Declared in `include/datoviz/drp2/stream.h`:1337._
+_Declared in `include/datoviz/drp2/stream.h`:1343._
 
 #### `dvz_drp2_stream_copy_texture_to_buffer()` { #dvz_drp2_stream_copy_texture_to_buffer .dvz-api-function }
 
@@ -688,7 +688,7 @@ _Bool dvz_drp2_stream_copy_texture_to_buffer(
 | `bytes_per_row` | `uint32_t` | the destination bytes per row |
 | `rows_per_image` | `uint32_t` | the destination rows per image |
 
-_Declared in `include/datoviz/drp2/stream.h`:1358._
+_Declared in `include/datoviz/drp2/stream.h`:1364._
 
 #### `dvz_drp2_stream_copy_texture_to_texture()` { #dvz_drp2_stream_copy_texture_to_texture .dvz-api-function }
 
@@ -715,7 +715,7 @@ _Bool dvz_drp2_stream_copy_texture_to_texture(
 | `width` | `uint32_t` | the copy width in pixels |
 | `height` | `uint32_t` | the copy height in pixels |
 
-_Declared in `include/datoviz/drp2/stream.h`:1376._
+_Declared in `include/datoviz/drp2/stream.h`:1382._
 
 #### `dvz_drp2_stream_count()` { #dvz_drp2_stream_count .dvz-api-function }
 
@@ -760,7 +760,7 @@ _Bool dvz_drp2_stream_create_bind_group_entries(
 | `entry_count` | `uint32_t` | number of entries |
 | `entries` | `const` [`DvzDrp2BindGroupEntry`](drp2.md#type-dvzdrp2bindgroupentry) * | bind-group resource entries |
 
-_Declared in `include/datoviz/drp2/stream.h`:680._
+_Declared in `include/datoviz/drp2/stream.h`:686._
 
 #### `dvz_drp2_stream_create_bind_group_layout_entries()` { #dvz_drp2_stream_create_bind_group_layout_entries .dvz-api-function }
 
@@ -786,7 +786,7 @@ _Bool dvz_drp2_stream_create_bind_group_layout_entries(
 | `entry_count` | `uint32_t` | number of entries |
 | `entries` | `const` [`DvzDrp2BindGroupLayoutEntry`](drp2.md#type-dvzdrp2bindgrouplayoutentry) * | bind-group layout entries |
 
-_Declared in `include/datoviz/drp2/stream.h`:612._
+_Declared in `include/datoviz/drp2/stream.h`:618._
 
 #### `dvz_drp2_stream_create_buffer()` { #dvz_drp2_stream_create_buffer .dvz-api-function }
 
@@ -809,7 +809,7 @@ _Bool dvz_drp2_stream_create_buffer(
 | `size` | `uint64_t` | the buffer size in bytes |
 | `usage` | `uint32_t` | buffer usage flags |
 
-_Declared in `include/datoviz/drp2/stream.h`:157._
+_Declared in `include/datoviz/drp2/stream.h`:163._
 
 #### `dvz_drp2_stream_create_compute_pipeline()` { #dvz_drp2_stream_create_compute_pipeline .dvz-api-function }
 
@@ -830,7 +830,7 @@ _Bool dvz_drp2_stream_create_compute_pipeline(
 | `id` | `uint64_t` | the pipeline id |
 | `compute_shader_module_id` | `uint64_t` | the compute shader module id |
 
-_Declared in `include/datoviz/drp2/stream.h`:508._
+_Declared in `include/datoviz/drp2/stream.h`:514._
 
 #### `dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout()` { #dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout .dvz-api-function }
 
@@ -853,7 +853,7 @@ _Bool dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(
 | `compute_shader_module_id` | `uint64_t` | the compute shader module id |
 | `bind_group_layout_id` | `uint64_t` | the bind-group layout id for slot 0 |
 
-_Declared in `include/datoviz/drp2/stream.h`:522._
+_Declared in `include/datoviz/drp2/stream.h`:528._
 
 #### `dvz_drp2_stream_create_render_pipeline()` { #dvz_drp2_stream_create_render_pipeline .dvz-api-function }
 
@@ -877,7 +877,7 @@ _Bool dvz_drp2_stream_create_render_pipeline(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `desc` | `const` [`DvzDrp2RenderPipelineDesc`](drp2.md#type-dvzdrp2renderpipelinedesc) * | the render-pipeline descriptor |
 
-_Declared in `include/datoviz/drp2/stream.h`:374._
+_Declared in `include/datoviz/drp2/stream.h`:380._
 
 #### `dvz_drp2_stream_create_sampler()` { #dvz_drp2_stream_create_sampler .dvz-api-function }
 
@@ -896,7 +896,7 @@ _Bool dvz_drp2_stream_create_sampler(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `id` | `uint64_t` | the sampler id |
 
-_Declared in `include/datoviz/drp2/stream.h`:547._
+_Declared in `include/datoviz/drp2/stream.h`:553._
 
 #### `dvz_drp2_stream_create_sampler_filter()` { #dvz_drp2_stream_create_sampler_filter .dvz-api-function }
 
@@ -919,7 +919,7 @@ _Bool dvz_drp2_stream_create_sampler_filter(
 | `mag_filter` | [`DvzDrp2FilterMode`](drp2.md#type-dvzdrp2filtermode) | magnification filter |
 | `min_filter` | [`DvzDrp2FilterMode`](drp2.md#type-dvzdrp2filtermode) | minification filter |
 
-_Declared in `include/datoviz/drp2/stream.h`:559._
+_Declared in `include/datoviz/drp2/stream.h`:565._
 
 #### `dvz_drp2_stream_create_shader_module()` { #dvz_drp2_stream_create_shader_module .dvz-api-function }
 
@@ -942,7 +942,7 @@ _Bool dvz_drp2_stream_create_shader_module(
 | `stage` | `const` `char` * | the shader stage |
 | `code` | `const` `char` * | the WGSL shader source |
 
-_Declared in `include/datoviz/drp2/stream.h`:288._
+_Declared in `include/datoviz/drp2/stream.h`:294._
 
 #### `dvz_drp2_stream_create_shader_module_format()` { #dvz_drp2_stream_create_shader_module_format .dvz-api-function }
 
@@ -967,7 +967,7 @@ _Bool dvz_drp2_stream_create_shader_module_format(
 | `format` | `const` `char` * | the shader source format |
 | `code` | `const` `char` * | the shader source |
 
-_Declared in `include/datoviz/drp2/stream.h`:302._
+_Declared in `include/datoviz/drp2/stream.h`:308._
 
 #### `dvz_drp2_stream_create_shader_module_spirv()` { #dvz_drp2_stream_create_shader_module_spirv .dvz-api-function }
 
@@ -994,7 +994,7 @@ _Bool dvz_drp2_stream_create_shader_module_spirv(
 | `spirv` | `const` `unsigned` `char` * | pointer to SPIR-V bytecode |
 | `spirv_size` | `uint64_t` | size in bytes |
 
-_Declared in `include/datoviz/drp2/stream.h`:320._
+_Declared in `include/datoviz/drp2/stream.h`:326._
 
 #### `dvz_drp2_stream_create_storage_bind_group()` { #dvz_drp2_stream_create_storage_bind_group .dvz-api-function }
 
@@ -1021,7 +1021,7 @@ _Bool dvz_drp2_stream_create_storage_bind_group(
 | `buffer1_id` | `uint64_t` | the second storage buffer id |
 | `buffer_size` | `uint64_t` | the bound range size for each buffer |
 
-_Declared in `include/datoviz/drp2/stream.h`:645._
+_Declared in `include/datoviz/drp2/stream.h`:651._
 
 #### `dvz_drp2_stream_create_storage_bind_group_layout()` { #dvz_drp2_stream_create_storage_bind_group_layout .dvz-api-function }
 
@@ -1040,7 +1040,7 @@ _Bool dvz_drp2_stream_create_storage_bind_group_layout(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `id` | `uint64_t` | the bind-group layout id |
 
-_Declared in `include/datoviz/drp2/stream.h`:585._
+_Declared in `include/datoviz/drp2/stream.h`:591._
 
 #### `dvz_drp2_stream_create_texture()` { #dvz_drp2_stream_create_texture .dvz-api-function }
 
@@ -1059,7 +1059,7 @@ _Bool dvz_drp2_stream_create_texture(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `desc` | `const` [`DvzDrp2TextureDesc`](drp2.md#type-dvzdrp2texturedesc) * | the texture descriptor |
 
-_Declared in `include/datoviz/drp2/stream.h`:189._
+_Declared in `include/datoviz/drp2/stream.h`:195._
 
 #### `dvz_drp2_stream_create_texture_2d()` { #dvz_drp2_stream_create_texture_2d .dvz-api-function }
 
@@ -1082,7 +1082,7 @@ _Bool dvz_drp2_stream_create_texture_2d(
 | `width` | `uint32_t` | the texture width |
 | `height` | `uint32_t` | the texture height |
 
-_Declared in `include/datoviz/drp2/stream.h`:201._
+_Declared in `include/datoviz/drp2/stream.h`:207._
 
 #### `dvz_drp2_stream_create_texture_2d_format_usage()` { #dvz_drp2_stream_create_texture_2d_format_usage .dvz-api-function }
 
@@ -1109,7 +1109,7 @@ _Bool dvz_drp2_stream_create_texture_2d_format_usage(
 | `format` | [`DvzFormat`](drp2.md#type-dvzformat) | texture format token |
 | `usage` | `uint32_t` | texture usage flags |
 
-_Declared in `include/datoviz/drp2/stream.h`:232._
+_Declared in `include/datoviz/drp2/stream.h`:238._
 
 #### `dvz_drp2_stream_create_texture_2d_usage()` { #dvz_drp2_stream_create_texture_2d_usage .dvz-api-function }
 
@@ -1134,7 +1134,7 @@ _Bool dvz_drp2_stream_create_texture_2d_usage(
 | `height` | `uint32_t` | the texture height |
 | `usage` | `uint32_t` | texture usage flags |
 
-_Declared in `include/datoviz/drp2/stream.h`:216._
+_Declared in `include/datoviz/drp2/stream.h`:222._
 
 #### `dvz_drp2_stream_create_texture_3d()` { #dvz_drp2_stream_create_texture_3d .dvz-api-function }
 
@@ -1159,7 +1159,7 @@ _Bool dvz_drp2_stream_create_texture_3d(
 | `height` | `uint32_t` | the texture height |
 | `depth` | `uint32_t` | the texture depth (number of slices) |
 
-_Declared in `include/datoviz/drp2/stream.h`:247._
+_Declared in `include/datoviz/drp2/stream.h`:253._
 
 #### `dvz_drp2_stream_create_texture_3d_format_usage()` { #dvz_drp2_stream_create_texture_3d_format_usage .dvz-api-function }
 
@@ -1188,7 +1188,7 @@ _Bool dvz_drp2_stream_create_texture_3d_format_usage(
 | `format` | [`DvzFormat`](drp2.md#type-dvzformat) | texture format token |
 | `usage` | `uint32_t` | texture usage flags |
 
-_Declared in `include/datoviz/drp2/stream.h`:263._
+_Declared in `include/datoviz/drp2/stream.h`:269._
 
 #### `dvz_drp2_stream_create_texture_sampler_bind_group()` { #dvz_drp2_stream_create_texture_sampler_bind_group .dvz-api-function }
 
@@ -1213,7 +1213,7 @@ _Bool dvz_drp2_stream_create_texture_sampler_bind_group(
 | `texture_id` | `uint64_t` | the sampled texture id |
 | `sampler_id` | `uint64_t` | the sampler id |
 
-_Declared in `include/datoviz/drp2/stream.h`:628._
+_Declared in `include/datoviz/drp2/stream.h`:634._
 
 #### `dvz_drp2_stream_create_texture_sampler_bind_group_layout()` { #dvz_drp2_stream_create_texture_sampler_bind_group_layout .dvz-api-function }
 
@@ -1232,7 +1232,7 @@ _Bool dvz_drp2_stream_create_texture_sampler_bind_group_layout(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `id` | `uint64_t` | the bind-group layout id |
 
-_Declared in `include/datoviz/drp2/stream.h`:573._
+_Declared in `include/datoviz/drp2/stream.h`:579._
 
 #### `dvz_drp2_stream_create_uniform_bind_group()` { #dvz_drp2_stream_create_uniform_bind_group .dvz-api-function }
 
@@ -1259,7 +1259,7 @@ _Bool dvz_drp2_stream_create_uniform_bind_group(
 | `offset` | `uint64_t` | byte offset into the buffer for this sub-allocation |
 | `size` | `uint64_t` | bound range size in bytes |
 
-_Declared in `include/datoviz/drp2/stream.h`:662._
+_Declared in `include/datoviz/drp2/stream.h`:668._
 
 #### `dvz_drp2_stream_create_uniform_bind_group_layout()` { #dvz_drp2_stream_create_uniform_bind_group_layout .dvz-api-function }
 
@@ -1278,7 +1278,7 @@ _Bool dvz_drp2_stream_create_uniform_bind_group_layout(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `id` | `uint64_t` | the bind-group layout id |
 
-_Declared in `include/datoviz/drp2/stream.h`:597._
+_Declared in `include/datoviz/drp2/stream.h`:603._
 
 #### `dvz_drp2_stream_destroy()` { #dvz_drp2_stream_destroy .dvz-api-function }
 
@@ -1313,7 +1313,7 @@ _Bool dvz_drp2_stream_destroy_bind_group(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `bind_group_id` | `uint64_t` | the bind-group id |
 
-_Declared in `include/datoviz/drp2/stream.h`:706._
+_Declared in `include/datoviz/drp2/stream.h`:712._
 
 #### `dvz_drp2_stream_destroy_bind_group_layout()` { #dvz_drp2_stream_destroy_bind_group_layout .dvz-api-function }
 
@@ -1332,7 +1332,7 @@ _Bool dvz_drp2_stream_destroy_bind_group_layout(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `bind_group_layout_id` | `uint64_t` | the bind-group layout id |
 
-_Declared in `include/datoviz/drp2/stream.h`:693._
+_Declared in `include/datoviz/drp2/stream.h`:699._
 
 #### `dvz_drp2_stream_destroy_buffer()` { #dvz_drp2_stream_destroy_buffer .dvz-api-function }
 
@@ -1351,7 +1351,7 @@ _Bool dvz_drp2_stream_destroy_buffer(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `buffer_id` | `uint64_t` | the buffer id |
 
-_Declared in `include/datoviz/drp2/stream.h`:169._
+_Declared in `include/datoviz/drp2/stream.h`:175._
 
 #### `dvz_drp2_stream_destroy_compute_pipeline()` { #dvz_drp2_stream_destroy_compute_pipeline .dvz-api-function }
 
@@ -1370,7 +1370,7 @@ _Bool dvz_drp2_stream_destroy_compute_pipeline(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `compute_pipeline_id` | `uint64_t` | the compute pipeline id |
 
-_Declared in `include/datoviz/drp2/stream.h`:535._
+_Declared in `include/datoviz/drp2/stream.h`:541._
 
 #### `dvz_drp2_stream_destroy_render_pipeline()` { #dvz_drp2_stream_destroy_render_pipeline .dvz-api-function }
 
@@ -1389,7 +1389,7 @@ _Bool dvz_drp2_stream_destroy_render_pipeline(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `render_pipeline_id` | `uint64_t` | the render pipeline id |
 
-_Declared in `include/datoviz/drp2/stream.h`:496._
+_Declared in `include/datoviz/drp2/stream.h`:502._
 
 #### `dvz_drp2_stream_destroy_shader_module()` { #dvz_drp2_stream_destroy_shader_module .dvz-api-function }
 
@@ -1408,7 +1408,7 @@ _Bool dvz_drp2_stream_destroy_shader_module(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `shader_module_id` | `uint64_t` | the shader module id |
 
-_Declared in `include/datoviz/drp2/stream.h`:349._
+_Declared in `include/datoviz/drp2/stream.h`:355._
 
 #### `dvz_drp2_stream_destroy_texture()` { #dvz_drp2_stream_destroy_texture .dvz-api-function }
 
@@ -1427,7 +1427,7 @@ _Bool dvz_drp2_stream_destroy_texture(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `texture_id` | `uint64_t` | the texture id |
 
-_Declared in `include/datoviz/drp2/stream.h`:275._
+_Declared in `include/datoviz/drp2/stream.h`:281._
 
 #### `dvz_drp2_stream_dispatch_workgroups()` { #dvz_drp2_stream_dispatch_workgroups .dvz-api-function }
 
@@ -1452,7 +1452,7 @@ _Bool dvz_drp2_stream_dispatch_workgroups(
 | `y` | `uint32_t` | the y workgroup count |
 | `z` | `uint32_t` | the z workgroup count |
 
-_Declared in `include/datoviz/drp2/stream.h`:1266._
+_Declared in `include/datoviz/drp2/stream.h`:1272._
 
 #### `dvz_drp2_stream_draw()` { #dvz_drp2_stream_draw .dvz-api-function }
 
@@ -1479,7 +1479,7 @@ _Bool dvz_drp2_stream_draw(
 | `first_vertex` | `uint32_t` | the first vertex |
 | `first_instance` | `uint32_t` | the first instance |
 
-_Declared in `include/datoviz/drp2/stream.h`:1221._
+_Declared in `include/datoviz/drp2/stream.h`:1227._
 
 #### `dvz_drp2_stream_draw_indexed()` { #dvz_drp2_stream_draw_indexed .dvz-api-function }
 
@@ -1508,7 +1508,7 @@ _Bool dvz_drp2_stream_draw_indexed(
 | `base_vertex` | `int32_t` | the base vertex |
 | `first_instance` | `uint32_t` | the first instance |
 
-_Declared in `include/datoviz/drp2/stream.h`:1239._
+_Declared in `include/datoviz/drp2/stream.h`:1245._
 
 #### `dvz_drp2_stream_end_compute_pass()` { #dvz_drp2_stream_end_compute_pass .dvz-api-function }
 
@@ -1527,7 +1527,7 @@ _Bool dvz_drp2_stream_end_compute_pass(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `pass_id` | `uint64_t` | the compute pass id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1278._
+_Declared in `include/datoviz/drp2/stream.h`:1284._
 
 #### `dvz_drp2_stream_end_render_pass()` { #dvz_drp2_stream_end_render_pass .dvz-api-function }
 
@@ -1546,7 +1546,7 @@ _Bool dvz_drp2_stream_end_render_pass(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `pass_id` | `uint64_t` | the pass id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1252._
+_Declared in `include/datoviz/drp2/stream.h`:1258._
 
 #### `dvz_drp2_stream_finish_command_encoder()` { #dvz_drp2_stream_finish_command_encoder .dvz-api-function }
 
@@ -1567,11 +1567,14 @@ _Bool dvz_drp2_stream_finish_command_encoder(
 | `encoder_id` | `uint64_t` | the encoder id |
 | `command_buffer_id` | `uint64_t` | the command buffer id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1390._
+_Declared in `include/datoviz/drp2/stream.h`:1396._
 
 #### `dvz_drp2_stream_get()` { #dvz_drp2_stream_get .dvz-api-function }
 
 Return a command from a DRP2 command stream.
+
+The returned pointer is borrowed from the stream. Any call that appends a command may reallocate
+command storage and invalidate it; it is also invalid after the stream is destroyed.
 
 ```c
 const DvzDrp2Command * dvz_drp2_stream_get(
@@ -1586,7 +1589,7 @@ const DvzDrp2Command * dvz_drp2_stream_get(
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `index` | `uint32_t` | the command index |
 
-_Declared in `include/datoviz/drp2/stream.h`:71._
+_Declared in `include/datoviz/drp2/stream.h`:74._
 
 #### `dvz_drp2_stream_hello_renderer()` { #dvz_drp2_stream_hello_renderer .dvz-api-function }
 
@@ -1605,7 +1608,7 @@ _Bool dvz_drp2_stream_hello_renderer(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `client_name` | `const` `char` * | the client name |
 
-_Declared in `include/datoviz/drp2/stream.h`:132._
+_Declared in `include/datoviz/drp2/stream.h`:138._
 
 #### `dvz_drp2_stream_json()` { #dvz_drp2_stream_json .dvz-api-function }
 
@@ -1624,7 +1627,7 @@ char * dvz_drp2_stream_json(
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `name` | `const` `char` * | the fixture name |
 
-_Declared in `include/datoviz/drp2/stream.h`:1433._
+_Declared in `include/datoviz/drp2/stream.h`:1439._
 
 #### `dvz_drp2_stream_json_destroy()` { #dvz_drp2_stream_json_destroy .dvz-api-function }
 
@@ -1640,7 +1643,7 @@ void dvz_drp2_stream_json_destroy(
 | --- | --- | --- |
 | `json` | `char` * | the JSON string |
 
-_Declared in `include/datoviz/drp2/stream.h`:1500._
+_Declared in `include/datoviz/drp2/stream.h`:1506._
 
 #### `dvz_drp2_stream_json_payload_refs()` { #dvz_drp2_stream_json_payload_refs .dvz-api-function }
 
@@ -1664,11 +1667,14 @@ char * dvz_drp2_stream_json_payload_refs(
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `name` | `const` `char` * | the fixture name |
 
-_Declared in `include/datoviz/drp2/stream.h`:1449._
+_Declared in `include/datoviz/drp2/stream.h`:1455._
 
 #### `dvz_drp2_stream_label()` { #dvz_drp2_stream_label .dvz-api-function }
 
 Return a debug label attached to a numeric DRP2 id.
+
+The returned pointer is borrowed from the stream. Any later `dvz_drp2_stream_set_label()` call
+may reallocate label storage and invalidate it; it is also invalid after the stream is destroyed.
 
 ```c
 const char * dvz_drp2_stream_label(
@@ -1683,7 +1689,7 @@ const char * dvz_drp2_stream_label(
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `id` | `uint64_t` | the DRP2 object or transient id |
 
-_Declared in `include/datoviz/drp2/stream.h`:98._
+_Declared in `include/datoviz/drp2/stream.h`:104._
 
 #### `dvz_drp2_stream_label_id()` { #dvz_drp2_stream_label_id .dvz-api-function }
 
@@ -1702,7 +1708,7 @@ uint64_t dvz_drp2_stream_label_id(
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `label` | `const` `char` * | the debug label |
 
-_Declared in `include/datoviz/drp2/stream.h`:110._
+_Declared in `include/datoviz/drp2/stream.h`:116._
 
 #### `dvz_drp2_stream_payload_command_index()` { #dvz_drp2_stream_payload_command_index .dvz-api-function }
 
@@ -1721,7 +1727,7 @@ uint32_t dvz_drp2_stream_payload_command_index(
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `payload_index` | `uint32_t` | the payload index |
 
-_Declared in `include/datoviz/drp2/stream.h`:1469._
+_Declared in `include/datoviz/drp2/stream.h`:1475._
 
 #### `dvz_drp2_stream_payload_count()` { #dvz_drp2_stream_payload_count .dvz-api-function }
 
@@ -1738,7 +1744,7 @@ uint32_t dvz_drp2_stream_payload_count(
 | return | `uint32_t` | the number of raw payload spans |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 
-_Declared in `include/datoviz/drp2/stream.h`:1458._
+_Declared in `include/datoviz/drp2/stream.h`:1464._
 
 #### `dvz_drp2_stream_payload_ptr()` { #dvz_drp2_stream_payload_ptr .dvz-api-function }
 
@@ -1757,7 +1763,7 @@ const void * dvz_drp2_stream_payload_ptr(
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `payload_index` | `uint32_t` | the payload index |
 
-_Declared in `include/datoviz/drp2/stream.h`:1480._
+_Declared in `include/datoviz/drp2/stream.h`:1486._
 
 #### `dvz_drp2_stream_payload_size()` { #dvz_drp2_stream_payload_size .dvz-api-function }
 
@@ -1776,7 +1782,7 @@ uint64_t dvz_drp2_stream_payload_size(
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `payload_index` | `uint32_t` | the payload index |
 
-_Declared in `include/datoviz/drp2/stream.h`:1491._
+_Declared in `include/datoviz/drp2/stream.h`:1497._
 
 #### `dvz_drp2_stream_pipeline_set_bind_group_layout()` { #dvz_drp2_stream_pipeline_set_bind_group_layout .dvz-api-function }
 
@@ -1798,7 +1804,7 @@ _Bool dvz_drp2_stream_pipeline_set_bind_group_layout(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `bind_group_layout_id` | `uint64_t` | the bind-group layout id (0 = none) |
 
-_Declared in `include/datoviz/drp2/stream.h`:388._
+_Declared in `include/datoviz/drp2/stream.h`:394._
 
 #### `dvz_drp2_stream_pipeline_set_bind_group_layouts()` { #dvz_drp2_stream_pipeline_set_bind_group_layouts .dvz-api-function }
 
@@ -1819,7 +1825,7 @@ _Bool dvz_drp2_stream_pipeline_set_bind_group_layouts(
 | `count` | `uint32_t` | the number of bind-group layout ids |
 | `bind_group_layout_ids` | `const` `uint64_t` * | ordered bind-group layout ids, one per slot |
 
-_Declared in `include/datoviz/drp2/stream.h`:401._
+_Declared in `include/datoviz/drp2/stream.h`:407._
 
 #### `dvz_drp2_stream_pipeline_set_builtin_identity()` { #dvz_drp2_stream_pipeline_set_builtin_identity .dvz-api-function }
 
@@ -1842,7 +1848,7 @@ _Bool dvz_drp2_stream_pipeline_set_builtin_identity(
 | `pipeline` | `const` `char` * | stable built-in pipeline id |
 | `version` | `uint32_t` | built-in pipeline contract version |
 
-_Declared in `include/datoviz/drp2/stream.h`:482._
+_Declared in `include/datoviz/drp2/stream.h`:488._
 
 #### `dvz_drp2_stream_pipeline_set_color_blend()` { #dvz_drp2_stream_pipeline_set_color_blend .dvz-api-function }
 
@@ -1875,7 +1881,7 @@ _Bool dvz_drp2_stream_pipeline_set_color_blend(
 | `alpha_op` | [`DvzBlendOp`](drp2.md#type-dvzblendop) | alpha blend operation |
 | `color_write_mask` | [`DvzColorMask`](drp2.md#type-dvzcolormask) | color component write mask |
 
-_Declared in `include/datoviz/drp2/stream.h`:467._
+_Declared in `include/datoviz/drp2/stream.h`:473._
 
 #### `dvz_drp2_stream_pipeline_set_color_target()` { #dvz_drp2_stream_pipeline_set_color_target .dvz-api-function }
 
@@ -1896,7 +1902,7 @@ _Bool dvz_drp2_stream_pipeline_set_color_target(
 | `idx` | `uint32_t` | the color target index |
 | `format` | [`DvzFormat`](drp2.md#type-dvzformat) | texture format token |
 
-_Declared in `include/datoviz/drp2/stream.h`:449._
+_Declared in `include/datoviz/drp2/stream.h`:455._
 
 #### `dvz_drp2_stream_pipeline_set_depth_state()` { #dvz_drp2_stream_pipeline_set_depth_state .dvz-api-function }
 
@@ -1917,7 +1923,7 @@ _Bool dvz_drp2_stream_pipeline_set_depth_state(
 | `depth_write_enabled` | `_Bool` | whether depth writes are enabled |
 | `depth_compare_op` | [`DvzCompareOp`](drp2.md#type-dvzcompareop) | depth compare operation |
 
-_Declared in `include/datoviz/drp2/stream.h`:413._
+_Declared in `include/datoviz/drp2/stream.h`:419._
 
 #### `dvz_drp2_stream_pipeline_set_multisampling()` { #dvz_drp2_stream_pipeline_set_multisampling .dvz-api-function }
 
@@ -1938,7 +1944,7 @@ _Bool dvz_drp2_stream_pipeline_set_multisampling(
 | `sample_count` | `uint32_t` | raster sample count, with 0 treated as 1 |
 | `alpha_to_coverage_enabled` | `_Bool` | whether alpha-to-coverage is enabled |
 
-_Declared in `include/datoviz/drp2/stream.h`:437._
+_Declared in `include/datoviz/drp2/stream.h`:443._
 
 #### `dvz_drp2_stream_pipeline_set_raster_state()` { #dvz_drp2_stream_pipeline_set_raster_state .dvz-api-function }
 
@@ -1959,7 +1965,7 @@ _Bool dvz_drp2_stream_pipeline_set_raster_state(
 | `cull_mode` | [`DvzCullMode`](drp2.md#type-dvzcullmode) | face culling mode |
 | `front_face` | [`DvzFrontFace`](drp2.md#type-dvzfrontface) | front-face winding |
 
-_Declared in `include/datoviz/drp2/stream.h`:425._
+_Declared in `include/datoviz/drp2/stream.h`:431._
 
 #### `dvz_drp2_stream_queue_submit()` { #dvz_drp2_stream_queue_submit .dvz-api-function }
 
@@ -1980,7 +1986,7 @@ _Bool dvz_drp2_stream_queue_submit(
 | `command_buffer_id` | `uint64_t` | the command buffer id |
 | `submission_id` | `uint64_t` | the submission id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1403._
+_Declared in `include/datoviz/drp2/stream.h`:1409._
 
 #### `dvz_drp2_stream_queue_submit_readback()` { #dvz_drp2_stream_queue_submit_readback .dvz-api-function }
 
@@ -2007,7 +2013,7 @@ _Bool dvz_drp2_stream_queue_submit_readback(
 | `offset` | `uint64_t` | the readback byte offset |
 | `size` | `uint64_t` | the readback byte size |
 
-_Declared in `include/datoviz/drp2/stream.h`:1419._
+_Declared in `include/datoviz/drp2/stream.h`:1425._
 
 #### `dvz_drp2_stream_renderer_hello_reply()` { #dvz_drp2_stream_renderer_hello_reply .dvz-api-function }
 
@@ -2026,7 +2032,7 @@ _Bool dvz_drp2_stream_renderer_hello_reply(
 | `stream` | [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 | `renderer_name` | `const` `char` * | the renderer name |
 
-_Declared in `include/datoviz/drp2/stream.h`:144._
+_Declared in `include/datoviz/drp2/stream.h`:150._
 
 #### `dvz_drp2_stream_resource_barrier()` { #dvz_drp2_stream_resource_barrier .dvz-api-function }
 
@@ -2062,7 +2068,7 @@ _Bool dvz_drp2_stream_resource_barrier(
 | `offset` | `uint64_t` | the first byte in the synchronized range |
 | `size` | `uint64_t` | the synchronized byte size, or 0 for the rest of the buffer |
 
-_Declared in `include/datoviz/drp2/stream.h`:1298._
+_Declared in `include/datoviz/drp2/stream.h`:1304._
 
 #### `dvz_drp2_stream_set_bind_group()` { #dvz_drp2_stream_set_bind_group .dvz-api-function }
 
@@ -2085,7 +2091,7 @@ _Bool dvz_drp2_stream_set_bind_group(
 | `slot` | `uint32_t` | the bind-group slot |
 | `bind_group_id` | `uint64_t` | the bind-group id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1157._
+_Declared in `include/datoviz/drp2/stream.h`:1163._
 
 #### `dvz_drp2_stream_set_bind_group_dynamic()` { #dvz_drp2_stream_set_bind_group_dynamic .dvz-api-function }
 
@@ -2112,7 +2118,7 @@ _Bool dvz_drp2_stream_set_bind_group_dynamic(
 | `dynamic_offset_count` | `uint32_t` | number of dynamic offsets |
 | `dynamic_offsets` | `const` `uint64_t` * | dynamic offsets consumed in layout-entry order |
 
-_Declared in `include/datoviz/drp2/stream.h`:1172._
+_Declared in `include/datoviz/drp2/stream.h`:1178._
 
 #### `dvz_drp2_stream_set_index_buffer()` { #dvz_drp2_stream_set_index_buffer .dvz-api-function }
 
@@ -2137,7 +2143,7 @@ _Bool dvz_drp2_stream_set_index_buffer(
 | `index_format` | `const` `char` * | the index format token |
 | `offset` | `uint64_t` | the byte offset |
 
-_Declared in `include/datoviz/drp2/stream.h`:1204._
+_Declared in `include/datoviz/drp2/stream.h`:1210._
 
 #### `dvz_drp2_stream_set_label()` { #dvz_drp2_stream_set_label .dvz-api-function }
 
@@ -2160,7 +2166,7 @@ _Bool dvz_drp2_stream_set_label(
 | `id` | `uint64_t` | the DRP2 object or transient id |
 | `label` | `const` `char` * | the debug label, or NULL to clear it to an empty string |
 
-_Declared in `include/datoviz/drp2/stream.h`:86._
+_Declared in `include/datoviz/drp2/stream.h`:89._
 
 #### `dvz_drp2_stream_set_pipeline()` { #dvz_drp2_stream_set_pipeline .dvz-api-function }
 
@@ -2181,7 +2187,7 @@ _Bool dvz_drp2_stream_set_pipeline(
 | `pass_id` | `uint64_t` | the pass id |
 | `pipeline_id` | `uint64_t` | the pipeline id |
 
-_Declared in `include/datoviz/drp2/stream.h`:1144._
+_Declared in `include/datoviz/drp2/stream.h`:1150._
 
 #### `dvz_drp2_stream_set_scissor()` { #dvz_drp2_stream_set_scissor .dvz-api-function }
 
@@ -2208,7 +2214,7 @@ _Bool dvz_drp2_stream_set_scissor(
 | `width` | `float` | normalized width in attachment space [0, 1] |
 | `height` | `float` | normalized height in attachment space [0, 1] |
 
-_Declared in `include/datoviz/drp2/stream.h`:1130._
+_Declared in `include/datoviz/drp2/stream.h`:1136._
 
 #### `dvz_drp2_stream_set_vertex_buffer()` { #dvz_drp2_stream_set_vertex_buffer .dvz-api-function }
 
@@ -2233,7 +2239,7 @@ _Bool dvz_drp2_stream_set_vertex_buffer(
 | `buffer_id` | `uint64_t` | the buffer id |
 | `offset` | `uint64_t` | the byte offset |
 
-_Declared in `include/datoviz/drp2/stream.h`:1188._
+_Declared in `include/datoviz/drp2/stream.h`:1194._
 
 #### `dvz_drp2_stream_set_viewport()` { #dvz_drp2_stream_set_viewport .dvz-api-function }
 
@@ -2260,7 +2266,7 @@ _Bool dvz_drp2_stream_set_viewport(
 | `width` | `float` | normalized width in attachment space [0, 1] |
 | `height` | `float` | normalized height in attachment space [0, 1] |
 
-_Declared in `include/datoviz/drp2/stream.h`:1114._
+_Declared in `include/datoviz/drp2/stream.h`:1120._
 
 #### `dvz_drp2_stream_shader_set_builtin_identity()` { #dvz_drp2_stream_shader_set_builtin_identity .dvz-api-function }
 
@@ -2285,7 +2291,7 @@ _Bool dvz_drp2_stream_shader_set_builtin_identity(
 | `variant` | `const` `char` * | stable built-in shader variant id |
 | `version` | `uint32_t` | built-in shader contract version |
 
-_Declared in `include/datoviz/drp2/stream.h`:335._
+_Declared in `include/datoviz/drp2/stream.h`:341._
 
 #### `dvz_drp2_stream_write_buffer_base64()` { #dvz_drp2_stream_write_buffer_base64 .dvz-api-function }
 
@@ -2310,7 +2316,7 @@ _Bool dvz_drp2_stream_write_buffer_base64(
 | `size` | `uint64_t` | the payload size in bytes |
 | `data_base64` | `const` `char` * | base64-encoded payload |
 
-_Declared in `include/datoviz/drp2/stream.h`:720._
+_Declared in `include/datoviz/drp2/stream.h`:726._
 
 #### `dvz_drp2_stream_write_buffer_bytes()` { #dvz_drp2_stream_write_buffer_bytes .dvz-api-function }
 
@@ -2345,7 +2351,7 @@ _Bool dvz_drp2_stream_write_buffer_bytes(
 | `size` | `uint64_t` | number of bytes to write (0 is a valid no-op) |
 | `data` | `const` `void` * | raw source bytes (must be non-NULL when size>0) |
 
-_Declared in `include/datoviz/drp2/stream.h`:746._
+_Declared in `include/datoviz/drp2/stream.h`:752._
 
 #### `dvz_drp2_stream_write_texture_2d_base64()` { #dvz_drp2_stream_write_texture_2d_base64 .dvz-api-function }
 
@@ -2376,7 +2382,7 @@ _Bool dvz_drp2_stream_write_texture_2d_base64(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data_base64` | `const` `char` * | base64-encoded payload |
 
-_Declared in `include/datoviz/drp2/stream.h`:765._
+_Declared in `include/datoviz/drp2/stream.h`:771._
 
 #### `dvz_drp2_stream_write_texture_2d_borrowed()` { #dvz_drp2_stream_write_texture_2d_borrowed .dvz-api-function }
 
@@ -2411,7 +2417,7 @@ _Bool dvz_drp2_stream_write_texture_2d_borrowed(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data` | `const` `void` * | raw pixel bytes (must remain valid until the stream executes) |
 
-_Declared in `include/datoviz/drp2/stream.h`:787._
+_Declared in `include/datoviz/drp2/stream.h`:793._
 
 #### `dvz_drp2_stream_write_texture_2d_region_base64()` { #dvz_drp2_stream_write_texture_2d_region_base64 .dvz-api-function }
 
@@ -2446,7 +2452,7 @@ _Bool dvz_drp2_stream_write_texture_2d_region_base64(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data_base64` | `const` `char` * | base64-encoded payload |
 
-_Declared in `include/datoviz/drp2/stream.h`:830._
+_Declared in `include/datoviz/drp2/stream.h`:836._
 
 #### `dvz_drp2_stream_write_texture_2d_region_borrowed()` { #dvz_drp2_stream_write_texture_2d_region_borrowed .dvz-api-function }
 
@@ -2483,7 +2489,7 @@ _Bool dvz_drp2_stream_write_texture_2d_region_borrowed(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data` | `const` `void` * | raw pixel bytes (must remain valid until the stream executes) |
 
-_Declared in `include/datoviz/drp2/stream.h`:809._
+_Declared in `include/datoviz/drp2/stream.h`:815._
 
 #### `dvz_drp2_stream_write_texture_3d_base64()` { #dvz_drp2_stream_write_texture_3d_base64 .dvz-api-function }
 
@@ -2522,7 +2528,7 @@ _Bool dvz_drp2_stream_write_texture_3d_base64(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data_base64` | `const` `char` * | base64-encoded payload |
 
-_Declared in `include/datoviz/drp2/stream.h`:854._
+_Declared in `include/datoviz/drp2/stream.h`:860._
 
 #### `dvz_drp2_stream_write_texture_3d_borrowed()` { #dvz_drp2_stream_write_texture_3d_borrowed .dvz-api-function }
 
@@ -2563,7 +2569,7 @@ _Bool dvz_drp2_stream_write_texture_3d_borrowed(
 | `rows_per_image` | `uint32_t` | the source rows per image |
 | `data` | `const` `void` * | raw pixel bytes (must remain valid until the stream executes) |
 
-_Declared in `include/datoviz/drp2/stream.h`:880._
+_Declared in `include/datoviz/drp2/stream.h`:886._
 
 #### `dvz_drp2_texture_desc()` { #dvz_drp2_texture_desc .dvz-api-function }
 
@@ -2577,7 +2583,7 @@ DvzDrp2TextureDesc dvz_drp2_texture_desc(void);
 | --- | --- | --- |
 | return | [`DvzDrp2TextureDesc`](drp2.md#type-dvzdrp2texturedesc) | initialized descriptor |
 
-_Declared in `include/datoviz/drp2/stream.h`:178._
+_Declared in `include/datoviz/drp2/stream.h`:184._
 
 #### `dvz_drp2_validate_stream()` { #dvz_drp2_validate_stream .dvz-api-function }
 

@@ -234,13 +234,22 @@ modules:
     headers:
       - include/datoviz/gui.h
       - include/datoviz/gui/**
-      - include/datoviz/imgui.h
     tier: experimental
     umbrella: advanced
     raw_binding: true
     python_top_level: false
     docs_group: app
     rationale: Optional Dear ImGui integration and hosted GUI controls.
+
+  - module: imgui_raw
+    headers:
+      - include/datoviz/imgui.h
+    tier: experimental
+    umbrella: none
+    raw_binding: true
+    python_top_level: false
+    docs_group: app
+    rationale: Explicit version-coupled access to the optional raw cimgui declarations.
 
   - module: runner
     headers:

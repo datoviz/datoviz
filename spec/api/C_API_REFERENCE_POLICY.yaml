@@ -694,7 +694,7 @@ pages:
   runtime_math:
     title: Math API
     output: docs/reference/c-api/runtime-math.md
-    summary: Boxes, vectors, animation curves, pseudo-random generation, and statistical helpers.
+    summary: Boxes, vectors, animation curves, parallelism, pseudo-random generation, and statistical helpers.
     audience: Use these helpers for numeric work shared by scene, controller, and runtime integrations.
     headers:
       - include/datoviz/dvzmath.h
@@ -708,8 +708,10 @@ pages:
       - mean
       - min
       - normalize
+      - num
       - prng
       - range
+      - threads
       - vec2
       - vec3
     group_patterns:

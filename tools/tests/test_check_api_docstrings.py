@@ -77,6 +77,41 @@ class DocstringValidationTests(unittest.TestCase):
         )
         self.assertIn("unexpected @return", "\n".join(docs.validate(function)))
 
+    def test_growable_borrowed_accessor_requires_invalidation_contract(self) -> None:
+        function = self.function(
+            name="dvz_drp2_stream_get",
+            result="const DvzDrp2Command *",
+            parameters=("stream", "index"),
+            doc="""/**
+                * Return a command.
+                * @param stream the stream
+                * @param index the command index
+                * @return the command
+                */""",
+        )
+        errors = "\n".join(docs.validate(function))
+        self.assertIn("must mention 'borrowed'", errors)
+        self.assertIn("must mention 'appends a command'", errors)
+        self.assertIn("must mention 'stream is destroyed'", errors)
+
+    def test_growable_borrowed_accessor_complete_contract_passes(self) -> None:
+        function = self.function(
+            name="dvz_drp2_stream_get",
+            result="const DvzDrp2Command *",
+            parameters=("stream", "index"),
+            doc="""/**
+                * Return a command.
+                *
+                * The pointer is borrowed. A call that appends a command invalidates it, as does
+                * the point when the stream is destroyed.
+                *
+                * @param stream the stream
+                * @param index the command index
+                * @return the command
+                */""",
+        )
+        self.assertEqual(docs.validate(function), [])
+
     def test_public_inline_function_discovery(self) -> None:
         with tempfile.TemporaryDirectory(dir=docs.ROOT) as tmp:
             root = Path(tmp)

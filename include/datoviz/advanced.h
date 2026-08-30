@@ -25,7 +25,6 @@
 #include "ffi.h"
 #include "fileio.h"
 #include "gui.h"
-#include "imgui.h"
 #include "app_interop.h"
 #include "runner.h"
 #include "shader.h"
@@ -35,3 +34,5 @@
 #include "vklite.h"
 #include "window.h"
 #include "window/backend.h"
+
+/* The raw, version-coupled cimgui declarations remain an explicit <datoviz/imgui.h> opt-in. */

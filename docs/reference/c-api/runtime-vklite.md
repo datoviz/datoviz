@@ -474,7 +474,7 @@ void dvz_cmd_begin(
 | --- | --- | --- |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:166._
+_Declared in `include/datoviz/vklite/commands.h`:167._
 
 #### `dvz_cmd_begin_result()` { #dvz_cmd_begin_result .dvz-api-function }
 
@@ -493,7 +493,7 @@ int dvz_cmd_begin_result(
 | return | `int` | 0 on success, non-zero on Vulkan or state failure |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:154._
+_Declared in `include/datoviz/vklite/commands.h`:155._
 
 #### `dvz_cmd_bind_compute()` { #dvz_cmd_bind_compute .dvz-api-function }
 
@@ -970,7 +970,7 @@ void dvz_cmd_end(
 | --- | --- | --- |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:190._
+_Declared in `include/datoviz/vklite/commands.h`:191._
 
 #### `dvz_cmd_end_result()` { #dvz_cmd_end_result .dvz-api-function }
 
@@ -989,7 +989,7 @@ int dvz_cmd_end_result(
 | return | `int` | 0 on success, non-zero on Vulkan or state failure |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:178._
+_Declared in `include/datoviz/vklite/commands.h`:179._
 
 #### `dvz_cmd_push_constants()` { #dvz_cmd_push_constants .dvz-api-function }
 
@@ -1040,7 +1040,7 @@ void dvz_cmd_release(
 | --- | --- | --- |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:214._
+_Declared in `include/datoviz/vklite/commands.h`:215._
 
 #### `dvz_cmd_rendering_begin()` { #dvz_cmd_rendering_begin .dvz-api-function }
 
@@ -1118,7 +1118,7 @@ void dvz_cmd_reset(
 | --- | --- | --- |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:201._
+_Declared in `include/datoviz/vklite/commands.h`:202._
 
 #### `dvz_cmd_set_scissor()` { #dvz_cmd_set_scissor .dvz-api-function }
 
@@ -1192,7 +1192,7 @@ void dvz_cmd_submit(
 | --- | --- | --- |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:237._
+_Declared in `include/datoviz/vklite/commands.h`:238._
 
 #### `dvz_cmd_submit_result()` { #dvz_cmd_submit_result .dvz-api-function }
 
@@ -1211,7 +1211,7 @@ int dvz_cmd_submit_result(
 | return | `int` | 0 on success, non-zero on Vulkan or state failure |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:226._
+_Declared in `include/datoviz/vklite/commands.h`:227._
 
 #### `dvz_command_buffer_alloc()` { #dvz_command_buffer_alloc .dvz-api-function }
 
@@ -1230,7 +1230,7 @@ VkCommandBuffer dvz_command_buffer_alloc(
 | `device` | [`DvzDevice`](runtime-vulkan.md#type-dvzdevice) * | logical device that owns the selected command pool |
 | `queue_family` | `uint32_t` | queue family index used to select the command pool |
 
-_Declared in `include/datoviz/vklite/commands.h`:100._
+_Declared in `include/datoviz/vklite/commands.h`:101._
 
 #### `dvz_command_buffer_free()` { #dvz_command_buffer_free .dvz-api-function }
 
@@ -1250,7 +1250,7 @@ void dvz_command_buffer_free(
 | `queue_family` | `uint32_t` | queue family index used to select the command pool |
 | `cmd` | `VkCommandBuffer` | command buffer to free |
 
-_Declared in `include/datoviz/vklite/commands.h`:112._
+_Declared in `include/datoviz/vklite/commands.h`:113._
 
 #### `dvz_commands()` { #dvz_commands .dvz-api-function }
 
@@ -1275,7 +1275,7 @@ void dvz_commands(
 | `count` | `uint32_t` | the number of command buffers to create |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * |  |
 
-_Declared in `include/datoviz/vklite/commands.h`:88._
+_Declared in `include/datoviz/vklite/commands.h`:89._
 
 #### `dvz_commands_count()` { #dvz_commands_count .dvz-api-function }
 
@@ -1292,7 +1292,7 @@ uint32_t dvz_commands_count(
 | return | `uint32_t` | number of command buffers owned or wrapped by `cmds` |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:132._
+_Declared in `include/datoviz/vklite/commands.h`:133._
 
 #### `dvz_commands_create_wrapper()` { #dvz_commands_create_wrapper .dvz-api-function }
 
@@ -1311,7 +1311,7 @@ DvzCommands * dvz_commands_create_wrapper(void);
 | --- | --- | --- |
 | return | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | allocated commands wrapper, or NULL on allocation failure |
 
-_Declared in `include/datoviz/vklite/commands.h`:62._
+_Declared in `include/datoviz/vklite/commands.h`:63._
 
 #### `dvz_commands_current()` { #dvz_commands_current .dvz-api-function }
 
@@ -1329,7 +1329,7 @@ void dvz_commands_current(
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 | `current` | `uint32_t` | command-buffer index in `[0, dvz_commands_count(cmds))` |
 
-_Declared in `include/datoviz/vklite/commands.h`:142._
+_Declared in `include/datoviz/vklite/commands.h`:143._
 
 #### `dvz_commands_destroy()` { #dvz_commands_destroy .dvz-api-function }
 
@@ -1348,7 +1348,7 @@ void dvz_commands_destroy(
 | --- | --- | --- |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:249._
+_Declared in `include/datoviz/vklite/commands.h`:250._
 
 #### `dvz_commands_free()` { #dvz_commands_free .dvz-api-function }
 
@@ -1364,7 +1364,7 @@ void dvz_commands_free(
 | --- | --- | --- |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | commands wrapper to free |
 
-_Declared in `include/datoviz/vklite/commands.h`:71._
+_Declared in `include/datoviz/vklite/commands.h`:72._
 
 #### `dvz_commands_handle()` { #dvz_commands_handle .dvz-api-function }
 
@@ -1381,7 +1381,7 @@ VkCommandBuffer dvz_commands_handle(
 | return | `VkCommandBuffer` | borrowed handle of the currently selected command buffer |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | the set of command buffers |
 
-_Declared in `include/datoviz/vklite/commands.h`:122._
+_Declared in `include/datoviz/vklite/commands.h`:123._
 
 #### `dvz_commands_unwrap()` { #dvz_commands_unwrap .dvz-api-function }
 
@@ -1403,7 +1403,7 @@ DvzResult dvz_commands_unwrap(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success or DVZ_ERROR when the wrapper is null or not borrowed-recording |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * | borrowed recording commands wrapper to detach |
 
-_Declared in `include/datoviz/vklite/commands.h`:294._
+_Declared in `include/datoviz/vklite/commands.h`:295._
 
 #### `dvz_commands_wrap()` { #dvz_commands_wrap .dvz-api-function }
 
@@ -1427,7 +1427,7 @@ void dvz_commands_wrap(
 | `vk_cmd` | `VkCommandBuffer` | externally owned command buffer whose owner permits recording-control operations |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * |  |
 
-_Declared in `include/datoviz/vklite/commands.h`:264._
+_Declared in `include/datoviz/vklite/commands.h`:265._
 
 #### `dvz_commands_wrap_borrowed_recording()` { #dvz_commands_wrap_borrowed_recording .dvz-api-function }
 
@@ -1451,7 +1451,7 @@ void dvz_commands_wrap_borrowed_recording(
 | `vk_cmd` | `VkCommandBuffer` | externally owned command buffer that is already in the recording state |
 | `cmds` | [`DvzCommands`](runtime-vklite.md#type-dvzcommands) * |  |
 
-_Declared in `include/datoviz/vklite/commands.h`:279._
+_Declared in `include/datoviz/vklite/commands.h`:280._
 
 #### `dvz_rendering()` { #dvz_rendering .dvz-api-function }
 

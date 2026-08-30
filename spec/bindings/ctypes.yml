@@ -33,6 +33,10 @@ headers:
 
 smoke_symbols:
   - dvz_time_monotonic_ns
+  - dvz_num_procs
+  - dvz_threads_set
+  - dvz_threads_get
+  - dvz_threads_default
   - dvz_shader_compiler_status
   - dvz_shader_compile
   - dvz_shader_compile_result_destroy

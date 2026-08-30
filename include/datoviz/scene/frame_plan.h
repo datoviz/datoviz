@@ -229,6 +229,9 @@ DVZ_EXPORT uint32_t dvz_frame_plan_node_count(const DvzFramePlan* plan);
 /**
  * Return a FramePlan node.
  *
+ * The returned pointer is borrowed from the plan. Any call that appends a node may reallocate node
+ * storage and invalidate it; it is also invalid after the plan is destroyed.
+ *
  * @param plan the FramePlan
  * @param index the node index
  * @return the node, or NULL when index is out of bounds

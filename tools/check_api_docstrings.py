@@ -26,6 +26,12 @@ INLINE_RE = re.compile(
     re.DOTALL,
 )
 
+BORROWED_GROWABLE_ACCESSORS = {
+    "dvz_drp2_stream_get": ("borrowed", "appends a command", "stream is destroyed"),
+    "dvz_drp2_stream_label": ("borrowed", "set_label", "stream is destroyed"),
+    "dvz_frame_plan_node_get": ("borrowed", "appends a node", "plan is destroyed"),
+}
+
 
 @dataclass(frozen=True)
 class Function:
@@ -180,6 +186,11 @@ def validate(function: Function) -> list[str]:
             errors.append(f"{prefix}: empty @return description")
     elif doc.returns:
         errors.append(f"{prefix}: unexpected @return on void function")
+
+    normalized_doc = " ".join(clean_doc(function.doc)).lower()
+    for required in BORROWED_GROWABLE_ACCESSORS.get(function.name, ()):
+        if required not in normalized_doc:
+            errors.append(f"{prefix}: borrowed accessor contract must mention {required!r}")
     return errors
 
 
