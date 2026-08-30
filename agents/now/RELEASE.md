@@ -26,7 +26,7 @@ Completed RC3 implementation includes gallery-media policy and tooling, generate
 
 The validated implementation head passes the complete 1,128-case native matrix, affected DRP2/vklite/recovery/presentation gates, practical CPU sanitizer checks, full-tree static-analysis disposition, WebGPU, bindings, documentation, example-manifest, and course checks. Vulkan-backed sanitizer teardown remains inconclusive, and exact artifact/host/platform proof remains separate.
 
-Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) and [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md). The local #140 scene-buffer lifecycle and coherent mesh replacement, #139 physical-key/committed-text split, and #138 benchmark-backed bounded corrections are complete. Chapter-5 input proof and exact-candidate validation remain separate gates; optional RC4 sampled-field foundations and post-v0.4 GPU displacement retain the boundaries below.
+Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) and [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md). The #140 scene-buffer lifecycle and coherent mesh replacement, #139 physical-key/committed-text split, and #138 benchmark-backed bounded corrections are integrated into `main`. Chapter-5 input proof and exact-candidate validation remain separate gates; optional RC4 sampled-field foundations and post-v0.4 GPU displacement retain the boundaries below.
 
 Remaining RC3 deliverables:
 

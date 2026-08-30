@@ -1,6 +1,6 @@
 # Issues #139 And #140 Handoff
 
-Status: implemented locally on the active `v0.4-dev` line with focused validation complete. Updated: 2026-08-13.
+Status: integrated into `main` with focused validation complete. Updated: 2026-08-30.
 
 This handoff covers [issue #139](https://github.com/datoviz/datoviz/issues/139) and [issue #140](https://github.com/datoviz/datoviz/issues/140). A local implementation audit and an independent `gpt-5.6-sol` high-reasoning architectural audit agreed that #140 exposes resource-lifecycle defects deeper than its reported shrink symptom and that #139 requires a distinct committed-text stream rather than key remapping. The checkpoints below landed as focused local commits after their gates passed; no geometry-resource API was published as part of these fixes.
 

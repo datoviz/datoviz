@@ -1,6 +1,6 @@
 # GUI ImPlot And Docking Handoff
 
-Status: planned non-blocking pre-RC3 candidate; implementation begins only after PR #145 merges. Updated: 2026-08-27.
+Status: entry gate open after PR #145 merged; optional pre-RC3 implementation has not started and still requires an integrate-or-defer decision before candidate freeze. Updated: 2026-08-30.
 
 This handoff routes the implementation of [GUI_EXTENSIONS_AND_DOCKING.md](../../spec/architecture/GUI_EXTENSIONS_AND_DOCKING.md). The durable specification is authoritative; this file owns sequencing, release boundaries, and checkpoint evidence only.
 
@@ -18,7 +18,7 @@ Landing the default-on dependency changes the exact candidate and invalidates ea
 
 ## Entry Conditions
 
-1. PR #145 is merged with the requested idle-render regression, default-off network-fetched example, and honest gallery media state.
+1. Complete: PR #145 merged at `7f1c6c65f` with the requested idle-render regression, default-off network-fetched example, and honest gallery media state.
 2. The durable architecture specification and its dependency-policy cross-reference are integrated on the active branch.
 3. The exact compatible ImGui/cimgui/ImPlot/cimplot source family and license/provenance plan are reviewed before dependency pointers or vendored sources change.
 4. The worktree and staged set exclude unapproved `data`, paper artifacts, runtime binaries, and unrelated user changes.
