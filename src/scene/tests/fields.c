@@ -4810,7 +4810,7 @@ int test_scene_image_field_resize_emits_texture_reallocation(TstContext* suite, 
         }
     }
     AT(tex1 != 0);
-    AT(tex1 != tex0);
+    AT(tex1 == tex0);
     AT(created_tex1);
     AT(wrote_resized);
     AT(!field->dirty);

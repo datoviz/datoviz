@@ -19,6 +19,7 @@
 #include "runtime/_frame_plan_runtime_internal.h"
 #include "scene_emit/panel_render_plan.h"
 #include "scene_graph_utils.h"
+#include "../../drp2/_runtime.h"
 
 
 
@@ -348,7 +349,7 @@ int test_scene_panel_local_intermediate_realization(TstContext* suite, const Tst
 
 
 /**
- * Verify a panel-only resize recreates its targets, refreshes descriptors, and then becomes quiet.
+ * Verify a panel-only resize recreates stable-id targets and then becomes quiet.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -384,6 +385,38 @@ int test_scene_panel_local_resize_refresh(TstContext* suite, const TstCase* item
     ANN(initial);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
+    uint64_t initial_normal_id = 0;
+    uint64_t initial_depth_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(initial); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(initial, i);
+        ANN(command);
+        if (command->type != DVZ_DRP2_COMMAND_CREATE_TEXTURE)
+            continue;
+        const char* label = dvz_drp2_stream_label(initial, command->u.create_texture.id);
+        if (label != NULL && strstr(label, "fig0_p0.gbuffer.normal") != NULL)
+            initial_normal_id = command->u.create_texture.id;
+        else if (label != NULL && strstr(label, "fig0_p0.gbuffer.depth") != NULL)
+            initial_depth_id = command->u.create_texture.id;
+    }
+    AT(initial_normal_id != 0);
+    AT(initial_depth_id != 0);
+    bool initial_gtao_binding = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(initial); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(initial, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
+            command->u.create_bind_group.entry_count == 5)
+        {
+            initial_gtao_binding =
+                initial_gtao_binding ||
+                (command->u.create_bind_group.entries[0].resource_id == initial_normal_id &&
+                 command->u.create_bind_group.entries[1].resource_id == initial_depth_id);
+        }
+    }
+    AT(initial_gtao_binding);
+
     AT(dvz_panel_set_desc(panel, &(DvzPanelDesc){0.10f, 0.20f, 0.45f, 0.50f}) == DVZ_OK);
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* resized = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
@@ -416,7 +449,9 @@ int test_scene_panel_local_resize_refresh(TstContext* suite, const TstCase* item
     }
     AT(recreated_normal);
     AT(recreated_depth);
-    bool refreshed_gtao = false;
+    AT(normal_id == initial_normal_id);
+    AT(depth_id == initial_depth_id);
+    bool explicit_gtao_rebuild = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(resized); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(resized, i);
@@ -424,12 +459,13 @@ int test_scene_panel_local_resize_refresh(TstContext* suite, const TstCase* item
         if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP &&
             command->u.create_bind_group.entry_count == 5)
         {
-            refreshed_gtao = refreshed_gtao ||
-                             (command->u.create_bind_group.entries[0].resource_id == normal_id &&
-                              command->u.create_bind_group.entries[1].resource_id == depth_id);
+            explicit_gtao_rebuild =
+                explicit_gtao_rebuild ||
+                (command->u.create_bind_group.entries[0].resource_id == normal_id &&
+                 command->u.create_bind_group.entries[1].resource_id == depth_id);
         }
     }
-    AT(refreshed_gtao);
+    AT(!explicit_gtao_rebuild);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* steady = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
@@ -456,6 +492,43 @@ int test_scene_panel_local_resize_refresh(TstContext* suite, const TstCase* item
     }
     AT(!recreated_steady);
     AT(!refreshed_steady);
+
+    DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    runtime_cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, initial);
+    AT(result.ok);
+    uint32_t semantic_object_count = runtime->semantic_state->count;
+    result = dvz_drp2_runtime_execute(runtime, resized);
+    AT(result.ok);
+    AT(runtime->semantic_state->count == semantic_object_count);
+    Drp2Object* normal = _drp2_find_any_object(runtime->semantic_state, normal_id);
+    Drp2Object* depth = _drp2_find_any_object(runtime->semantic_state, depth_id);
+    ANN(normal);
+    ANN(depth);
+    AT(!normal->destroyed);
+    AT(!depth->destroyed);
+    AT(normal->width == 90 && normal->height == 50);
+    AT(depth->width == 90 && depth->height == 50);
+    bool semantic_gtao_binding = false;
+    for (uint32_t i = 0; i < runtime->semantic_state->count; i++)
+    {
+        const Drp2Object* object = &runtime->semantic_state->objects[i];
+        if (!object->destroyed && object->kind == DRP2_OBJECT_BIND_GROUP &&
+            object->bind_group_entry_count == 5)
+        {
+            semantic_gtao_binding =
+                semantic_gtao_binding ||
+                (object->bind_group_entries[0].resource_id == normal_id &&
+                 object->bind_group_entries[1].resource_id == depth_id);
+        }
+    }
+    AT(semantic_gtao_binding);
+    result = dvz_drp2_runtime_execute(runtime, steady);
+    AT(result.ok);
+    AT(runtime->semantic_state->count == semantic_object_count);
+    dvz_drp2_runtime_destroy(runtime);
 
     _test_scene_stream_destroy(steady);
     _test_scene_stream_destroy(resized);
@@ -6727,7 +6800,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(dvz_diagnostic_report_count(&report) == 0);
 
     bool resized_front_accum = false;
-    bool rebuilt_composite_bind_group = false;
+    bool explicit_composite_bind_group_rebuild = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_resize_stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_resize_stream, i);
@@ -6746,15 +6819,15 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
         {
             const char* label =
                 dvz_drp2_stream_label(scoped_resize_stream, command->u.create_bind_group.id);
-            rebuilt_composite_bind_group =
-                rebuilt_composite_bind_group ||
+            explicit_composite_bind_group_rebuild =
+                explicit_composite_bind_group_rebuild ||
                 (label != NULL && strstr(label, "_bg_depth_peel_composite_") != NULL &&
                  strstr(label, "_scope_000000000000007b") != NULL &&
                  command->u.create_bind_group.id != 0);
         }
     }
     AT(resized_front_accum);
-    AT(rebuilt_composite_bind_group);
+    AT(!explicit_composite_bind_group_rebuild);
 
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;
@@ -6764,6 +6837,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
     AT(result.ok);
     result = dvz_drp2_runtime_execute(runtime, scoped_stream);
     AT(result.ok);
+    uint32_t scoped_semantic_object_count = runtime->semantic_state->count;
     result = dvz_drp2_runtime_execute(runtime, scoped_resize_stream);
     if (!result.ok)
     {
@@ -6774,6 +6848,7 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
             result.command_index, failed != NULL ? (int)failed->type : -1);
         return 1;
     }
+    AT(runtime->semantic_state->count == scoped_semantic_object_count);
     dvz_drp2_runtime_destroy(runtime);
 
     _test_scene_stream_destroy(scoped_resize_stream);
@@ -7171,8 +7246,10 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     }
     AT(resized_accum_texture_id != 0);
     AT(resized_weight_texture_id != 0);
+    AT(resized_accum_texture_id == scoped_accum_texture_id);
+    AT(resized_weight_texture_id == scoped_weight_texture_id);
 
-    bool rebuilt_resolve_bind_group = false;
+    bool explicit_resolve_bind_group_rebuild = false;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(scoped_resize_stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(scoped_resize_stream, i);
@@ -7180,12 +7257,12 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
         if (command->type != DVZ_DRP2_COMMAND_CREATE_BIND_GROUP ||
             command->u.create_bind_group.entry_count != 3)
             continue;
-        rebuilt_resolve_bind_group =
-            rebuilt_resolve_bind_group ||
+        explicit_resolve_bind_group_rebuild =
+            explicit_resolve_bind_group_rebuild ||
             (command->u.create_bind_group.entries[0].resource_id == resized_accum_texture_id &&
              command->u.create_bind_group.entries[1].resource_id == resized_weight_texture_id);
     }
-    AT(rebuilt_resolve_bind_group);
+    AT(!explicit_resolve_bind_group_rebuild);
 
     DvzDrp2RuntimeConfig runtime_cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
     runtime_cfg.semantic_only = true;
@@ -7195,6 +7272,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
     AT(result.ok);
     result = dvz_drp2_runtime_execute(runtime, scoped_stream);
     AT(result.ok);
+    uint32_t scoped_semantic_object_count = runtime->semantic_state->count;
     result = dvz_drp2_runtime_execute(runtime, scoped_resize_stream);
     if (!result.ok)
     {
@@ -7205,6 +7283,7 @@ int test_scene_visual_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCa
             result.command_index, failed != NULL ? (int)failed->type : -1);
         return 1;
     }
+    AT(runtime->semantic_state->count == scoped_semantic_object_count);
     dvz_drp2_runtime_destroy(runtime);
 
     _test_scene_stream_destroy(scoped_resize_stream);

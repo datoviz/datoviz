@@ -3131,10 +3131,10 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
         }
     }
     AT(tex2 != 0);
-    AT(tex2 != tex0);
+    AT(tex2 == tex0);
     AT(created_tex2);
     AT(wrote_tex2);
-    AT(rebound_tex2);
+    AT(!rebound_tex2);
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream3 =
@@ -3181,10 +3181,13 @@ int test_frame_plan_emitter_runtime_texture_extent_changes(TstContext* suite, co
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream0);
     AT(result.ok);
+    uint32_t semantic_object_count = runtime->semantic_state->count;
     result = dvz_drp2_runtime_execute(runtime, stream1);
     AT(result.ok);
+    AT(runtime->semantic_state->count == semantic_object_count);
     result = dvz_drp2_runtime_execute(runtime, stream2);
     AT(result.ok);
+    AT(runtime->semantic_state->count == semantic_object_count);
     result = dvz_drp2_runtime_execute(runtime, stream3);
     AT(result.ok);
 

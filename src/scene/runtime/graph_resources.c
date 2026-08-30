@@ -1060,9 +1060,6 @@ bool _runtime_resolve_texture_2d(
         resource->texture_depth != 1 || format != resource->texture_format ||
         sample_count != resource->texture_sample_count)
     {
-        if (emitter->resources.next_id == UINT64_MAX)
-            return false;
-        resource->id = emitter->resources.next_id++;
         resource->texture_width = width;
         resource->texture_height = height;
         resource->texture_depth = 1;

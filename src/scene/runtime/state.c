@@ -560,9 +560,6 @@ bool _resource_ensure_texture(
         depth == resource->texture_depth && format == resource->texture_format)
         return true;
 
-    if (state->next_id == UINT64_MAX)
-        return false;
-    resource->id = state->next_id++;
     resource->texture_width = width;
     resource->texture_height = height;
     resource->texture_depth = depth;

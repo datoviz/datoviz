@@ -26,6 +26,7 @@
 
 #include "../../app/_app.h"
 #include "../../canvas/canvas_internal.h"
+#include "../../drp2/_runtime.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -7307,10 +7308,16 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
     AT(win != NULL);
     DvzCanvas* canvas = dvz_view_canvas(win);
     ANN(canvas);
+    DvzTestGpuFixture* fixture =
+        (DvzTestGpuFixture*)tst_context_fixture(suite, TST_SCENE_APP_GPU_FIXTURE);
+    ANN(fixture);
+    ANN(fixture->runtime);
 
     const uint32_t sizes[][2] = {
         {96, 64}, {128, 72}, {80, 96}, {144, 80}, {96, 64},
     };
+    uint32_t semantic_object_count = 0;
+    uint32_t vklite_object_count = 0;
 
     for (uint32_t frame = 0; frame < sizeof(sizes) / sizeof(sizes[0]); frame++)
     {
@@ -7318,6 +7325,30 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
         uint32_t expected_height = sizes[frame][1];
         AT(dvz_view_resize(win, expected_width, expected_height) == 0);
         AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+
+        if (frame == 0)
+        {
+            ANN(fixture->runtime->semantic_state);
+            ANN(fixture->runtime->vklite_state);
+            semantic_object_count = fixture->runtime->semantic_state->count;
+            vklite_object_count = fixture->runtime->vklite_state->count;
+            AT(semantic_object_count > 0);
+            AT(vklite_object_count > 0);
+        }
+        else if (frame == 1)
+        {
+            /* The first resize may replace the borrowed command buffer, creating one new scoped
+             * depth target. Later extent changes must recreate that target under its stable ID. */
+            AT(fixture->runtime->semantic_state->count <= semantic_object_count + 1);
+            AT(fixture->runtime->vklite_state->count <= vklite_object_count + 1);
+            semantic_object_count = fixture->runtime->semantic_state->count;
+            vklite_object_count = fixture->runtime->vklite_state->count;
+        }
+        else
+        {
+            AT(fixture->runtime->semantic_state->count == semantic_object_count);
+            AT(fixture->runtime->vklite_state->count == vklite_object_count);
+        }
 
         uint32_t width = 0;
         uint32_t height = 0;
