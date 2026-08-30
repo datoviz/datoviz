@@ -468,6 +468,9 @@ int test_scene_mesh_geometry_unchanged_indices_skip_upload(
 int test_scene_mesh_geometry_replacement_switches_indexing(
     TstContext* suite, const TstCase* item);
 
+int test_scene_buffer_destroy_requests_frame_and_emits_retirement(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_mesh_instance_count_shrink_uses_logical_extent(
     TstContext* suite, const TstCase* item);
 

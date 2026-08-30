@@ -1020,6 +1020,55 @@ int test_scene_mesh_geometry_replacement_switches_indexing(TstContext* suite, co
 
 
 
+int test_scene_buffer_destroy_requests_frame_and_emits_retirement(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+
+    DvzGeometry* geometry = _mesh_replacement_geometry(3, 3);
+    ANN(geometry);
+    AT(dvz_mesh_set_geometry(mesh, geometry) == 0);
+    DvzSceneBuffer* index_buffer = _visual_family_state(mesh)->buffer;
+    ANN(index_buffer);
+
+    DvzDrp2CommandStream* stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 3, 1));
+    uint64_t runtime_index_buffer_id = _stream_index_buffer_id(stream);
+    AT(runtime_index_buffer_id != 0);
+    _test_scene_stream_destroy(stream);
+
+    uint64_t frame_revision = figure->frame_revision;
+    dvz_scene_buffer_destroy(index_buffer);
+    AT(figure->frame_revision == frame_revision + 1);
+    AT(_visual_family_state(mesh)->buffer == NULL);
+    AT(scene->buffer_retirement_count == 1);
+
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_buffer_command_count(
+           stream, DVZ_DRP2_COMMAND_DESTROY_BUFFER, runtime_index_buffer_id) == 1);
+    AT(scene->buffer_retirement_count == 0);
+    _test_scene_stream_destroy(stream);
+
+    dvz_geometry_destroy(geometry);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_mesh_instance_count_shrink_uses_logical_extent(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

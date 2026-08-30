@@ -60,6 +60,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_mesh_geometry_replacement_uses_logical_index_count);
     TST_CASE(test_scene_mesh_geometry_unchanged_indices_skip_upload);
     TST_CASE(test_scene_mesh_geometry_replacement_switches_indexing);
+    TST_CASE(test_scene_buffer_destroy_requests_frame_and_emits_retirement);
     TST_CASE(test_scene_mesh_instance_count_shrink_uses_logical_extent);
     TST_CASE(test_scene_mesh_geometry_replacement_failure_rolls_back);
     TST_CASE(test_scene_mesh_instance_transform_emits_instanced_draw);

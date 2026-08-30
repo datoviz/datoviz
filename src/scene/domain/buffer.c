@@ -237,6 +237,7 @@ void dvz_scene_buffer_destroy(DvzSceneBuffer* buffer)
     DvzScene* scene = buffer->scene;
     if (scene != NULL)
     {
+        _scene_notify_buffer_changed(buffer);
         for (uint32_t i = 0; i < scene->field_count; i++)
         {
             DvzSampledField* field = &scene->fields[i];
