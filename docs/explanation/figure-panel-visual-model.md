@@ -1,9 +1,6 @@
 # Scene building blocks
 
-This page gives the conceptual model shared by Python and C. Read it after the
-[Quickstart](../start/quickstart.md) if you want to predict where data, layout, interaction, and
-output state belong. Exact constructors, attributes, and destruction rules remain in the
-[Reference](../reference/index.md).
+This page explains the object model shared by Python and C. Read it after the [quickstart](../start/quickstart.md) to understand where data, layout, interaction, and output state belong. The [reference](../reference/index.md) defines the exact constructors, attributes, and destruction rules.
 
 **Audience:** new Datoviz users and agents adapting examples. **Prerequisite:** none, although the
 Quickstart makes the names concrete. You will learn containment, attachment, data ownership, and the
@@ -25,9 +22,11 @@ Scene                         top-level retained owner
 DvzApp -> DvzView -> target/runtime    executes a Figure; not owned by the Scene
 ```
 
-The visual is scene-owned; a panel attachment determines where and how it participates in a figure.
-Uploading arrays to a visual does not display it. A visual becomes part of a view only after it is
-attached to a panel.
+The scene owns each visual. A panel attachment determines where and how the visual participates in a figure. Uploading arrays does not display the visual; it becomes part of a view only after you attach it to a panel.
+
+!!! important "One visual should contain many items"
+
+    A visual is a rendering batch, not an individual mark. Put related points, segments, mesh instances, or other same-family items into arrays on one visual. Create another visual only when the items need a different family, panel, rendering state, coordinate treatment, or update schedule.
 
 
 ## Object responsibilities

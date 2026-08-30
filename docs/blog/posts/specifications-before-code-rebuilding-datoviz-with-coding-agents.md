@@ -8,27 +8,18 @@ categories:
 
 # Specifications before code: rebuilding Datoviz with coding agents
 
-Datoviz v0.4 is the culmination of ideas I have been exploring for about fifteen years. It is also
-the first version developed through sustained collaboration with coding agents—not just to write
-code, but to help with architecture, API design, and the search for the right abstractions.
+Datoviz v0.4 brings together ideas I have been working on for about fifteen years. It is also the first version I developed in sustained collaboration with coding agents. I used them to write code and to think through the architecture, design the API, and find better abstractions.
 
-This changed what I could realistically attempt as the maintainer of a mostly one-person project.
-It did not remove the need for expertise, judgment, or close review. Instead, it changed how I used
-my time and how architectural decisions could be carried consistently through implementation,
-tests, examples, documentation, bindings, and packaging.
+That changed what I could realistically attempt as the maintainer of a mostly one-person project. The agents did not replace expertise, judgment, or close review. They changed where I spent my time and helped carry architectural decisions through the code, tests, examples, documentation, bindings, and packaging.
 
-The resulting release is now available as the
-[first Datoviz v0.4 release candidate](datoviz-v0.4-release-candidate.md).
+The result is now available as the [first Datoviz v0.4 release candidate](datoviz-v0.4-release-candidate.md).
 
 <!-- more -->
 
 
 ## A little history
 
-The story started long before Datoviz. Frustrated by the performance of existing visualization
-libraries, I began investigating GPU rendering for fast 2D scientific visualization in 2011 and
-released an experimental project called Galry in 2012. The following year, Nicolas Rougier, Almar
-Klein, Luke Campagnola, and I joined forces to create VisPy.
+The story started long before Datoviz. I was frustrated by the performance of existing visualization libraries, so in 2011 I began investigating GPU rendering for fast 2D scientific visualization. I released an experimental project called Galry in 2012. The following year, Nicolas Rougier, Almar Klein, Luke Campagnola, and I joined forces to create VisPy.
 
 By 2015, I had become convinced that Python and OpenGL imposed fundamental limits on the kind of
 library I wanted to build. When Vulkan was announced, I wrote
@@ -37,10 +28,7 @@ It described a low-level, language-independent runtime with modular APIs, deskto
 targets, and GPU compute working directly with visualization data. Many details have changed, but
 the main vision is recognizable in Datoviz v0.4.
 
-Vulkan was released in 2016, but it took me nearly four years to experiment with it seriously. I
-knew OpenGL but had no experience with low-level GPU APIs, and the learning curve was daunting. In
-late 2019, I finally started connecting the dots and quickly obtained promising results using the
-raw Vulkan C API.
+Vulkan was released in 2016, but it took me nearly four years to experiment with it seriously. I knew OpenGL but had no experience with low-level GPU APIs, and the learning curve was daunting. In late 2019, I finally started connecting the dots and quickly obtained promising results with the raw Vulkan C API.
 
 I worked intensely on the experiment throughout 2020, learning Vulkan and becoming more familiar
 with C. In February 2021, I
@@ -53,10 +41,7 @@ learning Vulkan and working out the architecture. Version 0.2 was released in 20
 architecture. Version 0.3 followed in May 2025, after a major effort to make the library easy to
 package and install.
 
-These ideas took shape over about fifteen years. Modern graphics APIs finally provided the
-foundation I wanted for a fast, scalable, high-quality scientific visualization engine. The
-remaining constraint was the time and manpower needed to turn that foundation into a coherent,
-portable library. Datoviz remained mostly a one-person project, and progress was necessarily slow.
+These ideas took shape over about fifteen years. Modern graphics APIs finally provided the foundation I wanted for a fast, scalable scientific visualization engine. The remaining constraint was the time needed to turn that foundation into a coherent, portable library. Datoviz remained mostly a one-person project, and progress was necessarily slow.
 
 
 ## Working with coding agents
@@ -66,11 +51,7 @@ I began using LLMs for software development in 2023, mostly through the ChatGPT 
 
 ### Specifications before code
 
-At first, I did not ask the agents to implement anything. I worked with them on specifications.
-The `spec/` directory grew to hundreds of Markdown files covering the system layer by layer and
-module by module. We rewrote, split, merged, and reorganized them as decisions in one area affected
-another. They became our shared working memory. Only after the architecture became coherent did we
-turn the specifications into implementation plans and code.
+At first, I did not ask the agents to implement anything. I worked with them on specifications. The `spec/` directory grew to hundreds of Markdown files covering the system layer by layer and module by module. We rewrote, split, merged, and reorganized them as decisions in one area affected another. They became our shared working memory. Only after the architecture became coherent did we turn the specifications into implementation plans and code.
 
 The architectural work focused on layer boundaries and ownership: separating the scene from the rendering runtime, deciding which layer owned each resource, and sharing scene semantics between native Vulkan and browser WebGPU without reducing both backends to their lowest common denominator.
 
@@ -78,14 +59,9 @@ The API work focused on consistency across C, Python, and generated bindings. We
 
 The portability work tied those decisions to tests and distribution. Ownership, lifetimes, and rendering behavior had to remain testable across platforms and GPUs; packages had to be self-contained on Linux, macOS, and Windows; and examples, documentation, bindings, and the public API had to move together.
 
-These questions were intertwined. A decision that made one layer cleaner could make another harder
-to use, test, package, or port. The real difficulty was finding a coherent set of choices that
-satisfied all these requirements at once. This is why I spent so much time discussing them with
-high-reasoning agents before asking for implementation.
+These questions were intertwined. A decision that made one layer cleaner could make another harder to use, test, package, or port. We needed a coherent set of choices that satisfied all these requirements at once. This is why I spent so much time discussing them with high-reasoning agents before asking for implementation.
 
-The quality of those discussions surprised me. In several cases, the agents proposed concepts I
-had not considered or module boundaries cleaner than my initial designs—even after I had spent
-fifteen years thinking about these problems.
+The quality of those discussions surprised me. In several cases, the agents proposed concepts I had not considered or module boundaries cleaner than my initial designs—even after I had spent fifteen years thinking about these problems.
 
 
 ### A concrete architectural example
@@ -97,25 +73,14 @@ sinks. Sinks can be registered and combined, so the same frame can, for example,
 recorded without adding special cases to the scene or renderer. The scene does not even know
 whether its output will be displayed, saved, or discarded.
 
-This separation sounds simple once it exists, but I had not found such a clean organization on my
-own. Reaching it required careful decisions about ownership, borrowed GPU handles, synchronization,
-resizing, resource lifetimes, and module boundaries. The agents helped identify an architecture
-that could support more capabilities while making the overall system more coherent.
+This separation sounds simple once it exists, but I had not found such a clean organization on my own. Reaching it required careful decisions about ownership, borrowed GPU handles, synchronization, resizing, resource lifetimes, and module boundaries. The agents helped me find an architecture that supported more capabilities without adding special cases to every layer.
 
 
 ### From specifications to code
 
-Once we agreed on a specification and plan, the agents could carry the work through implementation,
-tests, examples, documentation, bindings, and build infrastructure. This reduced the gap between
-an architectural decision and all the places where it had to be applied consistently. The result
-still required close review, but the context behind each decision remained available throughout
-implementation.
+Once we agreed on a specification and plan, the agents could carry the work through implementation, tests, examples, documentation, bindings, and build infrastructure. This reduced the gap between an architectural decision and all the places where it had to be applied. The result still required close review, but the context behind each decision remained available throughout implementation.
 
-The implementation itself was often remarkably good: clear, consistent C code that fit naturally
-into the existing project. That observation needs some qualification. Much of the implementation
-was relatively straightforward once the architecture and contracts had been settled; it was not
-dominated by novel, complex algorithms. The hardest problems were choosing the abstractions,
-ownership rules, module boundaries, and relationships between layers.
+The implementation itself was often remarkably good: clear, consistent C code that fit naturally into the existing project. There is an important qualification. Much of the implementation was relatively straightforward once we had settled the architecture and contracts. The hardest problems were choosing the abstractions, ownership rules, module boundaries, and relationships between layers, not inventing novel algorithms.
 
 The GPU code was highly specialized, but it did not start from zero. It drew on roughly fifteen
 years of prior work, notably Nicolas Rougier's research on GPU-based scientific visualization,
@@ -159,12 +124,6 @@ would have been unrealistic for a mostly one-person project.
 Datoviz is a library I want to maintain for many years. Other programs may come to depend on its
 API and ownership rules; a quick demonstration is not enough.
 
-Datoviz v0.4 is not the product of an autonomous coding agent. It is the result of close human-AI
-collaboration built on years of prior work, explicit specifications, continuous review, and repeated
-refactoring. That collaboration changed what I could realistically attempt. Version 0.4 is broader
-and more coherent than I expected a mostly one-person project to become in this amount of time. It
-remains imperfect, but coding agents helped turn years of ideas into a working system that is now
-ready to be tested by users.
+Datoviz v0.4 is not the product of an autonomous coding agent. It grew from years of prior work, explicit specifications, continuous review, repeated refactoring, and close human-AI collaboration. That collaboration changed what I could realistically attempt. Version 0.4 is broader and more coherent than I expected a mostly one-person project to become in this amount of time. It remains imperfect, but coding agents helped me turn years of ideas into a working system that users can now test.
 
-You can read the [v0.4 release-candidate announcement](datoviz-v0.4-release-candidate.md), explore
-the [examples](../../examples/index.md), or try the release and share feedback.
+You can read the [v0.4 release-candidate announcement](datoviz-v0.4-release-candidate.md), explore the [examples](../../examples/index.md), or try the release and share feedback.

@@ -1,8 +1,6 @@
 # Retained resources
 
-Datoviz keeps scene data and derived resource descriptions between frames. Retention is what lets an
-application update colors, move a camera, or redraw a panel without recreating the visualization and
-all GPU objects.
+Datoviz keeps scene data and derived resource descriptions between frames. An application can therefore update colors, move a camera, or redraw a panel without recreating the visualization and all of its GPU objects. This is the **retained resource model**.
 
 **Audience:** developers optimizing updates or changing resource preparation. **Prerequisite:** the
 [scene building blocks](figure-panel-visual-model.md). For public copy/borrow rules, use
