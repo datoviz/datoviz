@@ -93,7 +93,7 @@ int main(int argc, char** argv)
     };
     dvz_canvas_set_draw_callback(canvas, draw, &renderer);
 
-    // The render loop: one iteration draws and presents exactly one frame.
+    // Process one frame attempt; READY attempts are submitted below.
     uint64_t frame_index = 0;
     while (live ? !dvz_window_should_close(window) : frame_index < 1)
     {
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
     if (png_path != NULL)
         dvz_canvas_capture_png(canvas, png_path);
 
-    // Destroy in reverse order of creation.
+    // Destroy resources in dependency-safe order.
     dvz_rendering_free(renderer.rendering);
     dvz_commands_free(renderer.commands);
     dvz_canvas_destroy(canvas);

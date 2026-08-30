@@ -7,31 +7,22 @@
   <img src="/assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues and greys.">
 </picture>
 
-Chapter 2 asked you to accept five lines on faith. This chapter takes them apart, because they are
-the shape of every frame you will ever draw: the triangle in chapter 4 and the lit textured mesh in
-chapter 15 both slot into exactly the same sequence, between the same two calls.
+Chapter 2 asked you to accept five lines on faith. This chapter takes them apart because they establish the shape of every frame in the course. The triangle in chapter 4 and the lit, textured mesh in chapter 15 both fit between the same two calls.
 
-Then you will make the window pulse, which proves the loop really is running rather than showing you
-one frame forever.
+You will then make the window pulse, proving that the loop is running rather than displaying one frame forever.
 
 ## Two processors, one to-do list
 
-A GPU program is two programs, on two processors, handed to each other every frame.
+A GPU program consists of work for two processors, handed from one to the other every frame.
 
-The CPU decides *what* to draw and writes it down: use this pipeline, draw these three vertices,
-clear to this color. It does not draw anything. That written-down list is a **command buffer**.
+The CPU decides *what* to draw and writes down instructions: use this pipeline, draw these three vertices, clear to this color. The CPU does not draw the image itself. That recorded list is a **command buffer**.
 
-The GPU reads the command buffer afterwards and executes it. By then your callback has long since
-returned. The CPU is already working on the next frame while the GPU chews on the last one. This
-lag is the reason Vulkan needs so much synchronization, and the reason the canvas earns its keep.
+The GPU reads the command buffer after submission and executes it asynchronously. Your callback has returned by then, and the CPU may be preparing later work while the GPU chews on the submitted frame. Reusing a frame slot can still make the CPU wait. Managing that overlap safely is why Vulkan needs so much synchronization and why the canvas earns its keep.
 
-Two consequences deserve attention now, because both are common sources of confusion:
+This separation has two consequences that often confuse new Vulkan programmers:
 
-- **Recording happens on the CPU; drawing happens later, on the GPU.** When `draw` returns, nothing
-  has happened on the GPU yet, and nothing will until `dvz_canvas_submit`.
-- **Anything the recorded commands point at must still exist when the GPU gets there.** A buffer you
-  free at the end of your callback is a buffer the GPU may read after it is gone. Ownership, in this
-  course, is not bookkeeping pedantry; it is the difference between a picture and a crash.
+- **Recording happens on the CPU; drawing happens later, on the GPU.** When `draw` returns, the recorded work has not reached the GPU. Submission begins with `dvz_canvas_submit`.
+- **Anything referenced by the recorded commands must still exist when the GPU uses it.** If you free a buffer at the end of the callback, the GPU may try to read it afterwards. Ownership is not bookkeeping pedantry here; it is the difference between a picture and a crash.
 
 ## What the canvas hands you
 
@@ -40,27 +31,20 @@ Your callback receives a `DvzStreamFrame*`. Three of its fields matter for now:
 | Field | What it is |
 | --- | --- |
 | `frame->command_buffer` | A command buffer the canvas has already opened for recording. You write into it. |
-| `frame->image_view` | The image this frame renders into (one of the swapchain images in live mode). |
+| `frame->image_view` | A Canvas-owned frame target. In live mode, the Canvas later transfers it to the acquired swapchain image. |
 | `frame->extent` | Its current size in pixels. This changes when the window is resized. |
 
-All three are **borrowed**. They are valid for the duration of this one call and no longer. Do not
-store them in `Renderer`, do not free them, and do not submit the command buffer yourself. The
-canvas owns all of that. Each frame it may hand you a different image, and after a resize it will
-hand you differently sized ones.
+The command buffer and image view are **borrowed** handles. They are valid only for this callback. Do not store or free them, and do not submit the command buffer yourself; the canvas owns those operations. A later frame may use a different image view, especially after a resize.
 
-The `extent` field is the reason a correct renderer never caches the window size. Read it from the
-frame every time.
+The `extent` is a copied value rather than a borrowed handle, so storing the number itself is safe. It may become stale after a resize, however. Read the current extent from each frame before recording size-dependent commands.
 
-## The five calls, one at a time
+## The frame calls, one at a time
 
 ```c
     dvz_commands_wrap_borrowed_recording(renderer->device, frame->command_buffer, renderer->commands);
 ```
 
-The rest of the `vklite` API records through a typed `DvzCommands` object, and what the canvas gives
-you is a raw Vulkan handle. This wraps the handle in the `DvzCommands` you allocated once at startup.
-It creates nothing and owns nothing. Think of it as pointing your recording tool at the canvas's
-buffer. `_borrowed_recording` names both facts: borrowed, and already recording.
+The `vklite` API records through a typed `DvzCommands` object, while the canvas gives you a raw Vulkan handle. This function wraps the handle in the `DvzCommands` object allocated at startup. It creates and owns nothing. Think of it as pointing your recording tool at the canvas's buffer. `_borrowed_recording` records both facts in the name: the handle is borrowed and already recording.
 
 ```c
     dvz_cmd_rendering_default(
@@ -68,45 +52,38 @@ buffer. `_borrowed_recording` names both facts: borrowed, and already recording.
         clear, renderer->rendering);
 ```
 
-This describes *where* the next commands will draw. Despite the `dvz_cmd_` prefix it records nothing
-at all. It fills in the `DvzRendering` description with the render area, one color **attachment**
-pointing at `frame->image_view`, a load operation of "clear", a store operation of "store", and the
-clear value.
+This describes *where* the next commands will draw. Despite the `dvz_cmd_` prefix, it records nothing. It fills the `DvzRendering` description with the render area, one color **attachment** that points to `frame->image_view`, a load operation of "clear," a store operation of "store," and the clear value.
 
-Those two operations deserve a moment, because they are how a GPU thinks about images:
+The load and store operations define what happens to the attachment at the boundaries of the rendering pass:
 
-- The **load op** says what happens to the attachment's existing contents when the pass begins.
-  `CLEAR` overwrites everything with the clear value; `LOAD` keeps what was already there. Clearing
-  is a property of *starting to render*, not a command you issue, which is why there is no
-  `dvz_cmd_clear` in the sequence.
-- The **store op** says whether the results are written back to memory when the pass ends. `STORE`
-  keeps them, which is what you want for an image you intend to display.
+- The **load op** says what happens to the attachment's existing contents when the pass begins. `CLEAR` overwrites everything with the clear value, while `LOAD` keeps what was already there. Clearing is a property of *starting to render*, not a separate command, which is why the sequence has no `dvz_cmd_clear`.
+- The **store op** says whether the results are preserved when the pass ends. `STORE` keeps them, which is what you need for an image that will be displayed or read back.
 
-Being explicit about this pays off on mobile and tiled GPUs, where "discard the contents, I'm going
-to overwrite them all anyway" is dramatically cheaper than reading them back in.
+This distinction can matter on mobile and tiled GPUs, where discarding contents that will be overwritten may avoid unnecessary memory work.
 
 ```c
     dvz_cmd_rendering_begin(renderer->commands, renderer->rendering);
 ```
 
-*Now* something is recorded. This opens the rendering pass described above: from here on, draw
-commands target that attachment. The split between describing and beginning is deliberate: in
-chapter 10 you will add a depth attachment to the description before beginning the pass.
+*Now* something is recorded. This opens the rendering pass described above, and subsequent draw commands target its attachments. Description and recording are separate because you may need to finish configuring the attachments first. In chapter 10, for example, you will add a depth attachment before beginning the pass.
+
+```c
+    dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
+```
+
+The viewport maps normalized device coordinates into pixels, and the scissor limits drawing to a rectangular pixel region. This helper sets both to the full current frame. They are dynamic pipeline state, so you record them for the current extent before issuing draw calls. The clear does not need them, but the triangle in chapter 4 will.
 
 ```c
     dvz_cmd_rendering_end(renderer->commands);
 ```
 
-This closes the pass. Every draw call in this course goes between these two lines. Right now there
-are none, so the frame consists of just the clear.
+This closes the pass. Every draw call in the course goes between `dvz_cmd_rendering_begin` and `dvz_cmd_rendering_end`. There are no draw calls yet, so the frame contains only the clear.
 
 ```c
     dvz_commands_unwrap(renderer->commands);
 ```
 
-This detaches your typed wrapper from the borrowed buffer. It does not end, reset, submit, or
-destroy the command buffer; the canvas does all four. Skipping this leaves your `DvzCommands`
-pointing at a handle that is about to become someone else's.
+This detaches your typed wrapper from the borrowed buffer. It does not end, reset, submit, or destroy the command buffer; the canvas owns that lifecycle. Skipping the detach leaves your `DvzCommands` pointing at a callback-scoped handle after the callback returns.
 
 Who owns what, for this chapter:
 
@@ -114,14 +91,13 @@ Who owns what, for this chapter:
 | --- | --- | --- |
 | `frame->command_buffer` | canvas | end of this callback |
 | `frame->image_view` | canvas | end of this callback |
-| `frame->extent` | canvas | end of this callback (changes on resize) |
+| `frame->extent` | copied frame value | the value may be stored, but a later frame may have a different extent |
 | `renderer->device` | GPU context | program teardown |
 | `renderer->commands`, `renderer->rendering` | your renderer | program teardown |
 
 ## Make it move
 
-A static color cannot tell you whether the loop is running at 60 frames a second or froze after the
-first one. Drive the color from a clock instead.
+A static color cannot tell you whether the loop is running at 60 frames per second or froze after the first frame. Drive the color from a clock instead.
 
 Add `<math.h>` to the top of the file:
 
@@ -129,8 +105,7 @@ Add `<math.h>` to the top of the file:
 #include <math.h>
 ```
 
-`Renderer` no longer needs a stored clear color, but it does need a start time and a flag for
-whether to animate at all:
+`Renderer` no longer needs to store a clear color. It now needs a start time and a flag that enables animation:
 
 ```c
 typedef struct
@@ -161,26 +136,22 @@ In the callback, compute the color before recording:
                           }};
 ```
 
-and pass that local `clear` to `dvz_cmd_rendering_default` in place of `renderer->clear`.
+Pass this local `clear` value to `dvz_cmd_rendering_default` in place of `renderer->clear`.
 
-Two details in those seven lines matter more than they look.
+The timing code follows two rules that will matter throughout the course.
 
-**Animate from a clock, not a frame counter.** `dvz_time_monotonic_ns` is a monotonic nanosecond
-timer. Deriving motion from elapsed seconds means the animation runs at the same speed on a 30 Hz
-laptop and a 144 Hz monitor, whereas `frame_index * 0.01f` would run five times faster on the
-latter. Everything that moves in this course (the spinning cube, the arcball's inertia) takes its
-time from here.
+**Animate from a clock, not a frame counter.** `dvz_time_monotonic_ns` is a monotonic nanosecond timer. Deriving motion from elapsed time keeps the animation speed independent of the display rate. In contrast, `frame_index * 0.01f` would run nearly five times faster at 144 Hz than at 30 Hz. Everything that moves later in the course, including the spinning cube and the arcball's inertia, follows this clock-based approach.
 
-**Offscreen renders use a fixed time.** A wall clock would make every `--png` capture different, so nothing could ever be compared against a reference. Add `float capture_time = 0.5f;` beside `png_path`, accept an optional fixed time in the existing argument loop, and store it in `Renderer`:
+**Offscreen renders use a fixed time.** Reading the clock would make every `--png` capture different and prevent comparison with a reference image. Add `float capture_time = 0.5f;` beside `png_path`, accept an optional fixed time in the existing argument loop, and store it in `Renderer`:
 
 ```c
         else if (strcmp(argv[i], "--time") == 0)
             capture_time = strtof(argv[i + 1], NULL);
 ```
 
-This needs `#include <stdlib.h>` for `strtof`. Ordinary offscreen runs freeze `t` at `0.5`; `--time` lets you request another reproducible instant and is how this chapter’s animated preview is generated.
+This requires `#include <stdlib.h>` for `strtof`. Ordinary offscreen runs freeze `t` at `0.5`. The `--time` option selects another reproducible instant and is also how the chapter's animated preview is generated.
 
-Finally, update the initializer to match the new struct:
+Update the initializer to match the new struct:
 
 ```c
     Renderer renderer = {
@@ -200,8 +171,7 @@ cmake --build build
 ./build/vkcourse
 ```
 
-The window now breathes slowly through blues and greys. Drag its edge while it does. The animation
-keeps going, because resizing changes only the `extent` your callback reads each frame.
+The window now breathes slowly through blues and greys. Drag an edge while it runs. The animation continues because each callback reads the new `extent` after a resize.
 
 ```sh
 ./build/vkcourse --png chapter03.png
@@ -209,28 +179,22 @@ keeps going, because resizing changes only the `extent` your callback reads each
 ./build/vkcourse --png later.png --time 1.5
 ```
 
-The first two files are identical. The third is another reproducible point on the same animation.
+The first two files are identical. The third captures another reproducible point in the same animation.
 
 ??? info "Under the hood: the frame you did not have to orchestrate"
 
-    In raw Vulkan, the sequence around your recording looks roughly like this, every frame:
+    In raw Vulkan, the sequence around this Canvas-style recording looks roughly like this for every live frame:
 
     1. Wait on the fence for this frame slot, then reset it.
-    2. `vkAcquireNextImageKHR` with a semaphore, and handle `VK_ERROR_OUT_OF_DATE_KHR` by rebuilding
-       the swapchain and starting over.
+    2. Call `vkAcquireNextImageKHR` with a semaphore, and handle `VK_ERROR_OUT_OF_DATE_KHR` by rebuilding the swapchain and starting over.
     3. Reset the command buffer and `vkBeginCommandBuffer`.
-    4. A pipeline barrier transitioning the acquired image from `UNDEFINED` (or `PRESENT_SRC_KHR`) to
-       `COLOR_ATTACHMENT_OPTIMAL`, with the right source and destination stage masks.
-    5. Your recording (the only part this course asks you to write).
-    6. A second barrier back to `PRESENT_SRC_KHR`.
-    7. `vkEndCommandBuffer`, then `vkQueueSubmit` with the acquire semaphore as a wait, a render
-       semaphore as a signal, and the fence.
-    8. `vkQueuePresentKHR` waiting on the render semaphore, and handle out-of-date *again*.
+    4. Transition the Canvas-owned frame target to `COLOR_ATTACHMENT_OPTIMAL` with the right source and destination stage masks.
+    5. Record your rendering, the only part the course asks you to write.
+    6. Transition the completed frame target for transfer, transfer it into the acquired swapchain image, and transition that image to `PRESENT_SRC_KHR`.
+    7. Call `vkEndCommandBuffer`, then `vkQueueSubmit` with the acquire semaphore as a wait, a render semaphore as a signal, and the fence.
+    8. Call `vkQueuePresentKHR` while waiting on the render semaphore, and handle an out-of-date swapchain *again*.
 
-    Steps 1, 2, 4, 6, 7, and 8 are what `dvz_canvas_frame` and `dvz_canvas_submit` do. Getting the
-    two image-layout barriers or the wait stages subtly wrong is the classic Vulkan beginner
-    experience: it usually still renders, just with tearing, flicker, or a validation error you have
-    to decode.
+    `dvz_canvas_frame` and `dvz_canvas_submit` coordinate this sequence around your callback. A wrong image transition or wait stage may still produce an image, but it can also cause flicker, stale contents, synchronization failures, or validation errors that are difficult to decode.
 
 !!! tip "Try it"
 
@@ -242,22 +206,12 @@ The first two files are identical. The third is another reproducible point on th
         dvz_attachment_ops(color, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
         ```
 
-        Nothing overwrites the image now, so what you see is whatever was already in it. A `--png`
-        run shows the canvas's own initial clear: opaque black. Live, you see stale frames, because
-        each image still holds what was last drawn into it. That is a useful reminder that "the
-        screen" is several images taking turns, not one.
+        Nothing overwrites the image now, so you see whatever it already contained. A `--png` run shows the canvas's initial opaque-black clear. In a live run, frame targets may show stale contents from their previous use. This is a useful reminder that presentation involves several images taking turns, not one permanent "screen" image.
 
-        Know what you are relying on here: Vulkan does not define the contents of a fresh
-        image; loading one is only meaningful because the canvas clears every target it creates
-        before handing it over. Do the same for any image you create yourself in later chapters:
-        write it before you read it.
-    2. **Slow it down** by dividing the three `sinf` frequencies by 10. The window drifts almost
-       imperceptibly.
-    3. **Print the frame rate.** Every 60 frames, print `frame_index` divided by elapsed seconds. On
-       a live window you should see your monitor's refresh rate, because presentation waits for
-       vertical sync.
-    4. **Remove `dvz_commands_unwrap`.** With validation on you will get complaints on the next
-       frame. Read them: they are what a Vulkan mistake looks like when the layers catch it for you.
+        Vulkan does not define the contents of a fresh image. Loading this one is meaningful only because the canvas clears every target before first use. Follow the same rule for images you create later: write them before you read them.
+    2. **Slow it down** by dividing the three `sinf` frequencies by 10. The window drifts almost imperceptibly.
+    3. **Print the frame rate.** Every 60 frames, print `frame_index` divided by elapsed seconds. On a live window, the result should be close to the display's refresh rate because the default presentation path waits for vertical sync.
+    4. **Inspect frame targets.** Print `frame->image_view` and `frame->extent` in the callback, then resize the window. The extent changes, and the canvas may supply different target views. This is why size-dependent state comes from the current frame and why the image view must not be retained.
 
 ## When it goes wrong
 
@@ -266,8 +220,8 @@ The first two files are identical. The third is another reproducible point on th
 | Nothing animates, one static color | `animate` is false, or `start_ns` was never initialized. Note that `--png` mode is *meant* to be static. |
 | The animation runs at wildly different speeds on two machines | The color is being derived from `frame_index` rather than elapsed time. |
 | Two `--png` runs differ | `t` is coming from the clock in offscreen mode. That breaks reproducible captures. |
-| Validation complains about a command buffer in the wrong state | A `dvz_cmd_*` call is outside the `begin`/`end` pair, or `unwrap` is missing. |
-| Flicker or torn frames in live mode | Almost always a load op of `LOAD` where `CLEAR` was intended, as in the first experiment above. |
+| Validation complains about a command buffer in the wrong state | A `dvz_cmd_*` call may be outside the rendering `begin`/`end` pair, or code may have begun, ended, reset, or submitted the borrowed command buffer. |
+| Alternating stale colors or flicker in live mode | A load op of `LOAD` may be preserving the previous contents of each reused frame target. Restore `CLEAR` unless preserving those contents is intentional. |
 
 ??? example "Your `main.c` at the end of chapter 3"
 
@@ -279,8 +233,7 @@ The first two files are identical. The third is another reproducible point on th
 
 - At what exact point in your program does the GPU begin executing the commands you recorded?
 - Why must you read `frame->extent` every frame instead of storing the window size once?
-- What is the difference between a load op of `CLEAR` and one of `LOAD`, and why is clearing not a
-  command?
+- What is the difference between a load op of `CLEAR` and one of `LOAD`, and why is clearing not a command?
 - Why does offscreen mode use a fixed time value instead of the clock?
 
-You now have a program that owns a window, a GPU, and a frame. Chapter 4 puts a triangle in it.
+You now have a program that owns a window and GPU context and can record and submit a frame through the canvas. Chapter 4 puts a triangle in that frame.

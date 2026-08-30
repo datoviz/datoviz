@@ -4,13 +4,9 @@
 
 ![The chapter 2 window filled with its deterministic blue-grey clear color.](../assets/gpu-graphics/02-window.webp)
 
-By the end of this chapter your program opens a resizable window, fills it with a color you chose,
-and keeps drawing until you close it. Given one command-line flag, it renders the same picture to a
-PNG file instead. Keep that flag from the start: it is how you will check every later chapter
-without needing to eyeball a window.
+By the end of this chapter, your program will open a resizable window, fill it with a color you choose, and keep drawing until you close it. With one command-line flag, the same program will render to a PNG file instead. Keep that flag throughout the course; it lets you check every chapter without relying on visual inspection of a window.
 
-Six Datoviz objects appear here. Take them one at a time; the next chapter dissects what happens
-inside a frame, and this one is about getting the machinery standing up.
+This chapter introduces six Datoviz objects. Take them one at a time. Chapter 3 will explain what happens inside a frame; for now, the goal is to get the machinery running.
 
 ## The headers
 
@@ -29,9 +25,7 @@ Replace the includes in `main.c` with these:
 #include <datoviz/window.h>
 ```
 
-`vklite.h` is the low-level layer this course lives in: typed wrappers over Vulkan objects. `canvas.h`
-is the piece that owns the window's images and the frame loop's synchronization. Both bring the
-Vulkan headers with them, so `VkClearValue` and friends are available without any extra include.
+`vklite.h` provides the typed wrappers over Vulkan objects used throughout this course. `canvas.h` provides the canvas, which owns the window's images and the frame loop's synchronization. Both include the Vulkan headers, so types such as `VkClearValue` are available without another include.
 
 Add the window size while you are here:
 
@@ -42,8 +36,7 @@ Add the window size while you are here:
 
 ## A window, or a file
 
-The same program can render to a window or straight to an image. That choice is made once, up front,
-and everything downstream follows from it. At the top of `main`:
+The same program can render to a window or directly to an image. You make that choice once at startup, and the rest of the setup follows from it. At the top of `main`:
 
 ```c
     // With --png PATH the program renders offscreen and saves an image instead of opening a window.
@@ -60,9 +53,7 @@ and everything downstream follows from it. At the top of `main`:
 
 `main` now takes arguments, so change its signature to `int main(int argc, char** argv)`.
 
-The **backend** decides who provides the window: GLFW talks to your desktop, and the offscreen
-backend provides a windowless surface of the same size. The **render mode** decides where finished
-frames go: presented to the screen, or kept in memory for you to read back.
+The **backend** decides who provides the window abstraction. GLFW communicates with the desktop, while the offscreen backend provides a windowless render target of the same size. The **render mode** decides where finished frames go: either to the screen for presentation or into memory for readback.
 
 ## The window host
 
@@ -71,8 +62,7 @@ frames go: presented to the screen, or kept in memory for you to read back.
     DvzWindowHost* host = dvz_window_host();
 ```
 
-Your program needs exactly one of these. It owns the connection to the platform's windowing system
-and the event queue you will pump in the render loop.
+Your program needs one window host. It owns the connection to the platform's windowing system and the event queue that you will process in the render loop.
 
 ## The GPU context
 
@@ -89,24 +79,14 @@ and the event queue you will pump in the render loop.
     }
 ```
 
-This is where your program acquires a GPU. Two Vulkan terms deserve names now, because the whole
-course refers back to them:
+This is where your program acquires a GPU. The rest of the course relies on two Vulkan terms:
 
-- A **physical device** is an actual GPU in the machine. Vulkan can enumerate several; the context
-  picks one.
-- A **logical device** is your program's private connection to that GPU. Every object you create
-  later (shader, pipeline, buffer, image) is created *from* a device and is only valid with it.
-  Whenever you see `DvzDevice*` in this course, that is what it is.
+- A **physical device** is a Vulkan-visible implementation, usually a GPU in the machine but sometimes a software device. Vulkan may find several, and the context chooses one.
+- A **logical device** is your program's private connection to that GPU. Every object you create later, including shaders, pipelines, buffers, and images, comes *from* a logical device and is valid only with that device. This is what `DvzDevice*` refers to throughout the course.
 
-`dvz_canvas_configure_gpu_ctx` fills in the extensions and Vulkan features the canvas requires. The
-canvas needs modern Vulkan (dynamic rendering, synchronization2, timeline semaphores), and this
-call is what requests them, so a device that cannot support them fails here rather than mysteriously
-later.
+`dvz_canvas_configure_gpu_ctx` adds the extensions and Vulkan features required by the canvas: dynamic rendering, synchronization2, and timeline semaphores. Requesting them here means that an incompatible device fails during setup instead of causing an obscure error later.
 
-`dvz_gpu_ctx_config_validation(&gpu_config, true)` turns on the Vulkan **validation layers**. They
-sit between your calls and the driver and complain, in words, when you misuse the API. Without them
-a mistake usually shows up as a blank window or a crash with no explanation. Leave them on for the
-whole course.
+`dvz_gpu_ctx_config_validation(&gpu_config, true)` requests the Vulkan **validation layers**. When the layers are installed, they sit between your code and the driver and complain, in words, when you misuse the API. Without them, a Vulkan mistake may look like nothing more than a blank window or an unexplained crash. Keep them requested throughout the course, and check the startup log if you need to confirm that they were available.
 
 Print which GPU you got:
 
@@ -126,9 +106,7 @@ Print which GPU you got:
     DvzWindow* window = dvz_window_create(host, backend, &window_config);
 ```
 
-Datoviz's config structs all follow this shape: a `dvz_*_config()` call returns a struct filled with
-defaults, you overwrite the fields you care about, and you pass it to the create function. New
-fields can be added to those structs without breaking your code.
+Datoviz config structs follow a common pattern: a `dvz_*_config()` function returns a struct filled with defaults, you replace the fields you care about, and then pass it to the create function. This pattern allows new fields to be added without breaking your code.
 
 ## The canvas
 
@@ -146,20 +124,11 @@ fields can be added to those structs without breaking your code.
     }
 ```
 
-The canvas is the object this course leans on most, so this section is precise about what it
-absorbs.
+The course relies heavily on the canvas, so it is worth being precise about what the canvas owns.
 
-A window cannot be drawn to directly. Vulkan renders into images, and getting images that a window
-will actually display means creating a **surface** (the Vulkan handle for "this operating system
-window") and then a **swapchain**: a small set of images (typically two or three) that you and the
-display hardware pass back and forth. Each frame you must ask the swapchain for the next free image,
-render into it, and hand it back for presentation. Because the GPU runs behind the CPU, you also
-need synchronization primitives per frame in flight so you never overwrite an image the display is
-still reading. And when the window is resized, the whole swapchain becomes invalid and has to be
-rebuilt.
+A window cannot be drawn to directly. Vulkan presentation requires a **surface**, the Vulkan handle for an operating-system window, followed by a **swapchain**. A swapchain is a small set of images, typically two or three, that your program and the display hardware pass back and forth. For each presented frame, an application acquires the next available image and eventually returns it for presentation. The canvas gives your callback its own frame target, then transfers the finished result into the acquired swapchain image. Because the GPU runs behind the CPU, each frame in flight also needs synchronization so that images are not overwritten while still in use. Resizing the window invalidates the swapchain and requires it to be rebuilt.
 
-The canvas owns all of that. What you get in return is one function that says "a frame is ready to
-record into", which you will meet in a moment.
+The canvas owns all of that. In return, you get one function that tells you when a frame is ready for recording.
 
 ## Something to draw with
 
@@ -176,8 +145,7 @@ typedef struct
 } Renderer;
 ```
 
-`Renderer` grows in nearly every chapter from here: pipeline, buffers, texture, and matrices all end
-up in it. For now it holds the device, two small wrapper objects, and a clear color.
+`Renderer` will grow in nearly every chapter as you add a pipeline, buffers, a texture, and matrices. For now, it holds the device, two small wrapper objects, and a clear color.
 
 Then the callback itself, also above `main`:
 
@@ -198,10 +166,7 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
 }
 ```
 
-Read it, for now, as five lines that mean "clear this frame's image to a color". Chapter 3 takes
-each one apart. The one thing to notice is that the callback draws nothing between
-`dvz_cmd_rendering_begin` and `dvz_cmd_rendering_end`. The color you see is the *clear*, and every
-triangle in this course will be drawn between those two calls.
+For now, read these five lines as "clear this frame's image to a color." Chapter 3 will take them apart. Notice that the callback draws nothing between `dvz_cmd_rendering_begin` and `dvz_cmd_rendering_end`. The color you see comes from the *clear*, and every triangle in this course will be drawn between those two calls.
 
 Create the renderer in `main`, after the canvas, and hand it to the canvas:
 
@@ -215,13 +180,12 @@ Create the renderer in `main`, after the canvas, and hand it to the canvas:
     dvz_canvas_set_draw_callback(canvas, draw, &renderer);
 ```
 
-Clear-color components are floats from `0.0` to `1.0` in the order red, green, blue, alpha, not
-bytes from 0 to 255.
+Clear-color components are floating-point values from `0.0` to `1.0`, in red, green, blue, alpha order. They are not bytes from 0 to 255.
 
 ## The render loop
 
 ```c
-    // The render loop: one iteration draws and presents exactly one frame.
+    // Process one frame attempt; READY attempts are submitted below.
     uint64_t frame_index = 0;
     while (live ? !dvz_window_should_close(window) : frame_index < 1)
     {
@@ -237,19 +201,13 @@ bytes from 0 to 255.
     printf("rendered %llu frames\n", (unsigned long long)frame_index);
 ```
 
-A live run loops until the window is closed; a `--png` run needs a single frame. Each iteration does
-three things:
+A live run loops until the window closes, while a `--png` run needs only one frame. Each iteration does three things:
 
-1. `dvz_window_host_poll` drains operating-system events: keyboard, mouse, resize, close. Skip it
-   and your window stops responding, even though it keeps rendering.
-2. `dvz_canvas_frame` acquires the next image, opens a command buffer, and calls your `draw`
-   callback with both. `DVZ_CANVAS_FRAME_READY` means that happened. `DVZ_CANVAS_FRAME_WAIT_SURFACE`
-   means the surface is temporarily unusable (the window is minimized, or mid-resize), so there is
-   nothing to draw this iteration and you simply try again.
+1. `dvz_window_host_poll` processes operating-system events such as keyboard, mouse, resize, and close. If you skip it, the window keeps rendering but stops responding.
+2. `dvz_canvas_frame` acquires the next image, opens a command buffer, and calls your `draw` callback with both. `DVZ_CANVAS_FRAME_READY` means the frame is ready. `DVZ_CANVAS_FRAME_WAIT_SURFACE` means the surface is temporarily unusable because the window is minimized or being resized. There is nothing to draw in that iteration, so the loop tries again.
 3. `dvz_canvas_submit` sends the recorded commands to the GPU and, in live mode, presents the result.
 
-Note the division of labour: your callback records *what* to draw, `dvz_canvas_submit` decides
-*when* it runs. Nothing has reached the GPU until that call.
+Notice the division of labor: your callback records *what* to draw, while `dvz_canvas_submit` decides *when* it runs. Nothing reaches the GPU before that call.
 
 ## Saving the image
 
@@ -258,13 +216,12 @@ Note the division of labour: your callback records *what* to draw, `dvz_canvas_s
         dvz_canvas_capture_png(canvas, png_path);
 ```
 
-Reading back an offscreen frame means waiting for the GPU to finish, copying the image into
-host-visible memory, and encoding it. This one call does all of it.
+Reading back an offscreen frame requires waiting for the GPU, copying the image into host-visible memory, and encoding it. This function performs all three steps.
 
 ## Cleanup
 
 ```c
-    // Destroy in reverse order of creation.
+    // Destroy resources in dependency-safe order.
     dvz_rendering_free(renderer.rendering);
     dvz_commands_free(renderer.commands);
     dvz_canvas_destroy(canvas);
@@ -276,13 +233,9 @@ host-visible memory, and encoding it. This one call does all of it.
 }
 ```
 
-Destruction order matters: a GPU object cannot outlive the device that created it, and the device is
-owned by the GPU context, so the context is destroyed last. Reverse order of creation is the rule
-that keeps this correct as `Renderer` grows.
+Destruction order follows dependencies. A GPU object cannot outlive the device that created it, and the GPU context owns the device, so the context must be destroyed last. As `Renderer` grows, destroy each resource before the object that owns or backs it.
 
-`dvz_gpu_ctx_error_count` reports how many validation errors the layers recorded. It is queried
-*before* the context is destroyed, and it should print `0` for the rest of the course. When it does
-not, read the messages on your terminal: they name the call that was wrong.
+`dvz_gpu_ctx_error_count` reports how many validation errors the layers recorded when validation was available. Query it *before* destroying the context. It should print `0` throughout the course. A zero count is useful only after the startup log has confirmed that validation was active. If the count is nonzero, read the terminal messages; they identify the incorrect call.
 
 ## Run it
 
@@ -291,9 +244,7 @@ cmake --build build
 ./build/vkcourse
 ```
 
-A window appears, filled with dark blue, and stays until you close it. Resize it. The color still
-fills it, because the canvas rebuilt its swapchain and your callback simply drew into the new,
-larger image.
+A dark blue window appears and remains open until you close it. Resize the window. The color still fills it because the canvas rebuilds its swapchain and your callback draws into the new, larger image.
 
 Then the same program, without a window:
 
@@ -309,40 +260,23 @@ validation errors: 0
 
 ??? info "Under the hood: what you just skipped"
 
-    A raw Vulkan program reaching this same dark blue window writes, roughly:
+    A raw Vulkan program needs roughly the following code to reach the same dark blue window:
 
-    - `vkCreateInstance` with the right extensions for your platform, plus the debug-messenger
-      plumbing that makes validation errors readable (about 80 lines).
-    - `vkEnumeratePhysicalDevices`, then scoring each candidate for the extensions, features, and
-      queue families you need (about 150 lines).
+    - `vkCreateInstance` with the right platform extensions, plus the debug-messenger plumbing that makes validation errors readable (about 80 lines).
+    - `vkEnumeratePhysicalDevices`, followed by scoring each candidate for the extensions, features, and queue families you need (about 150 lines).
     - `vkCreateDevice`, requesting queues and chaining several feature structs (about 80 lines).
-    - A platform surface, then swapchain creation: querying supported formats and present modes,
-      choosing one, picking an image count, creating the swapchain, retrieving its images, and
-      creating a view for each (about 250 lines).
+    - A platform surface, followed by swapchain creation: querying supported formats and present modes, choosing one, selecting an image count, creating the swapchain, retrieving its images, and creating a view for each one (about 250 lines).
     - A command pool, command buffers, and per-frame semaphores and fences (about 100 lines).
-    - An acquire/record/submit/present sequence with correct wait stages, plus detecting
-      `VK_ERROR_OUT_OF_DATE_KHR` and rebuilding the entire swapchain on resize (about 200 lines).
+    - An acquire, record, submit, and present sequence with the correct wait stages, plus detection of `VK_ERROR_OUT_OF_DATE_KHR` and complete swapchain rebuilding after a resize (about 200 lines).
 
-    That is the roughly 900 lines the canvas replaced. Not one of them is about graphics, which is
-    why this course does not spend three chapters on them. But you now know what they are, and
-    where to look when you eventually want to write them yourself.
+    The canvas replaces roughly 900 lines of this machinery. None of those lines describes the graphics you want to draw, so the course does not spend its first three chapters implementing them. You now know what the machinery contains and where to look if you later decide to write it yourself.
 
 !!! tip "Try it"
 
-    1. **Change the clear color** to `{1.0f, 1.0f, 1.0f, 1.0f}`. The window turns white. Now try
-       `{255.0f, 0.0f, 0.0f, 1.0f}`: still just red, because values are clamped to 1.0.
-    2. **Comment out the two `dvz_cmd_rendering_*` calls** and run again. The window turns black.
-       That black is worth understanding: Vulkan itself promises *nothing* about the contents of
-       an image you have not written to. What you would get is undefined: zeros, stale pixels, or a
-       driver's debug fill. You see black because the canvas clears each target it creates once,
-       before your callback ever sees it, precisely so that this experiment has a defined outcome on
-       every platform. From the second frame onward, what the target holds is entirely up to the
-       rendering you record.
-    3. **Delete `dvz_window_host_poll`** from the loop. The window still fills with color but stops
-       responding: no resizing, and the close button does nothing.
-    4. **Compare colors.** The `0.10f` red in your clear value comes out as 89 in the PNG, not 26.
-       The canvas image uses an sRGB format, so the linear values you write are gamma-encoded on the
-       way out. Chapter 14 returns to this when it starts to matter for lighting.
+    1. **Change the clear color** to `{1.0f, 1.0f, 1.0f, 1.0f}`. The window turns white. Now try `{255.0f, 0.0f, 0.0f, 1.0f}`. The window is still red because values are clamped to 1.0.
+    2. **Comment out the two `dvz_cmd_rendering_*` calls** and run again. The window turns black. That black is worth understanding: Vulkan promises *nothing* about the contents of an image you have not written to. The result could be zeros, stale pixels, or a driver's debug fill. You see black because the canvas clears each target once before your callback first sees it, giving this experiment a defined result on every platform. From the second frame onward, the target contains whatever your recorded rendering leaves there.
+    3. **Delete `dvz_window_host_poll`** from the loop. The window still fills with color but stops responding: it no longer resizes, and the close button does nothing.
+    4. **Compare colors.** The `0.10f` red component in your clear value becomes 89 in the PNG, not 26. The canvas image uses an sRGB format, so the linear values you write are gamma-encoded on output. Chapter 14 returns to this when it matters for lighting.
 
 ## When it goes wrong
 
@@ -362,8 +296,7 @@ validation errors: 0
 
 ## Checkpoint
 
-- What is the difference between a physical device and a logical device, and which one do the
-  objects you create belong to?
+- What is the difference between a physical device and a logical device, and which one do the objects you create belong to?
 - Name three things the canvas does for you that a raw Vulkan program would have to do by hand.
 - Why does `dvz_canvas_frame` sometimes return `WAIT_SURFACE`, and why is that not an error?
 - Why is the GPU context destroyed last?
