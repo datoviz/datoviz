@@ -1,4 +1,4 @@
-# Select and Highlight Data
+# Select and highlight data
 
 Show which items are selected without rebuilding the scene.
 

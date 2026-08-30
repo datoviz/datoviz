@@ -1,4 +1,4 @@
-# Animate a Scene
+# Animate a scene
 
 Update retained scene state over time without rebuilding the scene.
 

@@ -1,4 +1,4 @@
-# Use 3D Controllers
+# Use 3D controllers
 
 Navigate 3D panels with arcball, turntable, or fly controls.
 

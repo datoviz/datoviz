@@ -1,4 +1,4 @@
-# Pick Items
+# Pick items
 
 Map a pointer location to a rendered item or scene value.
 

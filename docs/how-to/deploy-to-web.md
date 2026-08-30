@@ -1,4 +1,4 @@
-# Deploy Datoviz Scenes to the Web
+# Deploy Datoviz scenes to the web
 
 Publish a Datoviz scene as an experimental browser WebGPU page.
 

@@ -1,4 +1,4 @@
-# Render Offscreen
+# Render offscreen
 
 Render a scene without opening a visible window.
 

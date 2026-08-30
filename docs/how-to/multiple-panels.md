@@ -1,4 +1,4 @@
-# Create Multiple Panels
+# Create multiple panels
 
 Split a figure into coordinated viewports.
 

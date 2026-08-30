@@ -1,4 +1,4 @@
-# Choose a Visual Family
+# Choose a visual family
 
 Pick the visual whose primitive and data layout match your task.
 
@@ -11,13 +11,11 @@ Pick the visual whose primitive and data layout match your task.
 
 ## Task workflow
 
-Start from the geometry you have, not from the plot name. Use point or marker for independent 2D
-samples, path or segment for lines, image or volume for sampled fields, mesh or sphere for 3D
-surfaces and objects, text for semantic strings, and labels for categorical integer fields.
+Start from the geometry and data layout you have, not from a plot name. Use point or marker for independent 2D samples, path or segment for lines, image or volume for sampled fields, mesh or sphere for 3D surfaces and objects, text for strings, and labels for categorical integer fields.
 
-Choose the coarsest visual family that lets you batch similar elements together. The preferred
-Datoviz layout is few visuals, many items per visual. Split elements into separate visuals only
-when they truly need different visual families, materials, transforms, panels, or update schedules.
+!!! important "Choose for batching"
+
+    Choose the visual family that lets you group the largest useful set of similar items. A typical Datoviz scene has a few visuals with many items in each. Split items only when they need different visual families, materials, transforms, panels, or update schedules.
 
 The examples below show the main data-shape choices. Each image links to the complete canonical
 example; use the decision matrix for neighboring or more specialized families.

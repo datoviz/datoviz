@@ -1,4 +1,4 @@
-# Transform Visual Data
+# Transform visual data
 
 Apply object transforms or user scales without rewriting source data.
 

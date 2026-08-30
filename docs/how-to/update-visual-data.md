@@ -1,4 +1,4 @@
-# Update Visual Data
+# Update visual data
 
 Change the data shown by an existing visual.
 
@@ -10,9 +10,7 @@ Change the data shown by an existing visual.
     **Prerequisites:** An existing visual with initialized, family-valid attributes
     **Result:** Later frames use the new arrays without recreating the visual or scene
 
-Use this when the same plot should display new values: a time series advances, a simulation step
-finishes, a slider changes a threshold, or a selection changes the colors of some items. In most
-cases, keep the visual and update its data arrays. Do not rebuild the whole scene for every change.
+Keep the visual and update its arrays when a time series advances, a simulation step finishes, a slider changes a threshold, or a selection changes item colors. Rebuilding the whole scene for each change adds work and discards useful state.
 
 ## Basic workflow
 
@@ -25,9 +23,11 @@ Most updates follow the same shape:
 5. When your data changes, call the visual data update function again.
 6. Let the next frame draw the updated visual.
 
-For example, a point visual might have one array for `"position"`, one array for `"color"`, and one
-array for `"diameter_px"`. Updating the visual means replacing one or more of those arrays, not
-creating a new point visual for every point.
+For example, a point visual might have one array for `"position"`, one for `"color"`, and one for `"diameter_px"`. Update one or more of these arrays; do not create a new point visual for each point.
+
+!!! important "Preserve the batch"
+
+    Keep related items in one visual when their values change. Datoviz can update a dense array within an existing visual; splitting that array across many small visuals makes both updates and drawing more expensive.
 
 ## Choose the update method
 

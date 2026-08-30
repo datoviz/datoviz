@@ -1,4 +1,4 @@
-# Diagnose Build and Platform Issues
+# Diagnose build and platform issues
 
 Separate install, build, native rendering, offscreen rendering, optional providers, and browser
 WebGPU failures.

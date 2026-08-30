@@ -1,4 +1,4 @@
-# Use Sampled Fields and Textures
+# Use sampled fields and textures
 
 Render regular 2D or 3D scalar data as image, texture, or volume content.
 

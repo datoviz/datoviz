@@ -1,4 +1,4 @@
-# Choose Window Size
+# Choose window size
 
 Choose the size rule that matches what you need: an exact screenshot, a normal desktop window, a
 reference-sized UI, or an approximate physical size on a display.

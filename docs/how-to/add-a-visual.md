@@ -1,7 +1,6 @@
-# Add Visuals to a Panel
+# Add visuals to a panel
 
-Add a visual when you want a panel to draw a dataset: points, lines, an image, a mesh, text labels,
-or another visual family.
+Add a visual when you want a panel to draw a collection of points, lines, pixels, mesh instances, text labels, or another family of related items.
 
 ![Colored circular points rendered in one panel](../assets/gallery/v0.4/visuals/visuals_point.webp)
 
@@ -13,9 +12,7 @@ or another visual family.
 
 ## Task workflow
 
-A visual is a renderable collection of related items. For a point visual, the items are points. For
-an image visual, the items are image corners and texture coordinates. For a mesh visual, the items
-are vertices, triangles, or instances depending on the mesh setup.
+A visual is a collection of related items that Datoviz can render together. In a point visual, the items are points. An image visual uses image corners and texture coordinates. A mesh visual contains vertices, triangles, or instances, depending on its setup.
 
 The usual workflow is:
 
@@ -25,8 +22,7 @@ The usual workflow is:
 4. Upload each array to the matching visual attribute.
 5. Add the visual to the panel where it should appear.
 
-Uploading data prepares the visual, but it does not draw anything by itself. The visual becomes part
-of a figure only after `dvz_panel_add_visual()`.
+Uploading data prepares the visual but does not place it in a figure. Call `dvz_panel_add_visual()` to attach it to a panel.
 
 
 ## Basic point visual
@@ -162,9 +158,9 @@ dvz_visual_set_data_many(visual, updates, 3);
 
 ## Group items into visuals
 
-Prefer one visual that contains many related items over many small visuals with only a few items
-each. For example, if 100 points belong to the same dataset and use the same point visual settings,
-put them in one point visual with 100 positions, colors, and diameters.
+!!! important "Batch related items"
+
+    Prefer one visual that contains many related items over many small visuals. If 100 points belong to the same dataset and use the same point settings, put them in one visual with 100 positions, colors, and diameters. This grouping is central to Datoviz performance.
 
 Create a separate visual when there is a real difference in how the data should be drawn:
 

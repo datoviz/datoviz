@@ -1,4 +1,4 @@
-# Add Axes
+# Add axes
 
 Add 2D axes, ticks, grid lines, and labels to a panel.
 

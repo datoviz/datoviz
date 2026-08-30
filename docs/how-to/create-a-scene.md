@@ -1,4 +1,4 @@
-# Create a Scene
+# Create a scene
 
 Create the basic structure used by most Datoviz visualizations.
 

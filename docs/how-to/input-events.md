@@ -1,4 +1,4 @@
-# Handle Input Events
+# Handle input events
 
 React to keyboard, mouse, and pointer input in native examples.
 

@@ -1,4 +1,4 @@
-# Record and Replay Frame Streams
+# Record and replay frame streams
 
 Use Datoviz recordings when you need to capture rendered frames and replay them later for debugging
 or release checks. This is an advanced diagnostic workflow; for ordinary visualization code, start

@@ -1,4 +1,4 @@
-# Use Lighting and Materials
+# Use lighting and materials
 
 Make 3D surfaces readable with normals, material attributes, and scene-owned lights.
 

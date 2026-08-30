@@ -1,4 +1,4 @@
-# Use Coordinate Systems
+# Use coordinate systems
 
 Map your data coordinates into panel space.
 

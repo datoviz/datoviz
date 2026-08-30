@@ -1,4 +1,4 @@
-# Link Panels and Controllers
+# Link panels and controllers
 
 Make multiple panels pan, zoom, or probe together.
 

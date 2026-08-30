@@ -1,4 +1,4 @@
-# Add Colorbars, Scale Bars, and Legends
+# Add colorbars, scale bars, and legends
 
 Add visual context without turning the adornment into primary data.
 

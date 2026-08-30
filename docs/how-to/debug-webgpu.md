@@ -1,4 +1,4 @@
-# Diagnose WebGPU Support
+# Diagnose WebGPU support
 
 Check whether a Datoviz browser route should run, why it failed, and what fallback to use when the
 current browser or adapter cannot run it.

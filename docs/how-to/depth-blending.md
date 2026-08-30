@@ -1,4 +1,4 @@
-# Control Depth, Blending, and Transparency
+# Control depth, blending, and transparency
 
 Choose the rendering state for overlapping geometry, transparent visuals, and depth-based visual
 cues.

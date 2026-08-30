@@ -1,4 +1,4 @@
-# Use Panzoom
+# Use panzoom
 
 Enable 2D mouse pan and wheel zoom on a panel.
 

@@ -1,4 +1,4 @@
-# Probe Image or Field Values
+# Probe image or field values
 
 Read the field value under a cursor or selected coordinate.
 

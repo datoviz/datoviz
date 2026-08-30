@@ -1,4 +1,4 @@
-# Save Screenshots
+# Save screenshots
 
 Capture a rendered figure to an image file.
 

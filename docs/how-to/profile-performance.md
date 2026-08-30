@@ -1,4 +1,4 @@
-# Profile Rendering Performance
+# Profile rendering performance
 
 Measure how much time Datoviz spends updating and drawing a scene.
 
@@ -12,15 +12,13 @@ Measure how much time Datoviz spends updating and drawing a scene.
 
 ## Task workflow
 
-Use the smallest scene that reproduces the performance issue. Build the scene once, keep the output
-size fixed, warm up a few frames, then time a fixed number of frames.
+Use the smallest scene that reproduces the performance issue. Build it once, keep the output size fixed, warm up a few frames, and then time a fixed number of frames.
 
-Separate data generation, data upload, drawing, and screenshot or query work when measuring. Change
-one variable at a time.
+Measure data generation, data upload, drawing, and screenshot or query work separately. Change one variable at a time.
 
-First check batching. Datoviz is fastest when a scene has a small number of visuals and many items
-inside each visual. For example, use one point visual with many points instead of one visual per
-point.
+!!! important "Check batching first"
+
+    Datoviz batches items inside a visual. The intended fast path is a small number of visuals, each containing many items. Put related points in one point visual, not one visual per point. Check and correct the scene structure before investigating lower-level rendering costs.
 
 Before collecting numbers, record:
 
@@ -34,9 +32,7 @@ Before collecting numbers, record:
 
 ## Minimal call sequence
 
-This is a C function-body excerpt. `update_scene_for_frame()` is application code; omit it when
-measuring rendering without uploads. Always reject a zero timed-frame count and report failures
-instead of averaging partial runs.
+This is a C function-body excerpt. `update_scene_for_frame()` is application code; omit it when measuring rendering without uploads. Reject a zero timed-frame count, and report failures instead of averaging partial runs.
 
 ```c
 const uint32_t warmup_frames = 8;
@@ -62,48 +58,38 @@ const double ms_per_frame = (double)(t1 - t0) / (double)timed_frames / 1e6;
 const double fps = 1000.0 / ms_per_frame;
 ```
 
-Create the scene, figure, panel, visuals, view, controllers, and callbacks before the warm-up loop.
-Keep random data generation outside the timed loop unless data generation is the thing being
-measured.
+Create the scene, figure, panel, visuals, view, controllers, and callbacks before the warm-up loop. Keep random data generation outside the timed loop unless you intend to measure it.
 
-For rendering-only checks, prefer offscreen or fixed-frame native examples. Avoid timing an
-unbounded interactive event loop unless the interaction path is the performance issue.
+For rendering-only checks, prefer offscreen or fixed-frame native examples. Time an unbounded interactive event loop only when interaction is part of the problem.
 
 
 ## Important details
 
-Datoviz performance depends on how much data changes, how many items are drawn, how many visuals the
-scene has, output size, and whether screenshots or queries are enabled. Measure one variable at a
-time.
+Frame time depends on how much data changes, how many items are drawn, how many visuals the scene contains, the output size, and whether screenshots or queries are enabled. Measure one variable at a time.
 
-When optimizing, prefer increasing item count inside existing visuals over increasing visual count.
-Split visuals only for different visual types, style paths, panels, transforms, lifetimes, or update
-rates.
+When optimizing, prefer increasing the item count inside existing visuals over increasing the number of visuals. Split a visual only when its items need different families, rendering paths, panels, transforms, lifetimes, or update rates.
 
-Update existing visuals instead of recreating them while the scene is running. Updating existing
-positions, colors, sizes, image pixels, or mesh data is usually cheaper than deleting and rebuilding
-the visual.
+Update existing visuals instead of recreating them while the scene is running. Replacing positions, colors, sizes, image pixels, or mesh data is usually cheaper than deleting and rebuilding the visual.
 
-Screenshots, pixel probes, queries, and downloads can force the program to wait for drawing to
-finish. Disable them unless those operations are the target of the measurement.
+Screenshots, pixel probes, queries, and downloads can force the program to wait for drawing to finish. Disable them unless you are measuring those operations.
 
-Browser WebGPU is useful for browser testing, but it is not the desktop performance baseline.
-Compare desktop and browser results only after matching output size, feature set, item count, and
-screenshot or query behavior.
+Browser WebGPU is useful for browser testing, but it is not the desktop performance baseline. Compare desktop and browser results only after matching the output size, feature set, item count, and screenshot or query behavior.
 
-`dvz_view_render_once()` measures the work and synchronization visible to the calling thread; it is
-not a standalone GPU timestamp. Use platform GPU profilers when the CPU/GPU split matters.
+`dvz_view_render_once()` measures the work and synchronization visible to the calling thread; it is not a standalone GPU timestamp. Use a platform GPU profiler when you need to separate CPU and GPU time.
 
 
-## What to measure
-
-## Rolling sampled-field lab
+## Specialized sampled-field lab
 
 Issue #138 has a non-CI diagnostic harness at `examples/c/lab/rolling_field_bench.c`. It measures retained regional mutation, sampled-field upload packing, and emitted FramePlan upload commands without submitting a GPU workload. This separates CPU update and transfer shape from presentation pacing and GPU execution.
 
 Build it with `just example-c lab/rolling_field_bench`, then run release and debug builds separately with fixed dimensions, warm-up, and frame count. For example: `./build/examples/c/lab/rolling_field_bench --mode 2d --warmup 16 --frames 240 --cadence 1`. Use `--mode 1d`, `--mode 2d`, and `--mode 3d` for fixed one-row, planar, and volume fields. `--mode surface` primes a retained fixed-grid mesh, then reports acquisition, combined height/normal mutation, mesh conversion/commit, semantic DRP2 emission, buffer writes, and index writes. Raise `--cadence` to model a parked panel; the report records active and parked frames rather than treating skipped updates as free active work.
 
 Record the complete output line with platform, backend, validation state, visible-panel policy, and build type. The expected active field update is one row-wide texture upload, so `bytes_per_active_frame` should equal `width * sizeof(float)` and `upload_commands` should equal `active_frames`. The primed surface steady-state should report no index writes. A result outside either shape is an investigation signal, not a benchmark pass/fail assertion. Neither lab mode submits work to a GPU.
+
+
+## Start from the symptom
+
+Each row removes one class of work before you investigate the next one.
 
 | Symptom | Likely cause | First check |
 | --- | --- | --- |
@@ -115,11 +101,9 @@ Record the complete output line with platform, backend, validation state, visibl
 | Many tiny objects are slow. | Too many separate visuals. | Batch items into fewer visuals. |
 
 
-## Batching pattern
+## Confirm the batching pattern
 
-Before lower-level profiling, verify that related items are grouped into dense visual arrays. Use
-the authoritative [visual grouping guidance](add-a-visual.md#group-items-into-visuals), then measure
-visual count, item count, and uploaded bytes rather than duplicating the construction pattern here.
+Before lower-level profiling, verify that related items are grouped into dense visual arrays. The [visual grouping guidance](add-a-visual.md#group-items-into-visuals) explains when items belong together. Record the visual count, item count per visual, and uploaded bytes per frame.
 
 
 ## Common mistakes

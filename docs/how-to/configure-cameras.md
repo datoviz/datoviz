@@ -1,4 +1,4 @@
-# Configure Cameras
+# Configure cameras
 
 Set the view and projection conventions for 3D panels.
 

@@ -1,4 +1,4 @@
-# Debug Rendering Output
+# Debug rendering output
 
 Narrow down blank frames, wrong colors, missing geometry, unexpected depth behavior, and screenshots
 that differ from an interactive view.

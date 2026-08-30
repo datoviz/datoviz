@@ -1,4 +1,4 @@
-# Add Text, Labels, and Annotations
+# Add text, labels, and annotations
 
 Place readable text in or near a data view.
 

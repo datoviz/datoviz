@@ -1,4 +1,4 @@
-# Map Scalar Values with Colormaps
+# Map scalar values with colormaps
 
 Convert scalar data into colors and expose the scale to readers.
 

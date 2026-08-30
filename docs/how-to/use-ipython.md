@@ -1,4 +1,4 @@
-# Use from Terminal IPython
+# Use from terminal IPython
 
 Use terminal IPython when you want to keep a native Datoviz window open while editing arrays and
 calling Datoviz functions at the prompt.

@@ -1,4 +1,4 @@
-# Export Videos
+# Export videos
 
 Write rendered frames to a video output.
 

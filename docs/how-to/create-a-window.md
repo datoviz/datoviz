@@ -1,4 +1,4 @@
-# Open an Interactive Window
+# Open an interactive window
 
 Run a scene in a native window for desktop interaction.
 

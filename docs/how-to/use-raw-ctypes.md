@@ -1,4 +1,4 @@
-# Use the Exact Python Binding Call Form
+# Use the exact Python binding call form
 
 Use `datoviz.raw` when Python code needs to call the generated `ctypes` binding almost exactly as C
 would. This is an advanced integration path for the same Python binding. For ordinary scene code
