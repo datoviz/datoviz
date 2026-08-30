@@ -237,6 +237,21 @@ static void _scene_mark_runtime_payloads_dirty(DvzScene* scene)
         if (scene->buffers[i].scene == scene)
             scene->buffers[i].dirty = true;
     }
+    for (uint32_t fi = 0; fi < scene->figure_count; fi++)
+    {
+        DvzFigure* figure = &scene->figures[fi];
+        if (figure->scene != scene)
+            continue;
+        for (uint32_t pi = 0; pi < figure->panel_count; pi++)
+        {
+            DvzPanel* panel = &figure->panels[pi];
+            if (panel->figure != figure)
+                continue;
+            panel->lights.gpu_dirty = true;
+            panel->lights.gpu_realized = false;
+            panel->lights.gpu_upload_pending = false;
+        }
+    }
     for (uint32_t i = 0; i < scene->compute_count; i++)
     {
         DvzSceneCompute* compute = &scene->computes[i];

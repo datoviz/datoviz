@@ -250,6 +250,7 @@ int test_scene_graph(TstSuite* suite)
     TST_SCENE_GRAPH_GPU_CASE(test_scene_point_large_count_executes);
     TST_CASE(test_scene_second_emit_no_uploads_when_not_dirty);
     TST_CASE(test_scene_runtime_emitter_reset_reemits_payloads);
+    TST_CASE(test_scene_runtime_emitter_reset_reemits_custom_panel_lights);
     TST_CASE(test_scene_pending_render_work_tracks_volume_state);
     TST_CASE(test_scene_pending_render_work_tracks_labels_state);
     TST_CASE(test_scene_pending_render_work_clears_unlit_background);

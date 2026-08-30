@@ -15,6 +15,8 @@
 /*************************************************************************************************/
 
 #include "common.h"
+#include "core/_scene_resource_key.h"
+#include "core/frame_trace_internal.h"
 
 
 
@@ -33,6 +35,44 @@ _scene_test_first_draw_command(const DvzDrp2CommandStream* stream)
             return cmd;
     }
     return NULL;
+}
+
+
+
+/**
+ * Return the unique panel-light payload written to one exact buffer id.
+ *
+ * @param stream emitted command stream
+ * @param buffer_id exact panel-light buffer id
+ * @param[out] upload_count number of matching writes
+ * @return borrowed payload pointer, or NULL when absent
+ */
+static const DvzScenePanelLightsGpu* _scene_test_panel_light_payload(
+    const DvzDrp2CommandStream* stream, uint64_t buffer_id, uint32_t* upload_count)
+{
+    ANN(stream);
+    ANN(upload_count);
+    *upload_count = 0;
+    const DvzScenePanelLightsGpu* payload = NULL;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (
+            cmd == NULL || cmd->type != DVZ_DRP2_COMMAND_WRITE_BUFFER ||
+            cmd->u.write_buffer.buffer_id != buffer_id)
+        {
+            continue;
+        }
+        (*upload_count)++;
+        if (
+            cmd->u.write_buffer.offset == 0 &&
+            cmd->u.write_buffer.size == sizeof(DvzScenePanelLightsGpu) &&
+            cmd->u.write_buffer.data_raw != NULL)
+        {
+            payload = (const DvzScenePanelLightsGpu*)cmd->u.write_buffer.data_raw;
+        }
+    }
+    return payload;
 }
 
 
@@ -639,6 +679,113 @@ int test_scene_runtime_emitter_reset_reemits_payloads(TstContext* suite, const T
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+/**
+ * Ensure runtime-emitter reset re-emits the exact authored panel-light resource.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_runtime_emitter_reset_reemits_custom_panel_lights(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzVisual* sphere = dvz_sphere(scene, DVZ_SPHERE_FLAGS_LIGHTING);
+    ANN(sphere);
+    vec3 position = {0.0f, 0.0f, 0.0f};
+    DvzColor color = {255, 255, 255, 255};
+    float radius = 0.5f;
+    AT(dvz_visual_set_data(sphere, "position", &position, 1) == DVZ_OK);
+    AT(dvz_visual_set_data(sphere, "color", &color, 1) == DVZ_OK);
+    AT(dvz_visual_set_data(sphere, "radius", &radius, 1) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == DVZ_OK);
+
+    DvzLightDesc light_desc = dvz_light_desc(DVZ_LIGHT_AMBIENT);
+    light_desc.color[0] = 0.125f;
+    light_desc.color[1] = 0.375f;
+    light_desc.color[2] = 0.625f;
+    light_desc.intensity = 0.875f;
+    DvzLight* light = dvz_light(scene, &light_desc);
+    ANN(light);
+    DvzLight* lights[1] = {light};
+    AT(dvz_panel_set_lights(panel, lights, 1) == DVZ_OK);
+    AT(panel->lights.gpu_dirty);
+    AT(!panel->lights.gpu_realized);
+    AT(!panel->lights.gpu_upload_pending);
+
+    DvzScenePanelLightsGpu expected = {.active_count = 1};
+    expected.lights[0].color_intensity[0] = light_desc.color[0];
+    expected.lights[0].color_intensity[1] = light_desc.color[1];
+    expected.lights[0].color_intensity[2] = light_desc.color[2];
+    expected.lights[0].color_intensity[3] = light_desc.intensity;
+    expected.lights[0].direction_type[3] = (float)DVZ_LIGHT_AMBIENT;
+
+    char figure_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    char panel_id[DVZ_SCENE_LABEL_SIZE] = {0};
+    char resource_key[DVZ_SCENE_LABEL_SIZE] = {0};
+    _scene_figure_id(figure, figure_id, sizeof(figure_id));
+    dvz_snprintf(panel_id, sizeof(panel_id), "%s_p0", figure_id);
+    AT(_scene_resource_key_panel_lights(panel_id, resource_key, sizeof(resource_key)));
+    AT(strcmp(resource_key, "fig0_p0.lights") == 0);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* initial = _test_scene_emit_stream(figure, &caps, &report);
+    ANN(initial);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(!panel->lights.gpu_dirty);
+    AT(panel->lights.gpu_realized);
+    AT(!panel->lights.gpu_upload_pending);
+
+    uint64_t initial_id = _resource_lookup_id(&scene->emitter->resources, resource_key);
+    AT(initial_id != 0);
+    uint32_t upload_count = 0;
+    const DvzScenePanelLightsGpu* initial_payload =
+        _scene_test_panel_light_payload(initial, initial_id, &upload_count);
+    AT(upload_count == 1);
+    ANN(initial_payload);
+    AT(memcmp(initial_payload, &expected, sizeof(expected)) == 0);
+    _test_scene_stream_destroy(initial);
+
+    AT(_scene_runtime_emitter_reset(scene));
+    AT(panel->lights.gpu_dirty);
+    AT(!panel->lights.gpu_realized);
+    AT(!panel->lights.gpu_upload_pending);
+
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* recovered = _test_scene_emit_stream(figure, &caps, &report);
+    ANN(recovered);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(!panel->lights.gpu_dirty);
+    AT(panel->lights.gpu_realized);
+    AT(!panel->lights.gpu_upload_pending);
+
+    uint64_t recovered_id = _resource_lookup_id(&scene->emitter->resources, resource_key);
+    AT(recovered_id != 0);
+    upload_count = 0;
+    const DvzScenePanelLightsGpu* recovered_payload =
+        _scene_test_panel_light_payload(recovered, recovered_id, &upload_count);
+    AT(upload_count == 1);
+    ANN(recovered_payload);
+    AT(memcmp(recovered_payload, &expected, sizeof(expected)) == 0);
+
+    _test_scene_stream_destroy(recovered);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 
 /**
