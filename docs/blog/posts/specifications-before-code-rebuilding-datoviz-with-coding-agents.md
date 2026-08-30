@@ -61,11 +61,7 @@ portable library. Datoviz remained mostly a one-person project, and progress was
 
 ## Working with coding agents
 
-I began using LLMs for software development in 2023, mostly through the ChatGPT web interface and
-only to a limited extent for coding. In early 2026, I decided to use OpenAI Codex and Claude Code
-more seriously—not just to write code, but to help with architecture, API design, and the search
-for the right abstractions. I did most of this work in Codex with GPT-5.5, then GPT-5.6 Sol, and
-used Claude Code for a smaller part.
+I began using LLMs for software development in 2023, mostly through the ChatGPT web interface and only to a limited extent for coding. In early 2026, I shifted to coding agents: most of the v0.4 work happened in OpenAI Codex with GPT-5.5 and later GPT-5.6 Sol, with Claude Code used for a smaller share.
 
 
 ### Specifications before code
@@ -76,25 +72,11 @@ module by module. We rewrote, split, merged, and reorganized them as decisions i
 another. They became our shared working memory. Only after the architecture became coherent did we
 turn the specifications into implementation plans and code.
 
-The questions I tackled with the agents covered every level of the project. At the architectural
-level, how should the public API be divided into layers? Which layer should own each resource and
-its lifetime? How should the scene be separated from the rendering runtime? What should belong to
-the scene, the rendering protocol, or a specific GPU backend? How could native Vulkan and browser
-WebGPU share the same scene semantics without reducing everything to the lowest common denominator?
-How could we decouple low-level GPU rendering from the more stable scientific visualization logic?
-How much flexibility should be exposed, and at what cost in complexity?
+The architectural work focused on layer boundaries and ownership: separating the scene from the rendering runtime, deciding which layer owned each resource, and sharing scene semantics between native Vulkan and browser WebGPU without reducing both backends to their lowest common denominator.
 
-Then there was the API as a whole. How could a large C API remain consistent? Where should we draw
-the line between C and Python, and what should the Python layer adapt automatically? How could we
-support other languages without letting generated bindings diverge? How could we keep the code
-readable enough for non-GPU experts and Python programmers to contribute without hiding the power
-of the underlying engine?
+The API work focused on consistency across C, Python, and generated bindings. We had to decide what Python should adapt automatically, what every language should see directly, and how to keep the code approachable without hiding the engine's capabilities.
 
-Portability and the long-term life of the project raised another set of questions. How could we
-preserve modularity and a clear separation of concerns as the project grew? How could we test
-ownership, lifetimes, and rendering behavior across different platforms and GPUs? How could we
-automatically create self-contained packages for Linux, macOS, and Windows? How could we keep
-examples, documentation, bindings, and the public API synchronized as the library evolved?
+The portability work tied those decisions to tests and distribution. Ownership, lifetimes, and rendering behavior had to remain testable across platforms and GPUs; packages had to be self-contained on Linux, macOS, and Windows; and examples, documentation, bindings, and the public API had to move together.
 
 These questions were intertwined. A decision that made one layer cleaner could make another harder
 to use, test, package, or port. The real difficulty was finding a coherent set of choices that
@@ -142,9 +124,9 @@ experiments behind VisPy and Datoviz. The agents could build on that specialized
 than inventing the techniques from scratch.
 
 
-### A highly interactive process
+### The working loop
 
-This process was highly interactive and iterative, with me in the loop at every step.
+I stayed in the loop at every step, and each review fed the next iteration.
 
 The usual loop was:
 
