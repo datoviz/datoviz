@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "../_runtime.h"
 #include "../_stream.h"
@@ -35,6 +36,17 @@
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
+
+#if DVZ_DRP2_HAS_VKLITE
+static void* _reject_deferred_realloc(void* pointer, DvzSize size)
+{
+    (void)pointer;
+    (void)size;
+    return NULL;
+}
+#endif
+
+
 
 int test_drp2_runtime_vklite_skeleton_create_destroy(TstContext* suite, const TstCase* item)
 {
@@ -101,6 +113,78 @@ int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstContext* suite, 
     AT(result.command_index == 2);
 
     dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_semantic_references_persist_transactionally(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(setup, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(setup, 2, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(setup, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(setup, 3, 1, 0, 2, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(setup, 3, 4));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+
+    DvzDrp2CommandStream* blocked = dvz_drp2_stream();
+    ANN(blocked);
+    AT(dvz_drp2_stream_destroy_buffer(blocked, 1));
+    result = dvz_drp2_runtime_execute(runtime, blocked);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 0);
+
+    DvzDrp2CommandStream* failed_submit = dvz_drp2_stream();
+    ANN(failed_submit);
+    AT(dvz_drp2_stream_queue_submit(failed_submit, 4, 5));
+    AT(dvz_drp2_stream_destroy_buffer(failed_submit, 999));
+    result = dvz_drp2_runtime_execute(runtime, failed_submit);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 1);
+
+    DvzDrp2CommandStream* still_blocked = dvz_drp2_stream();
+    ANN(still_blocked);
+    AT(dvz_drp2_stream_destroy_buffer(still_blocked, 1));
+    result = dvz_drp2_runtime_execute(runtime, still_blocked);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 0);
+
+    DvzDrp2CommandStream* submit = dvz_drp2_stream();
+    ANN(submit);
+    AT(dvz_drp2_stream_queue_submit(submit, 4, 5));
+    result = dvz_drp2_runtime_execute(runtime, submit);
+    AT(result.ok);
+
+    DvzDrp2CommandStream* destroy = dvz_drp2_stream();
+    ANN(destroy);
+    AT(dvz_drp2_stream_destroy_buffer(destroy, 1));
+    result = dvz_drp2_runtime_execute(runtime, destroy);
+    AT(result.ok);
+
+    dvz_drp2_stream_destroy(destroy);
+    dvz_drp2_stream_destroy(submit);
+    dvz_drp2_stream_destroy(still_blocked);
+    dvz_drp2_stream_destroy(failed_submit);
+    dvz_drp2_stream_destroy(blocked);
+    dvz_drp2_stream_destroy(setup);
     dvz_drp2_runtime_destroy(runtime);
     return 0;
 }
@@ -250,6 +334,49 @@ int test_drp2_runtime_vklite_deferred_destroy_flush(TstContext* suite, const Tst
 
     _vklite_flush_deferred_for_command_buffer(&state, command_buffer);
     AT(state.deferred_count == 0);
+
+    Drp2VkliteObject first = {
+        .id = 78,
+        .kind = DRP2_OBJECT_TEXTURE,
+        .borrowed_frame_target = true,
+    };
+    Drp2VkliteObject second = {
+        .id = 79,
+        .kind = DRP2_OBJECT_TEXTURE,
+        .borrowed_frame_target = true,
+    };
+    AT(_vklite_defer_destroy_object(
+        &state, &first, (VkCommandBuffer)(uintptr_t)0x123));
+    AT(_vklite_defer_destroy_object(
+        &state, &second, (VkCommandBuffer)(uintptr_t)0x456));
+    AT(state.deferred_count == 2);
+    _vklite_flush_deferred(&state);
+    AT(state.deferred_count == 0);
+
+    Drp2VkliteObject retained = {
+        .id = 80,
+        .kind = DRP2_OBJECT_BUFFER,
+    };
+    Drp2VkliteObject queued = {
+        .id = 81,
+        .kind = DRP2_OBJECT_TEXTURE,
+        .borrowed_frame_target = true,
+    };
+    AT(_vklite_defer_destroy_object(&state, &queued, command_buffer));
+    uint32_t live_count = state.deferred_count;
+    state.deferred_count = state.deferred_capacity;
+    const DvzAllocator* previous_allocator = dvz_get_allocator();
+    DvzAllocator failing_allocator = *previous_allocator;
+    failing_allocator.realloc_fn = _reject_deferred_realloc;
+    dvz_set_allocator(&failing_allocator);
+    bool deferred = _vklite_defer_destroy_object(&state, &retained, command_buffer);
+    dvz_set_allocator(previous_allocator);
+    AT(!deferred);
+    AT(!retained.destroyed);
+    AT(retained.id == 80);
+    AT(state.deferred_count == state.deferred_capacity);
+    state.deferred_count = live_count;
+    _vklite_flush_deferred(&state);
 
     _vklite_state_cleanup(&state);
     return 0;

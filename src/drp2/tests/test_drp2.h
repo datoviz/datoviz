@@ -176,6 +176,16 @@ int test_drp2_runtime_rejects_destroy_buffer_referenced_by_work(
     TstContext* suite, const TstCase* item);
 int test_drp2_runtime_allows_destroy_buffer_after_submit(
     TstContext* suite, const TstCase* item);
+int test_drp2_runtime_allows_destroy_buffer_with_unrelated_open_encoder(
+    TstContext* suite, const TstCase* item);
+int test_drp2_runtime_rejects_destroy_buffer_until_all_captures_submit(
+    TstContext* suite, const TstCase* item);
+int test_drp2_runtime_rejects_recreate_buffer_with_pending_capture(
+    TstContext* suite, const TstCase* item);
+int test_drp2_runtime_rejects_destroy_pending_readback_buffer(
+    TstContext* suite, const TstCase* item);
+int test_drp2_runtime_rejects_rebind_group_with_destroyed_buffer(
+    TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_rejects_destroy_texture_referenced_by_work(
     TstContext* suite, const TstCase* item);
@@ -190,6 +200,9 @@ int test_drp2_runtime_vklite_skeleton_create_destroy(TstContext* suite, const Ts
 int test_drp2_runtime_vklite_skeleton_execute_valid_stream(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_semantic_references_persist_transactionally(
+    TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstContext* suite, const TstCase* item);
 
@@ -211,6 +224,11 @@ int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const
 int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_vklite_destroys_submitted_buffer(TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_vklite_releases_readback_buffer_after_download(
+    TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCase* item);
 

@@ -95,6 +95,7 @@ typedef enum
 
 typedef struct Drp2Object Drp2Object;
 typedef struct Drp2RuntimeState Drp2RuntimeState;
+typedef struct Drp2WorkReference Drp2WorkReference;
 #if DVZ_DRP2_HAS_VKLITE
 typedef struct Drp2VkliteObject Drp2VkliteObject;
 typedef struct Drp2VkliteState Drp2VkliteState;
@@ -155,6 +156,7 @@ struct Drp2Object
     bool open;
     bool submitted;
     bool external_timeline_pending;
+    uint32_t pending_readback_count;
     uint64_t external_timeline_wait_value;
     uint64_t external_timeline_signal_value;
     uint64_t external_timeline_last_signal_value;
@@ -196,6 +198,14 @@ struct Drp2Object
 };
 
 
+struct Drp2WorkReference
+{
+    uint64_t owner_id;
+    uint64_t resource_id;
+    Drp2ObjectKind kind;
+};
+
+
 struct Drp2RuntimeState
 {
     bool hello_seen;
@@ -204,6 +214,9 @@ struct Drp2RuntimeState
     uint32_t capacity;
     uint32_t count;
     Drp2Object* objects;
+    uint32_t reference_capacity;
+    uint32_t reference_count;
+    Drp2WorkReference* references;
 };
 
 #if DVZ_DRP2_HAS_VKLITE
@@ -343,6 +356,7 @@ bool _vklite_defer_destroy_object(
     Drp2VkliteState* state, Drp2VkliteObject* object, VkCommandBuffer command_buffer);
 void _vklite_flush_deferred_for_command_buffer(
     Drp2VkliteState* state, VkCommandBuffer command_buffer);
+void _vklite_flush_deferred(Drp2VkliteState* state);
 DvzCommands* _vklite_owned_commands_create(DvzDevice* device);
 void _vklite_owned_commands_destroy(DvzCommands* cmds);
 DvzCommands* _vklite_borrowed_frame_commands_create(

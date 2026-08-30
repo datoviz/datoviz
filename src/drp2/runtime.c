@@ -546,6 +546,8 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
     }
 
     dvz_buffer_download(object->buffer, offset, size, data);
+    if (semantic->pending_readback_count > 0)
+        semantic->pending_readback_count--;
     return true;
 }
 #endif

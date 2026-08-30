@@ -21,6 +21,7 @@
 #include "_assertions.h"
 #include "_overflow.h"
 #include "_runtime.h"
+#include "datoviz/vk/device.h"
 
 
 
@@ -394,6 +395,18 @@ void _vklite_flush_deferred_for_command_buffer(
     if (command_buffer == VK_NULL_HANDLE || state->deferred_count == 0)
         return;
 
+    bool has_match = false;
+    for (uint32_t i = 0; i < state->deferred_count; i++)
+    {
+        if (state->deferred[i].command_buffer == command_buffer)
+        {
+            has_match = true;
+            break;
+        }
+    }
+    if (has_match && state->runtime != NULL && state->runtime->device != NULL)
+        dvz_device_wait(state->runtime->device);
+
     uint32_t write_idx = 0;
     for (uint32_t i = 0; i < state->deferred_count; i++)
     {
@@ -415,5 +428,27 @@ void _vklite_flush_deferred_for_command_buffer(
             sizeof(Drp2DeferredDestroy));
     }
     state->deferred_count = write_idx;
+}
+
+
+
+/**
+ * Destroy every deferred backend object after an explicit device completion wait.
+ *
+ * @param state vklite runtime state
+ */
+void _vklite_flush_deferred(Drp2VkliteState* state)
+{
+    ANN(state);
+    if (state->deferred_count == 0)
+        return;
+    if (state->runtime != NULL && state->runtime->device != NULL)
+        dvz_device_wait(state->runtime->device);
+    for (uint32_t i = state->deferred_count; i > 0; i--)
+    {
+        _vklite_destroy_object(&state->deferred[i - 1].object);
+        state->deferred[i - 1] = (Drp2DeferredDestroy){0};
+    }
+    state->deferred_count = 0;
 }
 #endif

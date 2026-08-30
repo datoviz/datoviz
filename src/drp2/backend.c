@@ -176,7 +176,13 @@ static DvzDrp2ValidationResult _vklite_create_buffer(
                 return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         }
         else
+        {
+            if (state->deferred_count > 0)
+                _vklite_flush_deferred(state);
+            else if (state->runtime != NULL && state->runtime->device != NULL)
+                dvz_device_wait(state->runtime->device);
             _vklite_destroy_object_slot(state, previous);
+        }
     }
 
     Drp2VkliteObject* object =
@@ -361,7 +367,7 @@ bool _vklite_attach_frame_target(
             return false;
         runtime->vklite_state->runtime = runtime;
     }
-    _vklite_flush_deferred_for_command_buffer(runtime->vklite_state, frame->command_buffer);
+    _vklite_flush_deferred(runtime->vklite_state);
     runtime->vklite_state->active_borrowed_command_buffer = frame->command_buffer;
 
     DvzImages* images = dvz_images_create_wrapper();
@@ -538,9 +544,22 @@ static DvzDrp2ValidationResult _vklite_destroy_backend_object(
     Drp2VkliteObject* object = _vklite_find(state, id);
     if (object == NULL || object->kind != kind)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE &&
-        _vklite_defer_destroy_object(state, object, state->active_borrowed_command_buffer))
-        return _drp2_ok();
+    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+    {
+        if (_vklite_defer_destroy_object(
+                state, object, state->active_borrowed_command_buffer))
+            return _drp2_ok();
+        if (kind == DRP2_OBJECT_BUFFER)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    else if (kind == DRP2_OBJECT_BUFFER && state->runtime != NULL &&
+             state->runtime->device != NULL)
+    {
+        if (state->deferred_count > 0)
+            _vklite_flush_deferred(state);
+        else
+            dvz_device_wait(state->runtime->device);
+    }
     _vklite_destroy_object_slot(state, object);
     return _drp2_ok();
 }

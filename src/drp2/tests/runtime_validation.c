@@ -1805,6 +1805,163 @@ int test_drp2_runtime_allows_destroy_buffer_after_submit(TstContext* suite, cons
 
 
 
+int test_drp2_runtime_allows_destroy_buffer_with_unrelated_open_encoder(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(stream, 2, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 3, 1, 0, 2, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 3, 4));
+    AT(dvz_drp2_stream_queue_submit(stream, 4, 5));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 6));
+    AT(dvz_drp2_stream_destroy_buffer(stream, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_destroy_buffer_until_all_captures_submit(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(stream, 2, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 3, 1, 0, 2, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 3, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 6));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 6, 1, 0, 2, 16, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 6, 7));
+    AT(dvz_drp2_stream_queue_submit(stream, 4, 5));
+    AT(dvz_drp2_stream_destroy_buffer(stream, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 11);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_recreate_buffer_with_pending_capture(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(stream, 2, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(stream, 3, 1, 0, 2, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 3, 4));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 128, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 7);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_destroy_pending_readback_buffer(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 64, DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 2));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 2, 3));
+    AT(dvz_drp2_stream_queue_submit_readback(stream, 3, 4, 1, 0, 16));
+    AT(dvz_drp2_stream_destroy_buffer(stream, 1));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+    AT(result.command_index == 6);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+int test_drp2_runtime_rejects_rebind_group_with_destroyed_buffer(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 64, DVZ_DRP2_BUFFER_USAGE_UNIFORM));
+    AT(dvz_drp2_stream_create_uniform_bind_group_layout(stream, 2));
+    AT(dvz_drp2_stream_create_uniform_bind_group(stream, 3, 2, 1, 0, 64));
+    AT(dvz_drp2_stream_create_shader_module(stream, 4, "vertex", "@vertex fn main() {}"));
+    AT(dvz_drp2_stream_create_shader_module(stream, 5, "fragment", "@fragment fn main() {}"));
+    AT(drp2_test_create_render_pipeline(stream, 6, 4, 5, 0));
+    AT(dvz_drp2_stream_pipeline_set_bind_group_layout(stream, 2));
+    AT(dvz_drp2_stream_create_texture_2d(stream, 7, 4, 4));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 8));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 9, 8, 7));
+    AT(dvz_drp2_stream_set_pipeline(stream, 9, 6));
+    AT(dvz_drp2_stream_set_bind_group(stream, 9, 0, 3));
+    AT(dvz_drp2_stream_draw(stream, 9, 3, 1, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 9));
+    AT(dvz_drp2_stream_finish_command_encoder(stream, 8, 10));
+    AT(dvz_drp2_stream_queue_submit(stream, 10, 11));
+    AT(dvz_drp2_stream_destroy_buffer(stream, 1));
+    AT(dvz_drp2_stream_begin_command_encoder(stream, 12));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 13, 12, 7));
+    AT(dvz_drp2_stream_set_pipeline(stream, 13, 6));
+    AT(dvz_drp2_stream_set_bind_group(stream, 13, 0, 3));
+
+    DvzDrp2ValidationResult result = dvz_drp2_validate_stream(stream);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == dvz_drp2_stream_count(stream) - 1);
+
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_rejects_destroy_texture_referenced_by_work(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

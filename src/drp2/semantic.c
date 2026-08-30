@@ -529,6 +529,145 @@ static void _mark_referenced(Drp2RuntimeState* state, uint64_t id)
 
 
 /**
+ * Ensure command-buffer resource-capture storage can append one more association.
+ *
+ * @param state the runtime semantic state
+ * @return whether append capacity is available
+ */
+static bool _references_ensure_capacity(Drp2RuntimeState* state)
+{
+    ANN(state);
+    if (state->references == NULL || state->reference_capacity == 0)
+    {
+        state->reference_capacity = 16;
+        state->references = (Drp2WorkReference*)dvz_calloc(
+            state->reference_capacity, sizeof(Drp2WorkReference));
+        return state->references != NULL;
+    }
+    if (state->reference_count < state->reference_capacity)
+        return true;
+    if (state->reference_capacity > UINT32_MAX / 2)
+        return false;
+
+    uint32_t capacity = 2 * state->reference_capacity;
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(capacity, sizeof(Drp2WorkReference), &bytes))
+        return false;
+    Drp2WorkReference* references = (Drp2WorkReference*)dvz_realloc(state->references, bytes);
+    if (references == NULL)
+        return false;
+    state->references = references;
+    state->reference_capacity = capacity;
+    return true;
+}
+
+
+
+/**
+ * Capture one resource in an encoder, deduplicating repeated uses by the same work owner.
+ *
+ * @param state the runtime semantic state
+ * @param owner_id open encoder id
+ * @param resource_id captured resource id
+ * @param kind captured resource kind
+ * @return whether the capture was recorded
+ */
+static bool _capture_reference(
+    Drp2RuntimeState* state, uint64_t owner_id, uint64_t resource_id, Drp2ObjectKind kind)
+{
+    ANN(state);
+    if (owner_id == 0 || resource_id == 0 || kind == DRP2_OBJECT_NONE)
+        return false;
+    for (uint32_t i = 0; i < state->reference_count; i++)
+    {
+        const Drp2WorkReference* reference = &state->references[i];
+        if (reference->owner_id == owner_id && reference->resource_id == resource_id &&
+            reference->kind == kind)
+            return true;
+    }
+    if (!_references_ensure_capacity(state))
+        return false;
+    state->references[state->reference_count++] = (Drp2WorkReference){
+        .owner_id = owner_id,
+        .resource_id = resource_id,
+        .kind = kind,
+    };
+    _mark_referenced(state, resource_id);
+    return true;
+}
+
+
+
+/**
+ * Return whether recorded but unsubmitted work captures a resource.
+ *
+ * @param state the runtime semantic state
+ * @param resource_id resource id
+ * @param kind resource kind
+ * @return whether a pending capture exists
+ */
+static bool _reference_pending(
+    const Drp2RuntimeState* state, uint64_t resource_id, Drp2ObjectKind kind)
+{
+    ANN(state);
+    for (uint32_t i = 0; i < state->reference_count; i++)
+    {
+        const Drp2WorkReference* reference = &state->references[i];
+        if (reference->resource_id == resource_id && reference->kind == kind)
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Transfer encoder-owned captures to the immutable command buffer produced by Finish.
+ *
+ * @param state the runtime semantic state
+ * @param encoder_id finished encoder id
+ * @param command_buffer_id produced command-buffer id
+ */
+static void _references_finish_encoder(
+    Drp2RuntimeState* state, uint64_t encoder_id, uint64_t command_buffer_id)
+{
+    ANN(state);
+    for (uint32_t i = 0; i < state->reference_count; i++)
+    {
+        if (state->references[i].owner_id == encoder_id)
+            state->references[i].owner_id = command_buffer_id;
+    }
+}
+
+
+
+/**
+ * Release ordinary captures owned by one successfully submitted command buffer.
+ *
+ * @param state the runtime semantic state
+ * @param command_buffer_id submitted command-buffer id
+ */
+static void _references_release_command_buffer(
+    Drp2RuntimeState* state, uint64_t command_buffer_id)
+{
+    ANN(state);
+    uint32_t write_idx = 0;
+    for (uint32_t i = 0; i < state->reference_count; i++)
+    {
+        if (state->references[i].owner_id == command_buffer_id)
+            continue;
+        if (write_idx != i)
+            state->references[write_idx] = state->references[i];
+        write_idx++;
+    }
+    for (uint32_t i = write_idx; i < state->reference_count; i++)
+        state->references[i] = (Drp2WorkReference){0};
+    state->reference_count = write_idx;
+}
+
+
+
+/**
  * Remove destroyed objects from the end of the semantic object table.
  *
  * @param state the runtime semantic state
@@ -600,23 +739,6 @@ static bool _pipeline_uses_shader(const Drp2Object* object, uint64_t shader_modu
 
 
 
-static bool _has_pending_work(const Drp2RuntimeState* state)
-{
-    ANN(state);
-    for (uint32_t i = 0; i < state->count; i++)
-    {
-        const Drp2Object* object = &state->objects[i];
-        if (object->destroyed)
-            continue;
-        if (object->kind == DRP2_OBJECT_ENCODER || object->kind == DRP2_OBJECT_RENDER_PASS ||
-            object->kind == DRP2_OBJECT_COMPUTE_PASS || object->kind == DRP2_OBJECT_COMMAND_BUFFER)
-            return true;
-    }
-    return false;
-}
-
-
-
 static DvzDrp2ValidationResult _validate_destroy_object(
     Drp2RuntimeState* state, uint64_t id, Drp2ObjectKind kind, uint32_t command_index)
 {
@@ -624,8 +746,10 @@ static DvzDrp2ValidationResult _validate_destroy_object(
     Drp2Object* object = _drp2_find_any_object(state, id);
     if (object == NULL || object->destroyed || object->kind != kind)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    bool referenced_by_live_work = object->referenced_by_work &&
-                                   (kind != DRP2_OBJECT_BUFFER || _has_pending_work(state));
+    bool referenced_by_live_work =
+        kind == DRP2_OBJECT_BUFFER
+            ? _reference_pending(state, id, kind) || object->pending_readback_count > 0
+            : object->referenced_by_work;
     if (referenced_by_live_work || object->open || object->submitted)
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
@@ -712,6 +836,9 @@ static DvzDrp2ValidationResult _validate_create_buffer(
         if (object->destroyed || object->kind != DRP2_OBJECT_BUFFER ||
             !object->referenced_by_work)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if (_reference_pending(state, id, DRP2_OBJECT_BUFFER) ||
+            object->pending_readback_count > 0)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
         DvzDrp2ValidationResult result = _validate_buffer_recreate_bind_groups(
             state, id, size, command->u.create_buffer.usage, command_index);
         if (!result.ok)
@@ -1666,6 +1793,18 @@ static DvzDrp2ValidationResult _validate_set_bind_group(
     if (command->u.set_bind_group.dynamic_offset_count != _dynamic_binding_count(layout))
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
 
+    for (uint32_t i = 0; i < bind_group->bind_group_entry_count; i++)
+    {
+        const DvzDrp2BindGroupEntry* entry = &bind_group->bind_group_entries[i];
+        if (!_binding_type_is_buffer(entry->binding_type))
+            continue;
+        Drp2Object* buffer = _find_object(state, entry->resource_id);
+        if (buffer == NULL || buffer->kind != DRP2_OBJECT_BUFFER)
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if (_drp2_range_overflows(entry->offset, entry->size, buffer->size))
+            return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    }
+
     uint32_t dynamic_index = 0;
     for (uint32_t i = 0; i < layout->layout_entry_count; i++)
     {
@@ -1695,7 +1834,17 @@ static DvzDrp2ValidationResult _validate_set_bind_group(
     _mark_referenced(state, command->u.set_bind_group.bind_group_id);
     _mark_referenced(state, bind_group->bind_group_layout_id);
     for (uint32_t i = 0; i < bind_group->bind_group_entry_count; i++)
-        _mark_referenced(state, bind_group->bind_group_entries[i].resource_id);
+    {
+        const DvzDrp2BindGroupEntry* entry = &bind_group->bind_group_entries[i];
+        if (_binding_type_is_buffer(entry->binding_type))
+        {
+            if (!_capture_reference(
+                    state, pass->encoder_id, entry->resource_id, DRP2_OBJECT_BUFFER))
+                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
+        else
+            _mark_referenced(state, entry->resource_id);
+    }
     return _drp2_ok();
 }
 
@@ -1731,7 +1880,10 @@ static DvzDrp2ValidationResult _validate_set_vertex_buffer(
         command->u.set_vertex_buffer.buffer_id;
     pass->bound_vertex_buffer_offsets[command->u.set_vertex_buffer.slot] =
         command->u.set_vertex_buffer.offset;
-    _mark_referenced(state, command->u.set_vertex_buffer.buffer_id);
+    if (!_capture_reference(
+            state, pass->encoder_id, command->u.set_vertex_buffer.buffer_id,
+            DRP2_OBJECT_BUFFER))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _drp2_ok();
 }
 
@@ -1764,7 +1916,10 @@ static DvzDrp2ValidationResult _validate_set_index_buffer(
     pass->index_format_size =
         strcmp(command->u.set_index_buffer.index_format, "uint16") == 0 ? sizeof(uint16_t)
                                                                          : sizeof(uint32_t);
-    _mark_referenced(state, command->u.set_index_buffer.buffer_id);
+    if (!_capture_reference(
+            state, pass->encoder_id, command->u.set_index_buffer.buffer_id,
+            DRP2_OBJECT_BUFFER))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _drp2_ok();
 }
 
@@ -2072,7 +2227,10 @@ static DvzDrp2ValidationResult _validate_resource_barrier(
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
     }
 
-    _mark_referenced(state, command->u.resource_barrier.buffer_id);
+    if (!_capture_reference(
+            state, command->u.resource_barrier.encoder_id,
+            command->u.resource_barrier.buffer_id, DRP2_OBJECT_BUFFER))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _drp2_ok();
 }
 
@@ -2108,8 +2266,13 @@ static DvzDrp2ValidationResult _validate_copy_buffer_to_buffer(
             dst->size))
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
 
-    _mark_referenced(state, command->u.copy_buffer_to_buffer.src_buffer_id);
-    _mark_referenced(state, command->u.copy_buffer_to_buffer.dst_buffer_id);
+    if (!_capture_reference(
+            state, command->u.copy_buffer_to_buffer.encoder_id,
+            command->u.copy_buffer_to_buffer.src_buffer_id, DRP2_OBJECT_BUFFER) ||
+        !_capture_reference(
+            state, command->u.copy_buffer_to_buffer.encoder_id,
+            command->u.copy_buffer_to_buffer.dst_buffer_id, DRP2_OBJECT_BUFFER))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _drp2_ok();
 }
 
@@ -2165,7 +2328,10 @@ static DvzDrp2ValidationResult _validate_copy_buffer_to_texture(
         buffer->external_timeline_last_signal_value = buffer->external_timeline_signal_value;
         buffer->external_timeline_pending = false;
     }
-    _mark_referenced(state, command->u.copy_buffer_to_texture.src_buffer_id);
+    if (!_capture_reference(
+            state, command->u.copy_buffer_to_texture.encoder_id,
+            command->u.copy_buffer_to_texture.src_buffer_id, DRP2_OBJECT_BUFFER))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     _mark_referenced(state, command->u.copy_buffer_to_texture.dst_texture_id);
     return _drp2_ok();
 }
@@ -2212,7 +2378,10 @@ static DvzDrp2ValidationResult _validate_copy_texture_to_buffer(
     if (_drp2_range_overflows(command->u.copy_texture_to_buffer.dst_offset, required, buffer->size))
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
     _mark_referenced(state, command->u.copy_texture_to_buffer.src_texture_id);
-    _mark_referenced(state, command->u.copy_texture_to_buffer.dst_buffer_id);
+    if (!_capture_reference(
+            state, command->u.copy_texture_to_buffer.encoder_id,
+            command->u.copy_texture_to_buffer.dst_buffer_id, DRP2_OBJECT_BUFFER))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _drp2_ok();
 }
 
@@ -2293,6 +2462,9 @@ static DvzDrp2ValidationResult _validate_finish_encoder(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     mutable_encoder->open = false;
+    _references_finish_encoder(
+        state, command->u.finish_command_encoder.encoder_id,
+        command->u.finish_command_encoder.command_buffer_id);
     return _drp2_ok();
 }
 
@@ -2312,6 +2484,8 @@ static DvzDrp2ValidationResult _validate_queue_submit(
 
     if (!command->u.queue_submit.has_readback)
     {
+        _references_release_command_buffer(
+            state, command->u.queue_submit.command_buffer_id);
         _retire_submitted_work(state, command_buffer);
         return _drp2_ok();
     }
@@ -2323,6 +2497,11 @@ static DvzDrp2ValidationResult _validate_queue_submit(
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
     if (_drp2_range_overflows(command->u.queue_submit.offset, command->u.queue_submit.size, buffer->size))
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
+    if (buffer->pending_readback_count == UINT32_MAX)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    buffer->pending_readback_count++;
+    _references_release_command_buffer(
+        state, command->u.queue_submit.command_buffer_id);
     _retire_submitted_work(state, command_buffer);
     return _drp2_ok();
 }
@@ -2454,6 +2633,10 @@ void _drp2_runtime_state_cleanup(Drp2RuntimeState* state)
     state->objects = NULL;
     state->capacity = 0;
     state->count = 0;
+    dvz_free(state->references);
+    state->references = NULL;
+    state->reference_capacity = 0;
+    state->reference_count = 0;
     state->hello_seen = false;
     state->reply_seen = false;
     state->failed = false;
@@ -2477,17 +2660,42 @@ static bool _runtime_state_clone(Drp2RuntimeState* dst, const Drp2RuntimeState* 
 
     *dst = *src;
     dst->objects = NULL;
-    if (src->capacity == 0)
-        return true;
+    dst->references = NULL;
 
-    uint64_t bytes = 0;
-    if (_dvz_mul_u64_overflows(src->capacity, sizeof(Drp2Object), &bytes))
-        return false;
-    dst->objects = (Drp2Object*)dvz_calloc(src->capacity, sizeof(Drp2Object));
-    if (dst->objects == NULL)
-        return false;
-    if (src->count > 0)
-        dvz_memcpy(dst->objects, bytes, src->objects, (uint64_t)src->count * sizeof(Drp2Object));
+    if (src->capacity > 0)
+    {
+        uint64_t bytes = 0;
+        if (_dvz_mul_u64_overflows(src->capacity, sizeof(Drp2Object), &bytes))
+            return false;
+        dst->objects = (Drp2Object*)dvz_calloc(src->capacity, sizeof(Drp2Object));
+        if (dst->objects == NULL)
+            return false;
+        if (src->count > 0)
+            dvz_memcpy(
+                dst->objects, bytes, src->objects,
+                (uint64_t)src->count * sizeof(Drp2Object));
+    }
+    if (src->reference_capacity > 0)
+    {
+        uint64_t bytes = 0;
+        if (_dvz_mul_u64_overflows(
+                src->reference_capacity, sizeof(Drp2WorkReference), &bytes))
+        {
+            _drp2_runtime_state_cleanup(dst);
+            return false;
+        }
+        dst->references =
+            (Drp2WorkReference*)dvz_calloc(src->reference_capacity, sizeof(Drp2WorkReference));
+        if (dst->references == NULL)
+        {
+            _drp2_runtime_state_cleanup(dst);
+            return false;
+        }
+        if (src->reference_count > 0)
+            dvz_memcpy(
+                dst->references, bytes, src->references,
+                (uint64_t)src->reference_count * sizeof(Drp2WorkReference));
+    }
     return true;
 }
 
@@ -2527,8 +2735,11 @@ bool _drp2_runtime_state_commit(DvzDrp2Runtime* runtime, Drp2RuntimeState* next_
     _drp2_runtime_state_cleanup(runtime->semantic_state);
     *runtime->semantic_state = *next_state;
     next_state->objects = NULL;
+    next_state->references = NULL;
     next_state->capacity = 0;
     next_state->count = 0;
+    next_state->reference_capacity = 0;
+    next_state->reference_count = 0;
     next_state->hello_seen = false;
     next_state->reply_seen = false;
     next_state->failed = false;

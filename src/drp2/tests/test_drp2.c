@@ -189,6 +189,11 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_runtime_rejects_use_after_destroy);
     TST_CASE(test_drp2_runtime_rejects_destroy_buffer_referenced_by_work);
     TST_CASE(test_drp2_runtime_allows_destroy_buffer_after_submit);
+    TST_CASE(test_drp2_runtime_allows_destroy_buffer_with_unrelated_open_encoder);
+    TST_CASE(test_drp2_runtime_rejects_destroy_buffer_until_all_captures_submit);
+    TST_CASE(test_drp2_runtime_rejects_recreate_buffer_with_pending_capture);
+    TST_CASE(test_drp2_runtime_rejects_destroy_pending_readback_buffer);
+    TST_CASE(test_drp2_runtime_rejects_rebind_group_with_destroyed_buffer);
     TST_CASE(test_drp2_runtime_rejects_destroy_texture_referenced_by_work);
     TST_CASE(test_drp2_runtime_rejects_destroy_submitted_render_pipeline);
     TST_CASE(test_drp2_runtime_rejects_destroy_live_shader_module);
@@ -197,11 +202,14 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_runtime_vklite_skeleton_create_destroy);
     TST_CASE(test_drp2_runtime_vklite_skeleton_execute_valid_stream);
     TST_CASE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
+    TST_CASE(test_drp2_runtime_semantic_references_persist_transactionally);
     TST_CASE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
     TST_CASE(test_drp2_runtime_frame_target_validation);
     TST_CASE(test_drp2_runtime_frame_lifecycle_edge_cases);
 #if DVZ_DRP2_HAS_VKLITE
-    TST_CASE(test_drp2_runtime_vklite_deferred_destroy_flush);
+    TST_DRP2_CASE_EX(
+        test_drp2_runtime_vklite_deferred_destroy_flush,
+        TST_RES_CPU | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
     TST_CASE(test_drp2_runtime_vklite_trims_destroyed_tail_slots);
 #endif
     TST_DRP2_GPU_CASE(test_drp2_runtime_download_buffer_rejects_out_of_range);
@@ -211,6 +219,8 @@ int test_drp2(TstSuite* suite)
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_executes_resource_commands);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_destroys_submitted_buffer);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_releases_readback_buffer_after_download);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_uses_external_buffer);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_external_buffer_timeline_copy);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_texture_contents);

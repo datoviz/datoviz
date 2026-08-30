@@ -460,6 +460,121 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const Tst
 }
 
 
+
+/**
+ * Destroy an owned buffer after the command buffer that captured it has been submitted.
+ *
+ * @param suite the test suite.
+ * @param item the test item.
+ * @return 0 on success.
+ */
+int test_drp2_runtime_vklite_destroys_submitted_buffer(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = drp2_test_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
+        return 0;
+    ANN(ctx);
+
+    DvzDrp2CommandStream* submit_stream = dvz_drp2_stream();
+    ANN(submit_stream);
+    AT(dvz_drp2_stream_hello_renderer(submit_stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(submit_stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        submit_stream, 1, 16,
+        DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    AT(dvz_drp2_stream_create_buffer(
+        submit_stream, 2, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(submit_stream, 10));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(submit_stream, 10, 1, 0, 2, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(submit_stream, 10, 11));
+    AT(dvz_drp2_stream_queue_submit(submit_stream, 11, 12));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, submit_stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(_vklite_find(runtime->vklite_state, 1) != NULL);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
+
+    DvzDrp2CommandStream* destroy_stream = dvz_drp2_stream();
+    ANN(destroy_stream);
+    AT(dvz_drp2_stream_destroy_buffer(destroy_stream, 1));
+
+    result = dvz_drp2_runtime_execute(runtime, destroy_stream);
+    AT(result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_OK);
+    AT(_vklite_find(runtime->vklite_state, 1) == NULL);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
+
+    dvz_drp2_stream_destroy(destroy_stream);
+    dvz_drp2_stream_destroy(submit_stream);
+    return 0;
+}
+
+
+
+/**
+ * Keep readback buffers live until their requested bytes have been consumed.
+ *
+ * @param suite the test suite.
+ * @param item the test item.
+ * @return 0 on success.
+ */
+int test_drp2_runtime_vklite_releases_readback_buffer_after_download(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = drp2_test_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
+        return 0;
+    ANN(ctx);
+
+    DvzDrp2CommandStream* submit_stream = dvz_drp2_stream();
+    ANN(submit_stream);
+    AT(dvz_drp2_stream_hello_renderer(submit_stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(submit_stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        submit_stream, 1, 16,
+        DVZ_DRP2_BUFFER_USAGE_MAP_READ | DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(submit_stream, 10));
+    AT(dvz_drp2_stream_finish_command_encoder(submit_stream, 10, 11));
+    AT(dvz_drp2_stream_queue_submit_readback(submit_stream, 11, 12, 1, 0, 16));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, submit_stream);
+    AT(result.ok);
+
+    DvzDrp2CommandStream* blocked = dvz_drp2_stream();
+    ANN(blocked);
+    AT(dvz_drp2_stream_destroy_buffer(blocked, 1));
+    result = dvz_drp2_runtime_execute(runtime, blocked);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+
+    uint8_t downloaded[16] = {0};
+    AT(dvz_drp2_runtime_download_buffer(runtime, 1, 0, sizeof(downloaded), downloaded));
+
+    DvzDrp2CommandStream* destroy_stream = dvz_drp2_stream();
+    ANN(destroy_stream);
+    AT(dvz_drp2_stream_destroy_buffer(destroy_stream, 1));
+    result = dvz_drp2_runtime_execute(runtime, destroy_stream);
+    AT(result.ok);
+    AT(_vklite_find(runtime->vklite_state, 1) == NULL);
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
+
+    dvz_drp2_stream_destroy(destroy_stream);
+    dvz_drp2_stream_destroy(blocked);
+    dvz_drp2_stream_destroy(submit_stream);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_vklite_uses_external_buffer(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
