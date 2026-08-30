@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 import sys
 import unittest
@@ -21,6 +22,15 @@ class GalleryPreviewTests(unittest.TestCase):
             for example in build_gallery.collect_examples(manifest)
             if example.id == "showcases_point_cloud"
         )
+        example = replace(
+            example,
+            webgpu={
+                **example.webgpu,
+                "status": "webgpu-deferred",
+                "route": "",
+                "local_route": "examples/webgpu/live.html?id=showcases_point_cloud",
+            },
+        )
         lines = build_gallery.render_preview(
             example,
             Path("gallery/showcases/showcases_point_cloud.md"),
@@ -34,6 +44,25 @@ class GalleryPreviewTests(unittest.TestCase):
         self.assertEqual(lines.count('=== "Screenshot"'), 1)
         self.assertEqual(lines.count('=== "Live WebGPU"'), 1)
         self.assertNotIn('<div class="dvz-local-webgpu-tabs" hidden markdown="1">', lines)
+
+    def test_public_point_cloud_preview_uses_live_route(self) -> None:
+        manifest = build_gallery.load_manifest(build_gallery.DEFAULT_MANIFEST)
+        example = next(
+            example
+            for example in build_gallery.collect_examples(manifest)
+            if example.id == "showcases_point_cloud"
+        )
+        lines = build_gallery.render_preview(
+            example,
+            Path("gallery/showcases/showcases_point_cloud.md"),
+            build_gallery.DEFAULT_IMAGE_DIR,
+            build_gallery.DEFAULT_IMAGE_URL_BASE,
+        )
+
+        text = "\n".join(lines)
+        self.assertIn("showcases_point_cloud&embedded=1", text)
+        self.assertIn("Open the live WebGPU example", text)
+        self.assertNotIn("dvz-local-webgpu-tabs", text)
 
 
 if __name__ == "__main__":

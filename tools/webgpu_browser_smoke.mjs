@@ -1139,7 +1139,7 @@ async function main() {
           { label: 'Protein', limitations: ['ambient occlusion', 'ambient-occlusion'] },
         ],
         ['visuals_sphere', { label: 'Sphere', limitations: ['MSAA', 'alpha-to-coverage'] }],
-        ['showcases_point_cloud', { label: 'Point Cloud · local development' }],
+        ['showcases_point_cloud', { label: 'Point Cloud' }],
         ['showcases_galaxy', { label: 'Density-Wave Galaxy', kind: 'animated' }],
         [
           'showcases_textured_planet',

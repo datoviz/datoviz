@@ -17,8 +17,9 @@
  * Scenario: showcases_point_cloud
  * Style: showcase, graphite_cyan, 1280x720 window target
  *
- * Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_cloud.bin`.
- * Generate it from the upstream LAZ source with:
+ * Real data is loaded from the six-million-point local cache when available, with the committed
+ * 500,000-point browser bundle as a fallback. Generate the full local cache from the upstream LAZ
+ * source with:
  *
  *   python tools/data/prepare_point_cloud.py --force
  *

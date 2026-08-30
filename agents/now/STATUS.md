@@ -63,7 +63,7 @@ Final v0.4.0 resolves or records RC4 feedback, regenerates final media, passes r
 - Official default-on ImPlot/cimplot integration and the declarative docking refactor are deferred intact until after RC3 under [GUI_IMPLOT_DOCKING_HANDOFF.md](GUI_IMPLOT_DOCKING_HANDOFF.md). The experimental example remains default-off and no partial dependency, context, raw surface, or docking implementation enters the RC3 candidate.
 - GSP Texture2D mesh integration, point-light evaluation, and the full multi-light Klein-bottle slice remain optional. The required narrower scene-owned ambient/directional lighting foundation is complete.
 - Hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, and broad visual polish must not delay required release gates.
-- Point-cloud public WebGPU redistribution remains delisted without redistribution permission.
+- Point-cloud redistribution permission was received on 2026-08-30, with grantor, date, scope, and durable reference details pending. The deterministic 500k-point browser bundle is published in `data` at `b94d32d9c`, the route is promoted to public WebGPU, and headed interaction plus public-site confirmation remain release evidence gates.
 
 ## Validation Defaults
 

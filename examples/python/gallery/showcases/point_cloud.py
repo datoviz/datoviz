@@ -15,7 +15,8 @@ import datoviz as dvz
 from examples.python.gallery import common as ex
 
 
-DATA_PATH = Path(".cache/datoviz/examples/point_cloud/prepared/point_cloud.bin")
+CACHE_DATA_PATH = Path(".cache/datoviz/examples/point_cloud/prepared/point_cloud.bin")
+COMMITTED_DATA_PATH = Path("data/examples/point_cloud/prepared/point_cloud.bin")
 MAGIC = b"DVZPCD1\x00"
 VERSION = 2
 HEADER_SIZE = 40
@@ -60,7 +61,7 @@ def _load_header(path: Path):
     return count, bounds_min, bounds_max
 
 
-def _load_point_cloud(path: Path = DATA_PATH) -> PointCloudData:
+def _load_point_cloud(path: Path) -> PointCloudData:
     count, bounds_min, bounds_max = _load_header(path)
     record_dtype = np.dtype(
         [
@@ -132,7 +133,12 @@ def _add_pixels(scene, panel, data: PointCloudData):
     return pixel
 
 
-def _build_scene(path: Path = DATA_PATH):
+def _default_data_path() -> Path:
+    return CACHE_DATA_PATH if CACHE_DATA_PATH.is_file() else COMMITTED_DATA_PATH
+
+
+def _build_scene(path: Path | None = None):
+    path = path or _default_data_path()
     data = _load_point_cloud(path)
     scene, figure, panel = ex.scene_panel()
     dvz.dvz_panel_set_background_color(panel, PANEL_BG)

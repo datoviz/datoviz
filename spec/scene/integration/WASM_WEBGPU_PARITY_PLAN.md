@@ -194,6 +194,7 @@ If future parity work is explicitly promoted, use this order:
    2026-07-19: the RESEPI source dataset is third-party and all-rights-reserved, so no
    redistributable public bundle is possible; the example is delisted to `webgpu-deferred` (public
    route removed, localhost-only dev route retained) unless redistribution is licensed later.
+   Update 2026-08-30: redistribution permission was received, with details pending; the deterministic 500k-point prepared bundle is committed and the public route is promoted. Headed interaction and public-site confirmation remain release evidence gates.
 
 Keep GUI, GLFW, Qt, capture/export, raw Vulkan, and raw vklite examples native-only because their
 purpose is desktop runtime or host integration.

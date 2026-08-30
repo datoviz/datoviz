@@ -152,6 +152,8 @@ third-party and all-rights-reserved (Inertial Labs), so no redistributable publi
 possible. The example is delisted to `webgpu-deferred`, its public route removed from
 `live_examples.js`, and only the localhost-only dev route is retained.
 
+Superseded on 2026-08-30: redistribution permission was received, with the permission details still pending. The deterministic 500,000-point bundle is committed in `data`, subject to the existing 20 MB ceiling, and the route is restored to `webgpu-live`. Native rendering continues to prefer the six-million-point local cache and retains EDL; the browser route uses direct point rendering without EDL.
+
 Recorded local browser shader-payload proof on 2026-06-18: `node --check
 tools/webgpu_browser_smoke.mjs`, `node --check tools/wasm_scene_smoke.mjs`, and `just
 wasm-scene-smoke` passed after resolving WGSL includes during scene shader emission and adding a

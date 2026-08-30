@@ -421,7 +421,7 @@ def prepare(args: argparse.Namespace) -> None:
         command=command_argv(relpath(Path(__file__), ROOT), sys.argv[1:]),
         source={
             **source_info,
-            "license": "Public RESEPI sample data; usage follows the source site's terms.",
+            "license": "Redistribution permission received; permission details pending.",
             "v03_provenance_note": V03_PROVENANCE_NOTE,
         },
         artifacts=artifacts,
@@ -430,7 +430,12 @@ def prepare(args: argparse.Namespace) -> None:
             **metadata,
             "seed": args.seed,
         },
-        extra={"notes": ["Prepared under .cache; not committed to the data submodule."]},
+        extra={
+            "notes": [
+                "The raw source and six-million-point native bundle remain cache-local.",
+                "The deterministic 500,000-point browser derivative is published separately in the data submodule.",
+            ]
+        },
     )
     write_provenance(
         bundle_root,
@@ -452,7 +457,8 @@ def prepare(args: argparse.Namespace) -> None:
         ],
         license_lines=[
             "The current source is public RESEPI sample data downloadable through Stitch3D.",
-            "Keep prepared payloads cache-only until redistribution/licensing is explicitly approved.",
+            "Redistribution permission was received; grantor, date, scope, and durable reference details are pending.",
+            "The raw LAZ and six-million-point native bundle remain cache-local; only the deterministic 500,000-point browser derivative is published.",
         ],
     )
     print(f"wrote {relpath(bundle_root, ROOT)} ({records.shape[0]} points)")

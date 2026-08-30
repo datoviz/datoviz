@@ -13,25 +13,6 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 ## Preview
 
-<div class="dvz-public-webgpu-fallback" markdown="1">
-
-<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
-  <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
-    <source data-src="../../../../assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
-  </video>
-</div>
-
-<aside class="dvz-webgpu-unavailable" role="note">
-<strong>No live WebGPU preview</strong>
-<span>Browser support for this example is not currently implemented. The preview above shows the native version. <a href="../../../../reference/webgpu-subset/">Learn about browser support</a>.</span>
-</aside>
-
-</div>
-
-<div class="dvz-local-webgpu-tabs" hidden></div>
-
 === "Screenshot"
 
     <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
@@ -45,11 +26,15 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 === "Live WebGPU"
 
     <div class="dvz-webgpu-live" markdown="1">
-    <iframe data-src="../../../webgpu/live.html?id=showcases_point_cloud" title="Point Cloud local WebGPU example" loading="lazy" allow="fullscreen; webgpu"></iframe>
+    <iframe src="../../../webgpu/live.html?id=showcases_point_cloud&embedded=1" title="Point Cloud WebGPU live example" loading="lazy" allow="fullscreen; webgpu"></iframe>
     </div>
 
-    <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open the local WebGPU example</a>.
+    <aside class="dvz-webgpu-unavailable" role="note">
+    <strong>WebGPU rendering difference</strong>
+    <span><code>EDL</code>: The desktop example enables eye-dome lighting; the WebGPU route uses direct point rendering.</span>
+    </aside>
 
+    <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open the live WebGPU example</a>.
 
 ## Run And Adapt
 
@@ -60,13 +45,13 @@ Use your configured build environment; Python routes additionally require local 
 | --- | --- | --- |
 | C | Canonical native source | `just example-c showcases/point_cloud` (build and run), or rerun `./build/examples/c/showcases/point_cloud` |
 | Python | Available | `python3 -m examples.python.gallery.showcases.point_cloud` |
-| Browser | Deferred | the browser route renders a prepared 500k-point subset locally, but the source LiDAR dataset is third-party (Inertial Labs RESEPI sample data, all rights reserved) and cannot be redistributed as a public web data bundle <span class="dvz-local-webgpu-action" hidden>Local development: <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open WebGPU example</a>.</span> |
+| Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open live example</a> |
 
 !!! warning "Prepared data required"
 
     This example intentionally fails when its prepared input is absent; it does not
     substitute synthetic data.
-    Expected input: `.cache/datoviz/examples/point_cloud/prepared`.
+    Expected input: `data/examples/point_cloud/prepared/point_cloud.bin`.
     Prepare it from the repository root with `python tools/data/prepare_point_cloud.py --force`.
 
 Use this example as capability or integration evidence, not as a minimal copy-paste
@@ -79,7 +64,7 @@ The prepared binary stores point positions, RGBA colors, and per-point pixel siz
 
 This workflow is useful for large measured point clouds where the expensive decoding and normalization happen before the gallery example runs. Generate the prepared cache before running.
 
-Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_cloud.bin`. Generate it from the upstream LAZ source with:
+Real data is loaded from the six-million-point local cache when available, with the committed 500,000-point browser bundle as a fallback. Generate the full local cache from the upstream LAZ source with:
 
 `python tools/data/prepare_point_cloud.py --force`
 
@@ -107,8 +92,8 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
     - Approved adaptation starter: `no`
     - Python source: [`examples/python/gallery/showcases/point_cloud.py`](https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/showcases/point_cloud.py)
     - Python adaptation: Available
-    - Browser support: Deferred
-    - Browser note: the browser route renders a prepared 500k-point subset locally, but the source LiDAR dataset is third-party (Inertial Labs RESEPI sample data, all rights reserved) and cannot be redistributed as a public web data bundle
+    - Browser support: Live in browser
+    - WebGPU live route: <a href="../../../webgpu/live.html?id=showcases_point_cloud"><code>examples/webgpu/live.html?id=showcases_point_cloud</code></a>
     - Browser capability tags: `pixel`, `dense-point-cloud`, `fly`, `prepared-data`
     - Browser rendering effects: `edl` (unavailable)
     - Validation: `smoke+screenshot`
@@ -130,11 +115,12 @@ Real data is loaded from `.cache/datoviz/examples/point_cloud/prepared/point_clo
     | `name` | RESEPI GENM2X colorized benchmark point cloud |
     | `source` | [https://lidarpayload.com/sample-data/](https://lidarpayload.com/sample-data/) |
     | `source_url` | [https://lidarpayload.com/sample-data/](https://lidarpayload.com/sample-data/) |
-    | `license` | Public RESEPI sample data; usage follows the source site's terms |
+    | `license` | Redistribution permission received; permission details pending. |
     | `citation` | Credit Inertial Labs RESEPI sample data and link to the public sample-data page; no formal citation is supplied by the source. |
     | `preprocessing` | `python tools/data/prepare_point_cloud.py --force` |
+    | `prepared_source` | data/examples/point_cloud/prepared/point_cloud.bin |
     | `cache_prepared_path` | .cache/datoviz/examples/point_cloud/prepared |
-    | `provenance` | The preparation tool downloads the named RGB LAZ source through its public Stitch3D viewer, deterministically samples up to six million points with seed 12345, centers and aligns the scan while preserving metric aspect ratio, retains the measured RGB variation with documented display grading, and writes cache-only native and browser records. Prepared payloads are not redistributed. |
+    | `provenance` | The preparation tool downloads the named RGB LAZ source through its public Stitch3D viewer, deterministically samples up to six million points with seed 12345, centers and aligns the scan while preserving metric aspect ratio, retains the measured RGB variation with documented display grading, and writes the cache-local native record plus the committed 500k-point browser bundle. Redistribution permission was received; grantor, date, scope, and durable reference are pending. |
 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
