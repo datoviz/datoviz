@@ -1396,8 +1396,8 @@ static int canvas_handle_present_status(
         log_error(
             "failed to present swapchain image (frame=%u image=%u status=%d)", state->frame_index,
             image_index, present_status);
+        dvz_canvas_swapchain_mark_out_of_date(canvas);
         canvas_clear_active_slot(state);
-        canvas_runtime_transition(state, DVZ_CANVAS_PRESENT_STATE_READY, "present failed");
         return -1;
     }
     return 0;
@@ -2584,6 +2584,7 @@ int dvz_canvas_swapchain_present(DvzCanvas* canvas, uint64_t wait_value)
     {
         return -1;
     }
+    canvas->timeline_value = wait_value;
 
     // log_trace("present");
     if (canvas_dispatch_present(canvas, state, queue) != 0)

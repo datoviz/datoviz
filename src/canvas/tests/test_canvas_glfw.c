@@ -1081,6 +1081,94 @@ int test_canvas_glfw_submit_error_recovery(TstContext* suite, const TstCase* ite
 
 
 /**
+ * Ensure a generic present failure advances the timeline and rebuilds before slot reuse.
+ *
+ * @param suite The owning test suite.
+ * @param item The test item (unused).
+ * @return 0 on success.
+ */
+int test_canvas_glfw_present_error_recovery(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    CanvasGlfwFixture fixture = {.frame_slot_count = 1};
+    bool skipped = false;
+    AT(canvas_glfw_fixture_create(&fixture, dvz_testing_gpu_index(suite), &skipped) == 0);
+    if (skipped)
+    {
+        canvas_glfw_fixture_destroy(&fixture);
+        tst_skip(suite, "GLFW fixture unavailable");
+        return 0;
+    }
+
+    DvzCanvas* canvas = fixture.canvas;
+    ANN(canvas);
+    CanvasGlfwClearContext clear_ctx = {
+        .device = fixture.device,
+        .format = DVZ_DEFAULT_COLOR_FORMAT,
+    };
+    dvz_canvas_set_draw_callback(canvas, canvas_glfw_clear_draw, &clear_ctx);
+
+    bool frame_ready = false;
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        frame_ready = true;
+        break;
+    }
+    AT(frame_ready);
+    AT(_dvz_canvas_swapchain_slot_count(canvas) == 1);
+
+    uint64_t recreate_before = dvz_canvas_swapchain_recreate_count(canvas);
+    uint64_t submitted_value = canvas->timeline_value + 1;
+    uint32_t validation_errors_before = dvz_instance_error_count(fixture.instance);
+    tst_log_capture_begin(suite);
+    dvz_canvas_swapchain_test_force_present_status(canvas, DVZ_PRESENT_STATUS_ERROR);
+    tst_expect_error_begin(suite);
+    AT(dvz_canvas_submit(canvas) < 0);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(canvas->timeline_value == submitted_value);
+    AT(
+        dvz_canvas_present_runtime_state(canvas) ==
+        DVZ_CANVAS_PRESENT_STATE_WAIT_SURFACE);
+    AT(dvz_canvas_swapchain_recreate_count(canvas) == recreate_before);
+    dvz_semaphore_wait(canvas->timeline_semaphore, submitted_value);
+    AT(dvz_semaphore_query(canvas->timeline_semaphore) >= submitted_value);
+
+    bool resumed = false;
+    for (uint32_t i = 0; i < 24; i++)
+    {
+        dvz_window_host_poll(fixture.host);
+        int frame_rc = dvz_canvas_frame(canvas);
+        if (frame_rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
+            continue;
+        AT(frame_rc == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_swapchain_recreate_count(canvas) == recreate_before + 1);
+        AT(dvz_canvas_submit(canvas) == 0);
+        resumed = true;
+        break;
+    }
+    AT(resumed);
+    AT(canvas->timeline_value == submitted_value + 1);
+    tst_log_capture_end(suite);
+
+    dvz_canvas_set_draw_callback(canvas, NULL, NULL);
+    dvz_canvas_destroy(canvas);
+    fixture.canvas = NULL;
+    AT(dvz_instance_error_count(fixture.instance) == validation_errors_before);
+
+    canvas_glfw_fixture_destroy(&fixture);
+    return 0;
+}
+
+
+
+/**
  * Validate explicit out-of-date recovery on GLFW: recreate and resume frame submissions.
  *
  * @param suite The owning test suite.

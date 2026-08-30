@@ -2276,6 +2276,9 @@ int test_canvas(TstSuite* suite)
         test_canvas_glfw_submit_error_recovery,
         TST_CANVAS_GLFW_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
+        test_canvas_glfw_present_error_recovery,
+        TST_CANVAS_GLFW_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
         test_canvas_glfw_auto_format_stable, TST_CANVAS_GLFW_RES, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_glfw_present_semaphore_reuse, TST_CANVAS_GLFW_RES,

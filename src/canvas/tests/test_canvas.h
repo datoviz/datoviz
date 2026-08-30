@@ -54,6 +54,8 @@ int test_canvas_glfw_acquire_error_recovery(TstContext* suite, const TstCase* it
 
 int test_canvas_glfw_submit_error_recovery(TstContext* suite, const TstCase* item);
 
+int test_canvas_glfw_present_error_recovery(TstContext* suite, const TstCase* item);
+
 int test_canvas_glfw_auto_format_stable(TstContext* suite, const TstCase* item);
 
 int test_canvas_glfw_present_semaphore_reuse(TstContext* suite, const TstCase* item);
