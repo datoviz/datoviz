@@ -1,0 +1,23 @@
+{
+  "name": "invalid_destroy_buffer_until_all_captures_submit",
+  "description": "A buffer captured by two finished command buffers is destroyed after only one submits.",
+  "reason": "Every recorded capture must submit before logical buffer destruction is allowed.",
+  "fix": "Submit every command buffer that captured the buffer before destroying it.",
+  "version": {"major": 2, "minor": 0},
+  "tags": ["negative", "buffer", "lifetime", "submission"],
+  "commands": [
+    {"cmd": "HelloRenderer", "version": {"major": 2, "minor": 0}, "client_name": "fixture-client"},
+    {"cmd": "RendererHelloReply", "version": {"major": 2, "minor": 0}, "status": "ok", "renderer_name": "fixture-renderer"},
+    {"cmd": "CreateBuffer", "id": 1, "size": 64, "usage": ["COPY_SRC"]},
+    {"cmd": "CreateBuffer", "id": 2, "size": 64, "usage": ["COPY_DST"]},
+    {"cmd": "BeginCommandEncoder", "id": 3},
+    {"cmd": "CopyBufferToBuffer", "encoder_id": 3, "src_buffer_id": 1, "src_offset": 0, "dst_buffer_id": 2, "dst_offset": 0, "size": 16},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 3, "command_buffer_id": 4},
+    {"cmd": "BeginCommandEncoder", "id": 5},
+    {"cmd": "CopyBufferToBuffer", "encoder_id": 5, "src_buffer_id": 1, "src_offset": 16, "dst_buffer_id": 2, "dst_offset": 16, "size": 16},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 5, "command_buffer_id": 6},
+    {"cmd": "QueueSubmit", "command_buffer_ids": [4]},
+    {"cmd": "DestroyBuffer", "buffer_id": 1}
+  ],
+  "expected": {"outcome": "error", "phase": "semantic_validation", "code": "DRP2_ERR_USAGE", "command_index": 11}
+}

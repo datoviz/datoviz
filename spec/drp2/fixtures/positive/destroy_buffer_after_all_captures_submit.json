@@ -1,0 +1,23 @@
+{
+  "name": "destroy_buffer_after_all_captures_submit",
+  "description": "A buffer captured by two finished command buffers is destroyed only after both submit.",
+  "reason": "Submitting the final outstanding capture releases the logical buffer lifetime dependency.",
+  "version": {"major": 2, "minor": 0},
+  "tags": ["positive", "buffer", "lifetime", "submission"],
+  "commands": [
+    {"cmd": "HelloRenderer", "version": {"major": 2, "minor": 0}, "client_name": "fixture-client"},
+    {"cmd": "RendererHelloReply", "version": {"major": 2, "minor": 0}, "status": "ok", "renderer_name": "fixture-renderer"},
+    {"cmd": "CreateBuffer", "id": 1, "size": 64, "usage": ["COPY_SRC"]},
+    {"cmd": "CreateBuffer", "id": 2, "size": 64, "usage": ["COPY_DST"]},
+    {"cmd": "BeginCommandEncoder", "id": 3},
+    {"cmd": "CopyBufferToBuffer", "encoder_id": 3, "src_buffer_id": 1, "src_offset": 0, "dst_buffer_id": 2, "dst_offset": 0, "size": 16},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 3, "command_buffer_id": 4},
+    {"cmd": "BeginCommandEncoder", "id": 5},
+    {"cmd": "CopyBufferToBuffer", "encoder_id": 5, "src_buffer_id": 1, "src_offset": 16, "dst_buffer_id": 2, "dst_offset": 16, "size": 16},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 5, "command_buffer_id": 6},
+    {"cmd": "QueueSubmit", "command_buffer_ids": [4]},
+    {"cmd": "QueueSubmit", "command_buffer_ids": [6]},
+    {"cmd": "DestroyBuffer", "buffer_id": 1}
+  ],
+  "expected": {"outcome": "success"}
+}

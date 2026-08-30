@@ -1,0 +1,19 @@
+{
+  "name": "invalid_create_buffer_replacement_pending_capture",
+  "description": "CreateBuffer attempts to replace a buffer id while a finished command buffer still captures it.",
+  "reason": "A replacement would change the buffer contract before recorded work consumes its capture.",
+  "fix": "Submit every command buffer that captures the existing buffer before replacing its id.",
+  "version": {"major": 2, "minor": 0},
+  "tags": ["negative", "buffer", "lifetime", "replacement"],
+  "commands": [
+    {"cmd": "HelloRenderer", "version": {"major": 2, "minor": 0}, "client_name": "fixture-client"},
+    {"cmd": "RendererHelloReply", "version": {"major": 2, "minor": 0}, "status": "ok", "renderer_name": "fixture-renderer"},
+    {"cmd": "CreateBuffer", "id": 1, "size": 64, "usage": ["COPY_SRC"]},
+    {"cmd": "CreateBuffer", "id": 2, "size": 64, "usage": ["COPY_DST"]},
+    {"cmd": "BeginCommandEncoder", "id": 3},
+    {"cmd": "CopyBufferToBuffer", "encoder_id": 3, "src_buffer_id": 1, "src_offset": 0, "dst_buffer_id": 2, "dst_offset": 0, "size": 16},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 3, "command_buffer_id": 4},
+    {"cmd": "CreateBuffer", "id": 1, "size": 128, "usage": ["COPY_SRC"]}
+  ],
+  "expected": {"outcome": "error", "phase": "semantic_validation", "code": "DRP2_ERR_USAGE", "command_index": 7}
+}

@@ -238,7 +238,8 @@ Optional fields:
 Semantics:
 
 1. `size` is the allocation size of the whole buffer, not an upload length,
-2. later write, copy, bind, or draw commands must stay within the declared size and usage constraints.
+2. later write, copy, bind, or draw commands must stay within the declared size and usage constraints,
+3. reusing a live buffer id is a replacement only after that id has been captured by submitted work and has no open or unsubmitted capture and no pending readback; otherwise it is rejected as duplicate-id or active-use validation.
 
 
 ### `DestroyBuffer`
@@ -253,7 +254,9 @@ Required fields:
 Semantics:
 
 1. no later command may reference the buffer after destruction,
-2. destroying an unknown or already-destroyed buffer is a validation error.
+2. destroying an unknown or already-destroyed buffer is a validation error,
+3. open and finished-but-unsubmitted buffer captures prevent destruction,
+4. ordinary submitted buffer captures do not prevent logical destruction, but a pending `QueueSubmit` readback does until its reply validates and consumes it.
 
 
 ### `WriteBuffer`
@@ -992,7 +995,8 @@ Semantics:
 10. if the bind-group layout declares no dynamic buffer bindings, `dynamic_offsets` must be omitted or
    empty,
 11. if a new pipeline is rebound earlier in the same pass, `SetBindGroup` is interpreted against the
-    newly bound pipeline rather than any earlier pipeline.
+    newly bound pipeline rather than any earlier pipeline,
+12. every saved buffer dependency of the bind group, including non-dynamic entries, must still be live and its declared base range must still fit when `SetBindGroup` is issued.
 
 
 ### `SetViewport`
@@ -1289,7 +1293,8 @@ Semantics:
 4. each command buffer id may appear at most once within a single `QueueSubmit`,
 5. submission transfers work from recorded state to queue execution,
 6. when `readbacks` is non-empty, the runtime must send a `QueueSubmitReply` after all submitted work affecting the requested buffers has completed,
-7. readback ranges are read after GPU work is complete; producers must not assume the data is available before the reply arrives.
+7. readback ranges are read after GPU work is complete; producers must not assume the data is available before the reply arrives,
+8. every readback buffer remains pinned until the matching `QueueSubmitReply` fully validates and consumes that request.
 
 
 ### `QueueSubmitReply`
@@ -1315,4 +1320,5 @@ Semantics:
 2. the runtime must deliver replies in the same order as their corresponding submissions,
 3. the `readbacks` list must mirror the original request exactly: same buffer ids, offsets, and sizes in the same order,
 4. each `data` field must contain exactly `size` bytes encoded as base64,
-5. a `QueueSubmit` with no `readbacks` field or an empty `readbacks` list does not produce a reply.
+5. a `QueueSubmit` with no `readbacks` field or an empty `readbacks` list does not produce a reply,
+6. a reply consumes its pending request only after all reply validation succeeds; a rejected reply leaves the request and its buffer pins pending.

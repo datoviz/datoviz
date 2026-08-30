@@ -110,7 +110,8 @@ Use the most specific error code that matches the contract-visible failure.
    - resubmitting a command buffer that was already submitted earlier in the stream
    - issuing a copy command inside a pass
 5. prefer `DRP2_ERR_USAGE` for examples such as:
-   - destroying a resource still referenced by recorded or submitted work
+   - destroying a buffer still referenced by open, unsubmitted, or pending-readback work
+   - destroying a non-buffer resource still referenced by recorded or submitted work
    - destroying a bind group still referenced by recorded or submitted work
    - creating a bind-group entry whose referenced resource lacks the usage bits implied by
      `binding_type`

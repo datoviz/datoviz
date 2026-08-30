@@ -37,7 +37,7 @@ The negative corpus should stay focused and cover the core validation surface:
 9. copy inside a pass,
 10. finishing an encoder with an open pass,
 11. pass-kind mismatch,
-12. destroying a resource still referenced by recorded work,
+12. destroying a buffer still referenced by open or unsubmitted recorded work, including one of multiple captures,
 13. buffer range violation,
 14. texture range violation,
 15. texture mip-level violation,
@@ -80,7 +80,10 @@ The negative corpus should stay focused and cover the core validation surface:
 49. queue submission with the same command buffer id listed more than once,
 50. queue submission with an empty command-buffer list.
 51. texture view created with an unknown parent texture id,
-52. texture view destroyed while still referenced by recorded work.
+52. texture view destroyed while still referenced by recorded work,
+53. buffer replacement while a capture or readback is pending,
+54. readback buffer destruction before reply validation,
+55. bind-group rebinding that revalidates a destroyed non-dynamic buffer dependency.
 
 The positive corpus should stay minimal and focus on clean command shapes:
 
@@ -98,7 +101,10 @@ The positive corpus should stay minimal and focus on clean command shapes:
 12. render pass with pipeline plus bind-group binding before draw,
 13. render pass with bind-group dynamic offsets applied in layout order before draw,
 14. render pass pipeline rebind with refreshed bind-group and vertex-buffer state before draw,
-15. texture view lifecycle: create texture, create view, bind via bind group, destroy in reverse order.
+15. texture view lifecycle: create texture, create view, bind via bind group, destroy in reverse order,
+16. buffer destruction after ordinary submission, after every one of several captures submits, and with an unrelated open encoder,
+17. buffer replacement after submitted capture,
+18. readback buffer destruction after a matching reply consumes the request.
 
 
 ## Metadata Policy

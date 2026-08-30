@@ -110,7 +110,10 @@ Rules:
 3. `DestroyBuffer` ends the buffer lifetime immediately after semantic validation succeeds,
 4. no later command may reference the destroyed buffer,
 5. a buffer may be referenced by copy commands only while live,
-6. a buffer may be referenced by `QueueSubmit` only indirectly through previously finished command buffers.
+6. a buffer may be referenced by `QueueSubmit` only indirectly through previously finished command buffers,
+7. a buffer captured by an open encoder or finished but unsubmitted command buffer cannot be destroyed or replaced,
+8. ordinary submitted captures do not retain a buffer logically, so destruction or replacement may proceed after every capture submits,
+9. a pending readback retains its buffer until its matching `QueueSubmitReply` fully validates and consumes the request.
 
 
 ## Texture Lifetime
@@ -358,8 +361,8 @@ Rules:
    range validation,
 16. after a pipeline rebind, later draw/dispatch commands validate against the newly bound pipeline's
    requirements rather than any earlier pipeline,
-17. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime
-   cannot validate the slot against a known layout.
+17. validation may reject `SetBindGroup` immediately if no pipeline is currently bound and the runtime cannot validate the slot against a known layout,
+18. each `SetBindGroup` revalidates every saved buffer dependency, including non-dynamic entries, for liveness and declared base-range fit.
 
 Active runner note:
 
@@ -377,14 +380,12 @@ Rules:
 1. an object referenced by an open encoder or open pass cannot be destroyed,
 2. a command buffer referenced by a `QueueSubmit` is consumed as immutable recorded work,
 3. a command buffer that has already been submitted cannot be submitted again in active DRP2 `2.0`,
-4. destroying a resource that is referenced by a finished but not yet submitted command buffer is
-   invalid,
-5. destroying a resource that is referenced by already submitted work is invalid unless the runtime
-   explicitly defines completion tracking beyond the active `2.0` contract,
-6. because active `2.0` has no fence or completion primitive, clients should conservatively treat
-   submitted work as still using its referenced resources for the remainder of the stream,
-7. destroying an already-destroyed object is invalid,
-8. destroying an object of the wrong kind is invalid.
+4. destroying a resource that is referenced by a finished but not yet submitted command buffer is invalid,
+5. submitted buffer captures are released logically by ordinary `QueueSubmit`, but every capture of that buffer must submit before destruction or replacement is valid,
+6. a buffer with a pending readback remains retained until its matching `QueueSubmitReply` fully validates and consumes the request,
+7. all other object classes remain conservatively retained by submitted work for the remainder of the stream because active `2.0` has no completion primitive for them,
+8. destroying an already-destroyed object is invalid,
+9. destroying an object of the wrong kind is invalid.
 
 Validation consequences:
 
@@ -409,7 +410,8 @@ Rules:
    non-empty readbacks list; referencing an unknown or already-replied submission id is invalid,
 8. the `readbacks` list in `QueueSubmitReply` must mirror the request exactly: same buffer ids,
    offsets, and sizes, in the same order,
-9. each `data` field in the reply must contain exactly `size` bytes encoded as base64.
+9. each `data` field in the reply must contain exactly `size` bytes encoded as base64,
+10. a pending readback retains every requested buffer until the matching reply fully validates; a rejected reply does not consume the request or release those buffers.
 
 Validation consequences:
 

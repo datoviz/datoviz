@@ -72,6 +72,7 @@ globalThis.atob = (value) => Buffer.from(value, 'base64').toString('binary');
 globalThis.btoa = (value) => Buffer.from(value, 'binary').toString('base64');
 
 let createdBufferCount = 0;
+let createdBindGroupCount = 0;
 let queueSubmitCount = 0;
 let observedViewports = [];
 let observedScissors = [];
@@ -139,6 +140,7 @@ const device = {
     return {};
   },
   createBindGroup() {
+    createdBindGroupCount++;
     return {};
   },
   createShaderModule(desc = {}) {
@@ -570,6 +572,155 @@ async function smokeDestroyAfterSubmittedWork(executeDrp2Stream) {
     },
     { canvas: fakeCanvas, retireSubmittedRefs: true },
   );
+}
+
+async function smokeReadbackPinSurvivesInvalidReply(executeDrp2Stream) {
+  const result = await executeDrp2Stream(
+    device,
+    context,
+    'bgra8unorm',
+    {
+      commands: [
+        ...header,
+        { cmd: 'CreateBuffer', id: 1, size: 16, usage: ['MAP_READ'] },
+        { cmd: 'BeginCommandEncoder', id: 2 },
+        { cmd: 'FinishCommandEncoder', encoder_id: 2, command_buffer_id: 3 },
+        {
+          cmd: 'QueueSubmit',
+          command_buffer_ids: [3],
+          submission_id: 4,
+          readbacks: [{ buffer_id: 1, offset: 0, size: 4 }],
+        },
+      ],
+    },
+    { canvas: fakeCanvas },
+  );
+  const options = { canvas: fakeCanvas, commands: [], state: result.state };
+  await expectAsyncFailure(
+    async () => await executeDrp2Stream(
+      device,
+      context,
+      'bgra8unorm',
+      {},
+      {
+        ...options,
+        commands: [{
+          cmd: 'QueueSubmitReply',
+          submission_id: 4,
+          readbacks: [{ buffer_id: 1, offset: 4, size: 4, data: 'AAAAAA==' }],
+        }],
+      },
+    ),
+    'does not match the original request',
+  );
+  await expectAsyncFailure(
+    async () => await executeDrp2Stream(
+      device,
+      context,
+      'bgra8unorm',
+      {},
+      {
+        ...options,
+        commands: [{
+          cmd: 'QueueSubmitReply',
+          submission_id: 4,
+          readbacks: [{ buffer_id: 1, offset: 0, size: 4, data: 'AA==' }],
+        }],
+      },
+    ),
+    'data size does not match the original request',
+  );
+  await expectAsyncFailure(
+    async () => await executeDrp2Stream(
+      device,
+      context,
+      'bgra8unorm',
+      {},
+      { ...options, commands: [{ cmd: 'DestroyBuffer', buffer_id: 1 }] },
+    ),
+    'pending readback',
+  );
+  await executeDrp2Stream(
+    device,
+    context,
+    'bgra8unorm',
+    {},
+    {
+      ...options,
+      commands: [
+        { cmd: 'QueueSubmitReply', submission_id: 4, readbacks: result.readbacks },
+        { cmd: 'DestroyBuffer', buffer_id: 1 },
+      ],
+    },
+  );
+}
+
+async function smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream) {
+  const before = createdBindGroupCount;
+  await executeDrp2Stream(
+    device,
+    context,
+    'bgra8unorm',
+    {
+      commands: [
+        ...header,
+        { cmd: 'CreateBuffer', id: 1, size: 64, usage: ['UNIFORM'] },
+        {
+          cmd: 'CreateBindGroupLayout',
+          id: 2,
+          entries: [{ binding: 0, binding_type: 'uniform_buffer', visibility: ['COMPUTE'] }],
+        },
+        {
+          cmd: 'CreateBindGroup',
+          id: 3,
+          bind_group_layout_id: 2,
+          entries: [{
+            binding: 0,
+            binding_type: 'uniform_buffer',
+            resource_kind: 'buffer',
+            resource_id: 1,
+            offset: 0,
+            size: 16,
+          }],
+        },
+        {
+          cmd: 'CreateShaderModule',
+          id: 4,
+          stage: 'COMPUTE',
+          format: 'wgsl',
+          entry_point: 'main',
+          code: '@compute @workgroup_size(1) fn main() {}',
+        },
+        { cmd: 'CreateComputePipeline', id: 5, compute_shader_module_id: 4, bind_group_layout_ids: [2] },
+        { cmd: 'BeginCommandEncoder', id: 6 },
+        { cmd: 'BeginComputePass', id: 7, encoder_id: 6 },
+        { cmd: 'SetPipeline', pass_id: 7, pipeline_id: 5 },
+        { cmd: 'SetBindGroup', pass_id: 7, slot: 0, bind_group_id: 3 },
+        { cmd: 'EndComputePass', pass_id: 7 },
+        { cmd: 'FinishCommandEncoder', encoder_id: 6, command_buffer_id: 8 },
+        { cmd: 'QueueSubmit', command_buffer_ids: [8] },
+        { cmd: 'CreateBuffer', id: 1, size: 128, usage: ['UNIFORM'] },
+        { cmd: 'BeginCommandEncoder', id: 9 },
+        { cmd: 'BeginComputePass', id: 10, encoder_id: 9 },
+        { cmd: 'SetPipeline', pass_id: 10, pipeline_id: 5 },
+        { cmd: 'SetBindGroup', pass_id: 10, slot: 0, bind_group_id: 3 },
+        { cmd: 'EndComputePass', pass_id: 10 },
+        { cmd: 'FinishCommandEncoder', encoder_id: 9, command_buffer_id: 11 },
+        { cmd: 'QueueSubmit', command_buffer_ids: [11] },
+      ],
+    },
+    {
+      canvas: fakeCanvas,
+      requireExplicitBindGroupLayouts: true,
+      requireExplicitPipelineMetadata: true,
+    },
+  );
+  if (createdBindGroupCount - before !== 3) {
+    throw new Error(
+      `buffer replacement expected bind-group creation plus two live rebinds, got ` +
+        `${createdBindGroupCount - before}`,
+    );
+  }
 }
 
 async function smokeBrowserCanvasDepthCache(Drp2WebGpuRuntime) {
@@ -1165,7 +1316,7 @@ async function main() {
       ],
     },
     'destroyed',
-    { commandIndex: 4, cmd: 'WriteBuffer', code: 'DRP2_ERR_INVALID_STATE' },
+    { commandIndex: 4, cmd: 'WriteBuffer', code: 'DRP2_ERR_DESTROYED_OBJECT' },
   );
 
   await expectFailure(
@@ -1192,6 +1343,8 @@ async function main() {
     'recorded work',
   );
   await smokeDestroyAfterSubmittedWork(executeDrp2Stream);
+  await smokeReadbackPinSurvivesInvalidReply(executeDrp2Stream);
+  await smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream);
 
   await expectFailure(
     executeDrp2Stream,

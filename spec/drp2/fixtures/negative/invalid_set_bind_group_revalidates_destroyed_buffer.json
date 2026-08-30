@@ -1,0 +1,30 @@
+{
+  "name": "invalid_set_bind_group_revalidates_destroyed_buffer",
+  "description": "SetBindGroup reuses a non-dynamic buffer dependency after the buffer was logically destroyed.",
+  "reason": "SetBindGroup must revalidate every saved buffer entry, including entries without dynamic offsets.",
+  "fix": "Create a new bind group from live buffer dependencies before binding it again.",
+  "version": {"major": 2, "minor": 0},
+  "tags": ["negative", "buffer", "bind_group", "lifetime"],
+  "commands": [
+    {"cmd": "HelloRenderer", "version": {"major": 2, "minor": 0}, "client_name": "fixture-client"},
+    {"cmd": "RendererHelloReply", "version": {"major": 2, "minor": 0}, "status": "ok", "renderer_name": "fixture-renderer"},
+    {"cmd": "CreateBuffer", "id": 1, "size": 64, "usage": ["UNIFORM"]},
+    {"cmd": "CreateBindGroupLayout", "id": 2, "entries": [{"binding": 0, "binding_type": "uniform_buffer"}]},
+    {"cmd": "CreateBindGroup", "id": 3, "bind_group_layout_id": 2, "entries": [{"binding": 0, "binding_type": "uniform_buffer", "resource_kind": "buffer", "resource_id": 1, "offset": 0, "size": 16}]},
+    {"cmd": "CreateShaderModule", "id": 4, "stage": "COMPUTE", "format": "wgsl", "entry_point": "main", "code": "@compute @workgroup_size(1) fn main() {}"},
+    {"cmd": "CreateComputePipeline", "id": 5, "compute_shader_module_id": 4, "bind_group_layout_ids": [2]},
+    {"cmd": "BeginCommandEncoder", "id": 6},
+    {"cmd": "BeginComputePass", "id": 7, "encoder_id": 6},
+    {"cmd": "SetPipeline", "pass_id": 7, "pipeline_id": 5},
+    {"cmd": "SetBindGroup", "pass_id": 7, "slot": 0, "bind_group_id": 3},
+    {"cmd": "EndComputePass", "pass_id": 7},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 6, "command_buffer_id": 8},
+    {"cmd": "QueueSubmit", "command_buffer_ids": [8]},
+    {"cmd": "DestroyBuffer", "buffer_id": 1},
+    {"cmd": "BeginCommandEncoder", "id": 9},
+    {"cmd": "BeginComputePass", "id": 10, "encoder_id": 9},
+    {"cmd": "SetPipeline", "pass_id": 10, "pipeline_id": 5},
+    {"cmd": "SetBindGroup", "pass_id": 10, "slot": 0, "bind_group_id": 3}
+  ],
+  "expected": {"outcome": "error", "phase": "semantic_validation", "code": "DRP2_ERR_DESTROYED_OBJECT", "command_index": 18}
+}

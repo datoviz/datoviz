@@ -118,6 +118,9 @@ function classifyDrp2WebGpuError(message) {
   if (message.includes("duplicate or reused object id")) {
     return "DRP2_ERR_DUPLICATE_ID";
   }
+  if (message.includes(" is destroyed")) {
+    return "DRP2_ERR_DESTROYED_OBJECT";
+  }
   if (message.includes(" is ") && message.includes(", not ")) {
     return "DRP2_ERR_WRONG_OBJECT_TYPE";
   }
@@ -130,6 +133,7 @@ function classifyDrp2WebGpuError(message) {
     message.includes("has no bound pipeline") ||
     message.includes("handshake") ||
     message.includes("diagnostic Error before") ||
+    message.includes("no pending readback request") ||
     message.includes("open pass") ||
     message.includes("before a pipeline") ||
     message.includes("missing vertex buffer") ||
@@ -1021,10 +1025,7 @@ function validateDynamicOffsets(state, layoutRecord, bindGroupRecord, dynamicOff
 
 
 function bindGroupForSet(device, passRecord, slot, bindGroupRecord, command, buffers, textures, textureViews, samplers) {
-  const layout = passRecord.pipeline?.bindGroupLayouts?.[slot];
-  if (layout === undefined && (command.dynamic_offsets ?? []).length === 0) {
-    return bindGroupRecord.bindGroup;
-  }
+  const layout = passRecord.pipeline?.bindGroupLayouts?.[slot] ?? bindGroupRecord.layout;
   return makeBindGroup(
     device,
     required(layout, `missing pipeline bind-group layout at slot ${slot}`),
@@ -1784,6 +1785,8 @@ function registerObject(state, map, id, object, kind, metadata = {}) {
     openRefs: 0,
     recordedRefs: 0,
     submittedRefs: 0,
+    pendingReadbackRefs: 0,
+    referencedByWork: false,
     ...metadata,
   };
   state.objects.set(id, record);
@@ -1829,7 +1832,7 @@ function destroyObject(map, record) {
   if (record.destroyed) {
     throw new Error(`${objectLabel(record.kind)} ${record.id} is already destroyed`);
   }
-  if (record.dependents > 0) {
+  if (record.kind !== "buffer" && record.dependents > 0) {
     throw new Error(`${objectLabel(record.kind)} ${record.id} is still referenced by live objects`);
   }
   if (record.openRefs > 0) {
@@ -1838,7 +1841,10 @@ function destroyObject(map, record) {
   if (record.recordedRefs > 0) {
     throw new Error(`${objectLabel(record.kind)} ${record.id} is still referenced by recorded work`);
   }
-  if (record.submittedRefs > 0) {
+  if (record.kind === "buffer" && record.pendingReadbackRefs > 0) {
+    throw new Error(`${objectLabel(record.kind)} ${record.id} is still referenced by a pending readback`);
+  }
+  if (record.kind !== "buffer" && record.submittedRefs > 0) {
     throw new Error(`${objectLabel(record.kind)} ${record.id} is still referenced by submitted work`);
   }
   if (typeof record.object.destroy === "function") {
@@ -1903,12 +1909,58 @@ function prepareCreateObject(state, id, kind, options) {
 
 
 
+function validateBufferReplacement(state, record, size, usage) {
+  for (const dependent of state.objects.values()) {
+    if (dependent.destroyed || dependent.kind !== "bind_group") {
+      continue;
+    }
+    for (const entry of dependent.object.entries) {
+      if (entry.resource_kind !== "buffer" || entry.resource_id !== record.id) {
+        continue;
+      }
+      const requiredUsage = entry.binding_type === "uniform_buffer" ? "UNIFORM" : "STORAGE";
+      if (!usage.has(requiredUsage)) {
+        throw new Error(`buffer replacement ${record.id} lacks ${requiredUsage} usage`);
+      }
+      if (entry.offset !== undefined && entry.size !== undefined && entry.offset + entry.size > size) {
+        throw new Error(`buffer replacement ${record.id} bind-group range is out of range`);
+      }
+    }
+  }
+}
+
+
+
+function prepareCreateBuffer(state, id, size, usage, options) {
+  const record = state.objects.get(id);
+  if (record === undefined) {
+    return null;
+  }
+  if (record.kind !== "buffer") {
+    throw new Error(`object ${id} is ${objectLabel(record.kind)}, not buffer`);
+  }
+  if (record.destroyed) {
+    throw new Error(`buffer ${id} is destroyed`);
+  }
+  if (record.openRefs > 0 || record.recordedRefs > 0 || record.pendingReadbackRefs > 0) {
+    throw new Error(`buffer ${id} is still referenced by pending work or readback`);
+  }
+  if (!record.referencedByWork && options.replaceExistingResources !== true) {
+    throw new Error(`duplicate or reused object id ${id}`);
+  }
+  validateBufferReplacement(state, record, size, usage);
+  return record;
+}
+
+
+
 function addEncoderRef(state, encoderRefs, encoderId, id, kind) {
   const record = requireLiveRecord(state, id, kind);
   const refs = required(encoderRefs.get(encoderId), `unknown command encoder ${encoderId}`);
   if (!refs.has(record)) {
     refs.add(record);
     record.openRefs++;
+    record.referencedByWork = true;
   }
   return record;
 }
@@ -1937,7 +1989,9 @@ function submitCommandBuffer(record) {
   }
   for (const objectRecord of record.refs) {
     objectRecord.recordedRefs = Math.max(0, objectRecord.recordedRefs - 1);
-    objectRecord.submittedRefs++;
+    if (objectRecord.kind !== "buffer") {
+      objectRecord.submittedRefs++;
+    }
   }
   record.submitted = true;
   return record.commandBuffer;
@@ -1953,6 +2007,82 @@ function retireSubmittedRefs(record) {
     objectRecord.submittedRefs = Math.max(0, objectRecord.submittedRefs - 1);
   }
   record.submitted = false;
+}
+
+
+
+function validateQueueReadbacks(state, command) {
+  const readbacks = command.readbacks ?? [];
+  if (readbacks.length === 0) {
+    return [];
+  }
+  const submissionId = required(
+    command.submission_id,
+    "submission_id is required when readbacks are requested",
+  );
+  if (state.pendingReadbacks.has(submissionId)) {
+    throw new Error(`submission ${submissionId} already has a pending readback request`);
+  }
+  return readbacks.map((readback) => {
+    const bufferRecord = requireLiveRecord(state, readback.buffer_id, "buffer");
+    requireUsage(bufferRecord, "MAP_READ");
+    const offset = readback.offset ?? 0;
+    const size = required(readback.size, "readback needs size");
+    if (offset + size > bufferRecord.size) {
+      throw new Error("readback range is out of range");
+    }
+    return { bufferRecord, buffer_id: readback.buffer_id, offset, size };
+  });
+}
+
+
+
+function retainQueueReadbacks(state, submissionId, readbacks) {
+  if (readbacks.length === 0) {
+    return;
+  }
+  for (const readback of readbacks) {
+    readback.bufferRecord.pendingReadbackRefs++;
+  }
+  state.pendingReadbacks.set(submissionId, readbacks);
+}
+
+
+
+function consumeQueueSubmitReply(state, command) {
+  const pending = state.pendingReadbacks.get(command.submission_id);
+  if (pending === undefined) {
+    throw new Error(
+      `QueueSubmitReply references submission ${command.submission_id} with no pending readback request`,
+    );
+  }
+  const replies = command.readbacks ?? [];
+  if (replies.length !== pending.length) {
+    throw new Error(
+      `QueueSubmitReply readback count ${replies.length} does not match request count ${pending.length}`,
+    );
+  }
+  for (let i = 0; i < pending.length; i++) {
+    const request = pending[i];
+    const reply = replies[i];
+    if (
+      reply.buffer_id !== request.buffer_id ||
+      (reply.offset ?? 0) !== request.offset ||
+      reply.size !== request.size
+    ) {
+      throw new Error("QueueSubmitReply readback entry does not match the original request");
+    }
+    const data = decodeBase64(required(reply.data, "QueueSubmitReply readback needs data"));
+    if (data.byteLength !== request.size) {
+      throw new Error("QueueSubmitReply readback data size does not match the original request");
+    }
+  }
+  for (const request of pending) {
+    request.bufferRecord.pendingReadbackRefs = Math.max(
+      0, request.bufferRecord.pendingReadbackRefs - 1,
+    );
+  }
+  state.pendingReadbacks.delete(command.submission_id);
 }
 
 
@@ -2283,6 +2413,7 @@ function createExecutionState(canvas = null, browserPresentFormat = null) {
     bindGroups: new Map(),
     shaders: new Map(),
     pipelines: new Map(),
+    pendingReadbacks: new Map(),
     browserCanvasDepth: null,
     browserPresent: {
       current: null,
@@ -2805,21 +2936,28 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       case "RendererHelloReply":
         break;
 
-      case "CreateBuffer":
-        prepareCreateObject(state, command.id, "buffer", options);
-        registerObject(
-          state,
-          buffers,
-          command.id,
-          device.createBuffer({
-            label: command.label,
-            size: required(command.size, "CreateBuffer needs size"),
-            usage: mapBufferUsage(command.usage),
-          }),
-          "buffer",
-          { size: required(command.size, "CreateBuffer needs size"), usage: new Set(command.usage ?? []) },
-        );
+      case "CreateBuffer": {
+        const size = required(command.size, "CreateBuffer needs size");
+        const usage = new Set(command.usage ?? []);
+        const existing = prepareCreateBuffer(state, command.id, size, usage, options);
+        const buffer = device.createBuffer({
+          label: command.label,
+          size,
+          usage: mapBufferUsage(command.usage),
+        });
+        if (existing === null) {
+          registerObject(state, buffers, command.id, buffer, "buffer", { size, usage });
+        } else {
+          if (typeof existing.object.destroy === "function") {
+            existing.object.destroy();
+          }
+          existing.object = buffer;
+          existing.size = size;
+          existing.usage = usage;
+          buffers.set(command.id, buffer);
+        }
         break;
+      }
 
       case "WriteBuffer": {
         const bufferRecord = requireLiveRecord(state, command.buffer_id, "buffer");
@@ -3025,6 +3163,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           command.id,
           {
             layoutId: command.bind_group_layout_id,
+            layout: bindGroupLayout.layout,
             entries,
             bindGroup: makeBindGroup(
               device,
@@ -3259,6 +3398,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           bindGroupLayouts.get(bindGroupRecord.layoutId),
           `unknown bind-group layout ${bindGroupRecord.layoutId}`,
         );
+        for (const entry of bindGroupRecord.entries) {
+          if (entry.resource_kind === "buffer") {
+            requireLiveRecord(state, entry.resource_id, "buffer");
+          }
+        }
         validateDynamicOffsets(state, layoutRecord, bindGroupRecord, command.dynamic_offsets ?? []);
         const bindGroup = bindGroupForSet(
           device,
@@ -3272,6 +3416,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           samplers,
         );
         addEncoderRef(state, encoderRefs, passRecord.encoderId, command.bind_group_id, "bind_group");
+        for (const entry of bindGroupRecord.entries) {
+          if (entry.resource_kind === "buffer") {
+            addEncoderRef(state, encoderRefs, passRecord.encoderId, entry.resource_id, "buffer");
+          }
+        }
         passRecord.pass.setBindGroup(slot, bindGroup, []);
         break;
       }
@@ -3710,9 +3859,10 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         const submittedRecords = ids.map((id) =>
           required(commandBuffers.get(id), `unknown command buffer ${id}`),
         );
+        const readbacks = validateQueueReadbacks(state, command);
         const submitBuffers = submittedRecords.map((record) => submitCommandBuffer(record));
         device.queue.submit(submitBuffers);
-        const readbacks = command.readbacks ?? [];
+        retainQueueReadbacks(state, command.submission_id, readbacks);
         const retireSubmitted = options.retireSubmittedRefs === true;
         if ((readbacks.length > 0 || retireSubmitted) && typeof device.queue.onSubmittedWorkDone === "function") {
           await device.queue.onSubmittedWorkDone();
@@ -3724,17 +3874,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
         }
         await browserPresentPendingFrame(device, context, canvasFormat, state);
         for (const readback of readbacks) {
-          const bufferRecord = requireLiveRecord(state, readback.buffer_id, "buffer");
-          requireUsage(bufferRecord, "MAP_READ");
           const buffer = required(
             buffers.get(readback.buffer_id),
             `unknown readback buffer ${readback.buffer_id}`,
           );
-          const offset = readback.offset ?? 0;
-          const size = required(readback.size, "readback needs size");
-          if (offset + size > bufferRecord.size) {
-            throw new Error("readback range is out of range");
-          }
+          const { offset, size } = readback;
           await buffer.mapAsync(GPUMapMode.READ, offset, size);
           const mapped = buffer.getMappedRange(offset, size);
           const bytes = new Uint8Array(mapped.slice(0));
@@ -3752,6 +3896,9 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       }
 
       case "QueueSubmitReply":
+        consumeQueueSubmitReply(state, command);
+        break;
+
       case "Error":
         break;
 

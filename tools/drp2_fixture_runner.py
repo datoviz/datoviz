@@ -431,7 +431,86 @@ class DRP2SemanticValidator:
                 return True
         return False
 
+    def _buffer_has_pending_capture(self, buffer_id: int) -> bool:
+        """Return whether an open or unsubmitted capture retains a buffer."""
+
+        token = ('buffer', buffer_id)
+        for encoder in self.encoders.values():
+            if encoder['state'] == 'open' and token in encoder['resources']:
+                return True
+        for command_buffer in self.command_buffers.values():
+            if not command_buffer['submitted'] and token in command_buffer['resources']:
+                return True
+        return False
+
+    def _buffer_has_pending_readback(self, buffer_id: int) -> bool:
+        """Return whether a readback reply still retains a buffer."""
+
+        return any(
+            readback['buffer_id'] == buffer_id
+            for readbacks in self.pending_readbacks.values()
+            for readback in readbacks
+        )
+
+    def _buffer_has_completed_capture(self, buffer_id: int) -> bool:
+        """Return whether a submitted command buffer previously captured a buffer."""
+
+        token = ('buffer', buffer_id)
+        return any(
+            command_buffer['submitted'] and token in command_buffer['resources']
+            for command_buffer in self.command_buffers.values()
+        )
+
+    def _validate_buffer_replacement(
+        self, index: int, buffer_id: int, size: int, usage: set[str]
+    ) -> None:
+        """Ensure live bind groups remain compatible with a buffer replacement."""
+
+        for object_state in self.objects.values():
+            if not object_state.live or object_state.kind != 'bind_group':
+                continue
+            for entry in object_state.data['entries']:
+                if entry['resource_kind'] != 'buffer' or entry['resource_id'] != buffer_id:
+                    continue
+                required_usage = (
+                    'UNIFORM' if entry['binding_type'] == 'uniform_buffer' else 'STORAGE'
+                )
+                if required_usage not in usage:
+                    raise SemanticFailure(
+                        'DRP2_ERR_USAGE',
+                        index,
+                        f'buffer replacement {buffer_id} does not allow {required_usage}',
+                    )
+                if 'offset' in entry and 'size' in entry and entry['offset'] + entry['size'] > size:
+                    raise SemanticFailure(
+                        'DRP2_ERR_OUT_OF_RANGE',
+                        index,
+                        f'buffer replacement {buffer_id} does not fit bind-group range',
+                    )
+
     def _handle_CreateBuffer(self, index: int, command: Dict[str, Any]) -> None:
+        state = self.objects.get(command['id'])
+        if state is not None:
+            if state.kind == 'buffer' and state.live and (
+                self._buffer_has_pending_capture(command['id'])
+                or self._buffer_has_pending_readback(command['id'])
+            ):
+                raise SemanticFailure(
+                    'DRP2_ERR_USAGE',
+                    index,
+                    f'buffer {command["id"]} still has a pending capture or readback',
+                )
+            if state.kind != 'buffer' or not state.live or not self._buffer_has_completed_capture(command['id']):
+                raise SemanticFailure(
+                    'DRP2_ERR_DUPLICATE_ID',
+                    index,
+                    f'id {command["id"]} is already reserved as {state.kind}',
+                )
+            self._validate_buffer_replacement(
+                index, command['id'], command['size'], set(command['usage'])
+            )
+            state.data = {'size': command['size'], 'usage': set(command['usage'])}
+            return
         self._reserve_id(
             index,
             command['id'],
@@ -442,9 +521,11 @@ class DRP2SemanticValidator:
     def _handle_DestroyBuffer(self, index: int, command: Dict[str, Any]) -> None:
         buffer_id = command['buffer_id']
         state = self._resolve_live(index, buffer_id, 'buffer')
-        if self._resource_in_use('buffer', buffer_id):
+        if self._buffer_has_pending_capture(buffer_id) or self._buffer_has_pending_readback(buffer_id):
             raise SemanticFailure(
-                'DRP2_ERR_USAGE', index, f'buffer {buffer_id} is still referenced by recorded work'
+                'DRP2_ERR_USAGE',
+                index,
+                f'buffer {buffer_id} is still referenced by pending work or readback',
             )
         state.live = False
 
@@ -977,6 +1058,12 @@ class DRP2SemanticValidator:
                 f'bind group {command["bind_group_id"]} expected {len(dynamic_layout_entries)} dynamic offsets, got {len(dynamic_offsets)}',
             )
         entries_by_binding = {entry['binding']: entry for entry in bind_group.data['entries']}
+        for entry in bind_group.data['entries']:
+            if entry['resource_kind'] != 'buffer':
+                continue
+            buffer_state = self._resolve_live(index, entry['resource_id'], 'buffer')
+            if 'offset' in entry and 'size' in entry:
+                self._check_buffer_range(index, buffer_state, entry['offset'], entry['size'])
         for dynamic_index, layout_entry in enumerate(dynamic_layout_entries):
             bind_group_entry = entries_by_binding.get(layout_entry['binding'])
             if bind_group_entry is None:
@@ -1166,6 +1253,7 @@ class DRP2SemanticValidator:
 
     def _handle_QueueSubmit(self, index: int, command: Dict[str, Any]) -> None:
         seen_command_buffer_ids = set()
+        command_buffers = []
         for command_buffer_id in command['command_buffer_ids']:
             if command_buffer_id in seen_command_buffer_ids:
                 raise SemanticFailure(
@@ -1188,7 +1276,7 @@ class DRP2SemanticValidator:
                     index,
                     f'command buffer {command_buffer_id} was already submitted',
                 )
-            command_buffer['submitted'] = True
+            command_buffers.append(command_buffer)
 
         readbacks = command.get('readbacks', [])
         if readbacks:
@@ -1204,6 +1292,9 @@ class DRP2SemanticValidator:
                 self._check_buffer_range(index, buffer_state, rb['offset'], rb['size'])
             self.pending_readbacks[submission_id] = readbacks
 
+        for command_buffer in command_buffers:
+            command_buffer['submitted'] = True
+
     def _handle_QueueSubmitReply(self, index: int, command: Dict[str, Any]) -> None:
         submission_id = command['submission_id']
         if submission_id not in self.pending_readbacks:
@@ -1212,7 +1303,7 @@ class DRP2SemanticValidator:
                 index,
                 f'QueueSubmitReply references submission {submission_id} with no pending readback request',
             )
-        expected = self.pending_readbacks.pop(submission_id)
+        expected = self.pending_readbacks[submission_id]
         actual = command.get('readbacks', [])
         if len(actual) != len(expected):
             raise SemanticFailure(
@@ -1229,6 +1320,7 @@ class DRP2SemanticValidator:
                     index,
                     'QueueSubmitReply readback entry does not match the original request',
                 )
+        del self.pending_readbacks[submission_id]
 
 
 class DRP2FixtureRunner:

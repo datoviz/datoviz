@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tools.drp2_fixture_runner import DRP2FixtureRunner
+from tools.drp2_fixture_runner import DRP2FixtureRunner, DRP2SemanticValidator, SemanticFailure
 
 
 def test_drp2_fixture_runner_full_corpus_passes() -> None:
@@ -597,18 +597,81 @@ def test_drp2_fixture_runner_cli_json_output_for_capability_negative() -> None:
     assert result['passed'] is True
 
 
-def test_drp2_fixture_runner_rejects_destroying_buffer_still_referenced_by_submitted_work() -> None:
+def test_drp2_fixture_runner_allows_destroying_buffer_after_submit() -> None:
     runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
     fixture = Path(
-        'spec/drp2/fixtures/negative/invalid_destroy_buffer_still_referenced_by_submitted_work.json'
+        'spec/drp2/fixtures/positive/destroy_buffer_after_submit.json'
     )
     result = runner.run_fixture(runner.root_dir / fixture)
 
-    assert result.fixture_name == 'invalid_destroy_buffer_still_referenced_by_submitted_work'
+    assert result.fixture_name == 'destroy_buffer_after_submit'
     assert result.passed is True
-    assert result.actual_phase == 'semantic_validation'
-    assert result.actual_code == 'DRP2_ERR_USAGE'
-    assert result.actual_command_index == 8
+    assert result.actual_phase is None
+    assert result.actual_code is None
+
+
+def test_drp2_fixture_runner_validates_buffer_lifetime_refinements() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    expected = {
+        'destroy_buffer_with_unrelated_open_encoder': None,
+        'invalid_destroy_buffer_until_all_captures_submit': 'DRP2_ERR_USAGE',
+        'destroy_buffer_after_all_captures_submit': None,
+        'invalid_create_buffer_replacement_pending_capture': 'DRP2_ERR_USAGE',
+        'replace_buffer_after_submit': None,
+        'invalid_destroy_buffer_pending_readback': 'DRP2_ERR_USAGE',
+        'destroy_buffer_after_readback_reply': None,
+        'invalid_set_bind_group_revalidates_destroyed_buffer': 'DRP2_ERR_DESTROYED_OBJECT',
+    }
+
+    for name, code in expected.items():
+        fixtures = runner.discover([], name, [])
+        assert len(fixtures) == 1
+        result = runner.run_fixture(fixtures[0])
+        assert result.passed is True
+        assert result.actual_code == code
+
+
+def test_drp2_fixture_runner_retains_readback_until_reply_fully_validates() -> None:
+    validator = DRP2SemanticValidator()
+    commands = [
+        {'cmd': 'HelloRenderer', 'version': {'major': 2, 'minor': 0}, 'client_name': 'test'},
+        {
+            'cmd': 'RendererHelloReply',
+            'version': {'major': 2, 'minor': 0},
+            'status': 'ok',
+            'renderer_name': 'test',
+        },
+        {'cmd': 'CreateBuffer', 'id': 1, 'size': 16, 'usage': ['MAP_READ']},
+        {'cmd': 'BeginCommandEncoder', 'id': 2},
+        {'cmd': 'FinishCommandEncoder', 'encoder_id': 2, 'command_buffer_id': 3},
+        {
+            'cmd': 'QueueSubmit',
+            'command_buffer_ids': [3],
+            'submission_id': 4,
+            'readbacks': [{'buffer_id': 1, 'offset': 0, 'size': 4}],
+        },
+    ]
+    validator.validate(commands)
+
+    try:
+        validator._validate_command(
+            6,
+            {
+                'cmd': 'QueueSubmitReply',
+                'submission_id': 4,
+                'readbacks': [{'buffer_id': 1, 'offset': 4, 'size': 4, 'data': 'AAAAAA=='}],
+            },
+        )
+    except SemanticFailure as exc:
+        assert 'does not match' in exc.message
+    else:
+        raise AssertionError('invalid QueueSubmitReply unexpectedly consumed the pending readback')
+    try:
+        validator._validate_command(7, {'cmd': 'DestroyBuffer', 'buffer_id': 1})
+    except SemanticFailure as exc:
+        assert 'pending work or readback' in exc.message
+    else:
+        raise AssertionError('DestroyBuffer unexpectedly accepted a pending readback buffer')
 
 
 def test_drp2_fixture_runner_rejects_destroying_texture_still_referenced_by_submitted_work() -> None:

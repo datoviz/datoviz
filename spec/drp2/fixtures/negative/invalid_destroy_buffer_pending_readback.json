@@ -1,0 +1,18 @@
+{
+  "name": "invalid_destroy_buffer_pending_readback",
+  "description": "A readback buffer is destroyed before QueueSubmitReply validates and consumes the pending request.",
+  "reason": "A pending readback retains its buffer until the matching reply has fully validated.",
+  "fix": "Wait for the matching QueueSubmitReply before destroying the readback buffer.",
+  "version": {"major": 2, "minor": 0},
+  "tags": ["negative", "buffer", "lifetime", "readback"],
+  "commands": [
+    {"cmd": "HelloRenderer", "version": {"major": 2, "minor": 0}, "client_name": "fixture-client"},
+    {"cmd": "RendererHelloReply", "version": {"major": 2, "minor": 0}, "status": "ok", "renderer_name": "fixture-renderer"},
+    {"cmd": "CreateBuffer", "id": 1, "size": 16, "usage": ["MAP_READ"]},
+    {"cmd": "BeginCommandEncoder", "id": 2},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 2, "command_buffer_id": 3},
+    {"cmd": "QueueSubmit", "command_buffer_ids": [3], "submission_id": 4, "readbacks": [{"buffer_id": 1, "offset": 0, "size": 4}]},
+    {"cmd": "DestroyBuffer", "buffer_id": 1}
+  ],
+  "expected": {"outcome": "error", "phase": "semantic_validation", "code": "DRP2_ERR_USAGE", "command_index": 6}
+}
