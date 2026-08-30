@@ -150,7 +150,8 @@ def _populate_stage(
     import build_webgpu_data_bundles
 
     rc = build_webgpu_data_bundles.stage_bundles(
-        output_dir=stage_root / WEBGPU_STAGE_RELATIVE
+        output_dir=stage_root / WEBGPU_STAGE_RELATIVE,
+        include_local=profile == "local",
     )
     if rc != 0:
         raise RuntimeError(f"WebGPU data staging failed with status {rc}")

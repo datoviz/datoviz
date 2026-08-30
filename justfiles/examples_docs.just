@@ -480,6 +480,9 @@ publish confirm='no' source_branch='main' seed_legacy='no':
 
     just wasm-scene-build-if-needed
     just wasm-scene-export-check
+    just webgpu-data-check
+    just webgpu-fixture-preflight
+    just webgpu-runner-smoke
     just check-gallery-media-freshness
     python3 tools/build_gallery_webp.py --output-dir build/gallery-webp/v0.4 --animated-fallbacks
     python3 tools/gen_start_thumbs.py --output-dir build/gallery-webp/v0.4/thumbs

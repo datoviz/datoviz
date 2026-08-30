@@ -22,6 +22,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--check", action="store_true", help="validate without copying bundles")
+    parser.add_argument(
+        "--include-local",
+        action="store_true",
+        help="also stage cache-local bundles that must never enter the published site",
+    )
     return parser.parse_args()
 
 
@@ -181,9 +186,14 @@ def stage_local_bundle(
     return 1, expected_bytes
 
 
-def stage_bundles(manifest_path: Path = DEFAULT_MANIFEST, output_dir: Path = DEFAULT_OUTPUT, check: bool = False) -> int:
+def stage_bundles(
+    manifest_path: Path = DEFAULT_MANIFEST,
+    output_dir: Path = DEFAULT_OUTPUT,
+    check: bool = False,
+    include_local: bool = False,
+) -> int:
     rows = bundle_rows(manifest_path)
-    local_rows = local_bundle_rows(manifest_path)
+    local_rows = local_bundle_rows(manifest_path) if include_local else []
     copied = 0
     total = 0
     if not check:
@@ -224,7 +234,7 @@ def stage_bundles(manifest_path: Path = DEFAULT_MANIFEST, output_dir: Path = DEF
 
 def main() -> int:
     args = parse_args()
-    return stage_bundles(args.manifest, args.output_dir, args.check)
+    return stage_bundles(args.manifest, args.output_dir, args.check, args.include_local)
 
 
 if __name__ == "__main__":

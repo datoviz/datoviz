@@ -54,9 +54,11 @@ def test_real_profile_copies_products_and_stages_webgpu(profile, tmp_path):
     stage = tmp_path / f"stages/{profile}"
     manifest = write_manifest(tmp_path / "manifest.yaml")
 
-    def stage_webgpu(*, output_dir):
+    def stage_webgpu(*, output_dir, include_local):
         output_dir.mkdir(parents=True)
         (output_dir / "bundle.json").write_text("{}\n", encoding="utf8")
+        if include_local:
+            (output_dir / "local-only.bin").write_bytes(b"private")
         return 0
 
     with mock.patch("build_webgpu_data_bundles.stage_bundles", side_effect=stage_webgpu):
@@ -64,6 +66,7 @@ def test_real_profile_copies_products_and_stages_webgpu(profile, tmp_path):
 
     assert (stage / "gallery/v0.4/showcases/example.webp").read_bytes() == b"verified"
     assert (stage / "webgpu-data/bundle.json").is_file()
+    assert (stage / "webgpu-data/local-only.bin").exists() == (profile == "local")
     assert source.read_bytes() == b"verified"
     assert (stage / ".gallery-video-assets.ready").exists() == (profile == "local")
 

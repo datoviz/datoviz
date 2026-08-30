@@ -26,7 +26,7 @@ webgpu-data-check:
 #
 
 webgpu-browser-smoke *args='': wasm-scene-build
-    @python3 tools/build_webgpu_data_bundles.py
+    @python3 tools/build_webgpu_data_bundles.py --include-local
     @node tools/webgpu_browser_smoke.mjs {{args}}
 #
 
