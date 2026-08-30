@@ -1,6 +1,6 @@
 # Example Data Policy
 
-This policy covers example-data bundles prepared by `tools/data/*` and stored in the transitional `data` submodule. The protected `datoviz/data:v0.4-dev` branch is frozen at `3c862beb2e9885f5af9dc624dc22a6d5bb856026` except for explicitly approved recovery or migration work; do not add active datasets or gallery output while the catalog migration is pending, and do not rename, merge, or repoint it to the unrelated historical `data:main` line.
+This policy covers example-data bundles prepared by `tools/data/*` and stored in the transitional `data` submodule. The protected `datoviz/data:v0.4-dev` branch was recovered at baseline `3c862beb2e9885f5af9dc624dc22a6d5bb856026` and intentionally advanced to current tip `b94d32d9c0a0a4c47e7e5c393b4ccc570159ed96` for the approved Point Cloud publication; treat that tip as frozen except for explicitly approved recovery or migration work, do not add active datasets or gallery output while the catalog migration is pending, and do not rename, merge, or repoint it to the unrelated historical `data:main` line.
 
 Do not edit scripts or data files when the task is documentation-only.
 

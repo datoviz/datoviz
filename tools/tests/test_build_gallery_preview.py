@@ -64,6 +64,42 @@ class GalleryPreviewTests(unittest.TestCase):
         self.assertIn("Open the live WebGPU example", text)
         self.assertNotIn("dvz-local-webgpu-tabs", text)
 
+    def test_point_cloud_run_guidance_marks_full_preprocessing_optional(self) -> None:
+        manifest = build_gallery.load_manifest(build_gallery.DEFAULT_MANIFEST)
+        example = next(
+            example
+            for example in build_gallery.collect_examples(manifest)
+            if example.id == "showcases_point_cloud"
+        )
+
+        text = "\n".join(
+            build_gallery.render_run_and_adapt(
+                example, Path("gallery/showcases/showcases_point_cloud.md")
+            )
+        )
+
+        self.assertIn('!!! info "Prepared data included"', text)
+        self.assertIn("The committed prepared input is sufficient", text)
+        self.assertIn("Optionally generate the larger local cache", text)
+        self.assertNotIn('!!! warning "Prepared data required"', text)
+
+    def test_required_preprocessing_keeps_warning(self) -> None:
+        manifest = build_gallery.load_manifest(build_gallery.DEFAULT_MANIFEST)
+        example = next(
+            example
+            for example in build_gallery.collect_examples(manifest)
+            if example.id == "showcases_cortical_activity"
+        )
+
+        text = "\n".join(
+            build_gallery.render_run_and_adapt(
+                example, Path("gallery/showcases/showcases_cortical_activity.md")
+            )
+        )
+
+        self.assertIn('!!! warning "Prepared data required"', text)
+        self.assertNotIn('!!! info "Prepared data included"', text)
+
 
 if __name__ == "__main__":
     unittest.main()

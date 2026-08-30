@@ -776,24 +776,45 @@ def render_run_and_adapt(example: Example, page_path: str | Path) -> list[str]:
         or ""
     )
     preprocessing = str(example.dataset.get("preprocessing", ""))
-    preprocessing_required = bool(preprocessing) and not preprocessing.lower().startswith("none")
+    preprocessing_optional = bool(example.dataset.get("preprocessing_optional", False))
+    preprocessing_required = (
+        bool(preprocessing)
+        and not preprocessing.lower().startswith("none")
+        and not preprocessing_optional
+    )
     requires_preparation = bool(
         preprocessing_required or prepared_source or data_kind == "prepared"
     )
     if requires_preparation:
-        lines.extend(
-            [
-                '!!! warning "Prepared data required"',
-                "",
-                "    This example intentionally fails when its prepared input is absent; it does not",
-                "    substitute synthetic data.",
-            ]
-        )
-        if prepared_source:
-            lines.append(f"    Expected input: `{prepared_source}`.")
-        if preprocessing_required:
-            lines.append(f"    Prepare it from the repository root with `{preprocessing}`.")
-        lines.append("")
+        if preprocessing_optional:
+            lines.extend(
+                [
+                    '!!! info "Prepared data included"',
+                    "",
+                    "    The committed prepared input is sufficient to run this example.",
+                ]
+            )
+            if prepared_source:
+                lines.append(f"    Included input: `{prepared_source}`.")
+            if preprocessing:
+                lines.append(
+                    f"    Optionally generate the larger local cache with `{preprocessing}`."
+                )
+            lines.append("")
+        else:
+            lines.extend(
+                [
+                    '!!! warning "Prepared data required"',
+                    "",
+                    "    This example intentionally fails when its prepared input is absent; it does not",
+                    "    substitute synthetic data.",
+                ]
+            )
+            if prepared_source:
+                lines.append(f"    Expected input: `{prepared_source}`.")
+            if preprocessing_required:
+                lines.append(f"    Prepare it from the repository root with `{preprocessing}`.")
+            lines.append("")
     if data_kind == "real":
         lines.extend(
             [

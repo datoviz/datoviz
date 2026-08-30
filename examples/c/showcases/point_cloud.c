@@ -12,7 +12,8 @@
  * structure.
  *
  * This workflow is useful for large measured point clouds where the expensive decoding and
- * normalization happen before the gallery example runs. Generate the prepared cache before running.
+ * normalization happen before the gallery example runs. The committed 500,000-point input is
+ * sufficient; generate the full local cache only when the higher-resolution path is wanted.
  *
  * Scenario: showcases_point_cloud
  * Style: showcase, graphite_cyan, 1280x720 window target

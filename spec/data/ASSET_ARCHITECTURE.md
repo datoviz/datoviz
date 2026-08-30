@@ -287,7 +287,7 @@ Catalog implementation, asset publication, gallery migration, and final submodul
 2. Record every distinct data gitlink referenced by a released parent tag and the LFS objects required for later snapshot export, without making complete legacy reconstruction a branch-cutover gate.
 3. Classify every current binary as runtime-required, test fixture, stable generated core payload, package artifact, redistributable example bundle, upstream-only dataset, gallery media, release evidence, local diagnostic output, or obsolete/duplicate.
 4. Audit current fonts, textures, prepared datasets, and generated media for source/license gaps, privacy or scientific-data restrictions, dirty producer states, and honest reproducibility status.
-5. Preserve hashes for historical cutover snapshot `a9542d20f2d29aecb9518738f6b7ba1914b63997` and current frozen v0.4 tip `3c862beb2e9885f5af9dc624dc22a6d5bb856026` so later publication and legacy reconstruction can prove byte identity.
+5. Preserve hashes for historical cutover snapshot `a9542d20f2d29aecb9518738f6b7ba1914b63997`, recovered v0.4 baseline `3c862beb2e9885f5af9dc624dc22a6d5bb856026`, and current protected transitional tip `b94d32d9c0a0a4c47e7e5c393b4ccc570159ed96` so later publication and legacy reconstruction can prove byte identity.
 
 Exit gate: every current path has one declared destination or explicit retirement decision, every released data gitlink is enumerated for the parallel preservation lane, and no file is migrated solely because it exists.
 

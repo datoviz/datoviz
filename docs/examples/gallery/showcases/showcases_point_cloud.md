@@ -47,12 +47,11 @@ Use your configured build environment; Python routes additionally require local 
 | Python | Available | `python3 -m examples.python.gallery.showcases.point_cloud` |
 | Browser | Live WebGPU route | <a href="../../../webgpu/live.html?id=showcases_point_cloud">Open live example</a> |
 
-!!! warning "Prepared data required"
+!!! info "Prepared data included"
 
-    This example intentionally fails when its prepared input is absent; it does not
-    substitute synthetic data.
-    Expected input: `data/examples/point_cloud/prepared/point_cloud.bin`.
-    Prepare it from the repository root with `python tools/data/prepare_point_cloud.py --force`.
+    The committed prepared input is sufficient to run this example.
+    Included input: `data/examples/point_cloud/prepared/point_cloud.bin`.
+    Optionally generate the larger local cache with `python tools/data/prepare_point_cloud.py --force`.
 
 Use this example as capability or integration evidence, not as a minimal copy-paste
 template. Start from the nearest supported, copy-safe example and add this feature
@@ -62,7 +61,7 @@ after verifying the linked API reference.
 
 The prepared binary stores point positions, RGBA colors, and per-point pixel sizes after preprocessing the upstream LAZ source. The preview should read as a dense colored spatial scan, and the fly-style view is the interaction to use when inspecting depth and structure.
 
-This workflow is useful for large measured point clouds where the expensive decoding and normalization happen before the gallery example runs. Generate the prepared cache before running.
+This workflow is useful for large measured point clouds where the expensive decoding and normalization happen before the gallery example runs. The committed 500,000-point input is sufficient; generate the full local cache only when the higher-resolution path is wanted.
 
 Real data is loaded from the six-million-point local cache when available, with the committed 500,000-point browser bundle as a fallback. Generate the full local cache from the upstream LAZ source with:
 
@@ -118,6 +117,7 @@ Real data is loaded from the six-million-point local cache when available, with 
     | `license` | Redistribution permission received; permission details pending. |
     | `citation` | Credit Inertial Labs RESEPI sample data and link to the public sample-data page; no formal citation is supplied by the source. |
     | `preprocessing` | `python tools/data/prepare_point_cloud.py --force` |
+    | `preprocessing_optional` | True |
     | `prepared_source` | data/examples/point_cloud/prepared/point_cloud.bin |
     | `cache_prepared_path` | .cache/datoviz/examples/point_cloud/prepared |
     | `provenance` | The preparation tool downloads the named RGB LAZ source through its public Stitch3D viewer, deterministically samples up to six million points with seed 12345, centers and aligns the scan while preserving metric aspect ratio, retains the measured RGB variation with documented display grading, and writes the cache-local native record plus the committed 500k-point browser bundle. Redistribution permission was received; grantor, date, scope, and durable reference are pending. |
