@@ -2,6 +2,9 @@
 
 This is a course in modern GPU graphics, written in C and running on Vulkan.
 
+!!! note "RC3 availability"
+    Chapters 1–3 are available in RC3. Chapters 4–15 and the closing chapter are the RC4 roadmap; their summaries below describe the planned progression, not currently published lessons.
+
 You start with an empty file and end up with an interactive 3D mesh viewer: a perspective camera
 you drive with the mouse, depth-tested geometry, a texture you upload yourself, and per-fragment
 lighting. Every line of it is yours, with nothing to clone and no framework to fill in.
@@ -69,21 +72,21 @@ you can resynchronize in one paste. Along the way:
 2. [Your first window](02-window.md): a window, a GPU, a render loop, and a color of your choosing.
 3. [How a frame works](03-frame.md): what the CPU records, what the GPU executes, and when.
 
-**Part 2: Triangles, shaders, pipeline, vertex data**
+**Part 2: Triangles, shaders, pipeline, vertex data — RC4 roadmap**
 
 4. Your first triangle: shaders, a pipeline, and a draw call.
 5. Shaders in their own files: SPIR-V, compiler errors, and live reloading.
 6. Vertex buffers: geometry from your own memory.
 7. Index buffers: the same shape with fewer vertices.
 
-**Part 3: Into 3D**
+**Part 3: Into 3D — RC4 roadmap**
 
 8. Push constants: getting changing values into a shader.
 9. Matrices and perspective: model, view, projection, and a cube that looks wrong.
 10. Depth and culling: why it looked wrong, and how to fix it.
 11. Mouse control: an arcball camera.
 
-**Part 4: Surfaces, textures and light**
+**Part 4: Surfaces, textures and light — RC4 roadmap**
 
 12. Uploading a texture: staging buffers, image layouts, and barriers.
 13. Sampling the texture: samplers, descriptors, and UV coordinates.

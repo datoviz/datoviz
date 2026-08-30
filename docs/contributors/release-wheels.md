@@ -38,8 +38,7 @@ Shader and Vulkan dependency policy:
   for libraries Datoviz loads with `dlopen()` at runtime.
 - `glslc` and `spirv-val` are build/test tools and are not part of the Datoviz runtime GLSL compilation path.
 
-Required Python install-smoke versions are 3.10, 3.11, 3.12, 3.13, and 3.14. Python 3.15 is a
-prerelease smoke lane and should stay non-blocking until it is appropriate for normal PyPI users.
+Required Python install-smoke versions are 3.10, 3.11, 3.12, 3.13, and 3.14, except Windows ARM64 where the current validated matrix covers 3.11 through 3.14. Python 3.15 is a prerelease smoke lane and should stay non-blocking until it is appropriate for normal PyPI users.
 
 Target platform artifacts are:
 
@@ -220,7 +219,7 @@ Before relying on a run for release evidence:
 2. Linux wheels build and inspect on `x86_64` and `aarch64`;
 3. macOS wheels build and inspect on `x86_64` and `arm64`;
 4. Windows wheels build and inspect on `AMD64` and `ARM64`;
-5. host-native Python install smokes pass for Python 3.10 through 3.14;
+5. host-native Python install smokes pass for Python 3.10 through 3.14, except Windows ARM64 where the current matrix covers 3.11 through 3.14;
 6. the Python 3.15 prerelease lane remains non-blocking;
 7. Qt probing is optional unless the runner explicitly installs a known-good Qt/PyQt stack;
 8. artifact names match `wheel-<os>-<arch>`;

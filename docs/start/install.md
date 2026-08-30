@@ -1,6 +1,6 @@
 # Install
 
-These instructions target Datoviz v0.4.0rc2, the active release candidate published on PyPI and GitHub. Native windows and offscreen rendering require a Vulkan-capable GPU, driver, and runtime.
+These instructions target Datoviz v0.4.0rc2, the latest published release candidate on PyPI and GitHub. Native windows and offscreen rendering require a Vulkan-capable GPU, driver, and runtime.
 
 See the [v0.4.0rc2 release notes](../releases/v0.4.0rc2.md) for the package, validation scope, and known limitations. See [platform support](../reference/platform-support.md) for supported systems and current limitations.
 

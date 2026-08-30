@@ -1,6 +1,6 @@
 # Panel Frame Snapshot Architecture
 
-Status: initial v0.4-dev architecture slice.
+Status: implemented v0.4 snapshot contract with retained guide layout, hit testing, and rendered-contribution queries.
 
 ## Goal
 
@@ -22,16 +22,19 @@ DvzPanelFrameSnapshot
     diagnostics
 ```
 
-This architecture is allowed to break v0.4-dev API compatibility where needed.
+## Public API
 
-## M182 Core Slice
-
-The first slice adds an immutable public snapshot handle and a copied info record:
+The immutable public snapshot handle exposes copied frame information and retained guide queries:
 
 ```c
 DvzPanelFrameSnapshot* dvz_panel_resolve_frame(DvzPanel* panel);
 DvzId dvz_panel_frame_id(const DvzPanelFrameSnapshot* snapshot);
 bool dvz_panel_frame_info(const DvzPanelFrameSnapshot* snapshot, DvzPanelFrameInfo* out);
+uint32_t dvz_panel_frame_guide_count(const DvzPanelFrameSnapshot* snapshot);
+bool dvz_panel_frame_guide_layout(const DvzPanelFrameSnapshot* snapshot, uint32_t index, DvzGuideLayout* out);
+bool dvz_panel_frame_guide_hit(const DvzPanelFrameSnapshot* snapshot, float x_px, float y_px, DvzGuideHit* out);
+uint32_t dvz_panel_frame_contribution_count(const DvzPanelFrameSnapshot* snapshot);
+bool dvz_panel_frame_contribution(const DvzPanelFrameSnapshot* snapshot, uint32_t index, DvzRenderedContribution* out);
 void dvz_panel_frame_ref(DvzPanelFrameSnapshot* snapshot);
 void dvz_panel_frame_unref(DvzPanelFrameSnapshot* snapshot);
 ```
@@ -49,7 +52,7 @@ void dvz_panel_frame_unref(DvzPanelFrameSnapshot* snapshot);
 - DATA-to-VIEW matrix;
 - diagnostics for intentionally incomplete strict guide fields.
 
-The M182 revision fields deliberately share a coarse figure frame revision. This gives callers
+The revision fields deliberately share a coarse figure frame revision. This gives callers
 stable invalidation behavior now while later retained objects add finer panel/layout/view/guide and
 visual revisions.
 
@@ -71,7 +74,6 @@ and plot clipping for real clipping rather than endpoint trimming.
 Future work should split the coarse revision into real retained objects:
 
 - revisioned `DvzView2D` and `DvzView3D` descriptors;
-- first-class `DvzGuide` identities, layout boxes, query hits, and all-rendered contributions;
 - snapshot-based ray/readback APIs;
 - retained DATA-space View3D visual attachments;
 - retained update counters proving camera navigation does not reupload unchanged visual buffers.

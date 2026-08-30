@@ -23,7 +23,7 @@ top to bottom and record skipped items as known exclusions.
 - [ ] Confirm C runtime version and public notes agree with the release identity.
 - [ ] Confirm the intended tag name, for example `v0.4.0rc2`.
 - [ ] Draft RC notes with commit, tag, feature status, known issues, and validation matrix.
-- [ ] Update the release-candidate blog post date to match the actual release date.
+- [ ] Create or update the candidate-specific announcement; do not retag or redate an earlier RC post.
 - [ ] Confirm migration/status notes from v0.3 are honest about breaking changes.
 - [ ] Confirm `CITATION.cff` matches the intended release version.
 - [ ] Confirm [Citation](../reference/citation.md) has the correct DOI status for this release.
@@ -142,7 +142,7 @@ top to bottom and record skipped items as known exclusions.
       stable; treat cross-arch builds as inventory coverage unless a native runner is available.
 - [ ] Confirm macOS `x86_64` and `arm64` wheel artifacts.
 - [ ] Confirm Windows `AMD64` and `ARM64` wheel artifacts.
-- [ ] Confirm host-native install smokes for Python 3.10 through 3.14.
+- [ ] Confirm host-native install smokes for Python 3.10 through 3.14, except Windows ARM64 where the current matrix covers Python 3.11 through 3.14.
 - [ ] Keep Python 3.15 prerelease smoke non-blocking unless release policy changes.
 
 

@@ -1,6 +1,6 @@
 # C/C++ Distribution And Integration
 
-Status: implemented distribution surface with RC3 exact-artifact, provider, conda, and vcpkg gates remaining. Updated: 2026-08-01.
+Status: implemented distribution surface with RC3 exact base-artifact, conda, and vcpkg gates remaining; official Qt/PyQt provider artifacts are RC4. Updated: 2026-08-30.
 
 Use [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for commands, [../../docs/how-to/c-integration.md](../../docs/how-to/c-integration.md) for users, [../../docs/reference/build-options.md](../../docs/reference/build-options.md) for build modes, and [STATUS.md](STATUS.md) for current release blockers.
 
@@ -18,10 +18,13 @@ Use [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for c
 ## Remaining RC3 Gates
 
 1. Build the final source bundle and six-wheel matrix from the exact RC3 commit; inspect native dependencies and pass Python, shaderc, CMake, rendering, and clean-install smokes.
-2. Publish Vulkan-enabled Qt and compatible PyQt packages, then build the exact conda split outputs against that managed runtime and validate hosted Linux, macOS, and Windows behavior.
+2. Validate the base conda outputs without making the optional Qt provider an RC3 gate; confirm dependency names, install paths, Windows DLL layout, and headless import/scene behavior.
 3. Validate the vcpkg overlay on Windows with vcpkg installed and replace release-source SHA512 placeholders only after exact asset publication.
-4. Confirm final conda dependency names, Unix install paths, Windows DLL layout, headless import/scene behavior, optional-provider diagnostics, and feedstock CI results.
-5. Decide checksum/signing policy and verify third-party notices and licenses.
+4. Decide checksum/signing policy and verify third-party notices and licenses.
+
+## Remaining RC4 Provider Gate
+
+Publish Vulkan-enabled Qt and compatible PyQt packages, then build the exact conda split outputs against that managed runtime and validate the optional provider on hosted Linux, macOS, and Windows. Confirm provider diagnostics and feedstock CI results without changing the base-wheel contract.
 
 Homebrew, `.deb`, Spack, rpm, conan, Chocolatey, winget, MSYS2, nix, Docker distribution, and additional channels remain community-driven, post-v0.4, or optional unless release scope changes.
 

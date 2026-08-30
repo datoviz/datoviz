@@ -14,12 +14,11 @@ Use explicit release candidates. Do not treat RCs as anonymous nightly snapshots
 | Pre-RC | Remove known blockers and prove the release path locally. | Draft notes, local validation, draft artifacts. |
 | RC1 | API and architecture candidate. | Public tag, release notes, first broad tester artifacts. |
 | RC2 | Narrow packaged native-window hotfix. | Replacement wheels and exact-wheel regression evidence. |
-| RC3 | Documentation, packaging, and quality candidate. | Former RC2 scope, Qt provider, final packaging and docs. |
+| RC3 | Documentation, packaging, and quality candidate. | Base artifacts, documentation, gallery, WebGPU routes, and quality evidence. |
+| RC4 | Optional-provider and course-completion candidate. | Official Qt/PyQt provider artifacts and the completed Vulkan course. |
 | Final | Publish v0.4.0. | Final tag, PyPI artifacts, documentation, announcement assets. |
 
-RC1 exposed a macOS packaged native-window defect, so RC2 is deliberately limited to that repair
-and its regression proof. RC3 absorbs the former RC2 documentation/gallery/provider scope and
-should finish close enough that only release-blocking defects change before final.
+RC1 exposed a macOS packaged native-window defect, so RC2 was deliberately limited to that repair and its regression proof. RC3 absorbs the former documentation, gallery, WebGPU, base-packaging, and quality scope. RC4 owns the completed Vulkan course and official Qt/PyQt provider artifacts, whose upstream runtime work is not an RC3 dependency.
 
 
 ## Release Inputs
@@ -54,9 +53,9 @@ artifacts from a tree with unreviewed staged changes, generated binary payloads,
 For the automation front door, start with a dry run:
 
 ```sh
-just release-plan 0.4.0rc2
-just release-dry-run 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
-just release-candidate 0.4.0rc2 --dry-run
+just release-plan 0.4.0rc3
+just release-dry-run 0.4.0rc3 --wheel path/to/datoviz-0.4.0rc3-...whl
+just release-candidate 0.4.0rc3 --dry-run
 ```
 
 `release-dry-run` chains the plan, candidate dry-run, optional validation-pack rehearsal, strict
@@ -66,13 +65,13 @@ matrix report when state exists, and publication dry-runs. Add `--write-report` 
 After reviewing the dry-run output, run the local candidate flow:
 
 ```sh
-just release-candidate 0.4.0rc2
-just release-notes 0.4.0rc2
-just release-docs-validate 0.4.0rc2
-just release-report 0.4.0rc2
+just release-candidate 0.4.0rc3
+just release-notes 0.4.0rc3
+just release-docs-validate 0.4.0rc3
+just release-report 0.4.0rc3
 ```
 
-This writes `build/release/0.4.0rc2/release-state.json`, command logs, generated source bundle
+This writes `build/release/0.4.0rc3/release-state.json`, command logs, generated source bundle
 metadata, discovered wheel checksums, generated release notes, documentation validation evidence,
 and the first release report inputs. It does not tag, upload, publish, push, or create a GitHub
 release.
@@ -88,7 +87,7 @@ just spec-check
 Documentation validation is recorded separately because it produces release evidence:
 
 ```sh
-just release-docs-validate 0.4.0rc2
+just release-docs-validate 0.4.0rc3
 ```
 
 By default this runs the generated C API classification check and selected fenced code-block
@@ -135,15 +134,16 @@ For an RC, set the Python package metadata to the intended PEP 440 release-candi
 example:
 
 ```text
-0.4.0rc2
+0.4.0rc3
 ```
 
 Use tag names that make the artifact identity obvious:
 
 ```text
-v0.4.0rc2
+v0.4.0rc1
 v0.4.0rc2
 v0.4.0rc3
+v0.4.0rc4
 v0.4.0
 ```
 
@@ -172,11 +172,11 @@ checksum changes after validation begins, rerun validation or discard the stale 
 Create a portable validation pack for physical validation machines:
 
 ```sh
-just release-validation-pack 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
-just release-machine-plan 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl
+just release-validation-pack 0.4.0rc3 --wheel path/to/datoviz-0.4.0rc3-...whl
+just release-machine-plan 0.4.0rc3 --wheel path/to/datoviz-0.4.0rc3-...whl
 ```
 
-Copy the generated `datoviz-0.4.0rc2-validation.tar.gz` to each target machine listed by
+Copy the generated `datoviz-0.4.0rc3-validation.tar.gz` to each target machine listed by
 `release-machine-plan`. After extraction, run:
 
 ```sh
@@ -193,7 +193,7 @@ If the target machine already has the repository checkout, it may instead run th
 installed-artifact validator directly against the exact wheel or source artifact under review:
 
 ```sh
-just release-machine-validate 0.4.0rc2 --wheel path/to/datoviz-0.4.0rc2-...whl --profile rc
+just release-machine-validate 0.4.0rc3 --wheel path/to/datoviz-0.4.0rc3-...whl --profile rc
 ```
 
 Use `quick` for a short install/import/CLI smoke, `rc` for CMake consumer evidence, and `full` for
@@ -218,15 +218,15 @@ On Windows PowerShell, use `./archive-evidence.ps1 -MachineId <machine-id>`.
 Ingest returned evidence in the release checkout:
 
 ```sh
-just release-ingest-evidence 0.4.0rc2 path/to/evidence-<machine-id>.tar.gz
-just release-machine-plan 0.4.0rc2
-just release-report 0.4.0rc2 --strict-matrix
+just release-ingest-evidence 0.4.0rc3 path/to/evidence-<machine-id>.tar.gz
+just release-machine-plan 0.4.0rc3
+just release-report 0.4.0rc3 --strict-matrix
 ```
 
 Before any publication rehearsal, generate the release safety summary and local checksum artifacts:
 
 ```sh
-just release-gates 0.4.0rc2 --write-artifacts --strict-matrix
+just release-gates 0.4.0rc3 --write-artifacts --strict-matrix
 ```
 
 This writes `build/release/<version>/release-report.md`, `SHA256SUMS`, and `SHA512SUMS`. A nonzero
@@ -255,8 +255,8 @@ just testpypi-upload-all wheelhouse yes
 The release automation wrapper keeps the same irreversible-action split:
 
 ```sh
-just release-testpypi 0.4.0rc2 --dry-run --dist-dir dist
-just release-testpypi 0.4.0rc2 --dist-dir dist --confirm yes
+just release-testpypi 0.4.0rc3 --dry-run --dist-dir dist
+just release-testpypi 0.4.0rc3 --dist-dir dist --confirm yes
 ```
 
 It refuses to upload unless the release gates are satisfied, or the maintainer explicitly passes
@@ -308,15 +308,13 @@ rather than supported.
 Generate the first draft from release state and git history:
 
 ```sh
-just release-notes 0.4.0rc2
+just release-notes 0.4.0rc3
 ```
 
-Review `build/release/0.4.0rc2/release-notes.md` and replace generated commit grouping with
+Review `build/release/0.4.0rc3/release-notes.md` and replace generated commit grouping with
 user-facing highlights before GitHub draft approval.
 
-The active candidate record lives in [v0.4.0rc2 release notes](../releases/v0.4.0rc2.md). For future
-candidates, keep the note as a draft until the final commit, tag, artifact URLs, checksums, and
-platform validation matrix are filled in.
+The latest published candidate record is [v0.4.0rc2 release notes](../releases/v0.4.0rc2.md). Keep the RC3 note as a draft until the final commit, tag, artifact URLs, checksums, and platform validation matrix are filled in.
 
 For final `v0.4.0`, enable or verify GitHub-Zenodo archiving before creating the GitHub release.
 After Zenodo archives the release, update `CITATION.cff`, [Citation](../reference/citation.md), and
@@ -344,8 +342,8 @@ decision remains manual; the mechanics should be automated.
 For GitHub release drafts, use a dry run first:
 
 ```sh
-just release-github-draft 0.4.0rc2 --dry-run
-just release-github-draft 0.4.0rc2 --confirm yes
+just release-github-draft 0.4.0rc3 --dry-run
+just release-github-draft 0.4.0rc3 --confirm yes
 ```
 
 The command creates or updates a draft release and uploads the recorded source bundle, wheels,
@@ -375,6 +373,6 @@ After publishing an RC:
 3. check the documentation site link;
 4. open or update issues for every reported blocker;
 5. update `agents/now/STATUS.md` and release notes with the new state;
-6. decide whether the next step is RC feedback, RC2/RC3, or final.
+6. decide whether the next step is RC feedback, another numbered RC, or final.
 
 Do not start the next RC until feedback and known failures from the previous RC are triaged.
