@@ -1,4 +1,4 @@
-# Feature Status
+# Feature status
 
 Status labels use the meanings from [Project status](project-status.md). This page classifies
 public-facing features; exact function signatures live in the generated C API reference. The v0.3

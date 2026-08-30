@@ -1,15 +1,9 @@
-# WebGPU Subset
+# WebGPU subset
 
-Status: experimental v0.4 browser subset.
-
-Datoviz v0.4 can run selected examples in a browser. This uses WebGPU, a browser feature for drawing
-with the computer's graphics hardware.
-
-The browser path is useful for demos, documentation, and early testing. It is smaller than the
-desktop path. Check each example's browser status before assuming it works online.
+Datoviz v0.4 can run selected examples in a browser through WebGPU. This browser subset is experimental and is intended for live examples, documentation, and portability testing. It does not cover the full native Vulkan feature set. Check an example's browser status before relying on its online route.
 
 
-## How To Find Browser Examples
+## Find browser examples
 
 Start from the [Examples](../examples/index.md) section. On each generated example page, check the
 example details:
@@ -29,7 +23,7 @@ The example manifest changes as routes are promoted. Use the generated
 this authored page deliberately does not copy counts from that generated source.
 
 
-## What Is Supported
+## Supported features
 
 The browser subset covers the visuals and features needed by the live gallery routes. Current
 coverage includes:
@@ -45,7 +39,7 @@ Browser support is narrower than desktop support. When a feature matters to your
 the specific example page and the [Feature status](feature-status.md) page.
 
 
-## What Is Not Supported
+## Features outside the subset
 
 The browser subset intentionally does not include:
 
@@ -60,7 +54,7 @@ These limits may change after v0.4, but they should not be described as current 
 until the example matrix and validation checks prove them.
 
 
-## What `webgpu-live` Means
+## What `webgpu-live` means
 
 `webgpu-live` means a public browser route is registered for the example. It does not mean every
 browser, graphics card, driver, and CI runner has rendered that route successfully.
@@ -104,7 +98,7 @@ actual URL. Do not open WebGPU routes through `file://`; browser WebGPU APIs req
 browser security context.
 
 
-## See Also
+## See also
 
 - [WebGPU matrix](../examples/webgpu-matrix.md)
 - [Deploy Datoviz scenes to the web](../how-to/deploy-to-web.md)

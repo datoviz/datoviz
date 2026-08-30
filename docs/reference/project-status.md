@@ -1,4 +1,4 @@
-# Project Status
+# Project status
 
 Datoviz v0.4 is a release candidate. Public documentation uses explicit status labels so users can
 distinguish the RC surface, experimental slices, contributor surfaces, deferred work, and external
@@ -16,7 +16,7 @@ Status applies to the named public workflow, not automatically to every backend,
 query target, optional provider, or gallery route. A `supported` native API can still have an
 `experimental` WebGPU route or an unavailable optional dependency.
 
-## Current Broad Status
+## Current broad status
 
 | Area | Status | Reference |
 | --- | --- | --- |

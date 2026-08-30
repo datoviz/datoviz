@@ -1,10 +1,10 @@
-# Platform Support
+# Platform support
 
 Datoviz v0.4 targets native Vulkan-first rendering with an experimental WebGPU/WASM browser path.
 Support status is feature-specific; see [Feature status](feature-status.md) for the release-surface
 classification.
 
-## Native Runtime
+## Native runtime
 
 | Platform | Status | Notes |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ classification.
 | FreeBSD 14 amd64 | Provisional community source-build target | Initial [source-build instructions](../start/build-from-source.md#freebsd-14-amd64) await community verification. No binaries or wheels are published, and FreeBSD is not part of the release validation matrix. |
 | Headless/offscreen | Supported feature | Still requires a graphics-capable Vulkan runtime unless the specific test/example is CPU-only. |
 
-## Browser/WebGPU
+## Browser WebGPU
 
 The browser path is experimental. It runs selected gallery examples in WebGPU-capable browsers
 through public live routes.
@@ -31,7 +31,7 @@ Native Vulkan success does not imply WebGPU success on a particular browser/adap
 `webgpu-live` route is a routing and subset claim; browser/adapter visual proof is recorded
 separately in smoke output or compatibility notes.
 
-## Optional Providers
+## Optional providers
 
 | Provider | Status | Requirement |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ separately in smoke output or compatibility notes.
 
 The base `libdatoviz` build and base Python wheel do not link Qt. The `datoviz.qt` adapter and `datoviz[qt]` extra do not include the native bridge. PyQt hosting therefore needs a `datoviz_qtbridge` shared library built with `DVZ_ENABLE_QT_BRIDGE=ON` or supplied separately, plus a compatible Qt/PyQt runtime at load time.
 
-## Build Dependencies
+## Build dependencies
 
 Default native source builds need a C/C++ toolchain, CMake/build tools, Vulkan headers and loader,
 cglm, and the enabled module dependencies. A usable Vulkan driver/ICD is also required at runtime.
@@ -58,7 +58,7 @@ Wheel/installed-package support and source-build support are different claims. A
 should carry its declared native runtime payload; a source build must satisfy the dependencies
 selected by its own CMake configuration.
 
-## Known Limitations
+## Known limitations
 
 - Scene-managed nonlinear/geographic transforms are deferred; pre-project data on the CPU.
 - WebGPU is not native Vulkan parity.
@@ -70,7 +70,7 @@ selected by its own CMake configuration.
 
 See [Known limitations](known-limitations.md) for the consolidated release-candidate, scene, compatibility, and browser boundaries.
 
-## See Also
+## See also
 
 - [Build options](build-options.md)
 - [Known limitations](known-limitations.md)
