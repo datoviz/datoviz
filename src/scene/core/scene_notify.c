@@ -155,7 +155,8 @@ static bool _scene_visual_uses_buffer(const DvzVisual* visual, const DvzSceneBuf
 {
     if (visual == NULL || buffer == NULL)
         return false;
-    if (_visual_family_state(visual)->buffer == buffer)
+    const DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state != NULL && state->buffer == buffer)
         return true;
     for (uint32_t ai = 0; ai < visual->attr_count; ai++)
     {

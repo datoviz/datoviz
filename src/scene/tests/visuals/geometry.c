@@ -1069,6 +1069,37 @@ int test_scene_buffer_destroy_requests_frame_and_emits_retirement(
 
 
 
+int test_scene_destroy_multiple_visual_buffers(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
+    ANN(panel);
+
+    DvzGeometry* geometries[2] = {0};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzVisual* mesh = dvz_mesh(scene, 0);
+        ANN(mesh);
+        AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
+        geometries[i] = _mesh_replacement_geometry(3, 3);
+        ANN(geometries[i]);
+        AT(dvz_mesh_set_geometry(mesh, geometries[i]) == 0);
+    }
+
+    for (uint32_t i = 0; i < 2; i++)
+        dvz_geometry_destroy(geometries[i]);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_mesh_instance_count_shrink_uses_logical_extent(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
