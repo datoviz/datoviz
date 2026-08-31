@@ -360,11 +360,24 @@ def _bin_dir(venv: Path) -> Path:
 
 def _run(cmd: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
     print("+", " ".join(cmd))
-    subprocess.run(cmd, cwd=cwd, env=env, check=True)
+    subprocess.run(cmd, cwd=cwd, env=_venv_env() if env is None else env, check=True)
 
 
 def _venv_env() -> dict[str, str]:
     env = os.environ.copy()
+    for name in (
+        "PYTHONPATH",
+        "PYTHONHOME",
+        "DATOVIZ_LIBRARY",
+        "DATOVIZ_DEV_ROOT",
+        "DVZ_WHEEL_RUNTIME_DIRS",
+        "DVZ_SHADERC_RUNTIME_LIBRARY",
+        "DVZ_VULKAN_LOADER_LIBRARY",
+        "LD_LIBRARY_PATH",
+        "DYLD_LIBRARY_PATH",
+        "DYLD_FALLBACK_LIBRARY_PATH",
+    ):
+        env.pop(name, None)
     env["PIP_USER"] = "false"
     env["PYTHONNOUSERSITE"] = "1"
     return env
@@ -372,13 +385,21 @@ def _venv_env() -> dict[str, str]:
 
 def _create_venv(venv: Path) -> None:
     try:
-        subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
+        subprocess.run(
+            [sys.executable, "-m", "venv", "--clear", str(venv)],
+            env=_venv_env(),
+            check=True,
+        )
         return
     except subprocess.CalledProcessError:
         uv = shutil.which("uv")
         if uv is None:
             raise
-        subprocess.run([uv, "venv", "--python", sys.executable, str(venv)], check=True)
+        subprocess.run(
+            [uv, "venv", "--clear", "--python", sys.executable, str(venv)],
+            env=_venv_env(),
+            check=True,
+        )
 
 
 def _has_pip(python: Path, cwd: Path) -> bool:
@@ -403,6 +424,7 @@ def _pip_install(python: Path, cwd: Path, args: list[str]) -> None:
 
 
 def _python_smokes(python: Path, work: Path, *, require_precompiled_shaders: bool = False) -> None:
+    _installed_origin_smoke(python, work)
     _run([str(python), "-c", "import datoviz; print(datoviz.__file__)"], cwd=work)
     _run([str(python), "-c", "import datoviz.raw as dvz; print(dvz.__file__)"], cwd=work)
     _run(
@@ -416,6 +438,34 @@ def _python_smokes(python: Path, work: Path, *, require_precompiled_shaders: boo
     _run([str(python), "-m", "datoviz.cli", "--cflags"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--libs"], cwd=work)
     _run([str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work)
+
+
+def _installed_origin_smoke(python: Path, work: Path) -> None:
+    """Require Python, native, and CMake payloads to resolve inside the test venv."""
+
+    code = r'''
+import sys
+from pathlib import Path
+
+import datoviz
+import datoviz._ctypes as bindings
+from datoviz import cli
+
+prefix = Path(sys.prefix).resolve()
+paths = {
+    "package": Path(datoviz.__file__).resolve(),
+    "bindings": Path(bindings.__file__).resolve(),
+    "native library": Path(bindings.dvz._name).resolve(),
+    "CMake metadata": (Path(cli.__file__).resolve().parent / "lib" / "cmake" / "datoviz"),
+}
+for label, path in paths.items():
+    if not path.is_relative_to(prefix):
+        raise SystemExit(f"installed-wheel isolation failure: {label} resolved outside {prefix}: {path}")
+    if not path.exists():
+        raise SystemExit(f"installed-wheel payload is missing: {label}: {path}")
+    print(f"installed {label}: {path}")
+'''
+    _run([str(python), "-c", code], cwd=work)
 
 
 def _release_build_smoke(python: Path, work: Path) -> None:
@@ -573,7 +623,7 @@ def _render_smoke(python: Path, work: Path) -> None:
     script.write_text(_PYTHON_RENDER_EXAMPLE, encoding="utf8")
     cmd = [str(python), str(script)]
     print("+", " ".join(cmd))
-    result = subprocess.run(cmd, cwd=work, check=False)
+    result = subprocess.run(cmd, cwd=work, env=_venv_env(), check=False)
     if result.returncode == 77:
         print("check_wheel: render smoke skipped because no Vulkan runtime is available")
         return
@@ -609,7 +659,7 @@ def _window_smoke(python: Path, work: Path) -> None:
 def _qt_probe(python: Path, work: Path, *, required: bool) -> None:
     cmd = [str(python), "-m", "datoviz.qt"]
     print("+", " ".join(cmd))
-    result = subprocess.run(cmd, cwd=work, check=False)
+    result = subprocess.run(cmd, cwd=work, env=_venv_env(), check=False)
     if required and result.returncode != 0:
         raise RuntimeError("required Qt probe failed")
     if not required and result.returncode != 0:
@@ -637,17 +687,23 @@ def _cmake_consumer_smoke(python: Path, work: Path) -> None:
         encoding="utf8",
     )
     cmake_dir = subprocess.check_output(
-        [str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work, text=True
+        [str(python), "-m", "datoviz.cli", "--cmake-dir"],
+        cwd=work,
+        env=_venv_env(),
+        text=True,
     ).strip()
     build = source / "build"
     generator = ["-GNinja"] if shutil.which("ninja") else []
     _run([cmake, "-S", str(source), "-B", str(build), f"-Ddatoviz_DIR={cmake_dir}", *generator], cwd=work)
     _run([cmake, "--build", str(build)], cwd=work)
     exe = build / ("datoviz_cmake_consumer.exe" if os.name == "nt" else "datoviz_cmake_consumer")
-    env = os.environ.copy()
+    env = _venv_env()
     if os.name == "nt":
         prefix = subprocess.check_output(
-            [str(python), "-m", "datoviz.cli", "--prefix"], cwd=work, text=True
+            [str(python), "-m", "datoviz.cli", "--prefix"],
+            cwd=work,
+            env=_venv_env(),
+            text=True,
         ).strip()
         env["PATH"] = f"{prefix}{os.pathsep}{env.get('PATH', '')}"
     _run([str(exe)], cwd=work, env=env)
@@ -688,7 +744,10 @@ def _c_installed_example(python: Path, work: Path, *, render: bool) -> None:
         encoding="utf8",
     )
     cmake_dir = subprocess.check_output(
-        [str(python), "-m", "datoviz.cli", "--cmake-dir"], cwd=work, text=True
+        [str(python), "-m", "datoviz.cli", "--cmake-dir"],
+        cwd=work,
+        env=_venv_env(),
+        text=True,
     ).strip()
     build = source / "build"
     generator = ["-GNinja"] if shutil.which("ninja") else []
@@ -700,10 +759,13 @@ def _c_installed_example(python: Path, work: Path, *, render: bool) -> None:
     exe = build / (
         "datoviz_installed_example.exe" if os.name == "nt" else "datoviz_installed_example"
     )
-    env = os.environ.copy()
+    env = _venv_env()
     if os.name == "nt":
         prefix = subprocess.check_output(
-            [str(python), "-m", "datoviz.cli", "--prefix"], cwd=work, text=True
+            [str(python), "-m", "datoviz.cli", "--prefix"],
+            cwd=work,
+            env=_venv_env(),
+            text=True,
         ).strip()
         env["PATH"] = f"{prefix}{os.pathsep}{env.get('PATH', '')}"
     _run([str(exe)], cwd=work, env=env)
