@@ -287,6 +287,107 @@ int test_memory_1(TstContext* suite, const TstCase* tstitem)
 
 
 /**
+ * Verify external-memory image compatibility for ordinary and dedicated allocations.
+ *
+ * @param suite test suite
+ * @param tstitem test case
+ * @return 0 on success
+ */
+int test_memory_external_allocator_image(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    ANN(tstitem);
+
+#if OS_WINDOWS
+    const VkExternalMemoryHandleTypeFlagBits handle_type =
+        VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+#elif defined(__linux__)
+    const VkExternalMemoryHandleTypeFlagBits handle_type =
+        VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+#else
+    const VkExternalMemoryHandleTypeFlagBits handle_type = 0;
+    tst_skip(suite, "external allocator image regression is supported on Linux and Windows");
+    return 0;
+#endif
+
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
+    dvz_gpu_ctx_config_alloc(&cfg, handle_type);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "external-memory allocator is unavailable");
+        return 0;
+    }
+
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    DvzVma* allocator = dvz_gpu_ctx_alloc(ctx);
+    VkPhysicalDeviceExternalImageFormatInfo external_format = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO,
+        .handleType = handle_type,
+    };
+    VkPhysicalDeviceImageFormatInfo2 format_info = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,
+        .pNext = &external_format,
+        .format = VK_FORMAT_R8G8B8A8_UNORM,
+        .type = VK_IMAGE_TYPE_2D,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+    };
+    VkExternalImageFormatProperties external_props = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES};
+    VkImageFormatProperties2 format_props = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2,
+        .pNext = &external_props,
+    };
+    VkResult res = vkGetPhysicalDeviceImageFormatProperties2(
+        dvz_device_physical_device(device), &format_info, &format_props);
+    if (
+        res != VK_SUCCESS ||
+        !(external_props.externalMemoryProperties.externalMemoryFeatures &
+          VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT))
+    {
+        dvz_gpu_ctx_destroy(ctx);
+        tst_skip(suite, "external RGBA8 image export is unavailable");
+        return 0;
+    }
+
+    VkExternalMemoryImageCreateInfo existing = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+        .handleTypes = handle_type,
+    };
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        VkImageCreateInfo image_info = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .pNext = i == 0 ? NULL : &existing,
+            .imageType = VK_IMAGE_TYPE_2D,
+            .format = VK_FORMAT_R8G8B8A8_UNORM,
+            .extent = {.width = 2, .height = 2, .depth = 1},
+            .mipLevels = 1,
+            .arrayLayers = 1,
+            .samples = VK_SAMPLE_COUNT_1_BIT,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+        DvzAllocation* alloc = dvz_allocation_create();
+        ANN(alloc);
+        VkImage image = VK_NULL_HANDLE;
+        DvzAllocationFlags flags = i == 0 ? 0 : DVZ_ALLOC_DEDICATED_MEMORY;
+        AT(dvz_allocator_image(allocator, &image_info, flags, alloc, &image) == 0);
+        AT(image != VK_NULL_HANDLE);
+        dvz_allocator_destroy_image(allocator, alloc, image);
+        dvz_allocation_free(alloc);
+    }
+
+    uint32_t err_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+    return err_count > 0;
+}
+
+
+
+/**
  * Verify Vulkan-only timeline handoff for transfer reads without external-FD support.
  *
  * @param suite the test suite

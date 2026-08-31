@@ -413,9 +413,37 @@ int dvz_allocator_image(
     alloc->flags = flags;
     alloc_info.flags = _dvz_to_vma_allocation_flags(flags);
 
+    VkImageCreateInfo info_local = *info;
+    VkExternalMemoryImageCreateInfo external_info = {
+        .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO,
+        .handleTypes = allocator->external,
+        .pNext = info_local.pNext,
+    };
+    if (allocator->external != 0)
+    {
+        const VkBaseInStructure* next = (const VkBaseInStructure*)info_local.pNext;
+        const VkExternalMemoryImageCreateInfo* existing = NULL;
+        while (next != NULL)
+        {
+            if (next->sType == VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO)
+            {
+                existing = (const VkExternalMemoryImageCreateInfo*)next;
+                break;
+            }
+            next = next->pNext;
+        }
+        if (existing != NULL && (existing->handleTypes & allocator->external) == 0)
+        {
+            log_error("image external-memory handle types are incompatible with the allocator");
+            return -1;
+        }
+        if (existing == NULL)
+            info_local.pNext = &external_info;
+    }
+
     log_trace("creating image...");
-    VK_RETURN_RESULT(
-        vmaCreateImage(allocator->vma, info, &alloc_info, vk_image, &alloc->alloc, &alloc->info));
+    VK_RETURN_RESULT(vmaCreateImage(
+        allocator->vma, &info_local, &alloc_info, vk_image, &alloc->alloc, &alloc->info));
     if (out == 0)
         log_trace("image created");
 
