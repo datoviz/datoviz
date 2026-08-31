@@ -67,6 +67,45 @@ static bool _vklite_deferred_ensure_capacity(Drp2VkliteState* state)
 }
 
 
+
+/**
+ * Reserve storage for a batch of deferred backend-object retirements.
+ *
+ * @param state vklite runtime state
+ * @param additional_count number of additional retirements to reserve
+ * @return whether the requested capacity is available
+ */
+bool _vklite_deferred_reserve(Drp2VkliteState* state, uint32_t additional_count)
+{
+    ANN(state);
+    if (additional_count > UINT32_MAX - state->deferred_count)
+        return false;
+    uint32_t required = state->deferred_count + additional_count;
+    if (required <= state->deferred_capacity)
+        return true;
+
+    uint32_t capacity = state->deferred_capacity > 0 ? state->deferred_capacity : 8;
+    while (capacity < required)
+    {
+        if (capacity > UINT32_MAX / 2)
+            return false;
+        capacity *= 2;
+    }
+
+    Drp2DeferredDestroy* deferred = (Drp2DeferredDestroy*)dvz_realloc(
+        state->deferred, (uint64_t)capacity * sizeof(Drp2DeferredDestroy));
+    if (deferred == NULL)
+        return false;
+    dvz_memset(
+        deferred + state->deferred_capacity,
+        (uint64_t)(capacity - state->deferred_capacity) * sizeof(Drp2DeferredDestroy), 0,
+        (uint64_t)(capacity - state->deferred_capacity) * sizeof(Drp2DeferredDestroy));
+    state->deferred = deferred;
+    state->deferred_capacity = capacity;
+    return true;
+}
+
+
 /**
  * Remove destroyed objects from the end of a vklite object table.
  *
@@ -338,6 +377,7 @@ void _vklite_state_cleanup(Drp2VkliteState* state)
     state->deferred_capacity = 0;
     state->deferred_count = 0;
     state->active_borrowed_command_buffer = VK_NULL_HANDLE;
+    state->retirement_borrowed_command_buffer = VK_NULL_HANDLE;
     for (uint32_t i = state->count; i > 0; i--)
     {
         _vklite_destroy_object(&state->objects[i - 1]);

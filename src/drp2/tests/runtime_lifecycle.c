@@ -319,6 +319,31 @@ int test_drp2_runtime_vklite_deferred_destroy_flush(TstContext* suite, const Tst
     };
     VkCommandBuffer command_buffer = (VkCommandBuffer)(uintptr_t)0x123;
 
+    DvzDrp2Runtime runtime = {.vklite_state = &state};
+    DvzDrp2CommandStream empty = {0};
+    state.active_borrowed_command_buffer = command_buffer;
+    state.retirement_borrowed_command_buffer = command_buffer;
+    DvzDrp2ValidationResult result = _vklite_execute(&runtime, &empty);
+    AT(result.ok);
+    AT(state.active_borrowed_command_buffer == VK_NULL_HANDLE);
+    AT(state.retirement_borrowed_command_buffer == command_buffer);
+
+    Drp2VkliteObject* stale_target = _vklite_add(&state, 90, DRP2_OBJECT_TEXTURE);
+    ANN(stale_target);
+    stale_target->images = dvz_images_create_wrapper();
+    ANN(stale_target->images);
+    stale_target->image_view = (VkImageView)(uintptr_t)0x456;
+    stale_target->borrowed_frame_target = true;
+    stale_target->width = 4;
+    stale_target->height = 4;
+    stale_target->sample_count = 1;
+    DvzDrp2Command begin = {.type = DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS};
+    begin.u.begin_render_pass.id = 91;
+    begin.u.begin_render_pass.texture_id = 90;
+    result = _vklite_begin_render_pass(&state, &empty, &begin, 0);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+
     AT(!_vklite_defer_destroy_object(&state, &object, VK_NULL_HANDLE));
     AT(!object.destroyed);
     AT(state.deferred_count == 0);

@@ -408,6 +408,16 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
         AT(downloaded[i] == expected[i]);
     }
 
+    DvzDrp2CommandStream* no_map_read = dvz_drp2_stream();
+    ANN(no_map_read);
+    AT(dvz_drp2_stream_create_buffer(
+        no_map_read, 2, 16,
+        DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    result = dvz_drp2_runtime_execute(runtime, no_map_read);
+    AT(result.ok);
+    AT(!dvz_drp2_runtime_download_buffer(runtime, 2, 0, 4, downloaded));
+
+    dvz_drp2_stream_destroy(no_map_read);
     dvz_drp2_stream_destroy(stream);
     return 0;
 }
@@ -495,6 +505,7 @@ int test_drp2_runtime_vklite_destroys_submitted_buffer(TstContext* suite, const 
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, submit_stream);
     AT(result.ok);
+
     AT(result.code == DVZ_DRP2_VALIDATION_OK);
     AT(_vklite_find(runtime->vklite_state, 1) != NULL);
     AT(drp2_test_vklite_validation_clean(suite, ctx));
@@ -544,10 +555,22 @@ int test_drp2_runtime_vklite_releases_readback_buffer_after_download(
         DVZ_DRP2_BUFFER_USAGE_MAP_READ | DVZ_DRP2_BUFFER_USAGE_COPY_DST));
     AT(dvz_drp2_stream_begin_command_encoder(submit_stream, 10));
     AT(dvz_drp2_stream_finish_command_encoder(submit_stream, 10, 11));
-    AT(dvz_drp2_stream_queue_submit_readback(submit_stream, 11, 12, 1, 0, 16));
+    AT(dvz_drp2_stream_queue_submit_readback(submit_stream, 11, 12, 1, 0, 8));
+    AT(dvz_drp2_stream_begin_command_encoder(submit_stream, 20));
+    AT(dvz_drp2_stream_finish_command_encoder(submit_stream, 20, 21));
+    AT(dvz_drp2_stream_queue_submit_readback(submit_stream, 21, 22, 1, 8, 8));
 
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, submit_stream);
     AT(result.ok);
+
+    DvzDrp2CommandStream* duplicate_submission = dvz_drp2_stream();
+    ANN(duplicate_submission);
+    AT(dvz_drp2_stream_begin_command_encoder(duplicate_submission, 30));
+    AT(dvz_drp2_stream_finish_command_encoder(duplicate_submission, 30, 31));
+    AT(dvz_drp2_stream_queue_submit_readback(duplicate_submission, 31, 12, 1, 0, 8));
+    result = dvz_drp2_runtime_execute(runtime, duplicate_submission);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
 
     DvzDrp2CommandStream* blocked = dvz_drp2_stream();
     ANN(blocked);
@@ -557,7 +580,22 @@ int test_drp2_runtime_vklite_releases_readback_buffer_after_download(
     AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
 
     uint8_t downloaded[16] = {0};
-    AT(dvz_drp2_runtime_download_buffer(runtime, 1, 0, sizeof(downloaded), downloaded));
+    AT(dvz_drp2_runtime_download_buffer(runtime, 1, 4, 8, downloaded));
+    result = dvz_drp2_runtime_execute(runtime, blocked);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+
+    AT(dvz_drp2_runtime_download_buffer(runtime, 1, 8, 8, downloaded));
+    result = dvz_drp2_runtime_execute(runtime, blocked);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+
+    AT(dvz_drp2_runtime_download_buffer(runtime, 1, 0, 8, downloaded));
+    result = dvz_drp2_runtime_execute(runtime, blocked);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_USAGE);
+
+    AT(dvz_drp2_runtime_download_buffer(runtime, 1, 8, 8, downloaded));
 
     DvzDrp2CommandStream* destroy_stream = dvz_drp2_stream();
     ANN(destroy_stream);
@@ -569,6 +607,7 @@ int test_drp2_runtime_vklite_releases_readback_buffer_after_download(
 
     dvz_drp2_stream_destroy(destroy_stream);
     dvz_drp2_stream_destroy(blocked);
+    dvz_drp2_stream_destroy(duplicate_submission);
     dvz_drp2_stream_destroy(submit_stream);
     return 0;
 }
@@ -1433,22 +1472,54 @@ int test_drp2_runtime_vklite_destroy_after_partial_failure(TstContext* suite, co
     DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
     ANN(runtime);
 
-    /* Execute a stream that fails mid-way (bad GLSL). */
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(setup, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_buffer(setup, 2, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(setup, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(setup, 3, 1, 0, 2, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(setup, 3, 4));
+    AT(dvz_drp2_stream_queue_submit(setup, 4, 5));
+
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    Drp2VkliteObject* initial = _vklite_find(runtime->vklite_state, 1);
+    ANN(initial);
+    DvzBuffer* initial_buffer = initial->buffer;
+
+    /* The replacement succeeds in the backend before the invalid shader fails. */
     DvzDrp2CommandStream* stream = dvz_drp2_stream();
     ANN(stream);
-    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
-    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(stream, 1, 128, DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
     AT(dvz_drp2_stream_create_shader_module_format(
-        stream, 1, "VERTEX", "glsl", "this is not valid glsl {}}}}}"));
+        stream, 6, "VERTEX", "glsl", "this is not valid glsl {}}}}}"));
 
     tst_log_capture_begin(suite);
     tst_expect_error_begin(suite);
-    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    result = dvz_drp2_runtime_execute(runtime, stream);
     AT(tst_expect_error_end(suite) == 0);
     AT(!result.ok);
-    dvz_drp2_stream_destroy(stream);
+    AT(runtime->backend_failed);
+    AT(_drp2_find_any_object(runtime->semantic_state, 1)->size == 64);
+    AT(_vklite_find(runtime->vklite_state, 1)->buffer != initial_buffer);
 
-    /* Destroy the runtime after the failed execution — must not crash or leak. */
+    DvzDrp2CommandStream* rejected = dvz_drp2_stream();
+    ANN(rejected);
+    AT(dvz_drp2_stream_destroy_buffer(rejected, 1));
+    result = dvz_drp2_runtime_execute(runtime, rejected);
+    AT(!result.ok);
+    AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+
+    dvz_drp2_runtime_reset(runtime);
+    AT(!runtime->backend_failed);
+    result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+
+    dvz_drp2_stream_destroy(rejected);
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_stream_destroy(setup);
     dvz_drp2_runtime_destroy(runtime);
     AT(drp2_test_vklite_validation_clean(suite, ctx));
 
@@ -3049,7 +3120,7 @@ int test_drp2_runtime_vklite_refresh_defers_retired_descriptors(
     DvzDescriptors* previous = bind_group->descriptors;
 
     VkCommandBuffer command_buffer = (VkCommandBuffer)(uintptr_t)0x123;
-    state->active_borrowed_command_buffer = command_buffer;
+    state->retirement_borrowed_command_buffer = command_buffer;
     result = _vklite_refresh_dependent_bind_groups(state, 6, 99);
     AT(result.ok);
     AT(bind_group->descriptors != NULL);
@@ -3060,8 +3131,54 @@ int test_drp2_runtime_vklite_refresh_defers_retired_descriptors(
 
     _vklite_flush_deferred_for_command_buffer(state, command_buffer);
     AT(state->deferred_count == 0);
-    state->active_borrowed_command_buffer = VK_NULL_HANDLE;
+    state->retirement_borrowed_command_buffer = VK_NULL_HANDLE;
 
+    DvzDrp2CommandStream* buffer_setup = dvz_drp2_stream();
+    ANN(buffer_setup);
+    AT(dvz_drp2_stream_create_buffer(
+        buffer_setup, 8, 64,
+        DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    AT(dvz_drp2_stream_create_uniform_bind_group_layout(buffer_setup, 9));
+    AT(dvz_drp2_stream_create_uniform_bind_group(buffer_setup, 10, 9, 8, 0, 64));
+    AT(dvz_drp2_stream_create_buffer(buffer_setup, 11, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_begin_command_encoder(buffer_setup, 12));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(buffer_setup, 12, 8, 0, 11, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(buffer_setup, 12, 13));
+    AT(dvz_drp2_stream_queue_submit(buffer_setup, 13, 14));
+    result = dvz_drp2_runtime_execute(runtime, buffer_setup);
+    AT(result.ok);
+
+    Drp2VkliteObject* old_buffer = _vklite_find(state, 8);
+    Drp2VkliteObject* buffer_bind_group = _vklite_find(state, 10);
+    ANN(old_buffer);
+    ANN(buffer_bind_group);
+    DvzBuffer* previous_buffer = old_buffer->buffer;
+    DvzDescriptors* previous_buffer_descriptors = buffer_bind_group->descriptors;
+
+    state->active_borrowed_command_buffer = command_buffer;
+    state->retirement_borrowed_command_buffer = command_buffer;
+    DvzDrp2CommandStream* replacement = dvz_drp2_stream();
+    ANN(replacement);
+    AT(dvz_drp2_stream_create_buffer(
+        replacement, 8, 128,
+        DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_COPY_SRC));
+    result = dvz_drp2_runtime_execute(runtime, replacement);
+    AT(result.ok);
+    AT(state->active_borrowed_command_buffer == VK_NULL_HANDLE);
+    AT(state->retirement_borrowed_command_buffer == command_buffer);
+    Drp2VkliteObject* new_buffer = _vklite_find(state, 8);
+    ANN(new_buffer);
+    AT(new_buffer->buffer != previous_buffer);
+    AT(buffer_bind_group->descriptors != previous_buffer_descriptors);
+    AT(state->deferred_count == 2);
+
+    _vklite_flush_deferred_for_command_buffer(state, command_buffer);
+    AT(state->deferred_count == 0);
+    state->active_borrowed_command_buffer = VK_NULL_HANDLE;
+    state->retirement_borrowed_command_buffer = VK_NULL_HANDLE;
+
+    dvz_drp2_stream_destroy(replacement);
+    dvz_drp2_stream_destroy(buffer_setup);
     dvz_drp2_stream_destroy(stream);
     return 0;
 }

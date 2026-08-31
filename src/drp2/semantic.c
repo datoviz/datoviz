@@ -562,6 +562,115 @@ static bool _references_ensure_capacity(Drp2RuntimeState* state)
 }
 
 
+/**
+ * Ensure pending-readback storage can append one more request.
+ *
+ * @param state the runtime semantic state
+ * @return whether append capacity is available
+ */
+static bool _pending_readbacks_ensure_capacity(Drp2RuntimeState* state)
+{
+    ANN(state);
+    if (state->pending_readbacks == NULL || state->pending_readback_capacity == 0)
+    {
+        state->pending_readback_capacity = 8;
+        state->pending_readbacks = (Drp2PendingReadback*)dvz_calloc(
+            state->pending_readback_capacity, sizeof(Drp2PendingReadback));
+        return state->pending_readbacks != NULL;
+    }
+    if (state->pending_readback_count < state->pending_readback_capacity)
+        return true;
+    if (state->pending_readback_capacity > UINT32_MAX / 2)
+        return false;
+
+    uint32_t capacity = 2 * state->pending_readback_capacity;
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(capacity, sizeof(Drp2PendingReadback), &bytes))
+        return false;
+    Drp2PendingReadback* pending_readbacks =
+        (Drp2PendingReadback*)dvz_realloc(state->pending_readbacks, bytes);
+    if (pending_readbacks == NULL)
+        return false;
+    state->pending_readbacks = pending_readbacks;
+    state->pending_readback_capacity = capacity;
+    return true;
+}
+
+
+
+/**
+ * Record one pending readback request.
+ *
+ * @param state the runtime semantic state
+ * @param submission_id submission identifier
+ * @param buffer_id requested buffer id
+ * @param offset requested byte offset
+ * @param size requested byte count
+ * @return whether the request was recorded
+ */
+static bool _pending_readback_add(
+    Drp2RuntimeState* state, uint64_t submission_id, uint64_t buffer_id, uint64_t offset,
+    uint64_t size)
+{
+    ANN(state);
+    for (uint32_t i = 0; i < state->pending_readback_count; i++)
+    {
+        if (state->pending_readbacks[i].submission_id == submission_id)
+            return false;
+    }
+    if (!_pending_readbacks_ensure_capacity(state))
+        return false;
+    state->pending_readbacks[state->pending_readback_count++] = (Drp2PendingReadback){
+        .submission_id = submission_id,
+        .buffer_id = buffer_id,
+        .offset = offset,
+        .size = size,
+    };
+    return true;
+}
+
+
+
+/**
+ * Release the oldest pending readback whose buffer range matches exactly.
+ *
+ * The public native download API does not carry a submission id, so duplicate exact requests are
+ * retained as separate entries and consumed in submission order.
+ *
+ * @param state the runtime semantic state
+ * @param buffer_id requested buffer id
+ * @param offset requested byte offset
+ * @param size requested byte count
+ * @return whether one matching request was released
+ */
+bool _drp2_pending_readback_release(
+    Drp2RuntimeState* state, uint64_t buffer_id, uint64_t offset, uint64_t size)
+{
+    ANN(state);
+    if (state->pending_readback_count == 0)
+        return false;
+    const Drp2PendingReadback* pending = &state->pending_readbacks[0];
+    if (pending->buffer_id != buffer_id || pending->offset != offset || pending->size != size)
+        return false;
+
+    Drp2Object* buffer = _drp2_find_any_object(state, buffer_id);
+    if (buffer != NULL && buffer->kind == DRP2_OBJECT_BUFFER &&
+        buffer->pending_readback_count > 0)
+        buffer->pending_readback_count--;
+    if (state->pending_readback_count > 1)
+    {
+        dvz_memmove(
+            &state->pending_readbacks[0],
+            (uint64_t)state->pending_readback_count * sizeof(Drp2PendingReadback),
+            &state->pending_readbacks[1],
+            (uint64_t)(state->pending_readback_count - 1) * sizeof(Drp2PendingReadback));
+    }
+    state->pending_readback_count--;
+    state->pending_readbacks[state->pending_readback_count] = (Drp2PendingReadback){0};
+    return true;
+}
+
+
 
 /**
  * Capture one resource in an encoder, deduplicating repeated uses by the same work owner.
@@ -2499,6 +2608,10 @@ static DvzDrp2ValidationResult _validate_queue_submit(
         return _drp2_fail(DVZ_DRP2_VALIDATION_OUT_OF_RANGE, command_index);
     if (buffer->pending_readback_count == UINT32_MAX)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    if (!_pending_readback_add(
+            state, command->u.queue_submit.submission_id, command->u.queue_submit.buffer_id,
+            command->u.queue_submit.offset, command->u.queue_submit.size))
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     buffer->pending_readback_count++;
     _references_release_command_buffer(
         state, command->u.queue_submit.command_buffer_id);
@@ -2637,6 +2750,10 @@ void _drp2_runtime_state_cleanup(Drp2RuntimeState* state)
     state->references = NULL;
     state->reference_capacity = 0;
     state->reference_count = 0;
+    dvz_free(state->pending_readbacks);
+    state->pending_readbacks = NULL;
+    state->pending_readback_capacity = 0;
+    state->pending_readback_count = 0;
     state->hello_seen = false;
     state->reply_seen = false;
     state->failed = false;
@@ -2661,6 +2778,7 @@ static bool _runtime_state_clone(Drp2RuntimeState* dst, const Drp2RuntimeState* 
     *dst = *src;
     dst->objects = NULL;
     dst->references = NULL;
+    dst->pending_readbacks = NULL;
 
     if (src->capacity > 0)
     {
@@ -2695,6 +2813,27 @@ static bool _runtime_state_clone(Drp2RuntimeState* dst, const Drp2RuntimeState* 
             dvz_memcpy(
                 dst->references, bytes, src->references,
                 (uint64_t)src->reference_count * sizeof(Drp2WorkReference));
+    }
+    if (src->pending_readback_capacity > 0)
+    {
+        uint64_t bytes = 0;
+        if (_dvz_mul_u64_overflows(
+                src->pending_readback_capacity, sizeof(Drp2PendingReadback), &bytes))
+        {
+            _drp2_runtime_state_cleanup(dst);
+            return false;
+        }
+        dst->pending_readbacks = (Drp2PendingReadback*)dvz_calloc(
+            src->pending_readback_capacity, sizeof(Drp2PendingReadback));
+        if (dst->pending_readbacks == NULL)
+        {
+            _drp2_runtime_state_cleanup(dst);
+            return false;
+        }
+        if (src->pending_readback_count > 0)
+            dvz_memcpy(
+                dst->pending_readbacks, bytes, src->pending_readbacks,
+                (uint64_t)src->pending_readback_count * sizeof(Drp2PendingReadback));
     }
     return true;
 }
@@ -2736,10 +2875,13 @@ bool _drp2_runtime_state_commit(DvzDrp2Runtime* runtime, Drp2RuntimeState* next_
     *runtime->semantic_state = *next_state;
     next_state->objects = NULL;
     next_state->references = NULL;
+    next_state->pending_readbacks = NULL;
     next_state->capacity = 0;
     next_state->count = 0;
     next_state->reference_capacity = 0;
     next_state->reference_count = 0;
+    next_state->pending_readback_capacity = 0;
+    next_state->pending_readback_count = 0;
     next_state->hello_seen = false;
     next_state->reply_seen = false;
     next_state->failed = false;
@@ -2800,6 +2942,6 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(const DvzDrp2CommandStream* str
             break;
     }
 
-    dvz_free(state.objects);
+    _drp2_runtime_state_cleanup(&state);
     return result;
 }

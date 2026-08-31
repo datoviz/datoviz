@@ -163,38 +163,18 @@ static DvzDrp2ValidationResult _vklite_create_buffer(
     ANN(command);
 
     Drp2VkliteObject* previous = _vklite_find(state, command->u.create_buffer.id);
-    bool replaced = false;
     if (previous != NULL)
     {
         if (previous->kind != DRP2_OBJECT_BUFFER)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-        replaced = true;
-        if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
-        {
-            if (!_vklite_defer_destroy_object(
-                    state, previous, state->active_borrowed_command_buffer))
-                return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-        }
-        else
-        {
-            if (state->deferred_count > 0)
-                _vklite_flush_deferred(state);
-            else if (state->runtime != NULL && state->runtime->device != NULL)
-                dvz_device_wait(state->runtime->device);
-            _vklite_destroy_object_slot(state, previous);
-        }
     }
 
-    Drp2VkliteObject* object =
-        _vklite_add(state, command->u.create_buffer.id, DRP2_OBJECT_BUFFER);
-    if (object == NULL)
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-
+    Drp2VkliteObject replacement = {
+        .id = command->u.create_buffer.id, .kind = DRP2_OBJECT_BUFFER};
     DvzBuffer* buffer = dvz_buffer_create_wrapper();
     if (buffer == NULL)
-        return _vklite_fail_destroy_object(
-            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    object->buffer = buffer;
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    replacement.buffer = buffer;
 
     dvz_buffer(state->runtime->device, state->runtime->allocator, buffer);
     dvz_buffer_size(buffer, command->u.create_buffer.size);
@@ -202,14 +182,52 @@ static DvzDrp2ValidationResult _vklite_create_buffer(
     dvz_buffer_flags(buffer, _vklite_buffer_alloc_flags(command->u.create_buffer.usage));
     if (dvz_buffer_create(buffer) != 0)
         return _vklite_fail_destroy_object(
-            object, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (replaced)
+            &replacement, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+
+    if (previous == NULL)
     {
-        DvzDrp2ValidationResult result = _vklite_refresh_dependent_bind_groups(
-            state, command->u.create_buffer.id, command_index);
-        if (!result.ok)
-            return result;
+        Drp2VkliteObject* object =
+            _vklite_add(state, command->u.create_buffer.id, DRP2_OBJECT_BUFFER);
+        if (object == NULL)
+            return _vklite_fail_destroy_object(
+                &replacement, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        *object = replacement;
+        return _drp2_ok();
     }
+
+    if (state->retirement_borrowed_command_buffer != VK_NULL_HANDLE)
+    {
+        if (state->count == UINT32_MAX)
+            return _vklite_fail_destroy_object(
+                &replacement, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        if (!_vklite_deferred_reserve(state, state->count + 1))
+            return _vklite_fail_destroy_object(
+                &replacement, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
+    else if (state->deferred_count > 0)
+        _vklite_flush_deferred(state);
+    else if (state->runtime != NULL && state->runtime->device != NULL)
+        dvz_device_wait(state->runtime->device);
+
+    Drp2VkliteObject retired = *previous;
+    *previous = replacement;
+    DvzDrp2ValidationResult result = _vklite_refresh_dependent_bind_groups(
+        state, command->u.create_buffer.id, command_index);
+    if (!result.ok)
+    {
+        *previous = retired;
+        _vklite_destroy_object(&replacement);
+        return result;
+    }
+
+    if (state->retirement_borrowed_command_buffer != VK_NULL_HANDLE)
+    {
+        bool deferred = _vklite_defer_destroy_object(
+            state, &retired, state->retirement_borrowed_command_buffer);
+        ASSERT(deferred);
+    }
+    else
+        _vklite_destroy_object(&retired);
     return _drp2_ok();
 }
 
@@ -226,10 +244,10 @@ static DvzDrp2ValidationResult _vklite_create_texture(
         if (previous->kind != DRP2_OBJECT_TEXTURE)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         replaced = true;
-        if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+        if (state->retirement_borrowed_command_buffer != VK_NULL_HANDLE)
         {
             if (!_vklite_defer_destroy_object(
-                    state, previous, state->active_borrowed_command_buffer))
+                    state, previous, state->retirement_borrowed_command_buffer))
                 return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         }
         else
@@ -368,7 +386,6 @@ bool _vklite_attach_frame_target(
         runtime->vklite_state->runtime = runtime;
     }
     _vklite_flush_deferred(runtime->vklite_state);
-    runtime->vklite_state->active_borrowed_command_buffer = frame->command_buffer;
 
     DvzImages* images = dvz_images_create_wrapper();
     if (images == NULL)
@@ -435,6 +452,8 @@ bool _vklite_attach_frame_target(
         object->borrowed_frame_depth = true;
     }
     object->destroyed = false;
+    runtime->vklite_state->active_borrowed_command_buffer = frame->command_buffer;
+    runtime->vklite_state->retirement_borrowed_command_buffer = frame->command_buffer;
     return true;
 }
 
@@ -544,10 +563,10 @@ static DvzDrp2ValidationResult _vklite_destroy_backend_object(
     Drp2VkliteObject* object = _vklite_find(state, id);
     if (object == NULL || object->kind != kind)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+    if (state->retirement_borrowed_command_buffer != VK_NULL_HANDLE)
     {
         if (_vklite_defer_destroy_object(
-                state, object, state->active_borrowed_command_buffer))
+                state, object, state->retirement_borrowed_command_buffer))
             return _drp2_ok();
         if (kind == DRP2_OBJECT_BUFFER)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -584,8 +603,8 @@ static DvzDrp2ValidationResult _vklite_destroy_shader_module(
         object->kind != DRP2_OBJECT_SHADER_FRAGMENT &&
         object->kind != DRP2_OBJECT_SHADER_COMPUTE)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE &&
-        _vklite_defer_destroy_object(state, object, state->active_borrowed_command_buffer))
+    if (state->retirement_borrowed_command_buffer != VK_NULL_HANDLE &&
+        _vklite_defer_destroy_object(state, object, state->retirement_borrowed_command_buffer))
         return _drp2_ok();
     _vklite_destroy_object_slot(state, object);
     return _drp2_ok();

@@ -96,6 +96,7 @@ typedef enum
 typedef struct Drp2Object Drp2Object;
 typedef struct Drp2RuntimeState Drp2RuntimeState;
 typedef struct Drp2WorkReference Drp2WorkReference;
+typedef struct Drp2PendingReadback Drp2PendingReadback;
 #if DVZ_DRP2_HAS_VKLITE
 typedef struct Drp2VkliteObject Drp2VkliteObject;
 typedef struct Drp2VkliteState Drp2VkliteState;
@@ -115,6 +116,7 @@ struct DvzDrp2Runtime
     DvzVma* allocator;
     bool semantic_only;
     bool timing_enabled;
+    bool backend_failed;
     DvzDrp2RuntimeTiming last_timing;
     Drp2RuntimeState* semantic_state;
 #if DVZ_DRP2_HAS_VKLITE
@@ -206,6 +208,15 @@ struct Drp2WorkReference
 };
 
 
+struct Drp2PendingReadback
+{
+    uint64_t submission_id;
+    uint64_t buffer_id;
+    uint64_t offset;
+    uint64_t size;
+};
+
+
 struct Drp2RuntimeState
 {
     bool hello_seen;
@@ -217,6 +228,9 @@ struct Drp2RuntimeState
     uint32_t reference_capacity;
     uint32_t reference_count;
     Drp2WorkReference* references;
+    uint32_t pending_readback_capacity;
+    uint32_t pending_readback_count;
+    Drp2PendingReadback* pending_readbacks;
 };
 
 #if DVZ_DRP2_HAS_VKLITE
@@ -308,6 +322,7 @@ struct Drp2VkliteState
     uint32_t deferred_count;
     Drp2DeferredDestroy* deferred;
     VkCommandBuffer active_borrowed_command_buffer;
+    VkCommandBuffer retirement_borrowed_command_buffer;
 };
 
 #endif
@@ -327,6 +342,8 @@ bool _drp2_texture_format_bytes_per_texel(uint32_t format, uint32_t* out_bytes);
 bool _drp2_runtime_state_ensure_capacity(Drp2RuntimeState* state);
 Drp2Object* _drp2_find_any_object(Drp2RuntimeState* state, uint64_t id);
 Drp2Object* _drp2_add_object(Drp2RuntimeState* state, uint64_t id, Drp2ObjectKind kind);
+bool _drp2_pending_readback_release(
+    Drp2RuntimeState* state, uint64_t buffer_id, uint64_t offset, uint64_t size);
 void _drp2_runtime_state_cleanup(Drp2RuntimeState* state);
 bool _drp2_runtime_state_ensure(DvzDrp2Runtime* runtime);
 bool _drp2_runtime_state_commit(DvzDrp2Runtime* runtime, Drp2RuntimeState* next_state);
@@ -354,6 +371,7 @@ VkImageView _vklite_object_image_view(const Drp2VkliteObject* object);
 void _vklite_state_cleanup(Drp2VkliteState* state);
 bool _vklite_defer_destroy_object(
     Drp2VkliteState* state, Drp2VkliteObject* object, VkCommandBuffer command_buffer);
+bool _vklite_deferred_reserve(Drp2VkliteState* state, uint32_t additional_count);
 void _vklite_flush_deferred_for_command_buffer(
     Drp2VkliteState* state, VkCommandBuffer command_buffer);
 void _vklite_flush_deferred(Drp2VkliteState* state);

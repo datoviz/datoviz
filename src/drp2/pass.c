@@ -681,12 +681,8 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
     }
     else if (target->borrowed_frame_target)
     {
-        cmds = _vklite_borrowed_frame_commands_create(
-            state->runtime->device, target->command_buffer);
-        if (cmds == NULL)
-            return _vklite_fail_destroy_object(
-                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-        pass->borrowed_commands = true;
+        return _vklite_fail_destroy_object(
+            pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     else
     {
@@ -1534,9 +1530,11 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
             return result;
         }
     }
-    else if (pass->depth_images != NULL &&
-             state->active_borrowed_command_buffer != VK_NULL_HANDLE &&
-             _vklite_defer_destroy_object(state, pass, state->active_borrowed_command_buffer))
+    else if (
+        pass->depth_images != NULL &&
+        state->retirement_borrowed_command_buffer != VK_NULL_HANDLE &&
+        _vklite_defer_destroy_object(
+            state, pass, state->retirement_borrowed_command_buffer))
     {
         return _drp2_ok();
     }

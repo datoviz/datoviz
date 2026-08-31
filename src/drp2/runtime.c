@@ -20,6 +20,7 @@
 
 #if DVZ_DRP2_HAS_VKLITE
 #include <volk.h>
+#include "../vklite/_buffers.h"
 #endif
 
 #include "_alloc.h"
@@ -370,6 +371,8 @@ void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime)
         runtime->vklite_state = NULL;
     }
 #endif
+
+    runtime->backend_failed = false;
 }
 
 
@@ -386,7 +389,7 @@ bool dvz_drp2_runtime_register_external_buffer(
 {
     if (!_drp2_external_buffer_desc_validate(desc))
         return false;
-    if (runtime == NULL || buffer_id == 0 || desc->size == 0 ||
+    if (runtime == NULL || runtime->backend_failed || buffer_id == 0 || desc->size == 0 ||
         desc->usage == DVZ_DRP2_BUFFER_USAGE_NONE)
     {
         return false;
@@ -448,7 +451,8 @@ bool dvz_drp2_runtime_arm_external_buffer_timeline(
     DvzDrp2Runtime* runtime, uint64_t buffer_id,
     const DvzDrp2ExternalBufferTimelineDesc* desc)
 {
-    if (runtime == NULL || !_drp2_external_buffer_timeline_desc_validate(desc) ||
+    if (runtime == NULL || runtime->backend_failed ||
+        !_drp2_external_buffer_timeline_desc_validate(desc) ||
         runtime->semantic_state == NULL)
     {
         return false;
@@ -502,7 +506,8 @@ bool dvz_drp2_runtime_arm_external_buffer_timeline(
 bool dvz_drp2_runtime_external_buffer_timeline_pending(
     const DvzDrp2Runtime* runtime, uint64_t buffer_id)
 {
-    if (runtime == NULL || runtime->semantic_state == NULL || buffer_id == 0)
+    if (runtime == NULL || runtime->backend_failed || runtime->semantic_state == NULL ||
+        buffer_id == 0)
         return false;
     Drp2Object* semantic = _drp2_find_any_object(runtime->semantic_state, buffer_id);
     return semantic != NULL && !semantic->destroyed && semantic->kind == DRP2_OBJECT_BUFFER &&
@@ -524,7 +529,8 @@ bool dvz_drp2_runtime_external_buffer_timeline_pending(
 bool _dvz_drp2_runtime_vklite_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* data)
 {
-    if (runtime == NULL || runtime->vklite_state == NULL || data == NULL || size == 0)
+    if (runtime == NULL || runtime->backend_failed || runtime->vklite_state == NULL ||
+        data == NULL || size == 0)
         return false;
 
     Drp2VkliteObject* object = _vklite_find(runtime->vklite_state, buffer_id);
@@ -534,7 +540,8 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
         return false;
 
     Drp2Object* semantic = _drp2_find_any_object(runtime->semantic_state, buffer_id);
-    if (semantic == NULL || semantic->kind != DRP2_OBJECT_BUFFER)
+    if (semantic == NULL || semantic->kind != DRP2_OBJECT_BUFFER ||
+        (semantic->usage & DVZ_DRP2_BUFFER_USAGE_MAP_READ) == 0)
         return false;
     if (_drp2_range_overflows(offset, size, semantic->size))
     {
@@ -545,9 +552,9 @@ bool _dvz_drp2_runtime_vklite_download_buffer(
         return false;
     }
 
-    dvz_buffer_download(object->buffer, offset, size, data);
-    if (semantic->pending_readback_count > 0)
-        semantic->pending_readback_count--;
+    if (_dvz_buffer_download_result(object->buffer, offset, size, data) != 0)
+        return false;
+    _drp2_pending_readback_release(runtime->semantic_state, buffer_id, offset, size);
     return true;
 }
 #endif
@@ -568,6 +575,8 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
     if (stream == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, 0);
+    if (runtime->backend_failed)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
 
     if (runtime->timing_enabled)
         dvz_memset(
@@ -608,12 +617,14 @@ dvz_drp2_runtime_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* st
         runtime->last_timing.backend_ns = dvz_time_monotonic_ns() - start_ns;
     if (!backend_result.ok)
     {
+        runtime->backend_failed = true;
         _drp2_runtime_state_cleanup(&next_state);
         return backend_result;
     }
     start_ns = runtime->timing_enabled ? dvz_time_monotonic_ns() : 0;
     if (!_drp2_runtime_state_commit(runtime, &next_state))
     {
+        runtime->backend_failed = true;
         _drp2_runtime_state_cleanup(&next_state);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
     }
@@ -662,7 +673,8 @@ bool dvz_drp2_runtime_attach_frame_target(
     DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame)
 {
 #if DVZ_DRP2_HAS_VKLITE
-    if (runtime == NULL || !_drp2_frame_target_valid(texture_id, frame))
+    if (runtime == NULL || runtime->backend_failed ||
+        !_drp2_frame_target_valid(texture_id, frame))
         return false;
 
     if (runtime->semantic_state == NULL)
@@ -727,7 +739,8 @@ bool dvz_drp2_runtime_copy_texture_to_frame(
     DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame)
 {
 #if DVZ_DRP2_HAS_VKLITE
-    if (runtime == NULL || runtime->vklite_state == NULL || frame == NULL)
+    if (runtime == NULL || runtime->backend_failed || runtime->vklite_state == NULL ||
+        frame == NULL)
         return false;
     if (!_drp2_frame_target_valid(texture_id, frame))
         return false;
@@ -805,6 +818,8 @@ bool dvz_drp2_runtime_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* dst)
 {
 #if DVZ_DRP2_HAS_VKLITE
+    if (runtime == NULL || runtime->backend_failed)
+        return false;
     return _dvz_drp2_runtime_vklite_download_buffer(runtime, buffer_id, offset, size, dst);
 #else
     (void)runtime;

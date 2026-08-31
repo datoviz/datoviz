@@ -51,3 +51,8 @@ struct DvzBufferViews
     DvzSize alignment;
     DvzSize offsets[DVZ_MAX_BUFFER_VIEWS];
 };
+
+
+
+int _dvz_buffer_download_result(
+    DvzBuffer* buffer, DvzSize offset, DvzSize size, void* data);

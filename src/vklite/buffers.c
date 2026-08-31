@@ -740,7 +740,17 @@ void dvz_buffer_upload(DvzBuffer* buffer, DvzSize offset, DvzSize size, const vo
 
 
 
-void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* data)
+/**
+ * Download bytes from a buffer and report whether the allocator copy succeeded.
+ *
+ * @param buffer buffer to download from
+ * @param offset byte offset within the buffer
+ * @param size number of bytes to download
+ * @param data destination CPU buffer
+ * @return zero on success and non-zero on failure
+ */
+int _dvz_buffer_download_result(
+    DvzBuffer* buffer, DvzSize offset, DvzSize size, void* data)
 {
     ANN(buffer);
     ANN(data);
@@ -751,8 +761,16 @@ void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* 
     if (dvz_allocator_copy_from(buffer->allocator, buffer->alloc, offset, data, size) != 0)
     {
         log_error("failed to download data from buffer");
-        return;
+        return 1;
     }
+    return 0;
+}
+
+
+
+void dvz_buffer_download(DvzBuffer* buffer, DvzSize offset, DvzSize size, void* data)
+{
+    (void)_dvz_buffer_download_result(buffer, offset, size, data);
 }
 
 
