@@ -68,11 +68,60 @@ void main()
     bool hasPrev = (inPathFlags & HAS_PREV) != 0u;
     bool hasNext = (inPathFlags & HAS_NEXT) != 0u;
     float side = sideNegative ? -1.0 : 1.0;
+    float strokeWidth = max(inLineWidth, 0.0);
+    float lateralMarginPx = dvz_stroke_outer_half_width(strokeWidth);
+    if (!hasPrev)
+    {
+        int startCap = int(round(material.params.x));
+        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_extension(startCap, strokeWidth));
+        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_half_width(startCap, strokeWidth));
+    }
+    if (!hasNext)
+    {
+        int endCap = int(round(material.params.y));
+        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_extension(endCap, strokeWidth));
+        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_half_width(endCap, strokeWidth));
+    }
 
     vec4 p0Clip = transform(inPositionPrev);
     vec4 p1Clip = transform(inPositionStart);
     vec4 p2Clip = transform(inPositionEnd);
     vec4 p3Clip = transform(inPositionNext);
+
+    // Nothing may be projected before it is clipped: deviceClipToTopLeftPixel()
+    // mirrors a behind-camera vertex through the viewport centre rather than
+    // discarding it. Segment visuals already clip here; paths must too.
+    vec4 startOriginal = p1Clip;
+    vec4 endOriginal = p2Clip;
+    if (!dvz_stroke_clip_to_view(p1Clip, p2Clip, lateralMarginPx, viewport.rect.zw))
+    {
+        gl_Position = vec4(2.0, 2.0, 1.0, 1.0);
+        fragColor = vec4(0.0);
+        fragCoord = vec2(0.0);
+        fragLength = 0.0;
+        fragLineWidth = 0.0;
+        fragHasPrev = 0.0;
+        fragHasNext = 0.0;
+        fragBevelDistance = vec2(0.0);
+        fragJoinSplitDistance = 0.0;
+        return;
+    }
+    // An end the frustum cut is not a join and not a cap: the neighbour is on
+    // the far side of the clip, so it ends flat on the boundary.
+    bool startClipped = p1Clip != startOriginal;
+    bool endClipped = p2Clip != endOriginal;
+    bool joinPrev = hasPrev && !startClipped;
+    bool joinNext = hasNext && !endClipped;
+    // The core segment now sits in front of the near plane, so these only pull
+    // the neighbour in; they never move p1Clip or p2Clip back.
+    if (joinPrev)
+        joinPrev = dvz_stroke_clip_near(p0Clip, p1Clip);
+    if (joinNext)
+        joinNext = dvz_stroke_clip_near(p3Clip, p2Clip);
+    // A cap belongs only to a real path end, never to a clip boundary.
+    hasPrev = hasPrev || startClipped;
+    hasNext = hasNext || endClipped;
+
     vec2 p0 = deviceClipToTopLeftPixel(p0Clip);
     vec2 p1 = deviceClipToTopLeftPixel(p1Clip);
     vec2 p2 = deviceClipToTopLeftPixel(p2Clip);
@@ -81,15 +130,14 @@ void main()
     vec2 v0 = safeNormalize(p1 - p0, vec2(1.0, 0.0));
     vec2 v1 = safeNormalize(p2 - p1, v0);
     vec2 v2 = safeNormalize(p3 - p2, v1);
-    if (!hasPrev)
+    if (!joinPrev)
         v0 = v1;
-    if (!hasNext)
+    if (!joinNext)
         v2 = v1;
     vec2 n0 = vec2(-v0.y, v0.x);
     vec2 n1 = vec2(-v1.y, v1.x);
     vec2 n2 = vec2(-v2.y, v2.x);
 
-    float strokeWidth = max(inLineWidth, 0.0);
     float halfWidth = dvz_stroke_outer_half_width(strokeWidth);
     int joinType = int(round(material.params.z));
     float miterLimit = max(material.params.w, 1.0);
