@@ -134,6 +134,8 @@ function classifyDrp2WebGpuError(message) {
     message.includes("handshake") ||
     message.includes("diagnostic Error before") ||
     message.includes("no pending readback request") ||
+    message.includes("already has a pending readback request") ||
+    message.includes("is out of order") ||
     message.includes("open pass") ||
     message.includes("before a pipeline") ||
     message.includes("missing vertex buffer") ||
@@ -613,6 +615,19 @@ function decodeBase64(data) {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes;
+}
+
+
+
+function decodeStrictBase64(data, label) {
+  if (
+    typeof data !== "string" ||
+    data.length % 4 !== 0 ||
+    !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(data)
+  ) {
+    throw new Error(`${label} is not valid base64`);
+  }
+  return decodeBase64(data);
 }
 
 
@@ -2056,6 +2071,13 @@ function consumeQueueSubmitReply(state, command) {
       `QueueSubmitReply references submission ${command.submission_id} with no pending readback request`,
     );
   }
+  const expectedSubmissionId = state.pendingReadbacks.keys().next().value;
+  if (command.submission_id !== expectedSubmissionId) {
+    throw new Error(
+      `QueueSubmitReply for submission ${command.submission_id} is out of order; ` +
+        `expected ${expectedSubmissionId}`,
+    );
+  }
   const replies = command.readbacks ?? [];
   if (replies.length !== pending.length) {
     throw new Error(
@@ -2072,7 +2094,10 @@ function consumeQueueSubmitReply(state, command) {
     ) {
       throw new Error("QueueSubmitReply readback entry does not match the original request");
     }
-    const data = decodeBase64(required(reply.data, "QueueSubmitReply readback needs data"));
+    const data = decodeStrictBase64(
+      required(reply.data, "QueueSubmitReply readback needs data"),
+      "QueueSubmitReply readback data",
+    );
     if (data.byteLength !== request.size) {
       throw new Error("QueueSubmitReply readback data size does not match the original request");
     }

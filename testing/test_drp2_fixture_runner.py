@@ -667,11 +667,41 @@ def test_drp2_fixture_runner_retains_readback_until_reply_fully_validates() -> N
     else:
         raise AssertionError('invalid QueueSubmitReply unexpectedly consumed the pending readback')
     try:
-        validator._validate_command(7, {'cmd': 'DestroyBuffer', 'buffer_id': 1})
+        validator._validate_command(
+            7,
+            {
+                'cmd': 'QueueSubmitReply',
+                'submission_id': 4,
+                'readbacks': [{'buffer_id': 1, 'offset': 0, 'size': 4, 'data': '!!!!'}],
+            },
+        )
+    except SemanticFailure as exc:
+        assert 'not valid base64' in exc.message
+    else:
+        raise AssertionError('malformed QueueSubmitReply base64 unexpectedly consumed the readback')
+    try:
+        validator._validate_command(8, {'cmd': 'DestroyBuffer', 'buffer_id': 1})
     except SemanticFailure as exc:
         assert 'pending work or readback' in exc.message
     else:
         raise AssertionError('DestroyBuffer unexpectedly accepted a pending readback buffer')
+
+
+def test_drp2_fixture_runner_validates_readback_reply_contract() -> None:
+    runner = DRP2FixtureRunner(Path(__file__).resolve().parents[1])
+    expected = {
+        'invalid_queue_submit_duplicate_pending_submission_id': 'DRP2_ERR_INVALID_STATE',
+        'invalid_queue_submit_reply_invalid_base64': 'DRP2_ERR_INVALID_ARGUMENT',
+        'invalid_queue_submit_reply_data_size': 'DRP2_ERR_INVALID_ARGUMENT',
+        'invalid_queue_submit_reply_out_of_order': 'DRP2_ERR_INVALID_STATE',
+    }
+
+    for name, code in expected.items():
+        fixtures = runner.discover([], name, [])
+        assert len(fixtures) == 1
+        result = runner.run_fixture(fixtures[0])
+        assert result.passed is True
+        assert result.actual_code == code
 
 
 def test_drp2_fixture_runner_rejects_destroying_texture_still_referenced_by_submitted_work() -> None:

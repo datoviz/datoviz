@@ -1,0 +1,18 @@
+{
+  "name": "invalid_queue_submit_reply_data_size",
+  "description": "QueueSubmitReply decodes to fewer bytes than its pending readback request.",
+  "reason": "The decoded reply data must contain exactly the requested byte count before the request can be consumed.",
+  "fix": "Return base64 that decodes to exactly the requested readback size.",
+  "version": {"major": 2, "minor": 0},
+  "tags": ["negative", "queue", "readback", "reply"],
+  "commands": [
+    {"cmd": "HelloRenderer", "version": {"major": 2, "minor": 0}, "client_name": "fixture-client"},
+    {"cmd": "RendererHelloReply", "version": {"major": 2, "minor": 0}, "status": "ok", "renderer_name": "fixture-renderer"},
+    {"cmd": "CreateBuffer", "id": 1, "size": 16, "usage": ["MAP_READ"]},
+    {"cmd": "BeginCommandEncoder", "id": 2},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 2, "command_buffer_id": 3},
+    {"cmd": "QueueSubmit", "command_buffer_ids": [3], "submission_id": 4, "readbacks": [{"buffer_id": 1, "offset": 0, "size": 4}]},
+    {"cmd": "QueueSubmitReply", "submission_id": 4, "readbacks": [{"buffer_id": 1, "offset": 0, "size": 4, "data": "AA=="}]}
+  ],
+  "expected": {"outcome": "error", "phase": "semantic_validation", "code": "DRP2_ERR_INVALID_ARGUMENT", "command_index": 6}
+}

@@ -83,7 +83,8 @@ The negative corpus should stay focused and cover the core validation surface:
 52. texture view destroyed while still referenced by recorded work,
 53. buffer replacement while a capture or readback is pending,
 54. readback buffer destruction before reply validation,
-55. bind-group rebinding that revalidates a destroyed non-dynamic buffer dependency.
+55. bind-group rebinding that revalidates a destroyed non-dynamic buffer dependency,
+56. duplicate pending readback submission ids, malformed or incorrectly sized reply data, and out-of-order replies.
 
 The positive corpus should stay minimal and focus on clean command shapes:
 

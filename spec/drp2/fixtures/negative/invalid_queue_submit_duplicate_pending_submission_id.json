@@ -1,0 +1,20 @@
+{
+  "name": "invalid_queue_submit_duplicate_pending_submission_id",
+  "description": "A second readback submission reuses a submission id whose first reply is still pending.",
+  "reason": "A pending readback submission id identifies one ordered reply and cannot be reused before that reply validates.",
+  "fix": "Use a fresh submission_id or wait for the earlier QueueSubmitReply.",
+  "version": {"major": 2, "minor": 0},
+  "tags": ["negative", "queue", "readback", "submission"],
+  "commands": [
+    {"cmd": "HelloRenderer", "version": {"major": 2, "minor": 0}, "client_name": "fixture-client"},
+    {"cmd": "RendererHelloReply", "version": {"major": 2, "minor": 0}, "status": "ok", "renderer_name": "fixture-renderer"},
+    {"cmd": "CreateBuffer", "id": 1, "size": 16, "usage": ["MAP_READ"]},
+    {"cmd": "BeginCommandEncoder", "id": 2},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 2, "command_buffer_id": 3},
+    {"cmd": "BeginCommandEncoder", "id": 4},
+    {"cmd": "FinishCommandEncoder", "encoder_id": 4, "command_buffer_id": 5},
+    {"cmd": "QueueSubmit", "command_buffer_ids": [3], "submission_id": 10, "readbacks": [{"buffer_id": 1, "offset": 0, "size": 4}]},
+    {"cmd": "QueueSubmit", "command_buffer_ids": [5], "submission_id": 10, "readbacks": [{"buffer_id": 1, "offset": 0, "size": 4}]}
+  ],
+  "expected": {"outcome": "error", "phase": "semantic_validation", "code": "DRP2_ERR_INVALID_STATE", "command_index": 8}
+}

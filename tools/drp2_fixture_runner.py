@@ -188,7 +188,7 @@ class DRP2SemanticValidator:
         self.encoders: Dict[int, Dict[str, Any]] = {}
         self.passes: Dict[int, Dict[str, Any]] = {}
         self.command_buffers: Dict[int, Dict[str, Any]] = {}
-        self.pending_readbacks: Dict[int, Dict[str, Any]] = {}
+        self.pending_readbacks: Dict[int, List[Dict[str, Any]]] = {}
         self.handshake_started = False
         self.handshake_pending = False
         self.handshake_failed = False
@@ -1287,6 +1287,12 @@ class DRP2SemanticValidator:
                     index,
                     'submission_id is required when readbacks are requested',
                 )
+            if submission_id in self.pending_readbacks:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_STATE',
+                    index,
+                    f'submission {submission_id} already has a pending readback request',
+                )
             for rb in readbacks:
                 buffer_state = self._buffer_usage(index, rb['buffer_id'], 'MAP_READ')
                 self._check_buffer_range(index, buffer_state, rb['offset'], rb['size'])
@@ -1302,6 +1308,13 @@ class DRP2SemanticValidator:
                 'DRP2_ERR_INVALID_STATE',
                 index,
                 f'QueueSubmitReply references submission {submission_id} with no pending readback request',
+            )
+        expected_submission_id = next(iter(self.pending_readbacks))
+        if submission_id != expected_submission_id:
+            raise SemanticFailure(
+                'DRP2_ERR_INVALID_STATE',
+                index,
+                f'QueueSubmitReply for submission {submission_id} is out of order; expected {expected_submission_id}',
             )
         expected = self.pending_readbacks[submission_id]
         actual = command.get('readbacks', [])
@@ -1319,6 +1332,20 @@ class DRP2SemanticValidator:
                     'DRP2_ERR_INVALID_ARGUMENT',
                     index,
                     'QueueSubmitReply readback entry does not match the original request',
+                )
+            try:
+                data = base64.b64decode(rep['data'], validate=True)
+            except (ValueError, TypeError) as exc:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_ARGUMENT',
+                    index,
+                    'QueueSubmitReply readback data is not valid base64',
+                ) from exc
+            if len(data) != req['size']:
+                raise SemanticFailure(
+                    'DRP2_ERR_INVALID_ARGUMENT',
+                    index,
+                    'QueueSubmitReply readback data size does not match the original request',
                 )
         del self.pending_readbacks[submission_id]
 

@@ -1321,4 +1321,5 @@ Semantics:
 3. the `readbacks` list must mirror the original request exactly: same buffer ids, offsets, and sizes in the same order,
 4. each `data` field must contain exactly `size` bytes encoded as base64,
 5. a `QueueSubmit` with no `readbacks` field or an empty `readbacks` list does not produce a reply,
-6. a reply consumes its pending request only after all reply validation succeeds; a rejected reply leaves the request and its buffer pins pending.
+6. a reply consumes its pending request only after all reply validation succeeds; a rejected reply leaves the request and its buffer pins pending,
+7. a reply for a later pending submission is invalid until every earlier pending reply has been delivered and validated.

@@ -411,7 +411,8 @@ Rules:
 8. the `readbacks` list in `QueueSubmitReply` must mirror the request exactly: same buffer ids,
    offsets, and sizes, in the same order,
 9. each `data` field in the reply must contain exactly `size` bytes encoded as base64,
-10. a pending readback retains every requested buffer until the matching reply fully validates; a rejected reply does not consume the request or release those buffers.
+10. a new `QueueSubmit` must not reuse the `submission_id` of a pending readback request,
+11. a pending readback retains every requested buffer until the matching reply fully validates; a rejected reply does not consume the request or release those buffers.
 
 Validation consequences:
 
@@ -420,7 +421,9 @@ Validation consequences:
 3. a `QueueSubmitReply` with no matching pending submission should fail with
    `DRP2_ERR_INVALID_STATE`,
 4. a `QueueSubmitReply` whose readbacks list does not match the request should fail with
-   `DRP2_ERR_INVALID_ARGUMENT`.
+   `DRP2_ERR_INVALID_ARGUMENT`,
+5. duplicate pending submission ids and out-of-order replies should fail with `DRP2_ERR_INVALID_STATE`,
+6. malformed base64 and decoded readback data whose byte length differs from `size` should fail with `DRP2_ERR_INVALID_ARGUMENT`.
 
 
 ## Range And Layout Invariants

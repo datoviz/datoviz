@@ -624,6 +624,23 @@ async function smokeReadbackPinSurvivesInvalidReply(executeDrp2Stream) {
         commands: [{
           cmd: 'QueueSubmitReply',
           submission_id: 4,
+          readbacks: [{ buffer_id: 1, offset: 0, size: 4, data: '!!!!' }],
+        }],
+      },
+    ),
+    'not valid base64',
+  );
+  await expectAsyncFailure(
+    async () => await executeDrp2Stream(
+      device,
+      context,
+      'bgra8unorm',
+      {},
+      {
+        ...options,
+        commands: [{
+          cmd: 'QueueSubmitReply',
+          submission_id: 4,
           readbacks: [{ buffer_id: 1, offset: 0, size: 4, data: 'AA==' }],
         }],
       },
@@ -650,6 +667,78 @@ async function smokeReadbackPinSurvivesInvalidReply(executeDrp2Stream) {
       commands: [
         { cmd: 'QueueSubmitReply', submission_id: 4, readbacks: result.readbacks },
         { cmd: 'DestroyBuffer', buffer_id: 1 },
+      ],
+    },
+  );
+}
+
+
+
+async function smokeReadbackReplyOrder(executeDrp2Stream) {
+  const result = await executeDrp2Stream(
+    device,
+    context,
+    'bgra8unorm',
+    {
+      commands: [
+        ...header,
+        { cmd: 'CreateBuffer', id: 1, size: 16, usage: ['MAP_READ'] },
+        { cmd: 'BeginCommandEncoder', id: 2 },
+        { cmd: 'FinishCommandEncoder', encoder_id: 2, command_buffer_id: 3 },
+        { cmd: 'BeginCommandEncoder', id: 4 },
+        { cmd: 'FinishCommandEncoder', encoder_id: 4, command_buffer_id: 5 },
+        {
+          cmd: 'QueueSubmit',
+          command_buffer_ids: [3],
+          submission_id: 10,
+          readbacks: [{ buffer_id: 1, offset: 0, size: 4 }],
+        },
+        {
+          cmd: 'QueueSubmit',
+          command_buffer_ids: [5],
+          submission_id: 11,
+          readbacks: [{ buffer_id: 1, offset: 0, size: 4 }],
+        },
+      ],
+    },
+    { canvas: fakeCanvas },
+  );
+  const options = { canvas: fakeCanvas, commands: [], state: result.state };
+  const replyFor = (submissionId) => {
+    const reply = result.readbacks.find((item) => item.submission_id === submissionId);
+    if (reply === undefined) {
+      throw new Error(`missing generated readback reply for submission ${submissionId}`);
+    }
+    return {
+      buffer_id: reply.buffer_id,
+      offset: reply.offset,
+      size: reply.size,
+      data: reply.data,
+    };
+  };
+  await expectAsyncFailure(
+    async () => await executeDrp2Stream(
+      device,
+      context,
+      'bgra8unorm',
+      {},
+      {
+        ...options,
+        commands: [{ cmd: 'QueueSubmitReply', submission_id: 11, readbacks: [replyFor(11)] }],
+      },
+    ),
+    'out of order',
+  );
+  await executeDrp2Stream(
+    device,
+    context,
+    'bgra8unorm',
+    {},
+    {
+      ...options,
+      commands: [
+        { cmd: 'QueueSubmitReply', submission_id: 10, readbacks: [replyFor(10)] },
+        { cmd: 'QueueSubmitReply', submission_id: 11, readbacks: [replyFor(11)] },
       ],
     },
   );
@@ -1344,6 +1433,7 @@ async function main() {
   );
   await smokeDestroyAfterSubmittedWork(executeDrp2Stream);
   await smokeReadbackPinSurvivesInvalidReply(executeDrp2Stream);
+  await smokeReadbackReplyOrder(executeDrp2Stream);
   await smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream);
 
   await expectFailure(
