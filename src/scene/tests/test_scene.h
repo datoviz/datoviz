@@ -1383,6 +1383,12 @@ int test_app_offscreen_path_clips_behind_camera(TstContext* suite, const TstCase
 int test_app_offscreen_path_preserves_lateral_stroke_overlap(
     TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_path_preserves_rotated_cap_overlap(
+    TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_path_preserves_miter_join_overlap(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstCase* item);

@@ -69,18 +69,26 @@ void main()
     bool hasNext = (inPathFlags & HAS_NEXT) != 0u;
     float side = sideNegative ? -1.0 : 1.0;
     float strokeWidth = max(inLineWidth, 0.0);
-    float lateralMarginPx = dvz_stroke_outer_half_width(strokeWidth);
+    float halfWidth = dvz_stroke_outer_half_width(strokeWidth);
+    int joinType = int(round(material.params.z));
+    float miterLimit = max(material.params.w, 1.0);
+    float miterLengthLimit = dvz_stroke_miter_length_limit(strokeWidth, miterLimit);
+    float nonMiterScale = mix(1.0, 2.5, smoothstep(12.0, 48.0, strokeWidth));
+    float nonMiterLengthLimit = max(nonMiterScale * (strokeWidth * 0.5) + 2.0, halfWidth);
+    float joinLengthLimit = joinType == 0 ? miterLengthLimit : nonMiterLengthLimit;
+    float lateralMarginPx = halfWidth;
+    if (hasPrev || hasNext)
+        lateralMarginPx = max(lateralMarginPx, joinLengthLimit);
     if (!hasPrev)
     {
         int startCap = int(round(material.params.x));
-        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_extension(startCap, strokeWidth));
-        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_half_width(startCap, strokeWidth));
+        lateralMarginPx =
+            max(lateralMarginPx, dvz_stroke_cap_clip_radius(startCap, strokeWidth));
     }
     if (!hasNext)
     {
         int endCap = int(round(material.params.y));
-        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_extension(endCap, strokeWidth));
-        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_half_width(endCap, strokeWidth));
+        lateralMarginPx = max(lateralMarginPx, dvz_stroke_cap_clip_radius(endCap, strokeWidth));
     }
 
     vec4 p0Clip = transform(inPositionPrev);
@@ -133,9 +141,6 @@ void main()
     vec2 n1 = vec2(-v1.y, v1.x);
     vec2 n2 = vec2(-v2.y, v2.x);
 
-    float halfWidth = dvz_stroke_outer_half_width(strokeWidth);
-    int joinType = int(round(material.params.z));
-    float miterLimit = max(material.params.w, 1.0);
     float lengthPx = length(p2 - p1);
     vec2 miterStart = safeNormalize(n0 + n1, n1);
     vec2 miterEnd = safeNormalize(n1 + n2, n1);
@@ -143,10 +148,6 @@ void main()
     float denomEnd = dot(miterEnd, n1);
     float lengthStart = denomStart > 1e-3 ? halfWidth / denomStart : halfWidth;
     float lengthEnd = denomEnd > 1e-3 ? halfWidth / denomEnd : halfWidth;
-    float miterLengthLimit = max(miterLimit * (strokeWidth * 0.5) + 2.0, halfWidth);
-    float nonMiterScale = mix(1.0, 2.5, smoothstep(12.0, 48.0, strokeWidth));
-    float nonMiterLengthLimit = max(nonMiterScale * (strokeWidth * 0.5) + 2.0, halfWidth);
-    float joinLengthLimit = joinType == 0 ? miterLengthLimit : nonMiterLengthLimit;
     lengthStart = min(lengthStart, joinLengthLimit);
     lengthEnd = min(lengthEnd, joinLengthLimit);
 

@@ -119,6 +119,21 @@ float dvz_stroke_cap_half_width(int capType, float lineWidth)
 }
 
 
+float dvz_stroke_cap_clip_radius(int capType, float lineWidth)
+{
+    float extension = dvz_stroke_cap_extension(capType, lineWidth);
+    float halfWidth = dvz_stroke_cap_half_width(capType, lineWidth);
+    return length(vec2(extension, halfWidth));
+}
+
+
+float dvz_stroke_miter_length_limit(float lineWidth, float miterLimit)
+{
+    float halfWidth = dvz_stroke_outer_half_width(lineWidth);
+    return max(max(miterLimit, 1.0) * (max(lineWidth, 0.0) * 0.5) + 2.0, halfWidth);
+}
+
+
 float dvz_stroke_cap_distance(int capType, float dx, float dy, float lineWidth)
 {
     float aa = 1.0;
