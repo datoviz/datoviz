@@ -1,12 +1,12 @@
 # Differential code QA campaign
 
-Status: in progress on isolated local branch `qa/differential-febbb0142`. Started: 2026-08-31.
+Status: complete. Implementation, high-effort independent review, rebase onto the parallel documentation work, and final integration validation all passed on isolated local branch `qa/differential-febbb0142`. Started and completed: 2026-08-31.
 
 This record captures differential correctness and robustness evidence for production changes since the completed exploratory source audit. It is mutable-tree development evidence, not exact-artifact, hosted-platform, or release-candidate proof.
 
 ## Scope and plan
 
-The audit compares baseline `545c9937989ab2faf075155b3d7bfd38a74b0933` with initial campaign head `febbb0142f261a6526febec8ac2a64556377bb20` in isolated worktree `/home/cyrille/GIT/Viz/datoviz-qa-differential`.
+The audit compares baseline `545c9937989ab2faf075155b3d7bfd38a74b0933` with initial campaign head `febbb0142f261a6526febec8ac2a64556377bb20` in isolated worktree `/home/cyrille/GIT/Viz/datoviz-qa-differential`. Final integration targets `origin/main` at `2b1f293f4616f4ea85c789da35a8465f32b1f260`, which includes the parallel documentation work.
 
 1. Inventory changed production paths and review them by correctness risk and subsystem contract.
 2. Run differential compiler and static-analysis checks, inspecting underlying diagnostics directly.
@@ -15,7 +15,7 @@ The audit compares baseline `545c9937989ab2faf075155b3d7bfd38a74b0933` with init
 5. Run the relevant focused and broad native, DRP2, vklite, specification, binding, installed-consumer, and presentation gates.
 6. Record exact results, limitations, commits, and remaining external gates; finish with whitespace and repository-hygiene checks.
 
-Three parallel review agents are read-only. The primary QA agent owns all edits, validation decisions, evidence updates, and commits.
+Parallel review agents were used for bounded source review and validation lanes. The primary QA agent owns integration, validation decisions, evidence updates, and commits. A fresh high-effort independent architecture review of the final DRP2 series found no remaining priority-one blocker after its findings were addressed.
 
 ## Repository state
 
@@ -86,7 +86,7 @@ Documentation prose is excluded from this campaign except where a specification 
 
 Status: complete.
 
-The exact inventory, environment, available analyzers, and initial risk map are recorded above. Three read-only review lanes covered scene lifetime/resource behavior, the runtime graphics foundation, and CPU/tooling/package reliability. Reproducer-based review confirmed two moderate lifetime/recovery defects, one low allocation-unwind defect, and one low installed-header contract defect. One high-impact DRP2 lifetime inconsistency remains a material architecture decision and is intentionally unchanged pending maintainer direction.
+The exact inventory, environment, available analyzers, and initial risk map are recorded above. Three read-only review lanes covered scene lifetime/resource behavior, the runtime graphics foundation, and CPU/tooling/package reliability. Reproducer-based review confirmed two moderate lifetime/recovery defects, one low allocation-unwind defect, one low installed-header contract defect, and one high-impact DRP2 lifetime inconsistency. The DRP2 issue was resolved after a high-effort architecture review recommended a buffer-only pre-RC3 correction with transactional semantic tracking, readback pinning, bind-group revalidation, and backend-safe physical destruction.
 
 ### Checkpoint 2: differential static analysis
 
@@ -100,11 +100,26 @@ Status: complete with a bounded cppcheck limitation.
 
 ### Checkpoint 3: sanitizer and Valgrind analysis
 
-Status: pending.
+Status: complete with a bounded sanitizer-provider limitation.
+
+- A fresh Clang ASan, UBSan, and LSan build completed all 1,257 build steps.
+- Focused sanitizer runs for transactional semantic-reference persistence, deferred vklite destruction, and exact ordered readback retirement passed without sanitizer reports.
+- Broader sanitizer runtime-validation attempts stalled in the local Vulkan/provider path without a sanitizer report, including the invalid-shader partial-backend-failure regression. These attempts are inconclusive rather than passes; the same behavior is not present in the normal validation build.
+- Valgrind runs for semantic-reference persistence and deferred destruction completed with zero errors and zero leaks. They observed 15,072 and 15,095 allocation/free pairs respectively. A later semantic-reference rerun after the final fixes also completed with zero errors and zero leaks across 2,164 allocation/free pairs. The GPU readback regression passed under Valgrind, but NVIDIA GL/EGL and DBus initialization produced 28 provider-owned error contexts and 9,342 bytes of reported direct and indirect leaks, so that run is provider-limited rather than a Datoviz memory-safety pass.
 
 ### Checkpoint 4: runtime validation and stress
 
-Status: pending.
+Status: complete within the local Linux/Vulkan environment, with the uninitialized `data` submodule excluding data-backed WebGPU checks.
+
+- `just build` completed successfully. The full native suite reported 1,135 passed, zero failed, and 38 display-dependent skips out of 1,173 tests.
+- `xvfb-run -a just test canvas` passed all 47 canvas tests with Vulkan validation enabled, including the 13 GLFW recovery cases.
+- Focused native DRP2 semantic, transactional rollback, deferred-destruction, owned-Vulkan-destruction, and readback-unpin tests passed.
+- The full DRP2 native suite passed 158 of 158 tests. The full DRP2 fixture runner passed 137 of 137 fixtures. The complete specification/contract gate passed metadata checks, all fixtures, WebGPU preflight and runner smoke, 55 fixture-runner tests, 19 WebGPU preflight tests, 15 scheduler tests, and all scene source and visual-boundary guards.
+- WebGPU runner smoke passed 42 positive fixtures, two streams, and 89 negative fixtures. The full WebAssembly scene build and WebGPU data/network/loading smoke passed before `just webgpu-check` reached the expected unavailable `data/examples/svg_tiger/manifest.json` in the intentionally uninitialized `data` submodule.
+- `just ctypes-check` passed generated-binding freshness, 16 unit tests, binding policy, facade, and ABI validation. The installed CMake and FetchContent consumers passed `just c-consumer-smoke`.
+- `just check-example-manifests` passed for 121 identifiers, `just docs-check-generated` passed for 117 gallery and C entries, and `just shaderc-smoke` produced the expected 336-byte compute output.
+- The Vulkan course source check verified 25 excerpts across three chapters, and all three course programs passed their offscreen capture smoke with reproducible captures where expected.
+- A 300-frame offscreen `scene-drp2` stress run with 100,000 points completed on the NVIDIA RTX 5090 with zero swapchain recreations and no frames above 10 ms. After 30 warmup frames, 270 samples averaged 2.1730 ms at 460.18 frames per second, with 2.8840 ms p95 and 4.8873 ms p99.
 
 ## Findings
 
@@ -124,18 +139,27 @@ Severity: low. If default-light reverse-edge growth failed, `dvz_panel()` return
 
 Severity: low. The installed header documented pointer, keyboard, resize, and scale union events but omitted text events even though the implementation, tests, and normative keyboard-input specification include them. The public header and generated ctypes documentation now include text. `just ctypes`, `just ctypes-check`, and all selected input tests pass; one unrelated GUI case skipped because the initial non-Xvfb invocation could not create a window.
 
-### Decision required: DRP2 destruction semantics after queue submission
+### Fixed: DRP2 buffer destruction semantics and physical lifetime diverged after queue submission
 
-Severity: high if the documented contract is authoritative. Current semantic validation permits buffer destruction once recorded command buffers have been submitted, while `spec/drp2/LIFETIMES.md` says submitted resources remain in use for the rest of the stream because the protocol has no completion primitive. Backends currently avoid immediate failure through backend-specific waiting or deferred destruction, but the semantic layer has no per-resource completion provenance and a live bind group may retain a logically destroyed buffer. Restoring conservative rejection is the preferred release-candidate choice; formally permitting early logical destruction requires a larger completion/provenance design and dependent bind-group validation.
+Severity: high. The semantic layer previously permitted buffer destruction after submission without tracking which recorded command buffers captured the buffer, while the documented rule conservatively treated submitted resources as permanently in use and the native and WebGPU backends applied different physical-lifetime behavior. The chosen pre-RC3 contract is buffer-specific: recorded captures reject destruction and replacement; ordinary captures release transactionally on successful submission; readback captures remain pinned until the exact oldest request is acknowledged; live bind groups revalidate their buffer dependencies; and unrelated encoders do not block destruction. Native vklite stages buffer and dependent-descriptor replacement transactionally, separates currently recording from retirement command-buffer ownership, and waits or defers physical retirement safely. Any backend execution or semantic-commit divergence quarantines the runtime until explicit reset. The C semantic layer, native backend, WebGPU backend, normative prose, direct fixtures, generated manifest, and Python/Node runners now agree on duplicate submission IDs, reply ordering, strict base64, and exact decoded sizes. Other resource classes retain their conservative lifetime rule until a completion/provenance design exists for them.
+
+The independent high-effort architecture review initially identified non-transactional replacement, premature borrowed-command-buffer release, insufficient readback identity, and native/WebGPU fixture-parity gaps as integration blockers. Follow-up review then identified the need to separate recording and retirement command-buffer state, reject stale borrowed render targets, publish attachment handles only after successful attachment, quarantine whole-stream backend failures, require native `MAP_READ`, and retire only the oldest exact native readback. All were corrected and re-reviewed; the final source review reported no remaining priority-one blocker.
+
+Two bounded residuals remain. Native and protocol paths still collapse several failure causes into coarse validation/error codes, which reduces diagnostics without changing accepted behavior. Allocation-failure rollback is covered structurally and by existing transactional tests, but there is no deterministic fault-injection hook for every new buffer/descriptor copy allocation.
 
 ## Commits
 
-- `a8edead51` `qa: record differential campaign inventory`
-- `01d1e5ca2` `fix(scene): request frames before buffer detach`
-- `43239e0c3` `fix(canvas): recover safely from present errors`
-- `280f369e8` `fix(scene): unwind panel light allocation failure`
-- `d6b4627ec` `docs(input): include text in routed event contract`
+- `206d02614` `qa: record differential campaign inventory`
+- `6bc2d9864` `fix(scene): request frames before buffer detach`
+- `f762895c9` `fix(canvas): recover safely from present errors`
+- `42048cd58` `fix(scene): unwind panel light allocation failure`
+- `f64701795` `docs(input): include text in routed event contract`
+- `d7ec4f5f0` `qa: record confirmed differential findings`
+- `fe19c2e0e` `fix(drp2): track buffer captures through submission`
+- `042a92c20` `spec(drp2): define submitted buffer destruction`
+- `8c29a2d8e` `fix(drp2): harden backend lifetime recovery`
+- `6a12354cf` `fix(drp2): validate ordered readback replies`
 
 ## External and exact-artifact exclusions
 
-This campaign does not claim physical Windows or macOS proof, hosted-platform proof, exact source-archive or wheel proof, immutable-candidate proof, publication proof, or completion of release gates owned outside this local mutable-tree audit.
+This campaign does not claim physical Windows or macOS proof, hosted-platform proof, exact source-archive or wheel proof, immutable-candidate proof, publication proof, or completion of release gates owned outside this local mutable-tree audit. It also does not claim the unavailable data-backed WebGPU example check or a broad sanitizer Vulkan-runtime pass; those limitations are recorded above rather than treated as failures attributable to the changed code.
