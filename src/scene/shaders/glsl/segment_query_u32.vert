@@ -24,46 +24,11 @@ layout(location = 1) out float fragLength;
 layout(location = 2) out float fragLineWidth;
 layout(location = 3) flat out uint fragId;
 
-const float CLIP_EPS = 1e-5;
-
-bool clipSegmentPlane(inout vec4 startClip, inout vec4 endClip, float startDist, float endDist)
-{
-    if (startDist < 0.0 && endDist < 0.0)
-        return false;
-    if (startDist < 0.0 || endDist < 0.0)
-    {
-        float t = startDist / (startDist - endDist);
-        vec4 clipped = mix(startClip, endClip, clamp(t, 0.0, 1.0));
-        if (startDist < 0.0)
-            startClip = clipped;
-        else
-            endClip = clipped;
-    }
-    return true;
-}
-
-bool clipSegmentToView(inout vec4 startClip, inout vec4 endClip)
-{
-    if (!clipSegmentPlane(startClip, endClip, startClip.w - CLIP_EPS, endClip.w - CLIP_EPS))
-        return false;
-    if (!clipSegmentPlane(startClip, endClip, startClip.x + startClip.w, endClip.x + endClip.w))
-        return false;
-    if (!clipSegmentPlane(startClip, endClip, startClip.w - startClip.x, endClip.w - endClip.x))
-        return false;
-    if (!clipSegmentPlane(startClip, endClip, startClip.y + startClip.w, endClip.y + endClip.w))
-        return false;
-    if (!clipSegmentPlane(startClip, endClip, startClip.w - startClip.y, endClip.w - endClip.y))
-        return false;
-    if (!clipSegmentPlane(startClip, endClip, startClip.z, endClip.z))
-        return false;
-    return clipSegmentPlane(startClip, endClip, startClip.w - startClip.z, endClip.w - endClip.z);
-}
-
 void main()
 {
     vec4 startClip = transform(inPositionStart);
     vec4 endClip = transform(inPositionEnd);
-    if (!clipSegmentToView(startClip, endClip))
+    if (!dvz_stroke_clip_to_view(startClip, endClip))
     {
         gl_Position = vec4(2.0, 2.0, 1.0, 1.0);
         fragCoord = vec2(0.0);

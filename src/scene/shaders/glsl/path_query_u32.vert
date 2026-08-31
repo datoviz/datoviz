@@ -73,6 +73,36 @@ void main()
     vec4 p1Clip = transform(inPositionStart);
     vec4 p2Clip = transform(inPositionEnd);
     vec4 p3Clip = transform(inPositionNext);
+
+    // Picking has to agree with rendering, so this mirrors path.vert exactly:
+    // clip before projecting, because deviceClipToTopLeftPixel() mirrors a
+    // behind-camera vertex through the viewport centre rather than dropping it.
+    vec4 startOriginal = p1Clip;
+    vec4 endOriginal = p2Clip;
+    if (!dvz_stroke_clip_to_view(p1Clip, p2Clip))
+    {
+        gl_Position = vec4(2.0, 2.0, 1.0, 1.0);
+        fragCoord = vec2(0.0);
+        fragLength = 0.0;
+        fragLineWidth = 0.0;
+        fragHasPrev = 0.0;
+        fragHasNext = 0.0;
+        fragBevelDistance = vec2(0.0);
+        fragJoinSplitDistance = 0.0;
+        fragId = inId;
+        return;
+    }
+    bool startClipped = p1Clip != startOriginal;
+    bool endClipped = p2Clip != endOriginal;
+    bool joinPrev = hasPrev && !startClipped;
+    bool joinNext = hasNext && !endClipped;
+    if (joinPrev)
+        joinPrev = dvz_stroke_clip_near(p0Clip, p1Clip);
+    if (joinNext)
+        joinNext = dvz_stroke_clip_near(p3Clip, p2Clip);
+    hasPrev = hasPrev || startClipped;
+    hasNext = hasNext || endClipped;
+
     vec2 p0 = deviceClipToTopLeftPixel(p0Clip);
     vec2 p1 = deviceClipToTopLeftPixel(p1Clip);
     vec2 p2 = deviceClipToTopLeftPixel(p2Clip);
@@ -81,9 +111,9 @@ void main()
     vec2 v0 = safeNormalize(p1 - p0, vec2(1.0, 0.0));
     vec2 v1 = safeNormalize(p2 - p1, v0);
     vec2 v2 = safeNormalize(p3 - p2, v1);
-    if (!hasPrev)
+    if (!joinPrev)
         v0 = v1;
-    if (!hasNext)
+    if (!joinNext)
         v2 = v1;
     vec2 n0 = vec2(-v0.y, v0.x);
     vec2 n1 = vec2(-v1.y, v1.x);
