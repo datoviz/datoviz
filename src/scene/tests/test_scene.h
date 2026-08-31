@@ -1378,6 +1378,11 @@ int test_scene_text_block_image_lowering(TstContext* suite, const TstCase* item)
 #if defined(DVZ_HAS_APP) && DVZ_HAS_APP
 int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_path_clips_behind_camera(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_path_preserves_lateral_stroke_overlap(
+    TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstCase* item);

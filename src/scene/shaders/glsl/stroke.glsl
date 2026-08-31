@@ -41,21 +41,31 @@ bool dvz_stroke_clip_near(inout vec4 startClip, inout vec4 endClip)
 }
 
 
-bool dvz_stroke_clip_to_view(inout vec4 startClip, inout vec4 endClip)
+bool dvz_stroke_clip_to_view(
+    inout vec4 startClip, inout vec4 endClip, float lateralMarginPx, vec2 viewportSize)
 {
     if (!dvz_stroke_clip_near(startClip, endClip))
         return false;
+    // The centerline is not the rendered primitive. Expand only the lateral
+    // planes by the screen-space footprint so a visible stroke or cap is not
+    // rejected before its analytic quad is built.
+    vec2 lateralMarginNdc =
+        2.0 * max(lateralMarginPx, 0.0) / max(viewportSize, vec2(1.0));
     if (!dvz_stroke_clip_plane(
-            startClip, endClip, startClip.x + startClip.w, endClip.x + endClip.w))
+            startClip, endClip, startClip.x + (1.0 + lateralMarginNdc.x) * startClip.w,
+            endClip.x + (1.0 + lateralMarginNdc.x) * endClip.w))
         return false;
     if (!dvz_stroke_clip_plane(
-            startClip, endClip, startClip.w - startClip.x, endClip.w - endClip.x))
+            startClip, endClip, (1.0 + lateralMarginNdc.x) * startClip.w - startClip.x,
+            (1.0 + lateralMarginNdc.x) * endClip.w - endClip.x))
         return false;
     if (!dvz_stroke_clip_plane(
-            startClip, endClip, startClip.y + startClip.w, endClip.y + endClip.w))
+            startClip, endClip, startClip.y + (1.0 + lateralMarginNdc.y) * startClip.w,
+            endClip.y + (1.0 + lateralMarginNdc.y) * endClip.w))
         return false;
     if (!dvz_stroke_clip_plane(
-            startClip, endClip, startClip.w - startClip.y, endClip.w - endClip.y))
+            startClip, endClip, (1.0 + lateralMarginNdc.y) * startClip.w - startClip.y,
+            (1.0 + lateralMarginNdc.y) * endClip.w - endClip.y))
         return false;
     if (!dvz_stroke_clip_plane(startClip, endClip, startClip.z, endClip.z))
         return false;

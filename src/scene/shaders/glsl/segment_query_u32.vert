@@ -28,7 +28,17 @@ void main()
 {
     vec4 startClip = transform(inPositionStart);
     vec4 endClip = transform(inPositionEnd);
-    if (!dvz_stroke_clip_to_view(startClip, endClip))
+    float strokeWidth = max(inLineWidth, 0.0);
+    int startCap = int(round(material.params.x));
+    int endCap = int(round(material.params.y));
+    float startExtension = dvz_stroke_cap_extension(startCap, strokeWidth);
+    float endExtension = dvz_stroke_cap_extension(endCap, strokeWidth);
+    float startHalfWidth = dvz_stroke_cap_half_width(startCap, strokeWidth);
+    float endHalfWidth = dvz_stroke_cap_half_width(endCap, strokeWidth);
+    float lateralMarginPx =
+        max(max(startExtension, endExtension), max(startHalfWidth, endHalfWidth));
+    if (!dvz_stroke_clip_to_view(
+            startClip, endClip, lateralMarginPx, viewport.rect.zw))
     {
         gl_Position = vec4(2.0, 2.0, 1.0, 1.0);
         fragCoord = vec2(0.0);
@@ -49,13 +59,6 @@ void main()
         tangent /= lengthPx;
     vec2 normal = vec2(-tangent.y, tangent.x);
 
-    float strokeWidth = max(inLineWidth, 0.0);
-    int startCap = int(round(material.params.x));
-    int endCap = int(round(material.params.y));
-    float startExtension = dvz_stroke_cap_extension(startCap, strokeWidth);
-    float endExtension = dvz_stroke_cap_extension(endCap, strokeWidth);
-    float startHalfWidth = dvz_stroke_cap_half_width(startCap, strokeWidth);
-    float endHalfWidth = dvz_stroke_cap_half_width(endCap, strokeWidth);
     int vertex = gl_VertexIndex & 3;
     vec2 pixel = startPx;
     vec4 clip = startClip;
