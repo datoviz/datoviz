@@ -1,6 +1,6 @@
 # Datoviz v0.4 Dispatch
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-30.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Updated: 2026-08-31.
 
 Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file identifies only the current route; durable contracts belong in `spec/`, public guidance belongs in `docs/`, and completed evidence belongs in release records and Git history.
 
@@ -8,7 +8,7 @@ Use [../../AGENTS.md](../../AGENTS.md) as the mandatory entry point. This file i
 
 Datoviz `v0.4.0rc2` is published and closed. The active source branch and GitHub default are now `main`; the next release milestone is RC3.
 
-The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, local Qt bridge proof, required scene-owned lighting foundation, and branch cutover are complete. RC3 remains blocked on the final local documentation, WebGPU, example, and multi-machine review; exact package proof; maintainer documentation/media decisions; and final release-quality gates. Official Qt/PyQt provider artifacts are deferred to RC4.
+The RC3 tutorial-enabling API, rewritten course chapters 1-3 with generated previews, documentation inventory, gallery tooling, canonical screenshot promotion, local Qt bridge proof, required scene-owned lighting foundation, branch cutover, exploratory source audit, and differential code QA are complete. RC3 remains blocked on the final documentation, WebGPU, example, gallery/media, and multi-machine review; exact package proof; maintainer decisions; and final release-quality gates. Official Qt/PyQt provider artifacts are deferred to RC4.
 
 The active runtime path is:
 
@@ -39,6 +39,7 @@ scene frame plans -> drp2 command streams -> vklite runtime -> canvas/stream fra
 19. The required [RC3_LIGHTING_FOUNDATION_SLICE.md](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md) is complete at validated implementation head `8fd98715e`. Preserve its scene-owned panel-light and direct/indirect contracts during candidate validation; do not expand it into full PBR or the optional multi-light showcase.
 20. Use [GUI_IMPLOT_DOCKING_HANDOFF.md](GUI_IMPLOT_DOCKING_HANDOFF.md) for the deferred official ImPlot/cimplot and declarative docking lane. Keep the current experimental example default-off and do not admit a partial slice into RC3.
 21. Use [../../spec/data/ASSET_ARCHITECTURE.md](../../spec/data/ASSET_ARCHITECTURE.md) for the approved no-LFS asset catalog and active-submodule retirement plan. Preserve `datoviz/data:v0.4-dev` as the protected frozen v0.4 line during migration; do not rename, merge, or repoint it to the unrelated historical `data:main`.
+22. Use [QA_DIFFERENTIAL_CAMPAIGN.md](QA_DIFFERENTIAL_CAMPAIGN.md) for the completed differential correctness and robustness campaign at integrated and published head `42760e096`; retain its exact local evidence and bounded sanitizer/provider limitations when freezing the RC3 candidate.
 
 ## Guardrails
 
