@@ -14,6 +14,7 @@ Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHIC
 - Canvas-owned targets start with defined contents, making empty or load-based first frames reproducible.
 - Installed loader discovery reports explicit search routes and works from a source install without manual runtime-directory arguments.
 - `just vulkan-course-wheel-smoke <version>` tests the exact package-first instructions. It correctly reports that `0.4.0rc2` lacks the post-RC2 tutorial API.
+- The chapter-5 Canvas input path is proven through focused input tests, synthetic hosted-view injection, and a physical X11 `r` injection that delivered one physical-key press, one committed-text event, and one release. The safe reload shape is callback-to-flag only, followed outside event dispatch by candidate shader/pipeline creation, failure-preserving rollback, device wait, pointer swap, and old-pipeline destruction; it requires no watcher or new public API.
 
 The deleted `docs/tutorials/`, `examples/c/tutorial/`, `vulkan-tutorial-*` recipes, and old pilot previews are historical. Do not restore or reference them as current course content.
 
@@ -25,10 +26,9 @@ Official-package shaderc proof on supported platforms, package installation proo
 
 ## RC3 Next Steps
 
-1. Verify the Canvas keyboard subscription path needed by chapter 5 and record the smallest safe pipeline-reload shape; do not add a watcher or general hot-reload subsystem.
-2. Run the rewritten chapters through source-install, exact official package newer than RC2, and supported hosted-platform smokes with validation.
-3. Record any platform-delivered live resize limitation without redesigning the API around an unavailable event.
-4. Obtain maintainer review of chapters 1-3 voice, pacing, ownership explanations, package instructions, and generated previews before broad RC4 prose.
+1. Run the rewritten chapters through source-install, exact official package newer than RC2, and supported hosted-platform smokes with validation.
+2. Record any platform-delivered live resize limitation without redesigning the API around an unavailable event.
+3. Obtain maintainer review of chapters 1-3 voice, pacing, ownership explanations, package instructions, and generated previews before broad RC4 prose.
 
 ## RC4 Chapter Queue
 

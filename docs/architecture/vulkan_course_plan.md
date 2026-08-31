@@ -211,7 +211,7 @@ Everything the API needs already exists and is proven by the current spikes: `dv
 attachments, `dvz_arcball_*` / `dvz_camera_*`, and `dvz_geometry_*`. **No new public API is
 required.**
 
-Remaining RC3 verification: confirm the Canvas/input key-press path for chapter 5's hot-reload key and record the smallest safe pipeline-reload shape. The installed CMake target already exposes the Vulkan headers required by `vklite` signatures.
+RC3 verification confirmed the Canvas input route for chapter 5 through focused input tests, synthetic hosted-view injection, and a physical X11 `r` injection with distinct key-press, committed-text, and key-release delivery. The reload callback only sets a request flag; before the next frame, the main loop builds a separate candidate pipeline, keeps the current pipeline on failure, and on success waits for the device before swapping and destroying the old pipeline. No watcher or new public API is required. The installed CMake target already exposes the Vulkan headers required by `vklite` signatures.
 
 ---
 
