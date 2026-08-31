@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Status
 
-Status: RC3 implementation inventory and rewritten course previews complete; maintainer review, exact release artifacts, and publication decisions remain. Updated: 2026-08-30.
+Status: RC3 implementation inventory and rewritten course previews complete; maintainer review, exact release artifacts, and publication decisions remain. Updated: 2026-08-31.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 
@@ -11,7 +11,8 @@ Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wid
 - Python guidance covers all 18 NumPy-adapted calls, three generated helpers, exact `datoviz.raw` use, ownership, callbacks, and the GSP/VisPy2 boundary.
 - All 12 real or prepared dataset showcases pass attribution and provenance checks.
 - Gallery tooling enforces canonical `1280x720` animation media, bounded FPS/CRF fallback, encoded-output validation, isolated deterministic parallelism, and capture-worker limits.
-- All 38 animation candidates are current and within budget; publication remains an exact-approval action.
+- All 38 animation frame caches were regenerated under the prepared-data-aware key, all 38 animation candidates are current, and all 29 MP4 card candidates plus posters pass their budgets; publication remains an exact-approval action.
+- The nine invalidated still-cache records were regenerated and verified against the canonical images: eight are byte-identical and `features_panel_mixed_2d_3d` is pixel-equivalent with maximum channel delta 4 across 0.0911% of components.
 - The designated Linux host produced two byte-identical 104-image screenshot runs; the approved 54 changed images were promoted through `data` commit `d72c72c` and parent gitlink commit `264517633` with machine-readable evidence.
 - The four-page visual-system pilot passes strict build and software-rendered desktop/mobile inspection.
 - PR #132 is triaged read-only; most topics are superseded, focused successor PR #136 is open, and the original author's feedback is pending.

@@ -1,6 +1,6 @@
 # C/C++ Distribution And Integration
 
-Status: implemented distribution surface with RC3 exact base-artifact, conda, and vcpkg gates remaining; official Qt/PyQt provider artifacts are RC4. Updated: 2026-08-30.
+Status: implemented distribution surface with RC3 exact base-artifact, conda, and vcpkg gates remaining; official Qt/PyQt provider artifacts are RC4. Updated: 2026-08-31.
 
 Use [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for commands, [../../docs/how-to/c-integration.md](../../docs/how-to/c-integration.md) for users, [../../docs/reference/build-options.md](../../docs/reference/build-options.md) for build modes, and [STATUS.md](STATUS.md) for current release blockers.
 
@@ -14,6 +14,9 @@ Use [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for c
 - Linux, macOS 15, and Windows wheels have hosted build, inspection, installed Python 3.10-3.14, runtime shaderc, and CMake-consumer proof from the closed RC2 campaign.
 - The conda recipe uses split `libdatoviz`, `datoviz`, and optional `datoviz-qtbridge` outputs. Local Apple Silicon package and hosted Qt bridge proof is green.
 - A draft vcpkg overlay and repeatable local distribution validation tooling exist.
+- The current pre-freeze tree passes local source-bundle creation, source build/install, CMake and pkg-config consumers, and the 18-package license inventory. Installed-wheel validation now clears source-tree Python/native/provider/loader overrides, clears reused virtual environments, and asserts that Python, bindings, the native library, and CMake metadata resolve inside the installed environment.
+
+Local wheel probing is intentionally preliminary: an Ubuntu 24 host cannot repair to `manylinux_2_34` because its build references GLIBC 2.38, while a repaired `manylinux_2_38` diagnostic wheel passes isolated Python, shaderc, rendering, native-window, CMake, and installed Python/C examples but correctly fails the Release gate because the current checkout build is Debug. The exact RC3 wheel must be built as Release in the supported manylinux image after the version freeze.
 
 ## Remaining RC3 Gates
 

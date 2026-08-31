@@ -31,10 +31,10 @@ Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_
 Remaining RC3 deliverables:
 
 1. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates; await the original author's feedback on focused successor PR #136 before resolving PR #132.
-2. Complete the final local documentation, WebGPU, native-example, gallery, and multi-machine review in focused batches without admitting deferred dependency work.
+2. Complete subjective documentation and media review plus the remaining multi-machine review without admitting deferred dependency work; local documentation, WebGPU, input, Qt, gallery-cache, and animation/card pipeline gates are complete.
 3. Prove the rewritten course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
 4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, base conda layouts, third-party notices, and checksum/signing policy.
-5. Freeze the exact RC3 candidate, carry forward the completed local source-quality evidence, and run the remaining gallery/media, immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
+5. Freeze the exact RC3 candidate, carry forward the completed local source-quality and media-pipeline evidence, and run the immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
 6. Freeze RC3 notes, known issues, validation evidence, artifacts, and feedback request only after the exact release scope is fixed.
 Hosted Linux and Windows exact-artifact validation is mandatory for RC3. Physical Linux and Windows should be restored when suitable machines are available; unavailable hardware remains an exclusion. Final requires the missing physical proof or an explicit maintainer-approved exception.
 
