@@ -204,7 +204,6 @@ static bool _resolve_common_set(
     *out_bg_id = 0;
 
     char mvp_buf_key[256], viewport_buf_key[256], bg_key[256];
-    char mvp_slot_key[256], viewport_slot_key[256];
     const char* viewport_tag =
         viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_PLOT     ? "plot" :
         viewport_rect == DVZ_FRAME_PLAN_VIEWPORT_TARGET   ? "target" :
@@ -218,12 +217,6 @@ static bool _resolve_common_set(
     dvz_snprintf(
         bg_key, sizeof(bg_key), "_common_bg_%s_%s_%s", render->u.render.panel_id, mode_tag,
         viewport_tag);
-    dvz_snprintf(
-        mvp_slot_key, sizeof(mvp_slot_key), "%s_%s_%s", render->u.render.panel_id, mode_tag,
-        viewport_tag);
-    dvz_snprintf(
-        viewport_slot_key, sizeof(viewport_slot_key), "%s_%s_%s", render->u.render.panel_id,
-        mode_tag, viewport_tag);
 
     bool is_new = false;
     uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE |
@@ -274,11 +267,10 @@ static bool _resolve_common_set(
             return false;
     }
 
+    /* The command stream copies write-buffer payloads on record, so these uniforms are built
+       fresh per emission as locals rather than kept in per-panel emitter scratch. */
     DvzMVP local_identity = {0};
     const DvzMVP* mvp_src = &render->u.render.apply_mvp;
-    DvzMVP* mvp_slot = _emitter_mvp_slot(emitter, mvp_slot_key);
-    if (mvp_slot == NULL)
-        return false;
     if (override_mvp != NULL)
         mvp_src = override_mvp;
     else if (fixed || !render->u.render.has_mvp)
@@ -286,23 +278,18 @@ static bool _resolve_common_set(
         _identity_mvp(&local_identity);
         mvp_src = &local_identity;
     }
-    _mvp_uniform_copy(mvp_slot, mvp_src);
-    mvp_slot->flags |= mvp_flags;
-    mvp_src = mvp_slot;
+    DvzMVP local_mvp = {0};
+    _mvp_uniform_copy(&local_mvp, mvp_src);
+    local_mvp.flags |= mvp_flags;
 
     DvzSceneViewportUniform local_viewport = {0};
     _viewport_uniform_from_render(render, viewport_rect, &local_viewport);
-    DvzSceneViewportUniform* viewport_slot =
-        _emitter_viewport_slot(emitter, viewport_slot_key);
-    if (viewport_slot == NULL)
-        return false;
-    *viewport_slot = local_viewport;
 
     if (!dvz_drp2_stream_write_buffer_bytes(
-            stream, mvp_buf_id, 0, sizeof(DvzMVP), mvp_src))
+            stream, mvp_buf_id, 0, sizeof(DvzMVP), &local_mvp))
         return false;
     if (!dvz_drp2_stream_write_buffer_bytes(
-            stream, viewport_buf_id, 0, sizeof(DvzSceneViewportUniform), viewport_slot))
+            stream, viewport_buf_id, 0, sizeof(DvzSceneViewportUniform), &local_viewport))
         return false;
 
     *out_bg_id = bg_id;

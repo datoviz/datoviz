@@ -1790,8 +1790,6 @@ static int test_frame_plan_emitter_failure_rolls_back_state(
     AT(emitter->next_transient_id == DRP2_RUNTIME_TRANSIENT_ID_BASE);
     AT(emitter->max_color_sample_count == 16);
     AT(emitter->max_depth_sample_count == 16);
-    AT(emitter->mvp_panel_count == 0);
-    AT(emitter->viewport_panel_count == 0);
     AT(emitter->volume_count == 0);
     AT(emitter->labels_count == 0);
 
@@ -1825,6 +1823,94 @@ static int test_frame_plan_emitter_failure_rolls_back_state(
     _test_scene_stream_destroy(retry);
     dvz_frame_plan_destroy(plan);
     dvz_frame_plan_emitter_destroy(fresh);
+    dvz_frame_plan_emitter_destroy(emitter);
+    return 0;
+}
+
+
+/**
+ * Ensure common bindings scale past the retired 128-slot panel/visual cache.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+static int test_frame_plan_emitter_common_bindings_beyond_legacy_cache(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    const uint32_t panel_count = 2;
+    const uint32_t visuals_per_panel = 65;
+    const uint32_t expected_common_sets = panel_count * visuals_per_panel;
+
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(emitter);
+
+    DvzFramePlan* plan = dvz_frame_plan("figure.common.bindings.scale", 23);
+    ANN(plan);
+    AT(dvz_frame_plan_upload(plan, "point-position", 0, 3 * 3 * sizeof(float), "position"));
+    AT(dvz_frame_plan_upload(plan, "point-color", 0, 3 * sizeof(DvzColor), "color"));
+    AT(dvz_frame_plan_upload(plan, "point-size", 0, 3 * sizeof(float), "size"));
+
+    for (uint32_t p = 0; p < panel_count; p++)
+    {
+        char panel_id[DVZ_SCENE_LABEL_SIZE], target_id[DVZ_SCENE_LABEL_SIZE];
+        dvz_snprintf(panel_id, sizeof(panel_id), "panel.%u", p);
+        dvz_snprintf(target_id, sizeof(target_id), "target.panel.%u.color", p);
+        AT(dvz_frame_plan_render(plan, panel_id, target_id, false));
+        for (uint32_t v = 0; v < visuals_per_panel; v++)
+        {
+            char visual_id[DVZ_SCENE_LABEL_SIZE];
+            dvz_snprintf(visual_id, sizeof(visual_id), "visual.point.%u.%u", p, v);
+            AT(dvz_frame_plan_render_visual(plan, visual_id));
+
+            DvzFramePlanVisualMeta metadata = {0};
+            metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
+            metadata.renderable_kind = DVZ_RENDERABLE_POINT_LIKE;
+            metadata.vertex_count = 3;
+            metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+            dvz_strlcpy(metadata.position_id, "point-position", sizeof(metadata.position_id));
+            dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
+            dvz_strlcpy(metadata.size_id, "point-size", sizeof(metadata.size_id));
+            AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+        }
+    }
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+
+    /* Each panel/visual pair needs its own common set; the retired cache stopped at 128. */
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* first =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    ANN(first);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(dvz_drp2_validate_stream(first).ok);
+
+    uint32_t bind_groups = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(first); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(first, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+            bind_groups++;
+    }
+    AT(bind_groups >= expected_common_sets);
+
+    /* The persistent emitter reuses committed state, so the retry is an update-only stream. */
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* second =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, &caps, &report, &cfg);
+    ANN(second);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    _test_scene_stream_destroy(second);
+    _test_scene_stream_destroy(first);
+    dvz_frame_plan_destroy(plan);
     dvz_frame_plan_emitter_destroy(emitter);
     return 0;
 }
@@ -3709,6 +3795,7 @@ int test_scene_frame_plan_emit(TstSuite* suite)
     TST_CASE(test_frame_plan_emit_drp2_split_packets);
     TST_CASE(test_frame_plan_emitter_rejects_untyped_visual_metadata);
     TST_CASE(test_frame_plan_emitter_failure_rolls_back_state);
+    TST_CASE(test_frame_plan_emitter_common_bindings_beyond_legacy_cache);
     TST_CASE(test_frame_plan_emit_drp2_rejects_unsupported_shader_format);
     TST_CASE(test_frame_plan_emit_drp2_rejects_small_caps);
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
