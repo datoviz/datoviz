@@ -225,56 +225,6 @@ uint64_t _emitter_next_transient_id(DvzFramePlanEmitter* emitter)
 
 
 /**
- * Return the MVP cache slot for a panel key, creating it when capacity allows.
- *
- * @param emitter the persistent emitter
- * @param key the MVP cache key
- * @return the cached MVP slot, or NULL when the cache is full
- */
-DvzMVP* _emitter_mvp_slot(DvzFramePlanEmitter* emitter, const char* key)
-{
-    ANN(emitter);
-    ANN(key);
-    for (uint32_t i = 0; i < emitter->mvp_panel_count; i++)
-    {
-        if (strncmp(emitter->mvp_panel_ids[i], key, DVZ_SCENE_LABEL_SIZE) == 0)
-            return &emitter->mvp_cache[i];
-    }
-    if (emitter->mvp_panel_count >= DVZ_SCENE_COMMON_CACHE_CAPACITY)
-        return NULL;
-    uint32_t slot = emitter->mvp_panel_count++;
-    strncpy(emitter->mvp_panel_ids[slot], key, DVZ_SCENE_LABEL_SIZE - 1);
-    return &emitter->mvp_cache[slot];
-}
-
-
-
-/**
- * Return the viewport cache slot for a panel key, creating it when capacity allows.
- *
- * @param emitter the persistent emitter
- * @param key the viewport cache key
- * @return the cached viewport slot, or NULL when the cache is full
- */
-DvzSceneViewportUniform*
-_emitter_viewport_slot(DvzFramePlanEmitter* emitter, const char* key)
-{
-    ANN(emitter);
-    ANN(key);
-    for (uint32_t i = 0; i < emitter->viewport_panel_count; i++)
-    {
-        if (strncmp(emitter->viewport_panel_ids[i], key, DVZ_SCENE_LABEL_SIZE) == 0)
-            return &emitter->viewport_cache[i];
-    }
-    if (emitter->viewport_panel_count >= DVZ_SCENE_COMMON_CACHE_CAPACITY)
-        return NULL;
-    uint32_t slot = emitter->viewport_panel_count++;
-    strncpy(emitter->viewport_panel_ids[slot], key, DVZ_SCENE_LABEL_SIZE - 1);
-    return &emitter->viewport_cache[slot];
-}
-
-
-/**
  * Return the volume uniform cache slot for a visual key, creating it when capacity allows.
  *
  * @param emitter the persistent emitter
