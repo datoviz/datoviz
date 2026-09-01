@@ -1908,6 +1908,20 @@ static int test_frame_plan_emitter_common_bindings_beyond_legacy_cache(
     ANN(second);
     AT(dvz_diagnostic_report_count(&report) == 0);
 
+    uint32_t second_bind_groups = 0;
+    uint32_t second_writes = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(second); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(second, i);
+        ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_BIND_GROUP)
+            second_bind_groups++;
+        else if (command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER)
+            second_writes++;
+    }
+    AT(second_bind_groups == 0);
+    AT(second_writes >= 2 * expected_common_sets);
+
     _test_scene_stream_destroy(second);
     _test_scene_stream_destroy(first);
     dvz_frame_plan_destroy(plan);
