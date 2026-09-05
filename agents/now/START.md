@@ -8,6 +8,7 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. Read
 
 | Lane | Context |
 | --- | --- |
+| Agent instructions | [Follow-up status and recommended order](AGENT_INSTRUCTIONS_FOLLOWUP.md); not a release gate |
 | Documentation and media | [Documentation gates](DOCUMENTATION.md), [visual pilot and required rollout review](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) |
 | Vulkan course | [Execution queue](VKLITE_GRAPHICS_TUTORIAL.md), [durable contract](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) |
 | Packaging | [C/C++ distribution](C_DISTRIBUTION.md), [exact-artifact checklist](DISTRIBUTION_RELEASE_CHECKLIST.md) |
