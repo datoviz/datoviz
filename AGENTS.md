@@ -1,12 +1,10 @@
-# AGENTS.md - Datoviz v0.4 Agent Guide
+# Datoviz Agent Guide
 
-Mandatory entry point for automation agents in this repository. Keep this file short. Detailed
-rules live in [agents/rules/](agents/rules/).
+Shared instructions for coding agents. Claude Code loads this file through [CLAUDE.md](CLAUDE.md).
 
-Datoviz v0.4 is a deep rewrite of v0.3, and `main` is now the active v0.4 release-candidate line.
+Datoviz v0.4 is a deep rewrite of v0.3. The active development and release-candidate branch is `main`.
 
-
-## Non-Negotiable Rules
+## Required Boundaries
 
 1. Do not preserve v0.3 compatibility at the expense of v0.4 architecture, correctness, or maintainability.
 2. Do not stage, commit, or push changes inside the `data` submodule unless the user explicitly approves that submodule commit or pointer update in the current turn.
@@ -16,98 +14,65 @@ Datoviz v0.4 is a deep rewrite of v0.3, and `main` is now the active v0.4 releas
 6. Always run `git diff --check` before finalizing code changes.
 7. Before committing, run `git status --short` and `git diff --cached --stat`; verify the staged set excludes unapproved `data`, generated files, vendored runtime libraries, large binaries, and unrelated user changes.
 8. After changing public headers, exported API, binding policy, or binding generators, refresh and validate local Python bindings with `just ctypes` and `just ctypes-check` before running Python, GSP, or packaging validation.
-9. Pushing commits to `origin/main` is allowed when the user explicitly requests a push in the current turn. All other external publication requires the user's explicit manual approval of the exact final content and publication action first. This includes GitHub comments, reviews, issues, pull requests, releases, pushes to other branches, messages, uploads, and posts. Prepare drafts only until that approval is given; ambiguous instructions such as "do it" do not authorize publication.
-   Use the GitHub connector for read-only repository, issue, and pull-request inspection. Use the authenticated `gh` CLI for approved GitHub mutations so public actions appear directly under the maintainer's identity without connector attribution. If `gh` is unavailable, stop and obtain explicit approval before using the connector for a mutation.
+9. Pushing commits to `origin/main` is allowed when the user explicitly requests a push in the current turn. All other external publication requires the user's explicit manual approval of the exact final content and publication action first. This includes GitHub comments, reviews, issues, pull requests, releases, pushes to other branches, messages, uploads, and posts. Prepare drafts only until that approval is given; ambiguous instructions such as "do it" do not authorize publication. Use the GitHub connector for read-only repository, issue, and pull-request inspection. Use the authenticated `gh` CLI for approved GitHub mutations so public actions appear directly under the maintainer's identity without connector attribution. If `gh` is unavailable, stop and obtain explicit approval before using the connector for a mutation.
 10. Never hard-wrap Markdown prose, including list items. Keep each paragraph or list item on one source line; use line breaks only where Markdown structure requires them, such as headings, blank paragraph separators, separate list or table rows, blockquotes, and fenced code blocks.
 
-More detail: [agents/rules/REPO_HYGIENE.md](agents/rules/REPO_HYGIENE.md).
+Read [repository hygiene](agents/rules/REPO_HYGIENE.md) before staging, committing, pushing, or changing repository structure.
 
+## Working Style
 
-## Operating Style
+For implementation requests with clear scope, state a concise plan and execute through relevant validation. Resolve routine implementation choices independently. Ask before materially broadening scope or when an unresolved decision changes the intended result. If the user asks for a plan or review, provide that without implementing it.
 
-Write short, dense prose. Prefer concrete decisions over broad narration.
-When you ask the user for a decision, always include my own preference with the ask.
+Continue within an approved plan without requesting approval again for routine steps. The publication, submodule, and binary-asset approval requirements above still apply. If an instruction blocks requested work, identify the file and rule, explain the blocker, and give a recommended next step.
 
-For non-trivial implementation work, first propose a concise plan and wait for user approval. After
-approval, execute end to end: inspect, edit, test, run `git diff --check`, and report results.
+Keep changes focused and files modular. Reuse existing subsystem boundaries; ask before expanding a narrow task into a broader refactor.
 
-For long multi-stage work, make logical checkpoint commits after relevant checks pass. Never commit
-unrelated user changes, stop-sign paths, generated binaries, or staged surprises.
+Write short, concrete prose. When asking for a decision, include your recommendation. Report the result, relevant validation, and any remaining limitation.
 
-Before implementing a narrow request, check whether a small generalization, cleaner module boundary,
-or focused refactor would reduce duplication or future churn. Ask before broadening scope.
+For long implementation tasks, make logical checkpoint commits after relevant checks pass. Group related changes by coherent result; never commit unrelated user changes or unapproved paths.
 
-Keep files and folders modular. Split files that mix responsibilities, avoid large flat folders, and
-prefer reusable subsystem boundaries over one-off helpers.
-
-
-## Active Stack
-
-Active modules built into `libdatoviz` by default:
-
-`common`, `fileio`, `geom`, `math`, `thread`, `shader`, `input`, `window`, `canvas`, `stream`, `video`, `vk`, `vklite`, `drp2`, `scene`, and `app`.
-
-The active runtime path is:
+## Architecture
 
 ```text
 scene frame plans -> drp2 command streams -> vklite runtime ->
 canvas/stream frame execution -> optional app presentation
 ```
 
-Treat `vk`, `vklite`, `canvas`, `stream`, `video`, and `window` as the runtime foundation. Do not
-create parallel presentation, frame-stream, renderer, or Vulkan-wrapper paths unless explicitly
-asked.
+Treat `vk`, `vklite`, `canvas`, `stream`, `video`, and `window` as the runtime foundation. Do not create parallel presentation, frame-stream, renderer, or Vulkan-wrapper paths unless explicitly asked.
 
+For graphics work, make Vulkan ownership explicit. Do not destroy, begin, end, reset, submit, or transition borrowed handles unless the API contract grants that ownership.
 
-## Start Here
+## Read For The Task
 
-1. Read [agents/now/START.md](agents/now/START.md) for current branch dispatch.
-2. Read [agents/now/STATUS.md](agents/now/STATUS.md) for active release blockers.
-3. Read [agents/now/RELEASE.md](agents/now/RELEASE.md) for release sequencing.
-4. Read [spec/scene/README.md](spec/scene/README.md) before changing scene semantics or runtime
-   boundaries.
-5. Read [docs/contributors/adding-examples.md](docs/contributors/adding-examples.md) before adding or promoting a public example, screenshot, WebGPU route, animation, or video.
+Read the matching rules before editing; follow their more specific routes only when relevant. Ordinary fixes do not require reading release history.
 
+| Task | Read |
+| --- | --- |
+| C/C++ implementation | [C conventions](agents/rules/C_CODING.md), [build and validation](agents/rules/BUILD_TEST.md) |
+| Build, public headers, bindings, or tests | [Build and validation](agents/rules/BUILD_TEST.md) |
+| Graphics ownership, rendering, or frame execution | [Graphics safety](agents/rules/GRAPHICS_SAFETY.md) |
+| Scene semantics, visuals, shaders, or DRP2 | [Scene/DRP2 rules](agents/rules/SCENE_DRP2.md), [scene specs](spec/scene/README.md) |
+| Documents under `spec/scene/` | [Scene spec writing rules](spec/scene/AGENTS.md) |
+| Public examples, screenshots, WebGPU routes, animation, or video | [Adding examples](docs/contributors/adding-examples.md) |
+| Release-sensitive work, active handoffs, or choosing the next task | [Dispatch](agents/now/START.md), then only the relevant lane |
+| Public documentation, gallery, attribution, or release communication | [Documentation gates](agents/now/DOCUMENTATION.md) |
 
-## Build, Test, Code
+## Validation
 
 Run from the repository root:
 
 ```sh
 just build
-just test [filter]
-just ctypes-check   # after public API/header/binding changes
+just test <filter>
 git diff --check
 ```
 
-Use the narrowest relevant validation loop while iterating. For Vulkan/GLFW/Metal paths on macOS,
-prefer:
+For Vulkan/GLFW/Metal tests on macOS, use `direnv exec . just test <filter>`. After public API or binding changes, run `just ctypes` and `just ctypes-check` before Python-facing validation.
 
-```sh
-direnv exec . just test [filter]
-```
+Use the narrowest relevant checks. Instruction-only edits need link/content checks and `git diff --check`. Public documentation also requires the checks in `agents/now/DOCUMENTATION.md`, including any recipe build dependencies. Complete required checks, then broaden or repeat testing only when changes, failures, or unresolved risks justify it. Report unavailable validation as a limitation, never a pass.
 
-Public headers live in `include/datoviz/`. Internal implementation lives in `src/`. Shared internal
-helpers live in `src/common`.
+## Documentation
 
-Follow the project C style in touched files: Doxygen docstrings for new module-level functions,
-three blank lines between neighboring top-level definitions, `dvz_` for public symbols, project
-allocation/copy/I/O helpers, no file-scope mutable state, and focused tests for lifetime, bounds, or
-cross-module contract changes.
+Use `spec/` for durable design, semantics, and architecture; `agents/now/` for current execution status and handoffs; `agents/rules/` for shared agent rules; and `docs/` for public user and contributor documentation. Do not put private implementation plans in `docs/`.
 
-For graphics work, make Vulkan ownership explicit. Do not destroy, begin, end, reset, submit, or
-transition borrowed handles unless the API contract grants that ownership.
-
-More detail:
-
-1. [agents/rules/BUILD_TEST.md](agents/rules/BUILD_TEST.md)
-2. [agents/rules/C_CODING.md](agents/rules/C_CODING.md)
-3. [agents/rules/GRAPHICS_SAFETY.md](agents/rules/GRAPHICS_SAFETY.md)
-4. [agents/rules/SCENE_DRP2.md](agents/rules/SCENE_DRP2.md)
-
-
-## Documentation Routing
-
-Use `spec/` for durable v0.4 design, semantics, and architecture. Use `agents/` only for active
-execution status, handoff notes, and repo-wide agent rules. The public `docs/` tree may be rebuilt
-in place for v0.4 user documentation; do not put private implementation plans there.
+In documentation code examples, put explanatory comments on their own line above the code they describe.

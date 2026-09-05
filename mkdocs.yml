@@ -247,6 +247,7 @@ nav:
       - Add a DRP2 command: 'contributors/adding-a-drp2-command.md'
       - Add a WebGPU fixture: 'contributors/adding-a-webgpu-fixture.md'
       - Add a public gallery example: 'contributors/adding-examples.md'
+      - Gallery media pipeline: 'contributors/gallery-media.md'
       - Select examples by capability: 'contributors/example-selection-by-capability.md'
       - Generated documentation: 'contributors/generated-documentation.md'
     - Release maintainers:

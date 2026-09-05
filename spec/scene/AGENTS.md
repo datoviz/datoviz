@@ -2,30 +2,23 @@
 
 These rules apply to documents created or edited under `spec/scene/`.
 
-The goal is to keep the scene spec useful as an implementation guide. Prefer short, authoritative
-documents over exhaustive notes. Remove duplication when editing nearby text, and link to the
-canonical source instead of restating it.
-
+The goal is to keep the scene spec useful as an implementation guide. Prefer short, authoritative documents over exhaustive notes. Remove duplication when editing nearby text, and link to the canonical source instead of restating it.
 
 ## General Rules
 
 - Keep documents short, direct, and scoped to their category.
 - Do not add boilerplate sections just because another file has them.
 - Prefer tables, compact bullet lists, and links over repeated explanatory prose.
-- Avoid long pseudocode, speculative API sketches, or implementation recipes unless the document is
-  explicitly an implementation note or API example.
+- Avoid long pseudocode, speculative API sketches, or implementation recipes unless the document is explicitly an implementation note or API example.
 - State the document's authority clearly: normative, proposal, informative, historical, or roadmap.
 - Preserve important design decisions, invariants, unresolved choices, and acceptance criteria.
 - Delete or compress duplicated rationale when the rule already lives in a canonical spec.
-- Use `README.md` files as indexes and routing guides, not as duplicate summaries of every child
-  document.
+- Use `README.md` files as indexes and routing guides, not as duplicate summaries of every child document.
 - Keep examples informative. They pressure-test the design; they do not override normative specs.
-
 
 ## Canonical Design Specs
 
-Use for `core/`, `api/`, `semantics/`, `pipeline/`, `interaction/`, `validation/`, `export/`, and
-most `integration/` documents.
+Use for `core/`, `api/`, `semantics/`, `pipeline/`, `interaction/`, `validation/`, `export/`, and most `integration/` documents.
 
 Preferred structure:
 
@@ -38,14 +31,11 @@ Preferred structure:
 7. Relationship to nearby specs
 8. Open questions, only when still actionable
 
-Keep these documents normative and compact. Move repeated lifecycle, invalidation, resource,
-diagnostic, and runtime-boundary prose to the canonical document for that topic.
-
+Keep these documents normative and compact. Move repeated lifecycle, invalidation, resource, diagnostic, and runtime-boundary prose to the canonical document for that topic.
 
 ## Proposals
 
-Use for `proposals/active/`, `proposals/promoted/`, `proposals/future/`, and
-`proposals/history/`.
+Use for `proposals/active/`, `proposals/promoted/`, `proposals/future/`, and `proposals/history/`.
 
 Preferred structure:
 
@@ -56,9 +46,7 @@ Preferred structure:
 5. What moved into canonical specs
 6. Remaining unresolved points
 
-Promoted proposals should be short records. Once rules move into canonical specs, do not keep a
-second full copy in the proposal.
-
+Promoted proposals should be short records. Once rules move into canonical specs, do not keep a second full copy in the proposal.
 
 ## Examples
 
@@ -74,10 +62,7 @@ Preferred structure:
 6. Validation / acceptance criteria
 7. Links to shared policies or canonical specs
 
-Do not repeat generic cache/download policy, "API not final" caveats, FramePlan/DRP2 boilerplate, or
-agent pickup instructions in every example. Put shared guidance in a category README, template, or
-canonical policy document, then link to it.
-
+Do not repeat generic cache/download policy, "API not final" caveats, FramePlan/DRP2 boilerplate, or agent pickup instructions in every example. Put shared guidance in a category README, template, or canonical policy document, then link to it.
 
 ## Implementation Notes
 
@@ -93,9 +78,7 @@ Preferred structure:
 6. Tests and diagnostics
 7. Known gaps
 
-Implementation notes may be more concrete than semantic specs, but they should not redefine public
-semantics.
-
+Implementation notes may be more concrete than semantic specs, but they should not redefine public semantics.
 
 ## Integration Docs
 
@@ -111,9 +94,7 @@ Preferred structure:
 6. Minimal milestone
 7. Open integration risks
 
-Keep integration docs focused on what is unique to that integration. Link to shared high-DPI,
-threading, hosted-backend, picking, resource, and runtime-boundary specs instead of duplicating them.
-
+Keep integration docs focused on what is unique to that integration. Link to shared high-DPI, threading, hosted-backend, picking, resource, and runtime-boundary specs instead of duplicating them.
 
 ## Compression Checklist
 

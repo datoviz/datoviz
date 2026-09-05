@@ -95,6 +95,10 @@ git status --short
 
 Commit the approved media inside `data` first, then commit the parent repository's updated gitlink with the example implementation. Never stage unrelated data files or generated runtime binaries.
 
+## Pipeline Reference
+
+For capture caches, canonical screenshot verification, animation ownership, and encoding budgets, see [Gallery media pipeline](gallery-media.md).
+
 ## Manual Commands
 
 Use these when diagnosing one stage:
