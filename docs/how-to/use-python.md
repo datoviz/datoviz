@@ -11,9 +11,7 @@ Create Datoviz scenes from Python and upload NumPy arrays to visual attributes.
 
 ## Task workflow
 
-Use the main Python package when you want the current v0.4 scene workflow from Python. Datoviz has
-one generated `ctypes` binding. The top-level package follows the same `dvz_*` function names as the
-C examples and accepts NumPy arrays for supported visual-data uploads.
+Use the main Python package for the current v0.4 scene workflow. Datoviz has one generated `ctypes` binding. The top-level package follows the `dvz_*` function names used by the C examples and accepts NumPy arrays for supported visual-data uploads.
 
 Choose the import surface first:
 
@@ -25,10 +23,7 @@ Choose the import surface first:
 
 ## Minimal scene construction
 
-This scene-construction excerpt requires NumPy and an installed Datoviz package. It creates one
-retained point visual but deliberately does not open a window or render; continue with
-[Open an interactive window](create-a-window.md) or [Render offscreen](render-offscreen.md) to
-produce pixels. The canonical complete application is the [Quickstart](../start/quickstart.md).
+This scene-construction excerpt requires NumPy and an installed Datoviz package. It creates one retained point visual but does not open a window or render. Continue with [Open an interactive window](create-a-window.md) or [Render offscreen](render-offscreen.md) to produce pixels. The canonical complete application is the [Quickstart](../start/quickstart.md).
 
 ```python
 import numpy as np
@@ -54,16 +49,9 @@ dvz.dvz_visual_set_data(points, "diameter_px", diameters)
 dvz.dvz_panel_add_visual(panel, points, None)
 ```
 
-After these calls, `scene` owns a figure with one panel and one point visual. Adapt the C examples
-one call at a time, keeping NumPy array dtype and shape matched to the C attribute contract.
+After these calls, `scene` owns a figure with one panel and one point visual. This excerpt is not a rendered program: it produces no pixels until you create a native/offscreen view or call the managed `dvz.run()` helper. When adapting the C examples, work one call at a time and keep each NumPy array's dtype and shape matched to the C attribute contract.
 
-The block is a scene-construction excerpt, not a rendered program. It produces no pixels until you
-create a native/offscreen view or call the managed `dvz.run()` helper.
-
-The top-level `datoviz` module accepts NumPy arrays for the calls covered by the binding policy. Use
-`datoviz.raw` only when you need the exact C-shaped call form. Calls that are not covered by
-the policy may still expect explicit pointer/count arguments, so consult the C and Python binding
-references when needed.
+The top-level `datoviz` module accepts NumPy arrays for calls covered by the binding policy. Use `datoviz.raw` only when you need the exact C-shaped call form. Calls outside the policy may still expect explicit pointer/count arguments, so consult the C and Python binding references when needed.
 
 If you stop after the construction excerpt, destroy the scene when finished:
 
@@ -71,37 +59,24 @@ If you stop after the construction excerpt, destroy the scene when finished:
 dvz.dvz_scene_destroy(scene)
 ```
 
-If you continue by creating an app or hosted run session, close or destroy that runtime owner before
-destroying the scene, as shown in the window, offscreen, and IPython workflows.
+If you create an app or hosted run session, close or destroy that runtime owner before destroying the scene, as shown in the window, offscreen, and IPython workflows.
 
-For terminal IPython, use `session = dvz.run(scene, figure)`. The prompt remains usable while the
-native window stays responsive, so you can update NumPy arrays, upload them with
-`dvz_visual_set_data_range()`, and call `session.request_frame()`. See
-[Use from terminal IPython](use-ipython.md).
+For terminal IPython, use `session = dvz.run(scene, figure)`. The prompt remains usable while the native window stays responsive, so you can update NumPy arrays, upload them with `dvz_visual_set_data_range()`, and call `session.request_frame()`. See [Use from terminal IPython](use-ipython.md).
 
 ## Important details
 
-The v0.4 Python surface is close to the C API. It is meant for explicit scene, panel, visual, and
-data-upload code.
+The v0.4 Python surface is close to the C API. It is designed for explicit scene, panel, visual, and data-upload code.
 
-The top-level package adapts arrays; it is not a plotting wrapper. It does not rename APIs into
-Pythonic objects, infer visual families, or replace the retained scene model.
+The top-level package adapts arrays; it is not a plotting wrapper. It does not rename APIs into Pythonic objects, infer visual families, or replace the retained scene model.
 
 Datoviz v0.4 deliberately does not restore the old high-level Python plotting API. GSP/VisPy2 owns
-that Pythonic plotting and scientific-UX layer; availability and installation of that external
-layer are separate from the Datoviz engine package.
+that Pythonic plotting and scientific-UX layer; availability and installation of that external layer are separate from the Datoviz engine package.
 
-Use NumPy arrays with explicit dtype, shape, and layout. For dense visual attributes, the first
-dimension is the item count. Common examples include `float32` positions shaped `(n, 3)`, `uint8`
-RGBA colors shaped `(n, 4)`, and `float32` diameters shaped `(n,)`.
+Use NumPy arrays with explicit dtype, shape, and layout. For dense visual attributes, the first dimension is the item count. Common examples include `float32` positions shaped `(n, 3)`, `uint8` RGBA colors shaped `(n, 4)`, and `float32` diameters shaped `(n,)`.
 
-The top-level package may copy non-contiguous arrays during the call. For predictable performance
-and exact pointer compatibility, pass C-contiguous arrays yourself with
-`np.asarray(data, dtype=..., order="C")`.
+The top-level package may copy non-contiguous arrays during the call. For predictable performance and exact pointer compatibility, pass C-contiguous arrays yourself with `np.asarray(data, dtype=..., order="C")`.
 
-Adapted dense uploads copy their payload before returning. Exact callbacks, borrowed descriptors,
-and raw pointer APIs may have longer lifetimes; keep their Python/ctypes storage alive for the full
-lifetime stated by the C contract.
+Adapted dense uploads copy their payload before returning. Exact callbacks, borrowed descriptors, and raw pointer APIs may have longer lifetimes; keep their Python/ctypes storage alive for the full lifetime stated by the C contract.
 
 When porting a C example:
 
@@ -117,8 +92,7 @@ When porting a C example:
 - Passing non-contiguous arrays to exact pointer calls.
 - Expecting `datoviz` to provide high-level plotting functions such as `scatter()` or `imshow()`.
 - Importing generated implementation modules such as `datoviz._ctypes` directly.
-- Treating Python object lifetime as a substitute for `dvz_app_destroy()` and
-  `dvz_scene_destroy()`.
+- Treating Python object lifetime as a substitute for `dvz_app_destroy()` and `dvz_scene_destroy()`.
 - Adding empty Python tabs when a Python path is not implemented.
 
 ## See also

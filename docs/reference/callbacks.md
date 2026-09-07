@@ -1,7 +1,6 @@
 # Callbacks
 
-Callbacks are borrowed execution hooks. They let an app react to frame, input, timer, query, or host
-events while Datoviz keeps ownership of scene and runtime state.
+Callbacks are borrowed execution hooks. They let an app react to frame, input, timer, query, or host events while Datoviz keeps ownership of scene and runtime state.
 
 ## Lifetime Rules
 
@@ -13,15 +12,11 @@ events while Datoviz keeps ownership of scene and runtime state.
 | Unregistration | Prefer explicit unregister/disconnect helpers when available. Destroying the owner invalidates registrations owned by that object. |
 | Reentrancy | Do not recursively run the app/frame loop from inside callbacks unless the API explicitly allows it. |
 
-Subscription APIs return `DVZ_CALLBACK_ID_NONE` on failure. A callback id is scoped to the router
-or owner that returned it; unsubscribe while that owner and the callback's `user_data` are still
-alive.
+Subscription APIs return `DVZ_CALLBACK_ID_NONE` on failure. A callback id belongs to the router or owner that returned it. Unsubscribe while that owner and the callback's `user_data` are still alive.
 
 ## Expected Callback Work
 
-Callbacks should mutate retained scene state, enqueue application work, or record small pieces of
-interaction state. Keep slow work outside callbacks so the next frame can follow the normal
-validation, planning, DRP2 emission, and runtime execution path.
+Callbacks should mutate retained scene state, enqueue application work, or record small pieces of interaction state. Keep slow work outside callbacks so the next frame can follow the normal validation, planning, DRP2 emission, and runtime execution path.
 
 Good callback actions:
 
@@ -48,11 +43,9 @@ Avoid:
 
 ## Threading
 
-Unless a specific API says otherwise, call Datoviz scene and runtime APIs from the same thread or
-host event context that owns the app/runtime. Treat callbacks as part of that owner thread.
+Unless a specific API says otherwise, call Datoviz scene and runtime APIs from the same thread or host event context that owns the app/runtime. Treat callbacks as part of that owning thread or host event context.
 
-If another thread produces data, hand off immutable data or application-owned messages to the owner
-thread, then update Datoviz retained state there.
+If another thread produces data, hand off immutable data or application-owned messages to the owner thread, then update Datoviz retained state there.
 
 ## See Also
 

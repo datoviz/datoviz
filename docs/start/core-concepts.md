@@ -1,6 +1,6 @@
 # Core concepts
 
-Datoviz uses a small set of objects to turn scientific arrays into an interactive view or an image. The same object model appears in Python, C, examples, and the API reference.
+Datoviz uses a small set of objects to turn scientific arrays into an interactive view or an image. Python, C, the examples, and the API reference use the same object model.
 
 ## The object model
 
@@ -29,15 +29,15 @@ Datoviz uses a small set of objects to turn scientific arrays into an interactiv
 
 | Object | Think of it as | Typical choice |
 | --- | --- | --- |
-| **Scene** | The objects and data that describe a visualization. The scene remains available after a frame has been drawn. | Usually one scene for a program or independent visualization. |
-| **Figure** | The complete output image, with a width and height in pixels. | One window or captured image usually presents one figure. |
+| **Scene** | The objects and data that describe a visualization. The scene remains available after drawing a frame. | Usually one scene for a program or independent visualization. |
+| **Figure** | The complete output image, with a width and height in pixels. | A window or captured image usually presents one figure. |
 | **Panel** | A drawing region inside a figure. | Use one full panel first; add a grid only for multiple views. |
-| **Visual** | A collection rendered in one way: points, paths, an image, a mesh, text, or another family. | Group related items of the same family into one visual. |
+| **Visual** | A collection rendered in one way: points, paths, an image, a mesh, text, or another family. | Group related items from the same family into one visual. |
 | **Data arrays** | Values assigned to exact visual attribute names. | Arrays commonly describe positions, colors, sizes, pixels, or indices. |
 | **Controller** | Navigation state bound to a panel. | Panzoom for 2D; arcball, fly, or turntable for 3D. |
 | **View or capture** | Where the figure is rendered. | Choose a native window, offscreen capture, or supported embedded host. |
 
-A visual normally represents many related items. For example, use one point visual with 10,000 positions, colors, and diameters—not 10,000 one-point visuals. Separate visuals when the data needs a different visual family, panel, style, coordinate treatment, or update schedule.
+A visual normally represents many related items. For example, use one point visual with 10,000 positions, colors, and diameters, rather than 10,000 one-point visuals. Use separate visuals when the data needs a different visual family, panel, style, coordinate treatment, or update schedule.
 
 !!! important "Batch items into visuals"
     Datoviz is designed to draw many items through a small number of visuals. Put related points in one point visual, related line segments in one line visual, and so on. Creating one visual per item defeats this batching model and can make a scene much slower.
@@ -45,7 +45,7 @@ A visual normally represents many related items. For example, use one point visu
 
 ## The complete workflow
 
-Most programs follow the same sequence:
+A typical program follows this sequence:
 
 1. Create a scene, figure, and at least one panel.
 2. Create a visual for the data representation you need.
@@ -55,37 +55,31 @@ Most programs follow the same sequence:
 6. Open a window or create an offscreen output.
 7. Run the application or capture the frame.
 
-Uploading data does not place a visual in the figure. The visual becomes part of the view only after you attach it to a panel.
+Uploading data does not place a visual in the figure. The visual enters the view only after you attach it to a panel.
 
 
 ## Data has a contract
 
-Every visual family defines which attributes it accepts and what each array means. Before uploading
-an array, check four properties:
+Each visual family defines the attributes it accepts and what each array means. Before uploading an array, check four properties:
 
 - the exact attribute name, such as `"position"` or `"diameter_px"`;
 - the data type, such as `float32` positions or `uint8` RGBA colors;
 - the shape and item count;
 - the coordinate space or unit, such as data coordinates or screen pixels.
 
-The [visual-family reference](../reference/visual-families/index.md) describes these contracts. The
-[visual attributes reference](../reference/visual-attributes.md) explains full writes, range
-updates, copied data, and external-buffer variants.
+The [visual-family reference](../reference/visual-families/index.md) describes these contracts. The [visual attributes reference](../reference/visual-attributes.md) explains full writes, range updates, copied data, and external-buffer variants.
 
 
 ## Retained state and updates
 
-The scene and its objects remain available after the first frame. This behavior is called a **retained scene model**. Update the arrays, camera, controller, visibility, or style that changed; you do not normally rebuild the whole scene.
+The scene and its objects remain available after the first frame. This behavior is called a **retained scene model**. Update the arrays, camera, controller, visibility, or style that changed. You usually do not need to rebuild the whole scene.
 
-Ordinary `dvz_visual_set_data()` writes copy the supplied array before returning. Advanced borrowed
-or external-buffer APIs have separate lifetime and synchronization rules. See
-[Objects and lifetimes](../reference/objects-and-lifetimes.md) before using those paths.
+Ordinary `dvz_visual_set_data()` writes copy the supplied array before returning. Borrowed and external-buffer APIs have separate lifetime and synchronization rules. See [Objects and lifetimes](../reference/objects-and-lifetimes.md) before using those paths.
 
 
 ## The two language paths
 
-Python and C build the same retained objects and use the same visual attribute names. They differ
-mainly in array adaptation and session management:
+Python and C build the same retained objects and use the same visual attribute names. Their main differences are array adaptation and session management:
 
 | Concern | Python | C |
 | --- | --- | --- |
@@ -94,18 +88,11 @@ mainly in array adaptation and session management:
 | Window session | `dvz.run(scene, figure)` manages the common blocking session | create `DvzApp` and `DvzView`, run the app, then destroy objects |
 | Exact pointer/count access | use `datoviz.raw` only when required | already explicit in the C API |
 
-Start from a complete program before copying smaller API fragments. The
-[Quickstart](quickstart.md) contains complete Python and C programs; How-To pages label excerpts
-that assume existing objects or data.
+Start with a complete program before copying smaller API fragments. The [Quickstart](quickstart.md) contains complete Python and C programs. How-To pages label excerpts that assume existing objects or data.
 
 
 ## Coordinates and interaction
 
-Positions may be expressed in data, panel, world, or screen-related spaces depending on the visual
-and attribute. A panel's camera or controller transforms the data view; screen-sized attributes
-such as point diameter remain measured in pixels.
+Depending on the visual and attribute, positions may use data, panel, world, or screen-related spaces. A panel's camera or controller transforms the data view. Screen-sized attributes such as point diameter remain measured in pixels.
 
-Start with [panzoom](../how-to/use-panzoom.md) for 2D data or a
-[3D controller](../how-to/3d-navigation.md) for spatial scenes. Use the
-[coordinate-system guide](../how-to/coordinate-systems.md) before mixing overlays, labels, images,
-and 3D geometry.
+Start with [panzoom](../how-to/use-panzoom.md) for 2D data or a [3D controller](../how-to/3d-navigation.md) for spatial scenes. Use the [coordinate-system guide](../how-to/coordinate-systems.md) before mixing overlays, labels, images, and 3D geometry.

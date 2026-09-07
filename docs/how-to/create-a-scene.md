@@ -12,20 +12,15 @@ Create the basic structure used by most Datoviz visualizations.
 
 ## Task workflow
 
-Start by creating the scene structure: one scene, one figure, one panel, and at least one visual.
-Then attach data arrays to the visual attributes, add the visual to the panel, create a window or
-offscreen target, and run or capture the result. This page uses a small point example so you can see
-the main pieces without extra plotting features.
+Create the scene structure first: one scene, one figure, one panel, and at least one visual. Attach data arrays to the visual attributes, add the visual to the panel, create a window or offscreen target, and run or capture the result. This page uses a small point example to show the main pieces without extra plotting features.
 
-Use the same object model from C and Python. In Python, import the main `datoviz` package:
+Use the same object model in C and Python. In Python, import the main `datoviz` package:
 
 ```python
 import datoviz as dvz
 ```
 
-The Python calls use the same `dvz_*` function names as the C examples and accept NumPy arrays for
-common visual-data uploads. Use `datoviz.raw` only when you need the exact C-shaped pointer/count
-call form of the same generated binding.
+The Python calls use the same `dvz_*` function names as the C examples and accept NumPy arrays for common visual-data uploads. Use `datoviz.raw` only when you need the exact C-shaped pointer/count call form of the generated binding.
 
 | Object | Role | Created by |
 | --- | --- | --- |
@@ -36,9 +31,6 @@ call form of the same generated binding.
 | Controller | Mouse or camera interaction, such as pan/zoom for 2D or arcball rotation for 3D. | `dvz_panzoom()`, `dvz_arcball()`, and related helpers. |
 | Adornment | Extra visual context such as axes, labels, colorbars, legends, or scale bars. | Panel/adornment helpers. |
 | App and view | The part that opens a window, renders frames, or captures an image. | `dvz_app()`, `dvz_view_window()`, or offscreen view helpers. |
-
-Build the scene first, upload visual data, attach the visual to a panel, then decide whether to show
-the result in a window or render it offscreen.
 
 Basic checklist:
 
@@ -52,10 +44,7 @@ Basic checklist:
 
 ## Minimal call sequence
 
-The Python tab is a complete success-path script. The C tab is a function-body excerpt: add
-`#include <datoviz/datoviz.h>` and a `main()` function, and check pointer and result values in
-production code. Both tabs intentionally show explicit app ownership; the shorter managed Python
-path is `dvz.run(scene, figure)`.
+The Python tab is a complete success-path script. The C tab is a function-body excerpt: add `#include <datoviz/datoviz.h>` and a `main()` function, and check pointer and result values in production code. Both tabs show explicit app ownership. The shorter managed Python path is `dvz.run(scene, figure)`.
 
 === "Python"
 
@@ -138,35 +127,24 @@ path is `dvz.run(scene, figure)`.
     dvz_scene_destroy(scene);
     ```
 
-Use `dvz_panel_full()` for a single drawing area. Use panel-grid helpers only when the figure needs
-multiple coordinated panels.
+Use `dvz_panel_full()` for a single drawing area. Use panel-grid helpers when the figure needs multiple coordinated panels.
 
 
-The result is an 800 × 600 native window containing three colored points. To add another dataset
-to an existing panel, continue with [Add visuals to a panel](add-a-visual.md).
+The result is an 800 × 600 native window containing three colored points. To add another dataset to an existing panel, continue with [Add visuals to a panel](add-a-visual.md).
 
 ## Important details
 
-Create the initial scene structure before `dvz_app_run()`. You can update data later, but the first
-frame is easier to understand when the figure, panels, visuals, controllers, and adornments are
-already in place.
+Create the initial scene structure before `dvz_app_run()`. You can update data later, but the first frame is easier to understand when the figure, panels, visuals, controllers, and adornments are already in place.
 
-Destroy the app before destroying the scene. The app uses the scene while it renders, so the scene
-must remain valid until rendering has stopped.
+Destroy the app before destroying the scene. The app uses the scene while it renders, so the scene must remain valid until rendering has stopped.
 
-In C, keep CPU arrays alive until the corresponding `dvz_visual_set_data()` call has returned.
-After the call returns, Datoviz has stored the data needed for rendering. In Python, pass
-C-contiguous NumPy arrays with the dtype and shape required by the visual attribute; the main
-`datoviz` package infers the item count for supported visual-data uploads.
+In C, keep CPU arrays alive until the corresponding `dvz_visual_set_data()` call returns. Datoviz copies the data it needs before the call returns. In Python, pass C-contiguous NumPy arrays with the dtype and shape required by the visual attribute. The main `datoviz` package infers the item count for supported visual-data uploads.
 
-Uploading data does not make it visible. A visual appears only after `dvz_panel_add_visual()`
-attaches it to a panel.
+Uploading data does not make it visible. A visual appears only after `dvz_panel_add_visual()` attaches it to a panel.
 
 ## Choose visual granularity
 
-Use a small number of visuals, each with many related items. The authoritative grouping rules and
-examples are in [Add visuals to a panel](add-a-visual.md#group-items-into-visuals); scene creation
-only needs one visual to establish the object model.
+Use a small number of visuals, each with many related items. The authoritative grouping rules and examples are in [Add visuals to a panel](add-a-visual.md#group-items-into-visuals); scene creation only needs one visual to establish the object model.
 
 ## Common mistakes
 

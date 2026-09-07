@@ -2,8 +2,7 @@
 
 React to keyboard, mouse, and pointer input in native examples.
 
-Use explicit input callbacks when an application needs custom shortcuts, selection modes, overlays,
-diagnostics, or host integration. Use controllers instead when the input is ordinary navigation.
+Use explicit input callbacks when an application needs custom shortcuts, selection modes, overlays, diagnostics, or host integration. Use controllers when the input is ordinary navigation.
 
 !!! info "At a glance"
 
@@ -14,26 +13,21 @@ diagnostics, or host integration. Use controllers instead when the input is ordi
 
 ## Task workflow
 
-Use controllers for standard navigation first. Add explicit input callbacks when the application
-needs custom selection, toggles, overlays, or host integration.
+Use controllers for standard navigation first. Add explicit input callbacks when the application needs custom selection, toggles, overlays, or host integration.
 
-For host GUI controls, let the UI own application state such as toggles, sliders, and mode
-switches, then update retained Datoviz visual data, visibility, or controller state from that
-state.
+For host GUI controls, let the UI own application state such as toggles, sliders, and mode switches. Update retained Datoviz visual data, visibility, or controller state from that state.
 
 ## Minimal workflow
 
 1. Bind a controller first if the input is ordinary navigation.
 2. Get the view input router with `dvz_view_input(view)`.
 3. Subscribe to the routed event stream with `dvz_input_subscribe_event()`.
-4. In the callback, inspect the event, update retained scene state, and request or render the next
-   frame through the app or host loop.
+4. In the callback, inspect the event, update retained scene state, and request or render the next frame through the app or host loop.
 5. Unsubscribe before the callback `user_data` is destroyed.
 
 Keep callback work small; defer expensive updates to the next frame or a controlled update path.
 
-The following is a C function-body excerpt. A complete program must reject a `NULL` router and
-`DVZ_CALLBACK_ID_NONE`, and must preserve `state` until after unsubscription.
+The following is a C function-body excerpt. A complete program must reject a `NULL` router and `DVZ_CALLBACK_ID_NONE`, and must preserve `state` until after unsubscription.
 
 ```c
 typedef struct
@@ -77,8 +71,7 @@ dvz_app_run(app, 0);
 dvz_input_unsubscribe(router, callback_id);
 ```
 
-The related example uses this same route:
-`examples/c/features/input_events.c`.
+The related example uses this same route: `examples/c/features/input_events.c`.
 
 
 ## Event streams
@@ -91,14 +84,12 @@ The related example uses this same route:
 | Text | `dvz_input_subscribe_text()` | Layout-aware committed UTF-8 characters and ordinary text entry. |
 | Resize | `dvz_input_subscribe_resize()` | Resize-only consumers and late-bound layout state. |
 
-Use `dvz_input_subscribe_event()` when you need click, double-click, drag-start, drag, or drag-stop
-events. Those gesture-derived events are emitted on the routed input stream.
+Use `dvz_input_subscribe_event()` when you need click, double-click, drag-start, drag, or drag-stop events. Those gesture-derived events are emitted on the routed input stream.
 
 
 ## Testing callbacks
 
-Synthetic event emission is useful for smoke tests and hosted integrations. After creating a view,
-subscribe the callback and emit events through the view helper API:
+Synthetic event emission is useful for smoke tests and hosted integrations. After creating a view, subscribe the callback and emit events through the view helper API:
 
 ```c
 dvz_view_emit_resize(view, width, height, width, height, 1.0f, 1.0f);
@@ -110,21 +101,18 @@ dvz_view_emit_key(view, DVZ_KEYBOARD_EVENT_PRESS, DVZ_KEY_A, DVZ_KEY_MODIFIER_NO
 dvz_view_emit_text(view, "é", 2, DVZ_KEY_MODIFIER_NONE);
 ```
 
-The synthetic path works with offscreen views, so it can run in automated checks without opening a
-native GLFW window.
+The synthetic path works with offscreen views, so it can run in automated checks without opening a native GLFW window.
 
 
 ## Important details
 
-Input events are native-only in the current feature example. Browser interaction is handled by the
-WebGPU route and should not be copied from GLFW callback code.
+Input events are native-only in the current feature example. Browser interaction is handled by the WebGPU route and should not be copied from GLFW callback code.
 
-Callbacks run synchronously on the emitting thread. A text event's UTF-8 span is borrowed only until the emit call returns, so copy it inside the callback when it must be retained. Keep callback state owned by the application, and unsubscribe before destroying that state or the view.
+Callbacks run synchronously on the emitting thread. A text event's UTF-8 span is borrowed only until the emit call returns, so copy it inside the callback when it must be retained. Keep callback state owned by the application and unsubscribe before destroying that state or the view.
 
 `DVZ_KEY_*` printable names identify physical positions on the standard US layout. Use physical keyboard events for held state and positional controls; use committed text for character-labelled commands and text entry.
 
-`dvz_view_input()` returns a view-owned router. Do not destroy it. Unsubscribe while the view and
-router are still alive; a callback id is meaningful only to the router that created it.
+`dvz_view_input()` returns a view-owned router. Do not destroy it. Unsubscribe while the view and router are still alive; a callback id is meaningful only to the router that created it.
 
 ## Common mistakes
 

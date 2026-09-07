@@ -7,7 +7,7 @@ See the [v0.4.0rc2 release notes](../releases/v0.4.0rc2.md) for the package, val
 
 ## Install the Python package
 
-Create an isolated environment and install the exact version from PyPI.
+Create an isolated environment, then install the exact version from PyPI.
 
 === "macOS / Linux"
 
@@ -53,4 +53,4 @@ This fragment assumes an existing CMake project. The integration guide contains 
 
 ## Other installation paths
 
-Use [Build from source](build-from-source.md) when you need the current `main` code, want to contribute to Datoviz, or do not have a suitable published package. To inspect browser support without installing native Datoviz, open a `webgpu-live` route from [Examples](../examples/index.md); browser support is an experimental [WebGPU subset](../reference/webgpu-subset.md).
+Use [Build from source](build-from-source.md) when you need the current `main` code, want to contribute to Datoviz, or do not have a suitable published package. To inspect browser support without installing native Datoviz, open a `webgpu-live` route from [Examples](../examples/index.md). Browser support is an experimental [WebGPU subset](../reference/webgpu-subset.md).

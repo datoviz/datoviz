@@ -1,6 +1,6 @@
 # Choose your layer
 
-Datoviz has several entry points because a Python analysis, native application, browser example, and rendering backend need different levels of control. Start with the scene API unless your host or task requires a lower layer.
+Datoviz has several entry points because Python analysis, native applications, browser examples, and rendering backends need different levels of control. Start with the scene API unless your host or task requires a lower layer.
 
 The high-level plotting layer for the broader GSP/VisPy2 project is still in development. Datoviz v0.4 is the rendering engine underneath that work. Python users access Datoviz through a generated `ctypes` binding. The normal form, `import datoviz as dvz`, adapts documented calls for NumPy arrays. `datoviz.raw` exposes the same binding with exact pointer-and-count arguments.
 
@@ -43,27 +43,22 @@ The high-level plotting layer for the broader GSP/VisPy2 project is still in dev
 
 ## Python with NumPy
 
-Choose the main Python package when you want to create scenes from Python and upload NumPy arrays to
-visual attributes:
+Choose the main Python package when you want to create scenes from Python and upload NumPy arrays to visual attributes:
 
 ```python
 import datoviz as dvz
 ```
 
-This path keeps the `dvz_*` function names used by the C API and adapts documented data-upload calls
-so they accept NumPy arrays. The `dvz.run(...)` helper manages the ordinary native-window session.
-Use this path first when your analysis already lives in NumPy.
+This path keeps the `dvz_*` function names used by the C API and adapts documented data-upload calls so they accept NumPy arrays. The `dvz.run(...)` helper manages the ordinary native-window session. Use this path first when your analysis already lives in NumPy.
 
 [Start with the Python-first Quickstart](quickstart.md).
 
 
 ## C or C++
 
-Choose the C API when your application owns the window, rendering loop, offscreen target, capture
-path, or integration with another native system. C provides the same scene and visual model as
-Python, with explicit error handling and object destruction.
+Choose the C API when your application owns the window, rendering loop, offscreen target, capture path, or integration with another native system. C provides the same scene and visual model as Python, with explicit error handling and object destruction.
 
-Most public C examples follow the same visible sequence:
+Most public C examples follow the same sequence:
 
 1. create a scene, figure, and panel;
 2. create a visual;
@@ -72,39 +67,30 @@ Most public C examples follow the same visible sequence:
 5. open a window or create an offscreen target;
 6. run the app or capture a frame.
 
-[Run the First C Program](first-c-program.md), then see
-[C/C++ integration](../how-to/c-integration.md) for installed projects.
+[Run the First C Program](first-c-program.md), then see [C/C++ integration](../how-to/c-integration.md) for installed projects.
 
 
 ## WebGPU in the browser
 
-Experimental WebGPU support brings a selected subset of Datoviz to web browsers. Use the promoted live routes to inspect supported examples or test portability. WebGPU is not a second implementation of every native Vulkan feature: the example matrix and status page identify which routes are live, planned, deferred, or native-only.
+Experimental WebGPU support brings a selected subset of Datoviz to web browsers. Use the promoted live routes to inspect supported examples or test portability. WebGPU is not a second implementation of every native Vulkan feature. The example matrix and status page identify which routes are live, planned, deferred, or native-only.
 
 [Browse examples](../examples/index.md) and check the [WebGPU subset](../reference/webgpu-subset.md) before choosing a live route.
 
 
 ## Exact Python calls and advanced runtime layers
 
-`datoviz.raw` is not a separate plotting API. It exposes exact generated C-shaped calls for cases
-that need explicit pointers, counts, callbacks, or ABI diagnosis. Prefer the normal NumPy-adapted
-package until a documented operation requires the exact form.
+`datoviz.raw` is not a separate plotting API. It exposes exact generated C-shaped calls for cases that need explicit pointers, counts, callbacks, or ABI diagnosis. Prefer the normal NumPy-adapted package until a documented operation requires the exact form.
 
-Use the advanced runtime pages when you are working on Datoviz internals, backend portability,
-render replay, or specialized embedding. These pages are documented under
-[Runtime internals](../advanced/runtime-internals.md) and are secondary to the user-facing scene API.
+Use the advanced runtime pages when you are working on Datoviz internals, backend portability, render replay, or specialized embedding. These pages are documented under [Runtime internals](../advanced/runtime-internals.md) and are secondary to the user-facing scene API.
 
 [Open the advanced runtime overview](../advanced/runtime-internals.md).
 
 
 ## High-level plotting
 
-Datoviz v0.4 is not a high-level plotting library and does not restore the old Datoviz v0.3
-Pythonic plotting API. Use GSP/VisPy2, when available, for higher-level scientific plotting. Use
-Datoviz directly when you need the lower-level engine surface or while the high-level layer is still
-being developed.
+Datoviz v0.4 is not a high-level plotting library and does not restore the old Datoviz v0.3 Pythonic plotting API. Use GSP/VisPy2, when available, for higher-level scientific plotting. Use Datoviz directly when you need the lower-level engine surface or while the high-level layer is still being developed.
 
-Check [project status](../reference/project-status.md) for the current `external/GSP` boundary. Do
-not plan around a stable high-level package until that status changes.
+Check [project status](../reference/project-status.md) for the current `external/GSP` boundary. Do not plan around a stable high-level package until that status changes.
 
 
 ## Next steps
