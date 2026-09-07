@@ -153,7 +153,6 @@ void dvz_allocator_free(DvzVma* allocator)
 DvzAllocation* dvz_allocation_create(void)
 {
     DvzAllocation* alloc = (DvzAllocation*)dvz_calloc(1, sizeof(DvzAllocation));
-    ANN(alloc);
     return alloc;
 }
 
@@ -760,11 +759,12 @@ int dvz_allocator_import_buffer(
 
     ENSURE_EXTERNAL
 
-    // Set the external info structure to the VkBufferCreateInfo struct.
+    // Keep the caller's create-info chain valid after this function returns.
+    VkBufferCreateInfo info_local = *info;
     VkExternalMemoryBufferCreateInfoKHR external_info = {
         .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO_KHR};
     external_info.handleTypes = allocator->external;
-    if (info->pNext != NULL)
+    if (info_local.pNext != NULL)
     {
         log_error(
             "info.pNext must be NULL, otherwise need to iterate through the next chain and "
@@ -772,7 +772,7 @@ int dvz_allocator_import_buffer(
     }
     else
     {
-        info->pNext = &external_info;
+        info_local.pNext = &external_info;
     }
 
     // VMA allocation create info.
@@ -807,9 +807,11 @@ int dvz_allocator_import_buffer(
 
     log_trace("creating buffer...");
     VK_RETURN_RESULT(vmaCreateDedicatedBuffer(
-        allocator->vma, info, &alloc_info, &import_info, vk_buffer, &alloc->alloc, &alloc->info));
-    if (out == 0)
-        log_trace("buffer created");
+        allocator->vma, &info_local, &alloc_info, &import_info, vk_buffer, &alloc->alloc,
+        &alloc->info));
+    if (out != 0)
+        return out;
+    log_trace("buffer created");
 
     // Get the memory flags found by VMA and store them in the DvzBuffer instance.
     vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);
@@ -836,11 +838,12 @@ int dvz_allocator_import_image(
 
     ENSURE_EXTERNAL
 
-    // Set the external info structure to the VkImageCreateInfo struct.
+    // Keep the caller's create-info chain valid after this function returns.
+    VkImageCreateInfo info_local = *info;
     VkExternalMemoryImageCreateInfoKHR external_info = {
         .sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR};
     external_info.handleTypes = allocator->external;
-    if (info->pNext != NULL)
+    if (info_local.pNext != NULL)
     {
         log_error(
             "info.pNext must be NULL, otherwise need to iterate through the next chain and "
@@ -848,7 +851,7 @@ int dvz_allocator_import_image(
     }
     else
     {
-        info->pNext = &external_info;
+        info_local.pNext = &external_info;
     }
 
     // VMA allocation create info.
@@ -883,9 +886,11 @@ int dvz_allocator_import_image(
 
     log_trace("creating image...");
     VK_RETURN_RESULT(vmaCreateDedicatedImage(
-        allocator->vma, info, &alloc_info, &import_info, vk_image, &alloc->alloc, &alloc->info));
-    if (out == 0)
-        log_trace("image created");
+        allocator->vma, &info_local, &alloc_info, &import_info, vk_image, &alloc->alloc,
+        &alloc->info));
+    if (out != 0)
+        return out;
+    log_trace("image created");
 
     // Get the memory flags found by VMA and store them in the DvzImage instance.
     vmaGetMemoryTypeProperties(allocator->vma, alloc->info.memoryType, &alloc->memory_flags);

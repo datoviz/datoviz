@@ -171,7 +171,10 @@ static DvzDrp2ValidationResult _vklite_create_buffer(
 
     Drp2VkliteObject replacement = {
         .id = command->u.create_buffer.id, .kind = DRP2_OBJECT_BUFFER};
-    DvzBuffer* buffer = dvz_buffer_create_wrapper();
+    DvzBuffer* buffer =
+        _drp2_test_allocation_fail(state->runtime, DRP2_TEST_ALLOC_BUFFER_WRAPPER)
+            ? NULL
+            : dvz_buffer_create_wrapper();
     if (buffer == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     replacement.buffer = buffer;

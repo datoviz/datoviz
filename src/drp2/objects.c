@@ -41,10 +41,14 @@ static bool _vklite_deferred_ensure_capacity(Drp2VkliteState* state)
     ANN(state);
     if (state->deferred == NULL || state->deferred_capacity == 0)
     {
-        state->deferred_capacity = 8;
-        state->deferred =
-            (Drp2DeferredDestroy*)dvz_calloc(state->deferred_capacity, sizeof(Drp2DeferredDestroy));
-        return state->deferred != NULL;
+        uint32_t capacity = 8;
+        Drp2DeferredDestroy* deferred =
+            (Drp2DeferredDestroy*)dvz_calloc(capacity, sizeof(Drp2DeferredDestroy));
+        if (deferred == NULL)
+            return false;
+        state->deferred = deferred;
+        state->deferred_capacity = capacity;
+        return true;
     }
     if (state->deferred_count < state->deferred_capacity)
         return true;
@@ -83,6 +87,9 @@ bool _vklite_deferred_reserve(Drp2VkliteState* state, uint32_t additional_count)
     uint32_t required = state->deferred_count + additional_count;
     if (required <= state->deferred_capacity)
         return true;
+
+    if (_drp2_test_allocation_fail(state->runtime, DRP2_TEST_ALLOC_DEFERRED_RESERVE))
+        return false;
 
     uint32_t capacity = state->deferred_capacity > 0 ? state->deferred_capacity : 8;
     while (capacity < required)

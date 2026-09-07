@@ -22,6 +22,7 @@
 #endif
 
 #include "../_device.h"
+#include "../_memory.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -226,6 +227,94 @@ static int cuda_check(CUresult res, const char* label)
 /*************************************************************************************************/
 /*  Memory tests                                                                                 */
 /*************************************************************************************************/
+
+#if OS_UNIX
+/**
+ * Reject an import before it reaches VMA or a Vulkan provider.
+ *
+ * @param device unused logical device
+ * @param handle_type unused external handle type
+ * @param fd unused file descriptor
+ * @param properties unused output properties
+ * @return deterministic import failure
+ */
+static VKAPI_ATTR VkResult VKAPI_CALL _reject_import_fd_properties(
+    VkDevice device, VkExternalMemoryHandleTypeFlagBits handle_type, int fd,
+    VkMemoryFdPropertiesKHR* properties)
+{
+    (void)device;
+    (void)handle_type;
+    (void)fd;
+    (void)properties;
+    return VK_ERROR_INVALID_EXTERNAL_HANDLE;
+}
+#endif
+
+
+
+/**
+ * Preserve caller-owned create info when an external-memory import fails.
+ *
+ * @param suite test context
+ * @param tstitem test case
+ * @return zero on success
+ */
+int test_memory_import_failure_preserves_create_info(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+#if OS_UNIX
+    /* Only the stub reads this empty device. No Vulkan object or handle is owned here. */
+    DvzDevice device = {0};
+    DvzVma allocator = {
+        .device = &device, .external = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT};
+    DvzAllocation buffer_alloc = {0};
+    DvzAllocation image_alloc = {0};
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VkImage image = VK_NULL_HANDLE;
+    VkBufferCreateInfo buffer_info = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = 64,
+        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT};
+    VkImageCreateInfo image_info = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = VK_FORMAT_R8G8B8A8_UNORM,
+        .extent = {1, 1, 1},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT};
+
+    for (uint32_t attempt = 0; attempt < 2; attempt++)
+    {
+        PFN_vkGetMemoryFdPropertiesKHR previous = vkGetMemoryFdPropertiesKHR;
+        tst_expect_error_begin(suite);
+        vkGetMemoryFdPropertiesKHR = _reject_import_fd_properties;
+        int buffer_result = dvz_allocator_import_buffer(
+            &allocator, &buffer_info, 0, 1, &buffer_alloc, &buffer);
+        int image_result = dvz_allocator_import_image(
+            &allocator, &image_info, 0, 1, &image_alloc, &image);
+        vkGetMemoryFdPropertiesKHR = previous;
+        int expected_errors = tst_expect_error_end(suite);
+
+        AT(expected_errors == 0);
+        AT(buffer_result != 0);
+        AT(image_result != 0);
+        AT(buffer_info.pNext == NULL);
+        AT(image_info.pNext == NULL);
+        AT(buffer == VK_NULL_HANDLE);
+        AT(image == VK_NULL_HANDLE);
+        AT(buffer_alloc.alloc == NULL);
+        AT(image_alloc.alloc == NULL);
+    }
+#else
+    tst_skip(suite, "requires the Unix external-memory FD query path");
+#endif
+    return 0;
+}
+
+
 
 int test_memory_1(TstContext* suite, const TstCase* tstitem)
 {

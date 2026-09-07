@@ -197,11 +197,21 @@ int test_drp2_runtime_rejects_destroy_live_shader_module(TstContext* suite, cons
 
 int test_drp2_runtime_vklite_skeleton_create_destroy(TstContext* suite, const TstCase* item);
 
+#if DVZ_DRP2_HAS_VKLITE
+int test_drp2_runtime_wrapper_allocation_failure(TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_deferred_initial_allocation_failure(
+    TstContext* suite, const TstCase* item);
+#endif
+
 int test_drp2_runtime_vklite_skeleton_execute_valid_stream(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_skeleton_execute_invalid_stream(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_semantic_references_persist_transactionally(
+    TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_semantic_clone_allocation_failure(
     TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_skeleton_rejects_null_runtime(TstContext* suite, const TstCase* item);
@@ -220,6 +230,15 @@ int test_drp2_runtime_download_buffer_rejects_out_of_range(TstContext* suite, co
 
 #if DVZ_DRP2_HAS_VKLITE
 int test_drp2_runtime_vklite_executes_resource_commands(TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_vklite_bind_group_replacement_allocation_failure(
+    TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_vklite_buffer_replacement_allocation_failure(
+    TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_vklite_buffer_allocation_wrapper_failure(
+    TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const TstCase* item);
 

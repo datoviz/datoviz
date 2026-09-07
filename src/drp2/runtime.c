@@ -65,6 +65,27 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Consume a one-shot allocation failure at a selected internal runtime boundary.
+ *
+ * @param runtime runtime carrying the test control, or NULL to disable injection
+ * @param site allocation boundary being reached
+ * @return whether this allocation should fail
+ */
+bool _drp2_test_allocation_fail(DvzDrp2Runtime* runtime, Drp2TestAllocationSite site)
+{
+    if (runtime == NULL || site == DRP2_TEST_ALLOC_NONE ||
+        runtime->test_alloc_site != site || runtime->test_alloc_fail_at == 0)
+        return false;
+    runtime->test_alloc_fail_at--;
+    if (runtime->test_alloc_fail_at != 0)
+        return false;
+    runtime->test_alloc_site = DRP2_TEST_ALLOC_NONE;
+    return true;
+}
+
+
+
 #if DVZ_DRP2_HAS_VKLITE
 bool _dvz_drp2_runtime_vklite_download_buffer(
     DvzDrp2Runtime* runtime, uint64_t buffer_id, uint64_t offset, uint64_t size, void* data);
@@ -373,6 +394,8 @@ void dvz_drp2_runtime_reset(DvzDrp2Runtime* runtime)
 #endif
 
     runtime->backend_failed = false;
+    runtime->test_alloc_site = DRP2_TEST_ALLOC_NONE;
+    runtime->test_alloc_fail_at = 0;
 }
 
 

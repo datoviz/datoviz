@@ -89,6 +89,21 @@ typedef enum
 
 
 
+/* Internal allocation boundaries for regressions. Semantic sites cover cloning, not table growth. */
+typedef enum
+{
+    DRP2_TEST_ALLOC_NONE,
+    DRP2_TEST_ALLOC_SEMANTIC_OBJECTS,
+    DRP2_TEST_ALLOC_SEMANTIC_REFERENCES,
+    DRP2_TEST_ALLOC_SEMANTIC_READBACKS,
+    DRP2_TEST_ALLOC_BUFFER_WRAPPER,
+    DRP2_TEST_ALLOC_DESCRIPTOR_REPLACEMENTS,
+    DRP2_TEST_ALLOC_DESCRIPTOR_WRAPPER,
+    DRP2_TEST_ALLOC_DEFERRED_RESERVE,
+} Drp2TestAllocationSite;
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -117,6 +132,9 @@ struct DvzDrp2Runtime
     bool semantic_only;
     bool timing_enabled;
     bool backend_failed;
+    Drp2TestAllocationSite test_alloc_site;
+    /* One-based matching ordinal across calls; zero disables injection. Reset disarms it. */
+    uint32_t test_alloc_fail_at;
     DvzDrp2RuntimeTiming last_timing;
     Drp2RuntimeState* semantic_state;
 #if DVZ_DRP2_HAS_VKLITE
@@ -334,6 +352,7 @@ struct Drp2VkliteState
 /*************************************************************************************************/
 
 DvzDrp2ValidationResult _drp2_ok(void);
+bool _drp2_test_allocation_fail(DvzDrp2Runtime* runtime, Drp2TestAllocationSite site);
 DvzDrp2ValidationResult _drp2_fail(DvzDrp2ValidationCode code, uint32_t command_index);
 bool _drp2_range_overflows(uint64_t offset, uint64_t size, uint64_t total);
 uint64_t _drp2_texture_layout_size(
@@ -348,7 +367,7 @@ void _drp2_runtime_state_cleanup(Drp2RuntimeState* state);
 bool _drp2_runtime_state_ensure(DvzDrp2Runtime* runtime);
 bool _drp2_runtime_state_commit(DvzDrp2Runtime* runtime, Drp2RuntimeState* next_state);
 DvzDrp2ValidationResult _drp2_runtime_validate_stream(
-    const DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream,
+    DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream,
     Drp2RuntimeState* next_state);
 
 #if DVZ_DRP2_HAS_VKLITE

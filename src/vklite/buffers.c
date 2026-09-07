@@ -126,7 +126,6 @@ static void _interop_buffer_export_device_uuid(DvzBuffer* buffer, DvzInteropBuff
 DvzBuffer* dvz_buffer_create_wrapper(void)
 {
     DvzBuffer* buffer = (DvzBuffer*)dvz_calloc(1, sizeof(DvzBuffer));
-    ANN(buffer);
     return buffer;
 }
 
@@ -235,7 +234,8 @@ int dvz_buffer_create(DvzBuffer* buffer)
     if (buffer->alloc == NULL)
     {
         buffer->alloc = dvz_allocation_create();
-        ANN(buffer->alloc);
+        if (buffer->alloc == NULL)
+            return 1;
     }
     DvzAllocationFlags alloc_flags = buffer->req_alloc_flags;
     dvz_allocation_set_flags(buffer->alloc, alloc_flags);

@@ -200,9 +200,18 @@ int test_drp2(TstSuite* suite)
 
     TST_GROUP("runtime-lifecycle");
     TST_CASE(test_drp2_runtime_vklite_skeleton_create_destroy);
+#if DVZ_DRP2_HAS_VKLITE
+    TST_DRP2_CASE_EX(
+        test_drp2_runtime_wrapper_allocation_failure,
+        TST_RES_CPU | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
+    TST_DRP2_CASE_EX(
+        test_drp2_runtime_deferred_initial_allocation_failure,
+        TST_RES_CPU | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
+#endif
     TST_CASE(test_drp2_runtime_vklite_skeleton_execute_valid_stream);
     TST_CASE(test_drp2_runtime_vklite_skeleton_execute_invalid_stream);
     TST_CASE(test_drp2_runtime_semantic_references_persist_transactionally);
+    TST_CASE(test_drp2_runtime_semantic_clone_allocation_failure);
     TST_CASE(test_drp2_runtime_vklite_skeleton_rejects_null_runtime);
     TST_CASE(test_drp2_runtime_frame_target_validation);
     TST_CASE(test_drp2_runtime_frame_lifecycle_edge_cases);
@@ -217,6 +226,12 @@ int test_drp2(TstSuite* suite)
     TST_GROUP("vklite-runtime");
     TST_DRP2_SHARED_GPU_CASE(test_drp2_write_buffer_bytes_large_payload_executes);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_executes_resource_commands);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_bind_group_replacement_allocation_failure);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_buffer_replacement_allocation_failure);
+    TST_DRP2_CASE_EX(
+        test_drp2_runtime_vklite_buffer_allocation_wrapper_failure,
+        TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN | TST_RES_GLOBAL_STATE,
+        TST_ISOLATION_EXCLUSIVE);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_destroys_submitted_buffer);

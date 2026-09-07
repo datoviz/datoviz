@@ -2766,9 +2766,11 @@ void _drp2_runtime_state_cleanup(Drp2RuntimeState* state)
  *
  * @param dst the destination state
  * @param src the source state, or NULL for an empty state
+ * @param runtime runtime carrying the allocation test control
  * @return whether the clone succeeded
  */
-static bool _runtime_state_clone(Drp2RuntimeState* dst, const Drp2RuntimeState* src)
+static bool _runtime_state_clone(
+    Drp2RuntimeState* dst, const Drp2RuntimeState* src, DvzDrp2Runtime* runtime)
 {
     ANN(dst);
     dvz_memset(dst, sizeof(Drp2RuntimeState), 0, sizeof(Drp2RuntimeState));
@@ -2785,7 +2787,10 @@ static bool _runtime_state_clone(Drp2RuntimeState* dst, const Drp2RuntimeState* 
         uint64_t bytes = 0;
         if (_dvz_mul_u64_overflows(src->capacity, sizeof(Drp2Object), &bytes))
             return false;
-        dst->objects = (Drp2Object*)dvz_calloc(src->capacity, sizeof(Drp2Object));
+        dst->objects =
+            _drp2_test_allocation_fail(runtime, DRP2_TEST_ALLOC_SEMANTIC_OBJECTS)
+                ? NULL
+                : (Drp2Object*)dvz_calloc(src->capacity, sizeof(Drp2Object));
         if (dst->objects == NULL)
             return false;
         if (src->count > 0)
@@ -2803,7 +2808,10 @@ static bool _runtime_state_clone(Drp2RuntimeState* dst, const Drp2RuntimeState* 
             return false;
         }
         dst->references =
-            (Drp2WorkReference*)dvz_calloc(src->reference_capacity, sizeof(Drp2WorkReference));
+            _drp2_test_allocation_fail(runtime, DRP2_TEST_ALLOC_SEMANTIC_REFERENCES)
+                ? NULL
+                : (Drp2WorkReference*)dvz_calloc(
+                      src->reference_capacity, sizeof(Drp2WorkReference));
         if (dst->references == NULL)
         {
             _drp2_runtime_state_cleanup(dst);
@@ -2823,8 +2831,11 @@ static bool _runtime_state_clone(Drp2RuntimeState* dst, const Drp2RuntimeState* 
             _drp2_runtime_state_cleanup(dst);
             return false;
         }
-        dst->pending_readbacks = (Drp2PendingReadback*)dvz_calloc(
-            src->pending_readback_capacity, sizeof(Drp2PendingReadback));
+        dst->pending_readbacks =
+            _drp2_test_allocation_fail(runtime, DRP2_TEST_ALLOC_SEMANTIC_READBACKS)
+                ? NULL
+                : (Drp2PendingReadback*)dvz_calloc(
+                      src->pending_readback_capacity, sizeof(Drp2PendingReadback));
         if (dst->pending_readbacks == NULL)
         {
             _drp2_runtime_state_cleanup(dst);
@@ -2900,14 +2911,14 @@ bool _drp2_runtime_state_commit(DvzDrp2Runtime* runtime, Drp2RuntimeState* next_
  */
 DvzDrp2ValidationResult
 _drp2_runtime_validate_stream(
-    const DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream,
+    DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream,
     Drp2RuntimeState* next_state)
 {
     ANN(runtime);
     ANN(stream);
     ANN(next_state);
 
-    if (!_runtime_state_clone(next_state, runtime->semantic_state))
+    if (!_runtime_state_clone(next_state, runtime->semantic_state, runtime))
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
 
     DvzDrp2ValidationResult result = _drp2_ok();
