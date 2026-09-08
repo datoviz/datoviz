@@ -298,7 +298,7 @@ DvzDrp2ExternalBufferTimelineDesc dvz_drp2_external_buffer_timeline_desc(void)
  * Create a DRP2 runtime using the vklite backend boundary.
  *
  * @param cfg the runtime configuration
- * @return the runtime, or NULL on invalid configuration
+ * @return the runtime, or NULL on invalid configuration or allocation failure
  */
 DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* cfg)
 {
@@ -312,7 +312,8 @@ DvzDrp2Runtime* dvz_drp2_runtime_vklite(const DvzDrp2RuntimeConfig* cfg)
         return NULL;
 
     DvzDrp2Runtime* runtime = (DvzDrp2Runtime*)dvz_calloc(1, sizeof(DvzDrp2Runtime));
-    ANN(runtime);
+    if (runtime == NULL)
+        return NULL;
     runtime->device = cfg->device;
     runtime->allocator = cfg->allocator;
     runtime->semantic_only = cfg->semantic_only;

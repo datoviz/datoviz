@@ -299,11 +299,17 @@ int dvz_images_create(DvzImages* img)
         if (img->allocs[i] == NULL)
         {
             img->allocs[i] = dvz_allocation_create();
-            ANN(img->allocs[i]);
         }
-        dvz_allocation_set_flags(img->allocs[i], img->req_alloc_flags);
-        out = dvz_allocator_image(
-            allocator, &img->info, img->req_alloc_flags, img->allocs[i], &img->vk_images[i]);
+        if (img->allocs[i] == NULL)
+        {
+            out = 1;
+        }
+        else
+        {
+            dvz_allocation_set_flags(img->allocs[i], img->req_alloc_flags);
+            out = dvz_allocator_image(
+                allocator, &img->info, img->req_alloc_flags, img->allocs[i], &img->vk_images[i]);
+        }
         if (out != 0)
         {
             for (uint32_t j = 0; j <= i; j++)

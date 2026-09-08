@@ -77,8 +77,6 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
     DvzDevice* device = dvz_slots_device(slots);
     ANN(device);
 
-    descriptors->device = device;
-    descriptors->slots = slots;
     VkDevice vkd = dvz_device_handle(device);
     VkDescriptorPool dpool = dvz_device_descriptor_pool(device);
     ANNVK(vkd);
@@ -89,6 +87,8 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
     info.descriptorPool = dpool;
     info.descriptorSetCount = dvz_slots_set_count(slots);
     ASSERT(info.descriptorSetCount <= DVZ_MAX_SETS);
+    if (info.descriptorSetCount == 0)
+        return;
 
     VkDescriptorSetLayout set_layouts[DVZ_MAX_SETS] = {0};
     for (uint32_t set = 0; set < info.descriptorSetCount; set++)
@@ -98,7 +98,19 @@ void dvz_descriptors(DvzSlots* slots, DvzDescriptors* descriptors)
     info.pSetLayouts = set_layouts;
 
     log_trace("allocate descriptor sets");
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(vkd, &info, descriptors->vk_descriptors));
+    VkDescriptorSet allocated[DVZ_MAX_SETS] = {0};
+    VkResult result = vkAllocateDescriptorSets(vkd, &info, allocated);
+    if (result != VK_SUCCESS)
+    {
+        log_error("failed to allocate descriptor sets: %d", (int)result);
+        return;
+    }
+
+    dvz_memcpy(
+        descriptors->vk_descriptors, sizeof(descriptors->vk_descriptors), allocated,
+        sizeof(allocated));
+    descriptors->device = device;
+    descriptors->slots = slots;
     descriptors->vk_pool = dpool;
     descriptors->set_count = info.descriptorSetCount;
 }

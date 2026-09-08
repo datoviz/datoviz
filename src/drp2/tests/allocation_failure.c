@@ -90,6 +90,8 @@ int test_drp2_runtime_wrapper_allocation_failure(TstContext* suite, const TstCas
     ANN(suite);
     (void)item;
 
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
     const DvzAllocator* previous_allocator = dvz_get_allocator();
     DvzAllocator failing_allocator = *previous_allocator;
     failing_allocator.calloc_fn = _reject_calloc;
@@ -97,11 +99,30 @@ int test_drp2_runtime_wrapper_allocation_failure(TstContext* suite, const TstCas
     DvzBuffer* buffer = dvz_buffer_create_wrapper();
     DvzDescriptors* descriptors = dvz_descriptors_create_wrapper();
     DvzAllocation* allocation = dvz_allocation_create();
+    DvzVma* allocator = dvz_allocator_create();
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
     dvz_set_allocator(previous_allocator);
 
     AT(buffer == NULL);
     AT(descriptors == NULL);
     AT(allocation == NULL);
+    AT(allocator == NULL);
+    AT(runtime == NULL);
+
+    // Both constructors remain usable after restoring allocation.
+    allocator = dvz_allocator_create();
+    runtime = dvz_drp2_runtime_vklite(&cfg);
+    AT(allocator != NULL);
+    AT(runtime != NULL);
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_hello_renderer(stream, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(stream, "test-renderer"));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(stream);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_allocator_free(allocator);
     return 0;
 }
 
@@ -261,6 +282,25 @@ int test_drp2_runtime_semantic_clone_allocation_failure(
 
 #if DVZ_DRP2_HAS_VKLITE
 /**
+ * Reject a Vulkan descriptor allocation before bind-group replacement can publish it.
+ *
+ * @param device unused logical device
+ * @param info allocation request
+ * @param descriptors output descriptor handles
+ * @return deterministic pool exhaustion
+ */
+static VKAPI_ATTR VkResult VKAPI_CALL _reject_bind_group_descriptors(
+    VkDevice device, const VkDescriptorSetAllocateInfo* info, VkDescriptorSet* descriptors)
+{
+    (void)device;
+    for (uint32_t i = 0; i < info->descriptorSetCount; i++)
+        descriptors[i] = VK_NULL_HANDLE;
+    return VK_ERROR_OUT_OF_POOL_MEMORY;
+}
+
+
+
+/**
  * Preserve an existing bind group when replacement allocation or retirement reserve fails.
  *
  * @param suite test suite
@@ -307,6 +347,21 @@ int test_drp2_runtime_vklite_bind_group_replacement_allocation_failure(
     AT(retained->descriptors == initial_descriptors);
     AT(retained->bind_group_entries[0].resource_id == 1);
     AT(state->deferred_count == initial_deferred_count);
+
+    PFN_vkAllocateDescriptorSets previous = vkAllocateDescriptorSets;
+    tst_expect_error_begin(suite);
+    vkAllocateDescriptorSets = _reject_bind_group_descriptors;
+    result = _vklite_create_bind_group(state, &replacement->commands[0], 0);
+    vkAllocateDescriptorSets = previous;
+    int expected_errors = tst_expect_error_end(suite);
+    AT(expected_errors == 0);
+    AT(!result.ok);
+    retained = _vklite_find(state, 3);
+    ANN(retained);
+    AT(retained->descriptors == initial_descriptors);
+    AT(retained->bind_group_entries[0].resource_id == 1);
+    AT(state->deferred_count == initial_deferred_count);
+
     result = _vklite_create_bind_group(state, &replacement->commands[0], 0);
     AT(result.ok);
     Drp2VkliteObject* replaced = _vklite_find(state, 3);

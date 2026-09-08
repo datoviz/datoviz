@@ -226,7 +226,20 @@ int test_drp2(TstSuite* suite)
     TST_GROUP("vklite-runtime");
     TST_DRP2_SHARED_GPU_CASE(test_drp2_write_buffer_bytes_large_payload_executes);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_executes_resource_commands);
-    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_bind_group_replacement_allocation_failure);
+    {
+        TstCaseDesc desc = tst_case_desc(
+            "test_drp2_runtime_vklite_bind_group_replacement_allocation_failure",
+            "test_drp2_runtime_vklite_bind_group_replacement_allocation_failure",
+            test_drp2_runtime_vklite_bind_group_replacement_allocation_failure);
+        desc.tags = tags;
+        desc.resources = TST_RES_CPU | TST_RES_GPU | TST_RES_VULKAN | TST_RES_GLOBAL_STATE;
+        desc.isolation = TST_ISOLATION_EXCLUSIVE;
+        desc.fixture = TST_DRP2_VKLITE_FIXTURE;
+        desc.fixture_scope = TST_FIXTURE_SCOPE_PROCESS;
+        desc.setup = drp2_test_vklite_validation_setup;
+        desc.teardown = drp2_test_vklite_validation_teardown;
+        tst_suite_add_case(suite, desc);
+    }
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_buffer_replacement_allocation_failure);
     TST_DRP2_CASE_EX(
         test_drp2_runtime_vklite_buffer_allocation_wrapper_failure,

@@ -399,6 +399,11 @@ DvzDrp2ValidationResult _vklite_build_bind_group_descriptors(
     if (descriptors == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     dvz_descriptors(layout->slots, descriptors);
+    if (dvz_descriptors_set_count(descriptors) != dvz_slots_set_count(layout->slots))
+    {
+        dvz_descriptors_free(descriptors);
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
 
     for (uint32_t i = 0; i < bind_group->bind_group_entry_count; i++)
     {

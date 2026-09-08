@@ -123,7 +123,6 @@ static VmaAllocatorCreateFlags _set_vma_flags(DvzDevice* device)
 DvzVma* dvz_allocator_create(void)
 {
     DvzVma* allocator = (DvzVma*)dvz_calloc(1, sizeof(DvzVma));
-    ANN(allocator);
     return allocator;
 }
 

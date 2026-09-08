@@ -15,6 +15,9 @@
 /*************************************************************************************************/
 
 #include <stddef.h>
+#include <volk.h>
+
+#include "../_descriptors.h"
 
 #include "test_vk.h"
 #include "_assertions.h"
@@ -176,4 +179,92 @@ int test_vklite_rendering_reset(TstContext* suite, const TstCase* tstitem)
     dvz_rendering_free(rendering);
 
     return 0;
+}
+
+
+
+/**
+ * Reject descriptor allocation as an exhausted Vulkan descriptor pool would.
+ *
+ * @param device unused logical device
+ * @param info descriptor allocation request
+ * @param descriptors output descriptor handles
+ * @return deterministic pool exhaustion
+ */
+static VKAPI_ATTR VkResult VKAPI_CALL _reject_descriptor_allocation(
+    VkDevice device, const VkDescriptorSetAllocateInfo* info, VkDescriptorSet* descriptors)
+{
+    (void)device;
+    for (uint32_t i = 0; i < info->descriptorSetCount; i++)
+        descriptors[i] = VK_NULL_HANDLE;
+    return VK_ERROR_OUT_OF_POOL_MEMORY;
+}
+
+
+
+/**
+ * Leave failed descriptor allocations empty, safe to free, and retryable.
+ *
+ * @param suite test context
+ * @param tstitem test case
+ * @return zero on success
+ */
+int test_vklite_descriptors_allocation_failure(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+    DvzSlots* slots = dvz_slots_create_wrapper();
+    ANN(slots);
+    dvz_slots(dvz_gpu_ctx_device(ctx), slots);
+    AT(dvz_slots_create(slots) == 0);
+    DvzDescriptors* empty = dvz_descriptors_create_wrapper();
+    ANN(empty);
+    dvz_descriptors(slots, empty);
+    AT(dvz_descriptors_set_count(empty) == 0);
+    AT(empty->device == NULL);
+    AT(empty->slots == NULL);
+    AT(empty->vk_pool == VK_NULL_HANDLE);
+    dvz_slots_destroy(slots);
+    dvz_slots(dvz_gpu_ctx_device(ctx), slots);
+    dvz_slots_binding(slots, 0, 0, 1, VK_SHADER_STAGE_ALL, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    AT(dvz_slots_create(slots) == 0);
+    dvz_descriptors(slots, empty);
+    AT(dvz_descriptors_set_count(empty) == 1);
+    AT(dvz_descriptors_handle(empty, 0) != VK_NULL_HANDLE);
+    dvz_descriptors_free(empty);
+
+    for (uint32_t attempt = 0; attempt < 2; attempt++)
+    {
+        DvzDescriptors* descriptors = dvz_descriptors_create_wrapper();
+        ANN(descriptors);
+        PFN_vkAllocateDescriptorSets previous = vkAllocateDescriptorSets;
+        tst_expect_error_begin(suite);
+        vkAllocateDescriptorSets = _reject_descriptor_allocation;
+        dvz_descriptors(slots, descriptors);
+        vkAllocateDescriptorSets = previous;
+        int expected_errors = tst_expect_error_end(suite);
+
+        AT(expected_errors == 0);
+        AT(dvz_descriptors_set_count(descriptors) == 0);
+        AT(descriptors->device == NULL);
+        AT(descriptors->slots == NULL);
+        AT(descriptors->vk_pool == VK_NULL_HANDLE);
+        for (uint32_t i = 0; i < DVZ_MAX_SETS; i++)
+            AT(descriptors->vk_descriptors[i] == VK_NULL_HANDLE);
+        if (attempt == 1)
+        {
+            dvz_descriptors(slots, descriptors);
+            AT(dvz_descriptors_set_count(descriptors) == 1);
+            AT(dvz_descriptors_handle(descriptors, 0) != VK_NULL_HANDLE);
+        }
+        dvz_descriptors_free(descriptors);
+    }
+    dvz_slots_destroy(slots);
+    dvz_slots_free(slots);
+    uint32_t error_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+    return error_count > 0;
 }

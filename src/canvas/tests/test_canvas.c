@@ -23,6 +23,7 @@
 #endif
 
 #include "_alloc.h"
+#include "../../vk/_memory.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "_time_utils.h"
@@ -886,6 +887,89 @@ offscreen_recreate_cleanup:
     {
         dvz_window_host_destroy(host);
     }
+    canvas_test_destroy_instance_device(instance, device);
+    return 0;
+}
+
+
+
+/**
+ * Reject allocator-wrapper allocations while preserving the active allocator for other sizes.
+ *
+ * @param count allocation element count
+ * @param size allocation element size
+ * @return zeroed storage, or NULL for allocator wrappers or allocation failure
+ */
+static void* canvas_reject_allocator_calloc(DvzSize count, DvzSize size)
+{
+    if ((count == 1 && size == sizeof(DvzVma)) || (size != 0 && count > SIZE_MAX / size))
+        return NULL;
+    void* pointer = dvz_malloc(count * size);
+    if (pointer != NULL)
+        dvz_memset(pointer, count * size, 0, count * size);
+    return pointer;
+}
+
+
+
+/**
+ * Report allocator-wrapper failure without aborting and allow a fresh canvas to render afterward.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+static int test_canvas_allocator_wrapper_failure(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
+        goto cleanup;
+    host = dvz_window_host();
+    ANN(host);
+    DvzWindowConfig window_cfg = dvz_window_config();
+    window_cfg.width = 64;
+    window_cfg.height = 64;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL)
+    {
+        skip_reason = "headless window creation failed";
+        goto cleanup;
+    }
+    DvzCanvasConfig cfg = dvz_canvas_config();
+    cfg.window = window;
+    cfg.device = device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    const DvzAllocator* previous_allocator = dvz_get_allocator();
+    DvzAllocator failing_allocator = *previous_allocator;
+    failing_allocator.calloc_fn = canvas_reject_allocator_calloc;
+    dvz_set_allocator(&failing_allocator);
+    tst_expect_error_begin(suite);
+    canvas = dvz_canvas_create(&cfg);
+    dvz_set_allocator(previous_allocator);
+    AT(tst_expect_error_end(suite) == 0);
+    AT(canvas == NULL);
+
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+    dvz_canvas_set_draw_callback(canvas, canvas_offscreen_clear_draw, NULL);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+
+cleanup:
+    if (skip_reason != NULL)
+        tst_skip(suite, skip_reason);
+    dvz_canvas_destroy(canvas);
+    if (window != NULL)
+        dvz_window_destroy(window);
+    if (host != NULL)
+        dvz_window_host_destroy(host);
     canvas_test_destroy_instance_device(instance, device);
     return 0;
 }
@@ -2217,6 +2301,9 @@ int test_canvas(TstSuite* suite)
     const char* tags = "canvas";
     TST_MODULE(suite, tags);
     TST_CANVAS_CASE(test_canvas_defaults, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
+    TST_CANVAS_CASE(
+        test_canvas_allocator_wrapper_failure,
+        TST_CANVAS_VK_RES | TST_RES_GLOBAL_STATE | TST_RES_LOG_CAPTURE, TST_ISOLATION_EXCLUSIVE);
     TST_CANVAS_CASE(test_canvas_config_rejects_invalid_abi, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_depth_formats, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_configure_gpu_ctx, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);

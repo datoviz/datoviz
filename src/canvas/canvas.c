@@ -928,30 +928,44 @@ static int canvas_create_allocator(DvzCanvas* canvas)
     if (canvas->allocator == NULL)
     {
         canvas->allocator = dvz_allocator_create();
-        ANN(canvas->allocator);
+        if (canvas->allocator == NULL)
+        {
+            log_error("failed to allocate canvas allocator wrapper");
+            return -1;
+        }
     }
     VkExternalMemoryHandleTypeFlagsKHR handle_type =
         canvas->supports_external_memory ? canvas_external_memory_handle_type() : 0;
     if (dvz_device_allocator(canvas->device, handle_type, canvas->allocator) != 0)
     {
         log_error("failed to create canvas allocator");
-        return -1;
+        goto fail;
     }
     canvas->readback_allocator = dvz_allocator_create();
-    ANN(canvas->readback_allocator);
+    if (canvas->readback_allocator == NULL)
+    {
+        log_error("failed to allocate canvas readback allocator wrapper");
+        goto fail;
+    }
     if (dvz_device_allocator(canvas->device, 0, canvas->readback_allocator) != 0)
     {
         log_error("failed to create canvas readback allocator");
-        dvz_allocator_destroy(canvas->allocator);
-        dvz_allocator_free(canvas->allocator);
-        canvas->allocator = NULL;
-        dvz_allocator_destroy(canvas->readback_allocator);
-        dvz_allocator_free(canvas->readback_allocator);
-        canvas->readback_allocator = NULL;
-        return -1;
+        goto fail;
     }
     canvas->allocator_ready = true;
     return 0;
+
+fail:
+    dvz_allocator_destroy(canvas->allocator);
+    dvz_allocator_free(canvas->allocator);
+    canvas->allocator = NULL;
+    if (canvas->readback_allocator != NULL)
+    {
+        dvz_allocator_destroy(canvas->readback_allocator);
+        dvz_allocator_free(canvas->readback_allocator);
+        canvas->readback_allocator = NULL;
+    }
+    return -1;
 }
 
 
@@ -1668,9 +1682,9 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     {
         dvz_stream_stop(canvas->stream);
     }
-    dvz_canvas_stream_enable_video(canvas, false, NULL);
     if (canvas->stream)
     {
+        dvz_canvas_stream_enable_video(canvas, false, NULL);
         dvz_stream_destroy(canvas->stream);
         canvas->stream = NULL;
     }

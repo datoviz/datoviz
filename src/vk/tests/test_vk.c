@@ -153,6 +153,7 @@ int test_vk(TstSuite* suite)
 
 
     TST_VK_SELECTED_CASE(test_memory_1);
+    TST_VK_SELECTED_CASE(test_memory_provider_allocation_failure);
     {
         TstCaseDesc desc = tst_case_desc(
             "test_memory_import_failure_preserves_create_info",

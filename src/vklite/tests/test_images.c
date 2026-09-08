@@ -15,6 +15,8 @@
 /*************************************************************************************************/
 
 #include "test_vk.h"
+#include "_alloc.h"
+#include "../_images.h"
 #include "_assertions.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu_ctx.h"
@@ -171,4 +173,77 @@ int test_vklite_images_create_requires_destroy(TstContext* suite, const TstCase*
     dvz_gpu_ctx_destroy(ctx);
 
     return err_count > 0;
+}
+
+
+
+/**
+ * Reject host allocation while exercising image creation unwind.
+ *
+ * @param count allocation element count
+ * @param size allocation element size
+ * @return NULL
+ */
+static void* _images_reject_calloc(DvzSize count, DvzSize size)
+{
+    (void)count;
+    (void)size;
+    return NULL;
+}
+
+
+
+/**
+ * Unwind image creation after either the first or a later allocation-wrapper failure.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+int test_vklite_images_allocation_failure(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+    DvzImages* images = dvz_images_create_wrapper();
+    ANN(images);
+    dvz_images(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx), VK_IMAGE_TYPE_2D, 2, images);
+    dvz_images_format(images, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_images_size(images, 16, 16, 1);
+    dvz_images_usage(images, VK_IMAGE_USAGE_SAMPLED_BIT);
+
+    const DvzAllocator* previous_allocator = dvz_get_allocator();
+    DvzAllocator failing_allocator = *previous_allocator;
+    failing_allocator.calloc_fn = _images_reject_calloc;
+    for (uint32_t preallocated = 0; preallocated < 2; preallocated++)
+    {
+        // Reuse an allocation wrapper to let the first image succeed before the second fails.
+        if (preallocated != 0)
+        {
+            images->allocs[0] = dvz_allocation_create();
+            ANN(images->allocs[0]);
+        }
+        dvz_set_allocator(&failing_allocator);
+        int result = dvz_images_create(images);
+        dvz_set_allocator(previous_allocator);
+        AT(result != 0);
+        for (uint32_t i = 0; i < 2; i++)
+        {
+            AT(dvz_image_handle(images, i) == VK_NULL_HANDLE);
+            AT(images->allocs[i] == NULL);
+        }
+        // The same configured images remain reusable after the failed transaction.
+        AT(dvz_images_create(images) == 0);
+        AT(dvz_image_handle(images, 0) != VK_NULL_HANDLE);
+        AT(dvz_image_handle(images, 1) != VK_NULL_HANDLE);
+        dvz_images_destroy(images);
+        dvz_images_destroy(images);
+    }
+    dvz_images_free(images);
+    uint32_t errors = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+    return errors > 0;
 }

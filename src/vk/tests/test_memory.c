@@ -17,6 +17,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <string.h>
+#include <volk.h>
 #if !OS_WINDOWS
 #include <unistd.h>
 #endif
@@ -26,7 +27,6 @@
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
-#include <volk.h>
 
 #if DVZ_HAS_CUDA
 #include <cuda.h>
@@ -312,6 +312,119 @@ int test_memory_import_failure_preserves_create_info(TstContext* suite, const Ts
     tst_skip(suite, "requires the Unix external-memory FD query path");
 #endif
     return 0;
+}
+
+
+
+/**
+ * Reject provider memory allocations made by a test-owned VMA allocator.
+ *
+ * @param device unused logical device
+ * @param info unused allocation request
+ * @param callbacks unused host allocator callbacks
+ * @param memory output device memory handle
+ * @return deterministic device memory exhaustion
+ */
+static VKAPI_ATTR VkResult VKAPI_CALL _reject_device_memory(
+    VkDevice device, const VkMemoryAllocateInfo* info, const VkAllocationCallbacks* callbacks,
+    VkDeviceMemory* memory)
+{
+    (void)device;
+    (void)info;
+    (void)callbacks;
+    *memory = VK_NULL_HANDLE;
+    return VK_ERROR_OUT_OF_DEVICE_MEMORY;
+}
+
+
+
+/**
+ * Exercise VMA provider failures and retry with the same allocation wrappers.
+ *
+ * @param suite test context
+ * @param tstitem test case
+ * @return zero on success
+ */
+int test_memory_provider_allocation_failure(TstContext* suite, const TstCase* tstitem)
+{
+    ANN(suite);
+    (void)tstitem;
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    ANN(ctx);
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    VmaVulkanFunctions funcs = {0};
+    VmaAllocatorCreateInfo info = {0};
+    info.instance = dvz_instance_handle(dvz_gpu_ctx_instance(ctx));
+    info.physicalDevice = dvz_device_physical_device(device);
+    info.device = dvz_device_handle(device);
+    info.vulkanApiVersion = VK_API_VERSION_1_0;
+    VkResult imported = vmaImportVulkanFunctionsFromVolk(&info, &funcs);
+    AT(imported == VK_SUCCESS);
+    funcs.vkAllocateMemory = _reject_device_memory;
+    info.pVulkanFunctions = &funcs;
+    DvzVma failing = {.device = device};
+    VkResult created = vmaCreateAllocator(&info, &failing.vma);
+    AT(created == VK_SUCCESS);
+
+    DvzAllocation* buffer_alloc = dvz_allocation_create();
+    DvzAllocation* image_alloc = dvz_allocation_create();
+    ANN(buffer_alloc);
+    ANN(image_alloc);
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VkImage image = VK_NULL_HANDLE;
+    VkBufferCreateInfo buffer_info = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = 4096,
+        .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT};
+    VkImageCreateInfo image_info = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = VK_FORMAT_R8G8B8A8_UNORM,
+        .extent = {16, 16, 1},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT};
+
+    for (uint32_t attempt = 0; attempt < 2; attempt++)
+    {
+        tst_expect_error_begin(suite);
+        int buffer_result = dvz_allocator_buffer(
+            &failing, &buffer_info, DVZ_ALLOC_DEDICATED_MEMORY, buffer_alloc, &buffer);
+        int image_result = dvz_allocator_image(
+            &failing, &image_info, DVZ_ALLOC_DEDICATED_MEMORY, image_alloc, &image);
+        int expected_errors = tst_expect_error_end(suite);
+        AT(expected_errors == 0);
+        AT(buffer_result != 0);
+        AT(image_result != 0);
+        AT(buffer == VK_NULL_HANDLE);
+        AT(image == VK_NULL_HANDLE);
+        AT(buffer_alloc->alloc == NULL);
+        AT(image_alloc->alloc == NULL);
+        AT(buffer_alloc->info.deviceMemory == VK_NULL_HANDLE);
+        AT(image_alloc->info.deviceMemory == VK_NULL_HANDLE);
+        AT(buffer_info.pNext == NULL);
+        AT(image_info.pNext == NULL);
+    }
+    dvz_allocator_destroy(&failing);
+
+    DvzVma* healthy = dvz_gpu_ctx_alloc(ctx);
+    int buffer_result = dvz_allocator_buffer(
+        healthy, &buffer_info, DVZ_ALLOC_DEDICATED_MEMORY, buffer_alloc, &buffer);
+    int image_result = dvz_allocator_image(
+        healthy, &image_info, DVZ_ALLOC_DEDICATED_MEMORY, image_alloc, &image);
+    AT(buffer_result == 0);
+    AT(image_result == 0);
+    AT(buffer != VK_NULL_HANDLE);
+    AT(image != VK_NULL_HANDLE);
+    dvz_allocator_destroy_buffer(healthy, buffer_alloc, buffer);
+    dvz_allocator_destroy_image(healthy, image_alloc, image);
+    dvz_allocation_free(buffer_alloc);
+    dvz_allocation_free(image_alloc);
+    uint32_t error_count = dvz_gpu_ctx_error_count(ctx);
+    dvz_gpu_ctx_destroy(ctx);
+    return error_count > 0;
 }
 
 

@@ -88,6 +88,8 @@ int test_device_build_requires_destroy(TstContext* suite, const TstCase* tstitem
 
 int test_memory_1(TstContext* suite, const TstCase* tstitem);
 
+int test_memory_provider_allocation_failure(TstContext* suite, const TstCase* tstitem);
+
 int test_memory_import_failure_preserves_create_info(TstContext* suite, const TstCase* tstitem);
 
 int test_memory_external_allocator_image(TstContext* suite, const TstCase* tstitem);

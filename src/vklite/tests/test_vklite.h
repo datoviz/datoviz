@@ -112,9 +112,13 @@ int test_vklite_buffer_create_requires_destroy(TstContext* suite, const TstCase*
 
 int test_vklite_images_1(TstContext* suite, const TstCase* tstitem);
 
+int test_vklite_images_allocation_failure(TstContext* suite, const TstCase* tstitem);
+
 int test_vklite_images_create_requires_destroy(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_descriptors_1(TstContext* suite, const TstCase* tstitem);
+
+int test_vklite_descriptors_allocation_failure(TstContext* suite, const TstCase* tstitem);
 int test_vklite_rendering_reset(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_graphics_1(TstContext* suite, const TstCase* tstitem);
