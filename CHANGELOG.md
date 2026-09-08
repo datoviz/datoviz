@@ -7,6 +7,7 @@ RC3 prepares the documentation, packaging, and tutorial foundation for the v0.4 
 ### Highlights
 
 * Add the first three chapters of the Vulkan graphics course, with canonical C programs, generated previews, and installed CMake-consumer checks.
+* Support installed-course validation from source paths with spaces or non-ASCII characters and from multi-configuration CMake generators.
 * Provide the tutorial-facing Canvas and vklite operations and typed runtime GLSL compilation through shaderc.
 * Extend retained rendering with render products, ambient occlusion, and the scene-owned lighting foundation.
 * Separate physical-key input from committed text and support coherent mesh-buffer replacement.

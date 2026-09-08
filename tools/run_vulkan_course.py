@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import hashlib
+import json
 import os
 from pathlib import Path
 import platform
@@ -77,21 +78,32 @@ def _installed_build(temporary: Path, discovery: list[str]) -> Path:
     """
     project = temporary / "project"
     project.mkdir()
+    source_paths = {
+        step.name: (SOURCES / (step.name + ".c")).resolve().as_posix() for step in STEPS
+    }
     (project / "CMakeLists.txt").write_text(
         "cmake_minimum_required(VERSION 3.21)\n"
         "project(vulkan_course C)\n"
         "find_package(datoviz CONFIG REQUIRED)\n"
         + "".join(
-            f"add_executable({step.name} {SOURCES / (step.name + '.c')})\n"
+            f"add_executable({step.name} {json.dumps(source_paths[step.name], ensure_ascii=False)})\n"
             f"target_link_libraries({step.name} PRIVATE datoviz::datoviz)\n"
             f"if(NOT WIN32)\n  target_link_libraries({step.name} PRIVATE m)\nendif()\n"
             for step in STEPS
-        )
+        ),
+        encoding="utf-8",
     )
     build = temporary / "build"
     _run(["cmake", "-S", str(project), "-B", str(build), *discovery])
-    _run(["cmake", "--build", str(build)])
-    return build
+    cache = (build / "CMakeCache.txt").read_text()
+    multi_config = any(
+        line.startswith("CMAKE_CONFIGURATION_TYPES:") for line in cache.splitlines()
+    )
+    build_command = ["cmake", "--build", str(build)]
+    if multi_config:
+        build_command.extend(["--config", "Release"])
+    _run(build_command)
+    return build / "Release" if multi_config else build
 
 
 def _wheel_install(spec: str, temporary: Path) -> tuple[Path, list[str]]:
