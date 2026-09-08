@@ -579,7 +579,7 @@ void dvz_cmd_bind_index_buffer(
 | `offset` | [`DvzSize`](runtime-math.md#type-dvzsize) | byte offset within the index buffer |
 | `index_type` | `VkIndexType` | the Vulkan index type |
 
-_Declared in `include/datoviz/vklite/buffers.h`:351._
+_Declared in `include/datoviz/vklite/buffers.h`:358._
 
 #### `dvz_cmd_bind_vertex_buffers()` { #dvz_cmd_bind_vertex_buffers .dvz-api-function }
 
@@ -603,7 +603,7 @@ void dvz_cmd_bind_vertex_buffers(
 | `buffers` | [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) * | the "binding_count" buffers to bind |
 | `offsets` | [`DvzSize`](runtime-math.md#type-dvzsize) * | array of `binding_count` byte offsets, one per buffer |
 
-_Declared in `include/datoviz/vklite/buffers.h`:336._
+_Declared in `include/datoviz/vklite/buffers.h`:343._
 
 #### `dvz_cmd_blit_destination()` { #dvz_cmd_blit_destination .dvz-api-function }
 
@@ -4076,7 +4076,7 @@ void dvz_buffer_destroy(
 
 Related: [`dvz_buffer_create()`](#dvz_buffer_create).
 
-_Declared in `include/datoviz/vklite/buffers.h`:248._
+_Declared in `include/datoviz/vklite/buffers.h`:255._
 
 #### `dvz_buffer_download()` { #dvz_buffer_download .dvz-api-function }
 
@@ -4102,7 +4102,7 @@ void dvz_buffer_download(
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | the size of the region to download, in bytes |
 | `data` | `void` * |  |
 
-_Declared in `include/datoviz/vklite/buffers.h`:236._
+_Declared in `include/datoviz/vklite/buffers.h`:243._
 
 #### `dvz_buffer_flags()` { #dvz_buffer_flags .dvz-api-function }
 
@@ -4170,18 +4170,24 @@ int dvz_buffer_map(
 | return | `int` | 0 on success, non-zero on Vulkan or Datoviz state failure |
 | `buffer` | [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) * | live host-visible buffer |
 
-_Declared in `include/datoviz/vklite/buffers.h`:194._
+_Declared in `include/datoviz/vklite/buffers.h`:201._
 
 #### `dvz_buffer_resize()` { #dvz_buffer_resize .dvz-api-function }
 
-Resize a buffer.
+Grow a live buffer to at least the requested size.
 
-The requested logical size is updated only on a valid buffer. This helper does not preserve
-existing contents, remap host pointers, or recreate a live Vulkan buffer; destroy and create the
-buffer again after changing size. Shrinking follows the same recreate contract as growing.
+Requests no larger than the current logical size succeed without changing the buffer.
+
+Growth replaces the Vulkan buffer and does not preserve its contents.
+
+A mapped buffer stays mapped, but its old host pointer is invalid after successful growth.
+
+Failure preserves the original size, contents, Vulkan handle, and mapping.
+
+The caller must finish all GPU use before growth and refresh references to the old handle.
 
 ```c
-void dvz_buffer_resize(
+int dvz_buffer_resize(
     DvzBuffer * buffer,
     DvzSize size
 );
@@ -4189,10 +4195,11 @@ void dvz_buffer_resize(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `buffer` | [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) * | the buffer |
-| `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | the new buffer size, in bytes |
+| return | `int` | 0 on success or no-op, nonzero on invalid state, allocation, or mapping failure |
+| `buffer` | [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) * | live buffer wrapper |
+| `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | requested minimum size, in bytes; must be nonzero |
 
-_Declared in `include/datoviz/vklite/buffers.h`:184._
+_Declared in `include/datoviz/vklite/buffers.h`:191._
 
 #### `dvz_buffer_size()` { #dvz_buffer_size .dvz-api-function }
 
@@ -4243,7 +4250,7 @@ void dvz_buffer_unmap(
 | --- | --- | --- |
 | `buffer` | [`DvzBuffer`](runtime-vklite.md#type-dvzbuffer) * | mapped host-visible buffer; no action is taken when it is not mapped |
 
-_Declared in `include/datoviz/vklite/buffers.h`:203._
+_Declared in `include/datoviz/vklite/buffers.h`:210._
 
 #### `dvz_buffer_upload()` { #dvz_buffer_upload .dvz-api-function }
 
@@ -4269,7 +4276,7 @@ void dvz_buffer_upload(
 | `size` | [`DvzSize`](runtime-math.md#type-dvzsize) | number of bytes to copy |
 | `data` | `const` `void` * | source host-memory region containing at least `size` bytes |
 
-_Declared in `include/datoviz/vklite/buffers.h`:220._
+_Declared in `include/datoviz/vklite/buffers.h`:227._
 
 #### `dvz_buffer_usage()` { #dvz_buffer_usage .dvz-api-function }
 
@@ -4330,7 +4337,7 @@ void dvz_buffer_views(
 | `alignment` | [`DvzSize`](runtime-math.md#type-dvzsize) | the alignment requirement for the view offsets |
 | `views` | [`DvzBufferViews`](runtime-vklite.md#type-dvzbufferviews) * |  |
 
-_Declared in `include/datoviz/vklite/buffers.h`:271._
+_Declared in `include/datoviz/vklite/buffers.h`:278._
 
 #### `dvz_buffer_views_aligned_size()` { #dvz_buffer_views_aligned_size .dvz-api-function }
 
@@ -4347,7 +4354,7 @@ DvzSize dvz_buffer_views_aligned_size(
 | return | [`DvzSize`](runtime-math.md#type-dvzsize) | the aligned stride in bytes, or 0 when no alignment was requested |
 | `views` | [`DvzBufferViews`](runtime-vklite.md#type-dvzbufferviews) * | the buffer views |
 
-_Declared in `include/datoviz/vklite/buffers.h`:303._
+_Declared in `include/datoviz/vklite/buffers.h`:310._
 
 #### `dvz_buffer_views_count()` { #dvz_buffer_views_count .dvz-api-function }
 
@@ -4364,7 +4371,7 @@ uint32_t dvz_buffer_views_count(
 | return | `uint32_t` | the number of configured views |
 | `views` | [`DvzBufferViews`](runtime-vklite.md#type-dvzbufferviews) * | the buffer views |
 
-_Declared in `include/datoviz/vklite/buffers.h`:283._
+_Declared in `include/datoviz/vklite/buffers.h`:290._
 
 #### `dvz_buffer_views_create()` { #dvz_buffer_views_create .dvz-api-function }
 
@@ -4378,7 +4385,7 @@ DvzBufferViews * dvz_buffer_views_create(void);
 | --- | --- | --- |
 | return | [`DvzBufferViews`](runtime-vklite.md#type-dvzbufferviews) * | allocated buffer-views wrapper, or NULL on allocation failure |
 
-_Declared in `include/datoviz/vklite/buffers.h`:257._
+_Declared in `include/datoviz/vklite/buffers.h`:264._
 
 #### `dvz_buffer_views_free()` { #dvz_buffer_views_free .dvz-api-function }
 
@@ -4394,7 +4401,7 @@ void dvz_buffer_views_free(
 | --- | --- | --- |
 | `views` | [`DvzBufferViews`](runtime-vklite.md#type-dvzbufferviews) * | buffer-views wrapper to free |
 
-_Declared in `include/datoviz/vklite/buffers.h`:323._
+_Declared in `include/datoviz/vklite/buffers.h`:330._
 
 #### `dvz_buffer_views_offset()` { #dvz_buffer_views_offset .dvz-api-function }
 
@@ -4413,7 +4420,7 @@ DvzSize dvz_buffer_views_offset(
 | `views` | [`DvzBufferViews`](runtime-vklite.md#type-dvzbufferviews) * | the buffer views |
 | `idx` | `uint32_t` | the logical view index |
 
-_Declared in `include/datoviz/vklite/buffers.h`:314._
+_Declared in `include/datoviz/vklite/buffers.h`:321._
 
 #### `dvz_buffer_views_size()` { #dvz_buffer_views_size .dvz-api-function }
 
@@ -4430,7 +4437,7 @@ DvzSize dvz_buffer_views_size(
 | return | [`DvzSize`](runtime-math.md#type-dvzsize) | the logical view size in bytes |
 | `views` | [`DvzBufferViews`](runtime-vklite.md#type-dvzbufferviews) * | the buffer views |
 
-_Declared in `include/datoviz/vklite/buffers.h`:293._
+_Declared in `include/datoviz/vklite/buffers.h`:300._
 
 #### `dvz_image_blit()` { #dvz_image_blit .dvz-api-function }
 

@@ -164,6 +164,16 @@ int test_vk(TstSuite* suite)
         desc.isolation = TST_ISOLATION_EXCLUSIVE;
         tst_suite_add_case(suite, desc);
     }
+    {
+        TstCaseDesc desc = tst_case_desc(
+            "test_memory_import_provider_failure", "test_memory_import_provider_failure",
+            test_memory_import_provider_failure);
+        desc.tags = tags;
+        desc.resources = TST_RES_GPU | TST_RES_VULKAN | TST_RES_GLOBAL_STATE | TST_RES_LOG_CAPTURE;
+        desc.isolation = TST_ISOLATION_EXCLUSIVE;
+        desc.skip = _vk_skip_unless_runtime;
+        tst_suite_add_case(suite, desc);
+    }
     TST_VK_SELECTED_CASE(test_memory_external_allocator_image);
     TST_VK_SELECTED_CASE(test_memory_interop_buffer_timeline);
     // External-memory helper maintains independent GPU 0 selection pending its interop policy.

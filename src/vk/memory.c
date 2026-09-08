@@ -96,6 +96,23 @@ static VmaAllocatorCreateFlags _set_vma_flags(DvzDevice* device)
 
 
 
+/**
+ * Clear backend-owned state after a failed VMA allocation attempt.
+ *
+ * @param alloc allocation wrapper that did not acquire memory
+ */
+static void _clear_failed_allocation(DvzAllocation* alloc)
+{
+    ANN(alloc);
+    alloc->alloc = NULL;
+    dvz_memset(&alloc->info, sizeof(alloc->info), 0, sizeof(alloc->info));
+    alloc->memory_flags = 0;
+    alloc->alignment = 0;
+    alloc->mmap = NULL;
+}
+
+
+
 #define ENSURE_EXTERNAL                                                                           \
     if (allocator->external == 0)                                                                 \
     {                                                                                             \
@@ -809,7 +826,11 @@ int dvz_allocator_import_buffer(
         allocator->vma, &info_local, &alloc_info, &import_info, vk_buffer, &alloc->alloc,
         &alloc->info));
     if (out != 0)
+    {
+        *vk_buffer = VK_NULL_HANDLE;
+        _clear_failed_allocation(alloc);
         return out;
+    }
     log_trace("buffer created");
 
     // Get the memory flags found by VMA and store them in the DvzBuffer instance.
@@ -888,7 +909,11 @@ int dvz_allocator_import_image(
         allocator->vma, &info_local, &alloc_info, &import_info, vk_image, &alloc->alloc,
         &alloc->info));
     if (out != 0)
+    {
+        *vk_image = VK_NULL_HANDLE;
+        _clear_failed_allocation(alloc);
         return out;
+    }
     log_trace("image created");
 
     // Get the memory flags found by VMA and store them in the DvzImage instance.

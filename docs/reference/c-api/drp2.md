@@ -2600,7 +2600,7 @@ DvzDrp2ValidationResult dvz_drp2_validate_stream(
 | return | [`DvzDrp2ValidationResult`](drp2.md#type-dvzdrp2validationresult) | the validation result |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 
-_Declared in `include/datoviz/drp2/runtime.h`:217._
+_Declared in `include/datoviz/drp2/runtime.h`:218._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3763,7 +3763,7 @@ _Bool dvz_drp2_runtime_arm_external_buffer_timeline(
 | `buffer_id` | `uint64_t` | registered external buffer id |
 | `desc` | `const` [`DvzDrp2ExternalBufferTimelineDesc`](drp2.md#type-dvzdrp2externalbuffertimelinedesc) * | timeline handoff values and borrowed semaphore |
 
-_Declared in `include/datoviz/drp2/runtime.h`:193._
+_Declared in `include/datoviz/drp2/runtime.h`:194._
 
 #### `dvz_drp2_runtime_attach_frame_target()` { #dvz_drp2_runtime_attach_frame_target .dvz-api-function }
 
@@ -3771,9 +3771,9 @@ Attach a borrowed stream frame as a runtime render target.
 
 The runtime retains the frame's borrowed color image, optional depth image, image views, and
 command-buffer handles under `texture_id`. They must remain valid until this target is replaced,
-the runtime is reset, or the runtime is destroyed. The command buffer must already be recording
-during subsequent execution; the runtime records into it but does not begin, end, reset, submit,
-or destroy it.
+the runtime is reset, or the runtime is destroyed. The command buffer must already be recording,
+and the target must be attached again before each later execution that records into a new frame.
+The runtime records into it but does not begin, end, reset, submit, or destroy it.
 
 ```c
 _Bool dvz_drp2_runtime_attach_frame_target(
@@ -3790,7 +3790,7 @@ _Bool dvz_drp2_runtime_attach_frame_target(
 | `texture_id` | `uint64_t` | the DRP2 texture id to expose for render passes |
 | `frame` | `const` [`DvzStreamFrame`](app.md#type-dvzstreamframe) * | the borrowed stream frame whose command buffer is currently recording |
 
-_Declared in `include/datoviz/drp2/runtime.h`:247._
+_Declared in `include/datoviz/drp2/runtime.h`:252._
 
 #### `dvz_drp2_runtime_copy_texture_to_frame()` { #dvz_drp2_runtime_copy_texture_to_frame .dvz-api-function }
 
@@ -3815,7 +3815,7 @@ _Bool dvz_drp2_runtime_copy_texture_to_frame(
 | `texture_id` | `uint64_t` | the DRP2 texture id to copy from |
 | `frame` | `const` [`DvzStreamFrame`](app.md#type-dvzstreamframe) * | the borrowed stream frame whose command buffer is currently recording |
 
-_Declared in `include/datoviz/drp2/runtime.h`:263._
+_Declared in `include/datoviz/drp2/runtime.h`:268._
 
 #### `dvz_drp2_runtime_destroy()` { #dvz_drp2_runtime_destroy .dvz-api-function }
 
@@ -3840,7 +3840,10 @@ _Declared in `include/datoviz/drp2/runtime.h`:147._
 Download bytes from a DRP2 buffer into CPU memory.
 
 Must be called after dvz_drp2_runtime_execute() has completed. The requested byte range must fit
-in a live buffer created with `DVZ_DRP2_BUFFER_USAGE_MAP_READ`.
+in a live buffer created with `DVZ_DRP2_BUFFER_USAGE_MAP_READ`. A successful download whose
+buffer id, offset, and size exactly match the oldest pending QueueSubmit readback acknowledges
+and consumes that request; an ad-hoc or out-of-order download of another valid range does not
+release a pending readback pin.
 
 ```c
 _Bool dvz_drp2_runtime_download_buffer(
@@ -3861,11 +3864,15 @@ _Bool dvz_drp2_runtime_download_buffer(
 | `size` | `uint64_t` | number of bytes to read |
 | `dst` | `void` * | destination CPU buffer (caller-allocated, at least size bytes) |
 
-_Declared in `include/datoviz/drp2/runtime.h`:280._
+_Declared in `include/datoviz/drp2/runtime.h`:288._
 
 #### `dvz_drp2_runtime_execute()` { #dvz_drp2_runtime_execute .dvz-api-function }
 
 Execute a command stream through a DRP2 runtime skeleton.
+
+A backend execution failure may occur after earlier commands have changed backend state, so the
+runtime rejects subsequent operations until dvz_drp2_runtime_reset() restores an empty,
+synchronized state.
 
 ```c
 DvzDrp2ValidationResult dvz_drp2_runtime_execute(
@@ -3880,7 +3887,7 @@ DvzDrp2ValidationResult dvz_drp2_runtime_execute(
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 | `stream` | `const` [`DvzDrp2CommandStream`](drp2.md#type-dvzdrp2commandstream) * | the command stream |
 
-_Declared in `include/datoviz/drp2/runtime.h`:230._
+_Declared in `include/datoviz/drp2/runtime.h`:235._
 
 #### `dvz_drp2_runtime_external_buffer_timeline_pending()` { #dvz_drp2_runtime_external_buffer_timeline_pending .dvz-api-function }
 
@@ -3899,7 +3906,7 @@ _Bool dvz_drp2_runtime_external_buffer_timeline_pending(
 | `runtime` | `const` [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 | `buffer_id` | `uint64_t` | registered external buffer id |
 
-_Declared in `include/datoviz/drp2/runtime.h`:205._
+_Declared in `include/datoviz/drp2/runtime.h`:206._
 
 #### `dvz_drp2_runtime_get_config()` { #dvz_drp2_runtime_get_config .dvz-api-function }
 
@@ -3941,15 +3948,16 @@ _Bool dvz_drp2_runtime_register_external_buffer(
 | `buffer_id` | `uint64_t` | the DRP2 buffer id to register |
 | `desc` | `const` [`DvzDrp2ExternalBufferDesc`](drp2.md#type-dvzdrp2externalbufferdesc) * | the external buffer descriptor |
 
-_Declared in `include/datoviz/drp2/runtime.h`:175._
+_Declared in `include/datoviz/drp2/runtime.h`:176._
 
 #### `dvz_drp2_runtime_reset()` { #dvz_drp2_runtime_reset .dvz-api-function }
 
 Reset a DRP2 runtime to an empty semantic and backend state.
 
-This releases runtime-owned objects while keeping the runtime itself and its
-borrowed device/allocator configuration alive for reuse. Vklite-backed
-runtimes wait for submitted device work before releasing owned backend resources.
+This releases runtime-owned objects while keeping the runtime itself and its borrowed
+device/allocator configuration alive for reuse. Vklite-backed runtimes wait for submitted device
+work before releasing owned backend resources. Reset also recovers a runtime that rejected
+further operations after a backend execution failure.
 
 ```c
 void dvz_drp2_runtime_reset(
@@ -3961,7 +3969,7 @@ void dvz_drp2_runtime_reset(
 | --- | --- | --- |
 | `runtime` | [`DvzDrp2Runtime`](drp2.md#type-dvzdrp2runtime) * | the runtime |
 
-_Declared in `include/datoviz/drp2/runtime.h`:160._
+_Declared in `include/datoviz/drp2/runtime.h`:161._
 
 #### `dvz_drp2_runtime_vklite()` { #dvz_drp2_runtime_vklite .dvz-api-function }
 

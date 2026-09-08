@@ -91,6 +91,27 @@ int test_vklite(TstSuite* suite)
     TST_VKLITE_CASE(test_vklite_compute_spec_bounds);
     TST_VKLITE_CASE(test_vklite_compute_create_requires_destroy);
     TST_VKLITE_CASE(test_vklite_buffers_1);
+    {
+        TstCaseDesc desc = tst_case_desc(
+            "test_vklite_buffer_resize_allocation_failure",
+            "test_vklite_buffer_resize_allocation_failure",
+            test_vklite_buffer_resize_allocation_failure);
+        desc.tags = tags;
+        desc.resources = TST_RES_GPU | TST_RES_VULKAN | TST_RES_GLOBAL_STATE;
+        desc.isolation = TST_ISOLATION_EXCLUSIVE;
+        desc.skip = _vklite_skip_unless_runtime;
+        tst_suite_add_case(suite, desc);
+    }
+    {
+        TstCaseDesc desc = tst_case_desc(
+            "test_vklite_buffer_resize_provider_failure",
+            "test_vklite_buffer_resize_provider_failure", test_vklite_buffer_resize_provider_failure);
+        desc.tags = tags;
+        desc.resources = TST_RES_GPU | TST_RES_VULKAN | TST_RES_GLOBAL_STATE;
+        desc.isolation = TST_ISOLATION_EXCLUSIVE;
+        desc.skip = _vklite_skip_unless_runtime;
+        tst_suite_add_case(suite, desc);
+    }
     TST_VKLITE_CASE(test_vklite_buffer_views);
     TST_VKLITE_CASE(test_vklite_buffer_create_requires_destroy);
     TST_VKLITE_CASE(test_vklite_images_1);

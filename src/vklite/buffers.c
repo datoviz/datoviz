@@ -657,31 +657,51 @@ bool dvz_interop_buffer_signal_timeline_after_transfer(
 
 
 
-void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size)
+/**
+ * Grow a live buffer by preparing a complete replacement before releasing its old allocation.
+ *
+ * @param buffer live buffer whose GPU work has completed
+ * @param size requested minimum buffer size, in bytes
+ * @return zero on success or no-op, nonzero on invalid state or replacement failure
+ */
+int dvz_buffer_resize(DvzBuffer* buffer, DvzSize size)
 {
-    ANN(buffer);
-
-    if (size <= buffer->req_size)
+    if (buffer == NULL || !dvz_obj_is_created(&buffer->obj) || size == 0)
     {
-        char current_size_str[64] = {0};
-        char requested_size_str[64] = {0};
-        log_trace(
-            "skip buffer resizing as the buffer size is large enough:"
-            "(currently %s, requested %s)",
-            dvz_pretty_size(buffer->req_size, current_size_str, sizeof(current_size_str)),
-            dvz_pretty_size(size, requested_size_str, sizeof(requested_size_str)));
-        return;
+        log_error("buffer resize requires a live buffer and a nonzero size");
+        return 1;
     }
+    if (size <= buffer->req_size)
+        return 0;
+
+    // Device and allocator are borrowed; the staged buffer owns only its new allocation.
+    DvzBuffer replacement = {
+        .obj = buffer->obj,
+        .device = buffer->device,
+        .allocator = buffer->allocator,
+        .req_size = size,
+        .req_usage = buffer->req_usage,
+        .req_alloc_flags = buffer->req_alloc_flags,
+    };
+    dvz_obj_init(&replacement.obj);
+    int result = dvz_buffer_create(&replacement);
+    if (result != 0)
+        return result;
 
     bool mapped = buffer->alloc != NULL && dvz_allocation_mapped(buffer->alloc) != NULL;
+    if (mapped)
+    {
+        result = dvz_buffer_map(&replacement);
+        if (result != 0)
+        {
+            dvz_buffer_destroy(&replacement);
+            return result;
+        }
+    }
 
     dvz_buffer_destroy(buffer);
-
-    dvz_buffer_size(buffer, size);
-    dvz_buffer_create(buffer);
-
-    if (mapped)
-        dvz_buffer_map(buffer);
+    *buffer = replacement;
+    return 0;
 }
 
 

@@ -977,6 +977,57 @@ cleanup:
 
 
 /**
+ * Unwind a readback-wrapper failure after creating the primary VMA and retry on the same canvas.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+static int test_canvas_readback_allocator_wrapper_failure(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
+        goto cleanup;
+
+    DvzCanvas canvas = {
+        .device = device,
+        .test_force_readback_allocator_wrapper_failure = true,
+    };
+    tst_expect_error_begin(suite);
+    int result = _dvz_canvas_allocator_create(&canvas);
+    int expected_errors = tst_expect_error_end(suite);
+
+    AT(expected_errors == 0);
+    AT(result != 0);
+    AT(canvas.allocator == NULL);
+    AT(canvas.readback_allocator == NULL);
+    AT(!canvas.allocator_ready);
+    AT(!canvas.test_force_readback_allocator_wrapper_failure);
+
+    AT(_dvz_canvas_allocator_create(&canvas) == 0);
+    AT(canvas.allocator != NULL);
+    AT(canvas.readback_allocator != NULL);
+    AT(canvas.allocator_ready);
+    _dvz_canvas_allocator_destroy(&canvas);
+    AT(canvas.allocator == NULL);
+    AT(canvas.readback_allocator == NULL);
+    AT(!canvas.allocator_ready);
+
+cleanup:
+    if (skip_reason != NULL)
+        tst_skip(suite, skip_reason);
+    canvas_test_destroy_instance_device(instance, device);
+    return 0;
+}
+
+
+
+/**
  * Validate Canvas-owned offscreen depth metadata, rendering, and resize recreation.
  */
 static int test_canvas_offscreen_depth_attachment(TstContext* suite, const TstCase* item)
@@ -2304,6 +2355,9 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(
         test_canvas_allocator_wrapper_failure,
         TST_CANVAS_VK_RES | TST_RES_GLOBAL_STATE | TST_RES_LOG_CAPTURE, TST_ISOLATION_EXCLUSIVE);
+    TST_CANVAS_CASE(
+        test_canvas_readback_allocator_wrapper_failure, TST_CANVAS_VK_RES | TST_RES_LOG_CAPTURE,
+        TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(test_canvas_config_rejects_invalid_abi, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_depth_formats, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);
     TST_CANVAS_CASE(test_canvas_configure_gpu_ctx, TST_RES_CPU, TST_ISOLATION_THREAD_SAFE);

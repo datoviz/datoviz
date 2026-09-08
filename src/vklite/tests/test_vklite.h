@@ -106,6 +106,10 @@ int test_vklite_compute_create_requires_destroy(TstContext* suite, const TstCase
 
 int test_vklite_buffers_1(TstContext* suite, const TstCase* tstitem);
 
+int test_vklite_buffer_resize_allocation_failure(TstContext* suite, const TstCase* item);
+
+int test_vklite_buffer_resize_provider_failure(TstContext* suite, const TstCase* item);
+
 int test_vklite_buffer_views(TstContext* suite, const TstCase* tstitem);
 
 int test_vklite_buffer_create_requires_destroy(TstContext* suite, const TstCase* tstitem);

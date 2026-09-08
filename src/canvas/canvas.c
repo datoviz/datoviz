@@ -918,7 +918,13 @@ VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void)
 
 
 
-static int canvas_create_allocator(DvzCanvas* canvas)
+/**
+ * Create the primary and readback allocators owned by a canvas.
+ *
+ * @param canvas canvas whose allocators should be created
+ * @return zero on success, -1 on failure
+ */
+int _dvz_canvas_allocator_create(DvzCanvas* canvas)
 {
     ANN(canvas);
     if (canvas->allocator_ready)
@@ -941,7 +947,9 @@ static int canvas_create_allocator(DvzCanvas* canvas)
         log_error("failed to create canvas allocator");
         goto fail;
     }
-    canvas->readback_allocator = dvz_allocator_create();
+    bool fail_readback_wrapper = canvas->test_force_readback_allocator_wrapper_failure;
+    canvas->test_force_readback_allocator_wrapper_failure = false;
+    canvas->readback_allocator = fail_readback_wrapper ? NULL : dvz_allocator_create();
     if (canvas->readback_allocator == NULL)
     {
         log_error("failed to allocate canvas readback allocator wrapper");
@@ -970,7 +978,12 @@ fail:
 
 
 
-static void canvas_destroy_allocator(DvzCanvas* canvas)
+/**
+ * Destroy the primary and readback allocators owned by a canvas.
+ *
+ * @param canvas canvas whose allocators should be destroyed
+ */
+void _dvz_canvas_allocator_destroy(DvzCanvas* canvas)
 {
     if (!canvas || !canvas->allocator_ready)
     {
@@ -1607,7 +1620,7 @@ DvzCanvas* dvz_canvas_create(const DvzCanvasConfig* cfg)
         return NULL;
     }
 
-    if (canvas_create_allocator(canvas) != 0 || canvas_create_timeline(canvas) != 0)
+    if (_dvz_canvas_allocator_create(canvas) != 0 || canvas_create_timeline(canvas) != 0)
     {
         dvz_canvas_destroy(canvas);
         return NULL;
@@ -1696,7 +1709,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     canvas_offscreen_destroy_retired_resources(canvas);
     canvas_offscreen_destroy_resources(canvas);
     canvas_destroy_timeline(canvas);
-    canvas_destroy_allocator(canvas);
+    _dvz_canvas_allocator_destroy(canvas);
     dvz_canvas_frame_pool_release(&canvas->frame_pool);
     dvz_canvas_timings_release(&canvas->timings);
     dvz_free(canvas);

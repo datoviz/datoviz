@@ -172,16 +172,23 @@ DVZ_EXPORT VkBufferUsageFlags dvz_buffer_usage_value(DvzBuffer* buffer);
 
 
 /**
- * Resize a buffer.
+ * Grow a live buffer to at least the requested size.
  *
- * The requested logical size is updated only on a valid buffer. This helper does not preserve
- * existing contents, remap host pointers, or recreate a live Vulkan buffer; destroy and create the
- * buffer again after changing size. Shrinking follows the same recreate contract as growing.
+ * Requests no larger than the current logical size succeed without changing the buffer.
  *
- * @param buffer the buffer
- * @param size the new buffer size, in bytes
+ * Growth replaces the Vulkan buffer and does not preserve its contents.
+ *
+ * A mapped buffer stays mapped, but its old host pointer is invalid after successful growth.
+ *
+ * Failure preserves the original size, contents, Vulkan handle, and mapping.
+ *
+ * The caller must finish all GPU use before growth and refresh references to the old handle.
+ *
+ * @param buffer live buffer wrapper
+ * @param size requested minimum size, in bytes; must be nonzero
+ * @return 0 on success or no-op, nonzero on invalid state, allocation, or mapping failure
  */
-DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, DvzSize size);
+DVZ_EXPORT int dvz_buffer_resize(DvzBuffer* buffer, DvzSize size);
 
 
 

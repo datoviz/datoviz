@@ -100,6 +100,7 @@ struct DvzCanvas
     DvzSemaphore* timeline_semaphore;
     uint64_t timeline_value;
     bool timeline_ready;
+    bool test_force_readback_allocator_wrapper_failure;
     bool test_force_wait_semaphore_export_failure;
     int32_t test_force_offscreen_submit_status;
     bool test_force_offscreen_submit_status_set;
@@ -271,6 +272,10 @@ DvzCanvasPresentRuntimeState dvz_canvas_swapchain_runtime_state(const DvzCanvas*
 uint64_t dvz_canvas_swapchain_recreate_count(const DvzCanvas* canvas);
 
 VkExternalSemaphoreHandleTypeFlags dvz_canvas_timeline_handle_type(void);
+
+int _dvz_canvas_allocator_create(DvzCanvas* canvas);
+
+void _dvz_canvas_allocator_destroy(DvzCanvas* canvas);
 
 void dvz_canvas_test_force_wait_semaphore_export_failure(DvzCanvas* canvas, bool enabled);
 
