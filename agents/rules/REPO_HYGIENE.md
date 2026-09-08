@@ -32,6 +32,8 @@ git diff --cached --stat
 
 Verify the staged set excludes stop-sign paths, unrelated user changes, generated payloads, vendored runtime libraries, and large binary assets.
 
+Review the staged diff for private machine-access details before committing. SSH aliases, private hostnames/IP addresses, login names, and connection instructions learned from local configuration or conversation belong in ignored local notes unless the user explicitly approves their exact inclusion. Use generic labels such as Windows validation host in tracked plans. OS, architecture, GPU, driver, and non-identifying validation results may remain in shared evidence. Authorization to connect to or test a machine does not authorize committing its access details.
+
 Group related changes into coherent commits after relevant validation; use checkpoints for long implementation tasks. Keep commit messages concise and do not add `Co-Authored-By:` trailers.
 
 ## Documentation Placement
