@@ -1,6 +1,6 @@
 # Fractal Autonomous Code Hardening
 
-Status: complete, including the constructor/provider follow-up below on 2026-09-08. Originally executed on Fractal from `b9fa60576c327230bf56e924327c30e3ca54a7fb`, 2026-09-07 through 2026-09-08 local time. This campaign prioritizes coding, focused refactoring, and static/dynamic analysis. It is development evidence, not release approval or exact-artifact proof.
+Status: complete, including the constructor/provider and resize/vendor follow-ups below on 2026-09-08. Originally executed on Fractal from `b9fa60576c327230bf56e924327c30e3ca54a7fb`, 2026-09-07 through 2026-09-08 local time. This campaign prioritizes coding, focused refactoring, and static/dynamic analysis. It is development evidence, not release approval or exact-artifact proof.
 
 The maintainer authorized concurrent code hardening and a bounded prose pass, then explicitly approved the final push to `origin/main` in the execution conversation. This supersedes the original separate-prose scheduling and local-only publication limit below for this run. Course rewriting, media publication, and `data` changes remain excluded.
 
@@ -184,3 +184,80 @@ On Fractal, `timeout 300 xvfb-run -a python3 tools/release_wheels/check_wheel.py
 2. Cover readback-allocator-specific failure and later external-memory import failures if suitable instance-scoped seams become available; physical exhaustion is not tested by deterministic provider rejection.
 3. Resolve `dvz_buffer_resize()` semantics deliberately: `include/datoviz/vklite/buffers.h` says it only changes requested size and does not recreate a live buffer, while `src/vklite/buffers.c` destroys and recreates on growth without checking creation failure. Production callers are absent, but changing behavior or the public contract deserves its own focused decision and regression coverage.
 4. Preserve the remaining exact RC3 version/artifact, six-platform wheel, hosted/physical platform, conda/vcpkg, headed browser, course voice, and publication gates. Local checks and commits do not close them.
+
+
+## Resize, late failures, and vendor diagnosis, 2026-09-08
+
+Starting head: `31ca4541c`. The maintainer approved the combined next steps, autonomous implementation, cheap subagents, and local checkpoint commits. A low-cost Luna worker developed vendor reproductions; a Sol worker covered Canvas readback and late imports; a reused worker attributed NVIDIA leaks and independently reviewed the buffer change. The coordinator resolved resize semantics, integrated changes, and ran validation. No publication, submodule pointer update, or binary payload was authorized or performed. Original untracked user files remain untouched.
+
+### Runtime checkpoint
+
+`b67d0a95d` makes `dvz_buffer_resize()` a fallible, grow-only operation on live buffers. Same-size and smaller requests are successful no-ops; zero size and invalid state fail. Successful growth replaces the allocation without preserving contents; an already mapped buffer remains mapped through a new pointer. The caller must finish GPU work and refresh references to the old Vulkan handle. Failed heap allocation, Vulkan allocation, or replacement mapping preserves the old handle, size, mapping, and contents. This matches historical grow-only behavior while correcting the contradictory header contract and destructive failure path. The public return type changes from `void` to `int`; tracked bindings and generated API references were refreshed, including pre-existing reference drift from committed app/DRP2 headers.
+
+The heap-failure regression reproduced destruction of the old buffer before the fix. Two exclusive regressions cover heap, provider, and mapping failures, invalid/no-op requests, allocation-count cleanup, and successful mapped/unmapped growth. The provider test uses a test-owned VMA table forwarding scoped allocation/map callbacks; global hooks are restored before assertions. Independent source and test review found no blocking issue.
+
+Canvas now has an instance-scoped readback-wrapper rejection after primary VMA creation. The regression verifies both allocators unwind and retries the same private allocator lifecycle successfully. The earlier full-constructor failure/render retry remains separate coverage. Late external-buffer/image imports clear stale wrapper metadata and output handles on VMA failure. Their Unix regression seeds metadata through real allocations, rejects dedicated Vulkan allocation twice, preserves caller create-info chains and FD ownership, then reuses the wrappers for ordinary successful allocations. This does not claim successful imported-memory recovery or physical exhaustion coverage; the Unix-only regression explicitly skips on Windows.
+
+### Validation
+
+Logs are under `/tmp/datoviz-next-20260908/`; native validation uses the same Fractal environment and validation-enabled Debug configuration as the preceding campaign.
+
+| Check | Result |
+| --- | --- |
+| Native build and full Xvfb suite | 1,195/1,195 passed, zero failures or skips, 74-second runner time. |
+| Focused resize, Canvas readback, and late import tests | Four new regressions passed; broader memory and Canvas allocator selections also passed. |
+| Refreshed Clang ASan/UBSan/LSan unified runner | All four new regressions passed with llvmpipe, no suppressions and no skips. |
+| Bounded cppcheck | Three changed production translation units, zero diagnostics with warning/performance/portability and inconclusive checks. |
+| `just ctypes` and `just ctypes-check` | Passed, including 203-record ABI validation, before Python-facing checks. |
+| `just spec-check` | Passed all fixture, preflight, scheduler, runner, and source-guard checks. |
+| `just docs-api-check`, `just docs-build-check`, `just docs-status-check` | Passed generated-reference consistency, strict build, media helpers, and status policy. |
+
+The four software-provider sanitizer cases use `VK_DRIVER_FILES=/usr/share/vulkan/icd.d/lvp_icd.json`, empty `DEBUGINFOD_URLS`, `ASAN_OPTIONS=halt_on_error=1:detect_leaks=1:detect_stack_use_after_return=1:symbolize=0`, and `UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1`. No clean NVIDIA leak result is implied.
+
+### Vendor warning reproductions
+
+Checkpoint `4a4b3c3e9` adds `tools/check_vendor_warnings.py`, a bounded diagnostic against actual checked-out vendor sources. It reports compiler/submodule provenance, uses temporary harnesses and sanitizer builds, and accepts source overrides for temporary patches. Exit 77 means unavailable or partially skipped; a real failure takes precedence. Its default combined invocation intentionally fails on the current msdf defect and is not part of the normal passing test suite.
+
+- Kvazaar `6040962bed5cc68c5ad01234c38c08b8b2822068`: the generic and AVX2 angular implementations match across four widths (4, 8, 16, 32), 33 modes, and 1,000 deterministic input patterns: 132,000 comparisons under GCC 13 ASan/UBSan. The actual GCC 14.2.1 Release warning reproduces in the cached manylinux image. A separate nonsanitized GCC 14 `-O3 -DNDEBUG` run passes the same 132,000 comparisons while emitting the warning. The scalar bounds for width 32 write indices 31 through 63 of a 64-byte array. Adding one or 32 padding bytes does not remove the GCC 14 warning, so padding is not adopted as a fix. This is bounded evidence against the reported overflow for supported widths, not a proof for every input/compiler. GCC 14 sanitizer execution is unavailable because the cached image lacks libasan/libubsan; no suppression or vendor change was made.
+- msdf-atlas-gen `6148900d59423059bafde2f51a0cb303184404bd`: the real `exportJSON()` accepts representable unnamed `ImageType(6)`, truncates an existing file, and passes null to `%s`. The harness checks all six supported names and requires invalid input rejection before touching a sentinel file. The baseline fails; a temporary source patch validates the image-type string before `fopen()` and passes with ASan/UBSan. This confirms a vendor input-validation defect; it does not demonstrate a reachable invalid enum in Datoviz's current caller. The vendor revision stays unchanged pending a reviewed upstream/fork disposition.
+
+Reproduce with `python3 tools/check_vendor_warnings.py --case kvazaar` and `python3 tools/check_vendor_warnings.py --case msdf`; test a patched copy with `--msdf-source /absolute/path/to/json-export.cpp`. Host pass/fail and missing-compiler exit-77 evidence is in `vendor/host-*.log` and `vendor/missing-compiler.log`; GCC 14 optimized evidence is in `vendor/gcc14-differential.log`.
+
+The exact tested temporary change in `vendor-msdf-MFyo.cpp` is the following guard at the start of `exportJSON()`, before `fopen(filename, "w")`:
+
+```cpp
+if (!imageTypeString(imageType)) return false;
+```
+
+It is retained here as a reviewable patch proposal, not applied to `external/`. An upstream-quality change can store the validated string and reuse it in `fprintf`; that refinement has not been tested in this campaign.
+
+### NVIDIA attribution
+
+Minimal context create/destroy and context-plus-buffer runs report the same leak totals: one lifecycle produces 2,168 bytes in 11 allocations; five lifecycles produce 11,432 bytes in 55 allocations. Buffer work adds no observed leak to the context baseline. Repetition increases retained allocations, so these results do not justify calling it a fixed one-time cache.
+
+Loader traces resolve every formerly unknown frame in the original runner leak report to `libnvidia-glcore.so.595.84`, Build ID `f6a4d1811f1a23de23b5d525e956758e89fe7e4b`, at offsets `0x9e7c51`, `0x9e7f0d`, `0xa191f6`, `0xa6c373`, or `0xfc4580`. The child reports 6,792 bytes/33 allocations across three glcore load/unload lifecycles; the parent reports 2,168 bytes/11 allocations across one. All eleven child and four parent unknown PCs match loader bases, and the DBus allocation stacks enter glcore. Explicit NVIDIA selection and unrestricted ICD discovery agree. The evidence identifies the allocating module and lifecycle trigger; it does not prove who should perform cleanup or turn NVIDIA LSan into a pass. No leak suppression or speculative Datoviz workaround was added.
+
+Machine-local harnesses, loader traces, address mapping, and differential totals are in `nvidia/`, with machine-readable `attribution.json`. Empty `DEBUGINFOD_URLS` and `/usr/bin/llvm-symbolizer-18` avoid the earlier symbolizer stall.
+
+
+### Fresh Release source proof
+
+From runtime checkpoint `b67d0a95d`, `DATOVIZ_DIST_VALIDATE_WORKDIR=/tmp/datoviz-next-20260908/source-release CMAKE_BUILD_PARALLEL_LEVEL=12 timeout 900 just distribution-validate-local source-install` and the subsequent `audit` passed. The fresh archive builds and installs in Release, validates the 18-package notice inventory, and passes installed CMake/pkg-config consumers, 111-header inventory, metadata, dependency, and runpath checks. The absent vcpkg and conda prefixes are explicit skips. The only compiler warning is the investigated msdf null `%s` warning.
+
+The local archive is `source-release/source-bundle/datoviz-0.4.0-source.tar.gz` (15,108,954 bytes), SHA512 `2ef4ba0c8153dbf18b40b8d10f0d221de0062e7382b6bbcbe8703ac03607ecbcaaeb0dee5799eb4323031cb13cacc708ef441310053258c05a02539bc0658f9a`; the installed prefix is `source-release/source-prefix`. As before, the diagnostic archive label is `0.4.0` and embedded development version is `0.4.0rc2`; this is not an immutable RC3 release candidate. Logs are `source-install.log` and `source-audit.log` under the campaign scratch directory.
+
+
+### Fresh local manylinux wheel proof
+
+A separate extraction of the same `b67d0a95d` source archive built in cached `datoviz-manylinux:latest` with a scratch-only writable mount, 12-CPU/24-GB limits, 12-job Ninja, and `DATOVIZ_MANYLINUX_GENERATE_CTYPES=0`. The 900-second-bounded Release build, repair, dependency inspection, and clean Python 3.13 builder installation passed. The known Kvazaar AVX2 warning remains visible; unavailable CUDA, optional tinyxml2 SVG support, and PyQt6 are reported rather than counted as passes.
+
+The wheel is `manylinux-source/wheelhouse/datoviz-0.4.0rc2-py3-none-manylinux_2_34_x86_64.whl` (21,237,804 bytes), SHA512 `b200d9577bf74e053e9299c4d1501bbc37bb629e1669b96441341284a5602dfa5670238e2c6f5508009a0e4a017b7004492b4c2126cf893e4cc02d4b3ba656c8`. It remains local and unstaged.
+
+The Fractal Xvfb wheel validator passed in a fresh Python 3.12 environment with `--release-build --precompiled-shaders --shaderc --cmake-consumer --render --window --examples render --qt-probe optional --keep`. The installed binding additionally verifies `dvz_buffer_resize.restype is ctypes.c_int`. All three installed course steps pass with consistent cleared SDK/layer/library environment; steps 2 and 3 produce reproducible captures. This course run does not claim validation-layer coverage. Logs are `manylinux.log`, `wheel-host.log`, `wheel-restype.log`, and `wheel-course.log`. The wheel is development evidence, with no hosted or physical-display acceptance claim.
+
+### Remaining limits after this follow-up
+
+1. Review and publish the msdf patch through the chosen upstream/fork workflow before updating its vendor revision; the baseline diagnostic continues to fail until then. No external submission has been made.
+2. Retain the unsuppressed llvmpipe proof and NVIDIA module attribution separately. A driver comparison or vendor report is the next investigation step; allocation responsibility is not fully resolved.
+3. Keep the Kvazaar warning visible with the bounded scalar/sanitized/optimized differential evidence. No observed supported-width defect warrants a local padding patch, and GCC 14 sanitizer coverage remains unavailable in the cached builder.
+4. Exact RC3 identity/artifacts, the six-platform wheel matrix, hosted/physical platform checks, conda/vcpkg, headed browser, course voice, and publication gates remain as recorded in the release lanes. These local development artifacts do not close them.
