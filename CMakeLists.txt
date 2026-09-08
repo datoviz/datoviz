@@ -299,6 +299,13 @@ if(DVZ_BUILD_SCENE AND DVZ_WITH_MSDF_ATLAS)
                 "${DVZ_MSDF_ATLAS_SOURCE_DIR}"
                 "${CMAKE_CURRENT_BINARY_DIR}/external/msdf-atlas-gen"
                 EXCLUDE_FROM_ALL)
+            # The unused JSON exporter passes null to %s for an invalid ImageType. Datoviz
+            # writes its own JSON; silence only GCC's warning in this vendor source file.
+            set_property(SOURCE
+                "${DVZ_MSDF_ATLAS_SOURCE_DIR}/msdf-atlas-gen/json-export.cpp"
+                TARGET_DIRECTORY msdf-atlas-gen
+                APPEND PROPERTY COMPILE_OPTIONS
+                "$<$<COMPILE_LANG_AND_ID:CXX,GNU>:-Wno-format-overflow>")
         endif()
 
         if(NOT TARGET msdf-atlas-gen::msdf-atlas-gen AND NOT TARGET msdf-atlas-gen)

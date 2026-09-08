@@ -261,3 +261,40 @@ The Fractal Xvfb wheel validator passed in a fresh Python 3.12 environment with 
 2. Retain the unsuppressed llvmpipe proof and NVIDIA module attribution separately. A driver comparison or vendor report is the next investigation step; allocation responsibility is not fully resolved.
 3. Keep the Kvazaar warning visible with the bounded scalar/sanitized/optimized differential evidence. No observed supported-width defect warrants a local padding patch, and GCC 14 sanitizer coverage remains unavailable in the cached builder.
 4. Exact RC3 identity/artifacts, the six-platform wheel matrix, hosted/physical platform checks, conda/vcpkg, headed browser, course voice, and publication gates remain as recorded in the release lanes. These local development artifacts do not close them.
+
+
+## Vendor warning suppression and standalone Vulkan isolation, 2026-09-08
+
+The maintainer explicitly requested silencing the msdf warning without editing vendor code and reproducing the NVIDIA leak without any Datoviz code. This follow-up supersedes the earlier recommendation to prioritize an msdf patch or investigate Datoviz context cleanup for the observed NVIDIA signature.
+
+### msdf build disposition
+
+Datoviz does not call the vendor `exportJSON()` function; its atlas generator writes JSON itself. The parent CMake integration now applies GCC's `-Wno-format-overflow` only to the locally built vendor `msdf-atlas-gen/json-export.cpp`. Other vendor sources, Datoviz sources, Clang, and pre-existing/imported targets retain their previous settings. The submodule stays unchanged. This silences a diagnostic in an unused exporter; it does not fix the vendor defect, and the standalone invalid-enum diagnostic still describes that defect.
+
+Validation in `/tmp/datoviz-vendor-isolation-20260908/`: a fresh GCC Release msdf build passed. Replaying the exact exporter compilation without the flag reproduces `-Wformat-overflow`; restoring the flag removes the warning. Compile-database inspection confirms exactly one source receives the suppression. Clang configuration succeeds and its compilation database contains no GCC suppression. The normal `just build` and focused `text_msdf_atlas` test (1/1, zero skips) pass. Logs include `baseline-compile.log`, `suppressed-compile.log`, `msdf-build.log`, `clang-configure.log`, and `build.log`.
+
+### Independent NVIDIA reproduction
+
+The standalone Vulkan loader client creates a Vulkan 1.3 instance, enumerates physical devices, chooses a graphics queue, creates a logical device, then destroys device and instance. It enables no layers, extensions, or optional device features and submits no work. It links no Datoviz, VMA, or GLFW code. Host linkage under the actual clean runtime environment resolves the system `/lib/x86_64-linux-gnu/libvulkan.so.1`; all application storage is on the stack.
+
+| Provider | Lifecycles | Unsuppressed ASan/UBSan/LSan result |
+| --- | --- | --- |
+| NVIDIA | 1 | 2,168 bytes in 11 allocations; exit 1. |
+| NVIDIA | 5 | 11,432 bytes in 55 allocations; exit 1. |
+| llvmpipe | 1 | Clean, exit 0. |
+| llvmpipe | 5 | Clean, exit 0. |
+
+Every run finishes within five seconds under a 60-second bound. NVIDIA totals exactly match the previous Datoviz context-only and context-plus-buffer tests. This establishes that the observed signature reproduces independently of Datoviz and does not require a Datoviz cleanup bug. It does not assert that every possible Datoviz leak has been excluded. No Datoviz workaround or sanitizer suppression is warranted for this signature; driver-version comparison or an external report is optional follow-up.
+
+Raw source, commands, clean linkage, four run logs, loader tracing, and machine-readable run results are in `/tmp/datoviz-vendor-isolation-20260908/nvidia/`. The runs clear SDK/library overrides and inherited sanitizer settings, disable loader layers, select each ICD explicitly, and enable ASan/UBSan halt-on-error with leak detection and stack-use-after-return detection. No publication or vendor modification occurred.
+
+
+The standalone source is preserved as `tools/check_vulkan_lifecycle.c`; its final source compiles cleanly with `-Wall -Wextra -Werror`. Reproduce on this Linux host:
+
+```sh
+clang-18 -std=c11 -Wall -Wextra -Werror -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer tools/check_vulkan_lifecycle.c -lvulkan -o /tmp/vulkan-lifecycle
+
+env -u LD_LIBRARY_PATH -u LD_PRELOAD -u VK_LAYER_PATH -u VK_ADD_LAYER_PATH -u VK_INSTANCE_LAYERS -u VK_ICD_FILENAMES -u VULKAN_SDK -u VK_SDK_PATH -u LSAN_OPTIONS DEBUGINFOD_URLS= ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-18 ASAN_OPTIONS=halt_on_error=1:detect_leaks=1:detect_stack_use_after_return=1 UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 VK_LOADER_LAYERS_DISABLE='*' VK_DRIVER_FILES=/usr/share/vulkan/icd.d/nvidia_icd.json timeout 60 /tmp/vulkan-lifecycle 5 nvidia
+```
+
+Use count `1` for the single lifecycle. For the software control, replace the ICD path with `/usr/share/vulkan/icd.d/lvp_icd.json` and the final argument with `llvmpipe`. Adding `LD_DEBUG=files` to the environment records load addresses for attribution. In the five-cycle NVIDIA trace, all 15 unknown PCs map to `libnvidia-glcore.so.595.84` across five load/unload lifecycles, at offsets `0x9e7c51`, `0x9e7f0d`, `0xa191f6`, `0xa6c23b`, `0xa6c373`, or `0xfc4580`; none are unmapped.
