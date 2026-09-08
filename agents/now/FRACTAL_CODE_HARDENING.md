@@ -1,6 +1,6 @@
 # Fractal Autonomous Code Hardening
 
-Status: complete. Executed on Fractal from `b9fa60576c327230bf56e924327c30e3ca54a7fb`, 2026-09-07 through 2026-09-08 local time. This campaign prioritizes coding, focused refactoring, and static/dynamic analysis. It is development evidence, not release approval or exact-artifact proof.
+Status: complete, including the constructor/provider follow-up below on 2026-09-08. Originally executed on Fractal from `b9fa60576c327230bf56e924327c30e3ca54a7fb`, 2026-09-07 through 2026-09-08 local time. This campaign prioritizes coding, focused refactoring, and static/dynamic analysis. It is development evidence, not release approval or exact-artifact proof.
 
 The maintainer authorized concurrent code hardening and a bounded prose pass, then explicitly approved the final push to `origin/main` in the execution conversation. This supersedes the original separate-prose scheduling and local-only publication limit below for this run. Course rewriting, media publication, and `data` changes remain excluded.
 
@@ -102,7 +102,7 @@ Differential clang-tidy covered eight production translation units (`drp2/{backe
 
 Bounded cppcheck used the same eight-unit compilation database with `--enable=warning,performance,portability --inconclusive --inline-suppr --xml --xml-version=2 --error-exitcode=1` and a 180-second bound. Baseline analysis reported the two confirmed import stack-pointer escapes; final analysis completed all eight units with zero diagnostics. Earlier worker attempts with mismatched per-file filters produced setup errors and are excluded from analysis evidence.
 
-### Remaining limits and follow-ups
+### Remaining limits at the original checkpoint
 
 1. Exercise real Vulkan descriptor-pool and VMA allocation failures separately. This run covers selected host allocations and early import failure; it does not inject every allocation, force device-memory exhaustion, or prove every import-failure path.
 2. Extend the documented-NULL constructor checks to `dvz_drp2_runtime_vklite()` and `dvz_allocator_create()`, which still assert on allocation failure, and audit callers deliberately rather than broadening this transaction patch.
@@ -119,3 +119,68 @@ Fresh independent high-effort review found no remaining blocking defect in the f
 The temporary prose worktree and branch were removed after verifying that all eight files exactly matched committed checkpoint `c4adddfd8`. Older worktrees and the three original untracked user files remain untouched.
 
 Only the maintainer-approved `origin/main` push is authorized. No submodule, binary payload, unrelated user file, release artifact, or media promotion enters these checkpoints. The final evidence commit contains this record and the dispatch update; publication verification is reported in the execution conversation.
+
+
+## Constructor and provider follow-up, 2026-09-08
+
+Starting head: `8225bf26ff9f9fddedb0f536a442a2536f16f933`. The maintainer authorized autonomous QA, prose, subagents, and local checkpoint commits. No push or other publication was requested. Three workers handled constructors/callers, descriptor/VMA failures and static analysis, and prose/review; the coordinator integrated image unwind, validation, packaging, and commits. Existing untracked files and `data` remain untouched.
+
+### Changes and reproduced failures
+
+- `dvz_drp2_runtime_vklite()` and `dvz_allocator_create()` return `NULL` when allocation fails. The extended constructor regression reproduced the allocator assertion before the fix and verifies successful construction and semantic execution after restoring allocation. App, GPU-context, and scene-query callers already propagate `NULL`.
+- Canvas propagates allocator-wrapper failure and releases partially initialized primary/readback allocators. Its new offscreen failure/retry test exposed a second assertion: destruction disabled video before a stream existed. Stream teardown now checks that the stream exists. The regression creates and renders a fresh canvas after the failed creation. Readback-wrapper-specific injection remains unimplemented; that unwind path has source-review coverage.
+- Descriptor sets publish their handles and ownership only after successful Vulkan allocation. DRP2 checks the allocated set count before writing descriptors, preserving the old bind group on failure. Tests inject `VK_ERROR_OUT_OF_POOL_MEMORY`, verify safe free/retry and preserved old binding state, and exercise an empty layout without calling Vulkan with an invalid zero set count. Running the regression against the original descriptor implementation reproduced the zero-count Vulkan validation errors and incorrect wrapper publication. Direct transaction-helper retry does not relax public runtime quarantine/reset semantics.
+- Image creation propagates allocation-wrapper failure through the existing unwind loop. The regression reproduced the assertion before the fix and covers failure both before any image and after the first image has been created, followed by successful reuse and repeated destruction.
+- A test-owned VMA function table rejects actual `vkAllocateMemory` calls with `VK_ERROR_OUT_OF_DEVICE_MEMORY`. Dedicated buffer/image allocations fail twice with clear handles, then the same allocation wrappers succeed with a healthy allocator. This covers the regular VMA allocation boundary, not every external-import or physical device-exhaustion path.
+- Four additional prose pages cover visual updates, sampled fields, colormaps, and object lifetimes. The humanizer-guided pass clarifies wording and removes repeated introductions while preserving fenced code and link targets. Source checks covered sampled-field restrictions and Python array-copy behavior. Course rewriting and visual rollout remain outside this batch.
+
+Independent review checked constructor callers, partial canvas teardown, image rollback, descriptor publication, DRP2 validation, VMA function-table ownership, and restoration of process-wide test hooks before assertions. Review added the empty-layout descriptor regression. No blocking findings remain in these changes.
+
+### Checkpoints and validation
+
+- `6d4affab6`: `docs: clarify visual updates and resource lifetimes`, four authored pages.
+- `41ab7c28d`: `fix(runtime): unwind constructor and Vulkan allocation failures`, implementation and regressions. All runtime validation below applies to this code; no public headers or signatures changed.
+
+Logs and machine-local artifacts are under `/tmp/fractal-followup-20260908/`; initial constructor/canvas reproductions also use `/tmp/datoviz-constructors-*.log` and `/tmp/datoviz-canvas-allocator-after.log`. Environment remains the Fractal Linux/GCC 13/Clang 18/RTX 5090 setup recorded above. The native Debug cache has `DVZ_USE_VALIDATION=ON`.
+
+| Check | Result |
+| --- | --- |
+| `DVZ_BUILD_JOBS=12 timeout 300 just build` | Passed, no compiler warnings in the incremental build. |
+| `timeout 180 just test allocation_failure` | 9/9 passed, zero skips. |
+| Focused constructor and canvas wrapper tests | 1/1 each passed; canvas performed offscreen rendering. |
+| `timeout 300 xvfb-run -a just test` | 1,191/1,191 passed, zero failures or skips; runner time 73 seconds. |
+| `timeout 180 just spec-check` | Passed: 137 DRP2 fixtures, 44 preflight fixtures, runner smoke (42 positives/two streams/89 negatives), Python fixture/preflight/scheduler checks and source guards. |
+| `just ctypes` then `just ctypes-check` | Passed, including 203-record ABI validation; no generated binding changes. |
+| `just docs-status-check` and `DVZ_BUILD_JOBS=12 timeout 300 just docs-build-check` | Passed, including both six-test media helper suites and the strict documentation build. |
+| Bounded cppcheck 2.13.0 | Six changed production translation units completed with zero diagnostics, using the filtered compilation database, warning/performance/portability and inconclusive checks, and a 180-second timeout. |
+| CPU ASan/UBSan/LSan | Extended constructor regression passed without suppressions. |
+| llvmpipe ASan/UBSan/LSan | Six GPU regressions passed without suppressions or skips: buffer wrapper, VMA provider, canvas wrapper, DRP2 bind-group replacement, images, and descriptors. |
+
+The existing Clang `build-asan` configuration retains ASan/UBSan/LSan, CUDA off, and Vulkan validation off. Refreshed `dvztest_drp2`, `dvztest_vk`, `dvztest_canvas`, and unified `dvztest` targets with `cmake --build build-asan --target <target> --parallel 12`; no compiler warnings. Software-provider checks used `VK_DRIVER_FILES=/usr/share/vulkan/icd.d/lvp_icd.json`, `DEBUGINFOD_URLS=`, `ASAN_OPTIONS=halt_on_error=1:detect_leaks=1:detect_stack_use_after_return=1:symbolize=0`, and `UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1`, with 60-second bounds. The image/descriptor cases require the unified runner because the component runner manually registers only selected vklite cases.
+
+### NVIDIA sanitizer diagnosis
+
+The allocation-wrapper case timed out after 25 seconds with default symbolization. Process inspection found it blocked reading the llvm-symbolizer pipe. Under GDB with leak detection disabled, it completed successfully in about two seconds. Unsymbolized leak detection completed and reported 6,792 bytes in 33 allocations, including libdbus and unresolved module frames. Setting `DEBUGINFOD_URLS=''` and `ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-18` also produced the report promptly. This narrows the observed stall to post-test leak symbolization; it is not a clean NVIDIA LSan result, and the unresolved leaks are not all classified as external. The same case passes unsuppressed leak detection with llvmpipe.
+
+### Local Release source proof
+
+From clean tracked implementation head `41ab7c28d`, ran `DATOVIZ_DIST_VALIDATE_WORKDIR=/tmp/fractal-followup-20260908/source-release CMAKE_BUILD_PARALLEL_LEVEL=12 timeout 900 just distribution-validate-local source-install`, followed by `just distribution-validate-local audit` with the same work directory. Both passed: 18-package notice inventory, fresh archive extraction, Release build/install, installed CMake/pkg-config consumers, metadata, headers, and dynamic-dependency audit. vcpkg and conda prefixes are unavailable and were explicitly skipped by the audit. The fresh build reported one warning in vendored `external/msdf-atlas-gen/msdf-atlas-gen/json-export.cpp:69` about a null `%s` argument; vendored code remains unchanged.
+
+The diagnostic archive is `datoviz-0.4.0-source.tar.gz`, SHA512 `cc29337e81fad7df9a36ad9f98a0a1c4a5f0c58932c7baba3b0eb9f68ab64b71642be967b8303d6ca49c379ed8bbe5f614ada93015289a8d8164012fe04d0a1d`. The recipe's default archive label is `0.4.0`; embedded project version remains `0.4.0rc2`. No version freeze or release identity is claimed. Source bundling reads tracked working-tree bytes, so the code/prose checkpoints were committed before this run. Artifacts remain local and unstaged.
+
+### Local manylinux wheel proof
+
+Built from a separate extraction of the same source archive, mounted at `/workspace` in disposable `datoviz-manylinux:latest` (starting image `sha256:0e8dbfbc99a911cd7aea6bc7261a9e46400018eca0ed24f25a373f11785584a8`). The initial cached image lacked prerequisites; the existing `tools/release_wheels/manylinux_build_inside.sh x86_64` installed them inside the container. The 900-second attempt used a 12-CPU/24-GB container limit, a 12-job Ninja wrapper, `CMAKE_BUILD_PARALLEL_LEVEL=12`, and `DATOVIZ_MANYLINUX_GENERATE_CTYPES=0` to retain the already-refreshed archive bindings. The primary checkout and its wheelhouse were not mounted. GCC 14.2.1 built Release successfully; the compiler reported a vendored Kvazaar AVX2 `-Wstringop-overflow` warning at `external/kvazaar/src/strategies/avx2/intra-avx2.c:862`, which remains undispositioned and unchanged.
+
+The resulting local wheel is `/tmp/fractal-followup-20260908/manylinux-source/wheelhouse/datoviz-0.4.0rc2-py3-none-manylinux_2_34_x86_64.whl` (21,236,692 bytes), SHA512 `20b44759419825b4ac78608865e4a65d0f55b964cfdbfa223648354b7c37303a602892a871a86c93188ce69cb10743444ac31202dd53f8999aa9f39ff898e2a3`. Native-dependency inspection and clean Python 3.13 installation passed in the builder, including Release-build, precompiled-SPIR-V, runtime shaderc, and installed CMake-consumer checks. The optional Qt probe correctly reports unavailable PyQt6.
+
+On Fractal, `timeout 300 xvfb-run -a python3 tools/release_wheels/check_wheel.py --wheel <wheel> --work-dir /tmp/fractal-followup-20260908/wheel-host --release-build --precompiled-shaders --shaderc --cmake-consumer --render --window --examples render --qt-probe optional --keep` passed. This covers a clean Python 3.12 installation, installed package/binding/native-library/CMake path assertions, offscreen rendering, a native-window smoke under Xvfb, installed Python/C rendering examples, and runtime shader compilation. The validator used its existing `uv` fallback because system Python lacks ensurepip. No hosted or subjective physical-display proof is claimed.
+
+`tools/run_vulkan_course.py --installed-prefix <installed-wheel-package> --runtime-dir <installed-wheel-package>` also passed all three current course programs using the configured SDK environment; steps 2 and 3 produced reproducible captures. An initial run that cleared `LD_LIBRARY_PATH` while retaining the SDK layer configuration failed to create a GPU context. `VK_LOADER_DEBUG=error` identified the missing `libVkLayer_khronos_validation.so`; this was an inconsistent layer/library search environment, not a wheel rendering failure. Clearing the corresponding SDK/layer variables as well (`VK_LAYER_PATH`, `VK_ADD_LAYER_PATH`, `VULKAN_SDK`, and `VK_SDK_PATH`) passes all three steps too; that run does not establish active validation-layer coverage. These results exercise the new API from a locally built wheel whose development version remains `0.4.0rc2`; they do not claim that the published immutable RC2 wheel can compile the course or close the first-official-post-RC2-package gate.
+
+### Remaining work
+
+1. Resolve NVIDIA leak reports with attributable provider/module stacks; preserve the unsuppressed llvmpipe proof separately. Disposition the two recorded vendored Release-build warnings without silently suppressing or modifying third-party code.
+2. Cover readback-allocator-specific failure and later external-memory import failures if suitable instance-scoped seams become available; physical exhaustion is not tested by deterministic provider rejection.
+3. Resolve `dvz_buffer_resize()` semantics deliberately: `include/datoviz/vklite/buffers.h` says it only changes requested size and does not recreate a live buffer, while `src/vklite/buffers.c` destroys and recreates on growth without checking creation failure. Production callers are absent, but changing behavior or the public contract deserves its own focused decision and regression coverage.
+4. Preserve the remaining exact RC3 version/artifact, six-platform wheel, hosted/physical platform, conda/vcpkg, headed browser, course voice, and publication gates. Local checks and commits do not close them.

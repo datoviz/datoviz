@@ -1,6 +1,6 @@
 # C/C++ Distribution And Integration
 
-Status: implemented distribution surface with RC3 exact base-artifact, conda, and vcpkg gates remaining; official Qt/PyQt provider artifacts are RC4. Updated: 2026-08-31.
+Status: implemented distribution surface with RC3 exact base-artifact, conda, and vcpkg gates remaining; official Qt/PyQt provider artifacts are RC4. Local source/wheel evidence updated: 2026-09-08; release and remote state were not revalidated.
 
 Use [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for commands, [../../docs/how-to/c-integration.md](../../docs/how-to/c-integration.md) for users, [../../docs/reference/build-options.md](../../docs/reference/build-options.md) for build modes, and [STATUS.md](STATUS.md) for current release blockers.
 
@@ -16,7 +16,7 @@ Use [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for c
 - A draft vcpkg overlay and repeatable local distribution validation tooling exist.
 - The current pre-freeze tree passes local source-bundle creation, source build/install, CMake and pkg-config consumers, and the 18-package license inventory. Installed-wheel validation now clears source-tree Python/native/provider/loader overrides, clears reused virtual environments, and asserts that Python, bindings, the native library, and CMake metadata resolve inside the installed environment.
 
-Local wheel probing is intentionally preliminary: an Ubuntu 24 host cannot repair to `manylinux_2_34` because its build references GLIBC 2.38, while a repaired `manylinux_2_38` diagnostic wheel passes isolated Python, shaderc, rendering, native-window, CMake, and installed Python/C examples but correctly fails the Release gate because the current checkout build is Debug. The exact RC3 wheel must be built as Release in the supported manylinux image after the version freeze.
+The earlier Ubuntu-host diagnostic wheel required `manylinux_2_38` and used Debug. The 2026-09-08 [Fractal follow-up](FRACTAL_CODE_HARDENING.md#local-manylinux-wheel-proof) builds a Release `manylinux_2_34_x86_64` wheel from code head `41ab7c28d` in the manylinux image. It passes clean Python 3.13 builder checks and Python 3.12 host checks for shaderc, offscreen rendering, a native window under Xvfb, installed CMake and Python/C examples, and the three current course programs with the configured SDK. The local source Release/install audit also passes. Both artifacts retain the development version `0.4.0rc2`; neither is a published RC2 artifact or frozen RC3 candidate. The source and wheel builds retain recorded warnings in vendored msdf-atlas-gen and Kvazaar code. Exact RC3 version, six-platform, hosted, conda, and vcpkg proof remain required.
 
 ## Remaining RC3 Gates
 

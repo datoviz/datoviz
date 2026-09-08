@@ -1,6 +1,6 @@
 # Datoviz v0.4 Status
 
-Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Release evidence updated: 2026-08-31. Condensed: 2026-09-05; release and remote state were not revalidated.
+Status: active post-RC2 work toward RC3, then RC4 and final v0.4.0. Local QA evidence updated: 2026-09-08. Release and remote state retain their 2026-08-31 evidence and were not revalidated.
 
 Keep this file current and short. Durable behavior belongs in `spec/`; completed campaign detail belongs in Git history, release assets, and tagged documentation.
 
@@ -17,6 +17,7 @@ RC3 implementation is integrated. Remaining work is review, candidate freeze, an
 | Interaction pacing | [Contract and benchmarks](../../spec/testing/INTERACTION_LATENCY.md): physical Linux/X11 acceptance was smooth, approximately 60 FPS while interacting and zero idle rendering; Windows frame-slot throughput measurements remain neutral. |
 | Local readiness, gallery, packaging, and no-data builds | [Pre-freeze release evidence](RELEASE.md#pre-freeze-local-evidence-recorded-2026-08-31) retains heads `846fd3049`, `b6e330282`, and `f716786a3`, test counts, skips, and artifact limitations. The Debug `manylinux_2_38` diagnostic wheel is not an RC3 Release artifact. |
 | Differential correctness and robustness | Published head `42760e096`: [campaign](QA_DIFFERENTIAL_CAMPAIGN.md) and [release evidence](RELEASE.md). Native validation passed 1,135/1,173 with 38 expected no-display skips and zero failures; focused CPU sanitizer/Valgrind checks passed, broader Vulkan sanitizer/GPU Valgrind proof remains limited. Coarse DRP2 error codes and exhaustive allocation-failure injection are non-blocking follow-ups. |
+| Fractal allocation hardening and prose | Code head `41ab7c28d`: [campaign and follow-up](FRACTAL_CODE_HARDENING.md). Constructor, Canvas, descriptor, and image failures unwind safely; 1,191/1,191 display-enabled native tests, six llvmpipe GPU sanitizer cases, source Release/install consumers, a local Release `manylinux_2_34_x86_64` wheel with installed rendering/course checks, binding/specification/docs checks, and bounded cppcheck pass. NVIDIA LSan reports unresolved leaks; exact RC3 artifacts remain separate. |
 | Qt bridge | [Provider handoff](QT_MACOS_VULKAN_HANDOFF.md): local split-package proof and Linux/Xvfb source smoke at `50008e9ff` passed. System PyQt lacks `QVulkanInstance`; official managed provider proof is deferred to RC4. |
 
 The protected data branch remains `datoviz/data:v0.4-dev`, recovered baseline `3c862beb2e9885f5af9dc624dc22a6d5bb856026`, transitional tip `b94d32d9c0a0a4c47e7e5c393b4ccc570159ed96`; parent `996825aec` published the approved public WebGPU route. Preserve unrelated historical `data:main`. Follow [reachability and commit rules](../rules/REPO_HYGIENE.md) and the [asset migration contract](../../spec/data/ASSET_ARCHITECTURE.md); migration is not current RC3 work.
