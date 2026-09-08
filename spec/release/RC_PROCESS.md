@@ -41,7 +41,7 @@ Exit criteria:
 
 1. documentation and gallery structure are mostly final;
 2. generated C reference, captured artifacts, RC feedback triage, attribution, and gallery review are complete;
-3. Qt/PyQt hosting has a tested packaged `datoviz_qtbridge` provider, preferably conda-first, without adding Qt to the base wheel;
+3. Qt/PyQt hosting keeps the base wheel and base conda outputs independent of Qt, preserves tested source-build bridge behavior, and reports clear diagnostics when no provider is installed; official managed `datoviz-qtbridge` provider artifacts are deferred to RC4;
 4. the tutorial-enabling Canvas, vklite, shader-file, depth-attachment, OBJ-UV, and controller contracts are implemented from executable chapter spikes, documented, binding-validated where applicable, and proven through installed CMake consumers;
 5. native scene, Canvas, test, and example shaders share one `glslc` build helper and named target-profile policy, normal builds no longer require `glslangValidator`, release products contain precompiled SPIR-V, and generated SPIR-V passes release/CI validation;
 6. runtime shaderc is a focused thread-safe capability outside DRP2 pipeline code with a typed public availability, diagnostic, file, profile, and ownership contract; official packages guarantee its provider while disabled source builds preserve precompiled-SPIR-V rendering;
@@ -64,7 +64,8 @@ Exit criteria:
 5. bounded GLFW resize, depth-recreation, arcball-input, repeated-frame, shutdown, and Vulkan-validation smokes pass on supported hosted platforms, with physical exclusions recorded rather than inferred;
 6. tutorial source snippets, complete examples, screenshots, exercises, API links, compatibility labels, and navigation pass the strict documentation gates;
 7. RC4 release notes ask for final installation, tutorial-completion, GPU/driver, interaction, asset-discovery, and conceptual feedback;
-8. only recorded release or tutorial blockers remain before final v0.4.0.
+8. official managed Vulkan-enabled Qt, compatible PyQt, and `datoviz-qtbridge` provider artifacts are published and the exact split packages pass hosted Linux, macOS, and Windows validation without changing the base-package contract;
+9. only recorded release or tutorial blockers remain before final v0.4.0.
 
 
 ## Final v0.4.0

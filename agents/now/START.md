@@ -1,6 +1,6 @@
 # Datoviz v0.4 Dispatch
 
-The active branch is `main`. RC2 is closed; RC3 is the next release milestone, followed by RC4 and final v0.4.0. Release state is recorded in [STATUS.md](STATUS.md), last updated 2026-08-31; this routing cleanup does not revalidate it.
+The active branch is `main`. RC2 is closed; RC3 is the next release milestone, followed by RC4 and final v0.4.0. Current preparation is recorded in [STATUS.md](STATUS.md) and the [2026-09-08 candidate preparation](RELEASE.md#rc3-preparation-before-maintainer-review-2026-09-08); published artifacts retain their recorded evidence.
 
 Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. Read [STATUS.md](STATUS.md) when work affects release scope or readiness and [RELEASE.md](RELEASE.md) for release planning or packaging. Read only the matching lanes below.
 

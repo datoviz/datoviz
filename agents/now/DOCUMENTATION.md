@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Status
 
-Status: RC3 implementation inventory and rewritten course previews complete; maintainer review, exact release artifacts, and publication decisions remain. Local prose evidence updated: 2026-09-08; release and remote state were not revalidated.
+Status: RC3 implementation inventory, rewritten course previews, and automated course prose review complete; maintainer review, exact release artifacts, and publication decisions remain. Local prose and PR state updated: 2026-09-08.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 
@@ -15,26 +15,27 @@ Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wid
 - The nine invalidated still-cache records were regenerated and verified against the canonical images: eight are byte-identical and `features_panel_mixed_2d_3d` is pixel-equivalent with maximum channel delta 4 across 0.0911% of components.
 - The designated Linux host produced two byte-identical 104-image screenshot runs; the approved 54 changed images were promoted through `data` commit `d72c72c` and parent gitlink commit `264517633` with machine-readable evidence.
 - The four-page visual-system pilot passes strict build and software-rendered desktop/mobile inspection.
-- PR #132 is triaged read-only; most topics are superseded, focused successor PR #136 is open, and the original author's feedback is pending.
+- PR #132 is triaged read-only; most topics are superseded. Focused successor PR #136 remains open at head `af770b37f42f0c95a2ece98a6b26ac58aef3136b`, and the current connector reports `mergeable=false`.
 - Rewritten course chapters 1-3, their canonical programs, source synchronization, and installed source-prefix smoke are implemented.
 - Rewritten course previews are generated from the canonical programs with real stdout, exact flat-color validation, deterministic fixed-time animation, and no `data` dependency.
+- The 2026-09-08 automated course prose review covers the overview and chapters 1-3. Setup now gives corrected Windows Developer PowerShell, Release-configuration source-install, package DLL `PATH`, and configuration-specific executable guidance; maintainer review of voice and pacing remains required.
 
-The two bounded Fractal prose batches (`c4adddfd8` and `6d4affab6`) clarify twelve authored guide/reference pages, preserving code blocks, link targets, and technical qualifications. Strict documentation builds and status checks pass; [campaign evidence](FRACTAL_CODE_HARDENING.md) records their scope. Course voice review and broad visual rollout remain pending.
+The two bounded Fractal prose batches (`c4adddfd8` and `6d4affab6`) clarify twelve authored guide/reference pages, preserving code blocks, link targets, and technical qualifications. Strict documentation builds and status checks pass; [campaign evidence](FRACTAL_CODE_HARDENING.md) records their scope. Automated course prose review is complete; maintainer voice and pacing review and broad visual rollout remain pending.
 
 ## Remaining RC3 Documentation Work
 
 1. Obtain maintainer review of the four-page visual pilot before broad rollout.
 2. Review the rewritten course voice, pacing, API profile, ownership explanations, package-first instructions, and generated previews.
 3. Approve exact animation/card publication candidates if they should replace canonical website assets.
-4. Await the original author's feedback on focused successor PR #136, then resolve PR #136 and close PR #132 as superseded when appropriate.
-5. Draft exact RC3 release notes, validation evidence, and release-specific known issues only when artifact scope is fixed.
+4. Resolve the current PR #136 merge state and obtain downstream confirmation of the maintainer's fixes, then disposition PR #136 and close PR #132 as superseded when appropriate.
+5. Review the local RC3 release-notes draft; finalize its exact identity, validation evidence, and release-specific known issues only when artifact scope is fixed.
 6. Review exact outreach drafts before any dataset-author or public GitHub communication.
 
 ## PR #132 Disposition
 
 Per-image present semaphore, Canvas shader compilation, Kvazaar/PThreads4W, and `DVZ_LOG_LEVEL` work are superseded by integrated implementation. Vulkan fallback changes require a current focused reproducer. Focused successor PR #136 carries the pre-existing GLFW-target reuse, opt-in macOS Vulkan-environment sanitization, and `_time_utils.h` guard/comment; the broader developer-preset overhaul remains deferred.
 
-Current maintainer action: await the original author's feedback on PR #136. Keep PR #132 open until that feedback is resolved and PR #136 reaches a disposition, then close PR #132 as superseded when appropriate. Do not publish any GitHub action or text without approval of the exact action and content.
+The contributor reviewed PR #136 on 2026-08-06 and requested `GLSLC` namespacing and fallback changes. The maintainer reported those changes addressed on 2026-08-08 and requested downstream confirmation; no later contributor confirmation appears in the current timeline. PR #136 remains open at head `af770b37f42f0c95a2ece98a6b26ac58aef3136b`, and the current connector reports `mergeable=false`, superseding the historical 2026-08-08 green/mergeable observation. Resolve that state and confirmation before dispositioning PR #136, then close PR #132 as superseded when appropriate. Do not publish any GitHub action or text without approval of the exact action and content.
 
 ## RC4 Documentation Gate
 

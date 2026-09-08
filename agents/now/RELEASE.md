@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Updated: 2026-08-31.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Local candidate preparation and PR #136 audit updated: 2026-09-08; release artifacts are not frozen.
 
 Use [STATUS.md](STATUS.md) for current blockers, [DOCUMENTATION.md](DOCUMENTATION.md) for documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable release policy.
 
@@ -30,7 +30,7 @@ Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_
 
 Remaining RC3 deliverables:
 
-1. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates; await the original author's feedback on focused successor PR #136 before resolving PR #132.
+1. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates; resolve PR #136's current merge state and obtain downstream confirmation of its fixes before resolving PR #132.
 2. Complete subjective documentation and media review plus the remaining multi-machine review without admitting deferred dependency work; local documentation, WebGPU, input, Qt, gallery-cache, and animation/card pipeline gates are complete.
 3. Prove the rewritten course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
 4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, base conda layouts, third-party notices, and checksum/signing policy.
@@ -96,6 +96,37 @@ A fresh remote clone at `f716786a3` with every submodule except `data` initializ
 
 The Point Cloud promotion passes the 159-test tool suite with one environment skip and seven subtests, strict documentation generation, six-public-bundle validation at 52,793,718 total bytes, the 500k-point WASM packet smoke, and committed-data native and Python fallback checks. The browser route reaches `QueueSubmit`; headed interaction and public-site confirmation remain release evidence gates because the available headless and Xvfb runs encounter the known external WebGPU instance-loss limitation. Grantor, date, scope, and durable permission-reference details remain pending.
 
-The optional Qt bridge and local Apple Silicon split-package proof are complete. Vulkan-enabled Qt 6.11.1 build 2 is published for both macOS architectures. The compatible PyQt PR is ready for review, cleanly mergeable, and green after its final 25-job Linux, macOS, and Windows matrix plus the additional fifteen-job ready-transition Azure cycle passed against the published Qt packages. A final Linux/Xvfb source-build smoke at `50008e9ff` rendered 120 hosted frames, passed the Qt example and Vulkan validation, and produced two byte-identical 1280x720 captures. The installed system PyQt lacks `QVulkanInstance` and reports the intended diagnostic; official managed PyQt proof remains deferred to RC4. The official conda Qt/PyQt provider and exact split Datoviz provider artifacts are deferred to RC4 because upstream PyQt publication remains outside the Datoviz release schedule; the source-build bridge remains available in RC3 with experimental provider wording.
+The optional Qt bridge and local Apple Silicon split-package proof are complete. Vulkan-enabled Qt 6.11.1 build 2 is published for both macOS architectures. At that recorded checkpoint, the compatible PyQt PR was ready for review, cleanly mergeable, and green after its final 25-job Linux, macOS, and Windows matrix plus the additional fifteen-job ready-transition Azure cycle passed against the published Qt packages. A final Linux/Xvfb source-build smoke at `50008e9ff` rendered 120 hosted frames, passed the Qt example and Vulkan validation, and produced two byte-identical 1280x720 captures. The installed system PyQt lacks `QVulkanInstance` and reports the intended diagnostic; official managed PyQt proof remains deferred to RC4. The official conda Qt/PyQt provider and exact split Datoviz provider artifacts are deferred to RC4 because upstream PyQt publication remains outside the Datoviz release schedule; the source-build bridge remains available in RC3 with experimental provider wording.
 
-Local Qt 6.11.1 build 2, PyQt6 6.11.0 build 3, split Datoviz packages, Vulkan instance, Cocoa surface, and hosted rendering proof are green; upstream Qt build 2 is published for both macOS architectures; PyQt PR #186 is ready for review after Linux run `32184052560` passed 10/10 and Azure builds `1569935` and `1570229` each passed 15/15.
+Local Qt 6.11.1 build 2, PyQt6 6.11.0 build 3, split Datoviz packages, Vulkan instance, Cocoa surface, and hosted rendering proof are green; upstream Qt build 2 is published for both macOS architectures; PyQt PR #186 was recorded ready for review after Linux run `32184052560` passed 10/10 and Azure builds `1569935` and `1570229` each passed 15/15.
+
+
+## RC3 Preparation Before Maintainer Review, 2026-09-08
+
+The maintainer authorized autonomous prose review, gate reconciliation, available local checks, candidate drafts, and local commits. Linux, macOS, and Windows machines are available to the maintainer; remote access and desktop-session details have not yet been supplied. No release identity, tag, publication, submodule pointer, or binary payload was changed.
+
+### Prepared and validated
+
+- `a4cf201d8` reviews the course overview and chapters 1–3, adds Windows Developer PowerShell/Release/DLL-path commands, allows prerelease package installation, and records an unreleased RC3 changelog. All C, GLSL, and CMake blocks are unchanged; all 26 C excerpts match their canonical programs. Maintainer voice, pacing, and preview review remains pending.
+- The strict documentation build and status checks pass; all four course media products regenerate successfully. The exact chapter-1 C and CMake blocks compile and run against the installed development prefix with both Ninja and Ninja Multi-Config on Linux. This checks the multi-configuration command shape, not MSVC or Windows DLL execution.
+- The 53 release automation, conformance, wheel validation, and wheel backend tests pass in `.venv`. System Python lacks pytest; the existing development environment supplies it.
+- `release-dry-run 0.4.0rc3 --profile light` completes its planning steps. Its `pass` labels mean command planning succeeded, not that candidate artifacts or release gates passed. Exact-artifact/report/publication steps remain absent or skipped because there is no frozen RC3 state or wheel set.
+- Local review artifacts are `build/release/0.4.0rc3/release-notes.md`, `version-preparation.patch`, and `platform-validation.md`. The version patch passes `git apply --check` and is not applied. Its proposed citation date must be refreshed to the actual release date; applying it also requires `just ctypes` and `just ctypes-check`. Runtime, Python, and citation metadata remain `0.4.0rc2`.
+- The durable release specs now consistently defer official Qt/PyQt provider publication and validation to RC4, while retaining the RC3 source bridge and missing-provider diagnostics. Base conda remains an RC3 requirement.
+
+Detailed logs are in `/tmp/datoviz-rc3-preparation-20260908/`. The earlier 1,195 native tests, sanitizer/static-analysis checks, and local Release source/wheel proofs remain tied to their recorded code/artifact identities in [Fractal evidence](FRACTAL_CODE_HARDENING.md); they were not gratuitously repeated for authored-prose changes.
+
+### Remaining sequence
+
+| Work | Concrete next action | Acceptance boundary |
+| --- | --- | --- |
+| Maintainer review | Review the four course pages and previews, visual pilot, media candidates, and draft notes. | Automated review does not replace human acceptance. |
+| PR #136/#132 | PR #136 is open at `af770b37f42f0c95a2ece98a6b26ac58aef3136b`; read-only connector inspection reports `mergeable=false`. The contributor reviewed on August 6; downstream confirmation after the August 8 fixes is still absent. Resolve or explicitly exclude this lane before freeze. | Historical green/mergeable comments are not current merge proof; merging or posting needs exact approval. |
+| Machine access | Keep machine connection details in ignored local notes; verify each checkout and desktop session before running the prepared platform checks. Run the prepared source checks first, especially the unresolved Windows AMD/NVIDIA visible asymmetry. | Source and unattended results are development evidence; each real interaction observation stays pending until performed. |
+| Version and candidate freeze | Review the prepared `0.4.0rc3` metadata/workflow-default patch, finalize date/scope, apply it, refresh/validate bindings, and commit the candidate. | Version changes require approval under `spec/release/RELEASE_AUTOMATION.md`; no published-install claim changes before official package proof. |
+| Exact artifacts | Build one explicit source bundle and all six wheels, then hosted conformance and installed course/shaderc/CMake checks. | Match commit, filename, and checksum; older development wheels do not satisfy this. |
+| Base conda and vcpkg | Use the exact candidate source and package identity in temporary recipe/overlay preparation; validate base outputs, Windows DLL consumers, and macOS managed Vulkan without Qt. | Current templates still say `0.4.0` with placeholder hashes; do not represent RC3 source as a validated stable package. No conda/vcpkg tool or prefix is available on this Linux host. |
+| Physical and headed checks | Use the same accepted wheels on all available machines for the fixed live set, and complete headed WebGPU interaction. | Preserve individual GPU identities, skips, and observations; Xvfb is not a physical pass. |
+| Final evidence/publication | Finalize artifact checksums, signing decision, notes, TestPyPI/package-index verification, and publication actions. | Do not declare artifacts signed without an actual signature; external actions require exact reviewed approval. |
+
+The release tool currently requires macOS arm64, Linux x86_64, and Windows AMD64 machine evidence for non-RC2 candidates. The narrative policy is looser for RC3 physical Linux/Windows; with all three operating systems now available, prepare to satisfy the stricter matrix rather than silently weakening it. Availability of an OS does not establish availability of every architecture in the six-wheel build matrix. Commands in the local platform plan keep source checks, hosted artifact checks, and human interaction separate.

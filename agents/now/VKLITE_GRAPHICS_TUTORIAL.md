@@ -1,6 +1,6 @@
 # Modern GPU Graphics In Vulkan Course Execution
 
-Status: rewritten chapters 1-3, enabling API, and generated previews implemented; exact post-RC2 package proof remains for RC3; chapters 4-15 remain for RC4. Updated: 2026-08-01.
+Status: rewritten chapters 1-3, enabling API, generated previews, and automated course prose review complete; maintainer review and exact post-RC2 package proof remain for RC3; chapters 4-15 remain for RC4. Updated: 2026-09-08.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
@@ -14,6 +14,7 @@ Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHIC
 - Canvas-owned targets start with defined contents, making empty or load-based first frames reproducible.
 - Installed loader discovery reports explicit search routes and works from a source install without manual runtime-directory arguments.
 - `just vulkan-course-wheel-smoke <version>` tests the exact package-first instructions. It correctly reports that `0.4.0rc2` lacks the post-RC2 tutorial API.
+- The 2026-09-08 automated prose review covers the overview and chapters 1-3. Windows setup now specifies Developer PowerShell, `build-msvc --config Release` source installation, the package DLL `PATH`, and configuration-specific executable paths; maintainer review of voice, pacing, and teaching progression remains required.
 - The chapter-5 Canvas input path is proven through focused input tests, synthetic hosted-view injection, and a physical X11 `r` injection that delivered one physical-key press, one committed-text event, and one release. The safe reload shape is callback-to-flag only, followed outside event dispatch by candidate shader/pipeline creation, failure-preserving rollback, device wait, pointer swap, and old-pipeline destruction; it requires no watcher or new public API.
 
 The deleted `docs/tutorials/`, `examples/c/tutorial/`, `vulkan-tutorial-*` recipes, and old pilot previews are historical. Do not restore or reference them as current course content.
