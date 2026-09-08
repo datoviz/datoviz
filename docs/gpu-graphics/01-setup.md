@@ -4,20 +4,28 @@
 
 ![A terminal running the chapter 1 program and printing the Datoviz version.](../assets/gpu-graphics/01-setup.webp)
 
-You will not draw anything in this chapter. Instead, you will create a project directory, set up a one-command build, and verify that your compiler, the Datoviz headers, and the Datoviz library agree. Every later chapter depends on this build, so it is better to diagnose a problem now than in chapter 12.
+You will not draw anything in this chapter. You will create a project directory, set up a repeatable build, and verify that your compiler, the Datoviz headers, and the Datoviz library agree. Every later chapter depends on this setup, so diagnose problems here rather than in chapter 12.
 
 ## Install Datoviz
 
 !!! warning "This course needs a build newer than v0.4.0rc2"
 
-    The course uses five functions added to the low-level layers after the RC2 package was published, including `dvz_canvas_configure_gpu_ctx`, `dvz_commands_unwrap`, and `dvz_cmd_set_viewport_scissor`. Chapter 2 will not compile against `datoviz==0.4.0rc2`. Until a newer package is available, build from source.
+    The course uses functions added to the low-level layers after the RC2 package was published, including `dvz_canvas_configure_gpu_ctx`, `dvz_commands_unwrap`, and `dvz_cmd_set_viewport_scissor`. Chapter 2 will not compile against `datoviz==0.4.0rc2`. Until a newer package is available, build from source.
 
 === "From source (works today)"
 
     Follow [Build from source](../start/build-from-source.md), then install the result into your own prefix:
 
     ```sh
-    cmake --install build --prefix ~/datoviz-prefix
+    cmake --install build --config Release --prefix "$HOME/datoviz-prefix"
+    ```
+
+    On Windows, run the build commands from a Developer PowerShell for Visual Studio. The repository's `msvc` preset uses `build-msvc`; build its Release configuration and install into a prefix in your home directory:
+
+    ```powershell
+    cmake --build build-msvc --config Release
+    cmake --install build-msvc --config Release --prefix "$HOME/datoviz-prefix"
+    $env:PATH = "$HOME/datoviz-prefix/bin;$env:PATH"
     ```
 
     That prefix contains the public headers, library, and CMake package used in this chapter. A source install does not include its own Vulkan runtime; at run time, it uses the Vulkan loader and driver available through your system or configured SDK environment. If you keep the same environment you used to build Datoviz, the course needs no additional configuration.
@@ -30,12 +38,19 @@ You will not draw anything in this chapter. Instead, you will create a project d
     python -m venv .venv
     source .venv/bin/activate
     python -m pip install --upgrade pip
-    python -m pip install datoviz
+    python -m pip install --pre datoviz
     ```
 
-    Although `datoviz` is installed as a Python package, it also contains the C library, headers, CMake package, and `datoviz-config` helper used by this course. Keep the environment activated whenever you build. On Windows, use `py -m venv .venv` and `.\.venv\Scripts\Activate.ps1`.
+    Although `datoviz` is installed as a Python package, it also contains the C library, headers, CMake package, and `datoviz-config` helper used by this course. Keep the environment activated whenever you build. On Windows, use a Developer PowerShell for Visual Studio, create the environment with `py -m venv .venv`, and activate it with `.\.venv\Scripts\Activate.ps1`. After installation, add the package directory to the DLL search path for your C program:
 
-Either installation route gives CMake the three things this course needs: `DatovizConfig.cmake`, the `datoviz/` headers, and the library. The remaining chapters do not depend on which route you chose.
+    ```powershell
+    $coursePackage = datoviz-config --prefix
+    $env:PATH = "$coursePackage;$env:PATH"
+    ```
+
+    Repeat that PATH setup in each new terminal. `--pre` lets pip select a release candidate; it does not make the older RC2 package compatible with this course.
+
+Both installation routes give CMake the three things this course needs: `DatovizConfig.cmake`, the `datoviz/` headers, and the library. The remaining chapters do not depend on which route you choose.
 
 ## Create the project
 
@@ -86,7 +101,7 @@ Configure the project once and point CMake to your Datoviz installation:
 === "From source"
 
     ```sh
-    cmake -S . -B build -DCMAKE_PREFIX_PATH=~/datoviz-prefix
+    cmake -S . -B build -DCMAKE_PREFIX_PATH="$HOME/datoviz-prefix"
     ```
 
 === "From a package"
@@ -99,16 +114,27 @@ If Datoviz is installed system-wide, `cmake -S . -B build` on its own is enough.
 
 Then build and run. You will repeat this loop throughout the course:
 
-```sh
-cmake --build build
-./build/vkcourse
-```
+=== "Linux and macOS"
+
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    cmake --build build --config Release
+    .\build\Release\vkcourse.exe
+    ```
+
+The Visual Studio generator puts each configuration in its own directory. Use the same `--config Release` and executable path in the following chapters.
 
 ```
 Datoviz 0.4.0
 ```
 
-The exact version depends on what you installed. For now, what matters is that the program printed it.
+The exact version depends on what you installed. At this point, the important check is that the program prints it.
 
 ??? tip "A shorter loop on Linux and macOS"
 
@@ -128,7 +154,7 @@ The exact version depends on what you installed. For now, what matters is that t
 | `Could not find a package configuration file provided by "datoviz"` | Same cause, seen at configure time. CMake wants the directory containing `DatovizConfig.cmake`; `datoviz-config --cmake-dir` prints it for a package install. |
 | `call to undeclared function 'dvz_canvas_configure_gpu_ctx'` in chapter 2 | Your Datoviz is older than the course; see the version warning at the top of this chapter. |
 | Links fine, then `error while loading shared libraries` or `image not found` at startup | The dynamic loader cannot find the library at run time. Keep the environment activated; on Windows, ensure the package's DLL directory is on `PATH`. |
-| `command not found: datoviz-config` | Either the environment is not activated, you built from source (where the helper is not installed), or you are on MSVC. Use `CMAKE_PREFIX_PATH`. |
+| `command not found: datoviz-config` | Either the environment is not activated, you built from source (where the helper is not installed), or the package installation did not provide its console scripts. For a source install, use `CMAKE_PREFIX_PATH`. |
 
 You do not need a Vulkan driver yet because this program never touches the GPU. Chapter 2 will detect a missing driver and report it. If you see `no Vulkan loader could be loaded`, Datoviz could not find the Vulkan *loader* at run time. Package installs include one; source installs rely on the loader and driver search paths provided by your system or SDK environment. Check the loader installation, the installed driver or ICD, and `VULKAN_SDK` if you use the SDK. [No Vulkan loader found](../how-to/diagnose-platform.md#no-vulkan-loader-found) lists every location Datoviz checks.
 

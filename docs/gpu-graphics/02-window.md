@@ -4,9 +4,9 @@
 
 ![The chapter 2 window filled with its deterministic blue-grey clear color.](../assets/gpu-graphics/02-window.webp)
 
-By the end of this chapter, your program will open a resizable window, fill it with a color you choose, and keep drawing until you close it. With one command-line flag, the same program will render to a PNG file instead. Keep that flag throughout the course; it lets you check every chapter without relying on visual inspection of a window.
+By the end of this chapter, your program will open a resizable window, fill it with a color you choose, and keep drawing until you close it. With one command-line flag, the same program will render to a PNG file instead. Keep that option throughout the course so you can check each chapter without relying on a window.
 
-This chapter introduces six Datoviz objects. Take them one at a time. Chapter 3 will explain what happens inside a frame; for now, the goal is to get the machinery running.
+This chapter introduces six Datoviz objects. Take them one at a time. Chapter 3 explains what happens inside a frame; for now, the goal is to get the program running.
 
 ## The headers
 
@@ -128,7 +128,7 @@ The course relies heavily on the canvas, so it is worth being precise about what
 
 A window cannot be drawn to directly. Vulkan presentation requires a **surface**, the Vulkan handle for an operating-system window, followed by a **swapchain**. A swapchain is a small set of images, typically two or three, that your program and the display hardware pass back and forth. For each presented frame, an application acquires the next available image and eventually returns it for presentation. The canvas gives your callback its own frame target, then transfers the finished result into the acquired swapchain image. Because the GPU runs behind the CPU, each frame in flight also needs synchronization so that images are not overwritten while still in use. Resizing the window invalidates the swapchain and requires it to be rebuilt.
 
-The canvas owns all of that. In return, you get one function that tells you when a frame is ready for recording.
+The canvas owns all of that. In return, your callback runs when a frame is ready for recording.
 
 ## Something to draw with
 
@@ -239,18 +239,35 @@ Destruction order follows dependencies. A GPU object cannot outlive the device t
 
 ## Run it
 
-```sh
-cmake --build build
-./build/vkcourse
-```
+=== "Linux and macOS"
+
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    cmake --build build --config Release
+    .\build\Release\vkcourse.exe
+    ```
 
 A dark blue window appears and remains open until you close it. Resize the window. The color still fills it because the canvas rebuilds its swapchain and your callback draws into the new, larger image.
 
 Then the same program, without a window:
 
-```sh
-./build/vkcourse --png chapter02.png
-```
+=== "Linux and macOS"
+
+    ```sh
+    ./build/vkcourse --png chapter02.png
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    .\build\Release\vkcourse.exe --png chapter02.png
+    ```
 
 ```
 GPU: Apple M3

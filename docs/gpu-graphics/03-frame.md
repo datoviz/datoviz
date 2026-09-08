@@ -7,7 +7,7 @@
   <img src="/assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues and greys.">
 </picture>
 
-Chapter 2 asked you to accept five lines on faith. This chapter takes them apart because they establish the shape of every frame in the course. The triangle in chapter 4 and the lit, textured mesh in chapter 15 both fit between the same two calls.
+Chapter 2 asked you to accept five lines on faith. This chapter takes them apart because they establish the shape of every frame in the course. The triangle in chapter 4 and the lit, textured mesh in chapter 15 will both fit between the same two calls.
 
 You will then make the window pulse, proving that the loop is running rather than displaying one frame forever.
 
@@ -97,7 +97,7 @@ Who owns what, for this chapter:
 
 ## Make it move
 
-A static color cannot tell you whether the loop is running at 60 frames per second or froze after the first frame. Drive the color from a clock instead.
+A static color cannot tell you whether the loop is running at 60 frames per second or froze after the first frame. Drive the color from a clock so the motion shows that the loop is active.
 
 Add `<math.h>` to the top of the file:
 
@@ -166,18 +166,37 @@ Update the initializer to match the new struct:
 
 ## Run it
 
-```sh
-cmake --build build
-./build/vkcourse
-```
+=== "Linux and macOS"
+
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    cmake --build build --config Release
+    .\build\Release\vkcourse.exe
+    ```
 
 The window now breathes slowly through blues and greys. Drag an edge while it runs. The animation continues because each callback reads the new `extent` after a resize.
 
-```sh
-./build/vkcourse --png chapter03.png
-./build/vkcourse --png chapter03-again.png
-./build/vkcourse --png later.png --time 1.5
-```
+=== "Linux and macOS"
+
+    ```sh
+    ./build/vkcourse --png chapter03.png
+    ./build/vkcourse --png chapter03-again.png
+    ./build/vkcourse --png later.png --time 1.5
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    .\build\Release\vkcourse.exe --png chapter03.png
+    .\build\Release\vkcourse.exe --png chapter03-again.png
+    .\build\Release\vkcourse.exe --png later.png --time 1.5
+    ```
 
 The first two files are identical. The third captures another reproducible point in the same animation.
 
@@ -198,8 +217,7 @@ The first two files are identical. The third captures another reproducible point
 
 !!! tip "Try it"
 
-    1. **Keep the previous contents.** Override the load op after the default setup, just before
-       beginning the pass:
+    1. **Keep the previous contents.** Override the load op after the default setup, just before beginning the pass:
 
         ```c
         DvzAttachment* color = dvz_rendering_color(renderer->rendering, 0);
@@ -220,7 +238,7 @@ The first two files are identical. The third captures another reproducible point
 | Nothing animates, one static color | `animate` is false, or `start_ns` was never initialized. Note that `--png` mode is *meant* to be static. |
 | The animation runs at wildly different speeds on two machines | The color is being derived from `frame_index` rather than elapsed time. |
 | Two `--png` runs differ | `t` is coming from the clock in offscreen mode. That breaks reproducible captures. |
-| Validation complains about a command buffer in the wrong state | A `dvz_cmd_*` call may be outside the rendering `begin`/`end` pair, or code may have begun, ended, reset, or submitted the borrowed command buffer. |
+| Validation complains about a command buffer in the wrong state | Check whether code began, ended, reset, or submitted the borrowed command buffer. Draw commands also require an active rendering pass. |
 | Alternating stale colors or flicker in live mode | A load op of `LOAD` may be preserving the previous contents of each reused frame target. Restore `CLEAR` unless preserving those contents is intentional. |
 
 ??? example "Your `main.c` at the end of chapter 3"
