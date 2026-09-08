@@ -13,9 +13,7 @@ Render regular 2D or 3D scalar data as image, texture, or volume content.
 
 ## Task workflow
 
-Keep regular grids in sampled-field form when possible. Use image visuals for 2D arrays, volume
-visuals for 3D arrays, labels visuals for integer categorical fields, and textured mesh only when
-the texture is attached to surface geometry.
+Keep regular grids in sampled-field form when possible. Use image visuals for 2D arrays, volume visuals for 3D arrays, labels visuals for integer categorical fields, and textured mesh only when the texture is attached to surface geometry.
 
 Choose the field descriptor before choosing the visual:
 
@@ -26,14 +24,11 @@ Choose the field descriptor before choosing the visual:
 | Integer segmentation or label mask | 2D integer format, `DVZ_FIELD_SEMANTIC_LABEL` | `dvz_labels()` slot `"field"` plus categorical scale |
 | 3D scalar array | `DVZ_FIELD_DIM_3D`, scalar format, `DVZ_FIELD_SEMANTIC_SCALAR` | `dvz_volume()` slot `"field"` |
 
-The four family-specific code blocks below are C function-body excerpts, not standalone programs.
-Python users can create and update common packed field layouts with the helpers in the next section;
-use `datoviz.raw` only when you intentionally need the exact `DvzFieldDataView` contract.
+Python users can create and update common packed field layouts with the helpers below. Use `datoviz.raw` when you need the exact `DvzFieldDataView` contract. The four C examples are function-body excerpts; their setup requirements are listed before the first example.
 
 ## Python array helpers
 
-`dvz_sampled_field_from_array()` makes a C-contiguous copy when necessary, infers dimensions and
-row strides, creates the field, and uploads data. The default inferred layouts are:
+`dvz_sampled_field_from_array()` makes a C-contiguous copy when necessary, infers dimensions and row strides, creates the field, and uploads data. The default inferred layouts are:
 
 | NumPy shape and dtype | Inferred field |
 | --- | --- |
@@ -56,19 +51,11 @@ patch = np.asarray(patch, dtype=np.float32, order="C")
 dvz.dvz_sampled_field_update_from_array(field, patch, offset=(x, y))
 ```
 
-Both helpers copy the payload before returning. `offset` is in sample coordinates; if you pass
-`extent=`, it must match the extent derived from `patch`. Use `format=`, `semantic=`,
-`color_role=`, or `dim=` only for compatible packed layouts. For a 3D array whose final width is
-1, 2, or 4, pass `dim=dvz.DVZ_FIELD_DIM_3D` to disambiguate it from a 2D channel array. Padded rows,
-borrowed storage, and formats outside the helper's compatible layouts require the exact C-shaped
-descriptor and data-view calls.
+Both helpers copy the payload before returning. `offset` is in sample coordinates; if you pass `extent=`, it must match the extent derived from `patch`. Use `format=`, `semantic=`, `color_role=`, or `dim=` only for compatible packed layouts. For a 3D array whose final width is 1, 2, or 4, pass `dim=dvz.DVZ_FIELD_DIM_3D` to disambiguate it from a 2D channel array. Padded rows, borrowed storage, and formats outside the helper's compatible layouts require the exact C-shaped descriptor and data-view calls.
 
 ## 2D scalar image
 
-The snippets below are function-body excerpts. They assume valid scene/panel objects, dimensions,
-CPU arrays, placement attributes, and scales where shown; their `return false` paths belong to an
-enclosing setup function. For complete lifecycle and error handling, start from the linked gallery
-sources.
+The snippets below are function-body excerpts. They assume valid scene/panel objects, dimensions, CPU arrays, placement attributes, and scales where shown; their `return false` paths belong to an enclosing setup function. For complete lifecycle and error handling, start from the linked gallery sources.
 
 ```c
 DvzVisual* image = dvz_image(scene, 0);
@@ -105,14 +92,11 @@ if (dvz_visual_set_scale(image, "color", scale) != 0)
     return false;
 ```
 
-Use `dvz_visual_set_field()` for image, labels, mesh texture, and volume sampled fields. Public
-examples should keep dimensions, format, semantic role, and row pitch explicit in the sampled-field
-descriptor and data view.
+Use `dvz_visual_set_field()` to bind sampled fields to image, labels, mesh texture, and volume slots. Keep dimensions, format, semantic role, and row pitch explicit in the sampled-field descriptor and data view.
 
 ## Categorical labels
 
-Use labels visuals for integer sampled fields such as segmentation masks. Labels need a categorical
-scale; ordinary floating-point scalar fields belong on an image visual instead.
+Use labels visuals for integer sampled fields such as segmentation masks. Labels need a categorical scale; ordinary floating-point scalar fields belong on an image visual instead.
 
 ```c
 DvzVisual* labels = dvz_labels(scene, 0);
@@ -145,9 +129,7 @@ if (dvz_visual_set_field(labels, "field", field) != 0 ||
 
 ## 3D volumes
 
-For 3D fields, set `depth` to the number of slices and bind the field to a volume visual.
-`bytes_per_row` is the byte stride between adjacent rows in one slice, and `rows_per_image` is the
-number of rows per slice.
+For 3D fields, set `depth` to the number of slices and bind the field to a volume visual. `bytes_per_row` is the byte stride between adjacent rows in one slice, and `rows_per_image` is the number of rows per slice.
 
 ```c
 DvzSampledFieldDesc desc = dvz_sampled_field_desc();
@@ -172,13 +154,11 @@ if (volume == NULL || dvz_visual_set_field(volume, "field", field) != 0 ||
     return false;
 ```
 
-The result is a retained 3D texture sampled by the volume visual. Camera, transfer, and ray-march
-settings determine its final appearance; the field descriptor alone does not choose those policies.
+The result is a retained 3D texture sampled by the volume visual. Camera, transfer, and ray-march settings determine its final appearance; the field descriptor alone does not choose those policies.
 
 ## Textured meshes
 
-Use a sampled field as a mesh texture only when the texture belongs to surface geometry. The mesh
-still needs geometry attributes such as position, normal, and texture coordinates.
+Use a sampled field as a mesh texture only when the texture belongs to surface geometry. The mesh still needs geometry attributes such as position, normal, and texture coordinates.
 
 ```c
 DvzSampledFieldDesc desc = dvz_sampled_field_desc();
@@ -207,37 +187,22 @@ if (dvz_visual_set_field_sampling(mesh, "texture", &sampling) != 0)
     return false;
 ```
 
-Sampling belongs to the visual slot, not the sampled field. The same field may therefore use
-linear filtering on one visual and nearest filtering on another. Sampling may be configured before
-or after field binding. Pass `NULL` as the descriptor to restore the family default.
+Sampling belongs to the visual slot, not the sampled field. The same field may therefore use linear filtering on one visual and nearest filtering on another. Sampling may be configured before or after field binding. Pass `NULL` as the descriptor to restore the family default.
 
-The current public slice supports matching linear or nearest minification/magnification filters,
-clamp-to-edge addressing, and no mipmaps. Repeat modes, mixed filters, and mipmaps return an error
-until their native and WebGPU behavior is implemented.
+The public API supports matching linear or nearest minification/magnification filters and clamp-to-edge addressing without mipmaps. Repeat modes, mixed filters, and mipmaps return an error; their native and WebGPU behavior is not yet implemented.
 
 
 ## Important details
 
-Images and volumes are not just dense point clouds. Preserve grid dimensions, value range, and
-texture format so filtering, colormapping, and probing remain meaningful.
+Preserve the grid dimensions, value range, and texture format of images and volumes so filtering, colormapping, and probing remain meaningful.
 
-Keep the sampled-field pointer for updates, and bind it to visuals with
-`dvz_visual_set_field()`. If the values change without changing dimensions, call
-`dvz_sampled_field_set_data()` again or use `dvz_sampled_field_update_region()` for a subregion.
-If the dimensions change, call `dvz_sampled_field_resize()` so bound visuals can reallocate the
-texture on the next frame.
+Keep the sampled-field pointer for updates, and bind it to visuals with `dvz_visual_set_field()`. If the values change without changing dimensions, call `dvz_sampled_field_set_data()` again or use `dvz_sampled_field_update_region()` for a subregion. If the dimensions change, call `dvz_sampled_field_resize()` so bound visuals can reallocate the texture on the next frame.
 
-Use `DvzFieldGeometry` when the array has physical origin, spacing, axis order, flips, or units
-that matter to probing or measurement. The visual placement still controls where the field appears
-in the panel; geometry metadata records what the samples mean.
+Use `DvzFieldGeometry` when the array has physical origin, spacing, axis order, flips, or units that matter to probing or measurement. The visual placement still controls where the field appears in the panel; geometry metadata records what the samples mean.
 
-`DvzFieldDataView.data` is borrowed only for the upload call; Datoviz copies the supplied payload.
-The descriptor dimensions and data-view strides must nevertheless describe every uploaded byte
-correctly. For subregion updates, offsets and extents are expressed in field sample coordinates.
+`DvzFieldDataView.data` is borrowed only for the upload call; Datoviz copies the supplied payload. The descriptor dimensions and data-view strides must nevertheless describe every uploaded byte correctly. For subregion updates, offsets and extents are expressed in field sample coordinates.
 
-For color textures, set the semantic and color role intentionally. Scientific scalar fields should
-use scalar semantics and a scale. Ordinary RGBA textures should use color semantics so color-space
-handling is explicit.
+For color textures, set the semantic and color role explicitly. Scientific scalar fields should use scalar semantics and a scale. Ordinary RGBA textures should use color semantics so color-space handling is explicit.
 
 ## Common mistakes
 

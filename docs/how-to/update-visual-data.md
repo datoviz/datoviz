@@ -14,7 +14,7 @@ Keep the visual and update its arrays when a time series advances, a simulation 
 
 ## Basic workflow
 
-Most updates follow the same shape:
+To update a visual:
 
 1. Create the scene, figure, panel, and visual.
 2. Upload the initial arrays for the visual attributes, such as positions, colors, or sizes.
@@ -31,8 +31,6 @@ For example, a point visual might have one array for `"position"`, one for `"col
 
 ## Choose the update method
 
-Choose the update method from what changed in your data:
-
 | What changed | Use | When it is useful |
 | --- | --- | --- |
 | One complete attribute changed, and the item count stayed the same. | `dvz_visual_set_data()` | Simple updates such as moving points, changing colors, or changing point sizes. |
@@ -43,11 +41,7 @@ Choose the update method from what changed in your data:
 
 ## Replace one attribute
 
-This is the simplest case. The visual already exists, and you replace one array:
-
-Prerequisite: `visual` already has its initial point attributes. The result appears on the next
-rendered frame. This is a fragment; see the complete
-[Visual Data Update example](../examples/gallery/features/features_update_visual_data.md).
+The snippets assume `visual` already has its initial point attributes. They replace its position and color arrays for the next rendered frame. See the complete [Visual Data Update example](../examples/gallery/features/features_update_visual_data.md) for setup.
 
 === "Python"
 
@@ -68,19 +62,13 @@ rendered frame. This is a fragment; see the complete
     dvz_visual_set_data(visual, "color", color, n);
     ```
 
-Here `n` is the number of items in the visual. For a point visual, that means the number of points.
-For a segment visual, it means the number of segments. The attribute name, such as `"position"` or
-`"color"`, must be supported by that visual family.
+Here `n` is the number of items in the visual. For a point visual, that means the number of points. For a segment visual, it means the number of segments. The attribute name, such as `"position"` or `"color"`, must be supported by that visual family.
 
-Datoviz copies the array when you call the function. If you later modify `pos` or `color` in your
-own program, the visual does not change automatically. Call the update function again when you want
-the new values to appear.
+Datoviz copies the array when you call the function. If you later modify `pos` or `color` in your own program, the visual does not change automatically. Call the update function again when you want the new values to appear.
 
 ## Replace several attributes together
 
-When the number of items changes, update all per-item arrays that share that item count. For a point
-visual, positions, colors, and diameters usually all have one value per point. If you grow from
-1,000 points to 1,200 points, those arrays need to agree on the new count.
+When the number of items changes, update all per-item arrays that share that item count. For a point visual, positions, colors, and diameters usually all have one value per point. If you grow from 1,000 points to 1,200 points, those arrays need to agree on the new count.
 
 ```c
 DvzVisualDataUpdate updates[] = {
@@ -91,8 +79,7 @@ DvzVisualDataUpdate updates[] = {
 dvz_visual_set_data_many(visual, updates, 3);
 ```
 
-This form is also useful when several attributes change together even if the item count stays the
-same. It keeps related updates in one place and avoids temporary mismatches between arrays.
+This form is also useful when several attributes change together even if the item count stays the same. It keeps related updates in one place and avoids temporary mismatches between arrays.
 
 In Python, the NumPy facade accepts a mapping and infers each item count:
 
@@ -104,7 +91,7 @@ dvz.dvz_visual_set_data_many(
 
 ## Update part of one attribute
 
-If only a continuous slice of one existing attribute changed, update just that range:
+If only a contiguous slice of one existing attribute changed, update just that range:
 
 ```c
 dvz_visual_set_data_range(visual, "color", first, color + first, count);
@@ -117,45 +104,29 @@ changed = np.asarray(colors[first:first + count], dtype=np.uint8, order="C")
 dvz.dvz_visual_set_data_range(visual, "color", first, changed)
 ```
 
-Use this after the attribute has already been fully allocated with `dvz_visual_set_data()` or
-`dvz_visual_set_data_many()`. A range update edits existing data; it does not create a new
-attribute, and it does not change the number of items.
+Use this after the attribute has already been fully allocated with `dvz_visual_set_data()` or `dvz_visual_set_data_many()`. A range update edits existing data; it does not create a new attribute, and it does not change the number of items.
 
-Range updates are a good fit for hover or selection feedback when you know which consecutive items
-changed. If the changed items are scattered throughout the array, replacing the full attribute may
-be simpler and still fast enough.
+Range updates are a good fit for hover or selection feedback when you know which consecutive items changed. If the changed items are scattered throughout the array, replacing the full attribute may be simpler and still fast enough.
 
 ## Animation and interaction
 
-For animation, call the update from a timer, frame callback, or host event before the next frame is
-drawn. The visual remains the same object; only its data changes.
+For animation, call the update from a timer, frame callback, or host event before the next frame is drawn. The visual remains the same object; only its data changes.
 
-For interaction, keep your application data and your visual data connected by a stable index or id.
-For example, if item 37 in your application is point 37 in the visual, a pick result or selection
-state can update the right color entry. If you reorder the visual data, update that mapping too.
+For interaction, keep your application data and your visual data connected by a stable index or id. For example, if item 37 in your application is point 37 in the visual, a pick result or selection state can update the right color entry. If you reorder the visual data, update that mapping too.
 
 ## Keep related items in one visual
 
-Keep the grouping chosen during initial upload; an update should not split one visual into many
-objects. See [Group items into visuals](add-a-visual.md#group-items-into-visuals) for the
-authoritative batching and separation rules.
+Keep the grouping chosen during initial upload; an update should not split one visual into many objects. See [Group items into visuals](add-a-visual.md#group-items-into-visuals) for the batching and separation rules.
 
-## Details that matter
+## Item counts and frame timing
 
-All dense per-item attributes on one visual must agree on item count. If a point visual has
-`"position"`, `"color"`, and `"diameter_px"`, changing the number of points means updating all three
-arrays to the same new count.
+All dense per-item attributes on one visual must agree on item count. If a point visual has `"position"`, `"color"`, and `"diameter_px"`, changing the number of points means updating all three arrays to the same new count.
 
-`dvz_visual_set_data_many()` is the safer choice for count changes because Datoviz validates the
-whole group before replacing the old data. Use separate `dvz_visual_set_data()` calls when the item
-count is stable or when only one independent attribute changes.
+`dvz_visual_set_data_many()` is the safer choice for count changes because Datoviz validates the whole group before replacing the old data. Use separate `dvz_visual_set_data()` calls when the item count is stable or when only one independent attribute changes.
 
-Updates affect later frames. If a frame has already been prepared for drawing, changing the visual
-will affect a later frame, not the frame that was already handed to the runtime.
+Updates affect later frames. If a frame has already been prepared for drawing, changing the visual will affect a later frame, not the frame that was already handed to the runtime.
 
-Image and volume data use sampled fields and textures. Keep the grid dimensions, format, and value
-range explicit, and use the same scale for colorbars or probes. See [Use sampled fields and
-textures](use-sampled-fields.md).
+Image and volume data use sampled fields and textures. Keep the grid dimensions, format, and value range explicit, and use the same scale for colorbars or probes. See [Use sampled fields and textures](use-sampled-fields.md).
 
 ## Common mistakes
 
@@ -165,8 +136,7 @@ textures](use-sampled-fields.md).
 - Editing your own array after upload and expecting Datoviz to notice automatically.
 - Calling `dvz_visual_set_data_range()` before the full attribute exists.
 - Using data uploads for visual settings such as visibility, transform, or material.
-- Forgetting that pick or selection ids depend on a stable mapping between visual items and
-  application data.
+- Forgetting that pick or selection ids depend on a stable mapping between visual items and application data.
 
 ## See also
 

@@ -1,17 +1,15 @@
-# Objects And Lifetimes
+# Objects and lifetimes
 
-This page summarizes public ownership and lifetime rules for the v0.4 scene path. The active
-runtime boundary is:
+The v0.4 scene and runtime layers divide responsibility as follows:
 
 ```text
 scene frame plans -> DRP2 command streams -> vklite runtime ->
 canvas/stream frame execution -> optional app presentation
 ```
 
-Scene objects describe visualization state. Runtime objects execute emitted frame work. Do not
-borrow Vulkan, WebGPU, swapchain, command-buffer, or synchronization ownership from a scene object.
+Scene objects describe visualization state. Runtime objects execute emitted frame work. Do not borrow Vulkan, WebGPU, swapchain, command-buffer, or synchronization ownership from a scene object.
 
-## Ownership Summary
+## Ownership summary
 
 | Object | Owner | Lifetime rule |
 | --- | --- | --- |
@@ -26,23 +24,15 @@ borrow Vulkan, WebGPU, swapchain, command-buffer, or synchronization ownership f
 | `DvzView` | app | Presents or captures one borrowed figure. There is no independent view destroy call; the pointer becomes invalid when its app is destroyed. |
 | Lower runtime/canvas/stream objects | application/runtime layer | Advanced execution objects outside scene ownership. Follow each API's explicit owner/borrower contract. |
 
-## Data Writes
+## Data writes
 
-`dvz_visual_set_data()` and range-style visual writes copy caller-provided data unless an API
-explicitly documents borrowed or external-buffer semantics. After a successful ordinary data write,
-the caller may release the source memory.
+`dvz_visual_set_data()` and range-style visual writes copy caller-provided data unless an API explicitly documents borrowed or external-buffer semantics. After a successful ordinary data write, the caller may release the source memory.
 
-External buffers, scene compute buffers, and future zero-copy paths require an explicit lifetime and
-synchronization contract. Do not infer borrowed pointer behavior from `static`, `dynamic`, or
-`streaming` mutability hints; those hints guide planning and allocation, not pointer ownership.
+External buffers, scene compute buffers, and future zero-copy paths require an explicit lifetime and synchronization contract. Do not infer borrowed pointer behavior from `static`, `dynamic`, or `streaming` mutability hints; those hints guide planning and allocation, not pointer ownership.
 
-## Frame Artifacts
+## Frame artifacts
 
-`DvzSceneFrameArtifact` is the scene emission product. It owns the immutable DRP2 stream snapshot
-and frozen upload payload bytes needed to execute or inspect that frame safely after retained scene
-state changes.
-
-Rules:
+Scene emission produces a `DvzSceneFrameArtifact`. It owns the immutable DRP2 stream snapshot and frozen upload payload bytes needed to execute or inspect that frame safely after retained scene state changes.
 
 | Rule | Consequence |
 | --- | --- |
@@ -51,27 +41,19 @@ Rules:
 | Browser packet spans are borrowed from artifact-owned memory. | Decode or copy packet spans before releasing the artifact, emitting the next frame on the same scene, or destroying the scene. |
 | JSON/debug exports are projections of the artifact snapshot. | JSON is diagnostic/export material, not the browser runtime transport. |
 
-## Callbacks And User Data
+## Callbacks and user data
 
-Callbacks borrow scene/runtime objects for the duration of the call unless their API documents
-otherwise. User-data pointers are application-owned; Datoviz stores and returns the pointer but does
-not copy or free the pointee.
+Callbacks borrow scene/runtime objects for the duration of the call unless their API documents otherwise. User-data pointers are application-owned; Datoviz stores and returns the pointer but does not copy or free the pointee.
 
-Keep callback work short. Expensive updates should be scheduled into normal frame/update paths so
-controller state, dirty scopes, validation, frame planning, and runtime execution remain ordered.
+Keep callback work short. Schedule expensive updates through the normal frame/update paths so controller state, dirty scopes, validation, frame planning, and runtime execution remain ordered.
 
-## Query And Readback Results
+## Query and readback results
 
-Queries are request/result objects associated with a panel, frame, and scene generation. Results
-must be matched to the request they answer before mutating hover, selection, annotations, or
-application state. Stale results are valid diagnostics but should not update current interaction
-state.
+Queries are request/result objects associated with a panel, frame, and scene generation. Results must be matched to the request they answer before mutating hover, selection, annotations, or application state. Stale results are valid diagnostics but should not update current interaction state.
 
-Readback payload ownership depends on the query/runtime API. Treat returned result structs as value
-snapshots and treat any borrowed payload spans as valid only for the documented polling/result
-lifetime.
+Readback payload ownership depends on the query/runtime API. Treat returned result structs as value snapshots and treat any borrowed payload spans as valid only for the documented polling/result lifetime.
 
-## Destroy Order
+## Destroy order
 
 Recommended high-level order:
 
@@ -81,14 +63,11 @@ Recommended high-level order:
 4. destroy runtime/app/canvas/stream objects according to their API;
 5. destroy scene-owned resources or the scene.
 
-At the normal app layer this reduces to: stop callbacks/capture, call `dvz_app_destroy(app)`, then
-call `dvz_scene_destroy(scene)`. `DvzFigure`, `DvzPanel`, and `DvzView` pointers must not be used
-after their respective scene/app owner is destroyed.
+At the normal app layer this reduces to: stop callbacks/capture, call `dvz_app_destroy(app)`, then call `dvz_scene_destroy(scene)`. `DvzFigure`, `DvzPanel`, and `DvzView` pointers must not be used after their respective scene/app owner is destroyed.
 
-For graphics ownership, only destroy, begin, end, reset, submit, or transition handles that the API
-contract says you own.
+For graphics ownership, only destroy, begin, end, reset, submit, or transition handles that the API contract says you own.
 
-## See Also
+## See also
 
 - [Callbacks](callbacks.md)
 - [Queries](queries.md)

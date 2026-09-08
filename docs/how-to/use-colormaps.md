@@ -12,8 +12,7 @@ Convert scalar data into colors and expose the scale to readers.
 
 ## Task workflow
 
-Choose the scalar range, choose a colormap, upload the mapped colors or sampled-field data, then add
-a colorbar when the visual result needs interpretation.
+Choose the scalar range and colormap, upload the mapped colors or sampled-field data, then add a colorbar when readers need the numeric scale.
 
 Choose the color path by what the data represents:
 
@@ -26,10 +25,7 @@ Choose the color path by what the data represents:
 
 ## Minimal call sequence
 
-Prerequisite: create `scene`, `panel`, a point `visual`, and C-contiguous position and scalar arrays.
-The result maps the scalar `"color"` attribute through Viridis over `[0, 1]`. The snippets are setup
-fragments; see the complete
-[Scalar Color Scale example](../examples/gallery/features/features_colormap_scale.md).
+The snippets assume an existing `scene`, `panel`, point `visual`, and C-contiguous position and scalar arrays. They map the scalar `"color"` attribute through Viridis over `[0, 1]`. For complete setup, see the [Scalar Color Scale example](../examples/gallery/features/features_colormap_scale.md).
 
 ### Python
 
@@ -79,22 +75,16 @@ dvz_visual_set_data(visual, "color", values, n);
 dvz_panel_add_visual(panel, visual, NULL);
 ```
 
-If you already have RGBA colors, upload them directly to `"color"` and skip the scale and colormap.
-For sampled fields, use the image or volume path shown in the field examples instead of manually
-expanding every scalar to geometry.
+If you already have RGBA colors, upload them directly to `"color"` and skip the scale and colormap. For sampled fields, use the image or volume path shown in the field examples instead of manually expanding every scalar to geometry.
 
-Values at the low and high ends of the domain use the ends of Viridis; intermediate values are
-interpolated. Add a colorbar bound to this same `scale` when readers need to recover numeric values.
+Values at the low and high ends of the domain use the ends of Viridis; intermediate values are interpolated. Add a colorbar bound to this same `scale` when readers need to recover numeric values.
 
 
 ## Important details
 
-Keep the scalar domain explicit. The colorbar should match the normalization used for the visual,
-not just the colormap name.
+Keep the scalar domain explicit. The colorbar should match the normalization used for the visual, not just the colormap name.
 
-The `DvzScale` is the contract between scalar data, color mapping, colorbar labels, and readouts.
-Create one continuous scale, set its domain and colormap, bind that scale to the visual, and pass
-the same scale to the colorbar. Do not rebuild a separate color ramp for the colorbar.
+A `DvzScale` keeps scalar data, color mapping, colorbar labels, and readouts consistent. Create one continuous scale, set its domain and colormap, bind it to the visual, and pass it to the colorbar. Do not rebuild a separate color ramp for the colorbar.
 
 For point and pixel visuals with scalar colors, the required sequence is:
 
@@ -102,21 +92,15 @@ For point and pixel visuals with scalar colors, the required sequence is:
 2. Call `dvz_visual_set_scale(visual, "color", scale)`.
 3. Upload float values to the `"color"` attribute.
 
-For image and volume data, preserve the sampled-field shape instead of expanding the grid into
-individual points. The field semantic, format, dimensions, scale domain, colorbar range, and probe
-readout should all describe the same scalar values.
+For image and volume data, preserve the sampled-field shape instead of expanding the grid into individual points. The field semantic, format, dimensions, scale domain, colorbar range, and probe readout should all describe the same scalar values.
 
-When scalar values or normalization change, update the retained scalar data or scale state. Panning
-or zooming does not require recomputing colors because the scalar mapping is independent of the
-visible panel range.
+When scalar values or normalization change, update the retained scalar data or scale state. Panning or zooming does not require recomputing colors because the scalar mapping is independent of the visible panel range.
 
-Categorical labels are different from scalar values. Even if category ids are numeric, use a
-categorical scale and legend when the numbers name classes rather than ordered magnitudes.
+Use a categorical scale and legend when numeric category ids name classes rather than ordered magnitudes.
 
 ## Common mistakes
 
-- Remapping colors after every pan or zoom instead of only when scalar values or normalization
-  change.
+- Remapping colors after every pan or zoom instead of only when scalar values or normalization change.
 - Creating a separate colorbar scale that does not match the visual's scale.
 - Uploading direct RGBA colors and then adding a colorbar that implies a scalar mapping.
 - Showing a colorbar for categorical colors that have no scalar order.
