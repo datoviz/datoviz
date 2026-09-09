@@ -463,7 +463,7 @@ int test_memory_import_provider_failure(TstContext* suite, const TstCase* tstite
 {
     ANN(suite);
     (void)tstitem;
-#if OS_UNIX
+#if OS_LINUX
     const VkExternalMemoryHandleTypeFlagBits handle_type =
         VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
     DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
@@ -584,7 +584,7 @@ int test_memory_import_provider_failure(TstContext* suite, const TstCase* tstite
     dvz_gpu_ctx_destroy(ctx);
     return error_count > 0;
 #else
-    tst_skip(suite, "requires the Unix external-memory FD path");
+    tst_skip(suite, "requires the Linux external-memory FD path");
     return 0;
 #endif
 }
