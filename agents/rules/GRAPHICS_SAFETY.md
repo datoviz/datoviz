@@ -44,18 +44,9 @@ Use `DVZ_DRP2_TRACE_COLOR=0` or `NO_COLOR=1` when capturing logs. The app trace 
 
 ## Validation
 
-Run Vulkan validation-layer smoke tests for changes touching:
+Run focused Vulkan validation-layer smoke tests when changes affect GPU execution, resource ownership, command buffers, frame lifetimes, render targets, swapchains, synchronization, or rendering behavior, including changes emitted through scene or DRP2.
 
-1. `vk`
-2. `vklite`
-3. `canvas`
-4. `scene`
-5. `drp2`
-6. Command buffers
-7. Frame lifetimes
-8. Render targets
-9. Swapchains
-10. Synchronization
+For isolated CPU validation or bookkeeping changes with no effect on those behaviors, use focused CPU tests. Select checks by the affected behavior rather than the module name; investigate uncertain GPU effects before omitting Vulkan validation.
 
 On macOS, use:
 

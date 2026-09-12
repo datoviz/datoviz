@@ -26,6 +26,8 @@ For implementation requests with clear scope, state a concise plan and execute t
 
 Continue within an approved plan without requesting approval again for routine steps. The publication, submodule, and binary-asset approval requirements above still apply. If an instruction blocks requested work, identify the file and rule, explain the blocker, and give a recommended next step.
 
+Complete the requested implementation, relevant validation, and fixes for failures caused by the change before handing back. If an approval boundary blocks one action, finish independent authorized work and report the exact remaining blocker.
+
 Keep changes focused and files modular. Reuse existing subsystem boundaries; ask before expanding a narrow task into a broader refactor.
 
 Write short, concrete prose. When asking for a decision, include your recommendation. Report the result, relevant validation, and any remaining limitation.
@@ -56,11 +58,11 @@ Read the matching rules before editing; follow their more specific routes only w
 | Documents under `spec/scene/` | [Scene spec writing rules](spec/scene/AGENTS.md) |
 | Public examples, screenshots, WebGPU routes, animation, or video | [Adding examples](docs/contributors/adding-examples.md) |
 | Release-sensitive work, active handoffs, or choosing the next task | [Dispatch](agents/now/START.md), then only the relevant lane |
-| Public documentation, gallery, attribution, or release communication | [Documentation gates](agents/now/DOCUMENTATION.md) |
+| Public documentation, gallery, attribution, or release communication | [Documentation validation](agents/rules/DOCUMENTATION.md); [release inventory](agents/now/DOCUMENTATION.md) only for release scope or readiness |
 
 ## Validation
 
-Run from the repository root:
+For compiled code changes, build and run focused tests from the repository root:
 
 ```sh
 just build
@@ -70,7 +72,7 @@ git diff --check
 
 For Vulkan/GLFW/Metal tests on macOS, use `direnv exec . just test <filter>`. After public API or binding changes, run `just ctypes` and `just ctypes-check` before Python-facing validation.
 
-Use the narrowest relevant checks. Instruction-only edits need link/content checks and `git diff --check`. Public documentation also requires the checks in `agents/now/DOCUMENTATION.md`, including any recipe build dependencies. Complete required checks, then broaden or repeat testing only when changes, failures, or unresolved risks justify it. Report unavailable validation as a limitation, never a pass.
+Use the narrowest relevant checks. Instruction-only edits need link/content checks and `git diff --check`. Public documentation also requires [documentation validation](agents/rules/DOCUMENTATION.md), including any recipe build dependencies. Complete required checks, then broaden or repeat testing only when changes, failures, or unresolved risks justify it. Report unavailable validation as a limitation, never a pass.
 
 ## Documentation
 

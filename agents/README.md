@@ -4,11 +4,12 @@
 
 ## Layout
 
-- `rules/`: repository hygiene, C conventions, validation, graphics ownership, and scene/DRP2 rules.
+- `rules/`: repository hygiene, C conventions, code and documentation validation, graphics ownership, and scene/DRP2 rules.
 - [now/START.md](now/START.md): task and release dispatch.
 - [now/STATUS.md](now/STATUS.md): current release blockers and evidence.
 - [now/RELEASE.md](now/RELEASE.md): release sequencing.
-- [now/DOCUMENTATION.md](now/DOCUMENTATION.md): public documentation gates.
+- [rules/DOCUMENTATION.md](rules/DOCUMENTATION.md): public documentation validation.
+- [now/DOCUMENTATION.md](now/DOCUMENTATION.md): documentation release inventory and review gates.
 
 Read `STATUS.md` when work affects release scope or readiness; read `RELEASE.md` for release planning and packaging. Neither is mandatory startup context for ordinary implementation tasks.
 

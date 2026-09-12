@@ -23,13 +23,9 @@ Render nodes must emit through typed visual metadata, visual descriptors, and dr
 
 Backends consume the same DRP2 command streams. Native/WebGPU gaps should surface as capability diagnostics or unsupported-feature errors, not as scene-lowering forks or parallel texture render paths.
 
-## Current Scene Coverage
+## Scene Contracts
 
-Built-in scene visuals include point, pixel, marker, primitive, mesh, path/segment, image, volume, and sphere impostors.
-
-Scene support also covers retained sampled fields, image colormap scale binding, colorbar bookkeeping, panzoom/arcball/fly/turntable controllers, narrow text/annotation bookkeeping, GPU-backed point pick and image probe request paths, and graph-backed panel techniques.
-
-The active scene slice covers retained visual rendering, repeated partial updates, multi-panel figures, per-panel runtime viewport/scissor handling, depth-enabled 2D/3D passes, request readbacks, descriptor refresh after stable resource recreation, and graph-backed postprocess, transparency, and MSAA techniques.
+Use the [scene index](../../spec/scene/README.md) to locate the affected contract and the [visual-family index](../../spec/scene/visuals/README.md) for visual coverage and family specifications.
 
 ## Visual Family Boundaries
 
@@ -49,11 +45,13 @@ If a family needs behavior that the generic path cannot express, extend the norm
 
 ## Shader And ABI Work
 
-For scene visual/shader work, read:
+Read the contract affected by the change:
 
-1. [../../spec/scene/implementation/VISUAL_SHADER_REFACTOR.md](../../spec/scene/implementation/VISUAL_SHADER_REFACTOR.md)
-2. [../../spec/scene/visuals/BOUNDARY_CONTRACT.md](../../spec/scene/visuals/BOUNDARY_CONTRACT.md)
-3. [../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md](../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md)
+| Change | Context |
+| --- | --- |
+| Shader registry, binding layout, or shader ABI | [Visual/shader architecture](../../spec/scene/implementation/VISUAL_SHADER_REFACTOR.md) |
+| Visual-family ownership or generic lowering boundaries | [Boundary contract](../../spec/scene/visuals/BOUNDARY_CONTRACT.md) |
+| Family-specific rendering behavior | The affected family specification from the [visual index](../../spec/scene/visuals/README.md) and its section in [implementation decisions](../../spec/scene/visuals/IMPLEMENTATION_DECISIONS.md) |
 
 Run `just shader-abi-check` whenever changing:
 
@@ -65,11 +63,7 @@ Run `just shader-abi-check` whenever changing:
 
 ## DRP2 Specs
 
-Before touching `spec/drp2/`, `src/drp2/`, or DRP2-emitting scene code, read:
-
-1. [../../spec/drp2/README.md](../../spec/drp2/README.md)
-2. [../../spec/drp2/AUTHORITY.md](../../spec/drp2/AUTHORITY.md)
-3. [../../spec/drp2/READING_ORDER.md](../../spec/drp2/READING_ORDER.md)
+Use the [DRP2 index](../../spec/drp2/README.md) to find the affected contract. Read [commands](../../spec/drp2/COMMANDS.md) for command semantics, [lifetimes](../../spec/drp2/LIFETIMES.md) for object and encoder/pass state, [errors](../../spec/drp2/ERRORS.md) for validation behavior, or the [fixture runner contract](../../spec/drp2/fixtures/RUNNER.md) for conformance tooling. Read [authority](../../spec/drp2/AUTHORITY.md) when changing contracts or resolving prose/schema/fixture disagreement. The full [reading order](../../spec/drp2/READING_ORDER.md) is for comprehensive protocol reviews.
 
 ## Request And Query Paths
 

@@ -49,4 +49,4 @@ Publish final feature status, known issues, platform limitations, installation/b
 
 ## Validation
 
-Documentation-only changes require `git diff --check`, `just docs-build-check`, `just docs-status-check`, and inspection of `git status --short`. Generated references, examples, screenshots, animations, or inventories additionally require their focused generator and checker. Never hard-wrap Markdown prose.
+Follow [documentation validation](../rules/DOCUMENTATION.md) for public documentation changes. The release and maintainer-review gates above apply when work affects release scope or readiness.

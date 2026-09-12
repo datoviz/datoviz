@@ -44,7 +44,7 @@ Run this whenever a task touches:
 
 ## Validation Strategy
 
-Instruction-only changes need relevant link/content checks and `git diff --check`. Public documentation follows [documentation validation](../now/DOCUMENTATION.md), including recipe build dependencies. For code, use the narrowest relevant validation loop:
+Instruction-only changes need relevant link/content checks and `git diff --check`. Public documentation follows [documentation validation](DOCUMENTATION.md), including recipe build dependencies. For code, use the narrowest relevant validation loop:
 
 1. Use `just test <module-or-filter>` for focused module work.
 2. Use focused binaries such as `dvztest_drp2`, `dvztest_scene`, `dvztest_vk`, `dvztest_canvas`, or `dvztest_integration` when available.

@@ -1,12 +1,12 @@
 # DRP2 Spec
 
-This directory defines the future Datoviz Rendering Protocol v2.
+This directory defines the active Datoviz Rendering Protocol v2 contract.
 
 The goal is to freeze a small, backend-agnostic renderer contract that can support:
 
 1. a native runtime with a Vulkan backend,
 2. a browser runtime over WebGPU,
-3. future higher-level scene layers that emit DRP2 rather than depending on backend internals.
+3. higher-level scene layers that emit DRP2 rather than depending on backend internals.
 
 
 ## Status

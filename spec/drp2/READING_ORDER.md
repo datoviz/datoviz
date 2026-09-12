@@ -1,6 +1,6 @@
 # DRP2 Reading Order
 
-Read these files in order during DRP2 review.
+Use this order for a comprehensive DRP2 protocol review. For focused changes, use the [index](README.md) to select the affected contract; the full sequence is not required for every edit.
 
 
 ## 1. Orientation
