@@ -21,4 +21,4 @@ Keep `now/` limited to active, blocked, or protective handoffs. Preserve unresol
 
 Keep instruction content independent of model names and personal tool installations. Introduce repository skills only for recurring task procedures, with a shared source and explicit discovery for each supported agent; do not move unconditional safety rules into optional skills.
 
-When changing instructions, check links, shared entry points, conflicting rules, and Markdown formatting. Keep one paragraph or list item per source line.
+When changing instructions, run `just agent-instructions-check` and `git diff --check`, and review for conflicting rules. The checker covers repository `AGENTS.md`/`CLAUDE.md` files, this index, and `rules/*.md`; it checks local link target existence, shared imports, and prose wrapping. It does not validate URL availability, heading anchors, or instruction meaning. Check other Markdown files explicitly with `python3 tools/check_agent_instructions.py <path>`. Keep one paragraph or list item per source line.
