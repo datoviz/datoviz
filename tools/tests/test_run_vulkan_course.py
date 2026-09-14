@@ -25,6 +25,11 @@ class InstalledCourseBuildTests(unittest.TestCase):
             source.write_text("int main(void) { return 0; }\n")
             for step in run_vulkan_course.STEPS[1:]:
                 (source_dir / f"{step.name}.c").write_text("int main(void) { return 0; }\n")
+            for step in run_vulkan_course.STEPS[4:]:
+                shader_dir = source_dir / step.name
+                shader_dir.mkdir()
+                (shader_dir / "shader.vert").write_text("#version 450\nvoid main() {}\n")
+                (shader_dir / "shader.frag").write_text("#version 450\nvoid main() {}\n")
 
             package = root / "fake package"
             package.mkdir()

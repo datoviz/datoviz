@@ -268,7 +268,7 @@ cleanup:
 
 Destruction order follows dependencies. A GPU object cannot outlive the device that created it, and the GPU context owns the device, so the context must be destroyed last. As `Renderer` grows, destroy each resource before the object that owns or backs it.
 
-`dvz_gpu_ctx_error_count` reports how many validation errors the layers recorded when validation was available. Query it *before* destroying the context. It should print `0` throughout the course. A zero count is useful only after the startup log has confirmed that validation was active. If the count is nonzero, read the terminal messages; they identify the incorrect call.
+`dvz_gpu_ctx_error_count` reports how many validation errors the layers recorded when validation was available. Query it *before* destroying the context. It should print `0` throughout the course. Also check that startup did not warn `validation layer is not supported`; without the layer, a zero count proves nothing. If the count is nonzero, read the terminal messages because they identify the incorrect call.
 
 ## Run it
 

@@ -16,6 +16,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -34,18 +35,33 @@ class Step:
     # Chapters 1-3 render a flat clear color on purpose; later chapters draw geometry.
     captures: bool = True
     expect_geometry: bool = False
+    same_as_previous: bool = False
 
 
 STEPS = (
     Step("step01", captures=False),
     Step("step02"),
     Step("step03"),
+    Step("step04", expect_geometry=True),
+    Step("step05", expect_geometry=True, same_as_previous=True),
+    Step("step06", expect_geometry=True),
+    Step("step07", expect_geometry=True, same_as_previous=True),
+    Step("step08", expect_geometry=True),
+    Step("step09", expect_geometry=True),
+    Step("step10", expect_geometry=True),
+    Step("step11", expect_geometry=True),
+    Step("step12", expect_geometry=True, same_as_previous=True),
+    Step("step13", expect_geometry=True),
+    Step("step14", expect_geometry=True),
+    Step("step15", expect_geometry=True),
 )
 
 
-def _run(command: list[str], env: dict[str, str] | None = None) -> str:
+def _run(
+    command: list[str], env: dict[str, str] | None = None, cwd: Path = ROOT
+) -> str:
     result = subprocess.run(
-        command, cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        command, cwd=cwd, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
     if result.returncode != 0:
         print(result.stdout, file=sys.stderr)
@@ -78,15 +94,16 @@ def _installed_build(temporary: Path, discovery: list[str]) -> Path:
     """
     project = temporary / "project"
     project.mkdir()
-    source_paths = {
-        step.name: (SOURCES / (step.name + ".c")).resolve().as_posix() for step in STEPS
-    }
+    for step in STEPS:
+        shutil.copy2(SOURCES / f"{step.name}.c", project / f"{step.name}.c")
+        if step.name >= "step05":
+            shutil.copytree(SOURCES / step.name, project / step.name)
     (project / "CMakeLists.txt").write_text(
         "cmake_minimum_required(VERSION 3.21)\n"
         "project(vulkan_course C)\n"
         "find_package(datoviz CONFIG REQUIRED)\n"
         + "".join(
-            f"add_executable({step.name} {json.dumps(source_paths[step.name], ensure_ascii=False)})\n"
+            f"add_executable({step.name} {json.dumps(step.name + '.c', ensure_ascii=False)})\n"
             f"target_link_libraries({step.name} PRIVATE datoviz::datoviz)\n"
             f"if(NOT WIN32)\n  target_link_libraries({step.name} PRIVATE m)\nendif()\n"
             for step in STEPS
@@ -103,7 +120,13 @@ def _installed_build(temporary: Path, discovery: list[str]) -> Path:
     if multi_config:
         build_command.extend(["--config", "Release"])
     _run(build_command)
-    return build / "Release" if multi_config else build
+    executable_dir = build / "Release" if multi_config else build
+    for step in STEPS[4:]:
+        shader_runtime = executable_dir / "course-shaders" / step.name
+        shader_runtime.mkdir(parents=True)
+        for shader in ("shader.vert", "shader.frag"):
+            shutil.copy2(project / step.name / shader, shader_runtime / shader)
+    return executable_dir
 
 
 def _wheel_install(spec: str, temporary: Path) -> tuple[Path, list[str]]:
@@ -176,28 +199,43 @@ def main() -> int:
             executables = _installed_build(temporary, [f"-DCMAKE_PREFIX_PATH={prefix}"])
         env = _runtime_environment(prefix, runtime_dirs)
 
+        previous_digest: str | None = None
         for step in STEPS:
             executable = executables / step.name
             if platform.system() == "Windows":
                 executable = executable.with_suffix(".exe")
             if not executable.is_file():
                 raise FileNotFoundError(executable)
+            run_cwd = executable.parent
+            if step.name >= "step05":
+                run_cwd = (
+                    SOURCES / step.name
+                    if args.installed_prefix is None and args.wheel is None
+                    else executable.parent / "course-shaders" / step.name
+                )
 
             if not step.captures:
-                _run([str(executable)], env=env)
+                _run([str(executable)], env=env, cwd=run_cwd)
                 print(f"{step.name}: ran, no capture expected")
                 continue
 
             digests = []
             for attempt in (1, 2):
                 png = temporary / f"{step.name}-{attempt}.png"
-                output = _run([str(executable), "--png", str(png)], env=env)
+                output = _run([str(executable), "--png", str(png)], env=env, cwd=run_cwd)
+                if "validation layer is not supported" in output.lower():
+                    raise RuntimeError(f"{step.name}: Vulkan validation layer is unavailable")
                 if "validation errors: 0" not in output:
                     raise RuntimeError(f"{step.name}: Vulkan validation errors reported")
                 _validate_capture(step, png)
                 digests.append(hashlib.sha256(png.read_bytes()).hexdigest())
             if digests[0] != digests[1]:
                 raise RuntimeError(f"{step.name}: capture is not reproducible across runs")
+            if step.same_as_previous and previous_digest != digests[0]:
+                raise RuntimeError(f"{step.name}: capture changed from the previous chapter")
+            if previous_digest == digests[0] and not step.same_as_previous:
+                raise RuntimeError(f"{step.name}: capture is unchanged from the previous chapter")
+            previous_digest = digests[0]
             print(f"{step.name}: capture valid and reproducible")
 
     print(f"Vulkan course smoke: {len(STEPS)} steps OK")

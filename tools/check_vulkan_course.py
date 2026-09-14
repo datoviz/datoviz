@@ -23,6 +23,18 @@ CHAPTERS = {
     "01-setup.md": "step01.c",
     "02-window.md": "step02.c",
     "03-frame.md": "step03.c",
+    "04-triangle.md": "step04.c",
+    "05-shader-files.md": "step05.c",
+    "06-vertex-buffers.md": "step06.c",
+    "07-index-buffers.md": "step07.c",
+    "08-push-constants.md": "step08.c",
+    "09-matrices.md": "step09.c",
+    "10-depth-culling.md": "step10.c",
+    "11-mouse-control.md": "step11.c",
+    "12-texture-upload.md": "step12.c",
+    "13-texture-sampling.md": "step13.c",
+    "14-lighting.md": "step14.c",
+    "15-mesh.md": "step15.c",
 }
 
 FENCE = re.compile(r"^(?P<indent> *)```(?P<lang>[a-z]*)\s*$", re.MULTILINE)
@@ -79,14 +91,39 @@ def _blocks(markdown: str) -> list[Block]:
 def _check_chapter(page: Path, source: Path, errors: list[str]) -> int:
     markdown = page.read_text()
     haystack = _normalize(source.read_text())
+    shader_dir = source.with_suffix("")
+    shader_haystacks = [
+        _normalize(path.read_text())
+        for pattern in ("*.vert", "*.frag", "*.glsl")
+        for path in sorted(shader_dir.glob(pattern))
+    ]
     allowed = ALLOWED_DIVERGENCE.get(page.name, ())
     checked = 0
+    included_shaders: list[Path] = []
 
     for block in _blocks(markdown):
         if block.lang not in {"c", "glsl"}:
             continue
-        # Snippet includes are resolved by mkdocs, not written by hand.
         if block.code.lstrip().startswith("--8<--"):
+            match = re.search(r'--8<--\s+["\'](?P<path>[^"\']+)["\']', block.code)
+            if match is None:
+                errors.append(f"{page.relative_to(ROOT)}:{block.line}: malformed snippet include")
+                continue
+            included = Path(match.group("path"))
+            expected_c = Path("examples/c/vulkan") / source.name
+            expected_shader_dir = Path("examples/c/vulkan") / source.stem
+            if block.lang == "c" and included != expected_c:
+                errors.append(
+                    f"{page.relative_to(ROOT)}:{block.line}: full C listing must include {expected_c}"
+                )
+            elif block.lang == "glsl" and included.parent != expected_shader_dir:
+                errors.append(
+                    f"{page.relative_to(ROOT)}:{block.line}: shader listing must come from "
+                    f"{expected_shader_dir}"
+                )
+            elif block.lang == "glsl":
+                included_shaders.append(included)
+            checked += 1
             continue
         code = _normalize(block.code)
         if not code.strip():
@@ -94,10 +131,21 @@ def _check_chapter(page: Path, source: Path, errors: list[str]) -> int:
         if any(marker in code for marker in allowed):
             continue
         checked += 1
-        if code not in haystack:
+        candidates = [haystack, *shader_haystacks] if block.lang == "glsl" else [haystack]
+        if not any(code in candidate for candidate in candidates):
             errors.append(
                 f"{page.relative_to(ROOT)}:{block.line}: {block.lang} excerpt is not present "
                 f"verbatim in {source.relative_to(ROOT)}"
+            )
+    if shader_haystacks:
+        expected_shaders = {
+            Path("examples/c/vulkan") / source.stem / "shader.vert",
+            Path("examples/c/vulkan") / source.stem / "shader.frag",
+        }
+        if set(included_shaders) != expected_shaders or len(included_shaders) != 2:
+            errors.append(
+                f"{page.relative_to(ROOT)}: full shader listings must include shader.vert and "
+                "shader.frag exactly once"
             )
     return checked
 

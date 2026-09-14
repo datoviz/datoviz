@@ -12,6 +12,7 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SOURCES = ROOT / "examples" / "c" / "vulkan"
 DEFAULT_EXECUTABLES_DIR = ROOT / "build" / "examples" / "c" / "vulkan"
 DEFAULT_OUTPUT_DIR = ROOT / "build" / "vulkan-course-media"
 SIZE = (800, 600)
@@ -37,6 +38,21 @@ EXPECTED_OUTPUTS = (
     "02-window.webp",
     "03-frame-still.webp",
     "03-frame.webp",
+    *(f"{index:02d}-{slug}.webp" for index, slug in (
+        (4, "triangle"),
+        (5, "shader-files"),
+        (6, "vertex-buffers"),
+        (7, "index-buffers"),
+        (8, "push-constants"),
+        (9, "matrices"),
+        (10, "depth-culling"),
+        (11, "mouse-control"),
+        (12, "texture-upload"),
+        (13, "texture-sampling"),
+        (14, "lighting"),
+        (15, "mesh"),
+    )),
+    "15-mesh-animated.webp",
 )
 
 
@@ -56,10 +72,10 @@ def _executable(directory: Path, name: str) -> Path:
     return windows if windows.is_file() else path
 
 
-def _run_step(executable: Path, arguments: list[str]) -> str:
+def _run_step(executable: Path, arguments: list[str], cwd: Path = ROOT) -> str:
     result = subprocess.run(
         [str(executable), *arguments],
-        cwd=ROOT,
+        cwd=cwd,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -69,6 +85,13 @@ def _run_step(executable: Path, arguments: list[str]) -> str:
             f"{executable.name} failed with status {result.returncode}:\n{result.stdout}"
         )
     return result.stdout
+
+
+def _require_validation(output: str, label: str) -> None:
+    if "validation layer is not supported" in output.lower():
+        raise RuntimeError(f"{label}: Vulkan validation layer is unavailable")
+    if "validation errors: 0" not in output:
+        raise RuntimeError(f"{label}: Vulkan validation errors reported")
 
 
 def _pillow():
@@ -132,6 +155,17 @@ def _validate_uniform_rgba(
             )
 
 
+def _validate_nonflat(path: Path) -> None:
+    Image, _, _ = _pillow()
+    with Image.open(path) as source:
+        image = source.convert("RGBA")
+        if image.size != SIZE:
+            raise RuntimeError(f"{path}: expected {SIZE[0]}x{SIZE[1]}, got {image.size}")
+        spread = max(high - low for low, high in image.getextrema()[:3])
+        if spread <= 2:
+            raise RuntimeError(f"{path}: expected drawn geometry, got a flat image")
+
+
 def _encode_static(source: Path, output: Path, quality: int) -> None:
     cwebp = shutil.which("cwebp")
     if cwebp is None:
@@ -158,8 +192,55 @@ def _current(executables: list[Path], outputs: list[Path], force: bool) -> bool:
         return False
     input_times = [Path(__file__).stat().st_mtime_ns]
     input_times.extend(path.stat().st_mtime_ns for path in executables)
+    input_times.extend(path.stat().st_mtime_ns for path in SOURCES.glob("step*.c"))
+    input_times.extend(path.stat().st_mtime_ns for path in SOURCES.glob("step*/shader.*"))
     newest_input = max(input_times)
-    return min(output.stat().st_mtime_ns for output in outputs) >= newest_input
+    if min(output.stat().st_mtime_ns for output in outputs) < newest_input:
+        return False
+    Image, _, _ = _pillow()
+    try:
+        decoded = []
+        for output in outputs:
+            with Image.open(output) as image:
+                if image.size != SIZE:
+                    return False
+                frames = []
+                for frame_index in range(getattr(image, "n_frames", 1)):
+                    image.seek(frame_index)
+                    frames.append(image.convert("RGBA").copy())
+                decoded.append(frames)
+    except (OSError, ValueError):
+        return False
+
+    if len(decoded[3]) != len(ANIMATION_TIMES) or len(decoded[16]) != len(ANIMATION_TIMES):
+        return False
+    if len({frame.tobytes() for frame in decoded[3]}) != len(ANIMATION_TIMES):
+        return False
+    if len({frame.tobytes() for frame in decoded[16]}) != len(ANIMATION_TIMES):
+        return False
+
+    step02 = decoded[1][0]
+    actual = step02.getpixel((0, 0))
+    if step02.getextrema() != tuple((channel, channel) for channel in actual):
+        return False
+    if any(abs(channel - expected) > 2 for channel, expected in zip(actual, (89, 97, 118, 255))):
+        return False
+
+    step03_frames = decoded[3]
+    for frame, expected in zip(step03_frames, EXPECTED_STEP03_RGBA, strict=True):
+        actual = frame.getpixel((0, 0))
+        if frame.getextrema() != tuple((channel, channel) for channel in actual):
+            return False
+        if any(abs(channel - target) > 2 for channel, target in zip(actual, expected)):
+            return False
+    if decoded[2][0].tobytes() != step03_frames[3].tobytes():
+        return False
+
+    geometry_frames = [decoded[0][0], *[decoded[index][0] for index in range(4, 16)], *decoded[16]]
+    for frame in geometry_frames:
+        if max(high - low for low, high in frame.getextrema()[:3]) <= 2:
+            return False
+    return True
 
 
 def generate_tutorial_media(
@@ -174,7 +255,7 @@ def generate_tutorial_media(
         print("--quality must be between 0 and 100")
         return 2, TutorialMediaResult(invalid=1)
 
-    executables = [_executable(executables_dir, f"step0{i}") for i in range(1, 4)]
+    executables = [_executable(executables_dir, f"step{i:02d}") for i in range(1, 16)]
     missing = [path for path in executables if not path.is_file()]
     if missing:
         for path in missing:
@@ -182,6 +263,17 @@ def generate_tutorial_media(
         print("Run: just build")
         result = TutorialMediaResult(missing=len(missing))
         return (2 if strict else 0), result
+
+    stale = [
+        executable
+        for index, executable in enumerate(executables, start=1)
+        if (SOURCES / f"step{index:02d}.c").stat().st_mtime_ns > executable.stat().st_mtime_ns
+    ]
+    if stale:
+        for executable in stale:
+            print(f"stale Vulkan course executable: {executable}")
+        print("Run: just build")
+        return 2, TutorialMediaResult(invalid=len(stale))
 
     outputs = [output_dir / name for name in EXPECTED_OUTPUTS]
     if _current(executables, outputs, force):
@@ -203,8 +295,7 @@ def generate_tutorial_media(
 
             step02_png = temporary / "02-window.png"
             step02_output = _run_step(executables[1], ["--png", str(step02_png)])
-            if "validation errors: 0" not in step02_output:
-                raise RuntimeError("step02 reported Vulkan validation errors")
+            _require_validation(step02_output, "step02")
             _validate_uniform_rgba(step02_png, (89, 97, 118, 255))
             _encode_static(step02_png, outputs[1], quality)
 
@@ -216,14 +307,37 @@ def generate_tutorial_media(
                 step03_output = _run_step(
                     executables[2], ["--png", str(frame), "--time", f"{time_s:.9g}"]
                 )
-                if "validation errors: 0" not in step03_output:
-                    raise RuntimeError(f"step03 frame {index} reported Vulkan validation errors")
+                _require_validation(step03_output, f"step03 frame {index}")
                 _validate_uniform_rgba(frame, expected_rgba)
                 frames.append(frame)
             if len({path.read_bytes() for path in frames}) != len(frames):
                 raise RuntimeError("step03 fixed-time captures are not all distinct")
             _encode_static(frames[3], outputs[2], quality)
             _encode_animation(frames, outputs[3], quality)
+
+            for index, (executable, output) in enumerate(
+                zip(executables[3:], outputs[4:16], strict=True), start=4
+            ):
+                capture = temporary / f"{index:02d}.png"
+                run_cwd = SOURCES / f"step{index:02d}" if index >= 5 else ROOT
+                step_output = _run_step(executable, ["--png", str(capture)], cwd=run_cwd)
+                _require_validation(step_output, f"step{index:02d}")
+                _validate_nonflat(capture)
+                _encode_static(capture, output, quality)
+
+            mesh_frames = []
+            for frame_index, time_s in enumerate(ANIMATION_TIMES):
+                frame = temporary / f"15-mesh-{frame_index:03d}.png"
+                step_output = _run_step(
+                    executables[14], ["--png", str(frame), "--time", f"{time_s:.9g}"],
+                    cwd=SOURCES / "step15",
+                )
+                _require_validation(step_output, f"step15 frame {frame_index}")
+                _validate_nonflat(frame)
+                mesh_frames.append(frame)
+            if len({path.read_bytes() for path in mesh_frames}) != len(mesh_frames):
+                raise RuntimeError("step15 fixed-time captures are not all distinct")
+            _encode_animation(mesh_frames, outputs[16], quality)
     except (OSError, RuntimeError, subprocess.CalledProcessError) as e:
         print(f"Vulkan course media: {e}")
         return 2, TutorialMediaResult(invalid=1)

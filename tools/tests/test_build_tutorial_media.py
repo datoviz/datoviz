@@ -3,8 +3,10 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import tempfile
+import time
 from pathlib import Path
 from unittest import TestCase, main, mock
 
@@ -21,20 +23,35 @@ class TutorialMediaTest(TestCase):
     def _executables(self, root: Path) -> Path:
         directory = root / "executables"
         directory.mkdir()
-        for index in range(1, 4):
-            (directory / f"step0{index}").write_bytes(b"executable")
+        for index in range(1, 16):
+            executable = directory / f"step{index:02d}"
+            executable.write_bytes(b"executable")
+            future = time.time() + 3600
+            os.utime(executable, (future, future))
         return directory
 
-    def _run_step(self, executable: Path, arguments: list[str]) -> str:
+    def _run_step(
+        self, executable: Path, arguments: list[str], cwd: Path = build_tutorial_media.ROOT
+    ) -> str:
+        del cwd
         if executable.name == "step01":
             return "Datoviz 0.4.0-dev\n"
         png = Path(arguments[arguments.index("--png") + 1])
         if executable.name == "step02":
             rgba = (89, 97, 118, 255)
-        else:
+        elif executable.name == "step03":
             time_s = float(arguments[arguments.index("--time") + 1])
             frame_index = round(time_s * build_tutorial_media.ANIMATION_FPS)
             rgba = build_tutorial_media.EXPECTED_STEP03_RGBA[frame_index]
+        else:
+            image = Image.new("RGBA", build_tutorial_media.SIZE, (40, 45, 55, 255))
+            accent = 240
+            if executable.name == "step15" and "--time" in arguments:
+                time_s = float(arguments[arguments.index("--time") + 1])
+                accent = 100 + round(time_s * 50)
+            image.putpixel((400, 300), (accent, 80, 60, 255))
+            image.save(png)
+            return "rendered 1 frames\nvalidation errors: 0\n"
         Image.new("RGBA", build_tutorial_media.SIZE, rgba).save(png)
         return "rendered 1 frames\nvalidation errors: 0\n"
 
@@ -77,13 +94,55 @@ class TutorialMediaTest(TestCase):
             output_dir = root / "output"
             output_dir.mkdir()
             for name in build_tutorial_media.EXPECTED_OUTPUTS:
-                (output_dir / name).write_bytes(b"webp")
-            with mock.patch.object(build_tutorial_media, "_current", return_value=True):
-                rc, result = build_tutorial_media.generate_tutorial_media(
-                    executables_dir=executables, output_dir=output_dir, strict=True
-                )
+                path = output_dir / name
+                if name == "02-window.webp":
+                    image = Image.new("RGBA", build_tutorial_media.SIZE, (89, 97, 118, 255))
+                    image.save(path, format="WEBP", lossless=True)
+                elif name == "03-frame.webp":
+                    frames = [
+                        Image.new("RGBA", build_tutorial_media.SIZE, rgba)
+                        for rgba in build_tutorial_media.EXPECTED_STEP03_RGBA
+                    ]
+                    frames[0].save(
+                        path, save_all=True, append_images=frames[1:], format="WEBP", lossless=True
+                    )
+                elif name == "15-mesh-animated.webp":
+                    frames = []
+                    for index in range(len(build_tutorial_media.ANIMATION_TIMES)):
+                        frame = Image.new("RGBA", build_tutorial_media.SIZE, (40, 45, 55, 255))
+                        frame.putpixel((400, 300), (100 + index * 10, 80, 60, 255))
+                        frames.append(frame)
+                    frames[0].save(
+                        path, save_all=True, append_images=frames[1:], format="WEBP", lossless=True
+                    )
+                else:
+                    rgba = (
+                        build_tutorial_media.EXPECTED_STEP03_RGBA[3]
+                        if name == "03-frame-still.webp"
+                        else (40, 45, 55, 255)
+                    )
+                    image = Image.new("RGBA", build_tutorial_media.SIZE, rgba)
+                    if name != "03-frame-still.webp":
+                        image.putpixel((400, 300), (240, 80, 60, 255))
+                    image.save(path, format="WEBP", lossless=True)
+                future = time.time() + 3600
+                os.utime(path, (future, future))
+            rc, result = build_tutorial_media.generate_tutorial_media(
+                executables_dir=executables, output_dir=output_dir, strict=True
+            )
             self.assertEqual(rc, 0)
             self.assertEqual(result.skipped, len(build_tutorial_media.EXPECTED_OUTPUTS))
+
+            flat = output_dir / "04-triangle.webp"
+            Image.new("RGBA", build_tutorial_media.SIZE, (40, 45, 55, 255)).save(
+                flat, format="WEBP", lossless=True
+            )
+            future = time.time() + 3600
+            os.utime(flat, (future, future))
+            outputs = [output_dir / name for name in build_tutorial_media.EXPECTED_OUTPUTS]
+            self.assertFalse(
+                build_tutorial_media._current(list(executables.iterdir()), outputs, False)
+            )
 
     def test_strict_mode_rejects_missing_executables(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -91,7 +150,7 @@ class TutorialMediaTest(TestCase):
                 executables_dir=Path(tmp), output_dir=Path(tmp) / "output", strict=True
             )
         self.assertEqual(rc, 2)
-        self.assertEqual(result.missing, 3)
+        self.assertEqual(result.missing, 15)
 
     def test_uniform_rgba_accepts_one_level_rgb_delta(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
