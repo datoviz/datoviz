@@ -12,14 +12,18 @@ You will not draw anything in this chapter. You will create a project directory,
 
     The course uses functions added to the low-level layers after the RC2 package was published, including `dvz_canvas_configure_gpu_ctx`, `dvz_commands_unwrap`, and `dvz_cmd_set_viewport_scissor`. Chapter 2 will not compile against `datoviz==0.4.0rc2`. Until a newer package is available, build from source.
 
+    The current `main` source build may still print a version string beginning with `0.4.0rc2`; that label is also present in development revisions made after the RC2 package. For now, the checked-out `main` revision and a successful chapter 2 build establish compatibility. Do not use the printed source-build version alone to decide whether these APIs are present.
+
 === "From source (works today)"
 
     Follow the prerequisites and clone instructions in [Build from source](../start/build-from-source.md). For this course, build the Release configuration explicitly and install it into your own prefix:
 
     ```sh
-    just build Release
+    DVZ_CMAKE_ARGS="-DDVZ_ENABLE_CUDA=OFF" just build Release
     cmake --install build --config Release --prefix "$HOME/datoviz-prefix"
     ```
+
+    CUDA is optional in Datoviz and is not used anywhere in this course. Disabling it here keeps the course build independent of whether CUDA tooling or an NVIDIA GPU happens to be installed.
 
     On Windows, run the build commands from a Developer PowerShell for Visual Studio. The repository's `msvc` preset uses `build-msvc`; build its Release configuration and install into a prefix in your home directory:
 
