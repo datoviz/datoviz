@@ -20758,6 +20758,7 @@ except AttributeError:
 else:
     dvz_hover_apply_query.__doc__ = """/**
  * Apply one query result to a hover object.
+ * The query result must originate from the hover object's scene.
  *
  * @param hover the hover object
  * @param query the query result
@@ -28136,14 +28137,15 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_scene_id')
 else:
     dvz_scene_id.__doc__ = """/**
- * Return the scene-local identity of a scene.
+ * Return the process-unique identity of a scene.
  *
  * DvzId is a fixed-width opaque identity. It is stable for the Datoviz object lifetime and is
- * independent from DRP2 ids, backend handles, and adapter protocol ids. The value is not
- * persistent across scene destruction, process restart, serialization, or replay.
+ * independent from DRP2 ids, backend handles, and adapter protocol ids. Scene identities are not
+ * reused during the process lifetime, but are not persistent across process restart, serialization,
+ * or replay.
  *
  * @param scene the scene
- * @return the scene-local identity, or DVZ_ID_NONE when scene is NULL
+ * @return the process-unique scene identity, or DVZ_ID_NONE when scene is NULL
  */"""
     dvz_scene_id.argtypes = [ctypes.POINTER(DvzScene)]
     dvz_scene_id.restype = ctypes.c_uint64
@@ -28368,6 +28370,7 @@ except AttributeError:
 else:
     dvz_selection_apply_query.__doc__ = """/**
  * Apply one query result to a selection object.
+ * The query result must originate from the selection's scene.
  *
  * @param selection the selection
  * @param query the query result

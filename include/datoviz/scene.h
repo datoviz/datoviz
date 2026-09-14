@@ -57,14 +57,15 @@ DVZ_EXPORT DvzScene* dvz_scene(void);
 
 
 /**
- * Return the scene-local identity of a scene.
+ * Return the process-unique identity of a scene.
  *
  * DvzId is a fixed-width opaque identity. It is stable for the Datoviz object lifetime and is
- * independent from DRP2 ids, backend handles, and adapter protocol ids. The value is not
- * persistent across scene destruction, process restart, serialization, or replay.
+ * independent from DRP2 ids, backend handles, and adapter protocol ids. Scene identities are not
+ * reused during the process lifetime, but are not persistent across process restart, serialization,
+ * or replay.
  *
  * @param scene the scene
- * @return the scene-local identity, or DVZ_ID_NONE when scene is NULL
+ * @return the process-unique scene identity, or DVZ_ID_NONE when scene is NULL
  */
 DVZ_EXPORT DvzId dvz_scene_id(const DvzScene* scene);
 

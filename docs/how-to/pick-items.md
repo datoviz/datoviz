@@ -120,6 +120,8 @@ Use [Select and highlight data](select-items.md) for selection modes, styles, an
 
 ## Important details
 
+Every query result carries the process-unique identity of the scene that produced it. Apply it only to selection or hover state from that scene; cross-scene application is rejected without changing the receiving state.
+
 Picking is tied to what is rendered. Hidden, clipped, transparent, or depth-tested items may not
 behave like a CPU-side nearest-neighbor search.
 

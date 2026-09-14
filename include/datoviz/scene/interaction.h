@@ -265,6 +265,7 @@ DVZ_EXPORT DvzResult dvz_selection_set_visual_style(
 
 /**
  * Apply one query result to a selection object.
+ * The query result must originate from the selection's scene.
  *
  * @param selection the selection
  * @param query the query result
@@ -351,6 +352,7 @@ DVZ_EXPORT DvzResult dvz_hover_set_visual_style(DvzHover* hover, const DvzItemSt
 
 /**
  * Apply one query result to a hover object.
+ * The query result must originate from the hover object's scene.
  *
  * @param hover the hover object
  * @param query the query result

@@ -885,7 +885,12 @@ int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase
     _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_SELECTION, &hit);
     AT(dvz_selection_count(selection) == 1);
 
-    DvzQueryResult miss = {.request_id = 2, .status = DVZ_QUERY_STATUS_MISS, .hit = false};
+    DvzQueryResult miss = {
+        .request_id = 2,
+        .scene_id = dvz_scene_id(scene),
+        .status = DVZ_QUERY_STATUS_MISS,
+        .hit = false,
+    };
     _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_HOVER, &miss);
     AT(!hover->has_item);
     _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_SELECTION, &miss);
@@ -969,6 +974,34 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     AT(items[0].link_channel == channel_id);
     AT(items[0].target_id == 43);
     AT(items[0].link_key == 0);
+
+    DvzHover* hover = dvz_hover(
+        scene,
+        &(DvzHoverDesc){
+            DVZ_STRUCT_INIT_FIELDS(DvzHoverDesc),
+            .target = DVZ_SCENE_TARGET_ITEM,
+        });
+    ANN(hover);
+    AT(dvz_hover_apply_query(hover, &query) == DVZ_OK);
+    AT(hover->has_item);
+    AT(hover->item.target_id == 43);
+
+    DvzScene* other_scene = dvz_scene();
+    ANN(other_scene);
+    AT(dvz_scene_id(other_scene) != dvz_scene_id(scene));
+    query.scene_id = dvz_scene_id(other_scene);
+    query.resolved_id = 99;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_selection_apply_query(selection, &query) == DVZ_ERROR);
+    AT(dvz_selection_count(selection) == 1);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_hover_apply_query(hover, &query) == DVZ_ERROR);
+    AT(hover->has_item);
+    AT(hover->item.target_id == 43);
+    query.hit = false;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_hover_apply_query(hover, &query) == DVZ_ERROR);
+    AT(hover->has_item);
+    AT(hover->item.target_id == 43);
+    dvz_scene_destroy(other_scene);
 
     dvz_link_channel_destroy(channel);
     AT(dvz_link_channel_id(channel) == 0);
@@ -1112,6 +1145,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
 
     DvzQueryResult query = {
         .request_id = 1,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .visual_id = _scene_visual_public_id(scene, point),

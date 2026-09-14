@@ -16,6 +16,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,8 +61,32 @@
 
 
 /*************************************************************************************************/
+/*  Process state                                                                                */
+/*************************************************************************************************/
+
+static atomic_uint_fast64_t _next_scene_id = ATOMIC_VAR_INIT(DVZ_ID_NONE);
+
+
+
+/*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Allocate a process-unique scene identity.
+ *
+ * @return a non-zero identity that is not reused during the process lifetime
+ */
+static DvzId _scene_next_process_id(void)
+{
+    DvzId id = DVZ_ID_NONE;
+    while (id == DVZ_ID_NONE)
+        id = (DvzId)atomic_fetch_add_explicit(&_next_scene_id, 1, memory_order_relaxed) + 1;
+    return id;
+}
+
+
+
 
 static bool _volume_occlusion_desc_validate(const DvzVolumeOcclusionDesc* desc)
 {
@@ -301,7 +326,9 @@ DvzScene* dvz_scene(void)
     DvzScene* scene = (DvzScene*)dvz_calloc(1, sizeof(DvzScene));
     if (scene == NULL)
         return NULL;
-    scene->id = _scene_next_id(scene);
+    scene->id = _scene_next_process_id();
+    // Keep scene-owned object identities distinct from their owning scene identity.
+    scene->next_id = scene->id;
     scene->caps = dvz_capability_snapshot();
     _scene_technique_state_init(&scene->techniques);
     scene->font_defaults = dvz_font_defaults();

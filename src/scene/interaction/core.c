@@ -1977,6 +1977,11 @@ DvzResult dvz_selection_apply_query(DvzSelection* selection, const DvzQueryResul
 {
     ANN(selection);
     ANN(query);
+    if (selection->scene == NULL || query->scene_id != dvz_scene_id(selection->scene))
+    {
+        log_error("cannot apply a query result from a different scene to a selection");
+        return -1;
+    }
     DvzSelectionItem item = {0};
     if (!_selection_matches_query(selection, query, &item))
         return -1;
@@ -2214,6 +2219,11 @@ DvzResult dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
     ANN(query);
     if (hover->scene == NULL)
         return -1;
+    if (query->scene_id != dvz_scene_id(hover->scene))
+    {
+        log_error("cannot apply a query result from a different scene to hover state");
+        return -1;
+    }
     if (!query->hit || query->resolved_target == DVZ_SCENE_TARGET_NONE)
     {
         hover->has_item = false;

@@ -243,6 +243,11 @@ int test_scene_lifetime_local_ids(TstContext* suite, const TstCase* item)
     ANN(scene);
     DvzId scene_id = dvz_scene_id(scene);
     AT(scene_id != DVZ_ID_NONE);
+    DvzScene* other_scene = dvz_scene();
+    ANN(other_scene);
+    AT(dvz_scene_id(other_scene) != DVZ_ID_NONE);
+    AT(dvz_scene_id(other_scene) != scene_id);
+    dvz_scene_destroy(other_scene);
 
     DvzFigure* figure = dvz_figure(scene, 64, 32, 0);
     ANN(figure);

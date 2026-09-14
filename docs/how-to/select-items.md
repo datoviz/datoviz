@@ -129,6 +129,8 @@ Selections, hover objects, and their visual styles are scene state. Destroy expl
 objects before the scene, or let scene destruction release them; never retain their pointers after
 scene destruction.
 
+Apply a query result only to selection and hover objects from the same scene. Datoviz rejects cross-scene results without changing the receiving state.
+
 ## Common mistakes
 
 - Destroying and recreating visuals for every click.

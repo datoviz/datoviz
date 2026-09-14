@@ -17,12 +17,13 @@ identity across batching and the scene -> DRP2 -> runtime boundary.
 ## Core Rules
 
 1. Picking returns scene identity, not backend identity.
-2. Every request is panel-local and anchored to the requesting panel.
-3. Results must identify the request they answer and be freshness-checkable before mutation.
-4. Hover uses latest-request-wins semantics; stale hover results are discarded silently.
-5. Click and explicit query requests may require stronger delivery guarantees than hover.
-6. Controllers receive interpreted scene-level results, not encoded GPU payloads.
-7. Visual picking is GPU-render-path based. Do not add CPU-side picking fallbacks for visual hits.
+2. Every result carries the process-unique identity of its producing scene and may mutate only that scene.
+3. Every request is panel-local and anchored to the requesting panel.
+4. Results must identify the request they answer and be freshness-checkable before mutation.
+5. Hover uses latest-request-wins semantics; stale hover results are discarded silently.
+6. Click and explicit query requests may require stronger delivery guarantees than hover.
+7. Controllers receive interpreted scene-level results, not encoded GPU payloads.
+8. Visual picking is GPU-render-path based. Do not add CPU-side picking fallbacks for visual hits.
 
 
 ## Identity Model
