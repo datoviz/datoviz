@@ -299,6 +299,21 @@ owned_string_returns:
     destroy: dvz_scene_json_destroy
 
 array_facade:
+  dvz_path_set_subpaths:
+    special: path_subpaths
+
+  dvz_text_set_strings:
+    special: text_strings
+
+  dvz_visual_set_link_keys:
+    special: visual_link_keys
+
+  dvz_colormap_custom:
+    special: colormap_custom
+
+  dvz_panel_set_lights:
+    special: panel_set_lights
+
   dvz_band_set_bounds:
     groups:
       - pointer_arg: x

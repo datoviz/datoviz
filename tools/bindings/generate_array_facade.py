@@ -45,7 +45,7 @@ def _raw_pointer(value):
     return hasattr(value, '_as_parameter_')
 
 
-def _array_arg(value, name, raw_func, pointer_index, dtype=None):
+def _array_arg(value, name, raw_func, pointer_index, dtype=None, shape_tail=None):
     if _raw_pointer(value):
         return value, None
     array = np.asarray(value)
@@ -55,6 +55,8 @@ def _array_arg(value, name, raw_func, pointer_index, dtype=None):
             raise ValueError(f'{name} must have dtype {expected}, got {array.dtype}')
     if array.ndim == 0:
         raise ValueError(f'{name} must be at least one-dimensional')
+    if shape_tail is not None and tuple(array.shape[1:]) != tuple(shape_tail):
+        raise ValueError(f'{name} must have shape (n, {", ".join(map(str, shape_tail))})')
     if not array.flags.c_contiguous:
         array = np.ascontiguousarray(array)
     pointer = ctypes.c_void_p(array.ctypes.data)
@@ -65,6 +67,21 @@ def _array_arg(value, name, raw_func, pointer_index, dtype=None):
     if target is not None and target is not ctypes.c_void_p:
         pointer = ctypes.cast(pointer, target)
     return pointer, array
+
+
+def _typed_sequence(value, dtype):
+    if _raw_pointer(value) or isinstance(value, np.ndarray):
+        return value
+    array = np.asarray(value)
+    expected = np.dtype(dtype)
+    if expected.kind in 'ui':
+        if array.dtype.kind not in 'ui':
+            raise ValueError(f'values must contain integers for dtype {expected}')
+        if array.size:
+            limits = np.iinfo(expected)
+            if array.min() < limits.min or array.max() > limits.max:
+                raise ValueError(f'values are outside the range of dtype {expected}')
+    return np.asarray(value, dtype=expected)
 
 
 def _shape0_count(array, name):
@@ -653,6 +670,8 @@ def _validate_policy(api: dict, policy: dict) -> None:
             'gui_table_draw', 'gui_tree_get_selection', 'gui_tree_get_expanded',
             'gui_tree_get_filter', 'gui_table_get_selection', 'gui_table_get_filter',
             'gui_table_get_sort',
+            'path_subpaths', 'text_strings', 'visual_link_keys', 'colormap_custom',
+            'panel_set_lights',
         }:
             raise SystemExit(f'array_facade.{function_name} has unknown special wrapper {special}')
 
@@ -683,8 +702,110 @@ def _emit_wrapper(function: dict, rules: dict) -> str:
         'gui_table_draw', 'gui_tree_get_selection', 'gui_tree_get_expanded',
         'gui_tree_get_filter', 'gui_table_get_selection', 'gui_table_get_filter',
         'gui_table_get_sort',
+        'path_subpaths', 'text_strings', 'visual_link_keys', 'colormap_custom',
+        'panel_set_lights',
     }
     if gui_special in gui_specials:
+        if gui_special == 'path_subpaths':
+            return '''\
+def dvz_path_set_subpaths(visual, subpath_count, lengths=None):
+    if lengths is None and not _raw_pointer(subpath_count):
+        lengths = subpath_count
+        subpath_count = len(lengths)
+    lengths = _typed_sequence(lengths, np.uint32)
+    ptr, keepalive = _array_arg(lengths, 'lengths', _raw.dvz_path_set_subpaths, 2, np.uint32)
+    if keepalive is not None and len(lengths) != int(subpath_count):
+        raise ValueError(f'lengths count {len(lengths)} does not match subpath_count {subpath_count}')
+    return _raw.dvz_path_set_subpaths(visual, int(subpath_count), ptr)
+
+
+dvz_path_set_subpaths.__doc__ = getattr(_raw.dvz_path_set_subpaths, "__doc__", None)
+dvz_path_set_subpaths.argtypes = getattr(_raw.dvz_path_set_subpaths, "argtypes", None)
+dvz_path_set_subpaths.restype = getattr(_raw.dvz_path_set_subpaths, "restype", None)
+
+
+'''
+        if gui_special == 'text_strings':
+            return '''\
+def dvz_text_set_strings(text, strings, item_count=None):
+    ptr, keepalive = _gui_strings(strings, 'strings', item_count)
+    if item_count is None and not _raw_pointer(strings):
+        item_count = len(strings)
+    return _raw.dvz_text_set_strings(text, ptr, int(item_count or 0))
+
+
+dvz_text_set_strings.__doc__ = getattr(_raw.dvz_text_set_strings, "__doc__", None)
+dvz_text_set_strings.argtypes = getattr(_raw.dvz_text_set_strings, "argtypes", None)
+dvz_text_set_strings.restype = getattr(_raw.dvz_text_set_strings, "restype", None)
+
+
+'''
+        if gui_special == 'visual_link_keys':
+            return '''\
+def dvz_visual_set_link_keys(visual, channel, link_keys, item_count=None):
+    link_keys = _typed_sequence(link_keys, np.uint64)
+    ptr, keepalive = _array_arg(link_keys, 'link_keys', _raw.dvz_visual_set_link_keys, 2, np.uint64)
+    if keepalive is not None:
+        if item_count is None:
+            item_count = len(link_keys)
+        elif len(link_keys) != int(item_count):
+            raise ValueError(f'link_keys count {len(link_keys)} does not match item_count {item_count}')
+    elif item_count is None:
+        raise TypeError('item_count must be provided when passing a raw link_keys pointer')
+    return _raw.dvz_visual_set_link_keys(visual, channel, ptr, int(item_count or 0))
+
+
+dvz_visual_set_link_keys.__doc__ = getattr(_raw.dvz_visual_set_link_keys, "__doc__", None)
+dvz_visual_set_link_keys.argtypes = getattr(_raw.dvz_visual_set_link_keys, "argtypes", None)
+dvz_visual_set_link_keys.restype = getattr(_raw.dvz_visual_set_link_keys, "restype", None)
+
+
+'''
+        if gui_special == 'colormap_custom':
+            return '''\
+def dvz_colormap_custom(scene, label, colors, count=None):
+    label_bytes = _encode_string(label, 'label')
+    colors = _typed_sequence(colors, np.uint8)
+    ptr, keepalive = _array_arg(colors, 'colors', _raw.dvz_colormap_custom, 2, np.uint8, (4,))
+    if keepalive is not None:
+        if count is None:
+            count = len(colors)
+        elif len(colors) != int(count):
+            raise ValueError(f'colors count {len(colors)} does not match count {count}')
+    elif count is None:
+        raise TypeError('count must be provided when passing a raw colors pointer')
+    return _raw.dvz_colormap_custom(scene, label_bytes, ptr, int(count or 0))
+
+
+dvz_colormap_custom.__doc__ = getattr(_raw.dvz_colormap_custom, "__doc__", None)
+dvz_colormap_custom.argtypes = getattr(_raw.dvz_colormap_custom, "argtypes", None)
+dvz_colormap_custom.restype = getattr(_raw.dvz_colormap_custom, "restype", None)
+
+
+'''
+        if gui_special == 'panel_set_lights':
+            return '''\
+def dvz_panel_set_lights(panel, lights, count=None):
+    if _raw_pointer(lights):
+        if count is None:
+            raise TypeError('count must be provided when passing a raw light pointer')
+        ptr = lights
+    else:
+        items = list(lights)
+        if count is not None and len(items) != int(count):
+            raise ValueError(f'lights length {len(items)} does not match count {count}')
+        count = len(items)
+        target = _raw.dvz_panel_set_lights.argtypes[1]._type_
+        ptr = (target * count)(*items) if count else None
+    return _raw.dvz_panel_set_lights(panel, ptr, int(count or 0))
+
+
+dvz_panel_set_lights.__doc__ = getattr(_raw.dvz_panel_set_lights, "__doc__", None)
+dvz_panel_set_lights.argtypes = getattr(_raw.dvz_panel_set_lights, "argtypes", None)
+dvz_panel_set_lights.restype = getattr(_raw.dvz_panel_set_lights, "restype", None)
+
+
+'''
         return _emit_gui_wrapper(gui_special)
     if name == 'dvz_visual_set_data_many':
         return '''\
@@ -750,10 +871,11 @@ dvz_colorbar_set_ticks.restype = getattr(_raw.dvz_colorbar_set_ticks, "restype",
         pointer_local = f'_{pointer_arg}_ptr'
         array_local = f'_{pointer_arg}_array'
         dtype = group.get('dtype')
+        shape_tail = group.get('shape_tail')
         dtype_arg = repr(dtype) if dtype else 'None'
         lines.append(
             f"    {pointer_local}, {array_local} = _array_arg("
-            f"{pointer_arg}, '{pointer_arg}', _raw.{name}, {param_index[pointer_arg]}, {dtype_arg})\n"
+            f"{pointer_arg}, '{pointer_arg}', _raw.{name}, {param_index[pointer_arg]}, {dtype_arg}, {shape_tail!r})\n"
         )
         call_args[pointer_arg] = pointer_local
         keepalive_names.append(array_local)

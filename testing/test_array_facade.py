@@ -185,6 +185,22 @@ def fake_facade(monkeypatch):
     raw.dvz_text_set_angles = _raw_function(
         [ctypes.c_void_p, ctypes.POINTER(ctypes.c_float), ctypes.c_uint32]
     )
+    raw.dvz_path_set_subpaths = _raw_function(
+        [ctypes.c_void_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32)]
+    )
+    raw.dvz_text_set_strings = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_char_p), ctypes.c_uint32]
+    )
+    raw.dvz_visual_set_link_keys = _raw_function(
+        [ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint64), ctypes.c_uint32]
+    )
+    raw.dvz_colormap_custom = _raw_function(
+        [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32],
+        ctypes.c_void_p,
+    )
+    raw.dvz_panel_set_lights = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_void_p), ctypes.c_uint32]
+    )
     raw.dvz_view_window = _raw_function(
         [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_char_p],
         ctypes.c_void_p,
