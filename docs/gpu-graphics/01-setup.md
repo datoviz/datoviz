@@ -14,9 +14,10 @@ You will not draw anything in this chapter. You will create a project directory,
 
 === "From source (works today)"
 
-    Follow [Build from source](../start/build-from-source.md), then install the result into your own prefix:
+    Follow the prerequisites and clone instructions in [Build from source](../start/build-from-source.md). For this course, build the Release configuration explicitly and install it into your own prefix:
 
     ```sh
+    just build Release
     cmake --install build --config Release --prefix "$HOME/datoviz-prefix"
     ```
 
@@ -101,16 +102,16 @@ Configure the project once and point CMake to your Datoviz installation:
 === "From source"
 
     ```sh
-    cmake -S . -B build -DCMAKE_PREFIX_PATH="$HOME/datoviz-prefix"
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$HOME/datoviz-prefix"
     ```
 
 === "From a package"
 
     ```sh
-    cmake -S . -B build -Ddatoviz_DIR="$(datoviz-config --cmake-dir)"
+    cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Ddatoviz_DIR="$(datoviz-config --cmake-dir)"
     ```
 
-If Datoviz is installed system-wide, `cmake -S . -B build` on its own is enough.
+The explicit Release build type matches the installed Datoviz library on single-configuration generators such as Unix Makefiles and Ninja. Multi-configuration generators ignore it and select Release in the build command below. If Datoviz is installed system-wide, you may omit the package-location option, but keep `-DCMAKE_BUILD_TYPE=Release`.
 
 Then build and run. You will repeat this loop throughout the course:
 
