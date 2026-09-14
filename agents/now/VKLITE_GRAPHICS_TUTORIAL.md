@@ -1,20 +1,18 @@
 # Modern GPU Graphics In Vulkan Course Execution
 
-Status: rewritten chapters 1-3, enabling API, generated previews, and automated course prose review complete; maintainer review and exact post-RC2 package proof remain for RC3; chapters 4-15 remain for RC4. Updated: 2026-09-08.
+Status: executable 15-chapter baseline, generated previews, automated checks, live validation, and an isolated-reader pass complete; conceptual-depth revision to 16 substantive chapters plus an epilogue is active. Exact post-RC2 package proof remains a release gate. Updated: 2026-09-14.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
-## Implemented Foundation
+## Implemented Baseline
 
-- `docs/gpu-graphics/` contains the course overview and chapters 1-3: setup, first window, and recording commands.
-- `examples/c/vulkan/step01.c` through `step03.c` are the canonical programs and build as `example_c_vulkan_stepNN`.
-- `just vulkan-course-check` verifies that every chapter C excerpt occurs in its canonical program.
-- `just vulkan-course-smoke` and `just vulkan-course-installed-smoke` build and run every current step with deterministic captures and Vulkan validation.
-- `just tutorial-media` generates chapter 1's terminal card, validates chapter 2's exact flat RGBA, and captures chapter 3 at fixed times for a reduced-motion-safe still and animated WebP.
+- `docs/gpu-graphics/` contains the overview, chapters 1-15, and the epilogue; `examples/c/vulkan/step01.c` through `step15.c` are their canonical programs.
+- `just vulkan-course-check` verifies synchronized C and GLSL excerpts, and `just vulkan-course-smoke` builds and runs all current steps with deterministic captures and Vulkan validation.
+- The documentation build generates chapter media from canonical programs, including deterministic animations and still fallbacks.
 - Canvas-owned targets start with defined contents, making empty or load-based first frames reproducible.
 - Installed loader discovery reports explicit search routes and works from a source install without manual runtime-directory arguments.
 - `just vulkan-course-wheel-smoke <version>` tests the exact package-first instructions. It correctly reports that `0.4.0rc2` lacks the post-RC2 tutorial API.
-- The 2026-09-08 automated prose review covers the overview and chapters 1-3. Windows setup now specifies Developer PowerShell, `build-msvc --config Release` source installation, the package DLL `PATH`, and configuration-specific executable paths; maintainer review of voice, pacing, and teaching progression remains required.
+- Technical, prose, and consistency reviews cover the current complete baseline. A fresh isolated worker followed the rendered course from a clean source clone and external student directory, built and ran every chapter, inspected captures, exercised live interaction and shader failure recovery, and reported no course-caused defect after the setup correction.
 - The chapter-5 Canvas input path is proven through focused input tests, synthetic hosted-view injection, and a physical X11 `r` injection that delivered one physical-key press, one committed-text event, and one release. The safe reload shape is callback-to-flag only, followed outside event dispatch by candidate shader/pipeline creation, failure-preserving rollback, device wait, pointer swap, and old-pipeline destruction; it requires no watcher or new public API.
 
 The deleted `docs/tutorials/`, `examples/c/tutorial/`, `vulkan-tutorial-*` recipes, and old pilot previews are historical. Do not restore or reference them as current course content.
@@ -25,20 +23,13 @@ The reusable API work is complete: Canvas GPU-context augmentation and resolved 
 
 Official-package shaderc proof on supported platforms, package installation proof for the rewritten course, and platform-delivered live resize remain release evidence rather than new API design work.
 
-## RC3 Next Steps
+## Active Conceptual-Depth Revision
 
-1. Run the rewritten chapters through source-install, exact official package newer than RC2, and supported hosted-platform smokes with validation.
-2. Record any platform-delivered live resize limitation without redesigning the API around an unavailable event.
-3. Obtain maintainer review of chapters 1-3 voice, pacing, ownership explanations, package instructions, and generated previews before broad RC4 prose.
-
-## RC4 Chapter Queue
-
-Implement one canonical program, synchronized chapter, generated preview, source-install smoke, and installed exact-artifact smoke per checkpoint:
-
-1. Chapters 4-7: first triangle, external shaders and explicit reload, vertex buffers, and index buffers.
-2. Chapters 8-11: push constants, matrices and perspective, depth and culling, and mouse control.
-3. Chapters 12-15: texture upload, texture sampling, lighting, and a generated sphere or torus as the real mesh.
-4. Epilogue: explain the hidden instance/device, swapchain, acquisition/presentation, synchronization, render-target, memory, and Datoviz runtime machinery.
+1. Deepen first-introduction explanations and diagrams across chapters 3-11 without changing their completed behavior.
+2. Insert chapter 12 on uniform buffers and descriptors: a static fragment `Material` tint at set 0 binding 0, with the MVP retained as a vertex-stage push constant.
+3. Shift texture upload to chapter 13; put the combined image sampler at set 0 binding 1 in chapter 14; extend the material uniform with aligned lighting parameters in chapter 15; shift the generated mesh to chapter 16 and the epilogue to 17.
+4. Extend canonical programs, shaders, navigation, checks, smokes, media, and installed-consumer validation through step 16.
+5. Run conceptual and prose consistency review, then repeat the full isolated-reader audit with a fresh independent worker until one complete pass reports no course-caused failure or ambiguity.
 
 Use generated geometry and a procedural asymmetric checkerboard. No committed Suzanne OBJ, PNG, `data` update, Blender recipe, or binary-asset approval is required for the course. Optional external-mesh polish may be considered only after the required course is complete.
 

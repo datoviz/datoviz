@@ -1,10 +1,10 @@
 # Vulkan course — rewrite plan
 
-**Status: implemented. All 15 chapters, the epilogue, canonical programs, shader sources, source checks, execution smokes, and generated previews have landed. The final isolated-reader audit remains a separate release gate. Supersedes the deleted RC3 Vulkan tutorial pilot.**
+**Status: conceptual-depth revision approved. The existing 15-chapter course, epilogue, canonical programs, shader sources, checks, smokes, previews, and isolated-reader proof form the working baseline. The revision expands the course to 16 substantive chapters plus an epilogue by adding a uniform-buffer and descriptor chapter, then repeats the complete isolated-reader gate. Supersedes the deleted RC3 Vulkan tutorial pilot.**
 
 This note records the full rewrite of the AI-generated Vulkan tutorial that lived at `docs/tutorials/vulkan/`. The rewrite changed the section, pedagogy, code delivery model, and end goal.
 
-Implemented in `docs/gpu-graphics/` and `examples/c/vulkan/`:
+Current baseline in `docs/gpu-graphics/` and `examples/c/vulkan/`; chapters 12 onward will be revised as specified below:
 
 | Chapter | Page | Step program | Result |
 | --- | --- | --- | --- |
@@ -19,14 +19,15 @@ Implemented in `docs/gpu-graphics/` and `examples/c/vulkan/`:
 | 9 | `09-matrices.md` | `step09.c` (527 lines) | a projected cube without depth |
 | 10 | `10-depth-culling.md` | `step10.c` (539 lines) | depth-tested, culled cube |
 | 11 | `11-mouse-control.md` | `step11.c` (519 lines) | mouse-controlled cube |
-| 12 | `12-texture-upload.md` | `step12.c` (624 lines) | checkerboard uploaded to a GPU image |
-| 13 | `13-texture-sampling.md` | `step13.c` (680 lines) | textured cube |
-| 14 | `14-lighting.md` | `step14.c` (683 lines) | lit textured cube |
-| 15 | `15-mesh.md` | `step15.c` (689 lines) | generated, textured, lit sphere |
+| 12 | `12-uniform-buffers.md` | `step12.c` | material tint supplied by a uniform buffer and descriptor |
+| 13 | `13-texture-upload.md` | `step13.c` | checkerboard uploaded to a GPU image |
+| 14 | `14-texture-sampling.md` | `step14.c` | textured cube |
+| 15 | `15-lighting.md` | `step15.c` | lit textured cube with material and light parameters in the uniform buffer |
+| 16 | `16-mesh.md` | `step16.c` | generated, textured, lit sphere |
 
 `just vulkan-course-check` verifies every code excerpt against its step program and external shaders. `just vulkan-course-smoke` builds and renders every step offscreen, requires reproducible captures with zero validation errors, and rejects an unchanged image except where a chapter intentionally changes workflow or data representation without changing pixels.
 
-The hidden machinery is taught through per-chapter asides and the closing chapter rather than dedicated synchronization and swapchain chapters. Chapter 15 uses generated geometry and a procedural texture rather than a committed Suzanne asset, and compute is named in the epilogue rather than given a chapter.
+The hidden machinery is taught through per-chapter asides and the closing chapter rather than dedicated synchronization and swapchain chapters. Chapter 16 uses generated geometry and a procedural texture rather than a committed Suzanne asset, and compute is named in the epilogue rather than given a chapter.
 
 ---
 
@@ -71,7 +72,7 @@ The hidden column is *named and explained*: each chapter's "Under the hood" asid
 
 - **Section: `GPU Graphics`.** A dedicated top-level tab keeps this general graphics course distinct from the Datoviz-focused advanced documentation.
 - **Title: `Modern GPU Graphics in Vulkan`** — fixes the stale `in C`.
-- **Files: `docs/gpu-graphics/`**, numbered for a linear read: `index.md`, `01-setup.md`, `02-window.md`, … `15-mesh.md`, `16-next.md`.
+- **Files: `docs/gpu-graphics/`**, numbered for a linear read: `index.md`, `01-setup.md`, `02-window.md`, … `16-mesh.md`, `17-next.md`.
 - **Consequence to confirm:** moving this out empties the `Tutorials` tab — only a 6-line `tutorials/first-scene.md` stub remains, and it is not even in the nav. Recommendation: drop the `Tutorials` tab, delete the stub, and let `Get Started` / `How-To` / `Examples` carry that role.
 
 ---
@@ -88,11 +89,49 @@ The hidden column is *named and explained*: each chapter's "Under the hood" asid
 8. **No release-validation vocabulary.** No frame contracts, no resource generations, no counter dumps.
 9. **Keep the lesson's successful path visible.** Course prose shows a failure check when it teaches the current concept or prevents a confusing crash. Complete step programs remain safe to run, but routine checks should share a small, explained cleanup pattern instead of interrupting each API call. Do not use unchecked calls merely to shorten a listing.
 
+### Concept-teaching pattern
+
+At first introduction, every major concept gets the same five-part treatment: a precise one-sentence definition; its place in the CPU-to-GPU data flow; its concrete C, GLSL, or Vulkan representation in the running program; its copy, ownership, and lifetime rule; and one small experiment with a predicted result. Later chapters reinforce the concept in a new role instead of repeating its original definition.
+
+Use one stable vocabulary throughout: **shader**, **shader invocation**, **vertex shader**, **fragment shader**, **vertex record**, **vertex attribute**, **primitive assembly**, **rasterization**, **fragment**, **resource**, **attachment**, **pipeline layout**, **descriptor set layout**, **descriptor set**, **set**, **binding**, **push constant**, **uniform buffer**, and **storage buffer**. When the API name appears, explain that `DvzSlots` represents the pipeline and descriptor-layout declarations; do not use “slot” as a substitute for descriptor, set, or binding.
+
+The reader should be able to answer four questions for every shader input: where its bytes originate, how the pipeline or descriptor declarations interpret them, whether Vulkan copies the value or retains a resource reference, and how long the source value or referenced resource must remain valid.
+
+Use these conceptual diagrams at the chapters where the relationships first matter:
+
+1. **Chapter 3, frame timeline:** CPU callback records commands and returns; queue submission makes them available to the GPU; the GPU executes them later; a fence eventually permits resource reuse. Show that referenced GPU resources remain valid through completion while CPU source arrays need survive only through a synchronous copy call.
+2. **Chapter 4, graphics pipeline:** vertex source or index to vertex fetch or `gl_VertexIndex`, then vertex-shader invocations, primitive assembly, rasterization and interpolation, fragment-shader invocations, depth and color operations, and the attachment. Mark the programmable shader stages separately from fixed-function stages.
+3. **Chapter 9, coordinate spaces:** object space through model to world space, through view to view space, through projection to clip space, through division by `w` to normalized device coordinates, and through viewport mapping to framebuffer coordinates.
+4. **Chapter 12, shader-resource binding:** a C `Material` structure becomes bytes in a uniform buffer; a descriptor set entry refers to its buffer range; set 0 binding 0 matches the GLSL uniform block; the pipeline layout declares that interface; binding the descriptor set makes the resource available to later draws.
+5. **Chapter 13, texture transfer:** CPU pixels copy into a mapped linear staging buffer; a recorded copy and barriers make them available in an optimally tiled image; the staging resource and destination image have different completion lifetimes.
+
+Checkpoints test causality rather than names or API recall. “Try it” experiments change one concept at a time and state the expected visual result or validation symptom. Conceptual explanations stay in prose around the focused excerpts; complete listings retain safe error handling without making defensive scaffolding the lesson.
+
+### Progressive learning objectives
+
+1. **Setup:** distinguish translation, linking, and runtime loading; identify the header, library, and executable roles.
+2. **Your first window:** distinguish a physical GPU from a logical device; define the canvas, surface, swapchain, frame target, render loop, and device-scoped resource lifetime.
+3. **How a frame works:** explain command recording, asynchronous queue execution, attachments, load and store operations, borrowed frame handles, and why callback return does not imply GPU completion.
+4. **Your first triangle:** define shaders as GPU programs, shader invocations, vertex and fragment stages, fixed-function stages, primitive assembly, rasterization, interpolation, fragments, graphics pipelines, clip coordinates, and the attachment receiving the result. Introduce the GLSL source to SPIR-V to shader module to pipeline path before chapter 5 deepens its compilation mechanics.
+5. **Shaders in their own files:** distinguish GLSL source, SPIR-V intermediate representation, shader modules, device pipeline compilation, entry points, stages, diagnostics, C rebuilds, and shader/pipeline reloads. SPIR-V must not be described as GPU-native machine code.
+6. **Vertex buffers:** define a vertex as one attribute record and a vertex buffer as bytes interpreted by binding stride, attribute format, offset, and shader location; distinguish host-visible mapped allocations from device-local storage; identify the synchronous upload copy point.
+7. **Index buffers:** explain that each index selects a complete vertex record, how primitive assembly consumes the resulting order, why reuse saves records, why UV seams and hard creases can require duplicates, and why the bound index type must match storage.
+8. **Push constants:** explain the pipeline-layout declaration, stage visibility, command-recorded value copy, guaranteed small capacity, and the suitability of push constants for small per-draw values. Preview uniform and storage buffers briefly and promise the complete uniform-buffer model in chapter 12.
+9. **Matrices and perspective:** follow positions through object, world, view, clip, normalized-device, and framebuffer spaces; explain homogeneous `w`, perspective division, model/view/projection roles, multiplication convention, aspect, field of view, and near/far planes.
+10. **Depth and culling:** distinguish depth testing from depth writing, explain order-independent opaque visibility, define winding after projection, show that culling rejects primitives before rasterization, and explain why depth and culling solve different problems.
+11. **Mouse control:** trace input into CPU-side camera and model state and then into derived matrices; distinguish camera movement from model movement; reinforce that shaders see supplied values rather than controller objects.
+12. **Uniform buffers and descriptors:** define a uniform buffer as buffer-backed read-only shader parameters and a descriptor as a typed resource reference; distinguish descriptor set layout, populated descriptor set, set number, binding number, pipeline layout, descriptor update, and descriptor bind; compare push constants, uniform buffers, and storage buffers without presenting performance heuristics as universal rules; teach `std140` alignment with deliberately 16-byte-aligned members.
+13. **Uploading a texture:** distinguish linear buffer bytes from typed multidimensional images; explain staging, optimal tiling, layouts, and barriers as access, ordering, and visibility contracts; identify the copy-completion point and the separate staging and image lifetimes; connect the concrete image format to linear or sRGB interpretation.
+14. **Sampling the texture:** distinguish image, image view, and sampler; add the combined image sampler beside the existing uniform descriptor; explain filtering, addressing, UV coordinates, perspective-correct interpolation, and duplication at UV seams.
+15. **Lighting:** define normals as surface directions; keep positions, normals, light, and view directions in one coordinate space; explain interpolation and renormalization, diffuse and specular terms, inverse-transpose normal transforms under nonuniform scaling, and linear-light calculations with concrete sRGB texture and attachment formats.
+16. **A real mesh:** distinguish CPU mesh data from Vulkan buffers and draws; preserve the vertex-interface contract while changing geometry; explain generated attributes, index counts, float conversion, analytic and imported normals, recomputation, seams, and creases.
+17. **Epilogue:** reconstruct the full frame and resource model, name the hidden instance, device, queue, swapchain, synchronization, memory, and descriptor-pool machinery, and summarize which state normally changes per frame, per draw, or rarely.
+
 ---
 
 ## 5. Chapter map
 
-Four parts, 15 chapters plus an epilogue. Program length is measured from each completed canonical step rather than treated as a design target.
+Four parts, 16 chapters plus an epilogue. Program length is measured from each completed canonical step rather than treated as a design target.
 
 ### Prologue — `index.md`
 Hero image (or short video) of the final mesh viewer. The promise, the contract table from §2, prerequisites, and how the course is structured. No code.
@@ -127,28 +166,27 @@ Hero image (or short video) of the final mesh viewer. The promise, the contract 
 
 | # | Chapter | Reader adds | Concepts | Result |
 | --- | --- | --- | --- | --- |
-| 12 | **Uploading a texture** | procedural checkerboard pixels, a staging buffer, an image, two layout transitions, the copy, a one-shot submit | images vs buffers; tiling and why a copy is needed; image layouts and barriers; sRGB vs linear | nothing visible yet — verified by validation staying silent |
-| 13 | **Sampling the texture** | a sampler, a descriptor slot and set, a `texcoord` attribute, sampling in the fragment shader | descriptor sets vs push constants; filtering; address modes; UV orientation | a textured cube |
-| 14 | **Lighting** | a `normal` attribute, the normal matrix, ambient + diffuse, then specular; light and eye position pushed | normals and the dot product; world vs view space; per-vertex vs per-fragment shading; gamma | a lit textured cube |
-| 15 | **A real mesh** | `dvz_geometry_sphere`/`torus` (and `dvz_geometry_obj` for your own model), double→float conversion, analytic normals, and optional `dvz_geometry_compute_normals` for meshes without normals | separating mesh *data* from mesh *rendering*; index counts; why the GPU wants floats; when recomputed normals blur seams or creases | **the deliverable:** a rotatable, textured, lit mesh |
+| 12 | **Uniform buffers and descriptors** | a static fragment-shader `Material` block, a host-visible uniform buffer, set 0 binding 0, a populated descriptor set, and descriptor binding in the draw callback; the 64-byte MVP remains a vertex-stage push constant | uniform buffers; descriptor set layouts vs descriptor sets; set and binding addresses; buffer ranges; `std140` alignment; copied values vs referenced resources; push constants vs uniform and storage buffers | the cube receives a visible material tint |
+| 13 | **Uploading a texture** | procedural checkerboard pixels, a staging buffer, an image, two layout transitions, the copy, and a one-shot submit | buffers vs images; linear staging vs optimal tiling; layouts; barriers as ordering and visibility; image formats; sRGB vs linear | the tinted cube remains visible while its checkerboard becomes a ready GPU image |
+| 14 | **Sampling the texture** | a sampler, image view, combined image sampler at set 0 binding 1, a `texcoord` attribute, and sampling in the fragment shader; the material uniform remains at binding 0 | image views vs images; samplers; descriptor aggregation; filtering; address modes; UV orientation and perspective-correct interpolation | a textured, tinted cube |
+| 15 | **Lighting** | a `normal` attribute, normal transform, ambient, diffuse, and specular lighting; extend the existing material uniform with aligned light and material parameters while keeping projection and model-view matrices in the 128-byte push range | normals and the dot product; world vs view space; interpolation and renormalization; inverse transpose; linear-light calculations and sRGB encoding | a lit textured cube whose material and light parameters come from the uniform buffer |
+| 16 | **A real mesh** | `dvz_geometry_sphere`/`torus` (and `dvz_geometry_obj()` for readers' own models), double-to-float conversion, analytic normals, and optional `dvz_geometry_compute_normals()` for meshes without normals | separating mesh data from rendering; index counts; attribute contracts; why the GPU consumes the chosen float format; when recomputed normals blur seams or creases | **the deliverable:** a rotatable, textured, lit mesh |
 
-### Epilogue — `16-next.md`
+### Epilogue — `17-next.md`
 What you never wrote, one paragraph each with a pointer to where Datoviz does it: instance and device creation, queue families, surface and swapchain, acquire/present, semaphores and fences, render passes vs dynamic rendering, descriptor pools, memory allocation. Then where to go: compute shaders, multiple pipelines, MSAA, blending and transparency, ImGui overlays, and the Scene API for when you want none of this.
-
-**Merge candidates** if 15 chapters reads as too many: 6+7 (vertex and index buffers), 12+13 (texture upload and sampling). That lands at 13. Splitting 14 into diffuse and specular is the opposite move if the pacing needs it.
 
 ---
 
 ## 6. What makes it attractive
 
 - **Result image at the top of every chapter**, and the final one animated.
-- **A running line-count meter** in each chapter header. Chapter 1 gives the program length; chapters 2-15 also estimate the raw Vulkan equivalent. Progress stays visible without forcing a Vulkan comparison into the setup chapter.
+- **A running line-count meter** in each chapter header. Chapter 1 gives the program length; chapters 2-16 also estimate the raw Vulkan equivalent. Progress stays visible without forcing a Vulkan comparison into the setup chapter.
 - **"Try it" boxes**, 3–5 per chapter, each with a predicted outcome the reader can check: swap the topology to a line list, set `polygon_mode` to wireframe, flip the winding, disable depth write, clamp vs repeat the sampler.
 - **"Under the hood" asides** — the raw-Vulkan cost of the step just taken.
 - **"When it goes wrong" box** per chapter, with real symptoms and their causes.
 - **Collapsible full listing** at every chapter's end.
 - **Short checkpoint** — three or four questions, not a paragraph-long recital.
-- **Ownership tables** only where they earn their place (chapters 3, 12).
+- **Ownership tables** only where they earn their place (chapters 3, 12, and 13).
 
 ---
 
@@ -156,10 +194,10 @@ What you never wrote, one paragraph each with a pointer to where Datoviz does it
 
 The released course reader needs no repository once a compatible package is available. The repository still needs the canonical code, or the docs rot.
 
-- **`examples/c/vulkan/step01.c` … `step15.c`** plus reader-local `stepNN/shader.vert` and `stepNN/shader.frag` files from chapter 5 onward, all registered in the examples CMake file. Each `stepNN.c` is the honest state of the reader's file at the end of chapter NN — a real program, no `#ifdef` switches. `diff stepNN.c stepNN+1.c` is exactly the chapter's delta, which makes both authoring and review straightforward.
+- **`examples/c/vulkan/step01.c` … `step16.c`** plus reader-local `stepNN/shader.vert` and `stepNN/shader.frag` files from chapter 5 onward, all registered in the examples CMake file. Each `stepNN.c` is the honest state of the reader's file at the end of chapter NN — a real program, no `#ifdef` switches. `diff stepNN.c stepNN+1.c` is exactly the chapter's delta, which makes both authoring and review straightforward.
 - **`just vulkan-course-check`** (rewrite of `tools/check_vulkan_tutorial.py`): every fenced C or GLSL block in chapter NN must appear verbatim (whitespace-normalized) in `stepNN`'s sources. This is a real guarantee, unlike the current token-presence check.
 - **`just vulkan-course-smoke`** (rewrite of `tools/run_vulkan_tutorial.py`): build and run every in-tree step offscreen with validation, require reproducible captures, and enforce the expected visual relationship between adjacent chapters. Separate installed-prefix and wheel recipes compile copied course sources as standalone consumers.
-- **Images**: every chapter gets one, generated into `build/` from the step programs at docs-build time rather than committed, so previews cannot drift from the code and the `data` submodule is not involved. Chapter 1 gets a terminal card rendered with Pillow from the program's real stdout; flat-result chapters use the framebuffer capture validated against an exact expected RGBA; chapter 3 gets an animated WebP assembled from captures at fixed times; chapters 4-15 use ordinary captures with a non-flat check. `png_is_nonblank` stays as it is — it guards ~104 gallery images and "not flat" is the right check there, just the wrong contract for a chapter whose correct output is one color.
+- **Images**: every chapter gets one, generated into `build/` from the step programs at docs-build time rather than committed, so previews cannot drift from the code and the `data` submodule is not involved. Chapter 1 gets a terminal card rendered with Pillow from the program's real stdout; flat-result chapters use the framebuffer capture validated against an exact expected RGBA; chapter 3 gets an animated WebP assembled from captures at fixed times; chapters 4-16 use ordinary captures with a non-flat check. `png_is_nonblank` stays as it is — it guards gallery images and “not flat” is the right check there, just the wrong contract for a chapter whose correct output is one color.
 - **Delete** `examples/c/tutorial/` including the unused `*_spike` targets and orphan shader directories. Done.
 
 Everything the API needs already exists and is proven by the current spikes: `dvz_compile_glsl`, `dvz_graphics_*` (including `cull_mode`, `front_face`, `polygon_mode`, `depth`, `blend`), `dvz_slots_push` / `dvz_cmd_push_constants`, `dvz_descriptors_image` / `_buffer`, canvas depth attachments, `dvz_arcball_*` / `dvz_camera_*`, and `dvz_geometry_*`. **No new public API is required.**
@@ -170,10 +208,10 @@ RC3 verification confirmed the Canvas input route for chapter 5 through focused 
 
 ## 8. Migration status
 
-1. Done: add `docs/gpu-graphics/`, the prologue, chapters 1-15, and the epilogue.
+1. Done for the baseline; revision pending: expand `docs/gpu-graphics/` from chapters 1-15 plus epilogue to chapters 1-16 plus epilogue by inserting the uniform-buffer chapter at 12.
 2. Done: add the top-level `GPU Graphics` navigation group and remove the pilot `Tutorials` section.
-3. Done: add canonical programs and reader-local shader files under `examples/c/vulkan/` in lockstep with every chapter.
-4. Done: source synchronization, execution smokes, stale-executable protection, installed-consumer validation, and generated preview tooling are wired into the docs build.
+3. Done for the baseline; revision pending for steps 12-16: keep canonical programs and reader-local shader files under `examples/c/vulkan/` in lockstep with every chapter.
+4. Done for the baseline; revision pending: extend source synchronization, execution smokes, stale-executable protection, installed-consumer validation, and generated preview tooling through step 16.
 5. Done: delete `examples/c/tutorial/`, `docs/tutorials/`, and `data/tutorials/vulkan/`.
 6. Done: the old `tutorials/vulkan/*` pages and navigation are absent from the v0.4 site.
 
@@ -183,7 +221,7 @@ RC3 verification confirmed the Canvas input route for chapter 5 through focused 
 
 1. **Matrix math**: the reader writes ~40 lines of `mat4` helpers in chapter 9 and sees the math, then adopts `dvz_camera_*` / `dvz_arcball_*` in chapter 11 for interaction — by then they know what those objects produce.
 2. **Verification**: per-chapter `stepNN` programs in the repo, with CI asserting every code block in chapter NN appears verbatim in `stepNN`. The course text never points the reader at the repo.
-3. **Granularity**: 15 chapters as mapped. No merges.
+3. **Granularity**: 16 substantive chapters plus an epilogue. Chapter 12 teaches uniform buffers and descriptors before texture resources add another layer.
 4. **`Tutorials` tab**: dropped, along with `docs/tutorials/`.
 5. **Shaders**: inline strings through chapter 4, external files with hot reload from chapter 5.
 6. **Texture source**: procedural checkerboard — zero assets, fully self-contained.
@@ -192,7 +230,7 @@ RC3 verification confirmed the Canvas input route for chapter 5 through focused 
 
 ## 10. Pre-generation editorial gate (settled 2026-09-14)
 
-Before writing chapters 4-15:
+Before revising chapters 4-16:
 
 1. Keep the foundational object-model, coordinate, interaction, query, and project-boundary explanations under **Get Started → Concepts**. Reserve **Advanced** for scene planning, retained-resource machinery, GPU ownership, runtime layers, contributors, and release work.
 2. In teaching excerpts, keep checks that explain a failure mode or protect a boundary the chapter introduces. Consolidate routine constructor and teardown failures in complete programs so error handling does not obscure the graphics sequence.
@@ -201,6 +239,6 @@ Before writing chapters 4-15:
 
 ## 11. Final isolated-reader audit
 
-After all chapters pass normal repository validation, test the published course from beginning to end in a fresh isolated environment. Give an independent agent only the course, the supported installation artifacts, and the platform prerequisites stated by the course. Do not provide repository history, internal plans, unpublished source examples, or prior Datoviz guidance.
+After all chapters pass normal repository validation, test the published course from beginning to end in a fresh isolated environment. Give a fresh independent agent only the rendered public course, the supported installation artifacts, and the platform prerequisites stated by the course. Do not provide repository history, internal plans, unpublished source examples, canonical repository examples, tests, or prior Datoviz guidance.
 
-The agent must follow the instructions literally, create the project from an empty directory, build and run every chapter result, and record every command, failure, ambiguity, undocumented assumption, workaround, and elapsed time. It must not silently repair course code. Its deliverables are an execution transcript, a chapter-by-chapter audit, and a prioritized improvement plan. Any failed or ambiguous step must be corrected and rerun before the course is considered complete.
+The agent must begin from a fresh Datoviz clone or the exact supported package artifact and create the student project in a separate empty directory outside that source tree. It must follow the instructions literally, build and run every chapter result, exercise every documented interaction and failure-recovery path, capture every graphical result through the documented route, inspect the captures for the predicted behavior, and record every command, failure, ambiguity, undocumented assumption, workaround, and elapsed time. It must not inspect canonical examples or silently repair course code. Its deliverables are an execution transcript, captured evidence, a chapter-by-chapter audit, and a prioritized improvement plan. Any course-caused failure or ambiguity must be corrected, then the entire course must be rerun by another fresh independent agent until one complete pass succeeds without a course-caused problem.
