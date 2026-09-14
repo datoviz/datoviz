@@ -584,6 +584,9 @@ int test_app_offscreen_rotated_mesh_depth_orders_faces(TstContext* suite, const 
 
 int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_arcball_initial_state_without_camera(
+    TstContext* suite, const TstCase* item);
+
 #endif
 #endif
 

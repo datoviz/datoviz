@@ -20,6 +20,10 @@ RC3 prepares the documentation, packaging, and tutorial foundation for the v0.4 
 * The course requires a build newer than the published RC2 package. Its package warning remains until an official newer artifact passes the course checks.
 * Low-level APIs remain advanced/unstable. Chapters 4–15 and official Qt/PyQt provider artifacts are planned for RC4; high-level Python plotting remains in GSP/VisPy2.
 
+### Fixes
+
+* Apply arcball transforms to camera-less panels, including orientations set through `dvz_view_arcball()` before the first offscreen frame.
+
 ## v0.4.0rc2
 
 RC2 replaces RC1 to fix interactive windows created from the packaged macOS wheels. The API and

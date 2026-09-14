@@ -7148,6 +7148,92 @@ int test_app_offscreen_camera_arcball_mesh_renders_cube(TstContext* suite, const
 }
 
 
+/**
+ * Check that a high-level arcball controls the first and later frames without an explicit camera.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_app_offscreen_arcball_initial_state_without_camera(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    AT(dvz_panel_camera(panel) == NULL);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0.05f, 0.05f, 0.08f, 1.0f));
+
+    DvzVisual* visual = dvz_mesh(scene, 0);
+    ANN(visual);
+    vec3 positions[24] = {0};
+    DvzColor colors[24] = {0};
+    vec3 normals[24] = {0};
+    DvzIndex indices[36] = {0};
+    _mesh_build_cube_object_space(positions, colors, normals, indices);
+    AT(dvz_visual_set_data(visual, "position", positions, 24) == DVZ_OK);
+    AT(dvz_visual_set_data(visual, "color", colors, 24) == DVZ_OK);
+    AT(dvz_visual_set_data(visual, "normal", normals, 24) == DVZ_OK);
+    AT(dvz_visual_set_index_data(visual, indices, 36) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, visual, NULL) == DVZ_OK);
+    AT(_test_set_phong_material(visual, 0.25f, 0.85f, 0.25f, 32.0f) == DVZ_OK);
+
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        log_warn("test_app_offscreen_arcball_initial_state_without_camera skipped: GPU context "
+                 "creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* win = dvz_view_offscreen(app, figure, 128, 96);
+    ANN(win);
+    DvzArcball* arcball = dvz_view_arcball(win, panel, NULL);
+    ANN(arcball);
+    DvzCanvas* canvas = dvz_view_canvas(win);
+    ANN(canvas);
+
+    const vec3 angles[3] = {
+        {+0.45f, -0.70f, +0.25f},
+        {0.00f, 0.00f, 0.00f},
+        {-0.80f, +0.35f, +1.10f},
+    };
+    uint8_t* rgba[3] = {0};
+    uint32_t width = 0;
+    uint32_t height = 0;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        AT(dvz_arcball_set(arcball, (vec3){angles[i][0], angles[i][1], angles[i][2]}) == DVZ_OK);
+        AT(dvz_view_render_once(win) == DVZ_CANVAS_FRAME_READY);
+        AT(dvz_canvas_capture_rgba(canvas, &width, &height, &rgba[i]) == DVZ_OK);
+        ANN(rgba[i]);
+        AT(width == 128);
+        AT(height == 96);
+        const uint8_t* center = _pixel_at(rgba[i], width, height, width / 2, height / 2);
+        AT(!(center[0] == 13 && center[1] == 13 && center[2] == 20));
+    }
+
+    const size_t byte_count = 4 * width * height;
+    AT(memcmp(rgba[0], rgba[1], byte_count) != 0);
+    AT(memcmp(rgba[1], rgba[2], byte_count) != 0);
+    AT(memcmp(rgba[0], rgba[2], byte_count) != 0);
+
+    for (uint32_t i = 0; i < 3; i++)
+        dvz_free(rgba[i]);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_app_offscreen_shared_field_mixed_runtime_updates(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -10616,6 +10702,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_renders_nonblank);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_rotated_mesh_depth_orders_faces);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_camera_arcball_mesh_renders_cube);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_arcball_initial_state_without_camera);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_shared_field_mixed_runtime_updates);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_retained_render_second_frame);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_retained_render_second_frame);

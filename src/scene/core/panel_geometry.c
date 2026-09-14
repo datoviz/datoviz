@@ -252,7 +252,8 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
         DvzPanzoom panzoom = {0};
         if (!_scene_panel_compose_panzoom(panel, &panzoom))
         {
-            if (!panel->view2d_enabled)
+            /* A camera-less arcball applies its transform to the identity MVP below. */
+            if (!panel->view2d_enabled && panel->arcball == NULL)
                 return;
             panzoom.zoom[0] = 1.0f;
             panzoom.zoom[1] = 1.0f;

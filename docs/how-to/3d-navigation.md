@@ -111,6 +111,14 @@ Use a centered object for the first version of an arcball view. If imported geom
 origin, either normalize the data or set a camera target that matches the object's center before
 binding the controller.
 
+For an app-managed view, `dvz_view_arcball()` creates, binds, and connects the controller. An explicit panel camera is optional for centered normalized geometry, and `dvz_arcball_set()` may be called immediately after the helper to establish the orientation of the first rendered frame:
+
+```c
+DvzArcball* arcball = dvz_view_arcball(view, panel, NULL);
+dvz_arcball_set(arcball, (vec3){0.45f, -0.70f, 0.25f});
+dvz_view_render_once(view);
+```
+
 Arcball is also the simplest controller to share across comparable panels:
 
 ```c
