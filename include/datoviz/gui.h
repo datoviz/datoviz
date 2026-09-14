@@ -32,8 +32,13 @@
 
 typedef struct DvzGui DvzGui;
 typedef struct DvzGuiViewport DvzGuiViewport;
+typedef struct DvzGuiTree DvzGuiTree;
+typedef struct DvzGuiTable DvzGuiTable;
 
 typedef void (*DvzGuiCallback)(DvzGui* gui, DvzView* view, void* user_data);
+
+/** Column sentinel used by events which do not concern one table column. */
+#define DVZ_GUI_COLUMN_NONE UINT32_MAX
 
 
 
@@ -70,6 +75,56 @@ typedef enum DvzGuiDockSlot
     DVZ_GUI_DOCK_SLOT_TOP,
     DVZ_GUI_DOCK_SLOT_BOTTOM,
 } DvzGuiDockSlot;
+
+
+typedef enum DvzGuiDataEventType
+{
+    DVZ_GUI_DATA_EVENT_NONE = 0,
+    DVZ_GUI_DATA_EVENT_SELECTION_CHANGED,
+    DVZ_GUI_DATA_EVENT_ACTIVATED,
+    DVZ_GUI_DATA_EVENT_EXPANSION_CHANGED,
+    DVZ_GUI_DATA_EVENT_SORT_CHANGED,
+    DVZ_GUI_DATA_EVENT_FILTER_CHANGED,
+} DvzGuiDataEventType;
+
+typedef enum DvzGuiDataWidgetFlags
+{
+    DVZ_GUI_DATA_WIDGET_FLAGS_NONE = 0,
+    DVZ_GUI_DATA_WIDGET_FLAGS_MULTI_SELECT = 1u << 0,
+    DVZ_GUI_DATA_WIDGET_FLAGS_FILTER = 1u << 1,
+} DvzGuiDataWidgetFlags;
+
+typedef enum DvzGuiDataSetFlags
+{
+    DVZ_GUI_DATA_SET_FLAGS_NONE = 0,
+    DVZ_GUI_DATA_SET_FLAGS_RESET_STATE = 1u << 0,
+} DvzGuiDataSetFlags;
+
+typedef enum DvzGuiDataStyleFlags
+{
+    DVZ_GUI_DATA_STYLE_FLAGS_NONE = 0,
+    DVZ_GUI_DATA_STYLE_FLAGS_FOREGROUND = 1u << 0,
+    DVZ_GUI_DATA_STYLE_FLAGS_BACKGROUND = 1u << 1,
+    DVZ_GUI_DATA_STYLE_FLAGS_ACCENT = 1u << 2,
+    DVZ_GUI_DATA_STYLE_FLAGS_DISABLED = 1u << 3,
+} DvzGuiDataStyleFlags;
+
+typedef enum DvzGuiTableColumnFlags
+{
+    DVZ_GUI_TABLE_COLUMN_FLAGS_NONE = 0,
+    DVZ_GUI_TABLE_COLUMN_FLAGS_SORTABLE = 1u << 0,
+    DVZ_GUI_TABLE_COLUMN_FLAGS_SEARCHABLE = 1u << 1,
+    DVZ_GUI_TABLE_COLUMN_FLAGS_STRETCH = 1u << 2,
+} DvzGuiTableColumnFlags;
+
+typedef enum DvzGuiTableColumnType
+{
+    DVZ_GUI_TABLE_COLUMN_TEXT = 0,
+    DVZ_GUI_TABLE_COLUMN_INT64,
+    DVZ_GUI_TABLE_COLUMN_DOUBLE,
+    DVZ_GUI_TABLE_COLUMN_BOOL,
+    DVZ_GUI_TABLE_COLUMN_COLOR,
+} DvzGuiTableColumnType;
 
 
 
@@ -110,6 +165,42 @@ typedef struct DvzGuiViewportConfig
 } DvzGuiViewportConfig;
 
 
+typedef struct DvzGuiDataEvent
+{
+    uint32_t type;
+    uint32_t flags;
+    uint64_t row_key;
+    uint32_t column_id;
+    int32_t detail;
+    uint64_t revision;
+} DvzGuiDataEvent;
+
+
+typedef struct DvzGuiTableColumnDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t column_id;
+    uint32_t type;
+    float initial_width;
+    const char* title;
+    const char* format;
+    uint32_t reserved[4];
+} DvzGuiTableColumnDesc;
+
+
+typedef struct DvzGuiDataStyle
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t row_key;
+    DvzColor foreground;
+    DvzColor background;
+    DvzColor accent;
+    uint32_t reserved[4];
+} DvzGuiDataStyle;
+
+
 
 EXTERN_C_ON
 
@@ -132,6 +223,20 @@ DVZ_EXPORT DvzGuiConfig dvz_gui_config(void);
  * @return default GUI viewport configuration
  */
 DVZ_EXPORT DvzGuiViewportConfig dvz_gui_viewport_config(void);
+
+/**
+ * Return a default table column descriptor.
+ *
+ * @return a zero-initialized, size-versioned descriptor
+ */
+DVZ_EXPORT DvzGuiTableColumnDesc dvz_gui_table_column_desc(void);
+
+/**
+ * Return a default data row style.
+ *
+ * @return a zero-initialized, size-versioned style
+ */
+DVZ_EXPORT DvzGuiDataStyle dvz_gui_data_style(void);
 
 
 
@@ -160,8 +265,7 @@ DVZ_EXPORT DvzGui* dvz_view_gui(DvzView* view, const DvzGuiConfig* config);
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult
-dvz_view_set_gui_callback(
-    DvzView* view, DvzGuiCallback callback, void* user_data);
+dvz_view_set_gui_callback(DvzView* view, DvzGuiCallback callback, void* user_data);
 
 
 
@@ -319,8 +423,7 @@ dvz_gui_slider_float(DvzGui* gui, const char* label, float* value, float min, fl
  * @param max maximum value
  * @return whether the value changed
  */
-DVZ_EXPORT bool
-dvz_gui_slider_int(DvzGui* gui, const char* label, int* value, int min, int max);
+DVZ_EXPORT bool dvz_gui_slider_int(DvzGui* gui, const char* label, int* value, int min, int max);
 
 
 
@@ -398,8 +501,8 @@ DVZ_EXPORT bool dvz_gui_slider_float_format(
  * @return whether either value changed
  */
 DVZ_EXPORT bool dvz_gui_slider_range_float(
-    DvzGui* gui, const char* label, float* current_min, float* current_max, float min,
-    float max, const char* format);
+    DvzGui* gui, const char* label, float* current_min, float* current_max, float min, float max,
+    const char* format);
 
 
 
@@ -417,8 +520,8 @@ DVZ_EXPORT bool dvz_gui_slider_range_float(
  * @return whether either value changed
  */
 DVZ_EXPORT bool dvz_gui_range_float(
-    DvzGui* gui, const char* label, float* current_min, float* current_max, float speed,
-    float min, float max, const char* format);
+    DvzGui* gui, const char* label, float* current_min, float* current_max, float speed, float min,
+    float max, const char* format);
 
 
 
@@ -538,8 +641,7 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
  * @return a newly allocated GUI viewport owned by the caller, or NULL on failure
  */
 DVZ_EXPORT DvzGuiViewport*
-dvz_gui_viewport_from_window(
-    DvzGui* gui, DvzView* source, const DvzGuiViewportConfig* config);
+dvz_gui_viewport_from_window(DvzGui* gui, DvzView* source, const DvzGuiViewportConfig* config);
 
 
 
@@ -599,6 +701,388 @@ DVZ_EXPORT void dvz_gui_viewport_destroy(DvzGuiViewport* viewport);
  */
 DVZ_EXPORT bool
 dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* open, int flags);
+
+/**
+ * Create a retained tree widget which owns copies of all supplied model data.
+ *
+ * @param widget_id stable, non-empty UTF-8 ImGui identifier
+ * @param flags bitwise OR of DvzGuiDataWidgetFlags
+ * @return a caller-owned tree, or NULL on validation or allocation failure
+ */
+DVZ_EXPORT DvzGuiTree* dvz_gui_tree(const char* widget_id, uint32_t flags);
+
+/**
+ * Replace the tree rows atomically.
+ *
+ * @param tree tree
+ * @param row_count row count
+ * @param keys keys
+ * @param parents parents
+ * @param labels labels
+ * @param secondary_labels secondary labels
+ * @param flags flags
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_set_rows(
+    DvzGuiTree* tree, uint32_t row_count, const uint64_t* keys, const uint32_t* parents,
+    const char* const* labels, const char* const* secondary_labels, uint32_t flags);
+
+/**
+ * Replace copied tree swatches atomically.
+ *
+ * @param tree tree
+ * @param row_count row count
+ * @param colors colors
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_tree_set_swatches(DvzGuiTree* tree, uint32_t row_count, const DvzColor* colors);
+
+/**
+ * Replace copied keyed tree row styles atomically.
+ *
+ * @param tree tree
+ * @param style_count style count
+ * @param styles styles
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_tree_set_styles(DvzGuiTree* tree, uint32_t style_count, const DvzGuiDataStyle* styles);
+
+/**
+ * Replace tree selection by stable row key.
+ *
+ * @param tree tree
+ * @param key_count key count
+ * @param keys keys
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_tree_set_selection(DvzGuiTree* tree, uint32_t key_count, const uint64_t* keys);
+
+/**
+ * Copy selected tree keys up to capacity.
+ *
+ * @param tree tree
+ * @param capacity capacity
+ * @param keys keys
+ * @return the full selected count
+ */
+DVZ_EXPORT uint32_t
+dvz_gui_tree_get_selection(const DvzGuiTree* tree, uint32_t capacity, uint64_t* keys);
+
+/**
+ * Replace tree expansion state by stable row key.
+ *
+ * @param tree tree
+ * @param key_count key count
+ * @param keys keys
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_tree_set_expanded(DvzGuiTree* tree, uint32_t key_count, const uint64_t* keys);
+
+/**
+ * Copy expanded tree keys up to capacity.
+ *
+ * @param tree tree
+ * @param capacity capacity
+ * @param keys keys
+ * @return the full expanded count
+ */
+DVZ_EXPORT uint32_t
+dvz_gui_tree_get_expanded(const DvzGuiTree* tree, uint32_t capacity, uint64_t* keys);
+
+/**
+ * Expand all tree rows.
+ *
+ * @param tree tree
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_expand_all(DvzGuiTree* tree);
+
+/**
+ * Expand tree rows above the requested depth.
+ *
+ * @param tree tree
+ * @param depth depth
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_expand_to_depth(DvzGuiTree* tree, uint32_t depth);
+
+/**
+ * Collapse all tree rows.
+ *
+ * @param tree tree
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_collapse_all(DvzGuiTree* tree);
+
+/**
+ * Expand ancestors and schedule scrolling to one row.
+ *
+ * @param tree tree
+ * @param key key
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_reveal(DvzGuiTree* tree, uint64_t key);
+
+/**
+ * Set the strict tree visibility mask.
+ *
+ * @param tree tree
+ * @param row_count row count
+ * @param visible visible
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_tree_set_visible(DvzGuiTree* tree, uint32_t row_count, const bool* visible);
+
+/**
+ * Set the external tree match mask.
+ *
+ * @param tree tree
+ * @param row_count row count
+ * @param matches matches
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_tree_set_matches(DvzGuiTree* tree, uint32_t row_count, const bool* matches);
+
+/**
+ * Copy a UTF-8 native filter into the tree.
+ *
+ * @param tree tree
+ * @param filter filter
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_set_filter(DvzGuiTree* tree, const char* filter);
+
+/**
+ * Copy the tree filter up to capacity.
+ *
+ * @param tree tree
+ * @param capacity capacity
+ * @param filter filter
+ * @return the required byte count including the terminator
+ */
+DVZ_EXPORT uint32_t
+dvz_gui_tree_get_filter(const DvzGuiTree* tree, uint32_t capacity, char* filter);
+
+/**
+ * Draw a tree and drain interaction events.
+ *
+ * @param gui gui
+ * @param tree tree
+ * @param events events
+ * @param capacity capacity
+ * @param written written
+ * @param dropped dropped
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_draw(
+    DvzGui* gui, DvzGuiTree* tree, DvzGuiDataEvent* events, uint32_t capacity, uint32_t* written,
+    uint32_t* dropped);
+
+/**
+ * Destroy a retained tree.
+ *
+ * @param tree tree
+ */
+DVZ_EXPORT void dvz_gui_tree_destroy(DvzGuiTree* tree);
+
+/**
+ * Create a retained typed table.
+ *
+ * @param widget_id widget id
+ * @param column_count column count
+ * @param columns columns
+ * @param flags flags
+ * @return a caller-owned table, or NULL on failure
+ */
+DVZ_EXPORT DvzGuiTable* dvz_gui_table(
+    const char* widget_id, uint32_t column_count, const DvzGuiTableColumnDesc* columns,
+    uint32_t flags);
+
+/**
+ * Replace table row keys and clear column values.
+ *
+ * @param table table
+ * @param row_count row count
+ * @param keys keys
+ * @param flags flags
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_table_set_rows(
+    DvzGuiTable* table, uint32_t row_count, const uint64_t* keys, uint32_t flags);
+
+/**
+ * Copy a complete UTF-8 text column atomically.
+ *
+ * @param table table
+ * @param column_id column id
+ * @param row_count row count
+ * @param values values
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_table_set_column_text(
+    DvzGuiTable* table, uint32_t column_id, uint32_t row_count, const char* const* values);
+
+/**
+ * Copy a complete signed integer column atomically.
+ *
+ * @param table table
+ * @param column_id column id
+ * @param row_count row count
+ * @param values values
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_table_set_column_int64(
+    DvzGuiTable* table, uint32_t column_id, uint32_t row_count, const int64_t* values);
+
+/**
+ * Copy a complete double column atomically.
+ *
+ * @param table table
+ * @param column_id column id
+ * @param row_count row count
+ * @param values values
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_table_set_column_double(
+    DvzGuiTable* table, uint32_t column_id, uint32_t row_count, const double* values);
+
+/**
+ * Copy a complete boolean column atomically.
+ *
+ * @param table table
+ * @param column_id column id
+ * @param row_count row count
+ * @param values values
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_table_set_column_bool(
+    DvzGuiTable* table, uint32_t column_id, uint32_t row_count, const bool* values);
+
+/**
+ * Copy a complete color column atomically.
+ *
+ * @param table table
+ * @param column_id column id
+ * @param row_count row count
+ * @param values values
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_table_set_column_color(
+    DvzGuiTable* table, uint32_t column_id, uint32_t row_count, const DvzColor* values);
+
+/**
+ * Replace copied keyed table row styles atomically.
+ *
+ * @param table table
+ * @param style_count style count
+ * @param styles styles
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_table_set_styles(DvzGuiTable* table, uint32_t style_count, const DvzGuiDataStyle* styles);
+
+/**
+ * Replace table selection by stable row key.
+ *
+ * @param table table
+ * @param key_count key count
+ * @param keys keys
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_table_set_selection(DvzGuiTable* table, uint32_t key_count, const uint64_t* keys);
+
+/**
+ * Copy selected table keys up to capacity.
+ *
+ * @param table table
+ * @param capacity capacity
+ * @param keys keys
+ * @return the full selected count
+ */
+DVZ_EXPORT uint32_t
+dvz_gui_table_get_selection(const DvzGuiTable* table, uint32_t capacity, uint64_t* keys);
+
+/**
+ * Set the strict table visibility mask.
+ *
+ * @param table table
+ * @param row_count row count
+ * @param visible visible
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_table_set_visible(DvzGuiTable* table, uint32_t row_count, const bool* visible);
+
+/**
+ * Set the external table match mask.
+ *
+ * @param table table
+ * @param row_count row count
+ * @param matches matches
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_table_set_matches(DvzGuiTable* table, uint32_t row_count, const bool* matches);
+
+/**
+ * Copy a UTF-8 native filter into the table.
+ *
+ * @param table table
+ * @param filter filter
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_table_set_filter(DvzGuiTable* table, const char* filter);
+
+/**
+ * Copy the table filter up to capacity.
+ *
+ * @param table table
+ * @param capacity capacity
+ * @param filter filter
+ * @return the required byte count including the terminator
+ */
+DVZ_EXPORT uint32_t
+dvz_gui_table_get_filter(const DvzGuiTable* table, uint32_t capacity, char* filter);
+
+/**
+ * Return the active stable column ID and direction.
+ *
+ * @param table table
+ * @param column_id column id
+ * @param direction direction
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult
+dvz_gui_table_get_sort(const DvzGuiTable* table, uint32_t* column_id, int32_t* direction);
+
+/**
+ * Draw a table and drain interaction events.
+ *
+ * @param gui gui
+ * @param table table
+ * @param events events
+ * @param capacity capacity
+ * @param written written
+ * @param dropped dropped
+ * @return DVZ_OK on success, DVZ_ERROR on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_table_draw(
+    DvzGui* gui, DvzGuiTable* table, DvzGuiDataEvent* events, uint32_t capacity, uint32_t* written,
+    uint32_t* dropped);
+
+/**
+ * Destroy a retained table.
+ *
+ * @param table table
+ */
+DVZ_EXPORT void dvz_gui_table_destroy(DvzGuiTable* table);
 
 
 

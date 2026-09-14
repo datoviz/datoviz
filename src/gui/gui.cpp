@@ -128,6 +128,10 @@ struct DvzGui
     bool failed;
     bool had_active_item;
     bool had_open_popup;
+    bool callback_active;
+    bool data_window_visible;
+    uint32_t data_window_depth;
+    uint64_t frame_index;
 };
 
 
@@ -220,6 +224,36 @@ static void _gui_set_current(DvzGui* gui)
     ANN(gui);
     ANN(gui->context);
     ImGui::SetCurrentContext(gui->context);
+}
+
+
+/**
+ * Set a GUI overlay as the current Dear ImGui context for sibling GUI modules.
+ *
+ * @param gui GUI overlay
+ */
+void _dvz_gui_set_current(DvzGui* gui)
+{
+    _gui_set_current(gui);
+}
+
+
+/**
+ * Validate the retained data-widget draw context.
+ *
+ * @param gui GUI overlay
+ * @param[out] frame_index current GUI frame serial
+ * @return whether drawing is allowed in the current callback and window
+ */
+bool _dvz_gui_data_draw_context(DvzGui* gui, uint64_t* frame_index)
+{
+    if (gui == NULL || frame_index == NULL)
+        return false;
+    _gui_set_current(gui);
+    if (!gui->callback_active || gui->data_window_depth == 0 || !gui->data_window_visible)
+        return false;
+    *frame_index = gui->frame_index;
+    return true;
 }
 
 
@@ -1670,6 +1704,9 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    gui->frame_index++;
+    gui->data_window_depth = 0;
+    gui->data_window_visible = false;
     for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
         _gui_viewport_reset_frame_request(viewport);
     if (
@@ -1683,7 +1720,11 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
     }
     _gui_submit_dockspace(gui);
     if (gui->callback != NULL)
+    {
+        gui->callback_active = true;
         gui->callback(gui, win, gui->callback_user_data);
+        gui->callback_active = false;
+    }
 }
 
 
@@ -1951,7 +1992,10 @@ bool dvz_gui_begin(DvzGui* gui, const char* title, bool* open, int flags)
         ImGui::SetNextWindowSize(
             ImVec2((float)gui->config.default_window_width, 0.0f), ImGuiCond_FirstUseEver);
     }
-    return ImGui::Begin(title, open, flags);
+    const bool visible = ImGui::Begin(title, open, flags);
+    gui->data_window_depth++;
+    gui->data_window_visible = visible;
+    return visible;
 }
 
 
@@ -2018,6 +2062,10 @@ void dvz_gui_end(DvzGui* gui)
     ANN(gui);
     _gui_set_current(gui);
     ImGui::End();
+    if (gui->data_window_depth > 0)
+        gui->data_window_depth--;
+    if (gui->data_window_depth == 0)
+        gui->data_window_visible = false;
 }
 
 

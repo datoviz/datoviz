@@ -51,6 +51,14 @@ typedef struct DvzGuiViewportDebugState
 } DvzGuiViewportDebugState;
 
 
+typedef struct DvzGuiDataDebugState
+{
+    uint32_t row_count;
+    uint32_t display_count;
+    uint64_t rebuild_count;
+} DvzGuiDataDebugState;
+
+
 typedef int (*DvzGuiViewportResolveCallback)(DvzView* view, void* user_data);
 
 
@@ -66,6 +74,8 @@ _dvz_gui_create(
     DvzApp* app, DvzGpuCtx* gpu_ctx, DvzView* view, DvzWindow* window,
     const DvzGuiConfig* config, const DvzFontDefaults* font_defaults);
 bool _dvz_gui_config_validate(const DvzGuiConfig* config);
+void _dvz_gui_set_current(DvzGui* gui);
+bool _dvz_gui_data_draw_context(DvzGui* gui, uint64_t* frame_index);
 DvzFontDefaults _dvz_gui_font_defaults(const DvzGui* gui);
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
@@ -77,5 +87,11 @@ void _dvz_gui_fps_overlay(
 void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame);
 bool _dvz_gui_viewport_debug_state(
     const DvzGuiViewport* viewport, DvzGuiViewportDebugState* out);
+bool _dvz_gui_tree_debug_state(DvzGuiTree* tree, DvzGuiDataDebugState* out);
+uint64_t _dvz_gui_tree_debug_display_key(DvzGuiTree* tree, uint32_t display_index);
+bool _dvz_gui_table_debug_state(DvzGuiTable* table, DvzGuiDataDebugState* out);
+uint64_t _dvz_gui_table_debug_display_key(DvzGuiTable* table, uint32_t display_index);
+DvzResult _dvz_gui_table_debug_sort(
+    DvzGuiTable* table, uint32_t column_id, int32_t direction);
 
 EXTERN_C_OFF

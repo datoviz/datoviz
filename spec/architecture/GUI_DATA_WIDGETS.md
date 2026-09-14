@@ -260,10 +260,15 @@ Cell editing, cell selection, arbitrary action cells, context menus, drag and dr
 
 ## Validation
 
-CPU tests cover invalid and duplicate keys, invalid parent order, copied string lifetime, data replacement with preserved state, explicit reset, selection revisions, filtering and ancestor reveal, expansion restoration after filtering, visibility and match masks, sorting typed columns, event-buffer overflow, `destroy(NULL)` where supported, and ordinary create/destroy/recreate cycles.
+Initial CPU tests cover invalid and duplicate keys, invalid parent order, copied model state,
+replacement with preserved stable-key state, filtering and ancestor reveal, visibility and match masks,
+and deterministic typed sorting. Interaction-level tests for event overflow and revisions, clipped large
+widgets, modifier selection, activation, expansion, style precedence, and multiple widgets remain
+follow-up coverage; the deterministic gallery example provides an integrated rendering smoke in the
+meantime.
 
-GUI tests cover clipped large trees and tables, stable ImGui IDs, modifier selection, activation, expansion, integrated filtering, row style precedence, and multiple independent widgets in one frame.
-
-Python tests prove that input sequences are copied during setters, `draw()` performs one ctypes call regardless of row count, selection queries are conditional on revision events, and labels are not re-encoded during drawing.
+Python facade tests must prove that input sequences are encoded only during setters, `draw()` performs
+one ctypes call regardless of row count, event buffers report written and dropped counts correctly,
+and labels are not re-encoded during drawing.
 
 One deterministic `features_gui_data_widgets` gallery example presents a colored hierarchy and a typed table together. It has a Python adaptation, an honest native-only WebGPU classification because Dear ImGui is not part of the scene/WASM route, generated API and gallery pages, and a temporary reviewed screenshot candidate. Full example completion requires later explicit approval and promotion of the exact canonical PNG through the protected `data` workflow.

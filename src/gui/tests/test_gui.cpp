@@ -16,6 +16,7 @@
 
 #include "test_gui.h"
 
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -110,6 +111,182 @@ int test_gui_embedded_font_resources(TstContext* suite, const TstCase* item)
         AT(bytes != NULL);
         AT(size > 1024);
     }
+    return 0;
+}
+
+
+
+/**
+ * Verify retained data widgets copy keys and preserve queryable state without a GPU.
+ */
+int test_gui_data_widget_storage(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    const uint64_t keys[] = {7, 9};
+    const uint32_t parents[] = {UINT32_MAX, 0};
+    const char* labels[] = {"root", "child"};
+    DvzGuiTree* tree = dvz_gui_tree("storage", DVZ_GUI_DATA_WIDGET_FLAGS_MULTI_SELECT);
+    AT(tree != NULL);
+    AT(dvz_gui_tree_set_rows(tree, 2, keys, parents, labels, NULL, 0) == DVZ_OK);
+    AT(dvz_gui_tree_set_selection(tree, 1, &keys[1]) == DVZ_OK);
+    uint64_t selected = 0;
+    AT(dvz_gui_tree_get_selection(tree, 1, &selected) == 1);
+    AT(selected == 9);
+    AT(dvz_gui_tree_expand_all(tree) == DVZ_OK);
+    AT(dvz_gui_tree_get_expanded(tree, 0, NULL) == 2);
+    dvz_gui_tree_destroy(tree);
+    return 0;
+}
+
+
+/**
+ * Verify tree validation, state preservation, filtering, and cached flattening without a GPU.
+ */
+int test_gui_data_tree_model(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    AT(dvz_gui_tree("", 0) == NULL);
+    AT(dvz_gui_tree("bad", 1u << 20) == NULL);
+    DvzGuiTree* tree = dvz_gui_tree("tree-model", DVZ_GUI_DATA_WIDGET_FLAGS_FILTER);
+    AT(tree != NULL);
+    const uint64_t keys[] = {10, 11, 12, 20};
+    const uint32_t parents[] = {UINT32_MAX, 0, 1, UINT32_MAX};
+    const char* labels[] = {"Root", "Branch", "Needle", "Other"};
+    const char* secondary[] = {"", "secondary", "leaf", ""};
+    AT(dvz_gui_tree_set_rows(tree, 4, keys, parents, labels, secondary, 0) == DVZ_OK);
+    DvzGuiDataDebugState state = {};
+    AT(_dvz_gui_tree_debug_state(tree, &state));
+    AT(state.row_count == 4);
+    AT(state.display_count == 2);
+    const uint64_t rebuild = state.rebuild_count;
+    AT(_dvz_gui_tree_debug_state(tree, &state));
+    AT(state.rebuild_count == rebuild);
+
+    AT(dvz_gui_tree_set_filter(tree, "needle") == DVZ_OK);
+    AT(_dvz_gui_tree_debug_state(tree, &state));
+    AT(state.display_count == 3);
+    AT(_dvz_gui_tree_debug_display_key(tree, 0) == 10);
+    AT(_dvz_gui_tree_debug_display_key(tree, 2) == 12);
+    const bool visible[] = {false, true, true, true};
+    AT(dvz_gui_tree_set_visible(tree, 4, visible) == DVZ_OK);
+    AT(_dvz_gui_tree_debug_state(tree, &state));
+    AT(state.display_count == 0);
+    AT(dvz_gui_tree_set_visible(tree, 0, NULL) == DVZ_OK);
+    const bool matches[] = {true, false, false, true};
+    AT(dvz_gui_tree_set_filter(tree, "") == DVZ_OK);
+    AT(dvz_gui_tree_set_matches(tree, 4, matches) == DVZ_OK);
+    AT(_dvz_gui_tree_debug_state(tree, &state));
+    AT(state.display_count == 2);
+    AT(_dvz_gui_tree_debug_display_key(tree, 1) == 20);
+    AT(dvz_gui_tree_set_matches(tree, 0, NULL) == DVZ_OK);
+
+    AT(dvz_gui_tree_expand_all(tree) == DVZ_OK);
+    AT(dvz_gui_tree_set_selection(tree, 1, &keys[2]) == DVZ_OK);
+    const uint64_t reordered[] = {20, 10, 11, 12};
+    const uint32_t reordered_parents[] = {UINT32_MAX, UINT32_MAX, 1, 2};
+    const char* reordered_labels[] = {"Other", "Root", "Branch", "Needle"};
+    AT(dvz_gui_tree_set_rows(tree, 4, reordered, reordered_parents, reordered_labels, NULL, 0) ==
+       DVZ_OK);
+    uint64_t selected = 0;
+    AT(dvz_gui_tree_get_selection(tree, 1, &selected) == 1);
+    AT(selected == 12);
+    AT(dvz_gui_tree_get_expanded(tree, 0, NULL) == 4);
+
+    const uint64_t duplicate[] = {1, 1};
+    const uint32_t roots[] = {UINT32_MAX, UINT32_MAX};
+    const char* duplicate_labels[] = {"a", "b"};
+    AT(dvz_gui_tree_set_rows(tree, 2, duplicate, roots, duplicate_labels, NULL, 0) == DVZ_ERROR);
+    AT(dvz_gui_tree_get_selection(tree, 1, &selected) == 1);
+    const uint32_t invalid_preorder[] = {UINT32_MAX, 0, UINT32_MAX, 0};
+    AT(dvz_gui_tree_set_rows(tree, 4, keys, invalid_preorder, labels, NULL, 0) == DVZ_ERROR);
+    DvzGuiDataStyle style = dvz_gui_data_style();
+    style.row_key = 12;
+    style.flags = DVZ_GUI_DATA_STYLE_FLAGS_BACKGROUND;
+    AT(dvz_gui_tree_set_styles(tree, 1, &style) == DVZ_OK);
+    style.flags |= 1u << 20;
+    AT(dvz_gui_tree_set_styles(tree, 1, &style) == DVZ_ERROR);
+    AT(dvz_gui_tree_set_swatches(tree, 0, NULL) == DVZ_OK);
+    dvz_gui_tree_destroy(tree);
+    return 0;
+}
+
+
+/**
+ * Verify typed table columns, combined filtering, and deterministic sorting without a GPU.
+ */
+int test_gui_data_table_model(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzGuiTableColumnDesc columns[3] = {};
+    for (uint32_t i = 0; i < 3; i++)
+        columns[i] = dvz_gui_table_column_desc();
+    columns[0].column_id = 7;
+    columns[0].type = DVZ_GUI_TABLE_COLUMN_TEXT;
+    columns[0].title = "Name";
+    columns[0].flags = DVZ_GUI_TABLE_COLUMN_FLAGS_SEARCHABLE | DVZ_GUI_TABLE_COLUMN_FLAGS_SORTABLE;
+    columns[1].column_id = 8;
+    columns[1].type = DVZ_GUI_TABLE_COLUMN_DOUBLE;
+    columns[1].title = "Value";
+    columns[1].format = "%.2f";
+    columns[1].flags = DVZ_GUI_TABLE_COLUMN_FLAGS_SORTABLE;
+    columns[2].column_id = 9;
+    columns[2].type = DVZ_GUI_TABLE_COLUMN_COLOR;
+    columns[2].title = "Color";
+    DvzGuiTable* table = dvz_gui_table("table-model", 3, columns, 0);
+    AT(table != NULL);
+    const uint64_t keys[] = {3, 1, 4, 2};
+    const char* names[] = {"beta", "Alpha", "alpha", "gamma"};
+    const double values[] = {INFINITY, NAN, -INFINITY, 4.0};
+    const DvzColor colors[] = {{1, 2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5, 6}, {4, 5, 6, 7}};
+    AT(dvz_gui_table_set_rows(table, 4, keys, 0) == DVZ_OK);
+    AT(dvz_gui_table_set_column_text(table, 7, 4, names) == DVZ_OK);
+    AT(dvz_gui_table_set_column_double(table, 8, 4, values) == DVZ_OK);
+    AT(dvz_gui_table_set_column_color(table, 9, 4, colors) == DVZ_OK);
+    DvzGuiDataDebugState state = {};
+    AT(_dvz_gui_table_debug_state(table, &state));
+    AT(state.display_count == 4);
+    uint64_t rebuild = state.rebuild_count;
+    AT(_dvz_gui_table_debug_state(table, &state));
+    AT(state.rebuild_count == rebuild);
+    AT(dvz_gui_table_set_filter(table, "ALPHA") == DVZ_OK);
+    AT(_dvz_gui_table_debug_state(table, &state));
+    AT(state.display_count == 2);
+    const bool matches[] = {true, true, false, true};
+    AT(dvz_gui_table_set_matches(table, 4, matches) == DVZ_OK);
+    AT(_dvz_gui_table_debug_state(table, &state));
+    AT(state.display_count == 1);
+    AT(_dvz_gui_table_debug_display_key(table, 0) == 1);
+    AT(dvz_gui_table_set_matches(table, 0, NULL) == DVZ_OK);
+    AT(dvz_gui_table_set_filter(table, "") == DVZ_OK);
+    AT(_dvz_gui_table_debug_sort(table, 8, 1) == DVZ_OK);
+    AT(_dvz_gui_table_debug_display_key(table, 0) == 4);
+    AT(_dvz_gui_table_debug_display_key(table, 3) == 1);
+    AT(_dvz_gui_table_debug_sort(table, 8, -1) == DVZ_OK);
+    AT(_dvz_gui_table_debug_display_key(table, 0) == 3);
+    AT(_dvz_gui_table_debug_display_key(table, 3) == 1);
+    AT(_dvz_gui_table_debug_sort(table, 7, 1) == DVZ_OK);
+    AT(_dvz_gui_table_debug_display_key(table, 0) == 1);
+    AT(_dvz_gui_table_debug_display_key(table, 1) == 4);
+
+    const char invalid_utf8[] = {(char)0xc0, (char)0x80, 0};
+    const char* invalid_names[] = {"ok", invalid_utf8, "ok", "ok"};
+    AT(dvz_gui_table_set_column_text(table, 7, 4, invalid_names) == DVZ_ERROR);
+    AT(_dvz_gui_table_debug_display_key(table, 0) == 1);
+    AT(dvz_gui_table_set_column_double(table, 7, 4, values) == DVZ_ERROR);
+    DvzGuiTableColumnDesc invalid = dvz_gui_table_column_desc();
+    invalid.column_id = 1;
+    invalid.type = DVZ_GUI_TABLE_COLUMN_DOUBLE;
+    invalid.title = "invalid";
+    invalid.format = "%s";
+    AT(dvz_gui_table("invalid", 1, &invalid, 0) == NULL);
+    invalid.type = DVZ_GUI_TABLE_COLUMN_COLOR;
+    invalid.format = NULL;
+    invalid.flags = DVZ_GUI_TABLE_COLUMN_FLAGS_SORTABLE;
+    AT(dvz_gui_table("invalid", 1, &invalid, 0) == NULL);
+    dvz_gui_table_destroy(table);
     return 0;
 }
 
@@ -838,6 +1015,9 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_viewport_config_defaults);
     TST_CASE(test_gui_config_font_defaults);
     TST_CASE(test_gui_embedded_font_resources);
+    TST_CASE(test_gui_data_widget_storage);
+    TST_CASE(test_gui_data_tree_model);
+    TST_CASE(test_gui_data_table_model);
     TST_CASE(test_gui_widget_wrapper_symbols);
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);

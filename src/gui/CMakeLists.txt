@@ -4,6 +4,7 @@
 
 set(GUI_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/gui.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gui_data_widgets.cpp"
     "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui.cpp"
     "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_demo.cpp"
     "${PROJECT_SOURCE_DIR}/external/cimgui/imgui/imgui_draw.cpp"
