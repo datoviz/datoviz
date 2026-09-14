@@ -58,6 +58,8 @@ Real or prepared data also requires the complete dataset attribution, license, c
 
 Keep the demonstrated public `dvz_*` calls visible in the example. Reuse shared helpers only for theme, deterministic data generation, capture, and boilerplate. The scenario must work through the native scenario runner and must not call Vulkan, GLFW, WebGPU, or browser APIs directly.
 
+Keep error handling proportional to the example. Check failures that protect ownership boundaries or prevent confusing follow-on errors, but consolidate routine construction and cleanup when separate branches would hide the feature being demonstrated. A copy-safe example must fail safely without making defensive scaffolding the main thing readers see.
+
 Register the native executable in `examples/c/CMakeLists.txt`. A portable `webgpu-live` scenario must also be added to `src/wasm/CMakeLists.txt`, `src/wasm/scene_api_scenario.c`, the scenario-count constant, `tools/wasm_scene_smoke.mjs`, `examples/webgpu/live_examples.js`, and the filtered browser-smoke route table.
 
 Add focused WASM assertions for the example's meaningful packet shape and interaction updates. Compilation alone is not WebGPU proof.

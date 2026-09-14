@@ -4,9 +4,11 @@ Queries connect a rendered frame back to retained scene meaning. Picking asks wh
 rendered; probing asks what sampled value corresponds to a coordinate; readback retrieves GPU output
 such as pixels or typed buffer data. Support is visual-, query-, and backend-specific.
 
-Read this page when designing an interaction flow. Use the [Queries reference](../reference/queries.md)
-for exact request/result types and freshness rules, and the How-To pages for
-[picking](../how-to/pick-items.md) or [probing](../how-to/probe-fields.md).
+At the application level, you create a request and consume a result. Datoviz handles the render target, asynchronous completion, and translation from backend output to scene identities.
+
+**Audience:** application developers adding picking, probing, or readback. **Prerequisite:** [Scene building blocks](figure-panel-visual-model.md) and the [Interaction model](interaction-model.md).
+
+Use the [Queries reference](../reference/queries.md) for exact request/result types and freshness rules, and the How-To pages for [picking](../how-to/pick-items.md) or [probing](../how-to/probe-fields.md).
 
 
 ## Three questions

@@ -1,9 +1,6 @@
 # Advanced
 
-Use Advanced to understand Datoviz architecture, change runtime or backend code, contribute to the
-repository, or prepare a release. You do not need this section to create an ordinary visualization;
-use the [How-To guides](../how-to/index.md) for tasks and [Reference](../reference/index.md) for exact
-contracts.
+Use Advanced to understand Datoviz internals, change runtime or backend code, contribute to the repository, or prepare a release. You do not need this section to create an ordinary visualization. Start with [Get Started](../start/index.md) for the object model and other foundational concepts, use the [How-To guides](../how-to/index.md) for tasks, and use [Reference](../reference/index.md) for exact contracts.
 
 !!! note "Status and stability"
 
@@ -14,7 +11,7 @@ contracts.
   <a class="dvz-audience-card" href="../explanation/architecture/">
     <span class="dvz-audience-card__label">Understand</span>
     <strong>Understand the engine</strong>
-    <span>Learn the object model, architecture, frame lifecycle, and retained-resource model.</span>
+    <span>Follow scene state through planning, retained resources, frame execution, and backend output.</span>
   </a>
   <a class="dvz-audience-card" href="runtime-internals/">
     <span class="dvz-audience-card__label">Build</span>
@@ -67,14 +64,6 @@ produces presentation, capture, or readback output.
     <span>Present, capture, readback</span>
   </div>
 </div>
-
-## Concepts
-
-- [Figure, panel, and visual model](../explanation/figure-panel-visual-model.md)
-- [Coordinate systems](../explanation/coordinate-systems.md)
-- [Interaction model](../explanation/interaction-model.md)
-- [Queries, picking, and probing](../explanation/query-pick-probe-model.md)
-- [Datoviz, GSP, and VisPy2](../explanation/gsp-vispy2-boundary.md)
 
 ## Scene planning
 

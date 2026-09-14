@@ -12,6 +12,16 @@
 #define WIDTH  800
 #define HEIGHT 600
 
+#define COURSE_CHECK(condition, message)                                                         \
+    do                                                                                           \
+    {                                                                                            \
+        if (!(condition))                                                                        \
+        {                                                                                        \
+            fprintf(stderr, "%s\n", message);                                                   \
+            goto cleanup;                                                                        \
+        }                                                                                        \
+    } while (0)
+
 // Everything our program owns. It will grow in every chapter.
 typedef struct
 {
@@ -38,6 +48,14 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
 
 int main(int argc, char** argv)
 {
+    int exit_code = 1;
+    DvzWindowHost* host = NULL;
+    DvzGpuCtx* gpu = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    DvzCommands* commands = NULL;
+    DvzRendering* rendering = NULL;
+
     // With --png PATH the program renders offscreen and saves an image instead of opening a window.
     const char* png_path = NULL;
     for (int i = 1; i < argc - 1; i++)
@@ -50,18 +68,17 @@ int main(int argc, char** argv)
         live ? DVZ_CANVAS_RENDER_MODE_PRESENT : DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
 
     // The window host talks to the operating system's windowing layer.
-    DvzWindowHost* host = dvz_window_host();
+    host = dvz_window_host();
+    COURSE_CHECK(host != NULL, "window host creation failed");
 
     // The GPU context picks a physical device and creates the logical device and its queues.
     DvzGpuCtxConfig gpu_config = dvz_gpu_ctx_config();
     dvz_gpu_ctx_config_validation(&gpu_config, true);
-    dvz_canvas_configure_gpu_ctx(host, backend, mode, &gpu_config);
-    DvzGpuCtx* gpu = dvz_gpu_ctx(&gpu_config);
-    if (gpu == NULL)
-    {
-        fprintf(stderr, "no usable GPU found\n");
-        return 1;
-    }
+    DvzResult configure_result =
+        dvz_canvas_configure_gpu_ctx(host, backend, mode, &gpu_config);
+    COURSE_CHECK(configure_result == DVZ_OK, "GPU configuration failed");
+    gpu = dvz_gpu_ctx(&gpu_config);
+    COURSE_CHECK(gpu != NULL, "no usable GPU found");
 
     DvzGpuInfo info = {0};
     if (dvz_gpu_ctx_gpu_info(gpu, &info))
@@ -71,26 +88,26 @@ int main(int argc, char** argv)
     window_config.width = WIDTH;
     window_config.height = HEIGHT;
     window_config.title = "Modern GPU Graphics in Vulkan";
-    DvzWindow* window = dvz_window_create(host, backend, &window_config);
+    window = dvz_window_create(host, backend, &window_config);
+    COURSE_CHECK(window != NULL, "window creation failed");
 
     // The canvas owns the swapchain, the per-frame images, and all frame synchronization.
     DvzCanvasConfig canvas_config = dvz_canvas_config();
     canvas_config.window = window;
     canvas_config.device = dvz_gpu_ctx_device(gpu);
     canvas_config.render_mode = mode;
-    DvzCanvas* canvas = dvz_canvas_create(&canvas_config);
-    if (canvas == NULL)
-    {
-        fprintf(stderr, "canvas creation failed\n");
-        return 1;
-    }
+    canvas = dvz_canvas_create(&canvas_config);
+    COURSE_CHECK(canvas != NULL, "canvas creation failed");
 
+    commands = dvz_commands_create_wrapper();
+    rendering = dvz_rendering_create_wrapper();
     Renderer renderer = {
         .device = dvz_gpu_ctx_device(gpu),
-        .commands = dvz_commands_create_wrapper(),
-        .rendering = dvz_rendering_create_wrapper(),
+        .commands = commands,
+        .rendering = rendering,
         .clear = {.color.float32 = {0.10f, 0.12f, 0.18f, 1.00f}},
     };
+    COURSE_CHECK(commands != NULL && rendering != NULL, "renderer allocation failed");
     dvz_canvas_set_draw_callback(canvas, draw, &renderer);
 
     // Process one frame attempt; READY attempts are submitted below.
@@ -101,23 +118,31 @@ int main(int argc, char** argv)
         int status = dvz_canvas_frame(canvas);
         if (status == DVZ_CANVAS_FRAME_WAIT_SURFACE)
             continue;
-        if (status != DVZ_CANVAS_FRAME_READY)
-            break;
-        dvz_canvas_submit(canvas);
+        COURSE_CHECK(status == DVZ_CANVAS_FRAME_READY, "frame preparation failed");
+        int submit_result = dvz_canvas_submit(canvas);
+        COURSE_CHECK(submit_result == 0, "frame submission failed");
         frame_index++;
     }
     printf("rendered %llu frames\n", (unsigned long long)frame_index);
 
     if (png_path != NULL)
-        dvz_canvas_capture_png(canvas, png_path);
+    {
+        int capture_result = dvz_canvas_capture_png(canvas, png_path);
+        COURSE_CHECK(capture_result == 0, "PNG capture failed");
+    }
 
+    exit_code = 0;
+
+cleanup:
     // Destroy resources in dependency-safe order.
-    dvz_rendering_free(renderer.rendering);
-    dvz_commands_free(renderer.commands);
+    dvz_rendering_free(rendering);
+    dvz_commands_free(commands);
     dvz_canvas_destroy(canvas);
     dvz_window_destroy(window);
     dvz_window_host_destroy(host);
-    printf("validation errors: %u\n", dvz_gpu_ctx_error_count(gpu));
+    uint32_t validation_errors = gpu != NULL ? dvz_gpu_ctx_error_count(gpu) : 0;
+    if (gpu != NULL)
+        printf("validation errors: %u\n", validation_errors);
     dvz_gpu_ctx_destroy(gpu);
-    return 0;
+    return exit_code == 0 && validation_errors == 0 ? 0 : 1;
 }

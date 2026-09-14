@@ -1,6 +1,6 @@
 # 2. Your first window
 
-**Your program at the end of this chapter: about 120 lines. The raw Vulkan equivalent: around 900.**
+**Your program at the end of this chapter: about 150 lines. The raw Vulkan equivalent: around 900.**
 
 ![The chapter 2 window filled with its deterministic blue-grey clear color.](../assets/gpu-graphics/02-window.webp)
 
@@ -32,7 +32,19 @@ Add the window size while you are here:
 ```c
 #define WIDTH  800
 #define HEIGHT 600
+
+#define COURSE_CHECK(condition, message)                                                         \
+    do                                                                                           \
+    {                                                                                            \
+        if (!(condition))                                                                        \
+        {                                                                                        \
+            fprintf(stderr, "%s\n", message);                                                   \
+            goto cleanup;                                                                        \
+        }                                                                                        \
+    } while (0)
 ```
+
+`COURSE_CHECK` keeps routine failure handling on one line and sends every failure to the cleanup block at the end of `main`. The course uses it at boundaries where continuing would produce a misleading result. It does not wrap ordinary configuration calls whose return values do not change the lesson.
 
 ## A window, or a file
 
@@ -51,7 +63,21 @@ The same program can render to a window or directly to an image. You make that c
         live ? DVZ_CANVAS_RENDER_MODE_PRESENT : DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
 ```
 
-`main` now takes arguments, so change its signature to `int main(int argc, char** argv)`.
+`main` now takes arguments. Change its signature and initialize the objects that the cleanup block will release:
+
+```c
+int main(int argc, char** argv)
+{
+    int exit_code = 1;
+    DvzWindowHost* host = NULL;
+    DvzGpuCtx* gpu = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    DvzCommands* commands = NULL;
+    DvzRendering* rendering = NULL;
+```
+
+The course checks creation, frame submission, and file output because continuing after one of those failures would hide the real problem. Every failure jumps to one cleanup block. Routine configuration calls stay on the main path unless their result determines whether setup can continue.
 
 The **backend** decides who provides the window abstraction. GLFW communicates with the desktop, while the offscreen backend provides a windowless render target of the same size. The **render mode** decides where finished frames go: either to the screen for presentation or into memory for readback.
 
@@ -59,7 +85,8 @@ The **backend** decides who provides the window abstraction. GLFW communicates w
 
 ```c
     // The window host talks to the operating system's windowing layer.
-    DvzWindowHost* host = dvz_window_host();
+    host = dvz_window_host();
+    COURSE_CHECK(host != NULL, "window host creation failed");
 ```
 
 Your program needs one window host. It owns the connection to the platform's windowing system and the event queue that you will process in the render loop.
@@ -70,13 +97,11 @@ Your program needs one window host. It owns the connection to the platform's win
     // The GPU context picks a physical device and creates the logical device and its queues.
     DvzGpuCtxConfig gpu_config = dvz_gpu_ctx_config();
     dvz_gpu_ctx_config_validation(&gpu_config, true);
-    dvz_canvas_configure_gpu_ctx(host, backend, mode, &gpu_config);
-    DvzGpuCtx* gpu = dvz_gpu_ctx(&gpu_config);
-    if (gpu == NULL)
-    {
-        fprintf(stderr, "no usable GPU found\n");
-        return 1;
-    }
+    DvzResult configure_result =
+        dvz_canvas_configure_gpu_ctx(host, backend, mode, &gpu_config);
+    COURSE_CHECK(configure_result == DVZ_OK, "GPU configuration failed");
+    gpu = dvz_gpu_ctx(&gpu_config);
+    COURSE_CHECK(gpu != NULL, "no usable GPU found");
 ```
 
 This is where your program acquires a GPU. The rest of the course relies on two Vulkan terms:
@@ -103,7 +128,8 @@ Print which GPU you got:
     window_config.width = WIDTH;
     window_config.height = HEIGHT;
     window_config.title = "Modern GPU Graphics in Vulkan";
-    DvzWindow* window = dvz_window_create(host, backend, &window_config);
+    window = dvz_window_create(host, backend, &window_config);
+    COURSE_CHECK(window != NULL, "window creation failed");
 ```
 
 Datoviz config structs follow a common pattern: a `dvz_*_config()` function returns a struct filled with defaults, you replace the fields you care about, and then pass it to the create function. This pattern allows new fields to be added without breaking your code.
@@ -116,12 +142,8 @@ Datoviz config structs follow a common pattern: a `dvz_*_config()` function retu
     canvas_config.window = window;
     canvas_config.device = dvz_gpu_ctx_device(gpu);
     canvas_config.render_mode = mode;
-    DvzCanvas* canvas = dvz_canvas_create(&canvas_config);
-    if (canvas == NULL)
-    {
-        fprintf(stderr, "canvas creation failed\n");
-        return 1;
-    }
+    canvas = dvz_canvas_create(&canvas_config);
+    COURSE_CHECK(canvas != NULL, "canvas creation failed");
 ```
 
 The course relies heavily on the canvas, so it is worth being precise about what the canvas owns.
@@ -171,12 +193,15 @@ For now, read these five lines as "clear this frame's image to a color." Chapter
 Create the renderer in `main`, after the canvas, and hand it to the canvas:
 
 ```c
+    commands = dvz_commands_create_wrapper();
+    rendering = dvz_rendering_create_wrapper();
     Renderer renderer = {
         .device = dvz_gpu_ctx_device(gpu),
-        .commands = dvz_commands_create_wrapper(),
-        .rendering = dvz_rendering_create_wrapper(),
+        .commands = commands,
+        .rendering = rendering,
         .clear = {.color.float32 = {0.10f, 0.12f, 0.18f, 1.00f}},
     };
+    COURSE_CHECK(commands != NULL && rendering != NULL, "renderer allocation failed");
     dvz_canvas_set_draw_callback(canvas, draw, &renderer);
 ```
 
@@ -193,9 +218,9 @@ Clear-color components are floating-point values from `0.0` to `1.0`, in red, gr
         int status = dvz_canvas_frame(canvas);
         if (status == DVZ_CANVAS_FRAME_WAIT_SURFACE)
             continue;
-        if (status != DVZ_CANVAS_FRAME_READY)
-            break;
-        dvz_canvas_submit(canvas);
+        COURSE_CHECK(status == DVZ_CANVAS_FRAME_READY, "frame preparation failed");
+        int submit_result = dvz_canvas_submit(canvas);
+        COURSE_CHECK(submit_result == 0, "frame submission failed");
         frame_index++;
     }
     printf("rendered %llu frames\n", (unsigned long long)frame_index);
@@ -213,7 +238,12 @@ Notice the division of labor: your callback records *what* to draw, while `dvz_c
 
 ```c
     if (png_path != NULL)
-        dvz_canvas_capture_png(canvas, png_path);
+    {
+        int capture_result = dvz_canvas_capture_png(canvas, png_path);
+        COURSE_CHECK(capture_result == 0, "PNG capture failed");
+    }
+
+    exit_code = 0;
 ```
 
 Reading back an offscreen frame requires waiting for the GPU, copying the image into host-visible memory, and encoding it. This function performs all three steps.
@@ -221,15 +251,18 @@ Reading back an offscreen frame requires waiting for the GPU, copying the image 
 ## Cleanup
 
 ```c
+cleanup:
     // Destroy resources in dependency-safe order.
-    dvz_rendering_free(renderer.rendering);
-    dvz_commands_free(renderer.commands);
+    dvz_rendering_free(rendering);
+    dvz_commands_free(commands);
     dvz_canvas_destroy(canvas);
     dvz_window_destroy(window);
     dvz_window_host_destroy(host);
-    printf("validation errors: %u\n", dvz_gpu_ctx_error_count(gpu));
+    uint32_t validation_errors = gpu != NULL ? dvz_gpu_ctx_error_count(gpu) : 0;
+    if (gpu != NULL)
+        printf("validation errors: %u\n", validation_errors);
     dvz_gpu_ctx_destroy(gpu);
-    return 0;
+    return exit_code == 0 && validation_errors == 0 ? 0 : 1;
 }
 ```
 

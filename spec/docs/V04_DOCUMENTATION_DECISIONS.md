@@ -1,8 +1,6 @@
 # v0.4 Documentation Decisions
 
-Decisions locked in June 2026 planning session. These override or extend INFORMATION_ARCHITECTURE.md
-where they conflict. A future agent should reconcile the two files after implementing the
-restructure described here.
+This file records product-level decisions and earlier implementation targets from the June 2026 planning session, with revisions through September 2026. `mkdocs.yml` is the source of truth for current navigation, and `INFORMATION_ARCHITECTURE.md` describes the implemented structure.
 
 
 ## Tagline (landing page hero)
@@ -18,19 +16,17 @@ strip below the headline.
 
 ## Top-Level Navigation Structure
 
-Five sections, replacing the current seven-section Diataxis structure:
+The original five-section proposal established the main user path. The implemented navigation also gives GPU Graphics, Community, and News their own top-level sections:
 
 | Section | Purpose |
 | --- | --- |
-| **Get Started** | Install + first working example. Zero to rendering in one page. |
+| **Get Started** | Installation, first working examples, and the foundational concepts needed for ordinary use. |
 | **Examples** | The gallery — hero of the docs. Visual families, features, showcases, advanced. |
 | **How-To** | Task-oriented guides. "How do I add a colorbar", "how do I go offscreen", etc. |
 | **Reference** | API, visual family parameter tables, colormaps, build options. |
 | **Advanced** | Lower-level layers for Vulkan/WebGPU/embedding developers. |
 
-Rationale: simpler than Diataxis for the primary audience (Python scientists). The
-explanation/architecture content folds into Advanced or How-To rather than a standalone section.
-Contributors docs remain as a subsection of Advanced or a separate tab, not a top-level section.
+Rationale: simpler than Diataxis for the primary audience (Python scientists). Foundational explanations belong under **Get Started → Concepts**; internal architecture belongs under Advanced, and task guidance belongs under How-To. Contributor documentation remains under Advanced rather than becoming a top-level section.
 
 
 ## Primary Audience
@@ -71,22 +67,12 @@ renderer, but is not documented as a user surface.
 
 ## Example Language Policy
 
-All examples appear in both C and Python ctypes, side by side or in tabs. Raw ctypes only —
-no wrapper classes, no helper abstractions except where unavoidable (event loop integration,
-callback wiring). Ctypes code is auto-generated from C headers via the existing binding
-generator toolchain; it is the source of truth for Python examples.
+Canonical engine examples are written in C. User-facing pages add Python beside C when the generated binding supports the same workflow clearly. Python examples use the generated binding surface, with small documented helpers allowed for array adaptation, event-loop integration, and callback wiring.
 
 
 ## Get Started Page
 
-Single page. Zero external data dependencies — first example uses synthetic random data.
-Structure:
-1. Install (one command)
-2. First example: scatter plot, 10k random 3D points, pan/zoom controller
-   - C version first
-   - Python ctypes version immediately below (or in a tab — TBD based on MkDocs capability)
-3. Link to Examples gallery
-4. Link to LLM entry point page (for AI-assisted workflow)
+Get Started is a short sequence rather than one page. It covers installation, Python and C first renders, foundational concepts, layer selection, source builds, and AI-assisted use. Its examples use synthetic data and do not require external datasets.
 
 
 ## AI-Assisted Workflow

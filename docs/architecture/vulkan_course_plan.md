@@ -11,8 +11,8 @@ Landed so far, in `docs/gpu-graphics/` and `examples/c/vulkan/`:
 | Chapter | Page | Step program | Result |
 | --- | --- | --- | --- |
 | 1 | `01-setup.md` | `step01.c` (9 lines) | Datoviz links; version prints |
-| 2 | `02-window.md` | `step02.c` (123 lines) | resizable window in a chosen color, or a PNG |
-| 3 | `03-frame.md` | `step03.c` (139 lines) | the frame anatomy, and a pulsing window |
+| 2 | `02-window.md` | `step02.c` (148 lines) | resizable window in a chosen color, or a PNG |
+| 3 | `03-frame.md` | `step03.c` (173 lines) | the frame anatomy, and a pulsing window |
 
 `just vulkan-course-check` verifies every code excerpt against its step program;
 `just vulkan-course-smoke` renders every step offscreen and requires reproducible captures with zero
@@ -105,13 +105,13 @@ feel the course is after, with Vulkan concepts underneath.
 7. **Validation layers on from chapter 2**, framed as the reader's safety net, not as CI plumbing.
 8. **No release-validation vocabulary.** No frame contracts, no resource generations, no counter
    dumps.
+9. **Keep the lesson's successful path visible.** Course prose shows a failure check when it teaches the current concept or prevents a confusing crash. Complete step programs remain safe to run, but routine checks should share a small, explained cleanup pattern instead of interrupting each API call. Do not use unchecked calls merely to shorten a listing.
 
 ---
 
 ## 5. Chapter map
 
-Four parts, 15 chapters plus an epilogue. `Δ` is the rough size of the reader's file at the end of
-the chapter.
+Four parts, 15 chapters plus an epilogue. Program length is measured from each completed canonical step rather than treated as a design target.
 
 ### Prologue — `index.md`
 Hero image (or short video) of the final mesh viewer. The promise, the contract table from §2,
@@ -119,38 +119,38 @@ prerequisites, and how the course is structured. No code.
 
 ### Part 1 — A window and a frame
 
-| # | Chapter | Reader adds | Concepts | Result | Δ |
-| --- | --- | --- | --- | --- | --- |
-| 1 | **Setup** | `main.c` printing `dvz_version()`; a `CMakeLists.txt` and a one-line `cc` alternative via `datoviz-config` | toolchain, linking a native library, where the headers are | terminal output, and confidence the build works | 15 |
-| 2 | **Your first window** | window host, GPU context, canvas, frame loop, teardown | what a GPU context/device is; render loop; event polling; what the swapchain does *for* you; clear color; offscreen mode + PNG capture as your screenshot tool | a resizable window in the color you chose | 70 |
-| 3 | **Recording commands** | a draw callback; wrap the borrowed command buffer; begin/end a rendering pass; viewport and scissor; animate the clear color | CPU records, GPU executes; command buffers; render pass and attachments; load/store ops; borrowed vs owned objects | a pulsing background — proof your commands run | 100 |
+| # | Chapter | Reader adds | Concepts | Result |
+| --- | --- | --- | --- | --- |
+| 1 | **Setup** | `main.c` printing `dvz_version()`; a `CMakeLists.txt` and a one-line `cc` alternative via `datoviz-config` | toolchain, linking a native library, where the headers are | terminal output, and confidence the build works |
+| 2 | **Your first window** | window host, GPU context, canvas, frame loop, teardown | what a GPU context/device is; render loop; event polling; what the swapchain does *for* you; clear color; offscreen mode + PNG capture as your screenshot tool | a resizable window in the color you chose |
+| 3 | **How a frame works** | a draw callback; wrap the borrowed command buffer; begin/end a rendering pass; viewport and scissor; animate the clear color | CPU records, GPU executes; command buffers; render pass and attachments; load/store ops; borrowed vs owned objects | a pulsing background — proof your commands run |
 
 ### Part 2 — Triangles: shaders, pipeline, vertex data
 
-| # | Chapter | Reader adds | Concepts | Result | Δ |
-| --- | --- | --- | --- | --- | --- |
-| 4 | **Your first triangle** | inline GLSL strings, `dvz_compile_glsl`, shader modules, empty pipeline layout, graphics pipeline, `dvz_cmd_draw(0,3,0,1)` | vertex and fragment stages; `gl_VertexIndex`; clip space and Vulkan's y-down, z 0..1; primitive topology; rasterization; interpolation; a pipeline as frozen state | the RGB triangle | 190 |
-| 5 | **Shaders in their own files** | move GLSL to `shader.vert`/`shader.frag`, load and compile at startup, print compiler diagnostics, press `R` to recompile and rebuild the pipeline live | GLSL → SPIR-V; runtime vs offline compilation; why a pipeline must be rebuilt when a shader changes; reading compiler errors | same triangle, but shader edits appear without recompiling C | 230 |
-| 6 | **Vertex buffers** | a `Vertex` struct, a mapped GPU buffer, upload, vertex binding + attributes, bind and draw | host-visible vs device-local memory; stride and `offsetof`; attribute formats; the shader's `in` locations must match the pipeline's attributes | a triangle from *your* data, then a quad from 6 vertices | 270 |
-| 7 | **Index buffers** *(short)* | 4 vertices + 6 indices, `dvz_cmd_draw_indexed` | vertex reuse; `uint16` vs `uint32`; how indices feed primitive assembly | the same quad, 4 vertices instead of 6 | 290 |
+| # | Chapter | Reader adds | Concepts | Result |
+| --- | --- | --- | --- | --- |
+| 4 | **Your first triangle** | inline GLSL strings, `dvz_compile_glsl`, shader modules, empty pipeline layout, graphics pipeline, `dvz_cmd_draw(0,3,0,1)` | vertex and fragment stages; `gl_VertexIndex`; clip space and Vulkan's y-down, z 0..1; primitive topology; rasterization; interpolation; a pipeline as frozen state | the RGB triangle |
+| 5 | **Shaders in their own files** | move GLSL to `shader.vert`/`shader.frag`, load and compile at startup, print compiler diagnostics, press `R` to recompile and rebuild the pipeline live | GLSL → SPIR-V; runtime vs offline compilation; why a pipeline must be rebuilt when a shader changes; reading compiler errors | same triangle, but shader edits appear without recompiling C |
+| 6 | **Vertex buffers** | a `Vertex` struct, a mapped GPU buffer, upload, vertex binding + attributes, bind and draw | host-visible vs device-local memory; stride and `offsetof`; attribute formats; the shader's `in` locations must match the pipeline's attributes | a triangle from *your* data, then a quad from 6 vertices |
+| 7 | **Index buffers** *(short)* | 4 vertices + 6 indices, `dvz_cmd_draw_indexed` | vertex reuse; `uint16` vs `uint32`; how indices feed primitive assembly | the same quad, 4 vertices instead of 6 |
 
 ### Part 3 — Into 3D
 
-| # | Chapter | Reader adds | Concepts | Result | Δ |
-| --- | --- | --- | --- | --- | --- |
-| 8 | **Push constants** | a push-constant slot, per-frame elapsed time, use it in the shader | the three ways to get data to a shader (push constants, uniform buffers, storage buffers) and when each fits; pipeline layout; per-frame vs per-object data | the quad spins and pulses from shader-side math | 320 |
-| 9 | **Matrices and perspective** | three small matrix helpers, a cube (8 vertices, 36 indices), MVP pushed each frame | homogeneous coordinates; model/view/projection; perspective divide; FOV, aspect, near/far; how Vulkan's clip space differs from OpenGL's; aspect on resize | a spinning cube that looks *wrong* — faces in the wrong order | 380 |
-| 10 | **Depth and culling** | request a depth buffer from the canvas, attach it, enable depth test/write, then set cull mode and front face | why chapter 9 looked wrong; the depth buffer and depth range; z-fighting; winding order and back-face culling; wireframe mode as an experiment | a correct solid spinning cube | 420 |
-| 11 | **Mouse control** | input router, arcball, camera, compose and push the matrices, handle resize | interaction as matrix state; separating camera from model; why projection depends on window size | drag to rotate, scroll to zoom | 460 |
+| # | Chapter | Reader adds | Concepts | Result |
+| --- | --- | --- | --- | --- |
+| 8 | **Push constants** | a push-constant slot, per-frame elapsed time, use it in the shader | the three ways to get data to a shader (push constants, uniform buffers, storage buffers) and when each fits; pipeline layout; per-frame vs per-object data | the quad spins and pulses from shader-side math |
+| 9 | **Matrices and perspective** | three small matrix helpers, a cube (8 vertices, 36 indices), MVP pushed each frame | homogeneous coordinates; model/view/projection; perspective divide; FOV, aspect, near/far; how Vulkan's clip space differs from OpenGL's; aspect on resize | a spinning cube that looks *wrong* — faces in the wrong order |
+| 10 | **Depth and culling** | request a depth buffer from the canvas, attach it, enable depth test/write, then set cull mode and front face | why chapter 9 looked wrong; the depth buffer and depth range; z-fighting; winding order and back-face culling; wireframe mode as an experiment | a correct solid spinning cube |
+| 11 | **Mouse control** | input router, arcball, camera, compose and push the matrices, handle resize | interaction as matrix state; separating camera from model; why projection depends on window size | drag to rotate, scroll to zoom |
 
 ### Part 4 — Surfaces: textures and light
 
-| # | Chapter | Reader adds | Concepts | Result | Δ |
-| --- | --- | --- | --- | --- | --- |
-| 12 | **Uploading a texture** | procedural checkerboard pixels, a staging buffer, an image, two layout transitions, the copy, a one-shot submit | images vs buffers; tiling and why a copy is needed; image layouts and barriers; sRGB vs linear | nothing visible yet — verified by validation staying silent | 510 |
-| 13 | **Sampling the texture** | a sampler, a descriptor slot and set, a `texcoord` attribute, sampling in the fragment shader | descriptor sets vs push constants; filtering; address modes; UV orientation | a textured cube | 550 |
-| 14 | **Lighting** | a `normal` attribute, the normal matrix, ambient + diffuse, then specular; light and eye position pushed | normals and the dot product; world vs view space; per-vertex vs per-fragment shading; gamma | a lit textured cube | 600 |
-| 15 | **A real mesh** | `dvz_geometry_sphere`/`torus` (and `dvz_geometry_obj` for your own model), double→float conversion, `dvz_geometry_compute_normals` | separating mesh *data* from mesh *rendering*; index counts; why the GPU wants floats | **the deliverable:** a rotatable, textured, lit mesh | 640 |
+| # | Chapter | Reader adds | Concepts | Result |
+| --- | --- | --- | --- | --- |
+| 12 | **Uploading a texture** | procedural checkerboard pixels, a staging buffer, an image, two layout transitions, the copy, a one-shot submit | images vs buffers; tiling and why a copy is needed; image layouts and barriers; sRGB vs linear | nothing visible yet — verified by validation staying silent |
+| 13 | **Sampling the texture** | a sampler, a descriptor slot and set, a `texcoord` attribute, sampling in the fragment shader | descriptor sets vs push constants; filtering; address modes; UV orientation | a textured cube |
+| 14 | **Lighting** | a `normal` attribute, the normal matrix, ambient + diffuse, then specular; light and eye position pushed | normals and the dot product; world vs view space; per-vertex vs per-fragment shading; gamma | a lit textured cube |
+| 15 | **A real mesh** | `dvz_geometry_sphere`/`torus` (and `dvz_geometry_obj` for your own model), double→float conversion, `dvz_geometry_compute_normals` | separating mesh *data* from mesh *rendering*; index counts; why the GPU wants floats | **the deliverable:** a rotatable, textured, lit mesh |
 
 ### Epilogue — `16-next.md`
 What you never wrote, one paragraph each with a pointer to where Datoviz does it: instance and
@@ -168,15 +168,14 @@ opposite move if the pacing needs it.
 ## 6. What makes it attractive
 
 - **Result image at the top of every chapter**, and the final one animated.
-- **A running line-count meter** in each chapter header: *your program: 380 lines · the raw Vulkan
-  equivalent: ~1400*. Progress made visible, and the course's whole argument restated for free.
+- **A running line-count meter** in each chapter header. Chapter 1 gives the program length; chapters 2-15 also estimate the raw Vulkan equivalent. Progress stays visible without forcing a Vulkan comparison into the setup chapter.
 - **"Try it" boxes**, 3–5 per chapter, each with a predicted outcome the reader can check: swap the
   topology to a line list, set `polygon_mode` to wireframe, flip the winding, disable depth write,
   clamp vs repeat the sampler.
 - **"Under the hood" asides** — the raw-Vulkan cost of the step just taken.
 - **"When it goes wrong" box** per chapter, with real symptoms and their causes.
 - **Collapsible full listing** at every chapter's end.
-- **Short checkpoint** — three questions, not a paragraph-long recital.
+- **Short checkpoint** — three or four questions, not a paragraph-long recital.
 - **Ownership tables** only where they earn their place (chapters 3, 12).
 
 ---
@@ -218,7 +217,7 @@ RC3 verification confirmed the Canvas input route for chapter 5 through focused 
 ## 8. Migration status
 
 1. Done: add `docs/gpu-graphics/`, the prologue, and chapters 1-3.
-2. Done: add the `Advanced > Vulkan course` navigation group and remove the pilot `Tutorials` section.
+2. Done: add the top-level `GPU Graphics` navigation group and remove the pilot `Tutorials` section.
 3. In progress: add canonical programs under `examples/c/vulkan/` in lockstep with each chapter; steps 1-3 are present.
 4. Done for chapters 1-3: source synchronization, execution smokes, and generated preview tooling are wired into the docs build.
 5. Done: delete `examples/c/tutorial/`, `docs/tutorials/`, and `data/tutorials/vulkan/`.
@@ -237,3 +236,20 @@ RC3 verification confirmed the Canvas input route for chapter 5 through focused 
 4. **`Tutorials` tab**: dropped, along with `docs/tutorials/`.
 5. **Shaders**: inline strings through chapter 4, external files with hot reload from chapter 5.
 6. **Texture source**: procedural checkerboard — zero assets, fully self-contained.
+
+---
+
+## 10. Pre-generation editorial gate (settled 2026-09-14)
+
+Before writing chapters 4-15:
+
+1. Keep the foundational object-model, coordinate, interaction, query, and project-boundary explanations under **Get Started → Concepts**. Reserve **Advanced** for scene planning, retained-resource machinery, GPU ownership, runtime layers, contributors, and release work.
+2. In teaching excerpts, keep checks that explain a failure mode or protect a boundary the chapter introduces. Consolidate routine constructor and teardown failures in complete programs so error handling does not obscure the graphics sequence.
+3. Distinguish CPU input memory from GPU resources precisely. Ordinary set-data calls copy CPU data before returning; Vulkan resources referenced by submitted commands must remain valid until GPU execution completes.
+4. Review each new chapter with the same voice and structure as chapters 1-3, then run a separate cross-course prose and consistency audit before declaring the course complete.
+
+## 11. Final isolated-reader audit
+
+After all chapters pass normal repository validation, test the published course from beginning to end in a fresh isolated environment. Give an independent agent only the course, the supported installation artifacts, and the platform prerequisites stated by the course. Do not provide repository history, internal plans, unpublished source examples, or prior Datoviz guidance.
+
+The agent must follow the instructions literally, create the project from an empty directory, build and run every chapter result, and record every command, failure, ambiguity, undocumented assumption, workaround, and elapsed time. It must not silently repair course code. Its deliverables are an execution transcript, a chapter-by-chapter audit, and a prioritized improvement plan. Any failed or ambiguous step must be corrected and rerun before the course is considered complete.

@@ -1,13 +1,8 @@
 # Interaction model
 
-Interaction is retained scene mutation followed by another frame. Controllers handle standard
-navigation; callbacks and application tools update semantic state; queries return rendered
-identities or values. None of these paths should issue backend commands directly.
+Interaction changes a retained scene and requests another frame. Controllers handle standard navigation, callbacks and application tools update scene state, and queries return rendered identities or values. Application code works with those scene-level objects rather than issuing backend commands directly.
 
-**Audience:** application developers building custom tools and contributors changing input or
-controller routing. **Prerequisite:** understand panels and the [frame lifecycle](frame-lifecycle.md).
-Exact events and controller functions are documented in [Callbacks](../reference/callbacks.md) and
-[Controllers](../reference/controllers.md).
+**Audience:** application developers building custom tools and contributors changing input or controller routing. **Prerequisite:** [Scene building blocks](figure-panel-visual-model.md). Read the [frame lifecycle](frame-lifecycle.md) later if you need the internal planning and execution sequence. Exact events and controller functions are documented in [Callbacks](../reference/callbacks.md) and [Controllers](../reference/controllers.md).
 
 
 ## One interaction cycle

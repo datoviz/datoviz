@@ -104,7 +104,13 @@ nav:
     - Install: 'start/install.md'
     - Python quickstart: 'start/quickstart.md'
     - First C program: 'start/first-c-program.md'
-    - Core concepts: 'start/core-concepts.md'
+    - Concepts:
+      - Overview: 'start/core-concepts.md'
+      - Figure, panel, and visual model: 'explanation/figure-panel-visual-model.md'
+      - Coordinate systems: 'explanation/coordinate-systems.md'
+      - Interaction model: 'explanation/interaction-model.md'
+      - Query, pick, and probe model: 'explanation/query-pick-probe-model.md'
+      - Datoviz, GSP, and VisPy2: 'explanation/gsp-vispy2-boundary.md'
     - Choose your layer: 'start/choose-your-layer.md'
     - Build from source: 'start/build-from-source.md'
     - AI-assisted workflow: 'start/ai-workflow.md'
@@ -226,12 +232,6 @@ nav:
     - Citation: 'reference/citation.md'
   - Advanced:
     - Overview: 'advanced/index.md'
-    - Concepts:
-      - Figure, panel, and visual model: 'explanation/figure-panel-visual-model.md'
-      - Coordinate systems: 'explanation/coordinate-systems.md'
-      - Interaction model: 'explanation/interaction-model.md'
-      - Query, pick, and probe model: 'explanation/query-pick-probe-model.md'
-      - Datoviz, GSP, and VisPy2: 'explanation/gsp-vispy2-boundary.md'
     - Scene planning and boundaries:
       - Architecture: 'explanation/architecture.md'
       - Scene-to-runtime boundary: 'explanation/scene-to-runtime-boundary.md'
@@ -287,5 +287,3 @@ not_in_nav: |
   tutorials/first-scene.md
   reference/api_c.md
   explanation/index.md
-  explanation/coordinate-systems.md
-  explanation/gsp-vispy2-boundary.md

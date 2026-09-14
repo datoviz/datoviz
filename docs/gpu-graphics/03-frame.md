@@ -1,6 +1,6 @@
 # 3. How a frame works
 
-**Your program at the end of this chapter: about 140 lines.**
+**Your program at the end of this chapter: about 175 lines. The raw Vulkan equivalent: around 1000.**
 
 <picture>
   <source media="(prefers-reduced-motion: no-preference)" srcset="/assets/gpu-graphics/03-frame.webp">
@@ -22,7 +22,7 @@ The GPU reads the command buffer after submission and executes it asynchronously
 This separation has two consequences that often confuse new Vulkan programmers:
 
 - **Recording happens on the CPU; drawing happens later, on the GPU.** When `draw` returns, the recorded work has not reached the GPU. Submission begins with `dvz_canvas_submit`.
-- **Anything referenced by the recorded commands must still exist when the GPU uses it.** If you free a buffer at the end of the callback, the GPU may try to read it afterwards. Ownership is not bookkeeping pedantry here; it is the difference between a picture and a crash.
+- **GPU resources referenced by recorded commands must remain valid until execution finishes.** A submitted command buffer may refer to Vulkan buffers, images, image views, pipelines, and descriptor sets after the recording callback returns. Do not destroy those resources while the GPU may still use them. A CPU array is different: after a synchronous upload or set-data call copies its bytes, the caller may reuse or free the array. Each upload chapter identifies that copy point and the lifetime of the destination GPU resource.
 
 ## What the canvas hands you
 
@@ -154,10 +154,12 @@ This requires `#include <stdlib.h>` for `strtof`. Ordinary offscreen runs freeze
 Update the initializer to match the new struct:
 
 ```c
+    commands = dvz_commands_create_wrapper();
+    rendering = dvz_rendering_create_wrapper();
     Renderer renderer = {
         .device = dvz_gpu_ctx_device(gpu),
-        .commands = dvz_commands_create_wrapper(),
-        .rendering = dvz_rendering_create_wrapper(),
+        .commands = commands,
+        .rendering = rendering,
         .start_ns = dvz_time_monotonic_ns(),
         .capture_time = capture_time,
         .animate = live,

@@ -162,6 +162,8 @@ When a page includes a code block that is not tested or not copy-safe, it should
 sketch or fragment. Public how-to and tutorial pages should prefer complete examples generated from
 or kept in sync with source files.
 
+Keep the successful path easy to see. A teaching excerpt should show error handling when the failure is part of the lesson or when omitting it would lead to a confusing crash. Do not wrap every routine setter in a separate branch. Complete runnable examples must still handle failures safely; consolidate routine construction and cleanup into a small, consistent pattern when individual checks would obscure the feature being demonstrated.
+
 
 ## Machine-Readable Context
 

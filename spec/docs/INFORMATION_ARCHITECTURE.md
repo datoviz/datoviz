@@ -36,7 +36,7 @@ docs/
   community/
   how-to/
   reference/
-  explanation/   # exposed under Advanced / Architecture
+  explanation/   # foundational pages under Get Started / Concepts; internals under Advanced
   advanced/      # exposed under Advanced / Runtime layers
   contributors/  # exposed under Advanced / Contributors
 ```
@@ -48,7 +48,7 @@ This is a compact, Datoviz-specific structure:
 3. `community/` presents independently maintained projects built with Datoviz without treating them as release evidence.
 4. `how-to/` explains task workflows and points to canonical examples instead of duplicating them.
 5. `reference/` provides exact facts, tables, signatures, attributes, statuses, and limits.
-6. `explanation/`, `advanced/`, and `contributors/` are exposed through **Advanced**, not as the main user path.
+6. Foundational `explanation/` pages are exposed through **Get Started → Concepts**. Architecture and runtime explanations, `advanced/`, and `contributors/` remain under **Advanced**.
 7. Contributor and release-maintainer docs remain reachable, but they are secondary to the public user path.
 
 Page roles should stay distinct:
@@ -135,16 +135,22 @@ Purpose: orient readers and prevent wrong expectations.
 Current MkDocs navigation:
 
 ```text
-start/
-  Overview/
-    what-is-datoviz.md
-    choose-your-layer.md
-    project-status.md
-  Setup/
-    install.md
-    build-from-source.md
-  First Steps/
-    first-c-program.md
+Get Started/
+  Overview
+  Install
+  Python quickstart
+  First C program
+  Concepts/
+    Overview
+    Figure, panel, and visual model
+    Coordinate systems
+    Interaction model
+    Query, pick, and probe model
+    Datoviz, GSP, and VisPy2
+  Choose your layer
+  Build from source
+  AI-assisted workflow
+  AI agents
 ```
 
 `choose-your-layer.md` is required. It should explain:
@@ -346,31 +352,30 @@ authored prose.
 
 ## Advanced
 
-Purpose: explain concepts, architecture, runtime layers, portability boundaries, and contributor
-workflows without putting them in the primary visualization path.
+Purpose: explain internal architecture, runtime layers, portability boundaries, and contributor workflows without putting them in the primary visualization path. Foundational user concepts belong under **Get Started → Concepts**.
 
 Current MkDocs navigation groups Advanced material by responsibility:
 
 ```text
 Advanced/
   Overview
-  Concepts and architecture/
-    figure-panel-visual-model.md
+  Scene planning and boundaries/
     architecture.md
     scene-to-runtime-boundary.md
     frame-lifecycle.md
     retained-resources.md
     invalidation-and-caching.md
     gpu-resource-ownership.md
-    interaction-model.md
-    query-pick-probe-model.md
   Runtime layers/
     runtime-internals.md
     drp2-command-streams.md
+    cuda-external-memory.md
   Contributors/
     architecture-map.md
     adding-a-drp2-command.md
     adding-a-webgpu-fixture.md
+    adding-examples.md
+    gallery-media.md
     example-selection-by-capability.md
     generated-documentation.md
   Release maintainers/
@@ -378,6 +383,7 @@ Advanced/
     release-flight-checklist.md
     release-wheels.md
     release-validation.md
+    release-physical-validation.md
     agent-release-checklist.md
     validation-gallery.md
 ```

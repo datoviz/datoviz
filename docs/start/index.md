@@ -24,7 +24,7 @@ Datoviz is useful when data is large, changes over time, or needs more rendering
 
 ## After your first window
 
-Read [Core concepts](core-concepts.md) for the scene, figure, panel, visual, data, controller, and view model. Then adapt the closest working [example](../examples/index.md), use a focused [how-to guide](../how-to/index.md), or consult the [reference](../reference/index.md) for exact contracts and feature status.
+Start with [Core concepts](core-concepts.md) for the scene, figure, panel, visual, data, controller, and view model. The rest of the Concepts group covers containment and ownership in more detail, then explains coordinate systems, interaction, queries, and the boundary between Datoviz, GSP, and VisPy2. Then adapt the closest working [example](../examples/index.md), use a focused [how-to guide](../how-to/index.md), or consult the [reference](../reference/index.md) for exact contracts and feature status.
 
 
 ## Other integration paths

@@ -1,10 +1,8 @@
 # Scene building blocks
 
-This page explains the object model shared by Python and C. Read it after the [quickstart](../start/quickstart.md) to understand where data, layout, interaction, and output state belong. The [reference](../reference/index.md) defines the exact constructors, attributes, and destruction rules.
+The [Core concepts](../start/core-concepts.md) page introduces the objects used in every Datoviz scene. This page takes the next step: it explains containment, attachment, ownership, and destruction order for the same model in Python and C. The [reference](../reference/index.md) defines the exact constructors, attributes, and destruction rules.
 
-**Audience:** new Datoviz users and agents adapting examples. **Prerequisite:** none, although the
-Quickstart makes the names concrete. You will learn containment, attachment, data ownership, and the
-normal object lifetime.
+**Audience:** new Datoviz users and agents adapting examples. **Prerequisite:** [Core concepts](../start/core-concepts.md), preferably after the [Quickstart](../start/quickstart.md).
 
 
 ## Containment and attachment
