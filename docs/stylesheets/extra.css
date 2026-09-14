@@ -535,7 +535,7 @@ img[alt*=gpuopen] {
     .dvz-language-grid,
     .dvz-feature-grid,
     .dvz-release-scope {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
 }
