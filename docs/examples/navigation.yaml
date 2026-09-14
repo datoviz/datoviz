@@ -175,6 +175,7 @@ sections:
           - features_gui_controls
           - features_gui_viewport
           - features_gui_cimgui
+          - features_gui_data_widgets
       - title: Input & Diagnostics
         examples:
           - features_input_events

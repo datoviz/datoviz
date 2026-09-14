@@ -20,6 +20,7 @@ techniques. App lifecycle, capture, recording, replay, and media export examples
 - `gui_controls.c`: native Datoviz GUI controls mutating retained visual state.
 - `gui_viewport.c`: dockable ImGui window containing a Datoviz-rendered offscreen viewport.
 - `gui_cimgui.c`: raw `datoviz/imgui.h` access for cimgui tables and tabs.
+- `gui_data_widgets.c`: one native GUI callback combining retained tree and typed table widgets.
 - `animation_tracks.c`: retained track-backed visual transform animation.
 - `compute_buffer_animation.c`: experimental scene compute pass writing a render-consumed buffer.
 - `technique_edl.c`: focused Eye-Dome Lighting panel technique proof.

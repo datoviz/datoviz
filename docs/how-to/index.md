@@ -29,6 +29,7 @@ Choose the task you want to complete. New to Datoviz? Start with the
 
 ## Interaction
 
+- [Use retained GUI data widgets](retained-gui-data-widgets.md)
 - [Use panzoom](use-panzoom.md)
 - [Use 3D controllers](3d-navigation.md)
 - [Handle input events](input-events.md)

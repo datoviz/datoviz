@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_gui_cimgui/">← Previous: Raw cimgui GUI</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_gui_data_widgets/">← Previous: Retained GUI Data Widgets</a></span>
 <span class="dvz-example-nav__next"><a href="../features_json_export/">Next: JSON Export →</a></span>
 </div>
 </nav>
@@ -76,7 +76,7 @@ The native app registers input callbacks and prints event details for pointer mo
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../features_gui_cimgui/">← Previous: Raw cimgui GUI</a></span>
+<span class="dvz-example-nav__previous"><a href="../features_gui_data_widgets/">← Previous: Retained GUI Data Widgets</a></span>
 <span class="dvz-example-nav__next"><a href="../features_json_export/">Next: JSON Export →</a></span>
 </div>
 </nav>

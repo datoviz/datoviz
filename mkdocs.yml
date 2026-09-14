@@ -133,6 +133,7 @@ nav:
       - Add colorbars, scale bars, and legends: 'how-to/adornments.md'
       - Add text, labels, and annotations: 'how-to/add-annotations.md'
     - Interaction:
+      - Use retained GUI data widgets: 'how-to/retained-gui-data-widgets.md'
       - Use panzoom: 'how-to/use-panzoom.md'
       - Use 3D controllers: 'how-to/3d-navigation.md'
       - Handle input events: 'how-to/input-events.md'

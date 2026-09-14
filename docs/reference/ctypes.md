@@ -93,6 +93,19 @@ The generated top-level facade currently adapts these policy-declared calls. Oth
 | Axis and colorbar ticks | `dvz_axis_set_ticks()`, `dvz_colorbar_set_ticks()` |
 | Text arrays | `dvz_text_set_items()`, `dvz_text_set_positions()`, `dvz_text_set_offsets()`, `dvz_text_set_anchors()`, `dvz_text_set_sizes()`, `dvz_text_set_colors()`, `dvz_text_set_angles()` |
 | Window strings | `dvz_view_window()` |
+| Retained GUI table | `dvz_gui_table()`, `dvz_gui_table_draw()`, `dvz_gui_table_get_filter()`, `dvz_gui_table_get_selection()`, `dvz_gui_table_get_sort()`, `dvz_gui_table_set_column_bool()`, `dvz_gui_table_set_column_color()`, `dvz_gui_table_set_column_double()`, `dvz_gui_table_set_column_int64()`, `dvz_gui_table_set_column_text()`, `dvz_gui_table_set_matches()`, `dvz_gui_table_set_rows()`, `dvz_gui_table_set_selection()`, `dvz_gui_table_set_styles()`, `dvz_gui_table_set_visible()` |
+| Retained GUI tree | `dvz_gui_tree_draw()`, `dvz_gui_tree_get_expanded()`, `dvz_gui_tree_get_filter()`, `dvz_gui_tree_get_selection()`, `dvz_gui_tree_set_expanded()`, `dvz_gui_tree_set_matches()`, `dvz_gui_tree_set_rows()`, `dvz_gui_tree_set_selection()`, `dvz_gui_tree_set_styles()`, `dvz_gui_tree_set_swatches()`, `dvz_gui_tree_set_visible()` |
+
+Retained GUI setters accept Python sequences or contiguous NumPy arrays and copy model data at the
+native boundary. `dvz_gui_tree_draw()` and `dvz_gui_table_draw()` each make one native draw call and
+return `(result, events, dropped)`, where `events` contains compact `DvzGuiDataEvent` records and
+`dropped` reports overflow that requires state resynchronization. The query calls
+`dvz_gui_tree_get_expanded()`, `dvz_gui_tree_get_filter()`, `dvz_gui_tree_get_selection()`,
+`dvz_gui_table_get_filter()`, `dvz_gui_table_get_selection()`, and `dvz_gui_table_get_sort()` return
+ordinary Python values after each call; use them after an event or when recovering from dropped
+events. Table values are installed by type with the `dvz_gui_table_set_column_*()` family, while
+`dvz_gui_tree_set_rows()` and `dvz_gui_table_set_rows()` preserve surviving keyed state unless reset
+flags are requested.
 
 The facade also provides `dvz_view_capture_rgba()`, `dvz_sampled_field_from_array()`, and `dvz_sampled_field_update_from_array()` as generated Python helpers for output allocation and packed sampled-field layouts. These helpers preserve explicit Datoviz ownership and format contracts; they are not plotting abstractions.
 

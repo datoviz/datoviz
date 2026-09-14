@@ -200,6 +200,7 @@ batches:
     - features_gui_controls
     - features_gui_viewport
     - features_gui_cimgui
+    - features_gui_data_widgets
     - runtime_app_glfw
     - runtime_multi_window
 
@@ -974,6 +975,33 @@ examples:
         - gui
       reason: raw cimgui access requires the native ImGui app path
     agent_copy_safe: false
+
+  - id: features_gui_data_widgets
+    title: Retained GUI Data Widgets
+    stage: v0.4_required
+    category: feature
+    primary_feature: gui-data-widgets
+    lane: features
+    source: examples/c/features/gui_data_widgets.c
+    python:
+      source: examples/python/gallery/features/gui_data_widgets.py
+      status: direct-engine
+    validation: smoke+interaction+screenshot
+    capture:
+      mode: native-app
+      args: ["--png"]
+      reason: retained data widgets are rendered by the native Dear ImGui app path
+    data:
+      kind: synthetic
+    portability: native-only
+    webgpu:
+      status: native-only
+      requirements:
+        - gui
+        - retained-tree
+        - retained-table
+      reason: Dear ImGui retained data widgets are native GUI overlays and are not part of the scene/WASM WebGPU route
+    agent_copy_safe: true
 
   - id: features_animation_tracks
     title: Animation Tracks

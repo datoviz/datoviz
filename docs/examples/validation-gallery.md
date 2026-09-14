@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 117
-- Examples declaring screenshot validation: 105
+- Reviewed public C examples generated for the website: 118
+- Examples declaring screenshot validation: 106
 - Examples that should have video or motion evidence: 8
 
 ## Commands
@@ -55,6 +55,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [GUI Controls](gallery/features/features_gui_controls.md) | [`examples/c/features/gui_controls.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_controls.c) | `supported` | `smoke+interaction+screenshot` |
 | [GUI Viewport](gallery/features/features_gui_viewport.md) | [`examples/c/features/gui_viewport.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_viewport.c) | `supported` | `smoke+interaction+screenshot` |
 | [Raw cimgui GUI](gallery/features/features_gui_cimgui.md) | [`examples/c/features/gui_cimgui.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_cimgui.c) | `supported` | `smoke+interaction+screenshot` |
+| [Retained GUI Data Widgets](gallery/features/features_gui_data_widgets.md) | [`examples/c/features/gui_data_widgets.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_data_widgets.c) | `supported` | `smoke+interaction+screenshot` |
 | [Animation Tracks](gallery/features/features_animation_tracks.md) | [`examples/c/features/animation_tracks.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/animation_tracks.c) | `supported` | `smoke+interaction+screenshot` |
 | [Compute Buffer Animation](gallery/features/features_compute_buffer_animation.md) | [`examples/c/features/compute_buffer_animation.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/compute_buffer_animation.c) | `experimental` | `smoke+screenshot` |
 | [Eye-Dome Lighting](gallery/features/features_technique_edl.md) | [`examples/c/features/technique_edl.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_edl.c) | `experimental` | `smoke+screenshot` |

@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 117,
+  "count": 118,
   "categories": {
     "advanced": 6,
     "composite": 2,
-    "feature": 69,
+    "feature": 70,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 19,
     "prototype": 1,
-    "supported": 96
+    "supported": 97
   },
   "examples": [
     {
@@ -1330,6 +1330,55 @@
       "primary_feature": "gui-cimgui",
       "python_source": "examples/python/gallery/features/gui_cimgui.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/gui_cimgui.py",
+      "python_status": "direct-engine"
+    },
+    {
+      "id": "features_gui_data_widgets",
+      "title": "Retained GUI Data Widgets",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/gui_data_widgets.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_data_widgets.c",
+      "page": "gallery/features/features_gui_data_widgets.md",
+      "summary": "This example combines tree and table widgets.",
+      "validation": "smoke+interaction+screenshot",
+      "build_command": "just example-c features/gui_data_widgets",
+      "smoke_command": "./build/examples/c/features/gui_data_widgets --png",
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/features_gui_data_widgets.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_gui_data_widgets.webp"
+        }
+      },
+      "webgpu_status": "native-only",
+      "webgpu_status_label": "Native only",
+      "webgpu_requirements": [
+        "gui",
+        "retained-tree",
+        "retained-table"
+      ],
+      "webgpu_reason": "Dear ImGui retained data widgets are native GUI overlays and are not part of the scene/WASM WebGPU route",
+      "webgpu": {
+        "status": "native-only",
+        "requirements": [
+          "gui",
+          "retained-tree",
+          "retained-table"
+        ],
+        "reason": "Dear ImGui retained data widgets are native GUI overlays and are not part of the scene/WASM WebGPU route"
+      },
+      "primary_feature": "gui-data-widgets",
+      "python_source": "examples/python/gallery/features/gui_data_widgets.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/gui_data_widgets.py",
       "python_status": "direct-engine"
     },
     {

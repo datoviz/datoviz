@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../features_gui_viewport/">← Previous: GUI Viewport</a></span>
-<span class="dvz-example-nav__next"><a href="../features_input_events/">Next: Input Events →</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_data_widgets/">Next: Retained GUI Data Widgets →</a></span>
 </div>
 </nav>
 
@@ -78,6 +78,6 @@ Four point positions and colors are uploaded once, while the GUI slider rewrites
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../features_gui_viewport/">← Previous: GUI Viewport</a></span>
-<span class="dvz-example-nav__next"><a href="../features_input_events/">Next: Input Events →</a></span>
+<span class="dvz-example-nav__next"><a href="../features_gui_data_widgets/">Next: Retained GUI Data Widgets →</a></span>
 </div>
 </nav>

@@ -980,6 +980,18 @@ This example shows raw cimgui widgets controlling a Datoviz visual.
 
 </div>
 
+<div class="card" markdown="1">
+
+### [Retained GUI Data Widgets](gallery/features/features_gui_data_widgets.md)
+
+[![Retained GUI Data Widgets](../assets/gallery/v0.4/features/features_gui_data_widgets.webp)](gallery/features/features_gui_data_widgets.md)
+
+`features`
+
+This example combines tree and table widgets.
+
+</div>
+
 </div>
 
 ## Input & Diagnostics { #input-diagnostics }
