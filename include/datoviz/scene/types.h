@@ -1323,6 +1323,7 @@ struct DvzSelectionItem
 {
     uint64_t visual_id;
     DvzSceneTargetKind target;
+    uint32_t link_channel;
     uint64_t target_id;
     uint64_t link_key;
 };

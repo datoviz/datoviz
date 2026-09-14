@@ -2137,6 +2137,7 @@ int test_scene_mesh_query_resolves_instance_item(TstContext* suite, const TstCas
     AT(query.face_id == 1);
     AT(query.primitive_id == 1);
     AT(query.link_key == 99);
+    AT(query.link_channel == dvz_link_channel_id(channel));
     AT(!dvz_scene_poll_query(scene, &query));
 
     dvz_scene_destroy(scene);
@@ -2648,7 +2649,7 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_data_many(mesh, mesh_updates, 2) == 0);
     DvzLinkChannel* channel = dvz_link_channel(scene, "mesh-items-and-faces");
     ANN(channel);
-    uint64_t item_keys[1] = {42};
+    uint64_t item_keys[1] = {0};
     uint64_t face_keys[2] = {314, UINT64_C(0xFFFFFFFFFFFFFEC5)};
     AT(dvz_visual_set_link_keys(mesh, channel, item_keys, 1) == DVZ_OK);
     AT_EXPECTED_ERROR_STRICT(
@@ -2681,7 +2682,8 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
     AT(query.resolved_id == 0);
     AT(query.item_id == 0);
-    AT(query.link_key == 42);
+    AT(query.link_key == 0);
+    AT(query.link_channel == dvz_link_channel_id(channel));
     AT(!dvz_scene_poll_query(scene, &query));
 
     AT(dvz_panel_query_px(
@@ -2700,6 +2702,7 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.face_id == 1);
     AT(query.primitive_id == 1);
     AT(query.link_key == UINT64_C(0xFFFFFFFFFFFFFEC5));
+    AT(query.link_channel == dvz_link_channel_id(channel));
     AT(!dvz_scene_poll_query(scene, &query));
 
     AT(dvz_visual_set_target_link_keys(
@@ -2709,8 +2712,9 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(mesh->face_link_channel == NULL);
     AT(mesh->link_keys != NULL);
     AT(mesh->link_key_count == 1);
-    AT(mesh->link_keys[0] == 42);
+    AT(mesh->link_keys[0] == 0);
     dvz_link_channel_destroy(channel);
+    AT(dvz_link_channel_id(channel) == 0);
     AT(mesh->link_channel == NULL);
     AT(mesh->face_link_channel == NULL);
     AT(mesh->link_keys == NULL);

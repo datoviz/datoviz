@@ -99,6 +99,8 @@ dvz_visual_set_target_link_keys(
 
 For indexed meshes, face order is index-buffer triplet order. For non-indexed meshes, each consecutive group of three vertices is one face. An instanced mesh face query reports the base-geometry face shared by all instances; combined face-plus-instance identity is deferred. Face results can be retained by hover and selection objects, but the built-in mesh item-state shader styles whole meshes or instances, not individual faces or face groups. Update application-driven colors or use separate region visuals when face/region highlighting is required.
 
+`link_channel` identifies which scene-local mapping produced `link_key`. Treat a nonzero channel id as link presence: key zero is valid, and equal keys from different channels do not link. Use `dvz_link_channel_id()` when application state needs to retain or compare that namespace. Rebind face keys whenever triangle topology is reordered. Current mesh face queries expand and upload query geometry per request, so throttle hover queries or prefer click selection for large meshes.
+
 
 ## Hover and selection
 

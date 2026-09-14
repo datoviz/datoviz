@@ -145,9 +145,10 @@ DvzSelectionItem items[count];
 dvz_selection_copy(sel, items, count);
 ```
 
-`DvzSelectionItem` carries the resolved visual id, target kind/id, and link key for each selected
-target. `dvz_selection_copy()` writes into caller-owned storage, so the result can be retained
-independently of the next selection change.
+`DvzSelectionItem` carries the resolved visual id, target kind/id, scene-local link-channel id, and link key for each selected target. A nonzero channel id, rather than a nonzero key, marks a linked identity, so zero is a valid application key. Cross-visual matching requires both channel id and key to match. `dvz_selection_copy()` writes into caller-owned storage, so the result can be retained independently of the next selection change.
+
+Channel ids are scene-local and must never be compared without the owning scene identity. Query
+results must be applied to selection and hover objects owned by their originating scene.
 
 This is a CPU-side readback of scene-owned state — not a GPU readback.
 The GPU `item_state` attribute is a derived resource; the authoritative index set lives on the CPU

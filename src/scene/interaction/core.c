@@ -94,7 +94,7 @@ static void _item_state_sync_visual_style(DvzScene* scene, DvzVisual* visual);
 
 static int _item_state_sync_visual(DvzScene* scene, DvzVisual* visual);
 
-static int _item_state_sync_scene(DvzScene* scene, const char* reason);
+int _scene_item_state_sync(DvzScene* scene, const char* reason);
 
 static int _selection_sync_item_state(DvzSelection* selection);
 
@@ -337,6 +337,8 @@ static bool _selection_matches_query(
     ANN(selection);
     ANN(query);
     ANN(out_item);
+    if (selection->scene == NULL)
+        return false;
     if (!query->hit)
         return false;
     if (query->resolved_target == DVZ_SCENE_TARGET_NONE)
@@ -348,6 +350,7 @@ static bool _selection_matches_query(
     }
     out_item->visual_id = query->visual_id;
     out_item->target = query->resolved_target;
+    out_item->link_channel = query->link_channel;
     out_item->target_id = query->resolved_id;
     out_item->link_key = query->link_key;
     return true;
@@ -359,8 +362,8 @@ static bool _selection_item_equals(const DvzSelectionItem* a, const DvzSelection
 {
     ANN(a);
     ANN(b);
-    return a->visual_id == b->visual_id && a->target == b->target && a->target_id == b->target_id &&
-           a->link_key == b->link_key;
+    return a->visual_id == b->visual_id && a->target == b->target &&
+           a->target_id == b->target_id;
 }
 
 
@@ -470,23 +473,6 @@ static uint32_t _item_state_visual_item_count(const DvzVisual* visual)
 
 
 /**
- * Return the link key for one visual item.
- *
- * @param visual the visual
- * @param item_index zero-based item index
- * @return link key, or 0 when absent
- */
-static uint64_t _item_state_visual_link_key(const DvzVisual* visual, uint32_t item_index)
-{
-    ANN(visual);
-    if (visual->link_keys != NULL && item_index < visual->link_key_count)
-        return visual->link_keys[item_index];
-    return 0;
-}
-
-
-
-/**
  * Return whether one resolved target matches a visual item directly or through a link key.
  *
  * @param item resolved interaction item
@@ -505,8 +491,10 @@ static bool _item_state_matches_visual_item(
     if (item->visual_id == visual_id && item->target_id == item_index)
         return true;
 
-    uint64_t link_key = _item_state_visual_link_key(visual, item_index);
-    return item->link_key != 0 && link_key != 0 && item->link_key == link_key;
+    uint32_t link_channel = dvz_link_channel_id(visual->link_channel);
+    return item->link_channel != 0 && item->link_channel == link_channel &&
+           visual->link_keys != NULL && item_index < visual->link_key_count &&
+           item->link_key == visual->link_keys[item_index];
 }
 
 
@@ -783,7 +771,7 @@ static int _item_state_sync_visual(DvzScene* scene, DvzVisual* visual)
  * @param reason mutation reason for diagnostics
  * @return 0 on success, -1 on error
  */
-static int _item_state_sync_scene(DvzScene* scene, const char* reason)
+int _scene_item_state_sync(DvzScene* scene, const char* reason)
 {
     ANN(scene);
     if (!_scene_visual_mutation_allowed(scene, reason != NULL ? reason : "update item_state"))
@@ -814,7 +802,7 @@ static int _selection_sync_item_state(DvzSelection* selection)
     ANN(selection);
     if (selection->scene == NULL)
         return 0;
-    return _item_state_sync_scene(selection->scene, "update item_state");
+    return _scene_item_state_sync(selection->scene, "update item_state");
 }
 
 
@@ -860,7 +848,7 @@ static void _selection_card_refresh_text(DvzSelection* selection, const DvzQuery
     ANN(selection);
     ANN(query);
     uint64_t item_id = query->resolved_id != 0 ? query->resolved_id : query->item_id;
-    if (query->link_key != 0)
+    if (query->link_channel != 0)
     {
         dvz_snprintf(
             selection->card.text, sizeof(selection->card.text),
@@ -1732,9 +1720,23 @@ DvzLinkChannel* dvz_link_channel(DvzScene* scene, const char* name)
     DvzLinkChannel* channel = &scene->link_channels[scene->link_channel_count++];
     dvz_memset(channel, sizeof(DvzLinkChannel), 0, sizeof(DvzLinkChannel));
     channel->scene = scene;
+    channel->id = scene->link_channel_count;
     if (name != NULL)
         dvz_strlcpy(channel->name, name, sizeof(channel->name));
     return channel;
+}
+
+
+
+/**
+ * Return the scene-local identity of a link channel.
+ *
+ * @param channel the link channel, or NULL
+ * @return scene-local channel identity, or zero
+ */
+uint32_t dvz_link_channel_id(const DvzLinkChannel* channel)
+{
+    return channel != NULL && channel->scene != NULL ? channel->id : 0;
 }
 
 
@@ -1789,8 +1791,10 @@ void dvz_link_channel_destroy(DvzLinkChannel* channel)
                     panel->hover.link_channel = NULL;
             }
         }
+        (void)_scene_item_state_sync(scene, "destroy link channel item_state");
     }
     channel->scene = NULL;
+    channel->id = 0;
 }
 
 
@@ -1852,7 +1856,7 @@ void dvz_selection_destroy(DvzSelection* selection)
     if (scene != NULL && selection->item_count > 0)
     {
         _selection_clear_items(selection);
-        (void)_item_state_sync_scene(scene, "destroy selection item_state");
+        (void)_scene_item_state_sync(scene, "destroy selection item_state");
     }
     _selection_card_hide(selection);
     if (scene != NULL)
@@ -2142,7 +2146,7 @@ void dvz_hover_destroy(DvzHover* hover)
     hover->has_item = false;
     hover->item = (DvzSelectionItem){0};
     if (scene != NULL)
-        (void)_item_state_sync_scene(scene, "clear hover item_state");
+        (void)_scene_item_state_sync(scene, "clear hover item_state");
 }
 
 
@@ -2159,7 +2163,7 @@ DvzResult dvz_hover_clear(DvzHover* hover)
     hover->has_item = false;
     hover->item = (DvzSelectionItem){0};
     if (scene != NULL)
-        (void)_item_state_sync_scene(scene, "clear hover item_state");
+        (void)_scene_item_state_sync(scene, "clear hover item_state");
     return DVZ_OK;
 }
 
@@ -2192,7 +2196,7 @@ DvzResult dvz_hover_set_visual_style(DvzHover* hover, const DvzItemStateVisualSt
     }
 
     hover->visual_style = resolved;
-    return hover->scene != NULL ? _item_state_sync_scene(hover->scene, "update hover style") : 0;
+    return hover->scene != NULL ? _scene_item_state_sync(hover->scene, "update hover style") : 0;
 }
 
 
@@ -2214,7 +2218,7 @@ DvzResult dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
     {
         hover->has_item = false;
         hover->item = (DvzSelectionItem){0};
-        return _item_state_sync_scene(hover->scene, "clear hover item_state");
+        return _scene_item_state_sync(hover->scene, "clear hover item_state");
     }
     DvzSceneTargetKind target = hover->desc.target;
     if (target != DVZ_SCENE_TARGET_NONE && target != query->resolved_target)
@@ -2223,11 +2227,12 @@ DvzResult dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
     hover->item = (DvzSelectionItem){
         .visual_id = query->visual_id,
         .target = query->resolved_target,
+        .link_channel = query->link_channel,
         .target_id = query->resolved_id,
         .link_key = query->link_key,
     };
     hover->has_item = true;
-    return _item_state_sync_scene(hover->scene, "update hover item_state");
+    return _scene_item_state_sync(hover->scene, "update hover item_state");
 }
 
 

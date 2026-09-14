@@ -273,7 +273,7 @@ Object-level interaction on instanced meshes should resolve per instance.
 Conceptual rule:
 
 1. object target = `visual id + optional instance id`
-2. face target = `visual id + instance id + face id`
+2. v0.4 face target = `visual id + base-geometry face id`; adding instance identity to that payload remains deferred
 
 Do not let object-level selection on one instance silently mean “the whole visual”.
 

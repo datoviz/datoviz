@@ -50,7 +50,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Shared colorbar/legend layout, interactive scale/range editing, and richer legend composition beyond the active continuous colorbar and categorical legend slices | `spec/scene/semantics/LEGENDS_AND_COLORBARS.md` |
 | Labels GPU probing, 3D label slices, GPU-only label resources, and large sparse-id pressure tests beyond the active 2D integer-label rendering slice | `spec/scene/proposals/promoted/LABELS_VISUAL_DESIGN.md` |
 | Richer probe payloads beyond basic point identity and image RGBA/value readback | `spec/scene/proposals/promoted/PROBE_READOUT_DESIGN.md` |
-| Richer mesh face/region, path/subpath, label, text, volume ray-hit, object, and grouped-family picking beyond the active broad item-pick slices | `spec/scene/interaction/PICKING.md` |
+| Mesh grouped-region styling and combined face-plus-instance identity beyond active base-face picking; richer path/subpath, label, text, volume ray-hit, object, and grouped-family picking | `spec/scene/interaction/PICKING.md` |
 | Scene-level animation timeline coordination | `spec/scene/interaction/ANIMATION.md` |
 | Multi-scene GPU resource sharing across threads | `spec/scene/integration/THREAD_SAFETY.md` |
 | Polar axis geometry (circular gridlines, radial labels) | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |
@@ -60,7 +60,7 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Full PBR material model beyond current material/Phong/depth-cue slices | `spec/scene/semantics/LIGHTING.md`, `spec/scene/proposals/active/MATERIAL_LIGHTING_API.md` |
 | Selection state synchronization across scenes | `spec/scene/interaction/SELECTION.md` |
 | Selection/item-state highlighting beyond point/pixel/marker: splat, image, mesh/path/volume/text, per-visual style overrides, richer effects | `spec/scene/interaction/SELECTION.md`, `spec/scene/proposals/promoted/SELECTION_HIGHLIGHT_DESIGN.md` |
-| Mesh scalar colormap mode, automatic normal generation, edge overlay, isolines, shape-builder integration, face/region picking, normal maps, multi-texture materials, and PBR beyond the v0.4-required retained diffuse-texture slice | `spec/scene/visuals/MESH.md` |
+| Mesh scalar colormap mode, automatic normal generation, edge overlay, isolines, shape-builder integration, per-face/group styling beyond active base-face identity, combined face-plus-instance identity, normal maps, multi-texture materials, and PBR beyond the v0.4-required retained diffuse-texture slice | `spec/scene/visuals/MESH.md` |
 | Full Gaussian-splat pipeline beyond the possible v0.4 experimental retained splat visual: trained asset formats, differentiable rendering, out-of-core splat scenes, advanced splat LOD, and production splat asset tooling | `spec/scene/examples/PLANNING.md`, `spec/scene/examples/PLANNING.md` |
 | Custom visual dirty-tracking optimization | `spec/scene/integration/CUSTOM_VISUALS.md` |
 | Per-character glyph orientation | `spec/scene/visuals/GLYPH.md` |

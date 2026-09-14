@@ -171,6 +171,18 @@ DVZ_EXPORT DvzLinkChannel* dvz_link_channel(DvzScene* scene, const char* name);
 
 
 /**
+ * Return the scene-local identity of a link channel.
+ *
+ * The identity is nonzero while the channel is alive. NULL and explicitly destroyed channels
+ * return zero. Like every scene-owned handle, the pointer must not be used after scene destruction.
+ *
+ * @param channel the link channel, or NULL
+ * @return scene-local channel identity, or zero
+ */
+DVZ_EXPORT uint32_t dvz_link_channel_id(const DvzLinkChannel* channel);
+
+
+/**
  * Destroy a link channel.
  *
  * @param channel the link channel

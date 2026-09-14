@@ -496,6 +496,8 @@ void _scene_panel_refresh_colorbar_reserve(DvzPanel* panel);
 
 void _scene_panel_refresh_legend_reserve(DvzPanel* panel);
 
+int _scene_item_state_sync(DvzScene* scene, const char* reason);
+
 
 
 /*************************************************************************************************/
@@ -1017,6 +1019,7 @@ struct DvzLegend
 struct DvzLinkChannel
 {
     DvzScene* scene;
+    uint32_t id;
     char name[DVZ_SCENE_LABEL_SIZE];
 };
 

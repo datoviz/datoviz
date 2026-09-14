@@ -217,14 +217,20 @@ bool _dvz_scene_query_decode_target_id(
     {
         out_result->item_id = target_id;
         if (visual->link_keys != NULL && target_id < visual->link_key_count)
+        {
             out_result->link_key = visual->link_keys[target_id];
+            out_result->link_channel = dvz_link_channel_id(visual->link_channel);
+        }
     }
     else if (target == DVZ_SCENE_TARGET_FACE)
     {
         out_result->face_id = target_id;
         out_result->primitive_id = target_id;
         if (visual->face_link_keys != NULL && target_id < visual->face_link_key_count)
+        {
             out_result->link_key = visual->face_link_keys[target_id];
+            out_result->link_channel = dvz_link_channel_id(visual->face_link_channel);
+        }
     }
     return true;
 }

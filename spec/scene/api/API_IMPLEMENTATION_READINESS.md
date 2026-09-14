@@ -64,7 +64,7 @@ old v0.3 API names.
 | Core scene/app | scene, figure, panel, view, frame artifacts, view capture, DVZR recording/replay | active | active scene -> FramePlan -> DvzSceneFrameArtifact -> DRP2 packet/stream snapshots -> vklite/canvas/app path | frame capture and runtime readbacks are used by tests | installed CLI boundary for DVZR replay remains a product decision |
 | Visual families | pixel, point, marker, primitive, segment/path, image, labels, mesh, sphere, volume, glyph, vector constructors; semantic polygon composites | active for those families | active for retained first slices, including WBOIT/depth-peel, EDL, SSAO/G-buffer where eligible; glyph path renders atlas-backed text; labels render integer fields; vector uses cap-based stroke lowerings | item queries exist for point-like, stroke, primitive, image, mesh, sphere, vector, and volume proxy targets; image, labels, and volume sample queries have GPU paths | errorbar, boxplot, splat, exact marker/path semantics, independent vector-head styling, labels query pressure tests, and richer path/image/volume features |
 | Sampled fields/scales | `DvzSampledField`, scale, colormap, colorbar, legend, and labels APIs | fields/scales/colorbars/legends/labels retain state | image, labels, and volume consume fields; image/volume colormap bindings, continuous colorbars, categorical legends, and integer label rendering are active | image queries return RGBA/scalar/category-like payloads; volume slice queries now use GPU-rendered scalar and label payloads | richer query payloads, shared colorbar/legend layout, 3D label slices, and broader labels query pressure tests |
-| Interaction/selection | policies, panel query queues, selection/link APIs | active bookkeeping and tests | query processing executes through app/runtime for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets | broad item-query readback plus image/labels/volume sample query first slices | richer mesh face/region, path, label, text, and volume ray-hit identities plus broader rendered selection highlights |
+| Interaction/selection | policies, panel query queues, selection/link APIs | active bookkeeping and tests | query processing executes through app/runtime for point-like, stroke, primitive, image, mesh, sphere, and volume proxy targets | broad item-query readback, base-geometry mesh face identity, and image/labels/volume sample query first slices | mesh grouped-region and combined face-plus-instance identity, richer path, label, text, and volume ray-hit identities, plus broader rendered selection highlights |
 | Text/annotations | font, text, annotation APIs | active semantic `DvzText` state, bookkeeping, and lifecycle tests | first rendered glyph/text path active; label annotations use text lowering | no | data/world placement, readout integration, shaping, diagnostics, glyph/text picking |
 
 The implementation-ready packets for the retained and explanatory-object rows are:
@@ -95,7 +95,7 @@ annotation-style targets for future expansion.
 
 Glyph/text identity queries are still unimplemented. `DvzQueryHitPolicy` is queued but not yet
 materially applied by native execution, and richer payload fields such as `instance_id`,
-`data_position`, mesh face/region identity, image texel identity, and volume ray/sample identity still
+`data_position`, grouped mesh region and combined face-plus-instance identity, image texel identity, and volume ray/sample identity still
 need backing implementation before the API should document them as available.
 
 

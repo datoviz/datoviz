@@ -26,7 +26,7 @@ not GSP protocol ids.
 | `point` | `dvz_point(scene, flags)` | `position` vec3, `color` RGBA8, `diameter_px` float | `item_state`, link keys, `dvz_point_set_style()` | `DVZ_QUERY_CAPABILITY_ITEM`; returns visual id, family, item id, link key when present | ready |
 | `image` | `dvz_image(scene, flags)` | either legacy quad `position` + `texcoords`, or item `position` + `extent`; 2D `DvzSampledField` on `"field"` or texture wrapper | `anchor`, `tex_rect`, `dvz_visual_set_scale(image, "color", scale)`, colormap/scale resources | item, pixel, and sample paths are implemented; pixel/sample payloads expose panel/display identity and decoded sample metadata where supported | ready with payload limits |
 | `primitive` | `dvz_primitive(scene, topology, flags)` | `position` vec3, `color` RGBA8 | `normal`, `"index"` buffer | item-level primitive identity | usable, low-level only |
-| `mesh` | `dvz_mesh(scene, flags)` | `position` vec3 | `color`, `normal`, `texcoords`, `instance_transform`, `"index"` buffer, `"texture"` sampled field, `dvz_mesh_set_geometry()` | item-level mesh identity; face/region payloads are not first-slice ready | usable with limits |
+| `mesh` | `dvz_mesh(scene, flags)` | `position` vec3 | `color`, `normal`, `texcoords`, `instance_transform`, `"index"` buffer, `"texture"` sampled field, `dvz_mesh_set_geometry()` | item/instance identity and base-geometry `FACE` identity with target-specific link keys; combined face-plus-instance identity is deferred | usable with limits |
 | `volume` | `dvz_volume(scene, flags)` | 3D `DvzSampledField` on `"field"` | opacity, sampling, render mode, slice axis/position, step count, bounds, axis mapping, value range, alpha stops, clipping, scale | item/object proxy picking and slice/sample query paths; DVR/MIP ray-hit semantics are deferred | limited |
 | `text` / `glyph` | `dvz_text(panel, flags)` for semantic text, `dvz_glyph(scene, flags)` for low-level atlas quads | text string/style/placement for `DvzText`; glyph `position`, `bounds`, `texcoords`, `color`, `angle`, atlas field for `DvzGlyph` | text atlas renderer, glyph atlas, placement/style updates | no GSP-ready text/glyph query payload in the first slice | render-only first |
 
@@ -68,13 +68,12 @@ The adapter should only advertise query targets that the Datoviz visual has enab
 | Target | Current families | Result fields to rely on |
 |---|---|---|
 | `DVZ_SCENE_TARGET_ITEM` | point, pixel, marker, sphere, segment, path, vector, primitive, mesh, image, volume, labels | `scene_id`, `figure_id`, `panel_id`, `visual_id`, `visual_family`, `item_id`, `link_key` when present |
+| `DVZ_SCENE_TARGET_FACE` | triangle-list mesh | `visual_id`, `face_id`, `primitive_id`, and target-specific `link_key`; instanced meshes return the base-geometry face only |
 | `DVZ_SCENE_TARGET_PIXEL` | image | ids above plus pixel/sample fields documented by image query tests |
 | `DVZ_SCENE_TARGET_SAMPLE` | image, volume | ids above plus sample/scalar/vector/category fields when the family decoder supports the field format |
 | `DVZ_SCENE_TARGET_SEGMENT` | labels | label segment/category identity |
 
-Do not infer support for face, vertex, glyph, text, DVR ray-hit, or MIP ray-hit payloads from
-`DvzQueryResult` fields alone. Those targets need explicit implementation and tests before GSP
-advertises them.
+Do not infer support for vertex, glyph, text, DVR ray-hit, or MIP ray-hit payloads from `DvzQueryResult` fields alone. Mesh `FACE` is the explicit exception documented above; other targets need explicit implementation and tests before GSP advertises them.
 
 
 ## WebGPU And WASM Notes

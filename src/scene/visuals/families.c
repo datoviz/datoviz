@@ -1418,7 +1418,7 @@ DvzResult dvz_visual_set_target_link_keys(
     *keys = replacement;
     *link_channel = target_count > 0 ? channel : NULL;
     *key_count = target_count;
-    return 0;
+    return _scene_item_state_sync(visual->scene, "rebind visual link keys");
 }
 
 

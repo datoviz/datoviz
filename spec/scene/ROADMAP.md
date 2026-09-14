@@ -40,7 +40,7 @@ Preserved follow-up direction:
 5. implement two-attachment `r32uint` fallback only end to end before selecting it automatically;
 6. defer MIP and DVR/composite volume sample queries until exact GPU semantics are specified;
 7. preserve no-CPU-visual-picking tests for readback failure paths;
-8. add exact marker, mesh face/region, image alpha/texel, text/glyph/labels, volume ray-hit, and
+8. add exact marker, mesh grouped-region and combined face-plus-instance, image alpha/texel, text/glyph/labels, volume ray-hit, and
    hit-policy extensions as separate focused changes.
 
 

@@ -867,17 +867,20 @@ int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase
 
     DvzQueryResult hit = {
         .request_id = 1,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .visual_id = 7,
         .resolved_target = DVZ_SCENE_TARGET_ITEM,
         .resolved_id = 3,
+        .link_channel = 9,
         .link_key = 11,
     };
     _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
     AT(hover->has_item);
     AT(hover->item.visual_id == 7);
     AT(hover->item.target_id == 3);
+    AT(hover->item.link_channel == 9);
 
     _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_SELECTION, &hit);
     AT(dvz_selection_count(selection) == 1);
@@ -912,6 +915,8 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     ANN(channel);
     ANN(selection);
     ANN(visual);
+    uint32_t channel_id = dvz_link_channel_id(channel);
+    AT(channel_id != 0);
 
     AT(dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM) == DVZ_OK);
     AT(visual->query_capabilities == DVZ_QUERY_CAPABILITY_ITEM);
@@ -935,19 +940,24 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
 
     DvzQueryResult query = {
         .request_id = 1,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .visual_id = 7,
         .resolved_target = DVZ_SCENE_TARGET_ITEM,
         .resolved_id = 0,
+        .link_channel = channel_id,
         .link_key = 10,
     };
     AT(dvz_selection_apply_query(selection, &query) == 0);
     AT(dvz_selection_count(selection) == 1);
+    query.link_channel = 0;
+    query.link_key = 999;
     AT(dvz_selection_apply_query(selection, &query) == 0);
     AT(dvz_selection_count(selection) == 0);
 
     query.resolved_id = 43;
+    query.link_channel = channel_id;
     query.link_key = 0;
     selection->desc.mode = DVZ_SELECT_ADDITIVE;
     AT(dvz_selection_apply_query(selection, &query) == 0);
@@ -956,8 +966,13 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     DvzSelectionItem items[2] = {0};
     dvz_selection_copy(selection, items, 2);
     AT(items[0].target == DVZ_SCENE_TARGET_ITEM);
+    AT(items[0].link_channel == channel_id);
     AT(items[0].target_id == 43);
     AT(items[0].link_key == 0);
+
+    dvz_link_channel_destroy(channel);
+    AT(dvz_link_channel_id(channel) == 0);
+    AT(visual->link_channel == NULL);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -974,6 +989,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     DvzPanel* panel = dvz_panel(
         figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     DvzLinkChannel* channel = dvz_link_channel(scene, "items");
+    DvzLinkChannel* other_channel = dvz_link_channel(scene, "other-items");
     DvzSelection* selection = dvz_selection(
         scene,
         &(DvzSelectionDesc){
@@ -985,13 +1001,16 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     DvzVisual* pixel = dvz_pixel(scene, 0);
     DvzVisual* marker = dvz_marker(scene, 0);
     DvzVisual* sphere = dvz_sphere(scene, 0);
+    DvzVisual* other_pixel = dvz_pixel(scene, 0);
     ANN(panel);
     ANN(channel);
+    ANN(other_channel);
     ANN(selection);
     ANN(point);
     ANN(pixel);
     ANN(marker);
     ANN(sphere);
+    ANN(other_pixel);
 
     vec3 point_pos[3] = {{0.0f, 0.0f, 0.0f}, {0.25f, 0.0f, 0.0f}, {0.5f, 0.0f, 0.0f}};
     DvzColor point_color[3] = {
@@ -1000,7 +1019,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
         {255, 255, 255, 255},
     };
     float point_size[3] = {8.0f, 8.0f, 8.0f};
-    uint64_t point_keys[3] = {10, 20, 30};
+    uint64_t point_keys[3] = {0, 20, 30};
     AT(dvz_visual_set_data(point, "position", point_pos, 3) == 0);
     AT(dvz_visual_set_data(point, "color", point_color, 3) == 0);
     AT(dvz_visual_set_data(point, "size", point_size, 3) == 0);
@@ -1030,7 +1049,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
         {255, 255, 255, 255},
     };
     float pixel_size_px[3] = {8.0f, 8.0f, 8.0f};
-    uint64_t pixel_keys[3] = {60, 20, 70};
+    uint64_t pixel_keys[3] = {0, 20, 70};
     AT(dvz_visual_set_data(pixel, "position", pixel_pos, 3) == 0);
     AT(dvz_visual_set_data(pixel, "color", pixel_color, 3) == 0);
     AT(dvz_visual_set_data(pixel, "size", pixel_size_px, 3) == 0);
@@ -1047,6 +1066,13 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
                .background_color = {1.0f, 1.0f, 1.0f, 1.0f},
            }) == 0);
     AT(dvz_panel_add_visual(panel, pixel, NULL) == 0);
+
+    uint64_t other_pixel_keys[3] = {0, 20, 70};
+    AT(dvz_visual_set_data(other_pixel, "position", pixel_pos, 3) == 0);
+    AT(dvz_visual_set_data(other_pixel, "color", pixel_color, 3) == 0);
+    AT(dvz_visual_set_data(other_pixel, "size", pixel_size_px, 3) == 0);
+    AT(dvz_visual_set_link_keys(other_pixel, other_channel, other_pixel_keys, 3) == 0);
+    AT(dvz_panel_add_visual(panel, other_pixel, NULL) == 0);
 
     vec3 marker_pos[3] = {{0.0f, 0.25f, 0.0f}, {0.25f, 0.25f, 0.0f}, {0.5f, 0.25f, 0.0f}};
     DvzColor marker_color[3] = {
@@ -1091,6 +1117,7 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
         .visual_id = _scene_visual_public_id(scene, point),
         .resolved_target = DVZ_SCENE_TARGET_ITEM,
         .resolved_id = 1,
+        .link_channel = dvz_link_channel_id(channel),
         .link_key = 20,
     };
     AT(dvz_selection_apply_query(selection, &query) == 0);
@@ -1099,10 +1126,12 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     int pixel_state_idx = _attr_index(pixel, "item_state");
     int marker_state_idx = _attr_index(marker, "item_state");
     int sphere_state_idx = _attr_index(sphere, "item_state");
+    int other_pixel_state_idx = _attr_index(other_pixel, "item_state");
     AT(point_state_idx >= 0);
     AT(pixel_state_idx >= 0);
     AT(marker_state_idx >= 0);
     AT(sphere_state_idx >= 0);
+    AT(other_pixel_state_idx < 0);
     const uint32_t* point_state = (const uint32_t*)point->attrs[point_state_idx].data;
     const uint32_t* pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
     const uint32_t* marker_state = (const uint32_t*)marker->attrs[marker_state_idx].data;
@@ -1123,6 +1152,29 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(sphere_state[0] == DVZ_ITEM_STATE_NONE);
     AT(sphere_state[1] == DVZ_ITEM_STATE_SELECTED);
     AT(sphere_state[2] == DVZ_ITEM_STATE_NONE);
+
+    DvzQueryResult zero_key_query = {
+        .request_id = 2,
+        .scene_id = dvz_scene_id(scene),
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = true,
+        .visual_id = _scene_visual_public_id(scene, point),
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 0,
+        .link_channel = dvz_link_channel_id(channel),
+        .link_key = 0,
+    };
+    AT(dvz_selection_apply_query(selection, &zero_key_query) == 0);
+    point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
+    AT(point_state[0] == DVZ_ITEM_STATE_SELECTED);
+    AT(pixel_state[0] == DVZ_ITEM_STATE_SELECTED);
+    AT(_attr_index(other_pixel, "item_state") < 0);
+    AT(dvz_selection_apply_query(selection, &zero_key_query) == 0);
+    point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
+    AT(point_state[0] == DVZ_ITEM_STATE_NONE);
+    AT(pixel_state[0] == DVZ_ITEM_STATE_NONE);
     AT(point->attrs[point_state_idx].dirty_item_count == 3);
     AT(pixel->attrs[pixel_state_idx].dirty_item_count == 3);
     AT(marker->attrs[marker_state_idx].dirty_item_count == 3);
@@ -1226,7 +1278,12 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(pixel_state[1] == (DVZ_ITEM_STATE_SELECTED | DVZ_ITEM_STATE_HOVERED));
     AT(marker_state[1] == (DVZ_ITEM_STATE_SELECTED | DVZ_ITEM_STATE_HOVERED));
     AT(sphere_state[1] == (DVZ_ITEM_STATE_SELECTED | DVZ_ITEM_STATE_HOVERED));
-    DvzQueryResult miss = {.request_id = 2, .status = DVZ_QUERY_STATUS_MISS, .hit = false};
+    DvzQueryResult miss = {
+        .request_id = 2,
+        .scene_id = dvz_scene_id(scene),
+        .status = DVZ_QUERY_STATUS_MISS,
+        .hit = false,
+    };
     AT(dvz_hover_apply_query(hover, &miss) == 0);
     point_state = (const uint32_t*)point->attrs[point_state_idx].data;
     pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
@@ -1236,6 +1293,29 @@ int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const
     AT(pixel_state[1] == DVZ_ITEM_STATE_SELECTED);
     AT(marker_state[1] == DVZ_ITEM_STATE_SELECTED);
     AT(sphere_state[1] == DVZ_ITEM_STATE_SELECTED);
+
+    AT(dvz_visual_set_link_keys(pixel, other_channel, pixel_keys, 3) == 0);
+    point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
+    marker_state = (const uint32_t*)marker->attrs[marker_state_idx].data;
+    sphere_state = (const uint32_t*)sphere->attrs[sphere_state_idx].data;
+    AT(point_state[1] == DVZ_ITEM_STATE_SELECTED);
+    AT(pixel_state[1] == DVZ_ITEM_STATE_NONE);
+    AT(marker_state[1] == DVZ_ITEM_STATE_SELECTED);
+    AT(sphere_state[1] == DVZ_ITEM_STATE_SELECTED);
+    AT(dvz_visual_set_link_keys(pixel, channel, pixel_keys, 3) == 0);
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
+    AT(pixel_state[1] == DVZ_ITEM_STATE_SELECTED);
+
+    dvz_link_channel_destroy(channel);
+    point_state = (const uint32_t*)point->attrs[point_state_idx].data;
+    pixel_state = (const uint32_t*)pixel->attrs[pixel_state_idx].data;
+    marker_state = (const uint32_t*)marker->attrs[marker_state_idx].data;
+    sphere_state = (const uint32_t*)sphere->attrs[sphere_state_idx].data;
+    AT(point_state[1] == DVZ_ITEM_STATE_SELECTED);
+    AT(pixel_state[1] == DVZ_ITEM_STATE_NONE);
+    AT(marker_state[1] == DVZ_ITEM_STATE_NONE);
+    AT(sphere_state[1] == DVZ_ITEM_STATE_NONE);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -1305,6 +1385,7 @@ int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase
 
     DvzQueryResult hit = {
         .request_id = 8,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .visual_id = _scene_visual_public_id(scene, pixel),
@@ -1333,6 +1414,7 @@ int test_scene_pixel_hover_selection_item_state(TstContext* suite, const TstCase
 
     DvzQueryResult miss = {
         .request_id = 9,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_MISS,
         .hit = false,
     };
@@ -1410,6 +1492,7 @@ int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCas
 
     DvzQueryResult hit = {
         .request_id = 12,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .visual_id = _scene_visual_public_id(scene, sphere),
@@ -1437,6 +1520,7 @@ int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCas
 
     DvzQueryResult miss = {
         .request_id = 13,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_MISS,
         .hit = false,
     };
@@ -1528,6 +1612,7 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
 
     DvzQueryResult hit = {
         .request_id = 21,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .visual_id = _scene_visual_public_id(scene, mesh),
@@ -1567,6 +1652,7 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
 
     DvzQueryResult miss = {
         .request_id = 22,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_MISS,
         .hit = false,
     };
@@ -1602,9 +1688,12 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
     ANN(figure);
     ANN(panel);
     ANN(selection);
+    DvzLinkChannel* channel = dvz_link_channel(scene, "card-items");
+    ANN(channel);
 
     DvzQueryResult query = {
         .request_id = 1,
+        .scene_id = dvz_scene_id(scene),
         .status = DVZ_QUERY_STATUS_HIT,
         .hit = true,
         .panel_id = _scene_panel_public_id(figure, panel),
@@ -1612,6 +1701,7 @@ int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const T
         .item_id = 42,
         .resolved_target = DVZ_SCENE_TARGET_ITEM,
         .resolved_id = 42,
+        .link_channel = dvz_link_channel_id(channel),
         .link_key = 123,
         .panel_position = {20.0, 30.0},
     };

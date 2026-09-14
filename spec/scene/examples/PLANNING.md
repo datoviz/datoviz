@@ -201,7 +201,7 @@ examples are explicitly included in the public v0.4 API. The staged scenario-run
 
 | Scenario | Missing feature driver | Decision |
 | --- | --- | --- |
-| `mesh_selection_link` | mesh face/region picking, linked highlight styling | API sketch remains useful after marker/image selection lands. |
+| `mesh_selection_link` | grouped region styling and linked highlight beyond active base-face picking | API sketch remains useful after marker/image selection lands. |
 | `mouse_brain_atlas_explorer` | region picking, selection-driven mesh styling, linked 2D/3D panels | Full explorer is beyond v0.4. |
 | `streaming_signal_workbench` | dense traces, ring buffers, many-trace layout, overlays | Merge physiology and DAQ into one workbench track. |
 | `toy_dicom_viewer` | shared 3D texture slices, crosshairs, window/level, slice dragging | Good v0.5 medical-viewer target. |

@@ -438,7 +438,10 @@ void dvz_scene_destroy(DvzScene* scene)
     for (uint32_t i = 0; i < scene->item_interaction_count; i++)
         scene->item_interactions[i].scene = NULL;
     for (uint32_t i = 0; i < scene->link_channel_count; i++)
+    {
         scene->link_channels[i].scene = NULL;
+        scene->link_channels[i].id = 0;
+    }
     for (uint32_t i = 0; i < scene->pinned_readout_count; i++)
         scene->pinned_readouts[i].scene = NULL;
     for (uint32_t i = 0; i < scene->overlay_count; i++)

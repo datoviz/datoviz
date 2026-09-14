@@ -25,8 +25,7 @@ the active material path. Focused scene tests cover field binding and textured-m
 promoting or adding a deterministic terrain/planet fixture or showcase capture. Baked vertex colors
 remain useful fallbacks for other examples, but they do not replace textured-mesh validation.
 
-Scalar colormap mode, automatic normal generation, edge overlay, isolines, richer shape-builder
-integration, and face/region picking remain target capabilities unless marked above as implemented.
+Scalar colormap mode, automatic normal generation, edge overlay, isolines, richer shape-builder integration, grouped face/region styling, and combined face-plus-instance identity remain target capabilities unless marked above as implemented. Base-geometry face identity and per-face link-key resolution are active.
 
 ## Purpose
 

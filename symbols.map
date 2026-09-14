@@ -835,6 +835,7 @@ dvz_legend_set_layout
 dvz_legend_set_title
 dvz_link_channel
 dvz_link_channel_destroy
+dvz_link_channel_id
 dvz_marker
 dvz_marker_set_style
 dvz_marker_set_symbol

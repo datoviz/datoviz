@@ -5925,7 +5925,7 @@ DvzResult dvz_visual_set_target_link_keys(
 | --- | --- | --- |
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on error |
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
-| `target` | [`DvzSceneTargetKind`](scene.md#type-dvzscenetargetkind) | query target whose ids index the key array |
+| `target` | [`DvzSceneTargetKind`](scene.md#type-dvzscenetargetkind) | query target whose identities receive link keys |
 | `channel` | [`DvzLinkChannel`](scene.md#type-dvzlinkchannel) * | the link channel |
 | `link_keys` | `const` `uint64_t` * | array of link keys |
 | `target_count` | `uint32_t` | number of keys |

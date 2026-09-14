@@ -115,7 +115,7 @@ without temporary files for ordinary RGBA capture.
 | Text render | supported | `dvz_text()`, `dvz_text_set_string()`, style/placement helpers | symbols and `DvzTextPlacement` probed by `array_facade_smoke.py` | semantic text and atlas tests under `scene/interaction` and `scene/text_atlas` | Placement may be screen, data, or world; offsets and size are logical pixels. |
 | Text query | deferred for semantic text | `DVZ_SCENE_TARGET_TEXT` currently family/backend dependent | query APIs exposed | query unsupported/family tests | Use explicit unsupported statuses unless a promoted visual-family path handles the target. |
 | Mesh render | supported | `dvz_mesh()`, `dvz_mesh_set_geometry()`, dense/index uploads | symbols probed by `array_facade_smoke.py` | mesh geometry/state tests and examples | Indexed triangle topology; supports `z=0` 2D overlays and 3D depth paths. |
-| Mesh query | supported/experimental | query item targets on mesh visuals | query APIs exposed | `test_scene_mesh_query_resolves_item`, `test_scene_mesh_query_resolves_instance_item` | Face-level semantics beyond promoted item/instance payloads remain family-specific. |
+| Mesh query | supported/experimental | query item/instance or base-geometry face targets on mesh visuals; face link keys are target-specific | query APIs and `dvz_visual_set_target_link_keys()` exposed | `test_scene_mesh_query_resolves_item`, `test_scene_mesh_query_resolves_instance_item` | Combined face-plus-instance identity, grouped face styling, and large-mesh query caching remain deferred. |
 
 
 ## 0.3 Remaining RC/post-RC follow-up

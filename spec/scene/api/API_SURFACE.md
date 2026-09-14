@@ -94,8 +94,7 @@ Treat these installed declarations as draft contracts until implemented in `src/
 
 1. rendered non-label annotations, rich readouts, and callouts,
 2. broader link-driven state propagation,
-3. mesh face/region picking, exact path/marker semantics, label GPU probing, and richer probe
-   payloads,
+3. mesh grouped-region and combined face-plus-instance picking beyond active base-face identity, exact path/marker semantics, label GPU probing, and richer probe payloads,
 4. broad mapped attributes beyond the current image/volume colormap paths,
 5. shared legend/colorbar layout and richer legend composition beyond the first categorical legend
    slice.

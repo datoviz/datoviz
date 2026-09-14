@@ -47,11 +47,10 @@ same detail:
 | `segment` | `SEGMENT` identity |
 | `path` | parent `STRIP`/subpath when available, plus `SEGMENT` or `VERTEX` payload |
 | `image` | `ITEM` for image placements; `PIXEL`/`SAMPLE` for texel identity requests |
-| `mesh` | `FACE`/`TRIANGLE`; fill `instance_id` for instanced visuals |
+| `mesh` | v0.4 `FACE` identifies the base-geometry triangle; combined `instance_id` plus face remains deferred |
 | `text` | object/string identity first; glyph-level picking deferred |
 
-Mesh face picking remains the first high-resolution mesh mode. Mesh vertex picking, sub-character
-text picking, and richer barycentric detail remain deferred unless a concrete workflow needs them.
+Base-geometry mesh face picking is active. Combined instance-plus-face identity, mesh vertex picking, sub-character text picking, and richer barycentric detail remain deferred unless a concrete workflow needs them.
 
 
 ## Result-Shape Notes

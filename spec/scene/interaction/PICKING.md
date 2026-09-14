@@ -66,7 +66,7 @@ The final public C structs may change, but these fields are stable semantic requ
 | `path` | visual id + group id | optional vertex/item payload; default hit is the logical path |
 | `glyph` / text | visual id + group id | glyph index only for low-level workflows |
 | `image` | visual id + optional image item id | local image coordinate or sampled value may be returned |
-| `mesh` | visual id + semantic region/group when declared | primitive id is auxiliary and must not replace stable region identity |
+| `mesh` | visual id + item/instance or base-geometry face id | a face-specific link key may provide stable semantic region identity; combined face-plus-instance identity is deferred |
 | `sphere` | visual id + item id | applies even for impostor-first rendering |
 | `volume` | visual id + family-defined payload | slice probe/readout follows [`../visuals/VOLUME.md`](../visuals/VOLUME.md); DVR/MIP ray-cast identity remains deferred |
 | axes/annotations | owning axis or annotation id + optional component detail | does not require axes to become primitive visuals |
@@ -77,15 +77,11 @@ identity.
 
 ## Current Native Implementation Note
 
-As of 2026-05-26, the native executor implements GPU-backed item picking for point, pixel, marker,
-sphere, segment/stroke, path, primitive, mesh, image, and volume proxy visuals. Glyph, text, and
-labels do not have a native GPU picking path yet.
+As of 2026-09-14, the native executor implements GPU-backed item picking for point, pixel, marker, sphere, segment/stroke, path, primitive, mesh, image, and volume proxy visuals, plus base-geometry face picking for triangle meshes. Glyph and semantic text do not have a native GPU picking path yet.
 
-The normative target model above is intentionally broader than the current implementation. Native
-pick execution currently handles none/item targets, while object, vertex, face, pixel, sample, group,
-strip, segment, triangle, text, and annotation-style targets remain future work unless a specific
-visual documents support. Hit policy execution and richer result payloads such as instance IDs, data
-positions, image texels, mesh face/region IDs, and volume ray/sample IDs are also still incomplete.
+The normative target model above is intentionally broader than the current implementation. Native pick execution supports the targets documented by each visual family, including mesh `FACE`; unsupported object, vertex, group, strip, text, and annotation-style targets remain future work. Hit policy execution and richer result payloads such as combined mesh instance-plus-face identity and volume DVR/MIP ray identity are still incomplete.
+
+Mesh face queries currently rebuild and upload CPU-expanded query geometry per request. Applications should prefer click queries or throttle hover on large meshes until retained query-geometry caching or direct indexed primitive identity lands. Reorder or replace mesh topology only together with rebinding face link keys, because face ids follow triangle-list draw order.
 
 Do not close those gaps by adding CPU-side visual hit tests. Visual picking must stay tied to the GPU
 render path so the result follows the same transforms, panel scissor, depth, visibility, and
