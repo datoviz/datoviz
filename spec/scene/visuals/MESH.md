@@ -185,8 +185,7 @@ Transform model and stage participation are standard; see `SHARED_ATTRIBUTES.md`
 The target contract returns face identity. For indexed geometry, face id is the index buffer triplet
 index. For non-indexed triangles, face id is `vertex_index / 3`.
 
-Status on 2026-05-26: the active GPU-backed request path includes item-level mesh picking through
-the rendered mesh target. Mesh face/region identity remains deferred.
+Status on 2026-09-14: the active GPU-backed query path distinguishes mesh item identity (the whole mesh or an instance) from base-geometry face identity. `DVZ_SCENE_TARGET_FACE` returns the index-buffer triplet index and may resolve a separately bound face link key. Combined face-plus-instance identity and built-in per-face or per-region item-state styling remain deferred.
 
 ## Related Families
 

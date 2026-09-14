@@ -27,6 +27,15 @@ def test_path_text_link_and_colormap_adapters(monkeypatch):
     link, link_calls = _spy(
         [ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint64), ctypes.c_uint32]
     )
+    target_link, target_link_calls = _spy(
+        [
+            ctypes.c_void_p,
+            ctypes.c_int,
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_uint64),
+            ctypes.c_uint32,
+        ]
+    )
     cmap, cmap_calls = _spy(
         [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32],
         result=ctypes.c_void_p(3),
@@ -34,6 +43,7 @@ def test_path_text_link_and_colormap_adapters(monkeypatch):
     monkeypatch.setattr(facade._raw, 'dvz_path_set_subpaths', path)
     monkeypatch.setattr(facade._raw, 'dvz_text_set_strings', text)
     monkeypatch.setattr(facade._raw, 'dvz_visual_set_link_keys', link)
+    monkeypatch.setattr(facade._raw, 'dvz_visual_set_target_link_keys', target_link)
     monkeypatch.setattr(facade._raw, 'dvz_colormap_custom', cmap)
 
     assert facade.dvz_path_set_subpaths(ctypes.c_void_p(1), [2, 3]) == 17
@@ -48,6 +58,13 @@ def test_path_text_link_and_colormap_adapters(monkeypatch):
     assert facade.dvz_visual_set_link_keys(ctypes.c_void_p(3), ctypes.c_void_p(4), keys) == 17
     assert link_calls[-1][3] == 2
     assert np.ctypeslib.as_array(link_calls[-1][2], shape=(2,)).tolist() == [11, 12]
+
+    assert facade.dvz_visual_set_target_link_keys(
+        ctypes.c_void_p(3), facade.DVZ_SCENE_TARGET_FACE, ctypes.c_void_p(4), keys
+    ) == 17
+    assert target_link_calls[-1][1] == facade.DVZ_SCENE_TARGET_FACE
+    assert target_link_calls[-1][4] == 2
+    assert np.ctypeslib.as_array(target_link_calls[-1][3], shape=(2,)).tolist() == [11, 12]
 
     colors = np.array([[0, 1, 2, 255], [255, 2, 1, 0]], dtype=np.uint8)
     assert facade.dvz_colormap_custom(ctypes.c_void_p(5), 'ramp', colors).value == 3

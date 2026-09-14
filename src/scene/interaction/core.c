@@ -1763,6 +1763,16 @@ void dvz_link_channel_destroy(DvzLinkChannel* channel)
                 }
                 scene->visuals[i].link_key_count = 0;
             }
+            if (scene->visuals[i].face_link_channel == channel)
+            {
+                scene->visuals[i].face_link_channel = NULL;
+                if (scene->visuals[i].face_link_keys != NULL)
+                {
+                    dvz_free(scene->visuals[i].face_link_keys);
+                    scene->visuals[i].face_link_keys = NULL;
+                }
+                scene->visuals[i].face_link_key_count = 0;
+            }
         }
         for (uint32_t i = 0; i < scene->interaction_count; i++)
         {

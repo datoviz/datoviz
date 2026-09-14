@@ -1806,6 +1806,9 @@ struct DvzVisual
     DvzLinkChannel* link_channel;
     uint64_t*       link_keys;
     uint32_t        link_key_count;
+    DvzLinkChannel* face_link_channel;
+    uint64_t*       face_link_keys;
+    uint32_t        face_link_key_count;
     bool                   scene_occluder;
     bool                   scene_occluded;
     DvzVisualTransformDesc transform_desc;

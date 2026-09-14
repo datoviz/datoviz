@@ -49,3 +49,6 @@ bool _scene_mesh_visual_shader_desc(
 bool _scene_mesh_visual_draw_desc(
     const DvzSceneVisualDesc* visual, DvzSceneShaderFormat shader_format,
     DvzSceneVisualDrawDesc* out);
+
+bool _scene_mesh_visual_query_target_count(
+    const DvzVisual* visual, DvzSceneTargetKind target, uint32_t* out_count);

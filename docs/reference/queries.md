@@ -71,6 +71,7 @@ picking is absent.
 | Scope | Current status | Result behavior |
 | --- | --- | --- |
 | `DVZ_SCENE_TARGET_ITEM` | Supported for promoted visual families with item capability. | Hit results identify visual family, visual id, item id, link key when present, coordinates, and displayed RGBA when available. |
+| `DVZ_SCENE_TARGET_FACE` | Supported for triangle mesh visuals with face capability. | Hit results identify the zero-based base-geometry face and its target-specific link key; combined face-plus-instance identity is deferred. |
 | `DVZ_SCENE_TARGET_PIXEL` | Supported for promoted image-like paths with pixel capability. | Hit results identify the image visual and carry texel/sample value fields when available. |
 | `DVZ_SCENE_TARGET_SAMPLE` | Supported for promoted image/field/volume sample paths. | Hit results carry scalar/vector/category payloads and UVW/data coordinates when available. |
 | `DVZ_SCENE_TARGET_GUIDE` | Deferred. | `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET`; no visual id or hit payload. |

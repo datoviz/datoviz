@@ -1341,6 +1341,7 @@ dvz_visual_set_scene_occluded
 dvz_visual_set_scene_occluder
 dvz_visual_set_shader_desc
 dvz_visual_set_strings
+dvz_visual_set_target_link_keys
 dvz_visual_set_transform
 dvz_visual_set_transform_desc
 dvz_visual_set_visible

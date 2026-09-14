@@ -19,7 +19,7 @@ Common workflows:
 - [Update visual data](../../how-to/update-visual-data.md)
 - [Visual families reference](../visual-families/index.md)
 
-Functions: 225
+Functions: 226
 Types: 90
 
 ## Symbol Groups
@@ -55,7 +55,7 @@ Types: 90
 | [Triangulate](#triangulate) | 1 | 0 | `include/datoviz/geom.h` |
 | [Triangulation](#triangulation) | 1 | 2 | 3 headers |
 | [Vector](#vector) | 4 | 2 | 3 headers |
-| [Visual](#visual) | 47 | 20 | 6 headers |
+| [Visual](#visual) | 48 | 20 | 6 headers |
 | [Volume](#volume) | 16 | 5 | 3 headers |
 
 ??? info "Grouped function index"
@@ -407,6 +407,7 @@ Types: 90
     | [`dvz_visual_set_scale()`](#dvz_visual_set_scale) | `include/datoviz/scene/scale.h` |
     | [`dvz_visual_set_shader_desc()`](#dvz_visual_set_shader_desc) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_strings()`](#dvz_visual_set_strings) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_target_link_keys()`](#dvz_visual_set_target_link_keys) | `include/datoviz/scene/interaction.h` |
     | [`dvz_visual_set_transform()`](#dvz_visual_set_transform) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_transform_desc()`](#dvz_visual_set_transform_desc) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_visible()`](#dvz_visual_set_visible) | `include/datoviz/scene.h` |
@@ -5899,6 +5900,37 @@ DvzResult dvz_visual_set_strings(
 | `item_count` | `uint32_t` | number of strings |
 
 _Declared in `include/datoviz/scene.h`:2294._
+
+#### `dvz_visual_set_target_link_keys()` { #dvz_visual_set_target_link_keys .dvz-api-function }
+
+Bind link keys for one query target on a visual.
+
+`target` currently accepts `DVZ_SCENE_TARGET_ITEM` for any query-capable visual and
+`DVZ_SCENE_TARGET_FACE` for mesh visuals. Face keys follow triangle-list draw order: one key per
+index-buffer triplet for indexed meshes, or one key per three vertices for non-indexed meshes.
+Item and face bindings coexist. The keys are copied before return; zero entries clear only the
+requested target binding.
+
+```c
+DvzResult dvz_visual_set_target_link_keys(
+    DvzVisual * visual,
+    DvzSceneTargetKind target,
+    DvzLinkChannel * channel,
+    const uint64_t * link_keys,
+    uint32_t target_count
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on error |
+| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the visual |
+| `target` | [`DvzSceneTargetKind`](scene.md#type-dvzscenetargetkind) | query target whose ids index the key array |
+| `channel` | [`DvzLinkChannel`](scene.md#type-dvzlinkchannel) * | the link channel |
+| `link_keys` | `const` `uint64_t` * | array of link keys |
+| `target_count` | `uint32_t` | number of keys |
+
+_Declared in `include/datoviz/scene/interaction.h`:153._
 
 #### `dvz_visual_set_transform()` { #dvz_visual_set_transform .dvz-api-function }
 

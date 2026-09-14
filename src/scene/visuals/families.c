@@ -456,6 +456,11 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources)
         dvz_free(visual->link_keys);
         visual->link_keys = NULL;
     }
+    if (visual->face_link_keys != NULL)
+    {
+        dvz_free(visual->face_link_keys);
+        visual->face_link_keys = NULL;
+    }
     if (state != NULL && state->texture.rgba != NULL)
     {
         dvz_free(state->texture.rgba);
@@ -1352,41 +1357,86 @@ DvzResult dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabili
  * @param item_count the number of link keys
  * @return 0 on success, -1 on error
  */
-DvzResult dvz_visual_set_link_keys(
-    DvzVisual* visual, DvzLinkChannel* channel, const uint64_t* link_keys, uint32_t item_count)
+DvzResult dvz_visual_set_target_link_keys(
+    DvzVisual* visual, DvzSceneTargetKind target, DvzLinkChannel* channel,
+    const uint64_t* link_keys, uint32_t target_count)
 {
     ANN(visual);
+    if (target != DVZ_SCENE_TARGET_ITEM && target != DVZ_SCENE_TARGET_FACE)
+    {
+        log_error("link keys only support item and face query targets");
+        return -1;
+    }
     if (channel == NULL || channel->scene != visual->scene)
     {
         log_error("cannot bind link keys with a channel from a different scene");
         return -1;
     }
-    if (item_count > 0 && link_keys == NULL)
+    if (target_count > 0 && link_keys == NULL)
     {
         log_error("link key array is NULL");
         return -1;
     }
     if (!_scene_visual_mutation_allowed(visual->scene, "bind link keys"))
         return -1;
-    if (visual->link_keys != NULL)
+
+    if (target == DVZ_SCENE_TARGET_FACE)
     {
-        dvz_free(visual->link_keys);
-        visual->link_keys = NULL;
+        uint32_t expected_count = 0;
+        if (!_scene_visual_family_query_target_count(visual, target, &expected_count))
+        {
+            log_error("visual family does not support face link keys for its current topology");
+            return -1;
+        }
+        if (target_count > 0 && target_count != expected_count)
+        {
+            log_error(
+                "face link key count %u does not match mesh face count %u", target_count,
+                expected_count);
+            return -1;
+        }
     }
-    visual->link_channel = channel;
-    visual->link_key_count = item_count;
-    if (item_count == 0)
-        return 0;
-    visual->link_keys = (uint64_t*)dvz_calloc(item_count, sizeof(uint64_t));
-    if (visual->link_keys == NULL)
+
+    uint64_t** keys = target == DVZ_SCENE_TARGET_ITEM ? &visual->link_keys
+                                                      : &visual->face_link_keys;
+    uint32_t* key_count = target == DVZ_SCENE_TARGET_ITEM ? &visual->link_key_count
+                                                          : &visual->face_link_key_count;
+    DvzLinkChannel** link_channel = target == DVZ_SCENE_TARGET_ITEM
+                                        ? &visual->link_channel
+                                        : &visual->face_link_channel;
+    uint64_t* replacement = NULL;
+    if (target_count > 0)
     {
-        visual->link_key_count = 0;
-        return -1;
+        replacement = (uint64_t*)dvz_calloc(target_count, sizeof(uint64_t));
+        if (replacement == NULL)
+            return -1;
+        dvz_memcpy(
+            replacement, target_count * sizeof(uint64_t), link_keys,
+            target_count * sizeof(uint64_t));
     }
-    dvz_memcpy(
-        visual->link_keys, item_count * sizeof(uint64_t), link_keys,
-        item_count * sizeof(uint64_t));
+    dvz_free(*keys);
+    *keys = replacement;
+    *link_channel = target_count > 0 ? channel : NULL;
+    *key_count = target_count;
     return 0;
+}
+
+
+
+/**
+ * Bind item link keys for one visual on one scene link channel.
+ *
+ * @param visual the visual
+ * @param channel the link channel
+ * @param link_keys per-item link keys
+ * @param item_count the number of link keys
+ * @return 0 on success, -1 on error
+ */
+DvzResult dvz_visual_set_link_keys(
+    DvzVisual* visual, DvzLinkChannel* channel, const uint64_t* link_keys, uint32_t item_count)
+{
+    return dvz_visual_set_target_link_keys(
+        visual, DVZ_SCENE_TARGET_ITEM, channel, link_keys, item_count);
 }
 
 

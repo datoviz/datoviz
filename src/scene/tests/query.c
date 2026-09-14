@@ -2057,7 +2057,8 @@ int test_scene_mesh_query_resolves_instance_item(TstContext* suite, const TstCas
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     ANN(mesh);
-    dvz_visual_set_query_capabilities(mesh, DVZ_QUERY_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(
+        mesh, DVZ_QUERY_CAPABILITY_ITEM | DVZ_QUERY_CAPABILITY_FACE);
     vec3 mesh_pos[4] = {
         {-0.25f, -0.45f, 0.0f},
         {-0.25f, 0.45f, 0.0f},
@@ -2089,6 +2090,11 @@ int test_scene_mesh_query_resolves_instance_item(TstContext* suite, const TstCas
     };
     AT(dvz_visual_set_data_many(mesh, mesh_updates, 3) == 0);
     AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
+    DvzLinkChannel* channel = dvz_link_channel(scene, "mesh-faces-instanced");
+    ANN(channel);
+    uint64_t face_keys[2] = {88, 99};
+    AT(dvz_visual_set_target_link_keys(
+           mesh, DVZ_SCENE_TARGET_FACE, channel, face_keys, 2) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -2113,6 +2119,24 @@ int test_scene_mesh_query_resolves_instance_item(TstContext* suite, const TstCas
     AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
     AT(query.resolved_id == 1);
     AT(query.item_id == 1);
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    AT(dvz_panel_query_px(
+           panel, 48.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+                              .request_id = 85,
+                              .target = DVZ_SCENE_TARGET_FACE}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.request_id == 85);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MESH);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_FACE);
+    AT(query.resolved_id == 1);
+    AT(query.face_id == 1);
+    AT(query.primitive_id == 1);
+    AT(query.link_key == 99);
     AT(!dvz_scene_poll_query(scene, &query));
 
     dvz_scene_destroy(scene);
@@ -2564,7 +2588,7 @@ int test_scene_primitive_query_resolves_item(TstContext* suite, const TstCase* i
 
 
 /**
- * Ensure native mesh queries resolve indexed triangle identity.
+ * Ensure native mesh queries resolve non-indexed triangle identity.
  *
  * @param suite the active test suite
  * @param item the active test item
@@ -2599,33 +2623,40 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
 
     DvzVisual* mesh = dvz_mesh(scene, 0);
     ANN(mesh);
-    dvz_visual_set_query_capabilities(mesh, DVZ_QUERY_CAPABILITY_ITEM);
-    vec3 mesh_pos[4] = {
+    dvz_visual_set_query_capabilities(
+        mesh, DVZ_QUERY_CAPABILITY_ITEM | DVZ_QUERY_CAPABILITY_FACE);
+    vec3 mesh_pos[6] = {
         {-0.8f, -0.8f, 0.0f},
         {-0.8f, 0.8f, 0.0f},
         {0.8f, -0.8f, 0.0f},
+        {0.8f, -0.8f, 0.0f},
+        {-0.8f, 0.8f, 0.0f},
         {0.8f, 0.8f, 0.0f},
     };
-    vec3 mesh_normals[4] = {
+    vec3 mesh_normals[6] = {
+        {0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
         {0.0f, 0.0f, 1.0f},
     };
-    DvzIndex mesh_indices[6] = {0, 1, 2, 2, 1, 3};
-    DvzSceneBuffer* index_buffer = dvz_scene_buffer(
-        scene, &(DvzSceneBufferDesc){DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
-                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX,
-                   .stride = sizeof(DvzIndex),
-               });
-    ANN(index_buffer);
-    AT(dvz_scene_buffer_set_data(index_buffer, mesh_indices, sizeof(mesh_indices)) == DVZ_OK);
     DvzVisualDataUpdate mesh_updates[] = {
-        {.attr_name = "position", .data = mesh_pos, .item_count = 4},
-        {.attr_name = "normal", .data = mesh_normals, .item_count = 4},
+        {.attr_name = "position", .data = mesh_pos, .item_count = 6},
+        {.attr_name = "normal", .data = mesh_normals, .item_count = 6},
     };
     AT(dvz_visual_set_data_many(mesh, mesh_updates, 2) == 0);
-    AT(dvz_visual_set_buffer(mesh, "index", index_buffer) == DVZ_OK);
+    DvzLinkChannel* channel = dvz_link_channel(scene, "mesh-items-and-faces");
+    ANN(channel);
+    uint64_t item_keys[1] = {42};
+    uint64_t face_keys[2] = {314, UINT64_C(0xFFFFFFFFFFFFFEC5)};
+    AT(dvz_visual_set_link_keys(mesh, channel, item_keys, 1) == DVZ_OK);
+    AT_EXPECTED_ERROR_STRICT(
+        suite,
+        dvz_visual_set_target_link_keys(
+            mesh, DVZ_SCENE_TARGET_FACE, channel, face_keys, 1) == DVZ_ERROR);
+    AT(dvz_visual_set_target_link_keys(
+           mesh, DVZ_SCENE_TARGET_FACE, channel, face_keys, 2) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, mesh, NULL) == 0);
 
     DvzDrp2RuntimeConfig runtime_cfg =
@@ -2650,7 +2681,39 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.resolved_target == DVZ_SCENE_TARGET_ITEM);
     AT(query.resolved_id == 0);
     AT(query.item_id == 0);
+    AT(query.link_key == 42);
     AT(!dvz_scene_poll_query(scene, &query));
+
+    AT(dvz_panel_query_px(
+           panel, 48.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+                              .request_id = 86,
+                              .target = DVZ_SCENE_TARGET_FACE}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.request_id == 86);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_family == DVZ_SCENE_VISUAL_FAMILY_MESH);
+    AT(query.resolved_target == DVZ_SCENE_TARGET_FACE);
+    AT(query.resolved_id == 1);
+    AT(query.face_id == 1);
+    AT(query.primitive_id == 1);
+    AT(query.link_key == UINT64_C(0xFFFFFFFFFFFFFEC5));
+    AT(!dvz_scene_poll_query(scene, &query));
+
+    AT(dvz_visual_set_target_link_keys(
+           mesh, DVZ_SCENE_TARGET_FACE, channel, NULL, 0) == DVZ_OK);
+    AT(mesh->face_link_keys == NULL);
+    AT(mesh->face_link_key_count == 0);
+    AT(mesh->face_link_channel == NULL);
+    AT(mesh->link_keys != NULL);
+    AT(mesh->link_key_count == 1);
+    AT(mesh->link_keys[0] == 42);
+    dvz_link_channel_destroy(channel);
+    AT(mesh->link_channel == NULL);
+    AT(mesh->face_link_channel == NULL);
+    AT(mesh->link_keys == NULL);
 
     dvz_scene_destroy(scene);
     dvz_drp2_runtime_destroy(runtime);

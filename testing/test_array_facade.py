@@ -194,6 +194,15 @@ def fake_facade(monkeypatch):
     raw.dvz_visual_set_link_keys = _raw_function(
         [ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint64), ctypes.c_uint32]
     )
+    raw.dvz_visual_set_target_link_keys = _raw_function(
+        [
+            ctypes.c_void_p,
+            ctypes.c_int,
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_uint64),
+            ctypes.c_uint32,
+        ]
+    )
     raw.dvz_colormap_custom = _raw_function(
         [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint8), ctypes.c_uint32],
         ctypes.c_void_p,

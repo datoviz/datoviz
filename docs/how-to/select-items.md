@@ -121,6 +121,8 @@ Retained selection targets are visual-local unless you bind explicit link keys. 
 mapping from query result ids to application ids, especially after sorting, filtering, or replacing
 visual data.
 
+Mesh item state styles whole non-instanced meshes or individual mesh instances. A retained `DVZ_SCENE_TARGET_FACE` result preserves face identity and its face-specific link key, but does not automatically style that face or every face in the same semantic region. Apply application-owned vertex colors when face ownership is unambiguous, or use separate visuals for independently styled regions.
+
 Selections, hover objects, and their visual styles are scene state. Destroy explicitly managed
 objects before the scene, or let scene destruction release them; never retain their pointers after
 scene destruction.

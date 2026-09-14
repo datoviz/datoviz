@@ -25,6 +25,7 @@
 #include "_visual_pipeline.h"
 #include "query_geometry.h"
 #include "registry/registry.h"
+#include "mesh/internal.h"
 #include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -86,13 +87,19 @@ static bool _mesh_query_eligible(
     const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request)
 {
     ANN(panel);
+    ANN(visual);
+    ANN(request);
+    if (visual->type != DVZ_VISUAL_TYPE_MESH)
+        return false;
+    if (request->target == DVZ_SCENE_TARGET_FACE)
+        return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_FACE) != 0;
     return _dvz_scene_query_item_target_eligible(visual, request, DVZ_VISUAL_TYPE_MESH);
 }
 
 
 
 /**
- * Build a mesh-family r32uint item query plan.
+ * Build a mesh-family r32uint item or face query plan.
  *
  * @param ctx build context
  * @param out_plan output query plan
@@ -110,8 +117,11 @@ static bool _mesh_query_build(
 
     uint64_t vertex_count = 0;
     uint32_t topology = 0;
-    if (!_scene_query_mesh_item_geometry(
-            "mesh", ctx->visual, &out_plan->scratch, &vertex_count, &topology))
+    DvzSceneTargetKind target = ctx->pending->request.target;
+    if (target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_OBJECT)
+        target = DVZ_SCENE_TARGET_ITEM;
+    if (!_scene_query_mesh_target_geometry(
+            "mesh", ctx->visual, target, &out_plan->scratch, &vertex_count, &topology))
     {
         _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
@@ -204,7 +214,7 @@ static bool _mesh_query_build(
 
 
 /**
- * Decode a mesh-family r32uint item query payload.
+ * Decode a mesh-family r32uint item or face query payload.
  *
  * @param ctx decode context
  * @param out_result output query result
@@ -213,7 +223,11 @@ static bool _mesh_query_build(
 static bool _mesh_query_decode(
     const DvzSceneQueryDecodeContext* ctx, DvzQueryResult* out_result)
 {
-    return _dvz_scene_query_decode_item_id(ctx, DVZ_SCENE_VISUAL_FAMILY_MESH, out_result);
+    DvzSceneTargetKind target = ctx->build->pending->request.target;
+    if (target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_OBJECT)
+        target = DVZ_SCENE_TARGET_ITEM;
+    return _dvz_scene_query_decode_target_id(
+        ctx, DVZ_SCENE_VISUAL_FAMILY_MESH, target, out_result);
 }
 
 
@@ -239,6 +253,53 @@ static bool _mesh_query_readout(
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Return the number of identities exposed by a mesh query target.
+ *
+ * @param visual retained mesh visual
+ * @param target query target
+ * @param out_count output identity count
+ * @return true when the target and mesh topology define a valid count
+ */
+bool _scene_mesh_visual_query_target_count(
+    const DvzVisual* visual, DvzSceneTargetKind target, uint32_t* out_count)
+{
+    ANN(visual);
+    ANN(out_count);
+    if (target != DVZ_SCENE_TARGET_FACE || _visual_family_state(visual) == NULL ||
+        _visual_family_state(visual)->topology != DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+    {
+        return false;
+    }
+
+    uint64_t element_count = 0;
+    const DvzSceneBuffer* buffer = _visual_family_state(visual)->buffer;
+    if (buffer != NULL && buffer->data != NULL && buffer->desc.byte_size > 0)
+    {
+        uint32_t stride = buffer->desc.stride;
+        if ((stride != sizeof(uint16_t) && stride != sizeof(uint32_t)) ||
+            buffer->desc.byte_size % stride != 0)
+        {
+            return false;
+        }
+        element_count = buffer->desc.byte_size / stride;
+    }
+    else
+    {
+        const DvzVisualAttr* position = NULL;
+        if (!_dvz_scene_query_dense_attr(visual, "position", sizeof(vec3), &position))
+        {
+            *out_count = 0;
+            return true;
+        }
+        element_count = position->item_count;
+    }
+    if (element_count % 3 != 0 || element_count / 3 > UINT32_MAX)
+        return false;
+    *out_count = (uint32_t)(element_count / 3);
+    return true;
+}
 
 /**
  * Return mesh visual query operations.

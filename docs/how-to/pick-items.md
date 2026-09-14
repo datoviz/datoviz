@@ -29,7 +29,7 @@ is a sampled field value at a data coordinate.
 5. Map `resolved_id` or `link_key` back to application data.
 6. Update hover, selection, or readout state from the query result.
 
-Keep the visual's item order stable if the pick result is used as an index into application data.
+Keep the visual's item order stable if the pick result is used as an index into application data. For a mesh, `DVZ_SCENE_TARGET_ITEM` identifies the whole mesh or one instance; request `DVZ_SCENE_TARGET_FACE` when the application needs the triangle under the pointer.
 
 The code below is an asynchronous C excerpt. Check every mutator/queue result, render subsequent
 frames, and keep polling rather than waiting synchronously in the input callback.
@@ -86,6 +86,19 @@ with `dvz_panel_data_to_position()`.
 Use `request_id` to distinguish hover queries from click queries when both are active. The examples
 use one request id for hover and another for click selection.
 
+### Mesh faces
+
+Enable `DVZ_QUERY_CAPABILITY_FACE` and request `DVZ_SCENE_TARGET_FACE` to obtain indexed triangle identity from a mesh. `resolved_id`, `face_id`, and `primitive_id` then contain the zero-based triangle index. Bind application identities such as region ids independently from mesh item/instance keys with `dvz_visual_set_target_link_keys()`:
+
+```c
+dvz_visual_set_query_capabilities(
+    mesh, DVZ_QUERY_CAPABILITY_ITEM | DVZ_QUERY_CAPABILITY_FACE);
+dvz_visual_set_target_link_keys(
+    mesh, DVZ_SCENE_TARGET_FACE, region_channel, face_region_keys, face_count);
+```
+
+For indexed meshes, face order is index-buffer triplet order. For non-indexed meshes, each consecutive group of three vertices is one face. An instanced mesh face query reports the base-geometry face shared by all instances; combined face-plus-instance identity is deferred. Face results can be retained by hover and selection objects, but the built-in mesh item-state shader styles whole meshes or instances, not individual faces or face groups. Update application-driven colors or use separate region visuals when face/region highlighting is required.
+
 
 ## Hover and selection
 
@@ -121,6 +134,7 @@ their scene if you remove them early.
 - Reordering visual data without updating the application-side id mapping.
 - Expecting identical results from native and WebGPU paths without checking feature status.
 - Forgetting to enable query capabilities on the visual before issuing item queries.
+- Binding per-face keys with `dvz_visual_set_link_keys()`; that compatibility function binds item/instance keys, so use `dvz_visual_set_target_link_keys()` for `DVZ_SCENE_TARGET_FACE`.
 - Treating query results as immediate return values instead of polling resolved results.
 - Using raw window coordinates instead of outer-panel-local logical pixels.
 

@@ -34,6 +34,7 @@
 #include "text/internal.h"
 #include "vector/internal.h"
 #include "volume/internal.h"
+#include "_assertions.h"
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -346,7 +347,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attrs = MESH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(MESH_ATTRS),
      .expected_attrs = "position, color, normal, texcoords, instance_transform, item_state",
      .after_attr_set = _scene_mesh_visual_after_attr_set, .upload_position_topology = true,
-     .upload_material_params = true, .sampled_field_texture_upload = true},
+     .upload_material_params = true, .sampled_field_texture_upload = true,
+     .query_target_count = _scene_mesh_visual_query_target_count},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_VOLUME, "volume", _scene_volume_visual_lowering,
          _scene_volume_visual_bounds, _scene_volume_visual_bind_desc,
@@ -551,6 +553,29 @@ const DvzVisualFamilyOps* _scene_visual_family_ops_at(uint32_t index)
 bool _scene_visual_family_ops_registered(DvzVisualType type)
 {
     return _scene_visual_family_ops(type) != NULL;
+}
+
+
+
+/**
+ * Resolve the number of identities exposed by one family-specific query target.
+ *
+ * @param visual retained visual
+ * @param target query target
+ * @param out_count output identity count
+ * @return true when the family defines this target and its count is valid
+ */
+bool _scene_visual_family_query_target_count(
+    const DvzVisual* visual, DvzSceneTargetKind target, uint32_t* out_count)
+{
+    ANN(visual);
+    ANN(out_count);
+    const DvzVisualFamilyOps* ops = visual->ops;
+    if (ops == NULL)
+        ops = _scene_visual_family_ops(visual->type);
+    if (ops == NULL || ops->query_target_count == NULL)
+        return false;
+    return ops->query_target_count(visual, target, out_count);
 }
 
 

@@ -32,10 +32,10 @@ Status values:
 | Segment and path visuals | fixed | `dvz_segment()`, `dvz_path()`, path join/curve examples | Dashes, arrow caps, closed-path API, and richer path/span picking are deferred. |
 | Vector visual | fixed | `dvz_vector()` and wind/vector examples | Independent head dimensions and scalar styling are deferred. |
 | Image visual and 2D sampled fields | fixed | `dvz_image()`, `DvzSampledField`, image probe examples | Tiled/LOD image policy and richer probe payloads are deferred. |
-| Mesh, textured mesh, material mesh, and OBJ loading | fixed | `dvz_mesh()`, material/textured mesh examples, OBJ loading | Face/region picking, full PBR, and a broader public geometry-resource API remain deferred. |
+| Mesh, textured mesh, material mesh, and OBJ loading | fixed | `dvz_mesh()`, material/textured mesh examples, OBJ loading | GPU face identity and per-face link keys are active; grouped face styling, combined face-plus-instance identity, full PBR, and a broader public geometry-resource API remain deferred. |
 | Sphere visual | fixed | `dvz_sphere()` and sphere examples | Texture variants and per-item PBR are deferred. |
 | Volume visual and 3D sampled fields | fixed | `dvz_volume()`, volume, volume-occlusion, and brain-volume examples | Slice/MIP/composite paths are active. Isosurfaces, MPR, categorical label volumes, and DVR/MIP ray-hit picking are deferred. |
-| Picking, selection, image probing, and readback | fixed | unified query API, picking/selection/probe examples | First broad item/sample paths are active. Rich mesh face, text/glyph, path/span, and volume ray identities are deferred. |
+| Picking, selection, image probing, and readback | fixed | unified query API, picking/selection/probe examples | First broad item/sample paths and mesh face identity are active. Text/glyph, path/span, and volume ray identities remain deferred. |
 | Retained data updates, partial updates, transforms, and visibility | fixed | update, partial-update, transform, and visibility examples | Broader span/group source APIs remain future work unless a family documents support. |
 | Raster video export | fixed | app capture API and native video-export example | CPU-readback capture is release-facing when an encoder is available; external-memory/NVENC capture remains advanced and platform-specific. |
 | Scene compute and compute-to-render particles | experimental | experimental compute+graphics slice | Active as a v0.4 feature, not a v0.3 visible parity requirement. |

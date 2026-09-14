@@ -75,6 +75,8 @@ typedef bool (*DvzVisualFamilyValidateAttrFn)(
 typedef bool (*DvzVisualFamilyAfterAttrFn)(
     DvzVisual* visual, const char* attr_name, uint32_t item_count);
 typedef const char* (*DvzVisualFamilyAttrStorageNameFn)(const char* attr_name);
+typedef bool (*DvzVisualFamilyQueryTargetCountFn)(
+    const DvzVisual* visual, DvzSceneTargetKind target, uint32_t* out_count);
 
 struct DvzVisualFamilyOps
 {
@@ -108,6 +110,7 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyValidateAttrFn validate_attr;
     DvzVisualFamilyAfterAttrFn after_attr_set;
     DvzVisualFamilyAttrStorageNameFn attr_storage_name;
+    DvzVisualFamilyQueryTargetCountFn query_target_count;
     bool upload_position_topology;
     bool upload_material_params;
     bool skip_visual_uploads;
@@ -144,6 +147,9 @@ uint32_t _scene_visual_family_ops_count(void);
 const DvzVisualFamilyOps* _scene_visual_family_ops_at(uint32_t index);
 
 bool _scene_visual_family_ops_registered(DvzVisualType type);
+
+bool _scene_visual_family_query_target_count(
+    const DvzVisual* visual, DvzSceneTargetKind target, uint32_t* out_count);
 
 DvzRenderableKind _scene_visual_family_renderable_kind(DvzVisualType type);
 

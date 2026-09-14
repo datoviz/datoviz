@@ -1333,7 +1333,31 @@ dvz_visual_set_link_keys.argtypes = getattr(_raw.dvz_visual_set_link_keys, "argt
 dvz_visual_set_link_keys.restype = getattr(_raw.dvz_visual_set_link_keys, "restype", None)
 
 
-_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_colormap_custom', 'dvz_gui_table', 'dvz_gui_table_draw', 'dvz_gui_table_get_filter', 'dvz_gui_table_get_selection', 'dvz_gui_table_get_sort', 'dvz_gui_table_set_column_bool', 'dvz_gui_table_set_column_color', 'dvz_gui_table_set_column_double', 'dvz_gui_table_set_column_int64', 'dvz_gui_table_set_column_text', 'dvz_gui_table_set_matches', 'dvz_gui_table_set_rows', 'dvz_gui_table_set_selection', 'dvz_gui_table_set_styles', 'dvz_gui_table_set_visible', 'dvz_gui_tree_draw', 'dvz_gui_tree_get_expanded', 'dvz_gui_tree_get_filter', 'dvz_gui_tree_get_selection', 'dvz_gui_tree_set_expanded', 'dvz_gui_tree_set_matches', 'dvz_gui_tree_set_rows', 'dvz_gui_tree_set_selection', 'dvz_gui_tree_set_styles', 'dvz_gui_tree_set_swatches', 'dvz_gui_tree_set_visible', 'dvz_panel_set_lights', 'dvz_path_set_subpaths', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_text_set_strings', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data', 'dvz_visual_set_link_keys']
+def dvz_visual_set_target_link_keys(visual, target, channel, link_keys, target_count=None):
+    link_keys = _typed_sequence(link_keys, np.uint64)
+    ptr, keepalive = _array_arg(
+        link_keys, 'link_keys', _raw.dvz_visual_set_target_link_keys, 3, np.uint64)
+    if keepalive is not None:
+        if target_count is None:
+            target_count = len(link_keys)
+        elif len(link_keys) != int(target_count):
+            raise ValueError(
+                f'link_keys count {len(link_keys)} does not match target_count {target_count}')
+    elif target_count is None:
+        raise TypeError('target_count must be provided when passing a raw link_keys pointer')
+    return _raw.dvz_visual_set_target_link_keys(
+        visual, target, channel, ptr, int(target_count or 0))
+
+
+dvz_visual_set_target_link_keys.__doc__ = getattr(
+    _raw.dvz_visual_set_target_link_keys, "__doc__", None)
+dvz_visual_set_target_link_keys.argtypes = getattr(
+    _raw.dvz_visual_set_target_link_keys, "argtypes", None)
+dvz_visual_set_target_link_keys.restype = getattr(
+    _raw.dvz_visual_set_target_link_keys, "restype", None)
+
+
+_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_colormap_custom', 'dvz_gui_table', 'dvz_gui_table_draw', 'dvz_gui_table_get_filter', 'dvz_gui_table_get_selection', 'dvz_gui_table_get_sort', 'dvz_gui_table_set_column_bool', 'dvz_gui_table_set_column_color', 'dvz_gui_table_set_column_double', 'dvz_gui_table_set_column_int64', 'dvz_gui_table_set_column_text', 'dvz_gui_table_set_matches', 'dvz_gui_table_set_rows', 'dvz_gui_table_set_selection', 'dvz_gui_table_set_styles', 'dvz_gui_table_set_visible', 'dvz_gui_tree_draw', 'dvz_gui_tree_get_expanded', 'dvz_gui_tree_get_filter', 'dvz_gui_tree_get_selection', 'dvz_gui_tree_set_expanded', 'dvz_gui_tree_set_matches', 'dvz_gui_tree_set_rows', 'dvz_gui_tree_set_selection', 'dvz_gui_tree_set_styles', 'dvz_gui_tree_set_swatches', 'dvz_gui_tree_set_visible', 'dvz_panel_set_lights', 'dvz_path_set_subpaths', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_text_set_strings', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data', 'dvz_visual_set_link_keys', 'dvz_visual_set_target_link_keys']
 
 for _name in getattr(_raw, "__all__", dir(_raw)):
     if _name not in globals():

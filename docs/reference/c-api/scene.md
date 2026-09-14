@@ -4035,7 +4035,7 @@ DvzHover * dvz_hover(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `desc` | `const` [`DvzHoverDesc`](scene.md#type-dvzhoverdesc) * | hover descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/interaction.h`:286._
+_Declared in `include/datoviz/scene/interaction.h`:307._
 
 #### `dvz_hover_apply_query()` { #dvz_hover_apply_query .dvz-api-function }
 
@@ -4054,7 +4054,7 @@ DvzResult dvz_hover_apply_query(
 | `hover` | [`DvzHover`](scene.md#type-dvzhover) * | the hover object |
 | `query` | `const` [`DvzQueryResult`](scene.md#type-dvzqueryresult) * | the query result |
 
-_Declared in `include/datoviz/scene/interaction.h`:326._
+_Declared in `include/datoviz/scene/interaction.h`:347._
 
 #### `dvz_hover_clear()` { #dvz_hover_clear .dvz-api-function }
 
@@ -4071,7 +4071,7 @@ DvzResult dvz_hover_clear(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK when the hover state was cleared, DVZ_ERROR on error |
 | `hover` | [`DvzHover`](scene.md#type-dvzhover) * | the hover object |
 
-_Declared in `include/datoviz/scene/interaction.h`:303._
+_Declared in `include/datoviz/scene/interaction.h`:324._
 
 #### `dvz_hover_desc()` { #dvz_hover_desc .dvz-api-function }
 
@@ -4087,7 +4087,7 @@ DvzHoverDesc dvz_hover_desc(void);
 
 Related: [`dvz_hover()`](#dvz_hover).
 
-_Declared in `include/datoviz/scene/interaction.h`:276._
+_Declared in `include/datoviz/scene/interaction.h`:297._
 
 #### `dvz_hover_destroy()` { #dvz_hover_destroy .dvz-api-function }
 
@@ -4103,7 +4103,7 @@ void dvz_hover_destroy(
 | --- | --- | --- |
 | `hover` | [`DvzHover`](scene.md#type-dvzhover) * | the hover object |
 
-_Declared in `include/datoviz/scene/interaction.h`:294._
+_Declared in `include/datoviz/scene/interaction.h`:315._
 
 #### `dvz_hover_set_visual_style()` { #dvz_hover_set_visual_style .dvz-api-function }
 
@@ -4125,7 +4125,7 @@ DvzResult dvz_hover_set_visual_style(
 | `hover` | [`DvzHover`](scene.md#type-dvzhover) * | the hover object |
 | `style` | `const` [`DvzItemStateVisualStyle`](scene.md#type-dvzitemstatevisualstyle) * | the visual style descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/interaction.h`:316._
+_Declared in `include/datoviz/scene/interaction.h`:337._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -4336,7 +4336,7 @@ DvzItemInteraction * dvz_item_interaction(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `desc` | `const` [`DvzItemInteractionDesc`](scene.md#type-dvziteminteractiondesc) * | interaction descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/interaction.h`:349._
+_Declared in `include/datoviz/scene/interaction.h`:370._
 
 #### `dvz_item_interaction_desc()` { #dvz_item_interaction_desc .dvz-api-function }
 
@@ -4352,7 +4352,7 @@ DvzItemInteractionDesc dvz_item_interaction_desc(void);
 
 Related: [`dvz_item_interaction()`](#dvz_item_interaction).
 
-_Declared in `include/datoviz/scene/interaction.h`:339._
+_Declared in `include/datoviz/scene/interaction.h`:360._
 
 #### `dvz_item_interaction_destroy()` { #dvz_item_interaction_destroy .dvz-api-function }
 
@@ -4368,7 +4368,7 @@ void dvz_item_interaction_destroy(
 | --- | --- | --- |
 | `interaction` | [`DvzItemInteraction`](scene.md#type-dvziteminteraction) * | the item interaction controller |
 
-_Declared in `include/datoviz/scene/interaction.h`:358._
+_Declared in `include/datoviz/scene/interaction.h`:379._
 
 #### `dvz_item_interaction_hover()` { #dvz_item_interaction_hover .dvz-api-function }
 
@@ -4385,7 +4385,7 @@ DvzHover * dvz_item_interaction_hover(
 | return | [`DvzHover`](scene.md#type-dvzhover) * | the hover object, or NULL when hover is disabled |
 | `interaction` | [`DvzItemInteraction`](scene.md#type-dvziteminteraction) * | the item interaction controller |
 
-_Declared in `include/datoviz/scene/interaction.h`:367._
+_Declared in `include/datoviz/scene/interaction.h`:388._
 
 #### `dvz_item_interaction_selection()` { #dvz_item_interaction_selection .dvz-api-function }
 
@@ -4402,7 +4402,7 @@ DvzSelection * dvz_item_interaction_selection(
 | return | [`DvzSelection`](scene.md#type-dvzselection) * | the selection object, or NULL when selection is disabled |
 | `interaction` | [`DvzItemInteraction`](scene.md#type-dvziteminteraction) * | the item interaction controller |
 
-_Declared in `include/datoviz/scene/interaction.h`:376._
+_Declared in `include/datoviz/scene/interaction.h`:397._
 
 #### `dvz_item_state_visual_style()` { #dvz_item_state_visual_style .dvz-api-function }
 
@@ -4416,7 +4416,7 @@ DvzItemStateVisualStyle dvz_item_state_visual_style(void);
 | --- | --- | --- |
 | return | [`DvzItemStateVisualStyle`](scene.md#type-dvzitemstatevisualstyle) | the default item-state visual style |
 
-_Declared in `include/datoviz/scene/interaction.h`:178._
+_Declared in `include/datoviz/scene/interaction.h`:199._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -5055,7 +5055,7 @@ DvzLinkChannel * dvz_link_channel(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `name` | `const` `char` * | stable channel name, or NULL |
 
-_Declared in `include/datoviz/scene/interaction.h`:149._
+_Declared in `include/datoviz/scene/interaction.h`:170._
 
 #### `dvz_link_channel_destroy()` { #dvz_link_channel_destroy .dvz-api-function }
 
@@ -5071,7 +5071,7 @@ void dvz_link_channel_destroy(
 | --- | --- | --- |
 | `channel` | [`DvzLinkChannel`](scene.md#type-dvzlinkchannel) * | the link channel |
 
-_Declared in `include/datoviz/scene/interaction.h`:157._
+_Declared in `include/datoviz/scene/interaction.h`:178._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -6332,7 +6332,7 @@ DvzResult dvz_panel_query_now_px(
 | `request` | `const` [`DvzQueryRequest`](scene.md#type-dvzqueryrequest) * | the request descriptor, or NULL for defaults |
 | `out_result` | [`DvzQueryResult`](scene.md#type-dvzqueryresult) * | output result |
 
-_Declared in `include/datoviz/scene/interaction.h`:426._
+_Declared in `include/datoviz/scene/interaction.h`:447._
 
 #### `dvz_panel_query_px()` { #dvz_panel_query_px .dvz-api-function }
 
@@ -6355,7 +6355,7 @@ DvzResult dvz_panel_query_px(
 | `y` | `double` | the panel-local logical y coordinate, origin at the outer panel rectangle |
 | `request` | `const` [`DvzQueryRequest`](scene.md#type-dvzqueryrequest) * | the request descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/interaction.h`:401._
+_Declared in `include/datoviz/scene/interaction.h`:422._
 
 #### `dvz_panel_resolve_frame()` { #dvz_panel_resolve_frame .dvz-api-function }
 
@@ -7209,7 +7209,7 @@ void dvz_pinned_readout_destroy(
 | --- | --- | --- |
 | `readout` | [`DvzPinnedReadout`](scene.md#type-dvzpinnedreadout) * | the pinned readout |
 
-_Declared in `include/datoviz/scene/interaction.h`:466._
+_Declared in `include/datoviz/scene/interaction.h`:487._
 
 #### `dvz_pinned_readout_query()` { #dvz_pinned_readout_query .dvz-api-function }
 
@@ -7228,7 +7228,7 @@ DvzPinnedReadout * dvz_pinned_readout_query(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `query` | `const` [`DvzQueryResult`](scene.md#type-dvzqueryresult) * | the query result |
 
-_Declared in `include/datoviz/scene/interaction.h`:457._
+_Declared in `include/datoviz/scene/interaction.h`:478._
 
 #### `dvz_pinned_readout_set_format()` { #dvz_pinned_readout_set_format .dvz-api-function }
 
@@ -7247,7 +7247,7 @@ DvzResult dvz_pinned_readout_set_format(
 | `readout` | [`DvzPinnedReadout`](scene.md#type-dvzpinnedreadout) * | the pinned readout |
 | `format` | `const` [`DvzFormatDesc`](scene.md#type-dvzformatdesc) * | the format descriptor, or NULL to clear the override |
 
-_Declared in `include/datoviz/scene/interaction.h`:476._
+_Declared in `include/datoviz/scene/interaction.h`:497._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -7404,7 +7404,7 @@ DvzQueryRequest dvz_query_request(void);
 | --- | --- | --- |
 | return | [`DvzQueryRequest`](scene.md#type-dvzqueryrequest) | default query request descriptor |
 
-_Declared in `include/datoviz/scene/interaction.h`:389._
+_Declared in `include/datoviz/scene/interaction.h`:410._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -9340,7 +9340,7 @@ const DvzHoverState * dvz_scene_hover(
 | `scene` | `const` [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `panel` | `const` [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 
-_Declared in `include/datoviz/scene/interaction.h`:442._
+_Declared in `include/datoviz/scene/interaction.h`:463._
 
 #### `dvz_scene_id()` { #dvz_scene_id .dvz-api-function }
 
@@ -9416,7 +9416,7 @@ _Bool dvz_scene_poll_query(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `out_result` | [`DvzQueryResult`](scene.md#type-dvzqueryresult) * | output result |
 
-_Declared in `include/datoviz/scene/interaction.h`:412._
+_Declared in `include/datoviz/scene/interaction.h`:433._
 
 #### `dvz_scene_set_capabilities()` { #dvz_scene_set_capabilities .dvz-api-function }
 
@@ -9771,7 +9771,7 @@ DvzSelection * dvz_selection(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `desc` | `const` [`DvzSelectionDesc`](scene.md#type-dvzselectiondesc) * | selection descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/interaction.h`:188._
+_Declared in `include/datoviz/scene/interaction.h`:209._
 
 #### `dvz_selection_apply_query()` { #dvz_selection_apply_query .dvz-api-function }
 
@@ -9790,7 +9790,7 @@ DvzResult dvz_selection_apply_query(
 | `selection` | [`DvzSelection`](scene.md#type-dvzselection) * | the selection |
 | `query` | `const` [`DvzQueryResult`](scene.md#type-dvzqueryresult) * | the query result |
 
-_Declared in `include/datoviz/scene/interaction.h`:240._
+_Declared in `include/datoviz/scene/interaction.h`:261._
 
 #### `dvz_selection_clear()` { #dvz_selection_clear .dvz-api-function }
 
@@ -9807,7 +9807,7 @@ DvzResult dvz_selection_clear(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK when the selection was cleared, DVZ_ERROR on error |
 | `selection` | [`DvzSelection`](scene.md#type-dvzselection) * | the selection |
 
-_Declared in `include/datoviz/scene/interaction.h`:205._
+_Declared in `include/datoviz/scene/interaction.h`:226._
 
 #### `dvz_selection_copy()` { #dvz_selection_copy .dvz-api-function }
 
@@ -9830,7 +9830,7 @@ void dvz_selection_copy(
 | `items` | [`DvzSelectionItem`](scene.md#type-dvzselectionitem) * | output item array |
 | `max_items` | `uint32_t` | maximum number of items to write |
 
-_Declared in `include/datoviz/scene/interaction.h`:263._
+_Declared in `include/datoviz/scene/interaction.h`:284._
 
 #### `dvz_selection_count()` { #dvz_selection_count .dvz-api-function }
 
@@ -9847,7 +9847,7 @@ uint32_t dvz_selection_count(
 | return | `uint32_t` | the item count |
 | `selection` | `const` [`DvzSelection`](scene.md#type-dvzselection) * | the selection |
 
-_Declared in `include/datoviz/scene/interaction.h`:250._
+_Declared in `include/datoviz/scene/interaction.h`:271._
 
 #### `dvz_selection_desc()` { #dvz_selection_desc .dvz-api-function }
 
@@ -9863,7 +9863,7 @@ DvzSelectionDesc dvz_selection_desc(void);
 
 Related: [`dvz_selection()`](#dvz_selection).
 
-_Declared in `include/datoviz/scene/interaction.h`:170._
+_Declared in `include/datoviz/scene/interaction.h`:191._
 
 #### `dvz_selection_destroy()` { #dvz_selection_destroy .dvz-api-function }
 
@@ -9879,7 +9879,7 @@ void dvz_selection_destroy(
 | --- | --- | --- |
 | `selection` | [`DvzSelection`](scene.md#type-dvzselection) * | the selection |
 
-_Declared in `include/datoviz/scene/interaction.h`:196._
+_Declared in `include/datoviz/scene/interaction.h`:217._
 
 #### `dvz_selection_set_visual_style()` { #dvz_selection_set_visual_style .dvz-api-function }
 
@@ -9901,7 +9901,7 @@ DvzResult dvz_selection_set_visual_style(
 | `selection` | [`DvzSelection`](scene.md#type-dvzselection) * | the selection |
 | `style` | `const` [`DvzSelectionVisualStyle`](scene.md#type-dvzselectionvisualstyle) * | the visual style descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/interaction.h`:229._
+_Declared in `include/datoviz/scene/interaction.h`:250._
 
 #### `dvz_selection_visual_style()` { #dvz_selection_visual_style .dvz-api-function }
 
@@ -9918,7 +9918,7 @@ DvzSelectionVisualStyle dvz_selection_visual_style(void);
 | --- | --- | --- |
 | return | [`DvzSelectionVisualStyle`](scene.md#type-dvzselectionvisualstyle) | the default visual style descriptor |
 
-_Declared in `include/datoviz/scene/interaction.h`:216._
+_Declared in `include/datoviz/scene/interaction.h`:237._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 

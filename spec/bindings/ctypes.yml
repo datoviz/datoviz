@@ -308,6 +308,9 @@ array_facade:
   dvz_visual_set_link_keys:
     special: visual_link_keys
 
+  dvz_visual_set_target_link_keys:
+    special: visual_target_link_keys
+
   dvz_colormap_custom:
     special: colormap_custom
 

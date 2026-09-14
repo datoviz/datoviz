@@ -670,7 +670,8 @@ def _validate_policy(api: dict, policy: dict) -> None:
             'gui_table_draw', 'gui_tree_get_selection', 'gui_tree_get_expanded',
             'gui_tree_get_filter', 'gui_table_get_selection', 'gui_table_get_filter',
             'gui_table_get_sort',
-            'path_subpaths', 'text_strings', 'visual_link_keys', 'colormap_custom',
+            'path_subpaths', 'text_strings', 'visual_link_keys', 'visual_target_link_keys',
+            'colormap_custom',
             'panel_set_lights',
         }:
             raise SystemExit(f'array_facade.{function_name} has unknown special wrapper {special}')
@@ -702,7 +703,8 @@ def _emit_wrapper(function: dict, rules: dict) -> str:
         'gui_table_draw', 'gui_tree_get_selection', 'gui_tree_get_expanded',
         'gui_tree_get_filter', 'gui_table_get_selection', 'gui_table_get_filter',
         'gui_table_get_sort',
-        'path_subpaths', 'text_strings', 'visual_link_keys', 'colormap_custom',
+        'path_subpaths', 'text_strings', 'visual_link_keys', 'visual_target_link_keys',
+        'colormap_custom',
         'panel_set_lights',
     }
     if gui_special in gui_specials:
@@ -758,6 +760,33 @@ def dvz_visual_set_link_keys(visual, channel, link_keys, item_count=None):
 dvz_visual_set_link_keys.__doc__ = getattr(_raw.dvz_visual_set_link_keys, "__doc__", None)
 dvz_visual_set_link_keys.argtypes = getattr(_raw.dvz_visual_set_link_keys, "argtypes", None)
 dvz_visual_set_link_keys.restype = getattr(_raw.dvz_visual_set_link_keys, "restype", None)
+
+
+'''
+        if gui_special == 'visual_target_link_keys':
+            return '''\
+def dvz_visual_set_target_link_keys(visual, target, channel, link_keys, target_count=None):
+    link_keys = _typed_sequence(link_keys, np.uint64)
+    ptr, keepalive = _array_arg(
+        link_keys, 'link_keys', _raw.dvz_visual_set_target_link_keys, 3, np.uint64)
+    if keepalive is not None:
+        if target_count is None:
+            target_count = len(link_keys)
+        elif len(link_keys) != int(target_count):
+            raise ValueError(
+                f'link_keys count {len(link_keys)} does not match target_count {target_count}')
+    elif target_count is None:
+        raise TypeError('target_count must be provided when passing a raw link_keys pointer')
+    return _raw.dvz_visual_set_target_link_keys(
+        visual, target, channel, ptr, int(target_count or 0))
+
+
+dvz_visual_set_target_link_keys.__doc__ = getattr(
+    _raw.dvz_visual_set_target_link_keys, "__doc__", None)
+dvz_visual_set_target_link_keys.argtypes = getattr(
+    _raw.dvz_visual_set_target_link_keys, "argtypes", None)
+dvz_visual_set_target_link_keys.restype = getattr(
+    _raw.dvz_visual_set_target_link_keys, "restype", None)
 
 
 '''

@@ -283,24 +283,27 @@ bool _scene_query_indexed_primitive_geometry(
 
 
 /**
- * Build temporary query buffers for mesh object/instance item selection.
+ * Build temporary query buffers for mesh item or face selection.
  *
  * @param label diagnostic query family label
  * @param visual retained mesh visual
+ * @param target item or face query target
  * @param scratch output scratch storage
  * @param out_vertex_count output derived vertex count
  * @param out_topology output Vulkan draw topology
  * @return true when derived query buffers were created
  */
-bool _scene_query_mesh_item_geometry(
-    const char* label, const DvzVisual* visual, DvzSceneQueryScratch* scratch,
-    uint64_t* out_vertex_count, uint32_t* out_topology)
+bool _scene_query_mesh_target_geometry(
+    const char* label, const DvzVisual* visual, DvzSceneTargetKind target,
+    DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count, uint32_t* out_topology)
 {
     ANN(label);
     ANN(visual);
     ANN(scratch);
     ANN(out_vertex_count);
     ANN(out_topology);
+    if (target != DVZ_SCENE_TARGET_ITEM && target != DVZ_SCENE_TARGET_FACE)
+        return false;
 
     if (!_scene_query_indexed_primitive_geometry(
             label, visual, scratch, out_vertex_count, out_topology))
@@ -311,8 +314,11 @@ bool _scene_query_mesh_item_geometry(
     const DvzVisualAttr* transforms = NULL;
     if (!_dvz_scene_query_dense_attr(visual, "instance_transform", 16 * sizeof(float), &transforms))
     {
-        for (uint64_t i = 0; i < *out_vertex_count; i++)
-            scratch->query_ids[i] = 1u;
+        if (target == DVZ_SCENE_TARGET_ITEM)
+        {
+            for (uint64_t i = 0; i < *out_vertex_count; i++)
+                scratch->query_ids[i] = 1u;
+        }
         return true;
     }
 
@@ -363,7 +369,8 @@ bool _scene_query_mesh_item_geometry(
             positions[dst][0] = tx;
             positions[dst][1] = ty;
             positions[dst][2] = tz;
-            ids[dst] = (uint32_t)inst + 1u;
+            ids[dst] = target == DVZ_SCENE_TARGET_ITEM ? (uint32_t)inst + 1u
+                                                       : scratch->query_ids[v];
         }
     }
 

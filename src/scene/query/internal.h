@@ -250,6 +250,10 @@ bool _dvz_scene_query_decode_item_id(
     const DvzSceneQueryDecodeContext* ctx, DvzSceneVisualFamily family,
     DvzQueryResult* out_result);
 
+bool _dvz_scene_query_decode_target_id(
+    const DvzSceneQueryDecodeContext* ctx, DvzSceneVisualFamily family,
+    DvzSceneTargetKind target, DvzQueryResult* out_result);
+
 void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan);
 
 bool _dvz_scene_query_alloc(

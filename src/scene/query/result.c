@@ -173,16 +173,17 @@ bool _dvz_scene_query_push_result(
 
 
 /**
- * Decode a standard r32uint item-id query payload.
+ * Decode a standard r32uint target-id query payload.
  *
  * @param ctx decode context
  * @param family resolved visual family
+ * @param target resolved query target
  * @param out_result output query result
  * @return true when a terminal result was produced
  */
-bool _dvz_scene_query_decode_item_id(
+bool _dvz_scene_query_decode_target_id(
     const DvzSceneQueryDecodeContext* ctx, DvzSceneVisualFamily family,
-    DvzQueryResult* out_result)
+    DvzSceneTargetKind target, DvzQueryResult* out_result)
 {
     ANN(ctx);
     ANN(ctx->build);
@@ -201,21 +202,49 @@ bool _dvz_scene_query_decode_item_id(
     if (encoded == 0)
         return false;
 
-    uint64_t item_id = (uint64_t)encoded - 1u;
+    uint64_t target_id = (uint64_t)encoded - 1u;
     DvzVisual* visual = ctx->build->visual;
     out_result->status = DVZ_QUERY_STATUS_HIT;
     out_result->hit = true;
     out_result->visual_id = _scene_visual_public_id(ctx->build->figure->scene, visual);
     out_result->visual_family = family;
     out_result->payload_version = 1;
-    out_result->raw_target = DVZ_SCENE_TARGET_ITEM;
-    out_result->raw_id = item_id;
-    out_result->resolved_target = DVZ_SCENE_TARGET_ITEM;
-    out_result->resolved_id = item_id;
-    out_result->item_id = item_id;
-    if (visual->link_keys != NULL && item_id < visual->link_key_count)
-        out_result->link_key = visual->link_keys[item_id];
+    out_result->raw_target = target;
+    out_result->raw_id = target_id;
+    out_result->resolved_target = target;
+    out_result->resolved_id = target_id;
+    if (target == DVZ_SCENE_TARGET_ITEM)
+    {
+        out_result->item_id = target_id;
+        if (visual->link_keys != NULL && target_id < visual->link_key_count)
+            out_result->link_key = visual->link_keys[target_id];
+    }
+    else if (target == DVZ_SCENE_TARGET_FACE)
+    {
+        out_result->face_id = target_id;
+        out_result->primitive_id = target_id;
+        if (visual->face_link_keys != NULL && target_id < visual->face_link_key_count)
+            out_result->link_key = visual->face_link_keys[target_id];
+    }
     return true;
+}
+
+
+
+/**
+ * Decode a standard r32uint item-id query payload.
+ *
+ * @param ctx decode context
+ * @param family resolved visual family
+ * @param out_result output query result
+ * @return true when a terminal result was produced
+ */
+bool _dvz_scene_query_decode_item_id(
+    const DvzSceneQueryDecodeContext* ctx, DvzSceneVisualFamily family,
+    DvzQueryResult* out_result)
+{
+    return _dvz_scene_query_decode_target_id(
+        ctx, family, DVZ_SCENE_TARGET_ITEM, out_result);
 }
 
 

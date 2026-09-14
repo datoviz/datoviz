@@ -134,6 +134,27 @@ DVZ_EXPORT DvzResult dvz_visual_set_link_keys(
     DvzVisual* visual, DvzLinkChannel* channel, const uint64_t* link_keys, uint32_t item_count);
 
 
+/**
+ * Bind link keys for one query target on a visual.
+ *
+ * `target` currently accepts `DVZ_SCENE_TARGET_ITEM` for any query-capable visual and
+ * `DVZ_SCENE_TARGET_FACE` for mesh visuals. Face keys follow triangle-list draw order: one key per
+ * index-buffer triplet for indexed meshes, or one key per three vertices for non-indexed meshes.
+ * Item and face bindings coexist. The keys are copied before return; zero entries clear only the
+ * requested target binding.
+ *
+ * @param visual the visual
+ * @param target query target whose identities receive link keys
+ * @param channel the link channel
+ * @param link_keys array of link keys
+ * @param target_count number of keys
+ * @return DVZ_OK on success, DVZ_ERROR on error
+ */
+DVZ_EXPORT DvzResult dvz_visual_set_target_link_keys(
+    DvzVisual* visual, DvzSceneTargetKind target, DvzLinkChannel* channel,
+    const uint64_t* link_keys, uint32_t target_count);
+
+
 
 /*************************************************************************************************/
 /*  Link channels                                                                                */

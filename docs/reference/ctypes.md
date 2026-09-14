@@ -92,7 +92,7 @@ The generated top-level facade currently adapts these policy-declared calls. Oth
 | Bands and bars | `dvz_band_set_bounds()`, `dvz_band_set_center()`, `dvz_bars_set_intervals()` |
 | Axis and colorbar ticks | `dvz_axis_set_ticks()`, `dvz_colorbar_set_ticks()` |
 | Text arrays | `dvz_text_set_items()`, `dvz_text_set_strings()`, `dvz_text_set_positions()`, `dvz_text_set_offsets()`, `dvz_text_set_anchors()`, `dvz_text_set_sizes()`, `dvz_text_set_colors()`, `dvz_text_set_angles()` |
-| Paths and interaction | `dvz_path_set_subpaths()`, `dvz_visual_set_link_keys()` |
+| Paths and interaction | `dvz_path_set_subpaths()`, `dvz_visual_set_link_keys()`, `dvz_visual_set_target_link_keys()` |
 | Colormaps and lighting | `dvz_colormap_custom()`, `dvz_panel_set_lights()` |
 | Window strings | `dvz_view_window()` |
 | Retained GUI table | `dvz_gui_table()`, `dvz_gui_table_draw()`, `dvz_gui_table_get_filter()`, `dvz_gui_table_get_selection()`, `dvz_gui_table_get_sort()`, `dvz_gui_table_set_column_bool()`, `dvz_gui_table_set_column_color()`, `dvz_gui_table_set_column_double()`, `dvz_gui_table_set_column_int64()`, `dvz_gui_table_set_column_text()`, `dvz_gui_table_set_matches()`, `dvz_gui_table_set_rows()`, `dvz_gui_table_set_selection()`, `dvz_gui_table_set_styles()`, `dvz_gui_table_set_visible()` |
@@ -111,7 +111,7 @@ flags are requested.
 
 The facade also provides `dvz_view_capture_rgba()`, `dvz_sampled_field_from_array()`, and `dvz_sampled_field_update_from_array()` as generated Python helpers for output allocation and packed sampled-field layouts. These helpers preserve explicit Datoviz ownership and format contracts; they are not plotting abstractions.
 
-The small facade adapters for path subpaths, text strings, link keys, custom colormaps, and panel lights accept ordinary Python sequences or NumPy arrays and derive their count when possible. Text strings are UTF-8 encoded and retained until the C call returns; custom colormap colors must have shape (count, 4) and dtype uint8; link keys and path lengths require uint64 and uint32 respectively. Panel lights remain opaque raw handles, supplied as a Python sequence of handles. Exact pointer-and-count calls remain available through `datoviz.raw`.
+The small facade adapters for path subpaths, text strings, item/target link keys, custom colormaps, and panel lights accept ordinary Python sequences or NumPy arrays and derive their count when possible. Text strings are UTF-8 encoded and retained until the C call returns; custom colormap colors must have shape (count, 4) and dtype uint8; link keys and path lengths require uint64 and uint32 respectively. Panel lights remain opaque raw handles, supplied as a Python sequence of handles. Exact pointer-and-count calls remain available through `datoviz.raw`.
 
 The facade has two explicit sampled-field helpers for common packed layouts:
 
