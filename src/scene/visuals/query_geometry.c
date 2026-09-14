@@ -283,6 +283,111 @@ bool _scene_query_indexed_primitive_geometry(
 
 
 /**
+ * Resolve mesh query draw metadata without allocating expanded geometry.
+ *
+ * @param label diagnostic query family label
+ * @param visual retained mesh visual
+ * @param target item or face query target
+ * @param out_vertex_count output derived vertex count
+ * @param out_topology output Vulkan draw topology
+ * @return true when the retained geometry defines a valid query draw
+ */
+bool _scene_query_mesh_target_geometry_info(
+    const char* label, const DvzVisual* visual, DvzSceneTargetKind target,
+    uint64_t* out_vertex_count, uint32_t* out_topology)
+{
+    ANN(label);
+    ANN(visual);
+    ANN(out_vertex_count);
+    ANN(out_topology);
+    if (target != DVZ_SCENE_TARGET_ITEM && target != DVZ_SCENE_TARGET_FACE)
+        return false;
+
+    const DvzVisualAttr* pos_attr = NULL;
+    if (!_dvz_scene_query_dense_attr(visual, "position", sizeof(vec3), &pos_attr))
+        return false;
+    uint64_t source_index_count = pos_attr->item_count;
+    const DvzSceneBuffer* buffer = _visual_family_state(visual)->buffer;
+    if (buffer != NULL && buffer->data != NULL && buffer->desc.byte_size > 0 &&
+        buffer->desc.stride > 0)
+    {
+        uint32_t stride = buffer->desc.stride;
+        if (stride != sizeof(uint16_t) && stride != sizeof(uint32_t))
+        {
+            log_error("%s query request index stride must be 16-bit or 32-bit", label);
+            return false;
+        }
+        if (buffer->desc.byte_size % stride != 0)
+        {
+            log_error("%s query request index buffer size is not stride-aligned", label);
+            return false;
+        }
+        source_index_count = buffer->desc.byte_size / stride;
+    }
+
+    uint64_t primitive_count = 0;
+    uint64_t vertex_count = 0;
+    uint32_t topology = (uint32_t)_visual_family_state(visual)->topology;
+    switch (_visual_family_state(visual)->topology)
+    {
+    case DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST:
+        primitive_count = source_index_count;
+        vertex_count = primitive_count;
+        break;
+    case DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST:
+        primitive_count = source_index_count / 2;
+        if (_dvz_mul_u64_overflows(primitive_count, 2, &vertex_count))
+            return false;
+        break;
+    case DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP:
+        if (source_index_count < 2)
+            return false;
+        primitive_count = source_index_count - 1;
+        if (_dvz_mul_u64_overflows(primitive_count, 2, &vertex_count))
+            return false;
+        topology = DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        break;
+    case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST:
+        primitive_count = source_index_count / 3;
+        if (_dvz_mul_u64_overflows(primitive_count, 3, &vertex_count))
+            return false;
+        break;
+    case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP:
+    case DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN:
+        if (source_index_count < 3)
+            return false;
+        primitive_count = source_index_count - 2;
+        if (_dvz_mul_u64_overflows(primitive_count, 3, &vertex_count))
+            return false;
+        topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        break;
+    default:
+        return false;
+    }
+    if (primitive_count == 0 || vertex_count == 0 || vertex_count > UINT32_MAX)
+        return false;
+
+    const DvzVisualAttr* transforms = NULL;
+    if (_dvz_scene_query_dense_attr(
+            visual, "instance_transform", 16 * sizeof(float), &transforms))
+    {
+        if (
+            transforms->item_count == 0 || transforms->item_count > UINT32_MAX ||
+            _dvz_mul_u64_overflows(vertex_count, transforms->item_count, &vertex_count) ||
+            vertex_count > UINT32_MAX)
+        {
+            log_error("%s query request instance-expanded vertex count is invalid", label);
+            return false;
+        }
+    }
+    *out_vertex_count = vertex_count;
+    *out_topology = topology;
+    return true;
+}
+
+
+
+/**
  * Build temporary query buffers for mesh item or face selection.
  *
  * @param label diagnostic query family label

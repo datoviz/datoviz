@@ -99,6 +99,75 @@ static bool _mesh_query_eligible(
 
 
 /**
+ * Return the retained geometry revisions which invalidate mesh query uploads.
+ *
+ * @param visual retained mesh visual
+ * @param out_versions output revision tuple
+ * @return true when required mesh position data exists
+ */
+static bool _mesh_query_static_versions(
+    const DvzVisual* visual,
+    uint64_t out_versions[DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT])
+{
+    ANN(visual);
+    ANN(out_versions);
+    const DvzVisualAttr* positions = NULL;
+    if (!_dvz_scene_query_dense_attr(visual, "position", sizeof(vec3), &positions))
+        return false;
+
+    out_versions[0] = positions->version;
+    const DvzSceneBuffer* buffer = _visual_family_state(visual)->buffer;
+    if (buffer != NULL)
+    {
+        out_versions[1] = buffer->id;
+        out_versions[2] = buffer->content_revision;
+        out_versions[3] = buffer->extent_revision;
+        out_versions[4] = buffer->lifecycle_revision;
+    }
+    int transform_idx = _attr_index(visual, "instance_transform");
+    if (transform_idx >= 0 && visual->attrs[transform_idx].data != NULL)
+    {
+        out_versions[5] = visual->attrs[transform_idx].version;
+        out_versions[6] = visual->attrs[transform_idx].item_count;
+    }
+    out_versions[7] = (uint64_t)_visual_family_state(visual)->topology;
+    return true;
+}
+
+
+
+/**
+ * Return whether retained mesh-query uploads must be refreshed.
+ *
+ * @param executor retained query executor
+ * @param visual retained mesh visual
+ * @param versions current geometry revision tuple
+ * @return true when static resources should be uploaded
+ */
+static bool _mesh_query_needs_static_upload(
+    const DvzSceneRequestExecutor* executor, const DvzVisual* visual,
+    const uint64_t versions[DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT])
+{
+    if (executor == NULL)
+        return true;
+    if (
+        executor->query_static_cache_family != DVZ_SCENE_VISUAL_FAMILY_MESH ||
+        executor->query_static_cache_visual != visual ||
+        executor->query_static_cache_key_count != DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT)
+    {
+        return true;
+    }
+    for (uint32_t i = 0; i < DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT; i++)
+    {
+        if (executor->query_static_cache_keys[i] != versions[i])
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
  * Build a mesh-family r32uint item or face query plan.
  *
  * @param ctx build context
@@ -115,16 +184,37 @@ static bool _mesh_query_build(
     ANN(ctx->pending);
     ANN(out_plan);
 
-    uint64_t vertex_count = 0;
-    uint32_t topology = 0;
     DvzSceneTargetKind target = ctx->pending->request.target;
     if (target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_OBJECT)
         target = DVZ_SCENE_TARGET_ITEM;
-    if (!_scene_query_mesh_target_geometry(
-            "mesh", ctx->visual, target, &out_plan->scratch, &vertex_count, &topology))
+
+    uint64_t versions[DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT] = {0};
+    if (!_mesh_query_static_versions(ctx->visual, versions))
+        return false;
+    bool include_static_uploads =
+        _mesh_query_needs_static_upload(ctx->executor, ctx->visual, versions);
+
+    uint64_t vertex_count = 0;
+    uint32_t topology = 0;
+    if (!_scene_query_mesh_target_geometry_info(
+            "mesh", ctx->visual, target, &vertex_count, &topology))
     {
         _scene_query_scratch_destroy(&out_plan->scratch);
         return false;
+    }
+    if (include_static_uploads)
+    {
+        uint64_t uploaded_vertex_count = 0;
+        uint32_t uploaded_topology = 0;
+        if (
+            !_scene_query_mesh_target_geometry(
+                "mesh", ctx->visual, target, &out_plan->scratch, &uploaded_vertex_count,
+                &uploaded_topology) ||
+            uploaded_vertex_count != vertex_count || uploaded_topology != topology)
+        {
+            _scene_query_scratch_destroy(&out_plan->scratch);
+            return false;
+        }
     }
 
     uint32_t target_width = 0;
@@ -149,15 +239,25 @@ static bool _mesh_query_build(
     DvzFramePlan* plan = dvz_frame_plan("figure.query.mesh", ctx->pending->request.request_id);
     out_plan->scratch.plan = plan;
     bool ok = plan != NULL;
-    DvzFramePlanUploadDesc position_upload = dvz_frame_plan_upload_desc();
-    position_upload.resource_id = "query0_position";
-    position_upload.byte_size = position_bytes;
-    position_upload.data_tag = "position";
-    position_upload.data = out_plan->scratch.query_positions;
-    position_upload.topology = topology;
-    ok = ok && dvz_frame_plan_upload_ex(plan, &position_upload);
-    ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_ids);
+    if (include_static_uploads)
+    {
+        DvzFramePlanUploadDesc position_upload = dvz_frame_plan_upload_desc();
+        position_upload.resource_id = "query0_position";
+        position_upload.byte_size = position_bytes;
+        position_upload.data_tag = "position";
+        position_upload.data = out_plan->scratch.query_positions;
+        position_upload.topology = topology;
+        ok = ok && dvz_frame_plan_upload_ex(plan, &position_upload);
+        ok = ok && dvz_frame_plan_upload_bytes(
+                       plan, "query0_id", 0, id_bytes, "query_id",
+                       out_plan->scratch.query_ids);
+        out_plan->mark_static_cache_uploaded = true;
+        out_plan->static_cache_family = DVZ_SCENE_VISUAL_FAMILY_MESH;
+        out_plan->static_cache_visual = ctx->visual;
+        out_plan->static_cache_key_count = DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT;
+        for (uint32_t i = 0; i < DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT; i++)
+            out_plan->static_cache_keys[i] = versions[i];
+    }
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;

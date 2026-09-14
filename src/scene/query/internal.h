@@ -29,7 +29,7 @@
 /*************************************************************************************************/
 
 #define DVZ_SCENE_QUERY_PAYLOAD_WORDS 4
-#define DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT 4
+#define DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT 8
 
 
 

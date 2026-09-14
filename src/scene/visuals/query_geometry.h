@@ -34,3 +34,7 @@ bool _scene_query_indexed_primitive_geometry(
 bool _scene_query_mesh_target_geometry(
     const char* label, const DvzVisual* visual, DvzSceneTargetKind target,
     DvzSceneQueryScratch* scratch, uint64_t* out_vertex_count, uint32_t* out_topology);
+
+bool _scene_query_mesh_target_geometry_info(
+    const char* label, const DvzVisual* visual, DvzSceneTargetKind target,
+    uint64_t* out_vertex_count, uint32_t* out_topology);

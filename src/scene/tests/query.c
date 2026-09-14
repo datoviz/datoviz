@@ -2704,6 +2704,30 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.link_key == UINT64_C(0xFFFFFFFFFFFFFEC5));
     AT(query.link_channel == dvz_link_channel_id(channel));
     AT(!dvz_scene_poll_query(scene, &query));
+    AT(scene->query_executor.query_static_cache_upload_count == 1);
+
+    AT(dvz_panel_query_px(
+           panel, 48.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+                              .request_id = 87,
+                              .target = DVZ_SCENE_TARGET_FACE}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.face_id == 1);
+    AT(scene->query_executor.query_static_cache_upload_count == 1);
+
+    AT(dvz_visual_set_data(mesh, "position", mesh_pos, 6) == 0);
+    AT(dvz_panel_query_px(
+           panel, 48.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+                              .request_id = 88,
+                              .target = DVZ_SCENE_TARGET_FACE}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit);
+    AT(query.face_id == 1);
+    AT(scene->query_executor.query_static_cache_upload_count == 2);
 
     AT(dvz_visual_set_target_link_keys(
            mesh, DVZ_SCENE_TARGET_FACE, channel, NULL, 0) == DVZ_OK);
