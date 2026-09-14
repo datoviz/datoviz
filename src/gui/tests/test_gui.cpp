@@ -115,6 +115,21 @@ int test_gui_embedded_font_resources(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Verify the transfer function used for ImGui vertex colors on sRGB targets.
+ */
+int test_gui_srgb_vertex_colors(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    AT(_dvz_gui_srgb_to_linear_u8(0) == 0);
+    AT(_dvz_gui_srgb_to_linear_u8(15) == 1);
+    AT(_dvz_gui_srgb_to_linear_u8(128) == 55);
+    AT(_dvz_gui_srgb_to_linear_u8(255) == 255);
+    return 0;
+}
+
+
 
 /**
  * Verify retained data widgets copy keys and preserve queryable state without a GPU.
@@ -1015,6 +1030,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_viewport_config_defaults);
     TST_CASE(test_gui_config_font_defaults);
     TST_CASE(test_gui_embedded_font_resources);
+    TST_CASE(test_gui_srgb_vertex_colors);
     TST_CASE(test_gui_data_widget_storage);
     TST_CASE(test_gui_data_tree_model);
     TST_CASE(test_gui_data_table_model);

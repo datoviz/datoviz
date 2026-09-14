@@ -49,6 +49,12 @@ viewport images, color editors, range controls, section headers, and compact con
 Use `datoviz/imgui.h` when code needs direct Dear ImGui coverage and accepts the upstream/cimgui
 naming and version coupling.
 
+GUI style and vertex colors use display-encoded sRGB RGB values with linear alpha, consistently
+with `DvzColor`. When the overlay target is an sRGB Vulkan attachment, the GUI renderer converts
+packed vertex RGB to linear before blending and attachment encoding. Texture sampling keeps its
+normal image-view color-space behavior. This avoids the washed-out, double-encoded appearance that
+would result from sending Dear ImGui's display colors directly to an sRGB target.
+
 The C examples make the split explicit:
 
 | Example | API layer |

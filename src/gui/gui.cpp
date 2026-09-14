@@ -17,6 +17,7 @@
 #include "datoviz/gui.h"
 #include "_gui.h"
 
+#include <array>
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -25,6 +26,7 @@
 
 #include "_assertions.h"
 #include "_log.h"
+#include "_vk_utils.h"
 #include "datoviz/canvas.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/input/pointer.h"
@@ -224,6 +226,70 @@ static void _gui_set_current(DvzGui* gui)
     ANN(gui);
     ANN(gui->context);
     ImGui::SetCurrentContext(gui->context);
+}
+
+
+/**
+ * Convert one display-encoded sRGB channel to an 8-bit linear channel.
+ *
+ * @param value sRGB channel
+ * @return linear channel
+ */
+static const std::array<uint8_t, 256>& _gui_srgb_to_linear_lut(void)
+{
+    static const std::array<uint8_t, 256> lut = [] {
+        std::array<uint8_t, 256> values = {};
+        for (uint32_t i = 0; i < values.size(); i++)
+        {
+            const float srgb = i / 255.0f;
+            const float linear =
+                srgb <= 0.04045f ? srgb / 12.92f : powf((srgb + 0.055f) / 1.055f, 2.4f);
+            values[i] = (uint8_t)roundf(linear * 255.0f);
+        }
+        return values;
+    }();
+    return lut;
+}
+
+
+/**
+ * Convert one display-encoded sRGB channel to an 8-bit linear channel.
+ *
+ * @param value sRGB channel
+ * @return linear channel
+ */
+uint8_t _dvz_gui_srgb_to_linear_u8(uint8_t value)
+{
+    return _gui_srgb_to_linear_lut()[value];
+}
+
+
+/**
+ * Convert Dear ImGui's display-encoded packed vertex colors for an sRGB render target.
+ *
+ * Texture samples are deliberately untouched: their image-view format defines whether Vulkan
+ * decodes them. Alpha is linear and is preserved verbatim.
+ *
+ * @param draw_data ImGui draw data edited before backend upload
+ */
+static void _gui_linearize_vertex_colors(ImDrawData* draw_data)
+{
+    ANN(draw_data);
+    const std::array<uint8_t, 256>& lut = _gui_srgb_to_linear_lut();
+    for (int list_index = 0; list_index < draw_data->CmdListsCount; list_index++)
+    {
+        ImDrawList* list = draw_data->CmdLists[list_index];
+        ANN(list);
+        for (int vertex_index = 0; vertex_index < list->VtxBuffer.Size; vertex_index++)
+        {
+            ImU32 color = list->VtxBuffer[vertex_index].col;
+            const uint8_t red = lut[(color >> IM_COL32_R_SHIFT) & 0xffu];
+            const uint8_t green = lut[(color >> IM_COL32_G_SHIFT) & 0xffu];
+            const uint8_t blue = lut[(color >> IM_COL32_B_SHIFT) & 0xffu];
+            const uint8_t alpha = (uint8_t)((color >> IM_COL32_A_SHIFT) & 0xffu);
+            list->VtxBuffer[vertex_index].col = IM_COL32(red, green, blue, alpha);
+        }
+    }
 }
 
 
@@ -1845,6 +1911,9 @@ void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame)
     if (_gui_update_followup_frame_state(gui))
         _gui_request_frame(gui);
     ImGui::Render();
+    ImDrawData* draw_data = ImGui::GetDrawData();
+    if (dvz_format_is_srgb(frame->color_format))
+        _gui_linearize_vertex_colors(draw_data);
 
     VkImageMemoryBarrier2 barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -1886,7 +1955,7 @@ void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame)
     rendering.pColorAttachments = &color;
 
     vkCmdBeginRendering(frame->command_buffer, &rendering);
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), frame->command_buffer, VK_NULL_HANDLE);
+    ImGui_ImplVulkan_RenderDrawData(draw_data, frame->command_buffer, VK_NULL_HANDLE);
     vkCmdEndRendering(frame->command_buffer);
 }
 

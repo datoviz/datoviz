@@ -30,6 +30,7 @@ EXTERN_C_ON
 int test_gui_imgui_public_header(TstContext* suite, const TstCase* item);
 
 int test_gui_embedded_font_resources(TstContext* suite, const TstCase* item);
+int test_gui_srgb_vertex_colors(TstContext* suite, const TstCase* item);
 int test_gui_data_widget_storage(TstContext* suite, const TstCase* item);
 int test_gui_data_tree_model(TstContext* suite, const TstCase* item);
 int test_gui_data_table_model(TstContext* suite, const TstCase* item);
