@@ -1,6 +1,6 @@
 # 16. A real mesh
 
-**Your program at the end of this chapter: 741 C lines. The raw Vulkan equivalent: around 2200 lines, a rough estimate. The final viewer displays a rotatable, textured, lit sphere.**
+**Your program at the end of this chapter: 756 C lines. The raw Vulkan equivalent: around 2200 lines, a rough estimate. The final viewer displays a rotatable, textured, lit sphere or a Wavefront OBJ you supply.**
 
 ![The final generated sphere viewer, textured and lit.](../assets/gpu-graphics/16-mesh.webp)
 
@@ -14,13 +14,7 @@ Add this include:
 #include <datoviz/geom.h>
 ```
 
-Delete the complete `VERTICES` and `INDICES` definitions. Keep `Vertex` and `Push`. Add this capacity beside `TEXTURE_SIZE`:
-
-```c
-#define MAX_VERTICES ((24 + 1) * (48 + 1))
-```
-
-A sphere with 24 rings and 48 sectors has `(24 + 1) * (48 + 1)`, or 1225 vertices. The extra column duplicates the UV seam. A fixed local conversion buffer keeps this small example's allocation visible and bounded; a larger or imported mesh should use checked dynamic storage.
+Delete the complete `VERTICES` and `INDICES` definitions. Keep `Vertex`, `Push`, and both size assertions. Generated and imported meshes determine their vertex count at runtime, so the conversion helper will allocate exactly the checked capacity it needs.
 
 Add this field beside the buffers in `Renderer`:
 
@@ -36,18 +30,28 @@ Add this complete helper between `create_texture()` and `draw()`:
  * @param renderer Renderer that owns the uploaded GPU buffers.
  * @return Zero on success.
  */
-static int create_mesh(Renderer* renderer)
+static int create_mesh(Renderer* renderer, const char* obj_path)
 {
     int result = -1;
-    DvzGeometry* geometry = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
-        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc), .radius = 0.9, .rings = 24, .sectors = 48});
+    DvzGeometry* geometry = obj_path != NULL
+                                ? dvz_geometry_obj(obj_path, NULL)
+                                : dvz_geometry_sphere(&(DvzGeometrySphereDesc){
+                                      DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
+                                      .radius = 0.9,
+                                      .rings = 24,
+                                      .sectors = 48});
+    Vertex* vertices = NULL;
+    size_t vertex_count = geometry != NULL ? geometry->vertex_count : 0;
+    size_t index_count = geometry != NULL ? geometry->index_count : 0;
     if (geometry == NULL || geometry->positions == NULL || geometry->normals == NULL ||
         geometry->texcoords == NULL || geometry->indices == NULL || geometry->vertex_count == 0 ||
-        geometry->vertex_count > MAX_VERTICES || geometry->index_count == 0)
+        geometry->index_count == 0 || vertex_count > SIZE_MAX / sizeof(*vertices) ||
+        index_count > SIZE_MAX / sizeof(DvzIndex))
         goto cleanup;
 
-    // The sphere supplies radial normals, including matching normals across its UV seam.
-    Vertex vertices[MAX_VERTICES] = {0};
+    vertices = (Vertex*)calloc(vertex_count, sizeof(*vertices));
+    if (vertices == NULL)
+        goto cleanup;
     for (uint32_t i = 0; i < geometry->vertex_count; i++)
     {
         for (uint32_t j = 0; j < 3; j++)
@@ -83,32 +87,76 @@ static int create_mesh(Renderer* renderer)
     result = 0;
 
 cleanup:
+    free(vertices);
     dvz_geometry_destroy(geometry);
     return result;
 }
 ```
 
-The generator stores positions, normals, and texture coordinates as doubles. The pipeline contract expects 32-bit float attributes, so the conversion copies and narrows each component explicitly before upload. The indices remain `DvzIndex`, a 32-bit unsigned type. Casting the counts to `DvzSize` before multiplying keeps these byte calculations in the wider size type. The generator supplies valid triangle indices; the helper rejects absent attributes, empty data, and vertex counts beyond the conversion buffer's capacity.
+Both geometry routes return an owned `DvzGeometry` whose positions, normals, and texture coordinates use doubles. The pipeline contract expects 32-bit float attributes, so the conversion copies and narrows each component explicitly before upload. The indices remain `DvzIndex`, a 32-bit unsigned type. Before allocating or multiplying byte counts, the helper checks that both counts fit their element sizes. It then allocates exactly `vertex_count` converted records rather than imposing the sphere's size on an arbitrary file.
 
-`dvz_buffer_upload()` copies CPU bytes before returning. The local float array and `geometry` can therefore disappear after both uploads. The GPU buffers remain owned by `Renderer` and keep the existing device-wait cleanup.
+`dvz_buffer_upload()` copies CPU bytes before returning. The temporary converted array and owned `geometry` can therefore be freed after both uploads. The GPU buffers remain owned by `Renderer` and keep the existing device-wait cleanup.
 
 ## Change initialization and the draw count
 
 In `main()`, replace the entire vertex/index allocation and upload block, from `renderer.vertex_buffer = ...` through the index upload, with:
 
-```c
-    int mesh_result = create_mesh(&renderer);
+```text
+    int mesh_result = create_mesh(&renderer, NULL);
     COURSE_CHECK(mesh_result == 0, "mesh creation failed");
 ```
 
-Keep texture creation, pipeline creation, and controller creation that follow. In `draw()`, replace the index binding and indexed draw with:
+Keep the cumulative order shown in the full listing: create the material buffer first, then the selected mesh, texture with its view and sampler, pipeline with its descriptors, and controllers. In `draw()`, replace the index binding and indexed draw with:
 
 ```c
     dvz_cmd_bind_index_buffer(renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT32);
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, renderer->index_count, 0, 1);
 ```
 
-The index type changes from `VK_INDEX_TYPE_UINT16` to `VK_INDEX_TYPE_UINT32`; the draw count changes from 36 to the generator's actual count. The vertex layout and both shader files are unchanged from chapter 15.
+The index type changes from `VK_INDEX_TYPE_UINT16` to `VK_INDEX_TYPE_UINT32`; the draw count changes from 36 to the selected mesh's actual count. The vertex layout and both shader files are unchanged from chapter 15.
+
+## Load your own OBJ
+
+The default branch creates the sphere. Passing `--obj PATH` instead calls `dvz_geometry_obj(PATH, NULL)` and sends the returned geometry through the same conversion, buffer upload, pipeline, and draw path. Add this variable beside `png_path`:
+
+```c
+    const char* obj_path = NULL;
+```
+
+Add this branch after `--png` in the argument loop:
+
+```c
+        else if (strcmp(argv[argument_index], "--obj") == 0)
+            obj_path = argv[++argument_index];
+```
+
+Then replace the `NULL` argument in the initialization call so the selected path reaches the loader:
+
+```c
+    int mesh_result = create_mesh(&renderer, obj_path);
+```
+
+The loader supports Wavefront `v`, `vt`, `vn`, and polygonal `f` records, including independent and negative face indices. Polygonal faces are triangulated as fans. Materials, object names, groups, and smoothing records are ignored. When normals are absent, the loader computes them from the triangles. When texture coordinates are absent, it supplies `(0, 0)`, so the mesh still draws but every vertex samples the same checker texel. The loader expands face references into indexed vertices as needed, which is why the dynamic checked allocation matters for files larger than the built-in sphere.
+
+`dvz_geometry_obj()` returns an owned geometry or `NULL` for an unreadable, malformed, or unsupported file. `create_mesh()` destroys that geometry on every exit after copying successful data into the vertex and index buffers. The file itself and its parsed CPU arrays do not need to remain alive during rendering.
+
+Run an imported mesh with:
+
+=== "Linux and macOS"
+
+    ```sh
+    ./build/vkcourse --obj path/to/model.obj
+    ./build/vkcourse --obj path/to/model.obj --png model.png
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    .\build\Release\vkcourse.exe --obj path\to\model.obj
+    .\build\Release\vkcourse.exe --obj path\to\model.obj --png model.png
+    ```
+
+A valid mesh should use the same checker texture, lighting, depth test, and mouse controls as the sphere. An OBJ without normals should still light after generated normals are computed. An OBJ without UVs should render with one constant sampled texel. An unreadable path prints the loader error followed by `mesh creation failed`; malformed or unsupported geometry may print only `mesh creation failed`. Both cases exit cleanly. Records outside the supported geometry subset, including material and grouping records, are ignored.
 
 ## Add deterministic preview controls
 
@@ -116,6 +164,7 @@ The documentation build renders the final animation at 1280 × 720, 24 frames pe
 
 ```c
     const char* png_path = NULL;
+    const char* obj_path = NULL;
     float capture_time = 0.0f;
     uint32_t width = WIDTH;
     uint32_t height = HEIGHT;
@@ -125,6 +174,8 @@ The documentation build renders the final animation at 1280 × 720, 24 frames pe
             png_path = argv[++argument_index];
         else if (strcmp(argv[argument_index], "--time") == 0)
             capture_time = strtof(argv[++argument_index], NULL);
+        else if (strcmp(argv[argument_index], "--obj") == 0)
+            obj_path = argv[++argument_index];
         else if (
             strcmp(argv[argument_index], "--width") == 0 ||
             strcmp(argv[argument_index], "--height") == 0)
@@ -209,9 +260,9 @@ You should see a smooth sphere with a curved checkerboard and a specular highlig
 
 !!! tip "Try it"
 
-    1. Lower the sphere's `rings` to `8` and `sectors` to `16`, rebuild, and inspect the silhouette. The existing conversion buffer is large enough for this smaller mesh.
+    1. Lower the sphere's `rings` to `8` and `sectors` to `16`, rebuild, and inspect the silhouette. The conversion allocation follows the smaller generated vertex count.
     2. Compare the analytic normals with the optional recomputation, especially across the texture seam. Restore the analytic normals afterward.
-    3. Replace the sphere initializer with the complete torus initializer below. Its explicit tessellation fits the same conversion buffer and the existing pipeline.
+    3. Replace the sphere initializer with the complete torus initializer below. Its generated count determines the conversion allocation, while the existing vertex layout and pipeline still apply.
 
 ```text
 DvzGeometry* geometry = dvz_geometry_torus(&(DvzGeometryTorusDesc){
@@ -229,7 +280,7 @@ DvzGeometry* geometry = dvz_geometry_torus(&(DvzGeometryTorusDesc){
 
 !!! warning "When it goes wrong"
 
-    A garbled mesh usually means the index binding still says `UINT16` while the buffer holds 32-bit values. Missing triangles can mean the draw count is still 36. If a denser generator fails the capacity check, increase `MAX_VERTICES` to a checked bound for its vertex count or use appropriately sized dynamic storage. Dark seams after recomputing normals can result from averaging separated vertices independently; they are not necessarily a shader error.
+    A garbled mesh usually means the index binding still says `UINT16` while the buffer holds 32-bit values. Missing triangles can mean the draw count is still 36. A very large import can fail its checked conversion allocation or GPU-buffer allocation; report that failure rather than truncating counts. Dark seams after recomputing normals can result from averaging separated vertices independently; they are not necessarily a shader error.
 
 ## Checkpoint
 

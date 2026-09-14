@@ -15,13 +15,17 @@ A **descriptor** is the typed reference that connects a shader declaration to a 
 ```mermaid
 flowchart LR
     A[C Material value] -->|upload copies bytes| B[Uniform buffer]
-    C[Descriptor set layout] -->|declares set 0 binding 0| D[Descriptor set]
-    B -->|descriptor refers to range| D
-    D -->|bind before draw| E[Fragment shader]
-    F[GLSL set 0 binding 0] --> E
+    C[DvzSlots declarations] --> D[Pipeline layout]
+    D --> E[Set layout 0: uniform at binding 0]
+    D --> F[Vertex push range: MVP]
+    E -->|layout-compatible| G[Populated descriptor set 0]
+    B -->|descriptor refers to range| G
+    G -->|bind before draw| H[Fragment shader]
+    I[GLSL set 0 binding 0] --> H
+    F -->|push before draw| J[Vertex shader]
 ```
 
-The local C value needs to survive only until `dvz_buffer_upload()` returns. Recorded draws retain access to the uniform buffer and descriptor set, so those resources remain owned by `Renderer` through GPU completion.
+The pipeline layout contains both the push-constant range and descriptor set layout 0. That set layout describes an interface; it does not hold a material. The populated descriptor set must be compatible with the layout and refers to the actual buffer range. The local C value needs to survive only until `dvz_buffer_upload()` returns. Recorded draws retain access to the uniform buffer and descriptor set, so those resources remain owned by `Renderer` through GPU completion.
 
 ## Define an aligned material
 
@@ -80,7 +84,7 @@ static int create_material(Renderer* renderer)
 
 This program uploads the material once before any draw is submitted. That makes one persistent buffer safe for every frame. If you later rewrite the same mapped range every frame, you must prevent the CPU from changing bytes that an earlier GPU submission can still read. Common solutions use one uniform region per frame in flight, dynamic offsets, or an explicit wait. A mapped pointer provides access; it does not provide synchronization.
 
-Call the helper before pipeline creation:
+Call the helper immediately before pipeline creation. This order is required because `create_pipeline()` populates the descriptor with `renderer.material_buffer`; creating the pipeline group first would give that descriptor no valid buffer to reference:
 
 ```c
     int material_result = create_material(&renderer);
@@ -166,7 +170,7 @@ After the existing device wait and `destroy_pipeline(&renderer)`, transfer the s
                 renderer.descriptors = candidate.descriptors;
 ```
 
-A failed shader compile releases only the incomplete candidate and leaves the active descriptor and pipeline usable. A successful reload waits before destroying resources referenced by older submissions. At final cleanup, keep the device wait, destroy the pipeline group first, then destroy and free `material_buffer` before the GPU context.
+A failed shader compile releases only the incomplete candidate and leaves the active descriptor and pipeline usable. A successful reload waits before destroying resources referenced by older submissions. At final cleanup, preserve the cumulative program's dependency order: wait for the device, call `destroy_pipeline()` so the descriptor and its layout disappear, then destroy and free `material_buffer`, followed by the geometry buffers, controllers, canvas objects, and GPU context. This keeps both the descriptor-to-buffer and device-to-resource dependencies valid.
 
 ## Build and run
 

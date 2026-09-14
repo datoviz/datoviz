@@ -24,7 +24,6 @@
 #define HEIGHT       600
 #define MAX_DIMENSION 8192
 #define TEXTURE_SIZE 64
-#define MAX_VERTICES ((24 + 1) * (48 + 1))
 
 #define COURSE_CHECK(condition, message)                                                          \
     do                                                                                            \
@@ -54,6 +53,8 @@ typedef struct
     float tint[4];
     float lighting[4];
 } Material;
+
+_Static_assert(sizeof(Material) == 32, "the aligned material block must match two shader vec4 values");
 
 _Static_assert(sizeof(Push) == 128, "the lighting push block must fit in 128 bytes");
 
@@ -414,18 +415,28 @@ error:
  * @param renderer Renderer that owns the uploaded GPU buffers.
  * @return Zero on success.
  */
-static int create_mesh(Renderer* renderer)
+static int create_mesh(Renderer* renderer, const char* obj_path)
 {
     int result = -1;
-    DvzGeometry* geometry = dvz_geometry_sphere(&(DvzGeometrySphereDesc){
-        DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc), .radius = 0.9, .rings = 24, .sectors = 48});
+    DvzGeometry* geometry = obj_path != NULL
+                                ? dvz_geometry_obj(obj_path, NULL)
+                                : dvz_geometry_sphere(&(DvzGeometrySphereDesc){
+                                      DVZ_STRUCT_INIT_FIELDS(DvzGeometrySphereDesc),
+                                      .radius = 0.9,
+                                      .rings = 24,
+                                      .sectors = 48});
+    Vertex* vertices = NULL;
+    size_t vertex_count = geometry != NULL ? geometry->vertex_count : 0;
+    size_t index_count = geometry != NULL ? geometry->index_count : 0;
     if (geometry == NULL || geometry->positions == NULL || geometry->normals == NULL ||
         geometry->texcoords == NULL || geometry->indices == NULL || geometry->vertex_count == 0 ||
-        geometry->vertex_count > MAX_VERTICES || geometry->index_count == 0)
+        geometry->index_count == 0 || vertex_count > SIZE_MAX / sizeof(*vertices) ||
+        index_count > SIZE_MAX / sizeof(DvzIndex))
         goto cleanup;
 
-    // The sphere supplies radial normals, including matching normals across its UV seam.
-    Vertex vertices[MAX_VERTICES] = {0};
+    vertices = (Vertex*)calloc(vertex_count, sizeof(*vertices));
+    if (vertices == NULL)
+        goto cleanup;
     for (uint32_t i = 0; i < geometry->vertex_count; i++)
     {
         for (uint32_t j = 0; j < 3; j++)
@@ -461,6 +472,7 @@ static int create_mesh(Renderer* renderer)
     result = 0;
 
 cleanup:
+    free(vertices);
     dvz_geometry_destroy(geometry);
     return result;
 }
@@ -546,6 +558,7 @@ int main(int argc, char** argv)
     Renderer renderer = {0};
 
     const char* png_path = NULL;
+    const char* obj_path = NULL;
     float capture_time = 0.0f;
     uint32_t width = WIDTH;
     uint32_t height = HEIGHT;
@@ -555,6 +568,8 @@ int main(int argc, char** argv)
             png_path = argv[++argument_index];
         else if (strcmp(argv[argument_index], "--time") == 0)
             capture_time = strtof(argv[++argument_index], NULL);
+        else if (strcmp(argv[argument_index], "--obj") == 0)
+            obj_path = argv[++argument_index];
         else if (
             strcmp(argv[argument_index], "--width") == 0 ||
             strcmp(argv[argument_index], "--height") == 0)
@@ -628,10 +643,10 @@ int main(int argc, char** argv)
     renderer.rendering = dvz_rendering_create_wrapper();
     COURSE_CHECK(
         renderer.commands != NULL && renderer.rendering != NULL, "renderer allocation failed");
-    int mesh_result = create_mesh(&renderer);
-    COURSE_CHECK(mesh_result == 0, "mesh creation failed");
     int material_result = create_material(&renderer);
     COURSE_CHECK(material_result == 0, "material buffer creation failed");
+    int mesh_result = create_mesh(&renderer, obj_path);
+    COURSE_CHECK(mesh_result == 0, "mesh creation failed");
     int texture_result = create_texture(&renderer);
     COURSE_CHECK(texture_result == 0, "texture upload failed");
     int pipeline_result = create_pipeline(&renderer);

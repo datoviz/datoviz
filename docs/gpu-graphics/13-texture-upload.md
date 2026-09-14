@@ -1,10 +1,10 @@
 # 13. Uploading a texture
 
-**Your program at the end of this chapter: 665 C lines. The raw Vulkan equivalent: around 1950 lines, a rough estimate. The tinted cube now has a texture image prepared on the GPU.**
+**Your program at the end of this chapter: 667 C lines. The raw Vulkan equivalent: around 1950 lines, a rough estimate. The tinted cube now has a texture image prepared on the GPU.**
 
 ![The untextured cube remains visible while its texture is prepared on the GPU.](../assets/gpu-graphics/13-texture-upload.webp)
 
-Start with chapter 12's `main.c` and keep both shader files. The cube still uses vertex colors and the material uniform. You will generate a checkerboard in C, copy it into an image on the GPU, and leave that image ready for sampling in chapter 14. The cube, tint, camera, mouse controls, depth test, culling, and **R** reload all keep working.
+Start with chapter 12's `main.c` and keep both shader files. Keep the 16-byte `Material` assertion too; the uniform layout has not changed. The cube still uses vertex colors and the material uniform. You will generate a checkerboard in C, copy it into an image on the GPU, and leave that image ready for sampling in chapter 14. The cube, tint, camera, mouse controls, depth test, culling, and **R** reload all keep working.
 
 The initialization frame from chapter 4 resolves the canvas color format before pipeline creation. Keep `renderer.color_format` and copy it into reload candidates: a live window may use BGRA while offscreen images use RGBA. The pipeline must match the actual attachment in either mode.
 
@@ -135,7 +135,7 @@ This helper owns its upload command buffer, so it may begin, end, and submit it.
 
 ## Call the helper and release the image
 
-In `main()`, immediately after the index-buffer upload and before camera creation, insert:
+In `main()`, keep chapter 12's material and pipeline creation where they are, before the vertex and index buffers. Insert the texture call immediately after the index-buffer upload and before camera creation:
 
 ```c
     int texture_result = create_texture(&renderer);

@@ -328,7 +328,7 @@ validation errors: 0
     1. **Change the clear color** to `{1.0f, 1.0f, 1.0f, 1.0f}`. The window turns white. Now try `{255.0f, 0.0f, 0.0f, 1.0f}`. The window is still red because values are clamped to 1.0.
     2. **Comment out the two `dvz_cmd_rendering_*` calls** and run again. The window turns black. That black is worth understanding: Vulkan promises *nothing* about the contents of an image you have not written to. The result could be zeros, stale pixels, or a driver's debug fill. You see black because the canvas clears each target once before your callback first sees it, giving this experiment a defined result on every platform. From the second frame onward, the target contains whatever your recorded rendering leaves there.
     3. **Delete `dvz_window_host_poll`** from the loop. The window still fills with color but stops responding: it no longer resizes, and the close button does nothing.
-    4. **Compare colors.** The `0.10f` red component in your clear value becomes 89 in the PNG, not 26. The canvas image uses an sRGB format, so the linear values you write are gamma-encoded on output. Chapter 15 returns to this when it matters for lighting.
+    4. **Compare colors.** In this offscreen path, the `0.10f` red component becomes 89 in the PNG rather than 26 because the canvas target resolves to an sRGB format and encodes the linear value on output. A live surface chooses from the formats supported by the window system and may resolve to an sRGB or non-sRGB format. Chapter 15 returns to that distinction when it matters for lighting.
 
 ## When it goes wrong
 

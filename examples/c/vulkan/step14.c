@@ -48,6 +48,8 @@ typedef struct
     float tint[4];
 } Material;
 
+_Static_assert(sizeof(Material) == 16, "the material block must match four shader floats");
+
 static const Vertex VERTICES[24] = {
     // Back face.
     {{0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
@@ -575,6 +577,8 @@ int main(int argc, char** argv)
     renderer.rendering = dvz_rendering_create_wrapper();
     COURSE_CHECK(
         renderer.commands != NULL && renderer.rendering != NULL, "renderer allocation failed");
+    int material_result = create_material(&renderer);
+    COURSE_CHECK(material_result == 0, "material buffer creation failed");
     renderer.vertex_buffer = dvz_buffer_create_wrapper();
     renderer.index_buffer = dvz_buffer_create_wrapper();
     COURSE_CHECK(
@@ -598,8 +602,6 @@ int main(int argc, char** argv)
     int index_buffer_result = dvz_buffer_create(renderer.index_buffer);
     COURSE_CHECK(index_buffer_result == 0, "index buffer creation failed");
     dvz_buffer_upload(renderer.index_buffer, 0, sizeof(INDICES), INDICES);
-    int material_result = create_material(&renderer);
-    COURSE_CHECK(material_result == 0, "material buffer creation failed");
     int texture_result = create_texture(&renderer);
     COURSE_CHECK(texture_result == 0, "texture upload failed");
     int pipeline_result = create_pipeline(&renderer);

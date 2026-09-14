@@ -1,10 +1,10 @@
 # 14. Sampling the texture
 
-**Your program at the end of this chapter: 708 C lines. The raw Vulkan equivalent: around 2050 lines, a rough estimate. Each cube face now samples the checkerboard.**
+**Your program at the end of this chapter: 710 C lines. The raw Vulkan equivalent: around 2050 lines, a rough estimate. Each cube face now samples the checkerboard.**
 
 ![A checkerboard covers each face of the mouse-controlled cube.](../assets/gpu-graphics/14-texture-sampling.webp)
 
-Continue from chapter 13. The image is uploaded, but drawing still needs UV coordinates, an image view, a sampler, and a descriptor entry. This chapter adds those pieces to the same cube. The material uniform remains at set 0 binding 0; the texture joins the same descriptor set at binding 1. Mouse rotation, zoom, depth, culling, and shader reload stay in place.
+Continue from chapter 13. Keep the 16-byte `Material` assertion because its GLSL block is unchanged. The image is uploaded, but drawing still needs UV coordinates, an image view, a sampler, and a descriptor entry. This chapter adds those pieces to the same cube. The material uniform remains at set 0 binding 0; the texture joins the same descriptor set at binding 1. Mouse rotation, zoom, depth, culling, and shader reload stay in place.
 
 ## Give each face its own UVs
 
@@ -163,7 +163,7 @@ Set 0 binding 0 remains the material uniform from chapter 12. Set 0 binding 1 no
 
 The descriptor belongs with this pipeline's `slots`: its wrapper retains a pointer to them. Keeping it in the pipeline creation path also lets a reload build a complete candidate before changing the current draw resources.
 
-Keep pipeline creation after texture creation. The image view and sampler must exist before `create_pipeline()` can write their descriptor:
+Keep `create_material()` in its existing position before vertex and index setup. Move only the checked pipeline creation from before `create_texture()` to immediately after it. Chapter 13 could build the pipeline first because no shader referred to the prepared image. The new binding 1 descriptor is populated inside `create_pipeline()`, so the image view and sampler must now exist first. The resulting order is:
 
 ```c
     int texture_result = create_texture(&renderer);
