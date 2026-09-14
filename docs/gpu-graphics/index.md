@@ -5,8 +5,8 @@ This course teaches modern GPU graphics in C, with Vulkan running underneath.
 You start with an empty file and end with an interactive 3D mesh viewer: a perspective camera you control with the mouse, depth-tested geometry, a texture you upload yourself, and per-fragment lighting. You write the program line by line in a small project of your own.
 
 <picture>
-  <source media="(prefers-reduced-motion: no-preference)" srcset="/assets/gpu-graphics/15-mesh-animated.webp">
-  <img src="/assets/gpu-graphics/15-mesh.webp" alt="The textured, lit mesh built in chapter 15 rotating in the final viewer.">
+  <source media="(prefers-reduced-motion: no-preference)" srcset="/assets/gpu-graphics/16-mesh-animated.webp">
+  <img src="/assets/gpu-graphics/16-mesh.webp" alt="The textured, lit mesh built in chapter 16 rotating in the final viewer.">
 </picture>
 
 ## Why this course exists
@@ -78,12 +78,13 @@ Every chapter ends with a complete listing of the file as it should look at that
 **Part 4: Surfaces, textures, and light**
 
 <ol start="12">
-  <li><a href="12-texture-upload/">Uploading a texture</a>: staging buffers, image layouts, and barriers.</li>
-  <li><a href="13-texture-sampling/">Sampling the texture</a>: samplers, descriptors, and UV coordinates.</li>
-  <li><a href="14-lighting/">Lighting</a>: normals, diffuse, and specular.</li>
-  <li><a href="15-mesh/">A real mesh</a>: from a hand-typed cube to generated geometry.</li>
+  <li><a href="12-uniform-buffers/">Uniform buffers</a>: shader data shared across draws.</li>
+  <li><a href="13-texture-upload/">Uploading a texture</a>: staging buffers, image layouts, and barriers.</li>
+  <li><a href="14-texture-sampling/">Sampling the texture</a>: samplers, descriptors, and UV coordinates.</li>
+  <li><a href="15-lighting/">Lighting</a>: normals, diffuse, and specular.</li>
+  <li><a href="16-mesh/">A real mesh</a>: from a hand-typed cube to generated geometry.</li>
 </ol>
 
-The course closes with [what Datoviz handled for you and where to go next](16-next.md).
+The course closes with [what Datoviz handled for you and where to go next](17-next.md).
 
 Start with [Setup](01-setup.md).

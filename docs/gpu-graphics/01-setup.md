@@ -95,7 +95,7 @@ if(NOT WIN32)
 endif()
 ```
 
-This build file will serve all fifteen chapters. The `datoviz::datoviz` target supplies the include paths, library, and dependencies, including the Vulkan headers you will use from chapter 2 onward. On Unix, the separate `m` link supplies the standard math functions needed from chapter 3 onward; MSVC provides them without a separate library.
+This build file will serve all sixteen chapters. The `datoviz::datoviz` target supplies the include paths, library, and dependencies, including the Vulkan headers you will use from chapter 2 onward. On Unix, the separate `m` link supplies the standard math functions needed from chapter 3 onward; MSVC provides them without a separate library.
 
 Configure the project once and point CMake to your Datoviz installation:
 

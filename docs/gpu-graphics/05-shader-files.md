@@ -27,7 +27,7 @@ Write the complete shader files as follows:
 --8<-- "examples/c/vulkan/step05/shader.frag"
 ```
 
-`dvz_read_text()` returns an owned, null-terminated copy of the file. `compile_file()` frees that source copy after the compiler returns. The typed compiler request carries the reader-local path into diagnostics, which matters as soon as the compiler reports a line number.
+`dvz_read_text()` returns an owned, null-terminated copy of the file. `compile_file()` frees that source copy after the compiler returns because compilation consumes the text before returning; neither the result nor a later shader module refers to it. The typed compiler request supplies the stage, the `main` entry point, and the reader-local filename used in diagnostics.
 
 ```c
 static bool compile_file(
@@ -61,7 +61,7 @@ static bool compile_file(
 }
 ```
 
-GLSL is source text; SPIR-V is the validated binary passed to `vkCreateShaderModule`. Runtime compilation is convenient for learning and live editing. Production applications often compile shaders during the build so startup is faster and a missing compiler cannot break deployment.
+GLSL expresses shader types, control flow, stage inputs, and stage outputs as source text. Compilation checks those language rules and produces SPIR-V, the device-independent intermediate instructions passed to `vkCreateShaderModule`. The resulting shader module still is not a complete executable rendering pipeline: the driver combines it with the other shader stage and fixed-function state when the graphics pipeline is created. Runtime compilation is convenient for learning and live editing. Production applications often compile shaders during the build so startup is faster and a missing compiler cannot break deployment.
 
 ## Reload safely
 
@@ -87,7 +87,7 @@ Subscribe after installing the draw callback:
     COURSE_CHECK(keyboard_id != DVZ_CALLBACK_ID_NONE, "keyboard subscription failed");
 ```
 
-The main loop builds a complete candidate pipeline outside event dispatch. If compilation or pipeline creation fails, `destroy_pipeline()` releases the incomplete candidate and the working pipeline stays active. On success, wait for prior GPU work to finish before destroying the active pipeline and moving the candidate pointers into `renderer`. A shader edit requires a new graphics pipeline because shader stages are part of its frozen state. Pass the resolved `color_format` from chapter 4 into each candidate as well: the replacement pipeline draws into the same canvas attachments.
+The main loop builds a complete candidate pipeline outside event dispatch. If compilation or pipeline creation fails, `destroy_pipeline()` releases the incomplete candidate and the working pipeline stays active. On success, wait for prior GPU work to finish before destroying the active pipeline and moving the candidate pointers into `renderer`. A shader edit requires a new graphics pipeline because shader stages are part of the pipeline's compiled state; Vulkan does not replace one stage inside an existing pipeline. Pass the resolved `color_format` from chapter 4 into each candidate as well because the replacement pipeline must remain compatible with the canvas attachment.
 
 ```c
         if (renderer.reload_requested)

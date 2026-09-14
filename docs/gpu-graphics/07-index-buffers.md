@@ -4,7 +4,7 @@
 
 ![The same colored square drawn with four vertices and six indices.](../assets/gpu-graphics/07-index-buffers.webp)
 
-The square in chapter 6 stores six vertex records even though it has only four distinct corners. An index buffer separates vertex data from the order in which primitive assembly reads it.
+The square in chapter 6 stores six vertex records even though it has only four distinct corners. An **index buffer** is an integer array that tells primitive assembly which vertex records to fetch and in what order. It separates the records themselves from the sequence used to form triangles.
 
 The two shader files and their reload path are unchanged. Only the geometry arrays, a second buffer, and the draw command change.
 
@@ -29,7 +29,7 @@ Then add the index array:
 static const uint16_t INDICES[6] = {0, 1, 2, 0, 2, 3};
 ```
 
-The first three indices form one triangle; the last three form the other. Corners 0 and 2 are reused. Shared vertices also share their color and, later, texture coordinates and normals. Duplicate a vertex deliberately when two faces need different attributes at the same position.
+The first three indices form one triangle; the last three form the other. Corners 0 and 2 are reused. An index selects the complete record, not just its position, so a reused vertex also reuses its color and, later, its texture coordinates and normal. Duplicate a vertex deliberately when two faces occupy the same position but need different attributes, as they will at texture seams and sharp lighting creases.
 
 `uint16_t` supports indices through 65535 and halves index bandwidth compared with `uint32_t`. Large meshes need 32-bit indices. The C element type, bound `VkIndexType`, and uploaded byte count must all agree.
 
@@ -68,7 +68,7 @@ The allocation policy matches the vertex buffer, but the usage flag records a di
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, 6, 0, 1);
 ```
 
-The arguments to `dvz_cmd_draw_indexed()` are first index, vertex offset, index count, first instance, and instance count. Each fetched index selects a record from the already bound vertex buffer. The vertex offset is added to every fetched index; zero is right for this standalone mesh.
+The arguments to `dvz_cmd_draw_indexed()` are first index, vertex offset, index count, first instance, and instance count. The bound `VK_INDEX_TYPE_UINT16` tells Vulkan to read each entry as an unsigned 16-bit value; this declaration must match the array's storage. Each value selects a complete record from the already bound vertex buffer. The vertex offset is added to every fetched index; zero is right for this standalone mesh.
 
 In cleanup, after the device wait and before releasing the vertex buffer, release the index buffer too:
 

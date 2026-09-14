@@ -31,10 +31,11 @@ CHAPTERS = {
     "09-matrices.md": "step09.c",
     "10-depth-culling.md": "step10.c",
     "11-mouse-control.md": "step11.c",
-    "12-texture-upload.md": "step12.c",
-    "13-texture-sampling.md": "step13.c",
-    "14-lighting.md": "step14.c",
-    "15-mesh.md": "step15.c",
+    "12-uniform-buffers.md": "step12.c",
+    "13-texture-upload.md": "step13.c",
+    "14-texture-sampling.md": "step14.c",
+    "15-lighting.md": "step15.c",
+    "16-mesh.md": "step16.c",
 }
 
 FENCE = re.compile(r"^(?P<indent> *)```(?P<lang>[a-z]*)\s*$", re.MULTILINE)

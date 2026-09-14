@@ -6,7 +6,7 @@
 
 By the end of this chapter, your program will open a resizable window, fill it with a color you choose, and keep drawing until you close it. With one command-line flag, the same program will render to a PNG file instead. Keep that option throughout the course so you can check each chapter without relying on a window.
 
-This chapter introduces six Datoviz objects. Take them one at a time. Chapter 3 explains what happens inside a frame; for now, the goal is to get the program running.
+This chapter introduces the objects that connect your program to a GPU and a presentation target. Take them one at a time. For each one, keep track of what it represents, who owns it, and how long it remains valid. Chapter 3 explains what happens inside a frame; for now, the goal is to get the program running.
 
 ## The headers
 
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 
 The course checks creation, frame submission, and file output because continuing after one of those failures would hide the real problem. Every failure jumps to one cleanup block. Routine configuration calls stay on the main path unless their result determines whether setup can continue.
 
-The **backend** decides who provides the window abstraction. GLFW communicates with the desktop, while the offscreen backend provides a windowless render target of the same size. The **render mode** decides where finished frames go: either to the screen for presentation or into memory for readback.
+The **backend** decides who provides the window abstraction. GLFW communicates with the desktop, while the offscreen backend provides a windowless render target of the same size. The **render mode** decides where finished frames go: either to the screen for presentation or into memory for readback. Both routes produce an image that rendering commands can write; only the live route hands the finished image to a display.
 
 ## The window host
 
@@ -104,10 +104,12 @@ Your program needs one window host. It owns the connection to the platform's win
     COURSE_CHECK(gpu != NULL, "no usable GPU found");
 ```
 
-This is where your program acquires a GPU. The rest of the course relies on two Vulkan terms:
+This is where your program acquires access to a GPU. The rest of the course relies on two Vulkan terms:
 
-- A **physical device** is a Vulkan-visible implementation, usually a GPU in the machine but sometimes a software device. Vulkan may find several, and the context chooses one.
-- A **logical device** is your program's private connection to that GPU. Every object you create later, including shaders, pipelines, buffers, and images, comes *from* a logical device and is valid only with that device. This is what `DvzDevice*` refers to throughout the course.
+- A **physical device** describes one Vulkan-capable implementation and its hardware limits, memory types, queues, and supported features. It is usually a GPU in the machine, though a software implementation can also appear as a physical device. Vulkan may find several, and the context chooses one.
+- A **logical device** is the live Vulkan connection your program creates from that physical device. It enables selected features and gives the program queues and device-level operations. Every resource created later, including shader modules, pipelines, buffers, and images, belongs to this logical device and must be destroyed before it. This is what `DvzDevice*` refers to throughout the course.
+
+A **resource** is storage or executable state that later GPU work refers to, such as a buffer, image, shader module, or pipeline. Creating a C wrapper does not by itself create the underlying Vulkan resource; the configure-and-create calls later in the course make that distinction visible.
 
 `dvz_canvas_configure_gpu_ctx` adds the extensions and Vulkan features required by the canvas: dynamic rendering, synchronization2, and timeline semaphores. Requesting them here means that an incompatible device fails during setup instead of causing an obscure error later.
 
@@ -146,9 +148,9 @@ Datoviz config structs follow a common pattern: a `dvz_*_config()` function retu
     COURSE_CHECK(canvas != NULL, "canvas creation failed");
 ```
 
-The course relies heavily on the canvas, so it is worth being precise about what the canvas owns.
+The **canvas** owns the render targets and frame machinery needed to produce a window image or an offscreen image. It decides when a target is available, lends that target and a recording command buffer to your callback, submits the finished work, and handles presentation or readback. The course relies heavily on this object, so it is worth being precise about what it owns.
 
-A window cannot be drawn to directly. Vulkan presentation requires a **surface**, the Vulkan handle for an operating-system window, followed by a **swapchain**. A swapchain is a small set of images, typically two or three, that your program and the display hardware pass back and forth. For each presented frame, an application acquires the next available image and eventually returns it for presentation. The canvas gives your callback its own frame target, then transfers the finished result into the acquired swapchain image. Because the GPU runs behind the CPU, each frame in flight also needs synchronization so that images are not overwritten while still in use. Resizing the window invalidates the swapchain and requires it to be rebuilt.
+A window cannot be drawn to directly. Vulkan presentation requires a **surface**, the Vulkan connection to an operating-system window, followed by a **swapchain**. A swapchain is a rotating collection of presentable images. The program acquires one that the display is not using, rendering eventually supplies its pixels, and presentation returns it to the display system. The canvas gives your callback a separate frame target, then transfers the finished result into the acquired swapchain image. Because CPU recording, GPU execution, and display presentation overlap in time, synchronization prevents either side from reusing an image too early. Resizing can make the old swapchain incompatible with the surface, so the canvas rebuilds it.
 
 The canvas owns all of that. In return, your callback runs when a frame is ready for recording.
 
@@ -232,7 +234,7 @@ A live run loops until the window closes, while a `--png` run needs only one fra
 2. `dvz_canvas_frame` acquires the next image, opens a command buffer, and calls your `draw` callback with both. `DVZ_CANVAS_FRAME_READY` means the frame is ready. `DVZ_CANVAS_FRAME_WAIT_SURFACE` means the surface is temporarily unusable because the window is minimized or being resized. There is nothing to draw in that iteration, so the loop tries again.
 3. `dvz_canvas_submit` sends the recorded commands to the GPU and, in live mode, presents the result.
 
-Notice the division of labor: your callback records *what* to draw, while `dvz_canvas_submit` decides *when* it runs. Nothing reaches the GPU before that call.
+Notice the division of labor: your callback records *what* to draw, while `dvz_canvas_submit` queues that recorded work for GPU execution. Submission makes the work eligible to run; it does not mean the GPU has already finished, or even that it begins at the instant the function is called.
 
 ## Saving the image
 
@@ -326,7 +328,7 @@ validation errors: 0
     1. **Change the clear color** to `{1.0f, 1.0f, 1.0f, 1.0f}`. The window turns white. Now try `{255.0f, 0.0f, 0.0f, 1.0f}`. The window is still red because values are clamped to 1.0.
     2. **Comment out the two `dvz_cmd_rendering_*` calls** and run again. The window turns black. That black is worth understanding: Vulkan promises *nothing* about the contents of an image you have not written to. The result could be zeros, stale pixels, or a driver's debug fill. You see black because the canvas clears each target once before your callback first sees it, giving this experiment a defined result on every platform. From the second frame onward, the target contains whatever your recorded rendering leaves there.
     3. **Delete `dvz_window_host_poll`** from the loop. The window still fills with color but stops responding: it no longer resizes, and the close button does nothing.
-    4. **Compare colors.** The `0.10f` red component in your clear value becomes 89 in the PNG, not 26. The canvas image uses an sRGB format, so the linear values you write are gamma-encoded on output. Chapter 14 returns to this when it matters for lighting.
+    4. **Compare colors.** The `0.10f` red component in your clear value becomes 89 in the PNG, not 26. The canvas image uses an sRGB format, so the linear values you write are gamma-encoded on output. Chapter 15 returns to this when it matters for lighting.
 
 ## When it goes wrong
 

@@ -44,7 +44,7 @@ Deferred work must not enter the RC3 candidate: the official Qt/PyQt provider ar
 
 Required deliverables:
 
-1. Complete rewritten course chapters 4-15: triangle, external shaders and reload, vertex/index buffers, push constants, matrices, depth/culling, mouse control, texture upload/sampling, lighting, and a generated real mesh.
+1. Complete rewritten course chapters 4-16: triangle, external shaders and reload, vertex/index buffers, push constants, matrices, depth/culling, mouse control, uniform buffers, texture upload/sampling, lighting, and a generated real mesh.
 2. Generate and validate a distinct preview for every chapter from canonical programs without committed binary prerequisites or `data` submodule changes.
 3. Freeze the tutorial-facing API profile and document vklite as advanced/unstable with exact release compatibility.
 4. Build and run every chapter from exact installed source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`, packaged runtime shaderc, deterministic offscreen proof, and bounded live resize, input, depth, repeated-frame, and shutdown smoke.

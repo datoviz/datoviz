@@ -20,7 +20,6 @@
 
 #define WIDTH  800
 #define HEIGHT 600
-#define TEXTURE_SIZE 64
 
 #define COURSE_CHECK(condition, message)                                                         \
     do                                                                                           \
@@ -42,6 +41,13 @@ typedef struct
 {
     mat4 mvp;
 } Push;
+
+typedef struct
+{
+    float tint[4];
+} Material;
+
+_Static_assert(sizeof(Material) == 16, "the material block must match four shader floats");
 
 static const Vertex VERTICES[8] = {
     {{-0.65f, -0.65f, -0.65f}, {1.0f, 0.2f, 0.2f}},
@@ -70,8 +76,8 @@ static const uint16_t INDICES[36] = {
 typedef struct
 {
     DvzDevice* device;
-    DvzVma* allocator;
     VkFormat color_format;
+    DvzVma* allocator;
     DvzCommands* commands;
     DvzRendering* rendering;
     DvzSlots* slots;
@@ -84,7 +90,8 @@ typedef struct
     bool draw_failed;
     DvzBuffer* vertex_buffer;
     DvzBuffer* index_buffer;
-    DvzImages* texture;
+    DvzBuffer* material_buffer;
+    DvzDescriptors* descriptors;
 } Renderer;
 
 
@@ -117,6 +124,8 @@ static void multiply_mat4(mat4 left, mat4 right, mat4 out)
  */
 static void destroy_pipeline(Renderer* renderer)
 {
+    dvz_descriptors_free(renderer->descriptors);
+    renderer->descriptors = NULL;
     if (renderer->pipeline != NULL)
         dvz_graphics_destroy(renderer->pipeline);
     dvz_graphics_free(renderer->pipeline);
@@ -219,6 +228,9 @@ static int create_pipeline(Renderer* renderer)
         return -1;
 
     dvz_slots(renderer->device, renderer->slots);
+    dvz_slots_binding(
+        renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_slots_push(renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Push));
     if (dvz_slots_create(renderer->slots) != 0)
         return -1;
@@ -249,7 +261,40 @@ static int create_pipeline(Renderer* renderer)
     dvz_graphics_layout(renderer->pipeline, dvz_slots_handle(renderer->slots));
     dvz_graphics_viewport(renderer->pipeline, 0, 0, 0, 0, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(renderer->pipeline, 0, 0, 0, 0, DVZ_GRAPHICS_FLAGS_DYNAMIC);
-    return dvz_graphics_create(renderer->pipeline);
+    if (dvz_graphics_create(renderer->pipeline) != 0)
+        return -1;
+    renderer->descriptors = dvz_descriptors_create_wrapper();
+    if (renderer->descriptors == NULL)
+        return -1;
+    dvz_descriptors(renderer->slots, renderer->descriptors);
+    dvz_descriptors_buffer(
+        renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0,
+        sizeof(Material));
+    return dvz_descriptors_handle(renderer->descriptors, 0) != VK_NULL_HANDLE ? 0 : -1;
+}
+
+
+
+/**
+ * Create the persistent material uniform buffer.
+ * @param renderer Renderer that owns the buffer.
+ * @return Zero on success.
+ */
+static int create_material(Renderer* renderer)
+{
+    Material material = {.tint = {0.75f, 0.9f, 1.0f, 1.0f}};
+    renderer->material_buffer = dvz_buffer_create_wrapper();
+    if (renderer->material_buffer == NULL)
+        return -1;
+    dvz_buffer(renderer->device, renderer->allocator, renderer->material_buffer);
+    dvz_buffer_size(renderer->material_buffer, sizeof(Material));
+    dvz_buffer_usage(renderer->material_buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    dvz_buffer_flags(
+        renderer->material_buffer, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+    if (dvz_buffer_create(renderer->material_buffer) != 0)
+        return -1;
+    dvz_buffer_upload(renderer->material_buffer, 0, sizeof(material), &material);
+    return 0;
 }
 
 
@@ -266,102 +311,6 @@ static void keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void
     Renderer* renderer = (Renderer*)user_data;
     if (event->type == DVZ_KEYBOARD_EVENT_PRESS && event->key == DVZ_KEY_R)
         renderer->reload_requested = true;
-}
-
-
-
-/**
- * Upload a small checkerboard into a device-local image.
- * @param renderer Renderer that owns the image.
- * @return Zero on success.
- */
-static int create_texture(Renderer* renderer)
-{
-    uint8_t pixels[TEXTURE_SIZE * TEXTURE_SIZE * 4];
-    for (uint32_t y = 0; y < TEXTURE_SIZE; y++)
-    {
-        for (uint32_t x = 0; x < TEXTURE_SIZE; x++)
-        {
-            bool check = ((x / 8 + y / 8) & 1) != 0;
-            size_t i = ((size_t)y * TEXTURE_SIZE + x) * 4;
-            pixels[i + 0] = check ? 235 : 35;
-            pixels[i + 1] = check ? 170 : 80;
-            pixels[i + 2] = check ? 55 : 190;
-            pixels[i + 3] = 255;
-        }
-    }
-
-    DvzBuffer* staging = dvz_buffer_create_wrapper();
-    DvzCommands* upload = dvz_commands_create_wrapper();
-    renderer->texture = dvz_images_create_wrapper();
-    if (staging == NULL || upload == NULL || renderer->texture == NULL)
-        goto error;
-
-    dvz_buffer(renderer->device, renderer->allocator, staging);
-    dvz_buffer_size(staging, sizeof(pixels));
-    dvz_buffer_usage(staging, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    dvz_buffer_flags(staging, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
-    if (dvz_buffer_create(staging) != 0)
-        goto error;
-    dvz_buffer_upload(staging, 0, sizeof(pixels), pixels);
-
-    dvz_images(renderer->device, renderer->allocator, VK_IMAGE_TYPE_2D, 1, renderer->texture);
-    dvz_images_format(renderer->texture, VK_FORMAT_R8G8B8A8_SRGB);
-    dvz_images_size(renderer->texture, TEXTURE_SIZE, TEXTURE_SIZE, 1);
-    dvz_images_usage(
-        renderer->texture, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-    if (dvz_images_create(renderer->texture) != 0)
-        goto error;
-
-    dvz_commands(renderer->device, dvz_device_queue(renderer->device, DVZ_QUEUE_MAIN), 1, upload);
-    if (dvz_cmd_begin_result(upload) != 0)
-        goto error;
-    DvzBarriers barriers = {0};
-    dvz_barriers(&barriers);
-    DvzBarrierImage* image_barrier =
-        dvz_barriers_image(&barriers, dvz_image_handle(renderer->texture, 0));
-    if (image_barrier == NULL)
-        goto error;
-    dvz_barrier_image_stage(image_barrier, VK_PIPELINE_STAGE_2_NONE, VK_PIPELINE_STAGE_2_COPY_BIT);
-    dvz_barrier_image_access(image_barrier, 0, VK_ACCESS_2_TRANSFER_WRITE_BIT);
-    dvz_barrier_image_layout(
-        image_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    dvz_barrier_image_aspect(image_barrier, VK_IMAGE_ASPECT_COLOR_BIT);
-    dvz_cmd_barriers(upload, &barriers);
-    DvzImageRegion region = {0};
-    dvz_image_region(&region);
-    dvz_image_region_extent(&region, TEXTURE_SIZE, TEXTURE_SIZE, 1);
-    dvz_cmd_copy_buffer_to_image(
-        upload, dvz_buffer_handle(staging), 0, dvz_image_handle(renderer->texture, 0),
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &region);
-    dvz_barrier_image_stage(
-        image_barrier, VK_PIPELINE_STAGE_2_COPY_BIT, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
-    dvz_barrier_image_access(
-        image_barrier, VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_ACCESS_2_SHADER_SAMPLED_READ_BIT);
-    dvz_barrier_image_layout(
-        image_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    dvz_cmd_barriers(upload, &barriers);
-    if (dvz_cmd_end_result(upload) != 0 || dvz_cmd_submit_result(upload) != 0)
-        goto error;
-    dvz_commands_destroy(upload);
-    dvz_commands_free(upload);
-    dvz_buffer_destroy(staging);
-    dvz_buffer_free(staging);
-    return 0;
-
-error:
-    if (upload != NULL)
-    {
-        dvz_commands_destroy(upload);
-        dvz_commands_free(upload);
-    }
-    if (staging != NULL)
-    {
-        dvz_buffer_destroy(staging);
-        dvz_buffer_free(staging);
-    }
-    return -1;
 }
 
 
@@ -416,6 +365,8 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
     dvz_cmd_rendering_begin(renderer->commands, renderer->rendering);
     dvz_cmd_bind_graphics(renderer->commands, renderer->pipeline);
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
+    dvz_cmd_bind_descriptors(
+        renderer->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
     DvzResult push_result = dvz_cmd_push_constants(
         renderer->commands, renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push), &push);
     if (push_result != DVZ_OK)
@@ -471,7 +422,7 @@ int main(int argc, char** argv)
     DvzWindowConfig window_config = dvz_window_config();
     window_config.width = WIDTH;
     window_config.height = HEIGHT;
-    window_config.title = "Texture upload: drag to rotate, scroll to zoom, R to reload";
+    window_config.title = "Mouse control: drag to rotate, scroll to zoom, R to reload";
     window = dvz_window_create(host, backend, &window_config);
     COURSE_CHECK(window != NULL, "window creation failed");
 
@@ -507,6 +458,8 @@ int main(int argc, char** argv)
     renderer.rendering = dvz_rendering_create_wrapper();
     COURSE_CHECK(
         renderer.commands != NULL && renderer.rendering != NULL, "renderer allocation failed");
+    int material_result = create_material(&renderer);
+    COURSE_CHECK(material_result == 0, "material buffer creation failed");
     int pipeline_result = create_pipeline(&renderer);
     COURSE_CHECK(pipeline_result == 0, "graphics pipeline creation failed");
     renderer.vertex_buffer = dvz_buffer_create_wrapper();
@@ -532,8 +485,6 @@ int main(int argc, char** argv)
     int index_buffer_result = dvz_buffer_create(renderer.index_buffer);
     COURSE_CHECK(index_buffer_result == 0, "index buffer creation failed");
     dvz_buffer_upload(renderer.index_buffer, 0, sizeof(INDICES), INDICES);
-    int texture_result = create_texture(&renderer);
-    COURSE_CHECK(texture_result == 0, "texture upload failed");
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.projection.fov_y = 1.0471976f;
     renderer.camera = dvz_camera_create(&camera_desc);
@@ -558,12 +509,14 @@ int main(int argc, char** argv)
             Renderer candidate = {
                 .device = renderer.device,
                 .color_format = renderer.color_format,
+                .material_buffer = renderer.material_buffer,
             };
             pipeline_result = create_pipeline(&candidate);
             if (pipeline_result == 0)
             {
                 dvz_device_wait(renderer.device);
                 destroy_pipeline(&renderer);
+                renderer.descriptors = candidate.descriptors;
                 renderer.slots = candidate.slots;
                 renderer.vertex_shader = candidate.vertex_shader;
                 renderer.fragment_shader = candidate.fragment_shader;
@@ -596,9 +549,10 @@ int main(int argc, char** argv)
 cleanup:
     if (renderer.device != NULL)
         dvz_device_wait(renderer.device);
-    if (renderer.texture != NULL)
-        dvz_images_destroy(renderer.texture);
-    dvz_images_free(renderer.texture);
+    destroy_pipeline(&renderer);
+    if (renderer.material_buffer != NULL)
+        dvz_buffer_destroy(renderer.material_buffer);
+    dvz_buffer_free(renderer.material_buffer);
     if (renderer.index_buffer != NULL)
         dvz_buffer_destroy(renderer.index_buffer);
     dvz_buffer_free(renderer.index_buffer);
@@ -610,7 +564,6 @@ cleanup:
     if (renderer.arcball != NULL)
         dvz_arcball_destroy(renderer.arcball);
     dvz_camera_destroy(renderer.camera);
-    destroy_pipeline(&renderer);
     dvz_rendering_free(renderer.rendering);
     dvz_commands_free(renderer.commands);
     dvz_canvas_destroy(canvas);

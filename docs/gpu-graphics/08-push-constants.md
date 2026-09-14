@@ -8,11 +8,11 @@ The quad from chapter 7 already has a vertex buffer and an index buffer. This ch
 
 ## Three routes to shader data
 
-Push constants are a tiny, fast route for values that change often. A push constant update is recorded into the command buffer, so each draw can receive a different value without allocating a descriptor set. Vulkan guarantees at least 128 bytes for push constants; this example uses eight bytes: two floats.
+**Push constants** are a small block of values copied into the command stream and exposed directly to selected shader stages. Each draw can receive different values without referring to a buffer or descriptor set. Vulkan guarantees that every device supports at least 128 bytes, though a device may support more; this example uses eight bytes for two floats.
 
-Uniform buffers suit larger values shared by many draws, such as a camera matrix and a light description. Storage buffers suit arrays whose length or contents are produced by the CPU or another shader. These are different tools for different lifetimes: per draw values fit push constants, per frame blocks fit uniforms, and large or variable data fits storage buffers.
+A **uniform buffer** stores read-only shader parameters in a buffer range reached through a descriptor, while a **storage buffer** permits broader access patterns, including large arrays and shader writes when declared that way. These choices depend on capacity, access, update frequency, sharing, and device limits. Push constants are often convenient for small per-draw values; uniform buffers commonly hold structured parameters shared across draws; storage buffers suit data that needs their larger or less restricted interface. Chapter 12 builds the complete uniform-buffer and descriptor path.
 
-The shader interface and the pipeline layout must agree. `dvz_slots_push()` declares the range while `dvz_cmd_push_constants()` writes it. The write is part of the recorded GPU work; the C `Push` variable only needs to live until that call returns.
+The shader interface and the **pipeline layout** must agree about the block's size, offset, and visible stages. `dvz_slots_push()` declares that contract while `dvz_cmd_push_constants()` copies the current value into the recorded commands. The local C `Push` variable can therefore be reused when that call returns; submitted work does not retain its address. A descriptor works differently: it refers to a resource that must remain valid while the GPU may use it.
 
 ## Declare the slot
 
@@ -115,7 +115,7 @@ After `dvz_canvas_frame()` reports a ready frame, check `renderer.draw_failed` b
         COURSE_CHECK(!renderer.draw_failed, "push-constant update failed");
 ```
 
-The shader-file compiler and **R** reload path keep working. A successful reload builds the same push-constant layout into the replacement pipeline.
+The shader-file compiler and **R** reload path keep working. A successful reload builds the same push-constant declaration into the replacement pipeline layout. If C declares eight bytes but GLSL expects another size or member order, the shader reads a different interface from the one the command supplies.
 
 ## Try it
 

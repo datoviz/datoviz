@@ -1,10 +1,10 @@
-# 13. Sampling the texture
+# 14. Sampling the texture
 
-**Your program at the end of this chapter: 680 C lines. The raw Vulkan equivalent: around 2000 lines, a rough estimate. Each cube face now samples the checkerboard.**
+**Your program at the end of this chapter: 708 C lines. The raw Vulkan equivalent: around 2050 lines, a rough estimate. Each cube face now samples the checkerboard.**
 
-![A checkerboard covers each face of the mouse-controlled cube.](../assets/gpu-graphics/13-texture-sampling.webp)
+![A checkerboard covers each face of the mouse-controlled cube.](../assets/gpu-graphics/14-texture-sampling.webp)
 
-Continue from chapter 12. The image is uploaded, but drawing still needs UV coordinates, an image view, a sampler, and a descriptor set. This chapter adds those pieces to the same cube. Mouse rotation, zoom, depth, culling, and shader reload stay in place.
+Continue from chapter 13. The image is uploaded, but drawing still needs UV coordinates, an image view, a sampler, and a descriptor entry. This chapter adds those pieces to the same cube. The material uniform remains at set 0 binding 0; the texture joins the same descriptor set at binding 1. Mouse rotation, zoom, depth, culling, and shader reload stay in place.
 
 ## Give each face its own UVs
 
@@ -92,26 +92,26 @@ Replace `shader.frag` with:
 ```glsl
 #version 450
 
-layout(set = 0, binding = 0) uniform sampler2D tex;
+layout(set = 0, binding = 0) uniform Material { vec4 tint; } material;
+layout(set = 0, binding = 1) uniform sampler2D tex;
 layout(location = 0) in vec2 uv;
 layout(location = 0) out vec4 out_color;
 
 void main()
 {
-    out_color = texture(tex, uv);
+    out_color = texture(tex, uv) * material.tint;
 }
 ```
 
-The rasterizer interpolates UVs across each triangle, with perspective correction. `texture(tex, uv)` applies the sampler's filtering and address rules while reading the image.
+The rasterizer interpolates UVs across each triangle. Perspective-correct interpolation accounts for clip `w`, so the texture follows a receding surface rather than sliding through screen space. `texture(tex, uv)` uses the interpolated coordinate and applies the sampler's filtering and address rules while reading the image.
 
 ## Create a view and sampler
 
-Add these owned fields to `Renderer`, after `texture`:
+Add the view and sampler as owned fields after `texture`. Keep the existing descriptor field from chapter 12:
 
 ```c
     DvzImageViews* texture_view;
     DvzSampler* sampler;
-    DvzDescriptors* descriptors;
 ```
 
 Inside `create_texture()`, after the checked `dvz_cmd_end_result()` / `dvz_cmd_submit_result()` block and before `dvz_commands_destroy(upload)`, insert:
@@ -125,8 +125,8 @@ Inside `create_texture()`, after the checked `dvz_cmd_end_result()` / `dvz_cmd_s
     if (dvz_image_views_create(renderer->texture_view) != 0)
         goto error;
     dvz_sampler(renderer->device, renderer->sampler);
-    dvz_sampler_min_filter(renderer->sampler, VK_FILTER_LINEAR);
-    dvz_sampler_mag_filter(renderer->sampler, VK_FILTER_LINEAR);
+    dvz_sampler_min_filter(renderer->sampler, VK_FILTER_NEAREST);
+    dvz_sampler_mag_filter(renderer->sampler, VK_FILTER_NEAREST);
     dvz_sampler_address_mode(
         renderer->sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     dvz_sampler_address_mode(
@@ -135,19 +135,17 @@ Inside `create_texture()`, after the checked `dvz_cmd_end_result()` / `dvz_cmd_s
         goto error;
 ```
 
-The view selects how the shader sees the image's format and subresources. The sampler chooses linear filtering and repeats coordinates outside `[0, 1]`. This small example uses a single mip level.
+An **image view** selects which image subresources and format interpretation the shader can access; the descriptor refers to the view rather than to the image allocation directly. A **sampler** supplies the lookup rules independently of the stored pixels. Here nearest filtering selects one texel and preserves crisp checker boundaries, while repeat addressing wraps coordinates outside `[0, 1]`. This small example uses a single mip level.
 
 ## Declare and write the descriptor
 
 In `create_pipeline()`, immediately after `dvz_slots(renderer->device, renderer->slots);` and before `dvz_slots_push()`, insert:
 
 ```c
-    dvz_slots_binding(
-        renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    dvz_slots_binding(renderer->slots, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 ```
 
-Set 0, binding 0 now agrees with the fragment shader's `sampler2D`. Replace the final `return dvz_graphics_create(renderer->pipeline);` with this block:
+Set 0 binding 0 remains the material uniform from chapter 12. Set 0 binding 1 now agrees with the fragment shader's `sampler2D`. A combined image sampler descriptor refers to both the image view and sampler, though those remain separate Vulkan resources with separate jobs and lifetimes. Replace the final descriptor creation with this version:
 
 ```c
     if (dvz_graphics_create(renderer->pipeline) != 0)
@@ -157,14 +155,15 @@ Set 0, binding 0 now agrees with the fragment shader's `sampler2D`. Replace the 
         return -1;
     dvz_descriptors(renderer->slots, renderer->descriptors);
     dvz_descriptors_image(
-        renderer->descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        renderer->descriptors, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         dvz_image_views_handle(renderer->texture_view, 0), dvz_sampler_handle(renderer->sampler));
+    dvz_descriptors_buffer(renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0, sizeof(Material));
     return dvz_descriptors_handle(renderer->descriptors, 0) != VK_NULL_HANDLE ? 0 : -1;
 ```
 
 The descriptor belongs with this pipeline's `slots`: its wrapper retains a pointer to them. Keeping it in the pipeline creation path also lets a reload build a complete candidate before changing the current draw resources.
 
-In `main()`, move the two lines that create and check the pipeline from before buffer creation to immediately after texture creation. The resulting order there is:
+Keep pipeline creation after texture creation. The image view and sampler must exist before `create_pipeline()` can write their descriptor:
 
 ```c
     int texture_result = create_texture(&renderer);
@@ -182,19 +181,13 @@ In `draw()`, after setting the viewport and scissor and before pushing constants
 
 ## Keep reload and cleanup safe
 
-At the beginning of `destroy_pipeline()`, before destroying the graphics pipeline, add:
-
-```c
-    dvz_descriptors_free(renderer->descriptors);
-    renderer->descriptors = NULL;
-```
-
-In the reload branch of the main loop, replace the candidate initializer with:
+`destroy_pipeline()` already releases the descriptor before its layout from chapter 12. In the reload branch, add the view and sampler to the candidate initializer:
 
 ```c
             Renderer candidate = {
                 .device = renderer.device,
                 .color_format = renderer.color_format,
+                .material_buffer = renderer.material_buffer,
                 .texture_view = renderer.texture_view,
                 .sampler = renderer.sampler,
             };
@@ -229,7 +222,7 @@ Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from ch
 
     ```sh
     cmake --build build
-    ./build/vkcourse --png chapter13.png
+    ./build/vkcourse --png chapter14.png
     ./build/vkcourse
     ```
 
@@ -237,15 +230,15 @@ Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from ch
 
     ```powershell
     cmake --build build --config Release
-    .\build\Release\vkcourse.exe --png chapter13.png
+    .\build\Release\vkcourse.exe --png chapter14.png
     .\build\Release\vkcourse.exe
     ```
 
-The checkerboard should form squares on every face, including the sides when you rotate the cube. Offscreen captures use the same fixed camera pose as chapter 12 and should end with `validation errors: 0`.
+The checkerboard should form squares on every face, including the sides when you rotate the cube. Offscreen captures use the same fixed camera pose as chapter 13 and should end with `validation errors: 0`.
 
 !!! tip "Try it"
 
-    1. Replace both `VK_FILTER_LINEAR` values with `VK_FILTER_NEAREST`, rebuild, and zoom in to compare texel edges.
+    1. Replace both `VK_FILTER_NEAREST` values with `VK_FILTER_LINEAR`, rebuild, and zoom in. Linear filtering blends neighboring texels, so the checker boundaries should soften.
     2. Change one face's maximum U from `1.0` to `2.0`. Compare repeat addressing with `VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE` after rebuilding.
     3. Change the fragment output to a constant color, save, and press **R**. Then restore sampling and reload again. The cube and mouse controls should remain usable throughout.
 
@@ -266,17 +259,17 @@ The checkerboard should form squares on every face, including the sides when you
 ??? example "Full current listing"
 
     ```c
-    --8<-- "examples/c/vulkan/step13.c"
+    --8<-- "examples/c/vulkan/step14.c"
     ```
 
 ??? example "Current shader.vert"
 
     ```glsl
-    --8<-- "examples/c/vulkan/step13/shader.vert"
+    --8<-- "examples/c/vulkan/step14/shader.vert"
     ```
 
 ??? example "Current shader.frag"
 
     ```glsl
-    --8<-- "examples/c/vulkan/step13/shader.frag"
+    --8<-- "examples/c/vulkan/step14/shader.frag"
     ```

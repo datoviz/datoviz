@@ -63,7 +63,18 @@ Change the indexed draw count from six to 36:
 
 ## Homogeneous coordinates
 
-A position is a four-component vector `(x, y, z, 1)`, so translation can be expressed by matrix multiplication. The model matrix rotates and scales the cube. The view matrix moves the scene relative to the camera, which sits three units along positive z and looks toward the origin. The projection matrix produces clip coordinates. Vulkan clips them, then divides x, y, and z by w; distant edges appear smaller because their w is larger.
+The same position passes through several coordinate spaces, each chosen for a different job. The cube's stored coordinates begin in **object space**. The model matrix places them in **world space**. The view matrix expresses the world relative to the camera in **view space**. The projection matrix produces homogeneous **clip space**. Vulkan clips there, divides x, y, and z by `w` to reach **normalized device coordinates**, then the viewport maps those values into framebuffer coordinates.
+
+```mermaid
+flowchart LR
+    A[Object space] -->|model| B[World space]
+    B -->|view| C[View space]
+    C -->|projection| D[Clip space]
+    D -->|divide by w| E[Normalized device coordinates]
+    E -->|viewport| F[Framebuffer coordinates]
+```
+
+A position is represented during these transforms as a four-component vector `(x, y, z, 1)`, which lets a matrix express translation as well as rotation and scale. A direction would use `w = 0` because translation should not move it. Perspective comes from the division by clip `w`: in this projection, more distant points acquire a larger `w`, so their x and y values become smaller after division.
 
 Add these two helpers before `create_pipeline()`. `mat4` stores columns, so an element is indexed as `[column][row]`. The temporary product makes multiplication safe when the output is also an input:
 
@@ -81,7 +92,7 @@ static void multiply_mat4(mat4 left, mat4 right, mat4 out)
 }
 ```
 
-The model keeps chapter 8's size pulse and rotates about y, with a fixed tilt to show three faces. The perspective uses a 60-degree vertical field of view (`1.0471976` radians), the framebuffer aspect ratio, and near/far distances of 0.1 and 100:
+The model matrix keeps chapter 8's size pulse and rotates the object about y, with a fixed tilt to show three faces. The view matrix represents a camera three units along positive z looking toward the origin. The projection uses a 60-degree vertical field of view (`1.0471976` radians), the framebuffer aspect ratio, and near/far distances of 0.1 and 100:
 
 ```c
 static void make_mvp(float aspect, float time, mat4 out)
@@ -122,7 +133,7 @@ static void make_mvp(float aspect, float time, mat4 out)
 }
 ```
 
-For a point in front of this camera, view-space z is negative. The `-1` in `projection[2][3]` therefore makes clip w positive. The depth coefficients map the near plane to zero and the far plane to one, as Vulkan requires. The negative y scale compensates for the positive-height Vulkan viewport, so world-space positive y appears upward.
+For a point in front of this camera, view-space z is negative. The `-1` in `projection[2][3]` therefore makes clip `w` positive. The depth coefficients map the near plane to normalized-device z = 0 and the far plane to z = 1, as Vulkan requires. The negative y scale compensates for the positive-height viewport, so world-space positive y appears upward on the image.
 
 ## Send the matrix
 
@@ -202,6 +213,7 @@ cmake --build build
 ## Checkpoint
 
 - What does the perspective divide do?
+- Starting with one stored cube position, name each coordinate space it passes through before reaching a framebuffer location.
 - Why is the order `projection * view * model`?
 - Which depth values do the near and far planes produce?
 

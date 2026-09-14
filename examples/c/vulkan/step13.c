@@ -18,24 +18,24 @@
 #include <datoviz/vklite.h>
 #include <datoviz/window.h>
 
-#define WIDTH        800
-#define HEIGHT       600
+#define WIDTH  800
+#define HEIGHT 600
 #define TEXTURE_SIZE 64
 
-#define COURSE_CHECK(condition, message)                                                          \
-    do                                                                                            \
-    {                                                                                             \
-        if (!(condition))                                                                         \
-        {                                                                                         \
-            fprintf(stderr, "%s\n", message);                                                     \
-            goto cleanup;                                                                         \
-        }                                                                                         \
+#define COURSE_CHECK(condition, message)                                                         \
+    do                                                                                           \
+    {                                                                                            \
+        if (!(condition))                                                                        \
+        {                                                                                        \
+            fprintf(stderr, "%s\n", message);                                                   \
+            goto cleanup;                                                                        \
+        }                                                                                        \
     } while (0)
 
 typedef struct
 {
     float position[3];
-    float uv[2];
+    float color[3];
 } Vertex;
 
 typedef struct
@@ -43,43 +43,30 @@ typedef struct
     mat4 mvp;
 } Push;
 
-static const Vertex VERTICES[24] = {
-    // Back face.
-    {{0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
-    {{-0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
-    {{-0.65f, 0.65f, -0.65f}, {1.0f, 1.0f}},
-    {{0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
-    // Front face.
-    {{-0.65f, -0.65f, 0.65f}, {0.0f, 0.0f}},
-    {{0.65f, -0.65f, 0.65f}, {1.0f, 0.0f}},
-    {{0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
-    {{-0.65f, 0.65f, 0.65f}, {0.0f, 1.0f}},
-    // Bottom face.
-    {{-0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
-    {{0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
-    {{0.65f, -0.65f, 0.65f}, {1.0f, 1.0f}},
-    {{-0.65f, -0.65f, 0.65f}, {0.0f, 1.0f}},
-    // Top face.
-    {{-0.65f, 0.65f, -0.65f}, {0.0f, 0.0f}},
-    {{-0.65f, 0.65f, 0.65f}, {1.0f, 0.0f}},
-    {{0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
-    {{0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
-    // Right face.
-    {{0.65f, -0.65f, 0.65f}, {0.0f, 0.0f}},
-    {{0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
-    {{0.65f, 0.65f, -0.65f}, {1.0f, 1.0f}},
-    {{0.65f, 0.65f, 0.65f}, {0.0f, 1.0f}},
-    // Left face.
-    {{-0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
-    {{-0.65f, -0.65f, 0.65f}, {1.0f, 0.0f}},
-    {{-0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
-    {{-0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
+typedef struct
+{
+    float tint[4];
+} Material;
+
+static const Vertex VERTICES[8] = {
+    {{-0.65f, -0.65f, -0.65f}, {1.0f, 0.2f, 0.2f}},
+    {{ 0.65f, -0.65f, -0.65f}, {1.0f, 0.7f, 0.2f}},
+    {{ 0.65f,  0.65f, -0.65f}, {0.2f, 0.9f, 0.3f}},
+    {{-0.65f,  0.65f, -0.65f}, {0.2f, 0.5f, 1.0f}},
+    {{-0.65f, -0.65f,  0.65f}, {0.5f, 0.2f, 1.0f}},
+    {{ 0.65f, -0.65f,  0.65f}, {1.0f, 0.3f, 0.7f}},
+    {{ 0.65f,  0.65f,  0.65f}, {0.3f, 1.0f, 0.9f}},
+    {{-0.65f,  0.65f,  0.65f}, {0.9f, 0.9f, 0.2f}},
 };
 
 // Each face winds counter-clockwise when seen from outside the cube.
 static const uint16_t INDICES[36] = {
-    0,  1,  2,  0,  2,  3,  4,  5,  6,  4,  6,  7,  8,  9,  10, 8,  10, 11,
-    12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
+    0, 2, 1, 0, 3, 2,
+    4, 5, 6, 4, 6, 7,
+    0, 1, 5, 0, 5, 4,
+    3, 7, 6, 3, 6, 2,
+    1, 2, 6, 1, 6, 5,
+    0, 4, 7, 0, 7, 3,
 };
 
 #define VERTEX_PATH   "shader.vert"
@@ -88,8 +75,8 @@ static const uint16_t INDICES[36] = {
 typedef struct
 {
     DvzDevice* device;
-    VkFormat color_format;
     DvzVma* allocator;
+    VkFormat color_format;
     DvzCommands* commands;
     DvzRendering* rendering;
     DvzSlots* slots;
@@ -102,10 +89,9 @@ typedef struct
     bool draw_failed;
     DvzBuffer* vertex_buffer;
     DvzBuffer* index_buffer;
-    DvzImages* texture;
-    DvzImageViews* texture_view;
-    DvzSampler* sampler;
+    DvzBuffer* material_buffer;
     DvzDescriptors* descriptors;
+    DvzImages* texture;
 } Renderer;
 
 
@@ -127,6 +113,8 @@ static void multiply_mat4(mat4 left, mat4 right, mat4 out)
         for (uint32_t row = 0; row < 4; row++)
             out[column][row] = product[column][row];
 }
+
+
 
 
 
@@ -165,7 +153,8 @@ static void destroy_pipeline(Renderer* renderer)
  * @param result Compilation result that the caller must destroy.
  * @return Whether compilation succeeded.
  */
-static bool compile_file(const char* path, DvzShaderStage stage, DvzShaderCompileResult* result)
+static bool compile_file(
+    const char* path, DvzShaderStage stage, DvzShaderCompileResult* result)
 {
     DvzSize source_size = 0;
     char* source = dvz_read_text(path, &source_size);
@@ -231,17 +220,15 @@ static int create_pipeline(Renderer* renderer)
 
     int vertex_result =
         dvz_shader(renderer->device, vertex.spirv_size, vertex.spirv, renderer->vertex_shader);
-    int fragment_result = dvz_shader(
-        renderer->device, fragment.spirv_size, fragment.spirv, renderer->fragment_shader);
+    int fragment_result =
+        dvz_shader(renderer->device, fragment.spirv_size, fragment.spirv, renderer->fragment_shader);
     dvz_shader_compile_result_destroy(&vertex);
     dvz_shader_compile_result_destroy(&fragment);
     if (vertex_result != 0 || fragment_result != 0)
         return -1;
 
     dvz_slots(renderer->device, renderer->slots);
-    dvz_slots_binding(
-        renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    dvz_slots_binding(renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_slots_push(renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Push));
     if (dvz_slots_create(renderer->slots) != 0)
         return -1;
@@ -258,14 +245,15 @@ static int create_pipeline(Renderer* renderer)
     dvz_graphics_vertex_attr(
         renderer->pipeline, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position));
     dvz_graphics_vertex_attr(
-        renderer->pipeline, 0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv));
+        renderer->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color));
     dvz_graphics_primitive(
         renderer->pipeline, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_attachment_color(renderer->pipeline, 0, renderer->color_format);
     dvz_graphics_attachment_depth(renderer->pipeline, VK_FORMAT_D32_SFLOAT);
     dvz_graphics_depth(
         renderer->pipeline, false, true, VK_COMPARE_OP_LESS, DVZ_GRAPHICS_FLAGS_FIXED);
-    dvz_graphics_cull_mode(renderer->pipeline, VK_CULL_MODE_BACK_BIT, DVZ_GRAPHICS_FLAGS_FIXED);
+    dvz_graphics_cull_mode(
+        renderer->pipeline, VK_CULL_MODE_BACK_BIT, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_front_face(
         renderer->pipeline, VK_FRONT_FACE_COUNTER_CLOCKWISE, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_layout(renderer->pipeline, dvz_slots_handle(renderer->slots));
@@ -277,10 +265,24 @@ static int create_pipeline(Renderer* renderer)
     if (renderer->descriptors == NULL)
         return -1;
     dvz_descriptors(renderer->slots, renderer->descriptors);
-    dvz_descriptors_image(
-        renderer->descriptors, 0, 0, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-        dvz_image_views_handle(renderer->texture_view, 0), dvz_sampler_handle(renderer->sampler));
+    dvz_descriptors_buffer(renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0, sizeof(Material));
     return dvz_descriptors_handle(renderer->descriptors, 0) != VK_NULL_HANDLE ? 0 : -1;
+}
+
+static int create_material(Renderer* renderer)
+{
+    Material material = {.tint = {0.75f, 0.9f, 1.0f, 1.0f}};
+    renderer->material_buffer = dvz_buffer_create_wrapper();
+    if (renderer->material_buffer == NULL)
+        return -1;
+    dvz_buffer(renderer->device, renderer->allocator, renderer->material_buffer);
+    dvz_buffer_size(renderer->material_buffer, sizeof(Material));
+    dvz_buffer_usage(renderer->material_buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    dvz_buffer_flags(renderer->material_buffer, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+    if (dvz_buffer_create(renderer->material_buffer) != 0)
+        return -1;
+    dvz_buffer_upload(renderer->material_buffer, 0, sizeof(material), &material);
+    return 0;
 }
 
 
@@ -375,22 +377,6 @@ static int create_texture(Renderer* renderer)
     dvz_cmd_barriers(upload, &barriers);
     if (dvz_cmd_end_result(upload) != 0 || dvz_cmd_submit_result(upload) != 0)
         goto error;
-    renderer->texture_view = dvz_image_views_create_wrapper();
-    renderer->sampler = dvz_sampler_create_wrapper();
-    if (renderer->texture_view == NULL || renderer->sampler == NULL)
-        goto error;
-    dvz_image_views(renderer->texture, renderer->texture_view);
-    if (dvz_image_views_create(renderer->texture_view) != 0)
-        goto error;
-    dvz_sampler(renderer->device, renderer->sampler);
-    dvz_sampler_min_filter(renderer->sampler, VK_FILTER_LINEAR);
-    dvz_sampler_mag_filter(renderer->sampler, VK_FILTER_LINEAR);
-    dvz_sampler_address_mode(
-        renderer->sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    dvz_sampler_address_mode(
-        renderer->sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    if (dvz_sampler_create(renderer->sampler) != 0)
-        goto error;
     dvz_commands_destroy(upload);
     dvz_commands_free(upload);
     dvz_buffer_destroy(staging);
@@ -463,15 +449,16 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
     dvz_cmd_rendering_begin(renderer->commands, renderer->rendering);
     dvz_cmd_bind_graphics(renderer->commands, renderer->pipeline);
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
-    dvz_cmd_bind_descriptors(
-        renderer->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
+    dvz_cmd_bind_descriptors(renderer->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
     DvzResult push_result = dvz_cmd_push_constants(
         renderer->commands, renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push), &push);
     if (push_result != DVZ_OK)
         renderer->draw_failed = true;
     DvzSize vertex_offset = 0;
-    dvz_cmd_bind_vertex_buffers(renderer->commands, 0, 1, renderer->vertex_buffer, &vertex_offset);
-    dvz_cmd_bind_index_buffer(renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT16);
+    dvz_cmd_bind_vertex_buffers(
+        renderer->commands, 0, 1, renderer->vertex_buffer, &vertex_offset);
+    dvz_cmd_bind_index_buffer(
+        renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT16);
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, 36, 0, 1);
     dvz_cmd_rendering_end(renderer->commands);
     dvz_commands_unwrap(renderer->commands);
@@ -509,7 +496,8 @@ int main(int argc, char** argv)
     COURSE_CHECK(host != NULL, "window host creation failed");
     DvzGpuCtxConfig gpu_config = dvz_gpu_ctx_config();
     dvz_gpu_ctx_config_validation(&gpu_config, true);
-    DvzResult configure_result = dvz_canvas_configure_gpu_ctx(host, backend, mode, &gpu_config);
+    DvzResult configure_result =
+        dvz_canvas_configure_gpu_ctx(host, backend, mode, &gpu_config);
     COURSE_CHECK(configure_result == DVZ_OK, "GPU configuration failed");
     gpu = dvz_gpu_ctx(&gpu_config);
     COURSE_CHECK(gpu != NULL, "no usable GPU found");
@@ -517,7 +505,7 @@ int main(int argc, char** argv)
     DvzWindowConfig window_config = dvz_window_config();
     window_config.width = WIDTH;
     window_config.height = HEIGHT;
-    window_config.title = "Texture sampling: drag to rotate, scroll to zoom, R to reload";
+    window_config.title = "Texture upload: drag to rotate, scroll to zoom, R to reload";
     window = dvz_window_create(host, backend, &window_config);
     COURSE_CHECK(window != NULL, "window creation failed");
 
@@ -576,6 +564,8 @@ int main(int argc, char** argv)
     int index_buffer_result = dvz_buffer_create(renderer.index_buffer);
     COURSE_CHECK(index_buffer_result == 0, "index buffer creation failed");
     dvz_buffer_upload(renderer.index_buffer, 0, sizeof(INDICES), INDICES);
+    int material_result = create_material(&renderer);
+    COURSE_CHECK(material_result == 0, "material buffer creation failed");
     int texture_result = create_texture(&renderer);
     COURSE_CHECK(texture_result == 0, "texture upload failed");
     int pipeline_result = create_pipeline(&renderer);
@@ -584,8 +574,7 @@ int main(int argc, char** argv)
     camera_desc.projection.fov_y = 1.0471976f;
     renderer.camera = dvz_camera_create(&camera_desc);
     renderer.arcball = dvz_arcball_create(NULL);
-    COURSE_CHECK(
-        renderer.camera != NULL && renderer.arcball != NULL, "controller creation failed");
+    COURSE_CHECK(renderer.camera != NULL && renderer.arcball != NULL, "controller creation failed");
     DvzResult initial_result = dvz_arcball_initial(renderer.arcball, (vec3){-0.35f, 0.65f, 0.0f});
     COURSE_CHECK(initial_result == DVZ_OK, "initial rotation failed");
     DvzResult connect_result = dvz_arcball_connect(renderer.arcball, dvz_canvas_input(canvas));
@@ -605,8 +594,7 @@ int main(int argc, char** argv)
             Renderer candidate = {
                 .device = renderer.device,
                 .color_format = renderer.color_format,
-                .texture_view = renderer.texture_view,
-                .sampler = renderer.sampler,
+                .material_buffer = renderer.material_buffer,
             };
             pipeline_result = create_pipeline(&candidate);
             if (pipeline_result == 0)
@@ -647,12 +635,9 @@ cleanup:
     if (renderer.device != NULL)
         dvz_device_wait(renderer.device);
     destroy_pipeline(&renderer);
-    if (renderer.sampler != NULL)
-        dvz_sampler_destroy(renderer.sampler);
-    dvz_sampler_free(renderer.sampler);
-    if (renderer.texture_view != NULL)
-        dvz_image_views_destroy(renderer.texture_view);
-    dvz_image_views_free(renderer.texture_view);
+    if (renderer.material_buffer != NULL)
+        dvz_buffer_destroy(renderer.material_buffer);
+    dvz_buffer_free(renderer.material_buffer);
     if (renderer.texture != NULL)
         dvz_images_destroy(renderer.texture);
     dvz_images_free(renderer.texture);

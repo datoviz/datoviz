@@ -1,10 +1,10 @@
-# 15. A real mesh
+# 16. A real mesh
 
-**Your program at the end of this chapter: 689 C lines. The raw Vulkan equivalent: around 2100 lines, a rough estimate. The final viewer displays a rotatable, textured, lit sphere.**
+**Your program at the end of this chapter: 741 C lines. The raw Vulkan equivalent: around 2200 lines, a rough estimate. The final viewer displays a rotatable, textured, lit sphere.**
 
-![The final generated sphere viewer, textured and lit.](../assets/gpu-graphics/15-mesh.webp)
+![The final generated sphere viewer, textured and lit.](../assets/gpu-graphics/16-mesh.webp)
 
-Continue from chapter 14. Replace the hand-authored cube with a generated sphere. Geometry supplies CPU positions, normals, UVs, and indices; the renderer converts and uploads those arrays. The shaders, image, descriptor, 128-byte push block, depth test, culling, input handling, and safe **R** reload all stay the same.
+Continue from chapter 15. Replace the hand-authored cube with a generated sphere. A **mesh** is CPU-side data describing vertex attributes and the indices that assemble them into primitives; Vulkan has no mesh object of its own. The renderer converts those arrays into the established `Vertex` format and uploads them into Vulkan buffers. The shaders, material uniform, sampled image, descriptor set, 128-byte push block, depth test, culling, input handling, and safe **R** reload all stay the same because their interface has not changed.
 
 ## Replace the cube arrays
 
@@ -88,7 +88,7 @@ cleanup:
 }
 ```
 
-The generator stores positions, normals, and texture coordinates as doubles. `Vertex` uses floats, so the conversion copies each component explicitly. The indices remain `DvzIndex`, a 32-bit unsigned type. Casting the counts to `DvzSize` before multiplying keeps these byte calculations in the wider size type. The generator supplies valid triangle indices; the helper rejects absent attributes, empty data, and vertex counts beyond the conversion buffer's capacity.
+The generator stores positions, normals, and texture coordinates as doubles. The pipeline contract expects 32-bit float attributes, so the conversion copies and narrows each component explicitly before upload. The indices remain `DvzIndex`, a 32-bit unsigned type. Casting the counts to `DvzSize` before multiplying keeps these byte calculations in the wider size type. The generator supplies valid triangle indices; the helper rejects absent attributes, empty data, and vertex counts beyond the conversion buffer's capacity.
 
 `dvz_buffer_upload()` copies CPU bytes before returning. The local float array and `geometry` can therefore disappear after both uploads. The GPU buffers remain owned by `Renderer` and keep the existing device-wait cleanup.
 
@@ -108,22 +108,58 @@ Keep texture creation, pipeline creation, and controller creation that follow. I
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, renderer->index_count, 0, 1);
 ```
 
-The index type changes from `VK_INDEX_TYPE_UINT16` to `VK_INDEX_TYPE_UINT32`; the draw count changes from 36 to the generator's actual count. The vertex layout and both shader files are unchanged from chapter 14.
+The index type changes from `VK_INDEX_TYPE_UINT16` to `VK_INDEX_TYPE_UINT32`; the draw count changes from 36 to the generator's actual count. The vertex layout and both shader files are unchanged from chapter 15.
 
-## Add a deterministic preview angle
+## Add deterministic preview controls
 
-The documentation build turns several fixed starting angles into the animated course preview. Extend the existing argument loop with `--time`:
+The documentation build renders the final animation at 1280 × 720, 24 frames per second, and 48 frames over the interval from 0 seconds through the last sampled instant before 2 seconds. Add `<errno.h>` for checked dimension parsing, then replace the existing argument loop with:
 
 ```c
     const char* png_path = NULL;
     float capture_time = 0.0f;
+    uint32_t width = WIDTH;
+    uint32_t height = HEIGHT;
     for (int argument_index = 1; argument_index + 1 < argc; argument_index++)
     {
         if (strcmp(argv[argument_index], "--png") == 0)
             png_path = argv[++argument_index];
         else if (strcmp(argv[argument_index], "--time") == 0)
             capture_time = strtof(argv[++argument_index], NULL);
+        else if (
+            strcmp(argv[argument_index], "--width") == 0 ||
+            strcmp(argv[argument_index], "--height") == 0)
+        {
+            const bool is_width = strcmp(argv[argument_index], "--width") == 0;
+            char* end = NULL;
+            errno = 0;
+            long value = strtol(argv[++argument_index], &end, 10);
+            if (errno == ERANGE || end == argv[argument_index] || *end != '\0' || value <= 0 ||
+                value > MAX_DIMENSION)
+            {
+                fprintf(stderr, "%s must be an integer from 1 to %d\n", is_width ? "--width" : "--height", MAX_DIMENSION);
+                return 1;
+            }
+            if (is_width)
+                width = (uint32_t)value;
+            else
+                height = (uint32_t)value;
+        }
     }
+```
+
+Add `MAX_DIMENSION` beside the default dimensions:
+
+```c
+#define WIDTH        800
+#define HEIGHT       600
+#define MAX_DIMENSION 8192
+```
+
+Use the selected dimensions when configuring the window:
+
+```c
+    window_config.width = width;
+    window_config.height = height;
 ```
 
 Use that value only when choosing the arcball's initial orientation:
@@ -133,7 +169,7 @@ Use that value only when choosing the arcball's initial orientation:
         renderer.arcball, (vec3){-0.35f, 0.65f + (float)DVZ_PI * capture_time, 0.0f});
 ```
 
-The live viewer still responds to the mouse. This argument makes offscreen preview frames reproducible without synthesizing input events. The angle advances by π radians per second, so the two-second preview completes one full turn. Its 12 frames at six frames per second sample `--time` values from `0` through `11 / 6`; returning to the first frame advances by the same 30 degrees as every other frame transition.
+The live viewer still responds to the mouse. `--time` makes offscreen preview frames reproducible without synthesizing input events, while `--width` and `--height` let the media builder request the widescreen frame without changing interactive defaults. The angle advances by π radians per second, so the two-second preview completes one full turn. Its 48 frames sample time at 1/24-second intervals from `0` through `47 / 24`; looping to the first frame advances by the same 7.5 degrees as every other transition.
 
 ## Keep the sphere's smooth normals
 
@@ -157,7 +193,7 @@ Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from ch
 
     ```sh
     cmake --build build
-    ./build/vkcourse --png chapter15.png
+    ./build/vkcourse --png chapter16.png
     ./build/vkcourse
     ```
 
@@ -165,7 +201,7 @@ Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from ch
 
     ```powershell
     cmake --build build --config Release
-    .\build\Release\vkcourse.exe --png chapter15.png
+    .\build\Release\vkcourse.exe --png chapter16.png
     .\build\Release\vkcourse.exe
     ```
 
@@ -204,17 +240,17 @@ DvzGeometry* geometry = dvz_geometry_torus(&(DvzGeometryTorusDesc){
 ??? example "Full current listing"
 
     ```c
-    --8<-- "examples/c/vulkan/step15.c"
+    --8<-- "examples/c/vulkan/step16.c"
     ```
 
 ??? example "Current shader.vert"
 
     ```glsl
-    --8<-- "examples/c/vulkan/step15/shader.vert"
+    --8<-- "examples/c/vulkan/step16/shader.vert"
     ```
 
 ??? example "Current shader.frag"
 
     ```glsl
-    --8<-- "examples/c/vulkan/step15/shader.frag"
+    --8<-- "examples/c/vulkan/step16/shader.frag"
     ```

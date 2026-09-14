@@ -7,21 +7,34 @@
   <img src="/assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues and greys.">
 </picture>
 
-Chapter 2 asked you to accept five lines on faith. This chapter takes them apart because they establish the shape of every frame in the course. The triangle in chapter 4 and the lit, textured mesh in chapter 15 will both fit between the same two calls.
+Chapter 2 asked you to accept five lines on faith. This chapter takes them apart because they establish the shape of every frame in the course. The triangle in chapter 4 and the final lit, textured mesh will both fit between the same two calls.
 
 You will then make the window pulse, proving that the loop is running rather than displaying one frame forever.
 
 ## Two processors, one to-do list
 
-A GPU program consists of work for two processors, handed from one to the other every frame.
+A rendering program coordinates two processors with different jobs. The CPU runs your C code and prepares work. The GPU executes the graphics commands and shaders that produce the image.
 
 The CPU decides *what* to draw and writes down instructions: use this pipeline, draw these three vertices, clear to this color. The CPU does not draw the image itself. That recorded list is a **command buffer**.
 
-The GPU reads the command buffer after submission and executes it asynchronously. Your callback has returned by then, and the CPU may be preparing later work while the GPU chews on the submitted frame. Reusing a frame slot can still make the CPU wait. Managing that overlap safely is why Vulkan needs so much synchronization and why the canvas earns its keep.
+**Submission** places recorded command buffers on a device queue, in an order constrained by synchronization. The GPU can execute them asynchronously after submission. Your callback has returned by then, and the CPU may be preparing later work while the GPU processes an earlier frame. Reusing a frame slot can still make the CPU wait. Managing that overlap safely is why Vulkan needs synchronization and why the canvas earns its keep.
+
+```mermaid
+sequenceDiagram
+    participant CPU
+    participant Queue
+    participant GPU
+    CPU->>CPU: Record commands in callback
+    CPU->>Queue: Submit command buffer
+    Note over CPU,GPU: Referenced GPU resources must remain valid
+    Queue->>GPU: Execute when dependencies allow
+    GPU-->>CPU: Signal completion fence
+    Note over CPU: Frame slot and resources may now be reused
+```
 
 This separation has two consequences that often confuse new Vulkan programmers:
 
-- **Recording happens on the CPU; drawing happens later, on the GPU.** When `draw` returns, the recorded work has not reached the GPU. Submission begins with `dvz_canvas_submit`.
+- **Recording happens on the CPU; drawing happens later, on the GPU.** When `draw` returns, the commands exist but have not been submitted by your code. `dvz_canvas_submit` queues them; synchronization determines when execution can begin and when reuse is safe.
 - **GPU resources referenced by recorded commands must remain valid until execution finishes.** A submitted command buffer may refer to Vulkan buffers, images, image views, pipelines, and descriptor sets after the recording callback returns. Do not destroy those resources while the GPU may still use them. A CPU array is different: after a synchronous upload or set-data call copies its bytes, the caller may reuse or free the array. Each upload chapter identifies that copy point and the lifetime of the destination GPU resource.
 
 ## What the canvas hands you
@@ -52,7 +65,7 @@ The `vklite` API records through a typed `DvzCommands` object, while the canvas 
         clear, renderer->rendering);
 ```
 
-This describes *where* the next commands will draw. Despite the `dvz_cmd_` prefix, it records nothing. It fills the `DvzRendering` description with the render area, one color **attachment** that points to `frame->image_view`, a load operation of "clear," a store operation of "store," and the clear value.
+This describes *where* the next commands will draw. Despite the `dvz_cmd_` prefix, it records nothing. An **attachment** is an image view used as an output of a rendering pass. Here `frame->image_view` becomes the one color attachment, and the description also stores the render area, a load operation of "clear," a store operation of "store," and the clear value.
 
 The load and store operations define what happens to the attachment at the boundaries of the rendering pass:
 
@@ -251,7 +264,7 @@ The first two files are identical. The third captures another reproducible point
 
 ## Checkpoint
 
-- At what exact point in your program does the GPU begin executing the commands you recorded?
+- Which call submits the recorded commands, and why does that call not tell you the exact instant when GPU execution begins?
 - Why must you read `frame->extent` every frame instead of storing the window size once?
 - What is the difference between a load op of `CLEAR` and one of `LOAD`, and why is clearing not a command?
 - Why does offscreen mode use a fixed time value instead of the clock?

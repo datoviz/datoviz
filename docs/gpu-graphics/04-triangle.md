@@ -4,7 +4,7 @@
 
 ![An RGB triangle on a dark background.](../assets/gpu-graphics/04-triangle.webp)
 
-The frame from chapter 3 now has something to draw. You will compile two small shaders, create the pipeline that joins them to Vulkan's fixed-function stages, and issue one draw command. The vertex positions live in the shader for now, so no vertex buffer is needed.
+The frame from chapter 3 now has something to draw. A **shader** is a small GPU program that runs at a defined stage of the graphics pipeline. You will compile two shaders, create the pipeline that joins them to Vulkan's fixed-function stages, and issue one draw command. The vertex positions live in the shader for now, so no vertex buffer is needed.
 
 Start from your chapter 3 `main.c`. The pulsing clear has served its purpose, so remove `<math.h>`, the three animation fields in `Renderer`, the `--time` option, and the time calculation in `draw()`. Remove the GPU-name and rendered-frame prints as well; validation errors remain the one diagnostic printed on every run. Keep the `--png` option and replace the animated clear with this fixed dark color:
 
@@ -30,7 +30,9 @@ typedef struct
 
 ## Two shader stages
 
-The vertex shader runs once for each requested vertex. `gl_VertexIndex` is 0, 1, then 2, so it selects one position and one color from the arrays. These positions are already in **clip space**: x and y span the visible area from -1 to +1, while Vulkan's depth range runs from 0 to 1. Positive y points down after Vulkan maps clip space to the default viewport, which is why the first point uses a negative y coordinate to appear at the top.
+A **shader invocation** is one execution of a shader for one item of work. The **vertex shader** runs once for each requested vertex and must write that vertex's clip-space position. `gl_VertexIndex` is 0, 1, then 2, so each invocation selects one position and one color from the arrays. No CPU pointer survives into the draw: these arrays are constants compiled into the shader.
+
+These positions are already in **clip space**, the homogeneous coordinate system produced by a vertex shader. Because every position has `w = 1`, division by `w` leaves x and y spanning the visible range from -1 to +1 and z in Vulkan's visible depth range from 0 to 1. The positive-height viewport used here maps normalized-device positive y downward, which is why the first point uses a negative y coordinate to appear at the top. Chapter 9 returns to clip coordinates when `w` varies with depth.
 
 ```c
 static const char* VERTEX_GLSL =
@@ -46,7 +48,7 @@ static const char* VERTEX_GLSL =
     "}\n";
 ```
 
-The fragment shader runs for the covered pixels. The rasterizer interpolates the three vertex colors across the triangle before the fragment shader receives `color` at location 0.
+After the vertex stage, **primitive assembly** groups the three outputs into a triangle. **Rasterization** determines which framebuffer samples the triangle covers and produces **fragments**, candidate contributions to those samples. It also interpolates the three vertex colors across the triangle. The **fragment shader** runs for those fragments and produces a color at location 0. A fragment is not simply a pixel: later tests can reject it, and multisampling can evaluate coverage at more than one sample within a pixel.
 
 ```c
 static const char* FRAGMENT_GLSL =
@@ -55,6 +57,29 @@ static const char* FRAGMENT_GLSL =
     "layout(location = 0) out vec4 out_color;\n"
     "void main() { out_color = vec4(color, 1.0); }\n";
 ```
+
+The full path for this draw is:
+
+```mermaid
+flowchart LR
+    A[gl_VertexIndex] --> B[Vertex shader]
+    B --> C[Primitive assembly]
+    C --> D[Rasterization and interpolation]
+    D --> E[Fragment shader]
+    E --> F[Color and depth operations]
+    F --> G[Color attachment]
+    subgraph Programmable stages
+        B
+        E
+    end
+    subgraph Fixed-function stages
+        C
+        D
+        F
+    end
+```
+
+The programmable stages run code you supply. The fixed-function stages follow pipeline state that you configure, such as triangle topology, viewport, depth testing, and blending. A **graphics pipeline** packages those shaders and most of that fixed state into one device object. The command buffer later binds the pipeline so subsequent draws use that complete configuration.
 
 ## Resolve the canvas color format
 
@@ -86,7 +111,7 @@ If the surface is temporarily unavailable, keep polling until a frame can be acq
 
 ## Compile and build the pipeline
 
-Add `<stdint.h>` and `<datoviz/shader.h>`. `dvz_compile_glsl()` turns each GLSL string into SPIR-V, the binary shader format consumed by Vulkan. `dvz_shader()` creates the two shader modules. The CPU-side SPIR-V copies can then be freed because `dvz_shader()` has copied what it needs into Vulkan objects.
+Add `<stdint.h>` and `<datoviz/shader.h>`. **GLSL** is the human-readable shading language used for both source strings. `dvz_compile_glsl()` translates each string into **SPIR-V**, Vulkan's standardized binary intermediate representation. SPIR-V is not the GPU's native machine code; the driver can translate it further for the selected device. `dvz_shader()` copies the SPIR-V into a **shader module**, the Vulkan object that presents one compiled stage to pipeline creation. The CPU-side SPIR-V arrays can then be freed because the shader modules no longer refer to those arrays.
 
 ```c
     uint64_t vertex_size = 0;
@@ -128,7 +153,7 @@ Create the shader, layout, and pipeline wrappers, then create both shader module
         return -1;
 ```
 
-The empty `DvzSlots` layout says that this pipeline has no descriptors or push constants. A graphics pipeline freezes the shaders and most rasterization state together. Here that state says: group vertices in threes, render to the canvas color format, and set viewport and scissor dynamically for each frame.
+The empty `DvzSlots` layout declares that this pipeline has no descriptors or push constants. It contributes to the **pipeline layout**, the contract for resources and small values that shaders may access; later chapters add both. Here the graphics pipeline combines the shader stages with state that says: group vertices in threes, render to the canvas color format, and set viewport and scissor dynamically for each frame.
 
 ```c
     dvz_slots(renderer->device, renderer->slots);

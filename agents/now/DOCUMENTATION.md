@@ -39,7 +39,7 @@ The contributor reviewed PR #136 on 2026-08-06 and requested `GLSLC` namespacing
 
 ## RC4 Documentation Gate
 
-Complete course chapters 4-15 and the epilogue through an interactive textured and lit generated mesh. Generate a preview for every chapter, freeze the tutorial-facing API and advanced/unstable compatibility profile, validate every chapter against exact installed artifacts on supported hosted platforms, and resolve or record reader feedback.
+Complete course chapters 4-16 and the epilogue through an interactive textured and lit generated mesh. Generate a preview for every chapter, freeze the tutorial-facing API and advanced/unstable compatibility profile, validate every chapter against exact installed artifacts on supported hosted platforms, and resolve or record reader feedback.
 
 The required course uses generated geometry and a procedural texture. Suzanne and committed binary course assets are optional polish and must not become release blockers.
 

@@ -1,10 +1,10 @@
-# 12. Uploading a texture
+# 13. Uploading a texture
 
-**Your program at the end of this chapter: 624 C lines. The raw Vulkan equivalent: around 1850 lines, a rough estimate. The same cube now has a texture image prepared on the GPU.**
+**Your program at the end of this chapter: 665 C lines. The raw Vulkan equivalent: around 1950 lines, a rough estimate. The tinted cube now has a texture image prepared on the GPU.**
 
-![The untextured cube remains visible while its texture is prepared on the GPU.](../assets/gpu-graphics/12-texture-upload.webp)
+![The untextured cube remains visible while its texture is prepared on the GPU.](../assets/gpu-graphics/13-texture-upload.webp)
 
-Start with chapter 11's `main.c` and keep both shader files. The cube still uses vertex colors. We will generate a checkerboard in C, copy it into an image on the GPU, and leave that image ready for sampling in chapter 13. The cube, camera, mouse controls, depth test, culling, and **R** reload all keep working.
+Start with chapter 12's `main.c` and keep both shader files. The cube still uses vertex colors and the material uniform. You will generate a checkerboard in C, copy it into an image on the GPU, and leave that image ready for sampling in chapter 14. The cube, tint, camera, mouse controls, depth test, culling, and **R** reload all keep working.
 
 The initialization frame from chapter 4 resolves the canvas color format before pipeline creation. Keep `renderer.color_format` and copy it into reload candidates: a live window may use BGRA while offscreen images use RGBA. The pipeline must match the actual attachment in either mode.
 
@@ -16,20 +16,10 @@ Add this constant beside `WIDTH` and `HEIGHT`:
 #define TEXTURE_SIZE 64
 ```
 
-Add these two fields to `Renderer`: the allocator beside `device`, and the image beside the buffers. The allocator is borrowed from the GPU context; the renderer owns the image.
-
-```c
-    DvzVma* allocator;
-```
+Keep the allocator added in chapter 12 and add the image beside the buffers. The allocator remains borrowed from the GPU context; the renderer owns the image.
 
 ```c
     DvzImages* texture;
-```
-
-After `renderer.device = dvz_gpu_ctx_device(gpu);` in `main()`, save the allocator:
-
-```c
-    renderer.allocator = dvz_gpu_ctx_alloc(gpu);
 ```
 
 Add this complete helper between `keyboard()` and `draw()`. It generates 64 × 64 RGBA pixels, with eight-pixel checker tiles. Each texel occupies four bytes; the offset includes both its row and its position within that row.
@@ -130,9 +120,16 @@ error:
 }
 ```
 
-`dvz_buffer_upload()` copies the CPU pixels into host-visible staging memory. The sampled image uses a device-local allocation; `dvz_cmd_copy_buffer_to_image()` transfers the bytes into its image storage. We use `VK_FORMAT_R8G8B8A8_SRGB` because the checker colors represent display colors. Sampling this format will convert its RGB channels to linear values for shader calculations.
+A **buffer** is a linear range of bytes. An **image** adds dimensions, texel format, tiling, and image-specific access rules. `dvz_buffer_upload()` copies the CPU pixels into a host-visible **staging buffer**, temporary storage chosen so the CPU can write it. The sampled image uses a device-local, optimally tiled allocation chosen for GPU image access; `dvz_cmd_copy_buffer_to_image()` transfers the linear staging bytes into that image representation. We use `VK_FORMAT_R8G8B8A8_SRGB` because the checker values represent display colors. Sampling this concrete format later converts its RGB channels to linear values for shader calculations; alpha remains linear.
 
-The image has two allowed uses: transfer destination and sampled image. Its first barrier changes `UNDEFINED` to `TRANSFER_DST_OPTIMAL`; no old pixels need preserving. The second changes `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL` and makes the transfer writes visible to fragment shader reads. An image usage flag permits an operation, while a layout describes the image's state at a particular time. They solve different problems.
+```mermaid
+flowchart LR
+    A[CPU RGBA array] -->|synchronous upload| B[Mapped staging buffer]
+    B -->|recorded GPU copy| C[Optimally tiled image]
+    C -->|layout and visibility barrier| D[Shader-readable image]
+```
+
+The image has two allowed uses: transfer destination and sampled image. An image **layout** names the kind of access for which its contents are prepared. Its first barrier changes `UNDEFINED` to `TRANSFER_DST_OPTIMAL`; no old pixels need preserving. The second changes `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL`. A **barrier** establishes ordering and memory visibility as well as the layout transition: the copy must finish, and its writes must become visible, before fragment-shader sampling. An image usage flag permits an operation over the resource's lifetime, while a layout describes its state for a particular access.
 
 This helper owns its upload command buffer, so it may begin, end, and submit it. `dvz_cmd_submit_result()` waits for this upload to finish. Only then does the helper destroy the staging buffer and upload commands. The canvas's frame command buffer remains borrowed, as in earlier chapters.
 
@@ -163,7 +160,7 @@ Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from ch
 
     ```sh
     cmake --build build
-    ./build/vkcourse --png chapter12.png
+    ./build/vkcourse --png chapter13.png
     ./build/vkcourse
     ```
 
@@ -171,16 +168,16 @@ Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from ch
 
     ```powershell
     cmake --build build --config Release
-    .\build\Release\vkcourse.exe --png chapter12.png
+    .\build\Release\vkcourse.exe --png chapter13.png
     .\build\Release\vkcourse.exe
     ```
 
-The captured cube should look exactly like chapter 11. Its unchanged pixels are intentional: uploading an image does not make a shader use it. The completed upload and `validation errors: 0` confirm that the new resource path ran. Drag to rotate, scroll to zoom, and press **R** to reload the existing color shaders.
+The captured cube should match chapter 12 because uploading an image does not make a shader use it. Successful creation, submission, and `validation errors: 0` establish that Vulkan accepted the upload path and its synchronization; they do not prove that every intended checker byte is correct. Chapter 14 provides the visual check by sampling the image. Drag to rotate, scroll to zoom, and press **R** to reload the existing color-and-tint shaders.
 
 !!! tip "Try it"
 
     1. Change `TEXTURE_SIZE` to `32`. Image creation and the copy region both use this constant, so they change together.
-    2. Change the checker tile size from `8` to `4`. The uploaded pixels change, but the cube remains the same until chapter 13 samples them.
+    2. Change the checker tile size from `8` to `4`. The generated and uploaded pixels change, but the cube remains the same until chapter 14 samples them.
     3. Trace which object owns each byte copy: the C array, the staging buffer, and finally the GPU image.
 
 ??? info "Under the hood: an image upload"
@@ -200,17 +197,17 @@ The captured cube should look exactly like chapter 11. Its unchanged pixels are 
 ??? example "Full current listing"
 
     ```c
-    --8<-- "examples/c/vulkan/step12.c"
+    --8<-- "examples/c/vulkan/step13.c"
     ```
 
 ??? example "Current shader.vert"
 
     ```glsl
-    --8<-- "examples/c/vulkan/step12/shader.vert"
+    --8<-- "examples/c/vulkan/step13/shader.vert"
     ```
 
 ??? example "Current shader.frag"
 
     ```glsl
-    --8<-- "examples/c/vulkan/step12/shader.frag"
+    --8<-- "examples/c/vulkan/step13/shader.frag"
     ```

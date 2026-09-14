@@ -4,7 +4,7 @@
 
 ![A perspective cube ready for mouse rotation.](../assets/gpu-graphics/11-mouse-control.webp)
 
-Keep the cube, buffers, shader files, depth attachment, culling, and matrix push from chapter 10. Interaction changes CPU state, and the draw callback turns that state into the same 64-byte matrix. The shaders need no changes.
+Keep the cube, buffers, shader files, depth attachment, culling, and matrix push from chapter 10. Mouse events change controller state on the CPU. The draw callback asks those controllers for matrices, combines them, and copies the resulting 64-byte value into the push constants. The shaders receive only that matrix; they never see a mouse event, window coordinate, camera object, or arcball object.
 
 ## Create a camera and arcball
 
@@ -15,7 +15,7 @@ Include `<datoviz/controller.h>`. In `Renderer`, replace `start_ns`, `capture_ti
     DvzCamera* camera;
 ```
 
-Remove the `make_mvp()` helper; keep `multiply_mat4()`. The camera now supplies the view and projection, while the arcball supplies model rotation and modifies the view for pan and dolly. This also replaces the automatic pulse with pointer-controlled motion.
+Remove the `make_mvp()` helper; keep `multiply_mat4()`. A **camera** is CPU state and math that produces view and projection matrices. An **arcball** turns pointer motion into object rotation and view changes for pan and dolly. These objects replace the automatic pulse with interaction while preserving the shader's matrix interface.
 
 In `main()`, replace the clock initialization before `dvz_canvas_set_draw_callback()` with:
 
@@ -67,7 +67,7 @@ Replace the elapsed-time and `make_mvp()` code at the beginning of `draw()` with
     multiply_mat4(clip_correction, projection_view_model, push.mvp);
 ```
 
-The camera fills `view` and `proj`; the arcball fills `model` and applies pan/dolly to `view`. Calling them in that order matters. The camera uses framebuffer pixels for the projection aspect. The arcball uses the latest window size reported by the input router, because pointer positions are measured in window coordinates. These sizes may differ on a display with a high pixel density. Before any resize event arrives, the framebuffer extent is a usable fallback.
+The camera fills `view` and `proj`; the arcball fills `model` and applies pan and dolly to `view`. Calling them in that order matters. The camera uses framebuffer pixels for the projection aspect. The arcball uses the latest window size reported by the input router because pointer positions are measured in window coordinates. These sizes may differ on a display with a high pixel density. Before any resize event arrives, the framebuffer extent is a usable fallback. This is the complete input path: the host polls an event, the router updates the controllers, the controllers produce matrices, and the push-constant command copies those matrix bytes for the vertex shader.
 
 The camera helper currently produces OpenGL-style clip coordinates: z spans -w through w. Our Vulkan draw uses z from zero through w and a positive-height viewport. `clip_correction` flips y and changes z to `(z + w) / 2`, matching chapter 9's explicit projection. This correction belongs before the perspective divide.
 
@@ -135,4 +135,4 @@ cmake --build build
 - Why does the callback refresh the camera and arcball sizes?
 - What does the clip correction change before the perspective divide?
 
-You now have an interactive 3D cube. Next, upload a texture that later chapters will sample on its faces.
+You now have an interactive 3D cube. Next, give its fragment shader a material value through a uniform buffer and descriptor set.

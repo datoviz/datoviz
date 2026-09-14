@@ -4,11 +4,13 @@
 
 ![A colored square made from two triangles.](../assets/gpu-graphics/06-vertex-buffers.webp)
 
-The shader has owned the triangle's data until now. Real applications generate, load, and update geometry on the CPU, then place it in a buffer the GPU can read. You will define a vertex record, upload six records, and draw a square as two triangles.
+The shader has contained the triangle's data until now. Real applications generate, load, or update geometry on the CPU, then copy its bytes into a buffer the GPU can read. You will define a vertex record, upload six records, and draw a square as two triangles.
 
 The external shader files, **R** reload callback, and candidate-pipeline swap from chapter 5 stay in place. Shader modules may be destroyed after successful pipeline creation; this program keeps them with the pipeline so startup, reload, and cleanup share one ownership path. The pipeline now describes a vertex buffer, and the draw binds that buffer before requesting vertices.
 
 ## Describe one vertex
+
+A **vertex record** collects every attribute for one input vertex. This first record has a two-component position and a three-component color. The field names help the C reader, but the GPU sees only bytes; the pipeline description below tells it how to decode them.
 
 ```c
 typedef struct
@@ -47,7 +49,7 @@ void main()
 }
 ```
 
-The pipeline needs the same layout in Vulkan terms. A **binding** describes the byte stride between records. Each **attribute** maps a shader location to a format and byte offset within a record. `offsetof` asks C for the actual offsets instead of assuming that a struct has no padding.
+The pipeline needs the same layout in Vulkan terms. A vertex-buffer **binding** identifies one byte stream and its **stride**, the distance from one record to the next. A vertex **attribute** describes one value inside each record: the buffer binding that supplies it, the shader **location** that receives it, its numeric **format**, and its byte offset. A binding number chooses a byte stream; a location names a shader input. They happen to be small integers here, but they serve different purposes. `offsetof` asks C for the actual field offsets instead of assuming that a struct has no padding.
 
 ```c
     dvz_graphics_vertex_binding(
@@ -58,7 +60,7 @@ The pipeline needs the same layout in Vulkan terms. A **binding** describes the 
         renderer->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color));
 ```
 
-Locations 0 and 1 must agree with `in_position` and `in_color` in the vertex shader. A format mismatch does not convert arbitrary memory into the intended values; it makes the GPU interpret the same bytes differently.
+Locations 0 and 1 must agree with `in_position` and `in_color` in the vertex shader. `VK_FORMAT_R32G32_SFLOAT` reads two consecutive 32-bit floats, while `VK_FORMAT_R32G32B32_SFLOAT` reads three. A format mismatch does not convert arbitrary memory into the intended values; it makes vertex fetch interpret the same bytes differently before each vertex-shader invocation.
 
 ## Allocate and upload
 
@@ -77,7 +79,7 @@ Add `DvzBuffer* vertex_buffer;` to `Renderer`. In `main()`, after creating the p
     dvz_buffer_upload(renderer.vertex_buffer, 0, sizeof(VERTICES), VERTICES);
 ```
 
-This course starts with host-visible mapped memory because a direct upload keeps the data path easy to inspect. Device-local memory is often faster for frequently drawn static geometry, but filling it generally requires a host-visible staging buffer and a transfer command. Chapter 12 uses that two-step pattern for an image.
+The `DvzBuffer` is the durable GPU resource referenced by draw commands. This course starts with a host-visible mapped allocation, which lets the CPU copy bytes directly into memory the device can access and keeps the data path easy to inspect. A device-local allocation can offer better access for frequently drawn static geometry on some hardware, but filling it generally requires a host-visible staging buffer and a transfer command. The texture-upload chapter uses that two-step pattern for an image in chapter 13.
 
 `dvz_buffer_upload()` copies `VERTICES` before it returns, so the CPU array does not need to remain alive for the draw. The `DvzBuffer` and its Vulkan allocation do need to remain alive until submitted draws finish.
 
