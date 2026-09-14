@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 #include "obj.h"
+#include "_assertions.h"
 #include "datoviz/vk/memory.h"
 #include "datoviz/vklite/images.h"
 
