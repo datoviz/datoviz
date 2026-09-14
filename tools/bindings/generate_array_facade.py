@@ -79,6 +79,84 @@ def _nbytes_size(array, name):
     return int(array.nbytes)
 
 
+def _gui_strings(value, name, count=None, optional=False):
+    if value is None and optional:
+        return None, ()
+    if _raw_pointer(value):
+        if count is None:
+            raise TypeError(f'{name} count must be provided when passing a raw pointer')
+        return value, (value,)
+    try:
+        items = list(value)
+    except TypeError as exc:
+        raise TypeError(f'{name} must be a sequence of strings') from exc
+    if count is not None and len(items) != int(count):
+        raise ValueError(f'{name} length {len(items)} does not match row count {count}')
+    encoded = [_encode_string(item, f'{name}[{i}]') for i, item in enumerate(items)]
+    array = (ctypes.c_char_p * len(encoded))(*encoded) if encoded else None
+    return array, (array, encoded)
+
+
+def _gui_array(value, name, target, dtype=None, count=None, optional=False, shape_tail=None):
+    if value is None and optional:
+        return None, ()
+    if _raw_pointer(value):
+        if count is None:
+            raise TypeError(f'{name} count must be provided when passing a raw pointer')
+        return value, (value,)
+    array = np.asarray(value)
+    if dtype is not None and array.dtype != np.dtype(dtype):
+        raise ValueError(f'{name} must have dtype {np.dtype(dtype)}, got {array.dtype}')
+    if array.ndim == 0:
+        raise ValueError(f'{name} must be at least one-dimensional')
+    if shape_tail is not None and tuple(array.shape[1:]) != tuple(shape_tail):
+        raise ValueError(f'{name} must have shape (n, {", ".join(map(str, shape_tail))})')
+    if count is not None and array.shape[0] != int(count):
+        raise ValueError(f'{name} length {array.shape[0]} does not match row count {count}')
+    if not array.flags.c_contiguous:
+        array = np.ascontiguousarray(array)
+    pointer = ctypes.c_void_p(array.ctypes.data)
+    if target is not ctypes.c_void_p:
+        pointer = ctypes.cast(pointer, target)
+    return pointer, (array,)
+
+
+def _gui_records(value, record_type, name, count=None):
+    if _raw_pointer(value):
+        if count is None:
+            raise TypeError(f'{name} count must be provided when passing a raw pointer')
+        return value, (value,)
+    items = list(value)
+    if count is not None and len(items) != int(count):
+        raise ValueError(f'{name} length {len(items)} does not match expected count {count}')
+    records = (record_type * len(items))()
+    for i, item in enumerate(items):
+        if not isinstance(item, record_type):
+            raise TypeError(f'{name}[{i}] must be {record_type.__name__}')
+        records[i] = item
+    return records, (records,)
+
+
+def _gui_draw(raw_func, gui, widget, events, capacity):
+    if events is None:
+        if capacity is None:
+            capacity = 64
+        if int(capacity) < 0:
+            raise ValueError('capacity must be non-negative')
+        events = (_raw.DvzGuiDataEvent * int(capacity))()
+    elif isinstance(events, ctypes.Array):
+        capacity = len(events)
+    elif _raw_pointer(events):
+        if capacity is None:
+            raise TypeError('capacity must be provided for a raw event pointer')
+    else:
+        raise TypeError('events must be omitted, a ctypes array, or a raw pointer')
+    written = ctypes.c_uint32()
+    dropped = ctypes.c_uint32()
+    result = raw_func(gui, widget, events, int(capacity), ctypes.byref(written), ctypes.byref(dropped))
+    return result, [events[i] for i in range(min(written.value, int(capacity)))], dropped.value
+
+
 def _visual_data_updates_arg(updates):
     if isinstance(updates, dict):
         items = list(updates.items())
@@ -565,6 +643,16 @@ def _validate_policy(api: dict, policy: dict) -> None:
             'visual_data_updates',
             'axis_ticks',
             'colorbar_ticks',
+            'gui_tree_set_rows', 'gui_tree_set_swatches', 'gui_tree_set_styles',
+            'gui_tree_set_selection', 'gui_tree_set_expanded', 'gui_tree_set_visible',
+            'gui_tree_set_matches', 'gui_tree_draw', 'gui_table', 'gui_table_set_rows',
+            'gui_table_set_column_text', 'gui_table_set_column_int64',
+            'gui_table_set_column_double', 'gui_table_set_column_bool',
+            'gui_table_set_column_color', 'gui_table_set_styles',
+            'gui_table_set_selection', 'gui_table_set_visible', 'gui_table_set_matches',
+            'gui_table_draw', 'gui_tree_get_selection', 'gui_tree_get_expanded',
+            'gui_tree_get_filter', 'gui_table_get_selection', 'gui_table_get_filter',
+            'gui_table_get_sort',
         }:
             raise SystemExit(f'array_facade.{function_name} has unknown special wrapper {special}')
 
@@ -583,6 +671,21 @@ def _signature(function: dict, rules: dict) -> tuple[list[str], set[str]]:
 
 def _emit_wrapper(function: dict, rules: dict) -> str:
     name = function['name']
+    gui_special = rules.get('special')
+    gui_specials = {
+        'gui_tree_set_rows', 'gui_tree_set_swatches', 'gui_tree_set_styles',
+        'gui_tree_set_selection', 'gui_tree_set_expanded', 'gui_tree_set_visible',
+        'gui_tree_set_matches', 'gui_tree_draw', 'gui_table', 'gui_table_set_rows',
+        'gui_table_set_column_text', 'gui_table_set_column_int64',
+        'gui_table_set_column_double', 'gui_table_set_column_bool',
+        'gui_table_set_column_color', 'gui_table_set_styles',
+        'gui_table_set_selection', 'gui_table_set_visible', 'gui_table_set_matches',
+        'gui_table_draw', 'gui_tree_get_selection', 'gui_tree_get_expanded',
+        'gui_tree_get_filter', 'gui_table_get_selection', 'gui_table_get_filter',
+        'gui_table_get_sort',
+    }
+    if gui_special in gui_specials:
+        return _emit_gui_wrapper(gui_special)
     if name == 'dvz_visual_set_data_many':
         return '''\
 def dvz_visual_set_data_many(visual, updates, update_count=None):
@@ -698,6 +801,161 @@ dvz_colorbar_set_ticks.restype = getattr(_raw.dvz_colorbar_set_ticks, "restype",
     lines.append(f'{name}.argtypes = getattr(_raw.{name}, "argtypes", None)\n')
     lines.append(f'{name}.restype = getattr(_raw.{name}, "restype", None)\n\n\n')
     return ''.join(lines)
+
+
+def _emit_gui_wrapper(special: str) -> str:
+    common = "\n\n"
+    if special == 'gui_tree_set_rows':
+        body = '''def dvz_gui_tree_set_rows(tree, keys, parents, labels, secondary_labels=None, flags=0, row_count=None):
+    keys_ptr, keys_keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, row_count)
+    if row_count is None:
+        row_count = len(keys) if not _raw_pointer(keys) else None
+    parents_ptr, parents_keepalive = _gui_array(parents, 'parents', ctypes.POINTER(ctypes.c_uint32), np.uint32, row_count)
+    labels_ptr, labels_keepalive = _gui_strings(labels, 'labels', row_count)
+    secondary_ptr, secondary_keepalive = _gui_strings(secondary_labels, 'secondary_labels', row_count, optional=True)
+    return _raw.dvz_gui_tree_set_rows(tree, int(row_count), keys_ptr, parents_ptr, labels_ptr, secondary_ptr, flags)
+'''
+    elif special.startswith('gui_tree_set_'):
+        op = special.removeprefix('gui_tree_set_')
+        if op in {'swatches', 'styles', 'visible', 'matches'}:
+            arg = {'swatches': 'colors', 'styles': 'styles', 'visible': 'visible', 'matches': 'matches'}[op]
+            target = {'swatches': 'ctypes.POINTER(_raw.DvzColor)', 'styles': 'ctypes.POINTER(_raw.DvzGuiDataStyle)', 'visible': 'ctypes.POINTER(ctypes.c_bool)', 'matches': 'ctypes.POINTER(ctypes.c_bool)'}[op]
+            dtype = {'swatches': 'np.uint8', 'styles': 'None', 'visible': 'np.bool_', 'matches': 'np.bool_'}[op]
+            shape_tail = ', shape_tail=(4,)' if op == 'swatches' else ''
+            body = f'''def dvz_gui_tree_set_{op}(tree, {arg}, row_count=None):
+    if row_count is None and {arg} is not None and not _raw_pointer({arg}):
+        row_count = len({arg})
+    ptr, keepalive = _gui_records({arg}, _raw.DvzGuiDataStyle, '{arg}', row_count) if '{op}' == 'styles' else _gui_array({arg}, '{arg}', {target}, {dtype}, row_count, optional=True{shape_tail})
+    return _raw.dvz_gui_tree_set_{op}(tree, int(row_count or 0), ptr)
+'''
+        else:
+            body = f'''def dvz_gui_tree_set_{op}(tree, keys, key_count=None):
+    if key_count is None and not _raw_pointer(keys):
+        key_count = len(keys)
+    ptr, keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, key_count)
+    return _raw.dvz_gui_tree_set_{op}(tree, int(key_count or 0), ptr)
+'''
+    elif special == 'gui_tree_draw':
+        body = '''def dvz_gui_tree_draw(gui, tree, events=None, capacity=None):
+    return _gui_draw(_raw.dvz_gui_tree_draw, gui, tree, events, capacity)
+'''
+    elif special in {'gui_tree_get_selection', 'gui_tree_get_expanded', 'gui_table_get_selection'}:
+        function = special
+        body = f'''def dvz_{function}(widget):
+    count = _raw.dvz_{function}(widget, 0, None)
+    values = (ctypes.c_uint64 * int(count))() if count else None
+    if count:
+        _raw.dvz_{function}(widget, int(count), values)
+    return [] if not count else [int(values[i]) for i in range(int(count))]
+'''
+    elif special in {'gui_tree_get_filter', 'gui_table_get_filter'}:
+        function = special
+        body = f'''def dvz_{function}(widget):
+    size = _raw.dvz_{function}(widget, 0, None)
+    if not size:
+        return ''
+    buffer = ctypes.create_string_buffer(int(size))
+    _raw.dvz_{function}(widget, int(size), buffer)
+    return buffer.value.decode('utf-8')
+'''
+    elif special == 'gui_table':
+        body = '''def dvz_gui_table(widget_id, columns, flags=0, column_count=None):
+    widget_id = _encode_string(widget_id, 'widget_id')
+    if _raw_pointer(columns):
+        if column_count is None:
+            raise TypeError('column_count must be provided for a raw column pointer')
+        return _raw.dvz_gui_table(widget_id, int(column_count), columns, flags)
+    items = list(columns)
+    if column_count is not None and len(items) != int(column_count):
+        raise ValueError(f'columns length {len(items)} does not match column_count {column_count}')
+    records = (_raw.DvzGuiTableColumnDesc * len(items))()
+    keepalive = [widget_id]
+    allowed = {'struct_size', 'flags', 'column_id', 'type', 'initial_width', 'title', 'format', 'reserved'}
+    for i, item in enumerate(items):
+        if isinstance(item, dict):
+            item = dict(item)
+            unknown = sorted(set(item) - allowed)
+            if unknown:
+                raise TypeError(f'columns[{i}] has unknown fields: {", ".join(unknown)}')
+            title = _encode_string(item.get('title'), f'columns[{i}].title')
+            fmt = _encode_string(item.get('format'), f'columns[{i}].format')
+            record = _raw.dvz_gui_table_column_desc()
+            for key, value in item.items():
+                if key not in {'title', 'format'} and hasattr(record, key):
+                    setattr(record, key, value)
+            record.title, record.format = title, fmt
+            keepalive.extend((title, fmt))
+        elif isinstance(item, _raw.DvzGuiTableColumnDesc):
+            record = item
+        else:
+            raise TypeError(f'columns[{i}] must be a mapping or DvzGuiTableColumnDesc')
+        if not record.struct_size:
+            record.struct_size = ctypes.sizeof(_raw.DvzGuiTableColumnDesc)
+        records[i] = record
+    return _raw.dvz_gui_table(widget_id, len(records), records, flags)
+'''
+    elif special == 'gui_table_set_rows':
+        body = '''def dvz_gui_table_set_rows(table, keys, flags=0, row_count=None):
+    if row_count is None and not _raw_pointer(keys):
+        row_count = len(keys)
+    ptr, keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, row_count)
+    return _raw.dvz_gui_table_set_rows(table, int(row_count or 0), ptr, flags)
+'''
+    elif special == 'gui_table_set_column_text':
+        body = '''def dvz_gui_table_set_column_text(table, column_id, values, row_count=None):
+    if row_count is None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_strings(values, 'values', row_count)
+    return _raw.dvz_gui_table_set_column_text(table, column_id, int(row_count or 0), ptr)
+'''
+    elif special.startswith('gui_table_set_column_'):
+        op = special.removeprefix('gui_table_set_column_')
+        target = {'int64': 'ctypes.POINTER(ctypes.c_int64)', 'double': 'ctypes.POINTER(ctypes.c_double)', 'bool': 'ctypes.POINTER(ctypes.c_bool)', 'color': 'ctypes.POINTER(_raw.DvzColor)'}[op]
+        dtype = {'int64': 'np.int64', 'double': 'np.float64', 'bool': 'np.bool_', 'color': 'np.uint8'}[op]
+        shape_tail = ', shape_tail=(4,)' if op == 'color' else ''
+        body = f'''def dvz_gui_table_set_column_{op}(table, column_id, values, row_count=None):
+    if row_count is None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_array(values, 'values', {target}, {dtype}, row_count{shape_tail})
+    return _raw.dvz_gui_table_set_column_{op}(table, column_id, int(row_count or 0), ptr)
+'''
+    elif special == 'gui_table_set_styles':
+        body = '''def dvz_gui_table_set_styles(table, styles, style_count=None):
+    if style_count is None and not _raw_pointer(styles):
+        style_count = len(styles)
+    ptr, keepalive = _gui_records(styles, _raw.DvzGuiDataStyle, 'styles', style_count)
+    return _raw.dvz_gui_table_set_styles(table, int(style_count or 0), ptr)
+'''
+    elif special == 'gui_table_set_selection':
+        body = '''def dvz_gui_table_set_selection(table, keys, key_count=None):
+    if key_count is None and not _raw_pointer(keys):
+        key_count = len(keys)
+    ptr, keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, key_count)
+    return _raw.dvz_gui_table_set_selection(table, int(key_count or 0), ptr)
+'''
+    elif special in {'gui_table_set_visible', 'gui_table_set_matches'}:
+        op = special.removeprefix('gui_table_set_')
+        body = f'''def dvz_gui_table_set_{op}(table, values, row_count=None):
+    if row_count is None and values is not None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_array(values, 'values', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count, optional=True)
+    return _raw.dvz_gui_table_set_{op}(table, int(row_count or 0), ptr)
+'''
+    elif special == 'gui_table_draw':
+        body = '''def dvz_gui_table_draw(gui, table, events=None, capacity=None):
+    return _gui_draw(_raw.dvz_gui_table_draw, gui, table, events, capacity)
+'''
+    elif special == 'gui_table_get_sort':
+        body = '''def dvz_gui_table_get_sort(table):
+    column_id = ctypes.c_uint32()
+    direction = ctypes.c_int32()
+    result = _raw.dvz_gui_table_get_sort(table, ctypes.byref(column_id), ctypes.byref(direction))
+    return result, int(column_id.value), int(direction.value)
+'''
+    else:
+        raise SystemExit(f'unknown GUI facade special {special}')
+    name = body.split('def ', 1)[1].split('(', 1)[0]
+    return body + common + f'_raw_{name} = getattr(_raw, "{name}", None)\n{name}.__doc__ = getattr(_raw_{name}, "__doc__", None)\n{name}.argtypes = getattr(_raw_{name}, "argtypes", None)\n{name}.restype = getattr(_raw_{name}, "restype", None)\n\n\n'
 
 
 def generate(api: dict, policy: dict) -> str:

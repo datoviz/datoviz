@@ -130,6 +130,9 @@ layout_records:
     - DvzFieldRegion
     - DvzGuideHit
     - DvzGuideLayout
+    - DvzGuiDataEvent
+    - DvzGuiDataStyle
+    - DvzGuiTableColumnDesc
     - DvzInteropBufferExport
     - DvzInteropBufferExportConfig
     - DvzDrp2RenderPipelineDesc
@@ -445,6 +448,84 @@ array_facade:
         count_from: shape0
         dtype: uint32
         lifetime: copied_before_return
+
+  dvz_gui_tree_set_rows:
+    special: gui_tree_set_rows
+
+  dvz_gui_tree_set_swatches:
+    special: gui_tree_set_swatches
+
+  dvz_gui_tree_set_styles:
+    special: gui_tree_set_styles
+
+  dvz_gui_tree_set_selection:
+    special: gui_tree_set_selection
+
+  dvz_gui_tree_set_expanded:
+    special: gui_tree_set_expanded
+
+  dvz_gui_tree_set_visible:
+    special: gui_tree_set_visible
+
+  dvz_gui_tree_set_matches:
+    special: gui_tree_set_matches
+
+  dvz_gui_tree_draw:
+    special: gui_tree_draw
+
+  dvz_gui_tree_get_selection:
+    special: gui_tree_get_selection
+
+  dvz_gui_tree_get_expanded:
+    special: gui_tree_get_expanded
+
+  dvz_gui_tree_get_filter:
+    special: gui_tree_get_filter
+
+  dvz_gui_table:
+    special: gui_table
+
+  dvz_gui_table_set_rows:
+    special: gui_table_set_rows
+
+  dvz_gui_table_set_column_text:
+    special: gui_table_set_column_text
+
+  dvz_gui_table_set_column_int64:
+    special: gui_table_set_column_int64
+
+  dvz_gui_table_set_column_double:
+    special: gui_table_set_column_double
+
+  dvz_gui_table_set_column_bool:
+    special: gui_table_set_column_bool
+
+  dvz_gui_table_set_column_color:
+    special: gui_table_set_column_color
+
+  dvz_gui_table_set_styles:
+    special: gui_table_set_styles
+
+  dvz_gui_table_set_selection:
+    special: gui_table_set_selection
+
+  dvz_gui_table_set_visible:
+    special: gui_table_set_visible
+
+  dvz_gui_table_set_matches:
+    special: gui_table_set_matches
+
+  dvz_gui_table_draw:
+    special: gui_table_draw
+
+  dvz_gui_table_get_selection:
+    special: gui_table_get_selection
+
+  dvz_gui_table_get_filter:
+    special: gui_table_get_filter
+
+  dvz_gui_table_get_sort:
+    special: gui_table_get_sort
 
 skipped_functions:
   reason: >

@@ -63,6 +63,84 @@ def _nbytes_size(array, name):
     return int(array.nbytes)
 
 
+def _gui_strings(value, name, count=None, optional=False):
+    if value is None and optional:
+        return None, ()
+    if _raw_pointer(value):
+        if count is None:
+            raise TypeError(f'{name} count must be provided when passing a raw pointer')
+        return value, (value,)
+    try:
+        items = list(value)
+    except TypeError as exc:
+        raise TypeError(f'{name} must be a sequence of strings') from exc
+    if count is not None and len(items) != int(count):
+        raise ValueError(f'{name} length {len(items)} does not match row count {count}')
+    encoded = [_encode_string(item, f'{name}[{i}]') for i, item in enumerate(items)]
+    array = (ctypes.c_char_p * len(encoded))(*encoded) if encoded else None
+    return array, (array, encoded)
+
+
+def _gui_array(value, name, target, dtype=None, count=None, optional=False, shape_tail=None):
+    if value is None and optional:
+        return None, ()
+    if _raw_pointer(value):
+        if count is None:
+            raise TypeError(f'{name} count must be provided when passing a raw pointer')
+        return value, (value,)
+    array = np.asarray(value)
+    if dtype is not None and array.dtype != np.dtype(dtype):
+        raise ValueError(f'{name} must have dtype {np.dtype(dtype)}, got {array.dtype}')
+    if array.ndim == 0:
+        raise ValueError(f'{name} must be at least one-dimensional')
+    if shape_tail is not None and tuple(array.shape[1:]) != tuple(shape_tail):
+        raise ValueError(f'{name} must have shape (n, {", ".join(map(str, shape_tail))})')
+    if count is not None and array.shape[0] != int(count):
+        raise ValueError(f'{name} length {array.shape[0]} does not match row count {count}')
+    if not array.flags.c_contiguous:
+        array = np.ascontiguousarray(array)
+    pointer = ctypes.c_void_p(array.ctypes.data)
+    if target is not ctypes.c_void_p:
+        pointer = ctypes.cast(pointer, target)
+    return pointer, (array,)
+
+
+def _gui_records(value, record_type, name, count=None):
+    if _raw_pointer(value):
+        if count is None:
+            raise TypeError(f'{name} count must be provided when passing a raw pointer')
+        return value, (value,)
+    items = list(value)
+    if count is not None and len(items) != int(count):
+        raise ValueError(f'{name} length {len(items)} does not match expected count {count}')
+    records = (record_type * len(items))()
+    for i, item in enumerate(items):
+        if not isinstance(item, record_type):
+            raise TypeError(f'{name}[{i}] must be {record_type.__name__}')
+        records[i] = item
+    return records, (records,)
+
+
+def _gui_draw(raw_func, gui, widget, events, capacity):
+    if events is None:
+        if capacity is None:
+            capacity = 64
+        if int(capacity) < 0:
+            raise ValueError('capacity must be non-negative')
+        events = (_raw.DvzGuiDataEvent * int(capacity))()
+    elif isinstance(events, ctypes.Array):
+        capacity = len(events)
+    elif _raw_pointer(events):
+        if capacity is None:
+            raise TypeError('capacity must be provided for a raw event pointer')
+    else:
+        raise TypeError('events must be omitted, a ctypes array, or a raw pointer')
+    written = ctypes.c_uint32()
+    dropped = ctypes.c_uint32()
+    result = raw_func(gui, widget, events, int(capacity), ctypes.byref(written), ctypes.byref(dropped))
+    return result, [events[i] for i in range(min(written.value, int(capacity)))], dropped.value
+
+
 def _visual_data_updates_arg(updates):
     if isinstance(updates, dict):
         items = list(updates.items())
@@ -545,6 +623,377 @@ dvz_colorbar_set_ticks.argtypes = getattr(_raw.dvz_colorbar_set_ticks, "argtypes
 dvz_colorbar_set_ticks.restype = getattr(_raw.dvz_colorbar_set_ticks, "restype", None)
 
 
+def dvz_gui_table(widget_id, columns, flags=0, column_count=None):
+    widget_id = _encode_string(widget_id, 'widget_id')
+    if _raw_pointer(columns):
+        if column_count is None:
+            raise TypeError('column_count must be provided for a raw column pointer')
+        return _raw.dvz_gui_table(widget_id, int(column_count), columns, flags)
+    items = list(columns)
+    if column_count is not None and len(items) != int(column_count):
+        raise ValueError(f'columns length {len(items)} does not match column_count {column_count}')
+    records = (_raw.DvzGuiTableColumnDesc * len(items))()
+    keepalive = [widget_id]
+    allowed = {'struct_size', 'flags', 'column_id', 'type', 'initial_width', 'title', 'format', 'reserved'}
+    for i, item in enumerate(items):
+        if isinstance(item, dict):
+            item = dict(item)
+            unknown = sorted(set(item) - allowed)
+            if unknown:
+                raise TypeError(f'columns[{i}] has unknown fields: {", ".join(unknown)}')
+            title = _encode_string(item.get('title'), f'columns[{i}].title')
+            fmt = _encode_string(item.get('format'), f'columns[{i}].format')
+            record = _raw.dvz_gui_table_column_desc()
+            for key, value in item.items():
+                if key not in {'title', 'format'} and hasattr(record, key):
+                    setattr(record, key, value)
+            record.title, record.format = title, fmt
+            keepalive.extend((title, fmt))
+        elif isinstance(item, _raw.DvzGuiTableColumnDesc):
+            record = item
+        else:
+            raise TypeError(f'columns[{i}] must be a mapping or DvzGuiTableColumnDesc')
+        if not record.struct_size:
+            record.struct_size = ctypes.sizeof(_raw.DvzGuiTableColumnDesc)
+        records[i] = record
+    return _raw.dvz_gui_table(widget_id, len(records), records, flags)
+
+
+_raw_dvz_gui_table = getattr(_raw, "dvz_gui_table", None)
+dvz_gui_table.__doc__ = getattr(_raw_dvz_gui_table, "__doc__", None)
+dvz_gui_table.argtypes = getattr(_raw_dvz_gui_table, "argtypes", None)
+dvz_gui_table.restype = getattr(_raw_dvz_gui_table, "restype", None)
+
+
+def dvz_gui_table_draw(gui, table, events=None, capacity=None):
+    return _gui_draw(_raw.dvz_gui_table_draw, gui, table, events, capacity)
+
+
+_raw_dvz_gui_table_draw = getattr(_raw, "dvz_gui_table_draw", None)
+dvz_gui_table_draw.__doc__ = getattr(_raw_dvz_gui_table_draw, "__doc__", None)
+dvz_gui_table_draw.argtypes = getattr(_raw_dvz_gui_table_draw, "argtypes", None)
+dvz_gui_table_draw.restype = getattr(_raw_dvz_gui_table_draw, "restype", None)
+
+
+def dvz_gui_table_get_filter(widget):
+    size = _raw.dvz_gui_table_get_filter(widget, 0, None)
+    if not size:
+        return ''
+    buffer = ctypes.create_string_buffer(int(size))
+    _raw.dvz_gui_table_get_filter(widget, int(size), buffer)
+    return buffer.value.decode('utf-8')
+
+
+_raw_dvz_gui_table_get_filter = getattr(_raw, "dvz_gui_table_get_filter", None)
+dvz_gui_table_get_filter.__doc__ = getattr(_raw_dvz_gui_table_get_filter, "__doc__", None)
+dvz_gui_table_get_filter.argtypes = getattr(_raw_dvz_gui_table_get_filter, "argtypes", None)
+dvz_gui_table_get_filter.restype = getattr(_raw_dvz_gui_table_get_filter, "restype", None)
+
+
+def dvz_gui_table_get_selection(widget):
+    count = _raw.dvz_gui_table_get_selection(widget, 0, None)
+    values = (ctypes.c_uint64 * int(count))() if count else None
+    if count:
+        _raw.dvz_gui_table_get_selection(widget, int(count), values)
+    return [] if not count else [int(values[i]) for i in range(int(count))]
+
+
+_raw_dvz_gui_table_get_selection = getattr(_raw, "dvz_gui_table_get_selection", None)
+dvz_gui_table_get_selection.__doc__ = getattr(_raw_dvz_gui_table_get_selection, "__doc__", None)
+dvz_gui_table_get_selection.argtypes = getattr(_raw_dvz_gui_table_get_selection, "argtypes", None)
+dvz_gui_table_get_selection.restype = getattr(_raw_dvz_gui_table_get_selection, "restype", None)
+
+
+def dvz_gui_table_get_sort(table):
+    column_id = ctypes.c_uint32()
+    direction = ctypes.c_int32()
+    result = _raw.dvz_gui_table_get_sort(table, ctypes.byref(column_id), ctypes.byref(direction))
+    return result, int(column_id.value), int(direction.value)
+
+
+_raw_dvz_gui_table_get_sort = getattr(_raw, "dvz_gui_table_get_sort", None)
+dvz_gui_table_get_sort.__doc__ = getattr(_raw_dvz_gui_table_get_sort, "__doc__", None)
+dvz_gui_table_get_sort.argtypes = getattr(_raw_dvz_gui_table_get_sort, "argtypes", None)
+dvz_gui_table_get_sort.restype = getattr(_raw_dvz_gui_table_get_sort, "restype", None)
+
+
+def dvz_gui_table_set_column_bool(table, column_id, values, row_count=None):
+    if row_count is None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_array(values, 'values', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count)
+    return _raw.dvz_gui_table_set_column_bool(table, column_id, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_column_bool = getattr(_raw, "dvz_gui_table_set_column_bool", None)
+dvz_gui_table_set_column_bool.__doc__ = getattr(_raw_dvz_gui_table_set_column_bool, "__doc__", None)
+dvz_gui_table_set_column_bool.argtypes = getattr(_raw_dvz_gui_table_set_column_bool, "argtypes", None)
+dvz_gui_table_set_column_bool.restype = getattr(_raw_dvz_gui_table_set_column_bool, "restype", None)
+
+
+def dvz_gui_table_set_column_color(table, column_id, values, row_count=None):
+    if row_count is None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_array(values, 'values', ctypes.POINTER(_raw.DvzColor), np.uint8, row_count, shape_tail=(4,))
+    return _raw.dvz_gui_table_set_column_color(table, column_id, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_column_color = getattr(_raw, "dvz_gui_table_set_column_color", None)
+dvz_gui_table_set_column_color.__doc__ = getattr(_raw_dvz_gui_table_set_column_color, "__doc__", None)
+dvz_gui_table_set_column_color.argtypes = getattr(_raw_dvz_gui_table_set_column_color, "argtypes", None)
+dvz_gui_table_set_column_color.restype = getattr(_raw_dvz_gui_table_set_column_color, "restype", None)
+
+
+def dvz_gui_table_set_column_double(table, column_id, values, row_count=None):
+    if row_count is None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_array(values, 'values', ctypes.POINTER(ctypes.c_double), np.float64, row_count)
+    return _raw.dvz_gui_table_set_column_double(table, column_id, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_column_double = getattr(_raw, "dvz_gui_table_set_column_double", None)
+dvz_gui_table_set_column_double.__doc__ = getattr(_raw_dvz_gui_table_set_column_double, "__doc__", None)
+dvz_gui_table_set_column_double.argtypes = getattr(_raw_dvz_gui_table_set_column_double, "argtypes", None)
+dvz_gui_table_set_column_double.restype = getattr(_raw_dvz_gui_table_set_column_double, "restype", None)
+
+
+def dvz_gui_table_set_column_int64(table, column_id, values, row_count=None):
+    if row_count is None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_array(values, 'values', ctypes.POINTER(ctypes.c_int64), np.int64, row_count)
+    return _raw.dvz_gui_table_set_column_int64(table, column_id, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_column_int64 = getattr(_raw, "dvz_gui_table_set_column_int64", None)
+dvz_gui_table_set_column_int64.__doc__ = getattr(_raw_dvz_gui_table_set_column_int64, "__doc__", None)
+dvz_gui_table_set_column_int64.argtypes = getattr(_raw_dvz_gui_table_set_column_int64, "argtypes", None)
+dvz_gui_table_set_column_int64.restype = getattr(_raw_dvz_gui_table_set_column_int64, "restype", None)
+
+
+def dvz_gui_table_set_column_text(table, column_id, values, row_count=None):
+    if row_count is None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_strings(values, 'values', row_count)
+    return _raw.dvz_gui_table_set_column_text(table, column_id, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_column_text = getattr(_raw, "dvz_gui_table_set_column_text", None)
+dvz_gui_table_set_column_text.__doc__ = getattr(_raw_dvz_gui_table_set_column_text, "__doc__", None)
+dvz_gui_table_set_column_text.argtypes = getattr(_raw_dvz_gui_table_set_column_text, "argtypes", None)
+dvz_gui_table_set_column_text.restype = getattr(_raw_dvz_gui_table_set_column_text, "restype", None)
+
+
+def dvz_gui_table_set_matches(table, values, row_count=None):
+    if row_count is None and values is not None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_array(values, 'values', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count, optional=True)
+    return _raw.dvz_gui_table_set_matches(table, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_matches = getattr(_raw, "dvz_gui_table_set_matches", None)
+dvz_gui_table_set_matches.__doc__ = getattr(_raw_dvz_gui_table_set_matches, "__doc__", None)
+dvz_gui_table_set_matches.argtypes = getattr(_raw_dvz_gui_table_set_matches, "argtypes", None)
+dvz_gui_table_set_matches.restype = getattr(_raw_dvz_gui_table_set_matches, "restype", None)
+
+
+def dvz_gui_table_set_rows(table, keys, flags=0, row_count=None):
+    if row_count is None and not _raw_pointer(keys):
+        row_count = len(keys)
+    ptr, keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, row_count)
+    return _raw.dvz_gui_table_set_rows(table, int(row_count or 0), ptr, flags)
+
+
+_raw_dvz_gui_table_set_rows = getattr(_raw, "dvz_gui_table_set_rows", None)
+dvz_gui_table_set_rows.__doc__ = getattr(_raw_dvz_gui_table_set_rows, "__doc__", None)
+dvz_gui_table_set_rows.argtypes = getattr(_raw_dvz_gui_table_set_rows, "argtypes", None)
+dvz_gui_table_set_rows.restype = getattr(_raw_dvz_gui_table_set_rows, "restype", None)
+
+
+def dvz_gui_table_set_selection(table, keys, key_count=None):
+    if key_count is None and not _raw_pointer(keys):
+        key_count = len(keys)
+    ptr, keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, key_count)
+    return _raw.dvz_gui_table_set_selection(table, int(key_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_selection = getattr(_raw, "dvz_gui_table_set_selection", None)
+dvz_gui_table_set_selection.__doc__ = getattr(_raw_dvz_gui_table_set_selection, "__doc__", None)
+dvz_gui_table_set_selection.argtypes = getattr(_raw_dvz_gui_table_set_selection, "argtypes", None)
+dvz_gui_table_set_selection.restype = getattr(_raw_dvz_gui_table_set_selection, "restype", None)
+
+
+def dvz_gui_table_set_styles(table, styles, style_count=None):
+    if style_count is None and not _raw_pointer(styles):
+        style_count = len(styles)
+    ptr, keepalive = _gui_records(styles, _raw.DvzGuiDataStyle, 'styles', style_count)
+    return _raw.dvz_gui_table_set_styles(table, int(style_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_styles = getattr(_raw, "dvz_gui_table_set_styles", None)
+dvz_gui_table_set_styles.__doc__ = getattr(_raw_dvz_gui_table_set_styles, "__doc__", None)
+dvz_gui_table_set_styles.argtypes = getattr(_raw_dvz_gui_table_set_styles, "argtypes", None)
+dvz_gui_table_set_styles.restype = getattr(_raw_dvz_gui_table_set_styles, "restype", None)
+
+
+def dvz_gui_table_set_visible(table, values, row_count=None):
+    if row_count is None and values is not None and not _raw_pointer(values):
+        row_count = len(values)
+    ptr, keepalive = _gui_array(values, 'values', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count, optional=True)
+    return _raw.dvz_gui_table_set_visible(table, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_table_set_visible = getattr(_raw, "dvz_gui_table_set_visible", None)
+dvz_gui_table_set_visible.__doc__ = getattr(_raw_dvz_gui_table_set_visible, "__doc__", None)
+dvz_gui_table_set_visible.argtypes = getattr(_raw_dvz_gui_table_set_visible, "argtypes", None)
+dvz_gui_table_set_visible.restype = getattr(_raw_dvz_gui_table_set_visible, "restype", None)
+
+
+def dvz_gui_tree_draw(gui, tree, events=None, capacity=None):
+    return _gui_draw(_raw.dvz_gui_tree_draw, gui, tree, events, capacity)
+
+
+_raw_dvz_gui_tree_draw = getattr(_raw, "dvz_gui_tree_draw", None)
+dvz_gui_tree_draw.__doc__ = getattr(_raw_dvz_gui_tree_draw, "__doc__", None)
+dvz_gui_tree_draw.argtypes = getattr(_raw_dvz_gui_tree_draw, "argtypes", None)
+dvz_gui_tree_draw.restype = getattr(_raw_dvz_gui_tree_draw, "restype", None)
+
+
+def dvz_gui_tree_get_expanded(widget):
+    count = _raw.dvz_gui_tree_get_expanded(widget, 0, None)
+    values = (ctypes.c_uint64 * int(count))() if count else None
+    if count:
+        _raw.dvz_gui_tree_get_expanded(widget, int(count), values)
+    return [] if not count else [int(values[i]) for i in range(int(count))]
+
+
+_raw_dvz_gui_tree_get_expanded = getattr(_raw, "dvz_gui_tree_get_expanded", None)
+dvz_gui_tree_get_expanded.__doc__ = getattr(_raw_dvz_gui_tree_get_expanded, "__doc__", None)
+dvz_gui_tree_get_expanded.argtypes = getattr(_raw_dvz_gui_tree_get_expanded, "argtypes", None)
+dvz_gui_tree_get_expanded.restype = getattr(_raw_dvz_gui_tree_get_expanded, "restype", None)
+
+
+def dvz_gui_tree_get_filter(widget):
+    size = _raw.dvz_gui_tree_get_filter(widget, 0, None)
+    if not size:
+        return ''
+    buffer = ctypes.create_string_buffer(int(size))
+    _raw.dvz_gui_tree_get_filter(widget, int(size), buffer)
+    return buffer.value.decode('utf-8')
+
+
+_raw_dvz_gui_tree_get_filter = getattr(_raw, "dvz_gui_tree_get_filter", None)
+dvz_gui_tree_get_filter.__doc__ = getattr(_raw_dvz_gui_tree_get_filter, "__doc__", None)
+dvz_gui_tree_get_filter.argtypes = getattr(_raw_dvz_gui_tree_get_filter, "argtypes", None)
+dvz_gui_tree_get_filter.restype = getattr(_raw_dvz_gui_tree_get_filter, "restype", None)
+
+
+def dvz_gui_tree_get_selection(widget):
+    count = _raw.dvz_gui_tree_get_selection(widget, 0, None)
+    values = (ctypes.c_uint64 * int(count))() if count else None
+    if count:
+        _raw.dvz_gui_tree_get_selection(widget, int(count), values)
+    return [] if not count else [int(values[i]) for i in range(int(count))]
+
+
+_raw_dvz_gui_tree_get_selection = getattr(_raw, "dvz_gui_tree_get_selection", None)
+dvz_gui_tree_get_selection.__doc__ = getattr(_raw_dvz_gui_tree_get_selection, "__doc__", None)
+dvz_gui_tree_get_selection.argtypes = getattr(_raw_dvz_gui_tree_get_selection, "argtypes", None)
+dvz_gui_tree_get_selection.restype = getattr(_raw_dvz_gui_tree_get_selection, "restype", None)
+
+
+def dvz_gui_tree_set_expanded(tree, keys, key_count=None):
+    if key_count is None and not _raw_pointer(keys):
+        key_count = len(keys)
+    ptr, keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, key_count)
+    return _raw.dvz_gui_tree_set_expanded(tree, int(key_count or 0), ptr)
+
+
+_raw_dvz_gui_tree_set_expanded = getattr(_raw, "dvz_gui_tree_set_expanded", None)
+dvz_gui_tree_set_expanded.__doc__ = getattr(_raw_dvz_gui_tree_set_expanded, "__doc__", None)
+dvz_gui_tree_set_expanded.argtypes = getattr(_raw_dvz_gui_tree_set_expanded, "argtypes", None)
+dvz_gui_tree_set_expanded.restype = getattr(_raw_dvz_gui_tree_set_expanded, "restype", None)
+
+
+def dvz_gui_tree_set_matches(tree, matches, row_count=None):
+    if row_count is None and matches is not None and not _raw_pointer(matches):
+        row_count = len(matches)
+    ptr, keepalive = _gui_records(matches, _raw.DvzGuiDataStyle, 'matches', row_count) if 'matches' == 'styles' else _gui_array(matches, 'matches', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count, optional=True)
+    return _raw.dvz_gui_tree_set_matches(tree, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_tree_set_matches = getattr(_raw, "dvz_gui_tree_set_matches", None)
+dvz_gui_tree_set_matches.__doc__ = getattr(_raw_dvz_gui_tree_set_matches, "__doc__", None)
+dvz_gui_tree_set_matches.argtypes = getattr(_raw_dvz_gui_tree_set_matches, "argtypes", None)
+dvz_gui_tree_set_matches.restype = getattr(_raw_dvz_gui_tree_set_matches, "restype", None)
+
+
+def dvz_gui_tree_set_rows(tree, keys, parents, labels, secondary_labels=None, flags=0, row_count=None):
+    keys_ptr, keys_keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, row_count)
+    if row_count is None:
+        row_count = len(keys) if not _raw_pointer(keys) else None
+    parents_ptr, parents_keepalive = _gui_array(parents, 'parents', ctypes.POINTER(ctypes.c_uint32), np.uint32, row_count)
+    labels_ptr, labels_keepalive = _gui_strings(labels, 'labels', row_count)
+    secondary_ptr, secondary_keepalive = _gui_strings(secondary_labels, 'secondary_labels', row_count, optional=True)
+    return _raw.dvz_gui_tree_set_rows(tree, int(row_count), keys_ptr, parents_ptr, labels_ptr, secondary_ptr, flags)
+
+
+_raw_dvz_gui_tree_set_rows = getattr(_raw, "dvz_gui_tree_set_rows", None)
+dvz_gui_tree_set_rows.__doc__ = getattr(_raw_dvz_gui_tree_set_rows, "__doc__", None)
+dvz_gui_tree_set_rows.argtypes = getattr(_raw_dvz_gui_tree_set_rows, "argtypes", None)
+dvz_gui_tree_set_rows.restype = getattr(_raw_dvz_gui_tree_set_rows, "restype", None)
+
+
+def dvz_gui_tree_set_selection(tree, keys, key_count=None):
+    if key_count is None and not _raw_pointer(keys):
+        key_count = len(keys)
+    ptr, keepalive = _gui_array(keys, 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, key_count)
+    return _raw.dvz_gui_tree_set_selection(tree, int(key_count or 0), ptr)
+
+
+_raw_dvz_gui_tree_set_selection = getattr(_raw, "dvz_gui_tree_set_selection", None)
+dvz_gui_tree_set_selection.__doc__ = getattr(_raw_dvz_gui_tree_set_selection, "__doc__", None)
+dvz_gui_tree_set_selection.argtypes = getattr(_raw_dvz_gui_tree_set_selection, "argtypes", None)
+dvz_gui_tree_set_selection.restype = getattr(_raw_dvz_gui_tree_set_selection, "restype", None)
+
+
+def dvz_gui_tree_set_styles(tree, styles, row_count=None):
+    if row_count is None and styles is not None and not _raw_pointer(styles):
+        row_count = len(styles)
+    ptr, keepalive = _gui_records(styles, _raw.DvzGuiDataStyle, 'styles', row_count) if 'styles' == 'styles' else _gui_array(styles, 'styles', ctypes.POINTER(_raw.DvzGuiDataStyle), None, row_count, optional=True)
+    return _raw.dvz_gui_tree_set_styles(tree, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_tree_set_styles = getattr(_raw, "dvz_gui_tree_set_styles", None)
+dvz_gui_tree_set_styles.__doc__ = getattr(_raw_dvz_gui_tree_set_styles, "__doc__", None)
+dvz_gui_tree_set_styles.argtypes = getattr(_raw_dvz_gui_tree_set_styles, "argtypes", None)
+dvz_gui_tree_set_styles.restype = getattr(_raw_dvz_gui_tree_set_styles, "restype", None)
+
+
+def dvz_gui_tree_set_swatches(tree, colors, row_count=None):
+    if row_count is None and colors is not None and not _raw_pointer(colors):
+        row_count = len(colors)
+    ptr, keepalive = _gui_records(colors, _raw.DvzGuiDataStyle, 'colors', row_count) if 'swatches' == 'styles' else _gui_array(colors, 'colors', ctypes.POINTER(_raw.DvzColor), np.uint8, row_count, optional=True, shape_tail=(4,))
+    return _raw.dvz_gui_tree_set_swatches(tree, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_tree_set_swatches = getattr(_raw, "dvz_gui_tree_set_swatches", None)
+dvz_gui_tree_set_swatches.__doc__ = getattr(_raw_dvz_gui_tree_set_swatches, "__doc__", None)
+dvz_gui_tree_set_swatches.argtypes = getattr(_raw_dvz_gui_tree_set_swatches, "argtypes", None)
+dvz_gui_tree_set_swatches.restype = getattr(_raw_dvz_gui_tree_set_swatches, "restype", None)
+
+
+def dvz_gui_tree_set_visible(tree, visible, row_count=None):
+    if row_count is None and visible is not None and not _raw_pointer(visible):
+        row_count = len(visible)
+    ptr, keepalive = _gui_records(visible, _raw.DvzGuiDataStyle, 'visible', row_count) if 'visible' == 'styles' else _gui_array(visible, 'visible', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count, optional=True)
+    return _raw.dvz_gui_tree_set_visible(tree, int(row_count or 0), ptr)
+
+
+_raw_dvz_gui_tree_set_visible = getattr(_raw, "dvz_gui_tree_set_visible", None)
+dvz_gui_tree_set_visible.__doc__ = getattr(_raw_dvz_gui_tree_set_visible, "__doc__", None)
+dvz_gui_tree_set_visible.argtypes = getattr(_raw_dvz_gui_tree_set_visible, "argtypes", None)
+dvz_gui_tree_set_visible.restype = getattr(_raw_dvz_gui_tree_set_visible, "restype", None)
+
+
 def dvz_scene_buffer_set_data(buffer, data, byte_size=None):
     _data_ptr, _data_array = _array_arg(data, 'data', _raw.dvz_scene_buffer_set_data, 1, None)
     if _data_array is not None:
@@ -782,7 +1231,7 @@ dvz_visual_set_index_data.argtypes = getattr(_raw.dvz_visual_set_index_data, "ar
 dvz_visual_set_index_data.restype = getattr(_raw.dvz_visual_set_index_data, "restype", None)
 
 
-_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data']
+_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_gui_table', 'dvz_gui_table_draw', 'dvz_gui_table_get_filter', 'dvz_gui_table_get_selection', 'dvz_gui_table_get_sort', 'dvz_gui_table_set_column_bool', 'dvz_gui_table_set_column_color', 'dvz_gui_table_set_column_double', 'dvz_gui_table_set_column_int64', 'dvz_gui_table_set_column_text', 'dvz_gui_table_set_matches', 'dvz_gui_table_set_rows', 'dvz_gui_table_set_selection', 'dvz_gui_table_set_styles', 'dvz_gui_table_set_visible', 'dvz_gui_tree_draw', 'dvz_gui_tree_get_expanded', 'dvz_gui_tree_get_filter', 'dvz_gui_tree_get_selection', 'dvz_gui_tree_set_expanded', 'dvz_gui_tree_set_matches', 'dvz_gui_tree_set_rows', 'dvz_gui_tree_set_selection', 'dvz_gui_tree_set_styles', 'dvz_gui_tree_set_swatches', 'dvz_gui_tree_set_visible', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data']
 
 for _name in getattr(_raw, "__all__", dir(_raw)):
     if _name not in globals():
