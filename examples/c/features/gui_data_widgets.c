@@ -24,13 +24,14 @@
 
 #include "datoviz/app.h"
 #include "datoviz/gui.h"
+#include "datoviz/imgui.h"
 #include "datoviz/scene.h"
 #include "example_common.h"
 #include "example_style.h"
 
 #define WIDTH      EXAMPLE_WINDOW_WIDTH
 #define HEIGHT     EXAMPLE_WINDOW_HEIGHT
-#define TREE_ROWS  10u
+#define TREE_ROWS  22u
 #define TABLE_ROWS 6u
 
 typedef struct GuiDataWidgetsState
@@ -63,13 +64,25 @@ static void _gui_data_widgets_callback(DvzGui* gui, DvzView* view, void* user_da
     uint32_t dropped = 0;
     if (dvz_gui_begin(gui, "Retained data widgets", NULL, 0))
     {
+        igSetWindowSize_Vec2((ImVec2){980, 500}, ImGuiCond_FirstUseEver);
         dvz_gui_text(gui, "Allen-inspired hierarchy and typed region table");
-        dvz_gui_separator_text(gui, "Atlas hierarchy");
+        igSpacing();
+        (void)igBeginChild_Str(
+            "atlas_hierarchy_panel", (ImVec2){395, 440}, ImGuiChildFlags_None,
+            ImGuiWindowFlags_None);
+        igTextDisabled("ATLAS HIERARCHY");
         (void)dvz_gui_tree_draw(gui, state->tree, events, 8, &written, &dropped);
         _record_events(state, events, written, dropped);
-        dvz_gui_separator_text(gui, "Mapped regions");
+        igEndChild();
+        igSameLine(0, 12);
+        (void)igBeginChild_Str(
+            "mapped_regions_panel", (ImVec2){0, 440}, ImGuiChildFlags_None,
+            ImGuiWindowFlags_None);
+        igTextDisabled("MAPPED REGIONS");
         (void)dvz_gui_table_draw(gui, state->table, events, 8, &written, &dropped);
         _record_events(state, events, written, dropped);
+        igEndChild();
+        igSpacing();
         dvz_gui_text(gui, state->status);
     }
     dvz_gui_end(gui);
@@ -77,13 +90,16 @@ static void _gui_data_widgets_callback(DvzGui* gui, DvzView* view, void* user_da
 
 static bool _configure_widgets(GuiDataWidgetsState* state)
 {
-    static const uint64_t tree_keys[TREE_ROWS] = {997,  8,   567, 688,  315,
-                                                  1089, 623, 343, 1129, 549};
+    static const uint64_t tree_keys[TREE_ROWS] = {
+        997, 8, 567, 688, 315, 385, 500, 453, 1089, 382, 726, 623, 477, 672, 56, 343, 1129,
+        549, 1097, 313, 302, 795,
+    };
     static const uint32_t tree_parents[TREE_ROWS] = {
-        UINT32_MAX, 0, 1, 2, 3, 2, 2, 1, 7, 8,
+        UINT32_MAX, 0, 1, 2, 3, 4, 4, 4, 2, 8, 8, 2, 11, 12, 12, 1, 15, 16, 16, 15, 19, 19,
     };
     static const char* const tree_labels[TREE_ROWS] = {
-        "root", "grey", "CH", "CTX", "Isocortex", "HPF", "CNU", "BS", "IB", "TH",
+        "root", "grey", "CH", "CTX", "Isocortex", "VISp", "MOp", "SSp", "HPF", "CA1",
+        "DG", "CNU", "STR", "CP", "ACB", "BS", "IB", "TH", "HY", "MB", "SCs", "PAG",
     };
     static const char* const tree_secondary[TREE_ROWS] = {
         "root",
@@ -91,11 +107,23 @@ static bool _configure_widgets(GuiDataWidgetsState* state)
         "Cerebrum",
         "Cerebral cortex",
         "Isocortex",
+        "Primary visual area",
+        "Primary motor area",
+        "Primary somatosensory area",
         "Hippocampal formation",
+        "Field CA1",
+        "Dentate gyrus",
         "Cerebral nuclei",
+        "Striatum",
+        "Caudoputamen",
+        "Nucleus accumbens",
         "Brain stem",
         "Interbrain",
         "Thalamus",
+        "Hypothalamus",
+        "Midbrain",
+        "Superior colliculus",
+        "Periaqueductal gray",
     };
     const DvzColor tree_swatches[TREE_ROWS] = {
         dvz_color_from_unit(0.95f, 0.95f, 0.95f, 1.0f),
@@ -103,11 +131,23 @@ static bool _configure_widgets(GuiDataWidgetsState* state)
         dvz_color_from_unit(0.65f, 0.86f, 0.91f, 1.0f),
         dvz_color_from_unit(0.55f, 0.88f, 0.60f, 1.0f),
         dvz_color_from_unit(0.35f, 0.95f, 0.43f, 1.0f),
+        dvz_color_from_unit(0.38f, 0.92f, 0.50f, 1.0f),
+        dvz_color_from_unit(0.42f, 0.86f, 0.48f, 1.0f),
+        dvz_color_from_unit(0.48f, 0.89f, 0.55f, 1.0f),
         dvz_color_from_unit(0.48f, 0.82f, 0.42f, 1.0f),
+        dvz_color_from_unit(0.55f, 0.86f, 0.55f, 1.0f),
+        dvz_color_from_unit(0.48f, 0.78f, 0.48f, 1.0f),
         dvz_color_from_unit(0.48f, 0.74f, 0.87f, 1.0f),
+        dvz_color_from_unit(0.45f, 0.70f, 0.85f, 1.0f),
+        dvz_color_from_unit(0.40f, 0.66f, 0.82f, 1.0f),
+        dvz_color_from_unit(0.50f, 0.72f, 0.88f, 1.0f),
         dvz_color_from_unit(0.98f, 0.37f, 0.48f, 1.0f),
         dvz_color_from_unit(0.98f, 0.37f, 0.48f, 1.0f),
         dvz_color_from_unit(0.98f, 0.43f, 0.50f, 1.0f),
+        dvz_color_from_unit(0.94f, 0.31f, 0.27f, 1.0f),
+        dvz_color_from_unit(0.92f, 0.30f, 0.82f, 1.0f),
+        dvz_color_from_unit(0.88f, 0.34f, 0.78f, 1.0f),
+        dvz_color_from_unit(0.82f, 0.28f, 0.72f, 1.0f),
     };
     DvzGuiDataStyle style = dvz_gui_data_style();
     style.row_key = 315;
@@ -192,7 +232,7 @@ int main(int argc, char** argv)
     view = dvz_view_window(app, figure, WIDTH, HEIGHT, "gui_data_widgets");
     EXAMPLE_CHECK(view != NULL, "dvz_view_window() failed (GLFW unavailable?)");
     DvzGuiConfig gui_config = dvz_gui_config();
-    gui_config.default_window_width = 640;
+    gui_config.default_window_width = 980;
     EXAMPLE_CHECK(dvz_view_gui(view, &gui_config) != NULL, "dvz_view_gui() failed");
     EXAMPLE_CHECK(_configure_widgets(&state), "failed to configure retained widgets");
     EXAMPLE_CHECK(

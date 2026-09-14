@@ -1401,8 +1401,9 @@ DvzResult dvz_gui_table_draw(
             &table->core, events, cap, written, dropped, DVZ_GUI_DATA_EVENT_FILTER_CHANGED, 0,
             UINT32_MAX, 0, _mods());
     }
-    ImGuiTableFlags tf = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg |
-                         ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY;
+    ImGuiTableFlags tf = ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerV |
+                         ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable |
+                         ImGuiTableFlags_ScrollY;
     bool sortable = false;
     for (uint32_t i = 0; i < table->column_count; i++)
         sortable |= table->columns[i].desc.flags & DVZ_GUI_TABLE_COLUMN_FLAGS_SORTABLE;
