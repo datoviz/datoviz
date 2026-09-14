@@ -946,6 +946,12 @@ DvzResult dvz_gui_tree_draw(
         for (uint32_t i = 0; i < tree->core.order_count; i++)
             if (tree->core.keys[tree->core.order[i]] == tree->reveal)
                 reveal_display = (int)i;
+    const ImGuiStyle& imgui_style = ImGui::GetStyle();
+    const float indent_spacing = imgui_style.IndentSpacing;
+    ImGui::PushStyleVar(
+        ImGuiStyleVar_FramePadding, ImVec2(imgui_style.FramePadding.x, 0.0f));
+    ImGui::PushStyleVar(
+        ImGuiStyleVar_ItemSpacing, ImVec2(imgui_style.ItemSpacing.x, 1.0f));
     ImGuiListClipper clip;
     clip.Begin((int)tree->core.order_count);
     if (reveal_display >= 0)
@@ -957,37 +963,49 @@ DvzResult dvz_gui_tree_draw(
             const DvzGuiDataStyle* style = _style(&tree->core, tree->core.keys[row]);
             bool disabled = style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_DISABLED);
             _push_id(&tree->core, row);
-            ImGui::Indent(tree->depths[row] * ImGui::GetTreeNodeToLabelSpacing());
+            const float indent = tree->depths[row] * indent_spacing;
+            const ImVec2 row_start = ImGui::GetCursorScreenPos();
+            const float row_height = ImGui::GetFontSize() + 2.0f;
             if (style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_BACKGROUND))
             {
-                ImVec2 a = ImGui::GetCursorScreenPos();
-                ImVec2 b(a.x + ImGui::GetContentRegionAvail().x, a.y + ImGui::GetFrameHeight());
+                ImVec2 b(
+                    ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x,
+                    row_start.y + row_height);
                 ImGui::GetWindowDrawList()->AddRectFilled(
-                    a, b, ImGui::ColorConvertFloat4ToU32(_color(style->background)));
-            }
-            if (style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_ACCENT))
-            {
-                ImVec2 a = ImGui::GetCursorScreenPos();
-                ImGui::GetWindowDrawList()->AddRectFilled(
-                    a, ImVec2(a.x + 3, a.y + ImGui::GetFrameHeight()),
-                    ImGui::ColorConvertFloat4ToU32(_color(style->accent)));
+                    row_start, b,
+                    ImGui::ColorConvertFloat4ToU32(_color(style->background)));
             }
             if (style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_FOREGROUND))
                 ImGui::PushStyleColor(ImGuiCol_Text, _color(style->foreground));
             if (disabled)
                 ImGui::BeginDisabled();
-            ImGui::SetNextItemOpen(tree->expanded[row], ImGuiCond_Always);
-            ImGuiTreeNodeFlags nf =
-                ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanAvailWidth |
-                ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-            if (!tree->branches[row])
-                nf |= ImGuiTreeNodeFlags_Leaf;
-            if (tree->core.selected[row])
-                nf |= ImGuiTreeNodeFlags_Selected;
-            ImGui::TreeNodeEx("##row", nf);
-            bool toggled = tree->branches[row] && ImGui::IsItemToggledOpen();
+            ImGui::Selectable(
+                "##selection", tree->core.selected[row],
+                ImGuiSelectableFlags_AllowOverlap | ImGuiSelectableFlags_AllowDoubleClick,
+                ImVec2(0, row_height));
             bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
             bool activated = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0);
+            const ImVec2 next_row = ImGui::GetCursorScreenPos();
+
+            if (style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_ACCENT))
+                ImGui::GetWindowDrawList()->AddRectFilled(
+                    row_start, ImVec2(row_start.x + 3, row_start.y + row_height),
+                    ImGui::ColorConvertFloat4ToU32(_color(style->accent)));
+
+            ImGui::SetCursorScreenPos(row_start);
+            if (indent > 0)
+                ImGui::Indent(indent);
+            bool toggled = false;
+            if (tree->branches[row])
+            {
+                ImGui::SetNextItemOpen(tree->expanded[row], ImGuiCond_Always);
+                ImGui::TreeNodeEx(
+                    "##disclosure",
+                    ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_OpenOnArrow);
+                toggled = ImGui::IsItemToggledOpen();
+            }
+            else
+                ImGui::Dummy(ImVec2(ImGui::GetTreeNodeToLabelSpacing(), row_height));
             if (toggled && !disabled)
             {
                 tree->expanded[row] = !tree->expanded[row];
@@ -1006,18 +1024,32 @@ DvzResult dvz_gui_tree_draw(
                     DVZ_GUI_DATA_EVENT_SELECTION_CHANGED, tree->core.keys[row], UINT32_MAX,
                     tree->core.selected[row], mods);
             }
-            ImGui::SameLine(0, 4);
+            ImGui::SameLine(0, 3);
             if (tree->swatches)
             {
+                const float swatch_size = ImGui::GetFontSize() * 0.80f;
                 ImGui::ColorButton(
-                    "##swatch", _color(tree->swatches[row]), ImGuiColorEditFlags_NoTooltip);
-                ImGui::SameLine();
+                    "##swatch", _color(tree->swatches[row]),
+                    ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop |
+                        ImGuiColorEditFlags_NoBorder,
+                    ImVec2(swatch_size, swatch_size));
+                ImGui::SameLine(0, 6);
             }
+            ImFont* bold = ImGui::GetIO().Fonts->Fonts.Size > 1
+                               ? ImGui::GetIO().Fonts->Fonts[1]
+                               : NULL;
+            if (bold != NULL)
+                ImGui::PushFont(bold);
             ImGui::TextUnformatted(tree->labels[row]);
+            if (bold != NULL)
+                ImGui::PopFont();
             if (tree->secondary[row][0])
             {
-                ImGui::SameLine();
-                ImGui::TextDisabled("%s", tree->secondary[row]);
+                ImGui::SameLine(0, 10);
+                ImGui::PushStyleColor(
+                    ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+                ImGui::TextUnformatted(tree->secondary[row]);
+                ImGui::PopStyleColor();
             }
             if (activated && !disabled)
                 _event(
@@ -1032,9 +1064,12 @@ DvzResult dvz_gui_tree_draw(
                 ImGui::EndDisabled();
             if (style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_FOREGROUND))
                 ImGui::PopStyleColor();
-            ImGui::Unindent(tree->depths[row] * ImGui::GetTreeNodeToLabelSpacing());
+            if (indent > 0)
+                ImGui::Unindent(indent);
+            ImGui::SetCursorScreenPos(next_row);
             _pop_id();
         }
+    ImGui::PopStyleVar(2);
     ImGui::PopID();
     return DVZ_OK;
 }
