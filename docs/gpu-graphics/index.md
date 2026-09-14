@@ -59,24 +59,30 @@ Every chapter ends with a complete listing of the file as it should look at that
 
 **Part 2: Triangles, shaders, pipeline, and vertex data**
 
-4. [Your first triangle](04-triangle.md): shaders, a pipeline, and a draw call.
-5. [Shaders in their own files](05-shader-files.md): SPIR-V, compiler errors, and live reloading.
-6. [Vertex buffers](06-vertex-buffers.md): geometry from your own memory.
-7. [Index buffers](07-index-buffers.md): the same shape with fewer vertices.
+<ol start="4">
+  <li><a href="04-triangle/">Your first triangle</a>: shaders, a pipeline, and a draw call.</li>
+  <li><a href="05-shader-files/">Shaders in their own files</a>: SPIR-V, compiler errors, and live reloading.</li>
+  <li><a href="06-vertex-buffers/">Vertex buffers</a>: geometry from your own memory.</li>
+  <li><a href="07-index-buffers/">Index buffers</a>: the same shape with fewer vertices.</li>
+</ol>
 
 **Part 3: Into 3D**
 
-8. [Push constants](08-push-constants.md): getting changing values into a shader.
-9. [Matrices and perspective](09-matrices.md): model, view, projection, and a cube that looks wrong.
-10. [Depth and culling](10-depth-culling.md): why it looked wrong, and how to fix it.
-11. [Mouse control](11-mouse-control.md): an arcball camera.
+<ol start="8">
+  <li><a href="08-push-constants/">Push constants</a>: getting changing values into a shader.</li>
+  <li><a href="09-matrices/">Matrices and perspective</a>: model, view, projection, and a cube that looks wrong.</li>
+  <li><a href="10-depth-culling/">Depth and culling</a>: why it looked wrong, and how to fix it.</li>
+  <li><a href="11-mouse-control/">Mouse control</a>: an arcball camera.</li>
+</ol>
 
 **Part 4: Surfaces, textures, and light**
 
-12. [Uploading a texture](12-texture-upload.md): staging buffers, image layouts, and barriers.
-13. [Sampling the texture](13-texture-sampling.md): samplers, descriptors, and UV coordinates.
-14. [Lighting](14-lighting.md): normals, diffuse, and specular.
-15. [A real mesh](15-mesh.md): from a hand-typed cube to generated geometry.
+<ol start="12">
+  <li><a href="12-texture-upload/">Uploading a texture</a>: staging buffers, image layouts, and barriers.</li>
+  <li><a href="13-texture-sampling/">Sampling the texture</a>: samplers, descriptors, and UV coordinates.</li>
+  <li><a href="14-lighting/">Lighting</a>: normals, diffuse, and specular.</li>
+  <li><a href="15-mesh/">A real mesh</a>: from a hand-typed cube to generated geometry.</li>
+</ol>
 
 The course closes with [what Datoviz handled for you and where to go next](16-next.md).
 
