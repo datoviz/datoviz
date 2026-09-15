@@ -631,6 +631,35 @@ static int test_gui_scale_resolution(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Check that repeated and fractional style scaling starts from canonical metrics.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+static int test_gui_style_scale(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    ImGuiContext* context = igCreateContext(NULL);
+    AT(context != NULL);
+    _dvz_gui_style_scale(0.25f);
+    ImGuiStyle* style = igGetStyle();
+    AT(style->WindowBorderHoverPadding > 0.0f);
+
+    _dvz_gui_style_scale(2.0f);
+    const float padding_a = style->WindowPadding.x;
+    _dvz_gui_style_scale(2.0f);
+    AC(style->WindowPadding.x, padding_a, 1e-6f);
+    AT(style->WindowBorderHoverPadding > 0.0f);
+    igDestroyContext(context);
+    return 0;
+}
+
+
+
+/**
  * Check that the curated GUI widget wrappers are exported with C-callable signatures.
  *
  * @param suite test suite
@@ -1129,6 +1158,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_viewport_config_defaults);
     TST_CASE(test_gui_config_font_defaults);
     TST_CASE(test_gui_scale_resolution);
+    TST_CASE(test_gui_style_scale);
     TST_CASE(test_gui_embedded_font_resources);
     TST_CASE(test_gui_srgb_vertex_colors);
     TST_CASE(test_gui_data_widget_storage);

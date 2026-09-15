@@ -96,6 +96,7 @@ void* _dvz_gui_bold_font(DvzGui* gui);
 bool _dvz_gui_scale_resolve(
     DvzScaleXY device, DvzExtent native, DvzExtent framebuffer, float user,
     DvzGuiScaleDebugState* out);
+void _dvz_gui_style_scale(float scale);
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
 void _dvz_gui_begin_frame(DvzGui* gui, DvzView* view, const DvzStreamFrame* frame);

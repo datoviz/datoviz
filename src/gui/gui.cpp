@@ -1035,9 +1035,7 @@ static void _gui_sync_scale(DvzGui* gui, bool force)
         ImGui::GetIO().FontGlobalScale = scale.user;
     }
 
-    ImGuiStyle& style = ImGui::GetStyle();
-    ImGui::StyleColorsDark(&style);
-    style.ScaleAllSizes(_gui_valid_scale(scale.coordinate * scale.user));
+    _dvz_gui_style_scale(scale.coordinate * scale.user);
 
     gui->device_scale_x = scale.device_x;
     gui->device_scale_y = scale.device_y;
@@ -1050,6 +1048,25 @@ static void _gui_sync_scale(DvzGui* gui, bool force)
     gui->coordinate_scale = scale.coordinate;
     gui->user_scale = scale.user;
     _gui_request_frame(gui);
+}
+
+
+
+/**
+ * Reset and scale the current Dear ImGui style from its canonical metrics.
+ *
+ * @param scale combined Datoviz coordinate and user scale
+ */
+void _dvz_gui_style_scale(float scale)
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+    style = ImGuiStyle();
+    ImGui::StyleColorsDark(&style);
+    style.ScaleAllSizes(_gui_valid_scale(scale));
+
+    // Dear ImGui requires this value to stay positive. Repeated scale changes used to compound
+    // rounded style metrics and could reduce it to zero on fractional-DPI displays.
+    style.WindowBorderHoverPadding = fmaxf(style.WindowBorderHoverPadding, 1.0f);
 }
 
 

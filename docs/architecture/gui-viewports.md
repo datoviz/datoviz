@@ -61,7 +61,7 @@ naming and version coupling.
 
 ## Device and user scale
 
-Datoviz applies one scale contract to scene screen-space quantities and the attached Dear ImGui context. App font sizes and curated GUI dimensions are authored in Datoviz logical pixels. Device scale converts those logical pixels to physical framebuffer pixels, while `dvz_view_set_user_scale()` applies an additional presentation or accessibility scale to both the scene and GUI content.
+Datoviz applies one scale contract to scene screen-space quantities and the attached Dear ImGui context. App font sizes and curated GUI dimensions are authored in Datoviz logical pixels. Device scale converts those logical pixels to physical framebuffer pixels, while `dvz_view_set_user_scale()` applies an additional presentation or accessibility scale to both the scene and GUI content. Style metrics are reset to their canonical values before each scale change, so repeated runtime changes are stable on fractional-DPI displays.
 
 Dear ImGui uses native backend coordinates, which are not necessarily Datoviz logical coordinates. Datoviz derives this conversion from the current logical, native-window, and framebuffer extents. Fonts are rasterized at device resolution, and font metrics, padding, indentation, spacing, scrollbars, and other style dimensions follow the same effective scale.
 
