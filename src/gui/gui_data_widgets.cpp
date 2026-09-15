@@ -27,6 +27,7 @@
 #define COLUMN_FLAGS                                                                              \
     (DVZ_GUI_TABLE_COLUMN_FLAGS_SORTABLE | DVZ_GUI_TABLE_COLUMN_FLAGS_SEARCHABLE |                \
      DVZ_GUI_TABLE_COLUMN_FLAGS_STRETCH)
+#define TREE_LAYOUT_KNOWN_FLAGS 0u
 
 typedef struct _KeyIndex
 {
@@ -83,6 +84,7 @@ struct DvzGuiTree
     char** secondary;
     DvzColor* swatches;
     bool* expanded;
+    DvzGuiTreeLayout layout;
     uint64_t reveal;
     bool reveal_pending;
 };
@@ -750,7 +752,37 @@ DvzGuiTree* dvz_gui_tree(const char* id, uint32_t flags)
         dvz_free(tree);
         return NULL;
     }
+    tree->layout = dvz_gui_tree_layout();
     return tree;
+}
+
+DvzGuiTreeLayout dvz_gui_tree_layout(void)
+{
+    DvzGuiTreeLayout layout = {};
+    layout.struct_size = DVZ_STRUCT_SIZE(DvzGuiTreeLayout);
+    layout.indent_em = 0.70f;
+    layout.row_padding_em = 0.0625f;
+    layout.item_spacing_em = 0.0625f;
+    layout.disclosure_gap_em = 0.20f;
+    layout.swatch_gap_em = 0.40f;
+    layout.secondary_gap_em = 0.625f;
+    return layout;
+}
+
+DvzResult dvz_gui_tree_set_layout(DvzGuiTree* tree, const DvzGuiTreeLayout* layout)
+{
+    if (tree == NULL || layout == NULL ||
+        !DVZ_STRUCT_VALID(layout, DvzGuiTreeLayout, TREE_LAYOUT_KNOWN_FLAGS) ||
+        !isfinite(layout->indent_em) ||
+        !isfinite(layout->row_padding_em) || !isfinite(layout->item_spacing_em) ||
+        !isfinite(layout->disclosure_gap_em) || !isfinite(layout->swatch_gap_em) ||
+        !isfinite(layout->secondary_gap_em) || layout->indent_em < 0.0f ||
+        layout->row_padding_em < 0.0f || layout->item_spacing_em < 0.0f ||
+        layout->disclosure_gap_em < 0.0f || layout->swatch_gap_em < 0.0f ||
+        layout->secondary_gap_em < 0.0f || layout->reserved[0] != 0 || layout->reserved[1] != 0)
+        return DVZ_ERROR;
+    tree->layout = *layout;
+    return DVZ_OK;
 }
 
 DvzResult dvz_gui_tree_set_rows(
@@ -947,11 +979,20 @@ DvzResult dvz_gui_tree_draw(
             if (tree->core.keys[tree->core.order[i]] == tree->reveal)
                 reveal_display = (int)i;
     const ImGuiStyle& imgui_style = ImGui::GetStyle();
-    const float indent_spacing = imgui_style.IndentSpacing;
+    const float font_size = ImGui::GetFontSize();
+    // Keep deep retained trees compact while deriving distances from the active ImGui font size.
+    const float indent_spacing = font_size * tree->layout.indent_em;
+    const float row_padding = std::max(
+        imgui_style.FramePadding.y, font_size * tree->layout.row_padding_em);
+    const float item_spacing_y = std::max(
+        imgui_style.ItemSpacing.y, font_size * tree->layout.item_spacing_em);
+    const float disclosure_gap = font_size * tree->layout.disclosure_gap_em;
+    const float swatch_gap = font_size * tree->layout.swatch_gap_em;
+    const float secondary_gap = font_size * tree->layout.secondary_gap_em;
     ImGui::PushStyleVar(
-        ImGuiStyleVar_FramePadding, ImVec2(imgui_style.FramePadding.x, 0.0f));
+        ImGuiStyleVar_FramePadding, ImVec2(imgui_style.FramePadding.x, row_padding));
     ImGui::PushStyleVar(
-        ImGuiStyleVar_ItemSpacing, ImVec2(imgui_style.ItemSpacing.x, 1.0f));
+        ImGuiStyleVar_ItemSpacing, ImVec2(imgui_style.ItemSpacing.x, item_spacing_y));
     ImGuiListClipper clip;
     clip.Begin((int)tree->core.order_count);
     if (reveal_display >= 0)
@@ -965,7 +1006,7 @@ DvzResult dvz_gui_tree_draw(
             _push_id(&tree->core, row);
             const float indent = tree->depths[row] * indent_spacing;
             const ImVec2 row_start = ImGui::GetCursorScreenPos();
-            const float row_height = ImGui::GetFontSize() + 2.0f;
+            const float row_height = font_size + 2.0f * row_padding;
             if (style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_BACKGROUND))
             {
                 ImVec2 b(
@@ -1024,7 +1065,7 @@ DvzResult dvz_gui_tree_draw(
                     DVZ_GUI_DATA_EVENT_SELECTION_CHANGED, tree->core.keys[row], UINT32_MAX,
                     tree->core.selected[row], mods);
             }
-            ImGui::SameLine(0, 3);
+            ImGui::SameLine(0, disclosure_gap);
             if (tree->swatches)
             {
                 const float swatch_size = ImGui::GetFontSize() * 0.80f;
@@ -1033,11 +1074,9 @@ DvzResult dvz_gui_tree_draw(
                     ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop |
                         ImGuiColorEditFlags_NoBorder,
                     ImVec2(swatch_size, swatch_size));
-                ImGui::SameLine(0, 6);
+                ImGui::SameLine(0, swatch_gap);
             }
-            ImFont* bold = ImGui::GetIO().Fonts->Fonts.Size > 1
-                               ? ImGui::GetIO().Fonts->Fonts[1]
-                               : NULL;
+            ImFont* bold = (ImFont*)_dvz_gui_bold_font(gui);
             if (bold != NULL)
                 ImGui::PushFont(bold);
             ImGui::TextUnformatted(tree->labels[row]);
@@ -1045,7 +1084,7 @@ DvzResult dvz_gui_tree_draw(
                 ImGui::PopFont();
             if (tree->secondary[row][0])
             {
-                ImGui::SameLine(0, 10);
+                ImGui::SameLine(0, secondary_gap);
                 ImGui::PushStyleColor(
                     ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
                 ImGui::TextUnformatted(tree->secondary[row]);

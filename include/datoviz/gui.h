@@ -74,6 +74,7 @@ typedef enum DvzGuiDockSlot
     DVZ_GUI_DOCK_SLOT_RIGHT,
     DVZ_GUI_DOCK_SLOT_TOP,
     DVZ_GUI_DOCK_SLOT_BOTTOM,
+    DVZ_GUI_DOCK_SLOT_CENTER,
 } DvzGuiDockSlot;
 
 
@@ -202,6 +203,22 @@ typedef struct DvzGuiDataStyle
 
 
 
+/** Compact, font-relative layout parameters for a retained tree. */
+typedef struct DvzGuiTreeLayout
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    float indent_em;
+    float row_padding_em;
+    float item_spacing_em;
+    float disclosure_gap_em;
+    float swatch_gap_em;
+    float secondary_gap_em;
+    uint32_t reserved[2];
+} DvzGuiTreeLayout;
+
+
+
 EXTERN_C_ON
 
 /*************************************************************************************************/
@@ -290,7 +307,7 @@ DVZ_EXPORT bool dvz_gui_begin(DvzGui* gui, const char* title, bool* open, int fl
  *
  * @param gui the GUI overlay
  * @param title the window title
- * @param slot side of the full-view dockspace
+ * @param slot side or remaining center of the full-view dockspace
  * @param size_px initial docked size in logical pixels along the split axis, or 0 for default
  * @return DVZ_OK if the request was accepted, DVZ_ERROR otherwise
  */
@@ -710,6 +727,24 @@ dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* open,
  * @return a caller-owned tree, or NULL on validation or allocation failure
  */
 DVZ_EXPORT DvzGuiTree* dvz_gui_tree(const char* widget_id, uint32_t flags);
+
+/**
+ * Return compact default layout parameters for a retained tree.
+ *
+ * Distances use em units and therefore follow the attached GUI's device and user scale.
+ *
+ * @return default tree layout
+ */
+DVZ_EXPORT DvzGuiTreeLayout dvz_gui_tree_layout(void);
+
+/**
+ * Set font-relative layout parameters for a retained tree.
+ *
+ * @param tree retained tree
+ * @param layout size-versioned tree layout
+ * @return DVZ_OK on success, DVZ_ERROR on invalid input
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_set_layout(DvzGuiTree* tree, const DvzGuiTreeLayout* layout);
 
 /**
  * Replace the tree rows atomically.

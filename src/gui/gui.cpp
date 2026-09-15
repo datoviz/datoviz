@@ -51,7 +51,7 @@
 #define DVZ_GUI_VIEWPORT_DEFAULT_INITIAL_HEIGHT 480u
 #define DVZ_GUI_VIEWPORT_DEFAULT_MIN_WIDTH 32u
 #define DVZ_GUI_VIEWPORT_DEFAULT_MIN_HEIGHT 32u
-#define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP 8u
+#define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_STEP 1u
 #define DVZ_GUI_VIEWPORT_DEFAULT_RESIZE_DELAY_FRAMES 2u
 #define DVZ_GUI_VIEWPORT_RETIRED_TEXTURE_CAPACITY 64u
 #define DVZ_GUI_DEFAULT_WINDOW_WIDTH 200u
@@ -123,7 +123,18 @@ struct DvzGui
     uint32_t docked_window_hash_count;
     int glfw_mods;
     ImFont* font_regular;
+    ImFont* font_bold;
     ImFont* font_mono;
+    float device_scale_x;
+    float device_scale_y;
+    float device_scale;
+    float framebuffer_scale_x;
+    float framebuffer_scale_y;
+    float framebuffer_scale;
+    float coordinate_scale_x;
+    float coordinate_scale_y;
+    float coordinate_scale;
+    float user_scale;
     VkFormat color_format;
     bool glfw_initialized;
     bool vulkan_initialized;
@@ -196,6 +207,7 @@ static void _gui_request_frame(DvzGui* gui);
 static bool _gui_update_followup_frame_state(DvzGui* gui);
 static bool _gui_viewport_ensure_texture(DvzGuiViewport* viewport);
 static bool _gui_viewport_display_drawable(const DvzGuiViewport* viewport);
+static float _gui_valid_scale(float value);
 
 
 
@@ -408,7 +420,7 @@ static ImGuiID _gui_dock_node_for_slot(DvzGui* gui, DvzGuiDockSlot slot, float s
 {
     ANN(gui);
     const int index = _gui_dock_slot_index(slot);
-    if (index < 0)
+    if (index < 0 && slot != DVZ_GUI_DOCK_SLOT_CENTER)
         return 0;
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -435,13 +447,18 @@ static ImGuiID _gui_dock_node_for_slot(DvzGui* gui, DvzGuiDockSlot slot, float s
         gui->dockspace_main_id = gui->dockspace_id;
     }
 
+    if (slot == DVZ_GUI_DOCK_SLOT_CENTER)
+        return gui->dockspace_main_id;
+
     if (gui->dock_nodes[index] == 0)
     {
         ImGuiID dock_id = 0;
         ImGuiID main_id = 0;
         ImGui::DockBuilderSplitNode(
             gui->dockspace_main_id, _gui_dock_slot_dir(slot),
-            _gui_dock_slot_ratio(slot, size_px, viewport->Size), &dock_id, &main_id);
+            _gui_dock_slot_ratio(
+                slot, size_px * _gui_valid_scale(gui->coordinate_scale), viewport->Size),
+            &dock_id, &main_id);
         gui->dock_nodes[index] = dock_id;
         gui->dockspace_main_id = main_id;
         ImGui::DockBuilderFinish(gui->dockspace_id);
@@ -462,6 +479,126 @@ static ImGuiID _gui_dock_node_for_slot(DvzGui* gui, DvzGuiDockSlot slot, float s
 static float _gui_font_size(float size, float fallback)
 {
     return size > 0 ? size : fallback;
+}
+
+
+
+typedef struct DvzGuiScale
+{
+    float device_x;
+    float device_y;
+    float framebuffer_x;
+    float framebuffer_y;
+    float coordinate_x;
+    float coordinate_y;
+    float device;
+    float framebuffer;
+    float coordinate;
+    float user;
+} DvzGuiScale;
+
+
+
+/**
+ * Return a finite positive scale or one.
+ *
+ * @param value candidate scale
+ * @return validated scale
+ */
+static float _gui_valid_scale(float value)
+{
+    return value > 0.0f && isfinite(value) ? value : 1.0f;
+}
+
+
+
+/**
+ * Resolve the backend-independent scale relationship used by Dear ImGui.
+ *
+ * @param device physical pixels per Datoviz logical pixel
+ * @param native raw host-window coordinate extent
+ * @param framebuffer physical framebuffer extent
+ * @param user explicit presentation scale
+ * @param out resolved scale state
+ * @return whether output was written
+ */
+bool _dvz_gui_scale_resolve(
+    DvzScaleXY device, DvzExtent native, DvzExtent framebuffer, float user,
+    DvzGuiScaleDebugState* out)
+{
+    if (out == NULL)
+        return false;
+    *out = {};
+    out->device.x = _gui_valid_scale(device.x);
+    out->device.y = _gui_valid_scale(device.y);
+    out->framebuffer.x = 1.0f;
+    out->framebuffer.y = 1.0f;
+    if (native.width > 0 && framebuffer.width > 0)
+        out->framebuffer.x =
+            _gui_valid_scale((float)framebuffer.width / (float)native.width);
+    if (native.height > 0 && framebuffer.height > 0)
+        out->framebuffer.y =
+            _gui_valid_scale((float)framebuffer.height / (float)native.height);
+    out->coordinate.x = _gui_valid_scale(out->device.x / out->framebuffer.x);
+    out->coordinate.y = _gui_valid_scale(out->device.y / out->framebuffer.y);
+    out->scalar_device = 0.5f * (out->device.x + out->device.y);
+    out->scalar_framebuffer = 0.5f * (out->framebuffer.x + out->framebuffer.y);
+    out->scalar_coordinate = 0.5f * (out->coordinate.x + out->coordinate.y);
+    out->user = _gui_valid_scale(user);
+    return true;
+}
+
+
+
+/**
+ * Resolve the Datoviz-to-ImGui scale bridge for the host view.
+ *
+ * @param gui GUI overlay
+ * @return resolved per-axis and scalar scale factors
+ */
+static DvzGuiScale _gui_scale(const DvzGui* gui)
+{
+    ANN(gui);
+    DvzGuiScale out = {};
+    out.device_x = out.device_y = 1.0f;
+    out.framebuffer_x = out.framebuffer_y = 1.0f;
+    out.coordinate_x = out.coordinate_y = 1.0f;
+    out.device = out.framebuffer = out.coordinate = out.user = 1.0f;
+    if (gui->view == NULL)
+        return out;
+
+    const DvzScaleXY device = dvz_view_device_scale_xy(gui->view);
+    DvzExtent native = dvz_view_size(gui->view, DVZ_SIZE_NATIVE);
+    DvzExtent framebuffer = dvz_view_size(gui->view, DVZ_SIZE_SURFACE);
+    DvzGuiScaleDebugState resolved = {};
+    const bool ok = _dvz_gui_scale_resolve(
+        device, native, framebuffer, dvz_view_user_scale(gui->view), &resolved);
+    ASSERT(ok);
+    out.device_x = resolved.device.x;
+    out.device_y = resolved.device.y;
+    out.framebuffer_x = resolved.framebuffer.x;
+    out.framebuffer_y = resolved.framebuffer.y;
+    out.coordinate_x = resolved.coordinate.x;
+    out.coordinate_y = resolved.coordinate.y;
+    out.device = resolved.scalar_device;
+    out.framebuffer = resolved.scalar_framebuffer;
+    out.coordinate = resolved.scalar_coordinate;
+    out.user = resolved.user;
+    return out;
+}
+
+
+
+/**
+ * Return whether two scale values are materially different.
+ *
+ * @param a first scale
+ * @param b second scale
+ * @return whether the values differ
+ */
+static bool _gui_scale_changed(float a, float b)
+{
+    return fabsf(a - b) > 1e-4f;
 }
 
 
@@ -544,12 +681,11 @@ static uint32_t _gui_viewport_scale_dimension(uint32_t value, float scale)
 
 
 
-static float _gui_viewport_device_scale(const DvzGuiViewport* viewport)
+static DvzGuiScale _gui_viewport_scale(const DvzGuiViewport* viewport)
 {
     ANN(viewport);
-    if (viewport->gui != NULL && viewport->gui->view != NULL)
-        return dvz_view_device_scale(viewport->gui->view);
-    return 1.0f;
+    ANN(viewport->gui);
+    return _gui_scale(viewport->gui);
 }
 
 
@@ -744,12 +880,17 @@ static void _gui_viewport_draw_resolved(DvzGuiViewport* viewport)
  *
  * @param gui the GUI overlay
  */
-static void _gui_load_fonts(DvzGui* gui)
+static void _gui_load_fonts(DvzGui* gui, const DvzGuiScale* scale)
 {
     ANN(gui);
+    ANN(scale);
     _gui_set_current(gui);
 
     ImGuiIO& io = ImGui::GetIO();
+    io.Fonts->Clear();
+    gui->font_regular = NULL;
+    gui->font_bold = NULL;
+    gui->font_mono = NULL;
     DvzFontDefaults defaults = gui->font_defaults;
     DvzFontDefaults fallback_defaults = dvz_font_defaults();
     if (defaults.ui_size_px <= 0.0f)
@@ -757,13 +898,17 @@ static void _gui_load_fonts(DvzGui* gui)
     if (defaults.mono_size_px <= 0.0f)
         defaults.mono_size_px = fallback_defaults.mono_size_px;
 
-    const float font_size = _gui_font_size(defaults.ui_size_px, fallback_defaults.ui_size_px);
+    const float coordinate_scale = _gui_valid_scale(scale->coordinate);
+    const float raster_density = _gui_valid_scale(scale->device / coordinate_scale);
+    const float font_size =
+        _gui_font_size(defaults.ui_size_px, fallback_defaults.ui_size_px) * coordinate_scale;
     const float mono_font_size =
-        _gui_font_size(defaults.mono_size_px, fallback_defaults.mono_size_px);
+        _gui_font_size(defaults.mono_size_px, fallback_defaults.mono_size_px) * coordinate_scale;
 
     ImFontConfig regular_config = {};
     regular_config.OversampleH = 2;
     regular_config.OversampleV = 1;
+    regular_config.RasterizerDensity = raster_density;
     if (defaults.sans_path != NULL && defaults.sans_path[0] != '\0')
         gui->font_regular = io.Fonts->AddFontFromFileTTF(
             defaults.sans_path, font_size, &regular_config, io.Fonts->GetGlyphRangesDefault());
@@ -805,15 +950,26 @@ static void _gui_load_fonts(DvzGui* gui)
     math_config.OversampleH = 2;
     math_config.OversampleV = 1;
     math_config.FontDataOwnedByAtlas = false;
+    math_config.RasterizerDensity = raster_density;
     DvzSize math_size = 0;
     const unsigned char* math_bytes = dvz_resource_font("NotoSansMath_Regular", &math_size);
     if (gui->font_regular != NULL && math_bytes != NULL && math_size > 0 && math_size <= INT_MAX)
         io.Fonts->AddFontFromMemoryTTF(
             const_cast<void*>((const void*)math_bytes), (int)math_size, font_size, &math_config, scientific_ranges);
 
+    ImFontConfig bold_config = regular_config;
+    bold_config.FontDataOwnedByAtlas = false;
+    DvzSize bold_size = 0;
+    const unsigned char* bold_bytes = dvz_resource_font("SourceSans3_Bold", &bold_size);
+    if (bold_bytes != NULL && bold_size > 0 && bold_size <= INT_MAX)
+        gui->font_bold = io.Fonts->AddFontFromMemoryTTF(
+            const_cast<void*>((const void*)bold_bytes), (int)bold_size, font_size, &bold_config,
+            io.Fonts->GetGlyphRangesDefault());
+
     ImFontConfig mono_config = {};
     mono_config.OversampleH = 2;
     mono_config.OversampleV = 1;
+    mono_config.RasterizerDensity = raster_density;
     if (defaults.mono_path != NULL && defaults.mono_path[0] != '\0')
         gui->font_mono = io.Fonts->AddFontFromFileTTF(
             defaults.mono_path, mono_font_size, &mono_config, io.Fonts->GetGlyphRangesDefault());
@@ -833,6 +989,66 @@ static void _gui_load_fonts(DvzGui* gui)
 
     if (gui->font_regular != NULL)
         io.FontDefault = gui->font_regular;
+    io.FontGlobalScale = scale->user;
+}
+
+
+
+/**
+ * Synchronize Dear ImGui fonts and style with the Datoviz view scale contract.
+ *
+ * @param gui GUI overlay
+ * @param force whether to rebuild even when the resolved scale is unchanged
+ */
+static void _gui_sync_scale(DvzGui* gui, bool force)
+{
+    ANN(gui);
+    _gui_set_current(gui);
+    const DvzGuiScale scale = _gui_scale(gui);
+    const bool device_changed =
+        _gui_scale_changed(gui->device_scale_x, scale.device_x) ||
+        _gui_scale_changed(gui->device_scale_y, scale.device_y);
+    const bool framebuffer_changed =
+        _gui_scale_changed(gui->framebuffer_scale_x, scale.framebuffer_x) ||
+        _gui_scale_changed(gui->framebuffer_scale_y, scale.framebuffer_y);
+    const bool coordinate_changed =
+        _gui_scale_changed(gui->coordinate_scale_x, scale.coordinate_x) ||
+        _gui_scale_changed(gui->coordinate_scale_y, scale.coordinate_y);
+    const bool user_changed = _gui_scale_changed(gui->user_scale, scale.user);
+    const bool rebuild_fonts = force || device_changed || framebuffer_changed || coordinate_changed;
+    if (!rebuild_fonts && !user_changed)
+        return;
+
+    if (rebuild_fonts)
+    {
+        _gui_load_fonts(gui, &scale);
+        if (gui->vulkan_initialized && !ImGui_ImplVulkan_CreateFontsTexture())
+        {
+            log_error("Dear ImGui font atlas rebuild failed");
+            gui->failed = true;
+            return;
+        }
+    }
+    else
+    {
+        ImGui::GetIO().FontGlobalScale = scale.user;
+    }
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImGui::StyleColorsDark(&style);
+    style.ScaleAllSizes(_gui_valid_scale(scale.coordinate * scale.user));
+
+    gui->device_scale_x = scale.device_x;
+    gui->device_scale_y = scale.device_y;
+    gui->device_scale = scale.device;
+    gui->framebuffer_scale_x = scale.framebuffer_x;
+    gui->framebuffer_scale_y = scale.framebuffer_y;
+    gui->framebuffer_scale = scale.framebuffer;
+    gui->coordinate_scale_x = scale.coordinate_x;
+    gui->coordinate_scale_y = scale.coordinate_y;
+    gui->coordinate_scale = scale.coordinate;
+    gui->user_scale = scale.user;
+    _gui_request_frame(gui);
 }
 
 
@@ -1112,9 +1328,11 @@ static int _gui_viewport_live_image_callback(
 static void _gui_viewport_resize_source(DvzGuiViewport* viewport, uint32_t width, uint32_t height)
 {
     ANN(viewport);
-    float scale = _gui_viewport_device_scale(viewport);
-    uint32_t framebuffer_width = _gui_viewport_scale_dimension(width, scale);
-    uint32_t framebuffer_height = _gui_viewport_scale_dimension(height, scale);
+    const DvzGuiScale scale = _gui_viewport_scale(viewport);
+    uint32_t framebuffer_width = _gui_viewport_scale_dimension(width, scale.device_x);
+    uint32_t framebuffer_height = _gui_viewport_scale_dimension(height, scale.device_y);
+    if (viewport->owns_source)
+        (void)dvz_view_set_user_scale(viewport->source, scale.user);
     if (
         viewport->requested_width == width && viewport->requested_height == height &&
         viewport->requested_framebuffer_width == framebuffer_width &&
@@ -1122,13 +1340,71 @@ static void _gui_viewport_resize_source(DvzGuiViewport* viewport, uint32_t width
     {
         return;
     }
-    if (dvz_view_resize_scaled(viewport->source, width, height, scale) != 0)
+    if (
+        dvz_view_resize_scaled_xy(
+            viewport->source, width, height, scale.device_x, scale.device_y) != 0)
         return;
     viewport->requested_width = width;
     viewport->requested_height = height;
     viewport->requested_framebuffer_width = framebuffer_width;
     viewport->requested_framebuffer_height = framebuffer_height;
     viewport->stale_frame_count = 0;
+}
+
+
+
+/**
+ * Commit a viewport resize after its requested size has remained stable.
+ *
+ * @param viewport GUI viewport
+ * @param width target logical width
+ * @param height target logical height
+ * @return whether the target size is committed
+ */
+static bool
+_gui_viewport_resolve_resize(DvzGuiViewport* viewport, uint32_t width, uint32_t height)
+{
+    ANN(viewport);
+    if (viewport->requested_width == width && viewport->requested_height == height)
+    {
+        viewport->pending_width = 0;
+        viewport->pending_height = 0;
+        viewport->pending_stable_frames = 0;
+        _gui_viewport_resize_source(viewport, width, height);
+        return true;
+    }
+
+    if (viewport->config.resize_delay_frames == 0)
+    {
+        _gui_viewport_resize_source(viewport, width, height);
+        viewport->pending_width = 0;
+        viewport->pending_height = 0;
+        viewport->pending_stable_frames = 0;
+        return viewport->requested_width == width && viewport->requested_height == height;
+    }
+
+    if (viewport->pending_width != width || viewport->pending_height != height)
+    {
+        viewport->pending_width = width;
+        viewport->pending_height = height;
+        viewport->pending_stable_frames = 1;
+        return false;
+    }
+
+    viewport->pending_stable_frames++;
+    if (viewport->pending_stable_frames < viewport->config.resize_delay_frames)
+        return false;
+
+    _gui_viewport_resize_source(viewport, width, height);
+    const bool committed =
+        viewport->requested_width == width && viewport->requested_height == height;
+    if (committed)
+    {
+        viewport->pending_width = 0;
+        viewport->pending_height = 0;
+        viewport->pending_stable_frames = 0;
+    }
+    return committed;
 }
 
 
@@ -1153,11 +1429,12 @@ static void _gui_viewport_forward_input(
     ImGuiIO& io = ImGui::GetIO();
     const bool hovered = ImGui::IsItemHovered();
     const bool active = ImGui::IsItemActive();
+    const DvzGuiScale scale = _gui_viewport_scale(viewport);
 
-    float x = io.MousePos.x - image_min.x;
-    float y = io.MousePos.y - image_min.y;
-    const float window_x = size.x;
-    const float window_y = size.y;
+    float x = (io.MousePos.x - image_min.x) / scale.coordinate_x;
+    float y = (io.MousePos.y - image_min.y) / scale.coordinate_y;
+    const float window_x = size.x / scale.coordinate_x;
+    const float window_y = size.y / scale.coordinate_y;
     const int mods = _gui_mods_from_io(io);
 
     if ((hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) || active)
@@ -1224,12 +1501,13 @@ static void _gui_viewport_update_mouse(
     ANN(viewport);
     ImGuiIO& io = ImGui::GetIO();
     const bool hovered = ImGui::IsItemHovered();
+    const DvzGuiScale scale = _gui_viewport_scale(viewport);
     viewport->mouse_valid = size.x > 0.0f && size.y > 0.0f;
     viewport->mouse_hovered = hovered;
-    viewport->mouse_pos[0] = io.MousePos.x - image_min.x;
-    viewport->mouse_pos[1] = io.MousePos.y - image_min.y;
-    viewport->mouse_size[0] = size.x;
-    viewport->mouse_size[1] = size.y;
+    viewport->mouse_pos[0] = (io.MousePos.x - image_min.x) / scale.coordinate_x;
+    viewport->mouse_pos[1] = (io.MousePos.y - image_min.y) / scale.coordinate_y;
+    viewport->mouse_size[0] = size.x / scale.coordinate_x;
+    viewport->mouse_size[1] = size.y / scale.coordinate_y;
 }
 
 
@@ -1404,6 +1682,15 @@ static bool _gui_update_followup_frame_state(DvzGui* gui)
     bool active_item = ImGui::IsAnyItemActive() || io.WantTextInput;
     bool open_popup = ImGui::IsPopupOpen((const char*)NULL, ImGuiPopupFlags_AnyPopup);
     bool request_frame = active_item != gui->had_active_item || open_popup != gui->had_open_popup;
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+    {
+        if (viewport->frame_visible && viewport->pending_width > 0 &&
+            viewport->pending_height > 0)
+        {
+            request_frame = true;
+            break;
+        }
+    }
 
     gui->had_active_item = active_item;
     gui->had_open_popup = open_popup;
@@ -1677,8 +1964,8 @@ DvzGui* _dvz_gui_create(
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.IniFilename = gui->config.ini_path;
-    _gui_load_fonts(gui);
     ImGui::StyleColorsDark();
+    _gui_sync_scale(gui, true);
 
     if (!ImGui_ImplGlfw_InitForVulkan(glfw_window, false))
     {
@@ -1706,6 +1993,21 @@ DvzFontDefaults _dvz_gui_font_defaults(const DvzGui* gui)
     if (gui == NULL)
         return dvz_font_defaults();
     return gui->font_defaults;
+}
+
+
+
+/**
+ * Return the GUI's explicitly loaded bold font.
+ *
+ * @param gui GUI overlay
+ * @return borrowed ImFont pointer, or NULL
+ */
+void* _dvz_gui_bold_font(DvzGui* gui)
+{
+    if (gui == NULL)
+        return NULL;
+    return gui->font_bold;
 }
 
 
@@ -1767,6 +2069,9 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
     if (!was_initialized)
         _gui_request_frame(gui);
     _gui_set_current(gui);
+    _gui_sync_scale(gui, false);
+    if (gui->failed)
+        return;
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -1819,8 +2124,15 @@ bool _dvz_gui_resolve_viewports(
             continue;
         }
 
-        _gui_viewport_resize_source(
-            viewport, viewport->frame_request_width, viewport->frame_request_height);
+        const uint32_t target_width = viewport->frame_request_width;
+        const uint32_t target_height = viewport->frame_request_height;
+        if (!_gui_viewport_resolve_resize(viewport, target_width, target_height))
+        {
+            viewport->frame_request_width = viewport->requested_width;
+            viewport->frame_request_height = viewport->requested_height;
+            viewport->frame_request_framebuffer_width = viewport->requested_framebuffer_width;
+            viewport->frame_request_framebuffer_height = viewport->requested_framebuffer_height;
+        }
         if (callback == NULL || callback(viewport->source, user_data) < 0)
         {
             ok = false;
@@ -1983,6 +2295,11 @@ bool _dvz_gui_viewport_debug_state(
     out->pending_stable_frames = viewport->pending_stable_frames;
     out->displayed_framebuffer_width = viewport->extent.width;
     out->displayed_framebuffer_height = viewport->extent.height;
+    if (viewport->source != NULL)
+    {
+        out->source_device_scale = dvz_view_device_scale_xy(viewport->source);
+        out->source_user_scale = dvz_view_user_scale(viewport->source);
+    }
     out->displayed_resource_generation = viewport->resource_generation;
     out->source_frame_count = viewport->source_frame_count;
     out->stale_frame_count = viewport->stale_frame_count;
@@ -2059,7 +2376,11 @@ bool dvz_gui_begin(DvzGui* gui, const char* title, bool* open, int flags)
     if (gui->config.default_window_width > 0)
     {
         ImGui::SetNextWindowSize(
-            ImVec2((float)gui->config.default_window_width, 0.0f), ImGuiCond_FirstUseEver);
+            ImVec2(
+                (float)gui->config.default_window_width *
+                    _gui_valid_scale(gui->coordinate_scale),
+                0.0f),
+            ImGuiCond_FirstUseEver);
     }
     const bool visible = ImGui::Begin(title, open, flags);
     gui->data_window_depth++;
@@ -2633,13 +2954,14 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
         return NULL;
 
     DvzGuiViewportConfig cfg = _gui_viewport_config_normalize(config);
-    float scale = gui->view != NULL ? dvz_view_device_scale(gui->view) : 1.0f;
+    const DvzGuiScale scale = _gui_scale(gui);
     DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_OFFSCREEN);
     desc.size_policy = DVZ_VIEW_SIZE_FRAMEBUFFER_PX;
-    desc.size_width = _gui_viewport_scale_dimension(cfg.initial_width, scale);
-    desc.size_height = _gui_viewport_scale_dimension(cfg.initial_height, scale);
-    desc.size_requested_device_scale = scale;
-    desc.device_scale = scale;
+    desc.size_width = _gui_viewport_scale_dimension(cfg.initial_width, scale.device_x);
+    desc.size_height = _gui_viewport_scale_dimension(cfg.initial_height, scale.device_y);
+    desc.size_requested_device_scale = scale.device;
+    desc.device_scale = scale.device;
+    desc.user_scale = scale.user;
     DvzView* source = dvz_view(gui->app, figure, &desc);
     if (source == NULL)
         return NULL;
@@ -2754,16 +3076,17 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
     {
         window_visible = true;
         ImVec2 avail = ImGui::GetContentRegionAvail();
+        const DvzGuiScale scale = _gui_viewport_scale(viewport);
         /* Repair stale saved layouts that collapsed the hosted source below its minimum size. */
         if (
             ImGui::IsWindowAppearing() &&
-            (avail.x < (float)viewport->config.min_width ||
-             avail.y < (float)viewport->config.min_height))
+            (avail.x < (float)viewport->config.min_width * scale.coordinate_x ||
+             avail.y < (float)viewport->config.min_height * scale.coordinate_y))
         {
             ImGui::SetWindowSize(
                 ImVec2(
-                    (float)viewport->config.initial_width,
-                    (float)viewport->config.initial_height),
+                    (float)viewport->config.initial_width * scale.coordinate_x,
+                    (float)viewport->config.initial_height * scale.coordinate_y),
                 ImGuiCond_Always);
             avail = ImGui::GetContentRegionAvail();
         }
@@ -2773,9 +3096,11 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
             avail.y = 1.0f;
 
         uint32_t width = _gui_viewport_dimension(
-            avail.x, viewport->config.min_width, viewport->config.resize_step);
+            avail.x / scale.coordinate_x, viewport->config.min_width,
+            viewport->config.resize_step);
         uint32_t height = _gui_viewport_dimension(
-            avail.y, viewport->config.min_height, viewport->config.resize_step);
+            avail.y / scale.coordinate_y, viewport->config.min_height,
+            viewport->config.resize_step);
         ImVec2 image_min = ImGui::GetCursorScreenPos();
         ImVec2 image_max = ImVec2(image_min.x + avail.x, image_min.y + avail.y);
         ImGui::PushID(viewport);
@@ -2783,17 +3108,23 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
             "image", avail,
             ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight |
                 ImGuiButtonFlags_MouseButtonMiddle);
+        if ((viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
+        {
+            ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelX);
+            ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY);
+        }
         ImGui::PopID();
         _gui_viewport_update_mouse(viewport, image_min, avail);
         if ((viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT) != 0)
             _gui_viewport_forward_input(viewport, image_min, avail);
 
-        float scale = _gui_viewport_device_scale(viewport);
         viewport->frame_visible = width > 0 && height > 0;
         viewport->frame_request_width = width;
         viewport->frame_request_height = height;
-        viewport->frame_request_framebuffer_width = _gui_viewport_scale_dimension(width, scale);
-        viewport->frame_request_framebuffer_height = _gui_viewport_scale_dimension(height, scale);
+        viewport->frame_request_framebuffer_width =
+            _gui_viewport_scale_dimension(width, scale.device_x);
+        viewport->frame_request_framebuffer_height =
+            _gui_viewport_scale_dimension(height, scale.device_y);
         viewport->frame_draw_list = ImGui::GetWindowDrawList();
         viewport->frame_image_min = image_min;
         viewport->frame_image_max = image_max;

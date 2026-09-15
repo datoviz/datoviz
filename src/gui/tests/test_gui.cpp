@@ -166,6 +166,12 @@ int test_gui_data_tree_model(TstContext* suite, const TstCase* item)
     AT(dvz_gui_tree("bad", 1u << 20) == NULL);
     DvzGuiTree* tree = dvz_gui_tree("tree-model", DVZ_GUI_DATA_WIDGET_FLAGS_FILTER);
     AT(tree != NULL);
+    DvzGuiTreeLayout layout = dvz_gui_tree_layout();
+    AT(layout.struct_size == sizeof(layout));
+    AT(layout.indent_em < 1.0f);
+    AT(dvz_gui_tree_set_layout(tree, &layout) == DVZ_OK);
+    layout.indent_em = -1.0f;
+    AT(dvz_gui_tree_set_layout(tree, &layout) == DVZ_ERROR);
     const uint64_t keys[] = {10, 11, 12, 20};
     const uint32_t parents[] = {UINT32_MAX, 0, 1, UINT32_MAX};
     const char* labels[] = {"Root", "Branch", "Needle", "Other"};
@@ -565,6 +571,52 @@ static int test_gui_config_font_defaults(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Check the bridge between Datoviz, backend, and ImGui coordinate scales.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+static int test_gui_scale_resolution(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGuiScaleDebugState scale = {};
+    DvzScaleXY device = {};
+    device.x = device.y = 2.0f;
+    DvzExtent native = {};
+    native.width = 1600;
+    native.height = 900;
+    DvzExtent framebuffer = native;
+    AT(_dvz_gui_scale_resolve(device, native, framebuffer, 1.5f, &scale));
+    AC(scale.framebuffer.x, 1.0f, 1e-6f);
+    AC(scale.coordinate.x, 2.0f, 1e-6f);
+    AC(scale.coordinate.y, 2.0f, 1e-6f);
+    AC(scale.user, 1.5f, 1e-6f);
+
+    framebuffer.width = 3200;
+    framebuffer.height = 1800;
+    AT(_dvz_gui_scale_resolve(device, native, framebuffer, 1.0f, &scale));
+    AC(scale.framebuffer.x, 2.0f, 1e-6f);
+    AC(scale.coordinate.x, 1.0f, 1e-6f);
+    AC(scale.coordinate.y, 1.0f, 1e-6f);
+
+    device.x = 2.0f;
+    device.y = 1.5f;
+    framebuffer.width = 1600;
+    framebuffer.height = 1800;
+    AT(_dvz_gui_scale_resolve(device, native, framebuffer, 0.0f, &scale));
+    AC(scale.coordinate.x, 2.0f, 1e-6f);
+    AC(scale.coordinate.y, 0.75f, 1e-6f);
+    AC(scale.scalar_coordinate, 1.375f, 1e-6f);
+    AC(scale.user, 1.0f, 1e-6f);
+    return 0;
+}
+
+
+
+/**
  * Check that the curated GUI widget wrappers are exported with C-callable signatures.
  *
  * @param suite test suite
@@ -697,7 +749,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
 
     DvzGuiViewportConfig config = dvz_gui_viewport_config();
     config.resize_step = 1;
-    config.resize_delay_frames = 0;
+    config.resize_delay_frames = 2;
 
     AT(dvz_view_resize_scaled(source_win, 160, 120, 2.0f) == 0);
     uint32_t logical_width = 0;
@@ -963,10 +1015,14 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     DvzGuiViewportConfig config = dvz_gui_viewport_config();
     config.initial_width = 160;
     config.initial_height = 120;
+    AT(dvz_view_set_user_scale(host_win, 1.5f) == DVZ_OK);
     DvzGuiViewport* viewport_a = dvz_gui_viewport(gui, source_a, &config);
     DvzGuiViewport* viewport_b = dvz_gui_viewport(gui, source_b, &config);
     AT(viewport_a != NULL);
     AT(viewport_b != NULL);
+    DvzGuiViewportDebugState debug_a = {};
+    AT(_dvz_gui_viewport_debug_state(viewport_a, &debug_a));
+    AC(debug_a.source_user_scale, 1.5f, 1e-6f);
 
     DvzInputRouter* router_a = dvz_gui_viewport_input(viewport_a);
     DvzInputRouter* router_b = dvz_gui_viewport_input(viewport_b);
@@ -1029,6 +1085,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_imgui_public_header);
     TST_CASE(test_gui_viewport_config_defaults);
     TST_CASE(test_gui_config_font_defaults);
+    TST_CASE(test_gui_scale_resolution);
     TST_CASE(test_gui_embedded_font_resources);
     TST_CASE(test_gui_srgb_vertex_colors);
     TST_CASE(test_gui_data_widget_storage);

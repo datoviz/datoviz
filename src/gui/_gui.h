@@ -41,6 +41,8 @@ typedef struct DvzGuiViewportDebugState
     uint32_t pending_stable_frames;
     uint32_t displayed_framebuffer_width;
     uint32_t displayed_framebuffer_height;
+    DvzScaleXY source_device_scale;
+    float source_user_scale;
     uint64_t displayed_resource_generation;
     uint64_t source_frame_count;
     uint32_t stale_frame_count;
@@ -57,6 +59,18 @@ typedef struct DvzGuiDataDebugState
     uint32_t display_count;
     uint64_t rebuild_count;
 } DvzGuiDataDebugState;
+
+
+typedef struct DvzGuiScaleDebugState
+{
+    DvzScaleXY device;
+    DvzScaleXY framebuffer;
+    DvzScaleXY coordinate;
+    float scalar_device;
+    float scalar_framebuffer;
+    float scalar_coordinate;
+    float user;
+} DvzGuiScaleDebugState;
 
 
 typedef int (*DvzGuiViewportResolveCallback)(DvzView* view, void* user_data);
@@ -78,6 +92,10 @@ void _dvz_gui_set_current(DvzGui* gui);
 bool _dvz_gui_data_draw_context(DvzGui* gui, uint64_t* frame_index);
 uint8_t _dvz_gui_srgb_to_linear_u8(uint8_t value);
 DvzFontDefaults _dvz_gui_font_defaults(const DvzGui* gui);
+void* _dvz_gui_bold_font(DvzGui* gui);
+bool _dvz_gui_scale_resolve(
+    DvzScaleXY device, DvzExtent native, DvzExtent framebuffer, float user,
+    DvzGuiScaleDebugState* out);
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
 void _dvz_gui_begin_frame(DvzGui* gui, DvzView* view, const DvzStreamFrame* frame);
