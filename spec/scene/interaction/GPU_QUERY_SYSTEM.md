@@ -2,7 +2,7 @@
 
 > **Execution Status**
 > - **Status:** `ACTIVE IMPLEMENTATION - PUBLIC PICK/PROBE REMOVED`
-> - **Updated on:** `2026-06-27`
+> - **Updated on:** `2026-09-15`
 > - **Purpose:** define the long-term v0.4 scene query architecture: one GPU-only panel query
 >   system replacing the separate public pick/probe request model.
 
@@ -518,6 +518,40 @@ Current code implications recorded on 2026-05-27:
 9. `DVZ_QUERY_PROFILE_U64_2XR32` is a named future fallback, but no visual family currently builds a
    two-attachment query plan and FramePlan/DRP2 emission does not consume two query readbacks for one
    result. Default profile selection therefore stops after `r32uint` and `rg32uint`.
+
+
+## Performance Milestones
+
+The reference pressure case is a large indexed mesh with approximately 500,000 vertices, 1,000,000 triangles, and 1,000 semantic parts. Timings are benchmark evidence rather than API promises, and ordinary CI should assert deterministic command, upload, allocation, and freshness invariants instead of wall-clock thresholds. The cross-subsystem schedule is indexed in [`../ROADMAP.md`](../ROADMAP.md#interactive-mesh-performance-milestones).
+
+### v0.4.0 Final: Measurement And Low-Risk Corrections
+
+This work is useful but non-blocking for the release:
+
+1. Split query timing into plan construction, DRP2 emission and validation, backend submission, GPU completion, buffer download, and decode.
+2. Retain a reproducible benchmark for repeated mesh ITEM and FACE queries, including first-query static setup separately from steady-state requests.
+3. Record derived query vertex count, retained query-resource bytes, geometry upload bytes, submission count, and completed/dropped/coalesced request counts.
+4. Investigate an indexed exact-face query path that reuses original vertex and index resources. A primitive-index shader path may be measured as one lowering, but it must not become the sole semantic source of identity where a supported backend cannot provide equivalent behavior.
+5. Merge an optimization before v0.4.0 only when it is localized, preserves query results and capability diagnostics, passes native and WebGPU validation appropriate to the path, and has representative before/after evidence.
+
+Do not introduce a temporary mesh-region API, atlas-specific query mode, or second item-state model during this milestone.
+
+### Early v0.5: Asynchronous Interaction Queries
+
+Queued scene queries should cease to synchronously complete GPU work inside the rendering frame. The target behavior is:
+
+1. submission and readback use a bounded ring of retained resources;
+2. completion is polled in later frames and may carry one or more frames of latency;
+3. freshness remains latest-wins per panel and request scope;
+4. obsolete results never mutate hover or selection state;
+5. in-flight and per-frame processing limits prevent pointer motion or several request scopes from creating unbounded query work;
+6. the explicit synchronous helper remains available for tests and tools rather than defining interactive behavior.
+
+Mesh-part ITEM queries should reuse the original indexed geometry, part transforms, visibility, and compact part identity defined by [`../proposals/future/MESH_PART_STATE.md`](../proposals/future/MESH_PART_STATE.md). This removes expanded face geometry from ordinary semantic-part interaction, but does not by itself remove submission or readback latency.
+
+### Later v0.5: Exact Composite Identity
+
+Combined part-plus-face identity should be a separate evidence-gated extension. It must preserve the part transform and stable part identity while returning the exact face, define the required query payload/profile and fallback behavior, and avoid making portable ITEM queries depend on exact-face machinery. Indexed primitive identity, query-only expanded metadata, or another lowering may be selected after native and WebGPU measurements; the public result semantics must not expose that choice.
 
 
 ## Remaining Open Work

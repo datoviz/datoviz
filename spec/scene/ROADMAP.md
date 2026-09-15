@@ -43,6 +43,18 @@ Preserved follow-up direction:
 8. add exact marker, mesh grouped-region and combined face-plus-instance, image alpha/texel, text/glyph/labels, volume ray-hit, and
    hit-policy extensions as separate focused changes.
 
+### Interactive Mesh Performance Milestones
+
+Large semantically partitioned meshes provide the reference pressure test: approximately 500,000 vertices, 1,000,000 triangles, and 1,000 independently interactive parts. These milestones are performance direction, not v0.4 release gates. The query details remain owned by [interaction/GPU_QUERY_SYSTEM.md](interaction/GPU_QUERY_SYSTEM.md), while per-part transforms, styling, visibility, and item identity remain owned by [proposals/future/MESH_PART_STATE.md](proposals/future/MESH_PART_STATE.md).
+
+| Milestone | Scope | Exit evidence |
+| --- | --- | --- |
+| v0.4.0 final, non-blocking | Split query and GUI preparation timing into actionable phases; retain reproducible synthetic mesh-query and GUI/tree benchmark scenarios; investigate an indexed exact-face query path without committing to a backend-specific identity contract. | Measurements distinguish query build/emission/submission/readback and GUI callback/widget/viewport costs; deterministic counters cover query geometry and upload shape; any merged optimization has representative before/after evidence and preserves native/WebGPU capability behavior. |
+| Early v0.5 | Implement indexed mesh parts with GPU-resident per-part state; use mesh-part ITEM identity for region-style interaction; make query completion asynchronous with latest-wins freshness, bounded in-flight work, and bounded per-frame processing; optimize GUI/tree work only after the split timings identify its owner. | Part-only transform, tint, opacity, visibility, hover, and selection updates do not dirty vertex/index geometry; ordinary part queries do not require face-expanded query geometry; pointer interaction does not synchronously stall the rendering frame; GUI improvements have isolated benchmark evidence. |
+| Later v0.5, evidence-gated | Add exact combined part-plus-face identity; consider faster subdraw lowering, part culling, and more advanced visibility handling only when direct multipart measurements cross their documented triggers. | Correctness holds across opaque, transparency, query, surface-capture, native, and WebGPU paths; retained optimizations beat the direct reference path on representative workloads without changing public mesh-part semantics. |
+
+Application-side caching, pointer-rate policy, ontology lookup, and domain-specific face-to-region mapping remain outside Datoviz. Consumers may use them as temporary adaptations, but Datoviz should not add atlas-specific APIs or a second per-region styling mechanism that the mesh-part state model would supersede.
+
 
 ## Techniques, Effects, And Materials
 
