@@ -359,6 +359,55 @@ DVZ_EXPORT void dvz_gui_end(DvzGui* gui);
 DVZ_EXPORT void dvz_gui_text(DvzGui* gui, const char* text);
 
 
+/**
+ * Show a tooltip near the pointer for the current frame.
+ *
+ * @param gui the GUI overlay
+ * @param text null-terminated tooltip text
+ */
+DVZ_EXPORT void dvz_gui_tooltip(DvzGui* gui, const char* text);
+
+
+/**
+ * Show a fixed-capacity UTF-8 text input.
+ *
+ * @param gui the GUI overlay
+ * @param label input label
+ * @param value mutable null-terminated buffer
+ * @param capacity buffer capacity in bytes, including the terminator
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool
+dvz_gui_input_text(DvzGui* gui, const char* label, char* value, uint32_t capacity);
+
+
+
+/**
+ * Start a bounded child region with independent scrolling.
+ *
+ * A non-positive width or height uses the corresponding remaining content extent.
+ * Call dvz_gui_end_child() for every call, including when this function returns false.
+ *
+ * @param gui the GUI overlay
+ * @param id stable child identifier
+ * @param width requested width in logical pixels, or non-positive for remaining width
+ * @param height requested height in logical pixels, or non-positive for remaining height
+ * @param flags Dear ImGui child flags
+ * @return whether the child body is visible
+ */
+DVZ_EXPORT bool dvz_gui_begin_child(
+    DvzGui* gui, const char* id, float width, float height, int flags);
+
+
+
+/**
+ * End the current child region.
+ *
+ * @param gui the GUI overlay
+ */
+DVZ_EXPORT void dvz_gui_end_child(DvzGui* gui);
+
+
 
 /**
  * Push the default monospace ImGui font.

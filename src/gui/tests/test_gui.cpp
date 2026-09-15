@@ -58,6 +58,7 @@ typedef struct GuiViewportSmoke
 typedef struct GuiInputRecorder
 {
     uint32_t count;
+    uint32_t drag_count;
     DvzPointerEventType last_type;
 } GuiInputRecorder;
 
@@ -498,6 +499,19 @@ static void _gui_record_pointer(
 }
 
 
+static void _gui_record_input_event(
+    DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    ANN(router);
+    ANN(event);
+    GuiInputRecorder* recorder = (GuiInputRecorder*)user_data;
+    ANN(recorder);
+    if (event->type == DVZ_INPUT_EVENT_POINTER &&
+        event->content.pointer.type == DVZ_POINTER_EVENT_DRAG)
+        recorder->drag_count++;
+}
+
+
 
 /**
  * Emit one pointer event directly through a GUI viewport input router.
@@ -648,6 +662,10 @@ static int test_gui_widget_wrapper_symbols(TstContext* suite, const TstCase* ite
         dvz_gui_dock_window_once;
     bool (*current_window_docked)(DvzGui*) = dvz_gui_current_window_docked;
     bool (*current_window_rect)(DvzGui*, DvzRect*) = dvz_gui_current_window_rect;
+    void (*tooltip)(DvzGui*, const char*) = dvz_gui_tooltip;
+    bool (*input_text)(DvzGui*, const char*, char*, uint32_t) = dvz_gui_input_text;
+    bool (*begin_child)(DvzGui*, const char*, float, float, int) = dvz_gui_begin_child;
+    void (*end_child)(DvzGui*) = dvz_gui_end_child;
 
     AT(slider_int != NULL);
     AT(slider_float2 != NULL);
@@ -664,6 +682,10 @@ static int test_gui_widget_wrapper_symbols(TstContext* suite, const TstCase* ite
     AT(dock_window_once != NULL);
     AT(current_window_docked != NULL);
     AT(current_window_rect != NULL);
+    AT(tooltip != NULL);
+    AT(input_text != NULL);
+    AT(begin_child != NULL);
+    AT(end_child != NULL);
     return 0;
 }
 
@@ -1036,6 +1058,11 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
         dvz_input_subscribe_pointer(router_a, _gui_record_pointer, &recorder_a);
     DvzCallbackId id_b =
         dvz_input_subscribe_pointer(router_b, _gui_record_pointer, &recorder_b);
+    DvzCallbackId event_id_a =
+        dvz_input_subscribe_event(router_a, _gui_record_input_event, &recorder_a);
+    AT(id_a != DVZ_CALLBACK_ID_NONE);
+    AT(id_b != DVZ_CALLBACK_ID_NONE);
+    AT(event_id_a != DVZ_CALLBACK_ID_NONE);
 
     _gui_emit_pointer(router_a, DVZ_POINTER_EVENT_MOVE);
     AT(recorder_a.count == 1);
@@ -1047,7 +1074,23 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     AT(recorder_b.count == 1);
     AT(recorder_b.last_type == DVZ_POINTER_EVENT_PRESS);
 
+    /* Owned offscreen viewports synthesize gestures from forwarded raw events. */
+    dvz_pointer_emit_position(
+        router_a, DVZ_POINTER_EVENT_PRESS, 10.0f, 20.0f, 100.0f, 80.0f,
+        DVZ_POINTER_BUTTON_LEFT, 0, 1.0f, dvz_input_timestamp_ns(), NULL);
+    dvz_pointer_emit_position(
+        router_a, DVZ_POINTER_EVENT_MOVE, 20.0f, 25.0f, 100.0f, 80.0f,
+        DVZ_POINTER_BUTTON_NONE, 0, 1.0f, dvz_input_timestamp_ns(), NULL);
+    dvz_pointer_emit_position(
+        router_a, DVZ_POINTER_EVENT_MOVE, 30.0f, 30.0f, 100.0f, 80.0f,
+        DVZ_POINTER_BUTTON_NONE, 0, 1.0f, dvz_input_timestamp_ns(), NULL);
+    AT(recorder_a.drag_count > 0);
+    dvz_pointer_emit_position(
+        router_a, DVZ_POINTER_EVENT_RELEASE, 20.0f, 25.0f, 100.0f, 80.0f,
+        DVZ_POINTER_BUTTON_LEFT, 0, 1.0f, dvz_input_timestamp_ns(), NULL);
+
     dvz_input_unsubscribe(router_a, id_a);
+    dvz_input_unsubscribe(router_a, event_id_a);
     dvz_input_unsubscribe(router_b, id_b);
     dvz_gui_viewport_destroy(viewport_a);
     dvz_gui_viewport_destroy(viewport_b);

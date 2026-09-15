@@ -194,6 +194,7 @@ struct DvzGuiViewport
     bool mouse_hovered;
     float mouse_pos[2];
     float mouse_size[2];
+    DvzPointerGestureHandler* gesture_handler;
     DvzGuiViewport* next;
 };
 
@@ -1533,6 +1534,11 @@ static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
     }
     if (viewport->canvas != NULL)
         (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
+    if (viewport->gesture_handler != NULL)
+    {
+        dvz_pointer_gesture_handler_destroy(viewport->gesture_handler);
+        viewport->gesture_handler = NULL;
+    }
     if (viewport->source != NULL && viewport->owns_source)
         dvz_view_set_render_enabled(viewport->source, false);
     _gui_viewport_retire_texture(viewport);
@@ -2475,6 +2481,49 @@ void dvz_gui_text(DvzGui* gui, const char* text)
 }
 
 
+void dvz_gui_tooltip(DvzGui* gui, const char* text)
+{
+    ANN(gui);
+    ANN(text);
+    _gui_set_current(gui);
+    ImGui::SetTooltip("%s", text);
+}
+
+
+bool dvz_gui_input_text(DvzGui* gui, const char* label, char* value, uint32_t capacity)
+{
+    ANN(gui);
+    ANN(label);
+    ANN(value);
+    if (capacity == 0)
+        return false;
+    _gui_set_current(gui);
+    return ImGui::InputText(label, value, capacity);
+}
+
+
+
+bool dvz_gui_begin_child(DvzGui* gui, const char* id, float width, float height, int flags)
+{
+    ANN(gui);
+    ANN(id);
+    _gui_set_current(gui);
+    const float scale = _gui_valid_scale(gui->coordinate_scale);
+    const ImVec2 size = ImVec2(width > 0.0f ? width * scale : width,
+                               height > 0.0f ? height * scale : height);
+    return ImGui::BeginChild(id, size, (ImGuiChildFlags)flags, ImGuiWindowFlags_None);
+}
+
+
+
+void dvz_gui_end_child(DvzGui* gui)
+{
+    ANN(gui);
+    _gui_set_current(gui);
+    ImGui::EndChild();
+}
+
+
 
 /**
  * Push the default monospace ImGui font.
@@ -2911,12 +2960,18 @@ static DvzGuiViewport* _gui_viewport_from_window(
     viewport->config = _gui_viewport_config_normalize(config);
     viewport->owns_source = owns_source;
     viewport->texture_dirty = true;
+    viewport->gesture_handler = dvz_pointer_gesture_handler(dvz_view_input(source));
+    if (viewport->gesture_handler == NULL)
+    {
+        dvz_free(viewport);
+        return NULL;
+    }
     dvz_view_logical_size(source, &viewport->requested_width, &viewport->requested_height);
     dvz_view_framebuffer_size(
         source, &viewport->requested_framebuffer_width, &viewport->requested_framebuffer_height);
     if (!_gui_viewport_create_sampler(viewport))
     {
-        dvz_free(viewport);
+        _gui_viewport_destroy(viewport, false);
         return NULL;
     }
 

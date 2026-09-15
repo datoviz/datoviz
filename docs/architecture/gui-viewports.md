@@ -101,6 +101,10 @@ The viewport forwards pointer press, move, release, and wheel events in source-w
 
 While the viewport image is hovered, it owns horizontal and vertical wheel input. The enclosing ImGui window therefore does not scroll in response to the same wheel event.
 
+Forwarded raw press, move, and release events are also promoted to drag gestures by the owned offscreen viewport. Scene controllers connected to `dvz_gui_viewport_input()` therefore receive the same pan, orbit, and drag semantics as controllers attached to a native window.
+
+Applications that need fixed controls above a scrolling data widget can wrap only that widget in `dvz_gui_begin_child()` and `dvz_gui_end_child()`. `dvz_gui_input_text()` supports a fixed filter above that child, and `dvz_gui_tooltip()` provides hover details without requiring direct Dear ImGui calls.
+
 Clicking a viewport gives it keyboard focus for Datoviz input routing. GLFW key press, release, and
 repeat events are forwarded to that viewport only while no regular ImGui widget wants keyboard
 capture. Clicking another ImGui item clears the focused viewport.
