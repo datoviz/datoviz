@@ -261,6 +261,28 @@ class FixedWidthTypeTests(unittest.TestCase):
         self.assertEqual(callback["args"], ["uint64_t"])
 
 
+class CallbackLifetimeTests(unittest.TestCase):
+    def test_repeated_subscription_reuses_live_ctypes_closure(self) -> None:
+        text, _ = ctypes_gen.generate(
+            _aligned_record_api(), forced_layout_records={"DvzAlignedOutput"}
+        )
+        namespace = _execute_generated(text)
+        callback_type = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
+        owner = ctypes.c_void_p(1234)
+
+        class Receiver:
+            def callback(self, _value):
+                pass
+
+        receiver = Receiver()
+        store = namespace["_callback_store_subscription"]
+        first = store(callback_type, owner, receiver.callback, None)
+        second = store(callback_type, owner, receiver.callback, None)
+
+        self.assertIs(first, second)
+        self.assertEqual(len(namespace["_CALLBACK_KEEPALIVE"]), 1)
+
+
 class AlignedLayoutTests(unittest.TestCase):
     def test_policy_required_alignment_parser(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

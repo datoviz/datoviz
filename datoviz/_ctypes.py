@@ -177,9 +177,16 @@ def _callback_coerce(callback_type, callback):
 
 
 def _callback_store_subscription(callback_type, owner, callback, user_data):
-    c_callback = _callback_coerce(callback_type, callback)
-    if callback is not None:
-        key = _callback_subscription_key(callback_type, owner, callback, user_data)
+    if callback is None:
+        return callback_type()
+    key = _callback_subscription_key(callback_type, owner, callback, user_data)
+    # Reuse the closure while the same logical subscription is alive. Some
+    # one-shot APIs (notably dvz_view_post) may queue the same Python callback
+    # more than once before native code invokes it. Replacing the stored
+    # CFUNCTYPE here would free the closure still held by the earlier queue item.
+    c_callback = _CALLBACK_KEEPALIVE.get(key)
+    if c_callback is None:
+        c_callback = _callback_coerce(callback_type, callback)
         _CALLBACK_KEEPALIVE[key] = c_callback
     return c_callback
 

@@ -49,12 +49,16 @@ def _run_view_post_smoke() -> None:
             calls.append(user_data)
 
         user_data = ctypes.c_void_p(5678)
-        if dvz.dvz_view_post(view, posted, user_data) != 0:
-            raise RuntimeError('dvz_view_post() failed')
+        # Queue the same logical callback repeatedly before native code gets a
+        # chance to drain it. Every queued pointer must refer to the same live
+        # CFUNCTYPE closure rather than to an overwritten temporary closure.
+        for _ in range(3):
+            if dvz.dvz_view_post(view, posted, user_data) != 0:
+                raise RuntimeError('dvz_view_post() failed')
         rc = dvz.dvz_view_render_once(view)
         if rc < 0:
             raise RuntimeError('dvz_view_render_once() failed')
-        if calls != [5678]:
+        if calls != [5678, 5678, 5678]:
             raise RuntimeError('posted callback did not run on render_once')
     finally:
         if app:
