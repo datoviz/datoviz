@@ -3,7 +3,7 @@
 Integer sampled-field visual rendered through categorical label scale metadata.
 
 Status: supported.
-Backends: native; WebGPU live (`labels`, `categorical-scale`, `panzoom`).
+Backends: native; WebGPU live (`labels`, `categorical-scale`, `panzoom`) for the documented 2D categorical route. The 3D slice/composite route is native-only unless a specific browser example proves otherwise.
 Primitive: textured quad or retained label item quads.
 
 ## Preview And Links
@@ -52,7 +52,7 @@ the common case has `N = 1`.
 - Opacity and slice position must be finite in `[0,1]`. Boundary width must be finite and
   nonnegative. Up to `DVZ_LABELS_MAX_HIDDEN` category IDs may be hidden.
 - The 3D field route is slice-based and uses `dvz_labels_set_slice_axis()` plus
-  `dvz_labels_set_slice_position()`.
+  `dvz_labels_set_slice_position()`; this route is currently native-only.
 
 ## Verified Usage Pattern
 
@@ -67,8 +67,8 @@ through the categorical scale used by the visual.
 
 ## Backend Notes
 
-Native and WebGPU paths are active for the 2D categorical sampled-field route. The example disables
-depth testing and enables alpha blending.
+Native and WebGPU paths are active for the 2D categorical sampled-field route. The 3D labels
+slice/composite route is native-only. The example disables depth testing and enables alpha blending.
 
 ## Canonical Example
 

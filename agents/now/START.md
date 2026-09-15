@@ -19,6 +19,7 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. Read
 | Render products | [Graph techniques](../../spec/scene/implementation/GRAPH_TECHNIQUES.md), [occlusion](../../spec/scene/implementation/OCCLUSION_EFFECTS.md), [transparency/MSAA](../../spec/scene/implementation/TRANSPARENCY_MSAA.md); [landing evidence](RC3_RENDER_PRODUCTS_LANDING.md) and [affected QA](RC3_RENDER_PRODUCTS_AFFECTED_QA.md) |
 | Input and mesh updates | [Integrated issues #139/#140](ISSUES_139_140_HANDOFF.md) |
 | Rolling fields and surfaces | [Issue #138 benchmarks and RC4/post-v0.4 boundary](ISSUE_138_PERFORMANCE_HANDOFF.md) |
+| Atlas and sampled fields | [Current capability, gaps, benchmark gates, and RC3/RC4/final/v0.5 allocation](ATLAS_SAMPLED_FIELDS_HANDOFF.md) |
 | Lighting | [Completed RC3 foundation](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md); preserve panel-light ownership and direct/indirect contracts without expanding to full PBR or the optional multi-light showcase |
 | ImPlot and docking | [Deferred integration](GUI_IMPLOT_DOCKING_HANDOFF.md); keep the experimental example default-off and partial integration out of RC3 |
 | Windows CUDA/Vulkan interop | [Status](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md), [next steps](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/NEXT_STEPS.md); non-blocking RC4 work unless explicitly promoted |

@@ -45,7 +45,7 @@ Avoid:
 
 Unless a specific API says otherwise, call Datoviz scene and runtime APIs from the same thread or host event context that owns the app/runtime. Treat callbacks as part of that owning thread or host event context.
 
-If another thread produces data, hand off immutable data or application-owned messages to the owner thread, then update Datoviz retained state there.
+If another thread produces data, hand off immutable data or application-owned messages with `dvz_view_post()`, then update Datoviz retained state in that callback on the view owner thread. The post queue is bounded and borrows its `user_data` pointer; applications own result lifetime, cancellation, coalescing, and back-pressure.
 
 ## See Also
 
