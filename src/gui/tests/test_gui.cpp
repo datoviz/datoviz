@@ -20,11 +20,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "../_gui.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
+#include "datoviz/controller/arcball.h"
 #include "datoviz/fileio/fileio.h"
 #include "datoviz/gui.h"
 #include "datoviz/imgui.h"
@@ -34,7 +36,6 @@
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/window.h"
 #include "datoviz_testing.h"
-#include "../_gui.h"
 
 
 
@@ -1144,6 +1145,178 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
 
 
 /**
+ * Verify the native view-input path used by docked GUI viewport forwarding.
+ *
+ * This deliberately goes through dvz_view_emit_pointer(), rather than calling
+ * the arcball directly. The GUI bridge forwards ImGui pointer events to this
+ * view API, so this test catches broken panel connection, coordinate routing,
+ * and press/move/release drag synthesis. ImGui/X11 injection remains a manual
+ * acceptance concern because the test runner does not own a stable desktop.
+ *
+ * @param suite test suite
+ * @param item test case
+ * @return 0 on success
+ */
+static int test_gui_forwarded_viewport_arcball(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    if (!_gui_smoke_available())
+    {
+        tst_skip(suite, "GUI/GLFW support unavailable");
+        return 0;
+    }
+
+    GuiTestGpuResources gpu_resources = {};
+    tst_expect_error_begin(suite);
+    const char* gpu_skip = _gui_test_gpu_resources_create(suite, &gpu_resources);
+    (void)tst_expect_error_end(suite);
+    if (gpu_skip != NULL)
+    {
+        tst_skip(suite, gpu_skip);
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* source_figure = dvz_figure(scene, 240, 180, 0);
+    DvzFigure* host_figure = _gui_test_figure(scene, 640, 480);
+    AT(source_figure != NULL);
+    AT(host_figure != NULL);
+    DvzPanel* source_panel = dvz_panel_full(source_figure);
+    AT(source_panel != NULL);
+
+    /* Use asymmetric 3-D geometry so the rendered image must change when the arcball changes. */
+    DvzVisual* points = dvz_point(scene, 0);
+    AT(points != NULL);
+    vec3 positions[3] = {
+        {-0.72f, -0.38f, +0.18f},
+        {+0.48f, -0.12f, -0.44f},
+        {+0.16f, +0.68f, +0.35f},
+    };
+    DvzColor colors[3] = {
+        {238, 82, 76, 255},
+        {66, 184, 131, 255},
+        {75, 132, 235, 255},
+    };
+    float sizes[3] = {28.0f, 20.0f, 24.0f};
+    AT(dvz_visual_set_data(points, "position", positions, 3) == DVZ_OK);
+    AT(dvz_visual_set_data(points, "color", colors, 3) == DVZ_OK);
+    AT(dvz_visual_set_data(points, "size", sizes, 3) == DVZ_OK);
+    AT(dvz_panel_add_visual(source_panel, points, NULL) == DVZ_OK);
+
+    DvzApp* app = _gui_test_app(scene, NULL, &gpu_resources);
+    if (app == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
+        return 0;
+    }
+
+    DvzView* source_win = dvz_view_offscreen(app, source_figure, 240, 180);
+    tst_expect_error_begin(suite);
+    DvzView* host_win =
+        dvz_view_window(app, host_figure, 640, 480, "test_gui_forwarded_viewport_arcball");
+    (void)tst_expect_error_end(suite);
+    if (source_win == NULL || host_win == NULL)
+    {
+        tst_skip(suite, "view creation failed");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
+        return 0;
+    }
+
+    DvzGui* gui = dvz_view_gui(host_win, NULL);
+    if (gui == NULL)
+    {
+        tst_skip(suite, "GUI creation failed");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
+        return 0;
+    }
+    DvzGuiViewportConfig viewport_config = dvz_gui_viewport_config();
+    DvzGuiViewport* viewport = dvz_gui_viewport_from_window(gui, source_win, &viewport_config);
+    AT(viewport != NULL);
+
+    DvzController* controller = dvz_arcball(scene, NULL);
+    AT(controller != NULL);
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    AT(arcball != NULL);
+    AT(dvz_view_bind_controller(source_win, source_panel, controller, DVZ_DIM_MASK_XYZ) == DVZ_OK);
+
+    GuiInputRecorder recorder = {};
+    DvzInputRouter* router = dvz_view_input(source_win);
+    AT(router != NULL);
+    DvzCallbackId pointer_id = dvz_input_subscribe_pointer(router, _gui_record_pointer, &recorder);
+    AT(pointer_id != DVZ_CALLBACK_ID_NONE);
+    DvzCallbackId event_id = dvz_input_subscribe_event(router, _gui_record_input_event, &recorder);
+    AT(event_id != DVZ_CALLBACK_ID_NONE);
+
+    AT(dvz_view_render_once(source_win) == DVZ_CANVAS_FRAME_READY);
+    uint32_t before_width = 0;
+    uint32_t before_height = 0;
+    uint8_t* before_rgba = NULL;
+    AT(dvz_canvas_capture_rgba(
+           dvz_view_canvas(source_win), &before_width, &before_height, &before_rgba) == DVZ_OK);
+    ANN(before_rgba);
+
+    vec3 before = {0};
+    vec3 after = {0};
+    dvz_arcball_angles(arcball, before);
+    AT(dvz_view_emit_pointer(
+           source_win, DVZ_POINTER_EVENT_PRESS, 48.0f, 54.0f, 240.0f, 180.0f,
+           DVZ_POINTER_BUTTON_LEFT, 0) == DVZ_OK);
+    AT(dvz_view_emit_pointer(
+           source_win, DVZ_POINTER_EVENT_MOVE, 132.0f, 94.0f, 240.0f, 180.0f,
+           DVZ_POINTER_BUTTON_NONE, 0) == DVZ_OK);
+    AT(dvz_view_emit_pointer(
+           source_win, DVZ_POINTER_EVENT_MOVE, 168.0f, 120.0f, 240.0f, 180.0f,
+           DVZ_POINTER_BUTTON_NONE, 0) == DVZ_OK);
+    AT(dvz_view_emit_pointer(
+           source_win, DVZ_POINTER_EVENT_RELEASE, 168.0f, 120.0f, 240.0f, 180.0f,
+           DVZ_POINTER_BUTTON_LEFT, 0) == DVZ_OK);
+    dvz_arcball_angles(arcball, after);
+
+    AT(recorder.count >= 3);
+    AT(recorder.drag_count > 0);
+    AT(fabsf(after[0] - before[0]) > 1e-5f || fabsf(after[1] - before[1]) > 1e-5f);
+    AT(!dvz_arcball_is_interacting(arcball));
+
+    AT(dvz_view_render_once(source_win) == DVZ_CANVAS_FRAME_READY);
+    uint32_t after_width = 0;
+    uint32_t after_height = 0;
+    uint8_t* after_rgba = NULL;
+    AT(dvz_canvas_capture_rgba(
+           dvz_view_canvas(source_win), &after_width, &after_height, &after_rgba) == DVZ_OK);
+    ANN(after_rgba);
+    AT(after_width == before_width);
+    AT(after_height == before_height);
+    uint32_t changed_pixels = 0;
+    for (uint32_t i = 0; i < before_width * before_height; i++)
+    {
+        if (memcmp(&before_rgba[4 * i], &after_rgba[4 * i], 4) != 0)
+            changed_pixels++;
+    }
+    AT(changed_pixels > 32);
+    dvz_free(after_rgba);
+    dvz_free(before_rgba);
+
+    dvz_input_unsubscribe(router, pointer_id);
+    dvz_input_unsubscribe(router, event_id);
+    dvz_gui_viewport_destroy(viewport);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    _gui_test_gpu_resources_destroy(&gpu_resources);
+    return 0;
+}
+
+
+
+/**
  * Register GUI tests.
  *
  * @param suite test suite
@@ -1180,6 +1353,7 @@ int test_gui(TstSuite* suite)
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);
     TST_GUI_GPU_CASE(test_gui_multi_viewport_input_routers);
+    TST_GUI_GPU_CASE(test_gui_forwarded_viewport_arcball);
 
 #undef TST_GUI_GPU_CASE
     return 0;

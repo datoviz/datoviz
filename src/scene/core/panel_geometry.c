@@ -250,18 +250,18 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
     else
     {
         DvzPanzoom panzoom = {0};
-        if (!_scene_panel_compose_panzoom(panel, &panzoom))
+        bool has_panzoom = _scene_panel_compose_panzoom(panel, &panzoom);
+        if (!has_panzoom && panel->view2d_enabled)
         {
-            if (!panel->view2d_enabled)
-                return;
             panzoom.zoom[0] = 1.0f;
             panzoom.zoom[1] = 1.0f;
+            has_panzoom = true;
         }
         DvzPanelView2DResolved view = {0};
         DvzRect plot = {0};
         (void)dvz_panel_plot_rect_px(panel, &plot);
         DvzPanzoomResolved resolved = {0};
-        if (_scene_panel_view2d_resolve(panel, &view) &&
+        if (has_panzoom && _scene_panel_view2d_resolve(panel, &view) &&
             dvz_panzoom_resolve(
                 &panzoom,
                 &(DvzPanzoomEval){

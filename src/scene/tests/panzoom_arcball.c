@@ -1801,6 +1801,39 @@ int test_controller_destroy_preserves_other_panel_bindings(
  * @param item the test item
  * @return 0 on success
  */
+int test_scene_arcball_only_mvp_composition(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 800, 400, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+
+    DvzController* controller = dvz_arcball(scene, NULL);
+    ANN(controller);
+    DvzArcball* arcball = dvz_controller_arcball(controller);
+    ANN(arcball);
+    AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == DVZ_OK);
+    AT(dvz_arcball_set(arcball, (vec3){0.4f, -0.8f, 1.2f}) == DVZ_OK);
+
+    DvzMVP mvp = {0};
+    _scene_panel_apply_mvp(panel, &mvp);
+
+    /* An arcball-only 3-D panel must not return an identity MVP merely because it has no
+       panzoom, 2-D view, or explicit camera. */
+    AT(fabsf(mvp.model[0][0] - 1.0f) > 1e-3f);
+    AT(fabsf(mvp.model[1][2]) > 1e-3f);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -2270,6 +2303,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_controller_destroy_detaches_panels_links_and_reuses_slot);
     TST_CASE(test_controller_destroy_preserves_other_panel_bindings);
 
+    TST_CASE(test_scene_arcball_only_mvp_composition);
     TST_CASE(test_scene_camera_arcball_mvp_composition);
     return 0;
 }
