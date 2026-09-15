@@ -19,8 +19,8 @@ Common workflows:
 - [Handle input events](../../how-to/input-events.md)
 - [Save screenshots](../../how-to/screenshots.md)
 
-Functions: 251
-Types: 122
+Functions: 257
+Types: 123
 
 ## Symbol Groups
 
@@ -29,7 +29,7 @@ Types: 122
 | [Application Lifecycle](#application-lifecycle) | 15 | 9 | 3 headers |
 | [Canvas Execution](#canvas-execution) | 20 | 12 | `include/datoviz/canvas.h`, `include/datoviz/canvas/enums.h` |
 | [Display Sizing](#display-sizing) | 0 | 6 | `include/datoviz/app.h`, `include/datoviz/window/size.h` |
-| [GUI](#gui) | 71 | 19 | `include/datoviz/gui.h` |
+| [GUI](#gui) | 77 | 20 | `include/datoviz/gui.h` |
 | [Input Routing](#input-routing) | 28 | 27 | 5 headers |
 | [Streaming And Video](#streaming-and-video) | 19 | 15 | 4 headers |
 | [Views And Capture](#views-and-capture) | 60 | 8 | 3 headers |
@@ -87,6 +87,7 @@ Types: 122
     | Function | Header |
     | --- | --- |
     | [`dvz_gui_begin()`](#dvz_gui_begin) | `include/datoviz/gui.h` |
+    | [`dvz_gui_begin_child()`](#dvz_gui_begin_child) | `include/datoviz/gui.h` |
     | [`dvz_gui_button()`](#dvz_gui_button) | `include/datoviz/gui.h` |
     | [`dvz_gui_checkbox()`](#dvz_gui_checkbox) | `include/datoviz/gui.h` |
     | [`dvz_gui_collapsing_header()`](#dvz_gui_collapsing_header) | `include/datoviz/gui.h` |
@@ -101,6 +102,8 @@ Types: 122
     | [`dvz_gui_demo()`](#dvz_gui_demo) | `include/datoviz/gui.h` |
     | [`dvz_gui_dock_window_once()`](#dvz_gui_dock_window_once) | `include/datoviz/gui.h` |
     | [`dvz_gui_end()`](#dvz_gui_end) | `include/datoviz/gui.h` |
+    | [`dvz_gui_end_child()`](#dvz_gui_end_child) | `include/datoviz/gui.h` |
+    | [`dvz_gui_input_text()`](#dvz_gui_input_text) | `include/datoviz/gui.h` |
     | [`dvz_gui_pop_font()`](#dvz_gui_pop_font) | `include/datoviz/gui.h` |
     | [`dvz_gui_push_mono()`](#dvz_gui_push_mono) | `include/datoviz/gui.h` |
     | [`dvz_gui_range_float()`](#dvz_gui_range_float) | `include/datoviz/gui.h` |
@@ -132,6 +135,7 @@ Types: 122
     | [`dvz_gui_table_set_styles()`](#dvz_gui_table_set_styles) | `include/datoviz/gui.h` |
     | [`dvz_gui_table_set_visible()`](#dvz_gui_table_set_visible) | `include/datoviz/gui.h` |
     | [`dvz_gui_text()`](#dvz_gui_text) | `include/datoviz/gui.h` |
+    | [`dvz_gui_tooltip()`](#dvz_gui_tooltip) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree()`](#dvz_gui_tree) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_collapse_all()`](#dvz_gui_tree_collapse_all) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_destroy()`](#dvz_gui_tree_destroy) | `include/datoviz/gui.h` |
@@ -141,9 +145,11 @@ Types: 122
     | [`dvz_gui_tree_get_expanded()`](#dvz_gui_tree_get_expanded) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_get_filter()`](#dvz_gui_tree_get_filter) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_get_selection()`](#dvz_gui_tree_get_selection) | `include/datoviz/gui.h` |
+    | [`dvz_gui_tree_layout()`](#dvz_gui_tree_layout) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_reveal()`](#dvz_gui_tree_reveal) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_set_expanded()`](#dvz_gui_tree_set_expanded) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_set_filter()`](#dvz_gui_tree_set_filter) | `include/datoviz/gui.h` |
+    | [`dvz_gui_tree_set_layout()`](#dvz_gui_tree_set_layout) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_set_matches()`](#dvz_gui_tree_set_matches) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_set_rows()`](#dvz_gui_tree_set_rows) | `include/datoviz/gui.h` |
     | [`dvz_gui_tree_set_selection()`](#dvz_gui_tree_set_selection) | `include/datoviz/gui.h` |
@@ -1521,7 +1527,35 @@ _Bool dvz_gui_begin(
 | `open` | `_Bool` * | optional open flag, or NULL |
 | `flags` | `int` | Dear ImGui window flags |
 
-_Declared in `include/datoviz/gui.h`:281._
+_Declared in `include/datoviz/gui.h`:298._
+
+#### `dvz_gui_begin_child()` { #dvz_gui_begin_child .dvz-api-function }
+
+Start a bounded child region with independent scrolling.
+
+A non-positive width or height uses the corresponding remaining content extent.
+Call dvz_gui_end_child() for every call, including when this function returns false.
+
+```c
+_Bool dvz_gui_begin_child(
+    DvzGui * gui,
+    const char * id,
+    float width,
+    float height,
+    int flags
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the child body is visible |
+| `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
+| `id` | `const` `char` * | stable child identifier |
+| `width` | `float` | requested width in logical pixels, or non-positive for remaining width |
+| `height` | `float` | requested height in logical pixels, or non-positive for remaining height |
+| `flags` | `int` | Dear ImGui child flags |
+
+_Declared in `include/datoviz/gui.h`:398._
 
 #### `dvz_gui_button()` { #dvz_gui_button .dvz-api-function }
 
@@ -1540,7 +1574,7 @@ _Bool dvz_gui_button(
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 | `label` | `const` `char` * | button label |
 
-_Declared in `include/datoviz/gui.h`:372._
+_Declared in `include/datoviz/gui.h`:438._
 
 #### `dvz_gui_checkbox()` { #dvz_gui_checkbox .dvz-api-function }
 
@@ -1561,7 +1595,7 @@ _Bool dvz_gui_checkbox(
 | `label` | `const` `char` * | checkbox label |
 | `value` | `_Bool` * | value edited in place |
 
-_Declared in `include/datoviz/gui.h`:384._
+_Declared in `include/datoviz/gui.h`:450._
 
 #### `dvz_gui_collapsing_header()` { #dvz_gui_collapsing_header .dvz-api-function }
 
@@ -1582,7 +1616,7 @@ _Bool dvz_gui_collapsing_header(
 | `label` | `const` `char` * | section label |
 | `flags` | `int` | Dear ImGui tree node flags |
 
-_Declared in `include/datoviz/gui.h`:585._
+_Declared in `include/datoviz/gui.h`:651._
 
 #### `dvz_gui_color_edit4()` { #dvz_gui_color_edit4 .dvz-api-function }
 
@@ -1605,7 +1639,7 @@ _Bool dvz_gui_color_edit4(
 | `rgba` | `float`[4] | RGBA channels edited in place |
 | `flags` | `int` | Dear ImGui color edit flags |
 
-_Declared in `include/datoviz/gui.h`:537._
+_Declared in `include/datoviz/gui.h`:603._
 
 #### `dvz_gui_color_edit_dvz()` { #dvz_gui_color_edit_dvz .dvz-api-function }
 
@@ -1628,7 +1662,7 @@ _Bool dvz_gui_color_edit_dvz(
 | `color` | [`DvzColor`](runtime-utilities.md#type-dvzcolor) * | color edited in place |
 | `flags` | `int` | Dear ImGui color edit flags |
 
-_Declared in `include/datoviz/gui.h`:550._
+_Declared in `include/datoviz/gui.h`:616._
 
 #### `dvz_gui_color_picker4()` { #dvz_gui_color_picker4 .dvz-api-function }
 
@@ -1651,7 +1685,7 @@ _Bool dvz_gui_color_picker4(
 | `rgba` | `float`[4] | RGBA channels edited in place |
 | `flags` | `int` | Dear ImGui color edit flags |
 
-_Declared in `include/datoviz/gui.h`:563._
+_Declared in `include/datoviz/gui.h`:629._
 
 #### `dvz_gui_combo()` { #dvz_gui_combo .dvz-api-function }
 
@@ -1676,7 +1710,7 @@ _Bool dvz_gui_combo(
 | `items` | `const` `char` *`const` * | item labels |
 | `item_count` | `int` | number of item labels |
 
-_Declared in `include/datoviz/gui.h`:397._
+_Declared in `include/datoviz/gui.h`:463._
 
 #### `dvz_gui_config()` { #dvz_gui_config .dvz-api-function }
 
@@ -1690,7 +1724,7 @@ DvzGuiConfig dvz_gui_config(void);
 | --- | --- | --- |
 | return | [`DvzGuiConfig`](app.md#type-dvzguiconfig) | default GUI configuration |
 
-_Declared in `include/datoviz/gui.h`:216._
+_Declared in `include/datoviz/gui.h`:233._
 
 #### `dvz_gui_current_window_docked()` { #dvz_gui_current_window_docked .dvz-api-function }
 
@@ -1709,7 +1743,7 @@ _Bool dvz_gui_current_window_docked(
 | return | `_Bool` | whether the current ImGui window is docked |
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 
-_Declared in `include/datoviz/gui.h`:310._
+_Declared in `include/datoviz/gui.h`:327._
 
 #### `dvz_gui_current_window_rect()` { #dvz_gui_current_window_rect .dvz-api-function }
 
@@ -1730,7 +1764,7 @@ _Bool dvz_gui_current_window_rect(
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 | `out` | [`DvzRect`](scene.md#type-dvzrect) * | output rectangle |
 
-_Declared in `include/datoviz/gui.h`:323._
+_Declared in `include/datoviz/gui.h`:340._
 
 #### `dvz_gui_data_style()` { #dvz_gui_data_style .dvz-api-function }
 
@@ -1744,7 +1778,7 @@ DvzGuiDataStyle dvz_gui_data_style(void);
 | --- | --- | --- |
 | return | [`DvzGuiDataStyle`](app.md#type-dvzguidatastyle) | a zero-initialized, size-versioned style |
 
-_Declared in `include/datoviz/gui.h`:239._
+_Declared in `include/datoviz/gui.h`:256._
 
 #### `dvz_gui_demo()` { #dvz_gui_demo .dvz-api-function }
 
@@ -1762,7 +1796,7 @@ void dvz_gui_demo(
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 | `open` | `_Bool` * | optional open flag, or NULL |
 
-_Declared in `include/datoviz/gui.h`:606._
+_Declared in `include/datoviz/gui.h`:672._
 
 #### `dvz_gui_dock_window_once()` { #dvz_gui_dock_window_once .dvz-api-function }
 
@@ -1785,10 +1819,10 @@ DvzResult dvz_gui_dock_window_once(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK if the request was accepted, DVZ_ERROR otherwise |
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 | `title` | `const` `char` * | the window title |
-| `slot` | [`DvzGuiDockSlot`](app.md#type-dvzguidockslot) | side of the full-view dockspace |
+| `slot` | [`DvzGuiDockSlot`](app.md#type-dvzguidockslot) | side or remaining center of the full-view dockspace |
 | `size_px` | `float` | initial docked size in logical pixels along the split axis, or 0 for default |
 
-_Declared in `include/datoviz/gui.h`:298._
+_Declared in `include/datoviz/gui.h`:315._
 
 #### `dvz_gui_end()` { #dvz_gui_end .dvz-api-function }
 
@@ -1804,7 +1838,46 @@ void dvz_gui_end(
 | --- | --- | --- |
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 
-_Declared in `include/datoviz/gui.h`:332._
+_Declared in `include/datoviz/gui.h`:349._
+
+#### `dvz_gui_end_child()` { #dvz_gui_end_child .dvz-api-function }
+
+End the current child region.
+
+```c
+void dvz_gui_end_child(
+    DvzGui * gui
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
+
+_Declared in `include/datoviz/gui.h`:408._
+
+#### `dvz_gui_input_text()` { #dvz_gui_input_text .dvz-api-function }
+
+Show a fixed-capacity UTF-8 text input.
+
+```c
+_Bool dvz_gui_input_text(
+    DvzGui * gui,
+    const char * label,
+    char * value,
+    uint32_t capacity
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | whether the value changed |
+| `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
+| `label` | `const` `char` * | input label |
+| `value` | `char` * | mutable null-terminated buffer |
+| `capacity` | `uint32_t` | buffer capacity in bytes, including the terminator |
+
+_Declared in `include/datoviz/gui.h`:381._
 
 #### `dvz_gui_pop_font()` { #dvz_gui_pop_font .dvz-api-function }
 
@@ -1820,7 +1893,7 @@ void dvz_gui_pop_font(
 | --- | --- | --- |
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 
-_Declared in `include/datoviz/gui.h`:361._
+_Declared in `include/datoviz/gui.h`:427._
 
 #### `dvz_gui_push_mono()` { #dvz_gui_push_mono .dvz-api-function }
 
@@ -1837,7 +1910,7 @@ _Bool dvz_gui_push_mono(
 | return | `_Bool` | whether the monospace font was available and pushed |
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 
-_Declared in `include/datoviz/gui.h`:352._
+_Declared in `include/datoviz/gui.h`:418._
 
 #### `dvz_gui_range_float()` { #dvz_gui_range_float .dvz-api-function }
 
@@ -1868,7 +1941,7 @@ _Bool dvz_gui_range_float(
 | `max` | `float` | upper clamp value |
 | `format` | `const` `char` * | printf-style value format |
 
-_Declared in `include/datoviz/gui.h`:522._
+_Declared in `include/datoviz/gui.h`:588._
 
 #### `dvz_gui_same_line()` { #dvz_gui_same_line .dvz-api-function }
 
@@ -1888,7 +1961,7 @@ void dvz_gui_same_line(
 | `offset_from_start_x` | `float` | x offset from start, or 0 |
 | `spacing` | `float` | spacing between items, or -1 for default |
 
-_Declared in `include/datoviz/gui.h`:596._
+_Declared in `include/datoviz/gui.h`:662._
 
 #### `dvz_gui_separator_text()` { #dvz_gui_separator_text .dvz-api-function }
 
@@ -1906,7 +1979,7 @@ void dvz_gui_separator_text(
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 | `label` | `const` `char` * | separator label |
 
-_Declared in `include/datoviz/gui.h`:573._
+_Declared in `include/datoviz/gui.h`:639._
 
 #### `dvz_gui_slider_float()` { #dvz_gui_slider_float .dvz-api-function }
 
@@ -1931,7 +2004,7 @@ _Bool dvz_gui_slider_float(
 | `min` | `float` | minimum value |
 | `max` | `float` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:413._
+_Declared in `include/datoviz/gui.h`:479._
 
 #### `dvz_gui_slider_float2()` { #dvz_gui_slider_float2 .dvz-api-function }
 
@@ -1956,7 +2029,7 @@ _Bool dvz_gui_slider_float2(
 | `min` | `float` | minimum value |
 | `max` | `float` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:441._
+_Declared in `include/datoviz/gui.h`:507._
 
 #### `dvz_gui_slider_float3()` { #dvz_gui_slider_float3 .dvz-api-function }
 
@@ -1981,7 +2054,7 @@ _Bool dvz_gui_slider_float3(
 | `min` | `float` | minimum value |
 | `max` | `float` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:456._
+_Declared in `include/datoviz/gui.h`:522._
 
 #### `dvz_gui_slider_float4()` { #dvz_gui_slider_float4 .dvz-api-function }
 
@@ -2006,7 +2079,7 @@ _Bool dvz_gui_slider_float4(
 | `min` | `float` | minimum value |
 | `max` | `float` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:471._
+_Declared in `include/datoviz/gui.h`:537._
 
 #### `dvz_gui_slider_float_format()` { #dvz_gui_slider_float_format .dvz-api-function }
 
@@ -2033,7 +2106,7 @@ _Bool dvz_gui_slider_float_format(
 | `max` | `float` | maximum value |
 | `format` | `const` `char` * | printf-style value format |
 
-_Declared in `include/datoviz/gui.h`:486._
+_Declared in `include/datoviz/gui.h`:552._
 
 #### `dvz_gui_slider_int()` { #dvz_gui_slider_int .dvz-api-function }
 
@@ -2058,7 +2131,7 @@ _Bool dvz_gui_slider_int(
 | `min` | `int` | minimum value |
 | `max` | `int` | maximum value |
 
-_Declared in `include/datoviz/gui.h`:426._
+_Declared in `include/datoviz/gui.h`:492._
 
 #### `dvz_gui_slider_range_float()` { #dvz_gui_slider_range_float .dvz-api-function }
 
@@ -2087,7 +2160,7 @@ _Bool dvz_gui_slider_range_float(
 | `max` | `float` | upper clamp value |
 | `format` | `const` `char` * | optional printf-style value format |
 
-_Declared in `include/datoviz/gui.h`:503._
+_Declared in `include/datoviz/gui.h`:569._
 
 #### `dvz_gui_table()` { #dvz_gui_table .dvz-api-function }
 
@@ -2110,7 +2183,7 @@ DvzGuiTable * dvz_gui_table(
 | `columns` | `const` [`DvzGuiTableColumnDesc`](app.md#type-dvzguitablecolumndesc) * | columns |
 | `flags` | `uint32_t` | flags |
 
-_Declared in `include/datoviz/gui.h`:903._
+_Declared in `include/datoviz/gui.h`:987._
 
 #### `dvz_gui_table_column_desc()` { #dvz_gui_table_column_desc .dvz-api-function }
 
@@ -2124,7 +2197,7 @@ DvzGuiTableColumnDesc dvz_gui_table_column_desc(void);
 | --- | --- | --- |
 | return | [`DvzGuiTableColumnDesc`](app.md#type-dvzguitablecolumndesc) | a zero-initialized, size-versioned descriptor |
 
-_Declared in `include/datoviz/gui.h`:232._
+_Declared in `include/datoviz/gui.h`:249._
 
 #### `dvz_gui_table_destroy()` { #dvz_gui_table_destroy .dvz-api-function }
 
@@ -2140,7 +2213,7 @@ void dvz_gui_table_destroy(
 | --- | --- | --- |
 | `table` | [`DvzGuiTable`](app.md#type-dvzguitable) * | table |
 
-_Declared in `include/datoviz/gui.h`:1085._
+_Declared in `include/datoviz/gui.h`:1169._
 
 #### `dvz_gui_table_draw()` { #dvz_gui_table_draw .dvz-api-function }
 
@@ -2167,7 +2240,7 @@ DvzResult dvz_gui_table_draw(
 | `written` | `uint32_t` * | written |
 | `dropped` | `uint32_t` * | dropped |
 
-_Declared in `include/datoviz/gui.h`:1076._
+_Declared in `include/datoviz/gui.h`:1160._
 
 #### `dvz_gui_table_get_filter()` { #dvz_gui_table_get_filter .dvz-api-function }
 
@@ -2188,7 +2261,7 @@ uint32_t dvz_gui_table_get_filter(
 | `capacity` | `uint32_t` | capacity |
 | `filter` | `char` * | filter |
 
-_Declared in `include/datoviz/gui.h`:1052._
+_Declared in `include/datoviz/gui.h`:1136._
 
 #### `dvz_gui_table_get_selection()` { #dvz_gui_table_get_selection .dvz-api-function }
 
@@ -2209,7 +2282,7 @@ uint32_t dvz_gui_table_get_selection(
 | `capacity` | `uint32_t` | capacity |
 | `keys` | `uint64_t` * | keys |
 
-_Declared in `include/datoviz/gui.h`:1010._
+_Declared in `include/datoviz/gui.h`:1094._
 
 #### `dvz_gui_table_get_sort()` { #dvz_gui_table_get_sort .dvz-api-function }
 
@@ -2230,7 +2303,7 @@ DvzResult dvz_gui_table_get_sort(
 | `column_id` | `uint32_t` * | column id |
 | `direction` | `int32_t` * | direction |
 
-_Declared in `include/datoviz/gui.h`:1063._
+_Declared in `include/datoviz/gui.h`:1147._
 
 #### `dvz_gui_table_set_column_bool()` { #dvz_gui_table_set_column_bool .dvz-api-function }
 
@@ -2253,7 +2326,7 @@ DvzResult dvz_gui_table_set_column_bool(
 | `row_count` | `uint32_t` | row count |
 | `values` | `const` `_Bool` * | values |
 
-_Declared in `include/datoviz/gui.h`:964._
+_Declared in `include/datoviz/gui.h`:1048._
 
 #### `dvz_gui_table_set_column_color()` { #dvz_gui_table_set_column_color .dvz-api-function }
 
@@ -2276,7 +2349,7 @@ DvzResult dvz_gui_table_set_column_color(
 | `row_count` | `uint32_t` | row count |
 | `values` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) * | values |
 
-_Declared in `include/datoviz/gui.h`:976._
+_Declared in `include/datoviz/gui.h`:1060._
 
 #### `dvz_gui_table_set_column_double()` { #dvz_gui_table_set_column_double .dvz-api-function }
 
@@ -2299,7 +2372,7 @@ DvzResult dvz_gui_table_set_column_double(
 | `row_count` | `uint32_t` | row count |
 | `values` | `const` `double` * | values |
 
-_Declared in `include/datoviz/gui.h`:952._
+_Declared in `include/datoviz/gui.h`:1036._
 
 #### `dvz_gui_table_set_column_int64()` { #dvz_gui_table_set_column_int64 .dvz-api-function }
 
@@ -2322,7 +2395,7 @@ DvzResult dvz_gui_table_set_column_int64(
 | `row_count` | `uint32_t` | row count |
 | `values` | `const` `int64_t` * | values |
 
-_Declared in `include/datoviz/gui.h`:940._
+_Declared in `include/datoviz/gui.h`:1024._
 
 #### `dvz_gui_table_set_column_text()` { #dvz_gui_table_set_column_text .dvz-api-function }
 
@@ -2345,7 +2418,7 @@ DvzResult dvz_gui_table_set_column_text(
 | `row_count` | `uint32_t` | row count |
 | `values` | `const` `char` *`const` * | values |
 
-_Declared in `include/datoviz/gui.h`:928._
+_Declared in `include/datoviz/gui.h`:1012._
 
 #### `dvz_gui_table_set_filter()` { #dvz_gui_table_set_filter .dvz-api-function }
 
@@ -2364,7 +2437,7 @@ DvzResult dvz_gui_table_set_filter(
 | `table` | [`DvzGuiTable`](app.md#type-dvzguitable) * | table |
 | `filter` | `const` `char` * | filter |
 
-_Declared in `include/datoviz/gui.h`:1041._
+_Declared in `include/datoviz/gui.h`:1125._
 
 #### `dvz_gui_table_set_matches()` { #dvz_gui_table_set_matches .dvz-api-function }
 
@@ -2385,7 +2458,7 @@ DvzResult dvz_gui_table_set_matches(
 | `row_count` | `uint32_t` | row count |
 | `matches` | `const` `_Bool` * | matches |
 
-_Declared in `include/datoviz/gui.h`:1032._
+_Declared in `include/datoviz/gui.h`:1116._
 
 #### `dvz_gui_table_set_rows()` { #dvz_gui_table_set_rows .dvz-api-function }
 
@@ -2408,7 +2481,7 @@ DvzResult dvz_gui_table_set_rows(
 | `keys` | `const` `uint64_t` * | keys |
 | `flags` | `uint32_t` | flags |
 
-_Declared in `include/datoviz/gui.h`:916._
+_Declared in `include/datoviz/gui.h`:1000._
 
 #### `dvz_gui_table_set_selection()` { #dvz_gui_table_set_selection .dvz-api-function }
 
@@ -2429,7 +2502,7 @@ DvzResult dvz_gui_table_set_selection(
 | `key_count` | `uint32_t` | key count |
 | `keys` | `const` `uint64_t` * | keys |
 
-_Declared in `include/datoviz/gui.h`:999._
+_Declared in `include/datoviz/gui.h`:1083._
 
 #### `dvz_gui_table_set_styles()` { #dvz_gui_table_set_styles .dvz-api-function }
 
@@ -2450,7 +2523,7 @@ DvzResult dvz_gui_table_set_styles(
 | `style_count` | `uint32_t` | style count |
 | `styles` | `const` [`DvzGuiDataStyle`](app.md#type-dvzguidatastyle) * | styles |
 
-_Declared in `include/datoviz/gui.h`:988._
+_Declared in `include/datoviz/gui.h`:1072._
 
 #### `dvz_gui_table_set_visible()` { #dvz_gui_table_set_visible .dvz-api-function }
 
@@ -2471,7 +2544,7 @@ DvzResult dvz_gui_table_set_visible(
 | `row_count` | `uint32_t` | row count |
 | `visible` | `const` `_Bool` * | visible |
 
-_Declared in `include/datoviz/gui.h`:1021._
+_Declared in `include/datoviz/gui.h`:1105._
 
 #### `dvz_gui_text()` { #dvz_gui_text .dvz-api-function }
 
@@ -2489,7 +2562,25 @@ void dvz_gui_text(
 | `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
 | `text` | `const` `char` * | null-terminated text |
 
-_Declared in `include/datoviz/gui.h`:342._
+_Declared in `include/datoviz/gui.h`:359._
+
+#### `dvz_gui_tooltip()` { #dvz_gui_tooltip .dvz-api-function }
+
+Show a tooltip near the pointer for the current frame.
+
+```c
+void dvz_gui_tooltip(
+    DvzGui * gui,
+    const char * text
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `gui` | [`DvzGui`](app.md#type-dvzgui) * | the GUI overlay |
+| `text` | `const` `char` * | null-terminated tooltip text |
+
+_Declared in `include/datoviz/gui.h`:368._
 
 #### `dvz_gui_tree()` { #dvz_gui_tree .dvz-api-function }
 
@@ -2508,7 +2599,7 @@ DvzGuiTree * dvz_gui_tree(
 | `widget_id` | `const` `char` * | stable, non-empty UTF-8 ImGui identifier |
 | `flags` | `uint32_t` | bitwise OR of DvzGuiDataWidgetFlags |
 
-_Declared in `include/datoviz/gui.h`:712._
+_Declared in `include/datoviz/gui.h`:778._
 
 #### `dvz_gui_tree_collapse_all()` { #dvz_gui_tree_collapse_all .dvz-api-function }
 
@@ -2525,7 +2616,7 @@ DvzResult dvz_gui_tree_collapse_all(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on failure |
 | `tree` | [`DvzGuiTree`](app.md#type-dvzguitree) * | tree |
 
-_Declared in `include/datoviz/gui.h`:819._
+_Declared in `include/datoviz/gui.h`:903._
 
 #### `dvz_gui_tree_destroy()` { #dvz_gui_tree_destroy .dvz-api-function }
 
@@ -2541,7 +2632,7 @@ void dvz_gui_tree_destroy(
 | --- | --- | --- |
 | `tree` | [`DvzGuiTree`](app.md#type-dvzguitree) * | tree |
 
-_Declared in `include/datoviz/gui.h`:892._
+_Declared in `include/datoviz/gui.h`:976._
 
 #### `dvz_gui_tree_draw()` { #dvz_gui_tree_draw .dvz-api-function }
 
@@ -2568,7 +2659,7 @@ DvzResult dvz_gui_tree_draw(
 | `written` | `uint32_t` * | written |
 | `dropped` | `uint32_t` * | dropped |
 
-_Declared in `include/datoviz/gui.h`:883._
+_Declared in `include/datoviz/gui.h`:967._
 
 #### `dvz_gui_tree_expand_all()` { #dvz_gui_tree_expand_all .dvz-api-function }
 
@@ -2585,7 +2676,7 @@ DvzResult dvz_gui_tree_expand_all(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on failure |
 | `tree` | [`DvzGuiTree`](app.md#type-dvzguitree) * | tree |
 
-_Declared in `include/datoviz/gui.h`:802._
+_Declared in `include/datoviz/gui.h`:886._
 
 #### `dvz_gui_tree_expand_to_depth()` { #dvz_gui_tree_expand_to_depth .dvz-api-function }
 
@@ -2604,7 +2695,7 @@ DvzResult dvz_gui_tree_expand_to_depth(
 | `tree` | [`DvzGuiTree`](app.md#type-dvzguitree) * | tree |
 | `depth` | `uint32_t` | depth |
 
-_Declared in `include/datoviz/gui.h`:811._
+_Declared in `include/datoviz/gui.h`:895._
 
 #### `dvz_gui_tree_get_expanded()` { #dvz_gui_tree_get_expanded .dvz-api-function }
 
@@ -2625,7 +2716,7 @@ uint32_t dvz_gui_tree_get_expanded(
 | `capacity` | `uint32_t` | capacity |
 | `keys` | `uint64_t` * | keys |
 
-_Declared in `include/datoviz/gui.h`:794._
+_Declared in `include/datoviz/gui.h`:878._
 
 #### `dvz_gui_tree_get_filter()` { #dvz_gui_tree_get_filter .dvz-api-function }
 
@@ -2646,7 +2737,7 @@ uint32_t dvz_gui_tree_get_filter(
 | `capacity` | `uint32_t` | capacity |
 | `filter` | `char` * | filter |
 
-_Declared in `include/datoviz/gui.h`:870._
+_Declared in `include/datoviz/gui.h`:954._
 
 #### `dvz_gui_tree_get_selection()` { #dvz_gui_tree_get_selection .dvz-api-function }
 
@@ -2667,7 +2758,23 @@ uint32_t dvz_gui_tree_get_selection(
 | `capacity` | `uint32_t` | capacity |
 | `keys` | `uint64_t` * | keys |
 
-_Declared in `include/datoviz/gui.h`:772._
+_Declared in `include/datoviz/gui.h`:856._
+
+#### `dvz_gui_tree_layout()` { #dvz_gui_tree_layout .dvz-api-function }
+
+Return compact default layout parameters for a retained tree.
+
+Distances use em units and therefore follow the attached GUI's device and user scale.
+
+```c
+DvzGuiTreeLayout dvz_gui_tree_layout(void);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzGuiTreeLayout`](app.md#type-dvzguitreelayout) | default tree layout |
+
+_Declared in `include/datoviz/gui.h`:787._
 
 #### `dvz_gui_tree_reveal()` { #dvz_gui_tree_reveal .dvz-api-function }
 
@@ -2686,7 +2793,7 @@ DvzResult dvz_gui_tree_reveal(
 | `tree` | [`DvzGuiTree`](app.md#type-dvzguitree) * | tree |
 | `key` | `uint64_t` | key |
 
-_Declared in `include/datoviz/gui.h`:828._
+_Declared in `include/datoviz/gui.h`:912._
 
 #### `dvz_gui_tree_set_expanded()` { #dvz_gui_tree_set_expanded .dvz-api-function }
 
@@ -2707,7 +2814,7 @@ DvzResult dvz_gui_tree_set_expanded(
 | `key_count` | `uint32_t` | key count |
 | `keys` | `const` `uint64_t` * | keys |
 
-_Declared in `include/datoviz/gui.h`:783._
+_Declared in `include/datoviz/gui.h`:867._
 
 #### `dvz_gui_tree_set_filter()` { #dvz_gui_tree_set_filter .dvz-api-function }
 
@@ -2726,7 +2833,26 @@ DvzResult dvz_gui_tree_set_filter(
 | `tree` | [`DvzGuiTree`](app.md#type-dvzguitree) * | tree |
 | `filter` | `const` `char` * | filter |
 
-_Declared in `include/datoviz/gui.h`:859._
+_Declared in `include/datoviz/gui.h`:943._
+
+#### `dvz_gui_tree_set_layout()` { #dvz_gui_tree_set_layout .dvz-api-function }
+
+Set font-relative layout parameters for a retained tree.
+
+```c
+DvzResult dvz_gui_tree_set_layout(
+    DvzGuiTree * tree,
+    const DvzGuiTreeLayout * layout
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR on invalid input |
+| `tree` | [`DvzGuiTree`](app.md#type-dvzguitree) * | retained tree |
+| `layout` | `const` [`DvzGuiTreeLayout`](app.md#type-dvzguitreelayout) * | size-versioned tree layout |
+
+_Declared in `include/datoviz/gui.h`:796._
 
 #### `dvz_gui_tree_set_matches()` { #dvz_gui_tree_set_matches .dvz-api-function }
 
@@ -2747,7 +2873,7 @@ DvzResult dvz_gui_tree_set_matches(
 | `row_count` | `uint32_t` | row count |
 | `matches` | `const` `_Bool` * | matches |
 
-_Declared in `include/datoviz/gui.h`:850._
+_Declared in `include/datoviz/gui.h`:934._
 
 #### `dvz_gui_tree_set_rows()` { #dvz_gui_tree_set_rows .dvz-api-function }
 
@@ -2776,7 +2902,7 @@ DvzResult dvz_gui_tree_set_rows(
 | `secondary_labels` | `const` `char` *`const` * | secondary labels |
 | `flags` | `uint32_t` | flags |
 
-_Declared in `include/datoviz/gui.h`:726._
+_Declared in `include/datoviz/gui.h`:810._
 
 #### `dvz_gui_tree_set_selection()` { #dvz_gui_tree_set_selection .dvz-api-function }
 
@@ -2797,7 +2923,7 @@ DvzResult dvz_gui_tree_set_selection(
 | `key_count` | `uint32_t` | key count |
 | `keys` | `const` `uint64_t` * | keys |
 
-_Declared in `include/datoviz/gui.h`:761._
+_Declared in `include/datoviz/gui.h`:845._
 
 #### `dvz_gui_tree_set_styles()` { #dvz_gui_tree_set_styles .dvz-api-function }
 
@@ -2818,7 +2944,7 @@ DvzResult dvz_gui_tree_set_styles(
 | `style_count` | `uint32_t` | style count |
 | `styles` | `const` [`DvzGuiDataStyle`](app.md#type-dvzguidatastyle) * | styles |
 
-_Declared in `include/datoviz/gui.h`:750._
+_Declared in `include/datoviz/gui.h`:834._
 
 #### `dvz_gui_tree_set_swatches()` { #dvz_gui_tree_set_swatches .dvz-api-function }
 
@@ -2839,7 +2965,7 @@ DvzResult dvz_gui_tree_set_swatches(
 | `row_count` | `uint32_t` | row count |
 | `colors` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) * | colors |
 
-_Declared in `include/datoviz/gui.h`:739._
+_Declared in `include/datoviz/gui.h`:823._
 
 #### `dvz_gui_tree_set_visible()` { #dvz_gui_tree_set_visible .dvz-api-function }
 
@@ -2860,7 +2986,7 @@ DvzResult dvz_gui_tree_set_visible(
 | `row_count` | `uint32_t` | row count |
 | `visible` | `const` `_Bool` * | visible |
 
-_Declared in `include/datoviz/gui.h`:839._
+_Declared in `include/datoviz/gui.h`:923._
 
 #### `dvz_gui_viewport()` { #dvz_gui_viewport .dvz-api-function }
 
@@ -2888,7 +3014,7 @@ DvzGuiViewport * dvz_gui_viewport(
 | `figure` | [`DvzFigure`](scene.md#type-dvzfigure) * | the borrowed figure to render; must not be NULL |
 | `config` | `const` [`DvzGuiViewportConfig`](app.md#type-dvzguiviewportconfig) * | optional viewport configuration borrowed for the call, or NULL for defaults |
 
-_Declared in `include/datoviz/gui.h`:626._
+_Declared in `include/datoviz/gui.h`:692._
 
 #### `dvz_gui_viewport_config()` { #dvz_gui_viewport_config .dvz-api-function }
 
@@ -2902,7 +3028,7 @@ DvzGuiViewportConfig dvz_gui_viewport_config(void);
 | --- | --- | --- |
 | return | [`DvzGuiViewportConfig`](app.md#type-dvzguiviewportconfig) | default GUI viewport configuration |
 
-_Declared in `include/datoviz/gui.h`:225._
+_Declared in `include/datoviz/gui.h`:242._
 
 #### `dvz_gui_viewport_destroy()` { #dvz_gui_viewport_destroy .dvz-api-function }
 
@@ -2921,7 +3047,7 @@ void dvz_gui_viewport_destroy(
 | --- | --- | --- |
 | `viewport` | [`DvzGuiViewport`](app.md#type-dvzguiviewport) * | the owned GUI viewport to destroy, or NULL |
 
-_Declared in `include/datoviz/gui.h`:685._
+_Declared in `include/datoviz/gui.h`:751._
 
 #### `dvz_gui_viewport_from_window()` { #dvz_gui_viewport_from_window .dvz-api-function }
 
@@ -2947,7 +3073,7 @@ DvzGuiViewport * dvz_gui_viewport_from_window(
 | `source` | [`DvzView`](app.md#type-dvzview) * | the borrowed offscreen view providing the rendered image; must not be NULL |
 | `config` | `const` [`DvzGuiViewportConfig`](app.md#type-dvzguiviewportconfig) * | optional viewport configuration borrowed for the call, or NULL for defaults |
 
-_Declared in `include/datoviz/gui.h`:644._
+_Declared in `include/datoviz/gui.h`:710._
 
 #### `dvz_gui_viewport_input()` { #dvz_gui_viewport_input .dvz-api-function }
 
@@ -2967,7 +3093,7 @@ struct DvzInputRouter * dvz_gui_viewport_input(
 | return | `struct` [`DvzInputRouter`](app.md#type-dvzinputrouter) * | the input router, or NULL |
 | `viewport` | [`DvzGuiViewport`](app.md#type-dvzguiviewport) * | the GUI viewport |
 
-_Declared in `include/datoviz/gui.h`:657._
+_Declared in `include/datoviz/gui.h`:723._
 
 #### `dvz_gui_viewport_mouse()` { #dvz_gui_viewport_mouse .dvz-api-function }
 
@@ -2993,7 +3119,7 @@ _Bool dvz_gui_viewport_mouse(
 | `out_size` | `float`[2] | optional output displayed source width/height |
 | `out_hovered` | `_Bool` * | optional output hover state |
 
-_Declared in `include/datoviz/gui.h`:672._
+_Declared in `include/datoviz/gui.h`:738._
 
 #### `dvz_gui_viewport_window()` { #dvz_gui_viewport_window .dvz-api-function }
 
@@ -3020,7 +3146,7 @@ _Bool dvz_gui_viewport_window(
 | `open` | `_Bool` * | optional open flag, or NULL |
 | `flags` | `int` | Dear ImGui window flags |
 
-_Declared in `include/datoviz/gui.h`:703._
+_Declared in `include/datoviz/gui.h`:769._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3058,7 +3184,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:135._
+    _Declared in `include/datoviz/gui.h`:136._
 
 <a id="type-dvzguidataevent"></a>
 
@@ -3075,7 +3201,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:168._
+    _Declared in `include/datoviz/gui.h`:169._
 
 <a id="type-dvzguidataeventtype"></a>
 
@@ -3092,7 +3218,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:80._
+    _Declared in `include/datoviz/gui.h`:81._
 
 <a id="type-dvzguidatasetflags"></a>
 
@@ -3105,7 +3231,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:97._
+    _Declared in `include/datoviz/gui.h`:98._
 
 <a id="type-dvzguidatastyle"></a>
 
@@ -3123,7 +3249,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:192._
+    _Declared in `include/datoviz/gui.h`:193._
 
 <a id="type-dvzguidatastyleflags"></a>
 
@@ -3139,7 +3265,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:103._
+    _Declared in `include/datoviz/gui.h`:104._
 
 <a id="type-dvzguidatawidgetflags"></a>
 
@@ -3153,7 +3279,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:90._
+    _Declared in `include/datoviz/gui.h`:91._
 
 <a id="type-dvzguidockslot"></a>
 
@@ -3165,6 +3291,7 @@ _Declared in `include/datoviz/gui.h`:703._
         DVZ_GUI_DOCK_SLOT_RIGHT = 1,
         DVZ_GUI_DOCK_SLOT_TOP = 2,
         DVZ_GUI_DOCK_SLOT_BOTTOM = 3,
+        DVZ_GUI_DOCK_SLOT_CENTER = 4,
     };
     ```
 
@@ -3211,7 +3338,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:179._
+    _Declared in `include/datoviz/gui.h`:180._
 
 <a id="type-dvzguitablecolumnflags"></a>
 
@@ -3226,7 +3353,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:112._
+    _Declared in `include/datoviz/gui.h`:113._
 
 <a id="type-dvzguitablecolumntype"></a>
 
@@ -3242,7 +3369,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:120._
+    _Declared in `include/datoviz/gui.h`:121._
 
 <a id="type-dvzguitree"></a>
 
@@ -3253,6 +3380,26 @@ _Declared in `include/datoviz/gui.h`:703._
     ```
 
     _Declared in `include/datoviz/gui.h`:35._
+
+<a id="type-dvzguitreelayout"></a>
+
+??? abstract "`DvzGuiTreeLayout` · record"
+
+    ```c
+    struct DvzGuiTreeLayout {
+        uint32_t struct_size;
+        uint32_t flags;
+        float indent_em;
+        float row_padding_em;
+        float item_spacing_em;
+        float disclosure_gap_em;
+        float swatch_gap_em;
+        float secondary_gap_em;
+        uint32_t[2] reserved;
+    };
+    ```
+
+    _Declared in `include/datoviz/gui.h`:207._
 
 <a id="type-dvzguiviewport"></a>
 
@@ -3282,7 +3429,7 @@ _Declared in `include/datoviz/gui.h`:703._
     };
     ```
 
-    _Declared in `include/datoviz/gui.h`:148._
+    _Declared in `include/datoviz/gui.h`:149._
 
 <a id="type-dvzguiviewportflags"></a>
 
@@ -5484,7 +5631,7 @@ DvzGui * dvz_view_gui(
 | `view` | [`DvzView`](app.md#type-dvzview) * | the view |
 | `config` | `const` [`DvzGuiConfig`](app.md#type-dvzguiconfig) * | optional GUI configuration |
 
-_Declared in `include/datoviz/gui.h`:250._
+_Declared in `include/datoviz/gui.h`:267._
 
 #### `dvz_view_input()` { #dvz_view_input .dvz-api-function }
 
@@ -5998,7 +6145,7 @@ DvzResult dvz_view_set_gui_callback(
 | `callback` | [`DvzGuiCallback`](app.md#type-dvzguicallback) | callback pointer, or NULL to clear it |
 | `user_data` | `void` * | opaque pointer forwarded to the callback |
 
-_Declared in `include/datoviz/gui.h`:268._
+_Declared in `include/datoviz/gui.h`:285._
 
 #### `dvz_view_set_render_enabled()` { #dvz_view_set_render_enabled .dvz-api-function }
 
