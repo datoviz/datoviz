@@ -920,6 +920,7 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
     app_config.font_mono_size_px = 17.0f;
     app_config.font_text_size_px = 23.0f;
 
+    float base_font_size = 0.0f;
     for (uint32_t i = 0; i < 2; i++)
     {
         GuiTestGpuResources gpu_resources = {};
@@ -961,6 +962,8 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
             _gui_test_gpu_resources_destroy(&gpu_resources);
             return 0;
         }
+        const float user_scale = i == 0 ? 1.0f : 1.5f;
+        AT(dvz_view_set_user_scale(win, user_scale) == DVZ_OK);
 
         DvzGuiConfig gui_config = dvz_gui_config();
         DvzGui* gui = dvz_view_gui(win, i == 0 ? NULL : &gui_config);
@@ -981,6 +984,15 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
         AC(fonts.ui_size_px, 19.0f, 1e-6f);
         AC(fonts.mono_size_px, 17.0f, 1e-6f);
         AC(fonts.text_size_px, 23.0f, 1e-6f);
+        _dvz_gui_set_current(gui);
+        ImGuiIO* io = igGetIO_Nil();
+        AT(io != NULL);
+        AT(io->FontDefault != NULL);
+        AC(io->FontGlobalScale, 1.0f, 1e-6f);
+        if (i == 0)
+            base_font_size = io->FontDefault->FontSize;
+        else
+            AC(io->FontDefault->FontSize, 1.5f * base_font_size, 1e-5f);
 
         dvz_app_destroy(app);
         dvz_scene_destroy(scene);

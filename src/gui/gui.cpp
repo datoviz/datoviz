@@ -900,11 +900,12 @@ static void _gui_load_fonts(DvzGui* gui, const DvzGuiScale* scale)
         defaults.mono_size_px = fallback_defaults.mono_size_px;
 
     const float coordinate_scale = _gui_valid_scale(scale->coordinate);
+    const float presentation_scale = _gui_valid_scale(coordinate_scale * scale->user);
     const float raster_density = _gui_valid_scale(scale->device / coordinate_scale);
     const float font_size =
-        _gui_font_size(defaults.ui_size_px, fallback_defaults.ui_size_px) * coordinate_scale;
+        _gui_font_size(defaults.ui_size_px, fallback_defaults.ui_size_px) * presentation_scale;
     const float mono_font_size =
-        _gui_font_size(defaults.mono_size_px, fallback_defaults.mono_size_px) * coordinate_scale;
+        _gui_font_size(defaults.mono_size_px, fallback_defaults.mono_size_px) * presentation_scale;
 
     ImFontConfig regular_config = {};
     regular_config.OversampleH = 2;
@@ -990,7 +991,9 @@ static void _gui_load_fonts(DvzGui* gui, const DvzGuiScale* scale)
 
     if (gui->font_regular != NULL)
         io.FontDefault = gui->font_regular;
-    io.FontGlobalScale = scale->user;
+    // Bake the user scale into the atlas. Enlarging an atlas through FontGlobalScale makes text
+    // blurry, particularly when an accessibility scale is composed with a HiDPI device scale.
+    io.FontGlobalScale = 1.0f;
 }
 
 
@@ -1016,7 +1019,8 @@ static void _gui_sync_scale(DvzGui* gui, bool force)
         _gui_scale_changed(gui->coordinate_scale_x, scale.coordinate_x) ||
         _gui_scale_changed(gui->coordinate_scale_y, scale.coordinate_y);
     const bool user_changed = _gui_scale_changed(gui->user_scale, scale.user);
-    const bool rebuild_fonts = force || device_changed || framebuffer_changed || coordinate_changed;
+    const bool rebuild_fonts =
+        force || device_changed || framebuffer_changed || coordinate_changed || user_changed;
     if (!rebuild_fonts && !user_changed)
         return;
 
@@ -1030,11 +1034,6 @@ static void _gui_sync_scale(DvzGui* gui, bool force)
             return;
         }
     }
-    else
-    {
-        ImGui::GetIO().FontGlobalScale = scale.user;
-    }
-
     _dvz_gui_style_scale(scale.coordinate * scale.user);
 
     gui->device_scale_x = scale.device_x;
