@@ -13,6 +13,7 @@ making v0.4 implementation depend on speculative public APIs.
    future cross-panel annotations linked to panel domains and controllers.
 4. [INTEROPERABILITY_ARCHITECTURE.md](INTEROPERABILITY_ARCHITECTURE.md): post-v0.4 architecture, ecosystem and platform pressure map, prioritized milestones, and promotion gates for external frames, data, targets, hosts, queries, remote sources, scene interchange, and optional providers.
 5. [VISUAL_MODIFIERS.md](VISUAL_MODIFIERS.md): v0.5+ visual-wide and item-state modifier semantics, capability rules, and reactive-endpoint pressure.
+6. [MESH_PART_STATE.md](MESH_PART_STATE.md): early-v0.5 candidate for independently transformed, styled, visible, and pickable indexed parts within one retained mesh visual.
 
 
 ## Semantic Resources
