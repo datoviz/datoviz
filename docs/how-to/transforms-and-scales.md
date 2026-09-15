@@ -122,6 +122,8 @@ rewriting source positions or changing the panel domain.
 After multiplying the scale by `1.25`, screen-space quantities that honor user scale appear 25%
 larger; panel domains, camera distance, and uploaded positions are unchanged.
 
+When a visible view has an attached Dear ImGui overlay, `dvz_view_set_user_scale()` also scales its fonts and style metrics. Device scale remains automatic and describes physical pixels per logical pixel; user scale is the explicit presentation or accessibility multiplier shared by the scene and GUI.
+
 ## Semantic scales
 
 `DvzScale` is a semantic mapping object, not a geometry transform. Use it for scalar colormaps,

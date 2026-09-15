@@ -100,7 +100,8 @@ static void _gui_viewport_callback(DvzGui* gui, DvzView* view, void* user_data)
     if (state == NULL || state->viewport == NULL)
         return;
 
-    (void)dvz_gui_viewport_window(state->viewport, "Datoviz viewport", NULL, 0);
+    (void)dvz_gui_dock_window_once(gui, "Viewport controls", DVZ_GUI_DOCK_SLOT_LEFT, 280.0f);
+    (void)dvz_gui_dock_window_once(gui, "Datoviz viewport", DVZ_GUI_DOCK_SLOT_CENTER, 0.0f);
 
     bool changed = false;
     if (dvz_gui_begin(gui, "Viewport controls", NULL, 0))
@@ -110,6 +111,8 @@ static void _gui_viewport_callback(DvzGui* gui, DvzView* view, void* user_data)
         (void)dvz_gui_checkbox(gui, "ImGui demo", &state->show_demo);
     }
     dvz_gui_end(gui);
+
+    (void)dvz_gui_viewport_window(state->viewport, "Datoviz viewport", NULL, 0);
 
     if (state->show_demo)
         dvz_gui_demo(gui, &state->show_demo);

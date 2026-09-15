@@ -89,8 +89,12 @@ def _build_scene():
 
 def _gui_callback_factory(state: GuiViewportState):
     def gui_callback(gui, _view, _user_data) -> None:
-        if state.viewport:
-            dvz.dvz_gui_viewport_window(state.viewport, b"Datoviz viewport", None, 0)
+        dvz.dvz_gui_dock_window_once(
+            gui, b"Viewport controls", dvz.DVZ_GUI_DOCK_SLOT_LEFT, 280.0
+        )
+        dvz.dvz_gui_dock_window_once(
+            gui, b"Datoviz viewport", dvz.DVZ_GUI_DOCK_SLOT_CENTER, 0.0
+        )
 
         changed = False
         if dvz.dvz_gui_begin(gui, b"Viewport controls", None, 0):
@@ -100,6 +104,9 @@ def _gui_callback_factory(state: GuiViewportState):
             changed |= dvz.dvz_gui_checkbox(gui, b"Show points", ctypes.byref(state.show_points))
             dvz.dvz_gui_checkbox(gui, b"ImGui demo", ctypes.byref(state.show_demo))
         dvz.dvz_gui_end(gui)
+
+        if state.viewport:
+            dvz.dvz_gui_viewport_window(state.viewport, b"Datoviz viewport", None, 0)
 
         if state.show_demo.value:
             dvz.dvz_gui_demo(gui, ctypes.byref(state.show_demo))

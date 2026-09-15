@@ -29,6 +29,15 @@ and displays it with:
 dvz_gui_viewport_window(viewport, "Datoviz viewport", NULL, 0);
 ```
 
+For an application layout with a resizable sidebar and visualization area, dock the controls first and the viewport into the remaining center:
+
+```c
+dvz_gui_dock_window_once(gui, "Controls", DVZ_GUI_DOCK_SLOT_LEFT, 320.0f);
+dvz_gui_dock_window_once(gui, "Datoviz viewport", DVZ_GUI_DOCK_SLOT_CENTER, 0.0f);
+```
+
+The resulting windows are sibling docks. Resizing the sidebar therefore resizes the hosted Datoviz figure instead of covering it.
+
 `dvz_gui_viewport_from_window()` is the advanced path for integrations that already own an
 offscreen source app-window.
 
@@ -48,6 +57,15 @@ Use `datoviz/gui.h` for the stable Datoviz-facing layer: `DvzGui`, `DvzGuiViewpo
 viewport images, color editors, range controls, section headers, and compact convenience widgets.
 Use `datoviz/imgui.h` when code needs direct Dear ImGui coverage and accepts the upstream/cimgui
 naming and version coupling.
+
+
+## Device and user scale
+
+Datoviz applies one scale contract to scene screen-space quantities and the attached Dear ImGui context. App font sizes and curated GUI dimensions are authored in Datoviz logical pixels. Device scale converts those logical pixels to physical framebuffer pixels, while `dvz_view_set_user_scale()` applies an additional presentation or accessibility scale to both the scene and GUI content.
+
+Dear ImGui uses native backend coordinates, which are not necessarily Datoviz logical coordinates. Datoviz derives this conversion from the current logical, native-window, and framebuffer extents. Fonts are rasterized at device resolution, and font metrics, padding, indentation, spacing, scrollbars, and other style dimensions follow the same effective scale.
+
+Moving a visible view between monitors may change its device scale. Datoviz rebuilds the ImGui font atlas when the device or backend framebuffer scale changes. Changing only the view user scale updates GUI presentation without changing requested dock or viewport layout dimensions.
 
 GUI style and vertex colors use display-encoded sRGB RGB values with linear alpha, consistently
 with `DvzColor`. When the overlay target is an sRGB Vulkan attachment, the GUI renderer converts
@@ -79,10 +97,9 @@ Scene controllers should be attached through the viewport input router:
 dvz_panel_set_panzoom(panel, dvz_gui_viewport_input(viewport), 0);
 ```
 
-The viewport forwards pointer press, move, release, and wheel events in source-window coordinates,
-including the current keyboard modifier mask. During a button drag, forwarding continues even if
-the pointer leaves the ImGui item, and out-of-bounds drag coordinates are kept as raw source-window
-coordinates so controllers receive the full drag delta.
+The viewport forwards pointer press, move, release, and wheel events in source-window logical coordinates, including the current keyboard modifier mask. During a button drag, forwarding continues even if the pointer leaves the ImGui item, and out-of-bounds drag coordinates are kept so controllers receive the full drag delta. Conversion is per-axis and remains correct when native-window and framebuffer scale differ.
+
+While the viewport image is hovered, it owns horizontal and vertical wheel input. The enclosing ImGui window therefore does not scroll in response to the same wheel event.
 
 Clicking a viewport gives it keyboard focus for Datoviz input routing. GLFW key press, release, and
 repeat events are forwarded to that viewport only while no regular ImGui widget wants keyboard
@@ -94,6 +111,13 @@ capture. Clicking another ImGui item clears the focused viewport.
 Hidden or collapsed ImGui viewport windows stop rendering their source figure after the first
 source image is available. This avoids spending GPU time on hidden dock tabs. Set
 `DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN` when continuous background rendering is required.
+
+Viewport resize requests are debounced by `DvzGuiViewportConfig.resize_delay_frames`. Until the new logical and framebuffer extent is committed, Datoviz displays the last complete source image instead of exposing a partially resized render target.
+
+
+## Retained tree layout
+
+Retained trees use a compact font-relative layout by default, which is suitable for deep hierarchies. Use `dvz_gui_tree_layout()` and `dvz_gui_tree_set_layout()` to override indentation, row padding, item spacing, and label gaps in em units. These values automatically follow the GUI device and user scale.
 
 
 ## Ownership

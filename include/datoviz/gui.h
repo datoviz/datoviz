@@ -152,15 +152,15 @@ typedef struct DvzGuiViewportConfig
     uint32_t flags;
     uint32_t viewport_flags;
 
-    /* Initial size of the owned offscreen source window created by dvz_gui_viewport(). */
+    /* Initial logical size of the owned offscreen source view. */
     uint32_t initial_width;
     uint32_t initial_height;
 
-    /* Minimum source size after the ImGui content region is resized. */
+    /* Minimum source size in Datoviz logical pixels after the ImGui region is resized. */
     uint32_t min_width;
     uint32_t min_height;
 
-    /* Resize quantization and debounce policy for the source offscreen window. */
+    /* Logical-pixel resize quantization and stable-frame debounce policy. */
     uint32_t resize_step;
     uint32_t resize_delay_frames;
 } DvzGuiViewportConfig;
