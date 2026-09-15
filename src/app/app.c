@@ -174,6 +174,9 @@ typedef struct DvzAppFrameTiming
     uint64_t draw_ns;
     uint64_t submit_ns;
     uint64_t prepare_ns;
+    uint64_t gui_frame_ns;
+    uint64_t gui_viewport_ns;
+    uint64_t prepare_other_ns;
     uint64_t attach_ns;
     uint64_t setup_ns;
     uint64_t scene_total_ns;
@@ -188,6 +191,8 @@ typedef struct DvzAppFrameTiming
     uint64_t semantic_commit_ns;
     uint64_t trace_ns;
     uint64_t post_ns;
+    uint64_t query_ns;
+    uint64_t query_count;
     uint64_t callback_ns;
     uint64_t input_sequence;
     uint64_t input_timestamp_ns;
@@ -276,6 +281,7 @@ struct DvzView
     bool dirty;
     bool draw_failed;
     bool test_force_draw_failure;
+    uint32_t gui_viewport_ref_count;
     uint64_t next_frame_ns;
     bool capture_dvzr_enabled;
     bool capture_video_enabled;
@@ -1855,6 +1861,9 @@ static void _app_frame_timing_report(DvzApp* app)
             total.draw_ns += sample->draw_ns;
             total.submit_ns += sample->submit_ns;
             total.prepare_ns += sample->prepare_ns;
+            total.gui_frame_ns += sample->gui_frame_ns;
+            total.gui_viewport_ns += sample->gui_viewport_ns;
+            total.prepare_other_ns += sample->prepare_other_ns;
             total.attach_ns += sample->attach_ns;
             total.setup_ns += sample->setup_ns;
             total.scene_total_ns += sample->scene_total_ns;
@@ -1869,6 +1878,8 @@ static void _app_frame_timing_report(DvzApp* app)
             total.semantic_commit_ns += sample->semantic_commit_ns;
             total.trace_ns += sample->trace_ns;
             total.post_ns += sample->post_ns;
+            total.query_ns += sample->query_ns;
+            total.query_count += sample->query_count;
             total.callback_ns += sample->callback_ns;
         }
         qsort(sorted, state->sample_count, sizeof(double), _app_timing_compare_double);
@@ -1893,11 +1904,13 @@ static void _app_frame_timing_report(DvzApp* app)
             stdout,
             "app_frame_timing: view=%u frames=%u run_ms=%.4f host_ms=%.4f "
             "frame_ms=%.4f p50=%.4f p95=%.4f p99=%.4f canvas=%.4f draw=%.4f "
-            "submit=%.4f prepare=%.4f "
+            "submit=%.4f prepare=%.4f gui_frame=%.4f gui_viewport=%.4f "
+            "prepare_other=%.4f "
             "attach=%.4f setup=%.4f scene_total=%.4f scene_prepare=%.4f scene_plan=%.4f "
             "scene_contract=%.4f "
             "scene_emit=%.4f scene_cleanup=%.4f execute=%.4f semantic_validation=%.4f "
-            "backend=%.4f semantic_commit=%.4f trace=%.4f post=%.4f callback=%.4f "
+            "backend=%.4f semantic_commit=%.4f trace=%.4f post=%.4f query=%.4f "
+            "query_count=%" PRIu64 " callback=%.4f "
             "canvas_overhead=%.4f "
             "draw_residual=%.4f "
             "scheduler_residual=%.4f\n",
@@ -1909,6 +1922,9 @@ static void _app_frame_timing_report(DvzApp* app)
             (double)total.draw_ns * 1e-6 / divisor,
             (double)total.submit_ns * 1e-6 / divisor,
             (double)total.prepare_ns * 1e-6 / divisor,
+            (double)total.gui_frame_ns * 1e-6 / divisor,
+            (double)total.gui_viewport_ns * 1e-6 / divisor,
+            (double)total.prepare_other_ns * 1e-6 / divisor,
             (double)total.attach_ns * 1e-6 / divisor,
             (double)total.setup_ns * 1e-6 / divisor,
             (double)total.scene_total_ns * 1e-6 / divisor,
@@ -1922,6 +1938,7 @@ static void _app_frame_timing_report(DvzApp* app)
             (double)total.backend_ns * 1e-6 / divisor,
             (double)total.semantic_commit_ns * 1e-6 / divisor,
             (double)total.trace_ns * 1e-6 / divisor, (double)total.post_ns * 1e-6 / divisor,
+            (double)total.query_ns * 1e-6 / divisor, total.query_count,
             (double)total.callback_ns * 1e-6 / divisor, canvas_overhead_ms, draw_residual_ms,
             scheduler_residual_ms);
         dvz_free(sorted);
@@ -2253,7 +2270,8 @@ static bool _app_has_continuous_work(DvzApp* app)
     ANN(app);
     for (uint32_t i = 0; i < app->view_count; i++)
     {
-        if (_view_has_continuous_work(&app->views[i]))
+        if (app->views[i].gui_viewport_ref_count == 0 &&
+            _view_has_continuous_work(&app->views[i]))
             return true;
     }
     return false;
@@ -2345,7 +2363,7 @@ static bool _app_scheduler_deadline(DvzApp* app, uint64_t now, uint64_t* deadlin
     {
         DvzView* win = &app->views[i];
         requests[i] = (DvzAppPacingRequest){
-            .needs_frame = _view_needs_frame(win),
+            .needs_frame = win->gui_viewport_ref_count == 0 && _view_needs_frame(win),
             .policy = _view_pacing_policy(win),
             .next_frame_ns = win->next_frame_ns,
         };
@@ -2366,6 +2384,8 @@ static bool _app_scheduler_deadline(DvzApp* app, uint64_t now, uint64_t* deadlin
 static bool _view_should_render(DvzView* win, uint64_t now)
 {
     ANN(win);
+    if (win->gui_viewport_ref_count > 0)
+        return false;
     if (!_view_needs_frame(win))
         return false;
     DvzAppPacingPolicy policy = _view_pacing_policy(win);
@@ -2398,6 +2418,34 @@ bool _dvz_view_scheduler_should_render(DvzView* win, uint64_t now)
 bool _dvz_view_has_continuous_work(DvzView* win)
 {
     return _view_has_continuous_work(win);
+}
+
+
+
+/**
+ * Mark a view as managed by an embedded GUI viewport.
+ *
+ * @param view source view
+ */
+void _dvz_view_gui_viewport_attach(DvzView* view)
+{
+    ANN(view);
+    ASSERT(view->gui_viewport_ref_count < UINT32_MAX);
+    view->gui_viewport_ref_count++;
+}
+
+
+
+/**
+ * Release one embedded GUI viewport reference from a source view.
+ *
+ * @param view source view
+ */
+void _dvz_view_gui_viewport_detach(DvzView* view)
+{
+    ANN(view);
+    ASSERT(view->gui_viewport_ref_count > 0);
+    view->gui_viewport_ref_count--;
 }
 
 
@@ -4167,6 +4215,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
     if (win->gui != NULL)
     {
+        uint64_t gui_phase_start = timing != NULL ? dvz_time_monotonic_ns() : 0;
         _dvz_gui_begin_frame(win->gui, win, frame);
         if (win->fps_overlay_enabled && win->fps_valid)
         {
@@ -4174,12 +4223,19 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
                 win->gui, win->fps, win->fps_frame_ms, win->fps_last_sample_frames,
                 win->fps_last_sample_elapsed_s);
         }
+        if (timing != NULL)
+        {
+            timing->gui_frame_ns = dvz_time_monotonic_ns() - gui_phase_start;
+            gui_phase_start = dvz_time_monotonic_ns();
+        }
         if (!_dvz_gui_resolve_viewports(win->gui, _app_resolve_gui_viewport, app))
         {
             log_error("_app_draw failed to resolve strict GUI viewports");
             win->draw_failed = true;
             return;
         }
+        if (timing != NULL)
+            timing->gui_viewport_ns = dvz_time_monotonic_ns() - gui_phase_start;
     }
 #endif
 
@@ -4189,6 +4245,9 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     if (timing != NULL)
     {
         timing->prepare_ns = dvz_time_monotonic_ns() - phase_start;
+        const uint64_t gui_ns = timing->gui_frame_ns + timing->gui_viewport_ns;
+        timing->prepare_other_ns =
+            timing->prepare_ns > gui_ns ? timing->prepare_ns - gui_ns : 0;
         phase_start = dvz_time_monotonic_ns();
     }
 
@@ -4307,7 +4366,13 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     else
     {
         _app_runtime_failure_reset(win, "_app_draw runtime execution");
-        (void)dvz_figure_process_queries(win->figure, app->runtime, &caps);
+        const uint64_t query_start_ns = timing != NULL ? dvz_time_monotonic_ns() : 0;
+        const uint32_t query_count = dvz_figure_process_queries(win->figure, app->runtime, &caps);
+        if (timing != NULL)
+        {
+            timing->query_ns = dvz_time_monotonic_ns() - query_start_ns;
+            timing->query_count = query_count;
+        }
     }
 
     if (result.ok)
@@ -6672,7 +6737,10 @@ int dvz_app_render_once(DvzApp* app)
     int result = 0;
     for (uint32_t i = 0; i < app->view_count; i++)
     {
-        int rc = dvz_view_render_once(&app->views[i]);
+        DvzView* win = &app->views[i];
+        if (win->gui_viewport_ref_count > 0)
+            continue;
+        int rc = dvz_view_render_once(win);
         if (rc < 0)
             result = -1;
         else if (result == 0 && rc == DVZ_CANVAS_FRAME_WAIT_SURFACE)
@@ -6767,6 +6835,8 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
             {
                 DvzView* win = &app->views[i];
                 if (_view_close_requested(win))
+                    continue;
+                if (win->gui_viewport_ref_count > 0)
                     continue;
                 (void)dvz_view_render_once(win);
             }

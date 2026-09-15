@@ -63,6 +63,21 @@ Create the scene, figure, panel, visuals, view, controllers, and callbacks befor
 For rendering-only checks, prefer offscreen or fixed-frame native examples. Time an unbounded interactive event loop only when interaction is part of the problem.
 
 
+## Native frame decomposition
+
+Set `DVZ_APP_FRAME_TIMING=1` before a fixed-frame `dvz_app_run()` to print one `app_frame_timing:` record per view. The record reports mean phase durations in milliseconds, frame-time percentiles, and scheduler residual time. It is intended for local diagnostics and benchmark parsers; it is not a stable public data format.
+
+The `prepare` phase is split into `gui_frame`, `gui_viewport`, and `prepare_other`. `gui_frame` covers Dear ImGui frame construction and callbacks, while `gui_viewport` covers resolving embedded offscreen viewports, including any source render and synchronization they require. The `post` phase includes synchronous scene queries; `query` reports that subset and `query_count` reports the total number processed during the measured run. Compare `query` with `post` to distinguish query work from other post-render callbacks.
+
+For example:
+
+```bash
+DVZ_APP_FRAME_TIMING=1 DVZ_FPS=0 ./my_fixed_frame_example
+```
+
+Enable timing only for the measured run after warm-up. Timing itself adds CPU timestamp calls, and query or embedded-viewport costs may include GPU waits, so interpret these fields as caller-visible phase costs rather than pure CPU or GPU timings.
+
+
 ## Important details
 
 Frame time depends on how much data changes, how many items are drawn, how many visuals the scene contains, the output size, and whether screenshots or queries are enabled. Measure one variable at a time.

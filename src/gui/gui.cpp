@@ -36,6 +36,7 @@
 #include <GLFW/glfw3.h>
 
 #include "_alloc.h"
+#include "../app/_app.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
@@ -181,6 +182,7 @@ struct DvzGuiViewport
     ImVec2 frame_image_min;
     ImVec2 frame_image_max;
     bool owns_source;
+    bool source_managed;
     bool visible;
     bool frame_visible;
     bool frame_resolved;
@@ -1557,6 +1559,11 @@ static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
     }
     if (viewport->source != NULL && viewport->owns_source)
         dvz_view_set_render_enabled(viewport->source, false);
+    if (viewport->source != NULL && viewport->source_managed)
+    {
+        _dvz_view_gui_viewport_detach(viewport->source);
+        viewport->source_managed = false;
+    }
     _gui_viewport_retire_texture(viewport);
     _gui_viewport_collect_retired_textures(viewport, true);
     if (gui != NULL && viewport->sampler != VK_NULL_HANDLE)
@@ -3000,6 +3007,8 @@ static DvzGuiViewport* _gui_viewport_from_window(
         return NULL;
     }
 
+    _dvz_view_gui_viewport_attach(source);
+    viewport->source_managed = true;
     _gui_viewport_attach(gui, viewport);
     return viewport;
 }

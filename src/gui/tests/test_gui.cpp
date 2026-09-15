@@ -21,6 +21,7 @@
 #include <string.h>
 
 #include "../_gui.h"
+#include "../../app/_app.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -840,6 +841,8 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     GuiViewportSmoke smoke = {};
     smoke.viewport = dvz_gui_viewport_from_window(gui, source_win, &config);
     AT(smoke.viewport != NULL);
+    AT(dvz_view_request_frame(source_win) == 0);
+    AT(!_dvz_view_scheduler_should_render(source_win, UINT64_MAX));
 
     dvz_view_set_gui_callback(host_win, _gui_viewport_resize_callback, &smoke);
     dvz_app_run(app, 6);
@@ -895,6 +898,8 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     dvz_free(rgba);
 
     dvz_gui_viewport_destroy(smoke.viewport);
+    AT(dvz_view_request_frame(source_win) == 0);
+    AT(_dvz_view_scheduler_should_render(source_win, UINT64_MAX));
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     _gui_test_gpu_resources_destroy(&gpu_resources);
