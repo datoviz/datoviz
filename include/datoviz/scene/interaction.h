@@ -361,6 +361,20 @@ DVZ_EXPORT DvzResult dvz_hover_set_visual_style(DvzHover* hover, const DvzItemSt
 DVZ_EXPORT DvzResult dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query);
 
 
+/**
+ * Copy the currently hovered item into caller-owned storage.
+ *
+ * The output is written only when an item is currently hovered. The returned value is false for
+ * an inactive hover, a NULL output pointer, or a NULL hover object. The copied item remains valid
+ * independently of the hover object's subsequent updates.
+ *
+ * @param hover the hover object
+ * @param out_item output item storage
+ * @return true when an item was copied
+ */
+DVZ_EXPORT bool dvz_hover_copy(const DvzHover* hover, DvzSelectionItem* out_item);
+
+
 
 /*************************************************************************************************/
 /*  Item interaction                                                                             */

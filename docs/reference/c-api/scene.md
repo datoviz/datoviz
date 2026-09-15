@@ -19,7 +19,7 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick items](../../how-to/pick-items.md)
 
-Functions: 377
+Functions: 378
 Types: 198
 
 ## Symbol Groups
@@ -53,7 +53,7 @@ Types: 198
 | [Guide Line](#guide-line) | 4 | 2 | `include/datoviz/scene/plot.h`, `include/datoviz/scene/types.h` |
 | [Guide Span](#guide-span) | 4 | 2 | `include/datoviz/scene/plot.h`, `include/datoviz/scene/types.h` |
 | [Horizontal](#horizontal) | 0 | 1 | `include/datoviz/scene/enums.h` |
-| [Hover](#hover) | 6 | 3 | `include/datoviz/scene/interaction.h`, `include/datoviz/scene/types.h` |
+| [Hover](#hover) | 7 | 3 | `include/datoviz/scene/interaction.h`, `include/datoviz/scene/types.h` |
 | [Interaction](#interaction) | 7 | 1 | `include/datoviz/scene/interaction.h`, `include/datoviz/scene/types.h` |
 | [Item](#item) | 6 | 6 | 3 headers |
 | [Label](#label) | 1 | 1 | `include/datoviz/scene/annotation.h`, `include/datoviz/scene/types.h` |
@@ -304,6 +304,7 @@ Types: 198
     | [`dvz_hover()`](#dvz_hover) | `include/datoviz/scene/interaction.h` |
     | [`dvz_hover_apply_query()`](#dvz_hover_apply_query) | `include/datoviz/scene/interaction.h` |
     | [`dvz_hover_clear()`](#dvz_hover_clear) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_hover_copy()`](#dvz_hover_copy) | `include/datoviz/scene/interaction.h` |
     | [`dvz_hover_desc()`](#dvz_hover_desc) | `include/datoviz/scene/interaction.h` |
     | [`dvz_hover_destroy()`](#dvz_hover_destroy) | `include/datoviz/scene/interaction.h` |
     | [`dvz_hover_set_visual_style()`](#dvz_hover_set_visual_style) | `include/datoviz/scene/interaction.h` |
@@ -4075,6 +4076,29 @@ DvzResult dvz_hover_clear(
 
 _Declared in `include/datoviz/scene/interaction.h`:337._
 
+#### `dvz_hover_copy()` { #dvz_hover_copy .dvz-api-function }
+
+Copy the currently hovered item into caller-owned storage.
+
+The output is written only when an item is currently hovered. The returned value is false for
+an inactive hover, a NULL output pointer, or a NULL hover object. The copied item remains valid
+independently of the hover object's subsequent updates.
+
+```c
+_Bool dvz_hover_copy(
+    const DvzHover * hover,
+    DvzSelectionItem * out_item
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | `_Bool` | true when an item was copied |
+| `hover` | `const` [`DvzHover`](scene.md#type-dvzhover) * | the hover object |
+| `out_item` | [`DvzSelectionItem`](scene.md#type-dvzselectionitem) * | output item storage |
+
+_Declared in `include/datoviz/scene/interaction.h`:375._
+
 #### `dvz_hover_desc()` { #dvz_hover_desc .dvz-api-function }
 
 Return the default hover descriptor.
@@ -4338,7 +4362,7 @@ DvzItemInteraction * dvz_item_interaction(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `desc` | `const` [`DvzItemInteractionDesc`](scene.md#type-dvziteminteractiondesc) * | interaction descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/interaction.h`:384._
+_Declared in `include/datoviz/scene/interaction.h`:398._
 
 #### `dvz_item_interaction_desc()` { #dvz_item_interaction_desc .dvz-api-function }
 
@@ -4354,7 +4378,7 @@ DvzItemInteractionDesc dvz_item_interaction_desc(void);
 
 Related: [`dvz_item_interaction()`](#dvz_item_interaction).
 
-_Declared in `include/datoviz/scene/interaction.h`:374._
+_Declared in `include/datoviz/scene/interaction.h`:388._
 
 #### `dvz_item_interaction_destroy()` { #dvz_item_interaction_destroy .dvz-api-function }
 
@@ -4370,7 +4394,7 @@ void dvz_item_interaction_destroy(
 | --- | --- | --- |
 | `interaction` | [`DvzItemInteraction`](scene.md#type-dvziteminteraction) * | the item interaction controller |
 
-_Declared in `include/datoviz/scene/interaction.h`:393._
+_Declared in `include/datoviz/scene/interaction.h`:407._
 
 #### `dvz_item_interaction_hover()` { #dvz_item_interaction_hover .dvz-api-function }
 
@@ -4387,7 +4411,7 @@ DvzHover * dvz_item_interaction_hover(
 | return | [`DvzHover`](scene.md#type-dvzhover) * | the hover object, or NULL when hover is disabled |
 | `interaction` | [`DvzItemInteraction`](scene.md#type-dvziteminteraction) * | the item interaction controller |
 
-_Declared in `include/datoviz/scene/interaction.h`:402._
+_Declared in `include/datoviz/scene/interaction.h`:416._
 
 #### `dvz_item_interaction_selection()` { #dvz_item_interaction_selection .dvz-api-function }
 
@@ -4404,7 +4428,7 @@ DvzSelection * dvz_item_interaction_selection(
 | return | [`DvzSelection`](scene.md#type-dvzselection) * | the selection object, or NULL when selection is disabled |
 | `interaction` | [`DvzItemInteraction`](scene.md#type-dvziteminteraction) * | the item interaction controller |
 
-_Declared in `include/datoviz/scene/interaction.h`:411._
+_Declared in `include/datoviz/scene/interaction.h`:425._
 
 #### `dvz_item_state_visual_style()` { #dvz_item_state_visual_style .dvz-api-function }
 
@@ -6354,7 +6378,7 @@ DvzResult dvz_panel_query_now_px(
 | `request` | `const` [`DvzQueryRequest`](scene.md#type-dvzqueryrequest) * | the request descriptor, or NULL for defaults |
 | `out_result` | [`DvzQueryResult`](scene.md#type-dvzqueryresult) * | output result |
 
-_Declared in `include/datoviz/scene/interaction.h`:461._
+_Declared in `include/datoviz/scene/interaction.h`:475._
 
 #### `dvz_panel_query_px()` { #dvz_panel_query_px .dvz-api-function }
 
@@ -6377,7 +6401,7 @@ DvzResult dvz_panel_query_px(
 | `y` | `double` | the panel-local logical y coordinate, origin at the outer panel rectangle |
 | `request` | `const` [`DvzQueryRequest`](scene.md#type-dvzqueryrequest) * | the request descriptor, or NULL for defaults |
 
-_Declared in `include/datoviz/scene/interaction.h`:436._
+_Declared in `include/datoviz/scene/interaction.h`:450._
 
 #### `dvz_panel_resolve_frame()` { #dvz_panel_resolve_frame .dvz-api-function }
 
@@ -7231,7 +7255,7 @@ void dvz_pinned_readout_destroy(
 | --- | --- | --- |
 | `readout` | [`DvzPinnedReadout`](scene.md#type-dvzpinnedreadout) * | the pinned readout |
 
-_Declared in `include/datoviz/scene/interaction.h`:501._
+_Declared in `include/datoviz/scene/interaction.h`:515._
 
 #### `dvz_pinned_readout_query()` { #dvz_pinned_readout_query .dvz-api-function }
 
@@ -7250,7 +7274,7 @@ DvzPinnedReadout * dvz_pinned_readout_query(
 | `panel` | [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 | `query` | `const` [`DvzQueryResult`](scene.md#type-dvzqueryresult) * | the query result |
 
-_Declared in `include/datoviz/scene/interaction.h`:492._
+_Declared in `include/datoviz/scene/interaction.h`:506._
 
 #### `dvz_pinned_readout_set_format()` { #dvz_pinned_readout_set_format .dvz-api-function }
 
@@ -7269,7 +7293,7 @@ DvzResult dvz_pinned_readout_set_format(
 | `readout` | [`DvzPinnedReadout`](scene.md#type-dvzpinnedreadout) * | the pinned readout |
 | `format` | `const` [`DvzFormatDesc`](scene.md#type-dvzformatdesc) * | the format descriptor, or NULL to clear the override |
 
-_Declared in `include/datoviz/scene/interaction.h`:511._
+_Declared in `include/datoviz/scene/interaction.h`:525._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -7426,7 +7450,7 @@ DvzQueryRequest dvz_query_request(void);
 | --- | --- | --- |
 | return | [`DvzQueryRequest`](scene.md#type-dvzqueryrequest) | default query request descriptor |
 
-_Declared in `include/datoviz/scene/interaction.h`:424._
+_Declared in `include/datoviz/scene/interaction.h`:438._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -9362,7 +9386,7 @@ const DvzHoverState * dvz_scene_hover(
 | `scene` | `const` [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `panel` | `const` [`DvzPanel`](scene.md#type-dvzpanel) * | the panel |
 
-_Declared in `include/datoviz/scene/interaction.h`:477._
+_Declared in `include/datoviz/scene/interaction.h`:491._
 
 #### `dvz_scene_id()` { #dvz_scene_id .dvz-api-function }
 
@@ -9439,7 +9463,7 @@ _Bool dvz_scene_poll_query(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `out_result` | [`DvzQueryResult`](scene.md#type-dvzqueryresult) * | output result |
 
-_Declared in `include/datoviz/scene/interaction.h`:447._
+_Declared in `include/datoviz/scene/interaction.h`:461._
 
 #### `dvz_scene_set_capabilities()` { #dvz_scene_set_capabilities .dvz-api-function }
 

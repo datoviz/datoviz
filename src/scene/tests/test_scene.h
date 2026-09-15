@@ -386,6 +386,7 @@ int test_frame_plan_emit_drp2_rejects_unsupported_shader_format(
 
 int test_frame_plan_emit_drp2_rejects_small_caps(TstContext* suite, const TstCase* item);
 
+int test_scene_arcball_only_mvp_composition(TstContext* suite, const TstCase* item);
 int test_scene_camera_arcball_mvp_composition(TstContext* suite, const TstCase* item);
 
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
@@ -1277,6 +1278,8 @@ int test_scene_item_interaction_input_queries(TstContext* suite, const TstCase* 
 int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase* item);
 
 int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstCase* item);
+
+int test_scene_selection_link_key_is_semantic_identity(TstContext* suite, const TstCase* item);
 
 int test_scene_selection_apply_query_updates_item_state(TstContext* suite, const TstCase* item);
 

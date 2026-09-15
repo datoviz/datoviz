@@ -985,6 +985,13 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     AT(dvz_hover_apply_query(hover, &query) == DVZ_OK);
     AT(hover->has_item);
     AT(hover->item.target_id == 43);
+    DvzSelectionItem hovered_item = {0};
+    AT(dvz_hover_copy(hover, &hovered_item));
+    AT(hovered_item.target == DVZ_SCENE_TARGET_ITEM);
+    AT(hovered_item.target_id == 43);
+    AT(hovered_item.link_channel == channel_id);
+    AT(hovered_item.link_key == 0);
+    AT(!dvz_hover_copy(hover, NULL));
 
     DvzScene* other_scene = dvz_scene();
     ANN(other_scene);
@@ -1003,9 +1010,78 @@ int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstC
     AT(hover->item.target_id == 43);
     dvz_scene_destroy(other_scene);
 
+    AT(dvz_hover_clear(hover) == DVZ_OK);
+    AT(!dvz_hover_copy(hover, &hovered_item));
+
     dvz_link_channel_destroy(channel);
     AT(dvz_link_channel_id(channel) == 0);
     AT(visual->link_channel == NULL);
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+int test_scene_selection_link_key_is_semantic_identity(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzSelection* selection = dvz_selection(
+        scene, &(DvzSelectionDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
+                   .mode = DVZ_SELECT_TOGGLE,
+                   .target = DVZ_SCENE_TARGET_FACE,
+               });
+    ANN(selection);
+
+    DvzQueryResult first = {
+        .scene_id = dvz_scene_id(scene),
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = true,
+        .visual_id = 7,
+        .resolved_target = DVZ_SCENE_TARGET_FACE,
+        .resolved_id = 3,
+        .link_channel = 9,
+        .link_key = 42,
+    };
+    DvzQueryResult alias = first;
+    alias.visual_id = 8;
+    alias.resolved_id = 19;
+
+    AT(dvz_selection_apply_query(selection, &first) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 1);
+    AT(dvz_selection_apply_query(selection, &alias) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 0);
+
+    selection->desc.mode = DVZ_SELECT_ADDITIVE;
+    AT(dvz_selection_apply_query(selection, &first) == DVZ_OK);
+    AT(dvz_selection_apply_query(selection, &alias) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 1);
+    selection->desc.mode = DVZ_SELECT_SUBTRACT;
+    AT(dvz_selection_apply_query(selection, &alias) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 0);
+
+    // Key zero is linked when and only when its channel is nonzero.
+    first.link_key = alias.link_key = 0;
+    selection->desc.mode = DVZ_SELECT_TOGGLE;
+    AT(dvz_selection_apply_query(selection, &first) == DVZ_OK);
+    AT(dvz_selection_apply_query(selection, &alias) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 0);
+
+    // Equal raw keys on different channels or unlinked targets remain distinct.
+    first.link_key = alias.link_key = 42;
+    alias.link_channel = 10;
+    selection->desc.mode = DVZ_SELECT_ADDITIVE;
+    AT(dvz_selection_apply_query(selection, &first) == DVZ_OK);
+    AT(dvz_selection_apply_query(selection, &alias) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 2);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
+    first.link_channel = alias.link_channel = 0;
+    AT(dvz_selection_apply_query(selection, &first) == DVZ_OK);
+    AT(dvz_selection_apply_query(selection, &alias) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 2);
 
     dvz_scene_destroy(scene);
     return 0;
@@ -5542,6 +5618,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_item_interaction_input_queries);
     TST_CASE(test_scene_item_interaction_applies_results);
     TST_CASE(test_scene_selection_apply_query_and_link_keys);
+    TST_CASE(test_scene_selection_link_key_is_semantic_identity);
     TST_CASE(test_scene_selection_apply_query_updates_item_state);
     TST_CASE(test_scene_pixel_hover_selection_item_state);
     TST_CASE(test_scene_sphere_hover_selection_item_state);

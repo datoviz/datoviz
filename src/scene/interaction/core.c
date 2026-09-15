@@ -362,8 +362,15 @@ static bool _selection_item_equals(const DvzSelectionItem* a, const DvzSelection
 {
     ANN(a);
     ANN(b);
-    return a->visual_id == b->visual_id && a->target == b->target &&
-           a->target_id == b->target_id;
+    if (a->visual_id == b->visual_id && a->target == b->target && a->target_id == b->target_id)
+    {
+        return true;
+    }
+    // Binding a link channel explicitly promotes the application key to semantic identity.
+    // Different local targets (or visuals) carrying the same linked key therefore select and
+    // toggle as one item. A zero key remains valid; channel zero denotes unlinked local identity.
+    return a->link_channel != 0 && b->link_channel != 0 && a->link_channel == b->link_channel &&
+           a->link_key == b->link_key;
 }
 
 
@@ -2243,6 +2250,23 @@ DvzResult dvz_hover_apply_query(DvzHover* hover, const DvzQueryResult* query)
     };
     hover->has_item = true;
     return _scene_item_state_sync(hover->scene, "update hover item_state");
+}
+
+
+
+/**
+ * Copy the currently hovered item into caller-owned storage.
+ *
+ * @param hover the hover
+ * @param out_item the destination item
+ * @return whether an item was copied
+ */
+bool dvz_hover_copy(const DvzHover* hover, DvzSelectionItem* out_item)
+{
+    if (hover == NULL || out_item == NULL || !hover->has_item)
+        return false;
+    *out_item = hover->item;
+    return true;
 }
 
 
