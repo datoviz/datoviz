@@ -49,6 +49,7 @@ DvzScenarioSpec dvz_example_update_partial_scenario(void);
 DvzScenarioSpec dvz_example_update_visual_data_scenario(void);
 DvzScenarioSpec dvz_example_visibility_scenario(void);
 DvzScenarioSpec dvz_example_visual_transform_scenario(void);
+DvzScenarioSpec dvz_lab_ibl_atlas_webgpu_spike_scenario(void);
 DvzScenarioSpec dvz_example_picking_scenario(void);
 DvzScenarioSpec dvz_example_probe_labels_scenario(void);
 DvzScenarioSpec dvz_example_reference_grid_scenario(void);
@@ -300,6 +301,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_showcase_point_cloud_scenario();
     case 90:
         return dvz_example_panel_mixed_2d_3d_scenario();
+    case 91:
+        return dvz_lab_ibl_atlas_webgpu_spike_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

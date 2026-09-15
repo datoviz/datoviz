@@ -13,6 +13,11 @@ const DEMOS = [
     load: () => import("./demos/wasm_3d.js"),
   },
   {
+    id: "wasm-ibl-atlas-spike",
+    label: "IBL atlas portability spike",
+    load: () => import("./demos/wasm_ibl_atlas_spike.js"),
+  },
+  {
     id: "wasm-timer-animation",
     label: "WASM timer animation",
     load: () => import("./demos/wasm_timer_animation.js"),

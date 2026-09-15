@@ -45,6 +45,23 @@ http://localhost:8765/examples/webgpu/examples.html?demo=wasm-2d
 http://localhost:8765/examples/webgpu/examples.html?demo=wasm-3d
 ```
 
+The non-public IBL atlas portability spike uses one canonical C scenario in both native and browser
+runners. It embeds the decoded geometry and signed presentation identities from the test-only
+`ibl-atlas-assets` miniature fixture, then renders one opaque mesh, four colored probe sites, and an
+arcball controller. It intentionally excludes Python and ImGui integration, data-bundle transport,
+picking, and WBOIT parity. The browser route is a development sampler, not a public gallery claim:
+
+```bash
+just example-c lab/ibl_atlas_webgpu_spike
+./build/examples/c/lab/ibl_atlas_webgpu_spike --png
+just wasm-scene-smoke
+just webgpu-browser-smoke --route=lab_ibl_atlas_webgpu_spike
+```
+
+```text
+http://localhost:8765/examples/webgpu/examples.html?demo=wasm-ibl-atlas-spike
+```
+
 Refresh the committed fixture manifest after adding or removing positive or negative fixtures:
 
 ```bash

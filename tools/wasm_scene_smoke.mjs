@@ -755,6 +755,17 @@ function expectDrawIndexed(stream, indexCount, instanceCount, label) {
   );
 }
 
+function expectWriteBufferPayload(stream, expected, label) {
+  const found = commandsOf(stream, "WriteBuffer").some((command) => {
+    const data = typeof command.data === "string"
+      ? Uint8Array.from(Buffer.from(command.data, "base64"))
+      : command.data;
+    return data.byteLength === expected.length &&
+      expected.every((value, index) => data[index] === value);
+  });
+  requireOk(found, `${label}: missing deterministic WriteBuffer payload [${expected.join(", ")}]`);
+}
+
 function expectFrameCommandShape(
   stream,
   label,
@@ -1388,6 +1399,34 @@ function expectControllerMeshScenarioStreamShape(stream, label) {
   requireOk(
     commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 1,
     `${label}: expected mesh draw`,
+  );
+}
+
+function expectIblAtlasWebGpuSpikeStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} mesh`,
+    (pipeline) =>
+      pipeline.builtin_pipeline === "scene.mesh" ||
+      pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectPipeline(
+    stream,
+    `${label} probe sites`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.sphere",
+  );
+  expectDrawIndexed(stream, 36, 1, `${label} synthetic atlas mesh`);
+  requireOk(
+    commandsOf(stream, "Draw").some((draw) => draw.instance_count === 4),
+    `${label}: expected four probe-site sphere instances`,
+  );
+  // -315, -315, +315, +315 map deterministically to left cyan and right amber.
+  expectWriteBufferPayload(
+    stream,
+    [80, 210, 195, 255, 80, 210, 195, 255, 255, 190, 90, 255, 255, 190, 90, 255],
+    `${label} signed identity colors`,
   );
 }
 
@@ -2677,6 +2716,7 @@ try {
     "showcases_cortical_activity",
     "showcases_point_cloud",
     "features_panel_mixed_2d_3d",
+    "lab_ibl_atlas_webgpu_spike",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3880,6 +3920,11 @@ try {
       "protein",
       (stream, label) => expectProteinScenarioStreamShape(stream, label),
     ],
+    [
+      "lab_ibl_atlas_webgpu_spike",
+      "IBL atlas WebGPU spike",
+      (stream, label) => expectIblAtlasWebGpuSpikeStreamShape(stream, label),
+    ],
   ];
   for (const [id, label, expectShape] of panelAndAxesScenarios) {
     const index = scenarioIndex(Module, id);
@@ -3953,6 +3998,32 @@ try {
         requireOk(
           panzoomFrame.update.decoded.commands.some((command) => command.cmd === "WriteBuffer"),
           `${label}: panzoom interaction emitted no uniform update`,
+        );
+        expectNoDiagnostics(Module, scene, `${label} controller diagnostics`);
+      }
+      if (id === "lab_ibl_atlas_webgpu_spike") {
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_PRESS, 520, 360, DVZ_POINTER_BUTTON_LEFT, 0, 1, 100),
+          0,
+          `${label} arcball press`,
+        );
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_MOVE, 600, 300, DVZ_POINTER_BUTTON_LEFT, 0, 1, 116),
+          0,
+          `${label} arcball move`,
+        );
+        expectStatus(
+          Module._dvz_wasm_api_scenario_pointer(
+            scene, DVZ_POINTER_EVENT_RELEASE, 600, 300, DVZ_POINTER_BUTTON_LEFT, 0, 1, 132),
+          0,
+          `${label} arcball release`,
+        );
+        const arcballFrame = emitIncrementalPacketStream(Module, scene, figure, `${label} arcball`);
+        requireOk(
+          arcballFrame.update.decoded.commands.some((command) => command.cmd === "WriteBuffer"),
+          `${label}: arcball interaction emitted no uniform update`,
         );
         expectNoDiagnostics(Module, scene, `${label} controller diagnostics`);
       }

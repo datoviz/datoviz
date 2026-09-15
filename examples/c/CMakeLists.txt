@@ -343,6 +343,7 @@ if(TARGET datoviz_app AND DVZ_HAS_GLFW AND TARGET datoviz_gui)
     dvz_add_example(lab text_msdf_lab lab/text_msdf_lab.c)
 endif()
 
+dvz_add_example(lab ibl_atlas_webgpu_spike lab/ibl_atlas_webgpu_spike.c)
 dvz_add_example(lab rolling_field_bench lab/rolling_field_bench.c)
 target_include_directories(example_c_lab_rolling_field_bench PRIVATE ${PROJECT_SOURCE_DIR}/src/drp2)
 

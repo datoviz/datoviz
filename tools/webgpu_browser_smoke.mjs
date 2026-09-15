@@ -1106,6 +1106,13 @@ async function main() {
         ['features_path_join', { label: 'Path Join' }],
         ['features_camera_manual', { label: 'Manual Camera' }],
         ['features_controller_arcball', { label: 'Arcball Controller' }],
+        [
+          'lab_ibl_atlas_webgpu_spike',
+          {
+            label: 'IBL atlas portability spike',
+            path: '/examples/webgpu/examples.html?demo=wasm-ibl-atlas-spike',
+          },
+        ],
         ['features_panel_mixed_2d_3d', { label: 'Mixed 2D and 3D Panels' }],
         ['features_mesh_texture', { label: 'Textured Mesh' }],
         ['features_reference_grid', { label: 'Reference Grid' }],
@@ -1148,7 +1155,7 @@ async function main() {
       ]);
       const route = filteredRoutes.get(routeFilter);
       requireOk(route !== undefined, `unknown filtered WebGPU route: ${routeFilter}`);
-      const path = `/examples/webgpu/live.html?id=${routeFilter}`;
+      const path = route.path ?? `/examples/webgpu/live.html?id=${routeFilter}`;
       const screenshot = join(artifactsDir, `webgpu_live_${routeFilter}.png`);
       let result = null;
       try {

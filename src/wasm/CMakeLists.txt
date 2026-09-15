@@ -78,6 +78,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/update_visual_data.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/visibility.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/visual_transform.c
+    ${PROJECT_SOURCE_DIR}/examples/c/lab/ibl_atlas_webgpu_spike.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/linked_probe_colorbar.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/galaxy.c
     ${PROJECT_SOURCE_DIR}/examples/c/showcases/galaxy_model.c

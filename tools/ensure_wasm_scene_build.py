@@ -41,6 +41,7 @@ WASM_EXAMPLE_SHARED_INPUTS = (
     ROOT / "examples/c/example_style.c",
     ROOT / "examples/c/example_style.h",
     ROOT / "examples/c/example_tuner.h",
+    ROOT / "examples/c/lab/ibl_atlas_webgpu_spike.c",
 )
 INPUT_SUFFIXES = {
     ".c",

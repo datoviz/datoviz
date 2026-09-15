@@ -74,6 +74,19 @@ non_public_examples:
     source: examples/c/lab/axis_lattice_smoke.c
     validation: smoke
 
+  - id: lab_ibl_atlas_webgpu_spike
+    title: IBL Atlas WebGPU Spike
+    stage: v0.4_experimental
+    lane: lab
+    source: examples/c/lab/ibl_atlas_webgpu_spike.c
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-live
+      route: examples.html?demo=wasm-ibl-atlas-spike
+      scenario_id: lab_ibl_atlas_webgpu_spike
+      requirements: [mesh, arcball]
+    validation: native-smoke+wasm-packet+browser-interaction
+
   - id: lab_point_stress
     title: Point Stress
     stage: v0.4_experimental
