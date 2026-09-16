@@ -40,6 +40,14 @@ just example-c lab/mesh_query_bench
 
 It reports machine-readable cold and steady phases, per-phase CPU timings, derived query vertex count, first-use upload bytes, retained query resource bytes, completed hits, and failures. Run both `item` and `face` targets when changing mesh query lowering. The 697 x 699 default produces 487,203 retained vertices and 971,616 triangles, close to the measured atlas shape without depending on consumer data.
 
+The retained GUI/tree/viewport route is:
+
+```sh
+just example-c lab/gui_viewport_bench --profile combined --warmup 16 --frames 120
+```
+
+Run fresh `empty`, `tree`, `viewport`, and `combined` processes in randomized order. Tree profiles use 1,140 expanded synthetic hierarchy rows by default. Viewport profiles use the same atlas-scale surface grid and apply a tiny visual transform every frame so the owned source view exercises live rendering rather than the static-source cache. The benchmark enables `DVZ_APP_FRAME_TIMING` for the measured run and also emits one compact `gui_viewport_bench` summary.
+
 ## Stop And Retention Rules
 
 - Do not retain the one-pixel target if edge, depth, transform, panel-offset, DPI, native, or WebGPU query semantics differ, or if representative end-to-end improvement is negligible.
