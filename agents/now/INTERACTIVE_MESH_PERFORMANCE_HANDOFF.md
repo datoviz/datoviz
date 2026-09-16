@@ -31,6 +31,15 @@ These changes are useful but non-blocking and may land only as focused commits w
 
 Ordinary CI asserts deterministic lifecycle, command, upload, allocation, freshness, and result-shape invariants rather than wall-clock thresholds. Before/after timing comparisons use fixed dimensions, warm-up, fresh processes, matched builds, matched backend/validation settings, randomized run order, and recorded hardware and commit identities.
 
+The retained synthetic mesh-query route is:
+
+```sh
+just example-c lab/mesh_query_bench
+./build/examples/c/lab/mesh_query_bench --target face --rows 697 --cols 699 --warmup 4 --queries 20
+```
+
+It reports machine-readable cold and steady phases, per-phase CPU timings, derived query vertex count, first-use upload bytes, retained query resource bytes, completed hits, and failures. Run both `item` and `face` targets when changing mesh query lowering. The 697 x 699 default produces 487,203 retained vertices and 971,616 triangles, close to the measured atlas shape without depending on consumer data.
+
 ## Stop And Retention Rules
 
 - Do not retain the one-pixel target if edge, depth, transform, panel-offset, DPI, native, or WebGPU query semantics differ, or if representative end-to-end improvement is negligible.

@@ -345,6 +345,7 @@ endif()
 
 dvz_add_example(lab rolling_field_bench lab/rolling_field_bench.c)
 target_include_directories(example_c_lab_rolling_field_bench PRIVATE ${PROJECT_SOURCE_DIR}/src/drp2)
+dvz_add_example(lab mesh_query_bench lab/mesh_query_bench.c)
 
 if(DVZ_HAS_CUDA AND CMAKE_SYSTEM_NAME STREQUAL "Linux" AND TARGET datoviz_vklite)
     dvz_add_example(advanced cuda_external_buffer advanced/cuda_external_buffer.c)
