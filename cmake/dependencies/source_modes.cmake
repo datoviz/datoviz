@@ -1,4 +1,4 @@
-foreach(_dvz_source_var IN ITEMS DVZ_MIMALLOC_SOURCE DVZ_CGLM_SOURCE DVZ_KVAZAAR_SOURCE)
+foreach(_dvz_source_var IN ITEMS DVZ_CGLM_SOURCE DVZ_KVAZAAR_SOURCE)
     string(TOUPPER "${${_dvz_source_var}}" _dvz_source_mode)
     if(NOT _dvz_source_mode MATCHES "^(AUTO|SYSTEM|VENDORED|OFF)$")
         message(FATAL_ERROR "${_dvz_source_var} must be AUTO, SYSTEM, VENDORED, or OFF")

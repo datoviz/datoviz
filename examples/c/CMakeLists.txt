@@ -104,10 +104,6 @@ function(dvz_add_example group name source)
         target_link_libraries(${target} PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
     endif()
 
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(${target} PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-    endif()
-
     target_include_directories(${target}
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include

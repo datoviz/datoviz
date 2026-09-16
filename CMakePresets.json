@@ -59,7 +59,7 @@
         {
             "name": "package-smoke-system-required",
             "displayName": "Package smoke: required system dependencies",
-            "description": "Configure package-manager CI mode requiring system cglm, Kvazaar, mimalloc, and GLFW.",
+            "description": "Configure package-manager CI mode requiring system cglm, Kvazaar, and GLFW.",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/package-smoke-system-required",
             "cacheVariables": {
@@ -70,8 +70,7 @@
                 "DVZ_BUILD_EXAMPLES": "OFF",
                 "DVZ_VENDORED_DEPS": "OFF",
                 "DVZ_CGLM_SOURCE": "SYSTEM",
-                "DVZ_KVAZAAR_SOURCE": "SYSTEM",
-                "DVZ_MIMALLOC_SOURCE": "SYSTEM"
+                "DVZ_KVAZAAR_SOURCE": "SYSTEM"
             }
         }
     ],

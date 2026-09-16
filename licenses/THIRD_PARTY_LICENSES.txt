@@ -11,7 +11,6 @@ external/glfw/LICENSE.md
 external/kvazaar/LICENSE
 external/kvazaar/LICENSE.EXT.greatest
 external/kvazaar/src/threadwrapper/LICENSE
-external/mimalloc/LICENSE
 external/msdf-atlas-gen/LICENSE.txt
 external/msdf-atlas-gen/artery-font-format/LICENSE.txt
 external/msdf-atlas-gen/msdfgen/LICENSE.txt

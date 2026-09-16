@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: >-
           git submodule update --init --recursive
-          external/cglm external/cimgui external/glfw external/kvazaar external/mimalloc
+          external/cglm external/cimgui external/glfw external/kvazaar
           external/msdf-atlas-gen
       - uses: actions/setup-python@v6
         with:

@@ -91,9 +91,7 @@ EXTERN_C_ON
 DVZ_EXPORT void dvz_set_allocator(const DvzAllocator* allocator);
 DVZ_EXPORT const DvzAllocator* dvz_get_allocator(void);
 DVZ_EXPORT const DvzAllocator* dvz_system_allocator(void);
-DVZ_EXPORT const DvzAllocator* dvz_mimalloc_allocator(void);
 DVZ_EXPORT void dvz_use_system_allocator(void);
-DVZ_EXPORT void dvz_use_mimalloc_allocator(void);
 
 EXTERN_C_OFF
 

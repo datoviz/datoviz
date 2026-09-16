@@ -116,10 +116,6 @@ if(DVZ_THREADING_TARGET)
     target_link_libraries(dvztest_scheduler PRIVATE ${DVZ_THREADING_TARGET})
 endif()
 
-if(DVZ_WITH_MIMALLOC)
-    target_link_libraries(dvztest_scheduler PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-endif()
-
 target_include_directories(dvztest_scheduler
     PRIVATE
     ${PROJECT_SOURCE_DIR}/include
@@ -321,10 +317,6 @@ function(dvz_add_cpu_test_runner target source_var)
         target_link_libraries(${target} PRIVATE ${DVZ_THREADING_TARGET})
     endif()
 
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(${target} PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-    endif()
-
     target_include_directories(${target}
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
@@ -401,10 +393,6 @@ if(_dvz_has_core)
         target_link_libraries(dvztest_core PRIVATE ${DVZ_THREADING_TARGET})
     endif()
 
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(dvztest_core PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-    endif()
-
     target_include_directories(dvztest_core
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
@@ -461,11 +449,6 @@ if(_dvz_has_core AND _dvz_has_drp2)
                 dvz_shaderc_smoke PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
         endif()
 
-        if(DVZ_WITH_MIMALLOC)
-            target_link_libraries(
-                dvz_shaderc_smoke PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-        endif()
-
         target_include_directories(dvz_shaderc_smoke
             PRIVATE
             ${PROJECT_SOURCE_DIR}/include
@@ -499,11 +482,6 @@ if(_dvz_has_core AND _dvz_has_drp2)
             if(_dvz_has_vk)
                 target_link_libraries(
                     dvz_shaderc_runtime_dirs_smoke PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
-            endif()
-
-            if(DVZ_WITH_MIMALLOC)
-                target_link_libraries(
-                    dvz_shaderc_runtime_dirs_smoke PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
             endif()
 
             target_include_directories(dvz_shaderc_runtime_dirs_smoke
@@ -557,10 +535,6 @@ if(_dvz_has_core AND _dvz_has_drp2)
         target_link_libraries(dvztest_drp2 PRIVATE CUDA::cudart CUDA::cuda_driver)
     endif()
 
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(dvztest_drp2 PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-    endif()
-
     target_include_directories(dvztest_drp2
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
@@ -594,10 +568,6 @@ if(_dvz_has_core AND _dvz_has_drp2)
 
     if(_dvz_has_vk)
         target_link_libraries(dvz_drp2_player PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
-    endif()
-
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(dvz_drp2_player PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
     endif()
 
     target_include_directories(dvz_drp2_player
@@ -660,10 +630,6 @@ if(_dvz_has_core AND _dvz_has_drp2 AND _dvz_has_scene)
         target_link_libraries(dvztest_scene PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
     endif()
 
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(dvztest_scene PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-    endif()
-
     target_include_directories(dvztest_scene
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
@@ -716,10 +682,6 @@ if(_dvz_has_core AND _dvz_has_vk)
 
     if(TARGET vklite_test_shaders)
         add_dependencies(dvztest_vk vklite_test_shaders)
-    endif()
-
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(dvztest_vk PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
     endif()
 
     target_include_directories(dvztest_vk
@@ -797,10 +759,6 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         target_link_libraries(dvztest_canvas PRIVATE ${DVZ_THREADING_TARGET})
     endif()
 
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(dvztest_canvas PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-    endif()
-
     target_include_directories(dvztest_canvas
         PRIVATE
         ${PROJECT_SOURCE_DIR}/include
@@ -865,10 +823,6 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
 
         if(DVZ_THREADING_TARGET)
             target_link_libraries(dvztest_gui PRIVATE ${DVZ_THREADING_TARGET})
-        endif()
-
-        if(DVZ_WITH_MIMALLOC)
-            target_link_libraries(dvztest_gui PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
         endif()
 
         target_include_directories(dvztest_gui
@@ -987,11 +941,6 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
         add_dependencies(dvztest_integration vklite_test_shaders)
     endif()
 
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(dvztest PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-        target_link_libraries(dvztest_integration PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
-    endif()
-
     # Build the interactive canvas smoke app: dvz_live_canvas
     add_executable(dvz_live_canvas dvz_live_canvas.c)
 
@@ -1030,10 +979,6 @@ if(_dvz_has_core AND _dvz_has_vk AND _dvz_has_canvas)
 
     if(DVZ_THREADING_TARGET)
         target_link_libraries(dvz_live_canvas PRIVATE ${DVZ_THREADING_TARGET})
-    endif()
-
-    if(DVZ_WITH_MIMALLOC)
-        target_link_libraries(dvz_live_canvas PRIVATE $<$<CONFIG:Release>:mimalloc-static>)
     endif()
 
     target_include_directories(dvz_live_canvas

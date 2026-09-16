@@ -58,7 +58,7 @@ As root, install the native compiler and system dependencies:
 ```sh
 pkg install git cmake ninja pkgconf python3 \
   vulkan-headers vulkan-loader vulkan-tools shaderc \
-  glfw cglm mimalloc freetype2
+  glfw cglm freetype2
 ```
 
 Install and configure a Vulkan driver appropriate for the machine before attempting GPU or window tests. The [FreeBSD graphics documentation](https://docs.freebsd.org/en/books/handbook/x11/#x-config) describes the Intel, AMD, and NVIDIA driver paths. Follow the clone step below, then use the dedicated FreeBSD configuration instead of `just build`.
@@ -109,7 +109,6 @@ cmake -S . -B build-freebsd -G Ninja \
   -DCMAKE_INSTALL_PREFIX="$PWD/build-freebsd/install" \
   -DDVZ_VENDORED_DEPS=OFF \
   -DDVZ_CGLM_SOURCE=SYSTEM \
-  -DDVZ_MIMALLOC_SOURCE=SYSTEM \
   -DDVZ_ENABLE_KVAZAAR=OFF \
   -DDVZ_BUILD_GUI=OFF \
   -DDVZ_WITH_MSDF_ATLAS=OFF \
@@ -181,11 +180,11 @@ Continue with the complete [Quickstart](quickstart.md) or [First C Program](firs
 
 ## Dependency policy and troubleshooting context
 
-The normal build prefers repository submodules for cglm, mimalloc, Kvazaar, GLFW, and msdf-atlas-gen where available. Distribution maintainers may set `DVZ_VENDORED_DEPS=OFF`; in that system-auto lane, CMake prefers installed dependencies while `AUTO` modes may fall back to vendored sources. See [Build options](../reference/build-options.md) for switches and packaging presets.
+The normal build prefers repository submodules for cglm, Kvazaar, GLFW, and msdf-atlas-gen where available. Distribution maintainers may set `DVZ_VENDORED_DEPS=OFF`; in that system-auto lane, CMake prefers installed dependencies while `AUTO` modes may fall back to vendored sources. See [Build options](../reference/build-options.md) for switches and packaging presets.
 
 The normal native build uses `glslc` for scene, Canvas, and test SPIR-V and does not require `glslangValidator`. Shaderc provides the separate runtime GLSL API for external shaders, while CI and release builds use `spirv-val` to validate generated SPIR-V. Keep these roles separate when diagnosing a missing shader tool.
 
-System-auto packaging additionally prefers installed GLFW, cglm, mimalloc, and Kvazaar development packages. Those are not required when the normal vendored sources are available.
+System-auto packaging additionally prefers installed GLFW, cglm, and Kvazaar development packages. Those are not required when the normal vendored sources are available.
 
 ## Package engineering status
 

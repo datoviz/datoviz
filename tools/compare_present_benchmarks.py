@@ -39,7 +39,6 @@ EXTERNAL_SUBMODULES = (
     "external/cimgui",
     "external/glfw",
     "external/kvazaar",
-    "external/mimalloc",
     "external/msdf-atlas-gen",
 )
 LIVE_SUMMARY_RE = re.compile(

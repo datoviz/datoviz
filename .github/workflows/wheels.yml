@@ -7,7 +7,7 @@ env:
   # Build once per platform; Datoviz is Python-ABI independent and the backend emits
   # py3-none-<platform> directly. Separate install-smoke jobs cover Python 3.10 through 3.14,
   # with 3.15 prerelease enabled only for nightly/prerelease checks.
-  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
+  DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
 
 permissions:
   contents: read
@@ -74,7 +74,7 @@ jobs:
         shell: bash
         run: >-
           git submodule update --init --recursive
-          external/cglm external/cimgui external/glfw external/kvazaar external/mimalloc
+          external/cglm external/cimgui external/glfw external/kvazaar
           external/msdf-atlas-gen
       - uses: actions/download-artifact@v8
         with:
@@ -82,7 +82,7 @@ jobs:
           path: .
       - name: Build, inspect, and smoke-test manylinux wheel
         env:
-          DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
+          DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_BUILD_TESTING=OFF -DDVZ_BUILD_EXAMPLES=OFF -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
         run: |
           bash tools/release_wheels/manylinux_build_inside.sh ${{ matrix.arch }}
       - uses: actions/upload-artifact@v7
@@ -108,7 +108,7 @@ jobs:
             deployment_target: "15.0"
     env:
       MACOSX_DEPLOYMENT_TARGET: ${{ matrix.deployment_target }}
-      DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DDVZ_MIMALLOC_SOURCE=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment_target }} -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
+      DVZ_CMAKE_ARGS: "-DDVZ_ENABLE_SHADERC=ON -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment_target }} -DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON"
     steps:
       - uses: actions/checkout@v7
         with:
@@ -117,7 +117,7 @@ jobs:
         shell: bash
         run: >-
           git submodule update --init --recursive
-          external/cglm external/cimgui external/glfw external/kvazaar external/mimalloc
+          external/cglm external/cimgui external/glfw external/kvazaar
           external/msdf-atlas-gen
       - uses: actions/setup-python@v6
         with:
@@ -216,7 +216,7 @@ jobs:
         shell: bash
         run: >-
           git submodule update --init --recursive
-          external/cglm external/cimgui external/glfw external/kvazaar external/mimalloc
+          external/cglm external/cimgui external/glfw external/kvazaar
           external/msdf-atlas-gen
       - uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -343,7 +343,6 @@ jobs:
             "-DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }}",
             "-DVCPKG_INSTALLED_DIR=$PWD/build/vcpkg_installed",
             "-DDVZ_ENABLE_SHADERC=ON",
-            "-DDVZ_MIMALLOC_SOURCE=OFF",
             "-DDVZ_BUILD_TESTING=OFF",
             "-DDVZ_BUILD_EXAMPLES=OFF",
             "-DGLSLC=$env:DVZ_GLSLC",

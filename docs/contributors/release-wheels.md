@@ -30,9 +30,6 @@ Shader and Vulkan dependency policy:
 - Official release wheels must configure with `DVZ_REQUIRE_PRECOMPILED_SHADERS=ON` and `DVZ_VALIDATE_SPIRV=ON`; their build environments require `glslc` and `spirv-val`.
 - Official release wheels must use a Release native build and pass the installed
   `--release-build` check; a native version containing `(DEBUG)` is not publishable.
-- Official release wheels disable mimalloc. A wheel loads Datoviz into an existing interpreter,
-  where overriding the process allocator can cross unsafe allocation boundaries with dynamically
-  loaded dependencies such as shaderc.
 - Do not commit vendored SDK or runtime payloads such as Vulkan SDK libraries or shaderc dylibs.
 - On macOS wheels, `delocate` repairs linked dylib dependencies. `DVZ_WHEEL_RUNTIME_DIRS` is only
   for libraries Datoviz loads with `dlopen()` at runtime.

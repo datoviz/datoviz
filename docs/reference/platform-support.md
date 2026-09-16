@@ -47,7 +47,7 @@ The base `libdatoviz` build and base Python wheel do not link Qt. The `datoviz.q
 
 Default native source builds need a C/C++ toolchain, CMake/build tools, Vulkan headers and loader,
 cglm, and the enabled module dependencies. A usable Vulkan driver/ICD is also required at runtime.
-Optional or configuration-dependent dependencies include GLFW, mimalloc, Kvazaar, zlib, FreeType,
+Optional or configuration-dependent dependencies include GLFW, Kvazaar, zlib, FreeType,
 msdf-atlas-gen, Qt6, shaderc, CUDA, and video encoders.
 
 The default source build prefers vendored dependency submodules. Distribution builders may use `DVZ_VENDORED_DEPS=OFF` to prefer supported system packages with `AUTO` fallback. The normal native build uses `glslc` for Datoviz-owned SPIR-V, the typed runtime API uses shaderc for external GLSL, and CI/release lanes use `spirv-val`; `glslangValidator` is optional.

@@ -18,7 +18,6 @@ DEFAULT_SUBMODULES = (
     "external/cimgui",
     "external/glfw",
     "external/kvazaar",
-    "external/mimalloc",
     "external/msdf-atlas-gen",
 )
 REQUIRED_GENERATED_FILES = (

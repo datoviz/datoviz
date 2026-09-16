@@ -422,7 +422,6 @@ validate_source_install()
             cmake_opts+=(
                 -DDVZ_VENDORED_DEPS=OFF
                 -DDVZ_CGLM_SOURCE=SYSTEM
-                -DDVZ_MIMALLOC_SOURCE=SYSTEM
             )
             ;;
         *)

@@ -44,7 +44,6 @@ inconsistent combinations instead of silently building a partial API.
 | `DVZ_ENABLE_COVERAGE` | `OFF` | Enable code coverage instrumentation for supported compilers. |
 | `DVZ_ENABLE_GPROF` | `OFF` | Enable gprof instrumentation on supported compilers. |
 | `DVZ_SANITIZER` | empty | Optional sanitizer override for Debug builds: `asan`, `msan`, `tsan`, or `off`. |
-| `DVZ_USE_MIMALLOC_RELEASE_DEFAULT` | `ON` | Use mimalloc as the default allocator in Release builds when available. |
 
 ## Dependency Source
 
@@ -52,7 +51,6 @@ inconsistent combinations instead of silently building a partial API.
 | --- | --- | --- |
 | `DVZ_VENDORED_DEPS` | `ON` | Prefer bundled third-party source trees when source mode is `AUTO`. Set to `OFF` to prefer supported dependencies from the host package manager. |
 | `DVZ_WITH_GLFW` | `ON` | Enable the GLFW window backend. With `DVZ_VENDORED_DEPS=OFF`, CMake looks for a system `glfw3` package. If absent, non-GUI builds fall back to the headless backend; GUI builds fail because ImGui needs GLFW. |
-| `DVZ_MIMALLOC_SOURCE` | `AUTO` | Select mimalloc source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. `AUTO` follows `DVZ_VENDORED_DEPS`, falling back to the other source when needed. |
 | `DVZ_CGLM_SOURCE` | `AUTO` | Select cglm source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. cglm is required by the active math stack, so `OFF` is currently rejected. |
 | `DVZ_KVAZAAR_SOURCE` | `AUTO` | Select Kvazaar source: `AUTO`, `SYSTEM`, `VENDORED`, or `OFF`. `OFF` disables the optional software HEVC backend. |
 | `DVZ_BUILD_TESTING` | `PROJECT_IS_TOP_LEVEL` | Build Datoviz test executables. Package/install smoke presets and FetchContent consumers normally disable this. |
@@ -87,16 +85,16 @@ CUDA discovery is also independent from video encoding. A Linux system with the 
 | `package-install-vendored` | Install-tree smoke using the default vendored dependency preference. |
 | `package-smoke-system-auto` | Narrow Release build with `DVZ_VENDORED_DEPS=OFF`, preferring system packages while allowing `AUTO` fallback. |
 | `package-install-system-auto` | Install-tree smoke with `DVZ_VENDORED_DEPS=OFF`, preferring system packages while allowing `AUTO` fallback. |
-| `package-smoke-system-required` | Package CI preset requiring system cglm, Kvazaar, mimalloc, and GLFW. Use only in an environment that installs those development packages first. |
-| `package-install-system-required` | Install-tree smoke requiring system cglm, Kvazaar, mimalloc, and GLFW. Use only in an environment that installs those development packages first. |
+| `package-smoke-system-required` | Package CI preset requiring system cglm, Kvazaar, and GLFW. Use only in an environment that installs those development packages first. |
+| `package-install-system-required` | Install-tree smoke requiring system cglm, Kvazaar, and GLFW. Use only in an environment that installs those development packages first. |
 
 ## Package CI Matrix
 
 | Platform | System dependencies to install | Expected preset lane | Dependency policy |
 | --- | --- | --- | --- |
-| Ubuntu 24.04 | `libglfw3-dev libcglm-dev libmimalloc-dev` | `package-smoke-system-auto`, then `package-install-system-auto` | Prefer system GLFW, cglm, and mimalloc. Leave Kvazaar as `AUTO` or set `DVZ_KVAZAAR_SOURCE=VENDORED` unless the builder provides `libkvazaar-dev`. |
-| Fedora | `glfw-devel mimalloc-devel` plus any available cglm/Kvazaar development packages | `package-smoke-system-auto`, then `package-install-system-auto` | Prefer system packages that exist in the target Fedora/EPEL release. Keep cglm and Kvazaar as `AUTO` unless the packaging environment explicitly provides them. |
-| macOS / Homebrew | `glfw cglm kvazaar mimalloc` | `package-smoke-system-required`, then `package-install-system-required` | Homebrew has all four package-manager candidates, so this is the strict system-dependency lane. |
+| Ubuntu 24.04 | `libglfw3-dev libcglm-dev` | `package-smoke-system-auto`, then `package-install-system-auto` | Prefer system GLFW and cglm. Leave Kvazaar as `AUTO` or set `DVZ_KVAZAAR_SOURCE=VENDORED` unless the builder provides `libkvazaar-dev`. |
+| Fedora | `glfw-devel` plus any available cglm/Kvazaar development packages | `package-smoke-system-auto`, then `package-install-system-auto` | Prefer system packages that exist in the target Fedora/EPEL release. Keep cglm and Kvazaar as `AUTO` unless the packaging environment explicitly provides them. |
+| macOS / Homebrew | `glfw cglm kvazaar` | `package-smoke-system-required`, then `package-install-system-required` | Homebrew has all three package-manager candidates, so this is the strict system-dependency lane. |
 
 `msdf-atlas-gen` is intentionally absent from the matrix. Treat it as source/vendored-only for
 v0.4 packaging; do not add it as a distro package requirement.

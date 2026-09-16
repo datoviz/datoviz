@@ -18,7 +18,6 @@
     "freetype",
     "glfw3",
     "libpng",
-    "mimalloc",
     "pthreads",
     "tinyxml2",
     "vulkan",

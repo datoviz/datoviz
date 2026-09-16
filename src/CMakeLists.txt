@@ -264,20 +264,6 @@ if(OS_WINDOWS)
     list(APPEND DVZ_COMPILE_DEFINITIONS VK_USE_PLATFORM_WIN32_KHR NOMINMAX)
 endif()
 
-if(DVZ_WITH_MIMALLOC)
-    list(APPEND DVZ_COMPILE_DEFINITIONS
-        DVZ_HAS_MIMALLOC=$<IF:$<CONFIG:Release>,1,0>)
-else()
-    list(APPEND DVZ_COMPILE_DEFINITIONS DVZ_HAS_MIMALLOC=0)
-endif()
-
-if(DVZ_USE_MIMALLOC_RELEASE_DEFAULT AND DVZ_WITH_MIMALLOC)
-    list(APPEND DVZ_COMPILE_DEFINITIONS
-        DVZ_ALLOCATOR_DEFAULT_MIMALLOC=$<IF:$<CONFIG:Release>,1,0>)
-else()
-    list(APPEND DVZ_COMPILE_DEFINITIONS DVZ_ALLOCATOR_DEFAULT_MIMALLOC=0)
-endif()
-
 if(DVZ_ENABLE_ASAN_IN_DEBUG)
     list(APPEND DVZ_COMPILE_DEFINITIONS DVZ_ENABLE_ASAN_IN_DEBUG=1)
 else()
@@ -649,15 +635,6 @@ if(DVZ_THREADING_TARGET)
         target_link_libraries(datoviz_core PRIVATE ${DVZ_THREADING_TARGET})
     endif()
     target_link_libraries(datoviz PRIVATE ${DVZ_THREADING_TARGET})
-endif()
-
-if(DVZ_WITH_MIMALLOC)
-    if(TARGET datoviz_core)
-        target_link_libraries(datoviz_core PRIVATE $<$<CONFIG:Release>:${DVZ_MIMALLOC_TARGET}>)
-    endif()
-    if(DVZ_BUILD_CORE)
-        target_link_libraries(datoviz PRIVATE $<$<CONFIG:Release>:${DVZ_MIMALLOC_TARGET}>)
-    endif()
 endif()
 
 if(DVZ_TEXT_ATLAS_LIBS)

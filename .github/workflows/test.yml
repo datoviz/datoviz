@@ -35,7 +35,7 @@ jobs:
         shell: bash
         run: >-
           git submodule update --init --recursive
-          external/cglm external/cimgui external/glfw external/kvazaar external/mimalloc
+          external/cglm external/cimgui external/glfw external/kvazaar
           external/msdf-atlas-gen
       - uses: actions/setup-python@v6
         with:
@@ -89,7 +89,7 @@ jobs:
         shell: bash
         run: >-
           git submodule update --init --recursive
-          external/cglm external/cimgui external/glfw external/kvazaar external/mimalloc
+          external/cglm external/cimgui external/glfw external/kvazaar
           external/msdf-atlas-gen
       - uses: actions/setup-python@v6
         with:
@@ -123,7 +123,7 @@ jobs:
         shell: bash
         run: >-
           git submodule update --init --recursive
-          external/cglm external/cimgui external/glfw external/kvazaar external/mimalloc
+          external/cglm external/cimgui external/glfw external/kvazaar
           external/msdf-atlas-gen
       - uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -177,7 +177,6 @@ jobs:
             -DVCPKG_TARGET_TRIPLET=x64-windows `
             -DVCPKG_INSTALLED_DIR="$PWD/build/vcpkg_installed" `
             -DDVZ_ENABLE_SHADERC=ON `
-            -DDVZ_MIMALLOC_SOURCE=OFF `
             -DDVZ_BUILD_EXAMPLES=OFF `
             -DGLSLC="$env:DVZ_GLSLC" `
             -DDVZ_SPIRV_VAL_EXECUTABLE="$env:DVZ_SPIRV_VAL" `

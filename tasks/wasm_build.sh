@@ -75,7 +75,6 @@ build_mode()
         -DDVZ_ENABLE_KVAZAAR=OFF
         -DDVZ_WITH_GLFW=OFF
         -DDVZ_WITH_ZLIB=OFF
-        -DDVZ_USE_MIMALLOC_RELEASE_DEFAULT=OFF
     )
     if [[ -n "$c_flags" ]]; then
         cmake_args+=("-DCMAKE_C_FLAGS_${flag_config}=${c_flags}")

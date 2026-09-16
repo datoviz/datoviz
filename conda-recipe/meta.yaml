@@ -30,7 +30,6 @@ outputs:
         - glfw
         - libgl-devel  # [linux]
         - libpng
-        - mimalloc
         - tinyxml2
         - libvulkan-loader
         - zlib
@@ -39,7 +38,6 @@ outputs:
         - freetype
         - glfw
         - libpng
-        - mimalloc
         - moltenvk  # [osx]
         - tinyxml2
         - libvulkan-loader
