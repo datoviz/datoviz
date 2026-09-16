@@ -69,6 +69,8 @@ Set `DVZ_APP_FRAME_TIMING=1` before a fixed-frame `dvz_app_run()` to print one `
 
 The `prepare` phase is split into `gui_frame`, `gui_viewport`, and `prepare_other`. `gui_frame` covers Dear ImGui frame construction and callbacks, while `gui_viewport` covers resolving embedded offscreen viewports, including any source render and synchronization they require. The `post` phase includes synchronous scene queries; `query` reports that subset and `query_count` reports the total number processed during the measured run. Compare `query` with `post` to distinguish query work from other post-render callbacks.
 
+Query detail fields split caller-visible work into `query_build`, `query_emit`, `query_validation`, `query_backend`, `query_commit`, `query_download`, `query_decode`, and `query_readout`. Shape counters report the maximum derived vertex count, static upload bytes, retained static-resource bytes, submissions, completions, failures, superseded and coalesced requests, and static uploads. A first query may build and upload retained geometry while a steady-state query reuses it, so record those phases separately rather than averaging setup into continuous pointer interaction.
+
 For example:
 
 ```bash

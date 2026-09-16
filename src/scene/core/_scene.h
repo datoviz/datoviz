@@ -1381,6 +1381,28 @@ typedef struct DvzQueuedQueryResult DvzQueuedQueryResult;
 typedef struct DvzRequestFreshnessScope DvzRequestFreshnessScope;
 typedef struct DvzSceneQueryScratch DvzSceneQueryScratch;
 typedef struct DvzSceneRequestExecutor DvzSceneRequestExecutor;
+typedef struct DvzSceneQueryTiming DvzSceneQueryTiming;
+
+struct DvzSceneQueryTiming
+{
+    uint64_t build_ns;
+    uint64_t emit_ns;
+    uint64_t semantic_validation_ns;
+    uint64_t backend_ns;
+    uint64_t semantic_commit_ns;
+    uint64_t download_ns;
+    uint64_t decode_ns;
+    uint64_t readout_ns;
+    uint64_t derived_vertex_count;
+    uint64_t static_upload_bytes;
+    uint64_t retained_resource_bytes;
+    uint64_t submitted_count;
+    uint64_t completed_count;
+    uint64_t failed_count;
+    uint64_t superseded_count;
+    uint64_t coalesced_count;
+    uint64_t static_upload_count;
+};
 
 struct DvzPendingQueryRequest
 {
@@ -1425,6 +1447,9 @@ struct DvzSceneRequestExecutor
     uint32_t runtime_create_count;
     uint32_t emitter_create_count;
     uint32_t query_static_cache_upload_count;
+    bool timing_enabled;
+    uint64_t pending_superseded_count;
+    DvzSceneQueryTiming last_timing;
 };
 
 

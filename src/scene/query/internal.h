@@ -141,6 +141,9 @@ struct DvzSceneQueryPlan
     DvzVisual* static_cache_visual;
     uint64_t static_cache_keys[DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT];
     uint32_t static_cache_key_count;
+    uint64_t derived_vertex_count;
+    uint64_t static_upload_bytes;
+    uint64_t retained_resource_bytes;
 };
 
 
@@ -238,6 +241,10 @@ bool _dvz_scene_query_execute_readback(
     const DvzScene* scene, DvzSceneRequestExecutor* executor, const DvzCapabilitySnapshot* caps,
     DvzFramePlan* plan, uint32_t target_width, uint32_t target_height, uint32_t color_format,
     uint8_t* bytes, uint32_t byte_size, bool* out_executed);
+
+void _dvz_scene_query_timing_enable(DvzScene* scene, bool enabled);
+
+bool _dvz_scene_query_timing_get(const DvzScene* scene, DvzSceneQueryTiming* timing);
 
 void _dvz_scene_query_drop_superseded_results(
     DvzScene* scene, const DvzPanel* panel, uint64_t request_id);

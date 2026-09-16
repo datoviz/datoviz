@@ -167,6 +167,7 @@ static void _query_drop_superseded_requests(
             sizeof(DvzPendingQueryRequest));
     }
     scene->pending_query_count = write;
+    scene->query_executor.pending_superseded_count += old_count - write;
 }
 
 
@@ -177,7 +178,7 @@ static void _query_drop_superseded_requests(
  * @param scene the scene
  * @param figure the figure being processed
  */
-static void _query_coalesce_pending_requests(DvzScene* scene, const DvzFigure* figure)
+static uint32_t _query_coalesce_pending_requests(DvzScene* scene, const DvzFigure* figure)
 {
     ANN(scene);
     ANN(figure);
@@ -225,6 +226,7 @@ static void _query_coalesce_pending_requests(DvzScene* scene, const DvzFigure* f
             sizeof(DvzPendingQueryRequest));
     }
     scene->pending_query_count = write;
+    return old_count - write;
 }
 
 
@@ -330,6 +332,14 @@ uint32_t dvz_figure_process_queries(
 {
     ANN(figure);
     ANN(figure->scene);
+    DvzScene* scene = figure->scene;
+    DvzSceneRequestExecutor* executor = &scene->query_executor;
+    const uint64_t superseded_count = executor->pending_superseded_count;
+    executor->pending_superseded_count = 0;
+    dvz_memset(
+        &executor->last_timing, sizeof(DvzSceneQueryTiming), 0,
+        sizeof(DvzSceneQueryTiming));
+    executor->last_timing.superseded_count = superseded_count;
 
     DvzCapabilitySnapshot local_caps = {0};
     if (caps == NULL)
@@ -343,10 +353,8 @@ uint32_t dvz_figure_process_queries(
     if (!_scene_figure_resolve_layouts(figure))
         return 0;
 
-    DvzScene* scene = figure->scene;
     uint32_t processed = 0;
-    _query_coalesce_pending_requests(scene, figure);
-    DvzSceneRequestExecutor* executor = &scene->query_executor;
+    executor->last_timing.coalesced_count = _query_coalesce_pending_requests(scene, figure);
 
     for (uint32_t i = 0; i < scene->pending_query_count;)
     {
@@ -364,6 +372,14 @@ uint32_t dvz_figure_process_queries(
                 pending.item_interaction, pending.item_interaction_kind, &result);
             (void)_dvz_scene_query_push_result(
                 scene, pending.panel, pending.freshness_serial, &result);
+            executor->last_timing.completed_count++;
+            if (
+                result.status == DVZ_QUERY_STATUS_GPU_EXEC_FAILED ||
+                result.status == DVZ_QUERY_STATUS_READBACK_FAILED ||
+                result.status == DVZ_QUERY_STATUS_DECODE_FAILED)
+            {
+                executor->last_timing.failed_count++;
+            }
         }
 
         _query_remove_pending_at(scene, i);

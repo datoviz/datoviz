@@ -20,6 +20,7 @@
 #include "_scene.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_time_utils.h"
 #include "internal.h"
 
 
@@ -287,11 +288,18 @@ bool _dvz_scene_query_execute_family(
     executor->active_query_target = pending->request.target;
 
     DvzSceneQueryPlan plan = {0};
+    uint64_t phase_start = executor->timing_enabled ? dvz_time_monotonic_ns() : 0;
     if (!ops->build(&build, &plan))
     {
         _scene_query_scratch_destroy(&plan.scratch);
         return false;
     }
+    if (executor->timing_enabled)
+        executor->last_timing.build_ns += dvz_time_monotonic_ns() - phase_start;
+    if (plan.derived_vertex_count > executor->last_timing.derived_vertex_count)
+        executor->last_timing.derived_vertex_count = plan.derived_vertex_count;
+    executor->last_timing.static_upload_bytes += plan.static_upload_bytes;
+    executor->last_timing.retained_resource_bytes = plan.retained_resource_bytes;
     if (!dvz_frame_plan_render_metadata_complete(plan.scratch.plan))
     {
         log_error("query render plan missing typed visual metadata");
@@ -314,7 +322,11 @@ bool _dvz_scene_query_execute_family(
             plan.target_height, plan.format, bytes, plan.byte_size, &executed);
     }
     if (executed)
+    {
         _query_mark_static_upload(executor, &plan);
+        if (plan.mark_static_cache_uploaded)
+            executor->last_timing.static_upload_count++;
+    }
     if (!ok)
     {
         out_result->status =
@@ -329,11 +341,14 @@ bool _dvz_scene_query_execute_family(
         .bytes = bytes,
         .byte_size = plan.byte_size,
     };
+    phase_start = executor->timing_enabled ? dvz_time_monotonic_ns() : 0;
     if (!ops->decode(&decode, out_result))
     {
         _scene_query_scratch_destroy(&plan.scratch);
         return false;
     }
+    if (executor->timing_enabled)
+        executor->last_timing.decode_ns += dvz_time_monotonic_ns() - phase_start;
 
     if (ops->readout != NULL)
     {
@@ -341,8 +356,11 @@ bool _dvz_scene_query_execute_family(
             .build = &build,
             .plan = &plan,
         };
+        phase_start = executor->timing_enabled ? dvz_time_monotonic_ns() : 0;
         if (!ops->readout(&readout, out_result))
             out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
+        if (executor->timing_enabled)
+            executor->last_timing.readout_ns += dvz_time_monotonic_ns() - phase_start;
     }
 
     _scene_query_scratch_destroy(&plan.scratch);

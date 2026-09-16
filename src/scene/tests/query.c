@@ -193,6 +193,7 @@ int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const T
     DvzPanel* panel = dvz_panel(
         figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
     ANN(panel);
+    _dvz_scene_query_timing_enable(scene, true);
 
     AT(dvz_panel_query_px(
            panel, 8.0, 8.0,
@@ -204,6 +205,12 @@ int test_scene_query_queue_coalesces_pending_requests(TstContext* suite, const T
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     AT(dvz_figure_process_queries(figure, (DvzDrp2Runtime*)scene, &caps) == 1);
+    DvzSceneQueryTiming timing = {0};
+    AT(_dvz_scene_query_timing_get(scene, &timing));
+    AT(timing.superseded_count == 1);
+    AT(timing.coalesced_count == 0);
+    AT(timing.completed_count == 1);
+    AT(timing.submitted_count == 0);
 
     DvzQueryResult result = {0};
     AT(dvz_scene_poll_query(scene, &result));
@@ -2667,11 +2674,21 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
 
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     caps.shader_format_glsl = true;
+    _dvz_scene_query_timing_enable(scene, true);
 
     AT(dvz_panel_query_px(
            panel, 48.0, 32.0,
            &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 83, .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    DvzSceneQueryTiming timing = {0};
+    AT(_dvz_scene_query_timing_get(scene, &timing));
+    AT(timing.derived_vertex_count == 6);
+    AT(timing.static_upload_bytes == 6 * (sizeof(vec3) + sizeof(uint32_t)));
+    AT(timing.retained_resource_bytes == 6 * (sizeof(vec3) + sizeof(uint32_t)));
+    AT(timing.static_upload_count == 1);
+    AT(timing.submitted_count == 1);
+    AT(timing.completed_count == 1);
+    AT(timing.failed_count == 0);
 
     DvzQueryResult query = {0};
     AT(dvz_scene_poll_query(scene, &query));
@@ -2692,6 +2709,11 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
                               .request_id = 86,
                               .target = DVZ_SCENE_TARGET_FACE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(_dvz_scene_query_timing_get(scene, &timing));
+    AT(timing.derived_vertex_count == 6);
+    AT(timing.static_upload_bytes == 6 * (sizeof(vec3) + sizeof(uint32_t)));
+    AT(timing.retained_resource_bytes == 6 * (sizeof(vec3) + sizeof(uint32_t)));
+    AT(timing.static_upload_count == 1);
     AT(dvz_scene_poll_query(scene, &query));
     AT(query.hit);
     AT(query.request_id == 86);
@@ -2712,6 +2734,11 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
                               .request_id = 87,
                               .target = DVZ_SCENE_TARGET_FACE}) == 0);
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(_dvz_scene_query_timing_get(scene, &timing));
+    AT(timing.derived_vertex_count == 6);
+    AT(timing.static_upload_bytes == 0);
+    AT(timing.retained_resource_bytes == 6 * (sizeof(vec3) + sizeof(uint32_t)));
+    AT(timing.static_upload_count == 0);
     AT(dvz_scene_poll_query(scene, &query));
     AT(query.hit);
     AT(query.face_id == 1);

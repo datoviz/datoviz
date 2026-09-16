@@ -308,6 +308,9 @@ static bool _mesh_query_build(
     out_plan->target_height = target_height;
     out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
+    out_plan->derived_vertex_count = vertex_count;
+    out_plan->static_upload_bytes = include_static_uploads ? position_bytes + id_bytes : 0;
+    out_plan->retained_resource_bytes = position_bytes + id_bytes;
     return true;
 }
 

@@ -193,6 +193,7 @@ typedef struct DvzAppFrameTiming
     uint64_t post_ns;
     uint64_t query_ns;
     uint64_t query_count;
+    DvzSceneQueryTiming query_detail;
     uint64_t callback_ns;
     uint64_t input_sequence;
     uint64_t input_timestamp_ns;
@@ -1810,6 +1811,7 @@ static void _app_frame_timing_begin(DvzApp* app, uint32_t frame_count)
         if (!app->frame_timing_enabled)
         {
             _scene_figure_emit_timing_enable(win->figure, false);
+            _dvz_scene_query_timing_enable(win->figure->scene, false);
             continue;
         }
         win->frame_timing.samples =
@@ -1822,6 +1824,7 @@ static void _app_frame_timing_begin(DvzApp* app, uint32_t frame_count)
         win->frame_timing.enabled = true;
         win->frame_timing.sample_capacity = capacity;
         _scene_figure_emit_timing_enable(win->figure, true);
+        _dvz_scene_query_timing_enable(win->figure->scene, true);
     }
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     _dvz_drp2_runtime_timing_enable(app->runtime, app->frame_timing_enabled);
@@ -1880,6 +1883,32 @@ static void _app_frame_timing_report(DvzApp* app)
             total.post_ns += sample->post_ns;
             total.query_ns += sample->query_ns;
             total.query_count += sample->query_count;
+            total.query_detail.build_ns += sample->query_detail.build_ns;
+            total.query_detail.emit_ns += sample->query_detail.emit_ns;
+            total.query_detail.semantic_validation_ns +=
+                sample->query_detail.semantic_validation_ns;
+            total.query_detail.backend_ns += sample->query_detail.backend_ns;
+            total.query_detail.semantic_commit_ns += sample->query_detail.semantic_commit_ns;
+            total.query_detail.download_ns += sample->query_detail.download_ns;
+            total.query_detail.decode_ns += sample->query_detail.decode_ns;
+            total.query_detail.readout_ns += sample->query_detail.readout_ns;
+            if (sample->query_detail.derived_vertex_count > total.query_detail.derived_vertex_count)
+            {
+                total.query_detail.derived_vertex_count =
+                    sample->query_detail.derived_vertex_count;
+            }
+            total.query_detail.static_upload_bytes += sample->query_detail.static_upload_bytes;
+            if (sample->query_detail.retained_resource_bytes > 0)
+            {
+                total.query_detail.retained_resource_bytes =
+                    sample->query_detail.retained_resource_bytes;
+            }
+            total.query_detail.submitted_count += sample->query_detail.submitted_count;
+            total.query_detail.completed_count += sample->query_detail.completed_count;
+            total.query_detail.failed_count += sample->query_detail.failed_count;
+            total.query_detail.superseded_count += sample->query_detail.superseded_count;
+            total.query_detail.coalesced_count += sample->query_detail.coalesced_count;
+            total.query_detail.static_upload_count += sample->query_detail.static_upload_count;
             total.callback_ns += sample->callback_ns;
         }
         qsort(sorted, state->sample_count, sizeof(double), _app_timing_compare_double);
@@ -1910,7 +1939,14 @@ static void _app_frame_timing_report(DvzApp* app)
             "scene_contract=%.4f "
             "scene_emit=%.4f scene_cleanup=%.4f execute=%.4f semantic_validation=%.4f "
             "backend=%.4f semantic_commit=%.4f trace=%.4f post=%.4f query=%.4f "
-            "query_count=%" PRIu64 " callback=%.4f "
+            "query_count=%" PRIu64 " query_build=%.4f query_emit=%.4f "
+            "query_validation=%.4f query_backend=%.4f query_commit=%.4f "
+            "query_download=%.4f query_decode=%.4f query_readout=%.4f "
+            "query_vertices=%" PRIu64 " query_upload_bytes=%" PRIu64 " "
+            "query_retained_bytes=%" PRIu64 " query_submitted=%" PRIu64 " "
+            "query_completed=%" PRIu64 " query_failed=%" PRIu64 " "
+            "query_superseded=%" PRIu64 " query_coalesced=%" PRIu64 " "
+            "query_static_uploads=%" PRIu64 " callback=%.4f "
             "canvas_overhead=%.4f "
             "draw_residual=%.4f "
             "scheduler_residual=%.4f\n",
@@ -1939,6 +1975,19 @@ static void _app_frame_timing_report(DvzApp* app)
             (double)total.semantic_commit_ns * 1e-6 / divisor,
             (double)total.trace_ns * 1e-6 / divisor, (double)total.post_ns * 1e-6 / divisor,
             (double)total.query_ns * 1e-6 / divisor, total.query_count,
+            (double)total.query_detail.build_ns * 1e-6 / divisor,
+            (double)total.query_detail.emit_ns * 1e-6 / divisor,
+            (double)total.query_detail.semantic_validation_ns * 1e-6 / divisor,
+            (double)total.query_detail.backend_ns * 1e-6 / divisor,
+            (double)total.query_detail.semantic_commit_ns * 1e-6 / divisor,
+            (double)total.query_detail.download_ns * 1e-6 / divisor,
+            (double)total.query_detail.decode_ns * 1e-6 / divisor,
+            (double)total.query_detail.readout_ns * 1e-6 / divisor,
+            total.query_detail.derived_vertex_count, total.query_detail.static_upload_bytes,
+            total.query_detail.retained_resource_bytes, total.query_detail.submitted_count,
+            total.query_detail.completed_count, total.query_detail.failed_count,
+            total.query_detail.superseded_count, total.query_detail.coalesced_count,
+            total.query_detail.static_upload_count,
             (double)total.callback_ns * 1e-6 / divisor, canvas_overhead_ms, draw_residual_ms,
             scheduler_residual_ms);
         dvz_free(sorted);
@@ -4372,6 +4421,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
         {
             timing->query_ns = dvz_time_monotonic_ns() - query_start_ns;
             timing->query_count = query_count;
+            (void)_dvz_scene_query_timing_get(win->figure->scene, &timing->query_detail);
         }
     }
 

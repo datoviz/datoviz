@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "datoviz/drp2/runtime.h"
+#include "../../drp2/_runtime.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -71,11 +72,17 @@ void _scene_request_executor_destroy(DvzSceneRequestExecutor* executor)
 {
     if (executor == NULL)
         return;
+    const bool timing_enabled = executor->timing_enabled;
+    const uint64_t pending_superseded_count = executor->pending_superseded_count;
+    const DvzSceneQueryTiming last_timing = executor->last_timing;
     if (executor->runtime != NULL)
         dvz_drp2_runtime_destroy(executor->runtime);
     if (executor->emitter != NULL)
         dvz_frame_plan_emitter_destroy(executor->emitter);
     dvz_memset(executor, sizeof(DvzSceneRequestExecutor), 0, sizeof(DvzSceneRequestExecutor));
+    executor->timing_enabled = timing_enabled;
+    executor->pending_superseded_count = pending_superseded_count;
+    executor->last_timing = last_timing;
 }
 
 
@@ -117,5 +124,35 @@ bool _scene_request_executor_prepare(DvzSceneRequestExecutor* executor, DvzDrp2R
     }
     executor->runtime_cfg = runtime_cfg;
     executor->runtime_create_count++;
+    _dvz_drp2_runtime_timing_enable(executor->runtime, executor->timing_enabled);
+    return true;
+}
+
+
+
+void _dvz_scene_query_timing_enable(DvzScene* scene, bool enabled)
+{
+    ANN(scene);
+    DvzSceneRequestExecutor* executor = &scene->query_executor;
+    executor->timing_enabled = enabled;
+    if (enabled)
+        executor->pending_superseded_count = 0;
+    if (executor->runtime != NULL)
+        _dvz_drp2_runtime_timing_enable(executor->runtime, enabled);
+    if (!enabled)
+    {
+        dvz_memset(
+            &executor->last_timing, sizeof(DvzSceneQueryTiming), 0,
+            sizeof(DvzSceneQueryTiming));
+    }
+}
+
+
+
+bool _dvz_scene_query_timing_get(const DvzScene* scene, DvzSceneQueryTiming* timing)
+{
+    if (scene == NULL || timing == NULL || !scene->query_executor.timing_enabled)
+        return false;
+    *timing = scene->query_executor.last_timing;
     return true;
 }

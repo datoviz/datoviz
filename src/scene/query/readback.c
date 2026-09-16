@@ -19,10 +19,12 @@
 #include <stdint.h>
 
 #include "datoviz/drp2/runtime.h"
+#include "../../drp2/_runtime.h"
 #include "../../drp2/_stream.h"
 #include "_scene.h"
 #include "_assertions.h"
 #include "_log.h"
+#include "_time_utils.h"
 #include "internal.h"
 
 
@@ -69,8 +71,11 @@ bool _dvz_scene_query_execute_readback(
     cfg.target_width = target_width > 0 ? target_width : 1;
     cfg.target_height = target_height > 0 ? target_height : 1;
     cfg.color_target_format = color_format;
+    uint64_t phase_start = executor->timing_enabled ? dvz_time_monotonic_ns() : 0;
     DvzDrp2CommandStream* stream =
         dvz_frame_plan_emitter_emit_drp2(executor->emitter, plan, caps, &report, &cfg);
+    if (executor->timing_enabled)
+        executor->last_timing.emit_ns += dvz_time_monotonic_ns() - phase_start;
     if (stream == NULL)
     {
         log_error("scene query readback DRP2 emission failed");
@@ -86,7 +91,19 @@ bool _dvz_scene_query_execute_readback(
     }
     else
     {
+        executor->last_timing.submitted_count++;
         DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(executor->runtime, stream);
+        if (executor->timing_enabled)
+        {
+            DvzDrp2RuntimeTiming runtime_timing = {0};
+            if (_dvz_drp2_runtime_timing_get(executor->runtime, &runtime_timing))
+            {
+                executor->last_timing.semantic_validation_ns +=
+                    runtime_timing.semantic_validation_ns;
+                executor->last_timing.backend_ns += runtime_timing.backend_ns;
+                executor->last_timing.semantic_commit_ns += runtime_timing.semantic_commit_ns;
+            }
+        }
         if (!result.ok)
         {
             const DvzDrp2Command* failed = dvz_drp2_stream_get(stream, result.command_index);
@@ -121,7 +138,10 @@ bool _dvz_scene_query_execute_readback(
             }
             else
             {
+                phase_start = executor->timing_enabled ? dvz_time_monotonic_ns() : 0;
                 ok = dvz_drp2_runtime_download_buffer(executor->runtime, rb_id, 0, byte_size, bytes);
+                if (executor->timing_enabled)
+                    executor->last_timing.download_ns += dvz_time_monotonic_ns() - phase_start;
                 if (!ok)
                     log_error("scene query readback buffer download failed");
             }
