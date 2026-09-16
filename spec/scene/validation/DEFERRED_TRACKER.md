@@ -51,6 +51,8 @@ These items are in scope for v0.4 but deferred beyond the initial implementation
 | Labels GPU probing, 3D label slices, GPU-only label resources, and large sparse-id pressure tests beyond the active 2D integer-label rendering slice | `spec/scene/proposals/promoted/LABELS_VISUAL_DESIGN.md` |
 | Richer probe payloads beyond basic point identity and image RGBA/value readback | `spec/scene/proposals/promoted/PROBE_READOUT_DESIGN.md` |
 | Mesh grouped-region styling and combined face-plus-instance identity beyond active base-face picking; richer path/subpath, label, text, volume ray-hit, object, and grouped-family picking | `spec/scene/interaction/PICKING.md` |
+| Bounded asynchronous scene-query completion with latest-wins publication and retained readback slots | `spec/scene/proposals/future/ASYNC_QUERY_EXECUTION.md` |
+| Non-blocking embedded GUI viewport presentation with completed-image generations and scoped synchronization | `spec/architecture/GUI_VIEWPORT_PRESENTATION.md` |
 | Scene-level animation timeline coordination | `spec/scene/interaction/ANIMATION.md` |
 | Multi-scene GPU resource sharing across threads | `spec/scene/integration/THREAD_SAFETY.md` |
 | Polar axis geometry (circular gridlines, radial labels) | `spec/scene/pipeline/TRANSFORM_PIPELINE.md` |

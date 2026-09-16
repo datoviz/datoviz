@@ -547,6 +547,8 @@ Queued scene queries should cease to synchronously complete GPU work inside the 
 5. in-flight and per-frame processing limits prevent pointer motion or several request scopes from creating unbounded query work;
 6. the explicit synchronous helper remains available for tests and tools rather than defining interactive behavior.
 
+The lifecycle, bounded-capacity, scheduling, generation, teardown, and backend-completion contract is defined in [`../proposals/future/ASYNC_QUERY_EXECUTION.md`](../proposals/future/ASYNC_QUERY_EXECUTION.md).
+
 Mesh-part ITEM queries should reuse the original indexed geometry, part transforms, visibility, and compact part identity defined by [`../proposals/future/MESH_PART_STATE.md`](../proposals/future/MESH_PART_STATE.md). This removes expanded face geometry from ordinary semantic-part interaction, but does not by itself remove submission or readback latency.
 
 ### Later v0.5: Exact Composite Identity

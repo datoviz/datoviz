@@ -45,7 +45,7 @@ Preserved follow-up direction:
 
 ### Interactive Mesh Performance Milestones
 
-Large semantically partitioned meshes provide the reference pressure test: approximately 500,000 vertices, 1,000,000 triangles, and 1,000 independently interactive parts. These milestones are performance direction, not v0.4 release gates. The query details remain owned by [interaction/GPU_QUERY_SYSTEM.md](interaction/GPU_QUERY_SYSTEM.md), while per-part transforms, styling, visibility, and item identity remain owned by [proposals/future/MESH_PART_STATE.md](proposals/future/MESH_PART_STATE.md).
+Large semantically partitioned meshes provide the reference pressure test: approximately 500,000 vertices, 1,000,000 triangles, and 1,000 independently interactive parts. These milestones are performance direction, not v0.4 release gates. Query semantics remain owned by [interaction/GPU_QUERY_SYSTEM.md](interaction/GPU_QUERY_SYSTEM.md), asynchronous completion by [proposals/future/ASYNC_QUERY_EXECUTION.md](proposals/future/ASYNC_QUERY_EXECUTION.md), per-part transforms, styling, visibility, and identity by [proposals/future/MESH_PART_STATE.md](proposals/future/MESH_PART_STATE.md), and embedded GUI synchronization by [../architecture/GUI_VIEWPORT_PRESENTATION.md](../architecture/GUI_VIEWPORT_PRESENTATION.md).
 
 | Milestone | Scope | Exit evidence |
 | --- | --- | --- |

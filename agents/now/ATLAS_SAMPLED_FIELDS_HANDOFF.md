@@ -2,6 +2,8 @@
 
 This note records the release allocation exposed by a high-resolution brain-atlas consumer after RC3 candidate preparation. It is a current handoff, not a claim that deferred work is already implemented or release-proven.
 
+Large-mesh query, mesh-part state, and embedded GUI viewport performance are tracked separately in [INTERACTIVE_MESH_PERFORMANCE_HANDOFF.md](INTERACTIVE_MESH_PERFORMANCE_HANDOFF.md). This note remains authoritative only for sampled-field and slice/volume concerns.
+
 ## Current capability
 
 - Sampled fields retain 2D and 3D data in scalar, integer, or RGBA formats and support full replacement, resize, subregion updates, and explicit row/image strides.
