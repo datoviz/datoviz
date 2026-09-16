@@ -48,6 +48,12 @@ just example-c lab/gui_viewport_bench --profile combined --warmup 16 --frames 12
 
 Run fresh `empty`, `tree`, `viewport`, and `combined` processes in randomized order. Tree profiles use 1,140 expanded synthetic hierarchy rows by default. Viewport profiles use the same atlas-scale surface grid and apply a tiny visual transform every frame so the owned source view exercises live rendering rather than the static-source cache. The benchmark enables `DVZ_APP_FRAME_TIMING` for the measured run and also emits one compact `gui_viewport_bench` summary.
 
+## RC3 Evaluation Evidence
+
+An isolated mesh-only 1 x 1 physical query attachment was evaluated on the 697 x 699 synthetic FACE workload in a matched debug build on the RTX 5090. Three fresh 120-query runs measured a median 11.27 ms/query with the existing panel-sized attachment and 11.46 ms/query with the 1 x 1 attachment; median backend time remained approximately 6.9 ms/query. The experiment was not retained because it produced no representative improvement. This result indicates that expanded geometry processing and synchronous execution dominate attachment fill for this workload.
+
+The same synthetic GUI runs measured 0.34 ms/frame for the empty GUI, 0.32 ms/frame for the 1,140-row expanded tree, 4.57 ms/frame for the live atlas-scale viewport, and 4.65 ms/frame for the combined tree plus live viewport. These are single-run debug-build diagnostics rather than release thresholds, but they reproduce the consumer finding: retained tree traversal is not the priority, while live embedded presentation remains material.
+
 ## Stop And Retention Rules
 
 - Do not retain the one-pixel target if edge, depth, transform, panel-offset, DPI, native, or WebGPU query semantics differ, or if representative end-to-end improvement is negligible.
