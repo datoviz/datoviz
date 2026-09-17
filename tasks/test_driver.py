@@ -69,6 +69,7 @@ def main(argv: list[str] | None = None) -> int:
 
     run_p = sub.add_parser("run")
     run_p.add_argument("filter", nargs="?", default="")
+    run_p.add_argument("extra", nargs=argparse.REMAINDER)
 
     inv_p = sub.add_parser("inventory")
     inv_p.add_argument("lane", nargs="?", default="")
@@ -82,6 +83,10 @@ def main(argv: list[str] | None = None) -> int:
         cmd = [str(runner())]
         if args.filter:
             cmd.append(args.filter)
+        extra = args.extra
+        if extra and extra[0] == "--":
+            extra = extra[1:]
+        cmd.extend(extra)
         return run(cmd)
     if args.cmd == "inventory":
         return inventory(args.lane)

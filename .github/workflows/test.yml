@@ -75,7 +75,7 @@ jobs:
         run: >-
           xvfb-run --auto-servernum
           --server-args="-screen 0 1024x768x24 -extension MIT-SHM"
-          just test
+          just test "" --jobs 4
 
   test-macos:
     name: "Test / macOS"
@@ -106,7 +106,7 @@ jobs:
       - name: Build
         run: DVZ_CMAKE_ARGS="-DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON" just build
       - name: Test
-        run: just test
+        run: just test "" --jobs 3
 
   build-windows:
     name: "Build / Windows"
