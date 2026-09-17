@@ -99,8 +99,6 @@ jobs:
           brew install \
             just ccache ninja shaderc spirv-tools vulkan-headers vulkan-loader molten-vk \
             vulkan-validationlayers freetype tinyxml2
-          python -m pip install -U pip
-          python -m pip install -r requirements-dev.txt
           command -v glslc
           command -v spirv-val
       - name: Build
