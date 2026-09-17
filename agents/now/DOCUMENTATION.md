@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Status
 
-Status: RC3 implementation inventory, rewritten course previews, and automated course prose review complete; maintainer review, exact release artifacts, and publication decisions remain. Local prose and PR state updated: 2026-09-08.
+Status: RC3 implementation inventory, rewritten course previews, and automated course prose review complete; maintainer review, exact release artifacts, and publication decisions remain. Local prose and PR state updated: 2026-09-17.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 
@@ -15,7 +15,7 @@ Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wid
 - The nine invalidated still-cache records were regenerated and verified against the canonical images: eight are byte-identical and `features_panel_mixed_2d_3d` is pixel-equivalent with maximum channel delta 4 across 0.0911% of components.
 - The designated Linux host produced two byte-identical 104-image screenshot runs; the approved 54 changed images were promoted through `data` commit `d72c72c` and parent gitlink commit `264517633` with machine-readable evidence.
 - The four-page visual-system pilot passes strict build and software-rendered desktop/mobile inspection.
-- PR #132 is triaged read-only; most topics are superseded. Focused successor PR #136 remains open at head `af770b37f42f0c95a2ece98a6b26ac58aef3136b`, and the current connector reports `mergeable=false`.
+- PR #157 merged the refreshed embedding and platform-portability work at `fccf83061b05b7373f5caa1ba40bdecfc3578306` with green Linux, macOS, Windows, agent-instruction, and submodule-reachability checks. PR #136 is merged and superseded by #157; original PR #132 is closed as superseded.
 - Rewritten course chapters 1-3, their canonical programs, source synchronization, and installed source-prefix smoke are implemented.
 - Rewritten course previews are generated from the canonical programs with real stdout, exact flat-color validation, deterministic fixed-time animation, and no `data` dependency.
 - The 2026-09-08 automated course prose review covers the overview and chapters 1-3. Setup now gives corrected Windows Developer PowerShell, Release-configuration source-install, package DLL `PATH`, and configuration-specific executable guidance; maintainer review of voice and pacing remains required.
@@ -27,15 +27,14 @@ The two bounded Fractal prose batches (`c4adddfd8` and `6d4affab6`) clarify twel
 1. Obtain maintainer review of the four-page visual pilot before broad rollout.
 2. Review the rewritten course voice, pacing, API profile, ownership explanations, package-first instructions, and generated previews.
 3. Approve exact animation/card publication candidates if they should replace canonical website assets.
-4. Resolve the current PR #136 merge state and obtain downstream confirmation of the maintainer's fixes, then disposition PR #136 and close PR #132 as superseded when appropriate.
-5. Review the local RC3 release-notes draft; finalize its exact identity, validation evidence, and release-specific known issues only when artifact scope is fixed.
-6. Review exact outreach drafts before any dataset-author or public GitHub communication.
+4. Review the local RC3 release-notes draft; finalize its exact identity, validation evidence, and release-specific known issues only when artifact scope is fixed.
+5. Review exact outreach drafts before any dataset-author or public GitHub communication.
 
 ## PR #132 Disposition
 
-Per-image present semaphore, Canvas shader compilation, Kvazaar/PThreads4W, and `DVZ_LOG_LEVEL` work are superseded by integrated implementation. Vulkan fallback changes require a current focused reproducer. Focused successor PR #136 carries the pre-existing GLFW-target reuse, opt-in macOS Vulkan-environment sanitization, and `_time_utils.h` guard/comment; the broader developer-preset overhaul remains deferred.
+Per-image present semaphore, Kvazaar/PThreads4W, and `DVZ_LOG_LEVEL` work were integrated independently. The current vendored Vulkan-header fallback does not have a reproduced defect. The broad developer-preset overhaul remains deferred rather than entering RC3.
 
-The contributor reviewed PR #136 on 2026-08-06 and requested `GLSLC` namespacing and fallback changes. The maintainer reported those changes addressed on 2026-08-08 and requested downstream confirmation; no later contributor confirmation appears in the current timeline. PR #136 remains open at head `af770b37f42f0c95a2ece98a6b26ac58aef3136b`, and the current connector reports `mergeable=false`, superseding the historical 2026-08-08 green/mergeable observation. Resolve that state and confirmation before dispositioning PR #136, then close PR #132 as superseded when appropriate. Do not publish any GitHub action or text without approval of the exact action and content.
+The contributor reviewed PR #136 and requested namespaced shader-tool settings and accurate no-compiler behavior. PR #157 incorporated those follow-ups together with parent-owned GLFW reuse, the guarded Windows lean-header policy, opt-in macOS Vulkan-environment sanitization, removal of the obsolete Canvas swizzle-shader pipeline, deterministic compiler-discovery controls, FetchContent and no-compiler regressions, and Windows CI hardening. It merged on 2026-09-17 at `fccf83061b05b7373f5caa1ba40bdecfc3578306` after all hosted checks passed. PR #136 is merged and its final comment records #157 as the refreshed successor. PR #132 was closed as superseded on 2026-09-17 after the approved final comment was published.
 
 ## RC4 Documentation Gate
 

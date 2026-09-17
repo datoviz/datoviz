@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Local candidate preparation and PR #136 audit updated: 2026-09-08; release artifacts are not frozen.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Local candidate preparation and embedding-portability disposition updated: 2026-09-17; release artifacts are not frozen.
 
 Use [STATUS.md](STATUS.md) for current blockers, [DOCUMENTATION.md](DOCUMENTATION.md) for documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable release policy.
 
@@ -30,7 +30,7 @@ Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_
 
 Remaining RC3 deliverables:
 
-1. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates; resolve PR #136's current merge state and obtain downstream confirmation of its fixes before resolving PR #132.
+1. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates. The refreshed embedding-portability implementation is merged through #157, and original PR #132 is closed as superseded, so this lane is no longer an RC3 gate.
 2. Complete subjective documentation and media review plus the remaining multi-machine review without admitting deferred dependency work; local documentation, WebGPU, input, Qt, gallery-cache, and animation/card pipeline gates are complete.
 3. Prove the rewritten course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
 4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, base conda layouts, third-party notices, and checksum/signing policy.
@@ -121,7 +121,7 @@ Detailed logs are in `/tmp/datoviz-rc3-preparation-20260908/`. The earlier 1,195
 | Work | Concrete next action | Acceptance boundary |
 | --- | --- | --- |
 | Maintainer review | Review the four course pages and previews, visual pilot, media candidates, and draft notes. | Automated review does not replace human acceptance. |
-| PR #136/#132 | PR #136 is open at `af770b37f42f0c95a2ece98a6b26ac58aef3136b`; read-only connector inspection reports `mergeable=false`. The contributor reviewed on August 6; downstream confirmation after the August 8 fixes is still absent. Resolve or explicitly exclude this lane before freeze. | Historical green/mergeable comments are not current merge proof; merging or posting needs exact approval. |
+| PR #157/#136/#132 | PR #157 merged the refreshed embedding and platform-portability work at `fccf83061b05b7373f5caa1ba40bdecfc3578306` on 2026-09-17. Linux, macOS, Windows, agent-instruction, and submodule-reachability checks passed. PR #136 is merged and superseded by #157; PR #132 is closed as superseded. | Complete; no implementation or disposition gate remains in this lane. |
 | Machine access | Keep machine connection details in ignored local notes; verify each checkout and desktop session before running the prepared platform checks. Run the prepared source checks first, especially the unresolved Windows AMD/NVIDIA visible asymmetry. | Source and unattended results are development evidence; each real interaction observation stays pending until performed. |
 | Version and candidate freeze | Review the prepared `0.4.0rc3` metadata/workflow-default patch, finalize date/scope, apply it, refresh/validate bindings, and commit the candidate. | Version changes require approval under `spec/release/RELEASE_AUTOMATION.md`; no published-install claim changes before official package proof. |
 | Exact artifacts | Build one explicit source bundle and all six wheels, then hosted conformance and installed course/shaderc/CMake checks. | Match commit, filename, and checksum; older development wheels do not satisfy this. |
