@@ -10,6 +10,17 @@ set(
     "Parent-owned GLFW target to test before embedding Datoviz: OFF, PLAIN, or NAMESPACED")
 set_property(
     CACHE DATOVIZ_FETCHCONTENT_PRELOAD_GLFW PROPERTY STRINGS OFF PLAIN NAMESPACED)
+option(
+    DATOVIZ_FETCHCONTENT_PRELOAD_GLSLC_VARIABLES
+    "Define parent-owned generic GLSLC variables before embedding Datoviz"
+    OFF)
+
+if(DATOVIZ_FETCHCONTENT_PRELOAD_GLSLC_VARIABLES)
+    set(GLSLC "parent-owned-glslc" CACHE STRING "Parent-owned shader compiler setting")
+    set(GLSLC_PATH "parent-owned-glslc-path" CACHE STRING "Parent-owned shader search setting")
+    set(_parent_glslc "${GLSLC}")
+    set(_parent_glslc_path "${GLSLC_PATH}")
+endif()
 
 if(NOT DATOVIZ_FETCHCONTENT_PRELOAD_GLFW STREQUAL "OFF")
     if(NOT DATOVIZ_FETCHCONTENT_PRELOAD_GLFW MATCHES "^(PLAIN|NAMESPACED)$")
@@ -48,6 +59,13 @@ else()
 endif()
 
 FetchContent_MakeAvailable(datoviz)
+
+if(DATOVIZ_FETCHCONTENT_PRELOAD_GLSLC_VARIABLES)
+    if(NOT "${GLSLC}" STREQUAL "${_parent_glslc}"
+            OR NOT "${GLSLC_PATH}" STREQUAL "${_parent_glslc_path}")
+        message(FATAL_ERROR "Datoviz modified parent-owned GLSLC configuration variables")
+    endif()
+endif()
 
 add_executable(datoviz_fetchcontent_example main.c)
 target_link_libraries(datoviz_fetchcontent_example PRIVATE datoviz::datoviz)

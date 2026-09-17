@@ -8,6 +8,8 @@ PACKAGE_BUILD="$WORKDIR/cmake-package-build"
 FETCH_BUILD="$WORKDIR/fetchcontent-build"
 FETCH_GLFW_PLAIN_BUILD="$WORKDIR/fetchcontent-glfw-plain-build"
 FETCH_GLFW_NAMESPACED_BUILD="$WORKDIR/fetchcontent-glfw-namespaced-build"
+FETCH_GLSLC_VARIABLES_BUILD="$WORKDIR/fetchcontent-glslc-variables-build"
+CANVAS_NO_GLSLC_BUILD="$WORKDIR/canvas-no-glslc-build"
 DATOVIZ_BUILD="$WORKDIR/datoviz-build"
 
 rm -rf "$WORKDIR"
@@ -68,5 +70,48 @@ for GLFW_TARGET in PLAIN NAMESPACED; do
     DYLD_LIBRARY_PATH="$GLFW_BUILD/_deps/datoviz-build/src:${DYLD_LIBRARY_PATH:-}" \
         "$GLFW_BUILD/datoviz_fetchcontent_example"
 done
+
+echo "Building FetchContent consumer with parent-owned generic GLSLC variables..."
+cmake -S "$ROOT/examples/c/integration/fetchcontent" -B "$FETCH_GLSLC_VARIABLES_BUILD" -GNinja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DDATOVIZ_FETCHCONTENT_SOURCE_DIR="$ROOT" \
+    -DDATOVIZ_FETCHCONTENT_PRELOAD_GLSLC_VARIABLES=ON \
+    -DDVZ_BUILD_GUI=OFF \
+    -DDVZ_ENABLE_QT_BRIDGE=OFF \
+    -DDVZ_ENABLE_CUDA=OFF >/dev/null
+cmake --build "$FETCH_GLSLC_VARIABLES_BUILD" \
+    --target datoviz_fetchcontent_example >/dev/null
+
+LD_LIBRARY_PATH="$FETCH_GLSLC_VARIABLES_BUILD/_deps/datoviz-build/src:${LD_LIBRARY_PATH:-}" \
+DYLD_LIBRARY_PATH="$FETCH_GLSLC_VARIABLES_BUILD/_deps/datoviz-build/src:${DYLD_LIBRARY_PATH:-}" \
+    "$FETCH_GLSLC_VARIABLES_BUILD/datoviz_fetchcontent_example"
+
+echo "Building Canvas without glslc..."
+(
+    unset VULKAN_SDK DVZ_GLSLC
+    cmake -S "$ROOT" -B "$CANVAS_NO_GLSLC_BUILD" -GNinja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DDVZ_BUILD_CONTROLLER=OFF \
+        -DDVZ_BUILD_CANVAS=ON \
+        -DDVZ_BUILD_DRP2=OFF \
+        -DDVZ_BUILD_SCENE=OFF \
+        -DDVZ_BUILD_APP=OFF \
+        -DDVZ_BUILD_GUI=OFF \
+        -DDVZ_BUILD_TESTING=OFF \
+        -DDVZ_BUILD_EXAMPLES=OFF \
+        -DDVZ_INSTALL=OFF \
+        -DDVZ_WITH_FREETYPE=OFF \
+        -DDVZ_WITH_MSDF_ATLAS=OFF \
+        -DDVZ_WITH_MSDF_SVG=OFF \
+        -DDVZ_ENABLE_SHADERC=OFF \
+        -DDVZ_GLSLC_AUTO_DISCOVERY=OFF \
+        -DDVZ_ENABLE_QT_BRIDGE=OFF \
+        -DDVZ_ENABLE_CUDA=OFF >/dev/null
+)
+if grep -Eq '^DVZ_GLSLC_EXECUTABLE:FILEPATH=.+glslc' "$CANVAS_NO_GLSLC_BUILD/CMakeCache.txt"; then
+    echo "Canvas no-glslc smoke unexpectedly discovered glslc" >&2
+    exit 1
+fi
+cmake --build "$CANVAS_NO_GLSLC_BUILD" --target datoviz_canvas_layer >/dev/null
 
 echo "C integration smoke passed: $WORKDIR"
