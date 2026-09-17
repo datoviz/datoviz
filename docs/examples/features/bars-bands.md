@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../guide-spans/">← Previous: Guide Spans</a></span>
-<span class="dvz-example-nav__next"><a href="../scalebar/">Next: Scale Bar →</a></span>
+<span class="dvz-example-nav__next"><a href="../histogram/">Next: Histogram →</a></span>
 </div>
 </nav>
 
@@ -82,6 +82,6 @@ The bar helper uses start, end, and value arrays so each bar has an explicit int
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../guide-spans/">← Previous: Guide Spans</a></span>
-<span class="dvz-example-nav__next"><a href="../scalebar/">Next: Scale Bar →</a></span>
+<span class="dvz-example-nav__next"><a href="../histogram/">Next: Histogram →</a></span>
 </div>
 </nav>

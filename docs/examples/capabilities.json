@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 118,
+  "example_count": 119,
   "categories": {
     "advanced": 6,
     "composite": 2,
-    "feature": 70,
+    "feature": 71,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -17,7 +17,7 @@
     "diagnostic": 1,
     "experimental": 19,
     "prototype": 1,
-    "supported": 97
+    "supported": 98
   },
   "capabilities": {
     "composites": {
@@ -182,7 +182,7 @@
         ]
       },
       "synthetic": {
-        "count": 104,
+        "count": 105,
         "examples": [
           {
             "id": "features_basic_scene",
@@ -471,6 +471,14 @@
             "status": "supported",
             "source": "examples/c/features/bars_bands.c",
             "page": "features/bars-bands.md"
+          },
+          {
+            "id": "features_histogram",
+            "title": "Histogram",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/histogram.c",
+            "page": "features/histogram.md"
           },
           {
             "id": "runtime_app_glfw",
@@ -1397,6 +1405,19 @@
           }
         ]
       },
+      "histogram": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_histogram",
+            "title": "Histogram",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/histogram.c",
+            "page": "features/histogram.md"
+          }
+        ]
+      },
       "image-probe": {
         "count": 1,
         "examples": [
@@ -2285,8 +2306,16 @@
         ]
       },
       "axes": {
-        "count": 2,
+        "count": 3,
         "examples": [
+          {
+            "id": "features_histogram",
+            "title": "Histogram",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/histogram.c",
+            "page": "features/histogram.md"
+          },
           {
             "id": "showcases_panel_linked_axes",
             "title": "Linked Panels With Axes",
@@ -2302,6 +2331,19 @@
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
             "page": "features/datetime-axis.md"
+          }
+        ]
+      },
+      "bars": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_histogram",
+            "title": "Histogram",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/histogram.c",
+            "page": "features/histogram.md"
           }
         ]
       },
@@ -3151,8 +3193,16 @@
         ]
       },
       "histogram": {
-        "count": 1,
+        "count": 2,
         "examples": [
+          {
+            "id": "features_histogram",
+            "title": "Histogram",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/histogram.c",
+            "page": "features/histogram.md"
+          },
           {
             "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
@@ -3685,7 +3735,7 @@
         ]
       },
       "panzoom": {
-        "count": 20,
+        "count": 21,
         "examples": [
           {
             "id": "features_panel_mixed_2d_3d",
@@ -3694,6 +3744,14 @@
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
             "page": "features/panel-mixed-2d-3d.md"
+          },
+          {
+            "id": "features_histogram",
+            "title": "Histogram",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/histogram.c",
+            "page": "features/histogram.md"
           },
           {
             "id": "showcases_panel_linked_axes",
@@ -4568,6 +4626,19 @@
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
             "page": "showcases/galaxy.md"
+          }
+        ]
+      },
+      "statistics": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_histogram",
+            "title": "Histogram",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/histogram.c",
+            "page": "features/histogram.md"
           }
         ]
       },

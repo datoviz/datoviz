@@ -390,6 +390,18 @@ This example shows bars and an uncertainty band in one 2D panel.
 
 <div class="card" markdown="1">
 
+### [Histogram](features/histogram.md)
+
+[![Histogram](../assets/gallery/v0.4/features/features_histogram.webp)](features/histogram.md)
+
+`features`<br><span>`histogram`, `bars`, `statistics`, `axes`, `panzoom`</span>
+
+This example bins deterministic samples and renders a histogram with DvzBars.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Scale Bar](features/scalebar.md)
 
 [![Scale Bar](../assets/gallery/v0.4/features/features_scalebar.webp)](features/scalebar.md)

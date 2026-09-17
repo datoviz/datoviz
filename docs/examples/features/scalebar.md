@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../bars-bands/">← Previous: Bars And Bands</a></span>
+<span class="dvz-example-nav__previous"><a href="../histogram/">← Previous: Histogram</a></span>
 <span class="dvz-example-nav__next"><a href="../scalebar-units/">Next: Scale Bar Units →</a></span>
 </div>
 </nav>
@@ -81,7 +81,7 @@ Five data-space points mark a simple ruler from 0 to 8 along X, while the scale 
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../bars-bands/">← Previous: Bars And Bands</a></span>
+<span class="dvz-example-nav__previous"><a href="../histogram/">← Previous: Histogram</a></span>
 <span class="dvz-example-nav__next"><a href="../scalebar-units/">Next: Scale Bar Units →</a></span>
 </div>
 </nav>

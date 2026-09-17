@@ -83,6 +83,7 @@ sections:
       - features_panel_view2d
       - features_user_scale
       - features_bars_bands
+      - features_histogram
       - features_controller_turntable
       - features_builtin_shapes_3d
       - features_isolines
@@ -121,6 +122,7 @@ sections:
           - features_guide_lines
           - features_guide_spans
           - features_bars_bands
+          - features_histogram
           - features_scalebar
           - features_scalebar_units
           - features_colorbar

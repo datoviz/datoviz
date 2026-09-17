@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 118,
+  "count": 119,
   "categories": {
     "advanced": 6,
     "composite": 2,
-    "feature": 70,
+    "feature": 71,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 19,
     "prototype": 1,
-    "supported": 97
+    "supported": 98
   },
   "examples": [
     {
@@ -1854,6 +1854,62 @@
       "primary_feature": "bars-bands",
       "python_source": "examples/python/gallery/features/bars_bands.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/bars_bands.py",
+      "python_status": "direct-engine"
+    },
+    {
+      "id": "features_histogram",
+      "title": "Histogram",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/histogram.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/histogram.c",
+      "page": "features/histogram.md",
+      "summary": "This example bins deterministic samples and renders a histogram with DvzBars.",
+      "validation": "smoke+screenshot",
+      "build_command": "just example-c features/histogram",
+      "smoke_command": "./build/examples/c/features/histogram --png",
+      "tags": [
+        "histogram",
+        "bars",
+        "statistics",
+        "axes",
+        "panzoom"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/features_histogram.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_histogram.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
+      "webgpu_requirements": [
+        "primitive",
+        "axes",
+        "panzoom"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_histogram",
+        "requirements": [
+          "primitive",
+          "axes",
+          "panzoom"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=features_histogram",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_histogram",
+      "primary_feature": "histogram",
+      "python_source": "examples/python/gallery/features/histogram.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/histogram.py",
       "python_status": "direct-engine"
     },
     {

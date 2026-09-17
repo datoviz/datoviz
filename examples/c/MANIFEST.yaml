@@ -124,7 +124,6 @@ non_public_examples:
     validation: manual
 
 review_exclusions:
-  features_histogram: new pre-RC3 C/Python/WebGPU histogram example pending canonical 1280x720 media review
   features_volume_occlusion: experimental render-product diagnostic pending an explicit publication review
   showcases_embedding_atlas: experimental generated-data showcase pending canonical 1280x720 media review
   showcases_lipid_brain_atlas: experimental prepared-data showcase pending canonical 1280x720 media and license review
@@ -181,6 +180,7 @@ batches:
     - features_legend_categorical
     - features_marker_symbols
     - features_bars_bands
+    - features_histogram
 
   review-07-cameras-3d:
     - features_camera_manual

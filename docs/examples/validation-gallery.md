@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 118
-- Examples declaring screenshot validation: 106
+- Reviewed public C examples generated for the website: 119
+- Examples declaring screenshot validation: 107
 - Examples that should have video or motion evidence: 8
 
 ## Commands
@@ -66,6 +66,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Guide Lines](features/guide-lines.md) | [`examples/c/features/guide_lines.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/guide_lines.c) | `supported` | `smoke+screenshot` |
 | [Guide Spans](features/guide-spans.md) | [`examples/c/features/guide_spans.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/guide_spans.c) | `supported` | `smoke+screenshot` |
 | [Bars And Bands](features/bars-bands.md) | [`examples/c/features/bars_bands.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/bars_bands.c) | `supported` | `smoke+screenshot` |
+| [Histogram](features/histogram.md) | [`examples/c/features/histogram.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/histogram.c) | `supported` | `smoke+screenshot` |
 | [Offscreen Capture](runtime/offscreen-capture.md) | [`examples/c/runtime/offscreen_capture.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/runtime/offscreen_capture.c) | `supported` | `smoke+screenshot` |
 | [Visual Transform](features/visual-transform.md) | [`examples/c/features/visual_transform.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/visual_transform.c) | `supported` | `smoke+screenshot` |
 | [Panel View 2D](features/panel-view2d.md) | [`examples/c/features/panel_view2d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/panel_view2d.c) | `supported` | `smoke+animation+screenshot` |

@@ -277,6 +277,18 @@ This example shows bars and an uncertainty band in one 2D panel.
 
 <div class="card" markdown="1">
 
+**[Histogram](features/histogram.md)**
+
+[![Histogram](../assets/gallery/v0.4/features/features_histogram.webp)](features/histogram.md)
+
+`features`
+
+This example bins deterministic samples and renders a histogram with DvzBars.
+
+</div>
+
+<div class="card" markdown="1">
+
 **[Turntable Controller](features/controller-turntable.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
@@ -351,7 +363,7 @@ This example queries and selects individual instances of one mesh visual.
 
 </div>
 
-**[Show all 70 feature examples →](features.md)**
+**[Show all 71 feature examples →](features.md)**
 
 ## Runtime And Advanced
 
@@ -364,9 +376,9 @@ Some examples focus on how Datoviz runs rather than on a particular visual resul
 
 | Goal | Start here | Then browse |
 | --- | --- | --- |
-| Learn the scene → figure → panel → visual workflow | [Basic Scene](features/basic-scene.md) | [70 focused features](features.md) |
+| Learn the scene → figure → panel → visual workflow | [Basic Scene](features/basic-scene.md) | [71 focused features](features.md) |
 | Choose marks, lines, images, meshes, text, or volumes | [Point](visuals/point.md) | [18 visuals and composites](visuals.md) |
-| Add axes, interaction, layout, animation, or techniques | [2D Axes](features/axes-2d.md) | [70 focused features](features.md) |
+| Add axes, interaction, layout, animation, or techniques | [2D Axes](features/axes-2d.md) | [71 focused features](features.md) |
 | Open windows, render offscreen, capture, record, or export | [Offscreen Capture](runtime/offscreen-capture.md) | [5 runtime examples](runtime.md) |
 | Study complete scientific visualization compositions | [Scientific Plotting Workflow](showcases/scientific-plotting.md) | [18 showcases](showcases.md) |
 | Integrate a host or use lower-level rendering APIs | [Advanced examples](advanced.md) | [6 advanced examples](advanced.md) |
