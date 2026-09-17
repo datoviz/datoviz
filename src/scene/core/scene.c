@@ -64,7 +64,7 @@
 /*  Process state                                                                                */
 /*************************************************************************************************/
 
-static atomic_uint_fast64_t _next_scene_id = ATOMIC_VAR_INIT(DVZ_ID_NONE);
+static atomic_uint_fast64_t _next_scene_id = DVZ_ID_NONE;
 
 
 
