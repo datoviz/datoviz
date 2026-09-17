@@ -159,6 +159,6 @@ Reproducer:
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Visual Data Update](../examples/gallery/features/features_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
-    - [Compute Buffer Animation](../examples/gallery/features/features_compute_buffer_animation.md) - Source: `examples/c/features/compute_buffer_animation.c`
-    - [Point Cloud](../examples/gallery/showcases/showcases_point_cloud.md) - Source: `examples/c/showcases/point_cloud.c`
+    - Canonical complete example: [Visual Data Update](../examples/features/update-visual-data.md) - Source: `examples/c/features/update_visual_data.c`
+    - [Compute Buffer Animation](../examples/features/compute-buffer-animation.md) - Source: `examples/c/features/compute_buffer_animation.c`
+    - [Point Cloud](../examples/showcases/point-cloud.md) - Source: `examples/c/showcases/point_cloud.c`

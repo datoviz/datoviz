@@ -8,9 +8,9 @@ Primitive: triangle list.
 
 ## Preview And Links
 
-[![Mesh](../../assets/gallery/v0.4/visuals/visuals_mesh.webp)](../../examples/gallery/visuals/visuals_mesh.md)
+[![Mesh](../../assets/gallery/v0.4/visuals/visuals_mesh.webp)](../../examples/visuals/mesh.md)
 
-- Example: [Mesh](../../examples/gallery/visuals/visuals_mesh.md)
+- Example: [Mesh](../../examples/visuals/mesh.md)
 - How-to: [Use lighting and materials](../../how-to/lighting-and-materials.md), [use 3D controllers](../../how-to/3d-navigation.md)
 - Related: [Primitive](primitive.md), [Sphere](sphere.md), [Volume](volume.md)
 
@@ -60,7 +60,7 @@ same geometry; upload them separately because their count differs from `N`.
 
 ## Verified Usage Pattern
 
-The [C example](../../examples/gallery/visuals/visuals_mesh.md) uses
+The [C example](../../examples/visuals/mesh.md) uses
 `dvz_mesh_set_geometry()`. Its Python counterpart uploads `position`, `color`, and indices directly.
 
 ## Picking And Probing
@@ -71,7 +71,7 @@ use explicit instance attributes when instance-level identity matters.
 ## Backend Notes
 
 Native and WebGPU paths are active for indexed and RGBA8 textured geometry. The
-[textured-mesh example](../../examples/gallery/features/features_mesh_texture.md) demonstrates an
+[textured-mesh example](../../examples/features/mesh-texture.md) demonstrates an
 explicit field-slot sampling descriptor.
 
 ## Canonical Example
@@ -79,7 +79,7 @@ explicit field-slot sampling descriptor.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/mesh.c` |
-| Gallery | [Mesh](../../examples/gallery/visuals/visuals_mesh.md) |
+| Gallery | [Mesh](../../examples/visuals/mesh.md) |
 | Build | `just example-c visuals/mesh` |
 | Smoke | `./build/examples/c/visuals/mesh --png` |
 | Validation | `smoke+screenshot` |

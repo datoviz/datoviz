@@ -8,6 +8,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+import build_gallery
+
 
 ROOT = Path(__file__).resolve().parents[1]
 COMMITTED_DIR = ROOT / "docs/examples"
@@ -29,17 +31,18 @@ def main() -> int:
         _run("tools/build_capabilities.py", "--output", str(generated / "capabilities.json"))
 
         expected = _generated_files(generated)
-        committed_gallery = _generated_files(COMMITTED_DIR / "gallery")
-        generated_gallery = {
-            path.relative_to("gallery") for path in expected if path.parts[0] == "gallery"
-        }
         ok = True
-        if committed_gallery != generated_gallery:
-            for path in sorted(generated_gallery - committed_gallery):
-                print(f"missing generated documentation: docs/examples/gallery/{path}")
-            for path in sorted(committed_gallery - generated_gallery):
-                print(f"stale generated documentation: docs/examples/gallery/{path}")
-            ok = False
+        for dirname in build_gallery.GENERATED_DETAIL_DIRS:
+            committed_files = _generated_files(COMMITTED_DIR / dirname)
+            generated_files = {
+                path.relative_to(dirname) for path in expected if path.parts[0] == dirname
+            }
+            if committed_files != generated_files:
+                for path in sorted(generated_files - committed_files):
+                    print(f"missing generated documentation: docs/examples/{dirname}/{path}")
+                for path in sorted(committed_files - generated_files):
+                    print(f"stale generated documentation: docs/examples/{dirname}/{path}")
+                ok = False
 
         for relative in sorted(expected):
             actual = COMMITTED_DIR / relative

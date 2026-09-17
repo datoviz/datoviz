@@ -10,9 +10,9 @@ Browse composed scenes demonstrating scientific workflows, real data, and polish
 
 <div class="card" markdown="1">
 
-### [Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md)
+### [Scientific Plotting Workflow](showcases/scientific-plotting.md)
 
-[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp)](gallery/showcases/showcases_scientific_plotting.md)
+[![Scientific Plotting Workflow](../assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp)](showcases/scientific-plotting.md)
 
 `showcases`<br><span>`workflow`, `scientific`, `histogram`, `guide-lines`, `guide-spans`, ...</span>
 
@@ -22,10 +22,10 @@ This example composes common scientific plot elements in one figure.
 
 <div class="card" markdown="1">
 
-### [Streaming DAQ · 64 channels](gallery/showcases/showcases_streaming_daq.md)
+### [Streaming DAQ · 64 channels](showcases/streaming-daq.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_streaming_daq/" aria-label="Streaming DAQ · 64 channels"></a>
+  <a class="dvz-gallery-media-target" href="streaming-daq/" aria-label="Streaming DAQ · 64 channels"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" alt="Streaming DAQ · 64 channels" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" aria-label="Streaming DAQ · 64 channels preview">
@@ -41,10 +41,10 @@ This example renders a simulated real-time data acquisition system.
 
 <div class="card" markdown="1">
 
-### [Linked Panels With Axes](gallery/showcases/showcases_panel_linked_axes.md)
+### [Linked Panels With Axes](showcases/panel-linked-axes.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_panel_linked_axes/" aria-label="Linked Panels With Axes"></a>
+  <a class="dvz-gallery-media-target" href="panel-linked-axes/" aria-label="Linked Panels With Axes"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Linked Panels With Axes" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" aria-label="Linked Panels With Axes preview">
@@ -60,9 +60,9 @@ This example builds linked time-series panels with shared axes behavior.
 
 <div class="card" markdown="1">
 
-### [Linked Probe With Colorbar](gallery/showcases/showcases_linked_probe_colorbar.md)
+### [Linked Probe With Colorbar](showcases/linked-probe-colorbar.md)
 
-[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/showcases_linked_probe_colorbar.webp)](gallery/showcases/showcases_linked_probe_colorbar.md)
+[![Linked Probe With Colorbar](../assets/gallery/v0.4/showcases/showcases_linked_probe_colorbar.webp)](showcases/linked-probe-colorbar.md)
 
 `showcases`<br><span>`workflow`, `image`, `sampled-field`, `pixel-query`, `linked-panzoom`, ...</span>
 
@@ -72,9 +72,9 @@ This example links two image panels with a probe readout and colorbar.
 
 <div class="card" markdown="1">
 
-### [Scale Bar Measurement Workflow](gallery/showcases/showcases_scalebar_measurement.md)
+### [Scale Bar Measurement Workflow](showcases/scalebar-measurement.md)
 
-[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/showcases_scalebar_measurement.webp)](gallery/showcases/showcases_scalebar_measurement.md)
+[![Scale Bar Measurement Workflow](../assets/gallery/v0.4/showcases/showcases_scalebar_measurement.webp)](showcases/scalebar-measurement.md)
 
 `showcases`<br><span>`workflow`, `scale-bar`, `measurement`, `synthetic`</span>
 
@@ -84,9 +84,9 @@ This example compares scale bars across overview, detail, and 3D views.
 
 <div class="card" markdown="1">
 
-### [U.S. State Choropleth](gallery/showcases/showcases_choropleth.md)
+### [U.S. State Choropleth](showcases/choropleth.md)
 
-[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/showcases_choropleth.webp)](gallery/showcases/showcases_choropleth.md)
+[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/showcases_choropleth.webp)](showcases/choropleth.md)
 
 `showcases`<br><span>`scientific`, `real-data`, `geo`, `composite`, `polygon-set`, ...</span>
 
@@ -96,10 +96,10 @@ This example renders contiguous U.S. population density as polygon-set data.
 
 <div class="card" markdown="1">
 
-### [Wind Field](gallery/showcases/showcases_wind_field.md)
+### [Wind Field](showcases/wind-field.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_wind_field/" aria-label="Wind Field"></a>
+  <a class="dvz-gallery-media-target" href="wind-field/" aria-label="Wind Field"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" alt="Wind Field" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_wind_field.poster.webp" aria-label="Wind Field preview">
@@ -115,9 +115,9 @@ This example combines a synthetic wind-speed field with vectors and streamlines.
 
 <div class="card" markdown="1">
 
-### [SVG Tiger](gallery/showcases/showcases_svg_tiger.md)
+### [SVG Tiger](showcases/svg-tiger.md)
 
-[![SVG Tiger](../assets/gallery/v0.4/showcases/showcases_svg_tiger.webp)](gallery/showcases/showcases_svg_tiger.md)
+[![SVG Tiger](../assets/gallery/v0.4/showcases/showcases_svg_tiger.webp)](showcases/svg-tiger.md)
 
 `experimental` `showcases`<br><span>`vector-art`, `svg`, `bezier`, `polygon-triangulation`, `mesh`, ...</span>
 
@@ -127,10 +127,10 @@ This example renders the classic colored tiger from prepared SVG paths.
 
 <div class="card" markdown="1">
 
-### [GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)
+### [GPU Particle Smoke](showcases/gpu-particle-smoke.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_gpu_particle_smoke/" aria-label="GPU Particle Smoke"></a>
+  <a class="dvz-gallery-media-target" href="gpu-particle-smoke/" aria-label="GPU Particle Smoke"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" alt="GPU Particle Smoke" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" aria-label="GPU Particle Smoke preview">
@@ -152,10 +152,10 @@ This example uses scene compute buffers to animate particle smoke.
 
 <div class="card" markdown="1">
 
-### [Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md)
+### [Density-Wave Galaxy](showcases/galaxy.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_galaxy/" aria-label="Density-Wave Galaxy"></a>
+  <a class="dvz-gallery-media-target" href="galaxy/" aria-label="Density-Wave Galaxy"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
@@ -171,10 +171,10 @@ This example renders an animated density-wave spiral galaxy.
 
 <div class="card" markdown="1">
 
-### [Allen Mouse Brain](gallery/showcases/showcases_brain_volume.md)
+### [Allen Mouse Brain](showcases/brain-volume.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_brain_volume/" aria-label="Allen Mouse Brain"></a>
+  <a class="dvz-gallery-media-target" href="brain-volume/" aria-label="Allen Mouse Brain"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" alt="Allen Mouse Brain" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp" aria-label="Allen Mouse Brain preview">
@@ -190,10 +190,10 @@ This example renders a prepared Allen mouse brain volume with a visible slice.
 
 <div class="card" markdown="1">
 
-### [Human Auditory Cortical Activity](gallery/showcases/showcases_cortical_activity.md)
+### [Human Auditory Cortical Activity](showcases/cortical-activity.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_cortical_activity/" aria-label="Human Auditory Cortical Activity"></a>
+  <a class="dvz-gallery-media-target" href="cortical-activity/" aria-label="Human Auditory Cortical Activity"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human Auditory Cortical Activity" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" aria-label="Human Auditory Cortical Activity preview">
@@ -209,10 +209,10 @@ This example animates a human auditory dSPM estimate on cortex.
 
 <div class="card" markdown="1">
 
-### [Protein](gallery/showcases/showcases_protein.md)
+### [Protein](showcases/protein.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_protein/" aria-label="Protein"></a>
+  <a class="dvz-gallery-media-target" href="protein/" aria-label="Protein"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
@@ -228,10 +228,10 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 <div class="card" markdown="1">
 
-### [Point Cloud](gallery/showcases/showcases_point_cloud.md)
+### [Point Cloud](showcases/point-cloud.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_point_cloud/" aria-label="Point Cloud"></a>
+  <a class="dvz-gallery-media-target" href="point-cloud/" aria-label="Point Cloud"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
@@ -247,10 +247,10 @@ This example renders a prepared RGB LiDAR point cloud with direct colors.
 
 <div class="card" markdown="1">
 
-### [Spherical Harmonics](gallery/showcases/showcases_spherical_harmonics.md)
+### [Spherical Harmonics](showcases/spherical-harmonics.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_spherical_harmonics/" aria-label="Spherical Harmonics"></a>
+  <a class="dvz-gallery-media-target" href="spherical-harmonics/" aria-label="Spherical Harmonics"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_spherical_harmonics.poster.webp" alt="Spherical Harmonics" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_spherical_harmonics.poster.webp" aria-label="Spherical Harmonics preview">
@@ -266,9 +266,9 @@ This example turns a real spherical-harmonic blend into a lit mesh.
 
 <div class="card" markdown="1">
 
-### [Surface Grid](gallery/showcases/showcases_surface_grid.md)
+### [Surface Grid](showcases/surface-grid.md)
 
-[![Surface Grid](../assets/gallery/v0.4/showcases/showcases_surface_grid.webp)](gallery/showcases/showcases_surface_grid.md)
+[![Surface Grid](../assets/gallery/v0.4/showcases/showcases_surface_grid.webp)](showcases/surface-grid.md)
 
 `showcases`<br><span>`scientific`, `synthetic`, `surface-grid`, `mesh`, `wireframe`, ...</span>
 
@@ -278,9 +278,9 @@ This example turns a generated height field into a lit mesh and wireframe.
 
 <div class="card" markdown="1">
 
-### [McHenrys Peak Terrain Relief](gallery/showcases/showcases_terrain_relief.md)
+### [McHenrys Peak Terrain Relief](showcases/terrain-relief.md)
 
-[![McHenrys Peak Terrain Relief](../assets/gallery/v0.4/showcases/showcases_terrain_relief.webp)](gallery/showcases/showcases_terrain_relief.md)
+[![McHenrys Peak Terrain Relief](../assets/gallery/v0.4/showcases/showcases_terrain_relief.webp)](showcases/terrain-relief.md)
 
 `experimental` `showcases`<br><span>`scientific`, `real-data`, `terrain`, `dem`, `orthoimagery`, ...</span>
 
@@ -290,10 +290,10 @@ This example drapes aligned NAIP orthoimagery over USGS 3DEP elevation.
 
 <div class="card" markdown="1">
 
-### [Textured Planets and Orbital Debris](gallery/showcases/showcases_textured_planet.md)
+### [Textured Planets and Orbital Debris](showcases/textured-planet.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="../gallery/showcases/showcases_textured_planet/" aria-label="Textured Planets and Orbital Debris"></a>
+  <a class="dvz-gallery-media-target" href="textured-planet/" aria-label="Textured Planets and Orbital Debris"></a>
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets and Orbital Debris" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets and Orbital Debris preview">

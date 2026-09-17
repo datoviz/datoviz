@@ -8,9 +8,9 @@ Primitive: generated glyph quads.
 
 ## Preview And Links
 
-[![Text](../../assets/gallery/v0.4/visuals/visuals_text.webp)](../../examples/gallery/visuals/visuals_text.md)
+[![Text](../../assets/gallery/v0.4/visuals/visuals_text.webp)](../../examples/visuals/text.md)
 
-- Example: [Text](../../examples/gallery/visuals/visuals_text.md)
+- Example: [Text](../../examples/visuals/text.md)
 - How-to: [Add text, labels, and annotations](../../how-to/add-annotations.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Glyph](glyph.md), [Labels](labels.md), [Marker](marker.md)
 
@@ -83,7 +83,7 @@ Datoviz copies descriptor strings and loads the selected file into scene-owned s
 
 Create the panel-owned object, configure descriptors returned by the default helpers, populate an
 initialized `DvzTextItem[N]`, and call `dvz_text_set_items()`. The complete
-[C and Python example](../../examples/gallery/visuals/visuals_text.md) uses this route.
+[C and Python example](../../examples/visuals/text.md) uses this route.
 
 ## Picking And Probing
 
@@ -100,7 +100,7 @@ glyph atlas rendering.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/text.c` |
-| Gallery | [Text](../../examples/gallery/visuals/visuals_text.md) |
+| Gallery | [Text](../../examples/visuals/text.md) |
 | Build | `just example-c visuals/text` |
 | Smoke | `./build/examples/c/visuals/text --png` |
 | Validation | `smoke+screenshot` |

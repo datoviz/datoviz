@@ -150,6 +150,6 @@ their scene if you remove them early.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Picking](../examples/gallery/features/features_picking.md) - Source: `examples/c/features/picking.c`
-    - [Pixel Selection](../examples/gallery/features/features_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
-    - [Label Probe](../examples/gallery/features/features_probe_labels.md) - Source: `examples/c/features/probe_labels.c`
+    - Canonical complete example: [Picking](../examples/features/picking.md) - Source: `examples/c/features/picking.c`
+    - [Pixel Selection](../examples/features/selection-pixel.md) - Source: `examples/c/features/selection_pixel.c`
+    - [Label Probe](../examples/features/probe-labels.md) - Source: `examples/c/features/probe_labels.c`

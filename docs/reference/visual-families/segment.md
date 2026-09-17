@@ -8,9 +8,9 @@ Primitive: expanded screen-space stroked segments.
 
 ## Preview And Links
 
-[![Segment](../../assets/gallery/v0.4/visuals/visuals_segment.webp)](../../examples/gallery/visuals/visuals_segment.md)
+[![Segment](../../assets/gallery/v0.4/visuals/visuals_segment.webp)](../../examples/visuals/segment.md)
 
-- Example: [Segment](../../examples/gallery/visuals/visuals_segment.md)
+- Example: [Segment](../../examples/visuals/segment.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Path](path.md), [Vector](vector.md), [Primitive](primitive.md)
 
@@ -53,7 +53,7 @@ array is still one segment, not a broadcast value.
 ## Verified Usage Pattern
 
 Upload the two endpoint arrays, color, and width together, optionally set caps, then attach the
-visual. See the complete [C and Python example](../../examples/gallery/visuals/visuals_segment.md).
+visual. See the complete [C and Python example](../../examples/visuals/segment.md).
 
 ## Picking And Probing
 
@@ -69,7 +69,7 @@ geometry while retaining the source segment identity.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/segment.c` |
-| Gallery | [Segment](../../examples/gallery/visuals/visuals_segment.md) |
+| Gallery | [Segment](../../examples/visuals/segment.md) |
 | Build | `just example-c visuals/segment` |
 | Smoke | `./build/examples/c/visuals/segment --png` |
 | Validation | `smoke+screenshot` |

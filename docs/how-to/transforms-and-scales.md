@@ -31,7 +31,7 @@ This is a C function-body excerpt. Datoviz matrices use the same `mat4` represen
 public headers; use the canonical example for complete setup and combined transforms.
 
 <figure class="dvz-output-example">
-  <a href="../../examples/gallery/features/features_visual_transform/">
+  <a href="../../examples/features/visual-transform/">
     <img src="../../assets/gallery/v0.4/features/features_visual_transform.webp"
          alt="Copies of geometry positioned with different retained visual transforms"
          loading="lazy">
@@ -39,7 +39,7 @@ public headers; use the canonical example for complete setup and combined transf
   <figcaption>
     <strong>Visual-local transform.</strong> Geometry placement changes while the source vertex
     arrays remain unchanged.
-    <a href="../../examples/gallery/features/features_visual_transform/">Open the example</a>.
+    <a href="../../examples/features/visual-transform/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -100,14 +100,14 @@ diameter_px, stroke width, axes, labels, and GUI-adjusted readability. It should
 data units or world geometry.
 
 <figure class="dvz-output-example">
-  <a href="../../examples/gallery/features/features_user_scale/">
+  <a href="../../examples/features/user-scale/">
     <img src="../../assets/gallery/v0.4/features/features_user_scale.poster.webp"
          alt="The same scene shown with different screen-space user scale values" loading="lazy">
   </a>
   <figcaption>
     <strong>Presentation scale.</strong> Screen-space marks and labels change size without changing
     data coordinates or the panel domain.
-    <a href="../../examples/gallery/features/features_user_scale/">Open the example</a>.
+    <a href="../../examples/features/user-scale/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -178,6 +178,6 @@ new positions every frame when the vertex data itself is unchanged.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Visual Transform](../examples/gallery/features/features_visual_transform.md) - Source: `examples/c/features/visual_transform.c`
-    - [User Scale](../examples/gallery/features/features_user_scale.md) - Source: `examples/c/features/user_scale.c`
-    - [Reference Grid](../examples/gallery/features/features_reference_grid.md) - Source: `examples/c/features/reference_grid.c`
+    - Canonical complete example: [Visual Transform](../examples/features/visual-transform.md) - Source: `examples/c/features/visual_transform.c`
+    - [User Scale](../examples/features/user-scale.md) - Source: `examples/c/features/user_scale.c`
+    - [Reference Grid](../examples/features/reference-grid.md) - Source: `examples/c/features/reference_grid.c`

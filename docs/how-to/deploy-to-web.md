@@ -200,6 +200,6 @@ or portable C scenario.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
-    - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
-    - [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`
+    - Canonical complete example: [Basic Scene](../examples/features/basic-scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Linked Panels](../examples/features/panel-linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Point](../examples/visuals/point.md) - Source: `examples/c/visuals/point.c`

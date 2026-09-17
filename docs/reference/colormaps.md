@@ -199,6 +199,6 @@ display artifacts, not linear scientific measurements.
 
 ??? example "Complete examples"
 
-    - [Scalar Color Scale](../examples/gallery/features/features_colormap_scale.md) — point scalar colors and a shared colorbar.
-    - [Image](../examples/gallery/visuals/visuals_image.md) — scalar sampled field and custom stops.
-    - [Categorical Legend](../examples/gallery/features/features_legend_categorical.md) — explicit category table and legend.
+    - [Scalar Color Scale](../examples/features/colormap-scale.md) — point scalar colors and a shared colorbar.
+    - [Image](../examples/visuals/image.md) — scalar sampled field and custom stops.
+    - [Categorical Legend](../examples/features/legend-categorical.md) — explicit category table and legend.

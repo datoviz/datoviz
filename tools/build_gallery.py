@@ -24,6 +24,7 @@ DEFAULT_IMAGE_URL_BASE = "/assets/gallery/v0.4"
 DEFAULT_IMAGE_FORMAT = "webp"
 SOURCE_BASE_URL = "https://github.com/datoviz/datoviz/blob/main"
 PUBLIC_LANES = gallery_media.DOC_LANES
+GENERATED_DETAIL_DIRS = (*PUBLIC_LANES, "gallery")
 STATUS_ORDER = ("supported", "experimental", "prototype", "advanced/unstable", "deferred")
 DEFAULT_STATUS = "supported"
 SOURCE_LANGUAGE_BY_SUFFIX = {
@@ -179,6 +180,16 @@ class Example:
     def page_path(self) -> str:
         if self.docs_page is not None:
             return self.docs_page
+        return f"{self.lane}/{self.slug}.md"
+
+    @property
+    def slug(self) -> str:
+        prefix = f"{self.lane}_"
+        short_id = self.id.removeprefix(prefix)
+        return short_id.replace("_", "-")
+
+    @property
+    def legacy_page_path(self) -> str:
         return f"gallery/{self.lane}/{self.id}.md"
 
     @property
@@ -1353,20 +1364,20 @@ def render_index(
             "| Goal | Start here | Then browse |",
             "| --- | --- | --- |",
             "| Learn the scene → figure → panel → visual workflow | "
-            "[Basic Scene](gallery/features/features_basic_scene.md) | "
+            "[Basic Scene](features/basic-scene.md) | "
             f"[{counts['features']} focused features](features.md) |",
             "| Choose marks, lines, images, meshes, text, or volumes | "
-            "[Point](gallery/visuals/visuals_point.md) | "
+            "[Point](visuals/point.md) | "
             f"[{counts['visuals']} visuals and composites](visuals.md) |",
             "| Add axes, interaction, layout, animation, or techniques | "
-            "[2D Axes](gallery/features/features_axes_2d.md) | "
+            "[2D Axes](features/axes-2d.md) | "
             f"[{counts['features']} focused features](features.md) |",
             "| Open windows, render offscreen, capture, record, or export | "
-            "[Offscreen Capture](gallery/runtime/runtime_offscreen_capture.md) | "
+            "[Offscreen Capture](runtime/offscreen-capture.md) | "
             f"[{counts['runtime']} runtime examples](runtime.md) |",
             "| Study complete scientific visualization compositions | "
             "[Scientific Plotting Workflow]"
-            "(gallery/showcases/showcases_scientific_plotting.md) | "
+            "(showcases/scientific-plotting.md) | "
             f"[{counts['showcases']} showcases](showcases.md) |",
             "| Integrate a host or use lower-level rendering APIs | "
             "[Advanced examples](advanced.md) | "
@@ -1653,10 +1664,31 @@ def render_example_page(
     write_text(docs_dir / example.page_path, "\n".join(lines))
 
 
+def render_legacy_redirect(example: Example, docs_dir: Path) -> None:
+    target = f"/examples/{example.page_path.removesuffix('.md')}/"
+    lines = [
+        "---",
+        "hide:",
+        "  - navigation",
+        "  - toc",
+        "search:",
+        "  exclude: true",
+        "---",
+        "",
+        f'<meta http-equiv="refresh" content="0; url={target}">',
+        f'<link rel="canonical" href="https://datoviz.org{target}">',
+        "",
+        f'This example moved to <a href="{target}">{html.escape(example.title)}</a>.',
+        "",
+    ]
+    write_text(docs_dir / example.legacy_page_path, "\n".join(lines))
+
+
 def clean_generated_pages(docs_dir: Path) -> None:
-    generated = docs_dir / "gallery"
-    if generated.exists():
-        shutil.rmtree(generated)
+    for dirname in GENERATED_DETAIL_DIRS:
+        generated = docs_dir / dirname
+        if generated.exists():
+            shutil.rmtree(generated)
 
 
 def main() -> int:
@@ -1696,6 +1728,7 @@ def main() -> int:
             args.image_url_base,
             args.image_format,
         )
+        render_legacy_redirect(example, args.docs_dir)
     print(f"Generated {len(examples)} public gallery entries under {args.docs_dir}")
     return 0
 

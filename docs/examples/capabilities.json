@@ -30,7 +30,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composites_graph.md"
+            "page": "composites/graph.md"
           }
         ]
       },
@@ -43,7 +43,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composites_polygon.md"
+            "page": "composites/polygon.md"
           }
         ]
       }
@@ -58,7 +58,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           }
         ]
       },
@@ -71,7 +71,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           },
           {
             "id": "showcases_svg_tiger",
@@ -79,7 +79,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           },
           {
             "id": "showcases_terrain_relief",
@@ -87,7 +87,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -95,7 +95,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -103,7 +103,7 @@
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/showcases_brain_volume.md"
+            "page": "showcases/brain-volume.md"
           },
           {
             "id": "showcases_point_cloud",
@@ -111,7 +111,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -119,7 +119,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -132,7 +132,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/showcases_protein.md"
+            "page": "showcases/protein.md"
           }
         ]
       },
@@ -145,7 +145,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
-            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+            "page": "features/panel-mixed-2d-3d.md"
           },
           {
             "id": "showcases_streaming_daq",
@@ -153,7 +153,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           },
           {
             "id": "showcases_galaxy",
@@ -161,7 +161,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -169,7 +169,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+            "page": "showcases/gpu-particle-smoke.md"
           },
           {
             "id": "advanced_gui_implot",
@@ -177,7 +177,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/gui_implot.cpp",
-            "page": "gallery/advanced/advanced_gui_implot.md"
+            "page": "advanced/gui-implot.md"
           }
         ]
       },
@@ -190,7 +190,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/basic_scene.c",
-            "page": "gallery/features/features_basic_scene.md"
+            "page": "features/basic-scene.md"
           },
           {
             "id": "features_panel_single",
@@ -198,7 +198,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_single.c",
-            "page": "gallery/features/features_panel_single.md"
+            "page": "features/panel-single.md"
           },
           {
             "id": "features_panel_grid",
@@ -206,7 +206,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_grid.c",
-            "page": "gallery/features/features_panel_grid.md"
+            "page": "features/panel-grid.md"
           },
           {
             "id": "features_panel_multi",
@@ -214,7 +214,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_multi.c",
-            "page": "gallery/features/features_panel_multi.md"
+            "page": "features/panel-multi.md"
           },
           {
             "id": "features_panel_linked",
@@ -222,7 +222,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_linked.c",
-            "page": "gallery/features/features_panel_linked.md"
+            "page": "features/panel-linked.md"
           },
           {
             "id": "features_axes_2d",
@@ -230,7 +230,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/axes_2d.c",
-            "page": "gallery/features/features_axes_2d.md"
+            "page": "features/axes-2d.md"
           },
           {
             "id": "features_coordinate_system",
@@ -238,7 +238,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/coordinate_system.c",
-            "page": "gallery/features/features_coordinate_system.md"
+            "page": "features/coordinate-system.md"
           },
           {
             "id": "features_axis_labels",
@@ -246,7 +246,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/axis_labels.c",
-            "page": "gallery/features/features_axis_labels.md"
+            "page": "features/axis-labels.md"
           },
           {
             "id": "features_sampled_field_update",
@@ -254,7 +254,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/sampled_field_update.c",
-            "page": "gallery/features/features_sampled_field_update.md"
+            "page": "features/sampled-field-update.md"
           },
           {
             "id": "features_text_block",
@@ -262,7 +262,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/text_block.c",
-            "page": "gallery/features/features_text_block.md"
+            "page": "features/text-block.md"
           },
           {
             "id": "features_overlay_card",
@@ -270,7 +270,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/overlay_card.c",
-            "page": "gallery/features/features_overlay_card.md"
+            "page": "features/overlay-card.md"
           },
           {
             "id": "features_controller_arcball",
@@ -278,7 +278,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_arcball.c",
-            "page": "gallery/features/features_controller_arcball.md"
+            "page": "features/controller-arcball.md"
           },
           {
             "id": "features_camera_manual",
@@ -286,7 +286,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/camera_manual.c",
-            "page": "gallery/features/features_camera_manual.md"
+            "page": "features/camera-manual.md"
           },
           {
             "id": "features_orientation_gizmo",
@@ -294,7 +294,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/orientation_gizmo.c",
-            "page": "gallery/features/features_orientation_gizmo.md"
+            "page": "features/orientation-gizmo.md"
           },
           {
             "id": "features_reference_grid",
@@ -302,7 +302,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/reference_grid.c",
-            "page": "gallery/features/features_reference_grid.md"
+            "page": "features/reference-grid.md"
           },
           {
             "id": "features_bounds_overlay",
@@ -310,7 +310,7 @@
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/features_bounds_overlay.md"
+            "page": "features/bounds-overlay.md"
           },
           {
             "id": "features_controller_fly",
@@ -318,7 +318,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_fly.c",
-            "page": "gallery/features/features_controller_fly.md"
+            "page": "features/controller-fly.md"
           },
           {
             "id": "features_controller_turntable",
@@ -326,7 +326,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_turntable.c",
-            "page": "gallery/features/features_controller_turntable.md"
+            "page": "features/controller-turntable.md"
           },
           {
             "id": "features_mesh_texture",
@@ -334,7 +334,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/mesh_texture.c",
-            "page": "gallery/features/features_mesh_texture.md"
+            "page": "features/mesh-texture.md"
           },
           {
             "id": "features_material_mesh",
@@ -342,7 +342,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/material_mesh.c",
-            "page": "gallery/features/features_material_mesh.md"
+            "page": "features/material-mesh.md"
           },
           {
             "id": "features_lighting",
@@ -350,7 +350,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/lighting.c",
-            "page": "gallery/features/features_lighting.md"
+            "page": "features/lighting.md"
           },
           {
             "id": "features_user_scale",
@@ -358,7 +358,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/user_scale.c",
-            "page": "gallery/features/features_user_scale.md"
+            "page": "features/user-scale.md"
           },
           {
             "id": "features_gui_controls",
@@ -366,7 +366,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_controls.c",
-            "page": "gallery/features/features_gui_controls.md"
+            "page": "features/gui-controls.md"
           },
           {
             "id": "features_gui_viewport",
@@ -374,7 +374,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_viewport.c",
-            "page": "gallery/features/features_gui_viewport.md"
+            "page": "features/gui-viewport.md"
           },
           {
             "id": "features_gui_cimgui",
@@ -382,7 +382,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_cimgui.c",
-            "page": "gallery/features/features_gui_cimgui.md"
+            "page": "features/gui-cimgui.md"
           },
           {
             "id": "features_gui_data_widgets",
@@ -390,7 +390,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_data_widgets.c",
-            "page": "gallery/features/features_gui_data_widgets.md"
+            "page": "features/gui-data-widgets.md"
           },
           {
             "id": "features_animation_tracks",
@@ -398,7 +398,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/animation_tracks.c",
-            "page": "gallery/features/features_animation_tracks.md"
+            "page": "features/animation-tracks.md"
           },
           {
             "id": "features_compute_buffer_animation",
@@ -406,7 +406,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/features_compute_buffer_animation.md"
+            "page": "features/compute-buffer-animation.md"
           },
           {
             "id": "features_technique_edl",
@@ -414,7 +414,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/technique_edl.c",
-            "page": "gallery/features/features_technique_edl.md"
+            "page": "features/technique-edl.md"
           },
           {
             "id": "features_technique_ao",
@@ -422,7 +422,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_ao.c",
-            "page": "gallery/features/features_technique_ao.md"
+            "page": "features/technique-ao.md"
           },
           {
             "id": "features_technique_msaa",
@@ -430,7 +430,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_msaa.c",
-            "page": "gallery/features/features_technique_msaa.md"
+            "page": "features/technique-msaa.md"
           },
           {
             "id": "features_technique_depth_cue",
@@ -438,7 +438,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_depth_cue.c",
-            "page": "gallery/features/features_technique_depth_cue.md"
+            "page": "features/technique-depth-cue.md"
           },
           {
             "id": "features_technique_transparency",
@@ -446,7 +446,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_transparency.c",
-            "page": "gallery/features/features_technique_transparency.md"
+            "page": "features/technique-transparency.md"
           },
           {
             "id": "features_guide_lines",
@@ -454,7 +454,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/guide_lines.c",
-            "page": "gallery/features/features_guide_lines.md"
+            "page": "features/guide-lines.md"
           },
           {
             "id": "features_guide_spans",
@@ -462,7 +462,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/guide_spans.c",
-            "page": "gallery/features/features_guide_spans.md"
+            "page": "features/guide-spans.md"
           },
           {
             "id": "features_bars_bands",
@@ -470,7 +470,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/bars_bands.c",
-            "page": "gallery/features/features_bars_bands.md"
+            "page": "features/bars-bands.md"
           },
           {
             "id": "runtime_app_glfw",
@@ -478,7 +478,7 @@
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/app_glfw.c",
-            "page": "gallery/runtime/runtime_app_glfw.md"
+            "page": "runtime/app-glfw.md"
           },
           {
             "id": "runtime_multi_window",
@@ -486,7 +486,7 @@
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/multi_window.c",
-            "page": "gallery/runtime/runtime_multi_window.md"
+            "page": "runtime/multi-window.md"
           },
           {
             "id": "runtime_offscreen_capture",
@@ -494,7 +494,7 @@
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/offscreen_capture.c",
-            "page": "gallery/runtime/runtime_offscreen_capture.md"
+            "page": "runtime/offscreen-capture.md"
           },
           {
             "id": "features_input_events",
@@ -502,7 +502,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/input_events.c",
-            "page": "gallery/features/features_input_events.md"
+            "page": "features/input-events.md"
           },
           {
             "id": "features_view_size_policies",
@@ -510,7 +510,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/features_view_size_policies.md"
+            "page": "features/view-size-policies.md"
           },
           {
             "id": "runtime_record_replay",
@@ -518,7 +518,7 @@
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/record_replay.c",
-            "page": "gallery/runtime/runtime_record_replay.md"
+            "page": "runtime/record-replay.md"
           },
           {
             "id": "features_visual_transform",
@@ -526,7 +526,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/visual_transform.c",
-            "page": "gallery/features/features_visual_transform.md"
+            "page": "features/visual-transform.md"
           },
           {
             "id": "features_panel_view2d",
@@ -534,7 +534,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_view2d.c",
-            "page": "gallery/features/features_panel_view2d.md"
+            "page": "features/panel-view2d.md"
           },
           {
             "id": "features_json_export",
@@ -542,7 +542,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/json_export.c",
-            "page": "gallery/features/features_json_export.md"
+            "page": "features/json-export.md"
           },
           {
             "id": "features_bezier_curve_path",
@@ -550,7 +550,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/bezier_curve_path.c",
-            "page": "gallery/features/features_bezier_curve_path.md"
+            "page": "features/bezier-curve-path.md"
           },
           {
             "id": "features_path_join",
@@ -558,7 +558,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/path_join.c",
-            "page": "gallery/features/features_path_join.md"
+            "page": "features/path-join.md"
           },
           {
             "id": "showcases_panel_linked_axes",
@@ -566,7 +566,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/showcases_panel_linked_axes.md"
+            "page": "showcases/panel-linked-axes.md"
           },
           {
             "id": "showcases_linked_probe_colorbar",
@@ -574,7 +574,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+            "page": "showcases/linked-probe-colorbar.md"
           },
           {
             "id": "showcases_scientific_plotting",
@@ -582,7 +582,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/showcases_scientific_plotting.md"
+            "page": "showcases/scientific-plotting.md"
           },
           {
             "id": "features_scalebar",
@@ -590,7 +590,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/scalebar.c",
-            "page": "gallery/features/features_scalebar.md"
+            "page": "features/scalebar.md"
           },
           {
             "id": "features_scalebar_units",
@@ -598,7 +598,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/scalebar_units.c",
-            "page": "gallery/features/features_scalebar_units.md"
+            "page": "features/scalebar-units.md"
           },
           {
             "id": "showcases_scalebar_measurement",
@@ -606,7 +606,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/showcases_scalebar_measurement.md"
+            "page": "showcases/scalebar-measurement.md"
           },
           {
             "id": "features_colorbar",
@@ -614,7 +614,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/features_colorbar.md"
+            "page": "features/colorbar.md"
           },
           {
             "id": "features_colormap_scale",
@@ -622,7 +622,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colormap_scale.c",
-            "page": "gallery/features/features_colormap_scale.md"
+            "page": "features/colormap-scale.md"
           },
           {
             "id": "features_annotation_readout",
@@ -630,7 +630,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/annotation_readout.c",
-            "page": "gallery/features/features_annotation_readout.md"
+            "page": "features/annotation-readout.md"
           },
           {
             "id": "features_update_partial",
@@ -638,7 +638,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/update_partial.c",
-            "page": "gallery/features/features_update_partial.md"
+            "page": "features/update-partial.md"
           },
           {
             "id": "features_update_visual_data",
@@ -646,7 +646,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/update_visual_data.c",
-            "page": "gallery/features/features_update_visual_data.md"
+            "page": "features/update-visual-data.md"
           },
           {
             "id": "features_visibility",
@@ -654,7 +654,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/visibility.c",
-            "page": "gallery/features/features_visibility.md"
+            "page": "features/visibility.md"
           },
           {
             "id": "features_technique_depth_test",
@@ -662,7 +662,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_depth_test.c",
-            "page": "gallery/features/features_technique_depth_test.md"
+            "page": "features/technique-depth-test.md"
           },
           {
             "id": "features_alpha_blending",
@@ -670,7 +670,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/alpha_blending.c",
-            "page": "gallery/features/features_alpha_blending.md"
+            "page": "features/alpha-blending.md"
           },
           {
             "id": "features_panel_background",
@@ -678,7 +678,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_background.c",
-            "page": "gallery/features/features_panel_background.md"
+            "page": "features/panel-background.md"
           },
           {
             "id": "features_panzoom",
@@ -686,7 +686,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panzoom.c",
-            "page": "gallery/features/features_panzoom.md"
+            "page": "features/panzoom.md"
           },
           {
             "id": "features_image_probe",
@@ -694,7 +694,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/image_probe.c",
-            "page": "gallery/features/features_image_probe.md"
+            "page": "features/image-probe.md"
           },
           {
             "id": "features_picking",
@@ -702,7 +702,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/picking.c",
-            "page": "gallery/features/features_picking.md"
+            "page": "features/picking.md"
           },
           {
             "id": "features_selection_pixel",
@@ -710,7 +710,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_pixel.c",
-            "page": "gallery/features/features_selection_pixel.md"
+            "page": "features/selection-pixel.md"
           },
           {
             "id": "features_selection_sphere",
@@ -718,7 +718,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_sphere.c",
-            "page": "gallery/features/features_selection_sphere.md"
+            "page": "features/selection-sphere.md"
           },
           {
             "id": "features_selection_mesh_instances",
@@ -726,7 +726,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_mesh_instances.c",
-            "page": "gallery/features/features_selection_mesh_instances.md"
+            "page": "features/selection-mesh-instances.md"
           },
           {
             "id": "features_isolines",
@@ -734,7 +734,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/isolines.c",
-            "page": "gallery/features/features_isolines.md"
+            "page": "features/isolines.md"
           },
           {
             "id": "features_builtin_shapes_2d",
@@ -742,7 +742,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/builtin_shapes_2d.c",
-            "page": "gallery/features/features_builtin_shapes_2d.md"
+            "page": "features/builtin-shapes-2d.md"
           },
           {
             "id": "features_builtin_shapes_3d",
@@ -750,7 +750,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/builtin_shapes_3d.c",
-            "page": "gallery/features/features_builtin_shapes_3d.md"
+            "page": "features/builtin-shapes-3d.md"
           },
           {
             "id": "features_obj_loading",
@@ -758,7 +758,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/obj_loading.c",
-            "page": "gallery/features/features_obj_loading.md"
+            "page": "features/obj-loading.md"
           },
           {
             "id": "features_probe_labels",
@@ -766,7 +766,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/probe_labels.c",
-            "page": "gallery/features/features_probe_labels.md"
+            "page": "features/probe-labels.md"
           },
           {
             "id": "features_datetime_axis",
@@ -774,7 +774,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/features_datetime_axis.md"
+            "page": "features/datetime-axis.md"
           },
           {
             "id": "features_timer_animation",
@@ -782,7 +782,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/timer_animation.c",
-            "page": "gallery/features/features_timer_animation.md"
+            "page": "features/timer-animation.md"
           },
           {
             "id": "features_marker_symbols",
@@ -790,7 +790,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/features_marker_symbols.md"
+            "page": "features/marker-symbols.md"
           },
           {
             "id": "features_legend_categorical",
@@ -798,7 +798,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/features_legend_categorical.md"
+            "page": "features/legend-categorical.md"
           },
           {
             "id": "runtime_video_export",
@@ -806,7 +806,7 @@
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/runtime_video_export.md"
+            "page": "runtime/video-export.md"
           },
           {
             "id": "visuals_point",
@@ -814,7 +814,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/visuals_point.md"
+            "page": "visuals/point.md"
           },
           {
             "id": "visuals_pixel",
@@ -822,7 +822,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visuals_pixel.md"
+            "page": "visuals/pixel.md"
           },
           {
             "id": "visuals_marker",
@@ -830,7 +830,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visuals_marker.md"
+            "page": "visuals/marker.md"
           },
           {
             "id": "visuals_primitive",
@@ -838,7 +838,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visuals_primitive.md"
+            "page": "visuals/primitive.md"
           },
           {
             "id": "visuals_segment",
@@ -846,7 +846,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visuals_segment.md"
+            "page": "visuals/segment.md"
           },
           {
             "id": "visuals_vector",
@@ -854,7 +854,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visuals_vector.md"
+            "page": "visuals/vector.md"
           },
           {
             "id": "visuals_path",
@@ -862,7 +862,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visuals_path.md"
+            "page": "visuals/path.md"
           },
           {
             "id": "visuals_image",
@@ -870,7 +870,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visuals_image.md"
+            "page": "visuals/image.md"
           },
           {
             "id": "visuals_image_rgba",
@@ -878,7 +878,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visuals_image_rgba.md"
+            "page": "visuals/image-rgba.md"
           },
           {
             "id": "visuals_mesh",
@@ -886,7 +886,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visuals_mesh.md"
+            "page": "visuals/mesh.md"
           },
           {
             "id": "visuals_sphere",
@@ -894,7 +894,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/visuals_sphere.md"
+            "page": "visuals/sphere.md"
           },
           {
             "id": "visuals_splat",
@@ -902,7 +902,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visuals_splat.md"
+            "page": "visuals/splat.md"
           },
           {
             "id": "visuals_text",
@@ -910,7 +910,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visuals_text.md"
+            "page": "visuals/text.md"
           },
           {
             "id": "visuals_glyph",
@@ -918,7 +918,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visuals_glyph.md"
+            "page": "visuals/glyph.md"
           },
           {
             "id": "visuals_labels",
@@ -926,7 +926,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visuals_labels.md"
+            "page": "visuals/labels.md"
           },
           {
             "id": "visuals_volume",
@@ -934,7 +934,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/visuals_volume.md"
+            "page": "visuals/volume.md"
           },
           {
             "id": "composites_polygon",
@@ -942,7 +942,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composites_polygon.md"
+            "page": "composites/polygon.md"
           },
           {
             "id": "composites_graph",
@@ -950,7 +950,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composites_graph.md"
+            "page": "composites/graph.md"
           },
           {
             "id": "showcases_wind_field",
@@ -958,7 +958,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcases_wind_field.md"
+            "page": "showcases/wind-field.md"
           },
           {
             "id": "showcases_surface_grid",
@@ -966,7 +966,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcases_surface_grid.md"
+            "page": "showcases/surface-grid.md"
           },
           {
             "id": "advanced_raw_triangle_vklite",
@@ -974,7 +974,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_vklite.c",
-            "page": "gallery/advanced/advanced_raw_triangle_vklite.md"
+            "page": "advanced/raw-triangle-vklite.md"
           },
           {
             "id": "advanced_raw_triangle_drp2",
@@ -982,7 +982,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_drp2.c",
-            "page": "gallery/advanced/advanced_raw_triangle_drp2.md"
+            "page": "advanced/raw-triangle-drp2.md"
           },
           {
             "id": "advanced_cuda_external_buffer",
@@ -990,7 +990,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/cuda_external_buffer.c",
-            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
+            "page": "advanced/cuda-external-buffer.md"
           },
           {
             "id": "advanced_external_surface_glfw",
@@ -998,7 +998,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
-            "page": "gallery/advanced/advanced_external_surface_glfw.md"
+            "page": "advanced/external-surface-glfw.md"
           },
           {
             "id": "advanced_qt_hosting",
@@ -1006,7 +1006,7 @@
             "category": "advanced",
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
-            "page": "gallery/advanced/advanced_qt_hosting.md"
+            "page": "advanced/qt-hosting.md"
           },
           {
             "id": "start_scatter",
@@ -1029,7 +1029,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/alpha_blending.c",
-            "page": "gallery/features/features_alpha_blending.md"
+            "page": "features/alpha-blending.md"
           }
         ]
       },
@@ -1042,7 +1042,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/animation_tracks.c",
-            "page": "gallery/features/features_animation_tracks.md"
+            "page": "features/animation-tracks.md"
           }
         ]
       },
@@ -1055,7 +1055,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/annotation_readout.c",
-            "page": "gallery/features/features_annotation_readout.md"
+            "page": "features/annotation-readout.md"
           }
         ]
       },
@@ -1068,7 +1068,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_ao.c",
-            "page": "gallery/features/features_technique_ao.md"
+            "page": "features/technique-ao.md"
           }
         ]
       },
@@ -1081,7 +1081,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/axes_2d.c",
-            "page": "gallery/features/features_axes_2d.md"
+            "page": "features/axes-2d.md"
           }
         ]
       },
@@ -1094,7 +1094,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/axis_labels.c",
-            "page": "gallery/features/features_axis_labels.md"
+            "page": "features/axis-labels.md"
           }
         ]
       },
@@ -1107,7 +1107,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/bars_bands.c",
-            "page": "gallery/features/features_bars_bands.md"
+            "page": "features/bars-bands.md"
           }
         ]
       },
@@ -1120,7 +1120,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/bezier_curve_path.c",
-            "page": "gallery/features/features_bezier_curve_path.md"
+            "page": "features/bezier-curve-path.md"
           }
         ]
       },
@@ -1133,7 +1133,7 @@
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/features_bounds_overlay.md"
+            "page": "features/bounds-overlay.md"
           }
         ]
       },
@@ -1146,7 +1146,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/builtin_shapes_2d.c",
-            "page": "gallery/features/features_builtin_shapes_2d.md"
+            "page": "features/builtin-shapes-2d.md"
           }
         ]
       },
@@ -1159,7 +1159,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/builtin_shapes_3d.c",
-            "page": "gallery/features/features_builtin_shapes_3d.md"
+            "page": "features/builtin-shapes-3d.md"
           }
         ]
       },
@@ -1172,7 +1172,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/camera_manual.c",
-            "page": "gallery/features/features_camera_manual.md"
+            "page": "features/camera-manual.md"
           }
         ]
       },
@@ -1185,7 +1185,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/features_colorbar.md"
+            "page": "features/colorbar.md"
           }
         ]
       },
@@ -1198,7 +1198,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colormap_scale.c",
-            "page": "gallery/features/features_colormap_scale.md"
+            "page": "features/colormap-scale.md"
           }
         ]
       },
@@ -1211,7 +1211,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_arcball.c",
-            "page": "gallery/features/features_controller_arcball.md"
+            "page": "features/controller-arcball.md"
           }
         ]
       },
@@ -1224,7 +1224,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_fly.c",
-            "page": "gallery/features/features_controller_fly.md"
+            "page": "features/controller-fly.md"
           }
         ]
       },
@@ -1237,7 +1237,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panzoom.c",
-            "page": "gallery/features/features_panzoom.md"
+            "page": "features/panzoom.md"
           }
         ]
       },
@@ -1250,7 +1250,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/controller_turntable.c",
-            "page": "gallery/features/features_controller_turntable.md"
+            "page": "features/controller-turntable.md"
           }
         ]
       },
@@ -1263,7 +1263,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/coordinate_system.c",
-            "page": "gallery/features/features_coordinate_system.md"
+            "page": "features/coordinate-system.md"
           }
         ]
       },
@@ -1276,7 +1276,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/features_datetime_axis.md"
+            "page": "features/datetime-axis.md"
           }
         ]
       },
@@ -1289,7 +1289,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_depth_cue.c",
-            "page": "gallery/features/features_technique_depth_cue.md"
+            "page": "features/technique-depth-cue.md"
           }
         ]
       },
@@ -1302,7 +1302,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_depth_test.c",
-            "page": "gallery/features/features_technique_depth_test.md"
+            "page": "features/technique-depth-test.md"
           }
         ]
       },
@@ -1315,7 +1315,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/technique_edl.c",
-            "page": "gallery/features/features_technique_edl.md"
+            "page": "features/technique-edl.md"
           }
         ]
       },
@@ -1328,7 +1328,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_cimgui.c",
-            "page": "gallery/features/features_gui_cimgui.md"
+            "page": "features/gui-cimgui.md"
           }
         ]
       },
@@ -1341,7 +1341,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_controls.c",
-            "page": "gallery/features/features_gui_controls.md"
+            "page": "features/gui-controls.md"
           }
         ]
       },
@@ -1354,7 +1354,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_data_widgets.c",
-            "page": "gallery/features/features_gui_data_widgets.md"
+            "page": "features/gui-data-widgets.md"
           }
         ]
       },
@@ -1367,7 +1367,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/gui_viewport.c",
-            "page": "gallery/features/features_gui_viewport.md"
+            "page": "features/gui-viewport.md"
           }
         ]
       },
@@ -1380,7 +1380,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/guide_lines.c",
-            "page": "gallery/features/features_guide_lines.md"
+            "page": "features/guide-lines.md"
           }
         ]
       },
@@ -1393,7 +1393,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/guide_spans.c",
-            "page": "gallery/features/features_guide_spans.md"
+            "page": "features/guide-spans.md"
           }
         ]
       },
@@ -1406,7 +1406,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/image_probe.c",
-            "page": "gallery/features/features_image_probe.md"
+            "page": "features/image-probe.md"
           }
         ]
       },
@@ -1419,7 +1419,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/input_events.c",
-            "page": "gallery/features/features_input_events.md"
+            "page": "features/input-events.md"
           }
         ]
       },
@@ -1432,7 +1432,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/isolines.c",
-            "page": "gallery/features/features_isolines.md"
+            "page": "features/isolines.md"
           }
         ]
       },
@@ -1445,7 +1445,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/json_export.c",
-            "page": "gallery/features/features_json_export.md"
+            "page": "features/json-export.md"
           }
         ]
       },
@@ -1458,7 +1458,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/features_legend_categorical.md"
+            "page": "features/legend-categorical.md"
           }
         ]
       },
@@ -1471,7 +1471,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/lighting.c",
-            "page": "gallery/features/features_lighting.md"
+            "page": "features/lighting.md"
           }
         ]
       },
@@ -1484,7 +1484,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_linked.c",
-            "page": "gallery/features/features_panel_linked.md"
+            "page": "features/panel-linked.md"
           }
         ]
       },
@@ -1497,7 +1497,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/features_marker_symbols.md"
+            "page": "features/marker-symbols.md"
           }
         ]
       },
@@ -1510,7 +1510,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/material_mesh.c",
-            "page": "gallery/features/features_material_mesh.md"
+            "page": "features/material-mesh.md"
           }
         ]
       },
@@ -1523,7 +1523,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/mesh_texture.c",
-            "page": "gallery/features/features_mesh_texture.md"
+            "page": "features/mesh-texture.md"
           }
         ]
       },
@@ -1536,7 +1536,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
-            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+            "page": "features/panel-mixed-2d-3d.md"
           }
         ]
       },
@@ -1549,7 +1549,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_msaa.c",
-            "page": "gallery/features/features_technique_msaa.md"
+            "page": "features/technique-msaa.md"
           }
         ]
       },
@@ -1562,7 +1562,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_multi.c",
-            "page": "gallery/features/features_panel_multi.md"
+            "page": "features/panel-multi.md"
           }
         ]
       },
@@ -1575,7 +1575,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/obj_loading.c",
-            "page": "gallery/features/features_obj_loading.md"
+            "page": "features/obj-loading.md"
           }
         ]
       },
@@ -1588,7 +1588,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/orientation_gizmo.c",
-            "page": "gallery/features/features_orientation_gizmo.md"
+            "page": "features/orientation-gizmo.md"
           }
         ]
       },
@@ -1601,7 +1601,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/overlay_card.c",
-            "page": "gallery/features/features_overlay_card.md"
+            "page": "features/overlay-card.md"
           }
         ]
       },
@@ -1614,7 +1614,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_background.c",
-            "page": "gallery/features/features_panel_background.md"
+            "page": "features/panel-background.md"
           }
         ]
       },
@@ -1627,7 +1627,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_grid.c",
-            "page": "gallery/features/features_panel_grid.md"
+            "page": "features/panel-grid.md"
           }
         ]
       },
@@ -1640,7 +1640,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_single.c",
-            "page": "gallery/features/features_panel_single.md"
+            "page": "features/panel-single.md"
           }
         ]
       },
@@ -1653,7 +1653,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/panel_view2d.c",
-            "page": "gallery/features/features_panel_view2d.md"
+            "page": "features/panel-view2d.md"
           }
         ]
       },
@@ -1666,7 +1666,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/path_join.c",
-            "page": "gallery/features/features_path_join.md"
+            "page": "features/path-join.md"
           }
         ]
       },
@@ -1679,7 +1679,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/picking.c",
-            "page": "gallery/features/features_picking.md"
+            "page": "features/picking.md"
           }
         ]
       },
@@ -1692,7 +1692,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/probe_labels.c",
-            "page": "gallery/features/features_probe_labels.md"
+            "page": "features/probe-labels.md"
           }
         ]
       },
@@ -1705,7 +1705,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/reference_grid.c",
-            "page": "gallery/features/features_reference_grid.md"
+            "page": "features/reference-grid.md"
           }
         ]
       },
@@ -1718,7 +1718,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/sampled_field_update.c",
-            "page": "gallery/features/features_sampled_field_update.md"
+            "page": "features/sampled-field-update.md"
           }
         ]
       },
@@ -1731,7 +1731,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/scalebar.c",
-            "page": "gallery/features/features_scalebar.md"
+            "page": "features/scalebar.md"
           }
         ]
       },
@@ -1744,7 +1744,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/scalebar_units.c",
-            "page": "gallery/features/features_scalebar_units.md"
+            "page": "features/scalebar-units.md"
           }
         ]
       },
@@ -1757,7 +1757,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/basic_scene.c",
-            "page": "gallery/features/features_basic_scene.md"
+            "page": "features/basic-scene.md"
           }
         ]
       },
@@ -1770,7 +1770,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/features_compute_buffer_animation.md"
+            "page": "features/compute-buffer-animation.md"
           }
         ]
       },
@@ -1783,7 +1783,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_mesh_instances.c",
-            "page": "gallery/features/features_selection_mesh_instances.md"
+            "page": "features/selection-mesh-instances.md"
           }
         ]
       },
@@ -1796,7 +1796,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_pixel.c",
-            "page": "gallery/features/features_selection_pixel.md"
+            "page": "features/selection-pixel.md"
           }
         ]
       },
@@ -1809,7 +1809,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/selection_sphere.c",
-            "page": "gallery/features/features_selection_sphere.md"
+            "page": "features/selection-sphere.md"
           }
         ]
       },
@@ -1822,7 +1822,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/text_block.c",
-            "page": "gallery/features/features_text_block.md"
+            "page": "features/text-block.md"
           }
         ]
       },
@@ -1835,7 +1835,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/timer_animation.c",
-            "page": "gallery/features/features_timer_animation.md"
+            "page": "features/timer-animation.md"
           }
         ]
       },
@@ -1848,7 +1848,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/technique_transparency.c",
-            "page": "gallery/features/features_technique_transparency.md"
+            "page": "features/technique-transparency.md"
           }
         ]
       },
@@ -1861,7 +1861,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/update_partial.c",
-            "page": "gallery/features/features_update_partial.md"
+            "page": "features/update-partial.md"
           }
         ]
       },
@@ -1874,7 +1874,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/update_visual_data.c",
-            "page": "gallery/features/features_update_visual_data.md"
+            "page": "features/update-visual-data.md"
           }
         ]
       },
@@ -1887,7 +1887,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/user_scale.c",
-            "page": "gallery/features/features_user_scale.md"
+            "page": "features/user-scale.md"
           }
         ]
       },
@@ -1900,7 +1900,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/features_view_size_policies.md"
+            "page": "features/view-size-policies.md"
           }
         ]
       },
@@ -1913,7 +1913,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/visibility.c",
-            "page": "gallery/features/features_visibility.md"
+            "page": "features/visibility.md"
           }
         ]
       },
@@ -1926,7 +1926,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/visual_transform.c",
-            "page": "gallery/features/features_visual_transform.md"
+            "page": "features/visual-transform.md"
           }
         ]
       }
@@ -1941,7 +1941,7 @@
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/app_glfw.c",
-            "page": "gallery/runtime/runtime_app_glfw.md"
+            "page": "runtime/app-glfw.md"
           }
         ]
       },
@@ -1954,7 +1954,7 @@
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/multi_window.c",
-            "page": "gallery/runtime/runtime_multi_window.md"
+            "page": "runtime/multi-window.md"
           }
         ]
       },
@@ -1967,7 +1967,7 @@
             "category": "runtime",
             "status": "supported",
             "source": "examples/c/runtime/offscreen_capture.c",
-            "page": "gallery/runtime/runtime_offscreen_capture.md"
+            "page": "runtime/offscreen-capture.md"
           }
         ]
       },
@@ -1980,7 +1980,7 @@
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/record_replay.c",
-            "page": "gallery/runtime/runtime_record_replay.md"
+            "page": "runtime/record-replay.md"
           }
         ]
       },
@@ -1993,7 +1993,7 @@
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/runtime_video_export.md"
+            "page": "runtime/video-export.md"
           }
         ]
       }
@@ -2008,7 +2008,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -2021,7 +2021,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           }
         ]
       },
@@ -2034,7 +2034,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           }
         ]
       },
@@ -2047,7 +2047,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_vklite.c",
-            "page": "gallery/advanced/advanced_raw_triangle_vklite.md"
+            "page": "advanced/raw-triangle-vklite.md"
           },
           {
             "id": "advanced_raw_triangle_drp2",
@@ -2055,7 +2055,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_drp2.c",
-            "page": "gallery/advanced/advanced_raw_triangle_drp2.md"
+            "page": "advanced/raw-triangle-drp2.md"
           },
           {
             "id": "advanced_cuda_external_buffer",
@@ -2063,7 +2063,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/cuda_external_buffer.c",
-            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
+            "page": "advanced/cuda-external-buffer.md"
           },
           {
             "id": "advanced_external_surface_glfw",
@@ -2071,7 +2071,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
-            "page": "gallery/advanced/advanced_external_surface_glfw.md"
+            "page": "advanced/external-surface-glfw.md"
           },
           {
             "id": "advanced_gui_implot",
@@ -2079,7 +2079,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/gui_implot.cpp",
-            "page": "gallery/advanced/advanced_gui_implot.md"
+            "page": "advanced/gui-implot.md"
           },
           {
             "id": "advanced_qt_hosting",
@@ -2087,7 +2087,7 @@
             "category": "advanced",
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
-            "page": "gallery/advanced/advanced_qt_hosting.md"
+            "page": "advanced/qt-hosting.md"
           }
         ]
       },
@@ -2100,7 +2100,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visuals_image_rgba.md"
+            "page": "visuals/image-rgba.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -2108,7 +2108,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+            "page": "showcases/gpu-particle-smoke.md"
           }
         ]
       },
@@ -2121,7 +2121,7 @@
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/runtime_video_export.md"
+            "page": "runtime/video-export.md"
           },
           {
             "id": "showcases_galaxy",
@@ -2129,7 +2129,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_spherical_harmonics",
@@ -2137,7 +2137,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -2145,7 +2145,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -2153,7 +2153,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -2166,7 +2166,7 @@
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/runtime_video_export.md"
+            "page": "runtime/video-export.md"
           }
         ]
       },
@@ -2179,7 +2179,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
-            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+            "page": "features/panel-mixed-2d-3d.md"
           },
           {
             "id": "visuals_mesh",
@@ -2187,7 +2187,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visuals_mesh.md"
+            "page": "visuals/mesh.md"
           },
           {
             "id": "visuals_sphere",
@@ -2195,7 +2195,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/visuals_sphere.md"
+            "page": "visuals/sphere.md"
           },
           {
             "id": "visuals_volume",
@@ -2203,7 +2203,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/visuals_volume.md"
+            "page": "visuals/volume.md"
           },
           {
             "id": "showcases_protein",
@@ -2211,7 +2211,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/showcases_protein.md"
+            "page": "showcases/protein.md"
           },
           {
             "id": "showcases_galaxy",
@@ -2219,7 +2219,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_spherical_harmonics",
@@ -2227,7 +2227,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           },
           {
             "id": "showcases_surface_grid",
@@ -2235,7 +2235,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcases_surface_grid.md"
+            "page": "showcases/surface-grid.md"
           },
           {
             "id": "showcases_terrain_relief",
@@ -2243,7 +2243,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -2251,7 +2251,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -2259,7 +2259,7 @@
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/showcases_brain_volume.md"
+            "page": "showcases/brain-volume.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -2267,7 +2267,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -2280,7 +2280,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           }
         ]
       },
@@ -2293,7 +2293,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/showcases_panel_linked_axes.md"
+            "page": "showcases/panel-linked-axes.md"
           },
           {
             "id": "features_datetime_axis",
@@ -2301,7 +2301,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/features_datetime_axis.md"
+            "page": "features/datetime-axis.md"
           }
         ]
       },
@@ -2314,7 +2314,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           }
         ]
       },
@@ -2327,7 +2327,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composites_graph.md"
+            "page": "composites/graph.md"
           }
         ]
       },
@@ -2340,7 +2340,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/features_marker_symbols.md"
+            "page": "features/marker-symbols.md"
           },
           {
             "id": "showcases_galaxy",
@@ -2348,7 +2348,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           }
         ]
       },
@@ -2361,7 +2361,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/visuals_volume.md"
+            "page": "visuals/volume.md"
           }
         ]
       },
@@ -2374,7 +2374,7 @@
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/features_bounds_overlay.md"
+            "page": "features/bounds-overlay.md"
           }
         ]
       },
@@ -2387,7 +2387,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           }
         ]
       },
@@ -2400,7 +2400,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_vklite.c",
-            "page": "gallery/advanced/advanced_raw_triangle_vklite.md"
+            "page": "advanced/raw-triangle-vklite.md"
           }
         ]
       },
@@ -2413,7 +2413,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/features_colorbar.md"
+            "page": "features/colorbar.md"
           },
           {
             "id": "features_legend_categorical",
@@ -2421,7 +2421,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/features_legend_categorical.md"
+            "page": "features/legend-categorical.md"
           },
           {
             "id": "visuals_point",
@@ -2429,7 +2429,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/visuals_point.md"
+            "page": "visuals/point.md"
           },
           {
             "id": "visuals_pixel",
@@ -2437,7 +2437,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visuals_pixel.md"
+            "page": "visuals/pixel.md"
           },
           {
             "id": "visuals_marker",
@@ -2445,7 +2445,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visuals_marker.md"
+            "page": "visuals/marker.md"
           },
           {
             "id": "visuals_primitive",
@@ -2453,7 +2453,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visuals_primitive.md"
+            "page": "visuals/primitive.md"
           },
           {
             "id": "visuals_segment",
@@ -2461,7 +2461,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visuals_segment.md"
+            "page": "visuals/segment.md"
           },
           {
             "id": "visuals_vector",
@@ -2469,7 +2469,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visuals_vector.md"
+            "page": "visuals/vector.md"
           },
           {
             "id": "visuals_path",
@@ -2477,7 +2477,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visuals_path.md"
+            "page": "visuals/path.md"
           },
           {
             "id": "visuals_image",
@@ -2485,7 +2485,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visuals_image.md"
+            "page": "visuals/image.md"
           },
           {
             "id": "visuals_image_rgba",
@@ -2493,7 +2493,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visuals_image_rgba.md"
+            "page": "visuals/image-rgba.md"
           },
           {
             "id": "visuals_mesh",
@@ -2501,7 +2501,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visuals_mesh.md"
+            "page": "visuals/mesh.md"
           },
           {
             "id": "visuals_sphere",
@@ -2509,7 +2509,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/visuals_sphere.md"
+            "page": "visuals/sphere.md"
           },
           {
             "id": "visuals_splat",
@@ -2517,7 +2517,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visuals_splat.md"
+            "page": "visuals/splat.md"
           },
           {
             "id": "visuals_text",
@@ -2525,7 +2525,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visuals_text.md"
+            "page": "visuals/text.md"
           },
           {
             "id": "visuals_glyph",
@@ -2533,7 +2533,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visuals_glyph.md"
+            "page": "visuals/glyph.md"
           },
           {
             "id": "visuals_labels",
@@ -2541,7 +2541,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visuals_labels.md"
+            "page": "visuals/labels.md"
           },
           {
             "id": "visuals_volume",
@@ -2549,7 +2549,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/visuals_volume.md"
+            "page": "visuals/volume.md"
           },
           {
             "id": "showcases_choropleth",
@@ -2557,7 +2557,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           },
           {
             "id": "showcases_wind_field",
@@ -2565,7 +2565,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcases_wind_field.md"
+            "page": "showcases/wind-field.md"
           },
           {
             "id": "showcases_galaxy",
@@ -2573,7 +2573,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_svg_tiger",
@@ -2581,7 +2581,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -2589,7 +2589,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+            "page": "showcases/gpu-particle-smoke.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -2597,7 +2597,7 @@
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/showcases_brain_volume.md"
+            "page": "showcases/brain-volume.md"
           },
           {
             "id": "showcases_point_cloud",
@@ -2605,7 +2605,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -2613,7 +2613,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -2626,7 +2626,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/features_legend_categorical.md"
+            "page": "features/legend-categorical.md"
           },
           {
             "id": "visuals_labels",
@@ -2634,7 +2634,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visuals_labels.md"
+            "page": "visuals/labels.md"
           }
         ]
       },
@@ -2647,7 +2647,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -2660,7 +2660,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           }
         ]
       },
@@ -2673,7 +2673,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+            "page": "showcases/linked-probe-colorbar.md"
           },
           {
             "id": "features_colorbar",
@@ -2681,7 +2681,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/features_colorbar.md"
+            "page": "features/colorbar.md"
           },
           {
             "id": "showcases_choropleth",
@@ -2689,7 +2689,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           },
           {
             "id": "showcases_wind_field",
@@ -2697,7 +2697,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcases_wind_field.md"
+            "page": "showcases/wind-field.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -2705,7 +2705,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           }
         ]
       },
@@ -2718,7 +2718,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composites_polygon.md"
+            "page": "composites/polygon.md"
           },
           {
             "id": "composites_graph",
@@ -2726,7 +2726,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composites_graph.md"
+            "page": "composites/graph.md"
           },
           {
             "id": "showcases_choropleth",
@@ -2734,7 +2734,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           }
         ]
       },
@@ -2747,7 +2747,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+            "page": "showcases/gpu-particle-smoke.md"
           }
         ]
       },
@@ -2760,7 +2760,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           }
         ]
       },
@@ -2773,7 +2773,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/cuda_external_buffer.c",
-            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
+            "page": "advanced/cuda-external-buffer.md"
           }
         ]
       },
@@ -2786,7 +2786,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           }
         ]
       },
@@ -2799,7 +2799,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/features_datetime_axis.md"
+            "page": "features/datetime-axis.md"
           }
         ]
       },
@@ -2812,7 +2812,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           }
         ]
       },
@@ -2825,7 +2825,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           }
         ]
       },
@@ -2838,7 +2838,7 @@
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/features_bounds_overlay.md"
+            "page": "features/bounds-overlay.md"
           }
         ]
       },
@@ -2851,7 +2851,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           }
         ]
       },
@@ -2864,7 +2864,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/features_marker_symbols.md"
+            "page": "features/marker-symbols.md"
           }
         ]
       },
@@ -2877,7 +2877,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_drp2.c",
-            "page": "gallery/advanced/advanced_raw_triangle_drp2.md"
+            "page": "advanced/raw-triangle-drp2.md"
           }
         ]
       },
@@ -2890,7 +2890,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           }
         ]
       },
@@ -2903,7 +2903,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/cuda_external_buffer.c",
-            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
+            "page": "advanced/cuda-external-buffer.md"
           }
         ]
       },
@@ -2916,7 +2916,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
-            "page": "gallery/advanced/advanced_external_surface_glfw.md"
+            "page": "advanced/external-surface-glfw.md"
           },
           {
             "id": "advanced_qt_hosting",
@@ -2924,7 +2924,7 @@
             "category": "advanced",
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
-            "page": "gallery/advanced/advanced_qt_hosting.md"
+            "page": "advanced/qt-hosting.md"
           }
         ]
       },
@@ -2937,7 +2937,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           }
         ]
       },
@@ -2950,7 +2950,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           }
         ]
       },
@@ -2963,7 +2963,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visuals_glyph.md"
+            "page": "visuals/glyph.md"
           }
         ]
       },
@@ -2976,7 +2976,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/features_view_size_policies.md"
+            "page": "features/view-size-policies.md"
           }
         ]
       },
@@ -2989,7 +2989,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           }
         ]
       },
@@ -3002,7 +3002,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -3015,7 +3015,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           }
         ]
       },
@@ -3028,7 +3028,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           }
         ]
       },
@@ -3041,7 +3041,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
-            "page": "gallery/advanced/advanced_external_surface_glfw.md"
+            "page": "advanced/external-surface-glfw.md"
           }
         ]
       },
@@ -3054,7 +3054,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visuals_glyph.md"
+            "page": "visuals/glyph.md"
           }
         ]
       },
@@ -3067,7 +3067,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composites_graph.md"
+            "page": "composites/graph.md"
           }
         ]
       },
@@ -3080,7 +3080,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           },
           {
             "id": "showcases_galaxy",
@@ -3088,7 +3088,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -3096,7 +3096,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           },
           {
             "id": "showcases_point_cloud",
@@ -3104,7 +3104,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -3112,7 +3112,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           },
           {
             "id": "advanced_gui_implot",
@@ -3120,7 +3120,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/gui_implot.cpp",
-            "page": "gallery/advanced/advanced_gui_implot.md"
+            "page": "advanced/gui-implot.md"
           }
         ]
       },
@@ -3133,7 +3133,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/showcases_scientific_plotting.md"
+            "page": "showcases/scientific-plotting.md"
           }
         ]
       },
@@ -3146,7 +3146,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/showcases_scientific_plotting.md"
+            "page": "showcases/scientific-plotting.md"
           }
         ]
       },
@@ -3159,7 +3159,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/showcases_scientific_plotting.md"
+            "page": "showcases/scientific-plotting.md"
           }
         ]
       },
@@ -3172,7 +3172,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composites_polygon.md"
+            "page": "composites/polygon.md"
           }
         ]
       },
@@ -3185,7 +3185,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/external_surface_glfw.c",
-            "page": "gallery/advanced/advanced_external_surface_glfw.md"
+            "page": "advanced/external-surface-glfw.md"
           },
           {
             "id": "advanced_gui_implot",
@@ -3193,7 +3193,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/gui_implot.cpp",
-            "page": "gallery/advanced/advanced_gui_implot.md"
+            "page": "advanced/gui-implot.md"
           },
           {
             "id": "advanced_qt_hosting",
@@ -3201,7 +3201,7 @@
             "category": "advanced",
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
-            "page": "gallery/advanced/advanced_qt_hosting.md"
+            "page": "advanced/qt-hosting.md"
           }
         ]
       },
@@ -3214,7 +3214,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           }
         ]
       },
@@ -3227,7 +3227,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           }
         ]
       },
@@ -3240,7 +3240,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+            "page": "showcases/linked-probe-colorbar.md"
           },
           {
             "id": "features_colorbar",
@@ -3248,7 +3248,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/features_colorbar.md"
+            "page": "features/colorbar.md"
           },
           {
             "id": "visuals_image",
@@ -3256,7 +3256,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visuals_image.md"
+            "page": "visuals/image.md"
           },
           {
             "id": "visuals_image_rgba",
@@ -3264,7 +3264,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visuals_image_rgba.md"
+            "page": "visuals/image-rgba.md"
           }
         ]
       },
@@ -3277,7 +3277,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/gui_implot.cpp",
-            "page": "gallery/advanced/advanced_gui_implot.md"
+            "page": "advanced/gui-implot.md"
           }
         ]
       },
@@ -3290,7 +3290,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visuals_mesh.md"
+            "page": "visuals/mesh.md"
           }
         ]
       },
@@ -3303,7 +3303,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           }
         ]
       },
@@ -3316,7 +3316,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visuals_labels.md"
+            "page": "visuals/labels.md"
           }
         ]
       },
@@ -3329,7 +3329,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/features_legend_categorical.md"
+            "page": "features/legend-categorical.md"
           }
         ]
       },
@@ -3342,7 +3342,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/showcases_panel_linked_axes.md"
+            "page": "showcases/panel-linked-axes.md"
           }
         ]
       },
@@ -3355,7 +3355,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+            "page": "showcases/linked-probe-colorbar.md"
           }
         ]
       },
@@ -3368,7 +3368,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
-            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+            "page": "features/panel-mixed-2d-3d.md"
           }
         ]
       },
@@ -3381,7 +3381,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_vklite.c",
-            "page": "gallery/advanced/advanced_raw_triangle_vklite.md"
+            "page": "advanced/raw-triangle-vklite.md"
           },
           {
             "id": "advanced_raw_triangle_drp2",
@@ -3389,7 +3389,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_drp2.c",
-            "page": "gallery/advanced/advanced_raw_triangle_drp2.md"
+            "page": "advanced/raw-triangle-drp2.md"
           }
         ]
       },
@@ -3402,7 +3402,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/features_marker_symbols.md"
+            "page": "features/marker-symbols.md"
           },
           {
             "id": "features_legend_categorical",
@@ -3410,7 +3410,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/legend_categorical.c",
-            "page": "gallery/features/features_legend_categorical.md"
+            "page": "features/legend-categorical.md"
           },
           {
             "id": "visuals_marker",
@@ -3418,7 +3418,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visuals_marker.md"
+            "page": "visuals/marker.md"
           },
           {
             "id": "showcases_galaxy",
@@ -3426,7 +3426,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           }
         ]
       },
@@ -3439,7 +3439,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composites_graph.md"
+            "page": "composites/graph.md"
           }
         ]
       },
@@ -3452,7 +3452,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           },
           {
             "id": "showcases_terrain_relief",
@@ -3460,7 +3460,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -3468,7 +3468,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           }
         ]
       },
@@ -3481,7 +3481,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/showcases_scalebar_measurement.md"
+            "page": "showcases/scalebar-measurement.md"
           }
         ]
       },
@@ -3494,7 +3494,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           }
         ]
       },
@@ -3507,7 +3507,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visuals_mesh.md"
+            "page": "visuals/mesh.md"
           },
           {
             "id": "showcases_svg_tiger",
@@ -3515,7 +3515,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           },
           {
             "id": "showcases_spherical_harmonics",
@@ -3523,7 +3523,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           },
           {
             "id": "showcases_surface_grid",
@@ -3531,7 +3531,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcases_surface_grid.md"
+            "page": "showcases/surface-grid.md"
           },
           {
             "id": "showcases_terrain_relief",
@@ -3539,7 +3539,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -3547,7 +3547,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -3555,7 +3555,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -3568,7 +3568,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
-            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+            "page": "features/panel-mixed-2d-3d.md"
           },
           {
             "id": "advanced_gui_implot",
@@ -3576,7 +3576,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/gui_implot.cpp",
-            "page": "gallery/advanced/advanced_gui_implot.md"
+            "page": "advanced/gui-implot.md"
           }
         ]
       },
@@ -3589,7 +3589,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/showcases_protein.md"
+            "page": "showcases/protein.md"
           }
         ]
       },
@@ -3602,7 +3602,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           }
         ]
       },
@@ -3615,7 +3615,7 @@
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/runtime_video_export.md"
+            "page": "runtime/video-export.md"
           }
         ]
       },
@@ -3628,7 +3628,7 @@
             "category": "advanced",
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
-            "page": "gallery/advanced/advanced_qt_hosting.md"
+            "page": "advanced/qt-hosting.md"
           }
         ]
       },
@@ -3641,7 +3641,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -3654,7 +3654,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           }
         ]
       },
@@ -3667,7 +3667,7 @@
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/features_bounds_overlay.md"
+            "page": "features/bounds-overlay.md"
           }
         ]
       },
@@ -3680,7 +3680,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
-            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+            "page": "features/panel-mixed-2d-3d.md"
           }
         ]
       },
@@ -3693,7 +3693,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
-            "page": "gallery/features/features_panel_mixed_2d_3d.md"
+            "page": "features/panel-mixed-2d-3d.md"
           },
           {
             "id": "showcases_panel_linked_axes",
@@ -3701,7 +3701,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/showcases_panel_linked_axes.md"
+            "page": "showcases/panel-linked-axes.md"
           },
           {
             "id": "showcases_streaming_daq",
@@ -3709,7 +3709,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           },
           {
             "id": "visuals_point",
@@ -3717,7 +3717,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/visuals_point.md"
+            "page": "visuals/point.md"
           },
           {
             "id": "visuals_pixel",
@@ -3725,7 +3725,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visuals_pixel.md"
+            "page": "visuals/pixel.md"
           },
           {
             "id": "visuals_marker",
@@ -3733,7 +3733,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visuals_marker.md"
+            "page": "visuals/marker.md"
           },
           {
             "id": "visuals_primitive",
@@ -3741,7 +3741,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visuals_primitive.md"
+            "page": "visuals/primitive.md"
           },
           {
             "id": "visuals_segment",
@@ -3749,7 +3749,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visuals_segment.md"
+            "page": "visuals/segment.md"
           },
           {
             "id": "visuals_vector",
@@ -3757,7 +3757,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visuals_vector.md"
+            "page": "visuals/vector.md"
           },
           {
             "id": "visuals_path",
@@ -3765,7 +3765,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visuals_path.md"
+            "page": "visuals/path.md"
           },
           {
             "id": "visuals_image",
@@ -3773,7 +3773,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visuals_image.md"
+            "page": "visuals/image.md"
           },
           {
             "id": "visuals_image_rgba",
@@ -3781,7 +3781,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visuals_image_rgba.md"
+            "page": "visuals/image-rgba.md"
           },
           {
             "id": "visuals_splat",
@@ -3789,7 +3789,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visuals_splat.md"
+            "page": "visuals/splat.md"
           },
           {
             "id": "visuals_text",
@@ -3797,7 +3797,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visuals_text.md"
+            "page": "visuals/text.md"
           },
           {
             "id": "visuals_glyph",
@@ -3805,7 +3805,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visuals_glyph.md"
+            "page": "visuals/glyph.md"
           },
           {
             "id": "visuals_labels",
@@ -3813,7 +3813,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visuals_labels.md"
+            "page": "visuals/labels.md"
           },
           {
             "id": "composites_polygon",
@@ -3821,7 +3821,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composites_polygon.md"
+            "page": "composites/polygon.md"
           },
           {
             "id": "composites_graph",
@@ -3829,7 +3829,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/graph.c",
-            "page": "gallery/composites/composites_graph.md"
+            "page": "composites/graph.md"
           },
           {
             "id": "showcases_choropleth",
@@ -3837,7 +3837,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           },
           {
             "id": "showcases_svg_tiger",
@@ -3845,7 +3845,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           }
         ]
       },
@@ -3858,7 +3858,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           }
         ]
       },
@@ -3871,7 +3871,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -3879,7 +3879,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+            "page": "showcases/gpu-particle-smoke.md"
           }
         ]
       },
@@ -3892,7 +3892,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visuals_vector.md"
+            "page": "visuals/vector.md"
           },
           {
             "id": "visuals_path",
@@ -3900,7 +3900,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visuals_path.md"
+            "page": "visuals/path.md"
           },
           {
             "id": "showcases_svg_tiger",
@@ -3908,7 +3908,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -3916,7 +3916,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -3929,7 +3929,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           }
         ]
       },
@@ -3942,7 +3942,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visuals_pixel.md"
+            "page": "visuals/pixel.md"
           },
           {
             "id": "showcases_point_cloud",
@@ -3950,7 +3950,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           }
         ]
       },
@@ -3963,7 +3963,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+            "page": "showcases/linked-probe-colorbar.md"
           }
         ]
       },
@@ -3976,7 +3976,7 @@
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/features_bounds_overlay.md"
+            "page": "features/bounds-overlay.md"
           },
           {
             "id": "features_compute_buffer_animation",
@@ -3984,7 +3984,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/features_compute_buffer_animation.md"
+            "page": "features/compute-buffer-animation.md"
           },
           {
             "id": "visuals_point",
@@ -3992,7 +3992,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/visuals_point.md"
+            "page": "visuals/point.md"
           },
           {
             "id": "showcases_galaxy",
@@ -4000,7 +4000,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -4008,7 +4008,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+            "page": "showcases/gpu-particle-smoke.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -4016,7 +4016,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -4029,7 +4029,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composites_polygon.md"
+            "page": "composites/polygon.md"
           }
         ]
       },
@@ -4042,7 +4042,7 @@
             "category": "composite",
             "status": "supported",
             "source": "examples/c/composites/polygon.c",
-            "page": "gallery/composites/composites_polygon.md"
+            "page": "composites/polygon.md"
           },
           {
             "id": "showcases_choropleth",
@@ -4050,7 +4050,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           }
         ]
       },
@@ -4063,7 +4063,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           }
         ]
       },
@@ -4076,7 +4076,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           }
         ]
       },
@@ -4089,7 +4089,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visuals_primitive.md"
+            "page": "visuals/primitive.md"
           }
         ]
       },
@@ -4102,7 +4102,7 @@
             "category": "advanced",
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
-            "page": "gallery/advanced/advanced_qt_hosting.md"
+            "page": "advanced/qt-hosting.md"
           }
         ]
       },
@@ -4115,7 +4115,7 @@
             "category": "advanced",
             "status": "supported",
             "source": "examples/qt/qt_hosting.cpp",
-            "page": "gallery/advanced/advanced_qt_hosting.md"
+            "page": "advanced/qt-hosting.md"
           }
         ]
       },
@@ -4128,7 +4128,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+            "page": "showcases/linked-probe-colorbar.md"
           }
         ]
       },
@@ -4141,7 +4141,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           },
           {
             "id": "showcases_protein",
@@ -4149,7 +4149,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/showcases_protein.md"
+            "page": "showcases/protein.md"
           },
           {
             "id": "showcases_terrain_relief",
@@ -4157,7 +4157,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -4165,7 +4165,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -4173,7 +4173,7 @@
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/showcases_brain_volume.md"
+            "page": "showcases/brain-volume.md"
           },
           {
             "id": "showcases_point_cloud",
@@ -4181,7 +4181,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/point_cloud.c",
-            "page": "gallery/showcases/showcases_point_cloud.md"
+            "page": "showcases/point-cloud.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -4189,7 +4189,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -4202,7 +4202,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visuals_image_rgba.md"
+            "page": "visuals/image-rgba.md"
           }
         ]
       },
@@ -4215,7 +4215,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           }
         ]
       },
@@ -4228,7 +4228,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+            "page": "showcases/linked-probe-colorbar.md"
           },
           {
             "id": "visuals_image",
@@ -4236,7 +4236,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visuals_image.md"
+            "page": "visuals/image.md"
           },
           {
             "id": "visuals_image_rgba",
@@ -4244,7 +4244,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visuals_image_rgba.md"
+            "page": "visuals/image-rgba.md"
           },
           {
             "id": "visuals_volume",
@@ -4252,7 +4252,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/visuals_volume.md"
+            "page": "visuals/volume.md"
           },
           {
             "id": "showcases_terrain_relief",
@@ -4260,7 +4260,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -4268,7 +4268,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -4281,7 +4281,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/colorbar.c",
-            "page": "gallery/features/features_colorbar.md"
+            "page": "features/colorbar.md"
           },
           {
             "id": "showcases_wind_field",
@@ -4289,7 +4289,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcases_wind_field.md"
+            "page": "showcases/wind-field.md"
           }
         ]
       },
@@ -4302,7 +4302,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/showcases_scalebar_measurement.md"
+            "page": "showcases/scalebar-measurement.md"
           }
         ]
       },
@@ -4315,7 +4315,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/features_compute_buffer_animation.md"
+            "page": "features/compute-buffer-animation.md"
           }
         ]
       },
@@ -4328,7 +4328,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/showcases_scientific_plotting.md"
+            "page": "showcases/scientific-plotting.md"
           },
           {
             "id": "showcases_choropleth",
@@ -4336,7 +4336,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/choropleth.c",
-            "page": "gallery/showcases/showcases_choropleth.md"
+            "page": "showcases/choropleth.md"
           },
           {
             "id": "showcases_protein",
@@ -4344,7 +4344,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/showcases_protein.md"
+            "page": "showcases/protein.md"
           },
           {
             "id": "showcases_wind_field",
@@ -4352,7 +4352,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcases_wind_field.md"
+            "page": "showcases/wind-field.md"
           },
           {
             "id": "showcases_galaxy",
@@ -4360,7 +4360,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_spherical_harmonics",
@@ -4368,7 +4368,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           },
           {
             "id": "showcases_surface_grid",
@@ -4376,7 +4376,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcases_surface_grid.md"
+            "page": "showcases/surface-grid.md"
           },
           {
             "id": "showcases_terrain_relief",
@@ -4384,7 +4384,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           },
           {
             "id": "showcases_cortical_activity",
@@ -4392,7 +4392,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -4400,7 +4400,7 @@
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/showcases_brain_volume.md"
+            "page": "showcases/brain-volume.md"
           }
         ]
       },
@@ -4413,7 +4413,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visuals_glyph.md"
+            "page": "visuals/glyph.md"
           }
         ]
       },
@@ -4426,7 +4426,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visuals_segment.md"
+            "page": "visuals/segment.md"
           }
         ]
       },
@@ -4439,7 +4439,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -4452,7 +4452,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           }
         ]
       },
@@ -4465,7 +4465,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           },
           {
             "id": "showcases_gpu_particle_smoke",
@@ -4473,7 +4473,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/gpu_particle_smoke.c",
-            "page": "gallery/showcases/showcases_gpu_particle_smoke.md"
+            "page": "showcases/gpu-particle-smoke.md"
           }
         ]
       },
@@ -4486,7 +4486,7 @@
             "category": "feature",
             "status": "diagnostic",
             "source": "examples/c/features/bounds_overlay.c",
-            "page": "gallery/features/features_bounds_overlay.md"
+            "page": "features/bounds-overlay.md"
           },
           {
             "id": "visuals_sphere",
@@ -4494,7 +4494,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/visuals_sphere.md"
+            "page": "visuals/sphere.md"
           },
           {
             "id": "showcases_protein",
@@ -4502,7 +4502,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/protein.c",
-            "page": "gallery/showcases/showcases_protein.md"
+            "page": "showcases/protein.md"
           }
         ]
       },
@@ -4515,7 +4515,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/spherical_harmonics.c",
-            "page": "gallery/showcases/showcases_spherical_harmonics.md"
+            "page": "showcases/spherical-harmonics.md"
           }
         ]
       },
@@ -4528,7 +4528,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/cortical_activity.c",
-            "page": "gallery/showcases/showcases_cortical_activity.md"
+            "page": "showcases/cortical-activity.md"
           }
         ]
       },
@@ -4541,7 +4541,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visuals_splat.md"
+            "page": "visuals/splat.md"
           }
         ]
       },
@@ -4554,7 +4554,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/showcases_scientific_plotting.md"
+            "page": "showcases/scientific-plotting.md"
           }
         ]
       },
@@ -4567,7 +4567,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/galaxy.c",
-            "page": "gallery/showcases/showcases_galaxy.md"
+            "page": "showcases/galaxy.md"
           }
         ]
       },
@@ -4580,7 +4580,7 @@
             "category": "feature",
             "status": "experimental",
             "source": "examples/c/features/compute_buffer_animation.c",
-            "page": "gallery/features/features_compute_buffer_animation.md"
+            "page": "features/compute-buffer-animation.md"
           }
         ]
       },
@@ -4593,7 +4593,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           }
         ]
       },
@@ -4606,7 +4606,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcases_surface_grid.md"
+            "page": "showcases/surface-grid.md"
           },
           {
             "id": "showcases_terrain_relief",
@@ -4614,7 +4614,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           }
         ]
       },
@@ -4627,7 +4627,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           }
         ]
       },
@@ -4640,7 +4640,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/features_marker_symbols.md"
+            "page": "features/marker-symbols.md"
           }
         ]
       },
@@ -4653,7 +4653,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/marker_symbols.c",
-            "page": "gallery/features/features_marker_symbols.md"
+            "page": "features/marker-symbols.md"
           }
         ]
       },
@@ -4666,7 +4666,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/showcases_panel_linked_axes.md"
+            "page": "showcases/panel-linked-axes.md"
           },
           {
             "id": "showcases_scalebar_measurement",
@@ -4674,7 +4674,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/showcases_scalebar_measurement.md"
+            "page": "showcases/scalebar-measurement.md"
           },
           {
             "id": "showcases_wind_field",
@@ -4682,7 +4682,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcases_wind_field.md"
+            "page": "showcases/wind-field.md"
           },
           {
             "id": "showcases_surface_grid",
@@ -4690,7 +4690,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcases_surface_grid.md"
+            "page": "showcases/surface-grid.md"
           }
         ]
       },
@@ -4703,7 +4703,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           }
         ]
       },
@@ -4716,7 +4716,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visuals_text.md"
+            "page": "visuals/text.md"
           }
         ]
       },
@@ -4729,7 +4729,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/terrain_relief.c",
-            "page": "gallery/showcases/showcases_terrain_relief.md"
+            "page": "showcases/terrain-relief.md"
           },
           {
             "id": "showcases_textured_planet",
@@ -4737,7 +4737,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/textured_planet.c",
-            "page": "gallery/showcases/showcases_textured_planet.md"
+            "page": "showcases/textured-planet.md"
           }
         ]
       },
@@ -4750,7 +4750,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visuals_glyph.md"
+            "page": "visuals/glyph.md"
           }
         ]
       },
@@ -4763,7 +4763,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           },
           {
             "id": "features_datetime_axis",
@@ -4771,7 +4771,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/datetime_axis.c",
-            "page": "gallery/features/features_datetime_axis.md"
+            "page": "features/datetime-axis.md"
           }
         ]
       },
@@ -4784,7 +4784,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/visuals_volume.md"
+            "page": "visuals/volume.md"
           }
         ]
       },
@@ -4797,7 +4797,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/showcases_scientific_plotting.md"
+            "page": "showcases/scientific-plotting.md"
           }
         ]
       },
@@ -4810,7 +4810,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visuals_vector.md"
+            "page": "visuals/vector.md"
           }
         ]
       },
@@ -4823,7 +4823,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/svg_tiger.c",
-            "page": "gallery/showcases/showcases_svg_tiger.md"
+            "page": "showcases/svg-tiger.md"
           }
         ]
       },
@@ -4836,7 +4836,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcases_wind_field.md"
+            "page": "showcases/wind-field.md"
           }
         ]
       },
@@ -4849,7 +4849,7 @@
             "category": "runtime",
             "status": "experimental",
             "source": "examples/c/runtime/video_export.c",
-            "page": "gallery/runtime/runtime_video_export.md"
+            "page": "runtime/video-export.md"
           }
         ]
       },
@@ -4862,7 +4862,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/features_view_size_policies.md"
+            "page": "features/view-size-policies.md"
           }
         ]
       },
@@ -4875,7 +4875,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_vklite.c",
-            "page": "gallery/advanced/advanced_raw_triangle_vklite.md"
+            "page": "advanced/raw-triangle-vklite.md"
           },
           {
             "id": "advanced_raw_triangle_drp2",
@@ -4883,7 +4883,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/raw_triangle_drp2.c",
-            "page": "gallery/advanced/advanced_raw_triangle_drp2.md"
+            "page": "advanced/raw-triangle-drp2.md"
           }
         ]
       },
@@ -4896,7 +4896,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/visuals_volume.md"
+            "page": "visuals/volume.md"
           },
           {
             "id": "showcases_brain_volume",
@@ -4904,7 +4904,7 @@
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/showcases_brain_volume.md"
+            "page": "showcases/brain-volume.md"
           }
         ]
       },
@@ -4917,7 +4917,7 @@
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/showcases_brain_volume.md"
+            "page": "showcases/brain-volume.md"
           }
         ]
       },
@@ -4930,7 +4930,7 @@
             "category": "showcase",
             "status": "prototype",
             "source": "examples/c/showcases/brain_volume.c",
-            "page": "gallery/showcases/showcases_brain_volume.md"
+            "page": "showcases/brain-volume.md"
           }
         ]
       },
@@ -4943,7 +4943,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/wind_field.c",
-            "page": "gallery/showcases/showcases_wind_field.md"
+            "page": "showcases/wind-field.md"
           }
         ]
       },
@@ -4956,7 +4956,7 @@
             "category": "feature",
             "status": "supported",
             "source": "examples/c/features/view_size_policies.c",
-            "page": "gallery/features/features_view_size_policies.md"
+            "page": "features/view-size-policies.md"
           }
         ]
       },
@@ -4969,7 +4969,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/surface_grid.c",
-            "page": "gallery/showcases/showcases_surface_grid.md"
+            "page": "showcases/surface-grid.md"
           }
         ]
       },
@@ -4982,7 +4982,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/panel_linked_axes.c",
-            "page": "gallery/showcases/showcases_panel_linked_axes.md"
+            "page": "showcases/panel-linked-axes.md"
           },
           {
             "id": "showcases_linked_probe_colorbar",
@@ -4990,7 +4990,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/linked_probe_colorbar.c",
-            "page": "gallery/showcases/showcases_linked_probe_colorbar.md"
+            "page": "showcases/linked-probe-colorbar.md"
           },
           {
             "id": "showcases_scientific_plotting",
@@ -4998,7 +4998,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scientific_plotting.c",
-            "page": "gallery/showcases/showcases_scientific_plotting.md"
+            "page": "showcases/scientific-plotting.md"
           },
           {
             "id": "showcases_streaming_daq",
@@ -5006,7 +5006,7 @@
             "category": "showcase",
             "status": "experimental",
             "source": "examples/c/showcases/streaming_daq.c",
-            "page": "gallery/showcases/showcases_streaming_daq.md"
+            "page": "showcases/streaming-daq.md"
           },
           {
             "id": "showcases_scalebar_measurement",
@@ -5014,7 +5014,7 @@
             "category": "showcase",
             "status": "supported",
             "source": "examples/c/showcases/scalebar_measurement.c",
-            "page": "gallery/showcases/showcases_scalebar_measurement.md"
+            "page": "showcases/scalebar-measurement.md"
           }
         ]
       },
@@ -5027,7 +5027,7 @@
             "category": "advanced",
             "status": "experimental",
             "source": "examples/c/advanced/cuda_external_buffer.c",
-            "page": "gallery/advanced/advanced_cuda_external_buffer.md"
+            "page": "advanced/cuda-external-buffer.md"
           }
         ]
       }
@@ -5042,7 +5042,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/glyph.c",
-            "page": "gallery/visuals/visuals_glyph.md"
+            "page": "visuals/glyph.md"
           }
         ]
       },
@@ -5055,7 +5055,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image.c",
-            "page": "gallery/visuals/visuals_image.md"
+            "page": "visuals/image.md"
           },
           {
             "id": "visuals_image_rgba",
@@ -5063,7 +5063,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/image_rgba.c",
-            "page": "gallery/visuals/visuals_image_rgba.md"
+            "page": "visuals/image-rgba.md"
           }
         ]
       },
@@ -5076,7 +5076,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/labels.c",
-            "page": "gallery/visuals/visuals_labels.md"
+            "page": "visuals/labels.md"
           }
         ]
       },
@@ -5089,7 +5089,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/marker.c",
-            "page": "gallery/visuals/visuals_marker.md"
+            "page": "visuals/marker.md"
           }
         ]
       },
@@ -5102,7 +5102,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/mesh.c",
-            "page": "gallery/visuals/visuals_mesh.md"
+            "page": "visuals/mesh.md"
           }
         ]
       },
@@ -5115,7 +5115,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/path.c",
-            "page": "gallery/visuals/visuals_path.md"
+            "page": "visuals/path.md"
           }
         ]
       },
@@ -5128,7 +5128,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/pixel.c",
-            "page": "gallery/visuals/visuals_pixel.md"
+            "page": "visuals/pixel.md"
           }
         ]
       },
@@ -5141,7 +5141,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/point.c",
-            "page": "gallery/visuals/visuals_point.md"
+            "page": "visuals/point.md"
           }
         ]
       },
@@ -5154,7 +5154,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/primitive.c",
-            "page": "gallery/visuals/visuals_primitive.md"
+            "page": "visuals/primitive.md"
           }
         ]
       },
@@ -5167,7 +5167,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/segment.c",
-            "page": "gallery/visuals/visuals_segment.md"
+            "page": "visuals/segment.md"
           }
         ]
       },
@@ -5180,7 +5180,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/sphere.c",
-            "page": "gallery/visuals/visuals_sphere.md"
+            "page": "visuals/sphere.md"
           }
         ]
       },
@@ -5193,7 +5193,7 @@
             "category": "visual",
             "status": "experimental",
             "source": "examples/c/visuals/splat.c",
-            "page": "gallery/visuals/visuals_splat.md"
+            "page": "visuals/splat.md"
           }
         ]
       },
@@ -5206,7 +5206,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/text.c",
-            "page": "gallery/visuals/visuals_text.md"
+            "page": "visuals/text.md"
           }
         ]
       },
@@ -5219,7 +5219,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/vector.c",
-            "page": "gallery/visuals/visuals_vector.md"
+            "page": "visuals/vector.md"
           }
         ]
       },
@@ -5232,7 +5232,7 @@
             "category": "visual",
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
-            "page": "gallery/visuals/visuals_volume.md"
+            "page": "visuals/volume.md"
           }
         ]
       }

@@ -286,6 +286,6 @@ Include a screenshot only after recording the exact example, size, data seed, an
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
-    - [Depth Test Toggle](../examples/gallery/features/features_technique_depth_test.md) - Source: `examples/c/features/technique_depth_test.c`
-    - [Offscreen Capture](../examples/gallery/runtime/runtime_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
+    - Canonical complete example: [Basic Scene](../examples/features/basic-scene.md) - Source: `examples/c/features/basic_scene.c`
+    - [Depth Test Toggle](../examples/features/technique-depth-test.md) - Source: `examples/c/features/technique_depth_test.c`
+    - [Offscreen Capture](../examples/runtime/offscreen-capture.md) - Source: `examples/c/runtime/offscreen_capture.c`

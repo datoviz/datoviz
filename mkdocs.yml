@@ -287,6 +287,7 @@ not_in_nav: |
   discussions/*
   landing/*
   examples/webgpu/COMPAT.md
+  examples/gallery/*
   reference/python-direct-engine.md
   gallery/*
   guide/*

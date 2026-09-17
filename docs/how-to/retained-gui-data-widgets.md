@@ -22,6 +22,6 @@ Table columns are declared once with stable IDs and typed setters such as `dvz_g
 
 Call each widget's draw function inside the registered GUI callback, after `dvz_gui_begin()` and before `dvz_gui_end()`. Pass one event buffer to each draw, then use `written` and `dropped` to decide whether to apply the compact selection, activation, expansion, sorting, or filtering event. A dropped event requires resynchronizing widget state with the query functions.
 
-The canonical combined example is [`features_gui_data_widgets`](../examples/gallery/features/features_gui_data_widgets.md), with source in [`examples/c/features/gui_data_widgets.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_data_widgets.c). It is native-only because Dear ImGui overlays are not part of the scene/WASM WebGPU route.
+The canonical combined example is [`features_gui_data_widgets`](../examples/features/gui-data-widgets.md), with source in [`examples/c/features/gui_data_widgets.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/gui_data_widgets.c). It is native-only because Dear ImGui overlays are not part of the scene/WASM WebGPU route.
 
 The generated Python facade provides ergonomic setters, draw calls, and state queries for these opaque handles. The Python adaptation follows the same one-callback, copied-model pattern as the C example; use it when the native GUI dependencies are available.

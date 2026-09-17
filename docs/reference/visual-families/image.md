@@ -8,9 +8,9 @@ Primitive: textured quad or retained image item quads.
 
 ## Preview And Links
 
-[![Image](../../assets/gallery/v0.4/visuals/visuals_image.webp)](../../examples/gallery/visuals/visuals_image.md)
+[![Image](../../assets/gallery/v0.4/visuals/visuals_image.webp)](../../examples/visuals/image.md)
 
-- Example: [Image](../../examples/gallery/visuals/visuals_image.md)
+- Example: [Image](../../examples/visuals/image.md)
 - How-to: [Use sampled fields and textures](../../how-to/use-sampled-fields.md), [map scalar values with colormaps](../../how-to/use-colormaps.md)
 - Related: [Pixel](pixel.md), [Labels](labels.md), [Volume](volume.md)
 
@@ -59,8 +59,8 @@ color role without a scale.
 
 ## Verified Usage Pattern
 
-The [scalar C/Python example](../../examples/gallery/visuals/visuals_image.md) demonstrates a
-continuous field and scale. The [RGBA C example](../../examples/gallery/visuals/visuals_image_rgba.md)
+The [scalar C/Python example](../../examples/visuals/image.md) demonstrates a
+continuous field and scale. The [RGBA C example](../../examples/visuals/image-rgba.md)
 demonstrates a direct color field. Both use the four-corner placement form.
 
 ## Picking And Probing
@@ -78,7 +78,7 @@ fields explicitly with `dvz_visual_set_field()`.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/image.c` |
-| Gallery | [Image](../../examples/gallery/visuals/visuals_image.md) |
+| Gallery | [Image](../../examples/visuals/image.md) |
 | Build | `just example-c visuals/image` |
 | Smoke | `./build/examples/c/visuals/image --png` |
 | Validation | `smoke+screenshot` |
@@ -86,7 +86,7 @@ fields explicitly with `dvz_visual_set_field()`.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/image_rgba.c` |
-| Gallery | [RGBA Image](../../examples/gallery/visuals/visuals_image_rgba.md) |
+| Gallery | [RGBA Image](../../examples/visuals/image-rgba.md) |
 | Build | `just example-c visuals/image_rgba` |
 | Smoke | `./build/examples/c/visuals/image_rgba --png` |
 | Validation | `smoke+screenshot` |

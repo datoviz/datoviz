@@ -8,9 +8,9 @@ Primitive: screen-space stroked segments or paths.
 
 ## Preview And Links
 
-[![Vector](../../assets/gallery/v0.4/visuals/visuals_vector.webp)](../../examples/gallery/visuals/visuals_vector.md)
+[![Vector](../../assets/gallery/v0.4/visuals/visuals_vector.webp)](../../examples/visuals/vector.md)
 
-- Example: [Vector](../../examples/gallery/visuals/visuals_vector.md)
+- Example: [Vector](../../examples/visuals/vector.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Segment](segment.md), [Path](path.md), [Primitive](primitive.md)
 
@@ -57,7 +57,7 @@ broadcast.
 
 For straight vectors, upload all four attributes and optionally modify the descriptor returned by
 `dvz_vector_style()`. See the complete
-[C and Python example](../../examples/gallery/visuals/visuals_vector.md); the C source also contains
+[C and Python example](../../examples/visuals/vector.md); the C source also contains
 the verified curved-vector route.
 
 ## Picking And Probing
@@ -75,7 +75,7 @@ vectors.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/vector.c` |
-| Gallery | [Vector](../../examples/gallery/visuals/visuals_vector.md) |
+| Gallery | [Vector](../../examples/visuals/vector.md) |
 | Build | `just example-c visuals/vector` |
 | Smoke | `./build/examples/c/visuals/vector --png` |
 | Validation | `smoke+screenshot` |

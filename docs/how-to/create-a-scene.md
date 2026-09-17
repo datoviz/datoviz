@@ -166,5 +166,5 @@ Use a small number of visuals, each with many related items. The authoritative g
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - Canonical complete example: [Basic Scene](../examples/features/basic-scene.md) - Source: `examples/c/features/basic_scene.c`
     - [Quickstart scatter plot](../start/quickstart.md) - Source: `examples/c/start/scatter.c`

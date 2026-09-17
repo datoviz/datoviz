@@ -118,6 +118,6 @@ format.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
-    - [Linked Panels With Axes](../examples/gallery/showcases/showcases_panel_linked_axes.md) - Source: `examples/c/showcases/panel_linked_axes.c`
-    - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - Canonical complete example: [Linked Panels](../examples/features/panel-linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Linked Panels With Axes](../examples/showcases/panel-linked-axes.md) - Source: `examples/c/showcases/panel_linked_axes.c`
+    - [Linked Probe With Colorbar](../examples/showcases/linked-probe-colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

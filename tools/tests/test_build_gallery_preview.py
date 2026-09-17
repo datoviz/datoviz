@@ -15,6 +15,21 @@ import build_gallery  # noqa: E402
 
 
 class GalleryPreviewTests(unittest.TestCase):
+    def test_generated_example_uses_short_canonical_and_legacy_paths(self) -> None:
+        manifest = build_gallery.load_manifest(build_gallery.DEFAULT_MANIFEST)
+        example = next(
+            example
+            for example in build_gallery.collect_examples(manifest)
+            if example.id == "showcases_scientific_plotting"
+        )
+
+        self.assertEqual(example.slug, "scientific-plotting")
+        self.assertEqual(example.page_path, "showcases/scientific-plotting.md")
+        self.assertEqual(
+            example.legacy_page_path,
+            "gallery/showcases/showcases_scientific_plotting.md",
+        )
+
     def test_local_webgpu_preview_emits_unwrapped_two_tab_block(self) -> None:
         manifest = build_gallery.load_manifest(build_gallery.DEFAULT_MANIFEST)
         example = next(
@@ -33,7 +48,7 @@ class GalleryPreviewTests(unittest.TestCase):
         )
         lines = build_gallery.render_preview(
             example,
-            Path("gallery/showcases/showcases_point_cloud.md"),
+            Path("showcases/point-cloud.md"),
             build_gallery.DEFAULT_IMAGE_DIR,
             build_gallery.DEFAULT_IMAGE_URL_BASE,
         )
@@ -54,7 +69,7 @@ class GalleryPreviewTests(unittest.TestCase):
         )
         lines = build_gallery.render_preview(
             example,
-            Path("gallery/showcases/showcases_point_cloud.md"),
+            Path("showcases/point-cloud.md"),
             build_gallery.DEFAULT_IMAGE_DIR,
             build_gallery.DEFAULT_IMAGE_URL_BASE,
         )
@@ -74,7 +89,7 @@ class GalleryPreviewTests(unittest.TestCase):
 
         text = "\n".join(
             build_gallery.render_run_and_adapt(
-                example, Path("gallery/showcases/showcases_point_cloud.md")
+                example, Path("showcases/point-cloud.md")
             )
         )
 
@@ -93,7 +108,7 @@ class GalleryPreviewTests(unittest.TestCase):
 
         text = "\n".join(
             build_gallery.render_run_and_adapt(
-                example, Path("gallery/showcases/showcases_cortical_activity.md")
+                example, Path("showcases/cortical-activity.md")
             )
         )
 

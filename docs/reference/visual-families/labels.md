@@ -8,9 +8,9 @@ Primitive: textured quad or retained label item quads.
 
 ## Preview And Links
 
-[![Labels](../../assets/gallery/v0.4/visuals/visuals_labels.webp)](../../examples/gallery/visuals/visuals_labels.md)
+[![Labels](../../assets/gallery/v0.4/visuals/visuals_labels.webp)](../../examples/visuals/labels.md)
 
-- Example: [Labels](../../examples/gallery/visuals/visuals_labels.md)
+- Example: [Labels](../../examples/visuals/labels.md)
 - How-to: [Add text, labels, and annotations](../../how-to/add-annotations.md), [use sampled fields and textures](../../how-to/use-sampled-fields.md)
 - Related: [Image](image.md), [Text](text.md), [Pixel](pixel.md)
 
@@ -58,7 +58,7 @@ the common case has `N = 1`.
 
 Create an integer sampled field and categorical scale, upload one `position`/`extent` rectangle,
 bind both resources, then configure presentation state. See the complete
-[C and Python example](../../examples/gallery/visuals/visuals_labels.md).
+[C and Python example](../../examples/visuals/labels.md).
 
 ## Picking And Probing
 
@@ -75,7 +75,7 @@ slice/composite route is native-only. The example disables depth testing and ena
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/labels.c` |
-| Gallery | [Labels](../../examples/gallery/visuals/visuals_labels.md) |
+| Gallery | [Labels](../../examples/visuals/labels.md) |
 | Build | `just example-c visuals/labels` |
 | Smoke | `./build/examples/c/visuals/labels --png` |
 | Validation | `smoke+screenshot` |

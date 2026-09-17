@@ -22,56 +22,56 @@ example; use the decision matrix for neighboring or more specialized families.
 
 <div class="dvz-output-grid">
   <figure class="dvz-output-example">
-    <a href="../../examples/gallery/visuals/visuals_point/">
+    <a href="../../examples/visuals/point/">
       <img src="../../assets/gallery/v0.4/visuals/visuals_point.webp"
            alt="Dense colored samples rendered with the point visual" loading="lazy">
     </a>
     <figcaption><strong>Point</strong> — dense independent samples.</figcaption>
   </figure>
   <figure class="dvz-output-example">
-    <a href="../../examples/gallery/visuals/visuals_marker/">
+    <a href="../../examples/visuals/marker/">
       <img src="../../assets/gallery/v0.4/visuals/visuals_marker.webp"
            alt="Samples rendered with several marker symbols" loading="lazy">
     </a>
     <figcaption><strong>Marker</strong> — symbolic point samples.</figcaption>
   </figure>
   <figure class="dvz-output-example">
-    <a href="../../examples/gallery/visuals/visuals_path/">
+    <a href="../../examples/visuals/path/">
       <img src="../../assets/gallery/v0.4/visuals/visuals_path.webp"
            alt="Connected colored curves rendered with the path visual" loading="lazy">
     </a>
     <figcaption><strong>Path</strong> — connected curves and trajectories.</figcaption>
   </figure>
   <figure class="dvz-output-example">
-    <a href="../../examples/gallery/visuals/visuals_image/">
+    <a href="../../examples/visuals/image/">
       <img src="../../assets/gallery/v0.4/visuals/visuals_image.webp"
            alt="A regular two-dimensional scalar field rendered as an image" loading="lazy">
     </a>
     <figcaption><strong>Image</strong> — regular 2D sampled fields.</figcaption>
   </figure>
   <figure class="dvz-output-example">
-    <a href="../../examples/gallery/visuals/visuals_mesh/">
+    <a href="../../examples/visuals/mesh/">
       <img src="../../assets/gallery/v0.4/visuals/visuals_mesh.webp"
            alt="A shaded triangulated surface rendered with the mesh visual" loading="lazy">
     </a>
     <figcaption><strong>Mesh</strong> — triangulated surfaces and objects.</figcaption>
   </figure>
   <figure class="dvz-output-example">
-    <a href="../../examples/gallery/visuals/visuals_sphere/">
+    <a href="../../examples/visuals/sphere/">
       <img src="../../assets/gallery/v0.4/visuals/visuals_sphere.webp"
            alt="Lit three-dimensional balls rendered with the sphere visual" loading="lazy">
     </a>
     <figcaption><strong>Sphere</strong> — 3D balls with world-space radii.</figcaption>
   </figure>
   <figure class="dvz-output-example">
-    <a href="../../examples/gallery/visuals/visuals_volume/">
+    <a href="../../examples/visuals/volume/">
       <img src="../../assets/gallery/v0.4/visuals/visuals_volume.webp"
            alt="A three-dimensional sampled field rendered as a volume" loading="lazy">
     </a>
     <figcaption><strong>Volume</strong> — regular 3D sampled fields.</figcaption>
   </figure>
   <figure class="dvz-output-example">
-    <a href="../../examples/gallery/visuals/visuals_text/">
+    <a href="../../examples/visuals/text/">
       <img src="../../assets/gallery/v0.4/visuals/visuals_text.webp"
            alt="Several retained strings rendered with the text visual" loading="lazy">
     </a>
@@ -83,22 +83,22 @@ example; use the decision matrix for neighboring or more specialized families.
 
 | Data shape | Usually use | Reference | Canonical gallery |
 | --- | --- | --- | --- |
-| Dense scatter samples or point clouds | Point | [Point](../reference/visual-families/point.md) | [Point](../examples/gallery/visuals/visuals_point.md) |
-| Point samples that need symbolic shapes | Marker | [Marker](../reference/visual-families/marker.md) | [Marker](../examples/gallery/visuals/visuals_marker.md) |
-| Screen-aligned sparse raster cells | Pixel | [Pixel](../reference/visual-families/pixel.md) | [Pixel](../examples/gallery/visuals/visuals_pixel.md) |
-| Experimental Gaussian footprints | Splat | [Splat](../reference/visual-families/splat.md) | [Splat](../examples/gallery/visuals/visuals_splat.md) |
-| Connected polylines, curves, or trajectories | Path | [Path](../reference/visual-families/path.md) | [Path](../examples/gallery/visuals/visuals_path.md) |
-| Independent line segments | Segment | [Segment](../reference/visual-families/segment.md) | [Segment](../examples/gallery/visuals/visuals_segment.md) |
-| Arrow or vector-field glyphs | Vector | [Vector](../reference/visual-families/vector.md) | [Vector](../examples/gallery/visuals/visuals_vector.md) |
-| Simple triangle or line batches | Primitive | [Primitive](../reference/visual-families/primitive.md) | [Primitive](../examples/gallery/visuals/visuals_primitive.md) |
-| 2D sampled scalar/color field | Image | [Image](../reference/visual-families/image.md) | [Image](../examples/gallery/visuals/visuals_image.md) |
-| Integer label field or segmentation mask | Labels | [Labels](../reference/visual-families/labels.md) | [Labels](../examples/gallery/visuals/visuals_labels.md) |
-| 3D sampled scalar field | Volume | [Volume](../reference/visual-families/volume.md) | [Volume](../examples/gallery/visuals/visuals_volume.md) |
-| Triangulated surface or textured object | Mesh | [Mesh](../reference/visual-families/mesh.md) | [Mesh](../examples/gallery/visuals/visuals_mesh.md) |
-| Many copies of the same 3D object | Mesh with `instance_transform` | [Mesh](../reference/visual-families/mesh.md) | [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) |
-| 3D balls, atoms, or particles with world-space radius | Sphere | [Sphere](../reference/visual-families/sphere.md) | [Sphere](../examples/gallery/visuals/visuals_sphere.md) |
-| Human-readable retained strings | Text | [Text](../reference/visual-families/text.md) | [Text](../examples/gallery/visuals/visuals_text.md) |
-| Low-level font-atlas quads | Glyph | [Glyph](../reference/visual-families/glyph.md) | [Glyph](../examples/gallery/visuals/visuals_glyph.md) |
+| Dense scatter samples or point clouds | Point | [Point](../reference/visual-families/point.md) | [Point](../examples/visuals/point.md) |
+| Point samples that need symbolic shapes | Marker | [Marker](../reference/visual-families/marker.md) | [Marker](../examples/visuals/marker.md) |
+| Screen-aligned sparse raster cells | Pixel | [Pixel](../reference/visual-families/pixel.md) | [Pixel](../examples/visuals/pixel.md) |
+| Experimental Gaussian footprints | Splat | [Splat](../reference/visual-families/splat.md) | [Splat](../examples/visuals/splat.md) |
+| Connected polylines, curves, or trajectories | Path | [Path](../reference/visual-families/path.md) | [Path](../examples/visuals/path.md) |
+| Independent line segments | Segment | [Segment](../reference/visual-families/segment.md) | [Segment](../examples/visuals/segment.md) |
+| Arrow or vector-field glyphs | Vector | [Vector](../reference/visual-families/vector.md) | [Vector](../examples/visuals/vector.md) |
+| Simple triangle or line batches | Primitive | [Primitive](../reference/visual-families/primitive.md) | [Primitive](../examples/visuals/primitive.md) |
+| 2D sampled scalar/color field | Image | [Image](../reference/visual-families/image.md) | [Image](../examples/visuals/image.md) |
+| Integer label field or segmentation mask | Labels | [Labels](../reference/visual-families/labels.md) | [Labels](../examples/visuals/labels.md) |
+| 3D sampled scalar field | Volume | [Volume](../reference/visual-families/volume.md) | [Volume](../examples/visuals/volume.md) |
+| Triangulated surface or textured object | Mesh | [Mesh](../reference/visual-families/mesh.md) | [Mesh](../examples/visuals/mesh.md) |
+| Many copies of the same 3D object | Mesh with `instance_transform` | [Mesh](../reference/visual-families/mesh.md) | [Mesh Instance Selection](../examples/features/selection-mesh-instances.md) |
+| 3D balls, atoms, or particles with world-space radius | Sphere | [Sphere](../reference/visual-families/sphere.md) | [Sphere](../examples/visuals/sphere.md) |
+| Human-readable retained strings | Text | [Text](../reference/visual-families/text.md) | [Text](../examples/visuals/text.md) |
+| Low-level font-atlas quads | Glyph | [Glyph](../reference/visual-families/glyph.md) | [Glyph](../examples/visuals/glyph.md) |
 
 The constructor names in the table are available from both `import datoviz as dvz` and the C API.
 The table selects a family only; its reference page remains authoritative for attribute names,
@@ -172,7 +172,7 @@ visual with per-item attributes.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`
+    - Canonical complete example: [Point](../examples/visuals/point.md) - Source: `examples/c/visuals/point.c`
     - Additional source directory: `examples/c/visuals/`
     - Gallery index: [Visual examples](../examples/visuals.md)
     - Manifest: `examples/c/MANIFEST.yaml`

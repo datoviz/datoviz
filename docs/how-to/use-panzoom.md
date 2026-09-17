@@ -19,7 +19,7 @@ range. Use custom input callbacks only for application behavior that is not ordi
   <figcaption>
     <strong>Panzoom interaction.</strong> Dragging changes the visible center and wheel input changes
     the visible extent without rewriting point positions.
-    <a href="../../examples/gallery/features/features_panzoom/">Open the example</a>.
+    <a href="../../examples/features/panzoom/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -42,7 +42,7 @@ the panel, and connects it to the view input router:
 
 Prerequisite: create `panel` and a live window-backed `view` first. The result is mouse-drag and
 wheel navigation over the declared domain. This is a setup fragment; see the complete
-[Panzoom example](../examples/gallery/features/features_panzoom.md).
+[Panzoom example](../examples/features/panzoom.md).
 
 === "Python"
 
@@ -165,6 +165,6 @@ do not destroy it separately.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Panzoom](../examples/gallery/features/features_panzoom.md) - Source: `examples/c/features/panzoom.c`
-    - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
-    - [Panel View 2D](../examples/gallery/features/features_panel_view2d.md) - Source: `examples/c/features/panel_view2d.c`
+    - Canonical complete example: [Panzoom](../examples/features/panzoom.md) - Source: `examples/c/features/panzoom.c`
+    - [Linked Panels](../examples/features/panel-linked.md) - Source: `examples/c/features/panel_linked.c`
+    - [Panel View 2D](../examples/features/panel-view2d.md) - Source: `examples/c/features/panel_view2d.c`

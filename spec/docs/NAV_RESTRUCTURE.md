@@ -41,9 +41,7 @@ render path.
 
 ### Examples
 
-Keep Examples as the public gallery and source-of-truth layer. Generated example detail pages under
-`docs/examples/gallery/` remain excluded from nav but are linked from overview pages and How-To or
-Reference pages.
+Keep Examples as the public gallery and source-of-truth layer. Generated example detail pages use short routes under `docs/examples/<category>/<slug>.md` and remain linked from overview, How-To, and Reference pages. Generated pages under `docs/examples/gallery/` preserve legacy URLs as redirects and remain excluded from nav.
 
 
 ### How-To
