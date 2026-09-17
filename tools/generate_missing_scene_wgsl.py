@@ -32,15 +32,20 @@ class Tools:
     naga: Path | None
 
 
-def _discover_tool(cli_path: str | None, env_name: str, executable: str) -> Path | None:
+def _discover_tool(
+    cli_path: str | None, env_names: str | tuple[str, ...], executable: str
+) -> Path | None:
     if cli_path:
         path = Path(cli_path)
         return path if path.exists() else None
 
-    env_path = os.environ.get(env_name)
-    if env_path:
-        path = Path(env_path)
-        return path if path.exists() else None
+    if isinstance(env_names, str):
+        env_names = (env_names,)
+    for env_name in env_names:
+        env_path = os.environ.get(env_name)
+        if env_path:
+            path = Path(env_path)
+            return path if path.exists() else None
 
     found = shutil.which(executable)
     return Path(found) if found else None
@@ -163,7 +168,7 @@ def main() -> int:
     wgsl_dir = args.wgsl_dir.resolve()
     jobs = _scan_jobs(glsl_dir, wgsl_dir)
     tools = Tools(
-        glslc=_discover_tool(args.glslc, "GLSLC", "glslc"),
+        glslc=_discover_tool(args.glslc, ("DVZ_GLSLC", "GLSLC"), "glslc"),
         glslang_validator=_discover_tool(
             args.glslang_validator, "GLSLANG_VALIDATOR", "glslangValidator"
         ),

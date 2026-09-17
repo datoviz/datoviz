@@ -1,0 +1,69 @@
+name: "Windows vcpkg cache"
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - vcpkg.json
+      - vcpkg-configuration.json
+      - .github/workflows/windows-vcpkg-cache.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-vcpkg-cache-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  warm-vcpkg-cache:
+    name: "Warm / Windows vcpkg"
+    runs-on: windows-2025-vs2026
+    env:
+      VCPKG_ROOT: C:/vcpkg
+      VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          lfs: false
+          submodules: false
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Determine vcpkg cache key
+        id: vcpkg-cache-key
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VCToolsVersion)) {
+            throw "VCToolsVersion was not set by the MSVC developer environment"
+          }
+          "version=$($env:VCToolsVersion.Trim())" |
+            Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+      - name: Restore vcpkg binary archives
+        id: vcpkg-binary-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: C:/vcpkg-binary-cache
+          key: windows-2025-x64-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}-${{ steps.vcpkg-cache-key.outputs.version }}
+          restore-keys: |
+            windows-2025-x64-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}-
+            windows-2025-x64-vcpkg-
+      - name: Install vcpkg dependencies
+        shell: pwsh
+        run: |
+          if (!(Test-Path "$env:VCPKG_ROOT/vcpkg.exe")) {
+            & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat"
+          }
+          New-Item -ItemType Directory -Force C:/vcpkg-binary-cache | Out-Null
+          & "$env:VCPKG_ROOT/vcpkg.exe" install `
+            --triplet x64-windows `
+            --x-install-root="$PWD/build/vcpkg_installed"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Save vcpkg binary archives
+        if: steps.vcpkg-binary-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: C:/vcpkg-binary-cache
+          key: windows-2025-x64-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}-${{ steps.vcpkg-cache-key.outputs.version }}
