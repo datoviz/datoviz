@@ -124,7 +124,7 @@ non_public_examples:
     validation: manual
 
 review_exclusions:
-  features_histogram: new pre-RC3 C histogram example pending canonical 1280x720 media review
+  features_histogram: new pre-RC3 C/Python/WebGPU histogram example pending canonical 1280x720 media review
   features_volume_occlusion: experimental render-product diagnostic pending an explicit publication review
   showcases_embedding_atlas: experimental generated-data showcase pending canonical 1280x720 media review
   showcases_lipid_brain_atlas: experimental prepared-data showcase pending canonical 1280x720 media and license review
@@ -1275,17 +1275,20 @@ examples:
     primary_feature: histogram
     lane: features
     source: examples/c/features/histogram.c
+    python:
+      source: examples/python/gallery/features/histogram.py
+      status: direct-engine
     validation: smoke+screenshot
     data:
       kind: synthetic
     portability: portable-scenario
     webgpu:
-      status: webgpu-planned
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_histogram
       requirements:
-        - bars
+        - primitive
         - axes
         - panzoom
-      reason: the histogram scenario has not yet been added to the WebGPU fixture set
     agent_copy_safe: true
     tags:
       - histogram

@@ -1116,6 +1116,7 @@ async function main() {
         ['start_scatter', { label: 'Scatter Plot' }],
         ['features_datetime_axis', { label: 'Datetime Axis', kind: 'animated' }],
         ['features_marker_symbols', { label: 'Marker Symbols' }],
+        ['features_histogram', { label: 'Histogram' }],
         [
           'showcases_spherical_harmonics',
           { label: 'Spherical Harmonics', kind: 'animated', limitations: ['MSAA', 'single-sampled'] },
@@ -1499,6 +1500,7 @@ async function main() {
       ['features_guide_lines', 'Guide Lines', 'webgpu_live_guide_lines.png', 'guide-lines'],
       ['features_guide_spans', 'Guide Spans', 'webgpu_live_guide_spans.png', 'guide-spans'],
       ['features_bars_bands', 'Bars And Bands', 'webgpu_live_bars_bands.png', 'bars-bands'],
+      ['features_histogram', 'Histogram', 'webgpu_live_histogram.png', 'histogram'],
       ['features_controller_fly', 'Fly Controller', 'webgpu_live_controller_fly.png', 'fly-controller'],
       [
         'features_controller_turntable',

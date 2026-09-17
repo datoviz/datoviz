@@ -44,6 +44,7 @@ DvzScenarioSpec dvz_example_controller_turntable_scenario(void);
 DvzScenarioSpec dvz_example_datetime_axis_scenario(void);
 DvzScenarioSpec dvz_example_guide_lines_scenario(void);
 DvzScenarioSpec dvz_example_guide_spans_scenario(void);
+DvzScenarioSpec dvz_example_histogram_scenario(void);
 DvzScenarioSpec dvz_example_timer_animation_scenario(void);
 DvzScenarioSpec dvz_example_update_partial_scenario(void);
 DvzScenarioSpec dvz_example_update_visual_data_scenario(void);
@@ -300,6 +301,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_showcase_point_cloud_scenario();
     case 90:
         return dvz_example_panel_mixed_2d_3d_scenario();
+    case 91:
+        return dvz_example_histogram_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

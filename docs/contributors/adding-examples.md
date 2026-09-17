@@ -1,6 +1,6 @@
 # Add A Public Gallery Example
 
-Every public example is executable documentation and release evidence. A contribution is complete only when its canonical C scenario, manifest metadata, deterministic screenshot, applicable motion media, honest WebGPU classification, generated documentation, and focused validation agree.
+Every public example is executable documentation and release evidence. A portable contribution is complete only when its canonical C scenario, runnable Python direct-engine adaptation, live WebGPU route, manifest metadata, deterministic screenshot, applicable motion media, generated documentation, and focused validation agree. Build all three routes in the same change; Python and WebGPU are not optional follow-up tasks.
 
 ## Definition Of Done
 
@@ -8,11 +8,12 @@ Every public example must:
 
 1. use one canonical C scenario under `examples/c/<lane>/` and register it in `examples/c/CMakeLists.txt`;
 2. have one `examples/c/MANIFEST.yaml` entry with its category, primary capability, data kind, validation, portability, WebGPU status, and `agent_copy_safe` decision;
-3. declare `screenshot` validation and produce a deterministic, nonblank canonical PNG;
-4. declare an explicit WebGPU status, with `webgpu-live` reserved for scenarios that pass WASM packet validation and browser execution;
-5. provide deterministic animation or video when motion, interaction, streaming, compute, or a 3D camera is essential to understanding the example;
-6. regenerate the committed gallery pages and machine-readable inventories;
-7. pass the focused native, media, WebGPU, documentation, specification, and repository-hygiene checks.
+3. provide a runnable direct-engine Python adaptation under `examples/python/gallery/<lane>/` and declare it in `python.source` with `python.status: direct-engine`;
+4. expose the canonical C scenario as a live WebGPU route and pass focused WASM packet-shape and browser execution checks;
+5. declare `screenshot` validation and produce a deterministic, nonblank canonical PNG;
+6. provide deterministic animation or video when motion, interaction, streaming, compute, or a 3D camera is essential to understanding the example;
+7. regenerate the committed gallery pages and machine-readable inventories;
+8. pass the focused native, Python, media, WebGPU, documentation, specification, and repository-hygiene checks.
 
 A live browser route never replaces the screenshot. The gallery must remain useful without JavaScript, WebGPU, or video playback.
 
@@ -28,6 +29,9 @@ Use a nearby entry with the same lane and media needs. A portable interactive ex
   primary_feature: example
   lane: features
   source: examples/c/features/example.c
+  python:
+    source: examples/python/gallery/features/example.py
+    status: direct-engine
   validation: smoke+interaction+screenshot+video
   portability: portable-scenario
   media:
@@ -50,7 +54,7 @@ Use a nearby entry with the same lane and media needs. A portable interactive ex
   agent_copy_safe: true
 ```
 
-Use `webgpu-planned`, `webgpu-deferred`, or `native-only` when the browser path is not implemented. Include a concrete reason for deferred or native-only classifications. Do not create a separate JavaScript visualization to claim parity; the browser route must use the canonical C scenario through scene, DRP2, and the WASM host.
+New portable examples must start with `webgpu-live`; do not use `webgpu-planned` or `webgpu-deferred` to split ordinary implementation across later work. Use `native-only` or `browser-only` only when an intrinsic platform dependency makes another route impossible, and include a concrete reason. Do not create a separate JavaScript visualization to claim parity; the browser route must use the canonical C scenario through scene, DRP2, and the WASM host.
 
 Real or prepared data also requires the complete dataset attribution, license, citation, preprocessing, and provenance fields defined at the top of `examples/c/MANIFEST.yaml`.
 
@@ -63,6 +67,8 @@ Keep error handling proportional to the example. Check failures that protect own
 Register the native executable in `examples/c/CMakeLists.txt`. A portable `webgpu-live` scenario must also be added to `src/wasm/CMakeLists.txt`, `src/wasm/scene_api_scenario.c`, the scenario-count constant, `tools/wasm_scene_smoke.mjs`, `examples/webgpu/live_examples.js`, and the filtered browser-smoke route table.
 
 Add focused WASM assertions for the example's meaningful packet shape and interaction updates. Compilation alone is not WebGPU proof.
+
+Implement the Python adaptation against the generated `datoviz` bindings and shared gallery helpers. It must recreate the same data, domains, labels, and demonstrated feature rather than merely launch the C executable. Run it in bounded gallery smoke mode and validate that its capture is nonblank.
 
 ## Validate Without Changing Canonical Media
 
@@ -128,6 +134,7 @@ git diff --check
 - The native scenario owns no borrowed graphics handles and follows the scene-to-DRP2 runtime boundary.
 - Synthetic data and preview motion are deterministic.
 - Every public example has a screenshot.
+- Every portable public example has runnable C, Python, and live WebGPU routes in the same contribution.
 - Motion-dependent examples have an animated preview or MP4 card.
 - WebGPU metadata states proven support or a concrete limitation honestly.
 - `agent_copy_safe: true` is used only when generated user code can safely adapt the example.

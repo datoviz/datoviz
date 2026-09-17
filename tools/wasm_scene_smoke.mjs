@@ -1375,6 +1375,17 @@ function expectBarsBandsScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected bar or band draw`);
 }
 
+function expectHistogramScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  expectPipeline(
+    stream,
+    `${label} bars`,
+    (pipeline) => pipeline.builtin_pipeline === "scene.primitive",
+  );
+  expectDraw(stream, 144, 1, `${label} bars`);
+}
+
 function expectControllerMeshScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2677,6 +2688,7 @@ try {
     "showcases_cortical_activity",
     "showcases_point_cloud",
     "features_panel_mixed_2d_3d",
+    "features_histogram",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3614,6 +3626,11 @@ try {
       "features_bars_bands",
       "bars bands",
       (stream, label) => expectBarsBandsScenarioStreamShape(stream, label),
+    ],
+    [
+      "features_histogram",
+      "histogram",
+      (stream, label) => expectHistogramScenarioStreamShape(stream, label),
     ],
     [
       "features_controller_fly",

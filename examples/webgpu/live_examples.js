@@ -437,6 +437,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "features_bars_bands",
   },
   {
+    id: "features_histogram",
+    label: "Histogram",
+    scenarioId: "features_histogram",
+  },
+  {
     id: "features_controller_fly",
     label: "Fly Controller",
     scenarioId: "features_controller_fly",
