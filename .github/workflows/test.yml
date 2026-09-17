@@ -110,7 +110,7 @@ jobs:
 
   build-windows:
     name: "Build / Windows"
-    runs-on: windows-latest
+    runs-on: windows-2025
     env:
       VCPKG_ROOT: C:/vcpkg
       VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite
@@ -128,22 +128,30 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+      - name: Determine vcpkg cache key
+        id: vcpkg-cache-key
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:VCToolsVersion)) {
+            throw "VCToolsVersion was not set by the MSVC developer environment"
+          }
+          "version=$($env:VCToolsVersion.Trim())" |
+            Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
-      - name: Cache vcpkg dependencies
-        uses: actions/cache@v6
+      - name: Restore vcpkg binary archives
+        id: vcpkg-binary-cache
+        uses: actions/cache/restore@v6
         with:
-          path: |
-            C:/vcpkg-binary-cache
-            build/vcpkg_installed
-          key: windows-x64-test-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          path: C:/vcpkg-binary-cache
+          key: windows-2025-x64-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}-${{ steps.vcpkg-cache-key.outputs.version }}
+          restore-keys: |
+            windows-2025-x64-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}-
+            windows-2025-x64-vcpkg-
       - name: Dependencies
         shell: pwsh
         run: |
-          choco install just ninja ccache -y
-          python -m pip install -U pip
-          python -m pip install -r requirements-dev.txt
           if (!(Test-Path "$env:VCPKG_ROOT/vcpkg.exe")) {
             & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat"
           }
@@ -152,6 +160,12 @@ jobs:
             --triplet x64-windows `
             --x-install-root="$PWD/build/vcpkg_installed"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Save vcpkg binary archives
+        if: steps.vcpkg-binary-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: C:/vcpkg-binary-cache
+          key: windows-2025-x64-vcpkg-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}-${{ steps.vcpkg-cache-key.outputs.version }}
       - name: Resolve shader tools
         shell: pwsh
         run: |
