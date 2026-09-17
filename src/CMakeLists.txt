@@ -153,7 +153,7 @@ elseif(CC_CLANG)
         -Wno-unguarded-availability-new
     )
 elseif(CC_MSVC)
-    list(APPEND DVZ_COMPILE_OPTIONS_C /std:c11)
+    list(APPEND DVZ_COMPILE_OPTIONS_C /std:c11 /experimental:c11atomics)
     list(APPEND DVZ_COMPILE_OPTIONS_CXX /std:c++17)
 endif()
 

@@ -20,7 +20,7 @@ concurrency:
 jobs:
   warm-vcpkg-cache:
     name: "Warm / Windows vcpkg"
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
     env:
       VCPKG_ROOT: C:/vcpkg
       VCPKG_BINARY_SOURCES: clear;files,C:/vcpkg-binary-cache,readwrite
