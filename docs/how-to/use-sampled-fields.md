@@ -222,6 +222,6 @@ For color textures, set the semantic and color role explicitly. Scientific scala
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Sampled Field Update](../examples/gallery/features/features_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`
-    - [Volume](../examples/gallery/visuals/visuals_volume.md) - Source: `examples/c/visuals/volume.c`
-    - [Textured Mesh](../examples/gallery/features/features_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`
+    - Canonical complete example: [Sampled Field Update](../examples/features/sampled-field-update.md) - Source: `examples/c/features/sampled_field_update.c`
+    - [Volume](../examples/visuals/volume.md) - Source: `examples/c/visuals/volume.c`
+    - [Textured Mesh](../examples/features/mesh-texture.md) - Source: `examples/c/features/mesh_texture.c`

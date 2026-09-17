@@ -8,9 +8,9 @@ Primitive: impostor quads with fragment-shader sphere reconstruction.
 
 ## Preview And Links
 
-[![Sphere](../../assets/gallery/v0.4/visuals/visuals_sphere.webp)](../../examples/gallery/visuals/visuals_sphere.md)
+[![Sphere](../../assets/gallery/v0.4/visuals/visuals_sphere.webp)](../../examples/visuals/sphere.md)
 
-- Example: [Sphere](../../examples/gallery/visuals/visuals_sphere.md)
+- Example: [Sphere](../../examples/visuals/sphere.md)
 - How-to: [Use 3D controllers](../../how-to/3d-navigation.md), [use lighting and materials](../../how-to/lighting-and-materials.md)
 - Related: [Point](point.md), [Mesh](mesh.md), [Splat](splat.md)
 
@@ -53,7 +53,7 @@ broadcast.
 
 Upload center, color, and radius arrays together, optionally choose raycast mode/material, then
 attach the visual. See the complete
-[C and Python example](../../examples/gallery/visuals/visuals_sphere.md).
+[C and Python example](../../examples/visuals/sphere.md).
 
 ## Picking And Probing
 
@@ -70,7 +70,7 @@ shader and uses analytic antialiasing at silhouettes.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/sphere.c` |
-| Gallery | [Sphere](../../examples/gallery/visuals/visuals_sphere.md) |
+| Gallery | [Sphere](../../examples/visuals/sphere.md) |
 | Build | `just example-c visuals/sphere` |
 | Smoke | `./build/examples/c/visuals/sphere --png` |
 | Validation | `smoke+screenshot` |

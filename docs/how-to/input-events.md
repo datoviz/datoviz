@@ -130,8 +130,8 @@ Callbacks run synchronously on the emitting thread. A text event's UTF-8 span is
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Input Events](../examples/gallery/features/features_input_events.md) - Source: `examples/c/features/input_events.c`
-    - [Picking](../examples/gallery/features/features_picking.md) - Source: `examples/c/features/picking.c`
-    - [GUI Controls](../examples/gallery/features/features_gui_controls.md) - Source: `examples/c/features/gui_controls.c`
-    - [Raw cimgui GUI](../examples/gallery/features/features_gui_cimgui.md) - Source: `examples/c/features/gui_cimgui.c`
-    - [GUI Viewport](../examples/gallery/features/features_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`
+    - Canonical complete example: [Input Events](../examples/features/input-events.md) - Source: `examples/c/features/input_events.c`
+    - [Picking](../examples/features/picking.md) - Source: `examples/c/features/picking.c`
+    - [GUI Controls](../examples/features/gui-controls.md) - Source: `examples/c/features/gui_controls.c`
+    - [Raw cimgui GUI](../examples/features/gui-cimgui.md) - Source: `examples/c/features/gui_cimgui.c`
+    - [GUI Viewport](../examples/features/gui-viewport.md) - Source: `examples/c/features/gui_viewport.c`

@@ -164,6 +164,6 @@ style are stable.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Text Block](../examples/gallery/features/features_text_block.md) - Source: `examples/c/features/text_block.c`
-    - [Labels](../examples/gallery/visuals/visuals_labels.md) - Source: `examples/c/visuals/labels.c`
-    - [Annotation Readout](../examples/gallery/features/features_annotation_readout.md) - Source: `examples/c/features/annotation_readout.c`
+    - Canonical complete example: [Text Block](../examples/features/text-block.md) - Source: `examples/c/features/text_block.c`
+    - [Labels](../examples/visuals/labels.md) - Source: `examples/c/visuals/labels.c`
+    - [Annotation Readout](../examples/features/annotation-readout.md) - Source: `examples/c/features/annotation_readout.c`

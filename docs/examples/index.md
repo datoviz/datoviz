@@ -14,10 +14,10 @@ Polished, composed demonstrations built around scientific data, simulations, and
 
 <div class="card" markdown="1">
 
-**[Streaming DAQ · 64 channels](gallery/showcases/showcases_streaming_daq.md)**
+**[Streaming DAQ · 64 channels](showcases/streaming-daq.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_streaming_daq/" aria-label="Streaming DAQ · 64 channels"></a>
+  <a class="dvz-gallery-media-target" href="showcases/streaming-daq/" aria-label="Streaming DAQ · 64 channels"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" alt="Streaming DAQ · 64 channels" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/showcases/showcases_streaming_daq.poster.webp" aria-label="Streaming DAQ · 64 channels preview">
@@ -33,9 +33,9 @@ This example renders a simulated real-time data acquisition system.
 
 <div class="card" markdown="1">
 
-**[U.S. State Choropleth](gallery/showcases/showcases_choropleth.md)**
+**[U.S. State Choropleth](showcases/choropleth.md)**
 
-[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/showcases_choropleth.webp)](gallery/showcases/showcases_choropleth.md)
+[![U.S. State Choropleth](../assets/gallery/v0.4/showcases/showcases_choropleth.webp)](showcases/choropleth.md)
 
 `showcases`
 
@@ -45,10 +45,10 @@ This example renders contiguous U.S. population density as polygon-set data.
 
 <div class="card" markdown="1">
 
-**[GPU Particle Smoke](gallery/showcases/showcases_gpu_particle_smoke.md)**
+**[GPU Particle Smoke](showcases/gpu-particle-smoke.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_gpu_particle_smoke/" aria-label="GPU Particle Smoke"></a>
+  <a class="dvz-gallery-media-target" href="showcases/gpu-particle-smoke/" aria-label="GPU Particle Smoke"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" alt="GPU Particle Smoke" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" aria-label="GPU Particle Smoke preview">
@@ -64,10 +64,10 @@ This example uses scene compute buffers to animate particle smoke.
 
 <div class="card" markdown="1">
 
-**[Density-Wave Galaxy](gallery/showcases/showcases_galaxy.md)**
+**[Density-Wave Galaxy](showcases/galaxy.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_galaxy/" aria-label="Density-Wave Galaxy"></a>
+  <a class="dvz-gallery-media-target" href="showcases/galaxy/" aria-label="Density-Wave Galaxy"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" alt="Density-Wave Galaxy" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/showcases/showcases_galaxy.poster.webp" aria-label="Density-Wave Galaxy preview">
@@ -83,10 +83,10 @@ This example renders an animated density-wave spiral galaxy.
 
 <div class="card" markdown="1">
 
-**[Human Auditory Cortical Activity](gallery/showcases/showcases_cortical_activity.md)**
+**[Human Auditory Cortical Activity](showcases/cortical-activity.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_cortical_activity/" aria-label="Human Auditory Cortical Activity"></a>
+  <a class="dvz-gallery-media-target" href="showcases/cortical-activity/" aria-label="Human Auditory Cortical Activity"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human Auditory Cortical Activity" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" aria-label="Human Auditory Cortical Activity preview">
@@ -102,10 +102,10 @@ This example animates a human auditory dSPM estimate on cortex.
 
 <div class="card" markdown="1">
 
-**[Protein](gallery/showcases/showcases_protein.md)**
+**[Protein](showcases/protein.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_protein/" aria-label="Protein"></a>
+  <a class="dvz-gallery-media-target" href="showcases/protein/" aria-label="Protein"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
@@ -121,10 +121,10 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 <div class="card" markdown="1">
 
-**[Textured Planets and Orbital Debris](gallery/showcases/showcases_textured_planet.md)**
+**[Textured Planets and Orbital Debris](showcases/textured-planet.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_textured_planet/" aria-label="Textured Planets and Orbital Debris"></a>
+  <a class="dvz-gallery-media-target" href="showcases/textured-planet/" aria-label="Textured Planets and Orbital Debris"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets and Orbital Debris" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets and Orbital Debris preview">
@@ -140,10 +140,10 @@ This example combines a textured Earth with real catalogued orbital debris.
 
 <div class="card" markdown="1">
 
-**[Point Cloud](gallery/showcases/showcases_point_cloud.md)**
+**[Point Cloud](showcases/point-cloud.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/showcases/showcases_point_cloud/" aria-label="Point Cloud"></a>
+  <a class="dvz-gallery-media-target" href="showcases/point-cloud/" aria-label="Point Cloud"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
@@ -169,9 +169,9 @@ Focused examples of the marks Datoviz can draw, from paths and images to meshes.
 
 <div class="card" markdown="1">
 
-**[Marker](gallery/visuals/visuals_marker.md)**
+**[Marker](visuals/marker.md)**
 
-[![Marker](../assets/gallery/v0.4/visuals/visuals_marker.webp)](gallery/visuals/visuals_marker.md)
+[![Marker](../assets/gallery/v0.4/visuals/visuals_marker.webp)](visuals/marker.md)
 
 `visuals`
 
@@ -181,9 +181,9 @@ This example compares marker symbols, sizes, strokes, fills, and rotations.
 
 <div class="card" markdown="1">
 
-**[Vector](gallery/visuals/visuals_vector.md)**
+**[Vector](visuals/vector.md)**
 
-[![Vector](../assets/gallery/v0.4/visuals/visuals_vector.webp)](gallery/visuals/visuals_vector.md)
+[![Vector](../assets/gallery/v0.4/visuals/visuals_vector.webp)](visuals/vector.md)
 
 `visuals`
 
@@ -193,9 +193,9 @@ This example compares straight vector arrows with curved vector paths.
 
 <div class="card" markdown="1">
 
-**[RGBA Image](gallery/visuals/visuals_image_rgba.md)**
+**[RGBA Image](visuals/image-rgba.md)**
 
-[![RGBA Image](../assets/gallery/v0.4/visuals/visuals_image_rgba.webp)](gallery/visuals/visuals_image_rgba.md)
+[![RGBA Image](../assets/gallery/v0.4/visuals/visuals_image_rgba.webp)](visuals/image-rgba.md)
 
 `visuals`
 
@@ -205,9 +205,9 @@ This example displays a generated RGBA image as a 2D sampled field.
 
 <div class="card" markdown="1">
 
-**[Text](gallery/visuals/visuals_text.md)**
+**[Text](visuals/text.md)**
 
-[![Text](../assets/gallery/v0.4/visuals/visuals_text.webp)](gallery/visuals/visuals_text.md)
+[![Text](../assets/gallery/v0.4/visuals/visuals_text.webp)](visuals/text.md)
 
 `visuals`
 
@@ -227,10 +227,10 @@ Focused capabilities for layout, navigation, adornments, geometry, rendering, an
 
 <div class="card" markdown="1">
 
-**[Panel View 2D](gallery/features/features_panel_view2d.md)**
+**[Panel View 2D](features/panel-view2d.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/features/features_panel_view2d/" aria-label="Panel View 2D"></a>
+  <a class="dvz-gallery-media-target" href="features/panel-view2d/" aria-label="Panel View 2D"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" alt="Panel View 2D" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/features/features_panel_view2d.poster.webp" aria-label="Panel View 2D preview">
@@ -246,10 +246,10 @@ This example animates the widths of free and equal-aspect 2D panels.
 
 <div class="card" markdown="1">
 
-**[User Scale](gallery/features/features_user_scale.md)**
+**[User Scale](features/user-scale.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/features/features_user_scale/" aria-label="User Scale"></a>
+  <a class="dvz-gallery-media-target" href="features/user-scale/" aria-label="User Scale"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_user_scale.poster.webp" alt="User Scale" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/features/features_user_scale.poster.webp" aria-label="User Scale preview">
@@ -265,9 +265,9 @@ This example shows how one user-scale value affects screen-space visual sizes an
 
 <div class="card" markdown="1">
 
-**[Bars And Bands](gallery/features/features_bars_bands.md)**
+**[Bars And Bands](features/bars-bands.md)**
 
-[![Bars And Bands](../assets/gallery/v0.4/features/features_bars_bands.webp)](gallery/features/features_bars_bands.md)
+[![Bars And Bands](../assets/gallery/v0.4/features/features_bars_bands.webp)](features/bars-bands.md)
 
 `features`
 
@@ -277,10 +277,10 @@ This example shows bars and an uncertainty band in one 2D panel.
 
 <div class="card" markdown="1">
 
-**[Turntable Controller](gallery/features/features_controller_turntable.md)**
+**[Turntable Controller](features/controller-turntable.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/features/features_controller_turntable/" aria-label="Turntable Controller"></a>
+  <a class="dvz-gallery-media-target" href="features/controller-turntable/" aria-label="Turntable Controller"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" alt="Turntable Controller" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/features/features_controller_turntable.poster.webp" aria-label="Turntable Controller preview">
@@ -296,9 +296,9 @@ This example shows world-up orbiting with a turntable controller.
 
 <div class="card" markdown="1">
 
-**[Builtin Shapes 3D](gallery/features/features_builtin_shapes_3d.md)**
+**[Builtin Shapes 3D](features/builtin-shapes-3d.md)**
 
-[![Builtin Shapes 3D](../assets/gallery/v0.4/features/features_builtin_shapes_3d.webp)](gallery/features/features_builtin_shapes_3d.md)
+[![Builtin Shapes 3D](../assets/gallery/v0.4/features/features_builtin_shapes_3d.webp)](features/builtin-shapes-3d.md)
 
 `features`
 
@@ -308,9 +308,9 @@ This example shows built-in 3D geometry rendered as lit meshes.
 
 <div class="card" markdown="1">
 
-**[Isolines](gallery/features/features_isolines.md)**
+**[Isolines](features/isolines.md)**
 
-[![Isolines](../assets/gallery/v0.4/features/features_isolines.webp)](gallery/features/features_isolines.md)
+[![Isolines](../assets/gallery/v0.4/features/features_isolines.webp)](features/isolines.md)
 
 `features`
 
@@ -320,10 +320,10 @@ This example shows contour isolines over a scalar field.
 
 <div class="card" markdown="1">
 
-**[Lighting](gallery/features/features_lighting.md)**
+**[Lighting](features/lighting.md)**
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="gallery/features/features_lighting/" aria-label="Lighting"></a>
+  <a class="dvz-gallery-media-target" href="features/lighting/" aria-label="Lighting"></a>
   <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/features/features_lighting.poster.webp" alt="Lighting" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
          poster="../assets/gallery/v0.4/features/features_lighting.poster.webp" aria-label="Lighting preview">
@@ -339,9 +339,9 @@ This example compares the same sphere cluster under three panel-owned light conf
 
 <div class="card" markdown="1">
 
-**[Mesh Instance Selection](gallery/features/features_selection_mesh_instances.md)**
+**[Mesh Instance Selection](features/selection-mesh-instances.md)**
 
-[![Mesh Instance Selection](../assets/gallery/v0.4/features/features_selection_mesh_instances.webp)](gallery/features/features_selection_mesh_instances.md)
+[![Mesh Instance Selection](../assets/gallery/v0.4/features/features_selection_mesh_instances.webp)](features/selection-mesh-instances.md)
 
 `features`
 
@@ -364,11 +364,11 @@ Some examples focus on how Datoviz runs rather than on a particular visual resul
 
 | Goal | Start here | Then browse |
 | --- | --- | --- |
-| Learn the scene → figure → panel → visual workflow | [Basic Scene](gallery/features/features_basic_scene.md) | [70 focused features](features.md) |
-| Choose marks, lines, images, meshes, text, or volumes | [Point](gallery/visuals/visuals_point.md) | [18 visuals and composites](visuals.md) |
-| Add axes, interaction, layout, animation, or techniques | [2D Axes](gallery/features/features_axes_2d.md) | [70 focused features](features.md) |
-| Open windows, render offscreen, capture, record, or export | [Offscreen Capture](gallery/runtime/runtime_offscreen_capture.md) | [5 runtime examples](runtime.md) |
-| Study complete scientific visualization compositions | [Scientific Plotting Workflow](gallery/showcases/showcases_scientific_plotting.md) | [18 showcases](showcases.md) |
+| Learn the scene → figure → panel → visual workflow | [Basic Scene](features/basic-scene.md) | [70 focused features](features.md) |
+| Choose marks, lines, images, meshes, text, or volumes | [Point](visuals/point.md) | [18 visuals and composites](visuals.md) |
+| Add axes, interaction, layout, animation, or techniques | [2D Axes](features/axes-2d.md) | [70 focused features](features.md) |
+| Open windows, render offscreen, capture, record, or export | [Offscreen Capture](runtime/offscreen-capture.md) | [5 runtime examples](runtime.md) |
+| Study complete scientific visualization compositions | [Scientific Plotting Workflow](showcases/scientific-plotting.md) | [18 showcases](showcases.md) |
 | Integrate a host or use lower-level rendering APIs | [Advanced examples](advanced.md) | [6 advanced examples](advanced.md) |
 
 ## Before You Copy An Example

@@ -149,6 +149,6 @@ Apply a query result only to selection and hover objects from the same scene. Da
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Pixel Selection](../examples/gallery/features/features_selection_pixel.md) - Source: `examples/c/features/selection_pixel.c`
-    - [Sphere Selection](../examples/gallery/features/features_selection_sphere.md) - Source: `examples/c/features/selection_sphere.c`
-    - [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`
+    - Canonical complete example: [Pixel Selection](../examples/features/selection-pixel.md) - Source: `examples/c/features/selection_pixel.c`
+    - [Sphere Selection](../examples/features/selection-sphere.md) - Source: `examples/c/features/selection_sphere.c`
+    - [Mesh Instance Selection](../examples/features/selection-mesh-instances.md) - Source: `examples/c/features/selection_mesh_instances.c`

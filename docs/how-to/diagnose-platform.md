@@ -279,8 +279,8 @@ public report. Reduce logs to the commands, versions, detected options, and firs
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - Canonical complete example: [Basic Scene](../examples/features/basic-scene.md) - Source: `examples/c/features/basic_scene.c`
     - Start page: [Install](../start/install.md)
     - Reference: [Platform support](../reference/platform-support.md)
     - Reference: [Build options](../reference/build-options.md)
-    - [Offscreen Capture](../examples/gallery/runtime/runtime_offscreen_capture.md) - Source: `examples/c/runtime/offscreen_capture.c`
+    - [Offscreen Capture](../examples/runtime/offscreen-capture.md) - Source: `examples/c/runtime/offscreen_capture.c`

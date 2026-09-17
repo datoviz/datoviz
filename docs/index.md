@@ -13,7 +13,7 @@ Datoviz provides direct control over scene objects and rendering rather than a h
 </nav>
 
 <div class="dvz-gallery-media dvz-gallery-media--video dvz-home-hero" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_protein/" aria-label="Open the protein visualization example"></a>
+  <a class="dvz-gallery-media-target" href="examples/showcases/protein/" aria-label="Open the protein visualization example"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Interactive 3D protein visualization rendered with Datoviz" loading="eager">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true" poster="assets/gallery/v0.4/showcases/showcases_protein.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
@@ -26,43 +26,43 @@ Datoviz provides direct control over scene objects and rendering rather than a h
 <div class="dvz-showcase-grid">
 <article class="dvz-showcase">
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_point_cloud/" aria-label="Open the point cloud example"></a>
+  <a class="dvz-gallery-media-target" href="examples/showcases/point-cloud/" aria-label="Open the point cloud example"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="A dense colorized outdoor point cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true" poster="assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
   </video>
 </div>
-<h3><a href="examples/gallery/showcases/showcases_point_cloud/">Point cloud</a></h3>
+<h3><a href="examples/showcases/point-cloud/">Point cloud</a></h3>
 <p>Large colorized LiDAR data with fly navigation and depth enhancement.</p>
 </article>
 <article class="dvz-showcase">
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_cortical_activity/" aria-label="Open the human cortical activity example"></a>
+  <a class="dvz-gallery-media-target" href="examples/showcases/cortical-activity/" aria-label="Open the human cortical activity example"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human cortical activity projected onto a brain mesh" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true" poster="assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_cortical_activity.mp4" type="video/mp4">
   </video>
 </div>
-<h3><a href="examples/gallery/showcases/showcases_cortical_activity/">Human cortical activity</a></h3>
+<h3><a href="examples/showcases/cortical-activity/">Human cortical activity</a></h3>
 <p>Time-varying MEG activity projected onto a human cortical surface.</p>
 </article>
 <article class="dvz-showcase">
 <div class="dvz-gallery-media">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_scientific_plotting/" aria-label="Open the scientific plotting example"></a>
+  <a class="dvz-gallery-media-target" href="examples/showcases/scientific-plotting/" aria-label="Open the scientific plotting example"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_scientific_plotting.webp" alt="A scientific plotting workflow with histograms, traces, axes, and annotations" loading="lazy">
 </div>
-<h3><a href="examples/gallery/showcases/showcases_scientific_plotting/">Scientific plotting</a></h3>
+<h3><a href="examples/showcases/scientific-plotting/">Scientific plotting</a></h3>
 <p>Histograms, uncertainty bands, stacked traces, axes, and annotations.</p>
 </article>
 <article class="dvz-showcase">
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <a class="dvz-gallery-media-target" href="examples/gallery/showcases/showcases_textured_planet/" aria-label="Open the textured planets example"></a>
+  <a class="dvz-gallery-media-target" href="examples/showcases/textured-planet/" aria-label="Open the textured planets example"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Earth with orbital debris in a star field" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true" poster="assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp">
     <source data-src="assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
   </video>
 </div>
-<h3><a href="examples/gallery/showcases/showcases_textured_planet/">Textured planets</a></h3>
+<h3><a href="examples/showcases/textured-planet/">Textured planets</a></h3>
 <p>Textured worlds, orbital debris, and responsive 3D navigation.</p>
 </article>
 </div>

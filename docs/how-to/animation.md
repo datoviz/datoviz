@@ -22,9 +22,9 @@ then update only the state that changes.
 
 | Goal | Use | Canonical example |
 | --- | --- | --- |
-| CPU-updated visual attributes | Per-frame update or `dvz_anim_timer()` | [Timer Animation](../examples/gallery/features/features_timer_animation.md) |
-| Repeatable visual transform | Track plus `dvz_anim_visual_transform()` | [Animation Tracks](../examples/gallery/features/features_animation_tracks.md) |
-| Repeatable camera motion | Track plus `dvz_anim_camera_motion()` | [Animation Tracks](../examples/gallery/features/features_animation_tracks.md) |
+| CPU-updated visual attributes | Per-frame update or `dvz_anim_timer()` | [Timer Animation](../examples/features/timer-animation.md) |
+| Repeatable visual transform | Track plus `dvz_anim_visual_transform()` | [Animation Tracks](../examples/features/animation-tracks.md) |
+| Repeatable camera motion | Track plus `dvz_anim_camera_motion()` | [Animation Tracks](../examples/features/animation-tracks.md) |
 | Video or deterministic capture | Bounded frame loop and capture path | [Export videos](video-export.md) |
 
 On each frame, the scene clock supplies time to a timer or track. That mechanism changes retained
@@ -60,7 +60,7 @@ default timer mode runs on every scene frame. This function-body excerpt assumes
 `visual`, `positions`, and `n` state; its setup path returns `false` on failure.
 
 <figure class="dvz-output-example">
-  <a href="../../examples/gallery/features/features_timer_animation/">
+  <a href="../../examples/features/timer-animation/">
     <img src="../../assets/gallery/v0.4/features/features_timer_animation.webp"
          alt="Eight colored points following a sine curve in the timer animation example"
          loading="lazy">
@@ -68,7 +68,7 @@ default timer mode runs on every scene frame. This function-body excerpt assumes
   <figcaption>
     <strong>Timer-driven retained update.</strong> The same point visual receives new positions,
     colors, and sizes on each frame.
-    <a href="../../examples/gallery/features/features_timer_animation/">Open the timer animation
+    <a href="../../examples/features/timer-animation/">Open the timer animation
     example</a>.
   </figcaption>
 </figure>
@@ -133,14 +133,14 @@ can drive visual-local transforms or camera state.
   <figcaption>
     <strong>Track-based motion.</strong> One track rotates the cube while another moves the camera;
     the gallery page includes the moving preview and live WebGPU route.
-    <a href="../../examples/gallery/features/features_animation_tracks/">Open the animation tracks
+    <a href="../../examples/features/animation-tracks/">Open the animation tracks
     example</a>.
   </figcaption>
 </figure>
 
 Prerequisite: create `scene` and an attached `visual` first. The result is a retained visual-local
 rotation driven by the scene clock. These fragments omit app creation and cleanup; see the complete
-[Animation Tracks example](../examples/gallery/features/features_animation_tracks.md).
+[Animation Tracks example](../examples/features/animation-tracks.md).
 
 === "Python"
 
@@ -216,17 +216,17 @@ Use scene compute only when data should be written by a GPU compute pass and the
 rendering. This is not the default path for simple motion; most animations should update visual
 attributes or transforms.
 
-The [Compute Buffer Animation](../examples/gallery/features/features_compute_buffer_animation.md)
+The [Compute Buffer Animation](../examples/features/compute-buffer-animation.md)
 example is experimental because it exercises scene compute, storage buffers, and compute-to-render
 synchronization.
 
 ## Canonical examples
 
-- [Timer Animation](../examples/gallery/features/features_timer_animation.md) - retained point data
+- [Timer Animation](../examples/features/timer-animation.md) - retained point data
   updated on frames. Source: `examples/c/features/timer_animation.c`.
-- [Animation Tracks](../examples/gallery/features/features_animation_tracks.md) - retained visual
+- [Animation Tracks](../examples/features/animation-tracks.md) - retained visual
   transform and camera motion tracks. Source: `examples/c/features/animation_tracks.c`.
-- [Compute Buffer Animation](../examples/gallery/features/features_compute_buffer_animation.md) -
+- [Compute Buffer Animation](../examples/features/compute-buffer-animation.md) -
   experimental scene compute pass writing render-consumed data. Source:
   `examples/c/features/compute_buffer_animation.c`.
 

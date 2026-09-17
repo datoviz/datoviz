@@ -41,7 +41,7 @@ For example, a point visual might have one array for `"position"`, one for `"col
 
 ## Replace one attribute
 
-The snippets assume `visual` already has its initial point attributes. They replace its position and color arrays for the next rendered frame. See the complete [Visual Data Update example](../examples/gallery/features/features_update_visual_data.md) for setup.
+The snippets assume `visual` already has its initial point attributes. They replace its position and color arrays for the next rendered frame. See the complete [Visual Data Update example](../examples/features/update-visual-data.md) for setup.
 
 === "Python"
 
@@ -149,6 +149,6 @@ Image and volume data use sampled fields and textures. Keep the grid dimensions,
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Visual Data Update](../examples/gallery/features/features_update_visual_data.md) - Source: `examples/c/features/update_visual_data.c`
-    - [Partial Data Update](../examples/gallery/features/features_update_partial.md) - Source: `examples/c/features/update_partial.c`
-    - [Visual Visibility](../examples/gallery/features/features_visibility.md) - Source: `examples/c/features/visibility.c`
+    - Canonical complete example: [Visual Data Update](../examples/features/update-visual-data.md) - Source: `examples/c/features/update_visual_data.c`
+    - [Partial Data Update](../examples/features/update-partial.md) - Source: `examples/c/features/update_partial.c`
+    - [Visual Visibility](../examples/features/visibility.md) - Source: `examples/c/features/visibility.c`

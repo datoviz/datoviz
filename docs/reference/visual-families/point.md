@@ -8,9 +8,9 @@ Primitive: instanced screen-space quads.
 
 ## Preview And Links
 
-[![Point](../../assets/gallery/v0.4/visuals/visuals_point.webp)](../../examples/gallery/visuals/visuals_point.md)
+[![Point](../../assets/gallery/v0.4/visuals/visuals_point.webp)](../../examples/visuals/point.md)
 
-- Example: [Point](../../examples/gallery/visuals/visuals_point.md)
+- Example: [Point](../../examples/visuals/point.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Pixel](pixel.md), [Marker](marker.md), [Sphere](sphere.md), [Splat](splat.md)
 
@@ -56,7 +56,7 @@ still per-item and do not broadcast a one-row array.
 
 Create the visual, upload `position`, `color`, and `diameter_px` with
 `dvz_visual_set_data_many()`, optionally configure style/depth/alpha, then call
-`dvz_panel_add_visual()`. See the complete [C and Python example](../../examples/gallery/visuals/visuals_point.md).
+`dvz_panel_add_visual()`. See the complete [C and Python example](../../examples/visuals/point.md).
 
 ## Picking And Probing
 
@@ -73,7 +73,7 @@ Depth testing is a visual option; the example disables it for a 2D panzoom panel
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/point.c` |
-| Gallery | [Point](../../examples/gallery/visuals/visuals_point.md) |
+| Gallery | [Point](../../examples/visuals/point.md) |
 | Build | `just example-c visuals/point` |
 | Smoke | `./build/examples/c/visuals/point --png` |
 | Validation | `smoke+screenshot` |

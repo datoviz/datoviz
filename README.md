@@ -9,11 +9,11 @@
 dense points, images, meshes, volumes, annotations, linked panels, or custom scientific scenes need
 more control and performance than an ordinary plotting library provides.
 
-[![Interactive 3D protein visualization rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_protein.poster.webp)](https://datoviz.org/examples/gallery/showcases/showcases_protein/)
+[![Interactive 3D protein visualization rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_protein.poster.webp)](https://datoviz.org/examples/showcases/protein/)
 
-| [![Allen mouse brain volume rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp)](https://datoviz.org/examples/gallery/showcases/showcases_brain_volume/) | [![Large colorized LiDAR point cloud rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp)](https://datoviz.org/examples/gallery/showcases/showcases_point_cloud/) | [![U.S. state population choropleth rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_choropleth.webp)](https://datoviz.org/examples/gallery/showcases/showcases_choropleth/) |
+| [![Allen mouse brain volume rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_brain_volume.poster.webp)](https://datoviz.org/examples/showcases/brain-volume/) | [![Large colorized LiDAR point cloud rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp)](https://datoviz.org/examples/showcases/point-cloud/) | [![U.S. state population choropleth rendered with Datoviz](https://datoviz.org/assets/gallery/v0.4/showcases/showcases_choropleth.webp)](https://datoviz.org/examples/showcases/choropleth/) |
 | --- | --- | --- |
-| [Allen mouse brain](https://datoviz.org/examples/gallery/showcases/showcases_brain_volume/) | [Point cloud](https://datoviz.org/examples/gallery/showcases/showcases_point_cloud/) | [U.S. state choropleth](https://datoviz.org/examples/gallery/showcases/showcases_choropleth/) |
+| [Allen mouse brain](https://datoviz.org/examples/showcases/brain-volume/) | [Point cloud](https://datoviz.org/examples/showcases/point-cloud/) | [U.S. state choropleth](https://datoviz.org/examples/showcases/choropleth/) |
 
 **[Browse the full gallery →](https://datoviz.org/examples/)**
 

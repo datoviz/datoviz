@@ -92,7 +92,7 @@ the object is more important than a fixed horizon.
   </div>
   <figcaption>
     <strong>Arcball.</strong> The object can rotate freely around its center, including roll.
-    <a href="../../examples/gallery/features/features_controller_arcball/">Open the example</a>.
+    <a href="../../examples/features/controller-arcball/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -146,7 +146,7 @@ to read.
   </div>
   <figcaption>
     <strong>Turntable.</strong> Orbit motion preserves a stable vertical direction and horizon.
-    <a href="../../examples/gallery/features/features_controller_turntable/">Open the example</a>.
+    <a href="../../examples/features/controller-turntable/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -189,7 +189,7 @@ turntable because speed is expressed in scene units.
   </div>
   <figcaption>
     <strong>Fly.</strong> The camera translates through the scene instead of orbiting one object.
-    <a href="../../examples/gallery/features/features_controller_fly/">Open the example</a>.
+    <a href="../../examples/features/controller-fly/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -325,8 +325,8 @@ Use `--png` for a non-interactive smoke run, then use `--live` to validate the a
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Arcball Controller](../examples/gallery/features/features_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
-    - [Fly Controller](../examples/gallery/features/features_controller_fly.md) - Source: `examples/c/features/controller_fly.c`
-    - [Turntable Controller](../examples/gallery/features/features_controller_turntable.md) - Source: `examples/c/features/controller_turntable.c`
-    - [Orientation Gizmo](../examples/gallery/features/features_orientation_gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`
-    - [Protein](../examples/gallery/showcases/showcases_protein.md) - Source: `examples/c/showcases/protein.c`
+    - Canonical complete example: [Arcball Controller](../examples/features/controller-arcball.md) - Source: `examples/c/features/controller_arcball.c`
+    - [Fly Controller](../examples/features/controller-fly.md) - Source: `examples/c/features/controller_fly.c`
+    - [Turntable Controller](../examples/features/controller-turntable.md) - Source: `examples/c/features/controller_turntable.c`
+    - [Orientation Gizmo](../examples/features/orientation-gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`
+    - [Protein](../examples/showcases/protein.md) - Source: `examples/c/showcases/protein.c`

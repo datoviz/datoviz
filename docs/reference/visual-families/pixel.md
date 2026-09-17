@@ -8,9 +8,9 @@ Primitive: instanced screen-space quads.
 
 ## Preview And Links
 
-[![Pixel](../../assets/gallery/v0.4/visuals/visuals_pixel.webp)](../../examples/gallery/visuals/visuals_pixel.md)
+[![Pixel](../../assets/gallery/v0.4/visuals/visuals_pixel.webp)](../../examples/visuals/pixel.md)
 
-- Example: [Pixel](../../examples/gallery/visuals/visuals_pixel.md)
+- Example: [Pixel](../../examples/visuals/pixel.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Point](point.md), [Marker](marker.md), [Image](image.md), [Labels](labels.md)
 
@@ -50,7 +50,7 @@ regular grid.
 ## Verified Usage Pattern
 
 Upload `position`, `color`, and `pixel_size_px` together, then attach the visual to the panel. See
-the complete [C and Python example](../../examples/gallery/visuals/visuals_pixel.md).
+the complete [C and Python example](../../examples/visuals/pixel.md).
 
 ## Picking And Probing
 
@@ -67,7 +67,7 @@ disables depth testing for a 2D panzoom panel.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/pixel.c` |
-| Gallery | [Pixel](../../examples/gallery/visuals/visuals_pixel.md) |
+| Gallery | [Pixel](../../examples/visuals/pixel.md) |
 | Build | `just example-c visuals/pixel` |
 | Smoke | `./build/examples/c/visuals/pixel --png` |
 | Validation | `smoke+screenshot` |

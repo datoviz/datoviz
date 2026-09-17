@@ -209,6 +209,6 @@ browser support problem from a Datoviz scene or renderer issue.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Basic Scene](../examples/gallery/features/features_basic_scene.md) - Source: `examples/c/features/basic_scene.c`
+    - Canonical complete example: [Basic Scene](../examples/features/basic-scene.md) - Source: `examples/c/features/basic_scene.c`
     - Gallery: [WebGPU Matrix](../examples/webgpu-matrix.md)
     - Manifest: `examples/c/MANIFEST.yaml`

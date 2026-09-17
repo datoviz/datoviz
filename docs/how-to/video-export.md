@@ -207,5 +207,5 @@ project explicitly stores them as documentation assets.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Video Export](../examples/gallery/runtime/runtime_video_export.md) - Source: `examples/c/runtime/video_export.c`
-    - [Timer Animation](../examples/gallery/features/features_timer_animation.md) - Source: `examples/c/features/timer_animation.c`
+    - Canonical complete example: [Video Export](../examples/runtime/video-export.md) - Source: `examples/c/runtime/video_export.c`
+    - [Timer Animation](../examples/features/timer-animation.md) - Source: `examples/c/features/timer_animation.c`

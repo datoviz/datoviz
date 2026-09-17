@@ -134,8 +134,8 @@ colorbar.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Colorbar](../examples/gallery/features/features_colorbar.md) - Source: `examples/c/features/colorbar.c`
-    - [Scale Bar](../examples/gallery/features/features_scalebar.md) - Source: `examples/c/features/scalebar.c`
-    - [Categorical Legend](../examples/gallery/features/features_legend_categorical.md) - Source: `examples/c/features/legend_categorical.c`
-    - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
-    - [Scale-Aware Measurement Workflow](../examples/gallery/showcases/showcases_scalebar_measurement.md) - Source: `examples/c/showcases/scalebar_measurement.c`
+    - Canonical complete example: [Colorbar](../examples/features/colorbar.md) - Source: `examples/c/features/colorbar.c`
+    - [Scale Bar](../examples/features/scalebar.md) - Source: `examples/c/features/scalebar.c`
+    - [Categorical Legend](../examples/features/legend-categorical.md) - Source: `examples/c/features/legend_categorical.c`
+    - [Linked Probe With Colorbar](../examples/showcases/linked-probe-colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - [Scale-Aware Measurement Workflow](../examples/showcases/scalebar-measurement.md) - Source: `examples/c/showcases/scalebar_measurement.c`

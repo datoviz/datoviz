@@ -10,7 +10,7 @@ Browse examples for opening windows, rendering offscreen, recording, replaying, 
 
 <div class="card" markdown="1">
 
-### [GLFW App](gallery/runtime/runtime_app_glfw.md)
+### [GLFW App](runtime/app-glfw.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for GLFW App"><span>No screenshot</span></div>
 
@@ -22,7 +22,7 @@ This example opens a native GLFW window for a small point scene.
 
 <div class="card" markdown="1">
 
-### [Multi Window](gallery/runtime/runtime_multi_window.md)
+### [Multi Window](runtime/multi-window.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Multi Window"><span>No screenshot</span></div>
 
@@ -40,9 +40,9 @@ This example drives two independent native GLFW windows from one Datoviz app.
 
 <div class="card" markdown="1">
 
-### [Offscreen Capture](gallery/runtime/runtime_offscreen_capture.md)
+### [Offscreen Capture](runtime/offscreen-capture.md)
 
-[![Offscreen Capture](../assets/gallery/v0.4/runtime/runtime_offscreen_capture.webp)](gallery/runtime/runtime_offscreen_capture.md)
+[![Offscreen Capture](../assets/gallery/v0.4/runtime/runtime_offscreen_capture.webp)](runtime/offscreen-capture.md)
 
 `runtime`
 
@@ -52,7 +52,7 @@ This example renders a point scene offscreen and writes one PNG.
 
 <div class="card" markdown="1">
 
-### [Video Export](gallery/runtime/runtime_video_export.md)
+### [Video Export](runtime/video-export.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Video Export"><span>No screenshot</span></div>
 
@@ -64,7 +64,7 @@ This example records a deterministic offscreen point animation to video.
 
 <div class="card" markdown="1">
 
-### [Record Replay](gallery/runtime/runtime_record_replay.md)
+### [Record Replay](runtime/record-replay.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Record Replay"><span>No screenshot</span></div>
 

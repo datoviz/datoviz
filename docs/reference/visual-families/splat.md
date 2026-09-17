@@ -8,9 +8,9 @@ Primitive: screen-space Gaussian quads.
 
 ## Preview And Links
 
-[![Splat](../../assets/gallery/v0.4/visuals/visuals_splat.webp)](../../examples/gallery/visuals/visuals_splat.md)
+[![Splat](../../assets/gallery/v0.4/visuals/visuals_splat.webp)](../../examples/visuals/splat.md)
 
-- Example: [Splat](../../examples/gallery/visuals/visuals_splat.md)
+- Example: [Splat](../../examples/visuals/splat.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [control depth, blending, and transparency](../../how-to/depth-blending.md)
 - Related: [Point](point.md), [Sphere](sphere.md), [Mesh](mesh.md)
 
@@ -55,7 +55,7 @@ broadcast.
 ## Verified Usage Pattern
 
 Upload all four arrays with `dvz_visual_set_data_many()`, then attach the visual. The
-[canonical C example](../../examples/gallery/visuals/visuals_splat.md) is the executable source.
+[canonical C example](../../examples/visuals/splat.md) is the executable source.
 
 ## Picking And Probing
 
@@ -73,7 +73,7 @@ as a first example.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/splat.c` |
-| Gallery | [Splat](../../examples/gallery/visuals/visuals_splat.md) |
+| Gallery | [Splat](../../examples/visuals/splat.md) |
 | Build | `just example-c visuals/splat` |
 | Smoke | `./build/examples/c/visuals/splat --png` |
 | Validation | `smoke+screenshot` |

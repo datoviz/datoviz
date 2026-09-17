@@ -31,7 +31,7 @@ or controller state automatically.
 
 Prerequisite: create one `figure` and two prepared visuals. The result is a one-row, two-column
 figure with one visual per panel. These are fragments; see the complete
-[Multiple Panels example](../examples/gallery/features/features_panel_multi.md).
+[Multiple Panels example](../examples/features/panel-multi.md).
 
 === "Python"
 
@@ -184,6 +184,6 @@ the panels. Prefer keeping the grid alive for ordinary retained layouts.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Panel Grid](../examples/gallery/features/features_panel_grid.md) - Source: `examples/c/features/panel_grid.c`
-    - [Multiple Panels](../examples/gallery/features/features_panel_multi.md) - Source: `examples/c/features/panel_multi.c`
-    - [Linked Panels](../examples/gallery/features/features_panel_linked.md) - Source: `examples/c/features/panel_linked.c`
+    - Canonical complete example: [Panel Grid](../examples/features/panel-grid.md) - Source: `examples/c/features/panel_grid.c`
+    - [Multiple Panels](../examples/features/panel-multi.md) - Source: `examples/c/features/panel_multi.c`
+    - [Linked Panels](../examples/features/panel-linked.md) - Source: `examples/c/features/panel_linked.c`

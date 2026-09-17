@@ -55,7 +55,7 @@ angles; one static viewpoint can hide order-dependent transparency errors.
   <figcaption>
     <strong>Depth testing.</strong> Rotation makes the correct and incorrect occlusion order visible
     from several viewpoints.
-    <a href="../../examples/gallery/features/features_technique_depth_test/">Open the example</a>.
+    <a href="../../examples/features/technique-depth-test/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -101,7 +101,7 @@ interact:
   <figcaption>
     <strong>Transparency order.</strong> A moving view exposes differences between source-over,
     weighted blended, and depth-peel results.
-    <a href="../../examples/gallery/features/features_technique_transparency/">Open the example</a>.
+    <a href="../../examples/features/technique-transparency/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -136,7 +136,7 @@ metric is normalized clip depth after the scene transform. Pass `NULL` to
   <figcaption>
     <strong>Depth cue.</strong> Rotation shows how distance-dependent fading reinforces spatial
     ordering without changing geometry.
-    <a href="../../examples/gallery/features/features_technique_depth_cue/">Open the example</a>.
+    <a href="../../examples/features/technique-depth-cue/">Open the example</a>.
   </figcaption>
 </figure>
 
@@ -167,17 +167,17 @@ technique for the experimental browser path.
 
 ## Complete examples
 
-- [Depth Test Toggle](../examples/gallery/features/features_technique_depth_test.md) - compare overlapping
+- [Depth Test Toggle](../examples/features/technique-depth-test.md) - compare overlapping
   3D points with depth testing on and off. Source:
   `examples/c/features/technique_depth_test.c`.
-- [Alpha Blending](../examples/gallery/features/features_alpha_blending.md) - ordinary source-over alpha
+- [Alpha Blending](../examples/features/alpha-blending.md) - ordinary source-over alpha
   blending. Source: `examples/c/features/alpha_blending.c`.
-- [Transparency Order](../examples/gallery/features/features_technique_transparency.md) - compare
+- [Transparency Order](../examples/features/technique-transparency.md) - compare
   source-over, WBOIT, and depth-peel transparency on overlapping cubes. Source:
   `examples/c/features/technique_transparency.c`.
-- [Depth Cue](../examples/gallery/features/features_technique_depth_cue.md) - depth-dependent fading on a
+- [Depth Cue](../examples/features/technique-depth-cue.md) - depth-dependent fading on a
   3D sphere lattice. Source: `examples/c/features/technique_depth_cue.c`.
-- [Multisample Antialiasing](../examples/gallery/features/features_technique_msaa.md) - use MSAA for edge
+- [Multisample Antialiasing](../examples/features/technique-msaa.md) - use MSAA for edge
   quality. Source: `examples/c/features/technique_msaa.c`.
 
 

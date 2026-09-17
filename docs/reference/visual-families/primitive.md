@@ -8,9 +8,9 @@ Primitive: selected by `DvzPrimitiveTopology` at construction.
 
 ## Preview And Links
 
-[![Primitive](../../assets/gallery/v0.4/visuals/visuals_primitive.webp)](../../examples/gallery/visuals/visuals_primitive.md)
+[![Primitive](../../assets/gallery/v0.4/visuals/visuals_primitive.webp)](../../examples/visuals/primitive.md)
 
-- Example: [Primitive](../../examples/gallery/visuals/visuals_primitive.md)
+- Example: [Primitive](../../examples/visuals/primitive.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Mesh](mesh.md), [Path](path.md), [Segment](segment.md)
 
@@ -55,7 +55,7 @@ broadcast.
 
 Create the primitive with an explicit topology, upload matching `position` and `color` arrays,
 optionally add normals/indices, then attach it. See the complete
-[C and Python example](../../examples/gallery/visuals/visuals_primitive.md).
+[C and Python example](../../examples/visuals/primitive.md).
 
 ## Picking And Probing
 
@@ -73,7 +73,7 @@ Native and WebGPU paths are active for the canonical triangle-list route. Verify
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/primitive.c` |
-| Gallery | [Primitive](../../examples/gallery/visuals/visuals_primitive.md) |
+| Gallery | [Primitive](../../examples/visuals/primitive.md) |
 | Build | `just example-c visuals/primitive` |
 | Smoke | `./build/examples/c/visuals/primitive --png` |
 | Validation | `smoke+screenshot` |

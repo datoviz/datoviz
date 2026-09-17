@@ -39,7 +39,7 @@ A camera descriptor defines the initial view and projection:
 | `projection.near_clip`, `projection.far_clip` | Clipping planes. Choose values that enclose the data without making the depth range needlessly large. |
 
 <figure class="dvz-output-example">
-  <a href="../../examples/gallery/features/features_camera_manual/">
+  <a href="../../examples/features/camera-manual/">
     <img src="../../assets/gallery/v0.4/features/features_camera_manual.webp"
          alt="A three-dimensional scene rendered from an explicitly configured camera"
          loading="lazy">
@@ -47,7 +47,7 @@ A camera descriptor defines the initial view and projection:
   <figcaption>
     <strong>Explicit camera.</strong> Eye, target, up direction, projection, and clipping determine
     the first rendered view.
-    <a href="../../examples/gallery/features/features_camera_manual/">Open the manual camera example</a>.
+    <a href="../../examples/features/camera-manual/">Open the manual camera example</a>.
   </figcaption>
 </figure>
 
@@ -141,5 +141,5 @@ scale comparisons.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Arcball Controller](../examples/gallery/features/features_controller_arcball.md) - Source: `examples/c/features/controller_arcball.c`
-    - [Orientation Gizmo](../examples/gallery/features/features_orientation_gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`
+    - Canonical complete example: [Arcball Controller](../examples/features/controller-arcball.md) - Source: `examples/c/features/controller_arcball.c`
+    - [Orientation Gizmo](../examples/features/orientation-gizmo.md) - Source: `examples/c/features/orientation_gizmo.c`

@@ -15,7 +15,7 @@ Add 2D axes, ticks, grid lines, and labels to a panel.
 - A figure needs axis titles, grid lines, or tuned tick density.
 - You need a plotting-style panel rather than a bare scene view.
 
-Use [reference grids](../examples/gallery/features/features_reference_grid.md) or orientation gizmos
+Use [reference grids](../examples/features/reference-grid.md) or orientation gizmos
 for 3D spatial context. The retained axis helpers described here are for panel-owned 2D X/Y axes.
 
 ## Minimal sequence
@@ -25,17 +25,17 @@ parts.
 
 Prerequisite: create a 2D `panel` and its data visual first. The result is panel-owned X/Y axes
 with grid lines and labels. These are setup fragments; see the complete
-[Path With 2D Axes example](../examples/gallery/features/features_axes_2d.md).
+[Path With 2D Axes example](../examples/features/axes-2d.md).
 
 <figure class="dvz-output-example">
-  <a href="../../examples/gallery/features/features_axes_2d/">
+  <a href="../../examples/features/axes-2d/">
     <img src="../../assets/gallery/v0.4/features/features_axes_2d.webp"
          alt="A colored 2D path framed by labeled axes, ticks, and grid lines" loading="lazy">
   </a>
   <figcaption>
     <strong>Panel-owned axes.</strong> Ticks, labels, and grid lines follow the same data domain as
     the path.
-    <a href="../../examples/gallery/features/features_axes_2d/">Open the axes example</a>.
+    <a href="../../examples/features/axes-2d/">Open the axes example</a>.
   </figcaption>
 </figure>
 
@@ -101,13 +101,13 @@ preserves that endpoint order after View2D fitting and panzoom.
 Use the default tick policy for ordinary plots. Tune it when labels collide or the panel is small.
 
 <figure class="dvz-output-example">
-  <a href="../../examples/gallery/features/features_axis_labels/">
+  <a href="../../examples/features/axis-labels/">
     <img src="../../assets/gallery/v0.4/features/features_axis_labels.webp"
          alt="A plot with explicit axis titles, tick labels, and reserved margins" loading="lazy">
   </a>
   <figcaption>
     <strong>Labels and margins.</strong> Reserve enough plot space for axis titles and tick labels.
-    <a href="../../examples/gallery/features/features_axis_labels/">Open the labels example</a>.
+    <a href="../../examples/features/axis-labels/">Open the labels example</a>.
   </figcaption>
 </figure>
 
@@ -182,13 +182,13 @@ browser support matters, especially if the scene also uses panzoom or text-heavy
 
 ## Canonical examples
 
-- [Path With 2D Axes](../examples/gallery/features/features_axes_2d.md) - minimal retained 2D axes and
+- [Path With 2D Axes](../examples/features/axes-2d.md) - minimal retained 2D axes and
   tick labels on a path plot. Source: `examples/c/features/axes_2d.c`.
-- [Axis Labels](../examples/gallery/features/features_axis_labels.md) - axis titles, tick-label
+- [Axis Labels](../examples/features/axis-labels.md) - axis titles, tick-label
   spacing, and plot margins. Source: `examples/c/features/axis_labels.c`.
-- [Linked Panels With Axes](../examples/gallery/showcases/showcases_panel_linked_axes.md) - linked
+- [Linked Panels With Axes](../examples/showcases/panel-linked-axes.md) - linked
   panels, axes, and panzoom coordination. Source: `examples/c/showcases/panel_linked_axes.c`.
-- [Scientific Plotting Workflow](../examples/gallery/showcases/showcases_scientific_plotting.md) -
+- [Scientific Plotting Workflow](../examples/showcases/scientific-plotting.md) -
   composed plotting workflow using axes as one part of a larger layout.
 
 ## Important details

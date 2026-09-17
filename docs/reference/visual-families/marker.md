@@ -8,9 +8,9 @@ Primitive: instanced screen-space quads.
 
 ## Preview And Links
 
-[![Marker](../../assets/gallery/v0.4/visuals/visuals_marker.webp)](../../examples/gallery/visuals/visuals_marker.md)
+[![Marker](../../assets/gallery/v0.4/visuals/visuals_marker.webp)](../../examples/visuals/marker.md)
 
-- Example: [Marker](../../examples/gallery/visuals/visuals_marker.md)
+- Example: [Marker](../../examples/visuals/marker.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Point](point.md), [Pixel](pixel.md), [Glyph](glyph.md), [Text](text.md)
 
@@ -66,7 +66,7 @@ items.
 ## Verified Usage Pattern
 
 Upload all five required arrays together using either `shape` or `symbol`, then attach the visual.
-See the complete [C and Python example](../../examples/gallery/visuals/visuals_marker.md).
+See the complete [C and Python example](../../examples/visuals/marker.md).
 
 ## Backend Notes
 
@@ -78,7 +78,7 @@ screen diameter_px unless the data is updated.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/marker.c` |
-| Gallery | [Marker](../../examples/gallery/visuals/visuals_marker.md) |
+| Gallery | [Marker](../../examples/visuals/marker.md) |
 | Build | `just example-c visuals/marker` |
 | Smoke | `./build/examples/c/visuals/marker --png` |
 | Validation | `smoke+screenshot` |

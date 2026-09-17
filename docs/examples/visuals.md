@@ -10,9 +10,9 @@ Browse one focused example per visual family or composite.
 
 <div class="card" markdown="1">
 
-### [Point](gallery/visuals/visuals_point.md)
+### [Point](visuals/point.md)
 
-[![Point](../assets/gallery/v0.4/visuals/visuals_point.webp)](gallery/visuals/visuals_point.md)
+[![Point](../assets/gallery/v0.4/visuals/visuals_point.webp)](visuals/point.md)
 
 `visuals`<br><span>`point`, `panzoom`, `capture`</span>
 
@@ -22,9 +22,9 @@ This example renders a 2D scatter plot with per-point color and diameter.
 
 <div class="card" markdown="1">
 
-### [Pixel](gallery/visuals/visuals_pixel.md)
+### [Pixel](visuals/pixel.md)
 
-[![Pixel](../assets/gallery/v0.4/visuals/visuals_pixel.webp)](gallery/visuals/visuals_pixel.md)
+[![Pixel](../assets/gallery/v0.4/visuals/visuals_pixel.webp)](visuals/pixel.md)
 
 `visuals`<br><span>`pixel`, `panzoom`, `capture`</span>
 
@@ -34,9 +34,9 @@ This example renders a regular grid of independent screen-aligned pixels.
 
 <div class="card" markdown="1">
 
-### [Marker](gallery/visuals/visuals_marker.md)
+### [Marker](visuals/marker.md)
 
-[![Marker](../assets/gallery/v0.4/visuals/visuals_marker.webp)](gallery/visuals/visuals_marker.md)
+[![Marker](../assets/gallery/v0.4/visuals/visuals_marker.webp)](visuals/marker.md)
 
 `visuals`<br><span>`marker`, `panzoom`, `capture`</span>
 
@@ -46,9 +46,9 @@ This example compares marker symbols, sizes, strokes, fills, and rotations.
 
 <div class="card" markdown="1">
 
-### [Splat](gallery/visuals/visuals_splat.md)
+### [Splat](visuals/splat.md)
 
-[![Splat](../assets/gallery/v0.4/visuals/visuals_splat.webp)](gallery/visuals/visuals_splat.md)
+[![Splat](../assets/gallery/v0.4/visuals/visuals_splat.webp)](visuals/splat.md)
 
 `experimental` `visuals`<br><span>`splat`, `panzoom`, `capture`</span>
 
@@ -64,9 +64,9 @@ This example renders Gaussian splats as translucent ellipses.
 
 <div class="card" markdown="1">
 
-### [Segment](gallery/visuals/visuals_segment.md)
+### [Segment](visuals/segment.md)
 
-[![Segment](../assets/gallery/v0.4/visuals/visuals_segment.webp)](gallery/visuals/visuals_segment.md)
+[![Segment](../assets/gallery/v0.4/visuals/visuals_segment.webp)](visuals/segment.md)
 
 `visuals`<br><span>`segment`, `panzoom`, `capture`</span>
 
@@ -76,9 +76,9 @@ This example draws independent line segments with different cap styles.
 
 <div class="card" markdown="1">
 
-### [Path](gallery/visuals/visuals_path.md)
+### [Path](visuals/path.md)
 
-[![Path](../assets/gallery/v0.4/visuals/visuals_path.webp)](gallery/visuals/visuals_path.md)
+[![Path](../assets/gallery/v0.4/visuals/visuals_path.webp)](visuals/path.md)
 
 `visuals`<br><span>`path`, `panzoom`, `capture`</span>
 
@@ -88,9 +88,9 @@ This example draws several continuous signals with one path visual.
 
 <div class="card" markdown="1">
 
-### [Vector](gallery/visuals/visuals_vector.md)
+### [Vector](visuals/vector.md)
 
-[![Vector](../assets/gallery/v0.4/visuals/visuals_vector.webp)](gallery/visuals/visuals_vector.md)
+[![Vector](../assets/gallery/v0.4/visuals/visuals_vector.webp)](visuals/vector.md)
 
 `visuals`<br><span>`vector`, `path`, `panzoom`, `capture`</span>
 
@@ -100,9 +100,9 @@ This example compares straight vector arrows with curved vector paths.
 
 <div class="card" markdown="1">
 
-### [Primitive](gallery/visuals/visuals_primitive.md)
+### [Primitive](visuals/primitive.md)
 
-[![Primitive](../assets/gallery/v0.4/visuals/visuals_primitive.webp)](gallery/visuals/visuals_primitive.md)
+[![Primitive](../assets/gallery/v0.4/visuals/visuals_primitive.webp)](visuals/primitive.md)
 
 `visuals`<br><span>`primitive`, `panzoom`, `capture`</span>
 
@@ -118,9 +118,9 @@ This example compares basic primitive topologies.
 
 <div class="card" markdown="1">
 
-### [Image](gallery/visuals/visuals_image.md)
+### [Image](visuals/image.md)
 
-[![Image](../assets/gallery/v0.4/visuals/visuals_image.webp)](gallery/visuals/visuals_image.md)
+[![Image](../assets/gallery/v0.4/visuals/visuals_image.webp)](visuals/image.md)
 
 `visuals`<br><span>`image`, `sampled-field`, `panzoom`, `capture`</span>
 
@@ -130,9 +130,9 @@ This example displays a generated scalar field as a 2D image.
 
 <div class="card" markdown="1">
 
-### [RGBA Image](gallery/visuals/visuals_image_rgba.md)
+### [RGBA Image](visuals/image-rgba.md)
 
-[![RGBA Image](../assets/gallery/v0.4/visuals/visuals_image_rgba.webp)](gallery/visuals/visuals_image_rgba.md)
+[![RGBA Image](../assets/gallery/v0.4/visuals/visuals_image_rgba.webp)](visuals/image-rgba.md)
 
 `visuals`<br><span>`image`, `sampled-field`, `rgba8`, `alpha-blending`, `panzoom`, ...</span>
 
@@ -142,9 +142,9 @@ This example displays a generated RGBA image as a 2D sampled field.
 
 <div class="card" markdown="1">
 
-### [Text](gallery/visuals/visuals_text.md)
+### [Text](visuals/text.md)
 
-[![Text](../assets/gallery/v0.4/visuals/visuals_text.webp)](gallery/visuals/visuals_text.md)
+[![Text](../assets/gallery/v0.4/visuals/visuals_text.webp)](visuals/text.md)
 
 `visuals`<br><span>`text`, `panzoom`, `capture`</span>
 
@@ -154,9 +154,9 @@ This example places semantic text items in data coordinates.
 
 <div class="card" markdown="1">
 
-### [Font Atlas Glyphs](gallery/visuals/visuals_glyph.md)
+### [Font Atlas Glyphs](visuals/glyph.md)
 
-[![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visuals_glyph.webp)](gallery/visuals/visuals_glyph.md)
+[![Font Atlas Glyphs](../assets/gallery/v0.4/visuals/visuals_glyph.webp)](visuals/glyph.md)
 
 `experimental` `visuals`<br><span>`glyph`, `font-atlas`, `texture-atlas`, `sdf`, `panzoom`, ...</span>
 
@@ -166,9 +166,9 @@ This example renders text by submitting low-level glyph atlas quads directly.
 
 <div class="card" markdown="1">
 
-### [Labels](gallery/visuals/visuals_labels.md)
+### [Labels](visuals/labels.md)
 
-[![Labels](../assets/gallery/v0.4/visuals/visuals_labels.webp)](gallery/visuals/visuals_labels.md)
+[![Labels](../assets/gallery/v0.4/visuals/visuals_labels.webp)](visuals/labels.md)
 
 `visuals`<br><span>`labels`, `categorical-scale`, `panzoom`, `capture`</span>
 
@@ -184,9 +184,9 @@ This example turns an integer sampled field into categorical image labels.
 
 <div class="card" markdown="1">
 
-### [Mesh](gallery/visuals/visuals_mesh.md)
+### [Mesh](visuals/mesh.md)
 
-[![Mesh](../assets/gallery/v0.4/visuals/visuals_mesh.webp)](gallery/visuals/visuals_mesh.md)
+[![Mesh](../assets/gallery/v0.4/visuals/visuals_mesh.webp)](visuals/mesh.md)
 
 `visuals`<br><span>`mesh`, `indexed-geometry`, `arcball`, `capture`</span>
 
@@ -196,9 +196,9 @@ This example renders a lit indexed cube mesh in a 3D scene.
 
 <div class="card" markdown="1">
 
-### [Sphere](gallery/visuals/visuals_sphere.md)
+### [Sphere](visuals/sphere.md)
 
-[![Sphere](../assets/gallery/v0.4/visuals/visuals_sphere.webp)](gallery/visuals/visuals_sphere.md)
+[![Sphere](../assets/gallery/v0.4/visuals/visuals_sphere.webp)](visuals/sphere.md)
 
 `visuals`<br><span>`sphere`, `arcball`, `capture`</span>
 
@@ -208,9 +208,9 @@ This example displays a 3D cluster of raycast impostor spheres.
 
 <div class="card" markdown="1">
 
-### [Volume](gallery/visuals/visuals_volume.md)
+### [Volume](visuals/volume.md)
 
-[![Volume](../assets/gallery/v0.4/visuals/visuals_volume.webp)](gallery/visuals/visuals_volume.md)
+[![Volume](../assets/gallery/v0.4/visuals/visuals_volume.webp)](visuals/volume.md)
 
 `visuals`<br><span>`sampled-field`, `volume`, `transfer-function`, `boundary-box`, `arcball`, ...</span>
 
@@ -226,9 +226,9 @@ This example volume-renders a generated 3D gyroid scalar field.
 
 <div class="card" markdown="1">
 
-### [Polygon Composite](gallery/composites/composites_polygon.md)
+### [Polygon Composite](composites/polygon.md)
 
-[![Polygon Composite](../assets/gallery/v0.4/composites/composites_polygon.webp)](gallery/composites/composites_polygon.md)
+[![Polygon Composite](../assets/gallery/v0.4/composites/composites_polygon.webp)](composites/polygon.md)
 
 `composites`<br><span>`composite`, `polygon`, `polygon-set`, `holes`, `panzoom`</span>
 
@@ -238,9 +238,9 @@ This example compares one holed polygon with a multi-region polygon set.
 
 <div class="card" markdown="1">
 
-### [Graph Composite](gallery/composites/composites_graph.md)
+### [Graph Composite](composites/graph.md)
 
-[![Graph Composite](../assets/gallery/v0.4/composites/composites_graph.webp)](gallery/composites/composites_graph.md)
+[![Graph Composite](../assets/gallery/v0.4/composites/composites_graph.webp)](composites/graph.md)
 
 `composites`<br><span>`composite`, `graph`, `marker-nodes`, `bezier-edges`, `panzoom`</span>
 

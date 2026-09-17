@@ -8,9 +8,9 @@ Primitive: line strip or expanded screen-space stroke geometry.
 
 ## Preview And Links
 
-[![Path](../../assets/gallery/v0.4/visuals/visuals_path.webp)](../../examples/gallery/visuals/visuals_path.md)
+[![Path](../../assets/gallery/v0.4/visuals/visuals_path.webp)](../../examples/visuals/path.md)
 
-- Example: [Path](../../examples/gallery/visuals/visuals_path.md)
+- Example: [Path](../../examples/visuals/path.md)
 - How-to: [Choose a visual family](../../how-to/choose-a-visual-family.md), [add visuals to a panel](../../how-to/add-a-visual.md)
 - Related: [Segment](segment.md), [Vector](vector.md), [Primitive](primitive.md)
 
@@ -59,7 +59,7 @@ broadcasting.
 
 For the stroked route, upload `position`, `color`, and `stroke_width_px`, configure caps/joins and
 optional subpaths, then attach the visual. See the complete
-[C and Python example](../../examples/gallery/visuals/visuals_path.md).
+[C and Python example](../../examples/visuals/path.md).
 
 ## Picking And Probing
 
@@ -76,7 +76,7 @@ attributes are deferred.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/path.c` |
-| Gallery | [Path](../../examples/gallery/visuals/visuals_path.md) |
+| Gallery | [Path](../../examples/visuals/path.md) |
 | Build | `just example-c visuals/path` |
 | Smoke | `./build/examples/c/visuals/path --png` |
 | Validation | `smoke+screenshot` |

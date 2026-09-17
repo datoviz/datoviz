@@ -121,6 +121,6 @@ has superseded them.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Image Probe](../examples/gallery/features/features_image_probe.md) - Source: `examples/c/features/image_probe.c`
-    - [Label Probe](../examples/gallery/features/features_probe_labels.md) - Source: `examples/c/features/probe_labels.c`
-    - [Linked Probe With Colorbar](../examples/gallery/showcases/showcases_linked_probe_colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`
+    - Canonical complete example: [Image Probe](../examples/features/image-probe.md) - Source: `examples/c/features/image_probe.c`
+    - [Label Probe](../examples/features/probe-labels.md) - Source: `examples/c/features/probe_labels.c`
+    - [Linked Probe With Colorbar](../examples/showcases/linked-probe-colorbar.md) - Source: `examples/c/showcases/linked_probe_colorbar.c`

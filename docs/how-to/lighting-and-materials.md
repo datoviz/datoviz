@@ -36,7 +36,7 @@ sphere visuals. It is not a general style setter for every visual family.
   <figcaption>
     <strong>Lighting.</strong> Moving the view reveals how normals and light direction describe
     surface orientation.
-    <a href="../../examples/gallery/features/features_lighting/">Open the lighting example</a>.
+    <a href="../../examples/features/lighting/">Open the lighting example</a>.
   </figcaption>
 </figure>
 
@@ -72,7 +72,7 @@ tuning.
   <figcaption>
     <strong>Material comparison.</strong> Roughness, specular response, and related parameters remain
     readable as the mesh rotates.
-    <a href="../../examples/gallery/features/features_material_mesh/">Open the materials example</a>.
+    <a href="../../examples/features/material-mesh/">Open the materials example</a>.
   </figcaption>
 </figure>
 
@@ -181,6 +181,6 @@ When a lit surface looks flat, black, inverted, or unexpectedly glossy, check in
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Lighting](../examples/gallery/features/features_lighting.md) - Source: `examples/c/features/lighting.c`
-    - [Mesh Materials](../examples/gallery/features/features_material_mesh.md) - Source: `examples/c/features/material_mesh.c`
-    - [Textured Mesh](../examples/gallery/features/features_mesh_texture.md) - Source: `examples/c/features/mesh_texture.c`
+    - Canonical complete example: [Lighting](../examples/features/lighting.md) - Source: `examples/c/features/lighting.c`
+    - [Mesh Materials](../examples/features/material-mesh.md) - Source: `examples/c/features/material_mesh.c`
+    - [Textured Mesh](../examples/features/mesh-texture.md) - Source: `examples/c/features/mesh_texture.c`

@@ -171,6 +171,6 @@ path as rendering.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Coordinate System](../examples/gallery/features/features_coordinate_system.md) - Source: `examples/c/features/coordinate_system.c`
-    - [Panel View 2D](../examples/gallery/features/features_panel_view2d.md) - Source: `examples/c/features/panel_view2d.c`
-    - [User Scale](../examples/gallery/features/features_user_scale.md) - Source: `examples/c/features/user_scale.c`
+    - Canonical complete example: [Coordinate System](../examples/features/coordinate-system.md) - Source: `examples/c/features/coordinate_system.c`
+    - [Panel View 2D](../examples/features/panel-view2d.md) - Source: `examples/c/features/panel_view2d.c`
+    - [User Scale](../examples/features/user-scale.md) - Source: `examples/c/features/user_scale.c`

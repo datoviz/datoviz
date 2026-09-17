@@ -25,7 +25,7 @@ Choose the color path by what the data represents:
 
 ## Minimal call sequence
 
-The snippets assume an existing `scene`, `panel`, point `visual`, and C-contiguous position and scalar arrays. They map the scalar `"color"` attribute through Viridis over `[0, 1]`. For complete setup, see the [Scalar Color Scale example](../examples/gallery/features/features_colormap_scale.md).
+The snippets assume an existing `scene`, `panel`, point `visual`, and C-contiguous position and scalar arrays. They map the scalar `"color"` attribute through Viridis over `[0, 1]`. For complete setup, see the [Scalar Color Scale example](../examples/features/colormap-scale.md).
 
 ### Python
 
@@ -118,6 +118,6 @@ Use a categorical scale and legend when numeric category ids name classes rather
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Scalar Color Scale](../examples/gallery/features/features_colormap_scale.md) - Source: `examples/c/features/colormap_scale.c`
-    - [Colorbar](../examples/gallery/features/features_colorbar.md) - Source: `examples/c/features/colorbar.c`
-    - [Sampled Field Update](../examples/gallery/features/features_sampled_field_update.md) - Source: `examples/c/features/sampled_field_update.c`
+    - Canonical complete example: [Scalar Color Scale](../examples/features/colormap-scale.md) - Source: `examples/c/features/colormap_scale.c`
+    - [Colorbar](../examples/features/colorbar.md) - Source: `examples/c/features/colorbar.c`
+    - [Sampled Field Update](../examples/features/sampled-field-update.md) - Source: `examples/c/features/sampled_field_update.c`

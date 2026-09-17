@@ -37,7 +37,7 @@ Datoviz.
 
 <div class="card" markdown="1">
 
-### [Rotating Earth](../../examples/gallery/showcases/showcases_textured_planet.md)
+### [Rotating Earth](../../examples/showcases/textured-planet.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Rotating textured Earth rendered in 3D" loading="lazy">
@@ -51,7 +51,7 @@ Datoviz.
 
 <div class="card" markdown="1">
 
-### [GPU particle smoke](../../examples/gallery/showcases/showcases_gpu_particle_smoke.md)
+### [GPU particle smoke](../../examples/showcases/gpu-particle-smoke.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_gpu_particle_smoke.poster.webp" alt="GPU particle smoke simulation" loading="lazy">
@@ -65,7 +65,7 @@ Datoviz.
 
 <div class="card" markdown="1">
 
-### [Scientific 2D workflow](../../examples/gallery/showcases/showcases_panel_linked_axes.md)
+### [Scientific 2D workflow](../../examples/showcases/panel-linked-axes.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_panel_linked_axes.poster.webp" alt="Linked scientific 2D panels with axes and traces" loading="lazy">
@@ -79,7 +79,7 @@ Datoviz.
 
 <div class="card" markdown="1">
 
-### [Large point cloud](../../examples/gallery/showcases/showcases_point_cloud.md)
+### [Large point cloud](../../examples/showcases/point-cloud.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Large colored 3D point cloud" loading="lazy">

@@ -8,9 +8,9 @@ Primitive: box proxy with raymarching in the native runtime.
 
 ## Preview And Links
 
-[![Volume](../../assets/gallery/v0.4/visuals/visuals_volume.webp)](../../examples/gallery/visuals/visuals_volume.md)
+[![Volume](../../assets/gallery/v0.4/visuals/visuals_volume.webp)](../../examples/visuals/volume.md)
 
-- Example: [Volume](../../examples/gallery/visuals/visuals_volume.md)
+- Example: [Volume](../../examples/visuals/volume.md)
 - How-to: [Use sampled fields and textures](../../how-to/use-sampled-fields.md), [probe image or field values](../../how-to/probe-fields.md)
 - Related: [Image](image.md), [Labels](labels.md), [Mesh](mesh.md)
 
@@ -60,7 +60,7 @@ semantic, color role, and 3D dimension explicitly when inference is not the inte
 
 Create a 3D sampled field, create/bind the volume, configure transfer and bounds, attach it, and use
 a 3D camera/controller. The complete
-[C and Python example](../../examples/gallery/visuals/visuals_volume.md) demonstrates this route.
+[C and Python example](../../examples/visuals/volume.md) demonstrates this route.
 
 ## Picking And Probing
 
@@ -78,7 +78,7 @@ validated.
 | Field | Value |
 | --- | --- |
 | Source | `examples/c/visuals/volume.c` |
-| Gallery | [Volume](../../examples/gallery/visuals/visuals_volume.md) |
+| Gallery | [Volume](../../examples/visuals/volume.md) |
 | Build | `just example-c visuals/volume` |
 | Smoke | `./build/examples/c/visuals/volume --png` |
 | Validation | `smoke+screenshot` |

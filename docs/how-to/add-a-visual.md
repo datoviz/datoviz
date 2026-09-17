@@ -256,7 +256,7 @@ or update schedules.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Point](../examples/gallery/visuals/visuals_point.md) - Source: `examples/c/visuals/point.c`
-    - [Marker](../examples/gallery/visuals/visuals_marker.md) - Source: `examples/c/visuals/marker.c`
-    - [Mesh](../examples/gallery/visuals/visuals_mesh.md) - Source: `examples/c/visuals/mesh.c`
-    - [Mesh Instance Selection](../examples/gallery/features/features_selection_mesh_instances.md) - Source: `examples/c/features/selection_mesh_instances.c`
+    - Canonical complete example: [Point](../examples/visuals/point.md) - Source: `examples/c/visuals/point.c`
+    - [Marker](../examples/visuals/marker.md) - Source: `examples/c/visuals/marker.c`
+    - [Mesh](../examples/visuals/mesh.md) - Source: `examples/c/visuals/mesh.c`
+    - [Mesh Instance Selection](../examples/features/selection-mesh-instances.md) - Source: `examples/c/features/selection_mesh_instances.c`

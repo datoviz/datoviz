@@ -10,7 +10,7 @@ Browse advanced runtime and host-integration examples. These are useful after yo
 
 <div class="card" markdown="1">
 
-### [CUDA External Buffer](gallery/advanced/advanced_cuda_external_buffer.md)
+### [CUDA External Buffer](advanced/cuda-external-buffer.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for CUDA External Buffer"><span>No screenshot</span></div>
 
@@ -22,7 +22,7 @@ This example shares a Datoviz-owned Vulkan vertex buffer with CUDA.
 
 <div class="card" markdown="1">
 
-### [Datoviz with ImPlot](gallery/advanced/advanced_gui_implot.md)
+### [Datoviz with ImPlot](advanced/gui-implot.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Datoviz with ImPlot"><span>No screenshot</span></div>
 
@@ -34,7 +34,7 @@ This example combines an embedded Datoviz 3D view with ImPlot 2D charts.
 
 <div class="card" markdown="1">
 
-### [External Surface GLFW](gallery/advanced/advanced_external_surface_glfw.md)
+### [External Surface GLFW](advanced/external-surface-glfw.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for External Surface GLFW"><span>No screenshot</span></div>
 
@@ -46,9 +46,9 @@ This example embeds a Datoviz view inside a host-owned GLFW surface.
 
 <div class="card" markdown="1">
 
-### [Qt Hosting](gallery/advanced/advanced_qt_hosting.md)
+### [Qt Hosting](advanced/qt-hosting.md)
 
-[![Qt Hosting](../assets/gallery/v0.4/advanced/advanced_qt_hosting.webp)](gallery/advanced/advanced_qt_hosting.md)
+[![Qt Hosting](../assets/gallery/v0.4/advanced/advanced_qt_hosting.webp)](advanced/qt-hosting.md)
 
 `advanced`<br><span>`advanced`, `qt`, `pyqt`, `optional-provider`, `external-surface`, ...</span>
 
@@ -58,7 +58,7 @@ This example hosts a Datoviz Vulkan scene in live Qt Widgets.
 
 <div class="card" markdown="1">
 
-### [Raw Triangle DRP2](gallery/advanced/advanced_raw_triangle_drp2.md)
+### [Raw Triangle DRP2](advanced/raw-triangle-drp2.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Raw Triangle DRP2"><span>No screenshot</span></div>
 
@@ -70,7 +70,7 @@ This example renders one triangle from a hand-written DRP2 command stream.
 
 <div class="card" markdown="1">
 
-### [Raw Triangle Vklite](gallery/advanced/advanced_raw_triangle_vklite.md)
+### [Raw Triangle Vklite](advanced/raw-triangle-vklite.md)
 
 <div class="dvz-gallery-placeholder dvz-gallery-placeholder--not-required" role="img" aria-label="No screenshot for Raw Triangle Vklite"><span>No screenshot</span></div>
 

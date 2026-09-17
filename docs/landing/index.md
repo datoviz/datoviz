@@ -94,31 +94,31 @@ binding.
 
 <div class="dvz-public-card-grid" markdown="1">
 
-<a class="dvz-public-card" href="../examples/gallery/showcases/showcases_point_cloud/" markdown="1">
+<a class="dvz-public-card" href="../examples/showcases/point-cloud/" markdown="1">
 <span>01</span>
 <strong>Dense LiDAR</strong>
 <em>Large point clouds with direct color, depth, and metric navigation.</em>
 </a>
 
-<a class="dvz-public-card" href="../examples/gallery/showcases/showcases_protein/" markdown="1">
+<a class="dvz-public-card" href="../examples/showcases/protein/" markdown="1">
 <span>02</span>
 <strong>Molecular Arcball</strong>
 <em>Clustered spheres and interactive 3D inspection for real scientific data.</em>
 </a>
 
-<a class="dvz-public-card" href="../examples/gallery/showcases/showcases_brain_volume/" markdown="1">
+<a class="dvz-public-card" href="../examples/showcases/brain-volume/" markdown="1">
 <span>03</span>
 <strong>Brain Volume</strong>
 <em>Volume data, slices, transparent mesh overlays, and annotations.</em>
 </a>
 
-<a class="dvz-public-card" href="../examples/gallery/showcases/showcases_wind_field/" markdown="1">
+<a class="dvz-public-card" href="../examples/showcases/wind-field/" markdown="1">
 <span>04</span>
 <strong>Weather Field</strong>
 <em>Scalar fields, vector overlays, colorbars, and probe readback.</em>
 </a>
 
-<a class="dvz-public-card" href="../examples/gallery/showcases/showcases_choropleth/" markdown="1">
+<a class="dvz-public-card" href="../examples/showcases/choropleth/" markdown="1">
 <span>05</span>
 <strong>Choropleth</strong>
 <em>Retained polygon composites with labels, color scales, and resizing proof.</em>

@@ -72,14 +72,14 @@ DVZ_CMAKE_ARGS="-DDVZ_ENABLE_QT_BRIDGE=ON" just build
 window in a Qt Widgets layout and lets widget callbacks mutate retained scene data.
 
 <figure class="dvz-output-example">
-  <a href="../../examples/gallery/advanced/advanced_qt_hosting/">
+  <a href="../../examples/advanced/qt-hosting/">
     <img src="../../assets/gallery/v0.4/advanced/advanced_qt_hosting.webp"
          alt="A Datoviz scene embedded beside controls in a Qt Widgets application" loading="lazy">
   </a>
   <figcaption>
     <strong>Qt-hosted view.</strong> Qt owns the application shell and controls while Datoviz renders
     the scene inside the hosted surface.
-    <a href="../../examples/gallery/advanced/advanced_qt_hosting/">Open the Qt example</a>.
+    <a href="../../examples/advanced/qt-hosting/">Open the Qt example</a>.
   </figcaption>
 </figure>
 
@@ -203,6 +203,6 @@ are still valid. Then allow Qt to finish destroying its surface/window objects.
 
 ??? example "Complete and related examples"
 
-    - Canonical complete example: [Qt Hosting](../examples/gallery/advanced/advanced_qt_hosting.md) - Source: `examples/qt/qt_hosting.cpp`
-    - [External Surface GLFW](../examples/gallery/advanced/advanced_external_surface_glfw.md) - Source: `examples/c/advanced/external_surface_glfw.c`
-    - [GUI Viewport](../examples/gallery/features/features_gui_viewport.md) - Source: `examples/c/features/gui_viewport.c`
+    - Canonical complete example: [Qt Hosting](../examples/advanced/qt-hosting.md) - Source: `examples/qt/qt_hosting.cpp`
+    - [External Surface GLFW](../examples/advanced/external-surface-glfw.md) - Source: `examples/c/advanced/external_surface_glfw.c`
+    - [GUI Viewport](../examples/features/gui-viewport.md) - Source: `examples/c/features/gui_viewport.c`
