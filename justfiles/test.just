@@ -1,5 +1,5 @@
-test test_name="":
-    @python3 tasks/test_driver.py run "{{test_name}}"
+test test_name="" *args:
+    @python3 tasks/test_driver.py run "{{test_name}}" -- {{args}}
 #
 
 [linux]
