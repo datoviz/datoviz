@@ -104,7 +104,7 @@ jobs:
       - name: Build
         run: DVZ_CMAKE_ARGS="-DDVZ_VALIDATE_SPIRV=ON -DDVZ_REQUIRE_PRECOMPILED_SHADERS=ON" just build
       - name: Test
-        run: just test "" --jobs 3
+        run: just test
 
   build-windows:
     name: "Build / Windows"
