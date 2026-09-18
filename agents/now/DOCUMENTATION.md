@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Status
 
-Status: RC3 implementation inventory, rewritten course previews, and automated course prose review complete; maintainer review, exact release artifacts, and publication decisions remain. Local prose and PR state updated: 2026-09-17.
+Status: RC3 implementation inventory, rewritten course previews, and automated course prose review complete; maintainer review, exact release artifacts, and publication decisions remain. Local prose, PR, and gallery state updated: 2026-09-18.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 
@@ -14,6 +14,7 @@ Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wid
 - All 38 animation frame caches were regenerated under the prepared-data-aware key, all 38 animation candidates are current, and all 29 MP4 card candidates plus posters pass their budgets; publication remains an exact-approval action.
 - The nine invalidated still-cache records were regenerated and verified against the canonical images: eight are byte-identical and `features_panel_mixed_2d_3d` is pixel-equivalent with maximum channel delta 4 across 0.0911% of components.
 - The designated Linux host produced two byte-identical 104-image screenshot runs; the approved 54 changed images were promoted through `data` commit `d72c72c` and parent gitlink commit `264517633` with machine-readable evidence.
+- The canonical histogram is published through `data` commit `6a9091c10e08e477af5b07496cac602aefc7c999` and parent commit `9b0884f507f76f5a982db85cd2f6e59f094512e1`; all 107 reviewed stills pass full-pixel validation, and the example has C, Python, and live WebGPU routes.
 - The four-page visual-system pilot passes strict build and software-rendered desktop/mobile inspection.
 - PR #157 merged the refreshed embedding and platform-portability work at `fccf83061b05b7373f5caa1ba40bdecfc3578306` with green Linux, macOS, Windows, agent-instruction, and submodule-reachability checks. PR #136 is merged and superseded by #157; original PR #132 is closed as superseded.
 - Rewritten course chapters 1-3, their canonical programs, source synchronization, and installed source-prefix smoke are implemented.
