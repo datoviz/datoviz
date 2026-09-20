@@ -11,7 +11,7 @@ data coordinate.
     - **Status:** Supported GPU-backed queries; promoted picking examples run natively and in WebGPU.
     - **Languages:** C-first asynchronous workflow; Python exposes exact query descriptors and polling calls.
     - **Prerequisites:** A query-capable visual, rendered frames, and outer-panel-local pointer coordinates.
-    - **Result:** A later poll returns the frontmost rendered target and its visual-local or linked id.
+    - **Result:** A later poll returns the frontmost rendered target and its visual-local or linked id when the target/family path has frontmost coverage. Unsupported or ambiguous paths return an explicit status; they do not fall through to a background visual.
 
 ## Task workflow
 

@@ -2756,6 +2756,25 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.face_id == 1);
     AT(scene->query_executor.query_static_cache_upload_count == 2);
 
+    /* FACE identity is not yet comparable across visuals. The executor must
+     * reject this ambiguous scene instead of returning whichever attachment
+     * happens to be visited first. */
+    DvzVisual* overlapping_mesh = dvz_mesh(scene, 0);
+    ANN(overlapping_mesh);
+    dvz_visual_set_query_capabilities(overlapping_mesh, DVZ_QUERY_CAPABILITY_FACE);
+    AT(dvz_visual_set_data_many(overlapping_mesh, mesh_updates, 2) == 0);
+    AT(dvz_panel_add_visual(panel, overlapping_mesh, NULL) == 0);
+    AT(dvz_panel_query_px(
+           panel, 48.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+                              .request_id = 89,
+                              .target = DVZ_SCENE_TARGET_FACE}) == 0);
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.request_id == 89);
+    AT(!query.hit);
+    AT(query.status == DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY);
+
     AT(dvz_visual_set_target_link_keys(
            mesh, DVZ_SCENE_TARGET_FACE, channel, NULL, 0) == DVZ_OK);
     AT(mesh->face_link_keys == NULL);
