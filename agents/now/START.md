@@ -20,6 +20,7 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. Read
 | Input and mesh updates | [Integrated issues #139/#140](ISSUES_139_140_HANDOFF.md) |
 | Rolling fields and surfaces | [Issue #138 benchmarks and RC4/post-v0.4 boundary](ISSUE_138_PERFORMANCE_HANDOFF.md) |
 | Atlas and sampled fields | [Current capability, gaps, benchmark gates, and RC3/RC4/final/v0.5 allocation](ATLAS_SAMPLED_FIELDS_HANDOFF.md) |
+| GSP and VisPy2 future integration | [Durable post-RC3 roadmap](../../spec/api/GSP_VISPY2_FUTURE_WORK.md); panel titles and exact image texel identity are not RC3 gates, while mesh-face picking is currently downstream GSP work |
 | Interactive mesh performance | [Atlas-scale query, mesh-part, and GUI viewport evidence and implementation sequence](INTERACTIVE_MESH_PERFORMANCE_HANDOFF.md) |
 | Lighting | [Completed RC3 foundation](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md); preserve panel-light ownership and direct/indirect contracts without expanding to full PBR or the optional multi-light showcase |
 | ImPlot and docking | [Deferred integration](GUI_IMPLOT_DOCKING_HANDOFF.md); keep the experimental example default-off and partial integration out of RC3 |

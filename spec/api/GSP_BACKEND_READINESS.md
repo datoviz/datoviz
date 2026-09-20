@@ -122,6 +122,8 @@ without temporary files for ordinary RGBA capture.
 
 Remaining work is optional for RC unless a downstream GSP integration finds a concrete blocker:
 
+The durable post-RC3 panel-title, image sample/texel, mesh-face, and multi-panel ownership plan is recorded in [GSP and VisPy2 future work](GSP_VISPY2_FUTURE_WORK.md). That roadmap is not an RC3 gate and requires explicit promotion before it expands release scope.
+
 1. Add `dvz_view_capture_png_bytes(view)` only if alpha-preserving PNG bytes are required before
    RC; otherwise defer and keep RGBA memory as the stable backend target.
 2. Keep direct Python binding validation in release evidence: `testing/test_array_facade.py`,
