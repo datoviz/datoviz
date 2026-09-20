@@ -14,7 +14,7 @@ The following items are intentionally deferred:
 | Mesh-face query | Public `DVZ_SCENE_TARGET_FACE`, face identity, primitive identity, capability flags, bindings, and focused native tests exist for a single eligible mesh visual. | Datoviz fails closed when more than one eligible visual could answer FACE/TRIANGLE: the current per-visual query executor has no cross-visual depth comparison. A combined depth-aware query is required before scene-frontmost face identity can be advertised. |
 | Image sample query | Public `DVZ_SCENE_TARGET_SAMPLE` and `DVZ_SCENE_TARGET_PIXEL` can return sampled/display RGBA. | Supported only as sampled color/value until the identity contract below is implemented. |
 | Exact image texel identity | `DvzQueryResult` has `texel_id` and UVW fields, but the image query path does not currently populate a canonical texel coordinate or UVW. | Post-RC3 design and implementation. Do not infer texel identity from sampled RGBA. |
-| Multi-panel GSP execution | The plural-view GSP schema and both reference adapters now execute multiple panels. The Datoviz adapter retains all panels in one native scene/figure and routes panel-local views, visuals, guides, queries, snapshots, and navigation through existing public APIs. | Downstream implementation complete at GSP `aa6bcb4`; no missing Datoviz engine primitive was identified. Keep exact-wheel and real-runtime multi-panel qualification as downstream evidence, not an RC3 API gate. |
+| Multi-panel GSP execution | The plural-view GSP schema and both reference adapters now execute multiple panels. The Datoviz adapter retains all panels in one native scene/figure and routes panel-local views, visuals, guides, queries, snapshots, and navigation through existing public APIs. | Downstream implementation complete at GSP `aa6bcb4`; no missing Datoviz engine primitive was identified. A local exact-wheel smoke proved mixed View2D/View3D native panels, partial snapshots, and capture. Keep live mixed-panel interaction as downstream evidence, not an RC3 API gate. |
 
 ## Panel title slice
 
@@ -89,13 +89,13 @@ Do not create new Datoviz mesh-face APIs for GSP unless a concrete gap is demons
 
 Likewise, do not redesign Datoviz panels around GSP's plural view collections. GSP now establishes explicit panel/view/attachment routing, and the adapter audit found that existing Datoviz scene, figure, panel, clipping, query, navigation, snapshot, resize, and teardown APIs are sufficient for the implemented slice. The adapter creates one native panel per GSP panel inside one retained scene/figure and keeps panel-local state explicit. Future Datoviz work should add an engine primitive only when a concrete downstream conformance failure demonstrates the gap.
 
-The remaining multi-panel evidence gap is narrower: exercise native partial-layout snapshot aggregation and mixed 2D/3D interaction against the exact installed Datoviz candidate wheel. Unit and source-tree coverage already proves consumed full snapshots, attachment routing, targeted queries, independent Matplotlib live revisions, and VisPy2 mixed-panel lowering in both panel orders. Do not convert that downstream qualification gap into an RC3 public-API requirement.
+The local exact-wheel pass now exercises native partial-layout snapshot aggregation and mixed 2D/3D capture: two panel and view identities were recovered and the installed wheel produced a 640×360 PNG. Unit and source-tree coverage additionally proves consumed full snapshots, attachment routing, targeted queries, independent Matplotlib live revisions, and VisPy2 mixed-panel lowering in both panel orders. Live mixed-panel interaction is the remaining evidence gap. Do not convert that downstream qualification gap into an RC3 public-API requirement.
 
 ## Recommended sequence
 
 1. Keep RC3 focused on its existing artifact, platform, documentation, and maintainer-review gates.
 2. Let GSP implement and qualify mesh-face picking against the unchanged exact Datoviz wheel.
-3. Re-run the implemented plural-view and multi-panel adapter cases against exact installed wheels; add Datoviz APIs only if that qualification exposes a concrete engine gap.
+3. Preserve the exact-wheel mixed-panel capture gate and add a live mixed-panel interaction case when the downstream harness can exercise native input; add Datoviz APIs only if that qualification exposes a concrete engine gap.
 4. Implement the panel-title slice only after explicit release-scope approval.
 5. Specify image sample versus texel identity, then implement exact texel fields without changing sample-query meaning.
 6. Re-run native query/scene tests, generated binding checks, and exact-wheel GSP/VisPy2 qualification after every promoted Datoviz slice.
