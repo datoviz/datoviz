@@ -49,6 +49,8 @@ int test_scene_mesh_visual_binds_texture_field(TstContext* suite, const TstCase*
 int test_scene_colorbar_left_title_uses_content_lane(TstContext* suite, const TstCase* item);
 int test_scene_figure_reserve_resolves_content_layout(TstContext* suite, const TstCase* item);
 int test_scene_field_slot_sampling_state(TstContext* suite, const TstCase* item);
+int test_scene_large_r16_image_padded_upload(TstContext* suite, const TstCase* item);
+int test_scene_large_r16_uint_labels_padded_upload(TstContext* suite, const TstCase* item);
 
 
 /**
@@ -5161,6 +5163,8 @@ int test_scene_fields(TstSuite* suite)
     TST_CASE(test_scene_scale_guide_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_field_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_field_slot_sampling_state);
+    TST_CASE(test_scene_large_r16_image_padded_upload);
+    TST_CASE(test_scene_large_r16_uint_labels_padded_upload);
     TST_CASE(test_scene_scale_colormap_colorbar_core);
     TST_CASE(test_scene_categorical_scale_entries);
     TST_CASE(test_scene_placement_helpers);
