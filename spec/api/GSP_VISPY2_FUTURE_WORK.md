@@ -83,11 +83,59 @@ Until those rules land, `DVZ_SCENE_TARGET_PIXEL` and `DVZ_SCENE_TARGET_SAMPLE` m
 
 Acceptance requires CPU-level coordinate/addressing tests, native query plan/decode tests, transformed and reversed-extent cases, nearest and linear sampling cases, generated binding checks, and an exact-wheel GSP qualification that distinguishes sampled value from texel identity.
 
+### Proposed exact-texel decisions and test vectors
+
+The following table is a concrete post-RC3 proposal for review, not an active v0.4 contract. Implementation must not advertise exact texel identity until these choices are accepted in the authoritative query specification and all listed vectors pass.
+
+| Concern | Proposed decision |
+| --- | --- |
+| Public coordinate | Define canonical integer `(x, y, z)` texel coordinates, with `z = 0` for a 2D image. `texel_id` is sufficient to derive them when dimensions are known; adding explicit coordinate fields requires a separate API decision. |
+| Origin | Use lower-left public image origin: `x` increases rightward and `y` increases upward. Backend memory-row order remains an implementation detail. |
+| Flattening | `texel_id = x + width * (y + height * z)` after addressing. The id is derived from the public integer coordinate, not an upload offset. |
+| Addressing | Apply the declared clamp or repeat policy before choosing a texel. Border, mirror, and undefined addressing remain unsupported until separately specified. |
+| Nearest rule | For an addressed normalized coordinate in `[0, 1)`, choose `floor(u * width)`, `floor(v * height)`, and `floor(w * depth)`. An exact upper edge under clamp selects the final texel; repeat maps it to zero. |
+| UVW | For a successful texel query, return the selected texel center `((x + 0.5) / width, (y + 0.5) / height, (z + 0.5) / depth)`. Do not reuse the requested or pre-addressed coordinate. |
+| Reversed extent | Invert the visual transform before addressing. Reversing a displayed extent changes which public texel lies under a panel point but does not change integer coordinates or flattening. |
+| Linear sampling | A sample query may return the filtered value and displayed RGBA. An exact-texel query under linear sampling returns explicit unsupported because no unique source texel exists. |
+| Result validity | Set `texel_id`, integer coordinates, and UVW together or omit all of them. A zero-filled field without a validity indicator is never a valid identity. |
+
+Use a logical `3 x 2` image whose lower public row contains `10, 11, 12` and upper public row contains `20, 21, 22`. These CPU vectors should be shared by plan, decode, native, binding, and downstream exact-wheel tests:
+
+| Case | Request and policy | Expected result |
+| --- | --- | --- |
+| Lower-middle center | nearest clamp at `(0.5, 0.25)` | coordinate `(1, 0, 0)`, `texel_id = 1`, UVW `(0.5, 0.25, 0.5)`, value `11` |
+| Upper-right center | nearest clamp at `(5/6, 0.75)` | coordinate `(2, 1, 0)`, `texel_id = 5`, UVW `(5/6, 0.75, 0.5)`, value `22` |
+| Exact upper edge | nearest clamp at `(1, 1)` | coordinate `(2, 1, 0)`, `texel_id = 5` |
+| Negative edge | nearest clamp at `(-0.1, 0.25)` | coordinate `(0, 0, 0)`, `texel_id = 0`, value `10` |
+| Repeated upper edge | nearest repeat at `(1, 1)` | coordinate `(0, 0, 0)`, `texel_id = 0`, value `10` |
+| Reversed horizontal extent | panel point at the displayed left center after x reversal | coordinate `(2, 0, 0)`, `texel_id = 2`, value `12` |
+| Linear center | exact-texel target with linear sampling | explicit unsupported with no identity fields; the separate sample target may return a filtered value |
+
+The accepted specification must additionally cover zero-sized rejection, non-finite coordinates, 3D flattening, row padding, signed and unsigned integer formats, transformed panels, stale snapshots, and the distinction between a clamped hit and an out-of-domain policy rejection.
+
 ## Mesh-face and multi-panel responsibilities
 
 Do not create new Datoviz mesh-face APIs for GSP unless a concrete gap is demonstrated. The public face target and result fields are already the intended primitive map. Preserve their bindings and focused tests while GSP adds target selection, semantic visual-ID mapping, topology validation, freshness checks, and any backend-neutral geometry reconstruction.
 
 Likewise, do not redesign Datoviz panels around GSP's plural view collections. GSP now establishes explicit panel/view/attachment routing, and the adapter audit found that existing Datoviz scene, figure, panel, clipping, query, navigation, snapshot, resize, and teardown APIs are sufficient for the implemented slice. The adapter creates one native panel per GSP panel inside one retained scene/figure and keeps panel-local state explicit. Future Datoviz work should add an engine primitive only when a concrete downstream conformance failure demonstrates the gap.
+
+### Proposed combined multi-visual FACE execution
+
+The current fail-closed rule for more than one eligible mesh remains correct. A post-RC3 combined implementation should use one panel-scoped query plan and one depth comparison across every eligible opaque mesh, rather than running per-visual queries and attempting to compare backend-local results afterward. Each query fragment must encode both a plan-local visual slot and the canonical face or primitive identity; decode maps the slot to the retained public visual identity only after snapshot and topology freshness checks pass.
+
+The combined path must reuse the rendered panel viewport, camera, projection, clipping, culling, depth convention, and visibility state. It must exclude unsupported transparent, instanced, stale, or non-triangle contributors explicitly. Equal-depth ties need an accepted deterministic semantic rule or an explicit unsupported result; draw order alone must not silently define public frontmost identity. Existing `DvzQueryResult` visual, face, and primitive fields should be used if they can carry the proven result, and no new public API should be added merely to expose an internal attachment encoding.
+
+Required post-RC3 cases are:
+
+1. Two overlapping opaque meshes at distinct depths return the scene-frontmost visual and canonical face, and reversing creation or draw order does not change the result.
+2. Moving either mesh across the other updates the result and snapshot identity without returning stale data.
+3. A miss across several eligible meshes remains a miss rather than unsupported.
+4. Hidden, clipped, different-panel, and out-of-viewport meshes cannot contribute.
+5. Unsupported transparent, instanced, non-triangle, or ambiguous equal-depth contributors return structured unsupported instead of a result from the remaining subset.
+6. Resize, camera change, topology replacement, visual destruction, and query-resource recreation preserve freshness and lifetime rules.
+7. A single eligible mesh remains byte-for-byte compatible with the already qualified FACE result shape.
+
+Promotion requires focused native depth/order tests, validation-layer coverage, generated binding checks, and exact-wheel GSP tests that map the native visual slot to the semantic visual id. Until then, capability probing must retain the bounded single-eligible-mesh claim and all multi-visual FACE/TRIANGLE requests must fail closed.
 
 The local exact-wheel pass now exercises native partial-layout snapshot aggregation and mixed 2D/3D capture: two panel and view identities were recovered and the installed wheel produced a 640×360 PNG. Unit and source-tree coverage additionally proves consumed full snapshots, attachment routing, targeted queries, independent Matplotlib live revisions, and VisPy2 mixed-panel lowering in both panel orders. Live mixed-panel interaction is the remaining evidence gap. Do not convert that downstream qualification gap into an RC3 public-API requirement.
 
