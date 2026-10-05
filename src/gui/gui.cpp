@@ -1932,7 +1932,12 @@ static void _gui_submit_dockspace(DvzGui* gui)
         return;
     ImGuiDockNodeFlags flags = ImGuiDockNodeFlags_PassthruCentralNode;
     gui->dockspace_id = ImGui::GetID("DatovizDockSpace");
+    // A passthrough dockspace fills every non-central node with WindowBg, which would cover
+    // native panels framed by NoBackground windows docked there. Docked windows that want a
+    // background still draw their own.
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(0, 0, 0, 0));
     ImGui::DockSpaceOverViewport(gui->dockspace_id, ImGui::GetMainViewport(), flags);
+    ImGui::PopStyleColor();
 }
 
 
