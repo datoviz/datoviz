@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+shaderc_runtime="libshaderc${SHLIB_EXT}"
+if [[ "$(uname)" == Darwin ]]; then
+    shaderc_runtime="@rpath/$shaderc_runtime"
+fi
+
 cmake -S "$SRC_DIR" -B build-conda -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
@@ -12,6 +17,8 @@ cmake -S "$SRC_DIR" -B build-conda -G Ninja \
     -DDVZ_CGLM_SOURCE=SYSTEM \
     -DDVZ_KVAZAAR_SOURCE=OFF \
     -DDVZ_ENABLE_CUDA=OFF \
+    -DDVZ_ENABLE_SHADERC=ON \
+    -DDVZ_SHADERC_RUNTIME_LIBRARY="$shaderc_runtime" \
     -DDVZ_ENABLE_QT_BRIDGE=OFF
 
 cmake --build build-conda --target install

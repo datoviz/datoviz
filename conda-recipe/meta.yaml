@@ -1,4 +1,4 @@
-{% set version = "0.4.0" %}
+{% set version = environ.get("DATOVIZ_CONDA_VERSION", "0.4.0") %}
 {% set source_url = environ.get("DATOVIZ_CONDA_SOURCE_URL", "https://github.com/datoviz/datoviz/releases/download/v" ~ version ~ "/datoviz-" ~ version ~ "-source.tar.gz") %}
 {% set source_sha512 = environ.get("DATOVIZ_CONDA_SOURCE_SHA512", "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000") %}
 
@@ -21,9 +21,11 @@ outputs:
       build:
         - {{ compiler("c") }}
         - {{ compiler("cxx") }}
+        - {{ stdlib("c") }}
         - cmake
         - ninja
         - pkg-config  # [unix]
+        - shaderc 2026.3
       host:
         - cglm
         - freetype
@@ -32,6 +34,8 @@ outputs:
         - libpng
         - tinyxml2
         - libvulkan-loader
+        - libvulkan-headers
+        - shaderc 2026.3
         - zlib
       run:
         - cglm
@@ -41,6 +45,8 @@ outputs:
         - moltenvk  # [osx]
         - tinyxml2
         - libvulkan-loader
+        - libvulkan-headers
+        - shaderc 2026.3
         - zlib
     test:
       commands:
@@ -58,6 +64,7 @@ outputs:
         - pip
         - setuptools
         - wheel
+        - tomli  # [py<311]
       run:
         - python
         - numpy
@@ -78,18 +85,19 @@ outputs:
       build:
         - {{ compiler("c") }}
         - {{ compiler("cxx") }}
+        - {{ stdlib("c") }}
         - cmake
         - ninja
         - pkg-config  # [unix]
       host:
         - cglm
         - python
-        - qt6-main
+        - qt6-main 6.11.1 *_2
         - libvulkan-headers
       run:
         - python
-        - pyqt6
-        - qt6-main
+        - pyqt6 6.11.0 *_5
+        - qt6-main 6.11.1 *_2
         - {{ pin_subpackage("datoviz", exact=True) }}
     test:
       commands:
