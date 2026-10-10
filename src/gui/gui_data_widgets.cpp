@@ -1026,6 +1026,7 @@ DvzResult dvz_gui_tree_draw(
                 ImGuiSelectableFlags_AllowOverlap | ImGuiSelectableFlags_AllowDoubleClick,
                 ImVec2(0, row_height));
             bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
+            bool row_hovered = ImGui::IsItemHovered();
             bool activated = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0);
             const ImVec2 next_row = ImGui::GetCursorScreenPos();
 
@@ -1090,6 +1091,18 @@ DvzResult dvz_gui_tree_draw(
                     ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
                 ImGui::TextUnformatted(tree->secondary[row]);
                 ImGui::PopStyleColor();
+            }
+            if (row_hovered)
+            {
+                ImGui::BeginTooltip();
+                ImGui::TextUnformatted(tree->labels[row]);
+                if (tree->secondary[row][0])
+                {
+                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 24.0f);
+                    ImGui::TextUnformatted(tree->secondary[row]);
+                    ImGui::PopTextWrapPos();
+                }
+                ImGui::EndTooltip();
             }
             if (activated && !disabled)
                 _event(
