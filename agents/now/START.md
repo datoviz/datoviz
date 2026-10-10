@@ -2,7 +2,7 @@
 
 The active branch is `main`. RC2 is closed; RC3 is the next release milestone, followed by RC4 and final v0.4.0. Current preparation is recorded in [STATUS.md](STATUS.md) and the [2026-09-08 candidate preparation](RELEASE.md#rc3-preparation-before-maintainer-review-2026-09-08); published artifacts retain their recorded evidence.
 
-Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. Read [STATUS.md](STATUS.md) when work affects release scope or readiness and [RELEASE.md](RELEASE.md) for release planning or packaging. Read only the matching lanes below.
+Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For the next Linux checks after reboot and the macOS/Windows return sequence, use [the current development queue](STATUS.md#next-development-checks); RC3 freeze waits for maintainer course proofreading. Read [STATUS.md](STATUS.md) when work affects release scope or readiness and [RELEASE.md](RELEASE.md) for release planning or packaging. Read only the matching lanes below.
 
 ## Task Routes
 
@@ -13,7 +13,7 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. Read
 | Documentation and media | [Documentation gates](DOCUMENTATION.md), [visual pilot and required rollout review](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) |
 | Vulkan course | [Execution queue](VKLITE_GRAPHICS_TUTORIAL.md), [durable contract](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) |
 | Packaging | [C/C++ distribution](C_DISTRIBUTION.md), [exact-artifact checklist](DISTRIBUTION_RELEASE_CHECKLIST.md) |
-| Qt/PyQt | [Provider sequence and local proof](QT_MACOS_VULKAN_HANDOFF.md); official provider artifacts are deferred to RC4 |
+| Qt/PyQt | [Provider sequence and local proof](QT_MACOS_VULKAN_HANDOFF.md); published-runtime Linux/macOS proof is complete, macOS/Windows machines are unavailable, Windows retains a dependency trust blocker, and RC3 promotion remains undecided |
 | Physical platforms | [GPU selection](HANDOFF_GPU_SELECTION.md), [Windows baseline and remaining matrix](HANDOFF_WINDOWS_VALIDATION.md) |
 | Frame pacing | [Interaction latency contract and benchmarks](../../spec/testing/INTERACTION_LATENCY.md) |
 | Render products | [Graph techniques](../../spec/scene/implementation/GRAPH_TECHNIQUES.md), [occlusion](../../spec/scene/implementation/OCCLUSION_EFFECTS.md), [transparency/MSAA](../../spec/scene/implementation/TRANSPARENCY_MSAA.md); [landing evidence](RC3_RENDER_PRODUCTS_LANDING.md) and [affected QA](RC3_RENDER_PRODUCTS_AFFECTED_QA.md) |

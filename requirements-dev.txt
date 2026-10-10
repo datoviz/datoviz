@@ -1,3 +1,4 @@
+fonttools
 imageio
 jsonschema
 libclang

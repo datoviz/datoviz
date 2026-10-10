@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Local candidate preparation and embedding-portability disposition updated: 2026-09-17; release artifacts are not frozen.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Platform availability and PyQt intake updated: 2026-10-10; earlier candidate preparation retains its recorded evidence; release artifacts are not frozen.
 
 Use [STATUS.md](STATUS.md) for current blockers, [DOCUMENTATION.md](DOCUMENTATION.md) for documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable release policy.
 
@@ -36,9 +36,11 @@ Remaining RC3 deliverables:
 4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, base conda layouts, third-party notices, and checksum/signing policy.
 5. Freeze the exact RC3 candidate, carry forward the completed local source-quality and media-pipeline evidence, and run the immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
 6. Freeze RC3 notes, known issues, validation evidence, artifacts, and feedback request only after the exact release scope is fixed.
-Hosted Linux and Windows exact-artifact validation is mandatory for RC3. Physical Linux and Windows should be restored when suitable machines are available; unavailable hardware remains an exclusion. Final requires the missing physical proof or an explicit maintainer-approved exception.
+Hosted Linux and Windows exact-artifact validation is mandatory for RC3. The physical macOS and Windows machines are unavailable as of 2026-10-10; native/provider and physical candidate checks remain pending. Continue independent Linux development checks; unavailable hardware remains an exclusion. Final requires the missing physical proof or an explicit maintainer-approved exception.
 
-Deferred work must not enter the RC3 candidate: the official Qt/PyQt provider artifacts, ImPlot/cimplot integration, declarative docking, GSP Texture2D mesh integration, point-light evaluation, the full multi-light Klein-bottle showcase, hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, and broad visual polish. The narrower required lighting foundation is complete and must remain covered by exact-candidate validation.
+The official Qt/PyQt provider was allocated to RC4, but upstream publication is now complete and RC3 promotion is under evaluation; Linux/macOS published-runtime proof passes, while Windows runtime and exact-candidate provider proof remain pending in [the latest handoff](QT_MACOS_VULKAN_HANDOFF.md). Preserve the existing experimental scope until the maintainer decides otherwise. Other deferred work must not enter the RC3 candidate: ImPlot/cimplot integration, declarative docking, GSP Texture2D mesh integration, point-light evaluation, the full multi-light Klein-bottle showcase, hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, and broad visual polish. The narrower required lighting foundation is complete and must remain covered by exact-candidate validation.
+
+The maintainer is not ready to freeze RC3 before proofreading the course and resolving any resulting minor code fixes. Temporary source bundles, wheels, and conda packages validate the mutable development tree only; keep the existing version metadata and do not select a final candidate.
 
 ## 3. RC4 Course And Installed Developer Experience
 
@@ -129,7 +131,7 @@ Detailed logs are in `/tmp/datoviz-rc3-preparation-20260908/`. The earlier 1,195
 | Physical and headed checks | Use the same accepted wheels on all available machines for the fixed live set, and complete headed WebGPU interaction. | Preserve individual GPU identities, skips, and observations; Xvfb is not a physical pass. |
 | Final evidence/publication | Finalize artifact checksums, signing decision, notes, TestPyPI/package-index verification, and publication actions. | Do not declare artifacts signed without an actual signature; external actions require exact reviewed approval. |
 
-The release tool currently requires macOS arm64, Linux x86_64, and Windows AMD64 machine evidence for non-RC2 candidates. The narrative policy is looser for RC3 physical Linux/Windows; with all three operating systems now available, prepare to satisfy the stricter matrix rather than silently weakening it. Availability of an OS does not establish availability of every architecture in the six-wheel build matrix. Commands in the local platform plan keep source checks, hosted artifact checks, and human interaction separate.
+The release tool currently requires macOS arm64, Linux x86_64, and Windows AMD64 machine evidence for non-RC2 candidates. The narrative policy is looser for RC3 physical Linux/Windows; with Windows currently unavailable, leave its required proof pending and prepare to satisfy the stricter matrix when a suitable host returns rather than silently weakening it. Availability of an OS does not establish availability of every architecture in the six-wheel build matrix. Commands in the local platform plan keep source checks, hosted artifact checks, and human interaction separate.
 
 
 ### Portable source preview and course-runner correction

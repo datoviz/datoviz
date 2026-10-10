@@ -1,6 +1,10 @@
 # Windows Native Validation Handoff
 
-Status: source-checkout AMD/NVIDIA matrices, FIFO frame-slot comparison, and checkout-backed vcpkg consumer proof are complete; visible DRP2 live-canvas asymmetry, a Vulkan-enabled PyQt provider, and exact-candidate proof remain. Updated: 2026-08-03.
+Status: source-checkout AMD/NVIDIA matrices, FIFO frame-slot comparison, and checkout-backed vcpkg consumer proof are complete; visible DRP2 live-canvas asymmetry, a Vulkan-enabled PyQt provider, and exact-candidate proof remain. Platform availability updated: 2026-10-10; the completed native matrix below retains its 2026-08-03 evidence.
+
+## Current Availability
+
+The physical Windows validation machine is unavailable as of 2026-10-10. Leave native runtime, visible AMD/NVIDIA, and exact-candidate physical gates pending; continue independent checks on available platforms. The latest conda provider compiled, but application control rejected its GLFW dependency before Python import and provider rendering; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and PyPI-provider results below do not describe a newly validated RC3 artifact. When the machine returns, follow [the current development queue](STATUS.md#next-development-checks) and [provider-specific platform checks](QT_MACOS_VULKAN_HANDOFF.md#next-available-platform-checks) before the later exact-candidate campaign. RC3 remains unfrozen during course proofreading.
 
 ## Scope
 
