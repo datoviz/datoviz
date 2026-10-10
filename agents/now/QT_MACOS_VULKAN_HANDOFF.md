@@ -1,10 +1,10 @@
 # Qt/PyQt macOS Vulkan Handoff
 
-Status: local implementation and Apple Silicon proof complete; Vulkan-enabled Qt is published and compatible PyQt CI is green; official provider publication and exact Datoviz artifacts are deferred to RC4. Updated: 2026-08-30.
+Status: Vulkan-enabled Qt and PyQt are published; Linux and native macOS Apple Silicon split-package proof against the published runtime is complete. RC3 promotion is under evaluation; native Windows runtime proof is blocked by host application control, and frozen-candidate provider proof remains pending. Updated: 2026-10-10.
 
 This handoff records the verified local Qt, PyQt, and Datoviz provider artifacts; the published feedstock pull requests; the expected dependency-order CI failures; and the remaining maintainer and exact-artifact sequence. Upstream feedstock work remains in sibling repositories, not the Datoviz source tree.
 
-## Goal
+## Previous Release Allocation
 
 Deliver a conda-first `datoviz-qtbridge` provider for RC4 without adding Qt or PyQt to the base Datoviz wheel contract. The provider requires published Vulkan-enabled Qt packages, compatible published PyQt bindings, split Datoviz packages built against that managed runtime, and exact-artifact hosted validation. RC3 retains the source-build bridge with experimental provider wording and does not wait for upstream PyQt publication.
 
@@ -12,7 +12,25 @@ Deliver a conda-first `datoviz-qtbridge` provider for RC4 without adding Qt or P
 
 Read [../../AGENTS.md](../../AGENTS.md), [START.md](START.md), [STATUS.md](STATUS.md), and [RELEASE.md](RELEASE.md) before acting. Keep all upstream clones and build products outside tracked Datoviz paths, preferably as sibling directories. Do not stage or commit the Datoviz `data` submodule or generated/runtime binaries. Do not push, open a pull request, comment, rerun external CI, or otherwise publish without the maintainer's explicit approval of the exact final content and action.
 
-## Current Upstream State
+## Published Runtime Intake, 2026-10-10
+
+[PyQt PR #186](https://github.com/conda-forge/pyqt-feedstock/pull/186) merged on 2026-10-09 at `87ee8c9b67c91e859a7e4b7572bbe5a25f78a031`. PyQt6 6.11.0 build 5 is published on the conda-forge main label for Linux x86-64 and ARM64, macOS x86-64 and ARM64, and Windows x86-64, covering Python 3.11-3.14. Pinned Python 3.11/Qt 6.11.1 build-2/PyQt build-5 dependency solves pass for all five platforms; macOS solves assume macOS 14 and are not runtime proof.
+
+Current Datoviz `main` at `ab8a8fb4a9c2b1396598a4f7b84653f77321ce9c` builds all three split conda outputs and passes their package tests against the published runtime on Linux x86-64. These local Release packages retain `0.4.0rc2` metadata; they are neither published RC2 artifacts nor frozen RC3 artifacts. Binding freshness, policy, facade, and ABI checks pass.
+
+Fresh installed-prefix checks pass: base-only offscreen rendering without Qt, PyQt, or the bridge; packaged bridge ABI 1 and Qt 6.11.1; 347 hosted frames with point-size changes and resize under Xvfb/Mesa llvmpipe; matching adopted Vulkan instance identity; exactly one prefix-owned Vulkan loader; confirmed loaded Vulkan validation layer with no validation messages; and the explicit missing-provider diagnostic. Local package checksums, environment identities, probe scripts, and logs are recorded in `/tmp/datoviz-pyqt-rc3-check/`.
+
+Native macOS arm64 validation on macOS 26.5.1/Apple M1 Pro also passes all three package tests and fresh-prefix base rendering without Qt. The source is the same `main` head plus a portable `<cstdlib>`/`std::qsort` fix in `src/gui/gui_data_widgets.cpp`, discovered by the conda Clang build; the source bundle SHA512 is `8b7a80a14ae67816bb8113de8dc5ac3bcb479ce2c7db329530fe084391c17b84f2e3c3a770520cba12efb98517e0031ac27ac0685e4206df384b4e217ae62a99`. The Cocoa-hosted provider renders 28 frames with point-size changes and resize, creates a non-null native surface, adopts the same Vulkan instance, and loads exactly one conda-owned Vulkan loader plus conda MoltenVK and the validation layer. Missing-provider diagnostics pass. No Vulkan validation errors appear; MoltenVK emits its known primitive-restart capability warning. Hosted teardown reports 26 MB still allocated in MoltenVK; leak behavior and subjective interaction acceptance were not evaluated. Intel macOS and minimum-macOS runtime remain untested. The local build and all three focused GUI data tests pass for the portability fix. Package identities, checksums, and detailed Mac evidence are copied into `/tmp/datoviz-pyqt-rc3-check/macos/`; access details remain outside tracked files.
+
+Windows 11 x64/MSVC 19.44 compiled and packaged all three split outputs after adding the Windows `pthreads-win32` host/runtime dependency and a CMake fallback for its headers/import library. The source bundle SHA512 is `f977b83e449363962409939dd0123df11d9b42a53186faac5eb8bc6050cd683fed059c8480da3a6f30d1c2c7ef9d5cc0751a339d56e197afe3f769218ea4c5c5`. The `libdatoviz` file-layout package tests pass, but the Python package fails to import `datoviz.raw`: Windows application control rejects conda's `glfw3.dll` with `WinError 4551`, confirmed by Code Integrity events 3033/3077. The Python output is retained as a failed package; bridge package tests and fresh-prefix rendering remain unrun. No AMD/NVIDIA provider result is claimed.
+
+The Windows packager used conda-build's built-in Python scanner after application control rejected the optional ripgrep helper; micromamba also stopped starting. No security policy was changed, and the prepared one-shot desktop task was not registered or started. Local build and focused thread tests pass for the dependency/build changes. Package checksums, the rejected GLFW dependency identity, and detailed evidence are in `/tmp/datoviz-pyqt-rc3-check/windows/`; private access details remain outside tracked files.
+
+Read-only Windows investigation confirms Smart App Control is enabled (`VerifiedAndReputablePolicyState=1`). Its enforced `VerifiedAndReputableDesktop` policy ID matches the GLFW rejection events. The rejected GLFW DLL is unsigned, has no `Zone.Identifier` stream, and matches the package-cache DLL byte identity (SHA256 `b4bbb43017e9277224e17fc4c99a64d69835a936c6245a4ffd00525439c8e73b`). This is a dependency trust restriction, not evidence of a Qt or Datoviz rendering failure. [Microsoft's Smart App Control FAQ](https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions) documents no per-app exception and recommends a valid publisher signature; current Windows updates allow re-enabling the control without a clean installation, subject to device availability. Native proof requires a trusted dependency distribution or an explicitly approved host security decision; ordinary CI success does not remove this host-specific blocker.
+
+The maintainer requested evaluation for RC3 now that upstream publication is complete. Next, resolve the Windows dependency trust/signing requirement or use another suitable Windows validation host, then repeat package tests and native provider rendering. Finalize RC3 allocation and installation guidance after this provider proof; repeat the affected checks against the frozen RC3 candidate. The RC4 allocation below records the earlier plan and must not be read as a continuing upstream-publication blocker.
+
+## Historical Upstream State, 2026-08-30
 
 - [qt-main-feedstock PR #406](https://github.com/conda-forge/qt-main-feedstock/pull/406), head `36d761a20ad74615a5189bc69510be92ec4dc5d8`, was merged on 2026-08-17 at merge commit `671db17c3e462e01980e11b7ffd5efceb0b0e366`. It enables Qt Vulkan on macOS with `libvulkan-headers`, `libvulkan-loader`, and `moltenvk`; bumps Qt 6.11.1 from build 1 to build 2; and adds compile and package guards. All five post-merge platform builds passed, and build 2 is published on the conda-forge `main` label, including `qt6-main-6.11.1-pl5321h64d128d_2.conda` for `osx-64` and `qt6-main-6.11.1-pl5321h7775a44_2.conda` for `osx-arm64`.
 - [pyqt-feedstock PR #186](https://github.com/conda-forge/pyqt-feedstock/pull/186), head `7d3e950926e52653ccc4320e137fe7a0355f663c`, builds PyQt6 6.11.0 against Qt 6.11.1, makes `libvulkan-headers` available to native and cross builds, exports the header path for SIP feature probes, removes the cross-build `PyQt_Vulkan` disable, adds a `QVulkanInstance` regression test, and bumps build 2 to build 3. It also resolves the GCC 14.4 activation change from absolute compiler paths to command names by resolving the compiler shims through `command -v` in all four affected build scripts. The PR is ready for review, cleanly mergeable, and awaiting maintainer review.
@@ -37,7 +55,7 @@ The base `libdatoviz` output must depend on `moltenvk` on macOS independently of
 
 Do not claim support for mixing the standalone macOS Datoviz wheel, which carries a private loader, MoltenVK library, and ICD manifest, with conda-managed Qt/PyQt. The supported provider path uses the mutually pinned conda outputs and verifies the resolved loader and driver from a clean prefix.
 
-## Remaining RC4 sequence
+## Historical RC4 Sequence
 
 1. Wait for maintainer review, merge, and publication of PyQt PR #186 without weakening the Vulkan regression test or the cross-build contract.
 2. Build the Datoviz split packages against the published Qt/PyQt runtime, run a clean-prefix base macOS Vulkan render without Qt, then run exact-artifact bridge, import, loader/driver identity, Vulkan instance, Cocoa surface, hosted rendering, and missing-provider diagnostics.
