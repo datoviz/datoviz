@@ -17,8 +17,20 @@ if(WIN32)
         find_package(Threads REQUIRED)
         set(DVZ_THREADING_TARGET Threads::Threads)
     else()
-        # True MSVC / Visual Studio environment → use PThreads4W
-        find_package(PThreads4W CONFIG REQUIRED)
+        # Prefer the PThreads4W package target; conda supplies headers and an import library.
+        find_package(PThreads4W CONFIG QUIET)
+        if(NOT TARGET PThreads4W::PThreads4W)
+            find_path(DVZ_PTHREADS4W_INCLUDE_DIR NAMES pthread.h)
+            find_library(DVZ_PTHREADS4W_LIBRARY NAMES pthreads pthreadVC3 pthreadVC2)
+            if(NOT DVZ_PTHREADS4W_INCLUDE_DIR OR NOT DVZ_PTHREADS4W_LIBRARY)
+                message(FATAL_ERROR
+                    "MSVC builds require PThreads4W headers and an import library, or its CMake package.")
+            endif()
+            add_library(PThreads4W::PThreads4W UNKNOWN IMPORTED)
+            set_target_properties(PThreads4W::PThreads4W PROPERTIES
+                IMPORTED_LOCATION "${DVZ_PTHREADS4W_LIBRARY}"
+                INTERFACE_INCLUDE_DIRECTORIES "${DVZ_PTHREADS4W_INCLUDE_DIR}")
+        endif()
         set(DVZ_THREADING_TARGET PThreads4W::PThreads4W)
     endif()
 else()

@@ -32,6 +32,7 @@ outputs:
         - glfw
         - libgl-devel  # [linux]
         - libpng
+        - pthreads-win32  # [win]
         - tinyxml2
         - libvulkan-loader
         - libvulkan-headers
@@ -43,6 +44,7 @@ outputs:
         - glfw
         - libpng
         - moltenvk  # [osx]
+        - pthreads-win32  # [win]
         - tinyxml2
         - libvulkan-loader
         - libvulkan-headers
@@ -93,6 +95,7 @@ outputs:
         - cglm
         - python
         - qt6-main 6.11.1 *_2
+        - pthreads-win32  # [win]
         - libvulkan-headers
       run:
         - python

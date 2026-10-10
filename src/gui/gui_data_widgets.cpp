@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <limits.h>
 
@@ -227,7 +228,7 @@ _rows(const _Core* old, uint32_t count, const uint64_t* keys, uint32_t flags, _R
         out->index[i] = {keys[i], i};
         out->visible[i] = out->matches[i] = true;
     }
-    qsort(out->index, count, sizeof(_KeyIndex), _key_cmp);
+    std::qsort(out->index, count, sizeof(_KeyIndex), _key_cmp);
     for (uint32_t i = 1; i < count; i++)
         if (out->index[i - 1].key == out->index[i].key)
         {
