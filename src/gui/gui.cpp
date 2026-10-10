@@ -192,6 +192,11 @@ struct DvzGuiViewport
     bool input_capturing;
     int input_button;
     DvzPointerButton input_dvz_button;
+    bool input_move_valid;
+    float input_move_pos[2];
+    float input_move_size[2];
+    int input_move_mods;
+    uint64_t input_move_revision;
     bool mouse_valid;
     bool mouse_hovered;
     float mouse_pos[2];
@@ -799,6 +804,8 @@ static void _gui_viewport_set_visible(DvzGuiViewport* viewport, bool visible)
 {
     ANN(viewport);
     viewport->visible = visible;
+    if (!visible)
+        viewport->input_move_valid = false;
     if (viewport->source == NULL)
         return;
 
@@ -1429,6 +1436,51 @@ _gui_viewport_resolve_resize(DvzGuiViewport* viewport, uint32_t width, uint32_t 
 
 
 /**
+ * Forward changed pointer positions or refresh hover after a source figure mutation.
+ *
+ * @param viewport GUI viewport
+ * @param forward whether the pointer is hovered or captured
+ * @param x source-local pointer x position
+ * @param y source-local pointer y position
+ * @param width logical source width
+ * @param height logical source height
+ * @param mods keyboard modifier flags
+ * @return whether a MOVE event was forwarded
+ */
+bool _dvz_gui_viewport_forward_move(
+    DvzGuiViewport* viewport, bool forward, float x, float y, float width, float height, int mods)
+{
+    ANN(viewport);
+    if (!forward)
+    {
+        viewport->input_move_valid = false;
+        return false;
+    }
+    const uint64_t revision = _dvz_view_scene_revision(viewport->source);
+    if (viewport->input_move_valid && x == viewport->input_move_pos[0] &&
+        y == viewport->input_move_pos[1] && width == viewport->input_move_size[0] &&
+        height == viewport->input_move_size[1] && mods == viewport->input_move_mods &&
+        revision == viewport->input_move_revision)
+        return false;
+
+    if (dvz_view_emit_pointer(
+            viewport->source, DVZ_POINTER_EVENT_MOVE, x, y, width, height,
+            DVZ_POINTER_BUTTON_NONE, mods) != DVZ_OK)
+        return false;
+    viewport->input_move_valid = true;
+    viewport->input_move_pos[0] = x;
+    viewport->input_move_pos[1] = y;
+    viewport->input_move_size[0] = width;
+    viewport->input_move_size[1] = height;
+    viewport->input_move_mods = mods;
+    // The query's own frame request must not invalidate the pointer cache.
+    viewport->input_move_revision = _dvz_view_scene_revision(viewport->source);
+    return true;
+}
+
+
+
+/**
  * Forward ImGui item input to the source view router.
  *
  * @param viewport GUI viewport
@@ -1481,12 +1533,10 @@ static void _gui_viewport_forward_input(
         }
     }
 
+    (void)_dvz_gui_viewport_forward_move(
+        viewport, hovered || viewport->input_capturing, x, y, window_x, window_y, mods);
     if (!hovered && !viewport->input_capturing)
         return;
-
-    (void)dvz_view_emit_pointer(
-        viewport->source, DVZ_POINTER_EVENT_MOVE, x, y, window_x, window_y,
-        DVZ_POINTER_BUTTON_NONE, mods);
     if (hovered && (io.MouseWheel != 0.0f || io.MouseWheelH != 0.0f))
     {
         (void)dvz_view_emit_wheel(

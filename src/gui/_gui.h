@@ -97,6 +97,8 @@ bool _dvz_gui_scale_resolve(
     DvzScaleXY device, DvzExtent native, DvzExtent framebuffer, float user,
     DvzGuiScaleDebugState* out);
 void _dvz_gui_style_scale(float scale);
+bool _dvz_gui_viewport_forward_move(
+    DvzGuiViewport* viewport, bool forward, float x, float y, float width, float height, int mods);
 void _dvz_gui_destroy(DvzGui* gui);
 void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data);
 void _dvz_gui_begin_frame(DvzGui* gui, DvzView* view, const DvzStreamFrame* frame);

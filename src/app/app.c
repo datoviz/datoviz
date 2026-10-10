@@ -2472,6 +2472,19 @@ bool _dvz_view_has_continuous_work(DvzView* win)
 
 
 /**
+ * Return the figure revision used to invalidate retained GUI pointer input.
+ *
+ * @param view source view, or NULL
+ * @return the figure revision, or zero when there is no figure
+ */
+uint64_t _dvz_view_scene_revision(const DvzView* view)
+{
+    return view != NULL && view->figure != NULL ? view->figure->frame_revision : 0;
+}
+
+
+
+/**
  * Mark a view as managed by an embedded GUI viewport.
  *
  * @param view source view

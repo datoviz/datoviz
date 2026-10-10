@@ -1136,6 +1136,37 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
         router_a, DVZ_POINTER_EVENT_RELEASE, 20.0f, 25.0f, 100.0f, 80.0f,
         DVZ_POINTER_BUTTON_LEFT, 0, 1.0f, dvz_input_timestamp_ns(), NULL);
 
+    /* Stationary forwarding settles despite the query's own frame request. */
+    DvzPanel* panel = dvz_panel_full(source_a);
+    AT(panel != NULL);
+    AT(dvz_item_interaction(panel, NULL) != NULL);
+    AT(dvz_panel_connect_input(panel, router_a) == DVZ_OK);
+    DvzVisual* points = dvz_point(scene, 0);
+    vec3 position[1] = {{0, 0, 0}};
+    AT(dvz_visual_set_data(points, "position", position, 1) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, points, NULL) == DVZ_OK);
+    AT(_dvz_gui_viewport_forward_move(viewport_a, true, 50, 40, 160, 120, 0));
+    uint32_t stationary_count = recorder_a.count;
+    for (uint32_t i = 0; i < 100; i++)
+        AT(!_dvz_gui_viewport_forward_move(viewport_a, true, 50, 40, 160, 120, 0));
+    AT(recorder_a.count == stationary_count);
+
+    /* Geometry, camera, size, modifiers and re-entry independently refresh input. */
+    position[0][0] = .2f;
+    AT(dvz_visual_set_data(points, "position", position, 1) == DVZ_OK);
+    AT(_dvz_gui_viewport_forward_move(viewport_a, true, 50, 40, 160, 120, 0));
+    AT(!_dvz_gui_viewport_forward_move(viewport_a, true, 50, 40, 160, 120, 0));
+    DvzCameraDesc camera = dvz_camera_desc();
+    AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+    AT(_dvz_gui_viewport_forward_move(viewport_a, true, 50, 40, 160, 120, 0));
+    AT(_dvz_gui_viewport_forward_move(viewport_a, true, 50, 40, 180, 120, 0));
+    AT(_dvz_gui_viewport_forward_move(
+        viewport_a, true, 50, 40, 180, 120, DVZ_KEY_MODIFIER_SHIFT));
+    AT(!_dvz_gui_viewport_forward_move(viewport_a, false, 50, 40, 180, 120, 0));
+    AT(_dvz_gui_viewport_forward_move(viewport_a, true, 50, 40, 180, 120, 0));
+    AT(_dvz_gui_viewport_forward_move(viewport_b, true, 50, 40, 160, 120, 0));
+    AT(!_dvz_gui_viewport_forward_move(viewport_b, true, 50, 40, 160, 120, 0));
+
     dvz_input_unsubscribe(router_a, id_a);
     dvz_input_unsubscribe(router_a, event_id_a);
     dvz_input_unsubscribe(router_b, id_b);

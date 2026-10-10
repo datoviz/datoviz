@@ -979,6 +979,54 @@ int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase
 }
 
 
+/**
+ * Verify unchanged hover results do not invalidate a rendered figure.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+int test_scene_hover_unchanged_result_preserves_revision(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzVisual* points = dvz_point(scene, 0);
+    vec3 positions[2] = {{0, 0, 0}, {.2f, .2f, 0}};
+    AT(dvz_visual_set_data(points, "position", positions, 2) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, points, NULL) == DVZ_OK);
+    DvzHover* hover = dvz_hover(scene, NULL);
+    DvzQueryResult hit = {
+        .scene_id = dvz_scene_id(scene),
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = true,
+        .visual_id = _scene_visual_public_id(scene, points),
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 0,
+    };
+    AT(dvz_hover_apply_query(hover, &hit) == DVZ_OK);
+    uint64_t revision = figure->frame_revision;
+    AT(dvz_hover_apply_query(hover, &hit) == DVZ_OK);
+    AT(figure->frame_revision == revision);
+    hit.resolved_id = 1;
+    AT(dvz_hover_apply_query(hover, &hit) == DVZ_OK);
+    AT(figure->frame_revision != revision);
+    AT(hover->item.target_id == 1);
+    AT(dvz_hover_clear(hover) == DVZ_OK);
+    revision = figure->frame_revision;
+    AT(dvz_hover_clear(hover) == DVZ_OK);
+    AT(figure->frame_revision == revision);
+    hit.hit = false;
+    AT(dvz_hover_apply_query(hover, &hit) == DVZ_OK);
+    AT(figure->frame_revision == revision);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -5696,6 +5744,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_item_interaction_input_queries);
     TST_CASE(test_scene_item_interaction_drag_suppresses_hover);
     TST_CASE(test_scene_item_interaction_applies_results);
+    TST_CASE(test_scene_hover_unchanged_result_preserves_revision);
     TST_CASE(test_scene_selection_apply_query_and_link_keys);
     TST_CASE(test_scene_selection_link_key_is_semantic_identity);
     TST_CASE(test_scene_selection_apply_query_updates_item_state);

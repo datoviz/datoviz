@@ -1278,6 +1278,7 @@ int test_scene_item_interaction_input_queries(TstContext* suite, const TstCase* 
 int test_scene_item_interaction_drag_suppresses_hover(TstContext* suite, const TstCase* item);
 
 int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase* item);
+int test_scene_hover_unchanged_result_preserves_revision(TstContext* suite, const TstCase* item);
 
 int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstCase* item);
 
