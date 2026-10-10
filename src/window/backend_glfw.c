@@ -156,7 +156,10 @@ static void _glfw_apply_window_hints(void)
 {
 #if defined(GLFW_X11_CLASS_NAME) && defined(GLFW_X11_INSTANCE_NAME)
     glfwWindowHintString(GLFW_X11_CLASS_NAME, "datoviz");
-    glfwWindowHintString(GLFW_X11_INSTANCE_NAME, "datoviz");
+    // Allow automation to use a separate window-manager rule without affecting manual launches.
+    const char* instance = getenv("DVZ_WINDOW_INSTANCE");
+    glfwWindowHintString(
+        GLFW_X11_INSTANCE_NAME, instance != NULL && instance[0] != '\0' ? instance : "datoviz");
 #endif
 }
 

@@ -22,7 +22,9 @@ def runner() -> Path:
 
 
 def run(cmd: list[str]) -> int:
-    return subprocess.call(cmd, cwd=ROOT)
+    environment = os.environ.copy()
+    environment.setdefault("DVZ_WINDOW_INSTANCE", "datoviz-automated")
+    return subprocess.call(cmd, cwd=ROOT, env=environment)
 
 
 def inventory(lane: str) -> int:
