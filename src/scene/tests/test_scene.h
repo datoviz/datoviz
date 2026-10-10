@@ -1275,6 +1275,8 @@ int test_scene_item_interaction_defaults_and_lifetime(TstContext* suite, const T
 
 int test_scene_item_interaction_input_queries(TstContext* suite, const TstCase* item);
 
+int test_scene_item_interaction_drag_suppresses_hover(TstContext* suite, const TstCase* item);
+
 int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase* item);
 
 int test_scene_selection_apply_query_and_link_keys(TstContext* suite, const TstCase* item);

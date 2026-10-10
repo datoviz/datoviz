@@ -846,6 +846,84 @@ int test_scene_item_interaction_input_queries(TstContext* suite, const TstCase* 
 }
 
 
+int test_scene_item_interaction_drag_suppresses_hover(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    DvzPanel* panel = dvz_panel(
+        figure, &(DvzPanelDesc){.x = 0.0f, .y = 0.0f, .width = 1.0f, .height = 1.0f});
+    DvzInputRouter* router = dvz_input_router();
+    DvzPointerGestureHandler* gestures = dvz_pointer_gesture_handler(router);
+    DvzItemInteraction* pick = dvz_item_interaction(panel, NULL);
+    ANN(gestures);
+    ANN(pick);
+    AT(dvz_panel_connect_input(panel, router) == 0);
+
+    DvzQueryResult hit = {
+        .scene_id = dvz_scene_id(scene),
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = true,
+        .visual_id = 7,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 3,
+    };
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_SELECTION, &hit);
+    AT(pick->hover->has_item);
+    AT(dvz_selection_count(pick->selection) == 1);
+
+    DvzPointerEvent move =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_MOVE, 12, 15, DVZ_POINTER_BUTTON_NONE);
+    dvz_input_emit_pointer(router, &move);
+    DvzPointerEvent click =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_CLICK, 12, 15, DVZ_POINTER_BUTTON_LEFT);
+    dvz_input_emit_pointer(router, &click);
+    AT(scene->pending_query_count == 2);
+
+    DvzPointerEvent press =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_PRESS, 12, 15, DVZ_POINTER_BUTTON_LEFT);
+    dvz_input_emit_pointer(router, &press);
+    AT(!pick->hover->has_item);
+    AT(scene->pending_query_count == 1);
+    AT(scene->pending_queries[0].item_interaction_kind == DVZ_ITEM_INTERACTION_QUERY_SELECTION);
+    AT(dvz_selection_count(pick->selection) == 1);
+
+    // The gesture handler emits DRAG alongside the original raw MOVE.
+    move.pos[0] = 100;
+    dvz_input_emit_pointer(router, &move);
+    AT(pick->hover_dragging);
+    AT(scene->pending_query_count == 1);
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
+    AT(!pick->hover->has_item);
+
+    // Outside release must end capture, but must not restore a stale hover result.
+    DvzPointerEvent release =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_RELEASE, 400, 400, DVZ_POINTER_BUTTON_LEFT);
+    dvz_input_emit_pointer(router, &release);
+    AT(!pick->hover_dragging);
+    AT(pick->hover_buttons == 0);
+    AT(pick->hover_suspended);
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
+    AT(!pick->hover->has_item);
+    AT(dvz_selection_count(pick->selection) == 1);
+
+    dvz_input_emit_pointer(router, &move);
+    AT(!pick->hover_suspended);
+    AT(scene->pending_query_count == 2);
+    AT(scene->pending_queries[1].item_interaction_kind == DVZ_ITEM_INTERACTION_QUERY_HOVER);
+    _scene_item_interaction_apply_query_result(pick, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
+    AT(pick->hover->has_item);
+
+    dvz_panel_connect_input(panel, NULL);
+    dvz_pointer_gesture_handler_destroy(gestures);
+    dvz_input_router_destroy(router);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -5616,6 +5694,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_overlay_descriptor_abi_rejects_invalid_structs);
     TST_CASE(test_scene_item_interaction_defaults_and_lifetime);
     TST_CASE(test_scene_item_interaction_input_queries);
+    TST_CASE(test_scene_item_interaction_drag_suppresses_hover);
     TST_CASE(test_scene_item_interaction_applies_results);
     TST_CASE(test_scene_selection_apply_query_and_link_keys);
     TST_CASE(test_scene_selection_link_key_is_semantic_identity);

@@ -1057,6 +1057,9 @@ struct DvzItemInteraction
     DvzSelection* selection;
     bool owns_hover;
     bool owns_selection;
+    uint32_t hover_buttons;
+    bool hover_dragging;
+    bool hover_suspended;
     bool active;
 };
 
