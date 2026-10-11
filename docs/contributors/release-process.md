@@ -18,7 +18,7 @@ Use explicit release candidates. Do not treat RCs as anonymous nightly snapshots
 | RC4 | Optional-provider and course-completion candidate. | Official Qt/PyQt provider artifacts and the completed Vulkan course. |
 | Final | Publish v0.4.0. | Final tag, PyPI artifacts, documentation, announcement assets. |
 
-RC1 exposed a macOS packaged native-window defect, so RC2 was deliberately limited to that repair and its regression proof. RC3 absorbs the former documentation, gallery, WebGPU, base-packaging, and quality scope. RC4 owns the completed Vulkan course and official Qt/PyQt provider artifacts, whose upstream runtime work is not an RC3 dependency.
+RC1 exposed a macOS packaged native-window defect, so RC2 was deliberately limited to that repair and its regression proof. RC3 absorbs the former documentation, gallery, WebGPU, base-packaging, and quality scope. RC4 owns the completed Vulkan course and remains the fallback for official Qt/PyQt provider artifacts. Published Vulkan-enabled Qt/PyQt now permit evaluation of the optional conda provider for RC3; promotion requires a scope decision and exact installed-provider proof on the claimed platforms. Development-package success does not select a release candidate or establish publication readiness.
 
 
 ## Release Inputs

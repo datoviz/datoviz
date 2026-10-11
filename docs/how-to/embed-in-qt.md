@@ -2,11 +2,11 @@
 
 Integrate Datoviz with a Qt application that owns the window and event loop.
 
-Qt hosting is implemented as an advanced source-build integration and does not make Qt a dependency of the base Datoviz library. Build or supply the native bridge separately. The official conda provider is deferred to RC4 while compatible Vulkan-enabled PyQt publication remains pending.
+Qt hosting is implemented as an advanced integration through an optional native bridge. Vulkan-enabled Qt and PyQt are now published on conda-forge; Datoviz's split conda provider has development-package proof on Linux and Apple Silicon macOS. Official Datoviz provider packages remain unpublished, with RC3 inclusion under evaluation and RC4 as the fallback.
 
 !!! info "At a glance"
 
-    - **Status:** Implemented from source; official conda provider deferred to RC4.
+    - **Status:** Implemented from source; development conda provider validated on Linux and Apple Silicon macOS. RC3 inclusion is provisional.
     - **Languages:** C++/Qt and Python/PyQt6 through the optional bridge.
     - **Prerequisites:** Matching Qt development/runtime libraries, Vulkan hosting support, and a built/discoverable bridge.
     - **Result:** Qt owns the window/event loop while Datoviz renders one hosted view and receives forwarded events.
@@ -173,6 +173,30 @@ Use `DATOVIZ_QTBRIDGE_LIBRARY` only when the bridge is outside those discovery l
 
 System PyQt packages may lack the required Vulkan instance API even when PyQt imports successfully.
 Treat that as an environment limitation, not as a Datoviz rendering failure.
+
+## Development conda provider
+
+Use this route when you have an indexed channel containing locally built `libdatoviz`, `datoviz`, and `datoviz-qtbridge` packages for your platform. The channel must contain all three outputs from the same source build; conda-forge supplies their runtime dependencies. This is development-package guidance, not an installation command for a published RC3 provider. The validated development packages retain `0.4.0rc2` metadata and are distinct from the published RC2 wheels.
+
+Replace `path/to/local-channel` with your indexed channel directory or URL. Create a fresh environment with the validated Python 3.11 runtime and exact Qt/PyQt builds:
+
+```sh
+conda create --name datoviz-qt --override-channels --strict-channel-priority -c path/to/local-channel -c conda-forge python=3.11 datoviz-qtbridge=0.4.0rc2 "qt6-main=6.11.1=*_2" "pyqt6=6.11.0=*_5"
+conda activate datoviz-qt
+python -m datoviz.qt
+```
+
+The provider requires the matching Datoviz Python and native packages, so the solver installs all three outputs. Keep Qt, PyQt, the bridge, and the Vulkan loader in the same managed environment. On macOS, the base native package also supplies conda MoltenVK; that runtime declares macOS 14 as its minimum. The macOS 15 wheel floor is a separate packaging contract. Do not copy the standalone wheel's private Vulkan/MoltenVK payload into this environment or replace the conda Datoviz packages with a pip wheel.
+
+The probe reports the bridge path, bridge ABI, bridge Qt version, PyQt Qt version, and required Vulkan binding methods. Expect ABI 1 and matching Qt 6.11.1 versions for this package set. A successful probe checks provider discovery and compatibility; it does not create a window or prove rendering. Continue with the [PyQt hosted example](../examples/advanced/qt-hosting.md) to exercise rendering, resize, interaction, and close/reopen on a working native desktop.
+
+| Platform | Development evidence | Remaining limitation |
+| --- | --- | --- |
+| Linux x86_64 | Split-package tests, base rendering without Qt, and hosted resize/rendering with Vulkan validation pass under Xvfb/Mesa llvmpipe. | Hardware interaction and exact RC3 artifacts remain separate checks. |
+| macOS arm64 | Split-package tests, base rendering, Cocoa surface creation, managed loader/MoltenVK identity, and hosted resize/rendering pass. | Intel and minimum-macOS runtime are untested; attended interaction and teardown allocation behavior remain pending. |
+| Windows x86_64 | All split outputs compile and package; native package file-layout tests pass. | Python import is blocked by Smart App Control rejecting the unsigned GLFW dependency; provider rendering on AMD/NVIDIA remains untested. |
+
+If Windows reports `WinError 4551`, inspect the Code Integrity events to identify the rejected dependency. The recorded development run was blocked while loading conda's `glfw3.dll`, before Qt rendering started. [Microsoft documents no per-app Smart App Control exception](https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions). Use a trusted dependency distribution or a suitable validation host; changing host security policy requires a separate decision. A dependency solve, successful import, or green source-build CI does not substitute for installed-provider rendering proof.
 
 
 ## Important details

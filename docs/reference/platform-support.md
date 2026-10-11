@@ -35,7 +35,7 @@ separately in smoke output or compatibility notes.
 
 | Provider | Status | Requirement |
 | --- | --- | --- |
-| Qt/PyQt hosting | Implemented from source; packaged provider deferred to RC4 | Needs a source-built `datoviz_qtbridge`, compatible Qt runtime, PyQt6 Vulkan binding surface, and platform WSI support. The official conda provider awaits compatible Vulkan-enabled PyQt publication. |
+| Qt/PyQt hosting | Implemented from source; RC3 packaged provider under evaluation | Needs a source-built or separately packaged `datoviz_qtbridge`, compatible Qt runtime, PyQt6 Vulkan binding surface, and platform WSI support. Vulkan-enabled Qt/PyQt are published; Datoviz provider packages still need Windows runtime and exact-candidate proof. |
 | PySide6 hosting | Not a v0.4 target by default | Only viable if a binding exposes the same required Vulkan surface and pointer-unwrapping support. |
 | Shaderc runtime compilation | Optional | Enabled when headers/library are found or required by `DVZ_ENABLE_SHADERC=ON`; otherwise precompiled shaders are required. |
 | CUDA external-memory interop | Experimental, Linux/NVIDIA only | Native C buffer export, CuPy vertex buffers, and GPU-copied RGBA8 image buffers are implemented through opaque-FD external memory and timeline semaphores. Image, PyTorch, and Taichi routes await recorded physical GPU proof. See the [framework matrix](gpu-array-interop.md). |

@@ -18,7 +18,8 @@ RC3 prepares the documentation, packaging, and tutorial foundation for the v0.4 
 
 * `dvz_buffer_resize()` now returns an integer status. Growth replaces the allocation; failure preserves the old buffer, and requests no larger than the current size are successful no-ops.
 * The course requires a build newer than the published RC2 package. Its package warning remains until an official newer artifact passes the course checks.
-* Low-level APIs remain advanced/unstable. Chapters 4–15 and official Qt/PyQt provider artifacts are planned for RC4; high-level Python plotting remains in GSP/VisPy2.
+* Low-level APIs remain advanced/unstable. Chapters 4–15 remain planned for RC4; high-level Python plotting remains in GSP/VisPy2.
+* Published Vulkan-enabled Qt/PyQt enable RC3 evaluation of the optional conda provider. Linux and Apple Silicon development-package checks pass; Windows runtime and frozen-candidate proof remain pending. RC4 remains the fallback for official provider artifacts, and base wheels remain independent of Qt.
 
 ### Fixes
 

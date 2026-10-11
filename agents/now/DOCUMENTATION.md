@@ -31,6 +31,8 @@ The two bounded Fractal prose batches (`c4adddfd8` and `6d4affab6`) clarify twel
 4. Review the local RC3 release-notes draft; finalize its exact identity, validation evidence, and release-specific known issues only when artifact scope is fixed.
 5. Review exact outreach drafts before any dataset-author or public GitHub communication.
 
+The 2026-10-11 Qt/PyQt documentation draft corrects the completed upstream publication state, documents the indexed local-channel install and managed Vulkan ownership, and records the Windows trust limitation. [Provider promotion gates](QT_MACOS_VULKAN_HANDOFF.md#proposed-rc3-provider-scope-2026-10-11) keep RC3 inclusion conditional and RC4 as the fallback; review final channel, version, platform claims, and release-note wording after candidate proof.
+
 ## PR #132 Disposition
 
 Per-image present semaphore, Kvazaar/PThreads4W, and `DVZ_LOG_LEVEL` work were integrated independently. The current vendored Vulkan-header fallback does not have a reproduced defect. The broad developer-preset overhaul remains deferred rather than entering RC3.

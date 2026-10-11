@@ -54,3 +54,5 @@ This fragment assumes an existing CMake project. The integration guide contains 
 ## Other installation paths
 
 Use [Build from source](build-from-source.md) when you need the current `main` code, want to contribute to Datoviz, or do not have a suitable published package. To inspect browser support without installing native Datoviz, open a `webgpu-live` route from [Examples](../examples/index.md). Browser support is an experimental [WebGPU subset](../reference/webgpu-subset.md).
+
+For PyQt hosting, see [Embed in Qt](../how-to/embed-in-qt.md#development-conda-provider). Published RC2 wheels require a separately built native bridge; the `datoviz[qt]` extra supplies PyQt6 only. The guide also covers the validated development conda provider from an indexed local channel. Official Datoviz provider packages are not yet published, and RC3 inclusion remains provisional.

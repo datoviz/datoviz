@@ -177,7 +177,7 @@ just wheel-check --cmake-consumer --qt-probe optional
 Use `--qt-probe required` only on a machine or CI runner where PyQt6, Qt Vulkan support, and the
 Datoviz Qt bridge provider are expected to be present.
 
-The Qt/PyQt path remains source-build-only for RC3. Official provider artifacts are deferred to RC4 and remain separate from the base-wheel contract. Source builds may build `datoviz_qtbridge` with `DVZ_ENABLE_QT_BRIDGE=ON` or `AUTO`; local and split provider validation should point `datoviz.qt` at that bridge with `DATOVIZ_QTBRIDGE_LIBRARY`. Conda-forge is the preferred first binary provider channel because it can keep Qt, PyQt, and the bridge on one managed runtime. PyPI provider wheels should wait until the bridge ABI, runtime-version policy, and per-platform Qt library layout are proven.
+Published RC2 Qt/PyQt hosting requires a separately built bridge. Vulkan-enabled Qt/PyQt are now published on conda-forge, and development split-provider checks pass on Linux and Apple Silicon macOS. Official Datoviz provider artifacts are under evaluation for RC3, with RC4 as the fallback until platform and exact-candidate proof is complete. The provider remains separate from the base-wheel contract. Source builds may build `datoviz_qtbridge` with `DVZ_ENABLE_QT_BRIDGE=ON` or `AUTO`; set `DATOVIZ_QTBRIDGE_LIBRARY` when normal discovery cannot find the bridge. See [development conda provider installation](../how-to/embed-in-qt.md#development-conda-provider) for the managed-runtime route and current Windows trust limitation. PyPI provider wheels should wait until the bridge ABI, runtime-version policy, and per-platform Qt library layout are proven.
 
 On a Qt-capable source host, validate the split provider route with:
 
