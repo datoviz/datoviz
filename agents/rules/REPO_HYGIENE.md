@@ -16,6 +16,8 @@ Before committing or pushing a `data` gitlink, run `python3 tools/check_submodul
 
 Before any maintainer direct push to `origin/main`, run `python3 tools/check_submodule_reachability.py data --revision HEAD` in addition to the normal status, staged-stat, and whitespace checks. The `rossant` ruleset bypass applies only to the required reachability status so a verified fast-forward commit can be pushed before its post-push workflow exists. The separate deletion and non-fast-forward rules have no bypass.
 
+After a direct push to `origin/main`, verify the "Submodule reachability" workflow result for the exact pushed commit. A bypass warning is expected when its status is not yet available; report pending or unavailable results explicitly, and investigate failures before declaring validation complete.
+
 Stop-sign paths:
 
 1. staged `data` gitlink updates
