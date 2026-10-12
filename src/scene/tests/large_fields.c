@@ -68,19 +68,20 @@ int test_scene_large_r16_image_padded_upload(TstContext* suite, const TstCase* i
         PADDING_TEXELS = 8,
     };
     const uint64_t tight_row_bytes = WIDTH * sizeof(uint16_t);
-    const uint64_t source_row_bytes = (WIDTH + PADDING_TEXELS) * sizeof(uint16_t);
+    const uint64_t source_row_texels = WIDTH + PADDING_TEXELS;
+    const uint64_t source_row_bytes = source_row_texels * sizeof(uint16_t);
     const uint64_t source_size = source_row_bytes * HEIGHT;
-    uint8_t* source = (uint8_t*)dvz_calloc(source_size, 1);
+    uint16_t* source = (uint16_t*)dvz_calloc(source_row_texels * HEIGHT, sizeof(uint16_t));
     ANN(source);
     dvz_memset(source, source_size, 0xa5, source_size);
     for (uint32_t y = 0; y < HEIGHT; y++)
     {
-        uint16_t* row = (uint16_t*)(source + (uint64_t)y * source_row_bytes);
+        uint16_t* row = source + (uint64_t)y * source_row_texels;
         for (uint32_t x = 0; x < WIDTH; x++)
             row[x] = (uint16_t)((17u * x + 31u * y) & 0xffffu);
     }
-    ((uint16_t*)source)[0] = 0;
-    uint16_t* last_source_row = (uint16_t*)(source + (uint64_t)(HEIGHT - 1) * source_row_bytes);
+    source[0] = 0;
+    uint16_t* last_source_row = source + (uint64_t)(HEIGHT - 1) * source_row_texels;
     last_source_row[WIDTH - 1] = UINT16_MAX;
 
     DvzScene* scene = dvz_scene();
@@ -234,20 +235,21 @@ int test_scene_large_r16_uint_labels_padded_upload(TstContext* suite, const TstC
         PADDING_TEXELS = 12,
     };
     const uint64_t tight_row_bytes = WIDTH * sizeof(uint16_t);
-    const uint64_t source_row_bytes = (WIDTH + PADDING_TEXELS) * sizeof(uint16_t);
+    const uint64_t source_row_texels = WIDTH + PADDING_TEXELS;
+    const uint64_t source_row_bytes = source_row_texels * sizeof(uint16_t);
     const uint64_t source_size = source_row_bytes * HEIGHT;
-    uint8_t* source = (uint8_t*)dvz_calloc(source_size, 1);
+    uint16_t* source = (uint16_t*)dvz_calloc(source_row_texels * HEIGHT, sizeof(uint16_t));
     ANN(source);
     dvz_memset(source, source_size, 0xa5, source_size);
     for (uint32_t y = 0; y < HEIGHT; y++)
     {
-        uint16_t* row = (uint16_t*)(source + (uint64_t)y * source_row_bytes);
+        uint16_t* row = source + (uint64_t)y * source_row_texels;
         for (uint32_t x = 0; x < WIDTH; x++)
             row[x] = (uint16_t)(1u + (x + 3u * y) % 4093u);
     }
-    uint16_t* first_source_row = (uint16_t*)source;
-    uint16_t* second_source_row = (uint16_t*)(source + source_row_bytes);
-    uint16_t* last_source_row = (uint16_t*)(source + (uint64_t)(HEIGHT - 1) * source_row_bytes);
+    uint16_t* first_source_row = source;
+    uint16_t* second_source_row = source + source_row_texels;
+    uint16_t* last_source_row = source + (uint64_t)(HEIGHT - 1) * source_row_texels;
     first_source_row[0] = 0;
     first_source_row[WIDTH - 1] = 17;
     second_source_row[0] = 1009;
