@@ -44,13 +44,13 @@ bool _scene_point_like_visual_shader_desc(
     ANN(visual);
     ANN(format_tag);
     ANN(out);
-    (void)wboit_accumulation;
 
     bool point = visual->point_like_kind == DVZ_SCENE_POINT_LIKE_POINT;
     bool pixel = visual->point_like_kind == DVZ_SCENE_POINT_LIKE_PIXEL;
     bool marker = visual->point_like_kind == DVZ_SCENE_POINT_LIKE_MARKER;
     bool point_like = point || pixel || marker;
-    if (!point_like)
+    if (!point_like ||
+        (wboit_accumulation && (!point || picking || visual->has_item_state)))
         return false;
 
     bool depth_cue = visual->depth_cue_enabled && (point || pixel);
@@ -66,11 +66,11 @@ bool _scene_point_like_visual_shader_desc(
     dvz_snprintf(
         out->vertex_key, sizeof(out->vertex_key), "_vs_%s%s%s", visual_name, suffix, format_tag);
     dvz_snprintf(
-        out->fragment_key, sizeof(out->fragment_key), "_fs_%s%s%s", visual_name, suffix,
-        format_tag);
+        out->fragment_key, sizeof(out->fragment_key), "_fs_%s%s%s%s", visual_name, suffix,
+        wboit_accumulation ? "_wboit" : "", format_tag);
     dvz_snprintf(
-        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_%s%s%s", visual_name, suffix,
-        format_tag);
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_%s%s%s%s", visual_name, suffix,
+        wboit_accumulation ? "_wboit" : "", format_tag);
 
     DvzSceneBuiltinShader shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
     if (marker)
@@ -93,10 +93,21 @@ bool _scene_point_like_visual_shader_desc(
         shader =
             depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE : DVZ_SCENE_BUILTIN_SHADER_POINT;
 
+    if (wboit_accumulation)
+    {
+        shader = point_style && depth_cue ? DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE_WBOIT
+                 : point_style           ? DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_WBOIT
+                 : depth_cue             ? DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE_WBOIT
+                                         : DVZ_SCENE_BUILTIN_SHADER_POINT_WBOIT;
+    }
     _scene_shader_desc_set_builtin(out, shader);
     _scene_shader_desc_set_identity(
         out, pixel ? "scene.pixel" : marker ? "scene.marker" : "scene.point",
-        picking                    ? "pick"
+        wboit_accumulation         ? (point_style && depth_cue ? "style_depth_cue_wboit"
+                                     : point_style            ? "style_wboit"
+                                     : depth_cue              ? "depth_cue_wboit"
+                                                              : "wboit")
+        : picking                  ? "pick"
         : item_state               ? "item_state"
         : point_style && depth_cue ? "style_depth_cue"
         : point_style              ? "style"
@@ -139,6 +150,11 @@ bool _scene_point_like_visual_shader_desc(
         out->vertex_spirv_key = pixel || marker ? "pixel_pick_vert" : "point_pick_vert";
         out->fragment_spirv_key = pixel || marker ? "pixel_pick_frag" : "point_pick_frag";
     }
+    if (wboit_accumulation)
+        out->fragment_spirv_key = point_style && depth_cue ? "point_cue_style_wboit_frag"
+                                  : point_style           ? "point_style_wboit_frag"
+                                  : depth_cue             ? "point_cue_wboit_frag"
+                                                          : "point_wboit_frag";
     return true;
 }
 

@@ -49,9 +49,10 @@ const char* _scene_visual_alpha_eligibility_error(
     if (alpha_mode == DVZ_ALPHA_MASK)
         return "alpha mask requires cutoff semantics, which are not implemented";
     if (alpha_mode == DVZ_ALPHA_WBOIT &&
-        kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE && kind != DVZ_SCENE_VISUAL_DESC_SPLAT)
+        kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE && kind != DVZ_SCENE_VISUAL_DESC_SPLAT &&
+        kind != DVZ_SCENE_VISUAL_DESC_POINT)
         return "WBOIT requires family-conformant accumulation shaders; currently supported "
-               "only for ordinary mesh/primitive and splat visuals";
+               "only for ordinary mesh/primitive, point and splat visuals";
     if (alpha_mode == DVZ_ALPHA_DEPTH_PEEL && kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
         return "depth peeling requires family-conformant coverage and bounds shaders; "
                "currently supported only for ordinary mesh/primitive visuals";

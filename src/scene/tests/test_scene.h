@@ -1523,3 +1523,5 @@ int test_scene(TstSuite* suite);
 
 int test_scene_wboit_wgsl_composition(TstContext* suite, const TstCase* item);
 int test_scene_dense_geometry_empty_restore(TstContext* suite, const TstCase* item);
+int test_scene_point_wboit_shader_contract(TstContext* suite, const TstCase* item);
+int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item);
