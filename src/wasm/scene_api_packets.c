@@ -41,14 +41,15 @@ int dvz_wasm_api_set_capabilities(
     uint32_t scene_handle, uint32_t max_texture_dimension_2d, uint32_t max_bind_groups,
     uint32_t max_vertex_buffers, uint32_t max_buffer_size,
     uint32_t min_texture_copy_bytes_per_row_alignment, uint32_t max_sample_count,
-    uint32_t supports_color_blending)
+    uint32_t supports_color_blending, uint32_t max_color_attachments,
+    uint32_t supports_float_render_targets)
 {
     DvzWasmApiScene* scene = _scene(scene_handle);
     if (scene == NULL)
         return -1;
     if (max_texture_dimension_2d == 0 || max_bind_groups == 0 || max_vertex_buffers == 0 ||
         max_buffer_size == 0 || min_texture_copy_bytes_per_row_alignment == 0 ||
-        max_sample_count == 0)
+        max_sample_count == 0 || max_color_attachments == 0)
     {
         return _fail(scene, "invalid WASM capability snapshot");
     }
@@ -62,6 +63,10 @@ int dvz_wasm_api_set_capabilities(
     scene->caps.min_texture_copy_bytes_per_row_alignment =
         min_texture_copy_bytes_per_row_alignment;
     scene->caps.supports_color_blending = supports_color_blending != 0;
+    scene->caps.max_color_attachments = max_color_attachments;
+    scene->caps.render_target_format_rgba16float = supports_float_render_targets != 0;
+    scene->caps.render_target_format_r16float = supports_float_render_targets != 0;
+    scene->caps.supports_render_target_sampling = supports_float_render_targets != 0;
     return 0;
 }
 

@@ -56,6 +56,7 @@ export function runtimeCapabilities(device, canvasFormat, adapter = null) {
   const maxBindGroups = limits.maxBindGroups;
   const maxVertexBuffers = limits.maxVertexBuffers;
   const maxBufferSize = limits.maxBufferSize;
+  const maxColorAttachments = limits.maxColorAttachments;
   const capabilities = {
     supported_shader_formats: ["wgsl"],
     supported_texture_formats: supportedTextureFormats(canvasFormat),
@@ -72,6 +73,9 @@ export function runtimeCapabilities(device, canvasFormat, adapter = null) {
   }
   if (Number.isFinite(maxVertexBuffers)) {
     capabilities.max_vertex_buffers = maxVertexBuffers;
+  }
+  if (Number.isFinite(maxColorAttachments)) {
+    capabilities.max_color_attachments = maxColorAttachments;
   }
   if (Number.isFinite(maxBufferSize)) {
     capabilities.max_buffer_size = maxBufferSize;
