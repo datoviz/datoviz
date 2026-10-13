@@ -48,6 +48,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_point_emit_glsl_native_points);
     TST_CASE(test_scene_point_style_emits_glsl_and_wgsl);
     TST_CASE(test_scene_point_wboit_shader_contract);
+    TST_CASE(test_scene_point_wboit_wgsl_packets);
     TST_SCENE_GRAPH_GPU_CASE(test_scene_point_wboit_glsl_executes);
     TST_CASE(test_scene_point_filled_no_stroke_uses_fill_shader);
     TST_CASE(test_scene_marker_api_and_emit_glsl);
