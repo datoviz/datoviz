@@ -222,6 +222,11 @@ def run_one(example: Example, args: argparse.Namespace, logs: Path, captures: Pa
     log_path.write_text(completed.stdout, encoding="utf8")
     status = "pass" if completed.returncode == 0 else "fail"
     detail = "" if status == "pass" else f"exit-{completed.returncode}"
+    if status == "pass" and re.search(
+        r"\bE\s+validation\.h:\d+:\s+validation layer:", completed.stdout
+    ):
+        status = "fail"
+        detail = "vulkan-validation-error"
     if status == "pass" and capture_path is not None and not capture_path.is_file():
         status = "fail"
         detail = "missing-capture"
