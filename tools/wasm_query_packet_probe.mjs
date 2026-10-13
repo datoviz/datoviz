@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
 import { pathToFileURL } from "node:url";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { decodeDrp2Packet } from "../web/drp2/packet.js";
 
 const modulePath = process.argv[2] ?? "build-wasm-scene/wasm/datoviz_wasm_scene.mjs";
-const createModule = (await import(pathToFileURL(resolve(modulePath)))).default;
-const Module = await createModule();
+const resolvedModulePath = resolve(modulePath);
+const createModule = (await import(pathToFileURL(resolvedModulePath))).default;
+const Module = await createModule({
+  locateFile: (name) => resolve(dirname(resolvedModulePath), name),
+});
 
 const DVZ_FORMAT_R8G8B8A8_UNORM = 37;
 const DVZ_DRP2_PACKET_SETUP = 1;
