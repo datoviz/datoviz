@@ -1,10 +1,4 @@
-struct MVP {
-    model: mat4x4f,
-    view: mat4x4f,
-    proj: mat4x4f,
-    time: f32,
-    flags: u32,
-}
+#include "common.wgsl"
 
 struct FragmentIn {
     @location(0) color: vec4f,
@@ -14,8 +8,6 @@ struct FragmentIn {
     @location(4) @interpolate(flat) id: u32,
     @location(5) coord: vec2f,
 }
-
-@group(0) @binding(0) var<uniform> mvp: MVP;
 
 fn project_depth(view_position: vec4f) -> vec4f {
     return scene_clip_to_device_clip(mvp.proj * view_position);

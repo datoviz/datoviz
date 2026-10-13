@@ -4594,6 +4594,34 @@ static int test_scene_query_optional_color_and_size_aliases(TstContext* suite, c
     AT(dvz_scene_buffer_set_data(index, indices, sizeof(indices)) == DVZ_OK);
     AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
     AT(result.hit && result.face_id == 1);
+    // Unlit item-state decoration does not activate the material alpha used by lit fragments.
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    material.opacity = 0;
+    material.base_color_factor[3] = 0;
+    AT(dvz_visual_set_material(mesh, &material) == DVZ_OK);
+    uint32_t item_state = DVZ_ITEM_STATE_NONE;
+    AT(dvz_visual_set_data(mesh, "item_state", &item_state, 1) == DVZ_OK);
+    AT(_scene_item_state_sync(scene, "initialize neutral mesh item-state style") == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.face_id == 1);
+    AT(_query_test_center_pixel(runtime, figure, rendered));
+    AT(rendered[0] > 200 && rendered[1] > 200 && rendered[2] > 200);
+    // Adding normals selects the material-evaluating shader and must invalidate alpha uploads.
+    vec3 normals[6] = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+                       {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+    AT(dvz_visual_set_data(mesh, "normal", normals, 6) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(!result.hit && result.status == DVZ_QUERY_STATUS_MISS);
+    AT(_query_test_center_pixel(runtime, figure, rendered));
+    AT(rendered[0] == 0 && rendered[1] == 0 && rendered[2] == 0);
+    material.opacity = 1;
+    material.base_color_factor[3] = 1;
+    AT(dvz_visual_set_material(mesh, &material) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.face_id == 1);
+    AT(_query_test_center_pixel(runtime, figure, rendered));
+    AT(rendered[0] > 200 && rendered[1] > 200 && rendered[2] > 200);
     AT(dvz_visual_set_visible(mesh, false) == DVZ_OK);
     request.target = DVZ_SCENE_TARGET_ITEM;
     const DvzVisualType types[2] = {DVZ_VISUAL_TYPE_POINT, DVZ_VISUAL_TYPE_PIXEL};

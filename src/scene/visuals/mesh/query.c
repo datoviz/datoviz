@@ -23,6 +23,7 @@
 #include "datoviz/math/_cglm.h"
 #include "frame_plan/frame_plan.h"
 #include "_visual_pipeline.h"
+#include "_visual_pipeline_internal.h"
 #include "query_geometry.h"
 #include "registry/registry.h"
 #include "mesh/internal.h"
@@ -32,7 +33,6 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_overflow.h"
-#include "scene_emit/visual_lowering.h"
 
 
 
@@ -153,10 +153,8 @@ static bool _mesh_query_static_versions(
     if (color >= 0)
         out_versions[8] = visual->attrs[color].version;
     out_versions[9] = visual->material.version;
-    DvzVisualLowering lowering = {0};
-    if (!_scene_visual_lowering_resolve(visual, &lowering))
-        return false;
-    out_versions[10] = lowering.needs_material_params;
+    // Primitive material shading is selected by normals; item-state parameters only style color.
+    out_versions[10] = _scene_visual_has_dense_attr(visual, "normal");
     return true;
 }
 
@@ -234,11 +232,10 @@ static bool _mesh_query_build(
     if (include_static_uploads)
     {
         const DvzVisualAttr* positions = NULL;
-        DvzVisualLowering lowering = {0};
         if (!_dvz_scene_query_dense_attr(ctx->visual, "position", sizeof(vec3), &positions) ||
-            !_scene_visual_lowering_resolve(ctx->visual, &lowering) ||
             !_scene_query_color_alpha(
-                ctx->visual, positions->item_count, lowering.needs_material_params,
+                ctx->visual, positions->item_count,
+                _scene_visual_has_dense_attr(ctx->visual, "normal"),
                 &out_plan->scratch.query_alpha))
             return false;
         uint64_t uploaded_vertex_count = 0;
