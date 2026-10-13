@@ -529,7 +529,8 @@ static bool _contract_validate_drp2_pipeline_layouts(
         ok = false;
     }
     if ((mask & DVZ_SCENE_BIND_GROUP_REQUIREMENT_IMAGE) != 0 &&
-        !_contract_pipeline_has_layout_label(stream, command, "_bgl_img"))
+        !_contract_pipeline_has_layout_label(stream, command, "_bgl_img") &&
+        !_contract_pipeline_has_layout_label(stream, command, "_bgl_mesh_textured_lights_v1"))
     {
         _contract_report(report, "DRP2 pipeline missing image bind-group layout");
         ok = false;
