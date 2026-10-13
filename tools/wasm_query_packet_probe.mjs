@@ -143,6 +143,28 @@ try {
   requireOk(renderFrame.frame_index > queryFrameIndex, "normal packet frame did not advance after query");
   requireOk(Module._dvz_wasm_api_query_active(scene) === 1, "normal packet emit cleared active query");
 
+  requireOk(
+    Module._dvz_wasm_api_resize(scene, figure, 272, 256, 272, 256, 1, 1) === 0,
+    "query snapshot resize failed",
+  );
+  const staleBytes = Module._malloc(4);
+  try {
+    Module.HEAPU32[staleBytes / 4] = 1;
+    requireOk(Module._dvz_wasm_api_query_resolve(scene, staleBytes, 4) === 0, "stale query delivery failed");
+  } finally {
+    Module._free(staleBytes);
+  }
+  requireOk(Module._dvz_wasm_api_query_active(scene) === 0, "stale query retained active readback");
+  requireOk(Module._dvz_wasm_api_scenario_post_frame(scene) === 0, "stale query post-frame failed");
+  requireOk(Module._dvz_wasm_api_emit_packets(scene, figure) === 0, "post-stale normal packet emit failed");
+  const postStaleSetup = packet(scene, DVZ_DRP2_PACKET_SETUP);
+  requireOk(
+    !postStaleSetup.commands.some((command) => command.cmd === "CreateRenderPipeline" &&
+      (command.vertex_buffers ?? []).some((buffer) =>
+        (buffer.attributes ?? []).some((attribute) => attribute.shader_location === 5))),
+    "stale identity readback created a hover item-state pipeline",
+  );
+
   console.log(
     `query_packets setup=${querySetupSize} ` +
     `update=${queryUpdateSize} ` +

@@ -1060,6 +1060,10 @@ struct DvzItemInteraction
     uint32_t hover_buttons;
     bool hover_dragging;
     bool hover_suspended;
+    bool hover_pointer_valid;
+    bool hover_needs_refresh;
+    double hover_figure_position[2];
+    uint64_t hover_query_input_revision;
     bool active;
 };
 
@@ -1422,6 +1426,7 @@ struct DvzPendingQueryRequest
 struct DvzQueuedQueryResult
 {
     DvzPanel* panel;
+    uint64_t query_input_revision;
     uint64_t freshness_serial;
     DvzQueryResult result;
 };
@@ -2199,6 +2204,7 @@ struct DvzFigure
     uint64_t artifact_resource_version;
     uint64_t artifact_frame_index;
     uint64_t frame_revision;
+    uint64_t query_input_revision;
 
     char* last_frame_plan_trace;
     bool has_last_frame_plan_trace;
@@ -2305,6 +2311,7 @@ struct DvzScene
     uint32_t hover_count;
     DvzHover hovers[DVZ_SCENE_MAX_HOVERS];
 
+    bool syncing_item_state;
     uint32_t item_interaction_count;
     DvzItemInteraction item_interactions[DVZ_SCENE_MAX_ITEM_INTERACTIONS];
 

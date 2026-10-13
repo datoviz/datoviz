@@ -282,6 +282,7 @@ static bool _query_emit_result(
         out_result->visual_id = visual_id;
         out_result->visual_family = family;
         scene->query_pending = *pending;
+        scene->query_input_revision = figure->query_input_revision;
         scene->query_build = build;
         scene->query_build.pending = &scene->query_pending;
         scene->query_plan = plan;
@@ -451,6 +452,13 @@ int dvz_wasm_api_query_resolve(uint32_t scene_handle, const uint8_t* bytes, uint
         return _fail(scene, "WASM query resolve requested without an active query");
     if (bytes == NULL || byte_size < scene->query_plan.byte_size)
         return _fail(scene, "WASM query readback payload is too small");
+
+    if (scene->query_panel == NULL || scene->query_panel->figure == NULL ||
+        scene->query_input_revision != scene->query_panel->figure->query_input_revision)
+    {
+        _clear_query(scene);
+        return 0;
+    }
 
     DvzQueryResult result = scene->query_result;
     DvzSceneQueryDecodeContext decode = {

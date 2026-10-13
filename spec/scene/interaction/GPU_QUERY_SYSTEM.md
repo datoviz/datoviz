@@ -457,6 +457,8 @@ Glyph-level precision can be deferred. Object-level GPU identity should be the f
 
 Native `r32uint` identity queries compose multiple ordinary mesh FACE draws and mesh/point/sphere ITEM draws in one shared depth pass. Families append normalized identity packets with bounded per-visual token ranges; the GPU selects the winning token and CPU metadata lookup restores its visual, local target and full 64-bit link key. Signed scientific IDs retain their unsigned 64-bit bit pattern. Composition uses ordinary frontmost depth semantics rather than transparency contribution weighting. Sampled/textured mesh queries and mesh MASK queries are explicitly unsupported until their effective-alpha coverage is preserved. Browser query packets retain single-family execution and explicitly reject multiple identity candidates; native composition does not establish WebGPU parity.
 
+Retained item interaction refreshes stationary hover after geometry, link mapping, visibility, camera or layout changes. One latest hover request per panel survives mutation bursts; hover styling and plain redraws do not count as query-input changes. Gestures suppress hover and preserve committed selection. Releasing inside the panel queues a fresh hover query without requiring motion; outside release stays suspended. Pointer coordinates remain anchored in figure space across panel-layout changes. Completed results from older query inputs are dropped before later polling, and delayed browser readbacks from older input snapshots are discarded.
+
 Do not let WBOIT, depth peeling, alpha blending, SSAO, EDL, bloom, or other postprocess effects
 silently redefine query semantics. Each technique must either:
 

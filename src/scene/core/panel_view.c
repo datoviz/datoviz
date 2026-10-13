@@ -98,7 +98,7 @@ void _scene_panel_view_dirty(DvzPanel* panel)
         _axis_mark_dirty(x_axis);
     if (y_axis != NULL && y_axis->panel != NULL)
         _axis_mark_dirty(y_axis);
-    _scene_notify_request_frame(panel->figure);
+    _scene_notify_query_input_changed(panel->figure);
 }
 
 
@@ -107,7 +107,7 @@ void _scene_panel_view3d_dirty(DvzPanel* panel)
     if (panel == NULL)
         return;
     panel->view3d_revision = _panel_view_next_revision(panel->view3d_revision);
-    _scene_notify_request_frame(panel->figure);
+    _scene_notify_query_input_changed(panel->figure);
 }
 
 

@@ -55,6 +55,7 @@ void _clear_query(DvzWasmApiScene* scene)
     scene->frame_artifact = NULL;
     scene->packet_status = 0;
     scene->query_pending = (DvzPendingQueryRequest){0};
+    scene->query_input_revision = 0;
     scene->query_build = (DvzSceneQueryBuildContext){0};
     scene->query_plan = (DvzSceneQueryPlan){0};
     scene->query_result = (DvzQueryResult){0};

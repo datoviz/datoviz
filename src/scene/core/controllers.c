@@ -254,7 +254,7 @@ static void _scene_notify_controller_figures(const DvzController* controller)
         for (uint32_t pi = 0; pi < figure->panel_count; pi++)
             bound = bound || _scene_panel_has_controller(&figure->panels[pi], controller);
         if (bound)
-            _scene_notify_request_frame(figure);
+            _scene_notify_query_input_changed(figure);
     }
 }
 
@@ -312,7 +312,7 @@ static void _scene_controller_detach_from_panels(DvzController* controller)
     }
 
     for (uint32_t i = 0; i < affected_count; i++)
-        _scene_notify_request_frame(affected[i]);
+        _scene_notify_query_input_changed(affected[i]);
 }
 
 
@@ -1652,7 +1652,7 @@ DvzResult dvz_panel_bind_controller(DvzPanel* panel, DvzController* controller, 
     default:
         return -1;
     }
-    _scene_notify_request_frame(panel->figure);
+    _scene_notify_query_input_changed(panel->figure);
     return 0;
 }
 

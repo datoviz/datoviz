@@ -2293,7 +2293,7 @@ int test_scene_typed_upload_rejects_wrong_family(TstContext* suite, const TstCas
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(primitive, "radius", diameters, 1) == -1);
     AT_EXPECTED_ERROR_STRICT(
         suite, dvz_visual_set_data(sphere, "pixel_size_px", diameters, 1) == -1);
-    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(point, "item_state", item_state, 0) == -1);
+    AT(dvz_visual_set_data(point, "item_state", item_state, 0) == DVZ_OK);
 
     DvzVisualDataUpdate mismatch[] = {
         {.attr_name = "position", .data = positions, .item_count = 1},

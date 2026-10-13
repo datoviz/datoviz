@@ -18,8 +18,11 @@
 
 #include "_assertions.h"
 #include "../query/internal.h"
+#include "frame_plan/emit.h"
 #include "../visuals/image/internal.h"
 #include "domain/field_internal.h"
+#include "core/scene_notify_internal.h"
+#include "interaction/internal.h"
 #include "datoviz/drp2.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene/panzoom.h"
@@ -4267,6 +4270,16 @@ static int test_scene_query_scientific_composition(TstContext* suite, const TstC
         panel->visuals[0] = panel->visuals[1];
         panel->visuals[1] = swapped;
     }
+    uint32_t resource_count = scene->query_executor.emitter->resources.count;
+    uint32_t object_count = scene->query_executor.emitter->objects.count;
+    for (uint32_t repeat = 0; repeat < 16; repeat++)
+    {
+        AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+        AT(result.hit && result.visual_id == mesh_b_id && result.link_key == keys[1]);
+        AT(scene->query_executor.emitter->resources.count == resource_count);
+        AT(scene->query_executor.emitter->objects.count == object_count);
+        AT(scene->query_executor.last_timing.submitted_count == 1);
+    }
     keys[1] = UINT64_C(0x8000000000000001);
     AT(dvz_visual_set_target_link_keys(mesh_b, DVZ_SCENE_TARGET_FACE, channel, keys, 2) == DVZ_OK);
     AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
@@ -4387,6 +4400,139 @@ static int test_scene_query_scientific_composition(TstContext* suite, const TstC
 
 
 
+/**
+ * Prove stationary pointer updates consume current GPU identity while preserving selection.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+static int test_scene_query_stationary_hover_updates(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+    DvzGpuCtxConfig config = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceVulkan13Features features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .dynamicRendering = true, .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&config, &features);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&config);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzDrp2RuntimeConfig runtime_config =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_config);
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzVisual* point = dvz_point(scene, 0);
+    AT(dvz_visual_set_query_capabilities(point, DVZ_QUERY_CAPABILITY_ITEM) == DVZ_OK);
+    vec3 position[1] = {{0, 0, 0}};
+    DvzColor color[1] = {{255, 0, 0, 255}};
+    float size[1] = {12};
+    DvzVisualDataUpdate updates[3] = {
+        {.attr_name = "position", .data = position, .item_count = 1},
+        {.attr_name = "color", .data = color, .item_count = 1},
+        {.attr_name = "size", .data = size, .item_count = 1},
+    };
+    AT(dvz_visual_set_data_many(point, updates, 3) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, point, NULL) == DVZ_OK);
+    DvzLinkChannel* channel = dvz_link_channel(scene, "stationary");
+    uint64_t key[1] = {315};
+    AT(dvz_visual_set_link_keys(point, channel, key, 1) == DVZ_OK);
+    DvzItemInteraction* interaction = dvz_item_interaction(panel, NULL);
+    DvzPointerEvent move = {.type = DVZ_POINTER_EVENT_MOVE, .pos = {32, 32}};
+    AT(_scene_item_interaction_pointer(interaction, &move));
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 1);
+    DvzQueryResult query = {0};
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit && query.link_key == key[0]);
+    AT(interaction->hover->has_item);
+    AT(dvz_selection_apply_query(interaction->selection, &query) == DVZ_OK);
+    AT(dvz_selection_count(interaction->selection) == 1);
+    uint64_t input_revision = figure->query_input_revision;
+    for (uint32_t frame = 0; frame < 8; frame++)
+    {
+        _scene_notify_request_frame(figure);
+        AT(dvz_figure_process_queries(figure, runtime, NULL) == 0);
+        AT(scene->pending_query_count == 0);
+        AT(figure->query_input_revision == input_revision);
+    }
+
+    position[0][0] = 2;
+    AT(dvz_visual_set_data(point, "position", position, 1) == DVZ_OK);
+    AT(scene->pending_query_count == 1);
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(!query.hit && query.status == DVZ_QUERY_STATUS_MISS);
+    AT(!interaction->hover->has_item);
+    AT(dvz_selection_count(interaction->selection) == 1);
+    position[0][0] = 0;
+    AT(dvz_visual_set_data(point, "position", position, 1) == DVZ_OK);
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit && interaction->hover->has_item);
+    key[0] = UINT64_C(0x8000000000000001);
+    AT(dvz_visual_set_link_keys(point, channel, key, 1) == DVZ_OK);
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit && query.link_key == key[0]);
+    AT(interaction->hover->item.link_key == key[0]);
+    AT(dvz_selection_count(interaction->selection) == 1);
+
+    DvzQueryRequest manual = dvz_query_request();
+    manual.request_id = 37;
+    manual.target = DVZ_SCENE_TARGET_ITEM;
+    AT(dvz_panel_query_px(panel, 32, 32, &manual) == DVZ_OK);
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 1);
+    AT(dvz_visual_set_visible(point, false) == DVZ_OK);
+    // A completed request from old query inputs cannot become a current hit when polled later.
+    AT(!dvz_scene_poll_query(scene, &query));
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(!query.hit && !interaction->hover->has_item);
+    AT(dvz_selection_count(interaction->selection) == 1);
+    AT(dvz_visual_set_visible(point, true) == DVZ_OK);
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(query.hit && interaction->hover->has_item);
+
+    DvzPointerEvent press = {
+        .type = DVZ_POINTER_EVENT_PRESS, .button = DVZ_POINTER_BUTTON_LEFT, .pos = {32, 32}};
+    (void)_scene_item_interaction_pointer(interaction, &press);
+    AT(!interaction->hover->has_item);
+    position[0][0] = 2;
+    AT(dvz_visual_set_data(point, "position", position, 1) == DVZ_OK);
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 0);
+    DvzPointerEvent drag = {
+        .type = DVZ_POINTER_EVENT_DRAG, .button = DVZ_POINTER_BUTTON_LEFT, .pos = {32, 32}};
+    (void)_scene_item_interaction_pointer(interaction, &drag);
+    DvzPointerEvent release = {
+        .type = DVZ_POINTER_EVENT_RELEASE, .button = DVZ_POINTER_BUTTON_LEFT, .pos = {32, 32}};
+    (void)_scene_item_interaction_pointer(interaction, &release);
+    AT(scene->pending_query_count == 0);
+    release.type = DVZ_POINTER_EVENT_DRAG_STOP;
+    (void)_scene_item_interaction_pointer(interaction, &release);
+    AT(scene->pending_query_count == 1);
+    AT(dvz_figure_process_queries(figure, runtime, NULL) == 1);
+    AT(dvz_scene_poll_query(scene, &query));
+    AT(!query.hit && !interaction->hover->has_item);
+    AT(dvz_selection_count(interaction->selection) == 1);
+    AT(scene->pending_query_count == 0);
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    dvz_scene_destroy(scene);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
 int test_scene_query(TstSuite* suite)
 {
     ANN(suite);
@@ -4429,6 +4575,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_primitive_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_scientific_composition);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_query_stationary_hover_updates);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_instance_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_volume_query_resolves_item);

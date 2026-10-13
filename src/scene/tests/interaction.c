@@ -27,6 +27,7 @@
 #include "_scene.h"
 #include "_visual_internal.h"
 #include "core/generated_visual_policy.h"
+#include "core/scene_notify_internal.h"
 #include "annotation/prepare_internal.h"
 #include "datoviz/input.h"
 #include "datoviz/math/_cglm.h"
@@ -986,6 +987,93 @@ int test_scene_item_interaction_applies_results(TstContext* suite, const TstCase
  * @param item test case
  * @return zero on success
  */
+/**
+ * Verify stationary hover refreshes only for query inputs and remains suppressed during gestures.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+static int test_scene_item_interaction_stationary_freshness(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 320, 240, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzVisual* points = dvz_point(scene, 0);
+    vec3 positions[2] = {{0, 0, 0}, {.2f, 0, 0}};
+    AT(dvz_visual_set_data(points, "position", positions, 2) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, points, NULL) == DVZ_OK);
+    DvzItemInteraction* interaction = dvz_item_interaction(panel, NULL);
+    DvzPointerEvent move =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_MOVE, 12, 15, DVZ_POINTER_BUTTON_NONE);
+    AT(_scene_item_interaction_pointer(interaction, &move));
+    AT(scene->pending_query_count == 1);
+    scene->pending_query_count = 0;
+    DvzQueryResult hit = {
+        .scene_id = dvz_scene_id(scene), .status = DVZ_QUERY_STATUS_HIT, .hit = true,
+        .visual_id = _scene_visual_public_id(scene, points),
+        .resolved_target = DVZ_SCENE_TARGET_ITEM, .resolved_id = 0,
+    };
+    uint64_t revision = figure->query_input_revision;
+    _scene_item_interaction_apply_query_result(interaction, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
+    _scene_item_interaction_apply_query_result(interaction, DVZ_ITEM_INTERACTION_QUERY_SELECTION, &hit);
+    AT(interaction->hover->has_item);
+    AT(dvz_selection_count(interaction->selection) == 1);
+    AT(figure->query_input_revision == revision);
+    AT(scene->pending_query_count == 0);
+    _scene_notify_request_frame(figure);
+    _scene_item_interaction_refresh_queries(figure);
+    AT(scene->pending_query_count == 0);
+
+    AT(dvz_visual_set_visible(points, false) == DVZ_OK);
+    AT(scene->pending_query_count == 1);
+    uint64_t serial = scene->pending_queries[0].freshness_serial;
+    AT(dvz_visual_set_visible(points, true) == DVZ_OK);
+    AT(dvz_visual_set_data(points, "position", positions, 2) == DVZ_OK);
+    AT(scene->pending_query_count == 1);
+    AT(scene->pending_queries[0].freshness_serial > serial);
+    AC(scene->pending_queries[0].x, 12, 1e-6);
+    AC(scene->pending_queries[0].y, 15, 1e-6);
+    scene->pending_query_count = 0;
+    DvzCameraDesc camera = dvz_camera_desc();
+    AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+    AT(scene->pending_query_count == 1);
+    scene->pending_query_count = 0;
+    DvzPanelReserve reserve = {.left_px = 30};
+    AT(dvz_figure_set_reserve(figure, &reserve) == DVZ_OK);
+    AT(scene->pending_query_count == 1);
+    AC(scene->pending_queries[0].x, -18, 1e-6);
+    AT(dvz_figure_set_reserve(figure, NULL) == DVZ_OK);
+    AT(scene->pending_query_count == 1);
+    AC(scene->pending_queries[0].x, 12, 1e-6);
+
+    DvzPointerEvent press =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_PRESS, 12, 15, DVZ_POINTER_BUTTON_LEFT);
+    AT(!_scene_item_interaction_pointer(interaction, &press));
+    AT(scene->pending_query_count == 0);
+    AT(!interaction->hover->has_item);
+    AT(dvz_visual_set_data(points, "position", positions, 2) == DVZ_OK);
+    AT(scene->pending_query_count == 0);
+    _scene_item_interaction_apply_query_result(interaction, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
+    AT(!interaction->hover->has_item);
+    DvzPointerEvent release =
+        _interaction_pointer_event(DVZ_POINTER_EVENT_RELEASE, 12, 15, DVZ_POINTER_BUTTON_LEFT);
+    (void)_scene_item_interaction_pointer(interaction, &release);
+    AT(scene->pending_query_count == 1);
+    AT(!interaction->hover_suspended);
+    AT(dvz_selection_count(interaction->selection) == 1);
+    scene->pending_query_count = 0;
+    _scene_item_interaction_pointer_leave(interaction);
+    AT(dvz_visual_set_visible(points, false) == DVZ_OK);
+    AT(scene->pending_query_count == 0);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_hover_unchanged_result_preserves_revision(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -5745,6 +5833,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_item_interaction_drag_suppresses_hover);
     TST_CASE(test_scene_item_interaction_applies_results);
     TST_CASE(test_scene_hover_unchanged_result_preserves_revision);
+    TST_CASE(test_scene_item_interaction_stationary_freshness);
     TST_CASE(test_scene_selection_apply_query_and_link_keys);
     TST_CASE(test_scene_selection_link_key_is_semantic_identity);
     TST_CASE(test_scene_selection_apply_query_updates_item_state);

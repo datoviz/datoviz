@@ -152,6 +152,7 @@ struct DvzWasmApiScene
     uint64_t resource_version;
     uint64_t frame_index;
     DvzPendingQueryRequest query_pending;
+    uint64_t query_input_revision;
     DvzSceneQueryBuildContext query_build;
     DvzSceneQueryPlan query_plan;
     DvzQueryResult query_result;
