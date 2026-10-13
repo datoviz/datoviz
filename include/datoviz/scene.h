@@ -2303,6 +2303,8 @@ DVZ_EXPORT DvzResult dvz_visual_set_strings(
  * attributes, such as point position/color/size. All updates are validated before any existing
  * attribute payload is replaced. Every update in the batch must use the same item_count, and any
  * existing dense per-item attribute with a different item_count must also be included in the batch.
+ * Zero item counts clear the payload; data may be NULL for these updates. Include every populated
+ * per-item attribute when clearing a visual. Later nonempty batches restore the same visual.
  * Retained mutation is legal after frame artifact creation; changes are reflected only in later
  * artifacts.
  *

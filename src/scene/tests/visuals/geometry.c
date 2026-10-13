@@ -840,7 +840,12 @@ int test_scene_mesh_geometry_replacement_uses_logical_index_count(
     AT(dvz_scene_buffer_set_data(index_buffer, NULL, 0) == DVZ_OK);
     AT(index_buffer->capacity == retained_capacity);
     stream = _emit_mesh_replacement_stream(figure);
-    AT(stream == NULL);
+    ANN(stream);
+    AT(!_stream_has_mesh_draw(stream, true, 3, 1));
+    _test_scene_stream_destroy(stream);
+    uint32_t face_count = UINT32_MAX;
+    AT(_scene_visual_family_query_target_count(mesh, DVZ_SCENE_TARGET_FACE, &face_count));
+    AT(face_count == 0);
     AT(dvz_scene_buffer_set_data(
            index_buffer, small_geometry->indices, 3 * sizeof(DvzIndex)) == DVZ_OK);
 
@@ -850,9 +855,82 @@ int test_scene_mesh_geometry_replacement_uses_logical_index_count(
     AT(_stream_has_mesh_draw(stream, true, 12, 1));
     _test_scene_stream_destroy(stream);
 
+    uint64_t index_id = index_buffer->id;
+    DvzGeometry empty = {0};
+    AT(dvz_mesh_set_geometry(mesh, &empty) == DVZ_OK);
+    AT(_visual_family_state(mesh)->buffer == index_buffer);
+    AT(index_buffer->id == index_id);
+    AT(index_buffer->desc.byte_size == 0);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(!_stream_has_mesh_draw(stream, true, 12, 1));
+    _test_scene_stream_destroy(stream);
+    AT(dvz_mesh_set_geometry(mesh, small_geometry) == DVZ_OK);
+    AT(_visual_family_state(mesh)->buffer == index_buffer);
+    AT(index_buffer->id == index_id);
+    stream = _emit_mesh_replacement_stream(figure);
+    ANN(stream);
+    AT(_stream_has_mesh_draw(stream, true, 3, 1));
+    _test_scene_stream_destroy(stream);
+
     dvz_geometry_destroy(large);
     dvz_geometry_destroy(small_geometry);
     dvz_geometry_destroy(large_again);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Verify coherent empty point/sphere batches and failed partial clears preserve retained state.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+int test_scene_dense_geometry_empty_restore(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzVisual* visuals[2] = {dvz_point(scene, 0), dvz_sphere(scene, 0)};
+    vec3 positions[2] = {{-.2f, 0, 0}, {.2f, 0, 0}};
+    DvzColor colors[2] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+    float sizes[2] = {5, 5};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzVisual* visual = visuals[i];
+        AT(dvz_panel_add_visual(panel, visual, NULL) == DVZ_OK);
+        DvzVisualDataUpdate populated[3] = {
+            {.attr_name = "position", .data = positions, .item_count = 2},
+            {.attr_name = "color", .data = colors, .item_count = 2},
+            {.attr_name = "size", .data = sizes, .item_count = 2},
+        };
+        AT(dvz_visual_set_data_many(visual, populated, 3) == DVZ_OK);
+        AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data(visual, "position", NULL, 0) == DVZ_ERROR);
+        AT(visual->attrs[_attr_index(visual, "position")].item_count == 2);
+        DvzVisualDataUpdate empty[3] = {
+            {.attr_name = "position"}, {.attr_name = "color"}, {.attr_name = "size"},
+        };
+        empty[1] = populated[1];
+        AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_data_many(visual, empty, 3) == DVZ_ERROR);
+        empty[1] = (DvzVisualDataUpdate){.attr_name = "color"};
+        uint64_t version = visual->attrs[_attr_index(visual, "position")].version;
+        AT(dvz_visual_set_data_many(visual, empty, 3) == DVZ_OK);
+        AT(visual->attrs[_attr_index(visual, "position")].item_count == 0);
+        AT(visual->attrs[_attr_index(visual, "position")].version != version);
+        DvzDrp2CommandStream* stream = _emit_mesh_replacement_stream(figure);
+        ANN(stream);
+        _test_scene_stream_destroy(stream);
+        AT(dvz_visual_set_data_many(visual, populated, 3) == DVZ_OK);
+        AT(visual->attrs[_attr_index(visual, "position")].item_count == 2);
+        stream = _emit_mesh_replacement_stream(figure);
+        ANN(stream);
+        _test_scene_stream_destroy(stream);
+    }
     dvz_scene_destroy(scene);
     return 0;
 }

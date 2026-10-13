@@ -645,7 +645,8 @@ void _scene_emit_visual_index_buffer_upload(
     ANN(visual);
     ANN(emitted_buffers);
     if (_visual_family_state(visual)->buffer == NULL ||
-        _visual_family_state(visual)->buffer->data == NULL)
+        _visual_family_state(visual)->buffer->data == NULL ||
+        _visual_family_state(visual)->buffer->desc.byte_size == 0)
         return;
 
     uint32_t buffer_idx = _scene_buffer_index(figure->scene, _visual_family_state(visual)->buffer);
