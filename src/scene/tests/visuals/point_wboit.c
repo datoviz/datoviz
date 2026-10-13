@@ -52,6 +52,7 @@ int test_scene_point_wboit_shader_contract(TstContext* suite, const TstCase* ite
         AT(strstr(shader.fragment_glsl, "sceneWboitAccum(outColor)") != NULL);
         AT(strstr(shader.fragment_wgsl, "scene_wboit_accum(surface)") != NULL);
         AT(strstr(shader.fragment_glsl, "outColor.a <= 0.0") != NULL);
+        AT(strstr(shader.fragment_glsl, "applySceneOcclusion(outColor)") != NULL);
         AT(strstr(shader.fragment_wgsl, "surface.a <= 0.0") != NULL);
         if ((variant & 1) != 0)
         {
@@ -289,6 +290,29 @@ int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item)
             AT(pixels[center] <= 1 && pixels[center + 2] <= 1);
             AT(pixels[center + 1] > 250);
             AT(pixels[moved] <= 1 && pixels[moved + 1] > 250);
+            // Explicit hidden-surface attenuation must survive both style and cue variants.
+            AT(dvz_visual_set_visible(points[0], false) == DVZ_OK);
+            AT(dvz_visual_set_visible(transparent_mesh, false) == DVZ_OK);
+            DvzCameraDesc camera = dvz_camera_desc();
+            camera.view.eye[2] = 3;
+            AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+            vec3 behind = {0, 0, -.5f};
+            AT(dvz_visual_set_data(points[1], "position", &behind, 1) == DVZ_OK);
+            AT(dvz_visual_set_depth_test(points[1], false) == DVZ_OK);
+            AT(_point_wboit_capture(view, hidden));
+            AT(hidden[center + 2] > 60);
+            AT(dvz_visual_set_scene_occluder(mesh, true) == DVZ_OK);
+            AT(dvz_visual_set_scene_occluded(points[1], true) == DVZ_OK);
+            DvzSceneOcclusionDesc occlusion = {
+                DVZ_STRUCT_INIT_FIELDS(DvzSceneOcclusionDesc),
+                .enabled = true,
+                .depth_bias = .0001f,
+                .soft_edge = .01f,
+                .hidden_alpha = .1f,
+            };
+            AT(dvz_panel_set_scene_occlusion(panel, &occlusion) == DVZ_OK);
+            AT(_point_wboit_capture(view, pixels));
+            AT(pixels[center + 2] + 20 < hidden[center + 2]);
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
         }
