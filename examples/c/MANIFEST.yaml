@@ -258,6 +258,7 @@ batches:
     - features_technique_msaa
     - features_technique_depth_cue
     - features_technique_transparency
+    - features_scientific_wboit
 
   review-18-rendering-techniques-b:
     - features_technique_depth_test
@@ -1162,6 +1163,41 @@ examples:
       requirements:
         - depth-cue
     agent_copy_safe: true
+
+  - id: features_scientific_wboit
+    title: Scientific 3D Transparency
+    stage: v0.4_required
+    category: feature
+    primary_feature: scientific-wboit
+    lane: features
+    source: examples/c/features/scientific_wboit.c
+    python:
+      source: examples/python/gallery/features/scientific_wboit.py
+      status: direct-engine
+    validation: smoke+interaction+screenshot+video
+    portability: portable-scenario
+    media: *rotation_preview
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_scientific_wboit
+      requirements:
+        - point
+        - mesh
+        - sphere
+        - path
+        - arcball
+        - wboit
+      rendering_effects:
+        - effect: wboit
+          status: supported
+    agent_copy_safe: true
+    tags:
+      - scientific
+      - transparency
+      - retained-updates
+      - arcball
 
   - id: features_technique_transparency
     title: Transparency Order

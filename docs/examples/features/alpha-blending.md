@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../technique-transparency/">← Previous: Transparency Order</a></span>
+<span class="dvz-example-nav__previous"><a href="../scientific-wboit/">← Previous: Scientific 3D Transparency</a></span>
 <span class="dvz-example-nav__next"><a href="../technique-depth-test/">Next: Depth Test Toggle →</a></span>
 </div>
 </nav>
@@ -81,7 +81,7 @@ Three triangle groups share one primitive visual, with position and normal array
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../technique-transparency/">← Previous: Transparency Order</a></span>
+<span class="dvz-example-nav__previous"><a href="../scientific-wboit/">← Previous: Scientific 3D Transparency</a></span>
 <span class="dvz-example-nav__next"><a href="../technique-depth-test/">Next: Depth Test Toggle →</a></span>
 </div>
 </nav>

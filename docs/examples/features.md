@@ -794,6 +794,25 @@ This example compares three transparency techniques on the same overlapping cube
 
 <div class="card" markdown="1">
 
+### [Scientific 3D Transparency](features/scientific-wboit.md)
+
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="scientific-wboit/" aria-label="Scientific 3D Transparency"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_scientific_wboit.poster.webp" alt="Scientific 3D Transparency" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_scientific_wboit.poster.webp" aria-label="Scientific 3D Transparency preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_scientific_wboit.mp4" type="video/mp4">
+  </video>
+</div>
+
+`features`<br><span>`scientific`, `transparency`, `retained-updates`, `arcball`</span>
+
+This example compares the same scientific scene with reversed transparent draw order.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Alpha Blending](features/alpha-blending.md)
 
 [![Alpha Blending](../assets/gallery/v0.4/features/features_alpha_blending.webp)](features/alpha-blending.md)

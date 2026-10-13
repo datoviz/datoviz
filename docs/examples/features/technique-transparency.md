@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../technique-msaa/">← Previous: Multisample Antialiasing</a></span>
-<span class="dvz-example-nav__next"><a href="../alpha-blending/">Next: Alpha Blending →</a></span>
+<span class="dvz-example-nav__next"><a href="../scientific-wboit/">Next: Scientific 3D Transparency →</a></span>
 </div>
 </nav>
 
@@ -82,6 +82,6 @@ Each panel draws two translucent cube meshes with the same geometry, transforms,
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../technique-msaa/">← Previous: Multisample Antialiasing</a></span>
-<span class="dvz-example-nav__next"><a href="../alpha-blending/">Next: Alpha Blending →</a></span>
+<span class="dvz-example-nav__next"><a href="../scientific-wboit/">Next: Scientific 3D Transparency →</a></span>
 </div>
 </nav>

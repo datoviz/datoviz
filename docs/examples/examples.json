@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 119,
+  "count": 120,
   "categories": {
     "advanced": 6,
     "composite": 2,
-    "feature": 71,
+    "feature": 72,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 19,
     "prototype": 1,
-    "supported": 98
+    "supported": 99
   },
   "examples": [
     {
@@ -1657,6 +1657,73 @@
       "primary_feature": "depth-cue",
       "python_source": "examples/python/gallery/features/technique_depth_cue.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/technique_depth_cue.py",
+      "python_status": "direct-engine"
+    },
+    {
+      "id": "features_scientific_wboit",
+      "title": "Scientific 3D Transparency",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/scientific_wboit.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/scientific_wboit.c",
+      "page": "features/scientific-wboit.md",
+      "summary": "This example compares the same scientific scene with reversed transparent draw order.",
+      "validation": "smoke+interaction+screenshot+video",
+      "build_command": "just example-c features/scientific_wboit",
+      "smoke_command": "./build/examples/c/features/scientific_wboit --png",
+      "tags": [
+        "scientific",
+        "transparency",
+        "retained-updates",
+        "arcball"
+      ],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/features_scientific_wboit.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_scientific_wboit.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
+      "webgpu_requirements": [
+        "point",
+        "mesh",
+        "sphere",
+        "path",
+        "arcball",
+        "wboit"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_scientific_wboit",
+        "requirements": [
+          "point",
+          "mesh",
+          "sphere",
+          "path",
+          "arcball",
+          "wboit"
+        ],
+        "rendering_effects": [
+          {
+            "effect": "wboit",
+            "status": "supported"
+          }
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=features_scientific_wboit",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_scientific_wboit",
+      "primary_feature": "scientific-wboit",
+      "python_source": "examples/python/gallery/features/scientific_wboit.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/scientific_wboit.py",
       "python_status": "direct-engine"
     },
     {
