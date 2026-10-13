@@ -1538,7 +1538,8 @@ bool _emitter_prepare_wboit_targets(
         return false;
     if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, vs_id, "VERTEX", NULL,
+                       stream, vs_id, "VERTEX",
+                       _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE, false),
                        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE, false), cfg);
 
     uint64_t fs_id = _obj_id(emitter, fs_key, &is_new);
@@ -1546,7 +1547,8 @@ bool _emitter_prepare_wboit_targets(
         return false;
     if (ok && is_new)
         ok = ok && _emit_shader(
-                       stream, fs_id, "FRAGMENT", NULL,
+                       stream, fs_id, "FRAGMENT",
+                       _builtin_shader_wgsl(DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE, true),
                        _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_WBOIT_RESOLVE, true), cfg);
 
     out->resolve_pipeline_id = _obj_id(emitter, pipe_key, &is_new);

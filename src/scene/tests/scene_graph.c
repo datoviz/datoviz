@@ -181,6 +181,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_visual_alpha_mode_emits_depth_peel_drp2);
     TST_CASE(test_scene_visual_alpha_mode_requires_wboit_capabilities);
     TST_CASE(test_scene_visual_alpha_mode_emits_wboit_drp2);
+    TST_CASE(test_scene_wboit_wgsl_composition);
     TST_CASE(test_scene_splat_alpha_mode_emits_wboit_drp2);
     TST_CASE(test_scene_drp2_contract_checker_rejects_pipeline_drift);
     TST_CASE(test_scene_drp2_contract_checker_rejects_raster_drift);
