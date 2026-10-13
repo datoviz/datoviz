@@ -7,11 +7,7 @@ live in `SHARED_ATTRIBUTES.md`; general visual rules live in `../semantics/VISUA
 `../semantics/VISUAL_FAMILY_RULES.md`, `../pipeline/ATTRIBUTE_SOURCES.md`, and
 `../semantics/VISUAL_CONTRACT.md`.
 
-Status on 2026-05-17: the active v0.4 runtime implements retained mesh construction, triangle-list
-rendering through scene -> FramePlan -> DRP2 -> vklite, `position`, optional `color`, optional
-`normal`, scene-owned `"index"` buffers, `instance_transform`, depth-tested rendering, arcball/
-camera transforms, WBOIT/depth-peeling participation, SSAO G-buffer participation when normals are
-present, and offscreen/app execution coverage.
+The active v0.4 runtime implements retained mesh construction, triangle-list rendering through scene → FramePlan → DRP2 → vklite, `position`, optional `color` and `normal`, scene-owned `"index"` buffers, `instance_transform`, depth-tested rendering, arcball/camera transforms, and offscreen/app execution. Ordinary untextured meshes support native WBOIT and bounded depth peeling, plus EDL and AO surface capture when eligible normals are present. Textured meshes support ordinary rendering and raster depth, but WBOIT, depth peeling, alpha masking, and AO capture remain excluded until conformant variants exist.
 
 Update on 2026-05-24: CPU-side `geom` helpers can derive unique mesh edges and unstitched scalar
 contour segments. The first live overlay example lowers those derived outputs to `segment` visuals;

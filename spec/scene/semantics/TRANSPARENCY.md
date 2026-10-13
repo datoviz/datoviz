@@ -19,7 +19,7 @@ Every visual declares an `alpha_mode` that tells the scene how to handle its fra
 
 `DVZ_ALPHA_OPAQUE` is the default.
 `DVZ_ALPHA_WBOIT` is the active order-independent transparency path.
-`DVZ_ALPHA_MASK` requires a shared effective-alpha cutoff across visible shading, surface capture, occlusion, and queries. The current implementation classifies masked visuals but does not implement this general cutoff contract; zero-alpha discard alone is not full mask support.
+`DVZ_ALPHA_MASK` requires a shared effective-alpha cutoff across visible shading, surface capture, occlusion, and queries. The current implementation rejects this mode during visual validation and figure planning until the cutoff contract is implemented; zero-alpha discard alone is not full mask support.
 
 Depth behavior in the table applies to eligible 3D raster visuals with depth testing enabled. Screen-space images and overlays are separate: the current image pipeline does not test or write raster depth, even when the common depth-test setter succeeds. Use a depth-capable textured mesh for a physical 3D plane until an explicit 3D image contract is implemented.
 
@@ -94,7 +94,7 @@ target format may still saturate.
 Weighted blended OIT (McGuire & Bavoil 2013) is the active path for
 `DVZ_ALPHA_WBOIT` visuals.
 
-The first WBOIT slice is implemented in the active scene -> DRP2 -> runtime stack for ordinary untextured mesh/primitive visuals and splats. Textured meshes and point-like visuals do not yet have conformant accumulation variants. Enabling the alpha enum on another family does not establish support; required point and textured-plane extensions belong to the pre-final profile.
+The first WBOIT slice is implemented in the active scene -> DRP2 -> runtime stack for ordinary untextured mesh/primitive visuals and splats. Textured meshes and point-like visuals do not yet have conformant accumulation variants. Point/pixel/marker, textured mesh, image/labels/glyph, analytic sphere, stroked path/segment/vector, and volume WBOIT requests are rejected before planning; required point and textured-plane extensions belong to the pre-final profile. Mesh item-state styling is excluded from both WBOIT and peeling until its visibility and color evaluation are preserved by those variants. Native technique shader overrides must clear unavailable WGSL sources so backend preflight cannot accept an ordinary shader as a conformant advanced-technique route.
 
 It is selected from lower-level runtime capabilities rather than from a standalone WBOIT flag. The
 required ingredients are compatible floating-point render targets, enough color attachments for the

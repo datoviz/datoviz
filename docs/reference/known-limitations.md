@@ -22,8 +22,8 @@ This page records limits of the current v0.4 release-candidate line. Release not
 - Glyph and splat visual families are experimental. Other visual families are release-facing only for the documented attributes, queries, and backend routes.
 - Scene compute is a narrow experimental compute-to-render path, not a general-purpose compute framework.
 - Raster capture and video export use the documented app-level readback path; encoder availability and platform-specific zero-copy paths are separate concerns.
-- Transparency and occlusion support varies by visual path. The current image pipeline does not test/write raster depth; point-like and textured-mesh WBOIT, general alpha masking, and family-preserving peeling remain incomplete. Some setters accept unsupported combinations, so successful setup alone is not proof of support. See [native technique coverage](../how-to/depth-blending.md#current-native-technique-coverage) for the source-audited boundary.
-- AO surface capture and occlusion producers must preserve visible material alpha and silhouette coverage. A pre-final correctness audit has identified mismatches requiring focused GPU regression checks; ordinary family rendering does not establish support for every capture or occlusion role.
+- Transparency and occlusion support varies by visual path. The current image pipeline does not test/write raster depth; point-like and textured-mesh WBOIT, general alpha masking, and family-preserving peeling remain incomplete. Setters retain requested state, while visual validation and figure planning reject unsupported alpha modes and scene-occluder producers. See [native technique coverage](../how-to/depth-blending.md#current-native-technique-coverage) for the source-audited boundary.
+- AO surface capture and occlusion producers must preserve visible material alpha and silhouette coverage. Primitive/ordinary-mesh AO capture and depth peeling discard effective-zero alpha, including material opacity and base-color alpha. Other capture and scene-occluder combinations retain explicit exclusions; ordinary family rendering does not establish technique support.
 
 ## Browser scope
 

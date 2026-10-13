@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Status
 
-Status: RC3 implementation inventory, rewritten course previews, and automated course prose review complete; maintainer review, exact release artifacts, and publication decisions remain. Local prose, PR, and gallery state updated: 2026-09-18.
+Status: RC3 implementation inventory, rewritten course previews, and automated course prose review complete; maintainer review, exact release artifacts, and publication decisions remain. Scientific technique scope updated: 2026-10-13; earlier prose, PR, and gallery evidence retains its recorded identities.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 
@@ -22,6 +22,8 @@ Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wid
 - The 2026-09-08 automated course prose review covers the overview and chapters 1-3. Setup now gives corrected Windows Developer PowerShell, Release-configuration source-install, package DLL `PATH`, and configuration-specific executable guidance; maintainer review of voice and pacing remains required.
 
 The two bounded Fractal prose batches (`c4adddfd8` and `6d4affab6`) clarify twelve authored guide/reference pages, preserving code blocks, link targets, and technical qualifications. Strict documentation builds and status checks pass; [campaign evidence](FRACTAL_CODE_HARDENING.md) records their scope. Automated course prose review is complete; maintainer voice and pacing review and broad visual rollout remain pending.
+
+The scientific-profile correction at `d0e904705` updates native technique coverage, known limitations, feature status, and point/mesh specifications. Unsupported family/alpha/producer combinations, mask cutoff, item-state/instancing exclusions, and native/WGSL differences are explicit; the [profile handoff](SCIENTIFIC_3D_PROFILE_HANDOFF.md) retains implementation and GPU regression evidence.
 
 ## Remaining RC3 Documentation Work
 

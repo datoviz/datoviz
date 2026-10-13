@@ -25,8 +25,9 @@ The implemented path supports:
 5. GLSL/Vulkan native point-list lowering using point-coordinate coverage;
 6. WGSL/WebGPU instanced-quad lowering;
 7. GPU-backed circular picking that rejects points outside the disc;
-8. existing depth cueing, EDL, alpha-mode, WBOIT/depth-peel, and app/offscreen coverage for point
-   visuals.
+8. depth cueing, EDL, ordinary opaque/source-over alpha routing, and app/offscreen coverage for point visuals.
+
+Point WBOIT and depth peeling are unsupported in the current implementation; assigning an alpha mode does not supply a coverage-preserving shader. Required arbitrary-point WBOIT belongs to the [scientific 3D profile](../slices/V04_SCIENTIFIC_3D_PROFILE.md).
 
 The following sections describe the target point contract. Scalar color/diameter_px modes, `shift`, and
 data-space diameter_px are planned capabilities unless explicitly marked as implemented above.

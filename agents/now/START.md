@@ -2,7 +2,7 @@
 
 The active branch is `main`. RC2 is closed; RC3 is the next release milestone, followed by RC4 and final v0.4.0. Current preparation is recorded in [STATUS.md](STATUS.md) and the [2026-09-08 candidate preparation](RELEASE.md#rc3-preparation-before-maintainer-review-2026-09-08); published artifacts retain their recorded evidence.
 
-Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For the next Linux checks after reboot and the macOS/Windows return sequence, use [the current development queue](STATUS.md#next-development-checks); RC3 freeze waits for maintainer course proofreading. Read [STATUS.md](STATUS.md) when work affects release scope or readiness and [RELEASE.md](RELEASE.md) for release planning or packaging. Read only the matching lanes below.
+Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For current Linux hardware evidence and the macOS/Windows return sequence, use [the current development queue](STATUS.md#next-development-checks); RC3 freeze waits for maintainer course proofreading. Read [STATUS.md](STATUS.md) when work affects release scope or readiness and [RELEASE.md](RELEASE.md) for release planning or packaging. Read only the matching lanes below.
 
 ## Task Routes
 
@@ -17,7 +17,7 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For 
 | Physical platforms | [GPU selection](HANDOFF_GPU_SELECTION.md), [Windows baseline and remaining matrix](HANDOFF_WINDOWS_VALIDATION.md) |
 | Frame pacing | [Interaction latency contract and benchmarks](../../spec/testing/INTERACTION_LATENCY.md) |
 | Render products | [Graph techniques](../../spec/scene/implementation/GRAPH_TECHNIQUES.md), [occlusion](../../spec/scene/implementation/OCCLUSION_EFFECTS.md), [transparency/MSAA](../../spec/scene/implementation/TRANSPARENCY_MSAA.md); [landing evidence](RC3_RENDER_PRODUCTS_LANDING.md) and [affected QA](RC3_RENDER_PRODUCTS_AFFECTED_QA.md) |
-| Scientific 3D profile | [Required v0.4 native profile](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md), [release handoff](SCIENTIFIC_3D_PROFILE_HANDOFF.md); RC3 closes narrow capability, validation, docs, and supported-path correctness gaps; RC4 delivers non-volume scientific 3D composition and integration acceptance; RC5 is contingency only for substantial remaining gaps or feedback |
+| Scientific 3D profile | [Required v0.4 native profile](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md), [release handoff](SCIENTIFIC_3D_PROFILE_HANDOFF.md); narrow RC3 guards, effective-alpha corrections, and local validation are complete at `d0e904705`; exact-candidate proof remains; RC4 delivers non-volume scientific 3D composition and integration acceptance; RC5 is contingency only for substantial remaining gaps or feedback |
 | Input and mesh updates | [Integrated issues #139/#140](ISSUES_139_140_HANDOFF.md) |
 | Rolling fields and surfaces | [Issue #138 benchmarks and RC4/post-v0.4 boundary](ISSUE_138_PERFORMANCE_HANDOFF.md) |
 | Atlas and sampled fields | [Current capability, gaps, benchmark gates, and RC3/RC4/final/v0.5 allocation](ATLAS_SAMPLED_FIELDS_HANDOFF.md) |

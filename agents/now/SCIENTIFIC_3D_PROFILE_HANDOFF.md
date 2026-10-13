@@ -1,12 +1,24 @@
 # Scientific 3D Profile Handoff
 
-Status: approved queue, 2026-10-13. The required native non-volume target and RC4/RC5/final boundaries are in [the profile slice](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md). This record separates source inspection from delivered behavior; it does not close a release gate. Preserve [current release evidence](STATUS.md) and its recorded revisions.
+Status: narrow RC3 implementation locally complete at `d0e904705`, 2026-10-13; RC4 profile delivery and exact-candidate acceptance remain pending. The required native non-volume target and RC4/RC5/final boundaries are in [the profile slice](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md). This record separates source inspection from delivered behavior; it does not close a release gate. Preserve [current release evidence](STATUS.md) and its recorded revisions.
 
-## Source baseline and gaps
+## RC3 implementation and validation, 2026-10-13
 
-The technique audit inspected `b1ca5a195f921d531cdf729bd7e420ee732888d7`. Findings below are source evidence; their specific GPU symptoms were not reproduced during the audit. Existing successful scene tests do not prove every family/alpha combination.
+Implementation head `d0e904705` closes the narrow RC3 queue. Visual validation and figure preflight reject unsupported family/alpha/scene-occluder combinations before planning; direct shader selection also guards invalid variants. Unsupported alpha modes advertise no render products. The executable inventory and preflight tests live in `src/scene/tests/visuals/runtime.c`; [native technique coverage](../../docs/how-to/depth-blending.md#current-native-technique-coverage) records the supported/excluded matrix.
 
-| Native source path | Current boundary | Required disposition |
+WBOIT remains ordinary untextured mesh/primitive plus experimental splats; peeling remains ordinary untextured mesh/primitive. Alpha mask is excluded until shared cutoff semantics exist. Mesh item-state OIT is excluded. Scene-occluder producers remain ordinary mesh/primitive and bounded volumes, excluding item-state, instancing, zero effective lit material alpha, and view-dependent LIMB alpha. AO capture excludes item-state and instancing. Unsupported native technique overrides clear unavailable WGSL sources, so backend preflight diagnoses missing sources instead of accepting an ordinary shader. Peeling overrides apply only to peeling providers and cannot replace a scene-occlusion depth shader.
+
+Peeling initialization and iterations now discard effective-zero-alpha fragments; primitive/mesh AO capture evaluates the same material alpha as visible shading and retains its material bindings. NVIDIA pixel regressions reproduce the earlier peeling defect (maximum channel delta 188 against hidden-layer control) and zero-opacity AO ghost occlusion (delta 8). After correction, all eight peeling comparisons and the three AO zero-alpha comparisons have delta 0; the visible AO positive control remains delta 8. Cases cover unlit/lit primitives, indexed meshes, vertex alpha, material opacity, base-color alpha, and invisible interior peeling layers.
+
+Local Linux validation uses Vulkan SDK 1.4.328.1, RTX 5090 with matching NVIDIA kernel/user-space driver 595.99.02, and Vulkan validation enabled. `just build` and the full native suite pass: 1,213/1,213, zero failures/skips, including all 768 scene tests, existing sphere/AO/lighting coverage, NVENC, and Vulkan/CUDA memory tests. The two new alpha GPU regressions also pass on Mesa llvmpipe. Shader ABI, scene boundaries, specification/DRP2, strict documentation build, documentation status, agent instructions, and whitespace checks pass. Public ABI/binding policy is unchanged.
+
+These are development-source checks. Frozen source/wheels/providers, hosted platforms, live browser interaction, and unavailable macOS/Windows physical checks remain separate release gates. This change adds no public example or media publication and leaves the protected data gitlink unchanged.
+
+## Historical source baseline and gaps
+
+The technique audit inspected `b1ca5a195f921d531cdf729bd7e420ee732888d7`. Findings below describe the pre-fix source audit; their specific GPU symptoms were not reproduced during that audit. The RC3 dispositions are now implemented as recorded above, while profile extensions remain pending. Existing successful scene tests do not prove every family/alpha combination.
+
+| Native source path | Audited pre-fix boundary | Disposition from the audit |
 | --- | --- | --- |
 | Ordinary mesh/primitive and splat WBOIT | Dedicated accumulation shaders exist; ordinary mesh delegates to primitive selection. | Preserve these supported paths and add mixed-profile regressions. |
 | Point/pixel/marker WBOIT | Shared point shader resolver ignores the accumulation flag: `src/scene/visuals/point/shader.c:47`; pass caps still advertise WBOIT products: `registry/pass_caps.c:150`. | RC3 guard/diagnostic; required arbitrary-point WBOIT delivery in RC4/RC5. Marker/pixel expansion is optional unless used by an accepted scenario. |
@@ -23,8 +35,8 @@ Source paths abbreviated in the table are under `src/scene/visuals/` or `src/sce
 
 ## Ordered execution
 
-1. Build an executable family/alpha/backend eligibility inventory from descriptors and shader contracts; reject unsupported combinations before planning/emission and correct contradictory status/spec claims. Separate temporary guards from completed final-profile delivery.
-2. Reproduce and repair supported mesh/primitive peel effective-alpha validity and AO material-alpha capture. Verify final fragment discard agrees with bounds/surface products, including vertex alpha zero, material opacity zero and base-color alpha zero. Keep analytic-sphere AO and existing lighting regressions intact.
+1. **Complete for narrow RC3 scope:** build an executable family/alpha/backend eligibility inventory from descriptors and shader contracts; reject unsupported combinations before planning/emission and correct contradictory status/spec claims. Separate temporary guards from completed final-profile delivery.
+2. **Complete for narrow RC3 scope:** reproduce and repair supported mesh/primitive peel effective-alpha validity and AO material-alpha capture. Verify final fragment discard agrees with bounds/surface products, including vertex alpha zero, material opacity zero and base-color alpha zero. Keep analytic-sphere AO and existing lighting regressions intact.
 3. Deliver shared WBOIT for arbitrary points and sampled planes alongside meshes. Preserve family sampling, coverage, material response and opaque depth; test mixed spheres/paths and order reversal. Implement required plane depth/cutout without changing 2D overlays.
 4. Prove query identity and retained updates together: face and supported item targets, signed link keys, mapping changes, explosion, visibility, smaller/larger/empty-restored payloads, and gesture/stationary-hover freshness. Reuse existing query and transactional resource paths.
 5. Coordinate IBL package acceptance: multiple insertions/arbitrary point collections, independent region visibility, palette-alpha mode selection, volume-free linked navigator, scientific scalar/NaN semantics and linked tree/tables. These are package port dependencies; they do not impose old API compatibility on Datoviz.

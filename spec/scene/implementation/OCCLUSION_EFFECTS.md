@@ -22,7 +22,7 @@ Vulkan path for occlusion features.
 
 ## Ambient Visibility Pipeline Contract
 
-Ambient occlusion is a panel-local technique retained on panel state. The RC3 implementation produces a semantic `ambient_visibility` product from the coherent opaque or masked surface record and consumes that product inside eligible material lighting.
+Ambient occlusion is a panel-local technique retained on panel state. The RC3 implementation produces a semantic `ambient_visibility` product from eligible coherent opaque surfaces; masked capture remains excluded until shared cutoff semantics exist. Eligible material lighting consumes this product.
 
 The required composition is:
 
@@ -90,6 +90,8 @@ Known limitations:
 2. transparent occluders are approximate;
 3. scattering, absorption, refraction, and multiple volume layers are not physically modeled;
 4. embedded visuals are composited in screen space.
+
+Current native producer eligibility is ordinary untextured mesh/primitive plus the existing bounded volume route. Point/pixel/marker, sampled images, textured meshes, analytic spheres, splats, and stroked paths lack a coverage-conformant producer and are rejected when requested as scene occluders. Lit primitive/mesh producers with zero material opacity or base-color alpha are also rejected: their current depth shader tests vertex alpha without evaluating material alpha. Scene-occluder production also excludes item-state, instancing, and view-dependent LIMB material alpha. AO capture excludes item-state and instancing. Consumer support is a separate shader capability.
 
 ## Scene Occlusion Resources And Passes
 
