@@ -682,6 +682,47 @@ function expectSphereImpostorShaderContract(stream, pipeline, label) {
   );
 }
 
+function expectScientificWboitScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  const point = expectPipeline(stream, `${label} point accumulation`, (pipeline) =>
+    pipeline.builtin_pipeline === "scene.point" && pipeline.color_targets.length === 2);
+  const mesh = expectPipeline(stream, `${label} mesh accumulation`, (pipeline) =>
+    ["scene.primitive", "scene.mesh"].includes(pipeline.builtin_pipeline) &&
+      pipeline.color_targets.length === 2);
+  for (const pipeline of [point, mesh]) {
+    expectDepthPipeline(pipeline, label, false);
+    requireOk(pipeline.color_targets[0].format === "rgba16float" &&
+      pipeline.color_targets[1].format === "r16float", `${label}: wrong WBOIT formats`);
+    for (const target of pipeline.color_targets) {
+      requireOk(target.blend?.color.src_factor === "one" &&
+        target.blend.color.dst_factor === "one" && target.blend.color.operation === "add",
+        `${label}: expected additive logarithmic accumulation`);
+    }
+  }
+  const shaders = commandsOf(stream, "CreateShaderModule");
+  const fragment = shaders.find((shader) => shader.id === point.fragment_shader_module_id);
+  requireOk(fragment?.code.includes("point_disc_coverage") &&
+    fragment.code.includes("scene_wboit_weight"), `${label}: point coverage lost in OIT`);
+  requireOk(shaders.some((shader) => shader.code?.includes("1.0 - exp(-weight)")),
+    `${label}: missing logarithmic-weight resolve`);
+  const sphere = expectPipeline(stream, `${label} opaque sphere`, (pipeline) =>
+    pipeline.builtin_pipeline === "scene.sphere");
+  expectDepthPipeline(sphere, label);
+  expectSphereImpostorShaderContract(stream, sphere, label);
+  const path = expectPipeline(stream, `${label} opaque path`, (pipeline) =>
+    pipeline.builtin_pipeline === "scene.path");
+  expectDepthPipeline(path, label);
+  requireOk(commandsOf(stream, "Draw").filter((draw) =>
+    draw.vertex_count === 6 && draw.instance_count === 768).length === 2,
+    `${label}: expected 768 scientific points in each panel`);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 4,
+    `${label}: expected both indexed regional surfaces in both panels`);
+  requireOk(commandsOf(stream, "BeginRenderPass").filter((pass) =>
+    pass.color_attachments.length === 2).length === 2,
+    `${label}: expected one WBOIT accumulation pass per panel`);
+}
+
 function expectCanvasRenderPass(
   stream,
   label,
@@ -2434,6 +2475,15 @@ const smokeSize = 64;
 // Focused synthetic scenarios need no prepared scientific data fixtures.
 const focusedScenarioId = process.env.DVZ_WASM_SMOKE_SCENARIO;
 const focusedScenarioChecks = new Map([
+  ["features_scientific_wboit", {
+    shape: expectScientificWboitScenarioStreamShape,
+    cameraStart: [280, 320],
+    cameraEnd: [320, 350],
+    minUniformUpdates: 2,
+    frameTime: 1.1,
+    minDataUpdates: 6,
+    minDataBytes: 768 * 4,
+  }],
   ["features_sampled_planes", {
     shape: expectSampledPlanesScenarioStreamShape,
     cameraStart: [200, 300],
@@ -2468,8 +2518,16 @@ if (focusedScenarioId) {
     requireOk(changed.update.decoded.commands.filter((command) =>
       command.cmd === "WriteBuffer").length >= check.minUniformUpdates,
     `${label}: camera uniform updates missing`);
+    if (check.frameTime !== undefined) {
+      expectStatus(Module._dvz_wasm_api_scenario_frame(scene, check.frameTime, 1 / 60),
+        0, `${label} retained update frame`);
+      const animated = emitIncrementalPacketStream(Module, scene, figure, `${label} animation`);
+      requireOk(animated.update.decoded.commands.filter((command) =>
+        command.cmd === "WriteBuffer" && command.size >= check.minDataBytes).length >= check.minDataUpdates,
+        `${label}: missing retained payload updates`);
+    }
     expectNoDiagnostics(Module, scene, `${label} diagnostics`);
-    console.log(`PASS ${label}: packet shape and camera updates`);
+    console.log(`PASS ${label}: packet shape, camera updates${check.frameTime !== undefined ? ", retained data updates" : ""}`);
   } finally {
     Module._dvz_wasm_api_scene_destroy(scene);
   }
@@ -2776,6 +2834,7 @@ try {
     "features_panel_mixed_2d_3d",
     "features_histogram",
     "features_sampled_planes",
+    "features_scientific_wboit",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -2818,7 +2877,8 @@ try {
       id === "showcases_spherical_harmonics" ||
       id === "showcases_streaming_daq" ||
       id === "showcases_cortical_activity" ||
-      id === "showcases_galaxy"
+      id === "showcases_galaxy" ||
+      id === "features_scientific_wboit"
     ) {
       requireOk(
         (Module._dvz_wasm_api_scenario_requirements(i) & (1 << 9)) !== 0,
@@ -3720,6 +3780,11 @@ try {
       (stream, label) => expectHistogramScenarioStreamShape(stream, label),
     ],
     [
+      "features_scientific_wboit",
+      "scientific WBOIT",
+      (stream, label) => expectScientificWboitScenarioStreamShape(stream, label),
+    ],
+    [
       "features_controller_fly",
       "fly controller",
       (stream, label) => expectControllerMeshScenarioStreamShape(stream, label),
@@ -4088,7 +4153,8 @@ try {
         id === "showcases_spherical_harmonics" ||
         id === "showcases_streaming_daq" ||
         id === "showcases_galaxy" ||
-        id === "showcases_textured_planet"
+        id === "showcases_textured_planet" ||
+        id === "features_scientific_wboit"
       ) {
         expectStatus(
           Module._dvz_wasm_api_scenario_frame(scene, 1.1, 1 / 60),

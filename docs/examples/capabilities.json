@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 120,
+  "example_count": 121,
   "categories": {
     "advanced": 6,
     "composite": 2,
-    "feature": 72,
+    "feature": 73,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -17,7 +17,7 @@
     "diagnostic": 1,
     "experimental": 19,
     "prototype": 1,
-    "supported": 99
+    "supported": 100
   },
   "capabilities": {
     "composites": {
@@ -182,7 +182,7 @@
         ]
       },
       "synthetic": {
-        "count": 106,
+        "count": 107,
         "examples": [
           {
             "id": "features_basic_scene",
@@ -447,6 +447,14 @@
             "status": "supported",
             "source": "examples/c/features/technique_depth_cue.c",
             "page": "features/technique-depth-cue.md"
+          },
+          {
+            "id": "features_scientific_wboit",
+            "title": "Scientific 3D Transparency",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/scientific_wboit.c",
+            "page": "features/scientific-wboit.md"
           },
           {
             "id": "features_technique_transparency",
@@ -1816,6 +1824,19 @@
           }
         ]
       },
+      "scientific-wboit": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_scientific_wboit",
+            "title": "Scientific 3D Transparency",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/scientific_wboit.c",
+            "page": "features/scientific-wboit.md"
+          }
+        ]
+      },
       "selection-mesh-instances": {
         "count": 1,
         "examples": [
@@ -2213,7 +2234,7 @@
         ]
       },
       "arcball": {
-        "count": 12,
+        "count": 13,
         "examples": [
           {
             "id": "features_panel_mixed_2d_3d",
@@ -2222,6 +2243,14 @@
             "status": "experimental",
             "source": "examples/c/features/panel_mixed_2d_3d.c",
             "page": "features/panel-mixed-2d-3d.md"
+          },
+          {
+            "id": "features_scientific_wboit",
+            "title": "Scientific 3D Transparency",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/scientific_wboit.c",
+            "page": "features/scientific-wboit.md"
           },
           {
             "id": "visuals_mesh",
@@ -4272,6 +4301,19 @@
           }
         ]
       },
+      "retained-updates": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_scientific_wboit",
+            "title": "Scientific 3D Transparency",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/scientific_wboit.c",
+            "page": "features/scientific-wboit.md"
+          }
+        ]
+      },
       "rgba8": {
         "count": 1,
         "examples": [
@@ -4399,8 +4441,16 @@
         ]
       },
       "scientific": {
-        "count": 10,
+        "count": 11,
         "examples": [
+          {
+            "id": "features_scientific_wboit",
+            "title": "Scientific 3D Transparency",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/scientific_wboit.c",
+            "page": "features/scientific-wboit.md"
+          },
           {
             "id": "showcases_scientific_plotting",
             "title": "Scientific Plotting Workflow",
@@ -4877,6 +4927,19 @@
             "status": "supported",
             "source": "examples/c/visuals/volume.c",
             "page": "visuals/volume.md"
+          }
+        ]
+      },
+      "transparency": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_scientific_wboit",
+            "title": "Scientific 3D Transparency",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/scientific_wboit.c",
+            "page": "features/scientific-wboit.md"
           }
         ]
       },

@@ -8,9 +8,9 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 120
-- Examples declaring screenshot validation: 108
-- Examples that should have video or motion evidence: 9
+- Reviewed public C examples generated for the website: 121
+- Examples declaring screenshot validation: 109
+- Examples that should have video or motion evidence: 10
 
 ## Commands
 
@@ -63,6 +63,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [View-Space Ambient Occlusion](features/technique-ao.md) | [`examples/c/features/technique_ao.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_ao.c) | `supported` | `smoke+screenshot` |
 | [Multisample Antialiasing](features/technique-msaa.md) | [`examples/c/features/technique_msaa.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_msaa.c) | `supported` | `smoke+screenshot` |
 | [Depth Cue](features/technique-depth-cue.md) | [`examples/c/features/technique_depth_cue.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_depth_cue.c) | `supported` | `smoke+screenshot` |
+| [Scientific 3D Transparency](features/scientific-wboit.md) | [`examples/c/features/scientific_wboit.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/scientific_wboit.c) | `supported` | `smoke+interaction+screenshot+video` |
 | [Transparency Order](features/technique-transparency.md) | [`examples/c/features/technique_transparency.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/technique_transparency.c) | `supported` | `smoke+screenshot` |
 | [Guide Lines](features/guide-lines.md) | [`examples/c/features/guide_lines.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/guide_lines.c) | `supported` | `smoke+screenshot` |
 | [Guide Spans](features/guide-spans.md) | [`examples/c/features/guide_spans.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/guide_spans.c) | `supported` | `smoke+screenshot` |

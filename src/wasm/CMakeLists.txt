@@ -52,6 +52,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/marker_symbols.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/mesh_texture.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/sampled_planes.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/scientific_wboit.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/obj_loading.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/orientation_gizmo.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/overlay_card.c

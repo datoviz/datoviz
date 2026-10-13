@@ -158,6 +158,7 @@ sections:
           - features_technique_ao
           - features_technique_msaa
           - features_technique_transparency
+          - features_scientific_wboit
           - features_alpha_blending
           - features_technique_depth_test
       - title: Interaction & Selection

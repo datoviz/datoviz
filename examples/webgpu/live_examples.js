@@ -488,6 +488,12 @@ export const LIVE_EXAMPLES = [
     scenarioId: "features_controller_arcball",
   },
   {
+    id: "features_scientific_wboit",
+    label: "Scientific 3D Transparency",
+    scenarioId: "features_scientific_wboit",
+    animate: true,
+  },
+  {
     id: "features_mesh_texture",
     label: "Textured Mesh",
     scenarioId: "features_mesh_texture",

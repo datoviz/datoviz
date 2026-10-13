@@ -61,6 +61,7 @@ DvzScenarioSpec dvz_example_material_mesh_scenario(void);
 DvzScenarioSpec dvz_example_marker_symbols_scenario(void);
 DvzScenarioSpec dvz_example_mesh_texture_scenario(void);
 DvzScenarioSpec dvz_example_sampled_planes_scenario(void);
+DvzScenarioSpec dvz_example_scientific_wboit_scenario(void);
 DvzScenarioSpec dvz_example_obj_loading_scenario(void);
 DvzScenarioSpec dvz_example_orientation_gizmo_scenario(void);
 DvzScenarioSpec dvz_example_overlay_card_scenario(void);
@@ -306,6 +307,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_histogram_scenario();
     case 92:
         return dvz_example_sampled_planes_scenario();
+    case 93:
+        return dvz_example_scientific_wboit_scenario();
     default:
         return (DvzScenarioSpec){0};
     }
