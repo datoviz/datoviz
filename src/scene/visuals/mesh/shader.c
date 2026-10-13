@@ -51,18 +51,22 @@ bool _scene_mesh_visual_shader_desc(
             visual, picking, wboit_accumulation, format_tag, out);
     }
 
-    if (!_scene_visual_desc_is_textured_mesh(visual->kind) || picking || wboit_accumulation)
+    if (!_scene_visual_desc_is_textured_mesh(visual->kind) || picking)
         return false;
 
+    const char* suffix = wboit_accumulation ? "_wboit" : "";
     dvz_snprintf(out->vertex_key, sizeof(out->vertex_key), "_vs_mesh_textured%s", format_tag);
     dvz_snprintf(
-        out->fragment_key, sizeof(out->fragment_key), "_fs_mesh_textured%s", format_tag);
+        out->fragment_key, sizeof(out->fragment_key), "_fs_mesh_textured%s%s", suffix, format_tag);
     dvz_snprintf(
-        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_mesh_textured_t%u%s",
-        visual->topology, format_tag);
-    _scene_shader_desc_set_builtin(out, DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED);
-    _scene_shader_desc_set_identity(out, "scene.mesh", "textured");
+        out->pipeline_key, sizeof(out->pipeline_key), "_pipe_mesh_textured_t%u%s%s",
+        visual->topology, suffix, format_tag);
+    _scene_shader_desc_set_builtin(
+        out, wboit_accumulation ? DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED_WBOIT
+                               : DVZ_SCENE_BUILTIN_SHADER_MESH_TEXTURED);
+    _scene_shader_desc_set_identity(
+        out, "scene.mesh", wboit_accumulation ? "textured_wboit" : "textured");
     out->vertex_spirv_key = "mesh_textured_vert";
-    out->fragment_spirv_key = "mesh_textured_frag";
+    out->fragment_spirv_key = wboit_accumulation ? "mesh_textured_wboit_frag" : "mesh_textured_frag";
     return true;
 }

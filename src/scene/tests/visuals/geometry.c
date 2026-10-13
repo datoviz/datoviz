@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "common.h"
+#include "sampled_plane_utils.h"
 
 
 
@@ -1691,6 +1692,165 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+/**
+ * Verify retained plane cutoff, raster depth, and family accumulation contracts.
+ *
+ * @param suite the active test context
+ * @param item the active test case
+ * @return 0 on success
+ */
+int test_scene_sampled_plane_alpha_contract(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const uint8_t pixels[16] = {
+        255, 0, 0, 0, 255, 0, 0, 64, 255, 0, 0, 128, 255, 0, 0, 255,
+    };
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzVisual* plane = _test_sampled_plane(scene, pixels, 0, DVZ_ALPHA_MASK);
+    ANN(plane);
+    AT(dvz_panel_add_visual(panel, plane, NULL) == DVZ_OK);
+    AC(dvz_visual_alpha_cutoff(plane), 0.5f, 1e-6);
+    uint64_t version = plane->material.version;
+    AT(dvz_visual_set_alpha_cutoff(plane, 0.25f) == DVZ_OK);
+    AT(plane->material.version > version);
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    material.alpha_mode = DVZ_ALPHA_MASK;
+    AT(dvz_visual_set_material(plane, &material) == DVZ_OK);
+    AC(dvz_visual_alpha_cutoff(plane), 0.25f, 1e-6);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_alpha_cutoff(plane, NAN) != DVZ_OK);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_alpha_cutoff(plane, INFINITY) != DVZ_OK);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_alpha_cutoff(plane, -0.1f) != DVZ_OK);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_alpha_cutoff(plane, 1.1f) != DVZ_OK);
+    AC(dvz_visual_alpha_cutoff(plane), 0.25f, 1e-6);
+    const DvzAlphaMode modes[] = {DVZ_ALPHA_OPAQUE, DVZ_ALPHA_MASK, DVZ_ALPHA_WBOIT};
+    for (uint32_t m = 0; m < DVZ_ARRAY_COUNT(modes); m++)
+    {
+        AT(dvz_visual_set_alpha_mode(plane, modes[m]) == DVZ_OK);
+        DvzSceneMaterialParams payload = {0};
+        _material_params_upload_payload(plane, &payload);
+        AC(payload.model[2], 0.25f, 1e-6);
+        AC(payload.model[3], (float)modes[m], 1e-6);
+        DvzPanelAttach attach = {.visual = plane};
+        DvzSceneVisualPassCaps pass_caps = {0};
+        AT(_scene_visual_pass_caps_from_visual(plane, &attach, &pass_caps));
+        AT(pass_caps.kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH);
+        AT(pass_caps.can_depth_test);
+        AT(pass_caps.writes_depth == (modes[m] != DVZ_ALPHA_WBOIT));
+        AT(!pass_caps.eligible_for_gbuffer);
+        DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+        caps.max_color_attachments = 2;
+        caps.render_target_format_rgba16float = true;
+        caps.render_target_format_r16float = true;
+        caps.supports_render_target_sampling = true;
+        caps.supports_color_blending = true;
+        DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+        cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+        DvzDiagnosticReport report;
+        dvz_diagnostic_report_init(&report);
+        DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+        AT(stream != NULL);
+        AT(dvz_diagnostic_report_count(&report) == 0);
+        bool found = false;
+        for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+        {
+            const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+            if (command->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+                continue;
+            const char* label = dvz_drp2_stream_label(stream, command->u.create_render_pipeline.id);
+            if (label == NULL || strstr(label, "_pipe_mesh_textured_t") == NULL)
+                continue;
+            found = true;
+            AT(command->u.create_render_pipeline.has_depth_attachment);
+            AT(command->u.create_render_pipeline.depth_write_enabled ==
+               (modes[m] != DVZ_ALPHA_WBOIT));
+            AT(command->u.create_render_pipeline.depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL);
+            AT(command->u.create_render_pipeline.color_target_count ==
+               (modes[m] == DVZ_ALPHA_WBOIT ? 2 : 1));
+        }
+        // MASK reuses the opaque pipeline; its validity is retained in the material upload.
+        AT(found || modes[m] == DVZ_ALPHA_MASK);
+        _test_scene_stream_destroy(stream);
+    }
+    AT(dvz_visual_set_alpha_mode(plane, DVZ_ALPHA_MASK) == DVZ_OK);
+    AT(dvz_visual_set_scene_occluder(plane, true) == DVZ_OK);
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_visual_validate(plane, &report));
+    AT(strstr(dvz_diagnostic_report_get(&report, 0), "depth coverage") != NULL);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Emit complete masked and WBOIT sampled-plane WGSL streams with valid texture bindings.
+ *
+ * @param suite the active test context
+ * @param item the active test case
+ * @return 0 on success
+ */
+int test_scene_sampled_plane_wgsl(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const uint8_t pixels[16] = {
+        255, 0, 0, 0, 255, 0, 0, 64, 0, 255, 0, 128, 0, 255, 0, 255,
+    };
+    const DvzAlphaMode modes[] = {DVZ_ALPHA_MASK, DVZ_ALPHA_WBOIT};
+    for (uint32_t m = 0; m < DVZ_ARRAY_COUNT(modes); m++)
+    {
+        DvzScene* scene = dvz_scene();
+        ANN(scene);
+        DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+        ANN(figure);
+        DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.125f, 0.125f, 0.75f, 0.75f});
+        ANN(panel);
+        DvzVisual* plane = _test_sampled_plane(scene, pixels, 0, modes[m]);
+        ANN(plane);
+        AT(dvz_panel_add_visual(panel, plane, NULL) == DVZ_OK);
+        DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+        caps.max_color_attachments = 2;
+        caps.render_target_format_rgba16float = true;
+        caps.render_target_format_r16float = true;
+        caps.supports_render_target_sampling = true;
+        caps.supports_color_blending = true;
+        DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+        cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+        DvzDiagnosticReport report;
+        dvz_diagnostic_report_init(&report);
+        DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+        ANN(stream);
+        AT(dvz_diagnostic_report_count(&report) == 0);
+        DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+        AT(validation.ok);
+        char* json = dvz_drp2_stream_json(stream, "scene_sampled_plane_wgsl");
+        ANN(json);
+        AT(strstr(json, "evaluate_mesh_surface") != NULL);
+        AT(strstr(json, "scene_alpha_valid") != NULL);
+        AT(strstr(json, "textureSample(tex, samp, uv)") != NULL);
+        AT(strstr(json, "\"format\": \"glsl\"") == NULL);
+        if (modes[m] == DVZ_ALPHA_WBOIT)
+        {
+            AT(strstr(json, "scene_wboit_weight") != NULL);
+            AT(strstr(json, "1.0 - exp(-weight)") != NULL);
+        }
+        dvz_drp2_stream_json_destroy(json);
+        _test_scene_stream_destroy(stream);
+        dvz_scene_destroy(scene);
+    }
+    return 0;
+}
+
 
 
 int test_scene_indexed_primitive_emits_draw_indexed(TstContext* suite, const TstCase* item)

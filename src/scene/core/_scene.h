@@ -1526,6 +1526,7 @@ typedef struct DvzSceneMaterialParams DvzSceneMaterialParams;
 struct DvzSceneMaterialParams
 {
     float params[4];
+    // Model, opacity, effective-alpha cutoff, and DvzAlphaMode; shared shader ABI.
     float model[4];
     float base_color_factor[4];
     float standard_params[4];
@@ -1567,6 +1568,7 @@ struct DvzSceneMaterialState
     DvzMaterialModel model;
     DvzAlphaMode alpha_mode;
     float opacity;
+    float alpha_cutoff;
     float base_color_factor[4];
     float ambient;
     float diffuse;

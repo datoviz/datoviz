@@ -43,6 +43,8 @@ Set ordering is part of the scene shader ABI and is mirrored by `src/scene/_scen
 | `1` | Volume | `0`: volume texture, `1`: sampler, `2`: volume/state uniform, `3`: optional depth texture, `4`: scalar transfer texture |
 | `2` | Scene occlusion | `0`: depth texture, `1`: sampler, `2`: occlusion uniform |
 
+`DvzSceneMaterialParams.model` stores material model, opacity, effective-alpha cutoff and `DvzAlphaMode` in its four float lanes. The cutoff is independently retained, defaults to 0.5, and does not change the public material descriptor or uniform size. `scene_alpha.glsl` and `scene_alpha.wgsl` share positive-alpha validity and masked cutoff comparison; family evaluators must supply effective alpha before any participating color or depth product is written.
+
 Only one set-1 layout is used by a visual pipeline. Scene occlusion moves to set `2` when another set
 `1` layout is already present. Fixed-controller visuals still use set `0`, but with identity MVP data.
 

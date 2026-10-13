@@ -46,6 +46,7 @@
 #include "domain/field_internal.h"
 #include "helpers.h"
 #include "test_scene.h"
+#include "sampled_plane_utils.h"
 #include "testing.h"
 #include "text/internal.h"
 #include "text/text_internal.h"
@@ -10738,6 +10739,286 @@ int test_app_offscreen_volume_depth_occluded_by_primitive(TstContext* suite, con
 }
 
 
+/**
+ * Prove masked sampled-plane holes, cutoff equality, and retained alpha updates affect depth.
+ *
+ * @param suite the active test context
+ * @param item the active test case
+ * @return 0 on success
+ */
+int test_app_offscreen_sampled_plane_mask_depth(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+    const uint8_t pixels[16] = {
+        255, 0, 0, 0, 255, 0, 0, 64, 255, 0, 0, 128, 255, 0, 0, 255,
+    };
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzVisual* plane = _test_sampled_plane(scene, pixels, -0.4f, DVZ_ALPHA_MASK);
+    ANN(plane);
+    AT(dvz_panel_add_visual(panel, plane, NULL) == DVZ_OK);
+    // Draw the background second to prove surviving plane fragments wrote depth.
+    DvzVisual* background = _app_primitive_add_quad(
+        scene, panel, -0.9f, 0.9f, -0.9f, 0.9f, 0.4f,
+        (DvzColor){0, 0, 255, 255}, DVZ_ALPHA_OPAQUE, true);
+    ANN(background);
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        tst_skip(suite, "app offscreen capture unavailable");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* view = dvz_view_offscreen(app, figure, 128, 64);
+    ANN(view);
+    DvzCanvas* canvas = dvz_view_canvas(view);
+    ANN(canvas);
+    const float cutoffs[] = {128.0f / 255.0f, 0.0f, 1.0f, 0.5f, 0.0f, 0.12f};
+    const float opacities[] = {1, 1, 1, 0.5f, 1, 0.5f};
+    const float base_alphas[] = {1, 1, 1, 1, 0, 0.5f};
+    const uint8_t vertex_alphas[] = {255, 255, 255, 255, 255, 128};
+    const bool expected[6][4] = {
+        {false, false, true, true}, {false, true, true, true},
+        {false, false, false, true}, {false, false, false, true},
+        {false, false, false, false}, {false, false, false, true},
+    };
+    const uint32_t xs[4] = {24, 48, 80, 104};
+    for (uint32_t c = 0; c < DVZ_ARRAY_COUNT(cutoffs); c++)
+    {
+        AT(dvz_visual_set_alpha_cutoff(plane, cutoffs[c]) == DVZ_OK);
+        DvzMaterialDesc material = dvz_material_desc();
+        material.model = DVZ_MATERIAL_MODEL_UNLIT;
+        material.alpha_mode = DVZ_ALPHA_MASK;
+        material.opacity = opacities[c];
+        material.base_color_factor[3] = base_alphas[c];
+        AT(dvz_visual_set_material(plane, &material) == DVZ_OK);
+        DvzColor colors[4] = {0};
+        for (uint32_t v = 0; v < 4; v++)
+            colors[v] = (DvzColor){255, 255, 255, vertex_alphas[c]};
+        AT(dvz_visual_set_data(plane, "color", colors, 4) == DVZ_OK);
+        dvz_app_run(app, 2);
+        uint32_t width = 0, height = 0;
+        uint8_t* rgba = NULL;
+        AT(_app_ao_capture(canvas, &width, &height, &rgba));
+        AT(width == 128 && height == 64);
+        for (uint32_t x = 0; x < 4; x++)
+        {
+            const uint8_t* pixel = _pixel_at(rgba, width, height, xs[x], 32);
+            AT(pixel[expected[c][x] ? 0 : 2] > 200);
+            AT(pixel[expected[c][x] ? 2 : 0] < 30);
+        }
+        dvz_free(rgba);
+    }
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Capture sampled and ordinary WBOIT layers behind a narrow opaque occluder.
+ *
+ * @param suite the active test context
+ * @param reverse whether the transparent layers are attached in reverse order
+ * @param zero_alpha whether the sampled layer has zero material opacity
+ * @param hidden whether the sampled layer is hidden
+ * @return captured pixels, or an unavailable-capture marker
+ */
+static AppRgbaCapture _app_sampled_plane_wboit_capture(
+    TstContext* suite, bool reverse, bool zero_alpha, bool hidden)
+{
+    AppRgbaCapture out = {0};
+    const uint8_t pixels[16] = {
+        255, 0, 0, 0, 255, 0, 0, 64, 0, 255, 0, 128, 0, 255, 0, 255,
+    };
+    DvzScene* scene = dvz_scene();
+    if (scene == NULL)
+        return out;
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    DvzPanel* panel = figure != NULL ? dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1}) : NULL;
+    if (panel != NULL)
+        dvz_panel_set_background_color(panel, dvz_color_from_unit(0, 0, 0, 1));
+    DvzVisual* plane = panel != NULL ? _test_sampled_plane(scene, pixels, -0.2f, DVZ_ALPHA_WBOIT) : NULL;
+    if (plane == NULL)
+        goto cleanup;
+    if (zero_alpha)
+    {
+        DvzMaterialDesc material = dvz_material_desc();
+        material.model = DVZ_MATERIAL_MODEL_UNLIT;
+        material.alpha_mode = DVZ_ALPHA_WBOIT;
+        material.opacity = 0;
+        if (dvz_visual_set_material(plane, &material) != DVZ_OK)
+            goto cleanup;
+    }
+    if (dvz_visual_set_visible(plane, !hidden) != DVZ_OK)
+        goto cleanup;
+    if (!reverse && dvz_panel_add_visual(panel, plane, NULL) != DVZ_OK)
+        goto cleanup;
+    DvzVisual* blue = _app_primitive_add_quad(
+        scene, panel, -0.9f, 0.9f, -0.9f, 0.9f, 0.2f,
+        (DvzColor){0, 0, 255, 128}, DVZ_ALPHA_WBOIT, true);
+    if (blue == NULL || (reverse && dvz_panel_add_visual(panel, plane, NULL) != DVZ_OK))
+        goto cleanup;
+    DvzVisual* occluder = _app_primitive_add_quad(
+        scene, panel, -0.06f, 0.06f, -0.9f, 0.9f, -0.6f,
+        (DvzColor){255, 255, 255, 255}, DVZ_ALPHA_OPAQUE, true);
+    if (occluder == NULL)
+        goto cleanup;
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        out.skipped = true;
+        out.skip_reason = "app offscreen capture unavailable";
+        goto cleanup;
+    }
+    DvzView* view = dvz_view_offscreen(app, figure, 128, 64);
+    if (view != NULL)
+    {
+        dvz_app_run(app, 2);
+        _app_ao_capture(dvz_view_canvas(view), &out.width, &out.height, &out.rgba);
+    }
+    dvz_app_destroy(app);
+cleanup:
+    dvz_scene_destroy(scene);
+    return out;
+}
+
+
+
+/**
+ * Prove sampled WBOIT evaluation, order independence, zero alpha, and opaque occlusion.
+ *
+ * @param suite the active test context
+ * @param item the active test case
+ * @return 0 on success
+ */
+int test_app_offscreen_sampled_plane_wboit(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+    AppRgbaCapture forward = _app_sampled_plane_wboit_capture(suite, false, false, false);
+    if (forward.skipped)
+    {
+        tst_skip(suite, forward.skip_reason);
+        return 0;
+    }
+    ANN(forward.rgba);
+    AppRgbaCapture reverse = _app_sampled_plane_wboit_capture(suite, true, false, false);
+    ANN(reverse.rgba);
+    AT(forward.width == reverse.width && forward.height == reverse.height);
+    uint32_t max_delta = 0;
+    for (uint32_t i = 0; i < 4 * forward.width * forward.height; i++)
+    {
+        uint32_t delta = (uint32_t)abs((int)forward.rgba[i] - (int)reverse.rgba[i]);
+        max_delta = delta > max_delta ? delta : max_delta;
+    }
+    AT(max_delta <= 2);
+    const uint8_t* hole = _pixel_at(forward.rgba, forward.width, forward.height, 24, 32);
+    const uint8_t* red = _pixel_at(forward.rgba, forward.width, forward.height, 48, 32);
+    const uint8_t* green = _pixel_at(forward.rgba, forward.width, forward.height, 80, 32);
+    const uint8_t* opaque = _pixel_at(forward.rgba, forward.width, forward.height, 64, 32);
+    AT(hole[0] < 20 && hole[1] < 20 && hole[2] > 80);
+    AT(red[0] > 40 && red[1] < 20 && red[2] > 80);
+    AT(green[0] < 20 && green[1] > 80 && green[2] > 80);
+    AT(opaque[0] > 240 && opaque[1] > 240 && opaque[2] > 240);
+    AppRgbaCapture zero = _app_sampled_plane_wboit_capture(suite, false, true, false);
+    AppRgbaCapture hidden = _app_sampled_plane_wboit_capture(suite, false, false, true);
+    ANN(zero.rgba);
+    ANN(hidden.rgba);
+    AT(zero.width == hidden.width && zero.height == hidden.height);
+    AT(memcmp(zero.rgba, hidden.rgba, 4 * zero.width * zero.height) == 0);
+    dvz_free(forward.rgba);
+    dvz_free(reverse.rgba);
+    dvz_free(zero.rgba);
+    dvz_free(hidden.rgba);
+    return 0;
+}
+
+
+/**
+ * Preserve ordinary textured-mesh material and cue evaluation through WBOIT.
+ *
+ * @param suite the active test context
+ * @param item the active test case
+ * @return 0 on success
+ */
+int test_app_offscreen_sampled_plane_material(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+    const uint8_t pixels[16] = {
+        128, 64, 32, 255, 64, 128, 32, 255, 32, 64, 128, 255, 128, 128, 64, 255,
+    };
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    dvz_panel_set_background_color(panel, dvz_color_from_unit(0, 0, 0, 1));
+    DvzVisual* plane = _test_sampled_plane(scene, pixels, 0.4f, DVZ_ALPHA_OPAQUE);
+    ANN(plane);
+    AT(dvz_panel_add_visual(panel, plane, NULL) == DVZ_OK);
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        tst_skip(suite, "app offscreen capture unavailable");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* view = dvz_view_offscreen(app, figure, 128, 64);
+    ANN(view);
+    DvzCanvas* canvas = dvz_view_canvas(view);
+    ANN(canvas);
+    for (uint32_t c = 0; c < 3; c++)
+    {
+        DvzMaterialDesc material = dvz_phong_material_desc();
+        material.model = c == 0 ? DVZ_MATERIAL_MODEL_UNLIT : DVZ_MATERIAL_MODEL_PHONG;
+        material.base_color_factor[0] = 0.7f;
+        material.base_color_factor[1] = 0.8f;
+        material.base_color_factor[2] = 0.9f;
+        AT(dvz_visual_set_material(plane, &material) == DVZ_OK);
+        DvzDepthCueDesc cue = dvz_depth_cue_desc();
+        cue.mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
+        cue.strength = 0.5f;
+        AT(dvz_visual_set_depth_cue(plane, c == 2 ? &cue : NULL) == DVZ_OK);
+        dvz_app_run(app, 2);
+        uint32_t width = 0, height = 0;
+        uint8_t* ordinary = NULL;
+        uint8_t* transparent = NULL;
+        AT(_app_ao_capture(canvas, &width, &height, &ordinary));
+        AT(dvz_visual_set_alpha_mode(plane, DVZ_ALPHA_WBOIT) == DVZ_OK);
+        dvz_app_run(app, 2);
+        uint32_t oit_width = 0, oit_height = 0;
+        AT(_app_ao_capture(canvas, &oit_width, &oit_height, &transparent));
+        AT(width == oit_width && height == oit_height);
+        const uint8_t* center = _pixel_at(ordinary, width, height, 80, 32);
+        AT(center[0] > 10 || center[1] > 10 || center[2] > 10);
+        uint32_t max_delta = 0;
+        for (uint32_t i = 0; i < 4 * width * height; i++)
+        {
+            uint32_t delta = (uint32_t)abs((int)ordinary[i] - (int)transparent[i]);
+            max_delta = delta > max_delta ? delta : max_delta;
+        }
+        AT(max_delta <= 2);
+        dvz_free(ordinary);
+        dvz_free(transparent);
+    }
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 #endif
 
 
@@ -10788,6 +11069,9 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_point_depth_orders_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_wboit_mesh_order_independent_layers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_wboit_nonzero_panel_origin);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sampled_plane_mask_depth);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sampled_plane_wboit);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_sampled_plane_material);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_opaque_sphere_alpha_preserves_coverage);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_mesh_depth_and_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_additive_mesh_blend);
