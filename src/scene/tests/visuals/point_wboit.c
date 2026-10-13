@@ -8,10 +8,10 @@
 /*  Point accumulation contracts                                                                 */
 /*************************************************************************************************/
 
+#include "_visual_pipeline_internal.h"
 #include "common.h"
 #include "datoviz/app.h"
 #include "datoviz/canvas.h"
-#include "_visual_pipeline_internal.h"
 
 
 
@@ -57,8 +57,10 @@ int test_scene_point_wboit_shader_contract(TstContext* suite, const TstCase* ite
         {
             AT(strstr(shader.fragment_glsl, "pointStyleSurface()") != NULL);
             AT(strstr(shader.fragment_wgsl, "point_style_surface(input.color, dist)") != NULL);
-            AT(strstr(shader.fragment_wgsl,
-                "select(edge_color, mix(linear_color, edge_color, stroke_mask), filled)") != NULL);
+            AT(strstr(
+                   shader.fragment_wgsl,
+                   "select(edge_color, mix(linear_color, edge_color, stroke_mask), filled)") !=
+               NULL);
         }
         if ((variant & 2) != 0)
         {
@@ -75,16 +77,16 @@ int test_scene_point_wboit_shader_contract(TstContext* suite, const TstCase* ite
             AT(pipeline.has_depth_state);
             AT(!pipeline.depth_write_enabled);
             AT(pipeline.depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL);
-            AT(pipeline.topology == (backend == 0 ? DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST :
-                DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST));
+            AT(pipeline.topology == (backend == 0 ? DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST
+                                                  : DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST));
         }
         visual.has_item_state = true;
         AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_wgsl", &shader));
     }
-    AT(_scene_visual_alpha_eligibility_error(DVZ_SCENE_VISUAL_DESC_PIXEL,
-        DVZ_ALPHA_WBOIT) != NULL);
-    AT(_scene_visual_alpha_eligibility_error(DVZ_SCENE_VISUAL_DESC_MARKER,
-        DVZ_ALPHA_WBOIT) != NULL);
+    AT(_scene_visual_alpha_eligibility_error(DVZ_SCENE_VISUAL_DESC_PIXEL, DVZ_ALPHA_WBOIT) !=
+       NULL);
+    AT(_scene_visual_alpha_eligibility_error(DVZ_SCENE_VISUAL_DESC_MARKER, DVZ_ALPHA_WBOIT) !=
+       NULL);
     return 0;
 }
 
@@ -104,8 +106,8 @@ static bool _point_wboit_capture(DvzView* view, uint8_t* pixels)
     for (uint32_t i = 0; i < 2; i++)
         if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
             return false;
-    return dvz_canvas_capture_rgba_into(
-        dvz_view_canvas(view), 64, 64, pixels, 64 * 64 * 4) == DVZ_OK;
+    return dvz_canvas_capture_rgba_into(dvz_view_canvas(view), 64, 64, pixels, 64 * 64 * 4) ==
+           DVZ_OK;
 }
 
 
@@ -194,7 +196,16 @@ int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item)
                     AT(dvz_visual_set_depth_cue(points[i], &cue) == DVZ_OK);
                 }
             }
+            DvzVisual* transparent_mesh = dvz_mesh(scene, 0);
+            vec3 mesh_positions[6] = {{-.3f, -.3f, .5f}, {.3f, -.3f, .5f}, {-.3f, .3f, .5f},
+                                      {-.3f, .3f, .5f},  {.3f, -.3f, .5f}, {.3f, .3f, .5f}};
+            DvzColor mesh_colors[6] = {{0, 255, 0, 32}, {0, 255, 0, 32}, {0, 255, 0, 32},
+                                       {0, 255, 0, 32}, {0, 255, 0, 32}, {0, 255, 0, 32}};
+            AT(dvz_visual_set_data(transparent_mesh, "position", mesh_positions, 6) == DVZ_OK);
+            AT(dvz_visual_set_data(transparent_mesh, "color", mesh_colors, 6) == DVZ_OK);
+            AT(dvz_visual_set_alpha_mode(transparent_mesh, DVZ_ALPHA_WBOIT) == DVZ_OK);
             AT(dvz_panel_add_visual(panel, points[reverse], NULL) == DVZ_OK);
+            AT(dvz_panel_add_visual(panel, transparent_mesh, NULL) == DVZ_OK);
             AT(dvz_panel_add_visual(panel, points[1 - reverse], NULL) == DVZ_OK);
             DvzAppConfig app_cfg = dvz_app_config();
             app_cfg.enable_canvas_extensions = false;
@@ -247,8 +258,7 @@ int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item)
 
             // Grow and shrink the retained payload without leaving a stale point footprint.
             vec3 grown_positions[3] = {{-.65f, 0, .2f}, {0, .65f, .2f}, {.65f, 0, .2f}};
-            DvzColor grown_colors[3] = {
-                {255, 0, 0, 192}, {255, 0, 0, 192}, {255, 0, 0, 192}};
+            DvzColor grown_colors[3] = {{255, 0, 0, 192}, {255, 0, 0, 192}, {255, 0, 0, 192}};
             float grown_sizes[3] = {8, 8, 8};
             DvzVisualDataUpdate replacements[] = {
                 {"position", grown_positions, 3},
@@ -269,9 +279,9 @@ int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item)
             // An opaque surface in front hides the transparent point without changing its alpha.
             DvzVisual* mesh = dvz_primitive(scene, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
             vec3 quad[6] = {{-1, -1, -0.2f}, {1, -1, -0.2f}, {-1, 1, -0.2f},
-                            {-1, 1, -0.2f}, {1, -1, -0.2f}, {1, 1, -0.2f}};
+                            {-1, 1, -0.2f},  {1, -1, -0.2f}, {1, 1, -0.2f}};
             DvzColor green[6] = {{0, 255, 0, 255}, {0, 255, 0, 255}, {0, 255, 0, 255},
-                                {0, 255, 0, 255}, {0, 255, 0, 255}, {0, 255, 0, 255}};
+                                 {0, 255, 0, 255}, {0, 255, 0, 255}, {0, 255, 0, 255}};
             AT(dvz_visual_set_data(mesh, "position", quad, 6) == DVZ_OK);
             AT(dvz_visual_set_data(mesh, "color", green, 6) == DVZ_OK);
             AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
@@ -284,5 +294,139 @@ int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item)
         }
     }
     dvz_gpu_ctx_destroy(gpu_ctx);
+    return 0;
+}
+
+
+
+/**
+ * Verify WGSL accumulation packets retain instanced point layouts and current payload extents.
+ *
+ * @param suite active test context
+ * @param item active test item
+ * @return 0 on success
+ */
+int test_scene_point_wboit_wgsl_packets(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    for (uint32_t variant = 0; variant < 4; variant++)
+    {
+        DvzScene* scene = dvz_scene();
+        DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
+        DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.25f, .125f, .5f, .75f});
+        DvzVisual* point = dvz_point(scene, 0);
+        vec3 positions[3] = {{-.5f, -.5f, .2f}, {0, 0, .2f}, {.5f, .5f, .2f}};
+        DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 0}, {0, 0, 255, 192}};
+        float sizes[3] = {8, 12, 16};
+        DvzVisualDataUpdate updates[] = {
+            {"position", positions, 3}, {"color", colors, 3}, {"diameter_px", sizes, 3}};
+        AT(dvz_visual_set_data_many(point, updates, 3) == DVZ_OK);
+        AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_WBOIT) == DVZ_OK);
+        if ((variant & 1) != 0)
+        {
+            DvzPointStyleDesc style = dvz_point_style_desc();
+            style.aspect = DVZ_SHAPE_ASPECT_STROKE;
+            style.stroke_width_px = 2;
+            style.edge_color = (DvzColor){255, 255, 0, 96};
+            AT(dvz_point_set_style(point, &style) == DVZ_OK);
+        }
+        if ((variant & 2) != 0)
+        {
+            DvzDepthCueDesc cue = dvz_depth_cue_desc();
+            AT(dvz_visual_set_depth_cue(point, &cue) == DVZ_OK);
+        }
+        AT(dvz_panel_add_visual(panel, point, NULL) == DVZ_OK);
+        DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+        caps.shader_format_wgsl = true;
+        caps.shader_format_glsl = false;
+        caps.max_color_attachments = 2;
+        caps.render_target_format_rgba16float = true;
+        caps.render_target_format_r16float = true;
+        caps.supports_color_blending = true;
+        caps.supports_render_target_sampling = true;
+        caps.max_vertex_buffers = 16;
+        caps.max_bind_groups = 4;
+        caps.max_buffer_size = 256 * 1024 * 1024;
+        DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+        cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+        uint64_t point_shader = 0;
+        uint64_t point_pipeline = 0;
+        for (uint32_t replacement = 0; replacement < 3; replacement++)
+        {
+            uint32_t count = replacement == 1 ? 1 : 3;
+            for (uint32_t i = 0; i < 3; i++)
+                updates[i].item_count = count;
+            AT(dvz_visual_set_data_many(point, updates, 3) == DVZ_OK);
+            DvzDiagnosticReport report;
+            dvz_diagnostic_report_init(&report);
+            DvzDrp2CommandStream* stream =
+                _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+            AT(dvz_diagnostic_report_count(&report) == 0);
+            ANN(stream);
+            uint64_t current_pipeline = 0;
+            bool found_accum = false;
+            bool found_draw = false;
+            for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+            {
+                const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+                if (command->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE &&
+                    strcmp(command->u.create_shader_module.stage, "FRAGMENT") == 0 &&
+                    strcmp(command->u.create_shader_module.builtin_family, "scene.point") == 0)
+                {
+                    point_shader = command->u.create_shader_module.id;
+                    AT(strstr(command->u.create_shader_module.code, "scene_wboit_weight") != NULL);
+                    AT(strstr(command->u.create_shader_module.code, "point_disc_coverage") !=
+                       NULL);
+                }
+                if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+                    command->u.create_render_pipeline.fragment_shader_module_id == point_shader)
+                {
+                    point_pipeline = command->u.create_render_pipeline.id;
+                    AT(command->u.create_render_pipeline.color_target_count == 2);
+                    AT(command->u.create_render_pipeline.color_targets[0].format ==
+                       DVZ_FORMAT_R16G16B16A16_SFLOAT);
+                    AT(command->u.create_render_pipeline.color_targets[1].format ==
+                       DVZ_FORMAT_R16_SFLOAT);
+                    for (uint32_t target = 0; target < 2; target++)
+                    {
+                        const DvzDrp2ColorTarget* blend =
+                            &command->u.create_render_pipeline.color_targets[target];
+                        AT(blend->blend_enabled);
+                        AT(blend->src_color_blend_factor == DVZ_BLEND_FACTOR_ONE);
+                        AT(blend->dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE);
+                        AT(blend->color_blend_op == DVZ_BLEND_OP_ADD);
+                    }
+                    AT(command->u.create_render_pipeline.has_depth_attachment);
+                    AT(!command->u.create_render_pipeline.depth_write_enabled);
+                    AT(command->u.create_render_pipeline.topology ==
+                       DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+                    for (uint32_t binding = 0; binding < 3; binding++)
+                        AT(command->u.create_render_pipeline.binding_step_modes[binding] ==
+                           DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE);
+                }
+                if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+                    command->u.begin_render_pass.color_attachment_count == 2)
+                {
+                    found_accum = true;
+                    AT(command->u.begin_render_pass.has_depth_attachment);
+                }
+                if (command->type == DVZ_DRP2_COMMAND_SET_PIPELINE)
+                    current_pipeline = command->u.set_pipeline.pipeline_id;
+                if (command->type == DVZ_DRP2_COMMAND_DRAW && current_pipeline == point_pipeline)
+                {
+                    found_draw = true;
+                    AT(command->u.draw.vertex_count == 6);
+                    AT(command->u.draw.instance_count == count);
+                }
+            }
+            AT(point_shader != 0);
+            AT(point_pipeline != 0);
+            AT(found_accum);
+            AT(found_draw);
+            _test_scene_stream_destroy(stream);
+        }
+        dvz_scene_destroy(scene);
+    }
     return 0;
 }
