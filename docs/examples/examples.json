@@ -1729,13 +1729,14 @@
       "source": "examples/c/features/scientific_wboit.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/scientific_wboit.c",
       "page": "features/scientific-wboit.md",
-      "summary": "This example compares the same scientific scene with reversed transparent draw order.",
+      "summary": "This example compares meshes, RGBA points and a sampled plane with reversed transparent order.",
       "validation": "smoke+interaction+screenshot+video",
       "build_command": "just example-c features/scientific_wboit",
       "smoke_command": "./build/examples/c/features/scientific_wboit --png",
       "tags": [
         "scientific",
         "transparency",
+        "sampled-plane",
         "retained-updates",
         "arcball"
       ],
@@ -1756,6 +1757,8 @@
       "webgpu_requirements": [
         "point",
         "mesh",
+        "sampled-field",
+        "texture",
         "sphere",
         "path",
         "arcball",
@@ -1767,6 +1770,8 @@
         "requirements": [
           "point",
           "mesh",
+          "sampled-field",
+          "texture",
           "sphere",
           "path",
           "arcball",

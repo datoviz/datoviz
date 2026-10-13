@@ -9,7 +9,7 @@
 </div>
 </nav>
 
-This example compares the same scientific scene with reversed transparent draw order.
+This example compares meshes, RGBA points and a sampled plane with reversed transparent order.
 
 ## Preview
 
@@ -71,13 +71,13 @@ object lifetimes and data shapes intact while adapting the data and styling.
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../webgpu/live.html?id=features_scientific_wboit"><code>examples/webgpu/live.html?id=features_scientific_wboit</code></a>
-    - Browser capability tags: `point`, `mesh`, `sphere`, `path`, `arcball`, `wboit`
+    - Browser capability tags: `point`, `mesh`, `sampled-field`, `texture`, `sphere`, `path`, `arcball`, `wboit`
     - Browser rendering effects: `wboit` (supported)
     - Validation: `smoke+interaction+screenshot+video`
 
     **Tags**
 
-    `scientific`, `transparency`, `retained-updates`, `arcball`
+    `scientific`, `transparency`, `sampled-plane`, `retained-updates`, `arcball`
 
     **Data**
 

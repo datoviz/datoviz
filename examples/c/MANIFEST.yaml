@@ -1215,6 +1215,8 @@ examples:
       requirements:
         - point
         - mesh
+        - sampled-field
+        - texture
         - sphere
         - path
         - arcball
@@ -1226,6 +1228,7 @@ examples:
     tags:
       - scientific
       - transparency
+      - sampled-plane
       - retained-updates
       - arcball
 

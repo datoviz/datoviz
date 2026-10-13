@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example compares the same scientific scene with reversed transparent draw order.
+/* This example compares meshes, RGBA points and a sampled plane with reversed transparent order.
  *
- * Two translucent surface regions and a moving RGBA point collection share weighted OIT. Opaque
- * recording-site spheres and round trajectories keep their depth and silhouettes as the scene
- * rotates. Both panels use identical data and linked cameras; their transparent attachment orders
- * are opposite. Weighted OIT approximates layering, so overlapping colors need not match exact
- * source-over compositing. Point positions, colors, sizes and alpha are retained updates.
+ * Two translucent surface regions, a moving RGBA point collection and a physical sampled plane
+ * share weighted OIT. The plane's RGBA texture has transparent holes and two positive alpha levels.
+ * Opaque recording-site spheres and round trajectories keep their depth and silhouettes as the
+ * scene rotates. Both panels use identical data and linked cameras; their transparent attachment
+ * orders are opposite. Weighted OIT approximates layering, so overlapping colors need not match
+ * exact source-over compositing. Point positions, colors, sizes and alpha are retained updates.
  *
  * Build: just example-c features/scientific_wboit
  * Run:   ./build/examples/c/features/scientific_wboit --live
@@ -157,6 +158,82 @@ static DvzVisual* _surface(DvzScene* scene, float center_x, DvzColor color)
 }
 
 
+/**
+ * Create a physical sampled plane crossing the regional surfaces.
+ *
+ * @param scene scene owning the field, index buffer and plane
+ * @return retained plane, or NULL on failure
+ */
+static DvzVisual* _sampled_plane(DvzScene* scene)
+{
+    enum { SIZE = 32 };
+    uint8_t pixels[SIZE * SIZE * 4] = {0};
+    for (uint32_t y = 0; y < SIZE; y++)
+    {
+        for (uint32_t x = 0; x < SIZE; x++)
+        {
+            int dx = (int)(x % 8) - 4;
+            int dy = (int)(y % 8) - 4;
+            uint32_t i = 4 * (y * SIZE + x);
+            pixels[i] = 244;
+            pixels[i + 1] = 114;
+            pixels[i + 2] = 182;
+            pixels[i + 3] = dx * dx + dy * dy < 5 ? 0 :
+                            ((x / 8 + y / 8) % 2 != 0 ? 144 : 208);
+        }
+    }
+    DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
+    field_desc.dim = DVZ_FIELD_DIM_2D;
+    field_desc.format = DVZ_FIELD_FORMAT_RGBA8_UNORM;
+    field_desc.semantic = DVZ_FIELD_SEMANTIC_COLOR;
+    field_desc.width = field_desc.height = SIZE;
+    DvzSampledField* field = dvz_sampled_field(scene, &field_desc);
+    DvzFieldDataView data = dvz_field_data_view();
+    data.data = pixels;
+    data.bytes_per_row = SIZE * 4;
+    data.rows_per_image = SIZE;
+    DvzSceneBufferDesc index_desc = dvz_scene_buffer_desc();
+    index_desc.usage = DVZ_SCENE_BUFFER_USAGE_INDEX;
+    index_desc.stride = sizeof(DvzIndex);
+    DvzSceneBuffer* index = dvz_scene_buffer(scene, &index_desc);
+    DvzVisual* plane = dvz_mesh(scene, 0);
+    if (field == NULL || index == NULL || plane == NULL)
+        return NULL;
+    vec3 positions[4] = {
+        {-.68f, -.60f, -.0704f}, {-.68f, .60f, -.0704f},
+        {.68f, -.60f, .3104f}, {.68f, .60f, .3104f},
+    };
+    vec3 normals[4] = {
+        {-.26963f, 0, .96296f}, {-.26963f, 0, .96296f},
+        {-.26963f, 0, .96296f}, {-.26963f, 0, .96296f},
+    };
+    vec2 uv[4] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+    DvzColor colors[4] = {
+        {255, 255, 255, 255}, {255, 255, 255, 255},
+        {255, 255, 255, 255}, {255, 255, 255, 255},
+    };
+    DvzIndex indices[6] = {0, 2, 1, 2, 3, 1};
+    DvzFieldSamplingDesc sampling = dvz_field_sampling_desc();
+    sampling.min_filter = sampling.mag_filter = DVZ_FIELD_FILTER_NEAREST;
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    material.alpha_mode = DVZ_ALPHA_WBOIT;
+    material.opacity = .50f;
+    if (dvz_sampled_field_set_data(field, &data) != DVZ_OK ||
+        dvz_scene_buffer_set_data(index, indices, sizeof(indices)) != DVZ_OK ||
+        dvz_visual_set_data(plane, "position", positions, 4) != DVZ_OK ||
+        dvz_visual_set_data(plane, "normal", normals, 4) != DVZ_OK ||
+        dvz_visual_set_data(plane, "color", colors, 4) != DVZ_OK ||
+        dvz_visual_set_data(plane, "texcoords", uv, 4) != DVZ_OK ||
+        dvz_visual_set_buffer(plane, "index", index) != DVZ_OK ||
+        dvz_visual_set_field(plane, "texture", field) != DVZ_OK ||
+        dvz_visual_set_field_sampling(plane, "texture", &sampling) != DVZ_OK ||
+        dvz_visual_set_material(plane, &material) != DVZ_OK)
+        return NULL;
+    return plane;
+}
+
+
 
 /**
  * Add opaque analytic sites and independent round trajectories.
@@ -276,11 +353,15 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         DvzVisual* surfaces[2] = {
             _surface(ctx->scene, -.23f, (DvzColor){34, 211, 238, 68}),
             _surface(ctx->scene, .23f, (DvzColor){96, 165, 250, 92})};
+        DvzVisual* plane = _sampled_plane(ctx->scene);
         state->points[i] = dvz_point(ctx->scene, 0);
-        if (surfaces[0] == NULL || surfaces[1] == NULL || state->points[i] == NULL ||
+        if (surfaces[0] == NULL || surfaces[1] == NULL || plane == NULL ||
+            state->points[i] == NULL ||
             dvz_visual_set_alpha_mode(state->points[i], DVZ_ALPHA_WBOIT) != DVZ_OK ||
             dvz_panel_add_visual(panel, surfaces[i], NULL) != DVZ_OK ||
+            (i == 1 && dvz_panel_add_visual(panel, plane, NULL) != DVZ_OK) ||
             dvz_panel_add_visual(panel, state->points[i], NULL) != DVZ_OK ||
+            (i == 0 && dvz_panel_add_visual(panel, plane, NULL) != DVZ_OK) ||
             dvz_panel_add_visual(panel, surfaces[1 - i], NULL) != DVZ_OK ||
             !_opaque_context(ctx->scene, panel))
             return false;

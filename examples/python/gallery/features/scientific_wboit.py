@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared mesh/point WBOIT with opaque sites, trajectories and reversed draw order."""
+"""Shared mesh/point/sampled-plane WBOIT with opaque sites and reversed draw order."""
 
 from __future__ import annotations
 
@@ -72,6 +72,63 @@ def _surface(scene, center_x: float, color):
     if dvz.dvz_visual_set_transform(mesh, transform) != 0:
         raise RuntimeError('surface translation failed')
     return mesh
+
+
+def _sampled_plane(scene):
+    size = 32
+    y, x = np.mgrid[:size, :size]
+    hole = (x % 8 - 4) ** 2 + (y % 8 - 4) ** 2 < 5
+    pixels = np.empty((size, size, 4), dtype=np.uint8)
+    pixels[..., :3] = (244, 114, 182)
+    pixels[..., 3] = np.where(hole, 0, np.where((x // 8 + y // 8) % 2, 144, 208))
+    field = dvz.dvz_sampled_field_from_array(scene, pixels)
+    if not field:
+        raise RuntimeError('sampled-plane field upload failed')
+    positions = np.array(
+        [
+            [-0.68, -0.60, -0.0704],
+            [-0.68, 0.60, -0.0704],
+            [0.68, -0.60, 0.3104],
+            [0.68, 0.60, 0.3104],
+        ],
+        dtype=np.float32,
+    )
+    normals = np.tile(np.array([-0.26963, 0, 0.96296], dtype=np.float32), (4, 1))
+    uv = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float32)
+    colors = np.full((4, 4), 255, dtype=np.uint8)
+    indices = np.array([0, 2, 1, 2, 3, 1], dtype=np.uint32)
+    index_desc = dvz.dvz_scene_buffer_desc()
+    index_desc.usage = dvz.DVZ_SCENE_BUFFER_USAGE_INDEX
+    index_desc.stride = indices.itemsize
+    index = dvz.dvz_scene_buffer(scene, ctypes.byref(index_desc))
+    plane = dvz.dvz_mesh(scene, 0)
+    if not index or not plane or dvz.dvz_scene_buffer_set_data(index, indices) != 0:
+        raise RuntimeError('sampled-plane geometry creation failed')
+    for attr, data in (
+        ('position', positions),
+        ('normal', normals),
+        ('color', colors),
+        ('texcoords', uv),
+    ):
+        if dvz.dvz_visual_set_data(plane, attr, data) != 0:
+            raise RuntimeError(f'sampled-plane {attr} upload failed')
+    if (
+        dvz.dvz_visual_set_buffer(plane, b'index', index) != 0
+        or dvz.dvz_visual_set_field(plane, b'texture', field) != 0
+    ):
+        raise RuntimeError('sampled-plane resource binding failed')
+    sampling = dvz.dvz_field_sampling_desc()
+    sampling.min_filter = sampling.mag_filter = dvz.DVZ_FIELD_FILTER_NEAREST
+    material = dvz.dvz_material_desc()
+    material.model = dvz.DVZ_MATERIAL_MODEL_UNLIT
+    material.alpha_mode = dvz.DVZ_ALPHA_WBOIT
+    material.opacity = 0.50
+    if (
+        dvz.dvz_visual_set_field_sampling(plane, b'texture', ctypes.byref(sampling)) != 0
+        or dvz.dvz_visual_set_material(plane, ctypes.byref(material)) != 0
+    ):
+        raise RuntimeError('sampled-plane material setup failed')
+    return plane
 
 
 def _opaque_context(scene, panel) -> None:
@@ -156,11 +213,16 @@ def main() -> None:
             _surface(scene, -0.23, (34, 211, 238, 68)),
             _surface(scene, 0.23, (96, 165, 250, 92)),
         ]
+        plane = _sampled_plane(scene)
         point = dvz.dvz_point(scene, 0)
         dvz.dvz_visual_set_data_many(point, _point_data(0))
         dvz.dvz_visual_set_alpha_mode(point, dvz.DVZ_ALPHA_WBOIT)
         ex.add_visual(panel, surfaces[index])
+        if index == 1:
+            ex.add_visual(panel, plane)
         ex.add_visual(panel, point)
+        if index == 0:
+            ex.add_visual(panel, plane)
         ex.add_visual(panel, surfaces[1 - index])
         _opaque_context(scene, panel)
         panels.append(panel)

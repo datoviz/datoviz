@@ -4393,6 +4393,19 @@
           }
         ]
       },
+      "sampled-plane": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_scientific_wboit",
+            "title": "Scientific 3D Transparency",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/scientific_wboit.c",
+            "page": "features/scientific-wboit.md"
+          }
+        ]
+      },
       "scalar-field": {
         "count": 2,
         "examples": [

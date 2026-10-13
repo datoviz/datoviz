@@ -824,9 +824,9 @@ This example compares three transparency techniques on the same overlapping cube
   </video>
 </div>
 
-`features`<br><span>`scientific`, `transparency`, `retained-updates`, `arcball`</span>
+`features`<br><span>`scientific`, `transparency`, `sampled-plane`, `retained-updates`, `arcball`</span>
 
-This example compares the same scientific scene with reversed transparent draw order.
+This example compares meshes, RGBA points and a sampled plane with reversed transparent order.
 
 </div>
 

@@ -688,9 +688,12 @@ function expectScientificWboitScenarioStreamShape(stream, label) {
   const point = expectPipeline(stream, `${label} point accumulation`, (pipeline) =>
     pipeline.builtin_pipeline === "scene.point" && pipeline.color_targets.length === 2);
   const mesh = expectPipeline(stream, `${label} mesh accumulation`, (pipeline) =>
-    ["scene.primitive", "scene.mesh"].includes(pipeline.builtin_pipeline) &&
+    pipeline.builtin_pipeline === "scene.primitive" &&
       pipeline.color_targets.length === 2);
-  for (const pipeline of [point, mesh]) {
+  const plane = expectPipeline(stream, `${label} sampled plane accumulation`, (pipeline) =>
+    pipeline.builtin_pipeline === "scene.mesh" && pipeline.vertex_buffer_slots === 4 &&
+      pipeline.color_targets.length === 2);
+  for (const pipeline of [point, mesh, plane]) {
     expectDepthPipeline(pipeline, label, false);
     requireOk(pipeline.color_targets[0].format === "rgba16float" &&
       pipeline.color_targets[1].format === "r16float", `${label}: wrong WBOIT formats`);
@@ -704,6 +707,28 @@ function expectScientificWboitScenarioStreamShape(stream, label) {
   const fragment = shaders.find((shader) => shader.id === point.fragment_shader_module_id);
   requireOk(fragment?.code.includes("point_disc_coverage") &&
     fragment.code.includes("scene_wboit_weight"), `${label}: point coverage lost in OIT`);
+  const planeFragment = shaders.find((shader) => shader.id === plane.fragment_shader_module_id);
+  requireOk(planeFragment?.code.includes("evaluate_mesh_surface") &&
+    planeFragment.code.includes("scene_alpha_valid") &&
+    planeFragment.code.includes("textureSample(tex, samp, uv)") &&
+    planeFragment.code.includes("scene_wboit_weight"),
+    `${label}: sampled-plane texture/material alpha lost in OIT`);
+  requireOk(commandsOf(stream, "CreateBindGroup").some((group) =>
+    group.bind_group_layout_id === plane.bind_group_layout_ids[1] &&
+      group.entries.some((entry) => entry.binding_type === "sampled_texture") &&
+      group.entries.some((entry) => entry.binding_type === "sampler") &&
+      group.entries.some((entry) => entry.binding_type === "uniform_buffer")),
+    `${label}: sampled-plane material/texture bindings missing`);
+  const planeUploads = commandsOf(stream, "WriteTexture").filter((write) =>
+    write.size?.width === 32 && write.size?.height === 32);
+  requireOk(planeUploads.length === 2, `${label}: expected RGBA plane texture in each panel`);
+  for (const upload of planeUploads) {
+    const pixels = typeof upload.data === "string"
+      ? Buffer.from(upload.data, "base64") : upload.data;
+    const alpha = new Set(Array.from(pixels).filter((value, i) => i % 4 === 3));
+    requireOk(alpha.has(0) && alpha.has(144) && alpha.has(208),
+      `${label}: missing plane holes or positive RGBA alpha levels`);
+  }
   requireOk(shaders.some((shader) => shader.code?.includes("1.0 - exp(-weight)")),
     `${label}: missing logarithmic-weight resolve`);
   const sphere = expectPipeline(stream, `${label} opaque sphere`, (pipeline) =>
@@ -716,11 +741,16 @@ function expectScientificWboitScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "Draw").filter((draw) =>
     draw.vertex_count === 6 && draw.instance_count === 768).length === 2,
     `${label}: expected 768 scientific points in each panel`);
-  requireOk(commandsOf(stream, "DrawIndexed").length >= 4,
-    `${label}: expected both indexed regional surfaces in both panels`);
-  requireOk(commandsOf(stream, "BeginRenderPass").filter((pass) =>
-    pass.color_attachments.length === 2).length === 2,
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 6,
+    `${label}: expected two indexed surfaces and sampled plane in both panels`);
+  const accumulationPasses = commandsOf(stream, "BeginRenderPass").filter((pass) =>
+    pass.color_attachments.length === 2);
+  requireOk(accumulationPasses.length === 2,
     `${label}: expected one WBOIT accumulation pass per panel`);
+  requireOk(accumulationPasses.every((pass) =>
+    pass.depth_stencil_attachment?.depth_load_op === "load" &&
+      pass.depth_stencil_attachment.access === "read"),
+    `${label}: mixed WBOIT must read and preserve opaque depth`);
 }
 
 function expectCanvasRenderPass(
