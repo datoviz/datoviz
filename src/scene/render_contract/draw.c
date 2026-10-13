@@ -266,9 +266,10 @@ void _draw_raster_state_contract(
     ANN(out_has_raster_state);
     ANN(out_cull_mode);
     ANN(out_front_face);
-    *out_has_raster_state = false;
-    *out_cull_mode = 0;
-    *out_front_face = 0;
+    // Scene clip conversion and backend viewport conventions preserve authored CCW fronts.
+    *out_has_raster_state = true;
+    *out_cull_mode = DVZ_CULL_MODE_NONE;
+    *out_front_face = DVZ_FRONT_FACE_COUNTER_CLOCKWISE;
 
     if (pass_role == DVZ_FRAME_PLAN_RENDER_PASS_DEPTH_PEEL_INIT)
     {

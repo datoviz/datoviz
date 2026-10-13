@@ -78,6 +78,9 @@ int test_scene_point_wboit_shader_contract(TstContext* suite, const TstCase* ite
             AT(pipeline.has_depth_state);
             AT(!pipeline.depth_write_enabled);
             AT(pipeline.depth_compare_op == DVZ_COMPARE_OP_LESS_OR_EQUAL);
+            AT(pipeline.has_raster_state);
+            AT(pipeline.cull_mode == DVZ_CULL_MODE_NONE);
+            AT(pipeline.front_face == DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
             AT(pipeline.topology == (backend == 0 ? DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST
                                                   : DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST));
         }
@@ -313,6 +316,66 @@ int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item)
             AT(dvz_panel_set_scene_occlusion(panel, &occlusion) == DVZ_OK);
             AT(_point_wboit_capture(view, pixels));
             AT(pixels[center + 2] + 20 < hidden[center + 2]);
+            dvz_app_destroy(app);
+            dvz_scene_destroy(scene);
+        }
+    }
+    // Match authored CCW fronts across opaque and two-sided lit accumulation shaders.
+    for (uint32_t reversed = 0; reversed < 2; reversed++)
+    {
+        for (uint32_t accumulation = 0; accumulation < 2; accumulation++)
+        {
+            DvzScene* scene = dvz_scene();
+            DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+            DvzPanel* panel = dvz_panel_full(figure);
+            dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 0, 255));
+            DvzCameraDesc camera = dvz_camera_desc();
+            camera.view.eye[2] = 3;
+            AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+            DvzLightDesc light_desc = dvz_light_desc(DVZ_LIGHT_DIRECTIONAL);
+            glm_vec3_copy((vec3){0, 0, 1}, light_desc.direction);
+            light_desc.intensity = 1;
+            DvzLight* light = dvz_light(scene, &light_desc);
+            DvzLight* lights[] = {light};
+            AT(dvz_panel_set_lights(panel, lights, 1) == DVZ_OK);
+            DvzVisual* mesh = dvz_mesh(scene, 0);
+            vec3 positions[3] = {{-.8f, -.7f, 0}, {.8f, -.7f, 0}, {0, .8f, 0}};
+            if (reversed != 0)
+            {
+                vec3 temporary = {0};
+                glm_vec3_copy(positions[0], temporary);
+                glm_vec3_copy(positions[2], positions[0]);
+                glm_vec3_copy(temporary, positions[2]);
+            }
+            vec3 normals[3] = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+            DvzColor colors[3] = {{255, 255, 255, 255}, {255, 255, 255, 255},
+                                  {255, 255, 255, 255}};
+            DvzVisualDataUpdate updates[] = {
+                {"position", positions, 3}, {"normal", normals, 3}, {"color", colors, 3}};
+            AT(dvz_visual_set_data_many(mesh, updates, 3) == DVZ_OK);
+            DvzMaterialDesc material = dvz_phong_material_desc();
+            material.phong.ambient = 0;
+            material.phong.diffuse = 1;
+            material.phong.specular = 0;
+            material.alpha_mode = accumulation != 0 ? DVZ_ALPHA_WBOIT : DVZ_ALPHA_OPAQUE;
+            AT(dvz_visual_set_material(mesh, &material) == DVZ_OK);
+            AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+            DvzAppConfig app_cfg = dvz_app_config();
+            app_cfg.enable_canvas_extensions = false;
+            app_cfg.enable_glfw_extensions = false;
+            DvzAppResources resources = dvz_app_resources();
+            resources.gpu_ctx = gpu_ctx;
+            DvzApp* app = dvz_app_with_resources(scene, &app_cfg, &resources);
+            ANN(app);
+            DvzView* view = dvz_view_offscreen(app, figure, 64, 64);
+            ANN(view);
+            uint8_t pixels[64 * 64 * 4] = {0};
+            AT(_point_wboit_capture(view, pixels));
+            uint32_t center = 4 * (32 * 64 + 32);
+            bool illuminated = accumulation == 0 || reversed == 0;
+            for (uint32_t channel = 0; channel < 3; channel++)
+                AT(illuminated ? pixels[center + channel] > 250
+                               : pixels[center + channel] < 5);
             dvz_app_destroy(app);
             dvz_scene_destroy(scene);
         }
