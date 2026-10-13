@@ -24,6 +24,8 @@ void main()
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(outColor);
 #endif
+    if (outColor.a <= 0.0)
+        discard;
 #ifdef DVZ_SURFACE_DEPTH_OUTPUT
     writeSurfaceDepthFromDevice();
 #endif

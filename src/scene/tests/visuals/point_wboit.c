@@ -380,6 +380,72 @@ int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item)
             dvz_scene_destroy(scene);
         }
     }
+    // Zero effective alpha must match hidden geometry, including its depth footprint.
+    for (uint32_t variant = 0; variant < 4; variant++)
+    {
+        DvzScene* scene = dvz_scene();
+        DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+        DvzPanel* panel = dvz_panel_full(figure);
+        dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 0, 255));
+        DvzCameraDesc camera = dvz_camera_desc();
+        camera.view.eye[2] = 3;
+        AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+        DvzVisual* point = dvz_point(scene, 0);
+        vec3 position = {0, 0, .5f};
+        DvzColor red = {255, 0, 0, 0};
+        float diameter = 40;
+        DvzVisualDataUpdate updates[] = {
+            {"position", &position, 1}, {"color", &red, 1}, {"diameter_px", &diameter, 1}};
+        AT(dvz_visual_set_data_many(point, updates, 3) == DVZ_OK);
+        AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_OPAQUE) == DVZ_OK);
+        DvzPointStyleDesc style = dvz_point_style_desc();
+        style.aspect = DVZ_SHAPE_ASPECT_OUTLINE;
+        style.stroke_width_px = 4;
+        style.edge_color = red;
+        if ((variant & 1) != 0)
+            AT(dvz_point_set_style(point, &style) == DVZ_OK);
+        if ((variant & 2) != 0)
+        {
+            DvzDepthCueDesc cue = dvz_depth_cue_desc();
+            cue.strength = .5f;
+            AT(dvz_visual_set_depth_cue(point, &cue) == DVZ_OK);
+        }
+        DvzVisual* mesh = dvz_mesh(scene, 0);
+        vec3 positions[6] = {{-2, -2, 0}, {2, -2, 0}, {-2, 2, 0},
+                              {-2, 2, 0}, {2, -2, 0}, {2, 2, 0}};
+        DvzColor green[6];
+        for (uint32_t i = 0; i < 6; i++)
+            green[i] = (DvzColor){0, 255, 0, 255};
+        AT(dvz_visual_set_data(mesh, "position", positions, 6) == DVZ_OK);
+        AT(dvz_visual_set_data(mesh, "color", green, 6) == DVZ_OK);
+        AT(dvz_panel_add_visual(panel, point, NULL) == DVZ_OK);
+        AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+        DvzAppConfig app_cfg = dvz_app_config();
+        app_cfg.enable_canvas_extensions = false;
+        app_cfg.enable_glfw_extensions = false;
+        DvzAppResources resources = dvz_app_resources();
+        resources.gpu_ctx = gpu_ctx;
+        DvzApp* app = dvz_app_with_resources(scene, &app_cfg, &resources);
+        ANN(app);
+        DvzView* view = dvz_view_offscreen(app, figure, 64, 64);
+        ANN(view);
+        uint8_t zero[64 * 64 * 4] = {0};
+        uint8_t hidden[64 * 64 * 4] = {0};
+        AT(_point_wboit_capture(view, zero));
+        AT(dvz_visual_set_visible(point, false) == DVZ_OK);
+        AT(_point_wboit_capture(view, hidden));
+        AT(_point_wboit_delta(zero, hidden) == 0);
+        AT(dvz_visual_set_visible(point, true) == DVZ_OK);
+        red.a = 255;
+        AT(dvz_visual_set_data(point, "color", &red, 1) == DVZ_OK);
+        style.edge_color = red;
+        if ((variant & 1) != 0)
+            AT(dvz_point_set_style(point, &style) == DVZ_OK);
+        AT(_point_wboit_capture(view, zero));
+        AT(_point_wboit_delta(zero, hidden) > 100);
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+    }
     dvz_gpu_ctx_destroy(gpu_ctx);
     return 0;
 }

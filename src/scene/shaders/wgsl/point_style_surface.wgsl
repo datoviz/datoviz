@@ -21,5 +21,9 @@ fn point_style_surface(input_color: vec4f, dist: f32) -> vec4f {
     let edge_color = semantic_color_to_linear(material.base_color_factor);
     let linear_color = semantic_color_to_linear(input_color);
     let color = select(edge_color, mix(linear_color, edge_color, stroke_mask), filled);
-    return vec4f(color.rgb, color.a * coverage);
+    let surface = vec4f(color.rgb, color.a * coverage);
+    if (surface.a <= 0.0) {
+        discard;
+    }
+    return surface;
 }
