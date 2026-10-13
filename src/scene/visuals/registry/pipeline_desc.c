@@ -132,9 +132,18 @@ bool _scene_visual_pipeline_desc(
     const DvzVisualFamilyOps* ops = _scene_visual_family_ops((DvzVisualType)visual->visual_type);
     if (ops == NULL || ops->resolve_pipeline_desc == NULL)
         return false;
-    return ops->resolve_pipeline_desc(
+    bool resolved = ops->resolve_pipeline_desc(
         visual, picking, pass_needs_depth, wboit_accumulation, alpha_mode, controller_mode,
         shader_format, out);
+    // Scene clip conversion preserves authored CCW fronts on both native and WebGPU targets.
+    // Keep family-authored raster policies, including volume entry-face culling, unchanged.
+    if (resolved && !out->has_raster_state)
+    {
+        out->has_raster_state = true;
+        out->cull_mode = DVZ_CULL_MODE_NONE;
+        out->front_face = DVZ_FRONT_FACE_COUNTER_CLOCKWISE;
+    }
+    return resolved;
 }
 
 
