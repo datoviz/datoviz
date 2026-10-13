@@ -1520,3 +1520,5 @@ int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item
 #endif
 
 int test_scene(TstSuite* suite);
+
+int test_scene_wboit_wgsl_composition(TstContext* suite, const TstCase* item);
