@@ -2775,6 +2775,7 @@ try {
     "showcases_point_cloud",
     "features_panel_mixed_2d_3d",
     "features_histogram",
+    "features_sampled_planes",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);
@@ -3798,6 +3799,11 @@ try {
       },
     ],
     [
+      "features_sampled_planes",
+      "sampled planes",
+      (stream, label) => expectSampledPlanesScenarioStreamShape(stream, label),
+    ],
+    [
       "features_reference_grid",
       "reference grid",
       (stream, label) => {
@@ -4009,6 +4015,22 @@ try {
       requireOk(figure !== 0, `${label} scenario has no figure`);
       const initial = emitStream(Module, scene, figure, `${label} initial`);
       expectShape(initial.stream, `${label} initial`);
+      if (id === "features_sampled_planes") {
+        expectStatus(Module._dvz_wasm_api_scenario_pointer(
+          scene, DVZ_POINTER_EVENT_PRESS, 200, 300, DVZ_POINTER_BUTTON_LEFT, 0, 1, 100),
+        0, `${label} arcball press`);
+        expectStatus(Module._dvz_wasm_api_scenario_pointer(
+          scene, DVZ_POINTER_EVENT_MOVE, 240, 330, DVZ_POINTER_BUTTON_LEFT, 0, 1, 116),
+        0, `${label} arcball move`);
+        expectStatus(Module._dvz_wasm_api_scenario_pointer(
+          scene, DVZ_POINTER_EVENT_RELEASE, 240, 330, DVZ_POINTER_BUTTON_LEFT, 0, 1, 132),
+        0, `${label} arcball release`);
+        const changed = emitIncrementalPacketStream(Module, scene, figure, `${label} camera`);
+        requireOk(changed.update.decoded.commands.filter((command) =>
+          command.cmd === "WriteBuffer").length >= 3,
+        `${label}: linked arcballs emitted insufficient panel uniform updates`);
+        expectNoDiagnostics(Module, scene, `${label} camera diagnostics`);
+      }
       if (id === "features_panel_mixed_2d_3d") {
         expectStatus(
           Module._dvz_wasm_api_scenario_pointer(

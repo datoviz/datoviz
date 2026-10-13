@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 119,
+  "count": 120,
   "categories": {
     "advanced": 6,
     "composite": 2,
-    "feature": 71,
+    "feature": 72,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 19,
     "prototype": 1,
-    "supported": 98
+    "supported": 99
   },
   "examples": [
     {
@@ -1038,6 +1038,66 @@
       "primary_feature": "mesh-texture",
       "python_source": "examples/python/gallery/features/mesh_texture.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/mesh_texture.py",
+      "python_status": "direct-engine"
+    },
+    {
+      "id": "features_sampled_planes",
+      "title": "Sampled Planes",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/sampled_planes.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/sampled_planes.c",
+      "page": "features/sampled-planes.md",
+      "summary": "This example compares alpha cutout and WBOIT for indexed textured planes around an opaque cube.",
+      "validation": "smoke+interaction+screenshot+video",
+      "build_command": "just example-c features/sampled_planes",
+      "smoke_command": "./build/examples/c/features/sampled_planes --png",
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/features_sampled_planes.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_sampled_planes.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
+      "webgpu_requirements": [
+        "mesh",
+        "sampled-field",
+        "texture",
+        "wboit",
+        "arcball"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_sampled_planes",
+        "rendering_effects": [
+          {
+            "effect": "wboit",
+            "status": "supported"
+          }
+        ],
+        "requirements": [
+          "mesh",
+          "sampled-field",
+          "texture",
+          "wboit",
+          "arcball"
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=features_sampled_planes",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_sampled_planes",
+      "primary_feature": "sampled-plane-transparency",
+      "python_source": "examples/python/gallery/features/sampled_planes.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/sampled_planes.py",
       "python_status": "direct-engine"
     },
     {

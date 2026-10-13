@@ -493,6 +493,11 @@ export const LIVE_EXAMPLES = [
     scenarioId: "features_mesh_texture",
   },
   {
+    id: "features_sampled_planes",
+    label: "Sampled Planes",
+    scenarioId: "features_sampled_planes",
+  },
+  {
     id: "features_reference_grid",
     label: "Reference Grid",
     scenarioId: "features_reference_grid",
