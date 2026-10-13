@@ -395,9 +395,7 @@ The `src/wasm/scene_api.c` API is an unstable experimental ABI for the browser e
    non-empty diagnostics where the scene/DRP2 layer can explain the failure;
 10. the supported browser canvas formats are `rgba8unorm` and `bgra8unorm`, mapped to
    `DVZ_FORMAT_R8G8B8A8_UNORM` and `DVZ_FORMAT_B8G8R8A8_UNORM`;
-11. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group,
-   vertex-buffer, buffer-size, texture-copy alignment, sample-count limits, and color-blending
-   support used by scene emission;
+11. `dvz_wasm_api_set_capabilities()` accepts browser-normalized texture dimension, bind-group, vertex-buffer, buffer-size, texture-copy alignment, sample-count and color-attachment limits, plus color-blending and compatible `rgba16float`/`r16float` sampled render-target support. Unnegotiated scenes retain a conservative single-attachment profile; WBOIT requires two float color attachments, sampling and blending before planning succeeds;
 12. resize arguments retain logical and framebuffer pixel extents plus exact per-axis framebuffer-to-logical scales; callers derive both scales from the measured extents rather than assuming raw browser DPR, and the bridge rejects inconsistent size tuples;
 13. pointer and wheel positions are CSS-pixel canvas coordinates plus content scale, so high-DPI
    browsers keep controller math in the scene layer while still using framebuffer-sized targets.
