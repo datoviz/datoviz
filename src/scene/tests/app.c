@@ -10881,7 +10881,16 @@ static AppRgbaCapture _app_sampled_plane_wboit_capture(
     DvzView* view = dvz_view_offscreen(app, figure, 128, 64);
     if (view != NULL)
     {
-        dvz_app_run(app, 2);
+        // Explicit redraws exercise retained depth reuse, including read-only WBOIT stores.
+        for (uint32_t frame = 0; frame < 3; frame++)
+        {
+            if (dvz_view_request_frame(view) != DVZ_OK ||
+                dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
+            {
+                dvz_app_destroy(app);
+                goto cleanup;
+            }
+        }
         _app_ao_capture(dvz_view_canvas(view), &out.width, &out.height, &out.rgba);
     }
     dvz_app_destroy(app);
