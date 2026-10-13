@@ -674,6 +674,25 @@ This example maps an RGBA8 sampled field onto a UV sphere mesh.
 
 <div class="card" markdown="1">
 
+### [Sampled Planes](features/sampled-planes.md)
+
+<div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
+  <a class="dvz-gallery-media-target" href="sampled-planes/" aria-label="Sampled Planes"></a>
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/features/features_sampled_planes.poster.webp" alt="Sampled Planes" loading="lazy">
+  <video class="dvz-gallery-video" muted loop playsinline preload="none"
+         poster="../../assets/gallery/v0.4/features/features_sampled_planes.poster.webp" aria-label="Sampled Planes preview">
+    <source data-src="../../assets/gallery/v0.4/features/features_sampled_planes.mp4" type="video/mp4">
+  </video>
+</div>
+
+`features`
+
+This example compares alpha cutout and WBOIT for indexed textured planes around an opaque cube.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Mesh Materials](features/material-mesh.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">

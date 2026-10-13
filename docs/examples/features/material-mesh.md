@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../mesh-texture/">← Previous: Textured Mesh</a></span>
+<span class="dvz-example-nav__previous"><a href="../sampled-planes/">← Previous: Sampled Planes</a></span>
 <span class="dvz-example-nav__next"><a href="../technique-depth-cue/">Next: Depth Cue →</a></span>
 </div>
 </nav>
@@ -87,7 +87,7 @@ All three panels use the same colored cube geometry, while the material descript
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../mesh-texture/">← Previous: Textured Mesh</a></span>
+<span class="dvz-example-nav__previous"><a href="../sampled-planes/">← Previous: Sampled Planes</a></span>
 <span class="dvz-example-nav__next"><a href="../technique-depth-cue/">Next: Depth Cue →</a></span>
 </div>
 </nav>

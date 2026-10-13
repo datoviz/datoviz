@@ -149,6 +149,7 @@ sections:
         examples:
           - features_lighting
           - features_mesh_texture
+          - features_sampled_planes
           - features_material_mesh
       - title: Rendering Techniques
         examples:
@@ -211,6 +212,7 @@ sections:
         examples:
           - features_lighting
           - features_mesh_texture
+          - features_sampled_planes
           - features_technique_ao
           - features_technique_depth_cue
       - title: Animation & Interaction

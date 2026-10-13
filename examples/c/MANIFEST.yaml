@@ -237,6 +237,7 @@ batches:
     - visuals_mesh
     - visuals_sphere
     - features_mesh_texture
+    - features_sampled_planes
     - features_material_mesh
     - features_lighting
 
@@ -817,6 +818,35 @@ examples:
         - texture
         - arcball
         - material
+    agent_copy_safe: true
+
+  - id: features_sampled_planes
+    title: Sampled Planes
+    stage: v0.4_required
+    category: feature
+    primary_feature: sampled-plane-transparency
+    lane: features
+    portability: portable-scenario
+    source: examples/c/features/sampled_planes.c
+    python:
+      source: examples/python/gallery/features/sampled_planes.py
+      status: direct-engine
+    validation: smoke+interaction+screenshot+video
+    media: *rotation_preview
+    data:
+      kind: synthetic
+    webgpu:
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_sampled_planes
+      rendering_effects:
+        - effect: wboit
+          status: supported
+      requirements:
+        - mesh
+        - sampled-field
+        - texture
+        - wboit
+        - arcball
     agent_copy_safe: true
 
   - id: features_material_mesh

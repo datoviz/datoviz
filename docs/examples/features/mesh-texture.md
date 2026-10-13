@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../lighting/">← Previous: Lighting</a></span>
-<span class="dvz-example-nav__next"><a href="../material-mesh/">Next: Mesh Materials →</a></span>
+<span class="dvz-example-nav__next"><a href="../sampled-planes/">Next: Sampled Planes →</a></span>
 </div>
 </nav>
 
@@ -88,6 +88,6 @@ The texture pixels are generated as a 1024x512 color field, attached to the mesh
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../lighting/">← Previous: Lighting</a></span>
-<span class="dvz-example-nav__next"><a href="../material-mesh/">Next: Mesh Materials →</a></span>
+<span class="dvz-example-nav__next"><a href="../sampled-planes/">Next: Sampled Planes →</a></span>
 </div>
 </nav>

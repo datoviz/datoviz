@@ -8,9 +8,9 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 119
-- Examples declaring screenshot validation: 107
-- Examples that should have video or motion evidence: 8
+- Reviewed public C examples generated for the website: 120
+- Examples declaring screenshot validation: 108
+- Examples that should have video or motion evidence: 9
 
 ## Commands
 
@@ -49,6 +49,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Fly Controller](features/controller-fly.md) | [`examples/c/features/controller_fly.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/controller_fly.c) | `supported` | `smoke+interaction+screenshot` |
 | [Turntable Controller](features/controller-turntable.md) | [`examples/c/features/controller_turntable.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/controller_turntable.c) | `supported` | `smoke+interaction+screenshot` |
 | [Textured Mesh](features/mesh-texture.md) | [`examples/c/features/mesh_texture.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/mesh_texture.c) | `supported` | `smoke+interaction+screenshot` |
+| [Sampled Planes](features/sampled-planes.md) | [`examples/c/features/sampled_planes.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/sampled_planes.c) | `supported` | `smoke+interaction+screenshot+video` |
 | [Mesh Materials](features/material-mesh.md) | [`examples/c/features/material_mesh.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/material_mesh.c) | `supported` | `smoke+screenshot` |
 | [Lighting](features/lighting.md) | [`examples/c/features/lighting.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/lighting.c) | `supported` | `smoke+screenshot` |
 | [User Scale](features/user-scale.md) | [`examples/c/features/user_scale.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/user_scale.c) | `supported` | `smoke+interaction+screenshot` |
