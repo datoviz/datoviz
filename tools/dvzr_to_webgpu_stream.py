@@ -50,6 +50,7 @@ VERTEX_FORMATS = {
     106: "float32x3",
     109: "float32x4",
     98: "uint32",
+    101: "uint32x2",
 }
 
 TOPOLOGIES = {

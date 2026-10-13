@@ -182,7 +182,9 @@ bool _scene_visual_shader_desc_apply_query_pick(
     else if (path_query)
         query_shader = DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32;
     else if (primitive_query)
-        query_shader = DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32;
+        query_shader = visual->query_explicit_ids
+                           ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_VALID_U32
+                           : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32;
     else if (
         visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
         visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
@@ -210,22 +212,27 @@ bool _scene_visual_shader_desc_apply_query_pick(
         return false;
     }
 
-    if (
-        point_like || visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE ||
+    if (point_like || visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE ||
         query_shader == DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32 ||
         query_shader == DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32 ||
-        query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32)
+        query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32 ||
+        query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_VALID_U32)
     {
         if (!_shader_key_append(shader->vertex_key, sizeof(shader->vertex_key), "_query_u32"))
+            return false;
+        if (visual->query_explicit_ids &&
+            (!_shader_key_append(shader->vertex_key, sizeof(shader->vertex_key), "_valid") ||
+             !_shader_key_append(shader->fragment_key, sizeof(shader->fragment_key), "_valid") ||
+             !_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), "_valid")))
             return false;
         shader->vertex_glsl = _builtin_shader_glsl(query_shader, false);
         shader->vertex_wgsl = _builtin_shader_wgsl(query_shader, false);
         shader->vertex_spirv_key =
-            query_shader == DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32
-                ? "sphere_query_u32_vert"
-            : query_shader == DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32
-                ? "segment_query_u32_vert"
-            : query_shader == DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32 ? "path_query_u32_vert"
+            query_shader == DVZ_SCENE_BUILTIN_SHADER_SPHERE_QUERY_U32    ? "sphere_query_u32_vert"
+            : query_shader == DVZ_SCENE_BUILTIN_SHADER_SEGMENT_QUERY_U32 ? "segment_query_u32_vert"
+            : query_shader == DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32    ? "path_query_u32_vert"
+            : query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_VALID_U32
+                ? "primitive_query_valid_u32_vert"
             : query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32
                 ? "primitive_query_u32_vert"
             : query_shader == DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32 ? "pixel_query_u32_vert"
@@ -240,6 +247,8 @@ bool _scene_visual_shader_desc_apply_query_pick(
         shader->fragment_spirv_key = "segment_query_u32_frag";
     else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32)
         shader->fragment_spirv_key = "path_query_u32_frag";
+    else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_VALID_U32)
+        shader->fragment_spirv_key = "primitive_query_valid_u32_frag";
     else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32)
         shader->fragment_spirv_key = "primitive_query_u32_frag";
     else if (query_shader == DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32)

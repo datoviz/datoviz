@@ -139,7 +139,8 @@ bool _scene_query_point_like_build_ex(
     uint64_t color_bytes = 0;
     uint64_t size_bytes = 0;
     if (_dvz_mul_u64_overflows(pos_attr->item_count, pos_attr->item_size, &position_bytes) ||
-        _dvz_mul_u64_overflows(color_attr->item_count, color_attr->item_size, &color_bytes) ||
+        _dvz_mul_u64_overflows(
+            color_attr->item_count, sizeof(DvzSceneQueryIdentity), &color_bytes) ||
         _dvz_mul_u64_overflows(size_attr->item_count, size_attr->item_size, &size_bytes))
     {
         log_error("%s query request buffer size overflow", label);
@@ -148,12 +149,18 @@ bool _scene_query_point_like_build_ex(
 
     if (pos_attr->item_count > UINT32_MAX - ctx->identity_base)
         return false;
-    out_plan->scratch.query_ids =
-        (uint32_t*)dvz_calloc(pos_attr->item_count, sizeof(uint32_t));
-    if (out_plan->scratch.query_ids == NULL)
+    if (!_scene_query_color_alpha(
+            visual, pos_attr->item_count, false, &out_plan->scratch.query_alpha))
+        return false;
+    out_plan->scratch.query_identity =
+        dvz_calloc(pos_attr->item_count, sizeof(DvzSceneQueryIdentity));
+    if (out_plan->scratch.query_identity == NULL)
         return false;
     for (uint32_t i = 0; i < pos_attr->item_count; i++)
-        out_plan->scratch.query_ids[i] = ctx->identity_base + i + 1u;
+    {
+        out_plan->scratch.query_identity[i].id = ctx->identity_base + i + 1u;
+        out_plan->scratch.query_identity[i].alpha = out_plan->scratch.query_alpha[i];
+    }
 
     uint32_t target_width = 0;
     uint32_t target_height = 0;
@@ -162,16 +169,18 @@ bool _scene_query_point_like_build_ex(
 
     DvzFramePlan* plan = dvz_frame_plan(plan_id, pending->request.request_id);
     bool ok = plan != NULL;
-    ok = ok &&
-         _query_point_like_upload_bytes(
-             plan, "query0_position", position_bytes, "position", pos_attr->data,
-             DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION, metadata_visual_type, pos_attr->item_count, 0) &&
-         _query_point_like_upload_bytes(
-             plan, "query0_color", color_bytes, "query_id", out_plan->scratch.query_ids,
-             DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, metadata_visual_type, color_attr->item_count, 1) &&
-         _query_point_like_upload_bytes(
-             plan, "query0_size", size_bytes, "size", size_attr->data,
-             DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE, metadata_visual_type, size_attr->item_count, 2);
+    ok =
+        ok &&
+        _query_point_like_upload_bytes(
+            plan, "query0_position", position_bytes, "position", pos_attr->data,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION, metadata_visual_type, pos_attr->item_count,
+            0) &&
+        _query_point_like_upload_bytes(
+            plan, "query0_color", color_bytes, "query_id", out_plan->scratch.query_identity,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, metadata_visual_type, color_attr->item_count, 1) &&
+        _query_point_like_upload_bytes(
+            plan, "query0_size", size_bytes, "size", size_attr->data,
+            DVZ_FRAME_PLAN_RESOURCE_ROLE_SIZE, metadata_visual_type, size_attr->item_count, 2);
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;

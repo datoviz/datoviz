@@ -152,6 +152,7 @@ typedef struct DvzSceneVisualDesc
     bool volume_occluded;
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;
+    // Query-only RG32 input: integer token and float alpha bits.
     bool query_explicit_ids;
     bool has_item_range;
     uint32_t item_range_first;

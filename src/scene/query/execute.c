@@ -278,6 +278,20 @@ bool _dvz_scene_query_execute_family(
         out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE;
         return true;
     }
+    if (ops->identity_count != NULL)
+    {
+        uint32_t count = 0;
+        if (!ops->identity_count(&build, &count))
+        {
+            out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+            return true;
+        }
+        if (count == 0)
+        {
+            out_result->status = DVZ_QUERY_STATUS_MISS;
+            return true;
+        }
+    }
     if (runtime == NULL)
     {
         out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
@@ -297,6 +311,11 @@ bool _dvz_scene_query_execute_family(
     if (!ops->build(&build, &plan))
     {
         _scene_query_scratch_destroy(&plan.scratch);
+        if (ops->identity_count != NULL)
+        {
+            out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
+            return true;
+        }
         return false;
     }
     if (executor->timing_enabled)

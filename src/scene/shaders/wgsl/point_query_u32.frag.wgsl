@@ -1,4 +1,5 @@
 struct FragmentIn {
+    @location(3) alpha: f32,
     @location(0) @interpolate(flat) id: u32,
     @location(1) corner: vec2f,
     @location(2) size: f32,
@@ -12,6 +13,7 @@ fn point_disc_distance(corner: vec2f, size: f32) -> f32 {
 
 @fragment
 fn main(input: FragmentIn) -> @location(0) u32 {
+    if (!(input.alpha > 0.0) || input.alpha > 3.402823466e38) { discard; }
     if (point_disc_distance(input.corner, input.size) > 0.0) {
         discard;
     }

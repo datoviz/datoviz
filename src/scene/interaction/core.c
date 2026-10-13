@@ -737,6 +737,20 @@ static int _item_state_sync_visual(DvzScene* scene, DvzVisual* visual)
         return -1;
     }
 
+    // Hover and selection styling must preserve authored item-state bits.
+    if (item_state_idx >= 0)
+    {
+        const DvzVisualAttr* attr = &visual->attrs[item_state_idx];
+        if (attr->data != NULL && attr->item_size == sizeof(uint32_t) &&
+            attr->item_count == item_count)
+        {
+            const uint32_t* authored = (const uint32_t*)attr->data;
+            for (uint32_t i = 0; i < item_count; i++)
+                states[i] =
+                    authored[i] & ~(uint32_t)(DVZ_ITEM_STATE_HOVERED | DVZ_ITEM_STATE_SELECTED);
+        }
+    }
+
     uint64_t visual_id = _scene_visual_public_id(scene, visual);
     bool any_state = false;
     for (uint32_t item_index = 0; item_index < item_count; item_index++)

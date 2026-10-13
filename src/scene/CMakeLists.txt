@@ -3,9 +3,9 @@
 # -------------------------------------------------------------------------------------------------
 
 file(GLOB SCENE_SRC "${CMAKE_CURRENT_SOURCE_DIR}/*.c*")
-file(GLOB SCENE_QUERY_SRC "${CMAKE_CURRENT_SOURCE_DIR}/query/*.c*")
+file(GLOB SCENE_QUERY_SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/query/*.c*")
 file(GLOB SCENE_SHADER_SRC "${CMAKE_CURRENT_SOURCE_DIR}/shaders/*.c*")
-file(GLOB SCENE_VISUAL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/visuals/*.c*")
+file(GLOB SCENE_VISUAL_SRC CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/visuals/*.c*")
 file(GLOB SCENE_VISUAL_QUERY_SRC "${CMAKE_CURRENT_SOURCE_DIR}/visuals/*/*.c*")
 file(GLOB SCENE_ANNOTATION_SRC "${CMAKE_CURRENT_SOURCE_DIR}/annotation/*.c*")
 file(GLOB SCENE_COLOR_SRC "${CMAKE_CURRENT_SOURCE_DIR}/color/*.c*")

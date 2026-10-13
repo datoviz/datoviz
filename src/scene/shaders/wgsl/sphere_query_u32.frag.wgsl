@@ -53,6 +53,7 @@ struct FragmentOut {
 
 @fragment
 fn main(input: FragmentIn) -> FragmentOut {
+    if (!(input.color.a > 0.0) || input.color.a > 3.402823466e38) { discard; }
     let coord = input.coord;
     if (dot(coord, coord) > 1.0) {
         discard;

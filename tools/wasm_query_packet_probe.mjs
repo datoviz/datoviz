@@ -118,7 +118,7 @@ try {
     .flatMap((buffer) => buffer.attributes ?? [])
     .find((attribute) => attribute.shader_location === 1);
   requireOk(
-    idAttribute?.format === "uint32",
+    idAttribute?.format === "uint32x2",
     "point query pipeline does not expose its explicit integer identity attribute",
   );
   requireOk(
