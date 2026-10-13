@@ -63,6 +63,10 @@ void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan)
     plan->query_texcoords = NULL;
     dvz_free(plan->query_colors);
     plan->query_colors = NULL;
+    dvz_free(plan->query_identity);
+    plan->query_identity = NULL;
+    dvz_free(plan->query_alpha);
+    plan->query_alpha = NULL;
     dvz_free(plan->query_ids);
     plan->query_ids = NULL;
     dvz_free(plan->query_position_start);

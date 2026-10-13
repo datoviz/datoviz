@@ -254,6 +254,23 @@ static bool _query_emit_result(
             return false;
         }
 
+        if (ops->identity_count != NULL)
+        {
+            uint32_t count = 0;
+            bool counted = ops->identity_count(&build, &count);
+            if (!counted || count == 0)
+            {
+                out_result->visual_id = visual_id;
+                out_result->visual_family = family;
+                out_result->status = counted ? DVZ_QUERY_STATUS_MISS
+                                            : DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+                if (!counted)
+                    _query_setup_diagnostic(
+                        scene, "unsupported identity coverage or input range", ops, visual->type,
+                        visual_id, pending->request.target, out_result->profile);
+                return false;
+            }
+        }
         DvzSceneQueryPlan plan = {0};
         bool built = ops->build(&build, &plan);
         if (!built)

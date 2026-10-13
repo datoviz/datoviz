@@ -107,6 +107,45 @@ static bool _sphere_query_eligible(
 
 
 /**
+ * Diagnose sphere coverage profiles with view-dependent alpha or unsupported masks.
+ *
+ * @param visual retained sphere visual
+ * @param request query request
+ * @param status output failure status
+ * @return whether the current profile is unsupported
+ */
+static bool _sphere_query_reject_coverage(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzQueryStatus* status)
+{
+    (void)request;
+    const char* const inputs[] = {"position", "color", "size"};
+    if (!_scene_query_dense_inputs_supported(visual, inputs, 3))
+    {
+        *status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+        return true;
+    }
+    if (visual->material.model != DVZ_MATERIAL_MODEL_LIMB && visual->alpha_mode != DVZ_ALPHA_MASK)
+        return false;
+    *status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return true;
+}
+
+/**
+ * Count supported sphere identities before allocating composed-query token ranges.
+ *
+ * @param ctx family build context
+ * @param count output identity count
+ * @return whether the current geometry and coverage are supported
+ */
+static bool _sphere_query_identity_count(const DvzSceneQueryBuildContext* ctx, uint32_t* count)
+{
+    DvzQueryStatus status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return !_sphere_query_reject_coverage(ctx->visual, &ctx->pending->request, &status) &&
+           _dvz_scene_query_dense_identity_count(ctx, count);
+}
+
+
+/**
  * Build a sphere-family r32uint item query plan.
  *
  * @param ctx build context
@@ -122,6 +161,10 @@ static bool _sphere_query_build(
     ANN(ctx->visual);
     ANN(ctx->pending);
     ANN(out_plan);
+
+    DvzQueryStatus status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    if (_sphere_query_reject_coverage(ctx->visual, &ctx->pending->request, &status))
+        return false;
 
     const DvzVisualAttr* pos_attr = NULL;
     const DvzVisualAttr* color_attr = NULL;
@@ -143,7 +186,8 @@ static bool _sphere_query_build(
     uint64_t color_bytes = 0;
     uint64_t size_bytes = 0;
     if (_dvz_mul_u64_overflows(pos_attr->item_count, pos_attr->item_size, &position_bytes) ||
-        _dvz_mul_u64_overflows(color_attr->item_count, color_attr->item_size, &color_bytes) ||
+        _dvz_mul_u64_overflows(
+            color_attr->item_count, sizeof(DvzSceneQueryIdentity), &color_bytes) ||
         _dvz_mul_u64_overflows(size_attr->item_count, size_attr->item_size, &size_bytes))
     {
         log_error("sphere query request buffer size overflow");
@@ -152,12 +196,18 @@ static bool _sphere_query_build(
 
     if (pos_attr->item_count > UINT32_MAX - ctx->identity_base)
         return false;
-    out_plan->scratch.query_ids =
-        (uint32_t*)dvz_calloc(pos_attr->item_count, sizeof(uint32_t));
-    if (out_plan->scratch.query_ids == NULL)
+    if (!_scene_query_color_alpha(
+            ctx->visual, pos_attr->item_count, true, &out_plan->scratch.query_alpha))
+        return false;
+    out_plan->scratch.query_identity =
+        dvz_calloc(pos_attr->item_count, sizeof(DvzSceneQueryIdentity));
+    if (out_plan->scratch.query_identity == NULL)
         return false;
     for (uint32_t i = 0; i < pos_attr->item_count; i++)
-        out_plan->scratch.query_ids[i] = ctx->identity_base + i + 1u;
+    {
+        out_plan->scratch.query_identity[i].id = ctx->identity_base + i + 1u;
+        out_plan->scratch.query_identity[i].alpha = out_plan->scratch.query_alpha[i];
+    }
 
     uint32_t target_width = 0;
     uint32_t target_height = 0;
@@ -166,12 +216,12 @@ static bool _sphere_query_build(
 
     DvzFramePlan* plan = dvz_frame_plan("figure.query.sphere", ctx->pending->request.request_id);
     bool ok = plan != NULL;
-    ok = ok && dvz_frame_plan_upload_bytes(
-                   plan, "query0_position", 0, position_bytes, "position", pos_attr->data) &&
+    ok = ok &&
          dvz_frame_plan_upload_bytes(
-             plan, "query0_color", 0, color_bytes, "query_id", out_plan->scratch.query_ids) &&
+             plan, "query0_position", 0, position_bytes, "position", pos_attr->data) &&
          dvz_frame_plan_upload_bytes(
-             plan, "query0_size", 0, size_bytes, "size", size_attr->data);
+             plan, "query0_color", 0, color_bytes, "query_id", out_plan->scratch.query_identity) &&
+         dvz_frame_plan_upload_bytes(plan, "query0_size", 0, size_bytes, "size", size_attr->data);
 
     DvzFramePlanVisualMeta metadata = {0};
     metadata.has_metadata = true;
@@ -180,6 +230,10 @@ static bool _sphere_query_build(
     metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_SPHERE;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
     metadata.query_explicit_ids = true;
+    metadata.vertex_count = (uint32_t)pos_attr->item_count;
+    metadata.has_item_range = ctx->visual->has_item_range;
+    metadata.item_range_first = ctx->visual->item_range_first;
+    metadata.item_range_count = ctx->visual->item_range_count;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
     dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
@@ -300,9 +354,10 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_sphere_ops(void)
         .family = DVZ_SCENE_VISUAL_FAMILY_SPHERE,
         .eligible = _sphere_query_eligible,
         .build = _sphere_query_build,
-        .identity_count = _dvz_scene_query_dense_identity_count,
+        .identity_count = _sphere_query_identity_count,
         .append_identity = _sphere_query_append_identity,
         .decode = _sphere_query_decode,
+        .reject_unsupported = _sphere_query_reject_coverage,
         .readout = _sphere_query_readout,
     };
     return &ops;

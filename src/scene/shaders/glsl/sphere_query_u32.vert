@@ -4,7 +4,7 @@
 #include "sphere_vertex.glsl"
 
 layout(location = 0) in vec3 inPos;
-layout(location = 1) in uint inId;
+layout(location = 1) in uvec2 inIdentity;
 layout(location = 2) in float inSize;
 
 layout(location = 0) out vec4 fragColor;
@@ -22,9 +22,9 @@ void main()
     sphereQuadVertex(centerView.xyz, radius, gl_VertexIndex, clipPosition, ndc);
 
     gl_Position = clipPosition;
-    fragColor = vec4(1.0);
+    fragColor = vec4(1.0, 1.0, 1.0, uintBitsToFloat(inIdentity.y));
     fragCenterView = centerView;
     fragRadius = radius;
     fragNdc = ndc;
-    fragId = inId;
+    fragId = inIdentity.x;
 }

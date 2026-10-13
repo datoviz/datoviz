@@ -437,6 +437,59 @@ static void _scene_scalar_color_domain(
 
 
 /**
+ * Resolve a dense color range using the same scalar/colormap lowering as visual uploads.
+ *
+ * @param visual retained visual
+ * @param attr retained color attribute
+ * @param first first source item
+ * @param count number of source items
+ * @param colors output RGBA range
+ * @return whether the retained range was resolved
+ */
+bool _scene_visual_color_rgba(
+    const DvzVisual* visual, const DvzVisualAttr* attr, uint64_t first, uint64_t count,
+    DvzColor* colors)
+{
+    if (visual == NULL || attr == NULL || colors == NULL || attr->data == NULL ||
+        attr->item_size != sizeof(DvzColor) || count > SIZE_MAX / sizeof(DvzColor) ||
+        first > SIZE_MAX / sizeof(DvzColor) || first > attr->item_count ||
+        count > attr->item_count - first)
+        return false;
+    if (!_scene_attr_needs_scalar_color_upload(visual, attr))
+    {
+        if (attr->format != DVZ_VISUAL_ATTR_FORMAT_RGBA_U8)
+            return false;
+        dvz_memcpy(
+            colors, count * sizeof(DvzColor), (const DvzColor*)attr->data + first,
+            count * sizeof(DvzColor));
+        return true;
+    }
+    const DvzScale* scale = _visual_family_state(visual)->scale;
+    const DvzColormap* colormap = scale != NULL ? scale->colormap : NULL;
+    const float* scalars = (const float*)attr->data;
+    double domain_min = 0.0;
+    double domain_max = 1.0;
+    _scene_scalar_color_domain(scale, scalars, attr->item_count, &domain_min, &domain_max);
+    const double span = domain_max - domain_min;
+
+    for (uint64_t i = 0; i < count; i++)
+    {
+        const uint64_t item_idx = first + i;
+        const double value = (double)scalars[item_idx];
+        if (!isfinite(value))
+        {
+            colors[i] = dvz_color_rgba(0, 0, 0, 0);
+            continue;
+        }
+        const double t = span != 0.0 ? (value - domain_min) / span : 0.5;
+        dvz_colormap_sample(colormap, t, &colors[i]);
+    }
+
+    return true;
+}
+
+
+/**
  * Emit a derived RGBA upload for one scalar color attribute.
  *
  * @param figure the figure
@@ -475,25 +528,11 @@ static bool _scene_emit_scalar_color_upload(
     if (colors == NULL)
         return false;
 
-    const DvzScale* scale = _visual_family_state(visual)->scale;
-    const DvzColormap* colormap = scale != NULL ? scale->colormap : NULL;
-    const float* scalars = (const float*)attr->data;
-    double domain_min = 0.0;
-    double domain_max = 1.0;
-    _scene_scalar_color_domain(scale, scalars, attr->item_count, &domain_min, &domain_max);
-    const double span = domain_max - domain_min;
-
-    for (uint64_t i = 0; i < attr->dirty_item_count; i++)
+    if (!_scene_visual_color_rgba(
+            visual, attr, attr->dirty_first_item, attr->dirty_item_count, colors))
     {
-        const uint64_t item_idx = attr->dirty_first_item + i;
-        const double value = (double)scalars[item_idx];
-        if (!isfinite(value))
-        {
-            colors[i] = dvz_color_rgba(0, 0, 0, 0);
-            continue;
-        }
-        const double t = span != 0.0 ? (value - domain_min) / span : 0.5;
-        dvz_colormap_sample(colormap, t, &colors[i]);
+        dvz_free(colors);
+        return false;
     }
 
     const uint64_t byte_offset = attr->dirty_first_item * sizeof(DvzColor);

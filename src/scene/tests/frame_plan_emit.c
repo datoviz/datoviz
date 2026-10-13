@@ -3391,7 +3391,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     AT(dvz_frame_plan_upload(plan, "point-position", 0, 3 * 3 * sizeof(float), ""));
     upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;
     AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
-    AT(dvz_frame_plan_upload(plan, "point-color", 0, 3 * sizeof(DvzColor), ""));
+    AT(dvz_frame_plan_upload(plan, "point-color", 0, 6 * sizeof(uint32_t), ""));
     upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
     AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
     AT(dvz_frame_plan_upload(plan, "point-size", 0, 3 * sizeof(float), ""));
@@ -3403,7 +3403,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     AT(dvz_frame_plan_upload(plan, "sphere-position", 0, 3 * 3 * sizeof(float), ""));
     upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION;
     AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
-    AT(dvz_frame_plan_upload(plan, "sphere-color", 0, 3 * sizeof(DvzColor), ""));
+    AT(dvz_frame_plan_upload(plan, "sphere-color", 0, 6 * sizeof(uint32_t), ""));
     upload_meta.role = DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR;
     AT(dvz_frame_plan_upload_metadata(plan, &upload_meta));
     AT(dvz_frame_plan_upload(plan, "sphere-radius", 0, 3 * sizeof(float), ""));
@@ -3454,6 +3454,16 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     dvz_strlcpy(metadata.position_id, "primitive-position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "primitive-id", sizeof(metadata.color_id));
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
+    AT(dvz_frame_plan_render_visual(plan, "mesh.valid"));
+    metadata = (DvzFramePlanVisualMeta){0};
+    metadata.query_explicit_ids = true;
+    metadata.visual_type = DVZ_VISUAL_TYPE_MESH;
+    metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+    metadata.topology = DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    metadata.vertex_count = 3;
+    dvz_strlcpy(metadata.position_id, "primitive-position", sizeof(metadata.position_id));
+    dvz_strlcpy(metadata.color_id, "point-color", sizeof(metadata.color_id));
+    AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
     AT(dvz_frame_plan_copy(plan, "target.panel.0.query", "buf.query", sizeof(uint32_t)));
     AT(dvz_frame_plan_readback(plan, "buf.query", "request.query"));
 
@@ -3469,7 +3479,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     }
     AT(count_before == 11);
     AT(render_count_before == 1);
-    AT(render_visual_count_before == 3);
+    AT(render_visual_count_before == 4);
 
     DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
     ANN(emitter);
@@ -3509,7 +3519,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
             for (uint32_t a = 0; a < pipeline->u.create_render_pipeline.attr_count; a++)
             {
                 if (pipeline->u.create_render_pipeline.attr_locations[a] == 1 &&
-                    pipeline->u.create_render_pipeline.attr_formats[a] == DVZ_FORMAT_R32_UINT)
+                    pipeline->u.create_render_pipeline.attr_formats[a] == DVZ_FORMAT_R32G32_UINT)
                     explicit_id_pipelines++;
             }
         }
@@ -3528,7 +3538,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
         AT(command->u.create_shader_module.code[0] != '\0');
         query_shader_count++;
     }
-    AT(query_shader_count == 6);
+    AT(query_shader_count == 8);
     AT(explicit_id_pipelines == 3);
 
     _test_scene_stream_destroy(stream);

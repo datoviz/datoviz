@@ -217,6 +217,13 @@ bool _scene_query_indexed_primitive_geometry(
         return false;
     }
 
+    float* expanded_alpha = NULL;
+    if (scratch->query_alpha != NULL &&
+        !_dvz_scene_query_alloc(label, (void**)&expanded_alpha, draw_vertex_count, sizeof(float)))
+    {
+        _scene_query_scratch_destroy(scratch);
+        return false;
+    }
     const float* position = (const float*)pos_attr->data;
     for (uint64_t prim = 0; prim < primitive_count; prim++)
     {
@@ -257,6 +264,7 @@ bool _scene_query_indexed_primitive_geometry(
             prim_vertex_count = 3;
             break;
         default:
+            dvz_free(expanded_alpha);
             _scene_query_scratch_destroy(scratch);
             return false;
         }
@@ -267,6 +275,7 @@ bool _scene_query_indexed_primitive_geometry(
             if (!_query_geometry_source_vertex_index(
                     visual, draw_indices[j], vertex_count, &source_index))
             {
+                dvz_free(expanded_alpha);
                 _scene_query_scratch_destroy(scratch);
                 return false;
             }
@@ -275,7 +284,15 @@ bool _scene_query_indexed_primitive_geometry(
                 scratch->query_positions[dst], sizeof(vec3), &position[3 * source_index],
                 sizeof(vec3));
             scratch->query_ids[dst] = (uint32_t)prim + 1u;
+            if (expanded_alpha != NULL)
+                expanded_alpha[dst] = scratch->query_alpha[source_index];
         }
+    }
+
+    if (expanded_alpha != NULL)
+    {
+        dvz_free(scratch->query_alpha);
+        scratch->query_alpha = expanded_alpha;
     }
 
     *out_vertex_count = draw_vertex_count;
@@ -447,11 +464,14 @@ bool _scene_query_mesh_target_geometry(
 
     vec3* positions = NULL;
     uint32_t* ids = NULL;
-    if (!_dvz_scene_query_alloc(label, (void**)&positions, vertex_count, sizeof(vec3)) ||
+    float* alpha = NULL;
+    if (!_dvz_scene_query_alloc(label, (void**)&alpha, vertex_count, sizeof(float)) ||
+        !_dvz_scene_query_alloc(label, (void**)&positions, vertex_count, sizeof(vec3)) ||
         !_dvz_scene_query_alloc(label, (void**)&ids, vertex_count, sizeof(uint32_t)))
     {
         dvz_free(positions);
         dvz_free(ids);
+        dvz_free(alpha);
         _scene_query_scratch_destroy(scratch);
         return false;
     }
@@ -479,6 +499,7 @@ bool _scene_query_mesh_target_geometry(
             positions[dst][0] = tx;
             positions[dst][1] = ty;
             positions[dst][2] = tz;
+            alpha[dst] = scratch->query_alpha != NULL ? scratch->query_alpha[v] : 1.0f;
             ids[dst] = target == DVZ_SCENE_TARGET_ITEM ? (uint32_t)inst + 1u
                                                        : scratch->query_ids[v];
         }
@@ -486,6 +507,8 @@ bool _scene_query_mesh_target_geometry(
 
     dvz_free(scratch->query_positions);
     dvz_free(scratch->query_ids);
+    dvz_free(scratch->query_alpha);
+    scratch->query_alpha = alpha;
     scratch->query_positions = positions;
     scratch->query_ids = ids;
     *out_vertex_count = vertex_count;

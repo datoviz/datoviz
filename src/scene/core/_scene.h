@@ -1448,7 +1448,7 @@ struct DvzSceneRequestExecutor
     DvzDrp2RuntimeConfig runtime_cfg;
     DvzSceneVisualFamily query_static_cache_family;
     DvzVisual* query_static_cache_visual;
-    uint64_t query_static_cache_keys[8];
+    uint64_t query_static_cache_keys[11];
     uint32_t query_static_cache_key_count;
     bool active_query_composed;
     DvzSceneVisualFamily active_query_family;

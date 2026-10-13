@@ -12,6 +12,8 @@ layout(location = 0) out uint outId;
 
 void main()
 {
+    if (!(fragColor.a > 0.0) || isinf(fragColor.a))
+        discard;
     DvzSphereHit hit;
     if (!sphereIntersect(fragCenterView, fragRadius, fragNdc, hit))
         discard;

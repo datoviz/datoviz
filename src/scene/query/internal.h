@@ -29,7 +29,7 @@
 /*************************************************************************************************/
 
 #define DVZ_SCENE_QUERY_PAYLOAD_WORDS 4
-#define DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT 8
+#define DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT 11
 
 
 
@@ -109,6 +109,14 @@ struct DvzSceneQueryBuildContext
 };
 
 
+typedef struct DvzSceneQueryIdentity
+{
+    uint32_t id;
+    float alpha;
+} DvzSceneQueryIdentity;
+
+
+
 struct DvzSceneQueryScratch
 {
     DvzFramePlan* plan;
@@ -116,6 +124,8 @@ struct DvzSceneQueryScratch
     vec2* query_texcoords;
     DvzColor* query_colors;
     uint32_t* query_ids;
+    DvzSceneQueryIdentity* query_identity;
+    float* query_alpha;
     float* query_position_start;
     float* query_position_curr;
     float* query_position_end;
@@ -335,3 +345,10 @@ bool _dvz_scene_query_process_composed(
     DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
     const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
     const vec2 request_ndc, DvzQueryResult* result);
+
+// Prepare retained color alpha; material factors apply only to material-shaded families.
+bool _scene_query_color_alpha(
+    const DvzVisual* visual, uint64_t count, bool material, float** out_alpha);
+
+bool _scene_query_dense_inputs_supported(
+    const DvzVisual* visual, const char* const* names, uint32_t count);

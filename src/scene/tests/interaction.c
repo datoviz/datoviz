@@ -1005,6 +1005,9 @@ static int test_scene_item_interaction_stationary_freshness(TstContext* suite, c
     vec3 positions[2] = {{0, 0, 0}, {.2f, 0, 0}};
     AT(dvz_visual_set_data(points, "position", positions, 2) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, points, NULL) == DVZ_OK);
+    uint32_t authored[2] = {
+        DVZ_ITEM_STATE_ACTIVE | DVZ_ITEM_STATE_FILTERED, DVZ_ITEM_STATE_DISABLED};
+    AT(dvz_visual_set_data(points, "item_state", authored, 2) == DVZ_OK);
     DvzItemInteraction* interaction = dvz_item_interaction(panel, NULL);
     DvzPointerEvent move =
         _interaction_pointer_event(DVZ_POINTER_EVENT_MOVE, 12, 15, DVZ_POINTER_BUTTON_NONE);
@@ -1019,6 +1022,11 @@ static int test_scene_item_interaction_stationary_freshness(TstContext* suite, c
     uint64_t revision = figure->query_input_revision;
     _scene_item_interaction_apply_query_result(interaction, DVZ_ITEM_INTERACTION_QUERY_HOVER, &hit);
     _scene_item_interaction_apply_query_result(interaction, DVZ_ITEM_INTERACTION_QUERY_SELECTION, &hit);
+    DvzVisualDataView state_view = {0};
+    AT(dvz_visual_data(points, "item_state", &state_view) == DVZ_OK);
+    const uint32_t* retained = state_view.data;
+    AT((retained[0] & (DVZ_ITEM_STATE_ACTIVE | DVZ_ITEM_STATE_FILTERED)) == authored[0]);
+    AT((retained[1] & DVZ_ITEM_STATE_DISABLED) == authored[1]);
     AT(interaction->hover->has_item);
     AT(dvz_selection_count(interaction->selection) == 1);
     AT(figure->query_input_revision == revision);

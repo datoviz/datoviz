@@ -99,3 +99,8 @@ void _scene_emit_visual_family_texture_uploads(
 void _scene_emit_visual_buffer_payloads(
     const DvzFigure* figure, DvzFramePlan* plan, const DvzVisual* visual, uint32_t visual_index,
     const DvzVisualUploadPayload* payloads, uint32_t payload_count, uint32_t position_topology);
+
+// Resolve retained color inputs before GPU upload; scalar NaNs produce transparent RGBA.
+bool _scene_visual_color_rgba(
+    const DvzVisual* visual, const DvzVisualAttr* attr, uint64_t first, uint64_t count,
+    DvzColor* colors);

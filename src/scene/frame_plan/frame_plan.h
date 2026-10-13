@@ -932,6 +932,7 @@ typedef struct DvzFramePlanVisualMeta
     uint32_t vertex_count;
     uint32_t index_count;
     uint32_t instance_count;
+    // Query-only RG32 input: integer token and float alpha bits.
     bool query_explicit_ids;
     bool has_item_range;
     uint32_t item_range_first;

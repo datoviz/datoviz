@@ -2,11 +2,12 @@
 
 struct VertexIn {
     @location(0) position: vec3f,
-    @location(1) id: u32,
+    @location(1) identity: vec2u,
     @location(2) size: f32,
 }
 
 struct VertexOut {
+    @location(3) alpha: f32,
     @builtin(position) position: vec4f,
     @location(0) @interpolate(flat) id: u32,
     @location(1) corner: vec2f,
@@ -38,7 +39,8 @@ fn main(
 
     var output: VertexOut;
     output.position = vec4f(center.xy + corner * radius * center.w, center.zw);
-    output.id = input.id;
+    output.id = input.identity.x;
+    output.alpha = bitcast<f32>(input.identity.y);
     output.corner = corner;
     output.size = input.size;
     return output;

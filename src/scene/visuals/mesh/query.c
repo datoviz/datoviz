@@ -32,6 +32,7 @@
 #include "_compat.h"
 #include "_log.h"
 #include "_overflow.h"
+#include "scene_emit/visual_lowering.h"
 
 
 
@@ -99,6 +100,23 @@ static bool _mesh_query_eligible(
 
 
 /**
+ * Return whether mesh query geometry and coverage have retained bounded input payloads.
+ *
+ * @param visual retained mesh visual
+ * @return whether the current coverage and geometry profile is supported
+ */
+static bool _mesh_query_inputs_supported(const DvzVisual* visual)
+{
+    const char* const inputs[] = {"position", "color", "instance_transform"};
+    const DvzSceneBuffer* index = _visual_family_state(visual)->buffer;
+    return _visual_family_state(visual)->field == NULL && visual->alpha_mode != DVZ_ALPHA_MASK &&
+           visual->material.model != DVZ_MATERIAL_MODEL_LIMB &&
+           _scene_query_dense_inputs_supported(visual, inputs, 3) &&
+           (index == NULL || index->desc.byte_size == 0 || index->data != NULL);
+}
+
+
+/**
  * Return the retained geometry revisions which invalidate mesh query uploads.
  *
  * @param visual retained mesh visual
@@ -131,6 +149,14 @@ static bool _mesh_query_static_versions(
         out_versions[6] = visual->attrs[transform_idx].item_count;
     }
     out_versions[7] = (uint64_t)_visual_family_state(visual)->topology;
+    int color = _attr_index(visual, "color");
+    if (color >= 0)
+        out_versions[8] = visual->attrs[color].version;
+    out_versions[9] = visual->material.version;
+    DvzVisualLowering lowering = {0};
+    if (!_scene_visual_lowering_resolve(visual, &lowering))
+        return false;
+    out_versions[10] = lowering.needs_material_params;
     return true;
 }
 
@@ -188,8 +214,7 @@ static bool _mesh_query_build(
     if (target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_OBJECT)
         target = DVZ_SCENE_TARGET_ITEM;
 
-    if (_visual_family_state(ctx->visual)->field != NULL ||
-        ctx->visual->alpha_mode == DVZ_ALPHA_MASK)
+    if (!_mesh_query_inputs_supported(ctx->visual))
         return false;
 
     uint64_t versions[DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT] = {0};
@@ -208,6 +233,14 @@ static bool _mesh_query_build(
     }
     if (include_static_uploads)
     {
+        const DvzVisualAttr* positions = NULL;
+        DvzVisualLowering lowering = {0};
+        if (!_dvz_scene_query_dense_attr(ctx->visual, "position", sizeof(vec3), &positions) ||
+            !_scene_visual_lowering_resolve(ctx->visual, &lowering) ||
+            !_scene_query_color_alpha(
+                ctx->visual, positions->item_count, lowering.needs_material_params,
+                &out_plan->scratch.query_alpha))
+            return false;
         uint64_t uploaded_vertex_count = 0;
         uint32_t uploaded_topology = 0;
         if (
@@ -221,13 +254,18 @@ static bool _mesh_query_build(
         }
     }
 
-    if (include_static_uploads && ctx->identity_base > 0)
+    if (include_static_uploads)
     {
+        out_plan->scratch.query_identity = dvz_calloc(vertex_count, sizeof(DvzSceneQueryIdentity));
+        if (out_plan->scratch.query_identity == NULL)
+            return false;
         for (uint64_t i = 0; i < vertex_count; i++)
         {
             if (out_plan->scratch.query_ids[i] > UINT32_MAX - ctx->identity_base)
                 return false;
-            out_plan->scratch.query_ids[i] += ctx->identity_base;
+            out_plan->scratch.query_identity[i].id =
+                out_plan->scratch.query_ids[i] + ctx->identity_base;
+            out_plan->scratch.query_identity[i].alpha = out_plan->scratch.query_alpha[i];
         }
     }
 
@@ -241,9 +279,8 @@ static bool _mesh_query_build(
 
     uint64_t position_bytes = 0;
     uint64_t id_bytes = 0;
-    if (
-        _dvz_mul_u64_overflows(vertex_count, sizeof(vec3), &position_bytes) ||
-        _dvz_mul_u64_overflows(vertex_count, sizeof(uint32_t), &id_bytes))
+    if (_dvz_mul_u64_overflows(vertex_count, sizeof(vec3), &position_bytes) ||
+        _dvz_mul_u64_overflows(vertex_count, sizeof(DvzSceneQueryIdentity), &id_bytes))
     {
         log_error("mesh query request buffer size overflow");
         _scene_query_scratch_destroy(&out_plan->scratch);
@@ -262,9 +299,9 @@ static bool _mesh_query_build(
         position_upload.data = out_plan->scratch.query_positions;
         position_upload.topology = topology;
         ok = ok && dvz_frame_plan_upload_ex(plan, &position_upload);
-        ok = ok && dvz_frame_plan_upload_bytes(
-                       plan, "query0_id", 0, id_bytes, "query_id",
-                       out_plan->scratch.query_ids);
+        ok = ok &&
+             dvz_frame_plan_upload_bytes(
+                 plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_identity);
         out_plan->mark_static_cache_uploaded = true;
         out_plan->static_cache_family = DVZ_SCENE_VISUAL_FAMILY_MESH;
         out_plan->static_cache_visual = ctx->visual;
@@ -280,6 +317,7 @@ static bool _mesh_query_build(
     metadata.desc_kind = (uint32_t)_scene_visual_family_desc_kind(DVZ_VISUAL_TYPE_PRIMITIVE);
     metadata.topology = topology;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.query_explicit_ids = true;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
     metadata.vertex_count = (uint32_t)vertex_count;
@@ -376,8 +414,7 @@ static bool _mesh_query_readout(
  */
 static bool _mesh_query_identity_count(const DvzSceneQueryBuildContext* ctx, uint32_t* out_count)
 {
-    if (_visual_family_state(ctx->visual)->field != NULL ||
-        ctx->visual->alpha_mode == DVZ_ALPHA_MASK)
+    if (!_mesh_query_inputs_supported(ctx->visual))
         return false;
     if (ctx->pending->request.target == DVZ_SCENE_TARGET_FACE)
         return _scene_mesh_visual_query_target_count(ctx->visual, DVZ_SCENE_TARGET_FACE, out_count);
@@ -397,16 +434,21 @@ static bool _mesh_query_identity_count(const DvzSceneQueryBuildContext* ctx, uin
         return true;
     }
     const DvzVisualAttr* transforms = NULL;
-    *out_count = _dvz_scene_query_dense_attr(
-                     ctx->visual, "instance_transform", 16 * sizeof(float), &transforms)
-                     ? (uint32_t)transforms->item_count : 1;
+    *out_count = 1;
+    if (_dvz_scene_query_dense_attr(
+            ctx->visual, "instance_transform", 16 * sizeof(float), &transforms))
+    {
+        if (transforms->item_count > UINT32_MAX)
+            return false;
+        *out_count = (uint32_t)transforms->item_count;
+    }
     return true;
 }
 
 
 
 /**
- * Diagnose sampled mesh queries until their texture coverage is preserved.
+ * Diagnose mesh queries whose coverage or geometry inputs are unsupported.
  *
  * @param visual retained visual
  * @param request query request
@@ -417,7 +459,7 @@ static bool _mesh_query_reject_sampled(
     const DvzVisual* visual, const DvzQueryRequest* request, DvzQueryStatus* out_status)
 {
     (void)request;
-    if (_visual_family_state(visual)->field == NULL && visual->alpha_mode != DVZ_ALPHA_MASK)
+    if (_mesh_query_inputs_supported(visual))
         return false;
     *out_status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
     return true;

@@ -12,8 +12,12 @@ float pointDiscDistance()
     return length(p * spriteSize) - 0.5 * size;
 }
 
+layout(location = 2) in float fragAlpha;
+
 void main()
 {
+    if (!(fragAlpha > 0.0) || isinf(fragAlpha))
+        discard;
     if (pointDiscDistance() > 0.0)
         discard;
     outId = fragId;

@@ -55,6 +55,47 @@ static bool _point_query_eligible(
 
 
 /**
+ * Diagnose point profiles whose coverage is not represented by the solid-disc query.
+ *
+ * @param visual retained point visual
+ * @param request query request
+ * @param status output failure status
+ * @return whether the current profile is unsupported
+ */
+static bool _point_query_reject_coverage(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzQueryStatus* status)
+{
+    (void)request;
+    const char* const inputs[] = {"position", "color", "size"};
+    if (!_scene_query_dense_inputs_supported(visual, inputs, 3))
+    {
+        *status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+        return true;
+    }
+    if (!visual->material.point_style_enabled && !visual->material.depth_cue_enabled &&
+        visual->alpha_mode != DVZ_ALPHA_MASK)
+        return false;
+    *status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return true;
+}
+
+
+/**
+ * Count supported point identities before allocating composed-query token ranges.
+ *
+ * @param ctx family build context
+ * @param count output identity count
+ * @return whether the current geometry and coverage are supported
+ */
+static bool _point_query_identity_count(const DvzSceneQueryBuildContext* ctx, uint32_t* count)
+{
+    DvzQueryStatus status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return !_point_query_reject_coverage(ctx->visual, &ctx->pending->request, &status) &&
+           _dvz_scene_query_dense_identity_count(ctx, count);
+}
+
+
+/**
  * Build a point-family r32uint item query plan.
  *
  * @param ctx build context
@@ -64,6 +105,9 @@ static bool _point_query_eligible(
 bool _point_query_build(
     const DvzSceneQueryBuildContext* ctx, DvzSceneQueryPlan* out_plan)
 {
+    DvzQueryStatus status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    if (_point_query_reject_coverage(ctx->visual, &ctx->pending->request, &status))
+        return false;
     return _scene_query_point_like_build(ctx, &POINT_QUERY_DESC, out_plan);
 }
 
@@ -120,9 +164,10 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_point_ops(void)
         .family = DVZ_SCENE_VISUAL_FAMILY_POINT,
         .eligible = _point_query_eligible,
         .build = _point_query_build,
-        .identity_count = _dvz_scene_query_dense_identity_count,
+        .identity_count = _point_query_identity_count,
         .append_identity = _point_query_append_identity,
         .decode = _point_query_decode,
+        .reject_unsupported = _point_query_reject_coverage,
         .readout = _scene_query_point_like_readout,
     };
     return &ops;
