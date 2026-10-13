@@ -2865,7 +2865,7 @@ DvzResult dvz_figure_add_compute(
 | `figure` | [`DvzFigure`](scene.md#type-dvzfigure) * | the figure |
 | `compute` | [`DvzSceneCompute`](scene.md#type-dvzscenecompute) * | the compute pass |
 
-_Declared in `include/datoviz/scene.h`:2487._
+_Declared in `include/datoviz/scene.h`:2514._
 
 #### `dvz_figure_color_pipeline()` { #dvz_figure_color_pipeline .dvz-api-function }
 
@@ -3025,7 +3025,7 @@ DvzResult dvz_figure_remove_compute(
 | `figure` | [`DvzFigure`](scene.md#type-dvzfigure) * | the figure |
 | `compute` | [`DvzSceneCompute`](scene.md#type-dvzscenecompute) * | the compute pass |
 
-_Declared in `include/datoviz/scene.h`:2497._
+_Declared in `include/datoviz/scene.h`:2524._
 
 #### `dvz_figure_resize()` { #dvz_figure_resize .dvz-api-function }
 
@@ -5831,7 +5831,7 @@ DvzResult dvz_panel_bounds(
 | `space` | [`DvzBoundsSpace`](scene.md#type-dvzboundsspace) | target bounds space |
 | `out` | [`DvzBounds`](scene.md#type-dvzbounds) * | output bounding box |
 
-_Declared in `include/datoviz/scene.h`:2280._
+_Declared in `include/datoviz/scene.h`:2305._
 
 #### `dvz_panel_bounds_visible()` { #dvz_panel_bounds_visible .dvz-api-function }
 
@@ -6875,7 +6875,7 @@ DvzResult dvz_panel_visual_bounds(
 | `space` | [`DvzBoundsSpace`](scene.md#type-dvzboundsspace) | target bounds space |
 | `out` | [`DvzBounds`](scene.md#type-dvzbounds) * | output bounding box |
 
-_Declared in `include/datoviz/scene.h`:2268._
+_Declared in `include/datoviz/scene.h`:2293._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -8940,7 +8940,7 @@ DvzSceneBuffer * dvz_scene_buffer(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `desc` | `const` [`DvzSceneBufferDesc`](scene.md#type-dvzscenebufferdesc) * | the buffer descriptor |
 
-_Declared in `include/datoviz/scene.h`:2357._
+_Declared in `include/datoviz/scene.h`:2384._
 
 #### `dvz_scene_buffer_desc()` { #dvz_scene_buffer_desc .dvz-api-function }
 
@@ -8956,7 +8956,7 @@ DvzSceneBufferDesc dvz_scene_buffer_desc(void);
 
 Related: [`dvz_scene_buffer()`](#dvz_scene_buffer).
 
-_Declared in `include/datoviz/scene.h`:2365._
+_Declared in `include/datoviz/scene.h`:2392._
 
 #### `dvz_scene_buffer_destroy()` { #dvz_scene_buffer_destroy .dvz-api-function }
 
@@ -8972,7 +8972,7 @@ void dvz_scene_buffer_destroy(
 | --- | --- | --- |
 | `buffer` | [`DvzSceneBuffer`](scene.md#type-dvzscenebuffer) * | the buffer |
 
-_Declared in `include/datoviz/scene.h`:2373._
+_Declared in `include/datoviz/scene.h`:2400._
 
 #### `dvz_scene_buffer_info()` { #dvz_scene_buffer_info .dvz-api-function }
 
@@ -8991,7 +8991,7 @@ _Bool dvz_scene_buffer_info(
 | `buffer` | `const` [`DvzSceneBuffer`](scene.md#type-dvzscenebuffer) * | the buffer |
 | `out` | [`DvzSceneBufferDesc`](scene.md#type-dvzscenebufferdesc) * | output buffer descriptor |
 
-_Declared in `include/datoviz/scene.h`:2397._
+_Declared in `include/datoviz/scene.h`:2424._
 
 #### `dvz_scene_buffer_resource_key()` { #dvz_scene_buffer_resource_key .dvz-api-function }
 
@@ -9016,7 +9016,7 @@ _Bool dvz_scene_buffer_resource_key(
 | `out` | `char` * | output string buffer |
 | `out_size` | `size_t` | output string capacity |
 
-_Declared in `include/datoviz/scene.h`:2413._
+_Declared in `include/datoviz/scene.h`:2440._
 
 #### `dvz_scene_buffer_set_data()` { #dvz_scene_buffer_set_data .dvz-api-function }
 
@@ -9037,7 +9037,7 @@ DvzResult dvz_scene_buffer_set_data(
 | `data` | `const` `void` * | the packed byte payload borrowed for the duration of the call |
 | `byte_size` | `uint64_t` | the payload size in bytes |
 
-_Declared in `include/datoviz/scene.h`:2388._
+_Declared in `include/datoviz/scene.h`:2415._
 
 #### `dvz_scene_clock_dt()` { #dvz_scene_clock_dt .dvz-api-function }
 
@@ -9093,7 +9093,7 @@ DvzSceneCompute * dvz_scene_compute(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `desc` | `const` [`DvzSceneComputeDesc`](scene.md#type-dvzscenecomputedesc) * | the compute descriptor |
 
-_Declared in `include/datoviz/scene.h`:2427._
+_Declared in `include/datoviz/scene.h`:2454._
 
 #### `dvz_scene_compute_desc()` { #dvz_scene_compute_desc .dvz-api-function }
 
@@ -9109,7 +9109,7 @@ DvzSceneComputeDesc dvz_scene_compute_desc(void);
 
 Related: [`dvz_scene_compute()`](#dvz_scene_compute).
 
-_Declared in `include/datoviz/scene.h`:2435._
+_Declared in `include/datoviz/scene.h`:2462._
 
 #### `dvz_scene_compute_destroy()` { #dvz_scene_compute_destroy .dvz-api-function }
 
@@ -9125,7 +9125,7 @@ void dvz_scene_compute_destroy(
 | --- | --- | --- |
 | `compute` | [`DvzSceneCompute`](scene.md#type-dvzscenecompute) * | the compute pass |
 
-_Declared in `include/datoviz/scene.h`:2443._
+_Declared in `include/datoviz/scene.h`:2470._
 
 #### `dvz_scene_compute_set_buffer()` { #dvz_scene_compute_set_buffer .dvz-api-function }
 
@@ -9155,7 +9155,7 @@ DvzResult dvz_scene_compute_set_buffer(
 | `byte_offset` | `uint64_t` | byte offset into the buffer |
 | `byte_size` | `uint64_t` | bound byte range, or 0 for the remaining buffer range |
 
-_Declared in `include/datoviz/scene.h`:2473._
+_Declared in `include/datoviz/scene.h`:2500._
 
 #### `dvz_scene_compute_set_dispatch()` { #dvz_scene_compute_set_dispatch .dvz-api-function }
 
@@ -9178,7 +9178,7 @@ DvzResult dvz_scene_compute_set_dispatch(
 | `y` | `uint32_t` | workgroup count in Y |
 | `z` | `uint32_t` | workgroup count in Z |
 
-_Declared in `include/datoviz/scene.h`:2456._
+_Declared in `include/datoviz/scene.h`:2483._
 
 #### `dvz_scene_destroy()` { #dvz_scene_destroy .dvz-api-function }
 

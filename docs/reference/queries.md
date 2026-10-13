@@ -1,10 +1,8 @@
 # Queries
 
-Queries connect rendered output back to retained scene state. Public pick/probe entry points have
-been replaced by a unified panel query model.
+Queries connect rendered output back to retained scene state. Public pick/probe entry points have been replaced by a unified panel query model.
 
-Use "picking" for identity questions and "probing" for sampled-value questions, but route both
-through query APIs.
+Use "picking" for identity questions and "probing" for sampled-value questions, but route both through query APIs.
 
 ## Model
 
@@ -34,10 +32,7 @@ DvzResult dvz_panel_query_now_px(
 
 Check the generated [scene C API](c-api/scene.md) for exact signatures in the current tree.
 
-`dvz_panel_query_px()` takes `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the outer
-panel rectangle. `DvzQueryResult.panel_position` echoes the same coordinate frame. Convert pointers,
-plot pixels, and data points with `dvz_panel_transform_point()`; use `dvz_panel_query_data()` when
-the query point is already in panel data coordinates.
+`dvz_panel_query_px()` takes `DVZ_PANEL_COORD_PANEL_PX` coordinates: logical pixels local to the outer panel rectangle. `DvzQueryResult.panel_position` echoes the same coordinate frame. Convert pointers, plot pixels, and data points with `dvz_panel_transform_point()`; use `dvz_panel_query_data()` when the query point is already in panel data coordinates.
 
 ## Result Semantics
 
@@ -51,27 +46,18 @@ the query point is already in panel data coordinates.
 
 A miss is not a capability failure. A capability failure is not a background hit.
 
-Read optional fields only when their discriminator says they are present: for example,
-`has_data_position`, `has_visual_position`, `has_uvw`, `has_depth`, `has_display_rgba`, and
-`value_kind`. `DvzQueryResult.scale` is a borrowed scene-owned scale; it remains valid only while
-that scale and its source scene remain alive.
+Read optional fields only when their discriminator says they are present: for example, `has_data_position`, `has_visual_position`, `has_uvw`, `has_depth`, `has_display_rgba`, and `value_kind`. `DvzQueryResult.scale` is a borrowed scene-owned scale; it remains valid only while that scale and its source scene remain alive.
 
 ## Target Scopes
 
-`DvzQueryRequest.target` declares the semantic scope requested by the caller. Data-oriented scopes
-such as `DVZ_SCENE_TARGET_ITEM`, `DVZ_SCENE_TARGET_PIXEL`, and `DVZ_SCENE_TARGET_SAMPLE` are routed
-to visual-family query implementations when the visual advertises the matching capability.
+`DvzQueryRequest.target` declares the semantic scope requested by the caller. Data-oriented scopes such as `DVZ_SCENE_TARGET_ITEM`, `DVZ_SCENE_TARGET_PIXEL`, and `DVZ_SCENE_TARGET_SAMPLE` are routed to visual-family query implementations when the visual advertises the matching capability.
 
-`DVZ_SCENE_TARGET_GUIDE` and `DVZ_SCENE_TARGET_ALL_RENDERED` are explicit public scopes for guide
-adapters and whole-rendered-scene requests. They are intentionally deferred in v0.4 RC: Datoviz
-returns `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET` and echoes the requested target in `raw_target` and
-`resolved_target`. It does not silently degrade `ALL_RENDERED` into data-only picking when guide
-picking is absent.
+`DVZ_SCENE_TARGET_GUIDE` and `DVZ_SCENE_TARGET_ALL_RENDERED` are explicit public scopes for guide adapters and whole-rendered-scene requests. They are intentionally deferred in v0.4 RC: Datoviz returns `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET` and echoes the requested target in `raw_target` and `resolved_target`. It does not silently degrade `ALL_RENDERED` into data-only picking when guide picking is absent.
 
 | Scope | Current status | Result behavior |
 | --- | --- | --- |
 | `DVZ_SCENE_TARGET_ITEM` | Supported for promoted visual families with item capability. | Hit results identify visual family, visual id, item id, link key when present, coordinates, and displayed RGBA when available. |
-| `DVZ_SCENE_TARGET_FACE` | Supported for a single eligible triangle-mesh visual with face capability. | Hit results identify the zero-based base-geometry face and its target-specific link key; combined face-plus-instance identity is deferred. When multiple eligible visuals share a panel, Datoviz returns `DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY` until a combined depth-aware path exists. |
+| `DVZ_SCENE_TARGET_FACE` | Supported for eligible ordinary triangle meshes; native requests can compose multiple meshes. | Hit results identify the winning visual, zero-based base-geometry face and target-specific link key. Combined face-plus-instance identity and sampled/masked mesh queries remain deferred. |
 | `DVZ_SCENE_TARGET_PIXEL` | Supported for promoted image-like paths with pixel capability. | Hit results identify the image visual and carry texel/sample value fields when available. |
 | `DVZ_SCENE_TARGET_SAMPLE` | Supported for promoted image/field/volume sample paths. | Hit results carry scalar/vector/category payloads and UVW/data coordinates when available. |
 | `DVZ_SCENE_TARGET_GUIDE` | Deferred. | `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET`; no visual id or hit payload. |
@@ -79,13 +65,11 @@ picking is absent.
 
 ## GPU Authority
 
-Rendered visual queries are GPU-authoritative. CPU code may queue requests, track freshness, decode
-GPU payloads, map ids to scene objects, format readouts, and mutate hover/selection state. CPU code
-must not decide rendered hits or sample retained visual data as a fallback for unsupported GPU
-queries.
+Rendered visual queries are GPU-authoritative. CPU code may queue requests, track freshness, decode GPU payloads, map ids to scene objects, format readouts, and mutate hover/selection state. CPU code must not decide rendered hits or sample retained visual data as a fallback for unsupported GPU queries.
 
-This keeps queries aligned with the same transforms, depth, clipping, visibility, shader discard,
-and viewport rules that produced the rendered frame.
+Queries use the visual’s transforms, depth, clipping, visibility and viewport rules. Scientific identity queries use authored base geometry and effective vertex/material alpha, including transparent scalar NaNs. Zero effective alpha writes neither identity nor depth. Hover and selection ALPHA/SCALE/tint decorations do not alter base identity regions, so identity queries do not promise exact decorated-pixel coverage. Style-enabled or depth-cued points, sampled or MASK meshes, and view-dependent LIMB material alpha are explicitly unsupported by this identity profile.
+
+Native frontmost identity requests compose mesh FACE draws and mesh/point/sphere ITEM draws in one shared GPU depth pass. The winning token maps back to its visual and full 64-bit link key. This depth rule does not weight transparent contributions. Browser identity queries retain the single-candidate route and return `DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY` for multiple eligible candidates.
 
 ## Freshness And Delivery
 
@@ -96,16 +80,11 @@ and viewport rules that produced the rendered frame.
 | Tool/query helper | Synchronous helper may be used for tests and tools when a runtime is available. |
 | Browser/WebGPU | Only the promoted subset is live; unsupported cases must produce explicit diagnostics. |
 
-Queued panel queries are asynchronous: a successful queue call means the request was accepted, not
-that a hit is already available. Advance rendering and poll `dvz_scene_poll_query()`; use
-`request_id` and `freshness_serial` to reject superseded hover/readout results.
+Queued panel queries are asynchronous: a successful queue call means the request was accepted, not that a hit is already available. Advance rendering and poll `dvz_scene_poll_query()`; use `request_id` and `freshness_serial` to reject superseded hover/readout results.
 
 ## Current Support Shape
 
-Support is visual-family and backend specific. The native query implementation is GPU-backed for the
-active rendered-query families and exposes unsupported status for gaps. WebGPU live routes currently
-cover a promoted subset such as point/marker picking, point hover/selection, sphere and mesh
-selection, and image probing.
+Support is visual-family and backend specific. The native query implementation is GPU-backed for the active rendered-query families and exposes unsupported status for gaps. WebGPU live routes currently cover a promoted subset such as point/marker picking, point hover/selection, sphere and mesh selection, and image probing.
 
 Do not assume every visual family supports every target kind, value kind, or result payload.
 

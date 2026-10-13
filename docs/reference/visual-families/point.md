@@ -68,6 +68,8 @@ results identify the source item, not the generated quad vertices.
 Native and WebGPU paths are active. The WebGPU gallery route is live for the RC browser subset.
 Depth testing is a visual option; the example disables it for a 2D panzoom panel.
 
+RC4 development supports point WBOIT in native and WGSL routes, including disc/style coverage and depth cue. Pixel and marker WBOIT remain excluded. See [current technique coverage](../../how-to/depth-blending.md#current-native-technique-coverage) for item-state and scene-occlusion boundaries.
+
 ## Canonical Example
 
 | Field | Value |

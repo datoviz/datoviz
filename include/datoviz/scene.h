@@ -1916,7 +1916,8 @@ DVZ_EXPORT bool dvz_visual_depth_test(const DvzVisual* visual);
  * This controls which transparency path the scene planner should use for the visual. Use
  * DVZ_ALPHA_BLENDED for ordinary source-over alpha blending, DVZ_ALPHA_WBOIT for weighted
  * blended order-independent transparency, and DVZ_ALPHA_DEPTH_PEEL for the depth-peeling
- * order-independent transparency path.
+ * order-independent transparency path. DVZ_ALPHA_MASK uses the retained alpha cutoff on
+ * supported textured meshes; discarded fragments do not write color or depth.
  *
  * @param visual the visual
  * @param mode the alpha handling mode
