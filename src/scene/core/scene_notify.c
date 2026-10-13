@@ -20,6 +20,7 @@
 #include "_log.h"
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
+#include "interaction/internal.h"
 
 
 /*************************************************************************************************/
@@ -113,6 +114,25 @@ void _scene_notify_request_frame(DvzFigure* figure)
 
 
 /**
+ * Advance query-input freshness and refresh any stationary interaction pointer.
+ *
+ * @param figure figure whose geometry, identity, camera or layout changed
+ */
+void _scene_notify_query_input_changed(DvzFigure* figure)
+{
+    if (figure == NULL || figure->scene == NULL)
+        return;
+    if (!figure->scene->syncing_item_state)
+    {
+        figure->query_input_revision =
+            figure->query_input_revision == UINT64_MAX ? 1 : figure->query_input_revision + 1;
+        _scene_item_interaction_refresh_queries(figure);
+    }
+    _scene_notify_request_frame(figure);
+}
+
+
+/**
  * Notify app hosts for every figure containing an attached visual.
  *
  * @param visual visual whose attached figures should be redrawn
@@ -126,7 +146,8 @@ void _scene_notify_visual_changed(DvzVisual* visual)
     {
         DvzFigure* figure = &scene->figures[fi];
         bool contains_visual = false;
-        for (uint32_t pi = 0; pi < figure->panel_count && !contains_visual; pi++)
+        bool query_input = false;
+        for (uint32_t pi = 0; pi < figure->panel_count; pi++)
         {
             const DvzPanel* panel = &figure->panels[pi];
             for (uint32_t vi = 0; vi < panel->visual_count; vi++)
@@ -134,11 +155,14 @@ void _scene_notify_visual_changed(DvzVisual* visual)
                 if (panel->visuals[vi].visual == visual)
                 {
                     contains_visual = true;
-                    break;
+                    query_input = query_input ||
+                                  panel->visuals[vi].controller_mode != DVZ_CONTROLLER_FIXED;
                 }
             }
         }
-        if (contains_visual)
+        if (query_input)
+            _scene_notify_query_input_changed(figure);
+        else if (contains_visual)
             _scene_notify_request_frame(figure);
     }
 }
@@ -208,6 +232,6 @@ void _scene_notify_buffer_changed(DvzSceneBuffer* buffer)
             }
         }
         if (uses_buffer)
-            _scene_notify_request_frame(figure);
+            _scene_notify_query_input_changed(figure);
     }
 }

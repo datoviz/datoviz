@@ -117,7 +117,7 @@ static void _scene_grid_mark_dirty(DvzGrid* grid)
         return;
     grid->dirty = true;
     if (grid->figure != NULL)
-        _scene_notify_request_frame(grid->figure);
+        _scene_notify_query_input_changed(grid->figure);
 }
 
 
@@ -254,7 +254,7 @@ void dvz_grid_destroy(DvzGrid* grid)
     }
 
     dvz_memset(grid, sizeof(DvzGrid), 0, sizeof(DvzGrid));
-    _scene_notify_request_frame(figure);
+    _scene_notify_query_input_changed(figure);
 }
 
 

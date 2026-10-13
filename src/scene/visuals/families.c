@@ -965,7 +965,10 @@ DvzResult dvz_panel_add_visual(DvzPanel* panel, DvzVisual* visual, const DvzVisu
     slot->viewport_rect = resolved.viewport_rect;
     slot->insertion_index = panel->visual_count;
     panel->visual_count++;
-    _scene_notify_request_frame(panel->figure);
+    if (slot->controller_mode != DVZ_CONTROLLER_FIXED)
+        _scene_notify_query_input_changed(panel->figure);
+    else
+        _scene_notify_request_frame(panel->figure);
     return 0;
 }
 
@@ -1343,6 +1346,7 @@ DvzResult dvz_visual_set_query_capabilities(DvzVisual* visual, uint32_t capabili
 {
     ANN(visual);
     visual->query_capabilities = capabilities;
+    _scene_notify_visual_changed(visual);
     return DVZ_OK;
 }
 
@@ -1418,7 +1422,9 @@ DvzResult dvz_visual_set_target_link_keys(
     *keys = replacement;
     *link_channel = target_count > 0 ? channel : NULL;
     *key_count = target_count;
-    return _scene_item_state_sync(visual->scene, "rebind visual link keys");
+    DvzResult result = _scene_item_state_sync(visual->scene, "rebind visual link keys");
+    _scene_notify_visual_changed(visual);
+    return result;
 }
 
 
@@ -1452,6 +1458,7 @@ void dvz_visual_destroy(DvzVisual* visual)
         return;
     if (!_scene_visual_mutation_allowed(visual->scene, "destroy scene-owned visual data"))
         return;
+    _scene_notify_visual_changed(visual);
     _scene_visual_reset(visual, true);
 }
 

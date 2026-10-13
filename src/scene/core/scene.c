@@ -619,7 +619,7 @@ DvzResult dvz_figure_resize(DvzFigure* figure, uint32_t width, uint32_t height)
             dvz_camera_resize(panel->camera, panel_width, panel_height);
         }
     }
-    _scene_notify_request_frame(figure);
+    _scene_notify_query_input_changed(figure);
     return DVZ_OK;
 }
 
@@ -659,7 +659,7 @@ DvzResult dvz_figure_set_reserve(DvzFigure* figure, const DvzPanelReserve* reser
     figure->reserve = next;
     (void)_scene_figure_resolve_layouts(figure);
     (void)_scene_figure_resolve_panel_descs(figure);
-    _scene_notify_request_frame(figure);
+    _scene_notify_query_input_changed(figure);
     return DVZ_OK;
 }
 

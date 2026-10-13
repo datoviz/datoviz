@@ -369,7 +369,7 @@ void _panel_mark_layout_changed(DvzPanel* panel)
         legend->dirty = true;
         legend->version = legend->version == UINT64_MAX ? 1 : legend->version + 1;
     }
-    _scene_notify_request_frame(panel->figure);
+    _scene_notify_query_input_changed(panel->figure);
 }
 
 

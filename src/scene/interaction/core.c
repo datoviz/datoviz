@@ -324,6 +324,11 @@ static int _item_interaction_queue_query(
         &interaction->scene->pending_queries[interaction->scene->pending_query_count - 1];
     pending->item_interaction = interaction;
     pending->item_interaction_kind = query_kind;
+    if (query_kind == DVZ_ITEM_INTERACTION_QUERY_HOVER)
+    {
+        interaction->hover_query_input_revision = interaction->panel->figure->query_input_revision;
+        interaction->hover_needs_refresh = false;
+    }
     return 0;
 }
 
@@ -782,6 +787,8 @@ int _scene_item_state_sync(DvzScene* scene, const char* reason)
     if (!_scene_visual_mutation_allowed(scene, reason != NULL ? reason : "update item_state"))
         return -1;
 
+    bool was_syncing = scene->syncing_item_state;
+    scene->syncing_item_state = true;
     int res = 0;
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
@@ -791,6 +798,7 @@ int _scene_item_state_sync(DvzScene* scene, const char* reason)
         if (_item_state_sync_visual(scene, visual) != 0)
             res = -1;
     }
+    scene->syncing_item_state = was_syncing;
     return res;
 }
 
@@ -2460,6 +2468,7 @@ static void _item_interaction_suspend_hover(DvzItemInteraction* interaction)
 {
     ANN(interaction);
     interaction->hover_suspended = true;
+    interaction->hover_needs_refresh = true;
     if (interaction->hover != NULL)
         dvz_hover_clear(interaction->hover);
 
@@ -2483,6 +2492,36 @@ static void _item_interaction_suspend_hover(DvzItemInteraction* interaction)
 
 
 /**
+ * Queue one latest stationary-hover refresh for each eligible panel in a changed figure.
+ *
+ * @param figure figure with updated query inputs
+ */
+void _scene_item_interaction_refresh_queries(DvzFigure* figure)
+{
+    if (figure == NULL)
+        return;
+    for (uint32_t i = 0; i < figure->panel_count; i++)
+    {
+        DvzItemInteraction* interaction = figure->panels[i].item_interaction;
+        if (interaction == NULL || !interaction->active || !interaction->desc.hover_enabled ||
+            interaction->hover == NULL || !interaction->hover_pointer_valid ||
+            interaction->hover_suspended || interaction->hover_buttons != 0 ||
+            interaction->hover_dragging)
+            continue;
+        if (!interaction->hover_needs_refresh &&
+            interaction->hover_query_input_revision == figure->query_input_revision)
+            continue;
+        (void)_item_interaction_queue_query(
+            interaction,
+            interaction->hover_figure_position[0] - interaction->panel->desc.x * figure->width,
+            interaction->hover_figure_position[1] - interaction->panel->desc.y * figure->height,
+            DVZ_ITEM_INTERACTION_QUERY_HOVER);
+    }
+}
+
+
+
+/**
  * Apply a panel-local pointer event to an item interaction controller.
  *
  * @param interaction the item interaction
@@ -2493,6 +2532,18 @@ bool _scene_item_interaction_pointer(DvzItemInteraction* interaction, const DvzP
 {
     if (interaction == NULL || ev == NULL || !interaction->active)
         return false;
+    DvzFigure* figure = interaction->panel->figure;
+    if (figure != NULL && ev->type != DVZ_POINTER_EVENT_CLICK)
+    {
+        double width = interaction->panel->desc.width * figure->width;
+        double height = interaction->panel->desc.height * figure->height;
+        interaction->hover_pointer_valid =
+            ev->pos[0] >= 0 && ev->pos[1] >= 0 && ev->pos[0] < width && ev->pos[1] < height;
+        interaction->hover_figure_position[0] =
+            ev->pos[0] + interaction->panel->desc.x * figure->width;
+        interaction->hover_figure_position[1] =
+            ev->pos[1] + interaction->panel->desc.y * figure->height;
+    }
     uint32_t button =
         ev->button >= DVZ_POINTER_BUTTON_LEFT && ev->button <= DVZ_POINTER_BUTTON_RIGHT
             ? 1u << ev->button
@@ -2511,6 +2562,14 @@ bool _scene_item_interaction_pointer(DvzItemInteraction* interaction, const DvzP
         interaction->hover_buttons &= ~button;
     else if (ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
         interaction->hover_dragging = false;
+
+    if ((ev->type == DVZ_POINTER_EVENT_RELEASE || ev->type == DVZ_POINTER_EVENT_DRAG_STOP) &&
+        interaction->hover_buttons == 0 && !interaction->hover_dragging &&
+        interaction->hover_pointer_valid)
+    {
+        interaction->hover_suspended = false;
+        _scene_item_interaction_refresh_queries(figure);
+    }
 
     if (ev->type == DVZ_POINTER_EVENT_MOVE && interaction->desc.hover_enabled &&
         interaction->hover != NULL)
@@ -2541,6 +2600,11 @@ bool _scene_item_interaction_pointer(DvzItemInteraction* interaction, const DvzP
  */
 void _scene_item_interaction_pointer_leave(DvzItemInteraction* interaction)
 {
+    if (interaction != NULL && interaction->active)
+    {
+        interaction->hover_pointer_valid = false;
+        interaction->hover_suspended = true;
+    }
     if (interaction == NULL || !interaction->active || !interaction->desc.clear_hover_on_miss ||
         interaction->hover == NULL)
     {

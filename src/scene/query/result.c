@@ -164,6 +164,8 @@ bool _dvz_scene_query_push_result(
     uint32_t index =
         (scene->query_result_head + scene->query_result_count) % DVZ_SCENE_MAX_QUERY_RESULTS;
     scene->query_results[index].panel = panel;
+    scene->query_results[index].query_input_revision =
+        panel != NULL && panel->figure != NULL ? panel->figure->query_input_revision : 0;
     scene->query_results[index].freshness_serial = freshness_serial;
     scene->query_results[index].result = *result;
     scene->query_result_count++;
@@ -267,15 +269,20 @@ bool dvz_scene_poll_query(DvzScene* scene, DvzQueryResult* out_result)
     ANN(scene);
     ANN(out_result);
 
-    if (scene->query_result_count > 0)
+    while (scene->query_result_count > 0)
     {
         uint32_t index = scene->query_result_head;
-        *out_result = scene->query_results[index].result;
+        DvzQueuedQueryResult queued = scene->query_results[index];
         dvz_memset(
             &scene->query_results[index], sizeof(DvzQueuedQueryResult), 0,
             sizeof(DvzQueuedQueryResult));
         scene->query_result_head = (index + 1) % DVZ_SCENE_MAX_QUERY_RESULTS;
         scene->query_result_count--;
+        if (queued.panel != NULL &&
+            (queued.panel->figure == NULL ||
+             queued.query_input_revision != queued.panel->figure->query_input_revision))
+            continue;
+        *out_result = queued.result;
         return true;
     }
 

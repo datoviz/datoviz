@@ -201,7 +201,7 @@ bool _dvz_scene_query_process_composed(
     uint32_t count = 0;
     uint32_t identity_end = 0;
     bool ok = contributions != NULL && plan != NULL;
-    result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    result->status = ok ? DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY : DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
     for (uint32_t i = 0; ok && i < panel->visual_count; i++)
     {
         const DvzPanelAttach* attach = &panel->visuals[order[i]];
@@ -211,13 +211,13 @@ bool _dvz_scene_query_process_composed(
             continue;
         const DvzSceneQueryFamilyOps* ops =
             _dvz_scene_query_family_ops_for_visual(panel, visual, &pending->request);
+        result->visual_id = _scene_visual_public_id(figure->scene, visual);
+        result->visual_family = ops != NULL ? ops->family : DVZ_SCENE_VISUAL_FAMILY_NONE;
         if (ops == NULL || ops->identity_count == NULL || ops->append_identity == NULL)
         {
             ok = false;
             break;
         }
-        result->visual_id = _scene_visual_public_id(figure->scene, visual);
-        result->visual_family = ops->family;
         QueryContribution* contribution = &contributions[count++];
         contribution->ops = ops;
         contribution->context = (DvzSceneQueryBuildContext){
@@ -240,9 +240,13 @@ bool _dvz_scene_query_process_composed(
         identity_end += contribution->count;
         ok = ops->append_identity(
             &contribution->context, plan, count - 1, &contribution->retained, &contribution->draw);
+        if (!ok)
+            result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
     }
+    if (!ok)
+        goto cleanup;
     uint32_t width = 0, height = 0;
-    if (ok && identity_end == 0)
+    if (identity_end == 0)
     {
         result->status = DVZ_QUERY_STATUS_MISS;
         goto cleanup;
@@ -275,7 +279,10 @@ bool _dvz_scene_query_process_composed(
     if (ok)
         ok = _query_append_readback(plan, pending->request.request_id);
     if (!ok)
+    {
+        result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
         goto cleanup;
+    }
 
     if (!executor->active_query_composed)
         _scene_request_executor_destroy(executor);

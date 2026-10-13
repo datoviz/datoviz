@@ -31,6 +31,8 @@
 #define DVZ_ITEM_INTERACTION_QUERY_HOVER 1u
 #define DVZ_ITEM_INTERACTION_QUERY_SELECTION 2u
 
+void _scene_item_interaction_refresh_queries(DvzFigure* figure);
+
 bool _scene_item_interaction_pointer(DvzItemInteraction* interaction, const DvzPointerEvent* ev);
 
 void _scene_item_interaction_pointer_leave(DvzItemInteraction* interaction);

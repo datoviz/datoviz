@@ -286,6 +286,9 @@ bool _dvz_scene_query_dense_identity_count(
     const DvzVisualAttr* positions = NULL;
     if (!_dvz_scene_query_dense_attr(ctx->visual, "position", sizeof(vec3), &positions))
     {
+        int position = _attr_index(ctx->visual, "position");
+        if (position >= 0 && ctx->visual->attrs[position].item_count > 0)
+            return false;
         *out_count = 0;
         return true;
     }
