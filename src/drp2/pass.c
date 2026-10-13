@@ -541,8 +541,9 @@ static VkAttachmentStoreOp _vklite_attachment_store_op(DvzDrp2AttachmentStoreOp 
 static VkAttachmentStoreOp _vklite_depth_attachment_store_op(
     DvzDrp2AttachmentStoreOp op, DvzDrp2AttachmentAccess access)
 {
-    if (access == DVZ_DRP2_ATTACHMENT_ACCESS_READ &&
-        op == DVZ_DRP2_ATTACHMENT_STORE_DONT_CARE)
+    // A store is a depth write even when the pipeline only reads the attachment.
+    // NONE preserves the existing contents without contradicting the declared access.
+    if (access == DVZ_DRP2_ATTACHMENT_ACCESS_READ)
         return VK_ATTACHMENT_STORE_OP_NONE;
     return _vklite_attachment_store_op(op);
 }
