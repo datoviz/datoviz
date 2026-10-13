@@ -146,6 +146,15 @@ bool _scene_query_point_like_build_ex(
         return false;
     }
 
+    if (pos_attr->item_count > UINT32_MAX - ctx->identity_base)
+        return false;
+    out_plan->scratch.query_ids =
+        (uint32_t*)dvz_calloc(pos_attr->item_count, sizeof(uint32_t));
+    if (out_plan->scratch.query_ids == NULL)
+        return false;
+    for (uint32_t i = 0; i < pos_attr->item_count; i++)
+        out_plan->scratch.query_ids[i] = ctx->identity_base + i + 1u;
+
     uint32_t target_width = 0;
     uint32_t target_height = 0;
     if (!_dvz_scene_query_target_extent(figure, panel, &target_width, &target_height))
@@ -158,7 +167,7 @@ bool _scene_query_point_like_build_ex(
              plan, "query0_position", position_bytes, "position", pos_attr->data,
              DVZ_FRAME_PLAN_RESOURCE_ROLE_POSITION, metadata_visual_type, pos_attr->item_count, 0) &&
          _query_point_like_upload_bytes(
-             plan, "query0_color", color_bytes, "color", color_attr->data,
+             plan, "query0_color", color_bytes, "query_id", out_plan->scratch.query_ids,
              DVZ_FRAME_PLAN_RESOURCE_ROLE_COLOR, metadata_visual_type, color_attr->item_count, 1) &&
          _query_point_like_upload_bytes(
              plan, "query0_size", size_bytes, "size", size_attr->data,
@@ -171,6 +180,7 @@ bool _scene_query_point_like_build_ex(
     metadata.desc_kind = (uint32_t)desc_kind;
     metadata.point_like_kind = (uint32_t)point_like_kind;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.query_explicit_ids = true;
     metadata.depth_test_enabled = visual->depth_test_enabled;
     metadata.depth_compare_op = visual->depth_compare_op;
     metadata.vertex_count =
@@ -221,6 +231,9 @@ bool _scene_query_point_like_build_ex(
     out_plan->target_height = target_height;
     out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
+    out_plan->derived_vertex_count = pos_attr->item_count;
+    out_plan->static_upload_bytes = position_bytes + color_bytes + size_bytes;
+    out_plan->retained_resource_bytes = out_plan->static_upload_bytes;
     out_plan->schema.fields = DVZ_SCENE_QUERY_SCHEMA_FIELD_ITEM_ID;
     out_plan->schema.value_kind = DVZ_QUERY_VALUE_NONE;
     out_plan->schema.profile = ctx->profile;
@@ -256,5 +269,28 @@ bool _scene_query_point_like_readout(
     ANN(ctx);
     ANN(result);
     result->value_kind = DVZ_QUERY_VALUE_NONE;
+    return true;
+}
+
+
+/**
+ * Count dense point-like identities for bounded composed-query token ranges.
+ *
+ * @param ctx family build context
+ * @param out_count identity count
+ * @return whether the count is representable
+ */
+bool _dvz_scene_query_dense_identity_count(
+    const DvzSceneQueryBuildContext* ctx, uint32_t* out_count)
+{
+    const DvzVisualAttr* positions = NULL;
+    if (!_dvz_scene_query_dense_attr(ctx->visual, "position", sizeof(vec3), &positions))
+    {
+        *out_count = 0;
+        return true;
+    }
+    if (positions->item_count > UINT32_MAX)
+        return false;
+    *out_count = (uint32_t)positions->item_count;
     return true;
 }

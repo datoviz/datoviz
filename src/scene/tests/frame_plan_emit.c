@@ -3422,6 +3422,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     AT(dvz_frame_plan_render(plan, "panel.0", "target.panel.0.query", true));
     AT(dvz_frame_plan_render_visual(plan, "point"));
     DvzFramePlanVisualMeta metadata = {0};
+    metadata.query_explicit_ids = true;
     metadata.visual_type = DVZ_VISUAL_TYPE_POINT;
     metadata.visual_index = 0;
     metadata.buffer_index = UINT32_MAX;
@@ -3432,6 +3433,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     AT(dvz_frame_plan_render_visual_metadata(plan, &metadata));
     AT(dvz_frame_plan_render_visual(plan, "sphere"));
     metadata = (DvzFramePlanVisualMeta){0};
+    metadata.query_explicit_ids = true;
     metadata.visual_type = DVZ_VISUAL_TYPE_SPHERE;
     metadata.desc_kind = DVZ_SCENE_VISUAL_DESC_SPHERE;
     metadata.visual_index = 1;
@@ -3496,10 +3498,21 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
     AT(render_visual_count_after == render_visual_count_before);
 
     uint32_t query_shader_count = 0;
+    uint32_t explicit_id_pipelines = 0;
     for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
     {
         const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
         ANN(command);
+        if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+        {
+            const DvzDrp2Command* pipeline = command;
+            for (uint32_t a = 0; a < pipeline->u.create_render_pipeline.attr_count; a++)
+            {
+                if (pipeline->u.create_render_pipeline.attr_locations[a] == 1 &&
+                    pipeline->u.create_render_pipeline.attr_formats[a] == DVZ_FORMAT_R32_UINT)
+                    explicit_id_pipelines++;
+            }
+        }
         if (command->type != DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE)
             continue;
         if (strcmp(command->u.create_shader_module.format, "wgsl") != 0)
@@ -3516,6 +3529,7 @@ int test_frame_plan_emitter_wgsl_query_shader_resolves(
         query_shader_count++;
     }
     AT(query_shader_count == 6);
+    AT(explicit_id_pipelines == 3);
 
     _test_scene_stream_destroy(stream);
     dvz_frame_plan_emitter_destroy(emitter);

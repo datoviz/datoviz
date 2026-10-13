@@ -84,6 +84,26 @@ bool _point_query_decode(
 
 
 
+/**
+ * Append this family's integer identity uploads to a composed query.
+ *
+ * @param ctx family build context with an allocated identity range
+ * @param plan composed destination plan
+ * @param slot bounded visual resource slot
+ * @param retained retained source plan and scratch lifetime
+ * @param out normalized draw packet
+ * @return whether the packet was appended
+ */
+static bool _point_query_append_identity(
+    const DvzSceneQueryBuildContext* ctx, DvzFramePlan* plan, uint32_t slot,
+    DvzSceneQueryPlan* retained, DvzSceneQueryAppend* out)
+{
+    return _point_query_build(ctx, retained) &&
+           _dvz_scene_query_append_identity_uploads(plan, slot, retained, out);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -100,6 +120,8 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_point_ops(void)
         .family = DVZ_SCENE_VISUAL_FAMILY_POINT,
         .eligible = _point_query_eligible,
         .build = _point_query_build,
+        .identity_count = _dvz_scene_query_dense_identity_count,
+        .append_identity = _point_query_append_identity,
         .decode = _point_query_decode,
         .readout = _scene_query_point_like_readout,
     };

@@ -154,7 +154,13 @@ void _scene_visual_pipeline_desc_apply_query_pick(
     if (color_target_format != DVZ_FORMAT_R32_UINT)
         return;
 
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT && pipeline->attr_count > 2)
+    if (visual->query_explicit_ids)
+    {
+        pipeline->attr_count = 3;
+        _scene_visual_pipeline_attr(pipeline, 1, 1, 1, DVZ_FORMAT_R32_UINT, sizeof(uint32_t));
+        _scene_visual_pipeline_attr(pipeline, 2, 2, 2, DVZ_FORMAT_R32_SFLOAT, sizeof(float));
+    }
+    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT && pipeline->attr_count > 2)
     {
         pipeline->strides[2] = sizeof(uint32_t);
         pipeline->formats[2] = DVZ_FORMAT_R32_UINT;

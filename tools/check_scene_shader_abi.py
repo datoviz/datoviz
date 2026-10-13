@@ -52,6 +52,9 @@ COMMON_GLSL_VERTEX_SHADERS = [
     "point_style.vert",
     "point_cue_style.vert",
     "point_pick.vert",
+    "point_query_u32.vert",
+    "pixel_query_u32.vert",
+    "sphere_query_u32.vert",
     "pixel_pick.vert",
     "primitive.vert",
     "primitive_lit.vert",
@@ -64,6 +67,9 @@ COMMON_GLSL_VERTEX_SHADERS = [
 ]
 
 COMMON_WGSL_VERTEX_SHADERS = [
+    "point_query_u32.vert.wgsl",
+    "pixel_query_u32.vert.wgsl",
+    "sphere_query_u32.vert.wgsl",
     "point.vert.wgsl",
     "pixel.vert.wgsl",
     "point_cue.vert.wgsl",

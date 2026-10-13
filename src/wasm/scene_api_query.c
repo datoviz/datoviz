@@ -176,6 +176,30 @@ static bool _query_emit_result(
         return false;
     }
 
+    // Browser packets currently execute one family's plan, without cross-visual depth.
+    DvzSceneTargetKind target = pending->request.target;
+    if (target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_OBJECT ||
+        target == DVZ_SCENE_TARGET_ITEM || target == DVZ_SCENE_TARGET_FACE)
+    {
+        uint32_t count = 0;
+        for (uint32_t i = 0; i < pending->panel->visual_count; i++)
+        {
+            const DvzPanelAttach* attach = &pending->panel->visuals[i];
+            const DvzVisual* visual = attach->visual;
+            if (visual != NULL && visual->visible && attach->controller_mode != DVZ_CONTROLLER_FIXED &&
+                (visual->query_capabilities & capability) != 0)
+                count++;
+        }
+        if (count > 1)
+        {
+            out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+            _query_setup_diagnostic(
+                scene, "composed identity queries require the native runtime", NULL, 0, 0,
+                target, out_result->profile);
+            return false;
+        }
+    }
+
     bool attempted = false;
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(pending->panel, order);

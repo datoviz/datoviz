@@ -455,8 +455,7 @@ Glyph-level precision can be deferred. Object-level GPU identity should be the f
 
 ## Transparency And Compositing
 
-First implementation supports opaque and depth-tested frontmost query. Transparent query support is a
-separate capability profile.
+Native `r32uint` identity queries compose multiple ordinary mesh FACE draws and mesh/point/sphere ITEM draws in one shared depth pass. Families append normalized identity packets with bounded per-visual token ranges; the GPU selects the winning token and CPU metadata lookup restores its visual, local target and full 64-bit link key. Signed scientific IDs retain their unsigned 64-bit bit pattern. Composition uses ordinary frontmost depth semantics rather than transparency contribution weighting. Sampled/textured mesh queries and mesh MASK queries are explicitly unsupported until their effective-alpha coverage is preserved. Browser query packets retain single-family execution and explicitly reject multiple identity candidates; native composition does not establish WebGPU parity.
 
 Do not let WBOIT, depth peeling, alpha blending, SSAO, EDL, bloom, or other postprocess effects
 silently redefine query semantics. Each technique must either:

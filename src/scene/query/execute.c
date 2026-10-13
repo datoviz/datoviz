@@ -99,8 +99,9 @@ static void _query_executor_reset_for_schema(
 {
     ANN(executor);
     if (
-        executor->active_query_family != DVZ_SCENE_VISUAL_FAMILY_NONE &&
-        (executor->active_query_family != family || executor->active_query_target != target))
+        executor->active_query_composed ||
+        (executor->active_query_family != DVZ_SCENE_VISUAL_FAMILY_NONE &&
+        (executor->active_query_family != family || executor->active_query_target != target)))
     {
         _scene_request_executor_destroy(executor);
     }
@@ -157,36 +158,9 @@ bool _dvz_scene_query_process_pending(
         return true;
     }
 
-    /* FACE results currently carry no comparable depth value. Executing one
-     * query per visual and returning the first hit would make the answer
-     * depend on attachment order rather than rendered visibility. A combined
-     * query/depth path is required before this can be advertised for
-     * overlapping visuals; fail closed until then. */
-    if (pending->request.target == DVZ_SCENE_TARGET_FACE ||
-        pending->request.target == DVZ_SCENE_TARGET_TRIANGLE)
-    {
-        uint32_t eligible_count = 0;
-        uint32_t face_order[DVZ_SCENE_MAX_VISUALS] = {0};
-        _scene_panel_visual_order(pending->panel, face_order);
-        for (uint32_t oi = 0; oi < pending->panel->visual_count; oi++)
-        {
-            const DvzPanelAttach* attach = &pending->panel->visuals[face_order[oi]];
-            DvzVisual* visual = attach->visual;
-            if (visual == NULL || !visual->visible ||
-                attach->controller_mode == DVZ_CONTROLLER_FIXED ||
-                (visual->query_capabilities & capability) == 0)
-                continue;
-            const DvzSceneQueryFamilyOps* ops =
-                _dvz_scene_query_family_ops_for_visual(pending->panel, visual, &pending->request);
-            if (ops != NULL && ops->build != NULL && ops->decode != NULL)
-                eligible_count++;
-        }
-        if (eligible_count > 1)
-        {
-            out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
-            return true;
-        }
-    }
+    if (_dvz_scene_query_process_composed(
+            figure, runtime, executor, caps, pending, request_ndc, out_result))
+        return true;
 
     bool native_attempted = false;
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
