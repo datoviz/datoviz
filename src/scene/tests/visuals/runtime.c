@@ -3248,11 +3248,11 @@ int test_scene_visual_technique_eligibility_inventory(TstContext* suite, const T
     AT(_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
     AT(shader.vertex_glsl != NULL);
     AT(shader.fragment_glsl != NULL);
-    AT(shader.fragment_wgsl == NULL);
+    AT(shader.fragment_wgsl != NULL);
     visual.has_normal = true;
     AT(_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
     AT(shader.fragment_glsl != NULL);
-    AT(shader.fragment_wgsl == NULL);
+    AT(shader.fragment_wgsl != NULL);
     visual.has_item_state = true;
     AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
     visual = (DvzSceneVisualDesc){.kind = DVZ_SCENE_VISUAL_DESC_SPLAT};

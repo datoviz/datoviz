@@ -8138,3 +8138,110 @@ int test_scene_visual_alpha_mode_depth_peel_glsl_executes(TstContext* suite, con
  * @param suite the active test suite
  * @return 0 on success
  */
+
+
+
+/**
+ * Emit complete lit and unlit WBOIT graphs with WebGPU-ready shaders and shared opaque depth.
+ *
+ * @param suite active test suite
+ * @param item active test item
+ * @return 0 on success
+ */
+int test_scene_wboit_wgsl_composition(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    for (uint32_t lit = 0; lit < 2; lit++)
+    {
+        DvzScene* scene = dvz_scene();
+        ANN(scene);
+        DvzFigure* figure = dvz_figure(scene, 96, 64, 0);
+        ANN(figure);
+        DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.25f, .125f, .5f, .75f});
+        ANN(panel);
+        vec3 positions[3] = {{-.8f, -.8f, 0}, {.8f, -.8f, 0}, {0, .8f, 0}};
+        vec3 normals[3] = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+        DvzColor opaque_colors[3] = {{0, 0, 255, 255}, {0, 0, 255, 255}, {0, 0, 255, 255}};
+        DvzColor colors[3] = {{255, 0, 0, 128}, {255, 0, 0, 128}, {255, 0, 0, 128}};
+        DvzVisual* opaque = dvz_mesh(scene, 0);
+        DvzVisual* transparent = dvz_mesh(scene, 0);
+        ANN(opaque);
+        ANN(transparent);
+        AT(dvz_visual_set_data(opaque, "position", positions, 3) == DVZ_OK);
+        AT(dvz_visual_set_data(opaque, "color", opaque_colors, 3) == DVZ_OK);
+        AT(dvz_visual_set_data(transparent, "position", positions, 3) == DVZ_OK);
+        AT(dvz_visual_set_data(transparent, "color", colors, 3) == DVZ_OK);
+        if (lit)
+            AT(dvz_visual_set_data(transparent, "normal", normals, 3) == DVZ_OK);
+        AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == DVZ_OK);
+        AT(dvz_panel_add_visual(panel, opaque, NULL) == DVZ_OK);
+        AT(dvz_panel_add_visual(panel, transparent, NULL) == DVZ_OK);
+        DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+        caps.max_color_attachments = 2;
+        caps.render_target_format_rgba16float = true;
+        caps.render_target_format_r16float = true;
+        caps.supports_render_target_sampling = true;
+        caps.supports_color_blending = true;
+        DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+        cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+        DvzDiagnosticReport report;
+        dvz_diagnostic_report_init(&report);
+        DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+        if (stream == NULL)
+        {
+            for (uint32_t i = 0; i < dvz_diagnostic_report_count(&report); i++)
+                log_error("WBOIT WGSL: %s", dvz_diagnostic_report_get(&report, i));
+        }
+        AT(stream != NULL);
+        AT(dvz_diagnostic_report_count(&report) == 0);
+        DvzDrp2ValidationResult validation = dvz_drp2_validate_stream(stream);
+        AT(validation.ok);
+        bool additive_mrt = false;
+        bool read_only_depth = false;
+        bool offset_viewport = false;
+        for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+        {
+            const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+            ANN(command);
+            if (command->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+                command->u.create_render_pipeline.color_target_count == 2)
+            {
+                AT(!command->u.create_render_pipeline.depth_write_enabled);
+                for (uint32_t target = 0; target < 2; target++)
+                {
+                    AT(command->u.create_render_pipeline.color_targets[target].blend_enabled);
+                    AT(command->u.create_render_pipeline.color_targets[target]
+                           .src_color_blend_factor == DVZ_BLEND_FACTOR_ONE);
+                    AT(command->u.create_render_pipeline.color_targets[target]
+                           .dst_color_blend_factor == DVZ_BLEND_FACTOR_ONE);
+                }
+                additive_mrt = true;
+            }
+            if (command->type == DVZ_DRP2_COMMAND_BEGIN_RENDER_PASS &&
+                command->u.begin_render_pass.color_attachment_count == 2)
+            {
+                AT(command->u.begin_render_pass.has_depth_attachment);
+                AT(command->u.begin_render_pass.depth_load_op == DVZ_DRP2_ATTACHMENT_LOAD_LOAD);
+                AT(command->u.begin_render_pass.depth_access == DVZ_DRP2_ATTACHMENT_ACCESS_READ);
+                read_only_depth = true;
+            }
+            if (command->type == DVZ_DRP2_COMMAND_SET_VIEWPORT &&
+                command->u.set_viewport.viewport[0] > 0 && command->u.set_viewport.viewport[1] > 0)
+                offset_viewport = true;
+        }
+        AT(additive_mrt);
+        AT(read_only_depth);
+        AT(offset_viewport);
+        char* json = dvz_drp2_stream_json(stream, "scene_wboit_wgsl");
+        ANN(json);
+        AT(strstr(json, "scene_wboit_weight") != NULL);
+        AT(strstr(json, "textureLoad(weight_texture") != NULL);
+        AT(strstr(json, "1.0 - exp(-weight)") != NULL);
+        AT(strstr(json, "\"format\": \"glsl\"") == NULL);
+        dvz_free(json);
+        _test_scene_stream_destroy(stream);
+        dvz_scene_destroy(scene);
+    }
+    return 0;
+}
