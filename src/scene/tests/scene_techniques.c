@@ -2739,11 +2739,10 @@ int test_scene_frame_plan_node_reallocation_safe(TstContext* suite, const TstCas
     }
     for (uint32_t i = 0; i < 2; i++)
     {
-        DvzVisual* wboit = dvz_point(scene, 0);
+        DvzVisual* wboit = dvz_mesh(scene, 0);
         AT(wboit != NULL);
         AT(dvz_visual_set_data(wboit, "position", point_positions, 3) == 0);
         AT(dvz_visual_set_data(wboit, "color", blended_colors, 3) == 0);
-        AT(dvz_visual_set_data(wboit, "size", point_sizes, 3) == 0);
         AT(dvz_visual_set_alpha_mode(wboit, DVZ_ALPHA_WBOIT) == 0);
         AT(dvz_panel_add_visual(panel, wboit, NULL) == 0);
     }
@@ -4169,7 +4168,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
     AT(dvz_visual_set_data(transparent_point, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(transparent_point, "color", colors, 3) == 0);
     AT(dvz_visual_set_data(transparent_point, "size", point_sizes, 3) == 0);
-    AT(dvz_visual_set_alpha_mode(transparent_point, DVZ_ALPHA_WBOIT) == 0);
+    AT(dvz_visual_set_alpha_mode(transparent_point, DVZ_ALPHA_BLENDED) == 0);
     AT(dvz_panel_add_visual(transparent_panel, transparent_point, NULL) == 0);
     AT(dvz_panel_set_edl(
            transparent_panel, &(DvzEdlDesc){
@@ -4192,7 +4191,7 @@ int test_scene_edl_ignores_ineligible_passes(TstContext* suite, const TstCase* i
             found_wboit_resolve || provider == DVZ_SCENE_WORK_PROVIDER_WBOIT_RESOLVE;
     }
     AT(!found_edl_resolve);
-    AT(found_wboit_resolve);
+    AT(!found_wboit_resolve);
 
     dvz_frame_plan_destroy(transparent_plan);
     dvz_frame_plan_destroy(fixed_plan);
@@ -5615,7 +5614,7 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     AT(panel != NULL);
 
     DvzVisual* opaque = dvz_point(scene, 0);
-    DvzVisual* transparent = dvz_point(scene, 0);
+    DvzVisual* transparent = dvz_mesh(scene, 0);
     AT(opaque != NULL);
     AT(transparent != NULL);
 
@@ -5633,7 +5632,6 @@ int test_scene_visual_alpha_mode_splits_frame_plan_passes(TstContext* suite, con
     AT(dvz_visual_set_data(opaque, "size", sizes, 3) == 0);
     AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(transparent, "color", transparent_colors, 3) == 0);
-    AT(dvz_visual_set_data(transparent, "size", sizes, 3) == 0);
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, opaque, NULL) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
@@ -5796,7 +5794,7 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(
     DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0.0f, 0.0f, 1.0f, 1.0f});
     AT(panel != NULL);
 
-    DvzVisual* transparent = dvz_point(scene, 0);
+    DvzVisual* transparent = dvz_mesh(scene, 0);
     AT(transparent != NULL);
 
     vec3 positions[3] = {
@@ -5805,11 +5803,9 @@ int test_scene_visual_alpha_mode_wboit_transparent_only_depth(
         {0.0f, 0.5f, 0.0f},
     };
     DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
-    float sizes[3] = {10.0f, 12.0f, 14.0f};
 
     AT(dvz_visual_set_data(transparent, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(transparent, "color", colors, 3) == 0);
-    AT(dvz_visual_set_data(transparent, "size", sizes, 3) == 0);
     AT(dvz_visual_set_alpha_mode(transparent, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, transparent, NULL) == 0);
 
@@ -6879,7 +6875,7 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(
     DvzPanelDesc desc = {0.0f, 0.0f, 1.0f, 1.0f};
     DvzPanel* panel = dvz_panel(figure, &desc);
     AT(panel != NULL);
-    DvzVisual* visual = dvz_point(scene, 0);
+    DvzVisual* visual = dvz_mesh(scene, 0);
     AT(visual != NULL);
 
     vec3 positions[3] = {
@@ -6888,11 +6884,9 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(
         {0.0f, 0.5f, 0.0f},
     };
     DvzColor colors[3] = {{255, 0, 0, 128}, {0, 255, 0, 128}, {0, 0, 255, 128}};
-    float sizes[3] = {10.0f, 12.0f, 14.0f};
 
     AT(dvz_visual_set_data(visual, "position", positions, 3) == 0);
     AT(dvz_visual_set_data(visual, "color", colors, 3) == 0);
-    AT(dvz_visual_set_data(visual, "size", sizes, 3) == 0);
     AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_WBOIT) == 0);
     AT(dvz_panel_add_visual(panel, visual, NULL) == 0);
 
@@ -6900,7 +6894,9 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
 
-    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(stream == NULL);
     AT(dvz_diagnostic_report_count(&report) == 1);
     const char* message = dvz_diagnostic_report_get(&report, 0);
@@ -6914,7 +6910,7 @@ int test_scene_visual_alpha_mode_requires_wboit_capabilities(
     caps.supports_color_blending = true;
     dvz_diagnostic_report_init(&report);
 
-    stream = _test_scene_emit_stream(figure, &caps, &report);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
     AT(stream != NULL);
     AT(dvz_diagnostic_report_count(&report) == 0);
 

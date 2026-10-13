@@ -1,6 +1,7 @@
 #version 450
 
 #include "common.glsl"
+#include "scene_material.glsl"
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec3 fragNormal;
@@ -13,7 +14,9 @@ layout(location = 2) out float outCoverage;
 
 void main()
 {
-    if (fragColor.a <= 0.0)
+    vec4 shaded = evaluateSceneMaterialWithAmbientVisibility(
+        fragColor, fragNormal, fragWorldPos, fragCameraPos, 1.0);
+    if (shaded.a <= 0.0)
         discard;
 
     vec3 viewPos = (mvp.view * vec4(fragWorldPos, 1.0)).xyz;

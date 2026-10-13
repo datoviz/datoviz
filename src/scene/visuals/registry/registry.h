@@ -133,6 +133,11 @@ struct DvzVisualFamilyOps
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+const char* _scene_visual_alpha_eligibility_error(
+    DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode);
+
+const char* _scene_visual_technique_eligibility_error(const DvzVisual* visual);
+
 const DvzVisualFamilyOps* _scene_visual_family_ops(DvzVisualType type);
 
 void _scene_visual_pass_caps_apply_generated_role(

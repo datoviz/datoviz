@@ -38,6 +38,7 @@
 #include "domain/field_internal.h"
 #include "plot/internal.h"
 #include "_visual_internal.h"
+#include "visuals/registry/registry.h"
 #include "datoviz/scene.h"
 
 
@@ -156,6 +157,17 @@ static bool _scene_figure_validate_transparency_modes(
             const DvzVisual* visual = panel->visuals[vi].visual;
             if (!_scene_emit_visual_drawable(visual))
                 continue;
+            const char* eligibility_error = _scene_visual_technique_eligibility_error(visual);
+            if (eligibility_error != NULL)
+            {
+                dvz_snprintf(
+                    message, sizeof(message), "panel %u visual %llu (%s): %s", pi,
+                    (unsigned long long)visual->id,
+                    dvz_visual_family_name(dvz_visual_family(visual)), eligibility_error);
+                (void)dvz_diagnostic_report_add(report, message);
+                ok = false;
+                continue;
+            }
             uint32_t visual_index = UINT32_MAX;
             (void)_figure_visual_index(figure, visual, &visual_index);
             if (_scene_alpha_mode_is_wboit(visual->alpha_mode))

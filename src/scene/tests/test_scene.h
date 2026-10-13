@@ -706,6 +706,10 @@ int test_app_offscreen_source_over_mesh_depth_and_blend(TstContext* suite, const
 
 int test_app_offscreen_additive_mesh_blend(TstContext* suite, const TstCase* item);
 
+int test_app_offscreen_depth_peel_effective_alpha(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_mesh_ao_effective_alpha(TstContext* suite, const TstCase* item);
+
 int test_app_offscreen_depth_peel_mesh_two_layers(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_depth_peel_mesh_three_layers(TstContext* suite, const TstCase* item);
@@ -859,6 +863,12 @@ int test_scene_shared_field_mixed_full_and_partial_uploads(TstContext* suite, co
 int test_scene_rejects_unsupported_point_attribute(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_alpha_mode(TstContext* suite, const TstCase* item);
+
+int test_scene_visual_technique_eligibility_inventory(TstContext* suite, const TstCase* item);
+
+int test_scene_visual_technique_eligibility_preflight(TstContext* suite, const TstCase* item);
+
+int test_scene_visual_technique_provider_wgsl_preflight(TstContext* suite, const TstCase* item);
 
 int test_scene_visual_depth_test(TstContext* suite, const TstCase* item);
 

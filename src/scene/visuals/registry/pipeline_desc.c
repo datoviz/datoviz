@@ -194,13 +194,6 @@ void _scene_visual_pipeline_desc_apply_pass_policy(
                       visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
 
-    if (
-        provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE &&
-        visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
-    {
-        pipeline->needs_material_layout = false;
-    }
-
     if (provider == DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION)
     {
         pipeline->needs_image_layout = false;

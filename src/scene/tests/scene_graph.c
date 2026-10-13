@@ -120,6 +120,9 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_rejects_cross_scene_visual);
     TST_CASE(test_scene_rejects_unsupported_point_attribute);
     TST_CASE(test_scene_visual_alpha_mode);
+    TST_CASE(test_scene_visual_technique_eligibility_inventory);
+    TST_CASE(test_scene_visual_technique_eligibility_preflight);
+    TST_CASE(test_scene_visual_technique_provider_wgsl_preflight);
     TST_CASE(test_scene_visual_depth_test);
     TST_CASE(test_scene_visual_scene_occlusion_flags);
     TST_CASE(test_scene_visual_scene_occlusion_frame_plan);

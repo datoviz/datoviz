@@ -21,6 +21,9 @@ vec4 shade()
 
 void main()
 {
+    if (shade().a <= 0.0)
+        discard;
+
     /* Init pass: reduce all transparent fragments to first nearest/farthest depth bounds. */
     float viewDepth = positiveLinearViewDepth(gl_FragCoord.z);
     frontAccum = vec4(0.0);

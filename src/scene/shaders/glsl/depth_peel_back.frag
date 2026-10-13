@@ -24,6 +24,9 @@ void main()
 
     vec4 linearColor = semanticColorToLinear(fragColor);
     float a = clamp(linearColor.a, 0.0, 1.0);
+    if (a <= 0.0)
+        discard;
+
     vec4 color = vec4(linearColor.rgb * a, a);
     frontAccum = vec4(0.0);
     backAccum = vec4(0.0);

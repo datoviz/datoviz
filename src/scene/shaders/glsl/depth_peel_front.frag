@@ -9,6 +9,9 @@ layout(location = 2) out vec4 depthPair;
 
 void main()
 {
+    if (fragColor.a <= 0.0)
+        discard;
+
     /* Init pass: reduce all transparent fragments to first nearest/farthest depth bounds. */
     float viewDepth = positiveLinearViewDepth(gl_FragCoord.z);
     backAccum = vec4(0.0);

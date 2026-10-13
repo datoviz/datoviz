@@ -37,6 +37,70 @@
 /*************************************************************************************************/
 
 /**
+ * Describe alpha modes whose shader contracts are unavailable for a descriptor kind.
+ *
+ * @param kind normalized visual descriptor kind
+ * @param alpha_mode requested alpha mode
+ * @return an unsupported-mode explanation, or NULL when supported
+ */
+const char* _scene_visual_alpha_eligibility_error(
+    DvzSceneVisualDescKind kind, DvzAlphaMode alpha_mode)
+{
+    if (alpha_mode == DVZ_ALPHA_MASK)
+        return "alpha mask requires cutoff semantics, which are not implemented";
+    if (alpha_mode == DVZ_ALPHA_WBOIT &&
+        kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE && kind != DVZ_SCENE_VISUAL_DESC_SPLAT)
+        return "WBOIT requires family-conformant accumulation shaders; currently supported "
+               "only for ordinary mesh/primitive and splat visuals";
+    if (alpha_mode == DVZ_ALPHA_DEPTH_PEEL && kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
+        return "depth peeling requires family-conformant coverage and bounds shaders; "
+               "currently supported only for ordinary mesh/primitive visuals";
+    return NULL;
+}
+
+
+
+/**
+ * Describe unsupported technique requests using retained family lowering facts.
+ *
+ * @param visual retained visual
+ * @return an unsupported-technique explanation, or NULL when supported
+ */
+const char* _scene_visual_technique_eligibility_error(const DvzVisual* visual)
+{
+    ANN(visual);
+    DvzVisualLowering lowering = {0};
+    if (!_scene_visual_lowering_resolve(visual, &lowering))
+        return "visual family lowering is unavailable";
+    const char* error = _scene_visual_alpha_eligibility_error(lowering.desc_kind, visual->alpha_mode);
+    if (error != NULL)
+        return error;
+    bool item_state = _scene_visual_has_dense_attr(visual, "item_state");
+    bool instanced = _scene_visual_has_dense_attr(visual, "instance_transform");
+    if (item_state && (visual->alpha_mode == DVZ_ALPHA_WBOIT ||
+                       visual->alpha_mode == DVZ_ALPHA_DEPTH_PEEL))
+        return "OIT shaders do not preserve mesh item-state visibility and styling";
+    if (visual->scene_occluder && (item_state || instanced))
+        return "scene occlusion depth does not preserve item-state coverage or instanced transforms";
+    if (visual->scene_occluder && lowering.desc_kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
+        lowering.desc_kind != DVZ_SCENE_VISUAL_DESC_VOLUME)
+        return "scene occlusion requires family-conformant depth coverage; currently supported "
+               "only for ordinary mesh/primitive and volume visuals";
+    if (visual->scene_occluder && lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
+        _scene_visual_has_dense_attr(visual, "normal") &&
+        visual->material.model == DVZ_MATERIAL_MODEL_LIMB)
+        return "scene occlusion depth does not preserve view-dependent LIMB material alpha";
+    if (visual->scene_occluder && lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
+        _scene_visual_has_dense_attr(visual, "normal") &&
+        (visual->material.opacity <= 0 || visual->material.base_color_factor[3] <= 0))
+        return "scene occlusion depth does not apply zero effective material alpha; "
+               "disable this occluder or restore positive material alpha";
+    return NULL;
+}
+
+
+
+/**
  * Resolve common pass capabilities from normalized visual facts.
  *
  * @param kind the visual descriptor kind
@@ -55,6 +119,12 @@ void _scene_visual_pass_caps_resolve(
 {
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualPassCaps), 0, sizeof(DvzSceneVisualPassCaps));
+
+    out->kind = kind;
+    out->alpha_mode = alpha_mode;
+    out->controller_mode = controller_mode;
+    if (_scene_visual_alpha_eligibility_error(kind, alpha_mode) != NULL)
+        return;
 
     bool primitive = _scene_visual_desc_is_primitive(kind);
     bool textured_mesh = kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
@@ -199,6 +269,9 @@ bool _scene_visual_default_pass_caps(
     ANN(lowering);
     ANN(out);
 
+    if (_scene_visual_technique_eligibility_error(visual) != NULL)
+        return false;
+
     DvzSceneVisualDescKind kind = lowering->desc_kind;
     bool has_normals =
         (_scene_visual_desc_is_primitive(kind) || kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH) &&
@@ -218,6 +291,13 @@ bool _scene_visual_default_pass_caps(
         kind, visual->alpha_mode, attach->controller_mode, has_normals, has_material_resource,
         visual->material.depth_cue_enabled, visual->depth_test_enabled, ops->baseline_layer,
         ops->baseline_product_caps, ops->baseline_phase_participation, out);
+    if (_scene_visual_has_dense_attr(visual, "item_state") ||
+        _scene_visual_has_dense_attr(visual, "instance_transform"))
+    {
+        out->eligible_for_gbuffer = false;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY;
+    }
     return true;
 }
 
@@ -351,6 +431,12 @@ bool _scene_visual_pass_caps_from_desc(
         visual->kind, alpha_mode, controller_mode, visual->has_normal,
         visual->material_buffer_id != 0, visual->depth_cue_enabled, visual->depth_test_enabled,
         baseline_layer, baseline_product_caps, baseline_phase_participation, out);
+    if (visual->has_item_state || visual->has_instance_transform)
+    {
+        out->eligible_for_gbuffer = false;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;
+        out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_CONSUME_AMBIENT_VISIBILITY;
+    }
     return true;
 }
 

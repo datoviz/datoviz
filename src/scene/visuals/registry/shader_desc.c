@@ -111,6 +111,10 @@ bool _scene_visual_shader_desc_resolve(
     ANN(format_tag);
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualShaderDesc), 0, sizeof(DvzSceneVisualShaderDesc));
+    if (wboit_accumulation &&
+        (visual->has_item_state ||
+         _scene_visual_alpha_eligibility_error(visual->kind, DVZ_ALPHA_WBOIT) != NULL))
+        return false;
 
     DvzVisualType type = _scene_visual_family_desc_default_type(visual->kind);
     const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
@@ -295,6 +299,10 @@ bool _scene_visual_shader_desc_for_pass(
     if (provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE)
     {
         *out_handled = true;
+        if (visual->has_instance_transform || visual->has_item_state)
+            return false;
+        shader->vertex_wgsl = NULL;
+        shader->fragment_wgsl = NULL;
         if (visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && !visual->has_normal)
         {
             *out_skip = true;
@@ -307,8 +315,6 @@ bool _scene_visual_shader_desc_for_pass(
             *out_skip = true;
             return true;
         }
-        if (visual->kind != DVZ_SCENE_VISUAL_DESC_SPHERE)
-            visual->material_buffer_id = 0;
         if (visual->kind == DVZ_SCENE_VISUAL_DESC_SPHERE)
         {
             dvz_snprintf(
@@ -351,6 +357,8 @@ bool _scene_visual_shader_desc_for_pass(
     if (provider == DVZ_SCENE_WORK_PROVIDER_VOLUME_OCCLUSION)
     {
         *out_handled = true;
+        shader->vertex_wgsl = NULL;
+        shader->fragment_wgsl = NULL;
         if (visual->kind != DVZ_SCENE_VISUAL_DESC_VOLUME)
         {
             *out_skip = true;
@@ -375,6 +383,8 @@ bool _scene_visual_shader_desc_for_pass(
         return true;
 
     *out_handled = true;
+    shader->vertex_wgsl = NULL;
+    shader->fragment_wgsl = NULL;
     if (visual->kind == DVZ_SCENE_VISUAL_DESC_VOLUME)
     {
         dvz_snprintf(
@@ -397,40 +407,13 @@ bool _scene_visual_shader_desc_for_pass(
         return shader->fragment_glsl != NULL;
     }
 
+    if (visual->kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE ||
+        visual->has_item_state || visual->has_instance_transform)
+        return false;
+
     const char* stem = "prim";
     const char* vertex_spirv_key = "primitive_vert";
     DvzSceneBuiltinShader vertex_shader = DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE;
-    if (visual->kind == DVZ_SCENE_VISUAL_DESC_POINT)
-    {
-        stem = "point";
-        vertex_spirv_key = "point_vert";
-        vertex_shader = DVZ_SCENE_BUILTIN_SHADER_POINT;
-    }
-    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL)
-    {
-        stem = "pixel";
-        vertex_spirv_key = "pixel_vert";
-        vertex_shader = DVZ_SCENE_BUILTIN_SHADER_PIXEL;
-    }
-    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER)
-    {
-        stem = "marker";
-        vertex_spirv_key = "marker_vert";
-        vertex_shader = DVZ_SCENE_BUILTIN_SHADER_MARKER;
-    }
-    else if (visual->kind == DVZ_SCENE_VISUAL_DESC_IMAGE)
-    {
-        stem = visual->image_pixel_space ? "image_px" : "image";
-        vertex_spirv_key = visual->image_pixel_space ? "image_pixel_vert" : "image_vert";
-        vertex_shader = visual->image_pixel_space ? DVZ_SCENE_BUILTIN_SHADER_IMAGE_PIXEL
-                                                  : DVZ_SCENE_BUILTIN_SHADER_IMAGE;
-    }
-    else if (visual->kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
-    {
-        *out_skip = true;
-        return true;
-    }
-
     dvz_snprintf(
         shader->vertex_key, sizeof(shader->vertex_key), "_vs_scene_occ_%s%s", stem, format_tag);
     dvz_snprintf(
@@ -537,9 +520,18 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     ANN(out_fragment_glsl_variant);
     ANN(out_segment_coverage_blend);
 
+    if (_scene_visual_alpha_eligibility_error(visual->kind, alpha_mode) != NULL ||
+        (visual->has_item_state && (alpha_mode == DVZ_ALPHA_WBOIT ||
+                                   alpha_mode == DVZ_ALPHA_DEPTH_PEEL)))
+        return false;
+
     bool depth_peel_pass = provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||
                            provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION;
     bool gbuffer_pass = provider == DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE;
+    if (depth_peel_pass &&
+        (alpha_mode != DVZ_ALPHA_DEPTH_PEEL || visual->has_item_state ||
+         _scene_visual_alpha_eligibility_error(visual->kind, DVZ_ALPHA_DEPTH_PEEL) != NULL))
+        return false;
     bool point_like = visual->kind == DVZ_SCENE_VISUAL_DESC_POINT ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_PIXEL ||
                       visual->kind == DVZ_SCENE_VISUAL_DESC_MARKER;
@@ -576,8 +568,9 @@ bool _scene_visual_shader_desc_apply_pass_policy(
             return false;
     }
 
-    if (_scene_alpha_mode_is_depth_peel(alpha_mode))
+    if (depth_peel_pass)
     {
+        shader->fragment_wgsl = NULL;
         const char* peel_suffix =
             provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ? "_peel_init" : "_peel_iter";
         if (!_shader_key_append(shader->pipeline_key, sizeof(shader->pipeline_key), peel_suffix) ||

@@ -6423,6 +6423,223 @@ int test_app_offscreen_depth_peel_mesh_three_layers(TstContext* suite, const Tst
 
 
 /**
+ * Ensure zero-alpha layers do not exhaust the fixed dual-peeling budget.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_depth_peel_effective_alpha(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    for (uint32_t mode = 0; mode < 4; mode++)
+    {
+        DvzScene* scene = dvz_scene();
+        DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+        DvzPanel* panel = dvz_panel_full(figure);
+        dvz_panel_set_background_color(panel, dvz_color_rgba(0, 0, 0, 255));
+        DvzCameraDesc camera = dvz_camera_desc();
+        camera.view.eye[2] = 3.0f;
+        AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+        bool normals = mode != 0;
+        vec3 normal_data[6] = {
+            {0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+            {0, 0, 1}, {0, 0, 1}, {0, 0, 1},
+        };
+        DvzColor green = {0, 255, 0, 128};
+        DvzVisual* visible = NULL;
+        if (mode >= 2)
+        {
+            visible = _app_ao_add_quad(
+                scene, panel, -.8f, .8f, -.8f, .8f, .5f, green).visual;
+            AT(dvz_visual_set_alpha_mode(visible, DVZ_ALPHA_DEPTH_PEEL) == DVZ_OK);
+        }
+        else
+        {
+            visible = _app_primitive_add_quad(
+                scene, panel, -.8f, .8f, -.8f, .8f, .5f, green, DVZ_ALPHA_DEPTH_PEEL, true);
+        }
+        if (normals && mode < 2)
+        {
+            AT(dvz_visual_set_data(visible, "normal", normal_data, 6) == DVZ_OK);
+        }
+        ANN(visible);
+        DvzVisual* invisible[10] = {0};
+        for (uint32_t i = 0; i < 10; i++)
+        {
+            DvzColor red = {255, 0, 0, mode < 2 ? 0 : 255};
+            float z = i < 5 ? .05f + .08f * i : .55f + .08f * (i - 5);
+            if (mode >= 2)
+            {
+                invisible[i] = _app_ao_add_quad(
+                    scene, panel, -.8f, .8f, -.8f, .8f, z, red).visual;
+                AT(dvz_visual_set_alpha_mode(invisible[i], DVZ_ALPHA_DEPTH_PEEL) == DVZ_OK);
+            }
+            else
+            {
+                invisible[i] = _app_primitive_add_quad(
+                    scene, panel, -.8f, .8f, -.8f, .8f, z, red, DVZ_ALPHA_DEPTH_PEEL, true);
+            }
+            ANN(invisible[i]);
+            if (normals && mode < 2)
+            {
+                AT(dvz_visual_set_data(invisible[i], "normal", normal_data, 6) == DVZ_OK);
+            }
+            if (mode >= 2)
+            {
+                DvzMaterialDesc material = dvz_material_desc();
+                material.alpha_mode = DVZ_ALPHA_DEPTH_PEEL;
+                if (mode == 2)
+                    material.opacity = 0.0f;
+                else
+                    material.base_color_factor[3] = 0.0f;
+                AT(dvz_visual_set_material(invisible[i], &material) == DVZ_OK);
+            }
+            dvz_visual_set_visible(invisible[i], false);
+        }
+        DvzApp* app = _app_test_create(suite, scene);
+        if (app == NULL)
+        {
+            tst_skip(suite, "GPU context failed");
+            dvz_scene_destroy(scene);
+            return 0;
+        }
+        DvzView* view = dvz_view_offscreen(app, figure, 64, 64);
+        DvzCanvas* canvas = dvz_view_canvas(view);
+        AT(_app_ao_render_frames(view, 2));
+        uint32_t width = 0, height = 0;
+        uint8_t* baseline = NULL;
+        AT(_app_ao_capture(canvas, &width, &height, &baseline));
+        const uint8_t* center = _pixel_at(baseline, width, height, 32, 32);
+        AT(center[1] > 80);
+        for (uint32_t i = 0; i < 10; i++)
+            dvz_visual_set_visible(invisible[i], true);
+        AT(_app_ao_render_frames(view, 2));
+        uint8_t* actual = NULL;
+        AT(_app_ao_capture(canvas, &width, &height, &actual));
+        AppAoMetrics delta = _app_ao_delta_metrics(baseline, actual, width * height);
+        log_info("peel effective-alpha mode %u: max delta %u", mode, delta.max_delta);
+        AT(delta.max_delta <= 1);
+        dvz_free(actual);
+        dvz_free(baseline);
+
+        // Visible outer layers keep zero-alpha interior fragments inside the iterative bounds.
+        DvzColor faint = {255, 255, 255, 20};
+        for (uint32_t i = 0; i < 2; i++)
+        {
+            DvzVisual* boundary = _app_primitive_add_quad(
+                scene, panel, -.8f, .8f, -.8f, .8f, i == 0 ? 0.0f : .99f,
+                faint, DVZ_ALPHA_DEPTH_PEEL, true);
+            ANN(boundary);
+            if (normals)
+            {
+                AT(dvz_visual_set_data(boundary, "normal", normal_data, 6) == DVZ_OK);
+            }
+        }
+        for (uint32_t i = 0; i < 10; i++)
+            dvz_visual_set_visible(invisible[i], false);
+        AT(_app_ao_render_frames(view, 2));
+        AT(_app_ao_capture(canvas, &width, &height, &baseline));
+        for (uint32_t i = 0; i < 10; i++)
+            dvz_visual_set_visible(invisible[i], true);
+        AT(_app_ao_render_frames(view, 2));
+        AT(_app_ao_capture(canvas, &width, &height, &actual));
+        delta = _app_ao_delta_metrics(baseline, actual, width * height);
+        log_info("peel interior effective-alpha mode %u: max delta %u", mode, delta.max_delta);
+        AT(delta.max_delta <= 1);
+        dvz_free(actual);
+        dvz_free(baseline);
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+    }
+    return 0;
+}
+
+
+/**
+ * Ensure AO capture excludes vertex, opacity, and base-color effective-zero-alpha surfaces.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return 0 on success
+ */
+int test_app_offscreen_mesh_ao_effective_alpha(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 96, 96, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzColor gray = {190, 190, 190, 255};
+    AppAoQuad back = _app_ao_add_quad(scene, panel, -.82f, .82f, -.72f, .72f, .05f, gray);
+    AppAoQuad front = _app_ao_add_quad(scene, panel, -.22f, .52f, -.28f, .46f, .55f, gray);
+    ANN(back.visual);
+    ANN(front.visual);
+    AT(_test_set_phong_material(back.visual, 1, 0, 0, 32) == DVZ_OK);
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.view.eye[2] = 3.0f;
+    AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+    DvzAoDesc ao = _app_gtao_desc(false);
+    AT(dvz_panel_set_ao(panel, &ao) == DVZ_OK);
+    dvz_visual_set_visible(front.visual, false);
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* view = dvz_view_offscreen(app, figure, 96, 96);
+    DvzCanvas* canvas = dvz_view_canvas(view);
+    AT(_app_ao_render_frames(view, 2));
+    uint32_t width = 0, height = 0;
+    uint8_t* baseline = NULL;
+    AT(_app_ao_capture(canvas, &width, &height, &baseline));
+    dvz_visual_set_visible(front.visual, true);
+    for (uint32_t mode = 0; mode < 4; mode++)
+    {
+        DvzColor colors[4] = {gray, gray, gray, gray};
+        if (mode == 0)
+            for (uint32_t i = 0; i < 4; i++)
+                colors[i].a = 0;
+        AT(dvz_visual_set_data(front.visual, "color", colors, 4) == DVZ_OK);
+        DvzMaterialDesc material = dvz_phong_material_desc();
+        material.phong.ambient = 1;
+        material.phong.diffuse = 0;
+        material.phong.specular = 0;
+        if (mode == 1)
+            material.opacity = 0;
+        if (mode == 2)
+            material.base_color_factor[3] = 0;
+        AT(dvz_visual_set_material(front.visual, &material) == DVZ_OK);
+        AT(_app_ao_render_frames(view, 2));
+        uint8_t* actual = NULL;
+        AT(_app_ao_capture(canvas, &width, &height, &actual));
+        AppAoMetrics delta = _app_ao_delta_metrics(baseline, actual, width * height);
+        log_info("AO effective-alpha mode %u: max delta %u", mode, delta.max_delta);
+        if (mode < 3)
+        {
+            AT(delta.max_delta <= 1);
+        }
+        else
+        {
+            AT(delta.max_delta > 4);
+        }
+        dvz_free(actual);
+    }
+    dvz_free(baseline);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
  * Ensure hidden and zero-alpha scene occluders do not attenuate sampled visuals.
  *
  * @param suite test suite
@@ -10574,6 +10791,8 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_opaque_sphere_alpha_preserves_coverage);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_source_over_mesh_depth_and_blend);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_additive_mesh_blend);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_effective_alpha);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_mesh_ao_effective_alpha);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_mesh_two_layers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_depth_peel_mesh_three_layers);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_scene_occlusion_hidden_alpha);

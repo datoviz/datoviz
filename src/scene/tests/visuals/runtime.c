@@ -2861,7 +2861,7 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
                .strength = 0.5f,
                .background_color = {0.0f, 0.0f, 0.0f, 1.0f},
            }) == 0);
-    AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_WBOIT) == 0);
+    AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED) == 0);
     AT(dvz_visual_set_alpha_mode(volume, DVZ_ALPHA_BLENDED) == 0);
 
     DvzVisualAttachDesc fixed = dvz_visual_attach_desc();
@@ -2926,12 +2926,13 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
     AT(caps.kind == DVZ_SCENE_VISUAL_DESC_POINT);
     AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_TRANSPARENT);
     AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING);
-    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR) == 0);
+    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR) != 0);
     AT(
-        (caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_ACCUMULATION) != 0);
+        (caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_ACCUMULATION) == 0);
     AT(
-        (caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_TRANSMITTANCE) != 0);
-    AT(caps.draws_in_wboit_pass);
+        (caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_TRANSPARENT_TRANSMITTANCE) == 0);
+    AT(!caps.draws_in_wboit_pass);
+    AT(caps.draws_in_transparent_blend_pass);
     AT(!caps.draws_in_opaque_pass);
     AT(caps.writes_color);
     AT(!caps.writes_depth);
@@ -3127,9 +3128,9 @@ int test_scene_visual_pass_capabilities(TstContext* suite, const TstCase* item)
 
     AT(_scene_visual_pass_caps_from_desc(
         &desc, DVZ_ALPHA_MASK, DVZ_CONTROLLER_APPLY, &caps));
-    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_MASKED);
-    AT((caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_SURFACE_CAPTURE) != 0);
-    AT((caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_COVERAGE) != 0);
+    AT(caps.layer == DVZ_SCENE_VISUAL_LAYER_NONE);
+    AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_NONE);
+    AT(caps.product_caps == DVZ_SCENE_VISUAL_PRODUCT_CAP_NONE);
 
     AT(_scene_visual_pass_caps_from_desc(
         &desc, DVZ_ALPHA_DEPTH_PEEL, DVZ_CONTROLLER_APPLY, &caps));
@@ -3197,5 +3198,266 @@ int test_scene_visual_family_registry_coverage(TstContext* suite, const TstCase*
     }
     AT(_scene_visual_family_ops_at(_scene_visual_family_ops_count()) == NULL);
 
+    return 0;
+}
+
+
+
+/**
+ * Inventory supported alpha products and native/WebGPU shader source availability.
+ *
+ * @param suite active test suite
+ * @param item active test item
+ * @return 0 on success
+ */
+int test_scene_visual_technique_eligibility_inventory(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    for (uint32_t i = 0; i < _scene_visual_family_ops_count(); i++)
+    {
+        const DvzVisualFamilyOps* ops = _scene_visual_family_ops_at(i);
+        ANN(ops);
+        for (DvzAlphaMode mode = DVZ_ALPHA_OPAQUE; mode <= DVZ_ALPHA_MASK; mode++)
+        {
+            const bool supported = mode != DVZ_ALPHA_MASK &&
+                (mode != DVZ_ALPHA_WBOIT || ops->desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE ||
+                 ops->desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT) &&
+                (mode != DVZ_ALPHA_DEPTH_PEEL || ops->desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
+            const char* error = _scene_visual_alpha_eligibility_error(ops->desc_kind, mode);
+            AT((error == NULL) == supported);
+            DvzSceneVisualPassCaps caps = {0};
+            _scene_visual_pass_caps_resolve(
+                ops->desc_kind, mode, DVZ_CONTROLLER_APPLY, true, true, false, true,
+                ops->baseline_layer, ops->baseline_product_caps, ops->baseline_phase_participation,
+                &caps);
+            if (!supported)
+            {
+                AT(caps.product_caps == 0);
+                AT(caps.phase_participation == DVZ_SCENE_VISUAL_PHASE_NONE);
+                AT(!caps.draws_in_wboit_pass);
+                AT(!caps.draws_in_depth_peel_pass);
+                AT(!caps.writes_color);
+            }
+        }
+    }
+
+    DvzSceneVisualDesc visual = {.kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE};
+    DvzSceneVisualShaderDesc shader = {0};
+    AT(_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    AT(shader.vertex_glsl != NULL);
+    AT(shader.fragment_glsl != NULL);
+    AT(shader.fragment_wgsl == NULL);
+    visual.has_normal = true;
+    AT(_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    AT(shader.fragment_glsl != NULL);
+    AT(shader.fragment_wgsl == NULL);
+    visual.has_item_state = true;
+    AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    visual = (DvzSceneVisualDesc){.kind = DVZ_SCENE_VISUAL_DESC_SPLAT};
+    AT(_scene_visual_shader_desc_resolve(&visual, false, true, "_wgsl", &shader));
+    AT(shader.fragment_glsl != NULL);
+    AT(shader.fragment_wgsl != NULL);
+    visual.kind = DVZ_SCENE_VISUAL_DESC_POINT;
+    AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    visual.kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
+    AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    return 0;
+}
+
+
+
+/**
+ * Reject unsupported alpha modes before stream emission and preserve ordinary point rendering.
+ *
+ * @param suite active test suite
+ * @param item active test item
+ * @return 0 on success
+ */
+int test_scene_visual_technique_eligibility_preflight(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    DvzVisual* point = dvz_point(scene, 0);
+    ANN(point);
+    vec3 position = {0, 0, 0};
+    DvzColor color = {255, 255, 255, 255};
+    float size = 10;
+    AT(dvz_visual_set_data(point, "position", &position, 1) == DVZ_OK);
+    AT(dvz_visual_set_data(point, "color", &color, 1) == DVZ_OK);
+    AT(dvz_visual_set_data(point, "diameter_px", &size, 1) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, point, NULL) == DVZ_OK);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    const DvzAlphaMode modes[] = {DVZ_ALPHA_WBOIT, DVZ_ALPHA_DEPTH_PEEL, DVZ_ALPHA_MASK};
+    const char* reasons[] = {"accumulation shaders", "coverage and bounds shaders", "cutoff semantics"};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        AT(dvz_visual_set_alpha_mode(point, modes[i]) == DVZ_OK);
+        dvz_diagnostic_report_init(&report);
+        AT(!dvz_visual_validate(point, &report));
+        AT(dvz_diagnostic_report_count(&report) == 1);
+        AT(strstr(dvz_diagnostic_report_get(&report, 0), reasons[i]) != NULL);
+        dvz_diagnostic_report_init(&report);
+        DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
+        AT(stream == NULL);
+        AT(dvz_diagnostic_report_count(&report) == 1);
+        AT(strstr(dvz_diagnostic_report_get(&report, 0), reasons[i]) != NULL);
+    }
+    AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_OPAQUE) == DVZ_OK);
+    AT(dvz_visual_set_scene_occluder(point, true) == DVZ_OK);
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_visual_validate(point, &report));
+    AT(strstr(dvz_diagnostic_report_get(&report, 0), "depth coverage") != NULL);
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream(figure, &caps, &report);
+    AT(stream == NULL);
+    AT(strstr(dvz_diagnostic_report_get(&report, 0), "depth coverage") != NULL);
+    AT(dvz_visual_set_scene_occluder(point, false) == DVZ_OK);
+    dvz_diagnostic_report_init(&report);
+    stream = _test_scene_emit_stream(figure, &caps, &report);
+    AT(stream != NULL);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    _test_scene_stream_destroy(stream);
+    dvz_scene_destroy(scene);
+    scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    ANN(mesh);
+    vec3 normal = {0, 0, 1};
+    AT(dvz_visual_set_data(mesh, "normal", &normal, 1) == DVZ_OK);
+    AT(dvz_visual_set_scene_occluder(mesh, true) == DVZ_OK);
+    mesh->material.opacity = 0;
+    AT(strstr(_scene_visual_technique_eligibility_error(mesh), "zero effective material alpha") != NULL);
+    mesh->material.opacity = 0.5f;
+    mesh->material.base_color_factor[3] = 0;
+    AT(strstr(_scene_visual_technique_eligibility_error(mesh), "zero effective material alpha") != NULL);
+    mesh->material.base_color_factor[3] = 0.5f;
+    AT(_scene_visual_technique_eligibility_error(mesh) == NULL);
+    mesh->material.model = DVZ_MATERIAL_MODEL_LIMB;
+    AT(strstr(_scene_visual_technique_eligibility_error(mesh), "LIMB") != NULL);
+    mesh->material.model = DVZ_MATERIAL_MODEL_PHONG;
+    uint32_t state = 0;
+    AT(dvz_visual_set_data(mesh, "item_state", &state, 1) == DVZ_OK);
+    AT(strstr(_scene_visual_technique_eligibility_error(mesh), "item-state") != NULL);
+    AT(dvz_visual_set_scene_occluder(mesh, false) == DVZ_OK);
+    AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_WBOIT) == DVZ_OK);
+    AT(strstr(_scene_visual_technique_eligibility_error(mesh), "item-state") != NULL);
+    AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_DEPTH_PEEL) == DVZ_OK);
+    AT(strstr(_scene_visual_technique_eligibility_error(mesh), "item-state") != NULL);
+    AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_OPAQUE) == DVZ_OK);
+    DvzPanelAttach attach = {.visual = mesh};
+    DvzSceneVisualPassCaps pass_caps = {0};
+    AT(_scene_visual_pass_caps_from_visual(mesh, &attach, &pass_caps));
+    AT(!pass_caps.eligible_for_gbuffer);
+    DvzVisual* instanced = dvz_mesh(scene, 0);
+    ANN(instanced);
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    AT(dvz_visual_set_data(instanced, "instance_transform", &transform, 1) == DVZ_OK);
+    AT(dvz_visual_set_scene_occluder(instanced, true) == DVZ_OK);
+    AT(strstr(_scene_visual_technique_eligibility_error(instanced), "instanced transforms") != NULL);
+    AT(dvz_visual_set_scene_occluder(instanced, false) == DVZ_OK);
+    AT(dvz_visual_set_data(instanced, "normal", &normal, 1) == DVZ_OK);
+    attach.visual = instanced;
+    AT(_scene_visual_pass_caps_from_visual(instanced, &attach, &pass_caps));
+    AT(!pass_caps.eligible_for_gbuffer);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Prevent native provider shader overrides from reusing ordinary WebGPU sources.
+ *
+ * @param suite active test suite
+ * @param item active test item
+ * @return 0 on success
+ */
+int test_scene_visual_technique_provider_wgsl_preflight(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const DvzSceneWorkProviderKey providers[] = {
+        DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE, DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION,
+        DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_ITERATION};
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        DvzSceneVisualDesc visual = {
+            .kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE, .has_normal = true,
+            .depth_test_enabled = true,
+        };
+        DvzSceneVisualShaderDesc shader = {0};
+        AT(_scene_visual_shader_desc_resolve(&visual, false, false, "_wgsl", &shader));
+        AT(shader.vertex_wgsl != NULL);
+        AT(shader.fragment_wgsl != NULL);
+        char* variant = NULL;
+        bool handled = false;
+        bool skip = false;
+        AT(_scene_visual_shader_desc_for_pass(
+            &visual, providers[i], "_wgsl", &shader, &variant, &handled, &skip));
+        AT(!skip);
+        bool coverage_blend = false;
+        DvzAlphaMode alpha = i >= 2 ? DVZ_ALPHA_DEPTH_PEEL : DVZ_ALPHA_OPAQUE;
+        AT(_scene_visual_shader_desc_apply_pass_policy(
+            &visual, providers[i], alpha, DVZ_CONTROLLER_APPLY, false, true, false,
+            false, false, 1, false, false, false, &shader, &variant, &coverage_blend));
+        AT(shader.fragment_wgsl == NULL);
+        DvzDiagnosticReport report;
+        dvz_diagnostic_report_init(&report);
+        DvzSceneResolvedShader resolved = {0};
+        AT(!_scene_runtime_shader_resolve(
+            &shader, &visual, providers[i], DVZ_SCENE_SHADER_FORMAT_WGSL, &resolved, &report));
+        AT(dvz_diagnostic_report_count(&report) == 1);
+        AT(strstr(dvz_diagnostic_report_get(&report, 0), "reason=missing WGSL source") != NULL);
+        dvz_diagnostic_report_init(&report);
+        AT(_scene_runtime_shader_resolve(
+            &shader, &visual, providers[i], DVZ_SCENE_SHADER_FORMAT_GLSL, &resolved, &report));
+        AT(dvz_diagnostic_report_count(&report) == 0);
+        if (variant != NULL)
+            _shader_glsl_variant_destroy(variant);
+    }
+    DvzSceneVisualDesc visual = {
+        .kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE, .depth_test_enabled = true,
+    };
+    DvzSceneVisualShaderDesc shader = {0};
+    AT(_scene_visual_shader_desc_resolve(&visual, false, false, "_glsl", &shader));
+    char* variant = NULL;
+    bool handled = false;
+    bool skip = false;
+    AT(_scene_visual_shader_desc_for_pass(
+        &visual, DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION, "_glsl", &shader, &variant,
+        &handled, &skip));
+    const char* depth_fragment = shader.fragment_glsl;
+    bool coverage_blend = false;
+    AT(_scene_visual_shader_desc_apply_pass_policy(
+        &visual, DVZ_SCENE_WORK_PROVIDER_SCENE_OCCLUSION, DVZ_ALPHA_DEPTH_PEEL,
+        DVZ_CONTROLLER_APPLY, false, true, false, false, false, 1, false, false,
+        false, &shader, &variant, &coverage_blend));
+    AT(shader.fragment_glsl == depth_fragment);
+    AT(strstr(shader.fragment_key, "peel") == NULL);
+    _shader_glsl_variant_destroy(variant);
+    variant = NULL;
+    visual.kind = DVZ_SCENE_VISUAL_DESC_POINT;
+    AT(!_scene_visual_shader_desc_apply_pass_policy(
+        &visual, DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT, DVZ_ALPHA_OPAQUE,
+        DVZ_CONTROLLER_APPLY, false, true, false, false, false, 1, false, false,
+        false, &shader, &variant, &coverage_blend));
+    visual.kind = DVZ_SCENE_VISUAL_DESC_PRIMITIVE;
+    visual.has_instance_transform = true;
+    AT(!_scene_visual_shader_desc_for_pass(
+        &visual, DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE, "_glsl", &shader, &variant,
+        &handled, &skip));
+    visual.has_instance_transform = false;
+    visual.has_item_state = true;
+    AT(!_scene_visual_shader_desc_for_pass(
+        &visual, DVZ_SCENE_WORK_PROVIDER_SURFACE_CAPTURE, "_glsl", &shader, &variant,
+        &handled, &skip));
     return 0;
 }

@@ -35,6 +35,9 @@ void main()
 
     vec4 c = shade();
     float a = clamp(c.a, 0.0, 1.0);
+    if (a <= 0.0)
+        discard;
+
     vec4 color = vec4(c.rgb * a, a);
     frontAccum = vec4(0.0);
     backAccum = vec4(0.0);

@@ -136,6 +136,15 @@ bool dvz_visual_validate(const DvzVisual* visual, DvzDiagnosticReport* report)
     }
 
     char message[DVZ_SCENE_DIAGNOSTIC_SIZE];
+    const char* eligibility_error = _scene_visual_technique_eligibility_error(visual);
+    if (eligibility_error != NULL)
+    {
+        snprintf(
+            message, sizeof(message), "visual validation failed: %s visual %llu: %s", ops->name,
+            (unsigned long long)visual->id, eligibility_error);
+        _visual_validation_report(report, message);
+        ok = false;
+    }
     for (uint32_t i = 0; i < visual->attr_count; i++)
     {
         const DvzVisualAttr* attr = &visual->attrs[i];

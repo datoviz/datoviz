@@ -476,17 +476,20 @@ int test_scene_public_validation(TstContext* suite, const TstCase* item)
     AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_WBOIT) == DVZ_OK);
     dvz_diagnostic_report_init(&report);
     AT(!dvz_visual_validate(point, &report));
-    AT(dvz_diagnostic_report_count(&report) == 1);
+    AT(dvz_diagnostic_report_count(&report) == 2);
     AT(strstr(dvz_diagnostic_report_get(&report, 0), "additive blending requires") != NULL);
+    AT(strstr(dvz_diagnostic_report_get(&report, 1), "family-conformant accumulation") != NULL);
     AT(dvz_visual_set_blend_mode(point, DVZ_BLEND_SOURCE_OVER) == DVZ_OK);
+    AT(dvz_visual_set_alpha_mode(point, DVZ_ALPHA_BLENDED) == DVZ_OK);
     AT(dvz_figure_validate(figure, NULL, &report));
     AT(dvz_diagnostic_report_count(&report) == 0);
 
     AT(dvz_visual_set_alpha_mode(pixel, DVZ_ALPHA_DEPTH_PEEL) == DVZ_OK);
     AT(!dvz_figure_validate(figure, NULL, &report));
     AT(dvz_diagnostic_report_count(&report) == 1);
-    AT(strstr(dvz_diagnostic_report_get(&report, 0), "mixes WBOIT") != NULL);
+    AT(strstr(dvz_diagnostic_report_get(&report, 0), "family-conformant coverage") != NULL);
 
+    AT(dvz_visual_set_alpha_mode(pixel, DVZ_ALPHA_OPAQUE) == DVZ_OK);
     DvzVisualAttr* bad = &point->attrs[point->attr_count++];
     snprintf(bad->name, sizeof(bad->name), "%s", "opacity");
     bad->data = NULL;
