@@ -72,26 +72,27 @@ angles; one static viewpoint can hide order-dependent transparency errors.
 
 ## Current native technique coverage
 
-This boundary applies to the current development source, including the RC3 scientific-profile guards. It does not replace exact-package or platform validation. Setters retain requested alpha state; `dvz_visual_validate()` and figure planning reject unsupported combinations with a family-specific diagnostic. Setter success alone is not a support check.
+This boundary applies to the RC4 development source. It does not replace exact-package or platform validation. Setters retain requested alpha state; `dvz_visual_validate()` and figure planning reject unsupported combinations with a family-specific diagnostic. Setter success alone is not a support check.
 
 | Visual family/path | Raster depth | WBOIT | Depth peeling |
 | --- | --- | --- | --- |
 | Ordinary untextured mesh/primitive | Supported with depth enabled. | Dedicated lit/unlit variants. | Primitive/ordinary-mesh variants; fixed four-iteration budget. |
-| Textured mesh/physical plane | Supported with depth enabled; zero-alpha texels discard. | Rejected: no accumulation variant yet. | Rejected: no compatible textured variant. |
-| Point/pixel/marker | Supported with depth enabled. | Rejected: no conformant point-like accumulation variant. | Rejected: no coverage-preserving variant. |
+| Textured mesh/physical plane | Supported with depth enabled; effective-zero alpha and masked texels discard. | Dedicated sampled/material accumulation variant. | Rejected: no compatible textured variant. |
+| Point | Supported with depth enabled. | Dedicated disc/style and depth-cue variants. | Rejected: no coverage-preserving variant. |
+| Pixel/marker | Supported with depth enabled. | Rejected: no conformant accumulation variant. | Rejected: no coverage-preserving variant. |
 | Analytic sphere | Supported with analytic fragment depth. | Rejected: no accumulation variant. | Rejected: no sphere-preserving variant. |
 | Segment/stroked path/vector | Supported for documented 3D stroke paths. | Rejected: no dedicated stroke variant. | Rejected: no coverage-preserving stroke variant. |
 | Image/integer labels | Current image-style paths do not test/write raster depth. | Rejected: no accumulation variant. | Rejected: no compatible sampled-field variant. |
 | Gaussian splat | Center-depth test; ordinary blending does not write depth. | Dedicated accumulation variant; family remains experimental. | Rejected: no Gaussian-coverage variant. |
 | Volume | Mode-specific ray-marched composition. | Rejected: no accumulation variant. | Rejected: no volume-preserving variant. |
 
-`DVZ_ALPHA_MASK` is rejected until shared threshold-cutout semantics exist across shading, surface capture, occlusion, and queries. Zero-alpha discard alone does not implement masking.
+`DVZ_ALPHA_MASK` supports textured meshes and physical planes. `dvz_visual_set_alpha_cutoff(visual, cutoff)` retains a finite threshold in `[0, 1]`, defaulting to `0.5`. Fragments below the effective-alpha cutoff discard; equality survives, while zero alpha always discards. Masked planes test and write raster depth. Other families reject masking; sampled/masked mesh queries, AO capture, and scene-occluder production remain unsupported.
 
 Scene-occluder producers are restricted to ordinary untextured mesh/primitive and the existing bounded volume route. Lit mesh/primitive occluders with zero material opacity or base-color alpha are rejected because the current depth producer does not evaluate material alpha. Points, markers, images, textured meshes, spheres, splats, and stroked paths cannot act as scene-occluder producers.
 
 OIT excludes mesh item-state styling; scene-occluder production also excludes item-state, instancing, and view-dependent LIMB material alpha. AO capture excludes item-state and instancing because its producer does not preserve those variants. Ordinary rendering and documented occlusion-consumer paths remain separate capabilities.
 
-WBOIT makes participating fragments order independent within its accumulation group. Mixing source-over layers, separate OIT groups, and volume composition does not provide globally correct transparency. Native primitive/mesh WBOIT, peeling, AO capture, and occlusion have no conformant WGSL route; shader preflight reports the missing source instead of substituting an ordinary shader. The presence of a splat accumulation WGSL shader alone does not establish a complete WBOIT composition route. For browser coverage, see the [WebGPU subset](../reference/webgpu-subset.md).
+WBOIT makes participating fragments order independent within its accumulation group. Mixing source-over layers, separate OIT groups, and volume composition does not provide globally correct transparency. Primitive/mesh, point, and sampled-plane WBOIT have shared WGSL accumulation and resolve routes, requiring two blendable floating-point render targets. Peeling, AO capture, and scene occlusion remain outside this browser slice; shader preflight diagnoses missing sources. For browser coverage, see the [WebGPU subset](../reference/webgpu-subset.md).
 
 ## Transparency rules
 
