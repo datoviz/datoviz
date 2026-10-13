@@ -10988,6 +10988,7 @@ int test_app_offscreen_sampled_plane_material(TstContext* suite, const TstCase* 
     ANN(view);
     DvzCanvas* canvas = dvz_view_canvas(view);
     ANN(canvas);
+    uint8_t uncued_center[4] = {0};
     for (uint32_t c = 0; c < 3; c++)
     {
         DvzMaterialDesc material = dvz_phong_material_desc();
@@ -10998,7 +10999,9 @@ int test_app_offscreen_sampled_plane_material(TstContext* suite, const TstCase* 
         AT(dvz_visual_set_material(plane, &material) == DVZ_OK);
         DvzDepthCueDesc cue = dvz_depth_cue_desc();
         cue.mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
-        cue.strength = 0.5f;
+        cue.far_depth = 0.4f;
+        cue.strength = 0.75f;
+        cue.background_color[0] = cue.background_color[1] = cue.background_color[2] = 0.0f;
         AT(dvz_visual_set_depth_cue(plane, c == 2 ? &cue : NULL) == DVZ_OK);
         dvz_app_run(app, 2);
         uint32_t width = 0, height = 0;
@@ -11012,6 +11015,16 @@ int test_app_offscreen_sampled_plane_material(TstContext* suite, const TstCase* 
         AT(width == oit_width && height == oit_height);
         const uint8_t* center = _pixel_at(ordinary, width, height, 80, 32);
         AT(center[0] > 10 || center[1] > 10 || center[2] > 10);
+        if (c == 1)
+            memcpy(uncued_center, center, sizeof(uncued_center));
+        if (c == 2)
+        {
+            // A positive cue contrast prevents ordinary/OIT equality from hiding a dropped cue.
+            int uncued_rgb = uncued_center[0] + uncued_center[1] + uncued_center[2];
+            int cued_rgb = center[0] + center[1] + center[2];
+            AT(cued_rgb + 20 < uncued_rgb);
+            AT(center[3] == uncued_center[3]);
+        }
         uint32_t max_delta = 0;
         for (uint32_t i = 0; i < 4 * width * height; i++)
         {
@@ -11021,6 +11034,17 @@ int test_app_offscreen_sampled_plane_material(TstContext* suite, const TstCase* 
         AT(max_delta <= 2);
         dvz_free(ordinary);
         dvz_free(transparent);
+        if (c == 2)
+        {
+            AT(dvz_visual_set_depth_cue(plane, NULL) == DVZ_OK);
+            dvz_app_run(app, 2);
+            uint8_t* restored = NULL;
+            AT(_app_ao_capture(canvas, &width, &height, &restored));
+            center = _pixel_at(restored, width, height, 80, 32);
+            for (uint32_t channel = 0; channel < 4; channel++)
+                AT(abs((int)center[channel] - (int)uncued_center[channel]) <= 2);
+            dvz_free(restored);
+        }
     }
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);

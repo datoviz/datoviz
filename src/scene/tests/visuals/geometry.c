@@ -1654,6 +1654,9 @@ int test_scene_sampled_plane_alpha_contract(TstContext* suite, const TstCase* it
     AT_EXPECTED_ERROR_STRICT(suite, dvz_visual_set_alpha_cutoff(plane, 1.1f) != DVZ_OK);
     AC(dvz_visual_alpha_cutoff(plane), 0.25f, 1e-6);
     const DvzAlphaMode modes[] = {DVZ_ALPHA_OPAQUE, DVZ_ALPHA_MASK, DVZ_ALPHA_WBOIT};
+    DvzDepthCueDesc cue = dvz_depth_cue_desc();
+    cue.mode = DVZ_DEPTH_CUE_FADE_TO_BACKGROUND;
+    AT(dvz_visual_set_depth_cue(plane, &cue) == DVZ_OK);
     for (uint32_t m = 0; m < DVZ_ARRAY_COUNT(modes); m++)
     {
         AT(dvz_visual_set_alpha_mode(plane, modes[m]) == DVZ_OK);
@@ -1665,6 +1668,8 @@ int test_scene_sampled_plane_alpha_contract(TstContext* suite, const TstCase* it
         DvzSceneVisualPassCaps pass_caps = {0};
         AT(_scene_visual_pass_caps_from_visual(plane, &attach, &pass_caps));
         AT(pass_caps.kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH);
+        AT(pass_caps.supports_depth_cue);
+        AT(pass_caps.depth_cue_enabled);
         AT(pass_caps.can_depth_test);
         AT(pass_caps.writes_depth == (modes[m] != DVZ_ALPHA_WBOIT));
         AT(!pass_caps.eligible_for_gbuffer);

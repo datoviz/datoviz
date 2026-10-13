@@ -180,7 +180,7 @@ void _scene_visual_pass_caps_resolve(
         kind == DVZ_SCENE_VISUAL_DESC_LABELS_UINT;
     out->uses_glyph_set = kind == DVZ_SCENE_VISUAL_DESC_GLYPH;
     out->uses_volume_set = volume;
-    out->supports_depth_cue = (primitive && has_normals) || point_like || sphere;
+    out->supports_depth_cue = (raster_mesh && has_normals) || point_like || sphere;
     out->depth_cue_enabled = out->supports_depth_cue && depth_cue_enabled;
 
     const bool surface_layer = baseline_layer == DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE ||
