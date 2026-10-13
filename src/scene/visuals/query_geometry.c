@@ -143,6 +143,9 @@ bool _scene_query_indexed_primitive_geometry(
     uint64_t vertex_count = pos_attr->item_count;
 
     uint64_t source_index_count = vertex_count;
+    if (_visual_family_state(visual)->buffer != NULL &&
+        _visual_family_state(visual)->buffer->desc.byte_size == 0)
+        return false;
     if (_visual_family_state(visual)->buffer != NULL && _visual_family_state(visual)->buffer->data != NULL &&
         _visual_family_state(visual)->buffer->desc.byte_size > 0 && _visual_family_state(visual)->buffer->desc.stride > 0)
     {
@@ -308,6 +311,8 @@ bool _scene_query_mesh_target_geometry_info(
         return false;
     uint64_t source_index_count = pos_attr->item_count;
     const DvzSceneBuffer* buffer = _visual_family_state(visual)->buffer;
+    if (buffer != NULL && buffer->desc.byte_size == 0)
+        return false;
     if (buffer != NULL && buffer->data != NULL && buffer->desc.byte_size > 0 &&
         buffer->desc.stride > 0)
     {

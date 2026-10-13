@@ -378,6 +378,11 @@ bool _scene_mesh_visual_query_target_count(
 
     uint64_t element_count = 0;
     const DvzSceneBuffer* buffer = _visual_family_state(visual)->buffer;
+    if (buffer != NULL && buffer->desc.byte_size == 0)
+    {
+        *out_count = 0;
+        return true;
+    }
     if (buffer != NULL && buffer->data != NULL && buffer->desc.byte_size > 0)
     {
         uint32_t stride = buffer->desc.stride;

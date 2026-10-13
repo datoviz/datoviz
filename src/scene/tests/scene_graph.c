@@ -58,6 +58,7 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_primitive_triangle_list_emit_wgsl);
     TST_CASE(test_scene_mesh_indexed_default_color_emits_draw_indexed);
     TST_CASE(test_scene_mesh_geometry_replacement_uses_logical_index_count);
+    TST_CASE(test_scene_dense_geometry_empty_restore);
     TST_CASE(test_scene_mesh_geometry_unchanged_indices_skip_upload);
     TST_CASE(test_scene_mesh_geometry_replacement_switches_indexing);
     TST_CASE(test_scene_buffer_destroy_requests_frame_and_emits_retirement);

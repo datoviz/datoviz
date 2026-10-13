@@ -267,15 +267,16 @@ DvzResult dvz_visual_set_data(
 {
     ANN(visual);
     ANN(attr_name);
-    ANN(data);
     attr_name = _attr_storage_name(visual->type, attr_name);
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual data"))
         return -1;
     if (item_count == 0)
     {
-        log_error("visual attribute '%s' requires item_count > 0", attr_name);
-        return -1;
+        DvzVisualDataUpdate update = {.attr_name = attr_name, .data = data, .item_count = 0};
+        return dvz_visual_set_data_many(visual, &update, 1);
     }
+    if (data == NULL)
+        return -1;
 
     uint32_t item_size = 0;
     if (!_attr_supported(visual->type, attr_name, &item_size))
@@ -597,13 +598,14 @@ DvzResult dvz_visual_set_data_many(
     }
 
     uint32_t batch_item_count = 0;
+    bool has_batch_item_count = false;
     uint32_t new_attr_count = 0;
     for (uint32_t i = 0; i < update_count; i++)
     {
         const DvzVisualDataUpdate* update = &updates[i];
         const char* attr_name =
             update->attr_name != NULL ? _attr_storage_name(visual->type, update->attr_name) : NULL;
-        if (update->attr_name == NULL || update->data == NULL || update->item_count == 0)
+        if (update->attr_name == NULL || (update->data == NULL && update->item_count > 0))
         {
             log_error("visual batch data update contains an invalid descriptor");
             dvz_free(prepared);
@@ -634,8 +636,11 @@ DvzResult dvz_visual_set_data_many(
         }
 
         bool update_instance_attr = _attr_is_instance_attribute(visual->type, update->attr_name);
-        if (!update_instance_attr && batch_item_count == 0)
+        if (!update_instance_attr && !has_batch_item_count)
+        {
             batch_item_count = update->item_count;
+            has_batch_item_count = true;
+        }
         else if (!update_instance_attr && update->item_count != batch_item_count)
         {
             log_error(
@@ -681,7 +686,7 @@ DvzResult dvz_visual_set_data_many(
             return -1;
         }
         if (
-            visual->ops != NULL && visual->ops->validate_attr != NULL &&
+            update->item_count > 0 && visual->ops != NULL && visual->ops->validate_attr != NULL &&
             !visual->ops->validate_attr(visual, attr_name, update->data, update->item_count))
         {
             dvz_free(prepared);
@@ -705,7 +710,7 @@ DvzResult dvz_visual_set_data_many(
     {
         const DvzVisualAttr* attr = &visual->attrs[i];
         bool attr_has_payload = attr->data != NULL || attr->buffer != NULL;
-        if (attr->item_count == 0 || !attr_has_payload || batch_item_count == 0)
+        if (attr->item_count == 0 || !attr_has_payload || !has_batch_item_count)
             continue;
         if (_attr_is_instance_attribute(visual->type, attr->name))
             continue;
@@ -730,6 +735,8 @@ DvzResult dvz_visual_set_data_many(
 
     for (uint32_t i = 0; i < update_count; i++)
     {
+        if (prepared[i].byte_size == 0)
+            continue;
         prepared[i].data = dvz_malloc(prepared[i].byte_size);
         if (prepared[i].data == NULL)
         {

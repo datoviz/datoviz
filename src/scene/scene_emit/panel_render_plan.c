@@ -61,6 +61,10 @@ bool _scene_panel_render_visual_is_visible_drawable(const DvzVisual* visual)
         return false;
     if (visual->ops != NULL && visual->ops->skip_visual_uploads)
         return false;
+    const DvzSceneBuffer* index = _visual_family_state(visual)->buffer;
+    if (index != NULL && index->desc.usage == DVZ_SCENE_BUFFER_USAGE_INDEX &&
+        index->desc.byte_size == 0)
+        return false;
     int pos_idx = _attr_index(visual, _scene_panel_render_visual_draw_position_attr(visual));
     return pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0;
 }
@@ -90,8 +94,7 @@ static uint32_t _scene_panel_drawable_visual_count(const DvzFigure* figure, cons
         if (!_figure_visual_index(figure, visual, &visual_index))
             continue;
         const char* position_attr = _scene_panel_render_visual_draw_position_attr(visual);
-        int pos_idx = _attr_index(visual, position_attr);
-        if (pos_idx >= 0 && visual->attrs[pos_idx].item_count > 0)
+        if (_scene_panel_render_visual_is_visible_drawable(visual))
         {
             count++;
             continue;

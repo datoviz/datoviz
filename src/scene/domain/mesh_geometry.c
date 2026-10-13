@@ -181,12 +181,40 @@ DvzResult dvz_mesh_set_geometry(DvzVisual* visual, const DvzGeometry* geometry)
 {
     if (
         visual == NULL || visual->type != DVZ_VISUAL_TYPE_MESH || geometry == NULL ||
-        geometry->vertex_count == 0 || geometry->positions == NULL)
+        (geometry->vertex_count > 0 && geometry->positions == NULL))
     {
         return -1;
     }
 
     const uint32_t vertex_count = geometry->vertex_count;
+    if (vertex_count == 0)
+    {
+        if (geometry->index_count != 0)
+            return -1;
+        DvzVisualDataUpdate updates[DVZ_SCENE_MAX_ITEM_ATTRS] = {0};
+        uint32_t count = 0;
+        for (uint32_t i = 0; i < visual->attr_count; i++)
+        {
+            const DvzVisualAttr* attr = &visual->attrs[i];
+            if (_attr_is_instance_attribute(visual->type, attr->name))
+                continue;
+            if (attr->buffer != NULL || attr->source != DVZ_VISUAL_ATTR_SOURCE_PER_ITEM)
+                return -1;
+            updates[count++] = (DvzVisualDataUpdate){.attr_name = attr->name};
+        }
+        if (count > 0 && dvz_visual_set_data_many(visual, updates, count) != DVZ_OK)
+            return -1;
+        const DvzVisualBinding* binding =
+            _visual_binding_const(visual, DVZ_VISUAL_BINDING_BUFFER);
+        DvzSceneBuffer* index = binding != NULL ? (DvzSceneBuffer*)binding->resource : NULL;
+        if (index != NULL)
+        {
+            // Zero extent retains the index binding and its semantic resource identity.
+            DvzResult result = dvz_scene_buffer_set_data(index, NULL, 0);
+            ASSERT(result == DVZ_OK);
+        }
+        return DVZ_OK;
+    }
     if (!_mesh_geometry_allocation_valid(vertex_count, sizeof(vec3)) ||
         !_mesh_geometry_allocation_valid(vertex_count, sizeof(vec2)))
     {
