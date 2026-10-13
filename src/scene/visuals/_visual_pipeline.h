@@ -152,6 +152,7 @@ typedef struct DvzSceneVisualDesc
     bool volume_occluded;
     DvzVolumeOcclusionDesc volume_occlusion;
     DvzVolumeState volume_state;
+    bool query_explicit_ids;
     bool has_item_range;
     uint32_t item_range_first;
     uint32_t item_range_count;

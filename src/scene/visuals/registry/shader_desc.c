@@ -228,8 +228,8 @@ bool _scene_visual_shader_desc_apply_query_pick(
             : query_shader == DVZ_SCENE_BUILTIN_SHADER_PATH_QUERY_U32 ? "path_query_u32_vert"
             : query_shader == DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_U32
                 ? "primitive_query_u32_vert"
-            : query_shader == DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32 ? "pixel_pick_vert"
-                                                                       : "point_pick_vert";
+            : query_shader == DVZ_SCENE_BUILTIN_SHADER_PIXEL_QUERY_U32 ? "pixel_query_u32_vert"
+                                                                       : "point_query_u32_vert";
     }
 
     shader->fragment_glsl = _builtin_shader_glsl(query_shader, true);

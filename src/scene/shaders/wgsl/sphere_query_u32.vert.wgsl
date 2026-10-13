@@ -2,7 +2,7 @@
 
 struct VertexIn {
     @location(0) position: vec3f,
-    @location(1) color: vec4f,
+    @location(1) id: u32,
     @location(2) radius: f32,
 }
 
@@ -62,11 +62,11 @@ fn main(
 
     var output: VertexOut;
     output.position = vec4f(center.xy + corner * ndc_radius * center.w, center.zw);
-    output.color = input.color;
+    output.color = vec4f(1.0);
     output.center_view = center_view;
     output.radius = radius;
     output.sprite_scale = padded_radius_px / max(radius_px, 1e-6);
-    output.id = instance_id + 1u;
+    output.id = input.id;
     output.coord = corner * output.sprite_scale;
     return output;
 }

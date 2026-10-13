@@ -63,7 +63,16 @@ try {
     Module._dvz_wasm_api_set_canvas_format(scene, DVZ_FORMAT_R8G8B8A8_UNORM) === 0,
     "canvas format setup failed",
   );
-  requireOk(Module._dvz_wasm_api_scenario_create(scene, 1) === 0, "point scenario creation failed");
+  const scenarioCount = Module._dvz_wasm_api_scenario_count();
+  let scenarioIndex = -1;
+  for (let i = 0; i < scenarioCount; i++) {
+    if (Module.UTF8ToString(Module._dvz_wasm_api_scenario_id(i)) === "features_picking") {
+      scenarioIndex = i;
+      break;
+    }
+  }
+  requireOk(scenarioIndex >= 0, "missing picking scenario");
+  requireOk(Module._dvz_wasm_api_scenario_create(scene, scenarioIndex) === 0, "picking scenario creation failed");
   const figure = Module._dvz_wasm_api_scenario_figure(scene);
   requireOk(figure !== 0, "point scenario has no figure");
 
@@ -105,12 +114,12 @@ try {
   );
   const pipeline = setup.commands.find((command) => command.cmd === "CreateRenderPipeline");
   requireOk(pipeline !== undefined, "query setup packet did not create a render pipeline");
-  const attributeLocations = (pipeline.vertex_buffers ?? [])
+  const idAttribute = (pipeline.vertex_buffers ?? [])
     .flatMap((buffer) => buffer.attributes ?? [])
-    .map((attribute) => attribute.shader_location);
+    .find((attribute) => attribute.shader_location === 1);
   requireOk(
-    !attributeLocations.includes(1),
-    "point query pipeline still advertises unused color attribute",
+    idAttribute?.format === "uint32",
+    "point query pipeline does not expose its explicit integer identity attribute",
   );
   requireOk(
     frame.commands.some((command) => command.cmd === "CopyTextureToBuffer"),

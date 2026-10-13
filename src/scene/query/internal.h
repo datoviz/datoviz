@@ -104,6 +104,7 @@ struct DvzSceneQueryBuildContext
     const DvzPendingQueryRequest* pending;
     const DvzCapabilitySnapshot* caps;
     DvzQueryProfile profile;
+    uint32_t identity_base;
     vec2 request_ndc;
 };
 
@@ -163,6 +164,19 @@ struct DvzSceneQueryReadoutContext
 };
 
 
+typedef struct DvzSceneQueryAppend
+{
+    DvzFramePlanVisualMeta metadata;
+    DvzMVP mvp;
+    DvzSceneViewportUniform viewport;
+} DvzSceneQueryAppend;
+
+typedef bool (*DvzSceneQueryIdentityCount)(
+    const DvzSceneQueryBuildContext* ctx, uint32_t* out_count);
+typedef bool (*DvzSceneQueryAppendIdentity)(
+    const DvzSceneQueryBuildContext* ctx, DvzFramePlan* plan, uint32_t slot,
+    DvzSceneQueryPlan* retained, DvzSceneQueryAppend* out);
+
 struct DvzSceneQueryFamilyOps
 {
     const char* name;
@@ -170,6 +184,8 @@ struct DvzSceneQueryFamilyOps
     DvzSceneQueryEligible eligible;
     DvzSceneQuerySupportsProfile supports_profile;
     DvzSceneQueryBuild build;
+    DvzSceneQueryIdentityCount identity_count;
+    DvzSceneQueryAppendIdentity append_identity;
     DvzSceneQueryExecute execute;
     DvzSceneQueryRejectUnsupported reject_unsupported;
     DvzSceneQueryDecode decode;
@@ -309,3 +325,13 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_volume_ops(void);
 const DvzSceneQueryFamilyOps* _dvz_scene_query_text_ops(void);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_glyph_ops(void);
+
+bool _dvz_scene_query_append_identity_uploads(
+    DvzFramePlan* plan, uint32_t slot, const DvzSceneQueryPlan* source,
+    DvzSceneQueryAppend* out);
+bool _dvz_scene_query_dense_identity_count(
+    const DvzSceneQueryBuildContext* ctx, uint32_t* out_count);
+bool _dvz_scene_query_process_composed(
+    DvzFigure* figure, DvzDrp2Runtime* runtime, DvzSceneRequestExecutor* executor,
+    const DvzCapabilitySnapshot* caps, const DvzPendingQueryRequest* pending,
+    const vec2 request_ndc, DvzQueryResult* result);

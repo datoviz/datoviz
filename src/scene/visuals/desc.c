@@ -246,6 +246,7 @@ static bool _scene_visual_desc_from_metadata(
     out->point_style_enabled = meta->point_style_enabled;
     out->scene_occluded = meta->scene_occluded;
     out->scene_occlusion = meta->scene_occlusion;
+    out->query_explicit_ids = meta->query_explicit_ids;
     out->has_item_range = meta->has_item_range;
     out->item_range_first = meta->item_range_first;
     out->item_range_count = meta->item_range_count;

@@ -21,6 +21,7 @@
 #include "../visuals/image/internal.h"
 #include "domain/field_internal.h"
 #include "datoviz/drp2.h"
+#include "datoviz/geom.h"
 #include "datoviz/scene/panzoom.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "helpers.h"
@@ -2756,13 +2757,19 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.face_id == 1);
     AT(scene->query_executor.query_static_cache_upload_count == 2);
 
-    /* FACE identity is not yet comparable across visuals. The executor must
-     * reject this ambiguous scene instead of returning whichever attachment
-     * happens to be visited first. */
+    // Composed FACE queries select the nearest mesh independently of attachment order.
     DvzVisual* overlapping_mesh = dvz_mesh(scene, 0);
     ANN(overlapping_mesh);
     dvz_visual_set_query_capabilities(overlapping_mesh, DVZ_QUERY_CAPABILITY_FACE);
-    AT(dvz_visual_set_data_many(overlapping_mesh, mesh_updates, 2) == 0);
+    vec3 nearer_positions[6];
+    memcpy(nearer_positions, mesh_pos, sizeof(nearer_positions));
+    for (uint32_t i = 0; i < 6; i++)
+        nearer_positions[i][2] = -.2f;
+    DvzVisualDataUpdate nearer_updates[] = {
+        {.attr_name = "position", .data = nearer_positions, .item_count = 6},
+        {.attr_name = "normal", .data = mesh_normals, .item_count = 6},
+    };
+    AT(dvz_visual_set_data_many(overlapping_mesh, nearer_updates, 2) == 0);
     AT(dvz_panel_add_visual(panel, overlapping_mesh, NULL) == 0);
     AT(dvz_panel_query_px(
            panel, 48.0, 32.0,
@@ -2772,8 +2779,10 @@ int test_scene_mesh_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
     AT(dvz_scene_poll_query(scene, &query));
     AT(query.request_id == 89);
-    AT(!query.hit);
-    AT(query.status == DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY);
+    AT(query.hit);
+    AT(query.status == DVZ_QUERY_STATUS_HIT);
+    AT(query.visual_id == _scene_visual_public_id(scene, overlapping_mesh));
+    AT(query.face_id == 1);
 
     AT(dvz_visual_set_target_link_keys(
            mesh, DVZ_SCENE_TARGET_FACE, channel, NULL, 0) == DVZ_OK);
@@ -4193,6 +4202,191 @@ int test_scene_query_processes_item_and_pixel_results(TstContext* suite, const T
  * @param suite the active test suite
  * @return 0 on success
  */
+/**
+ * Prove composed scientific queries use GPU depth through retained identity and geometry changes.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+static int test_scene_query_scientific_composition(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+    DvzGpuCtxConfig config = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceVulkan13Features features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .dynamicRendering = true, .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&config, &features);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&config);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzVisual* mesh_a = dvz_mesh(scene, 0);
+    DvzVisual* mesh_b = dvz_mesh(scene, 0);
+    DvzGeometry* geometry = dvz_geometry(4, 6);
+    dvec3 positions[4] = {{-.8, -.8, .2}, {-.8, .8, .2}, {.8, -.8, .2}, {.8, .8, .2}};
+    DvzIndex indices[6] = {0, 1, 2, 2, 1, 3};
+    memcpy(geometry->positions, positions, sizeof(positions));
+    memcpy(geometry->indices, indices, sizeof(indices));
+    AT(dvz_mesh_set_geometry(mesh_a, geometry) == DVZ_OK);
+    for (uint32_t i = 0; i < 4; i++)
+        geometry->positions[i][2] = 0;
+    AT(dvz_mesh_set_geometry(mesh_b, geometry) == DVZ_OK);
+    uint64_t mesh_b_id = _scene_visual_public_id(scene, mesh_b);
+    uint64_t index_id = _visual_family_state(mesh_b)->buffer->id;
+    dvz_visual_set_query_capabilities(mesh_a, DVZ_QUERY_CAPABILITY_ITEM | DVZ_QUERY_CAPABILITY_FACE);
+    dvz_visual_set_query_capabilities(mesh_b, DVZ_QUERY_CAPABILITY_ITEM | DVZ_QUERY_CAPABILITY_FACE);
+    AT(dvz_panel_add_visual(panel, mesh_a, NULL) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, mesh_b, NULL) == DVZ_OK);
+    DvzLinkChannel* channel = dvz_link_channel(scene, "scientific");
+    uint64_t keys[2] = {315, UINT64_C(0xFFFFFFFFFFFFFEC5)};
+    AT(dvz_visual_set_target_link_keys(mesh_b, DVZ_SCENE_TARGET_FACE, channel, keys, 2) == DVZ_OK);
+    DvzDrp2RuntimeConfig runtime_config =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_config);
+    DvzQueryRequest request = dvz_query_request();
+    request.target = DVZ_SCENE_TARGET_FACE;
+    _dvz_scene_query_timing_enable(scene, true);
+    DvzQueryResult result = {0};
+    for (uint32_t reverse = 0; reverse < 2; reverse++)
+    {
+        AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+        AT(result.hit && result.visual_id == mesh_b_id && result.face_id == 1);
+        AT(result.link_key == keys[1]);
+        AT(scene->query_executor.last_timing.submitted_count == 1);
+        AT(scene->query_executor.runtime_create_count == 1);
+        DvzPanelAttach swapped = panel->visuals[0];
+        panel->visuals[0] = panel->visuals[1];
+        panel->visuals[1] = swapped;
+    }
+    keys[1] = UINT64_C(0x8000000000000001);
+    AT(dvz_visual_set_target_link_keys(mesh_b, DVZ_SCENE_TARGET_FACE, channel, keys, 2) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.link_key == keys[1]);
+    AT(dvz_scene_buffer_set_data(_visual_family_state(mesh_b)->buffer, NULL, 0) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.visual_id == _scene_visual_public_id(scene, mesh_a));
+    AT(dvz_scene_buffer_set_data(_visual_family_state(mesh_a)->buffer, NULL, 0) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(!result.hit && result.status == DVZ_QUERY_STATUS_MISS);
+    AT(dvz_mesh_set_geometry(mesh_b, geometry) == DVZ_OK);
+    AT(_visual_family_state(mesh_b)->buffer->id == index_id);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.visual_id == mesh_b_id && result.link_key == keys[1]);
+    DvzGeometry* smaller = dvz_geometry(3, 3);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        memcpy(smaller->positions[i], geometry->positions[indices[i + 3]], sizeof(dvec3));
+        smaller->indices[i] = i;
+    }
+    AT(dvz_mesh_set_geometry(mesh_b, smaller) == DVZ_OK);
+    AT(dvz_visual_set_target_link_keys(mesh_b, DVZ_SCENE_TARGET_FACE, channel, &keys[1], 1) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.visual_id == mesh_b_id && result.face_id == 0 && result.link_key == keys[1]);
+    DvzGeometry empty = {0};
+    AT(dvz_mesh_set_geometry(mesh_b, &empty) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(!result.hit && result.status == DVZ_QUERY_STATUS_MISS);
+    AT(dvz_mesh_set_geometry(mesh_b, geometry) == DVZ_OK);
+    AT(dvz_visual_set_target_link_keys(mesh_b, DVZ_SCENE_TARGET_FACE, channel, keys, 2) == DVZ_OK);
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    transform[3][0] = 2;
+    AT(dvz_visual_set_transform(mesh_b, transform) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(!result.hit);
+    transform[3][0] = 0;
+    AT(dvz_visual_set_transform(mesh_b, transform) == DVZ_OK);
+    AT(dvz_visual_set_visible(mesh_b, false) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(!result.hit);
+    AT(dvz_visual_set_visible(mesh_b, true) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.link_key == keys[1]);
+
+    DvzVisual* point = dvz_point(scene, 0);
+    DvzVisual* sphere = dvz_sphere(scene, 0);
+    vec3 item_position[1] = {{.5f, 0, -.4f}};
+    DvzColor item_color[1] = {{255, 0, 0, 255}};
+    float point_size[1] = {12}, sphere_size[1] = {.1f};
+    DvzVisualDataUpdate updates[3] = {
+        {.attr_name = "position", .data = item_position, .item_count = 1},
+        {.attr_name = "color", .data = item_color, .item_count = 1},
+        {.attr_name = "size", .data = point_size, .item_count = 1},
+    };
+    AT(dvz_visual_set_data_many(point, updates, 3) == DVZ_OK);
+    item_position[0][2] = -.2f;
+    updates[2].data = sphere_size;
+    AT(dvz_visual_set_data_many(sphere, updates, 3) == DVZ_OK);
+    dvz_visual_set_query_capabilities(point, DVZ_QUERY_CAPABILITY_ITEM);
+    dvz_visual_set_query_capabilities(sphere, DVZ_QUERY_CAPABILITY_ITEM);
+    AT(dvz_panel_add_visual(panel, point, NULL) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, sphere, NULL) == DVZ_OK);
+    AT(dvz_visual_set_link_keys(point, channel, &keys[0], 1) == DVZ_OK);
+    AT(dvz_visual_set_link_keys(sphere, channel, &keys[1], 1) == DVZ_OK);
+    request.target = DVZ_SCENE_TARGET_ITEM;
+    for (uint32_t reverse = 0; reverse < 2; reverse++)
+    {
+        AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+        AT(result.hit && result.visual_id == _scene_visual_public_id(scene, point));
+        AT(result.item_id == 0 && result.link_key == keys[0]);
+        DvzPanelAttach swapped = panel->visuals[2];
+        panel->visuals[2] = panel->visuals[3];
+        panel->visuals[3] = swapped;
+    }
+    DvzVisualDataUpdate cleared[3] = {
+        {.attr_name = "position"}, {.attr_name = "color"}, {.attr_name = "size"},
+    };
+    AT(dvz_visual_set_data_many(point, cleared, 3) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.visual_id == _scene_visual_public_id(scene, sphere));
+    item_position[0][2] = -.4f;
+    updates[2].data = point_size;
+    AT(dvz_visual_set_data_many(point, updates, 3) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.visual_id == _scene_visual_public_id(scene, point));
+    AT(result.item_id == 0 && result.link_key == keys[0]);
+    AT(dvz_visual_set_visible(point, false) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.visual_id == _scene_visual_public_id(scene, sphere));
+    AT(result.item_id == 0 && result.link_key == keys[1]);
+    AT(dvz_visual_set_visible(sphere, false) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.visual_id == mesh_b_id);
+    scene->test.force_readback_download_failure = true;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(!result.hit && result.status == DVZ_QUERY_STATUS_READBACK_FAILED);
+    scene->test.force_readback_download_failure = false;
+    DvzSampledField* sampled = dvz_sampled_field(
+        scene, &(DvzSampledFieldDesc){DVZ_STRUCT_INIT_FIELDS(DvzSampledFieldDesc),
+            .dim = DVZ_FIELD_DIM_2D, .format = DVZ_FIELD_FORMAT_RGBA8_UNORM,
+            .semantic = DVZ_FIELD_SEMANTIC_COLOR, .width = 1, .height = 1, .depth = 1});
+    AT(dvz_visual_set_field(mesh_b, "texture", sampled) == DVZ_OK);
+    DvzAlphaMode excluded[] = {DVZ_ALPHA_OPAQUE, DVZ_ALPHA_MASK, DVZ_ALPHA_BLENDED, DVZ_ALPHA_WBOIT};
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        AT(dvz_visual_set_alpha_mode(mesh_b, excluded[i]) == DVZ_OK);
+        AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+        AT(!result.hit && result.status == DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY);
+    }
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    dvz_geometry_destroy(smaller);
+    dvz_geometry_destroy(geometry);
+    dvz_scene_destroy(scene);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
 int test_scene_query(TstSuite* suite)
 {
     ANN(suite);
@@ -4234,6 +4428,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_vector_query_resolves_curved_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_primitive_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_item);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_query_scientific_composition);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_instance_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_volume_query_resolves_item);

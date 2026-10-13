@@ -150,6 +150,15 @@ static bool _sphere_query_build(
         return false;
     }
 
+    if (pos_attr->item_count > UINT32_MAX - ctx->identity_base)
+        return false;
+    out_plan->scratch.query_ids =
+        (uint32_t*)dvz_calloc(pos_attr->item_count, sizeof(uint32_t));
+    if (out_plan->scratch.query_ids == NULL)
+        return false;
+    for (uint32_t i = 0; i < pos_attr->item_count; i++)
+        out_plan->scratch.query_ids[i] = ctx->identity_base + i + 1u;
+
     uint32_t target_width = 0;
     uint32_t target_height = 0;
     if (!_sphere_query_target_extent(ctx->figure, ctx->panel, &target_width, &target_height))
@@ -160,7 +169,7 @@ static bool _sphere_query_build(
     ok = ok && dvz_frame_plan_upload_bytes(
                    plan, "query0_position", 0, position_bytes, "position", pos_attr->data) &&
          dvz_frame_plan_upload_bytes(
-             plan, "query0_color", 0, color_bytes, "color", color_attr->data) &&
+             plan, "query0_color", 0, color_bytes, "query_id", out_plan->scratch.query_ids) &&
          dvz_frame_plan_upload_bytes(
              plan, "query0_size", 0, size_bytes, "size", size_attr->data);
 
@@ -170,6 +179,7 @@ static bool _sphere_query_build(
     metadata.renderable_kind = (uint32_t)DVZ_RENDERABLE_POINT_LIKE;
     metadata.desc_kind = (uint32_t)DVZ_SCENE_VISUAL_DESC_SPHERE;
     metadata.alpha_mode = DVZ_ALPHA_OPAQUE;
+    metadata.query_explicit_ids = true;
     metadata.depth_test_enabled = ctx->visual->depth_test_enabled;
     metadata.depth_compare_op = ctx->visual->depth_compare_op;
     dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
@@ -213,6 +223,9 @@ static bool _sphere_query_build(
     out_plan->target_height = target_height;
     out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
+    out_plan->derived_vertex_count = pos_attr->item_count;
+    out_plan->static_upload_bytes = position_bytes + color_bytes + size_bytes;
+    out_plan->retained_resource_bytes = out_plan->static_upload_bytes;
     return true;
 }
 
@@ -251,6 +264,26 @@ static bool _sphere_query_readout(
 
 
 
+/**
+ * Append this family's integer identity uploads to a composed query.
+ *
+ * @param ctx family build context with an allocated identity range
+ * @param plan composed destination plan
+ * @param slot bounded visual resource slot
+ * @param retained retained source plan and scratch lifetime
+ * @param out normalized draw packet
+ * @return whether the packet was appended
+ */
+static bool _sphere_query_append_identity(
+    const DvzSceneQueryBuildContext* ctx, DvzFramePlan* plan, uint32_t slot,
+    DvzSceneQueryPlan* retained, DvzSceneQueryAppend* out)
+{
+    return _sphere_query_build(ctx, retained) &&
+           _dvz_scene_query_append_identity_uploads(plan, slot, retained, out);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -267,6 +300,8 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_sphere_ops(void)
         .family = DVZ_SCENE_VISUAL_FAMILY_SPHERE,
         .eligible = _sphere_query_eligible,
         .build = _sphere_query_build,
+        .identity_count = _dvz_scene_query_dense_identity_count,
+        .append_identity = _sphere_query_append_identity,
         .decode = _sphere_query_decode,
         .readout = _sphere_query_readout,
     };

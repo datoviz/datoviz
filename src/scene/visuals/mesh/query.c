@@ -188,6 +188,10 @@ static bool _mesh_query_build(
     if (target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_OBJECT)
         target = DVZ_SCENE_TARGET_ITEM;
 
+    if (_visual_family_state(ctx->visual)->field != NULL ||
+        ctx->visual->alpha_mode == DVZ_ALPHA_MASK)
+        return false;
+
     uint64_t versions[DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT] = {0};
     if (!_mesh_query_static_versions(ctx->visual, versions))
         return false;
@@ -214,6 +218,16 @@ static bool _mesh_query_build(
         {
             _scene_query_scratch_destroy(&out_plan->scratch);
             return false;
+        }
+    }
+
+    if (include_static_uploads && ctx->identity_base > 0)
+    {
+        for (uint64_t i = 0; i < vertex_count; i++)
+        {
+            if (out_plan->scratch.query_ids[i] > UINT32_MAX - ctx->identity_base)
+                return false;
+            out_plan->scratch.query_ids[i] += ctx->identity_base;
         }
     }
 
@@ -353,6 +367,81 @@ static bool _mesh_query_readout(
 
 
 
+/**
+ * Count mesh identities without reconstructing rendered hits.
+ *
+ * @param ctx family build context
+ * @param out_count identity range length
+ * @return whether the target is supported
+ */
+static bool _mesh_query_identity_count(const DvzSceneQueryBuildContext* ctx, uint32_t* out_count)
+{
+    if (_visual_family_state(ctx->visual)->field != NULL ||
+        ctx->visual->alpha_mode == DVZ_ALPHA_MASK)
+        return false;
+    if (ctx->pending->request.target == DVZ_SCENE_TARGET_FACE)
+        return _scene_mesh_visual_query_target_count(ctx->visual, DVZ_SCENE_TARGET_FACE, out_count);
+    const DvzVisualAttr* positions = NULL;
+    if (!_dvz_scene_query_dense_attr(ctx->visual, "position", sizeof(vec3), &positions))
+    {
+        *out_count = 0;
+        return true;
+    }
+    const DvzSceneBuffer* index = _visual_family_state(ctx->visual)->buffer;
+    if (index != NULL && index->desc.byte_size == 0)
+    {
+        *out_count = 0;
+        return true;
+    }
+    const DvzVisualAttr* transforms = NULL;
+    *out_count = _dvz_scene_query_dense_attr(
+                     ctx->visual, "instance_transform", 16 * sizeof(float), &transforms)
+                     ? (uint32_t)transforms->item_count : 1;
+    return true;
+}
+
+
+
+/**
+ * Diagnose sampled mesh queries until their texture coverage is preserved.
+ *
+ * @param visual retained visual
+ * @param request query request
+ * @param out_status explicit failure status
+ * @return whether the request is unsupported
+ */
+static bool _mesh_query_reject_sampled(
+    const DvzVisual* visual, const DvzQueryRequest* request, DvzQueryStatus* out_status)
+{
+    (void)request;
+    if (_visual_family_state(visual)->field == NULL && visual->alpha_mode != DVZ_ALPHA_MASK)
+        return false;
+    *out_status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
+    return true;
+}
+
+
+
+/**
+ * Append this family's integer identity uploads to a composed query.
+ *
+ * @param ctx family build context with an allocated identity range
+ * @param plan composed destination plan
+ * @param slot bounded visual resource slot
+ * @param retained retained source plan and scratch lifetime
+ * @param out normalized draw packet
+ * @return whether the packet was appended
+ */
+static bool _mesh_query_append_identity(
+    const DvzSceneQueryBuildContext* ctx, DvzFramePlan* plan, uint32_t slot,
+    DvzSceneQueryPlan* retained, DvzSceneQueryAppend* out)
+{
+    return _mesh_query_build(ctx, retained) &&
+           _dvz_scene_query_append_identity_uploads(plan, slot, retained, out);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -421,7 +510,10 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_mesh_ops(void)
         .family = DVZ_SCENE_VISUAL_FAMILY_MESH,
         .eligible = _mesh_query_eligible,
         .build = _mesh_query_build,
+        .identity_count = _mesh_query_identity_count,
+        .append_identity = _mesh_query_append_identity,
         .decode = _mesh_query_decode,
+        .reject_unsupported = _mesh_query_reject_sampled,
         .readout = _mesh_query_readout,
     };
     return &ops;
