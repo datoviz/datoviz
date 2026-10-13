@@ -4523,6 +4523,111 @@ static bool _query_test_center_pixel(DvzDrp2Runtime* runtime, DvzFigure* figure,
 
 
 /**
+ * Verify optional mesh color and public point/pixel size aliases reach canonical GPU query inputs.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+static int test_scene_query_optional_color_and_size_aliases(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+    DvzGpuCtxConfig config = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceVulkan13Features features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .dynamicRendering = true,
+        .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&config, &features);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&config);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzDrp2RuntimeConfig runtime_config =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_config);
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    vec3 positions[6] = {
+        {-.8f, -.8f, 0}, {-.8f, .8f, 0}, {.8f, -.8f, 0},
+        {.8f, -.8f, 0},  {-.8f, .8f, 0}, {.8f, .8f, 0},
+    };
+    DvzIndex indices[6] = {0, 1, 2, 3, 4, 5};
+    AT(dvz_visual_set_data(mesh, "position", positions, 6) == DVZ_OK);
+    DvzSceneBuffer* index = dvz_scene_buffer(
+        scene, &(DvzSceneBufferDesc){
+                   DVZ_STRUCT_INIT_FIELDS(DvzSceneBufferDesc),
+                   .usage = DVZ_SCENE_BUFFER_USAGE_INDEX, .stride = sizeof(DvzIndex)});
+    AT(dvz_scene_buffer_set_data(index, indices, sizeof(indices)) == DVZ_OK);
+    AT(dvz_visual_set_buffer(mesh, "index", index) == DVZ_OK);
+    AT(dvz_visual_set_query_capabilities(mesh, DVZ_QUERY_CAPABILITY_FACE) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+    // Only positions and indices were authored; the renderer's canonical white color is retained.
+    DvzVisualDataView color_view = {0};
+    AT(dvz_visual_data(mesh, "color", &color_view) == DVZ_OK);
+    AT(_visual_family_state(mesh)->mesh_default_color);
+    AT(color_view.item_count == 6 && color_view.item_size == sizeof(DvzColor));
+    const DvzColor* colors = color_view.data;
+    for (uint32_t i = 0; i < 6; i++)
+        AT(colors[i].a == 255);
+    AT(_attr_index(mesh, "normal") < 0);
+    DvzQueryRequest request = dvz_query_request();
+    request.target = DVZ_SCENE_TARGET_FACE;
+    DvzQueryResult result = {0};
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.face_id == 1);
+    uint8_t rendered[4] = {0};
+    AT(_query_test_center_pixel(runtime, figure, rendered));
+    AT(rendered[0] > 200 && rendered[1] > 200 && rendered[2] > 200);
+    // Shrink and restore the generated color together with an uncolored mesh's positions.
+    AT(dvz_visual_set_data(mesh, "position", &positions[3], 3) == DVZ_OK);
+    AT(dvz_scene_buffer_set_data(index, indices, 3 * sizeof(DvzIndex)) == DVZ_OK);
+    AT(dvz_visual_data(mesh, "color", &color_view) == DVZ_OK && color_view.item_count == 3);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.face_id == 0);
+    AT(dvz_visual_set_data(mesh, "position", positions, 6) == DVZ_OK);
+    AT(dvz_scene_buffer_set_data(index, indices, sizeof(indices)) == DVZ_OK);
+    AT(dvz_panel_query_now_px(panel, runtime, 48, 32, &request, &result) == DVZ_OK);
+    AT(result.hit && result.face_id == 1);
+    AT(dvz_visual_set_visible(mesh, false) == DVZ_OK);
+    request.target = DVZ_SCENE_TARGET_ITEM;
+    const DvzVisualType types[2] = {DVZ_VISUAL_TYPE_POINT, DVZ_VISUAL_TYPE_PIXEL};
+    const char* aliases[2] = {"diameter_px", "pixel_size_px"};
+    vec3 position[1] = {{0, 0, 0}};
+    DvzColor color[1] = {{255, 0, 0, 255}};
+    float size[1] = {16};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzVisual* visual =
+            types[i] == DVZ_VISUAL_TYPE_POINT ? dvz_point(scene, 0) : dvz_pixel(scene, 0);
+        DvzVisualDataUpdate data[3] = {
+            {.attr_name = "position", .data = position, .item_count = 1},
+            {.attr_name = "color", .data = color, .item_count = 1},
+            {.attr_name = aliases[i], .data = size, .item_count = 1},
+        };
+        AT(dvz_visual_set_data_many(visual, data, 3) == DVZ_OK);
+        AT(_attr_index(visual, aliases[i]) == _attr_index(visual, "size"));
+        AT(strcmp(visual->attrs[_attr_index(visual, "size")].name, "size") == 0);
+        AT(dvz_visual_set_query_capabilities(visual, DVZ_QUERY_CAPABILITY_ITEM) == DVZ_OK);
+        AT(dvz_panel_add_visual(panel, visual, NULL) == DVZ_OK);
+        AT(dvz_panel_query_now_px(panel, runtime, 32, 32, &request, &result) == DVZ_OK);
+        AT(result.hit && result.visual_id == _scene_visual_public_id(scene, visual));
+        AT(dvz_visual_set_visible(visual, false) == DVZ_OK);
+    }
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    dvz_scene_destroy(scene);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+/**
  * Verify composed depth ignores zero effective alpha and preserves integer identities.
  *
  * @param suite test context
@@ -4882,6 +4987,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_scientific_composition);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_stationary_hover_updates);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_effective_alpha);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_query_optional_color_and_size_aliases);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_instance_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_image_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_volume_query_resolves_item);
