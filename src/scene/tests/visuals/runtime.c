@@ -17,6 +17,7 @@
 #include "common.h"
 #include "core/_scene_resource_key.h"
 #include "core/frame_trace_internal.h"
+#include "visuals/_visual_pipeline_internal.h"
 
 
 
