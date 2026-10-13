@@ -6,6 +6,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { decodeDrp2Packet } from "../web/drp2/packet.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+// Allow linked worktrees to reuse a read-only prepared fixture checkout.
+const fixtureRoot = resolve(process.env.DVZ_WASM_SMOKE_FIXTURE_ROOT || root);
 const modulePath = resolve(root, "build-wasm-scene/wasm/datoviz_wasm_scene.mjs");
 const browserWrapperPath = resolve(root, "web/wasm/scene.js");
 const browserSessionPath = resolve(root, "web/wasm/session.js");
@@ -63,7 +65,7 @@ async function mountOptionalHostFiles(Module, mappings) {
   const loaded = [];
   for (const [hostPath, virtualPath] of mappings) {
     try {
-      loaded.push([await readFile(resolve(root, hostPath)), virtualPath]);
+      loaded.push([await readFile(resolve(fixtureRoot, hostPath)), virtualPath]);
     } catch (error) {
       if (error?.code === "ENOENT") return false;
       throw error;
@@ -2372,7 +2374,7 @@ function setCapabilities(
   minTextureCopyBytesPerRowAlignment,
   maxSampleCount,
   label,
-  { supportsColorBlending = true } = {},
+  { supportsColorBlending = true, maxColorAttachments = 8, supportsFloatRenderTargets = true } = {},
 ) {
   expectStatus(
     Module._dvz_wasm_api_set_capabilities(
@@ -2384,6 +2386,8 @@ function setCapabilities(
       minTextureCopyBytesPerRowAlignment,
       maxSampleCount,
       supportsColorBlending ? 1 : 0,
+      maxColorAttachments,
+      supportsFloatRenderTargets ? 1 : 0,
     ),
     0,
     label,
@@ -2450,12 +2454,18 @@ try {
     );
     expectNoDiagnostics(Module, diagnosticScene, "successful format reset");
     expectStatus(
-      Module._dvz_wasm_api_set_capabilities(diagnosticScene, 0, 4, 8, 1024, 256, 1, 1),
+      Module._dvz_wasm_api_set_capabilities(diagnosticScene, 0, 4, 8, 1024, 256, 1, 1, 8, 1),
       -1,
       "invalid capabilities",
     );
     expectDiagnostics(
       Module, diagnosticScene, "invalid WASM capability snapshot", "invalid capabilities");
+    expectStatus(
+      Module._dvz_wasm_api_set_capabilities(diagnosticScene, 4096, 4, 8, 1024, 256, 1, 1, 0, 1),
+      -1,
+      "invalid color attachment limit",
+    );
+    expectDiagnostics(Module, diagnosticScene, "invalid WASM capability snapshot", "invalid attachment limit");
     setCapabilities(Module, diagnosticScene, 4096, 4, 8, 1024 * 1024, 256, 1, "reset capabilities");
     expectNoDiagnostics(Module, diagnosticScene, "successful capability reset");
 

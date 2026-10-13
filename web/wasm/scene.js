@@ -113,6 +113,10 @@ function browserCapabilityArgs(capabilities = {}) {
     ),
     maxSampleCount: Math.max(1, ...sampleCounts),
     supportsColorBlending: capabilities.supports_color_blending !== false,
+    maxColorAttachments: positiveInteger(capabilities.max_color_attachments, 1),
+    supportsFloatRenderTargets: Array.isArray(capabilities.supported_texture_formats) &&
+      capabilities.supported_texture_formats.includes("rgba16float") &&
+      capabilities.supported_texture_formats.includes("r16float"),
   };
 }
 
@@ -391,6 +395,8 @@ export class DatovizWasmScene {
       caps.minTextureCopyBytesPerRowAlignment,
       caps.maxSampleCount,
       caps.supportsColorBlending ? 1 : 0,
+      caps.maxColorAttachments,
+      caps.supportsFloatRenderTargets ? 1 : 0,
     );
     if (capsStatus !== 0) {
       throw new Error(diagnosticMessage(Module, scene, "scene rejected browser capabilities"));
@@ -435,6 +441,8 @@ export class DatovizWasmScene {
       caps.minTextureCopyBytesPerRowAlignment,
       caps.maxSampleCount,
       caps.supportsColorBlending ? 1 : 0,
+      caps.maxColorAttachments,
+      caps.supportsFloatRenderTargets ? 1 : 0,
     );
     if (capsStatus !== 0) {
       throw new Error(diagnosticMessage(Module, scene, "scene rejected browser capabilities"));
