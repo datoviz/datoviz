@@ -67,6 +67,8 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_mesh_instance_transform_emits_instanced_draw);
     TST_CASE(test_scene_mesh_emits_depth_attachment);
     TST_CASE(test_scene_textured_mesh_emits_texture_pipeline);
+    TST_CASE(test_scene_sampled_plane_alpha_contract);
+    TST_CASE(test_scene_sampled_plane_wgsl);
     TST_CASE(test_scene_indexed_primitive_emits_draw_indexed);
     TST_CASE(test_scene_shared_index_buffer_emits_one_upload);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_mesh_glsl_executes);

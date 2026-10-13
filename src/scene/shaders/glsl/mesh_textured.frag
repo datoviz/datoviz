@@ -1,17 +1,11 @@
 #version 450
 
-#include "scene_material.glsl"
+#include "mesh_surface.glsl"
 #include "surface_depth.glsl"
 
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
 #endif
-
-layout(set = 1, binding = 1) uniform texture2D tex;
-layout(set = 1, binding = 2) uniform sampler samp;
-layout(set = 1, binding = 3) uniform TextureParams {
-    vec4 params;
-} textureParams;
 
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec3 fragNormal;
@@ -23,13 +17,9 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    vec4 texel = sampledTextureColorToLinear(
-        texture(sampler2D(tex, samp), fragUV), textureParams.params);
-    vec4 base = texel * semanticColorToLinear(fragColor);
-    vec4 shaded = evaluateSceneMaterialLinearItem(base, fragNormal, fragWorldPos, fragCameraPos);
-    vec3 cue = vec3(fragDepth, length(fragCameraPos - fragWorldPos), length(fragWorldPos));
-    outColor = vec4(applyDepthCue(shaded.rgb, cue), shaded.a);
-    if (outColor.a <= 0.0) {
+    outColor = evaluateMeshSurface(
+        fragColor, fragNormal, fragUV, fragDepth, fragWorldPos, fragCameraPos);
+    if (!sceneAlphaValid(outColor.a, material.model)) {
         discard;
     }
 #ifdef DVZ_SCENE_OCCLUSION

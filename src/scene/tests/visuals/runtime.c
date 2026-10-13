@@ -3262,7 +3262,10 @@ int test_scene_visual_technique_eligibility_inventory(TstContext* suite, const T
     visual.kind = DVZ_SCENE_VISUAL_DESC_POINT;
     AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
     visual.kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
-    AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    AT(_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    AT(shader.fragment_glsl != NULL);
+    AT(shader.fragment_wgsl != NULL);
+    AT(strcmp(shader.fragment_spirv_key, "mesh_textured_wboit_frag") == 0);
     return 0;
 }
 

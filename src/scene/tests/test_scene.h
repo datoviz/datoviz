@@ -486,6 +486,11 @@ int test_scene_mesh_instance_transform_emits_instanced_draw(
 int test_scene_mesh_emits_depth_attachment(TstContext* suite, const TstCase* item);
 
 int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const TstCase* item);
+int test_scene_sampled_plane_alpha_contract(TstContext* suite, const TstCase* item);
+int test_scene_sampled_plane_wgsl(TstContext* suite, const TstCase* item);
+int test_app_offscreen_sampled_plane_mask_depth(TstContext* suite, const TstCase* item);
+int test_app_offscreen_sampled_plane_wboit(TstContext* suite, const TstCase* item);
+int test_app_offscreen_sampled_plane_material(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_glsl_executes(TstContext* suite, const TstCase* item);
 

@@ -1926,6 +1926,30 @@ DVZ_EXPORT DvzResult dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode m
 
 
 /**
+ * Set the effective-alpha cutoff used by DVZ_ALPHA_MASK.
+ *
+ * The cutoff defaults to 0.5 and must be finite and in [0, 1]. Masked fragments with effective
+ * alpha below the cutoff are discarded; equality survives. Effective zero alpha is always
+ * discarded. Setting a material preserves this independently retained cutoff. Mask support
+ * currently requires a textured mesh; unsupported families and products fail validation.
+ *
+ * @param visual the visual
+ * @param cutoff effective-alpha cutoff
+ * @return 0 on success, -1 on invalid input or forbidden mutation
+ */
+DVZ_EXPORT DvzResult dvz_visual_set_alpha_cutoff(DvzVisual* visual, float cutoff);
+
+
+/**
+ * Return the retained effective-alpha cutoff.
+ *
+ * @param visual the visual
+ * @return effective-alpha cutoff
+ */
+DVZ_EXPORT float dvz_visual_alpha_cutoff(const DvzVisual* visual);
+
+
+/**
  * Set how an ordinarily blended visual is composited with the current color target.
  *
  * Blend mode is independent from alpha mode. `DVZ_BLEND_SOURCE_OVER` is the default and uses

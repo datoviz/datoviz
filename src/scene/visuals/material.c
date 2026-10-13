@@ -54,6 +54,7 @@ void _material_params_default(DvzSceneMaterialParams* params)
     params->params[3] = 26.0f;
     params->model[0] = (float)DVZ_MATERIAL_MODEL_PHONG;
     params->model[1] = 1.0f;
+    params->model[2] = 0.5f;
     params->base_color_factor[0] = 1.0f;
     params->base_color_factor[1] = 1.0f;
     params->base_color_factor[2] = 1.0f;
@@ -236,6 +237,7 @@ void _material_state_default(DvzSceneMaterialState* material, DvzVisualType visu
     DvzMaterialDesc desc = dvz_material_desc();
     _material_state_apply_desc(material, &desc);
     material->alpha_mode = DVZ_ALPHA_OPAQUE;
+    material->alpha_cutoff = 0.5f;
     material->scalar_scale = 1.0f;
     material->point_style = dvz_point_style_desc();
     material->point_style_enabled = false;
@@ -449,6 +451,8 @@ void _material_params_sync_state(
     ANN(material);
     params->model[0] = (float)material->model;
     params->model[1] = material->opacity;
+    params->model[2] = material->alpha_cutoff;
+    params->model[3] = (float)material->alpha_mode;
     params->base_color_factor[0] = material->base_color_factor[0];
     params->base_color_factor[1] = material->base_color_factor[1];
     params->base_color_factor[2] = material->base_color_factor[2];
@@ -754,8 +758,7 @@ DvzResult dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode)
     }
     visual->alpha_mode = mode;
     visual->material.alpha_mode = mode;
-    _visual_bump_version(&visual->material.version);
-    _scene_notify_visual_changed(visual);
+    _visual_material_mark_dirty(visual);
     return 0;
 }
 
@@ -771,6 +774,44 @@ DvzAlphaMode dvz_visual_alpha_mode(const DvzVisual* visual)
 {
     ANN(visual);
     return visual->alpha_mode;
+}
+
+
+
+/**
+ * Set the retained effective-alpha cutoff for masked rendering.
+ *
+ * @param visual the visual
+ * @param cutoff finite cutoff in the inclusive range [0, 1]
+ * @return 0 on success, -1 on invalid input or forbidden mutation
+ */
+DvzResult dvz_visual_set_alpha_cutoff(DvzVisual* visual, float cutoff)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "update visual alpha cutoff"))
+        return -1;
+    if (!isfinite(cutoff) || cutoff < 0.0f || cutoff > 1.0f)
+    {
+        log_error("visual alpha cutoff must be finite and in [0, 1]");
+        return -1;
+    }
+    visual->material.alpha_cutoff = cutoff;
+    _visual_material_mark_dirty(visual);
+    return 0;
+}
+
+
+
+/**
+ * Return the retained effective-alpha cutoff.
+ *
+ * @param visual the visual
+ * @return cutoff in the inclusive range [0, 1]
+ */
+float dvz_visual_alpha_cutoff(const DvzVisual* visual)
+{
+    ANN(visual);
+    return visual->material.alpha_cutoff;
 }
 
 
