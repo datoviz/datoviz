@@ -1593,6 +1593,23 @@ int test_scene_textured_mesh_emits_texture_pipeline(TstContext* suite, const Tst
     AT(strstr(json, "\"min_filter\": \"nearest\"") != NULL);
     dvz_drp2_stream_json_destroy(json);
     _test_scene_stream_destroy(stream);
+
+    DvzVisualLowering lowering = {0};
+    AT(_scene_visual_lowering_resolve(visual, &lowering));
+    AT(lowering.desc_kind == DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH);
+    DvzPanelAttach attach = {.visual = visual};
+    DvzSceneVisualPassCaps pass_caps = {0};
+    AT(_scene_visual_pass_caps_from_visual(visual, &attach, &pass_caps));
+    AT(!pass_caps.eligible_for_gbuffer);
+    AT((pass_caps.product_caps & DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL) == 0);
+    AT(dvz_visual_set_scene_occluder(visual, true) == DVZ_OK);
+    dvz_diagnostic_report_init(&report);
+    AT(!dvz_visual_validate(visual, &report));
+    AT(strstr(dvz_diagnostic_report_get(&report, 0), "depth coverage") != NULL);
+    dvz_diagnostic_report_init(&report);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    AT(stream == NULL);
+    AT(strstr(dvz_diagnostic_report_get(&report, 0), "depth coverage") != NULL);
     dvz_scene_destroy(scene);
     return 0;
 }
