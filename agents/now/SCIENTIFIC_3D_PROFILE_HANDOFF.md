@@ -14,6 +14,25 @@ Local Linux validation uses Vulkan SDK 1.4.328.1, RTX 5090 with matching NVIDIA 
 
 These are development-source checks. Frozen source/wheels/providers, hosted platforms, live browser interaction, and unavailable macOS/Windows physical checks remain separate release gates. This change adds no public example or media publication and leaves the protected data gitlink unchanged.
 
+## RC4 parallel implementation wave
+
+Status: planning audited at `858bdf261`; implementation is authorized on isolated local RC4 branches. Preserve `main` for RC3 finalization. The wave implements the required scientific profile through the existing scene → FramePlan → DRP2 runtime; course/provider work, broad peeling/AO parity, volume/PBR, mesh parts, and asynchronous query redesign remain outside this wave.
+
+| Owner | Local branch | Ordered checkpoints |
+| --- | --- | --- |
+| Point worker | `rc4/point-wboit` | Native and WGSL disc/style/cue-preserving accumulation; zero-alpha/order/depth regressions; retained point updates. |
+| Plane worker | `rc4/sampled-planes` | Textured-mesh WBOIT with sampling/material validity; retained cutoff and masked raster depth; explicit query/capture/occluder exclusions for unsupported variants. |
+| Query/update worker | `rc4/query-composition` | Coherent empty/restored retained payloads; one GPU identity/depth query pass with bounded token mapping; coalesced stationary-hover freshness outside gestures. |
+| Integrator | `rc4/scientific-3d` | Shared logarithmic WBOIT equations and primitive/resolve WGSL; registry/layout reconciliation; mixed and cutout C/Python/live-WebGPU scenarios; final integration checks and evidence. |
+
+Workers use separate build outputs, Python environments/generated bindings, and exact external gitlinks. Compile concurrently with bounded jobs; serialize GPU tests and timing comparisons. Commit independently validated checkpoints locally, integrate them sequentially, and rerun affected validation. Shared descriptor, material, shader and test-registration changes require coordinated ownership and review at integration.
+
+Renderer acceptance compares reversed transparent order, hidden versus zero effective alpha, opaque sphere/path occlusion, sampled-plane holes and cutoff boundaries, material/cue response, camera/projection, nonzero panel origins and resize. Query/update acceptance compares frontmost identity under reversed attachment order, signed/zero link keys and mapping changes, shrink/grow/empty/restore, explosion/visibility, stationary scene changes, gesture suppression and retained committed selection. Preserve GPU authority and explicit readback failures; do not introduce CPU picking fallback or redraw/query feedback loops.
+
+Each code checkpoint runs its build, focused regressions and whitespace/staged review. Shader/layout changes also run shader ABI and scene boundaries/specifications; public API changes refresh and validate bindings before Python checks. Final integration runs the scene suite, Vulkan validation, focused browser packets/execution, complete temporary-media example checks, and bounded live update/resize/shutdown validation. Missing platform/browser proof remains pending. Portable public examples require C, Python and live WebGPU together; generated canonical media and the protected data pointer require separate approval before promotion.
+
+Stop a package that requires an alternative renderer, invalid borrowed-handle ownership, unbounded query resources, guessed coverage or substantial protocol redesign; continue independent packages and record the precise unresolved dependency. Local source delivery does not close real-data package acceptance, exact release artifacts, physical-platform proof or maintainer review. Publication is not part of this wave.
+
 ## Historical source baseline and gaps
 
 The technique audit inspected `b1ca5a195f921d531cdf729bd7e420ee732888d7`. Findings below describe the pre-fix source audit; their specific GPU symptoms were not reproduced during that audit. The RC3 dispositions are now implemented as recorded above, while profile extensions remain pending. Existing successful scene tests do not prove every family/alpha combination.
