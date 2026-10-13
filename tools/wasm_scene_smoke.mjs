@@ -598,7 +598,8 @@ function expectPipelineMetadata(stream, label) {
     for (const target of pipeline.color_targets) {
       requireOk(
         target.format === "rgba8unorm" || target.format === "bgra8unorm" ||
-          target.format === "rgba16float" || target.format === "canvas",
+          target.format === "rgba16float" || target.format === "r16float" ||
+          target.format === "canvas",
         `${label}: render pipeline ${pipeline.id} has unexpected color target format ${target.format}`,
       );
     }
@@ -628,6 +629,36 @@ function expectDepthPipeline(pipeline, label, writeEnabled = true, compare = "le
     pipeline.depth_stencil.depth_compare === compare,
     `${label}: unexpected depth compare ${pipeline.depth_stencil.depth_compare}`,
   );
+}
+
+function expectSampledPlanesScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  expectPipelineMetadata(stream, label);
+  requireOk(commandsOf(stream, "DrawIndexed").length >= 9, `${label}: missing indexed planes/cubes`);
+  requireOk(commandsOf(stream, "WriteTexture").length >= 1, `${label}: missing RGBA field upload`);
+  const mask = expectPipeline(stream, `${label} masked plane`, (pipeline) =>
+    pipeline.builtin_pipeline === "scene.mesh" && pipeline.color_targets.length === 1);
+  expectDepthPipeline(mask, `${label} masked plane`);
+  const accum = expectPipeline(stream, `${label} accumulation`, (pipeline) =>
+    pipeline.builtin_pipeline === "scene.mesh" && pipeline.color_targets.length === 2);
+  expectDepthPipeline(accum, `${label} accumulation`, false);
+  requireOk(
+    accum.color_targets[0].format === "rgba16float" && accum.color_targets[1].format === "r16float",
+    `${label}: incorrect accumulation/transmittance formats`,
+  );
+  requireOk(accum.color_targets.every((target) =>
+    target.blend?.color?.src_factor === "one" && target.blend?.color?.dst_factor === "one"),
+  `${label}: WBOIT attachments must accumulate additively`);
+  const shaders = commandsOf(stream, "CreateShaderModule").map((shader) => shader.code).join("\n");
+  requireOk(shaders.includes("evaluate_mesh_surface") && shaders.includes("scene_alpha_valid"),
+    `${label}: sampled alpha/material evaluation is absent`);
+  requireOk(shaders.includes("scene_wboit_weight") && shaders.includes("1.0 - exp(-weight)"),
+    `${label}: logarithmic accumulation/resolve is absent`);
+  const passes = commandsOf(stream, "BeginRenderPass").filter((pass) =>
+    pass.color_attachments.length === 2);
+  requireOk(passes.length === 2, `${label}: expected two panel WBOIT passes`);
+  requireOk(passes.every((pass) => pass.depth_stencil_attachment?.depth_load_op === "load"),
+    `${label}: WBOIT must retain opaque depth`);
 }
 
 function expectSphereImpostorShaderContract(stream, pipeline, label) {
@@ -2399,6 +2430,51 @@ const Module = await createModule({
   locateFile: (path) => join(dirname(modulePath), path),
 });
 const smokeSize = 64;
+
+// Focused synthetic scenarios need no prepared scientific data fixtures.
+const focusedScenarioId = process.env.DVZ_WASM_SMOKE_SCENARIO;
+const focusedScenarioChecks = new Map([
+  ["features_sampled_planes", {
+    shape: expectSampledPlanesScenarioStreamShape,
+    cameraStart: [200, 300],
+    cameraEnd: [240, 330],
+    minUniformUpdates: 3,
+  }],
+]);
+if (focusedScenarioId) {
+  const check = focusedScenarioChecks.get(focusedScenarioId);
+  requireOk(check !== undefined, `unknown focused scenario ${focusedScenarioId}`);
+  const label = `focused ${focusedScenarioId}`;
+  const scene = Module._dvz_wasm_api_scene(1280, 720);
+  requireOk(scene !== 0, `${label}: scene creation failed`);
+  try {
+    setCapabilities(Module, scene, 4096, 4, 8, 256 * 1024 * 1024, 256, 8,
+      `${label} capabilities`);
+    expectStatus(Module._dvz_wasm_api_scenario_create(scene, scenarioIndex(Module, focusedScenarioId)),
+      0, `${label} create`);
+    const figure = Module._dvz_wasm_api_scenario_figure(scene);
+    const initial = emitStream(Module, scene, figure, `${label} initial`);
+    check.shape(initial.stream, `${label} initial`);
+    expectStatus(Module._dvz_wasm_api_scenario_pointer(
+      scene, DVZ_POINTER_EVENT_PRESS, ...check.cameraStart, DVZ_POINTER_BUTTON_LEFT, 0, 1, 100),
+    0, `${label} press`);
+    expectStatus(Module._dvz_wasm_api_scenario_pointer(
+      scene, DVZ_POINTER_EVENT_MOVE, ...check.cameraEnd, DVZ_POINTER_BUTTON_LEFT, 0, 1, 116),
+    0, `${label} move`);
+    expectStatus(Module._dvz_wasm_api_scenario_pointer(
+      scene, DVZ_POINTER_EVENT_RELEASE, ...check.cameraEnd, DVZ_POINTER_BUTTON_LEFT, 0, 1, 132),
+    0, `${label} release`);
+    const changed = emitIncrementalPacketStream(Module, scene, figure, `${label} camera`);
+    requireOk(changed.update.decoded.commands.filter((command) =>
+      command.cmd === "WriteBuffer").length >= check.minUniformUpdates,
+    `${label}: camera uniform updates missing`);
+    expectNoDiagnostics(Module, scene, `${label} diagnostics`);
+    console.log(`PASS ${label}: packet shape and camera updates`);
+  } finally {
+    Module._dvz_wasm_api_scene_destroy(scene);
+  }
+  process.exit(0);
+}
 
 requireOk(
   await mountOptionalHostFiles(Module, [
