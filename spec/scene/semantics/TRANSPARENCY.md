@@ -1,7 +1,8 @@
 # Transparency And Depth Ordering
 
-This document defines how the scene layer handles transparent visuals, depth ordering,
-and order-independent transparency.
+Status: normative transparency semantics. A declared alpha mode does not establish implementation support for every visual family or backend. The [v0.4 scientific 3D profile](../slices/V04_SCIENTIFIC_3D_PROFILE.md) defines required pre-final coverage; the [execution handoff](../../../agents/now/SCIENTIFIC_3D_PROFILE_HANDOFF.md) records current gaps and validation work.
+
+This document defines how the scene layer handles transparent visuals, depth ordering, and order-independent transparency.
 
 
 ## Alpha Modes
@@ -18,8 +19,11 @@ Every visual declares an `alpha_mode` that tells the scene how to handle its fra
 
 `DVZ_ALPHA_OPAQUE` is the default.
 `DVZ_ALPHA_WBOIT` is the active order-independent transparency path.
-`DVZ_ALPHA_MASK` is useful for foliage, text impostor quads, and marker sprites where
-hard edges are acceptable and depth write must be preserved.
+`DVZ_ALPHA_MASK` requires a shared effective-alpha cutoff across visible shading, surface capture, occlusion, and queries. The current implementation classifies masked visuals but does not implement this general cutoff contract; zero-alpha discard alone is not full mask support.
+
+Depth behavior in the table applies to eligible 3D raster visuals with depth testing enabled. Screen-space images and overlays are separate: the current image pipeline does not test or write raster depth, even when the common depth-test setter succeeds. Use a depth-capable textured mesh for a physical 3D plane until an explicit 3D image contract is implemented.
+
+Unsupported family, attribute, alpha-mode, or backend combinations must produce a clear validation diagnostic before invalid frame emission. An OIT path must preserve the family's texture sampling, silhouette coverage, material alpha, clipping, and corrected fragment depth. Substituting a primitive fragment shader is not sufficient for image, sphere, or point support.
 
 
 ## Blend Modes
@@ -90,8 +94,7 @@ target format may still saturate.
 Weighted blended OIT (McGuire & Bavoil 2013) is the active path for
 `DVZ_ALPHA_WBOIT` visuals.
 
-The first WBOIT slice is implemented in the active scene -> DRP2 -> runtime stack for retained
-visuals that opt into `DVZ_ALPHA_WBOIT`.
+The first WBOIT slice is implemented in the active scene -> DRP2 -> runtime stack for ordinary untextured mesh/primitive visuals and splats. Textured meshes and point-like visuals do not yet have conformant accumulation variants. Enabling the alpha enum on another family does not establish support; required point and textured-plane extensions belong to the pre-final profile.
 
 It is selected from lower-level runtime capabilities rather than from a standalone WBOIT flag. The
 required ingredients are compatible floating-point render targets, enough color attachments for the
@@ -131,8 +134,7 @@ The resolve pass is inserted automatically into the `FramePlan` after the WBOIT 
 - More expensive than WBOIT because it needs multiple passes
 - Capability- and pass-budget-gated
 
-`DVZ_ALPHA_DEPTH_PEEL` is appropriate when WBOIT approximation errors are unacceptable and the
-runtime can afford the extra passes.
+`DVZ_ALPHA_DEPTH_PEEL` is appropriate when WBOIT approximation errors are unacceptable and the runtime can afford the extra passes. Current primitive/ordinary-mesh variants use four fixed dual-peeling iterations; this is a bounded technique, not arbitrary-depth exact OIT. Other families require compatible, coverage-preserving variants before support is declared. Effective-zero-alpha fragments must not consume the peeling budget.
 
 
 ## Deferred Exact OIT
@@ -141,10 +143,9 @@ Per-pixel linked-list OIT remains a deferred possible future path. It is not the
 alpha mode; use `DVZ_ALPHA_DEPTH_PEEL` for the current explicit higher-quality OIT mode.
 
 
-## CPU Depth Sort (Optional Source-Over Fallback)
+## CPU Depth Sort (Deferred Source-Over Fallback)
 
-For `DVZ_ALPHA_BLENDED` visuals that request sorted source-over blending, the scene may sort items
-by CPU-visible representative depth:
+There is no current scene-managed sorted source-over control. A future fallback could sort items by CPU-visible representative depth:
 
 1. item world positions are read from the CPU-side copy of the position buffer,
 2. they are sorted by depth (distance from camera) each frame,
@@ -156,18 +157,12 @@ For static scenes or scenes where items do not intersect, it can produce accepta
 
 ## Volume Visuals
 
-Volume visuals (`DVZ_VISUAL_VOLUME`) use fragment shader ray casting and handle their
-own internal compositing.
-The active first slice supports retained volume visuals with sampled fields, slice/DVR state, and
-the normal visual alpha modes. Volumes that opt into `DVZ_ALPHA_WBOIT` contribute transparent
-fragments to the WBOIT accumulation path; source-over and depth-peel modes follow their declared
-alpha mode.
+Volume visuals use fragment shader ray casting and handle their own internal compositing. Existing sampled-field slice, MIP, and composite routes do not establish WBOIT or depth-peeling support: the current volume shader has no WBOIT accumulation variant, and generic primitive peeling does not preserve volume semantics. Preserve existing bounded volume behavior; advanced geometry/volume transparency integration is deferred beyond v0.4. The nearest-layer scene/volume occlusion approximation remains governed by [OCCLUSION_EFFECTS.md](../implementation/OCCLUSION_EFFECTS.md).
 
 
 ## Interaction With Item-State Highlight
 
-Item-state visual styles apply to transparent visuals in the same way as opaque visuals.
-Alpha styling modifies the per-fragment alpha before OIT accumulation.
+Where a transparent shader variant supports item-state styles, alpha styling must modify effective per-fragment alpha before OIT accumulation. Do not infer item-state support from an ordinary or opaque family variant; unsupported combinations require diagnostics.
 
 Depth-raising or z-bias item-state effects are not meaningful for `DVZ_ALPHA_BLENDED`,
 `DVZ_ALPHA_WBOIT`, or `DVZ_ALPHA_DEPTH_PEEL` visuals because normal depth write is disabled in the

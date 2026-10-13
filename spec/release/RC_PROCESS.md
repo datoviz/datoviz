@@ -51,6 +51,7 @@ Exit criteria:
 10. static-analysis, memory/UB, Vulkan validation, long-running loop, docs link, gallery smoke, and example smoke results are either clean or recorded as known issues;
 11. checksums/signing policy and required third-party notices are decided;
 12. RC3 feedback explicitly asks whether setup, first-window latency, C guidance, ownership, frame-command explanation, runtime diagnostics, resize behavior, and the tutorial API profile are suitable before chapters 4-15 are implemented.
+13. the pre-v0.4 native scientific 3D profile has scoped capability, validation, and documentation updates plus correctness fixes for supported paths, with gaps and evidence recorded in the [profile specification](../scene/slices/V04_SCIENTIFIC_3D_PROFILE.md) and [release handoff](../../agents/now/SCIENTIFIC_3D_PROFILE_HANDOFF.md).
 
 
 ## RC4: Tutorial And Installed Developer Experience Candidate
@@ -65,7 +66,13 @@ Exit criteria:
 6. tutorial source snippets, complete examples, screenshots, exercises, API links, compatibility labels, and navigation pass the strict documentation gates;
 7. RC4 release notes ask for final installation, tutorial-completion, GPU/driver, interaction, asset-discovery, and conceptual feedback;
 8. official managed Vulkan-enabled Qt, compatible PyQt, and `datoviz-qtbridge` provider artifacts are published and the exact split packages pass hosted Linux, macOS, and Windows validation without changing the base-package contract;
-9. only recorded release or tutorial blockers remain before final v0.4.0.
+9. only recorded release, tutorial, or scientific-profile blockers remain before final v0.4.0 or an RC5 decision.
+10. non-volume scientific 3D composition required by the native profile is integrated and passes its acceptance checks, while the existing bounded volume behavior remains intact; advanced volume work may be deferred.
+
+
+## RC5: Conditional Scientific-Profile Gap Closure
+
+Use RC5 only if substantial scientific-profile gaps or RC4 feedback require another implementation cycle. It is a contingency, not an automatic release milestone; retain the accepted profile scope and require explicit capability, integration, and validation evidence for any remaining work.
 
 
 ## Final v0.4.0
@@ -78,6 +85,8 @@ Exit criteria:
 4. RC4 tutorial and installed-consumer feedback is resolved or recorded as a known limitation;
 5. direct feedback channels are open for early users, especially scientists whose public datasets are used in showcase examples;
 6. the active queue resets for v0.4 patch work and v0.5 planning.
+
+Final acceptance includes documented capability and validation evidence for the native scientific 3D profile. Do not rush major new features into the final release. Use an RC5 contingency only when substantial profile gaps or RC4 feedback require another implementation cycle; broader OIT, WebGPU parity, PBR expansion, and advanced volume capabilities may remain later work.
 
 
 ## Required RC Notes

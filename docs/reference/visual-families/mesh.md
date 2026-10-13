@@ -70,9 +70,7 @@ use explicit instance attributes when instance-level identity matters.
 
 ## Backend Notes
 
-Native and WebGPU paths are active for indexed and RGBA8 textured geometry. The
-[textured-mesh example](../../examples/features/mesh-texture.md) demonstrates an
-explicit field-slot sampling descriptor.
+Native and WebGPU paths are active for indexed and RGBA8 textured geometry. The [textured-mesh example](../../examples/features/mesh-texture.md) demonstrates an explicit field-slot sampling descriptor. Native WBOIT and primitive depth-peeling variants apply to ordinary untextured meshes; textured meshes currently have neither a WBOIT accumulation variant nor a compatible textured peel variant. See [current technique coverage](../../how-to/depth-blending.md#current-native-technique-coverage) before selecting transparency.
 
 ## Canonical Example
 

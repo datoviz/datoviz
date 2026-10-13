@@ -20,8 +20,7 @@ cues.
 
 ## Minimal sequence
 
-Start with an opaque scene. Enable depth testing on 3D visuals that should participate in scene
-occlusion.
+Start with an opaque scene. Enable depth testing on eligible 3D visuals that should participate in scene occlusion. Image visuals currently do not test or write raster depth; use a textured mesh for a physical plane. Check the family coverage below before choosing an alpha mode.
 
 ```c
 dvz_visual_set_depth_test(visual, true);
@@ -70,6 +69,25 @@ angles; one static viewpoint can hide order-dependent transparency errors.
 | Layered transparent surfaces | `DVZ_ALPHA_DEPTH_PEEL` | More accurate order-independent transparency for layered surfaces; native path, higher cost. |
 | Depth perception in dense 3D scenes | `dvz_visual_set_depth_cue()` | Fades or darkens by depth without changing geometry. |
 | Jagged edges | MSAA example and panel/runtime sample settings | Antialiasing is separate from alpha correctness. |
+
+## Current native technique coverage
+
+This source-audited boundary applies to the development implementation at `b1ca5a195`. It does not replace exact-package or GPU validation. Alpha-mode setters currently accept some combinations that cannot produce a conformant frame; setter success alone is not a support check.
+
+| Visual family/path | Raster depth | WBOIT | Depth peeling |
+| --- | --- | --- | --- |
+| Ordinary untextured mesh/primitive | Supported with depth enabled. | Dedicated lit/unlit variants. | Primitive/ordinary-mesh variants; fixed four-iteration budget. |
+| Textured mesh/physical plane | Supported with depth enabled; zero-alpha texels discard. | No accumulation variant yet. | No compatible textured variant. |
+| Point/pixel/marker | Supported with depth enabled. | No conformant point-like accumulation variant. | Generic replacement does not preserve family coverage. |
+| Analytic sphere | Supported with analytic fragment depth. | No accumulation variant. | Generic replacement does not preserve sphere intersection/depth. |
+| Segment/stroked path/vector | Supported for documented 3D stroke paths. | No dedicated stroke variant. | No coverage-preserving stroke variant. |
+| Image/integer labels | Current image-style paths do not test/write raster depth. | No accumulation variant. | No compatible sampled-field variant. |
+| Gaussian splat | Center-depth test; ordinary blending does not write depth. | Dedicated accumulation variant; family remains experimental. | No Gaussian-coverage variant. |
+| Volume | Mode-specific ray-marched composition. | No accumulation variant. | No volume-preserving variant. |
+
+`DVZ_ALPHA_MASK` is not yet a general threshold-cutout implementation. Zero-alpha discard in a particular shader does not establish matching cutoff behavior in shading, surface capture, occlusion, and queries. Scene-occluder coverage is also family-specific; do not assume that a visible circle, texture cutout, or sphere produces matching occlusion depth.
+
+WBOIT makes participating fragments order independent within its accumulation group. Mixing source-over layers, separate OIT groups, and volume composition does not provide globally correct transparency. Advanced browser techniques have narrower coverage; see the [WebGPU subset](../reference/webgpu-subset.md).
 
 ## Transparency rules
 

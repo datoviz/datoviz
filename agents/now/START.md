@@ -17,12 +17,13 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For 
 | Physical platforms | [GPU selection](HANDOFF_GPU_SELECTION.md), [Windows baseline and remaining matrix](HANDOFF_WINDOWS_VALIDATION.md) |
 | Frame pacing | [Interaction latency contract and benchmarks](../../spec/testing/INTERACTION_LATENCY.md) |
 | Render products | [Graph techniques](../../spec/scene/implementation/GRAPH_TECHNIQUES.md), [occlusion](../../spec/scene/implementation/OCCLUSION_EFFECTS.md), [transparency/MSAA](../../spec/scene/implementation/TRANSPARENCY_MSAA.md); [landing evidence](RC3_RENDER_PRODUCTS_LANDING.md) and [affected QA](RC3_RENDER_PRODUCTS_AFFECTED_QA.md) |
+| Scientific 3D profile | [Required v0.4 native profile](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md), [release handoff](SCIENTIFIC_3D_PROFILE_HANDOFF.md); RC3 closes narrow capability, validation, docs, and supported-path correctness gaps; RC4 delivers non-volume scientific 3D composition and integration acceptance; RC5 is contingency only for substantial remaining gaps or feedback |
 | Input and mesh updates | [Integrated issues #139/#140](ISSUES_139_140_HANDOFF.md) |
 | Rolling fields and surfaces | [Issue #138 benchmarks and RC4/post-v0.4 boundary](ISSUE_138_PERFORMANCE_HANDOFF.md) |
 | Atlas and sampled fields | [Current capability, gaps, benchmark gates, and RC3/RC4/final/v0.5 allocation](ATLAS_SAMPLED_FIELDS_HANDOFF.md) |
 | GSP and VisPy2 future integration | [Durable post-RC3 roadmap](../../spec/api/GSP_VISPY2_FUTURE_WORK.md); panel titles and exact image texel identity are not RC3 gates, while mesh-face picking is currently downstream GSP work |
 | Interactive mesh performance | [Atlas-scale query, mesh-part, and GUI viewport evidence and implementation sequence](INTERACTIVE_MESH_PERFORMANCE_HANDOFF.md) |
-| Lighting | [Completed RC3 foundation](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md); preserve panel-light ownership and direct/indirect contracts without expanding to full PBR or the optional multi-light showcase |
+| Lighting | [Completed RC3 foundation](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md); preserve panel-light ownership and direct/indirect contracts; broader PBR and the optional multi-light showcase remain deferred |
 | ImPlot and docking | [Deferred integration](GUI_IMPLOT_DOCKING_HANDOFF.md); keep the experimental example default-off and partial integration out of RC3 |
 | Windows CUDA/Vulkan interop | [Status](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md), [next steps](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/NEXT_STEPS.md); non-blocking RC4 work unless explicitly promoted |
 | Asset catalog and submodule migration | [Asset architecture](../../spec/data/ASSET_ARCHITECTURE.md); preserve protected `datoviz/data:v0.4-dev`, never repoint it to unrelated historical `data:main` |

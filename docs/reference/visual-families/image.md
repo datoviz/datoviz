@@ -55,7 +55,7 @@ color role without a scale.
 - Sampling defaults to linear filtering, clamp-to-edge addressing, and no mipmaps. Configure the
   `"field"` slot with `dvz_visual_set_field_sampling()` for linear or nearest filtering.
   `dvz_image_set_sampling()` remains available as an image-specific compatibility convenience.
-- Common options include alpha mode, depth test, transform, and color scale.
+- Common options include alpha mode, transform, and color scale. The common depth-test setter does not make the current image pipeline participate in raster depth testing or depth writes. Use a [textured mesh](mesh.md) for an occluding physical 3D plane.
 
 ## Verified Usage Pattern
 
@@ -70,8 +70,7 @@ positions to image coordinates and sampled field values.
 
 ## Backend Notes
 
-Native and WebGPU paths are active for 2D sampled fields. Public examples should bind sampled
-fields explicitly with `dvz_visual_set_field()`.
+Native and WebGPU paths are active for 2D sampled fields. Public examples should bind sampled fields explicitly with `dvz_visual_set_field()`. WBOIT and depth peeling do not have compatible image variants; see [current technique coverage](../../how-to/depth-blending.md#current-native-technique-coverage).
 
 ## Canonical Example
 

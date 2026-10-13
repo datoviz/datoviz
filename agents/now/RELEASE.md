@@ -1,6 +1,6 @@
 # Datoviz v0.4 Release Plan
 
-Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`. Platform availability and PyQt intake updated: 2026-10-10; earlier candidate preparation retains its recorded evidence; release artifacts are not frozen.
+Status: active roadmap from closed RC2 through RC3 and RC4 to final `v0.4.0`, with RC5 contingency for scientific-profile acceptance. Scientific-profile scope added: 2026-10-13. Platform availability and PyQt intake updated: 2026-10-10; earlier candidate preparation retains its recorded evidence; release artifacts are not frozen.
 
 Use [STATUS.md](STATUS.md) for current blockers, [DOCUMENTATION.md](DOCUMENTATION.md) for documentation gates, [DISTRIBUTION_RELEASE_CHECKLIST.md](DISTRIBUTION_RELEASE_CHECKLIST.md) for packaging proof, and [../../spec/release/](../../spec/release/) for durable release policy.
 
@@ -24,6 +24,8 @@ The cutover is complete: old v0.3 `main` is preserved as protected `v0.3-mainten
 
 Completed RC3 implementation includes gallery-media policy and tooling, generated C/Python documentation inventories, dataset attribution and provenance, known limitations, visual-system pilot, canonical Linux screenshots, tutorial-facing API, unified shader toolchain, rewritten course chapters 1-3, local installed-consumer proof, Qt bridge implementation, local Apple Silicon split-package proof, the R1-R9 render-product/GTAO/public-AO implementation, and the required scene-owned lighting foundation. The lighting slice is validated at implementation head `8fd98715e`; earlier integrated render and source-audit evidence remains recorded at its own exact heads.
 
+These completed lanes remain valid historical evidence, but they do not close the newly identified pre-v0.4 [native scientific 3D profile](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md). RC3 scope for that profile is limited to capability, validation, documentation, and correctness fixes on supported paths; the [profile handoff](SCIENTIFIC_3D_PROFILE_HANDOFF.md) tracks its gaps and acceptance evidence. Preserve bounded existing volume behavior while advanced volume work remains deferrable.
+
 The earlier validated implementation head passes the complete 1,128-case native matrix, affected DRP2/vklite/recovery/presentation gates, practical CPU sanitizer checks, full-tree static-analysis disposition, WebGPU, bindings, documentation, example-manifest, and course checks. The later differential correctness and robustness campaign is integrated and published at `42760e096`; after high-effort architecture review and corrective follow-up, its final post-rebase validation passed the full build, 1,135/1,173 native tests with zero failures and 38 expected no-display skips, 47/47 Xvfb canvas tests, 158/158 DRP2 tests, 137/137 fixtures, WebGPU smoke with 42 fixtures plus two streams and 89 negative cases, bindings and ABI policy, and installed-package and FetchContent consumers. Vulkan-backed sanitizer teardown and provider-owned GPU Valgrind diagnostics remain inconclusive, and exact artifact/host/platform proof remains separate.
 
 Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) and [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md). The #140 scene-buffer lifecycle and coherent mesh replacement, #139 physical-key/committed-text split, and #138 benchmark-backed bounded corrections are integrated into `main`. The chapter-5 explicit-reload input path is locally proven without a watcher or new API; exact-candidate package and hosted validation remain separate gates. Optional RC4 sampled-field foundations and post-v0.4 GPU displacement retain the boundaries below.
@@ -36,6 +38,8 @@ Remaining RC3 deliverables:
 4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, base conda layouts, third-party notices, and checksum/signing policy.
 5. Freeze the exact RC3 candidate, carry forward the completed local source-quality and media-pipeline evidence, and run the immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
 6. Freeze RC3 notes, known issues, validation evidence, artifacts, and feedback request only after the exact release scope is fixed.
+7. Close the scoped scientific-profile capability, validation, documentation, and supported-path correctness gaps without broadening RC3 into major rendering features.
+
 Hosted Linux and Windows exact-artifact validation is mandatory for RC3. The physical macOS and Windows machines are unavailable as of 2026-10-10; native/provider and physical candidate checks remain pending. Continue independent Linux development checks; unavailable hardware remains an exclusion. Final requires the missing physical proof or an explicit maintainer-approved exception.
 
 The official Qt/PyQt provider was allocated to RC4, but upstream publication is now complete and RC3 promotion is under evaluation; Linux/macOS published-runtime proof passes, while Windows runtime and exact-candidate provider proof remain pending in [the latest handoff](QT_MACOS_VULKAN_HANDOFF.md). Preserve the existing experimental scope until the maintainer decides otherwise. Other deferred work must not enter the RC3 candidate: ImPlot/cimplot integration, declarative docking, GSP Texture2D mesh integration, point-light evaluation, the full multi-light Klein-bottle showcase, hosted documentation preview, wind globe, prompt widget, Pyodide playground, hero composition, and broad visual polish. The narrower required lighting foundation is complete and must remain covered by exact-candidate validation.
@@ -55,6 +59,7 @@ Required deliverables:
 5. Pass Vulkan validation, public-header and binding checks, source synchronization, links, navigation, captures, license review, known-issue review, and supported hosted-platform validation, or record explicit limitations.
 6. Collect and disposition feedback on setup, progression, diagnostics, GPU/driver behavior, resize, input, concepts, ownership, and cleanup.
 7. Complete the official conda Qt/PyQt provider lane after compatible PyQt publication: build exact split `libdatoviz`, `datoviz`, and `datoviz-qtbridge` artifacts and validate the managed Vulkan loader, MoltenVK, `QVulkanInstance`, native surface, hosted rendering, and missing-provider diagnostics from clean prefixes.
+8. Deliver non-volume scientific 3D composition and integration acceptance required by the [scientific 3D profile](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md), alongside the course and provider gates above. Broader OIT, WebGPU parity, image-based lighting, and PBR expansion remain later work.
 
 The required course uses generated Datoviz geometry and a procedural asymmetric texture. Suzanne and committed binary assets are optional polish only after the course is complete.
 
@@ -62,11 +67,15 @@ Planned non-blocking RC4 engineering lane: implement and physically validate the
 
 Optional non-blocking RC4 sampled-field foundations may complete sampler addressing and bounded multi-region dirty tracking after required course work is secure and before the API freeze. They must not delay RC4, and binding-local logical field views, streaming extensions, and GPU field-displaced structured meshes remain post-v0.4 work under [SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md](../../spec/scene/proposals/future/SAMPLED_FIELD_VIEWS_AND_INCREMENTAL_UPDATES.md).
 
+## RC5 Contingency
+
+Use RC5 only if substantial scientific-profile gaps or RC4 feedback require another implementation cycle. It is not an automatic milestone; keep accepted profile scope and require explicit capability, integration, and validation evidence for remaining work.
+
 ## 4. Final `v0.4.0`
 
 Exit criteria:
 
-1. Reproducible source and binary artifacts pass final packaging, installation, consumer, rendering, documentation, license, and known-issue gates.
+1. Reproducible source and binary artifacts pass final packaging, installation, consumer, rendering, documentation, license, and known-issue gates, and the required scientific 3D profile has explicit capability and validation acceptance.
 2. RC4 course and installed-consumer feedback is resolved or recorded; final course media and compatibility wording are regenerated from exact release code.
 3. Physical validation is complete or explicit maintainer-approved exceptions are recorded in evidence and notes.
 4. Final screenshots, clips, README/website assets, release notes, and announcement text use current canonical examples and course output.
