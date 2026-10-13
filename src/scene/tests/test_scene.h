@@ -1520,3 +1520,6 @@ int test_scene_point_large_count_executes(TstContext* suite, const TstCase* item
 #endif
 
 int test_scene(TstSuite* suite);
+
+int test_scene_point_wboit_shader_contract(TstContext* suite, const TstCase* item);
+int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item);

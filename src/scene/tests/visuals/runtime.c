@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "common.h"
+#include "_visual_pipeline_internal.h"
 #include "core/_scene_resource_key.h"
 #include "core/frame_trace_internal.h"
 
@@ -3222,7 +3223,8 @@ int test_scene_visual_technique_eligibility_inventory(TstContext* suite, const T
         {
             const bool supported = mode != DVZ_ALPHA_MASK &&
                 (mode != DVZ_ALPHA_WBOIT || ops->desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE ||
-                 ops->desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT) &&
+                 ops->desc_kind == DVZ_SCENE_VISUAL_DESC_SPLAT ||
+                 ops->desc_kind == DVZ_SCENE_VISUAL_DESC_POINT) &&
                 (mode != DVZ_ALPHA_DEPTH_PEEL || ops->desc_kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE);
             const char* error = _scene_visual_alpha_eligibility_error(ops->desc_kind, mode);
             AT((error == NULL) == supported);
@@ -3259,7 +3261,10 @@ int test_scene_visual_technique_eligibility_inventory(TstContext* suite, const T
     AT(shader.fragment_glsl != NULL);
     AT(shader.fragment_wgsl != NULL);
     visual.kind = DVZ_SCENE_VISUAL_DESC_POINT;
-    AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    visual.point_like_kind = DVZ_SCENE_POINT_LIKE_POINT;
+    AT(_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
+    AT(shader.fragment_glsl != NULL);
+    AT(shader.fragment_wgsl != NULL);
     visual.kind = DVZ_SCENE_VISUAL_DESC_TEXTURED_MESH;
     AT(!_scene_visual_shader_desc_resolve(&visual, false, true, "_glsl", &shader));
     return 0;
@@ -3295,9 +3300,9 @@ int test_scene_visual_technique_eligibility_preflight(TstContext* suite, const T
     AT(dvz_panel_add_visual(panel, point, NULL) == DVZ_OK);
     DvzCapabilitySnapshot caps = dvz_capability_snapshot();
     DvzDiagnosticReport report;
-    const DvzAlphaMode modes[] = {DVZ_ALPHA_WBOIT, DVZ_ALPHA_DEPTH_PEEL, DVZ_ALPHA_MASK};
-    const char* reasons[] = {"accumulation shaders", "coverage and bounds shaders", "cutoff semantics"};
-    for (uint32_t i = 0; i < 3; i++)
+    const DvzAlphaMode modes[] = {DVZ_ALPHA_DEPTH_PEEL, DVZ_ALPHA_MASK};
+    const char* reasons[] = {"coverage and bounds shaders", "cutoff semantics"};
+    for (uint32_t i = 0; i < DVZ_ARRAY_COUNT(modes); i++)
     {
         AT(dvz_visual_set_alpha_mode(point, modes[i]) == DVZ_OK);
         dvz_diagnostic_report_init(&report);

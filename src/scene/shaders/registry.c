@@ -114,6 +114,14 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "point_style_frag" : "point_style_vert";
     case DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE:
         return fragment ? "point_cue_style_frag" : "point_cue_style_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_WBOIT:
+        return fragment ? "point_wboit_frag" : "point_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_DEPTH_CUE_WBOIT:
+        return fragment ? "point_cue_wboit_frag" : "point_cue_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_WBOIT:
+        return fragment ? "point_style_wboit_frag" : "point_style_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_POINT_STYLE_DEPTH_CUE_WBOIT:
+        return fragment ? "point_cue_style_wboit_frag" : "point_cue_style_vert";
     case DVZ_SCENE_BUILTIN_SHADER_POINT_ITEM_STATE:
         return fragment ? "point_item_state_frag" : "point_item_state_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PIXEL:
