@@ -1,5 +1,7 @@
 #version 450
 
+#include "wboit.glsl"
+
 #include "scene_material.glsl"
 #ifdef DVZ_SCENE_OCCLUSION
 #include "scene_occlusion.glsl"
@@ -26,7 +28,6 @@ void main()
 #ifdef DVZ_SCENE_OCCLUSION
     applySceneOcclusion(color);
 #endif
-    a = clamp(color.a, 0.0, 1.0);
-    outAccum = vec4(color.rgb * a, a);
-    outWeight = -log(max(1.0 - a, 1e-4));
+    outAccum = sceneWboitAccum(color);
+    outWeight = sceneWboitWeight(color.a);
 }
