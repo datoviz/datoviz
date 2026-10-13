@@ -21,5 +21,8 @@ vec4 pointStyleSurface()
     vec4 edgeColor = semanticColorToLinear(material.baseColorFactor);
     vec4 linearColor = semanticColorToLinear(fragColor);
     vec4 color = filled ? mix(linearColor, edgeColor, strokeMask) : edgeColor;
-    return vec4(color.rgb, color.a * coverage);
+    vec4 surface = vec4(color.rgb, color.a * coverage);
+    if (surface.a <= 0.0)
+        discard;
+    return surface;
 }

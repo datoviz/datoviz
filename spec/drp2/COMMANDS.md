@@ -653,6 +653,7 @@ Optional fields:
   `triangle-list`, `triangle-strip`. Defaults to `triangle-list`.
 - `cull_mode`: face-culling mode; one of `none`, `front`, `back`. Defaults to `none`.
 - `front_face`: winding order considered front-facing; one of `ccw`, `cw`. Defaults to `ccw`.
+- `raster`: emitted raster-state object with `cull_mode` (`none`, `front`, `back`) and `front_face` (`clockwise`, `counter-clockwise`). Native serialization and WebGPU execution use this object; the top-level short tokens remain schema vocabulary.
 - `sample_count`: MSAA sample count; integer ≥ 1. Defaults to `1`.
 - `depth_stencil`: depth and stencil state object. Omit for render passes without a depth/stencil
   attachment.

@@ -85,6 +85,20 @@
     "front_face": {
       "$ref": "../common/FrontFace.json"
     },
+    "raster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cull_mode", "front_face"],
+      "properties": {
+        "cull_mode": {
+          "$ref": "../common/CullMode.json"
+        },
+        "front_face": {
+          "type": "string",
+          "enum": ["clockwise", "counter-clockwise"]
+        }
+      }
+    },
     "sample_count": {
       "type": "integer",
       "minimum": 1

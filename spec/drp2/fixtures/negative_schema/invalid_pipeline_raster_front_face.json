@@ -1,0 +1,68 @@
+{
+  "name": "invalid_pipeline_raster_front_face",
+  "description": "CreateRenderPipeline with an invalid nested raster winding.",
+  "reason": "The raster front_face token must be clockwise or counter-clockwise.",
+  "fix": "Use a canonical front_face token inside the raster object.",
+  "version": {
+    "major": 2,
+    "minor": 0
+  },
+  "tags": [
+    "negative_schema",
+    "pipeline",
+    "raster"
+  ],
+  "commands": [
+    {
+      "cmd": "HelloRenderer",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "client_name": "fixture-client"
+    },
+    {
+      "cmd": "RendererHelloReply",
+      "version": {
+        "major": 2,
+        "minor": 0
+      },
+      "status": "ok",
+      "renderer_name": "fixture-renderer"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 10,
+      "stage": "VERTEX",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@vertex fn main() -> @builtin(position) vec4f { return vec4f(0.0); }"
+    },
+    {
+      "cmd": "CreateShaderModule",
+      "id": 11,
+      "stage": "FRAGMENT",
+      "format": "wgsl",
+      "entry_point": "main",
+      "code": "@fragment fn main() -> @location(0) vec4f { return vec4f(1.0); }"
+    },
+    {
+      "cmd": "CreateRenderPipeline",
+      "id": 20,
+      "vertex_shader_module_id": 10,
+      "fragment_shader_module_id": 11,
+      "vertex_buffer_slots": 0,
+      "topology": "triangle-list",
+      "raster": {
+        "cull_mode": "none",
+        "front_face": "inside"
+      }
+    }
+  ],
+  "expected": {
+    "outcome": "error",
+    "phase": "schema_validation",
+    "code": "DRP2_ERR_INVALID_ARGUMENT",
+    "command_index": 4
+  }
+}

@@ -277,7 +277,8 @@ char* _read_text_fixture(const char* path)
  * @param stream the command stream
  * @param name the fixture name to use during serialization
  * @param path the committed fixture path
- * @return 0 on success, 1 on mismatch
+ * @return 0 on success, 1 on mismatch or fixture write failure
+ * @note Set DVZ_UPDATE_SCENE_FIXTURES=1 to refresh textual fixtures intentionally.
  */
 int _assert_stream_matches_fixture(
     DvzDrp2CommandStream* stream, const char* name, const char* path)
@@ -288,6 +289,25 @@ int _assert_stream_matches_fixture(
 
     char* json = dvz_drp2_stream_json(stream, name);
     ANN(json);
+
+    const char* update = getenv("DVZ_UPDATE_SCENE_FIXTURES");
+    if (update != NULL && strcmp(update, "1") == 0)
+    {
+        FILE* file = fopen(path, "wb");
+        if (file == NULL)
+        {
+            dvz_drp2_stream_json_destroy(json);
+            return 1;
+        }
+        size_t size = strlen(json);
+        bool written = fwrite(json, 1, size, file) == size;
+        written = fclose(file) == 0 && written;
+        if (!written)
+        {
+            dvz_drp2_stream_json_destroy(json);
+            return 1;
+        }
+    }
 
     char* fixture = _read_text_fixture(path);
     ANN(fixture);
