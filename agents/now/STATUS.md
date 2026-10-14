@@ -68,6 +68,8 @@ RC4 also delivers non-volume scientific 3D composition and integration acceptanc
 
 RC5 is a contingency only if substantial scientific-profile gaps or RC4 feedback require another implementation cycle; it is not an automatic milestone. Final v0.4.0 accepts the profile from documented capability and validation evidence without rushing major new features into the release.
 
+The RC4 scientific lane also implements bounded indexed mesh item-state banks for sparse GPU hover/selection decoration, with native and live WebGPU proof and real atlas consumer evidence; see [the follow-up](SCIENTIFIC_3D_PROFILE_HANDOFF.md#indexed-item-state-rc4-follow-up-2026-10-14). Full mesh parts and asynchronous picking remain post-v0.4. This source delivery does not freeze a release candidate or close physical-platform, installed-package or canonical-media gates.
+
 The Windows/NVIDIA CUDA/Vulkan external-memory port is a planned non-blocking RC4 engineering lane with a durable task record in [../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md). It does not become an RC4 release gate unless the maintainer explicitly promotes it.
 
 ## Final Gate

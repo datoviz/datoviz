@@ -64,6 +64,8 @@ The same synthetic GUI runs measured 0.34 ms/frame for the empty GUI, 0.32 ms/fr
 
 ## Post-v0.4 Sequence
 
+The bounded indexed item-state bank is now implemented on the RC4 scientific lane: copied per-vertex u32 slots address a fixed-size scene-owned flags buffer; existing hover/selection styles apply in lit/unlit OPAQUE, BLENDED and WBOIT rendering. Sparse updates redraw without changing FACE/link identity or authored alpha coverage. It is a v0.4 capability, independent of the larger mesh-part API below. Full parts should reuse or evolve this bank machinery rather than introduce a second decoration mechanism. RC3 remains unchanged; RC5 is contingency for acceptance gaps, and final v0.4 validates the chosen capability rather than expanding it.
+
 1. Implement bounded asynchronous query execution and later-frame completion while retaining the explicit synchronous helper.
 2. Implement mesh parts in independently validated slices: normalized indexed subdraws, retained part layout/state, GPU state buffer, direct subdraw lowering, ITEM identity, batched Python facade, then native/WebGPU and transparency coverage.
 3. Implement GUI viewport submitted/completed/displayed generations, bounded source-image buffering, scoped completion, fair multi-viewport scheduling, and deferred retirement before removing the steady-state device-wide wait.
