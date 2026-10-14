@@ -801,7 +801,7 @@ function makeBindGroupLayoutEntry(entry, storageAccess = "read_write", options =
       return {
         binding,
         visibility: shaderStageVisibility(entry.visibility, ["FRAGMENT", "COMPUTE"]),
-        buffer: { type: storageAccess === "read" ? "read-only-storage" : "storage" },
+        buffer: { type: (entry.access ?? storageAccess) === "read" ? "read-only-storage" : "storage" },
       };
     case "storage_texture":
       return {
@@ -3134,7 +3134,7 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
             layout: device.createBindGroupLayout({
               label: command.label,
               entries: command.entries.map((entry) =>
-                makeBindGroupLayoutEntry(entry, "read_write", options)),
+                makeBindGroupLayoutEntry(entry, entry.access ?? "read_write", options)),
             }),
           },
           "bind_group_layout",

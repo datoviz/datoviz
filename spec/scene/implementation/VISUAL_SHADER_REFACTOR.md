@@ -159,3 +159,7 @@ Run the narrowest useful loop, then broaden only as needed:
 - Use `DVZ_DRP2_TRACE=1` or `DVZ_DRP2_TRACE=full` when investigating unexpected app-frame stream churn.
 
 For docs-only updates, do not touch source code; record changed documentation files in the final summary.
+
+## Indexed item-state ABI
+
+Ordinary untextured indexed triangle meshes with a typed state bank use vertex location `7` as a per-vertex `uint32_t` bank index. Set `1` retains material at binding `0`, shared item-state style at binding `1`, panel lights at binding `4`, and adds a read-only vertex-stage storage buffer of packed `uint32_t` words at binding `2`. The indexed layout has a separate persistent layout/cache identity from the existing dense instance-state layout. `indexed_item_state`, `lit_indexed_item_state`, `wboit_indexed_item_state`, and `wboit_lit_indexed_item_state` are distinct semantic pipeline variants. Picking/query shaders omit this decoration lookup and preserve authored alpha/geometry inputs.

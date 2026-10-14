@@ -268,6 +268,8 @@ DvzResult dvz_visual_set_data(
     ANN(visual);
     ANN(attr_name);
     attr_name = _attr_storage_name(visual->type, attr_name);
+    if (!_visual_indexed_state_attr_mutation_allowed(visual, attr_name))
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual data"))
         return -1;
     if (item_count == 0)
@@ -612,6 +614,11 @@ DvzResult dvz_visual_set_data_many(
             return -1;
         }
 
+        if (!_visual_indexed_state_attr_mutation_allowed(visual, attr_name))
+        {
+            dvz_free(prepared);
+            return DVZ_ERROR;
+        }
         for (uint32_t j = 0; j < i; j++)
         {
             if (strcmp(prepared[j].attr_name, attr_name) == 0)
@@ -809,6 +816,8 @@ DvzResult dvz_visual_set_data_range(
     ANN(attr_name);
     ANN(data);
     attr_name = _attr_storage_name(visual->type, attr_name);
+    if (!_visual_indexed_state_attr_mutation_allowed(visual, attr_name))
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual data"))
         return -1;
     if (item_count == 0)

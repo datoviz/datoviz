@@ -339,7 +339,7 @@ bool _resolve_image_bind_group(
 bool _resolve_item_state_style_bind_group(
     DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t bind_group_layout_id,
     uint64_t material_buffer_id, uint64_t panel_light_buffer_id,
-    uint64_t item_state_style_buffer_id, uint64_t* out_id)
+    uint64_t item_state_style_buffer_id, uint64_t item_state_words_buffer_id, uint64_t* out_id)
 {
     ANN(emitter);
     ANN(stream);
@@ -351,15 +351,16 @@ bool _resolve_item_state_style_bind_group(
 
     char bg_key[128];
     dvz_snprintf(
-        bg_key, sizeof(bg_key), "_bg_item_state_style_%" PRIu64 "_l%" PRIu64 "_%" PRIu64,
-        material_buffer_id, panel_light_buffer_id, item_state_style_buffer_id);
+        bg_key, sizeof(bg_key),
+        "_bg_item_state_style_%" PRIu64 "_l%" PRIu64 "_%" PRIu64 "_w%" PRIu64, material_buffer_id,
+        panel_light_buffer_id, item_state_style_buffer_id, item_state_words_buffer_id);
     bool is_new = false;
     uint64_t id = _obj_id(emitter, bg_key, &is_new);
     if (id == 0)
         return false;
     if (is_new)
     {
-        DvzDrp2BindGroupEntry entries[3] = {
+        DvzDrp2BindGroupEntry entries[4] = {
             {
                 .binding = DVZ_SCENE_SHADER_BINDING_MATERIAL_PARAMS,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
@@ -384,9 +385,18 @@ bool _resolve_item_state_style_bind_group(
                 .offset = 0,
                 .size = sizeof(DvzScenePanelLightsGpu),
             },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_ITEM_STATE_WORDS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+                .resource_kind = DVZ_DRP2_BINDING_RESOURCE_BUFFER,
+                .resource_id = item_state_words_buffer_id,
+                .offset = 0,
+                .size = _resource_byte_size(&emitter->resources, item_state_words_buffer_id),
+            },
         };
         if (!dvz_drp2_stream_create_bind_group_entries(
-                stream, id, bind_group_layout_id, 3, entries))
+                stream, id, bind_group_layout_id, item_state_words_buffer_id != 0 ? 4 : 3,
+                entries))
         {
             return false;
         }

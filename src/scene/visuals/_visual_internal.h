@@ -78,3 +78,5 @@ void _scene_visual_reset(DvzVisual* visual, bool release_owned_resources);
 uint64_t _scene_visual_public_id(const DvzScene* scene, const DvzVisual* visual);
 void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order);
 void _scene_release_visual_scale(DvzVisual* visual);
+
+bool _visual_indexed_state_attr_mutation_allowed(const DvzVisual* visual, const char* name);

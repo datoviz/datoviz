@@ -25,3 +25,5 @@ void _scene_notify_query_input_changed(DvzFigure* figure);
 void _scene_notify_visual_changed(DvzVisual* visual);
 
 void _scene_notify_buffer_changed(DvzSceneBuffer* buffer);
+
+void _scene_notify_visual_redraw(DvzVisual* visual);

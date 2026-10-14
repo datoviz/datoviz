@@ -171,19 +171,21 @@ bool _resolve_material_bind_group_layout(
  * @return whether the layout exists or was appended
  */
 bool _resolve_item_state_style_bind_group_layout(
-    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, uint64_t* out_id)
+    DvzFramePlanEmitter* emitter, DvzDrp2CommandStream* stream, bool indexed, uint64_t* out_id)
 {
     ANN(emitter);
     ANN(stream);
     ANN(out_id);
 
     bool is_new = false;
-    uint64_t id = _obj_id(emitter, "_bgl_item_state_style_lights_v1", &is_new);
+    uint64_t id = _obj_id(
+        emitter, indexed ? "_bgl_indexed_item_state_lights_v1" : "_bgl_item_state_style_lights_v1",
+        &is_new);
     if (id == 0)
         return false;
     if (is_new)
     {
-        DvzDrp2BindGroupLayoutEntry entries[3] = {
+        DvzDrp2BindGroupLayoutEntry entries[4] = {
             {
                 .binding = DVZ_SCENE_SHADER_BINDING_MATERIAL_PARAMS,
                 .binding_type = DVZ_DRP2_BINDING_TYPE_UNIFORM_BUFFER,
@@ -202,8 +204,15 @@ bool _resolve_item_state_style_bind_group_layout(
                 .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX | DVZ_DRP2_SHADER_STAGE_FRAGMENT,
                 .access = DVZ_DRP2_BINDING_ACCESS_READ,
             },
+            {
+                .binding = DVZ_SCENE_SHADER_BINDING_ITEM_STATE_WORDS,
+                .binding_type = DVZ_DRP2_BINDING_TYPE_STORAGE_BUFFER,
+                .visibility = DVZ_DRP2_SHADER_STAGE_VERTEX,
+                .access = DVZ_DRP2_BINDING_ACCESS_READ,
+            },
         };
-        if (!dvz_drp2_stream_create_bind_group_layout_entries(stream, id, 3, entries))
+        if (!dvz_drp2_stream_create_bind_group_layout_entries(
+                stream, id, indexed ? 4 : 3, entries))
             return false;
     }
     *out_id = id;

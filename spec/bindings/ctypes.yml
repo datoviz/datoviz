@@ -461,6 +461,27 @@ array_facade:
         count_from: shape0
         lifetime: copied_before_return
 
+  dvz_item_state_buffer_update:
+    groups:
+      - pointer_arg: slots
+        count_arg: update_count
+        count_from: shape0
+        dtype: uint32
+        lifetime: copied_before_return
+      - pointer_arg: words
+        count_arg: update_count
+        count_from: shape0
+        dtype: uint32
+        lifetime: copied_before_return
+
+  dvz_visual_set_item_state_buffer:
+    groups:
+      - pointer_arg: indices
+        count_arg: vertex_count
+        count_from: shape0
+        dtype: uint32
+        lifetime: copied_before_return
+
   dvz_visual_set_index_data:
     groups:
       - pointer_arg: indices

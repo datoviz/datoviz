@@ -756,9 +756,23 @@ DvzResult dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode)
         log_error("invalid visual alpha mode %d", (int)mode);
         return -1;
     }
+    bool indexed_technique_change =
+        _visual_family_state(visual)->item_state_bank != NULL &&
+        (visual->alpha_mode == DVZ_ALPHA_OPAQUE || visual->alpha_mode == DVZ_ALPHA_BLENDED ||
+         visual->alpha_mode == DVZ_ALPHA_WBOIT) &&
+        (mode == DVZ_ALPHA_OPAQUE || mode == DVZ_ALPHA_BLENDED || mode == DVZ_ALPHA_WBOIT);
     visual->alpha_mode = mode;
     visual->material.alpha_mode = mode;
-    _visual_material_mark_dirty(visual);
+    if (indexed_technique_change)
+    {
+        // Indexed decoration changes presentation; base geometry/alpha query coverage is stable.
+        _material_params_sync_state(
+            &_visual_family_state(visual)->material_params, &visual->material);
+        _visual_family_state(visual)->material_params_dirty = true;
+        _scene_notify_visual_redraw(visual);
+    }
+    else
+        _visual_material_mark_dirty(visual);
     return 0;
 }
 

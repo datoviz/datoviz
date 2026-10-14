@@ -442,7 +442,8 @@ bool _emitter_prepare_render_multi(
             if (pipeline.needs_item_state_style_layout)
             {
                 if (!_resolve_item_state_style_bind_group_layout(
-                        emitter, stream, &item_state_style_bgl_id))
+                        emitter, stream, pipeline.needs_indexed_item_state_layout,
+                        &item_state_style_bgl_id))
                 {
                     ok = false;
                     break;
@@ -675,7 +676,8 @@ bool _emitter_prepare_render_multi(
                 break;
             }
             if (!_resolve_item_state_style_bind_group_layout(
-                    emitter, stream, &item_state_style_bgl_id))
+                    emitter, stream, pipeline.needs_indexed_item_state_layout,
+                    &item_state_style_bgl_id))
             {
                 ok = false;
                 break;
@@ -684,7 +686,7 @@ bool _emitter_prepare_render_multi(
             ok = ok && _resolve_item_state_style_bind_group(
                            emitter, stream, item_state_style_bgl_id, bind.material_buffer_id,
                            bind.panel_light_buffer_id, bind.item_state_style_buffer_id,
-                           &item_state_style_bg_id);
+                           bind.item_state_words_buffer_id, &item_state_style_bg_id);
             vis_bg_set1 = item_state_style_bg_id;
         }
         else if (bind.uses_material_set1)

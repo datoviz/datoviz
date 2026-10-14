@@ -1484,6 +1484,16 @@ struct DvzSampledField
 };
 
 
+struct DvzItemStateBuffer
+{
+    DvzScene* scene;
+    DvzSceneBuffer* words;
+    DvzSceneBuffer* style;
+    uint32_t slot_count;
+    uint64_t* slot_revisions;
+};
+
+
 struct DvzSceneBuffer
 {
     DvzScene* scene;
@@ -1495,6 +1505,7 @@ struct DvzSceneBuffer
     uint64_t extent_revision;
     uint64_t lifecycle_revision;
     bool dirty;
+    DvzItemStateBuffer* item_state_bank;
 };
 
 
@@ -1785,6 +1796,7 @@ struct DvzVisualBinding
 struct DvzVisualFamilyState
 {
     DvzPrimitiveTopology topology;
+    DvzItemStateBuffer* item_state_bank;
     DvzVisualBinding bindings[DVZ_SCENE_MAX_VISUAL_BINDINGS];
     DvzSampledField* field;
     char             field_slot[32];
@@ -2207,6 +2219,8 @@ struct DvzFigure
     uint64_t artifact_frame_index;
     uint64_t frame_revision;
     uint64_t query_input_revision;
+    uint64_t item_state_consumed[DVZ_SCENE_MAX_BUFFERS];
+    DvzId item_state_consumed_ids[DVZ_SCENE_MAX_BUFFERS];
 
     char* last_frame_plan_trace;
     bool has_last_frame_plan_trace;
@@ -2270,6 +2284,7 @@ struct DvzScene
 
     uint32_t buffer_count;
     DvzSceneBuffer buffers[DVZ_SCENE_MAX_BUFFERS];
+    DvzItemStateBuffer item_state_banks[DVZ_SCENE_MAX_BUFFERS];
 
     uint32_t buffer_retirement_count;
     DvzSceneBufferRetirement buffer_retirements[DVZ_SCENE_MAX_BUFFER_RETIREMENTS];

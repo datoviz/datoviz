@@ -199,6 +199,20 @@ bool _scene_visual_frame_plan_metadata(
                 sizeof(metadata->item_state_style_id)))
             return false;
     }
+    DvzItemStateBuffer* bank = _visual_family_state(visual)->item_state_bank;
+    if (bank != NULL)
+    {
+        if (!_scene_attr_resource_key(
+                figure, visual, visual_index, "state_index", metadata->selection_id,
+                sizeof(metadata->selection_id)) ||
+            !_scene_resource_key_buffer(
+                bank->words->id, metadata->item_state_words_id,
+                sizeof(metadata->item_state_words_id)) ||
+            !_scene_resource_key_buffer(
+                bank->style->id, metadata->item_state_style_id,
+                sizeof(metadata->item_state_style_id)))
+            return false;
+    }
     bool path_stroke = renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
     bool stroke_quad = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD;
     bool stroke = path_stroke || stroke_quad;

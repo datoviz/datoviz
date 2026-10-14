@@ -265,6 +265,9 @@ static void _scene_mark_runtime_payloads_dirty(DvzScene* scene)
     for (uint32_t fi = 0; fi < scene->figure_count; fi++)
     {
         DvzFigure* figure = &scene->figures[fi];
+        dvz_memset(
+            figure->item_state_consumed, sizeof(figure->item_state_consumed), 0,
+            sizeof(figure->item_state_consumed));
         if (figure->scene != scene)
             continue;
         for (uint32_t pi = 0; pi < figure->panel_count; pi++)
@@ -452,6 +455,8 @@ void dvz_scene_destroy(DvzScene* scene)
     }
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_FIELDS; i++)
         _scene_field_reset(&scene->fields[i]);
+    for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)
+        dvz_free(scene->item_state_banks[i].slot_revisions);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_BUFFERS; i++)
         _scene_buffer_reset(&scene->buffers[i]);
     for (uint32_t i = 0; i < DVZ_SCENE_MAX_COMPUTES; i++)

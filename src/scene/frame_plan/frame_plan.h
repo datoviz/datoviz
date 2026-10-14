@@ -1011,6 +1011,7 @@ typedef struct DvzFramePlanVisualMeta
     char panel_lights_id[DVZ_SCENE_LABEL_SIZE];
     char selection_id[DVZ_SCENE_LABEL_SIZE];
     char item_state_style_id[DVZ_SCENE_LABEL_SIZE];
+    char item_state_words_id[DVZ_SCENE_LABEL_SIZE];
     char path_flags_id[DVZ_SCENE_LABEL_SIZE];
     char path_distance_id[DVZ_SCENE_LABEL_SIZE];
 } DvzFramePlanVisualMeta;

@@ -104,6 +104,15 @@ bool _scene_mesh_visual_desc_from_metadata(
         out->instance_count = (uint32_t)instance_count;
     }
 
+    if (meta->item_state_words_id[0] != '\0' &&
+        (_scene_visual_desc_resource(emitter, meta->item_state_words_id) == 0 ||
+         _scene_visual_desc_resource(emitter, meta->selection_id) == 0 ||
+         _scene_visual_desc_resource(emitter, meta->item_state_style_id) == 0))
+    {
+        if (error != NULL)
+            *error = "typed indexed state metadata missing words, indices, or style resource";
+        return false;
+    }
     uint64_t selection_id = _scene_visual_desc_resource(emitter, meta->selection_id);
     uint64_t item_state_style_id =
         _scene_visual_desc_resource(emitter, meta->item_state_style_id);
@@ -123,6 +132,9 @@ bool _scene_mesh_visual_desc_from_metadata(
         }
         out->vbuf_ids[out->vbuf_count++] = selection_id;
         out->has_item_state = true;
+        out->item_state_words_buffer_id =
+            _scene_visual_desc_resource(emitter, meta->item_state_words_id);
+        out->has_indexed_item_state = out->item_state_words_buffer_id != 0;
         out->item_state_style_buffer_id = item_state_style_id;
     }
 

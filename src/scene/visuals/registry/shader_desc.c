@@ -112,7 +112,7 @@ bool _scene_visual_shader_desc_resolve(
     ANN(out);
     dvz_memset(out, sizeof(DvzSceneVisualShaderDesc), 0, sizeof(DvzSceneVisualShaderDesc));
     if (wboit_accumulation &&
-        (visual->has_item_state ||
+        ((visual->has_item_state && !visual->has_indexed_item_state) ||
          _scene_visual_alpha_eligibility_error(visual->kind, DVZ_ALPHA_WBOIT) != NULL))
         return false;
 
@@ -530,8 +530,9 @@ bool _scene_visual_shader_desc_apply_pass_policy(
     ANN(out_segment_coverage_blend);
 
     if (_scene_visual_alpha_eligibility_error(visual->kind, alpha_mode) != NULL ||
-        (visual->has_item_state && (alpha_mode == DVZ_ALPHA_WBOIT ||
-                                   alpha_mode == DVZ_ALPHA_DEPTH_PEEL)))
+        (visual->has_item_state &&
+         ((alpha_mode == DVZ_ALPHA_WBOIT && !visual->has_indexed_item_state) ||
+          alpha_mode == DVZ_ALPHA_DEPTH_PEEL)))
         return false;
 
     bool depth_peel_pass = provider == DVZ_SCENE_WORK_PROVIDER_DEPTH_PEEL_INIT ||

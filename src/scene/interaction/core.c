@@ -423,7 +423,8 @@ static bool _item_state_visual_supports(const DvzVisual* visual)
     if (visual == NULL)
         return false;
     if (visual->type == DVZ_VISUAL_TYPE_MESH)
-        return _visual_family_state(visual)->field == NULL;
+        return _visual_family_state(visual)->field == NULL &&
+               _visual_family_state(visual)->item_state_bank == NULL;
     return visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
            visual->type == DVZ_VISUAL_TYPE_MARKER || visual->type == DVZ_VISUAL_TYPE_SPHERE;
 }

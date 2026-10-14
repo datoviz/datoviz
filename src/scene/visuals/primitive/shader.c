@@ -45,6 +45,38 @@ bool _scene_primitive_visual_shader_desc(
     if (visual->kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
         return false;
 
+    if (visual->has_indexed_item_state && !picking)
+    {
+        bool lit = visual->has_normal;
+        DvzSceneBuiltinShader vertex =
+            lit ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INDEXED_ITEM_STATE
+                : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INDEXED_ITEM_STATE;
+        DvzSceneBuiltinShader fragment = wboit_accumulation
+                                             ? (lit ? DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT
+                                                    : DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM)
+                                             : vertex;
+        _scene_shader_desc_set_builtin(out, fragment);
+        out->vertex_glsl = _builtin_shader_glsl(vertex, false);
+        out->vertex_wgsl = _builtin_shader_wgsl(vertex, false);
+        out->vertex_spirv_key =
+            lit ? "primitive_lit_indexed_item_state_vert" : "primitive_indexed_item_state_vert";
+        dvz_snprintf(
+            out->vertex_key, sizeof(out->vertex_key), "_vs_prim_indexed_item_state_n%u%s",
+            lit ? 1u : 0u, format_tag);
+        dvz_snprintf(
+            out->fragment_key, sizeof(out->fragment_key), "_fs_prim_indexed_item_state_n%u_o%u%s",
+            lit ? 1u : 0u, wboit_accumulation ? 1u : 0u, format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key),
+            "_pipe_prim_indexed_item_state_t%u_n%u_o%u%s", visual->topology, lit ? 1u : 0u,
+            wboit_accumulation ? 1u : 0u, format_tag);
+        _scene_shader_desc_set_identity(
+            out, "scene.primitive",
+            wboit_accumulation
+                ? (lit ? "wboit_lit_indexed_item_state" : "wboit_indexed_item_state")
+                : (lit ? "lit_indexed_item_state" : "indexed_item_state"));
+        return true;
+    }
     bool lit = visual->has_normal;
     bool instanced = visual->has_instance_transform;
     bool item_state = visual->has_item_state && !picking && !wboit_accumulation;

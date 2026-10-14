@@ -129,9 +129,13 @@ static DvzDrp2CommandStream* _frame_plan_emitter_emit_drp2_candidate(
         }
     }
     bool clear_only = compute == NULL && clear != NULL && render == NULL;
+    bool retained_visuals = false;
+    for (uint32_t i = 0; i < plan->count; i++)
+        if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_RENDER &&
+            plan->nodes[i].u.render.visual_count > 0)
+            retained_visuals = true;
     bool retained_render =
-        upload == NULL && (compute == NULL || scene_compute) && render != NULL &&
-        render->u.render.visual_count > 0;
+        upload == NULL && (compute == NULL || scene_compute) && render != NULL && retained_visuals;
 
     if ((!clear_only && !retained_render && upload == NULL) || (!clear_only && render == NULL))
     {

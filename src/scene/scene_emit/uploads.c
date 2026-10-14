@@ -16,15 +16,110 @@
 #include <stdint.h>
 
 #include "_assertions.h"
+#include "_compat.h"
 #include "_scene.h"
+#include "_scene_resource_key.h"
+#include "_visual_internal.h"
 #include "annotation/prepare_internal.h"
 #include "core/orientation_gizmo_internal.h"
+#include "domain/buffer_internal.h"
 #include "domain/polygon_internal.h"
 #include "registry/registry.h"
-#include "scene_emit/scene_emit.h"
 #include "scene_emit/internal.h"
+#include "scene_emit/scene_emit.h"
 #include "visuals/bounds_internal.h"
-#include "_visual_internal.h"
+
+
+/** Emit copied typed indices transactionally rather than treating them as optional uploads.
+ * @param figure the consumer
+ * @param plan destination plan
+ * @param visual the bound visual
+ * @param visual_index scene visual index
+ * @return whether the required mapping upload was appended
+ */
+static bool
+_emit_bank_indices(DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+{
+    int idx = _attr_index(visual, "state_index");
+    if (idx < 0)
+        return false;
+    const DvzVisualAttr* attr = &visual->attrs[idx];
+    if (attr->dirty_item_count == 0)
+        return true;
+    char key[DVZ_SCENE_LABEL_SIZE];
+    if (!_scene_visual_attr_resource_key(
+            figure, visual, visual_index, "state_index", key, sizeof(key)))
+        return false;
+    uint64_t offset = (uint64_t)attr->dirty_first_item * sizeof(uint32_t);
+    uint64_t bytes = (uint64_t)attr->dirty_item_count * sizeof(uint32_t);
+    if (!dvz_frame_plan_upload_bytes(
+            plan, key, offset, bytes, "state_index", (const uint8_t*)attr->data + offset))
+        return false;
+    _scene_attach_upload_metadata(
+        plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE,
+        DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, attr->item_count);
+    plan->nodes[plan->count - 1].u.upload.item_stride = sizeof(uint32_t);
+    return true;
+}
+
+
+
+/** Emit a bank resource using retained per-slot and per-figure revisions.
+ * @param figure the consumer
+ * @param plan destination plan
+ * @param bank the typed bank
+ * @param buffer words or style buffer
+ * @param emitted within-frame emission guards
+ * @return whether all required uploads were appended
+ */
+static bool _emit_bank_resource(
+    DvzFigure* figure, DvzFramePlan* plan, DvzItemStateBuffer* bank, DvzSceneBuffer* buffer,
+    bool* emitted)
+{
+    uint32_t idx = _scene_buffer_index(figure->scene, buffer);
+    if (idx == UINT32_MAX || emitted[idx])
+        return idx != UINT32_MAX;
+    emitted[idx] = true;
+    uint64_t consumed =
+        figure->item_state_consumed_ids[idx] == buffer->id ? figure->item_state_consumed[idx] : 0;
+    if (consumed >= buffer->content_revision)
+        return true;
+    char key[DVZ_SCENE_LABEL_SIZE];
+    if (!_scene_resource_key_buffer(buffer->id, key, sizeof(key)))
+        return false;
+    bool words = buffer == bank->words;
+    uint32_t count = words ? bank->slot_count : 1;
+    uint32_t stride = buffer->desc.stride;
+    for (uint32_t first = 0; first < count;)
+    {
+        if (words && consumed > 0 && bank->slot_revisions[first] <= consumed)
+        {
+            first++;
+            continue;
+        }
+        uint32_t end = first + 1;
+        while (end < count && (!words || consumed == 0 || bank->slot_revisions[end] > consumed))
+            end++;
+        uint64_t offset = (uint64_t)first * stride;
+        if (!dvz_frame_plan_upload_bytes(
+                plan, key, offset, (uint64_t)(end - first) * stride,
+                words ? "item_state_words" : "item_state_style",
+                (const uint8_t*)buffer->data + offset))
+            return false;
+        DvzFramePlanNode* node = &plan->nodes[plan->count - 1];
+        node->u.upload.buffer_usage = _scene_buffer_drp2_usage(buffer->desc.usage);
+        node->u.upload.item_stride = stride;
+        node->u.upload.metadata.has_metadata = true;
+        node->u.upload.metadata.kind = DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER;
+        node->u.upload.metadata.role = words ? DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE
+                                             : DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE_STYLE;
+        node->u.upload.metadata.has_logical_extent = true;
+        node->u.upload.metadata.logical_item_count = count;
+        first = end;
+    }
+    return true;
+}
+
 
 
 /*************************************************************************************************/
@@ -38,8 +133,7 @@
  * @param plan the destination frame plan
  * @param report optional diagnostic report
  */
-void _scene_emit_visual_uploads(
-    DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report)
+bool _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report)
 {
     ANN(figure);
     ANN(figure->scene);
@@ -66,11 +160,14 @@ void _scene_emit_visual_uploads(
             uint32_t vidx = 0;
             if (!_figure_visual_index(figure, visual, &vidx))
                 continue;
+            DvzItemStateBuffer* bank = _visual_family_state(visual)->item_state_bank;
             bool skip_dense_attrs = false;
             bool finished_visual = false;
             if (!_scene_emit_visual_family_derived_uploads(
                     figure, plan, visual, vidx, &skip_dense_attrs, &finished_visual))
             {
+                if (bank != NULL)
+                    return false;
                 continue;
             }
             if (finished_visual)
@@ -84,11 +181,28 @@ void _scene_emit_visual_uploads(
                     figure, plan, visual, vidx, upload_position_topology, emitted_buffers);
             if (!_scene_emit_visual_material_upload_if_needed(
                     figure, plan, visual, vidx, upload_material_params))
+            {
+                if (bank != NULL)
+                    return false;
                 continue;
-            if (!_scene_emit_visual_item_state_style_upload(figure, plan, visual, vidx))
+            }
+            if (bank == NULL &&
+                !_scene_emit_visual_item_state_style_upload(figure, plan, visual, vidx))
                 continue;
+            if (bank != NULL)
+            {
+                if (!_emit_bank_indices(figure, plan, visual, vidx) ||
+                    !_emit_bank_resource(figure, plan, bank, bank->words, emitted_buffers) ||
+                    !_emit_bank_resource(figure, plan, bank, bank->style, emitted_buffers))
+                {
+                    (void)dvz_diagnostic_report_add(
+                        report, "indexed state upload emission failed");
+                    return false;
+                }
+            }
             _scene_emit_visual_index_buffer_upload(figure, plan, visual, vidx, emitted_buffers);
             _scene_emit_visual_family_texture_uploads(figure, plan, visual, vidx);
         }
     }
+    return true;
 }

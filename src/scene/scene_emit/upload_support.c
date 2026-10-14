@@ -602,6 +602,8 @@ void _scene_emit_visual_dense_attr_uploads(
     for (uint32_t ai = 0; ai < visual->attr_count; ai++)
     {
         const DvzVisualAttr* attr = &visual->attrs[ai];
+        if (strcmp(attr->name, "state_index") == 0)
+            continue;
         if (attr->buffer != NULL)
         {
             uint32_t buffer_idx = _scene_buffer_index(figure->scene, attr->buffer);

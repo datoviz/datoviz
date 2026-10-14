@@ -495,7 +495,9 @@ static bool _contract_pipeline_has_material_layout(
            _contract_pipeline_has_layout_label(
                stream, command, "_bgl_mesh_textured_lights_v1") ||
            _contract_pipeline_has_layout_label(
-               stream, command, "_bgl_item_state_style_lights_v1");
+               stream, command, "_bgl_item_state_style_lights_v1") ||
+           _contract_pipeline_has_layout_label(
+               stream, command, "_bgl_indexed_item_state_lights_v1");
 }
 
 

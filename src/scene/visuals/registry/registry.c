@@ -185,6 +185,7 @@ static const DvzVisualFamilyAttrDesc MESH_ATTRS[] = {
     {"color", 4 * sizeof(uint8_t), SRC_COLOR_GROUPED, false},
     {"normal", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"texcoords", 2 * sizeof(float), SRC_ITEM_ONLY, false},
+    {"state_index", sizeof(uint32_t), SRC_ITEM_ONLY, false},
     {"instance_transform", 16 * sizeof(float), SRC_ITEM_ONLY, true},
     {"item_state", sizeof(uint32_t), SRC_ITEM_ONLY, true},
 };

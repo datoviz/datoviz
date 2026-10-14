@@ -127,6 +127,7 @@ typedef struct DvzSceneVisualDesc
     uint64_t material_buffer_id;
     uint64_t panel_light_buffer_id;
     uint64_t item_state_style_buffer_id;
+    uint64_t item_state_words_buffer_id;
     uint64_t image_texture_id;
     bool image_pixel_space;
     bool image_nearest_sampler;
@@ -145,6 +146,7 @@ typedef struct DvzSceneVisualDesc
     bool depth_cue_enabled;
     bool point_style_enabled;
     bool has_item_state;
+    bool has_indexed_item_state;
     bool volume_transfer_rgba;
     DvzColorRole volume_color_role;
     bool scene_occluded;
@@ -242,6 +244,7 @@ typedef struct DvzSceneVisualPipelineDesc
     bool needs_volume_layout;
     bool needs_material_layout;
     bool needs_item_state_style_layout;
+    bool needs_indexed_item_state_layout;
     bool needs_scene_occlusion_layout;
     bool needs_ambient_visibility_layout;
     bool has_depth_state;
@@ -293,6 +296,7 @@ typedef struct DvzSceneVisualBindDesc
     uint64_t panel_light_buffer_id;
     bool uses_item_state_style_set1;
     uint64_t item_state_style_buffer_id;
+    uint64_t item_state_words_buffer_id;
     bool uses_scene_occlusion_set2;
     uint64_t scene_occlusion_depth_texture_id;
     DvzSceneOcclusionDesc scene_occlusion;

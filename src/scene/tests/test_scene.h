@@ -1531,3 +1531,13 @@ int test_scene_dense_geometry_empty_restore(TstContext* suite, const TstCase* it
 int test_scene_point_wboit_shader_contract(TstContext* suite, const TstCase* item);
 int test_scene_point_wboit_glsl_executes(TstContext* suite, const TstCase* item);
 int test_scene_point_wboit_wgsl_packets(TstContext* suite, const TstCase* item);
+
+int test_scene_indexed_item_state_buffer_copies_and_updates_atomically(TstContext* suite, const TstCase* item);
+
+int test_scene_indexed_item_state_buffer_rejects_invalid_cardinality(TstContext* suite, const TstCase* item);
+
+int test_scene_indexed_item_state_mesh_binding_copies_and_unbinds(TstContext* suite, const TstCase* item);
+
+int test_scene_indexed_item_state_sparse_updates_reach_each_figure(TstContext* suite, const TstCase* item);
+
+int test_scene_indexed_item_state_shader_profile_matrix(TstContext* suite, const TstCase* item);

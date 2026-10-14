@@ -526,4 +526,40 @@ DVZ_EXPORT DvzResult dvz_pinned_readout_set_format(
     DvzPinnedReadout* readout, const DvzFormatDesc* format);
 
 
+/** Return the descriptor for a fixed-cardinality, scene-owned state bank. */
+DVZ_EXPORT DvzItemStateBufferDesc dvz_item_state_buffer_desc(void);
+
+/** Create a bank, synchronously copying desc->words. Zero slots and unknown bits fail. */
+DVZ_EXPORT DvzItemStateBuffer*
+dvz_item_state_buffer(DvzScene* scene, const DvzItemStateBufferDesc* desc);
+
+/** Destroy a bank and clear its visual bindings. Safe to call again before slot reuse. */
+DVZ_EXPORT void dvz_item_state_buffer_destroy(DvzItemStateBuffer* buffer);
+
+/**
+ * Atomically replace complete words at slots. Arrays are copied synchronously; repeated slots
+ * use the last word. Zero updates is a no-op. The application composes all writers' bits.
+ * Changes request rendering without invalidating geometry/alpha query inputs.
+ */
+DVZ_EXPORT DvzResult dvz_item_state_buffer_update(
+    DvzItemStateBuffer* buffer, const uint32_t* slots, const uint32_t* words,
+    uint32_t update_count);
+
+/**
+ * Set shared color/alpha styles and explicit selection context. NULL styles restore defaults.
+ * SCALE is unsupported in the indexed slice. Words do not imply selection context.
+ */
+DVZ_EXPORT DvzResult dvz_item_state_buffer_style(
+    DvzItemStateBuffer* buffer, const DvzSelectionVisualStyle* selection,
+    const DvzItemStateVisualStyle* hovered, bool selection_active);
+
+/**
+ * Bind copied uint32 state indices, one per vertex, to an ordinary untextured indexed triangle
+ * mesh in the same scene. Dense item_state and instancing conflict. NULL buffer clears binding.
+ * Author colors, geometry indices, and query FACE identities are unchanged.
+ */
+DVZ_EXPORT DvzResult dvz_visual_set_item_state_buffer(
+    DvzVisual* visual, DvzItemStateBuffer* buffer, const uint32_t* indices, uint32_t vertex_count);
+
+
 EXTERN_C_OFF

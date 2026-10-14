@@ -25,7 +25,7 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-void _scene_emit_visual_uploads(
+bool _scene_emit_visual_uploads(
     DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report);
 
 bool _scene_visual_needs_material_params(const DvzVisual* visual);

@@ -180,6 +180,9 @@ static bool _scene_visual_uses_buffer(const DvzVisual* visual, const DvzSceneBuf
     if (visual == NULL || buffer == NULL)
         return false;
     const DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state != NULL && state->item_state_bank != NULL &&
+        (state->item_state_bank->words == buffer || state->item_state_bank->style == buffer))
+        return true;
     if (state != NULL && state->buffer == buffer)
         return true;
     for (uint32_t ai = 0; ai < visual->attr_count; ai++)
@@ -232,6 +235,32 @@ void _scene_notify_buffer_changed(DvzSceneBuffer* buffer)
             }
         }
         if (uses_buffer)
-            _scene_notify_query_input_changed(figure);
+        {
+            if (buffer->item_state_bank != NULL)
+                _scene_notify_request_frame(figure);
+            else
+                _scene_notify_query_input_changed(figure);
+        }
+    }
+}
+
+
+/** Request redraws for all figures containing a visual, preserving query input revisions.
+ * @param visual the visual
+ */
+void _scene_notify_visual_redraw(DvzVisual* visual)
+{
+    if (visual == NULL || visual->scene == NULL)
+        return;
+    for (uint32_t fi = 0; fi < visual->scene->figure_count; fi++)
+    {
+        DvzFigure* figure = &visual->scene->figures[fi];
+        bool found = false;
+        for (uint32_t pi = 0; pi < figure->panel_count && !found; pi++)
+            for (uint32_t vi = 0; vi < figure->panels[pi].visual_count; vi++)
+                if (figure->panels[pi].visuals[vi].visual == visual)
+                    found = true;
+        if (found)
+            _scene_notify_request_frame(figure);
     }
 }

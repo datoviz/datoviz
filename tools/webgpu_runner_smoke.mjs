@@ -80,6 +80,7 @@ let observedShaderModules = [];
 let observedTextureDescriptors = [];
 let observedRenderPipelineDescriptors = [];
 let observedRenderPassDescriptors = [];
+let observedBindGroupLayoutDescriptors = [];
 
 const pass = () => ({
   setPipeline() {},
@@ -136,7 +137,8 @@ const device = {
   createSampler() {
     return {};
   },
-  createBindGroupLayout() {
+  createBindGroupLayout(desc) {
+    observedBindGroupLayoutDescriptors.push(desc);
     return {};
   },
   createBindGroup() {
@@ -742,6 +744,27 @@ async function smokeReadbackReplyOrder(executeDrp2Stream) {
       ],
     },
   );
+}
+
+async function smokeReadonlyVertexStorage(executeDrp2Stream) {
+  observedBindGroupLayoutDescriptors = [];
+  await executeDrp2Stream(device, context, 'bgra8unorm', {commands: [
+    ...header,
+    {cmd: 'CreateBuffer', id: 1, size: 16, usage: ['STORAGE']},
+    {cmd: 'CreateBindGroupLayout', id: 2, entries: [
+      {binding: 2, binding_type: 'storage_buffer', visibility: ['VERTEX'], access: 'read'},
+    ]},
+    {cmd: 'CreateBindGroup', id: 3, bind_group_layout_id: 2, entries: [
+      {binding: 2, binding_type: 'storage_buffer', resource_kind: 'buffer',
+        resource_id: 1, offset: 0, size: 16},
+    ]},
+  ]}, {requireExplicitBindGroupLayouts: true});
+  if (observedBindGroupLayoutDescriptors.length < 2 ||
+      !observedBindGroupLayoutDescriptors.every((desc) =>
+        desc.entries[0].buffer.type === 'read-only-storage' &&
+        desc.entries[0].visibility === GPUShaderStage.VERTEX)) {
+    throw new Error('explicit readonly vertex storage access was lost during layout specialization');
+  }
 }
 
 async function smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream) {
@@ -1434,6 +1457,7 @@ async function main() {
   await smokeDestroyAfterSubmittedWork(executeDrp2Stream);
   await smokeReadbackPinSurvivesInvalidReply(executeDrp2Stream);
   await smokeReadbackReplyOrder(executeDrp2Stream);
+  await smokeReadonlyVertexStorage(executeDrp2Stream);
   await smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream);
 
   await expectFailure(

@@ -73,6 +73,7 @@ typedef struct DvzController        DvzController;
 typedef struct DvzControllerLink    DvzControllerLink;
 typedef struct DvzSampledField      DvzSampledField;
 typedef struct DvzSceneBuffer       DvzSceneBuffer;
+typedef struct DvzItemStateBuffer DvzItemStateBuffer;
 typedef struct DvzInteractionPolicy DvzInteractionPolicy;
 typedef struct DvzSelection         DvzSelection;
 typedef struct DvzHover             DvzHover;
@@ -956,6 +957,17 @@ struct DvzGraphEdgeStyle
     float miter_limit;
 };
 typedef struct DvzGraphEdgeStyle DvzGraphEdgeStyle;
+
+
+/** Fixed-size copied state words. NULL words initializes every slot to zero. */
+struct DvzItemStateBufferDesc
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint32_t slot_count;
+    const uint32_t* words;
+};
+typedef struct DvzItemStateBufferDesc DvzItemStateBufferDesc;
 
 
 struct DvzSceneBufferDesc

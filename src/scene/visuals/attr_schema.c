@@ -170,6 +170,11 @@ uint32_t _visual_attr_item_size(const DvzVisual* visual, const char* name)
  */
 bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size)
 {
+    if (strcmp(name, "state_index") == 0)
+    {
+        log_error("state_index is owned by the typed indexed-state binding");
+        return false;
+    }
     ANN(name);
     ANN(item_size);
     *item_size = _attr_item_size(type, name);
@@ -197,6 +202,8 @@ bool _attr_supported(DvzVisualType type, const char* name, uint32_t* item_size)
 bool _attr_source_supported(DvzVisualType type, const char* name, DvzVisualAttrSource source)
 {
     ANN(name);
+    if (strcmp(name, "state_index") == 0)
+        return source == DVZ_VISUAL_ATTR_SOURCE_PER_ITEM;
     uint32_t item_size = 0;
     if (!_attr_supported(type, name, &item_size))
         return false;

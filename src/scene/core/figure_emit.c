@@ -572,6 +572,19 @@ static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel)
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         const DvzVisual* visual = panel->visuals[i].visual;
+        if (visual != NULL && visual->visible &&
+            _visual_family_state(visual)->item_state_bank != NULL)
+        {
+            DvzItemStateBuffer* bank = _visual_family_state(visual)->item_state_bank;
+            DvzSceneBuffer* buffers[2] = {bank->words, bank->style};
+            for (uint32_t bi = 0; bi < 2; bi++)
+            {
+                uint32_t idx = (uint32_t)(buffers[bi] - visual->scene->buffers);
+                if (panel->figure->item_state_consumed_ids[idx] != buffers[bi]->id ||
+                    panel->figure->item_state_consumed[idx] != buffers[bi]->content_revision)
+                    return true;
+            }
+        }
         if (_scene_visual_has_pending_render_work(visual))
             return true;
         if (visual != NULL && visual->type == DVZ_VISUAL_TYPE_TEXT)
@@ -638,6 +651,17 @@ static void _scene_commit_emit_success(DvzFigure* figure)
             DvzVisual* visual = panel->visuals[vi].visual;
             if (visual == NULL || !visual->visible)
                 continue;
+            DvzItemStateBuffer* bank = _visual_family_state(visual)->item_state_bank;
+            if (bank != NULL)
+            {
+                DvzSceneBuffer* buffers[2] = {bank->words, bank->style};
+                for (uint32_t bi = 0; bi < 2; bi++)
+                {
+                    uint32_t idx = (uint32_t)(buffers[bi] - figure->scene->buffers);
+                    figure->item_state_consumed[idx] = buffers[bi]->content_revision;
+                    figure->item_state_consumed_ids[idx] = buffers[bi]->id;
+                }
+            }
             for (uint32_t ai = 0; ai < visual->attr_count; ai++)
             {
                 visual->attrs[ai].dirty_item_count = 0;
@@ -812,7 +836,11 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
         return NULL;
     }
 
-    _scene_emit_visual_uploads(figure, plan, report);
+    if (!_scene_emit_visual_uploads(figure, plan, report))
+    {
+        dvz_frame_plan_destroy(plan);
+        return NULL;
+    }
     _scene_emit_panel_light_uploads(figure, plan, figure_id, report);
     if (!_scene_emit_compute_passes(figure, plan, report))
     {

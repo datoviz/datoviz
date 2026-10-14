@@ -1,6 +1,6 @@
 # Item State System
 
-Status: implemented v0.4 point-like slice, with additional item families planned.
+Status: implemented v0.4 dense item-state styling and bounded RC4 indexed mesh state banks.
 
 ## Goal
 
@@ -207,3 +207,19 @@ DvzSelection* selection = dvz_item_interaction_selection(pick);
 Do not add `dvz_item_hover()` or `dvz_item_selection()` convenience constructors. They blur the
 semantic boundary without removing meaningful boilerplate. Users who need explicit state objects can
 call `dvz_hover()` and `dvz_selection()` directly, then pass them to `dvz_item_interaction()`.
+
+## Indexed Mesh State Bank
+
+The bounded RC4 slice additionally supports ordinary untextured indexed triangle meshes through `DvzItemStateBuffer`. This is presentation state, independent of query item/FACE identities. It does not introduce parts, item ranges, transforms, query targets, categorical color tables, or sampled-mesh semantics.
+
+`dvz_item_state_buffer()` creates a scene-owned fixed-cardinality bank and synchronously copies its `uint32_t` words; NULL initial words zero every slot. `dvz_visual_set_item_state_buffer()` copies one `uint32_t` bank index per mesh vertex, validates every index against the bank cardinality, and borrows the same-scene bank. Authored RGBA/scalar color paths and geometry index buffers remain authoritative and unchanged. Dense instance-rate `item_state`, instancing, sampled/textured meshes, MASK mode, depth peeling, and scene-occluder production conflict with this slice and fail with diagnostics before drawing. `state_index` is reserved for the typed binding.
+
+`dvz_item_state_buffer_update()` replaces complete words at explicitly listed slots after validating the entire batch. Duplicate slots use the last replacement. The application owns composition of all writers' bits, including preserving SELECTED while moving HOVERED; automatic `DvzHover`/`DvzSelection` synchronization excludes bank-bound visuals. Unknown bits, out-of-range slots, and revision exhaustion fail without partial mutation. No identity-changing or resizing operation exists.
+
+`dvz_item_state_buffer_style()` supplies the existing selected, unselected, and hovered color/alpha styles plus explicit `selection_active` context. Words do not imply selection context. SCALE is unsupported. Styles apply to author color before lighting, in the same order as the existing state system; vertex interpolation preserves ordinary per-vertex color behavior. ALPHA multiplies authored alpha and never overrides it. Opaque, blended, and WBOIT GLSL/WGSL variants use the same storage lookup and style ABI.
+
+State/style changes request redraws without changing query-input revisions or stationary-hover refresh state. A bank-bound OPAQUE/BLENDED/WBOIT technique transition refreshes the render material uniform and pipeline without changing the authored material revision or base geometry/alpha query coverage. Author color/material/geometry changes retain their existing query invalidation semantics. GPU queries never consume bank words, mapped indices, or decoration styles.
+
+Words and styles travel through normal FramePlan upload nodes and DRP2 buffer writes. The first consumer upload allocates and copies the full bank; subsequent updates emit only changed slot runs, with no encompassing interval across unchanged distant slots. Each figure consumes retained revisions only after successful stream emission, so another figure cannot clear its pending updates and failed emission remains retryable. Destroying a bank clears consumers and retires its scene buffers; destroying the scene releases all bank storage. The portable C/Python/live WebGPU scenario is `features_indexed_item_state`.
+
+The future [mesh-part state system](../proposals/future/MESH_PART_STATE.md) should reuse or evolve this bank machinery as shared decoration storage, while owning its separate multipart semantic contracts.

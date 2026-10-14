@@ -54,6 +54,8 @@ DvzResult dvz_visual_set_attr_source(
     ANN(visual);
     ANN(attr_name);
     attr_name = _attr_storage_name(visual->type, attr_name);
+    if (!_visual_indexed_state_attr_mutation_allowed(visual, attr_name))
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual metadata"))
         return -1;
     if (source < DVZ_VISUAL_ATTR_SOURCE_PER_ITEM || source > DVZ_VISUAL_ATTR_SOURCE_PER_GROUP)
@@ -123,6 +125,8 @@ DvzResult dvz_visual_set_attr_mutability(
     ANN(visual);
     ANN(attr_name);
     attr_name = _attr_storage_name(visual->type, attr_name);
+    if (!_visual_indexed_state_attr_mutation_allowed(visual, attr_name))
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual metadata"))
         return -1;
     if (mutability < DVZ_VISUAL_ATTR_MUTABILITY_DYNAMIC ||
@@ -184,6 +188,8 @@ DvzResult dvz_visual_set_attr_format(
     ANN(visual);
     ANN(attr_name);
     attr_name = _attr_storage_name(visual->type, attr_name);
+    if (!_visual_indexed_state_attr_mutation_allowed(visual, attr_name))
+        return DVZ_ERROR;
     if (!_scene_visual_mutation_allowed(visual->scene, "mutate scene visual metadata"))
         return -1;
     if (
@@ -268,6 +274,8 @@ DvzResult dvz_visual_set_attr_buffer(
     ANN(visual);
     ANN(attr_name);
     attr_name = _attr_storage_name(visual->type, attr_name);
+    if (!_visual_indexed_state_attr_mutation_allowed(visual, attr_name))
+        return DVZ_ERROR;
     if (buffer != NULL && buffer->scene != visual->scene)
     {
         log_error("cannot bind an attribute buffer from a different scene");

@@ -24,12 +24,13 @@
 #include "_scene_resource_key.h"
 #include "_shader_registry.h"
 #include "_technique.h"
+#include "_visual_internal.h"
 #include "_visual_pipeline.h"
 #include "_visual_pipeline_internal.h"
-#include "render_contract/render_contract.h"
-#include "registry/registry.h"
-#include "scene_emit/visual_lowering.h"
 #include "datoviz/drp2/enums.h"
+#include "registry/registry.h"
+#include "render_contract/render_contract.h"
+#include "scene_emit/visual_lowering.h"
 
 
 /*************************************************************************************************/
@@ -77,6 +78,25 @@ const char* _scene_visual_technique_eligibility_error(const DvzVisual* visual)
     const char* error = _scene_visual_alpha_eligibility_error(lowering.desc_kind, visual->alpha_mode);
     if (error != NULL)
         return error;
+    bool indexed_state = _visual_family_state(visual)->item_state_bank != NULL;
+    if (indexed_state)
+    {
+        int pos = _attr_index(visual, "position");
+        int indices = _attr_index(visual, "state_index");
+        const DvzVisualFamilyState* state = _visual_family_state(visual);
+        if (lowering.desc_kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE || state->field != NULL ||
+            state->buffer == NULL || state->topology != DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST ||
+            _scene_visual_has_dense_attr(visual, "instance_transform") ||
+            _scene_visual_has_dense_attr(visual, "item_state") || pos < 0 || indices < 0 ||
+            visual->attrs[pos].item_count != visual->attrs[indices].item_count)
+            return "indexed state requires an ordinary indexed triangle mesh with exact vertex "
+                   "indices";
+        if ((visual->alpha_mode != DVZ_ALPHA_OPAQUE && visual->alpha_mode != DVZ_ALPHA_BLENDED &&
+             visual->alpha_mode != DVZ_ALPHA_WBOIT) ||
+            visual->scene_occluder)
+            return "indexed state supports OPAQUE/BLENDED/WBOIT only and excludes scene-occlusion "
+                   "production";
+    }
     bool item_state = _scene_visual_has_dense_attr(visual, "item_state");
     bool instanced = _scene_visual_has_dense_attr(visual, "instance_transform");
     if (item_state && (visual->alpha_mode == DVZ_ALPHA_WBOIT ||
