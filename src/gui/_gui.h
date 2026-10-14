@@ -111,6 +111,10 @@ bool _dvz_gui_viewport_debug_state(
     const DvzGuiViewport* viewport, DvzGuiViewportDebugState* out);
 bool _dvz_gui_tree_debug_state(DvzGuiTree* tree, DvzGuiDataDebugState* out);
 uint64_t _dvz_gui_tree_debug_display_key(DvzGuiTree* tree, uint32_t display_index);
+DvzResult _dvz_gui_tree_debug_draw(
+    DvzGuiTree* tree, DvzGuiDataEvent* events, uint32_t capacity, uint32_t* written,
+    uint32_t* dropped);
+const DvzGuiTreeAnnotation* _dvz_gui_tree_debug_annotation(DvzGuiTree* tree, uint64_t key);
 bool _dvz_gui_table_debug_state(DvzGuiTable* table, DvzGuiDataDebugState* out);
 uint64_t _dvz_gui_table_debug_display_key(DvzGuiTable* table, uint32_t display_index);
 DvzResult _dvz_gui_table_debug_sort(

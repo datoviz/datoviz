@@ -20,6 +20,7 @@
 #include "_alloc.h"
 #include "_gui.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 
 #define WIDGET_FLAGS (DVZ_GUI_DATA_WIDGET_FLAGS_MULTI_SELECT | DVZ_GUI_DATA_WIDGET_FLAGS_FILTER)
 #define STYLE_FLAGS                                                                               \
@@ -88,6 +89,17 @@ struct DvzGuiTree
     DvzGuiTreeLayout layout;
     uint64_t reveal;
     bool reveal_pending;
+    uint32_t* display_depths;
+    bool* display_branches;
+    bool* display_selectable;
+    DvzGuiTreeAnnotation* annotations;
+    uint32_t annotation_count;
+    uint64_t focus;
+    bool focus_pending;
+    uint64_t hovered;
+    bool has_hovered;
+    uint64_t focused;
+    bool has_focused;
 };
 
 typedef struct _Column
@@ -106,6 +118,8 @@ struct DvzGuiTable
     uint32_t sort_column;
     int32_t sort_direction;
 };
+
+static int _tree_projected(const DvzGuiTree* tree, uint64_t key);
 
 
 /*************************************************************************************************/
@@ -654,6 +668,21 @@ static void _tree_arrays_free(DvzGuiTree* tree)
     dvz_free(tree->secondary);
     dvz_free(tree->swatches);
     dvz_free(tree->expanded);
+    dvz_free(tree->display_depths);
+    dvz_free(tree->display_branches);
+    dvz_free(tree->display_selectable);
+    tree->display_depths = NULL;
+    tree->display_branches = tree->display_selectable = NULL;
+    for (uint32_t i = 0; i < tree->annotation_count; i++)
+    {
+        dvz_free(const_cast<char*>(tree->annotations[i].value_text));
+        dvz_free(const_cast<char*>(tree->annotations[i].tooltip));
+        dvz_free(const_cast<DvzGuiTreeTextSpan*>(tree->annotations[i].label_spans));
+        dvz_free(const_cast<DvzGuiTreeTextSpan*>(tree->annotations[i].secondary_spans));
+    }
+    dvz_free(tree->annotations);
+    tree->annotations = NULL;
+    tree->annotation_count = 0;
 }
 
 static bool _tree_layout(uint32_t n, const uint32_t* parents, uint32_t* depths, bool* branches)
@@ -690,6 +719,11 @@ static bool _tree_layout(uint32_t n, const uint32_t* parents, uint32_t* depths, 
 static void _tree_rebuild(DvzGuiTree* tree)
 {
     _Core* c = &tree->core;
+    if (c->flags & DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED)
+    {
+        c->dirty = false;
+        return;
+    }
     if (!c->dirty)
         return;
     c->order_count = 0;
@@ -748,12 +782,14 @@ DvzGuiDataStyle dvz_gui_data_style(void)
 DvzGuiTree* dvz_gui_tree(const char* id, uint32_t flags)
 {
     DvzGuiTree* tree = (DvzGuiTree*)dvz_calloc(1, sizeof(*tree));
-    if (tree == NULL || !_core_init(&tree->core, id, flags))
+    if (tree == NULL ||
+        !_core_init(&tree->core, id, flags & ~(uint32_t)DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED))
     {
         dvz_free(tree);
         return NULL;
     }
     tree->layout = dvz_gui_tree_layout();
+    tree->core.flags = flags;
     return tree;
 }
 
@@ -839,7 +875,214 @@ DvzResult dvz_gui_tree_set_rows(
     tree->secondary = ss;
     tree->expanded = es;
     tree->reveal_pending = false;
+    tree->focus_pending = false;
     return DVZ_OK;
+}
+
+/**
+ * Copy a host-owned display projection without deriving semantic ancestry.
+ *
+ * @param tree controlled tree
+ * @param n projected row count
+ * @param keys ordered existing row keys
+ * @param depths display depths
+ * @param branches disclosure capability
+ * @param selectable selection eligibility
+ * @return result; failure leaves the previous projection intact
+ */
+DvzResult dvz_gui_tree_set_projection(
+    DvzGuiTree* tree, uint32_t n, const uint64_t* keys, const uint32_t* depths,
+    const bool* branches, const bool* selectable)
+{
+    if (tree == NULL || !(tree->core.flags & DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED) ||
+        n > tree->core.count || n > SIZE_MAX / sizeof(uint32_t) ||
+        (n && (!keys || !depths || !branches || !selectable)))
+        return DVZ_ERROR;
+    uint32_t* order = n ? (uint32_t*)dvz_calloc(n, sizeof(uint32_t)) : NULL;
+    uint32_t* ds = n ? (uint32_t*)dvz_calloc(n, sizeof(uint32_t)) : NULL;
+    bool* bs = n ? (bool*)dvz_calloc(n, sizeof(bool)) : NULL;
+    bool* ss = n ? (bool*)dvz_calloc(n, sizeof(bool)) : NULL;
+    bool* seen = tree->core.count ? (bool*)dvz_calloc(tree->core.count, sizeof(bool)) : NULL;
+    bool ok = (!n || (order && ds && bs && ss)) && (!tree->core.count || seen);
+    for (uint32_t i = 0; ok && i < n; i++)
+    {
+        ok = _find(&tree->core, keys[i], &order[i]) && !seen[order[i]] && depths[i] <= INT_MAX;
+        if (!ok)
+            break;
+        seen[order[i]] = true;
+        ds[i] = depths[i];
+        bs[i] = branches[i];
+        ss[i] = selectable[i];
+    }
+    dvz_free(seen);
+    if (!ok)
+    {
+        dvz_free(order);
+        dvz_free(ds);
+        dvz_free(bs);
+        dvz_free(ss);
+        return DVZ_ERROR;
+    }
+    dvz_free(tree->core.order);
+    dvz_free(tree->display_depths);
+    dvz_free(tree->display_branches);
+    dvz_free(tree->display_selectable);
+    tree->core.order = order;
+    tree->core.order_count = n;
+    tree->display_depths = ds;
+    tree->display_branches = bs;
+    tree->display_selectable = ss;
+    tree->core.dirty = false;
+    tree->core.rebuild_count++;
+    if (tree->reveal_pending && _tree_projected(tree, tree->reveal) < 0)
+        tree->reveal_pending = false;
+    if (tree->focus_pending && _tree_projected(tree, tree->focus) < 0)
+        tree->focus_pending = false;
+    return DVZ_OK;
+}
+
+/**
+ * Return a default copied row annotation descriptor.
+ *
+ * @return size-versioned annotation
+ */
+DvzGuiTreeAnnotation dvz_gui_tree_annotation(void)
+{
+    DvzGuiTreeAnnotation annotation = {};
+    annotation.struct_size = sizeof(annotation);
+    return annotation;
+}
+
+/**
+ * Validate ordered UTF-8 highlight spans without interpreting their text.
+ *
+ * @param text UTF-8 text
+ * @param n span count
+ * @param spans byte ranges
+ * @return whether ranges are sorted, nonoverlapping codepoint ranges
+ */
+static bool _tree_spans(const char* text, uint32_t n, const DvzGuiTreeTextSpan* spans)
+{
+    if (n > SIZE_MAX / sizeof(DvzGuiTreeTextSpan) || (n && spans == NULL))
+        return false;
+    const size_t size = strlen(text);
+    size_t previous = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size_t start = spans[i].start, length = spans[i].length;
+        if (length == 0 || start < previous || start > size || length > size - start)
+            return false;
+        size_t end = start + length;
+        if (((unsigned char)text[start] & 0xc0) == 0x80 ||
+            ((unsigned char)text[end] & 0xc0) == 0x80)
+            return false;
+        previous = end;
+    }
+    return true;
+}
+
+/**
+ * Replace host-provided row text and highlight decorations transactionally.
+ *
+ * @param tree tree
+ * @param n descriptor count
+ * @param annotations descriptors, whose strings and spans are copied
+ * @return result; failure preserves the previous annotations
+ */
+DvzResult
+dvz_gui_tree_set_annotations(DvzGuiTree* tree, uint32_t n, const DvzGuiTreeAnnotation* annotations)
+{
+    if (tree == NULL || n > tree->core.count || n > SIZE_MAX / sizeof(DvzGuiTreeAnnotation) ||
+        (n && annotations == NULL))
+        return DVZ_ERROR;
+    DvzGuiTreeAnnotation* copy = n ? (DvzGuiTreeAnnotation*)dvz_calloc(n, sizeof(*copy)) : NULL;
+    bool ok = !n || copy;
+    for (uint32_t i = 0; ok && i < n; i++)
+    {
+        const DvzGuiTreeAnnotation* a = &annotations[i];
+        uint32_t row = 0;
+        ok = a->struct_size == sizeof(*a) &&
+             !(a->flags & ~(uint32_t)DVZ_GUI_TREE_ANNOTATION_FLAGS_MISSING) &&
+             a->reserved[0] == 0 && a->reserved[1] == 0 &&
+             (!a->value_text || _utf8(a->value_text)) && (!a->tooltip || _utf8(a->tooltip)) &&
+             _find(&tree->core, a->row_key, &row);
+        for (uint32_t j = 0; ok && j < i; j++)
+            ok = annotations[j].row_key != a->row_key;
+        ok = ok && _tree_spans(tree->labels[row], a->label_span_count, a->label_spans) &&
+             _tree_spans(tree->secondary[row], a->secondary_span_count, a->secondary_spans);
+        if (!ok)
+            break;
+        copy[i] = *a;
+        copy[i].value_text = a->value_text ? dvz_strdup(a->value_text) : NULL;
+        copy[i].tooltip = a->tooltip ? dvz_strdup(a->tooltip) : NULL;
+        copy[i].label_spans =
+            a->label_span_count
+                ? (DvzGuiTreeTextSpan*)dvz_calloc(a->label_span_count, sizeof(DvzGuiTreeTextSpan))
+                : NULL;
+        copy[i].secondary_spans = a->secondary_span_count
+                                      ? (DvzGuiTreeTextSpan*)dvz_calloc(
+                                            a->secondary_span_count, sizeof(DvzGuiTreeTextSpan))
+                                      : NULL;
+        ok = (!a->value_text || copy[i].value_text) && (!a->tooltip || copy[i].tooltip) &&
+             (!a->label_span_count || copy[i].label_spans) &&
+             (!a->secondary_span_count || copy[i].secondary_spans);
+        if (a->label_span_count && copy[i].label_spans)
+            dvz_memcpy(
+                const_cast<DvzGuiTreeTextSpan*>(copy[i].label_spans),
+                a->label_span_count * sizeof(DvzGuiTreeTextSpan), a->label_spans,
+                a->label_span_count * sizeof(DvzGuiTreeTextSpan));
+        if (a->secondary_span_count && copy[i].secondary_spans)
+            dvz_memcpy(
+                const_cast<DvzGuiTreeTextSpan*>(copy[i].secondary_spans),
+                a->secondary_span_count * sizeof(DvzGuiTreeTextSpan), a->secondary_spans,
+                a->secondary_span_count * sizeof(DvzGuiTreeTextSpan));
+    }
+    if (ok)
+    {
+        std::swap(copy, tree->annotations);
+        std::swap(n, tree->annotation_count);
+    }
+    for (uint32_t i = 0; i < n && copy; i++)
+    {
+        dvz_free(const_cast<char*>(copy[i].value_text));
+        dvz_free(const_cast<char*>(copy[i].tooltip));
+        dvz_free(const_cast<DvzGuiTreeTextSpan*>(copy[i].label_spans));
+        dvz_free(const_cast<DvzGuiTreeTextSpan*>(copy[i].secondary_spans));
+    }
+    dvz_free(copy);
+    return ok ? DVZ_OK : DVZ_ERROR;
+}
+
+/**
+ * Find a key in the host-controlled displayed order.
+ *
+ * @param tree tree
+ * @param key row key
+ * @return display index, or -1 when absent
+ */
+static int _tree_projected(const DvzGuiTree* tree, uint64_t key)
+{
+    for (uint32_t i = 0; i < tree->core.order_count; i++)
+        if (tree->core.keys[tree->core.order[i]] == key)
+            return (int)i;
+    return -1;
+}
+
+/**
+ * Request focus and scrolling without changing the host's expansion state.
+ *
+ * @param tree controlled tree
+ * @param key projected row key
+ * @return result
+ */
+DvzResult dvz_gui_tree_set_focus(DvzGuiTree* tree, uint64_t key)
+{
+    if (tree == NULL || !(tree->core.flags & DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED) ||
+        _tree_projected(tree, key) < 0)
+        return DVZ_ERROR;
+    tree->focus = key;
+    tree->focus_pending = true;
+    return dvz_gui_tree_reveal(tree, key);
 }
 
 DvzResult dvz_gui_tree_set_swatches(DvzGuiTree* tree, uint32_t n, const DvzColor* colors)
@@ -952,21 +1195,87 @@ DvzResult dvz_gui_tree_reveal(DvzGuiTree* tree, uint64_t key)
     uint32_t row = 0;
     if (tree == NULL || !_find(&tree->core, key, &row))
         return DVZ_ERROR;
-    for (uint32_t p = tree->parents[row]; p != UINT32_MAX; p = tree->parents[p])
-        tree->expanded[p] = true;
+    if (tree->core.flags & DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED)
+    {
+        if (_tree_projected(tree, key) < 0)
+            return DVZ_ERROR;
+    }
+    else
+        for (uint32_t p = tree->parents[row]; p != UINT32_MAX; p = tree->parents[p])
+            tree->expanded[p] = true;
     tree->reveal = key;
     tree->reveal_pending = tree->core.dirty = true;
     return DVZ_OK;
 }
 
-DvzResult dvz_gui_tree_draw(
+/**
+ * Draw host-supplied highlights behind text using its active font metrics.
+ *
+ * @param text UTF-8 text
+ * @param n highlight count
+ * @param spans validated byte ranges
+ */
+static void _tree_text(const char* text, uint32_t n, const DvzGuiTreeTextSpan* spans)
+{
+    const ImVec2 origin = ImGui::GetCursorScreenPos();
+    for (uint32_t i = 0; i < n; i++)
+    {
+        const char* start = text + spans[i].start;
+        const char* end = start + spans[i].length;
+        const float x = ImGui::CalcTextSize(text, start).x;
+        const float width = ImGui::CalcTextSize(start, end).x;
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            ImVec2(origin.x + x, origin.y),
+            ImVec2(origin.x + x + width, origin.y + ImGui::GetFontSize()),
+            ImGui::GetColorU32(ImGuiCol_TextSelectedBg));
+    }
+    ImGui::TextUnformatted(text);
+}
+
+/**
+ * Render the tree rows in the active ImGui window.
+ *
+ * @param gui GUI, or NULL for CPU-only ImGui regression tests
+ * @param tree tree
+ * @param events event destination
+ * @param cap capacity
+ * @param written event count
+ * @param dropped dropped event count
+ * @return result
+ */
+static DvzResult _tree_draw(
     DvzGui* gui, DvzGuiTree* tree, DvzGuiDataEvent* events, uint32_t cap, uint32_t* written,
     uint32_t* dropped)
 {
-    if (_draw_start(gui, tree ? &tree->core : NULL, events, cap, written, dropped) != DVZ_OK)
-        return DVZ_ERROR;
+    const bool controlled = tree->core.flags & DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED;
+    if (controlled && tree->has_focused && ImGui::IsWindowFocused())
+    {
+        const ImGuiKey imgui_keys[] = {ImGuiKey_UpArrow,    ImGuiKey_DownArrow, ImGuiKey_LeftArrow,
+                                       ImGuiKey_RightArrow, ImGuiKey_Home,      ImGuiKey_End,
+                                       ImGuiKey_PageUp,     ImGuiKey_PageDown,  ImGuiKey_Enter,
+                                       ImGuiKey_Space,      ImGuiKey_Escape};
+        const int32_t keys[] = {DVZ_KEY_UP,    DVZ_KEY_DOWN,  DVZ_KEY_LEFT,    DVZ_KEY_RIGHT,
+                                DVZ_KEY_HOME,  DVZ_KEY_END,   DVZ_KEY_PAGE_UP, DVZ_KEY_PAGE_DOWN,
+                                DVZ_KEY_ENTER, DVZ_KEY_SPACE, DVZ_KEY_ESCAPE};
+        // Capture keys for the previously focused row before Escape or activation changes focus.
+        // Only directional requests are canceled; Tab still leaves the widget normally.
+        for (uint32_t i = 0; i < 11; i++)
+            if (ImGui::IsKeyPressed(imgui_keys[i]))
+            {
+                if (i < 8)
+                    ImGui::NavMoveRequestCancel();
+                _event(
+                    &tree->core, events, cap, written, dropped, DVZ_GUI_DATA_EVENT_KEY_PRESSED,
+                    tree->focused, UINT32_MAX, keys[i], _mods());
+            }
+    }
+    bool has_hovered = false, has_focused = false;
+    uint64_t hovered = 0, focused = 0;
+    // Bound row input intents independently of the number of clipped rows.
+    bool click_emitted = false, disclosure_emitted = false, activation_emitted = false;
     ImGui::PushID(tree->core.id);
-    if ((tree->core.flags & DVZ_GUI_DATA_WIDGET_FLAGS_FILTER) && _draw_filter(&tree->core))
+    if (!controlled && (tree->core.flags & DVZ_GUI_DATA_WIDGET_FLAGS_FILTER) &&
+        _draw_filter(&tree->core))
     {
         tree->core.dirty = true;
         _event(
@@ -998,14 +1307,31 @@ DvzResult dvz_gui_tree_draw(
     clip.Begin((int)tree->core.order_count);
     if (reveal_display >= 0)
         clip.IncludeItemByIndex(reveal_display);
+    if (controlled && tree->focus_pending)
+    {
+        const int focus_display = _tree_projected(tree, tree->focus);
+        if (focus_display >= 0)
+            clip.IncludeItemByIndex(focus_display);
+    }
+    if (controlled && tree->has_focused)
+    {
+        const int focus_display = _tree_projected(tree, tree->focused);
+        if (focus_display >= 0)
+            clip.IncludeItemByIndex(focus_display);
+    }
     while (clip.Step())
         for (int q = clip.DisplayStart; q < clip.DisplayEnd; q++)
         {
             uint32_t row = tree->core.order[q];
             const DvzGuiDataStyle* style = _style(&tree->core, tree->core.keys[row]);
             bool disabled = style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_DISABLED);
+            const DvzGuiTreeAnnotation* annotation = NULL;
+            for (uint32_t i = 0; i < tree->annotation_count; i++)
+                if (tree->annotations[i].row_key == tree->core.keys[row])
+                    annotation = &tree->annotations[i];
             _push_id(&tree->core, row);
-            const float indent = tree->depths[row] * indent_spacing;
+            const float indent =
+                (controlled ? tree->display_depths[q] : tree->depths[row]) * indent_spacing;
             const ImVec2 row_start = ImGui::GetCursorScreenPos();
             const float row_height = font_size + 2.0f * row_padding;
             if (style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_BACKGROUND))
@@ -1021,6 +1347,11 @@ DvzResult dvz_gui_tree_draw(
                 ImGui::PushStyleColor(ImGuiCol_Text, _color(style->foreground));
             if (disabled)
                 ImGui::BeginDisabled();
+            if (controlled && tree->focus_pending && tree->focus == tree->core.keys[row])
+            {
+                ImGui::SetKeyboardFocusHere();
+                tree->focus_pending = false;
+            }
             ImGui::Selectable(
                 "##selection", tree->core.selected[row],
                 ImGuiSelectableFlags_AllowOverlap | ImGuiSelectableFlags_AllowDoubleClick,
@@ -1028,6 +1359,16 @@ DvzResult dvz_gui_tree_draw(
             bool clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
             bool row_hovered = ImGui::IsItemHovered();
             bool activated = ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0);
+            if (controlled && row_hovered && !disabled)
+            {
+                has_hovered = true;
+                hovered = tree->core.keys[row];
+            }
+            if (controlled && ImGui::IsItemFocused() && !disabled)
+            {
+                has_focused = true;
+                focused = tree->core.keys[row];
+            }
             const ImVec2 next_row = ImGui::GetCursorScreenPos();
 
             if (style && (style->flags & DVZ_GUI_DATA_STYLE_FLAGS_ACCENT))
@@ -1039,33 +1380,68 @@ DvzResult dvz_gui_tree_draw(
             if (indent > 0)
                 ImGui::Indent(indent);
             bool toggled = false;
-            if (tree->branches[row])
+            if (controlled ? tree->display_branches[q] : tree->branches[row])
             {
                 ImGui::SetNextItemOpen(tree->expanded[row], ImGuiCond_Always);
+                if (controlled)
+                    ImGui::PushItemFlag(ImGuiItemFlags_NoNav, true);
                 ImGui::TreeNodeEx(
                     "##disclosure",
                     ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_OpenOnArrow);
+                if (controlled)
+                    ImGui::PopItemFlag();
                 toggled = ImGui::IsItemToggledOpen();
+                row_hovered |= ImGui::IsItemHovered();
+                if (controlled && row_hovered && !disabled)
+                {
+                    has_hovered = true;
+                    hovered = tree->core.keys[row];
+                }
             }
             else
                 ImGui::Dummy(ImVec2(ImGui::GetTreeNodeToLabelSpacing(), row_height));
             if (toggled && !disabled)
             {
-                tree->expanded[row] = !tree->expanded[row];
-                tree->core.dirty = true;
-                _event(
-                    &tree->core, events, cap, written, dropped,
-                    DVZ_GUI_DATA_EVENT_EXPANSION_CHANGED, tree->core.keys[row], UINT32_MAX,
-                    tree->expanded[row], _mods());
+                if (controlled)
+                {
+                    if (!disclosure_emitted)
+                        _event(
+                            &tree->core, events, cap, written, dropped,
+                            DVZ_GUI_DATA_EVENT_DISCLOSURE_CLICKED, tree->core.keys[row],
+                            UINT32_MAX, !tree->expanded[row], _mods());
+                    disclosure_emitted = true;
+                }
+                else
+                {
+                    tree->expanded[row] = !tree->expanded[row];
+                    tree->core.dirty = true;
+                    _event(
+                        &tree->core, events, cap, written, dropped,
+                        DVZ_GUI_DATA_EVENT_EXPANSION_CHANGED, tree->core.keys[row], UINT32_MAX,
+                        tree->expanded[row], _mods());
+                }
             }
-            if (clicked && !toggled && !disabled)
+            if (clicked && !toggled && !disabled &&
+                (!controlled || tree->display_selectable[q] || tree->display_branches[q]))
             {
                 uint32_t mods = _mods();
-                _select(&tree->core, (uint32_t)q, mods);
-                _event(
-                    &tree->core, events, cap, written, dropped,
-                    DVZ_GUI_DATA_EVENT_SELECTION_CHANGED, tree->core.keys[row], UINT32_MAX,
-                    tree->core.selected[row], mods);
+                if (controlled)
+                {
+                    if (!click_emitted)
+                        _event(
+                            &tree->core, events, cap, written, dropped,
+                            DVZ_GUI_DATA_EVENT_ROW_CLICKED, tree->core.keys[row], UINT32_MAX, 0,
+                            mods);
+                    click_emitted = true;
+                }
+                else
+                {
+                    _select(&tree->core, (uint32_t)q, mods);
+                    _event(
+                        &tree->core, events, cap, written, dropped,
+                        DVZ_GUI_DATA_EVENT_SELECTION_CHANGED, tree->core.keys[row], UINT32_MAX,
+                        tree->core.selected[row], mods);
+                }
             }
             ImGui::SameLine(0, disclosure_gap);
             if (tree->swatches)
@@ -1078,10 +1454,12 @@ DvzResult dvz_gui_tree_draw(
                     ImVec2(swatch_size, swatch_size));
                 ImGui::SameLine(0, swatch_gap);
             }
-            ImFont* bold = (ImFont*)_dvz_gui_bold_font(gui);
+            ImFont* bold = gui ? (ImFont*)_dvz_gui_bold_font(gui) : NULL;
             if (bold != NULL)
                 ImGui::PushFont(bold);
-            ImGui::TextUnformatted(tree->labels[row]);
+            _tree_text(
+                tree->labels[row], annotation ? annotation->label_span_count : 0,
+                annotation ? annotation->label_spans : NULL);
             if (bold != NULL)
                 ImGui::PopFont();
             if (tree->secondary[row][0])
@@ -1089,25 +1467,50 @@ DvzResult dvz_gui_tree_draw(
                 ImGui::SameLine(0, secondary_gap);
                 ImGui::PushStyleColor(
                     ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
-                ImGui::TextUnformatted(tree->secondary[row]);
+                _tree_text(
+                    tree->secondary[row], annotation ? annotation->secondary_span_count : 0,
+                    annotation ? annotation->secondary_spans : NULL);
                 ImGui::PopStyleColor();
+            }
+            if (annotation && annotation->value_text)
+            {
+                ImGui::SameLine(0, secondary_gap);
+                if (annotation->flags & DVZ_GUI_TREE_ANNOTATION_FLAGS_MISSING)
+                    ImGui::PushStyleColor(
+                        ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+                ImGui::TextUnformatted(annotation->value_text);
+                if (annotation->flags & DVZ_GUI_TREE_ANNOTATION_FLAGS_MISSING)
+                    ImGui::PopStyleColor();
             }
             if (row_hovered)
             {
                 ImGui::BeginTooltip();
-                ImGui::TextUnformatted(tree->labels[row]);
-                if (tree->secondary[row][0])
+                if (annotation && annotation->tooltip)
                 {
                     ImGui::PushTextWrapPos(ImGui::GetFontSize() * 24.0f);
-                    ImGui::TextUnformatted(tree->secondary[row]);
+                    ImGui::TextUnformatted(annotation->tooltip);
                     ImGui::PopTextWrapPos();
+                }
+                else
+                {
+                    ImGui::TextUnformatted(tree->labels[row]);
+                    if (tree->secondary[row][0])
+                    {
+                        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 24.0f);
+                        ImGui::TextUnformatted(tree->secondary[row]);
+                        ImGui::PopTextWrapPos();
+                    }
                 }
                 ImGui::EndTooltip();
             }
-            if (activated && !disabled)
+            if (activated && !disabled &&
+                (!controlled || (tree->display_selectable[q] && !activation_emitted)))
+            {
                 _event(
                     &tree->core, events, cap, written, dropped, DVZ_GUI_DATA_EVENT_ACTIVATED,
                     tree->core.keys[row], UINT32_MAX, 0, _mods());
+                activation_emitted = true;
+            }
             if (tree->reveal_pending && tree->reveal == tree->core.keys[row])
             {
                 ImGui::SetScrollHereY(.5f);
@@ -1122,9 +1525,109 @@ DvzResult dvz_gui_tree_draw(
             ImGui::SetCursorScreenPos(next_row);
             _pop_id();
         }
+    if (controlled)
+    {
+        if (tree->has_hovered && (!has_hovered || tree->hovered != hovered))
+            _event(
+                &tree->core, events, cap, written, dropped, DVZ_GUI_DATA_EVENT_HOVER_CHANGED,
+                tree->hovered, UINT32_MAX, 0, _mods());
+        if (has_hovered && (!tree->has_hovered || tree->hovered != hovered))
+            _event(
+                &tree->core, events, cap, written, dropped, DVZ_GUI_DATA_EVENT_HOVER_CHANGED,
+                hovered, UINT32_MAX, 1, _mods());
+        if (tree->has_focused && (!has_focused || tree->focused != focused))
+            _event(
+                &tree->core, events, cap, written, dropped, DVZ_GUI_DATA_EVENT_FOCUS_CHANGED,
+                tree->focused, UINT32_MAX, 0, _mods());
+        if (has_focused && (!tree->has_focused || tree->focused != focused))
+            _event(
+                &tree->core, events, cap, written, dropped, DVZ_GUI_DATA_EVENT_FOCUS_CHANGED,
+                focused, UINT32_MAX, 1, _mods());
+        tree->has_hovered = has_hovered;
+        tree->hovered = hovered;
+        tree->has_focused = has_focused;
+        tree->focused = focused;
+    }
     ImGui::PopStyleVar(2);
     ImGui::PopID();
     return DVZ_OK;
+}
+
+/**
+ * Validate event storage before consuming draw context or controlled input.
+ *
+ * @param tree tree
+ * @param events destination
+ * @param cap event capacity
+ * @param written written count
+ * @param dropped dropped count
+ * @return whether drawing may proceed
+ */
+static bool _tree_draw_capacity(
+    DvzGuiTree* tree, DvzGuiDataEvent* events, uint32_t cap, uint32_t* written, uint32_t* dropped)
+{
+    if (written)
+        *written = 0;
+    if (dropped)
+        *dropped = 0;
+    return tree && written && dropped && (!cap || events) &&
+           (!(tree->core.flags & DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED) ||
+            cap >= DVZ_GUI_TREE_CONTROLLED_EVENT_CAPACITY);
+}
+
+/**
+ * Draw a retained tree in its owning GUI callback and window.
+ *
+ * @param gui GUI
+ * @param tree tree
+ * @param events destination
+ * @param cap event capacity
+ * @param written written count
+ * @param dropped dropped count
+ * @return result
+ */
+DvzResult dvz_gui_tree_draw(
+    DvzGui* gui, DvzGuiTree* tree, DvzGuiDataEvent* events, uint32_t cap, uint32_t* written,
+    uint32_t* dropped)
+{
+    if (!_tree_draw_capacity(tree, events, cap, written, dropped) ||
+        _draw_start(gui, tree ? &tree->core : NULL, events, cap, written, dropped) != DVZ_OK)
+        return DVZ_ERROR;
+    return _tree_draw(gui, tree, events, cap, written, dropped);
+}
+
+/**
+ * Exercise actual row drawing in an isolated CPU-only ImGui test context.
+ *
+ * @param tree tree
+ * @param events destination
+ * @param cap event capacity
+ * @param written written count
+ * @param dropped dropped count
+ * @return result
+ */
+DvzResult _dvz_gui_tree_debug_draw(
+    DvzGuiTree* tree, DvzGuiDataEvent* events, uint32_t cap, uint32_t* written, uint32_t* dropped)
+{
+    if (!_tree_draw_capacity(tree, events, cap, written, dropped) || !ImGui::GetCurrentContext())
+        return DVZ_ERROR;
+    return _tree_draw(NULL, tree, events, cap, written, dropped);
+}
+
+/**
+ * Inspect copied annotation storage for ownership regression tests.
+ *
+ * @param tree tree
+ * @param key row key
+ * @return borrowed descriptor, invalidated by annotation or row replacement
+ */
+const DvzGuiTreeAnnotation* _dvz_gui_tree_debug_annotation(DvzGuiTree* tree, uint64_t key)
+{
+    if (tree)
+        for (uint32_t i = 0; i < tree->annotation_count; i++)
+            if (tree->annotations[i].row_key == key)
+                return &tree->annotations[i];
+    return NULL;
 }
 
 void dvz_gui_tree_destroy(DvzGuiTree* tree)

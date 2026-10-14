@@ -33,6 +33,8 @@ int test_gui_embedded_font_resources(TstContext* suite, const TstCase* item);
 int test_gui_srgb_vertex_colors(TstContext* suite, const TstCase* item);
 int test_gui_data_widget_storage(TstContext* suite, const TstCase* item);
 int test_gui_data_tree_model(TstContext* suite, const TstCase* item);
+int test_gui_data_tree_controlled_model(TstContext* suite, const TstCase* item);
+int test_gui_data_tree_controlled_draw(TstContext* suite, const TstCase* item);
 int test_gui_data_table_model(TstContext* suite, const TstCase* item);
 
 int test_gui(TstSuite* suite);

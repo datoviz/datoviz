@@ -179,3 +179,59 @@ def test_table_sort_query_returns_result_and_outputs(monkeypatch):
 
     monkeypatch.setattr(facade._raw, 'dvz_gui_table_get_sort', get_sort)
     assert facade.dvz_gui_table_get_sort(1) == (0, 7, -1)
+
+
+def test_controlled_projection_adapts_all_arrays_and_validates_lengths(monkeypatch):
+    calls = []
+
+    def raw(widget, count, keys, depths, branches, selectable):
+        calls.append((count, [keys[i] for i in range(count)],
+                      [depths[i] for i in range(count)],
+                      [branches[i] for i in range(count)],
+                      [selectable[i] for i in range(count)]))
+        return 0
+
+    monkeypatch.setattr(facade._raw, 'dvz_gui_tree_set_projection', raw)
+    assert facade.dvz_gui_tree_set_projection(1, [4, 3], [0, 0], [False, True], [True, False]) == 0
+    assert calls[-1] == (2, [4, 3], [0, 0], [False, True], [True, False])
+    assert facade.dvz_gui_tree_set_projection(1, [], [], [], []) == 0
+    assert calls[-1] == (0, [], [], [], [])
+    keys = np.array([4, 3], dtype=np.uint64)
+    depths = np.array([0, 2], dtype=np.uint32)
+    flags = np.array([True, False], dtype=np.bool_)
+    facade.dvz_gui_tree_set_projection(1, keys, depths, flags, flags)
+    assert calls[-1][2] == [0, 2]
+    for invalid in (np.array([0, 1], dtype=np.int64), np.array([0], dtype=np.uint32)):
+        try:
+            facade.dvz_gui_tree_set_projection(1, keys, invalid, flags, flags)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError('expected projection depth type/count validation')
+
+
+def test_controlled_annotations_keep_nested_spans_and_strings_alive(monkeypatch):
+    calls = []
+
+    def raw(widget, count, annotations):
+        calls.append(count)
+        if count:
+            assert annotations[0].value_text == b'missing'
+            assert annotations[0].tooltip == 'root > é'.encode()
+            assert annotations[0].label_span_count == 2
+            assert annotations[0].label_spans[1].start == 6
+        return 0
+
+    monkeypatch.setattr(facade._raw, 'dvz_gui_tree_set_annotations', raw)
+    spans = (facade._raw.DvzGuiTreeTextSpan * 2)(
+        facade._raw.DvzGuiTreeTextSpan(0, 5), facade._raw.DvzGuiTreeTextSpan(6, 5))
+    annotation = facade._raw.DvzGuiTreeAnnotation()
+    annotation.struct_size = ctypes.sizeof(annotation)
+    annotation.row_key = 4
+    annotation.value_text = b'missing'
+    annotation.tooltip = 'root > é'.encode()
+    annotation.label_span_count = 2
+    annotation.label_spans = spans
+    assert facade.dvz_gui_tree_set_annotations(1, [annotation]) == 0
+    assert facade.dvz_gui_tree_set_annotations(1, []) == 0
+    assert calls == [1, 0]

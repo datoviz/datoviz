@@ -936,6 +936,19 @@ dvz_gui_tree_get_selection.argtypes = getattr(_raw_dvz_gui_tree_get_selection, "
 dvz_gui_tree_get_selection.restype = getattr(_raw_dvz_gui_tree_get_selection, "restype", None)
 
 
+def dvz_gui_tree_set_annotations(tree, annotations, annotation_count=None):
+    if annotation_count is None and not _raw_pointer(annotations):
+        annotation_count = len(annotations)
+    ptr, keepalive = _gui_records(annotations, _raw.DvzGuiTreeAnnotation, 'annotations', annotation_count)
+    return _raw.dvz_gui_tree_set_annotations(tree, int(annotation_count), ptr)
+
+
+_raw_dvz_gui_tree_set_annotations = getattr(_raw, "dvz_gui_tree_set_annotations", None)
+dvz_gui_tree_set_annotations.__doc__ = getattr(_raw_dvz_gui_tree_set_annotations, "__doc__", None)
+dvz_gui_tree_set_annotations.argtypes = getattr(_raw_dvz_gui_tree_set_annotations, "argtypes", None)
+dvz_gui_tree_set_annotations.restype = getattr(_raw_dvz_gui_tree_set_annotations, "restype", None)
+
+
 def dvz_gui_tree_set_expanded(tree, keys, key_count=None):
     if key_count is None and not _raw_pointer(keys):
         key_count = len(keys)
@@ -960,6 +973,22 @@ _raw_dvz_gui_tree_set_matches = getattr(_raw, "dvz_gui_tree_set_matches", None)
 dvz_gui_tree_set_matches.__doc__ = getattr(_raw_dvz_gui_tree_set_matches, "__doc__", None)
 dvz_gui_tree_set_matches.argtypes = getattr(_raw_dvz_gui_tree_set_matches, "argtypes", None)
 dvz_gui_tree_set_matches.restype = getattr(_raw_dvz_gui_tree_set_matches, "restype", None)
+
+
+def dvz_gui_tree_set_projection(tree, keys, depths, branches, selectable, row_count=None):
+    if row_count is None and not _raw_pointer(keys):
+        row_count = len(keys)
+    keys_ptr, keys_keepalive = _gui_array((_typed_sequence(keys, np.uint64) if row_count else np.asarray(keys, dtype=np.uint64)), 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, row_count)
+    depths_ptr, depths_keepalive = _gui_array((_typed_sequence(depths, np.uint32) if row_count else np.asarray(depths, dtype=np.uint32)), 'depths', ctypes.POINTER(ctypes.c_uint32), np.uint32, row_count)
+    branches_ptr, branches_keepalive = _gui_array(_typed_sequence(branches, np.bool_), 'branches', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count)
+    selectable_ptr, selectable_keepalive = _gui_array(_typed_sequence(selectable, np.bool_), 'selectable', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count)
+    return _raw.dvz_gui_tree_set_projection(tree, int(row_count), keys_ptr, depths_ptr, branches_ptr, selectable_ptr)
+
+
+_raw_dvz_gui_tree_set_projection = getattr(_raw, "dvz_gui_tree_set_projection", None)
+dvz_gui_tree_set_projection.__doc__ = getattr(_raw_dvz_gui_tree_set_projection, "__doc__", None)
+dvz_gui_tree_set_projection.argtypes = getattr(_raw_dvz_gui_tree_set_projection, "argtypes", None)
+dvz_gui_tree_set_projection.restype = getattr(_raw_dvz_gui_tree_set_projection, "restype", None)
 
 
 def dvz_gui_tree_set_rows(tree, keys, parents, labels, secondary_labels=None, flags=0, row_count=None):
@@ -1357,7 +1386,7 @@ dvz_visual_set_target_link_keys.restype = getattr(
     _raw.dvz_visual_set_target_link_keys, "restype", None)
 
 
-_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_colormap_custom', 'dvz_gui_table', 'dvz_gui_table_draw', 'dvz_gui_table_get_filter', 'dvz_gui_table_get_selection', 'dvz_gui_table_get_sort', 'dvz_gui_table_set_column_bool', 'dvz_gui_table_set_column_color', 'dvz_gui_table_set_column_double', 'dvz_gui_table_set_column_int64', 'dvz_gui_table_set_column_text', 'dvz_gui_table_set_matches', 'dvz_gui_table_set_rows', 'dvz_gui_table_set_selection', 'dvz_gui_table_set_styles', 'dvz_gui_table_set_visible', 'dvz_gui_tree_draw', 'dvz_gui_tree_get_expanded', 'dvz_gui_tree_get_filter', 'dvz_gui_tree_get_selection', 'dvz_gui_tree_set_expanded', 'dvz_gui_tree_set_matches', 'dvz_gui_tree_set_rows', 'dvz_gui_tree_set_selection', 'dvz_gui_tree_set_styles', 'dvz_gui_tree_set_swatches', 'dvz_gui_tree_set_visible', 'dvz_panel_set_lights', 'dvz_path_set_subpaths', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_text_set_strings', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data', 'dvz_visual_set_link_keys', 'dvz_visual_set_target_link_keys']
+_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_colormap_custom', 'dvz_gui_table', 'dvz_gui_table_draw', 'dvz_gui_table_get_filter', 'dvz_gui_table_get_selection', 'dvz_gui_table_get_sort', 'dvz_gui_table_set_column_bool', 'dvz_gui_table_set_column_color', 'dvz_gui_table_set_column_double', 'dvz_gui_table_set_column_int64', 'dvz_gui_table_set_column_text', 'dvz_gui_table_set_matches', 'dvz_gui_table_set_rows', 'dvz_gui_table_set_selection', 'dvz_gui_table_set_styles', 'dvz_gui_table_set_visible', 'dvz_gui_tree_draw', 'dvz_gui_tree_get_expanded', 'dvz_gui_tree_get_filter', 'dvz_gui_tree_get_selection', 'dvz_gui_tree_set_annotations', 'dvz_gui_tree_set_expanded', 'dvz_gui_tree_set_matches', 'dvz_gui_tree_set_projection', 'dvz_gui_tree_set_rows', 'dvz_gui_tree_set_selection', 'dvz_gui_tree_set_styles', 'dvz_gui_tree_set_swatches', 'dvz_gui_tree_set_visible', 'dvz_panel_set_lights', 'dvz_path_set_subpaths', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_text_set_strings', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data', 'dvz_visual_set_link_keys', 'dvz_visual_set_target_link_keys']
 
 for _name in getattr(_raw, "__all__", dir(_raw)):
     if _name not in globals():

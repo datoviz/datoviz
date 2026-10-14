@@ -86,6 +86,11 @@ typedef enum DvzGuiDataEventType
     DVZ_GUI_DATA_EVENT_EXPANSION_CHANGED,
     DVZ_GUI_DATA_EVENT_SORT_CHANGED,
     DVZ_GUI_DATA_EVENT_FILTER_CHANGED,
+    DVZ_GUI_DATA_EVENT_ROW_CLICKED,
+    DVZ_GUI_DATA_EVENT_DISCLOSURE_CLICKED,
+    DVZ_GUI_DATA_EVENT_KEY_PRESSED,
+    DVZ_GUI_DATA_EVENT_HOVER_CHANGED,
+    DVZ_GUI_DATA_EVENT_FOCUS_CHANGED,
 } DvzGuiDataEventType;
 
 typedef enum DvzGuiDataWidgetFlags
@@ -93,7 +98,22 @@ typedef enum DvzGuiDataWidgetFlags
     DVZ_GUI_DATA_WIDGET_FLAGS_NONE = 0,
     DVZ_GUI_DATA_WIDGET_FLAGS_MULTI_SELECT = 1u << 0,
     DVZ_GUI_DATA_WIDGET_FLAGS_FILTER = 1u << 1,
+    /* Tree only: the host owns projection, selection, expansion, and navigation semantics. */
+    DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED = 1u << 2,
 } DvzGuiDataWidgetFlags;
+
+typedef enum DvzGuiTreeAnnotationFlags
+{
+    DVZ_GUI_TREE_ANNOTATION_FLAGS_NONE = 0,
+    DVZ_GUI_TREE_ANNOTATION_FLAGS_MISSING = 1u << 0,
+} DvzGuiTreeAnnotationFlags;
+
+
+typedef enum DvzGuiTreeLimits
+{
+    /** Required controlled draw event capacity, checked before consuming input. */
+    DVZ_GUI_TREE_CONTROLLED_EVENT_CAPACITY = 32,
+} DvzGuiTreeLimits;
 
 typedef enum DvzGuiDataSetFlags
 {
@@ -216,6 +236,30 @@ typedef struct DvzGuiTreeLayout
     float secondary_gap_em;
     uint32_t reserved[2];
 } DvzGuiTreeLayout;
+
+
+/** UTF-8 byte range; endpoints must lie on codepoint boundaries. */
+typedef struct DvzGuiTreeTextSpan
+{
+    uint32_t start;
+    uint32_t length;
+} DvzGuiTreeTextSpan;
+
+
+/** Copied host-provided row decoration; NULL strings and zero spans mean absent. */
+typedef struct DvzGuiTreeAnnotation
+{
+    uint32_t struct_size;
+    uint32_t flags;
+    uint64_t row_key;
+    const char* value_text;
+    const char* tooltip;
+    uint32_t label_span_count;
+    const DvzGuiTreeTextSpan* label_spans;
+    uint32_t secondary_span_count;
+    const DvzGuiTreeTextSpan* secondary_spans;
+    uint32_t reserved[2];
+} DvzGuiTreeAnnotation;
 
 
 
@@ -796,6 +840,56 @@ DVZ_EXPORT DvzGuiTreeLayout dvz_gui_tree_layout(void);
 DVZ_EXPORT DvzResult dvz_gui_tree_set_layout(DvzGuiTree* tree, const DvzGuiTreeLayout* layout);
 
 /**
+ * Copy an ordered display projection atomically, without deriving ancestry or visibility.
+ *
+ * Only controlled trees accept projections. Keys must be unique existing row keys. Display depths
+ * and branch capability are independent of model parents; depth-zero leaf ranking is supported.
+ * Replacing model rows clears the projection. All arrays are required for nonzero counts.
+ *
+ * @param tree controlled tree
+ * @param row_count projected row count
+ * @param keys ordered existing keys
+ * @param depths display depths
+ * @param branches disclosure capability
+ * @param selectable row selection eligibility, independent of disclosure capability
+ * @return DVZ_OK on success, DVZ_ERROR without changing the projection on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_set_projection(
+    DvzGuiTree* tree, uint32_t row_count, const uint64_t* keys, const uint32_t* depths,
+    const bool* branches, const bool* selectable);
+
+/**
+ * Return a default, size-versioned tree annotation.
+ *
+ * @return default annotation
+ */
+DVZ_EXPORT DvzGuiTreeAnnotation dvz_gui_tree_annotation(void);
+
+/**
+ * Replace copied keyed annotations, strings, and highlight spans atomically.
+ *
+ * Highlight spans must be nonempty, sorted, nonoverlapping UTF-8 byte ranges within the matching
+ * label. The host provides formatted values, missing status, matches, and lineage tooltip text.
+ * Replacing model rows clears annotations. Zero count clears all annotations.
+ *
+ * @param tree tree
+ * @param annotation_count annotation count
+ * @param annotations size-versioned annotations
+ * @return DVZ_OK on success, DVZ_ERROR without changing annotations on failure
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_set_annotations(
+    DvzGuiTree* tree, uint32_t annotation_count, const DvzGuiTreeAnnotation* annotations);
+
+/**
+ * Request keyboard focus and scrolling for a projected controlled row.
+ *
+ * @param tree controlled tree
+ * @param key projected row key
+ * @return DVZ_OK on success, DVZ_ERROR if the key is outside the projection
+ */
+DVZ_EXPORT DvzResult dvz_gui_tree_set_focus(DvzGuiTree* tree, uint64_t key);
+
+/**
  * Replace the tree rows atomically.
  *
  * @param tree tree
@@ -903,7 +997,8 @@ DVZ_EXPORT DvzResult dvz_gui_tree_expand_to_depth(DvzGuiTree* tree, uint32_t dep
 DVZ_EXPORT DvzResult dvz_gui_tree_collapse_all(DvzGuiTree* tree);
 
 /**
- * Expand ancestors and schedule scrolling to one row.
+ * Expand ancestors and schedule scrolling to one row in automatic mode.
+ * Controlled mode requires a projected key and scrolls without changing expansion.
  *
  * @param tree tree
  * @param key key
@@ -955,6 +1050,15 @@ dvz_gui_tree_get_filter(const DvzGuiTree* tree, uint32_t capacity, char* filter)
 
 /**
  * Draw a tree and drain interaction events.
+ *
+ * Controlled trees require DVZ_GUI_TREE_CONTROLLED_EVENT_CAPACITY slots; a smaller capacity
+ * returns DVZ_ERROR before draw context or input is consumed. They emit input intents without
+ * mutating selection or expansion. Click flags are DvzKeyModifier; disclosure detail is requested
+ * expanded state. Key detail is a DvzKeyCode for arrows, Home, End, Page Up/Down, Enter, Space, or
+ * Escape. Hover/focus detail is 1 on entry and 0 on exit (row_key remains the affected key). At
+ * most eleven key intents, one click, one disclosure, one activation, and two hover/focus
+ * transitions each are emitted per draw; dropped is always zero. Native filter UI is omitted in
+ * controlled mode.
  *
  * @param gui gui
  * @param tree tree

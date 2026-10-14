@@ -132,6 +132,8 @@ layout_records:
     - DvzGuideLayout
     - DvzGuiDataEvent
     - DvzGuiDataStyle
+    - DvzGuiTreeTextSpan
+    - DvzGuiTreeAnnotation
     - DvzGuiTableColumnDesc
     - DvzInteropBufferExport
     - DvzInteropBufferExportConfig
@@ -472,6 +474,12 @@ array_facade:
 
   dvz_gui_tree_set_swatches:
     special: gui_tree_set_swatches
+
+  dvz_gui_tree_set_projection:
+    special: gui_tree_set_projection
+
+  dvz_gui_tree_set_annotations:
+    special: gui_tree_set_annotations
 
   dvz_gui_tree_set_styles:
     special: gui_tree_set_styles

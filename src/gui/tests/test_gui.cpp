@@ -238,6 +238,306 @@ int test_gui_data_tree_model(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Verify transactional controlled projections and copied row annotations.
+ *
+ * @param suite test context
+ * @param item test item
+ * @return zero on success
+ */
+int test_gui_data_tree_controlled_model(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    const uint64_t keys[] = {10, 11, 12};
+    const uint32_t parents[] = {UINT32_MAX, 0, 1};
+    const char* labels[] = {"root", "branch", "écho écho"};
+    DvzGuiTree* tree = dvz_gui_tree("controlled-model", DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED);
+    AT(tree != NULL);
+    AT(dvz_gui_tree_set_rows(tree, 3, keys, parents, labels, NULL, 0) == DVZ_OK);
+    DvzGuiDataDebugState state = {};
+    AT(_dvz_gui_tree_debug_state(tree, &state));
+    AT(state.display_count == 0);
+    uint64_t projected[] = {12, 10};
+    uint32_t depths[] = {0, 0};
+    bool branches[] = {false, true}, selectable[] = {true, false};
+    AT(dvz_gui_tree_set_projection(tree, 2, projected, depths, branches, selectable) == DVZ_OK);
+    projected[0] = 999;
+    depths[0] = 100;
+    branches[0] = true;
+    selectable[0] = false;
+    AT(_dvz_gui_tree_debug_display_key(tree, 0) == 12);
+    AT(dvz_gui_tree_set_projection(tree, 2, projected, depths, branches, selectable) == DVZ_ERROR);
+    projected[0] = 10;
+    AT(dvz_gui_tree_set_projection(tree, 2, projected, depths, branches, selectable) == DVZ_ERROR);
+    AT(_dvz_gui_tree_debug_display_key(tree, 0) == 12);
+    const bool hidden[] = {false, false, false};
+    AT(dvz_gui_tree_set_visible(tree, 3, hidden) == DVZ_OK);
+    AT(dvz_gui_tree_set_matches(tree, 3, hidden) == DVZ_OK);
+    AT(dvz_gui_tree_set_filter(tree, "no match") == DVZ_OK);
+    AT(dvz_gui_tree_collapse_all(tree) == DVZ_OK);
+    AT(_dvz_gui_tree_debug_state(tree, &state));
+    AT(state.display_count == 2);
+    AT(dvz_gui_tree_reveal(tree, 12) == DVZ_OK);
+    AT(dvz_gui_tree_set_focus(tree, 12) == DVZ_OK);
+    AT(dvz_gui_tree_get_expanded(tree, 0, NULL) == 0);
+    AT(dvz_gui_tree_reveal(tree, 11) == DVZ_ERROR);
+    AT(dvz_gui_tree_set_focus(tree, 11) == DVZ_ERROR);
+    char value[] = "missing", tooltip[] = "root > branch > leaf";
+    DvzGuiTreeTextSpan spans[] = {{0, 5}, {6, 5}};
+    DvzGuiTreeAnnotation annotation = dvz_gui_tree_annotation();
+    annotation.row_key = 12;
+    annotation.flags = DVZ_GUI_TREE_ANNOTATION_FLAGS_MISSING;
+    annotation.value_text = value;
+    annotation.tooltip = tooltip;
+    annotation.label_span_count = 2;
+    annotation.label_spans = spans;
+    AT(dvz_gui_tree_set_annotations(tree, 1, &annotation) == DVZ_OK);
+    value[0] = 'X';
+    tooltip[0] = 'X';
+    spans[0].start = 1;
+    const DvzGuiTreeAnnotation* copied = _dvz_gui_tree_debug_annotation(tree, 12);
+    AT(copied != NULL);
+    AT(strcmp(copied->value_text, "missing") == 0);
+    AT(strcmp(copied->tooltip, "root > branch > leaf") == 0);
+    AT(copied->label_spans[0].start == 0);
+    // A span starting inside é must reject the whole replacement.
+    AT(dvz_gui_tree_set_annotations(tree, 1, &annotation) == DVZ_ERROR);
+    AT(_dvz_gui_tree_debug_annotation(tree, 12) == copied);
+    spans[0] = {0, 100};
+    AT(dvz_gui_tree_set_annotations(tree, 1, &annotation) == DVZ_ERROR);
+    annotation.row_key = 999;
+    AT(dvz_gui_tree_set_annotations(tree, 1, &annotation) == DVZ_ERROR);
+    AT(dvz_gui_tree_set_rows(tree, 3, keys, parents, labels, NULL, 0) == DVZ_OK);
+    AT(_dvz_gui_tree_debug_state(tree, &state));
+    AT(state.display_count == 0);
+    AT(_dvz_gui_tree_debug_annotation(tree, 12) == NULL);
+    AT(dvz_gui_tree_set_projection(tree, 0, NULL, NULL, NULL, NULL) == DVZ_OK);
+    dvz_gui_tree_destroy(tree);
+    DvzGuiTree* automatic = dvz_gui_tree("automatic", 0);
+    AT(dvz_gui_tree_set_projection(automatic, 0, NULL, NULL, NULL, NULL) == DVZ_ERROR);
+    AT(dvz_gui_tree_set_focus(automatic, 10) == DVZ_ERROR);
+    dvz_gui_tree_destroy(automatic);
+    DvzGuiTableColumnDesc column = dvz_gui_table_column_desc();
+    column.title = "table";
+    AT(dvz_gui_table("bad-controlled-table", 1, &column, DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED) ==
+       NULL);
+    return 0;
+}
+
+
+/**
+ * Draw one CPU-only ImGui frame and optionally retry a capacity rejection before input is
+ * consumed.
+ *
+ * @param tree tree
+ * @param events capacity-sized destination
+ * @param reject_first whether to try one too-small destination first
+ * @param origin output first row position
+ * @return emitted count, or UINT32_MAX on a draw/capacity invariant failure
+ */
+static uint32_t
+_gui_controlled_frame(DvzGuiTree* tree, DvzGuiDataEvent* events, bool reject_first, ImVec2* origin)
+{
+    igNewFrame();
+    igSetNextWindowPos(ImVec2{0, 0}, ImGuiCond_Always, ImVec2{0, 0});
+    igSetNextWindowSize(ImVec2{360, 180}, ImGuiCond_Always);
+    igBegin("controlled CPU", NULL, ImGuiWindowFlags_NoSavedSettings);
+    igGetCursorScreenPos(origin);
+    uint32_t written = 99, dropped = 99;
+    if (reject_first && (_dvz_gui_tree_debug_draw(
+                             tree, events, DVZ_GUI_TREE_CONTROLLED_EVENT_CAPACITY - 1, &written,
+                             &dropped) != DVZ_ERROR ||
+                         written != 0 || dropped != 0))
+        return UINT32_MAX;
+    DvzResult result = _dvz_gui_tree_debug_draw(
+        tree, events, DVZ_GUI_TREE_CONTROLLED_EVENT_CAPACITY, &written, &dropped);
+    igEnd();
+    igRender();
+    return result == DVZ_OK && dropped == 0 ? written : UINT32_MAX;
+}
+
+
+/**
+ * Find one emitted input intent.
+ *
+ * @param events events
+ * @param n event count
+ * @param type event type
+ * @param key expected row key
+ * @param detail expected event detail
+ * @return whether the intent was emitted
+ */
+static bool _gui_controlled_event(
+    const DvzGuiDataEvent* events, uint32_t n, uint32_t type, uint64_t key, int32_t detail)
+{
+    if (n > DVZ_GUI_TREE_CONTROLLED_EVENT_CAPACITY)
+        return false;
+    for (uint32_t i = 0; i < n; i++)
+        if (events[i].type == type && events[i].row_key == key && events[i].detail == detail)
+            return true;
+    return false;
+}
+
+
+/**
+ * Verify real ImGui click, disclosure, hover, focus, clipped reveal, and keyboard input intents.
+ *
+ * @param suite test context
+ * @param item test item
+ * @return zero on success
+ */
+int test_gui_data_tree_controlled_draw(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    ImGuiContext* context = igCreateContext(NULL);
+    AT(context != NULL);
+    ImGuiIO* io = igGetIO_Nil();
+    io->DisplaySize = ImVec2{640, 480};
+    io->DeltaTime = 1.0f / 60.0f;
+    io->IniFilename = NULL;
+    io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    AT(ImFontAtlas_Build(io->Fonts));
+    const uint32_t count = 100;
+    uint64_t keys[count];
+    uint32_t parents[count], depths[count];
+    bool branches[count], selectable[count];
+    const char* labels[count];
+    for (uint32_t i = 0; i < count; i++)
+    {
+        keys[i] = i + 10;
+        parents[i] = i ? i - 1 : UINT32_MAX;
+        labels[i] = "row";
+        depths[i] = 0;
+        branches[i] = i == 0;
+        selectable[i] = i != 0;
+    }
+    selectable[2] = false;
+    DvzGuiTree* tree = dvz_gui_tree("controlled-draw", DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED);
+    AT(tree != NULL);
+    AT(dvz_gui_tree_set_rows(tree, count, keys, parents, labels, NULL, 0) == DVZ_OK);
+    AT(dvz_gui_tree_set_projection(tree, count, keys, depths, branches, selectable) == DVZ_OK);
+    AT(dvz_gui_tree_set_selection(tree, 1, &keys[2]) == DVZ_OK);
+    DvzGuiTreeTextSpan highlight[] = {{0, 1}, {2, 1}};
+    DvzGuiTreeAnnotation annotation = dvz_gui_tree_annotation();
+    annotation.row_key = keys[0];
+    annotation.value_text = "missing";
+    annotation.tooltip = "host lineage";
+    annotation.flags = DVZ_GUI_TREE_ANNOTATION_FLAGS_MISSING;
+    annotation.label_span_count = 2;
+    annotation.label_spans = highlight;
+    AT(dvz_gui_tree_set_annotations(tree, 1, &annotation) == DVZ_OK);
+    DvzGuiDataEvent events[DVZ_GUI_TREE_CONTROLLED_EVENT_CAPACITY] = {};
+    ImVec2 origin = {};
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    const float row_step = io->FontDefault ? io->FontDefault->FontSize : 13.0f;
+    // Draw another frame to settle the window's clipped region and overlapping hit targets.
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    const float step = row_step + 2 * igGetStyle()->FramePadding.y + igGetStyle()->ItemSpacing.y;
+    ImGuiIO_AddMousePosEvent(io, origin.x + 80, origin.y + step + 5);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    ImGuiIO_AddMouseButtonEvent(io, 0, true);
+    uint32_t n = _gui_controlled_frame(tree, events, true, &origin);
+    AT(_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_ROW_CLICKED, keys[1], 0));
+    uint64_t selected = 0;
+    AT(dvz_gui_tree_get_selection(tree, 1, &selected) == 1);
+    AT(selected == keys[2]);
+    ImGuiIO_AddMouseButtonEvent(io, 0, false);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    // A nonselectable leaf suppresses selection input but retains host-provided selection state.
+    ImGuiIO_AddMousePosEvent(io, origin.x + 80, origin.y + 2 * step + 5);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    ImGuiIO_AddMouseButtonEvent(io, 0, true);
+    n = _gui_controlled_frame(tree, events, true, &origin);
+    AT(!_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_ROW_CLICKED, keys[2], 0));
+    ImGuiIO_AddMouseButtonEvent(io, 0, false);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    // A nonselectable branch body still delegates its click to the host.
+    ImGuiIO_AddMousePosEvent(io, origin.x + 80, origin.y + 5);
+    n = _gui_controlled_frame(tree, events, false, &origin);
+    AT(_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_HOVER_CHANGED, keys[2], 0));
+    AT(_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_HOVER_CHANGED, keys[0], 1));
+    ImGuiIO_AddMouseButtonEvent(io, 0, true);
+    n = _gui_controlled_frame(tree, events, true, &origin);
+    AT(_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_ROW_CLICKED, keys[0], 0));
+    AT(dvz_gui_tree_get_selection(tree, 1, &selected) == 1 && selected == keys[2]);
+    ImGuiIO_AddMouseButtonEvent(io, 0, false);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    ImGuiIO_AddMousePosEvent(io, origin.x + 6, origin.y + 5);
+    n = _gui_controlled_frame(tree, events, false, &origin);
+    AT(n != UINT32_MAX);
+    ImGuiIO_AddMouseButtonEvent(io, 0, true);
+    n = _gui_controlled_frame(tree, events, true, &origin);
+    AT(_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_DISCLOSURE_CLICKED, keys[0], 1));
+    AT(!_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_ROW_CLICKED, keys[0], 0));
+    AT(dvz_gui_tree_get_expanded(tree, 0, NULL) == 0);
+    ImGuiIO_AddMouseButtonEvent(io, 0, false);
+    ImGuiIO_AddMousePosEvent(io, -100, -100);
+    AT(dvz_gui_tree_set_focus(tree, keys[count - 1]) == DVZ_OK);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    n = _gui_controlled_frame(tree, events, false, &origin);
+    AT(_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_FOCUS_CHANGED, keys[count - 1], 1));
+    ImGuiIO_AddKeyEvent(io, ImGuiMod_Shift, true);
+    ImGuiIO_AddKeyEvent(io, ImGuiKey_UpArrow, true);
+    n = _gui_controlled_frame(tree, events, true, &origin);
+    AT(_gui_controlled_event(
+        events, n, DVZ_GUI_DATA_EVENT_KEY_PRESSED, keys[count - 1], DVZ_KEY_UP));
+    bool modifier_found = false;
+    for (uint32_t i = 0; i < n; i++)
+        if (events[i].type == DVZ_GUI_DATA_EVENT_KEY_PRESSED)
+            modifier_found |= (events[i].flags & DVZ_KEY_MODIFIER_SHIFT) != 0;
+    AT(modifier_found);
+    AT(dvz_gui_tree_get_expanded(tree, 0, NULL) == 0);
+    AT(dvz_gui_tree_get_selection(tree, 1, &selected) == 1 && selected == keys[2]);
+    ImGuiIO_AddKeyEvent(io, ImGuiKey_UpArrow, false);
+    ImGuiIO_AddKeyEvent(io, ImGuiMod_Shift, false);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    const ImGuiKey input_keys[] = {ImGuiKey_UpArrow,    ImGuiKey_DownArrow, ImGuiKey_LeftArrow,
+                                   ImGuiKey_RightArrow, ImGuiKey_Home,      ImGuiKey_End,
+                                   ImGuiKey_PageUp,     ImGuiKey_PageDown,  ImGuiKey_Enter,
+                                   ImGuiKey_Space,      ImGuiKey_Escape};
+    const int32_t keycodes[] = {DVZ_KEY_UP,    DVZ_KEY_DOWN,  DVZ_KEY_LEFT,    DVZ_KEY_RIGHT,
+                                DVZ_KEY_HOME,  DVZ_KEY_END,   DVZ_KEY_PAGE_UP, DVZ_KEY_PAGE_DOWN,
+                                DVZ_KEY_ENTER, DVZ_KEY_SPACE, DVZ_KEY_ESCAPE};
+    io->ConfigInputTrickleEventQueue = false;
+    for (uint32_t i = 0; i < 11; i++)
+        ImGuiIO_AddKeyEvent(io, input_keys[i], true);
+    n = _gui_controlled_frame(tree, events, true, &origin);
+    for (uint32_t i = 0; i < 11; i++)
+        AT(_gui_controlled_event(
+            events, n, DVZ_GUI_DATA_EVENT_KEY_PRESSED, keys[count - 1], keycodes[i]));
+    for (uint32_t i = 0; i < 11; i++)
+        ImGuiIO_AddKeyEvent(io, input_keys[i], false);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    dvz_gui_tree_destroy(tree);
+    // Automatic mode retains native selection and expansion changes.
+    tree = dvz_gui_tree("automatic-draw", DVZ_GUI_DATA_WIDGET_FLAGS_MULTI_SELECT);
+    AT(tree != NULL);
+    AT(dvz_gui_tree_set_rows(tree, 3, keys, parents, labels, NULL, 0) == DVZ_OK);
+    AT(dvz_gui_tree_expand_all(tree) == DVZ_OK);
+    for (uint32_t i = 0; i < 3; i++)
+        AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    ImGuiIO_AddMousePosEvent(io, origin.x + 80, origin.y + step + 5);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    ImGuiIO_AddMouseButtonEvent(io, 0, true);
+    n = _gui_controlled_frame(tree, events, false, &origin);
+    AT(_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_SELECTION_CHANGED, keys[1], 1));
+    AT(dvz_gui_tree_get_selection(tree, 1, &selected) == 1 && selected == keys[1]);
+    ImGuiIO_AddMouseButtonEvent(io, 0, false);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    ImGuiIO_AddMousePosEvent(io, origin.x + 6, origin.y + 5);
+    AT(_gui_controlled_frame(tree, events, false, &origin) != UINT32_MAX);
+    ImGuiIO_AddMouseButtonEvent(io, 0, true);
+    n = _gui_controlled_frame(tree, events, false, &origin);
+    AT(_gui_controlled_event(events, n, DVZ_GUI_DATA_EVENT_EXPANSION_CHANGED, keys[0], 0));
+    AT(dvz_gui_tree_get_expanded(tree, 0, NULL) == 2);
+    dvz_gui_tree_destroy(tree);
+    igDestroyContext(context);
+    return 0;
+}
+
+
+/**
  * Verify typed table columns, combined filtering, and deterministic sorting without a GPU.
  */
 int test_gui_data_table_model(TstContext* suite, const TstCase* item)
@@ -1384,6 +1684,8 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_srgb_vertex_colors);
     TST_CASE(test_gui_data_widget_storage);
     TST_CASE(test_gui_data_tree_model);
+    TST_CASE(test_gui_data_tree_controlled_model);
+    TST_CASE(test_gui_data_tree_controlled_draw);
     TST_CASE(test_gui_data_table_model);
     TST_CASE(test_gui_widget_wrapper_symbols);
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);

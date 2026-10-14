@@ -661,6 +661,7 @@ def _validate_policy(api: dict, policy: dict) -> None:
             'axis_ticks',
             'colorbar_ticks',
             'gui_tree_set_rows', 'gui_tree_set_swatches', 'gui_tree_set_styles',
+            'gui_tree_set_projection', 'gui_tree_set_annotations',
             'gui_tree_set_selection', 'gui_tree_set_expanded', 'gui_tree_set_visible',
             'gui_tree_set_matches', 'gui_tree_draw', 'gui_table', 'gui_table_set_rows',
             'gui_table_set_column_text', 'gui_table_set_column_int64',
@@ -694,6 +695,7 @@ def _emit_wrapper(function: dict, rules: dict) -> str:
     gui_special = rules.get('special')
     gui_specials = {
         'gui_tree_set_rows', 'gui_tree_set_swatches', 'gui_tree_set_styles',
+        'gui_tree_set_projection', 'gui_tree_set_annotations',
         'gui_tree_set_selection', 'gui_tree_set_expanded', 'gui_tree_set_visible',
         'gui_tree_set_matches', 'gui_tree_draw', 'gui_table', 'gui_table_set_rows',
         'gui_table_set_column_text', 'gui_table_set_column_int64',
@@ -965,6 +967,23 @@ def _emit_gui_wrapper(special: str) -> str:
     labels_ptr, labels_keepalive = _gui_strings(labels, 'labels', row_count)
     secondary_ptr, secondary_keepalive = _gui_strings(secondary_labels, 'secondary_labels', row_count, optional=True)
     return _raw.dvz_gui_tree_set_rows(tree, int(row_count), keys_ptr, parents_ptr, labels_ptr, secondary_ptr, flags)
+'''
+    elif special == 'gui_tree_set_projection':
+        body = '''def dvz_gui_tree_set_projection(tree, keys, depths, branches, selectable, row_count=None):
+    if row_count is None and not _raw_pointer(keys):
+        row_count = len(keys)
+    keys_ptr, keys_keepalive = _gui_array((_typed_sequence(keys, np.uint64) if row_count else np.asarray(keys, dtype=np.uint64)), 'keys', ctypes.POINTER(ctypes.c_uint64), np.uint64, row_count)
+    depths_ptr, depths_keepalive = _gui_array((_typed_sequence(depths, np.uint32) if row_count else np.asarray(depths, dtype=np.uint32)), 'depths', ctypes.POINTER(ctypes.c_uint32), np.uint32, row_count)
+    branches_ptr, branches_keepalive = _gui_array(_typed_sequence(branches, np.bool_), 'branches', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count)
+    selectable_ptr, selectable_keepalive = _gui_array(_typed_sequence(selectable, np.bool_), 'selectable', ctypes.POINTER(ctypes.c_bool), np.bool_, row_count)
+    return _raw.dvz_gui_tree_set_projection(tree, int(row_count), keys_ptr, depths_ptr, branches_ptr, selectable_ptr)
+'''
+    elif special == 'gui_tree_set_annotations':
+        body = '''def dvz_gui_tree_set_annotations(tree, annotations, annotation_count=None):
+    if annotation_count is None and not _raw_pointer(annotations):
+        annotation_count = len(annotations)
+    ptr, keepalive = _gui_records(annotations, _raw.DvzGuiTreeAnnotation, 'annotations', annotation_count)
+    return _raw.dvz_gui_tree_set_annotations(tree, int(annotation_count), ptr)
 '''
     elif special.startswith('gui_tree_set_'):
         op = special.removeprefix('gui_tree_set_')
