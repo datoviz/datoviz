@@ -1,5 +1,11 @@
 export const LIVE_EXAMPLES = [
   {
+    id: "features_indexed_item_state",
+    label: "Indexed Item State",
+    scenarioId: "features_indexed_item_state",
+    animate: true,
+  },
+  {
     id: "start_scatter",
     label: "Scatter Plot",
     scenarioId: "start_scatter",

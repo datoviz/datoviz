@@ -77,6 +77,7 @@ DvzScenarioSpec dvz_example_path_join_scenario(void);
 DvzScenarioSpec dvz_example_scalebar_scenario(void);
 DvzScenarioSpec dvz_example_scalebar_units_scenario(void);
 DvzScenarioSpec dvz_example_selection_mesh_instances_scenario(void);
+DvzScenarioSpec dvz_example_indexed_item_state_scenario(void);
 DvzScenarioSpec dvz_example_selection_pixel_scenario(void);
 DvzScenarioSpec dvz_example_selection_sphere_scenario(void);
 DvzScenarioSpec dvz_example_sampled_field_update_scenario(void);
@@ -309,6 +310,8 @@ static DvzScenarioSpec _scenario_spec(uint32_t index)
         return dvz_example_sampled_planes_scenario();
     case 93:
         return dvz_example_scientific_wboit_scenario();
+    case 94:
+        return dvz_example_indexed_item_state_scenario();
     default:
         return (DvzScenarioSpec){0};
     }

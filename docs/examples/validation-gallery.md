@@ -8,8 +8,8 @@ generated in Vulkan-capable environments and should not be committed accidentall
 
 ## Evidence Counts
 
-- Reviewed public C examples generated for the website: 121
-- Examples declaring screenshot validation: 109
+- Reviewed public C examples generated for the website: 122
+- Examples declaring screenshot validation: 110
 - Examples that should have video or motion evidence: 10
 
 ## Commands
@@ -95,6 +95,7 @@ and should be committed through that submodule, not copied into the main reposit
 | [Picking](features/picking.md) | [`examples/c/features/picking.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/picking.c) | `supported` | `smoke+interaction+screenshot` |
 | [Pixel Selection](features/selection-pixel.md) | [`examples/c/features/selection_pixel.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/selection_pixel.c) | `supported` | `smoke+interaction+screenshot` |
 | [Sphere Selection](features/selection-sphere.md) | [`examples/c/features/selection_sphere.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/selection_sphere.c) | `supported` | `smoke+interaction+screenshot` |
+| [Indexed Item State](features/indexed-item-state.md) | [`examples/c/features/indexed_item_state.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/indexed_item_state.c) | `supported` | `smoke+animation+screenshot` |
 | [Mesh Instance Selection](features/selection-mesh-instances.md) | [`examples/c/features/selection_mesh_instances.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/selection_mesh_instances.c) | `supported` | `smoke+interaction+screenshot` |
 | [Isolines](features/isolines.md) | [`examples/c/features/isolines.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/isolines.c) | `supported` | `smoke+screenshot` |
 | [Builtin Shapes 2D](features/builtin-shapes-2d.md) | [`examples/c/features/builtin_shapes_2d.c`](https://github.com/datoviz/datoviz/blob/main/examples/c/features/builtin_shapes_2d.c) | `supported` | `smoke+screenshot` |

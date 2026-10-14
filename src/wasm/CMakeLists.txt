@@ -68,6 +68,7 @@ add_executable(datoviz_wasm_scene
     ${PROJECT_SOURCE_DIR}/examples/c/features/picking.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/probe_labels.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/reference_grid.c
+    ${PROJECT_SOURCE_DIR}/examples/c/features/indexed_item_state.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_mesh_instances.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_pixel.c
     ${PROJECT_SOURCE_DIR}/examples/c/features/selection_sphere.c

@@ -682,6 +682,25 @@ function expectSphereImpostorShaderContract(stream, pipeline, label) {
   );
 }
 
+function expectIndexedItemStateScenarioStreamShape(stream, label) {
+  expectAllShadersWgsl(stream, label);
+  const pipeline = expectPipeline(stream, label, (pipeline) =>
+    pipeline.builtin_pipeline === "scene.primitive" && pipeline.vertex_buffer_slots === 4);
+  requireOk(pipeline.color_targets.length === 2, `${label}: WBOIT outputs missing`);
+  const shaders = commandsOf(stream, "CreateShaderModule");
+  const vertex = shaders.find((shader) => shader.id === pipeline.vertex_shader_module_id);
+  requireOk(vertex?.code.includes("var<storage, read> item_state_words: array<u32>") &&
+    vertex.code.includes("item_state_words[input.state_index]") &&
+    vertex.code.includes("apply_item_state_color"), `${label}: indexed state lookup absent`);
+  requireOk(commandsOf(stream, "CreateBindGroup").some((group) =>
+    group.entries.some((entry) => entry.binding === 2 &&
+      entry.binding_type === "storage_buffer" && entry.size === 4096 * 4)),
+    `${label}: typed state storage binding missing`);
+  const bank = commandsOf(stream, "CreateBuffer").find((buffer) => buffer.size === 4096 * 4);
+  requireOk(bank !== undefined, `${label}: state bank allocation missing`);
+  return bank.id;
+}
+
 function expectScientificWboitScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -2505,6 +2524,11 @@ const smokeSize = 64;
 // Focused synthetic scenarios need no prepared scientific data fixtures.
 const focusedScenarioId = process.env.DVZ_WASM_SMOKE_SCENARIO;
 const focusedScenarioChecks = new Map([
+  ["features_indexed_item_state", {
+    shape: expectIndexedItemStateScenarioStreamShape,
+    frameTime: 1.1,
+    sparseState: true,
+  }],
   ["features_scientific_wboit", {
     shape: expectScientificWboitScenarioStreamShape,
     cameraStart: [280, 320],
@@ -2534,7 +2558,8 @@ if (focusedScenarioId) {
       0, `${label} create`);
     const figure = Module._dvz_wasm_api_scenario_figure(scene);
     const initial = emitStream(Module, scene, figure, `${label} initial`);
-    check.shape(initial.stream, `${label} initial`);
+    const stateBankId = check.shape(initial.stream, `${label} initial`);
+    if (check.cameraStart !== undefined) {
     expectStatus(Module._dvz_wasm_api_scenario_pointer(
       scene, DVZ_POINTER_EVENT_PRESS, ...check.cameraStart, DVZ_POINTER_BUTTON_LEFT, 0, 1, 100),
     0, `${label} press`);
@@ -2548,13 +2573,26 @@ if (focusedScenarioId) {
     requireOk(changed.update.decoded.commands.filter((command) =>
       command.cmd === "WriteBuffer").length >= check.minUniformUpdates,
     `${label}: camera uniform updates missing`);
+    }
     if (check.frameTime !== undefined) {
       expectStatus(Module._dvz_wasm_api_scenario_frame(scene, check.frameTime, 1 / 60),
         0, `${label} retained update frame`);
       const animated = emitIncrementalPacketStream(Module, scene, figure, `${label} animation`);
+      if (check.sparseState) {
+        const writes = animated.update.decoded.commands.filter((command) =>
+          command.cmd === "WriteBuffer" && command.buffer_id === stateBankId);
+        requireOk(writes.length === 2 && writes.every((write) => write.size === 4),
+          `${label}: expected only two four-byte state writes: ${JSON.stringify(writes.map(w => ({size:w.size, offset:w.offset})))}`);
+        requireOk(new Set(writes.map((write) => write.offset)).has(11 * 4) &&
+          new Set(writes.map((write) => write.offset)).has(4000 * 4),
+          `${label}: distant state slots were not preserved`);
+        requireOk(!animated.update.decoded.commands.some((command) => command.cmd === "CreateBuffer"),
+          `${label}: warm state update allocated a GPU buffer`);
+      } else {
       requireOk(animated.update.decoded.commands.filter((command) =>
         command.cmd === "WriteBuffer" && command.size >= check.minDataBytes).length >= check.minDataUpdates,
         `${label}: missing retained payload updates`);
+      }
     }
     expectNoDiagnostics(Module, scene, `${label} diagnostics`);
     console.log(`PASS ${label}: packet shape, camera updates${check.frameTime !== undefined ? ", retained data updates" : ""}`);
@@ -2865,6 +2903,7 @@ try {
     "features_histogram",
     "features_sampled_planes",
     "features_scientific_wboit",
+    "features_indexed_item_state",
   ];
   for (let i = 0; i < expectedScenarioIds.length; i++) {
     const ptr = Module._dvz_wasm_api_scenario_id(i);

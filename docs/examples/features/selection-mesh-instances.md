@@ -4,7 +4,7 @@
 
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../selection-sphere/">← Previous: Sphere Selection</a></span>
+<span class="dvz-example-nav__previous"><a href="../indexed-item-state/">← Previous: Indexed Item State</a></span>
 <span class="dvz-example-nav__next"><a href="../animation-tracks/">Next: Animation Tracks →</a></span>
 </div>
 </nav>
@@ -81,7 +81,7 @@ A single cube geometry is reused with an instance_transform array for a 6x4x2 fi
 
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
-<span class="dvz-example-nav__previous"><a href="../selection-sphere/">← Previous: Sphere Selection</a></span>
+<span class="dvz-example-nav__previous"><a href="../indexed-item-state/">← Previous: Indexed Item State</a></span>
 <span class="dvz-example-nav__next"><a href="../animation-tracks/">Next: Animation Tracks →</a></span>
 </div>
 </nav>

@@ -905,6 +905,18 @@ This example queries and selects individual raycast spheres in a 3D cluster.
 
 <div class="card" markdown="1">
 
+### [Indexed Item State](features/indexed-item-state.md)
+
+<div class="dvz-gallery-placeholder" role="note"><span>Canonical screenshot and motion media are pending. Use the live WebGPU preview or run this example.</span></div>
+
+`features`
+
+This example styles two indexed mesh groups through one copied state bank.
+
+</div>
+
+<div class="card" markdown="1">
+
 ### [Mesh Instance Selection](features/selection-mesh-instances.md)
 
 [![Mesh Instance Selection](../assets/gallery/v0.4/features/features_selection_mesh_instances.webp)](features/selection-mesh-instances.md)

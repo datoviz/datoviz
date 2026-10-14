@@ -197,6 +197,7 @@ batches:
     - features_selection_sphere
 
   review-09-selection-mesh:
+    - features_indexed_item_state
     - features_selection_mesh_instances
     - features_gui_controls
     - features_gui_viewport
@@ -2243,6 +2244,34 @@ examples:
         - arcball
         - query-readback
         - frame-callbacks
+    agent_copy_safe: true
+
+  - id: features_indexed_item_state
+    title: Indexed Item State
+    stage: v0.4_required
+    category: feature
+    primary_feature: indexed-item-state
+    lane: features
+    source: examples/c/features/indexed_item_state.c
+    python:
+      source: examples/python/gallery/features/indexed_item_state.py
+      status: direct-engine
+    validation: smoke+animation+screenshot
+    media:
+      status: pending
+    data:
+      kind: synthetic
+    portability: portable-scenario
+    webgpu:
+      status: webgpu-live
+      route: examples/webgpu/live.html?id=features_indexed_item_state
+      requirements:
+        - mesh
+        - frame-callbacks
+        - wboit
+      rendering_effects:
+        - effect: wboit
+          status: supported
     agent_copy_safe: true
 
   - id: features_selection_mesh_instances

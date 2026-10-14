@@ -351,6 +351,18 @@ This example compares the same sphere cluster under three panel-owned light conf
 
 <div class="card" markdown="1">
 
+**[Indexed Item State](features/indexed-item-state.md)**
+
+<div class="dvz-gallery-placeholder" role="note"><span>Canonical screenshot and motion media are pending. Use the live WebGPU preview or run this example.</span></div>
+
+`features`
+
+This example styles two indexed mesh groups through one copied state bank.
+
+</div>
+
+<div class="card" markdown="1">
+
 **[Mesh Instance Selection](features/selection-mesh-instances.md)**
 
 [![Mesh Instance Selection](../assets/gallery/v0.4/features/features_selection_mesh_instances.webp)](features/selection-mesh-instances.md)
@@ -363,7 +375,7 @@ This example queries and selects individual instances of one mesh visual.
 
 </div>
 
-**[Show all 73 feature examples →](features.md)**
+**[Show all 74 feature examples →](features.md)**
 
 ## Runtime And Advanced
 
@@ -376,9 +388,9 @@ Some examples focus on how Datoviz runs rather than on a particular visual resul
 
 | Goal | Start here | Then browse |
 | --- | --- | --- |
-| Learn the scene → figure → panel → visual workflow | [Basic Scene](features/basic-scene.md) | [73 focused features](features.md) |
+| Learn the scene → figure → panel → visual workflow | [Basic Scene](features/basic-scene.md) | [74 focused features](features.md) |
 | Choose marks, lines, images, meshes, text, or volumes | [Point](visuals/point.md) | [18 visuals and composites](visuals.md) |
-| Add axes, interaction, layout, animation, or techniques | [2D Axes](features/axes-2d.md) | [73 focused features](features.md) |
+| Add axes, interaction, layout, animation, or techniques | [2D Axes](features/axes-2d.md) | [74 focused features](features.md) |
 | Open windows, render offscreen, capture, record, or export | [Offscreen Capture](runtime/offscreen-capture.md) | [5 runtime examples](runtime.md) |
 | Study complete scientific visualization compositions | [Scientific Plotting Workflow](showcases/scientific-plotting.md) | [18 showcases](showcases.md) |
 | Integrate a host or use lower-level rendering APIs | [Advanced examples](advanced.md) | [6 advanced examples](advanced.md) |

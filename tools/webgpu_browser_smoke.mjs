@@ -869,6 +869,41 @@ async function smokeAnimatedWasmPage(
     return "animation did not advance after pointer movement";
   })()`);
   requireOk(pointerContinuity === true, `${path}: ${pointerContinuity}`);
+  if (expectedScenarioId === 'features_indexed_item_state') {
+    const changed = await page.evaluate(`(async () => {
+      const session = window.__datovizWasmSession;
+      const scene = window.__datovizWasmScene;
+      const canvas = document.querySelector("#viewport");
+      session.demo = {...session.demo, animate: false};
+      session.stopAnimationLoop();
+      await session.renderQueue;
+      scene.scenarioFrame(0, 1 / 60);
+      await session.render();
+      await scene.gpu.device.queue.onSubmittedWorkDone();
+      const brightness = () => {
+        const copy = document.createElement("canvas");
+        copy.width = canvas.width; copy.height = canvas.height;
+        const ctx = copy.getContext("2d");
+        ctx.drawImage(canvas, 0, 0);
+        const pixels = ctx.getImageData(0, 0, copy.width, copy.height).data;
+        const sums = [0, 0];
+        for (let y = 0; y < copy.height; y += 2)
+          for (let x = 0; x < copy.width; x += 2) {
+            const i = 4 * (y * copy.width + x);
+            sums[x < copy.width / 2 ? 0 : 1] += pixels[i] + pixels[i + 1] + pixels[i + 2];
+          }
+        return sums;
+      };
+      const before = brightness();
+      scene.scenarioFrame(1.1, 1 / 60);
+      await session.render();
+      await scene.gpu.device.queue.onSubmittedWorkDone();
+      const after = brightness();
+      return {before, after, changed: after[0] < before[0] - 1000 && after[1] > before[1] + 1000};
+    })()`);
+    requireOk(changed.changed, `${path}: sparse indexed-state brightness mismatch ${JSON.stringify(changed)}`);
+  }
+
   await page.screenshotCanvas(screenshotPath, {
     width: CAPTURE_CANVAS_WIDTH,
     height: CAPTURE_CANVAS_HEIGHT,
@@ -1109,6 +1144,7 @@ async function main() {
         ['features_panel_mixed_2d_3d', { label: 'Mixed 2D and 3D Panels' }],
         ['features_mesh_texture', { label: 'Textured Mesh' }],
         ['features_sampled_planes', { label: 'Sampled Planes' }],
+        ['features_indexed_item_state', { label: 'Indexed Item State', kind: 'animated' }],
         ['features_scientific_wboit', { label: 'Scientific 3D Transparency', kind: 'animated' }],
         ['features_reference_grid', { label: 'Reference Grid' }],
         ['features_bounds_overlay', { label: 'Bounds Overlay' }],
@@ -1488,6 +1524,7 @@ async function main() {
       ['features_controller_arcball', 'Arcball Controller', 'webgpu_live_controller_arcball.png', 'controller-arcball'],
       ['features_mesh_texture', 'Textured Mesh', 'webgpu_live_mesh_texture.png', 'mesh-texture'],
       ['features_sampled_planes', 'Sampled Planes', 'webgpu_live_sampled_planes.png', 'sampled-planes'],
+      ['features_indexed_item_state', 'Indexed Item State', 'webgpu_live_indexed_item_state.png', 'indexed-item-state'],
       ['features_scientific_wboit', 'Scientific 3D Transparency', 'webgpu_live_scientific_wboit.png', 'scientific-wboit'],
       ['features_reference_grid', 'Reference Grid', 'webgpu_live_reference_grid.png', 'reference-grid'],
       ['features_bounds_overlay', 'Bounds Overlay', 'webgpu_live_bounds_overlay.png', 'bounds-overlay'],
@@ -1561,14 +1598,13 @@ async function main() {
     ];
     for (const [id, label, filename, shortLabel, limitations] of promotedLiveRoutes) {
       try {
-        const result = await smokeWasmPage(
-          page,
-          baseUrl,
-          `/examples/webgpu/live.html?id=${id}`,
-          `Rendered ${label}`,
-          join(artifactsDir, filename),
-          limitations,
-        );
+        const result = id === 'features_indexed_item_state'
+          ? await smokeAnimatedWasmPage(page, baseUrl, `/examples/webgpu/live.html?id=${id}`,
+              `Rendered ${label}`, join(artifactsDir, filename), id, limitations)
+          : await smokeWasmPage(
+              page, baseUrl, `/examples/webgpu/live.html?id=${id}`,
+              `Rendered ${label}`, join(artifactsDir, filename), limitations);
+
         console.log(passLine(`live ${shortLabel}: ${result.initialStatus}`));
       } catch (error) {
         if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {

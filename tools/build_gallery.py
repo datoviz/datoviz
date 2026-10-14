@@ -685,6 +685,12 @@ def media_block(
 ) -> str:
     # Documentation generation is hermetic: the manifest declares whether reviewed media is part
     # of the public gallery contract, while capture and site-publication checks validate bytes.
+    if example.media.get("status") == "pending":
+        return (
+            '<div class="dvz-gallery-placeholder" role="note">'
+            '<span>Canonical screenshot and motion media are pending. '
+            'Use the live WebGPU preview or run this example.</span></div>'
+        )
     if example.screenshot_expected:
         if preferred_preview_media(example) == "video-mp4":
             return video_media_block(page_path, example, image_url_base, href=href)
@@ -968,6 +974,8 @@ def render_preview(
         *effect_notice_lines,
         f'{html_link(route, "Open the live WebGPU example")}.',
     ]
+    if example.media.get("status") == "pending":
+        return ["## Preview", "", *screenshot, "", *live_lines, ""]
     return [
         "## Preview",
         "",

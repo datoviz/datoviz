@@ -88,6 +88,7 @@ sections:
       - features_builtin_shapes_3d
       - features_isolines
       - features_lighting
+      - features_indexed_item_state
       - features_selection_mesh_instances
     groups:
       - title: Scene & Layout
@@ -166,6 +167,7 @@ sections:
           - features_picking
           - features_selection_pixel
           - features_selection_sphere
+          - features_indexed_item_state
           - features_selection_mesh_instances
       - title: Animation & Updates
         examples:

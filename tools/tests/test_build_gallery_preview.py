@@ -15,6 +15,19 @@ import build_gallery  # noqa: E402
 
 
 class GalleryPreviewTests(unittest.TestCase):
+    def test_pending_canonical_media_uses_live_preview_without_asset_links(self) -> None:
+        manifest = build_gallery.load_manifest(build_gallery.DEFAULT_MANIFEST)
+        example = next(example for example in build_gallery.collect_examples(manifest)
+                       if example.id == "features_indexed_item_state")
+        text = "\n".join(build_gallery.render_preview(
+            example, Path(example.page_path), build_gallery.DEFAULT_IMAGE_DIR,
+            build_gallery.DEFAULT_IMAGE_URL_BASE))
+        self.assertIn("Canonical screenshot and motion media are pending", text)
+        self.assertIn("Open the live WebGPU example", text)
+        self.assertNotIn(".webp", text)
+        self.assertNotIn(".mp4", text)
+        self.assertNotIn('=== "Screenshot"', text)
+
     def test_generated_example_uses_short_canonical_and_legacy_paths(self) -> None:
         manifest = build_gallery.load_manifest(build_gallery.DEFAULT_MANIFEST)
         example = next(

@@ -5,7 +5,7 @@
 <nav class="dvz-example-nav dvz-example-nav--top" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../selection-pixel/">← Previous: Pixel Selection</a></span>
-<span class="dvz-example-nav__next"><a href="../selection-mesh-instances/">Next: Mesh Instance Selection →</a></span>
+<span class="dvz-example-nav__next"><a href="../indexed-item-state/">Next: Indexed Item State →</a></span>
 </div>
 </nav>
 
@@ -82,6 +82,6 @@ The sphere visual uploads position, radius, and color arrays for a compact depth
 <nav class="dvz-example-nav dvz-example-nav--bottom" aria-label="Example navigation">
 <div class="dvz-example-nav__siblings">
 <span class="dvz-example-nav__previous"><a href="../selection-pixel/">← Previous: Pixel Selection</a></span>
-<span class="dvz-example-nav__next"><a href="../selection-mesh-instances/">Next: Mesh Instance Selection →</a></span>
+<span class="dvz-example-nav__next"><a href="../indexed-item-state/">Next: Indexed Item State →</a></span>
 </div>
 </nav>

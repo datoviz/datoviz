@@ -2,11 +2,11 @@
   "schema": "datoviz.public-examples.v1",
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_examples_manifest.py",
-  "count": 121,
+  "count": 122,
   "categories": {
     "advanced": 6,
     "composite": 2,
-    "feature": 73,
+    "feature": 74,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -16,7 +16,7 @@
     "diagnostic": 1,
     "experimental": 19,
     "prototype": 1,
-    "supported": 100
+    "supported": 101
   },
   "examples": [
     {
@@ -3682,6 +3682,62 @@
       "primary_feature": "selection-sphere",
       "python_source": "examples/python/gallery/features/selection_sphere.py",
       "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/selection_sphere.py",
+      "python_status": "direct-engine"
+    },
+    {
+      "id": "features_indexed_item_state",
+      "title": "Indexed Item State",
+      "category": "feature",
+      "lane": "features",
+      "stage": "v0.4_required",
+      "status": "supported",
+      "source": "examples/c/features/indexed_item_state.c",
+      "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/indexed_item_state.c",
+      "page": "features/indexed-item-state.md",
+      "summary": "This example styles two indexed mesh groups through one copied state bank.",
+      "validation": "smoke+animation+screenshot",
+      "build_command": "just example-c features/indexed_item_state",
+      "smoke_command": "./build/examples/c/features/indexed_item_state --png",
+      "tags": [],
+      "data": {
+        "kind": "synthetic"
+      },
+      "data_kind": "synthetic",
+      "media": {
+        "screenshot": {
+          "expected": true,
+          "status": "available",
+          "source": "data/gallery/v0.4/features/features_indexed_item_state.png",
+          "site_asset": "/assets/gallery/v0.4/features/features_indexed_item_state.webp"
+        }
+      },
+      "webgpu_status": "webgpu-live",
+      "webgpu_status_label": "Live in browser",
+      "webgpu_requirements": [
+        "mesh",
+        "frame-callbacks",
+        "wboit"
+      ],
+      "webgpu": {
+        "status": "webgpu-live",
+        "route": "examples/webgpu/live.html?id=features_indexed_item_state",
+        "requirements": [
+          "mesh",
+          "frame-callbacks",
+          "wboit"
+        ],
+        "rendering_effects": [
+          {
+            "effect": "wboit",
+            "status": "supported"
+          }
+        ]
+      },
+      "webgpu_route": "examples/webgpu/live.html?id=features_indexed_item_state",
+      "webgpu_site_route": "/examples/webgpu/live.html?id=features_indexed_item_state",
+      "primary_feature": "indexed-item-state",
+      "python_source": "examples/python/gallery/features/indexed_item_state.py",
+      "python_source_url": "https://github.com/datoviz/datoviz/blob/main/examples/python/gallery/features/indexed_item_state.py",
       "python_status": "direct-engine"
     },
     {

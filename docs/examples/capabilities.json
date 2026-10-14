@@ -3,11 +3,11 @@
   "source": "examples/c/MANIFEST.yaml",
   "generated_by": "tools/build_capabilities.py",
   "example_manifest": "docs/examples/examples.json",
-  "example_count": 121,
+  "example_count": 122,
   "categories": {
     "advanced": 6,
     "composite": 2,
-    "feature": 73,
+    "feature": 74,
     "runtime": 5,
     "showcase": 18,
     "start": 1,
@@ -17,7 +17,7 @@
     "diagnostic": 1,
     "experimental": 19,
     "prototype": 1,
-    "supported": 100
+    "supported": 101
   },
   "capabilities": {
     "composites": {
@@ -182,7 +182,7 @@
         ]
       },
       "synthetic": {
-        "count": 107,
+        "count": 108,
         "examples": [
           {
             "id": "features_basic_scene",
@@ -743,6 +743,14 @@
             "status": "supported",
             "source": "examples/c/features/selection_sphere.c",
             "page": "features/selection-sphere.md"
+          },
+          {
+            "id": "features_indexed_item_state",
+            "title": "Indexed Item State",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/indexed_item_state.c",
+            "page": "features/indexed-item-state.md"
           },
           {
             "id": "features_selection_mesh_instances",
@@ -1444,6 +1452,19 @@
             "status": "supported",
             "source": "examples/c/features/image_probe.c",
             "page": "features/image-probe.md"
+          }
+        ]
+      },
+      "indexed-item-state": {
+        "count": 1,
+        "examples": [
+          {
+            "id": "features_indexed_item_state",
+            "title": "Indexed Item State",
+            "category": "feature",
+            "status": "supported",
+            "source": "examples/c/features/indexed_item_state.c",
+            "page": "features/indexed-item-state.md"
           }
         ]
       },
