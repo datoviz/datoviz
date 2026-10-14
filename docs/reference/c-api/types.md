@@ -249,7 +249,11 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzGuiTableColumnFlags`](app.md#type-dvzguitablecolumnflags) | enum | App, Window, And I/O API | `include/datoviz/gui.h` |
 | [`DvzGuiTableColumnType`](app.md#type-dvzguitablecolumntype) | enum | App, Window, And I/O API | `include/datoviz/gui.h` |
 | [`DvzGuiTree`](app.md#type-dvzguitree) | typedef | App, Window, And I/O API | `include/datoviz/gui.h` |
+| [`DvzGuiTreeAnnotation`](app.md#type-dvzguitreeannotation) | record | App, Window, And I/O API | `include/datoviz/gui.h` |
+| [`DvzGuiTreeAnnotationFlags`](app.md#type-dvzguitreeannotationflags) | enum | App, Window, And I/O API | `include/datoviz/gui.h` |
 | [`DvzGuiTreeLayout`](app.md#type-dvzguitreelayout) | record | App, Window, And I/O API | `include/datoviz/gui.h` |
+| [`DvzGuiTreeLimits`](app.md#type-dvzguitreelimits) | enum | App, Window, And I/O API | `include/datoviz/gui.h` |
+| [`DvzGuiTreeTextSpan`](app.md#type-dvzguitreetextspan) | record | App, Window, And I/O API | `include/datoviz/gui.h` |
 | [`DvzGuiViewport`](app.md#type-dvzguiviewport) | typedef | App, Window, And I/O API | `include/datoviz/gui.h` |
 | [`DvzGuiViewportConfig`](app.md#type-dvzguiviewportconfig) | record | App, Window, And I/O API | `include/datoviz/gui.h` |
 | [`DvzGuiViewportFlags`](app.md#type-dvzguiviewportflags) | enum | App, Window, And I/O API | `include/datoviz/gui.h` |
