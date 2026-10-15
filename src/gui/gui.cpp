@@ -2779,8 +2779,6 @@ bool dvz_gui_icon_button(
     const bool active = (flags & DVZ_GUI_ICON_BUTTON_FLAGS_ACTIVE) != 0;
     const bool disabled = (flags & DVZ_GUI_ICON_BUTTON_FLAGS_DISABLED) != 0;
     ImGui::PushID(id);
-    if (active)
-        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
     ImGui::BeginDisabled(disabled);
     const bool native_pressed = ImGui::Button("##icon", ImVec2(extent, extent));
     // Native navigation intents can have been queued before this frame disabled the item.
@@ -2789,9 +2787,14 @@ bool dvz_gui_icon_button(
     _gui_icon_draw(
         ImGui::GetWindowDrawList(), icon, ImVec2((a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f), extent,
         ImGui::GetColorU32(ImGuiCol_Text));
-    ImGui::EndDisabled();
+    // Keep native hover/held backgrounds and the navigation outline independent of selection.
+    // The inset on-state mark survives hover and inherits the theme and disabled alpha.
     if (active)
-        ImGui::PopStyleColor();
+        ImGui::GetWindowDrawList()->AddLine(
+            ImVec2(a.x + extent * 0.3f, b.y - extent * 0.12f),
+            ImVec2(b.x - extent * 0.3f, b.y - extent * 0.12f),
+            ImGui::GetColorU32(ImGuiCol_Text), extent * 0.07f);
+    ImGui::EndDisabled();
     const bool navigation_focus =
         ImGui::GetCurrentContext()->NavCursorVisible && ImGui::IsItemFocused();
     if (tooltip != NULL && tooltip[0] != '\0' &&

@@ -1113,6 +1113,23 @@ static int test_gui_compact_layout(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Count vertices using one exact color in newly emitted GUI geometry.
+ *
+ * @param draw native draw list
+ * @param start first vertex
+ * @param color expected packed color
+ * @return matching vertex count
+ */
+static uint32_t _gui_vertices_with_color(const ImDrawList* draw, int start, ImU32 color)
+{
+    uint32_t count = 0;
+    for (int i = start; i < draw->VtxBuffer.Size; i++)
+        count += draw->VtxBuffer.Data[i].col == color;
+    return count;
+}
+
+
 typedef struct GuiIconTest
 {
     float scale;
@@ -1123,6 +1140,10 @@ typedef struct GuiIconTest
     ImGuiID id;
     ImVec2 center;
     ImVec2 disabled_center;
+    bool indicator;
+    bool normal_background;
+    bool hovered_background;
+    bool held_background;
     bool passed;
 } GuiIconTest;
 
@@ -1151,8 +1172,18 @@ static void _gui_icon_callback(DvzGui* gui, DvzView* view, void* user_data)
     DvzRect rect = {20, 30, 650, 300};
     GUI_ICON_CHECK(dvz_gui_set_next_window_rect(gui, &rect, 0) == DVZ_OK);
     dvz_gui_begin(gui, "icon CPU", NULL, ImGuiWindowFlags_NoSavedSettings);
+    const ImDrawList* draw = igGetWindowDrawList();
+    const int first_vertex = draw->VtxBuffer.Size;
     state->pressed = dvz_gui_icon_button(
         gui, "primary", DVZ_GUI_ICON_CLEAR, 28, "Clear selection", state->flags);
+    const bool disabled = (state->flags & DVZ_GUI_ICON_BUTTON_FLAGS_DISABLED) != 0;
+    const float alpha = disabled ? igGetStyle()->DisabledAlpha : 1.0f;
+    state->normal_background = _gui_vertices_with_color(
+        draw, first_vertex, igGetColorU32_Col(ImGuiCol_Button, alpha)) > 0;
+    state->hovered_background = _gui_vertices_with_color(
+        draw, first_vertex, igGetColorU32_Col(ImGuiCol_ButtonHovered, alpha)) > 0;
+    state->held_background = _gui_vertices_with_color(
+        draw, first_vertex, igGetColorU32_Col(ImGuiCol_ButtonActive, alpha)) > 0;
     const ImGuiID id = igGetItemID();
     GUI_ICON_CHECK(state->id == 0 || id == state->id);
     state->id = id;
@@ -1163,6 +1194,14 @@ static void _gui_icon_callback(DvzGui* gui, DvzView* view, void* user_data)
     GUI_ICON_CHECK(fabsf(size.y - 28 * scale) < 0.001f);
     igGetItemRectMin(&a);
     igGetItemRectMax(&b);
+    // The persistent selection mark sits below the glyph, inside the native frame.
+    state->indicator = false;
+    const ImU32 text_color = igGetColorU32_Col(ImGuiCol_Text, alpha);
+    for (int vertex = first_vertex; vertex < draw->VtxBuffer.Size; vertex++)
+    {
+        const ImDrawVert* v = &draw->VtxBuffer.Data[vertex];
+        state->indicator |= v->col == text_color && v->pos.y > b.y - size.y * 0.2f;
+    }
     state->center = ImVec2{(a.x + b.x) / 2, (a.y + b.y) / 2};
     const float primary_right = b.x;
     dvz_gui_same_line(gui, 0, 7);
@@ -1257,11 +1296,17 @@ static int test_gui_compact_icons(TstContext* suite, const TstCase* item)
         AT(_gui_icon_frame(&state));
         // Initial native focus alone must not display help before navigation starts.
         AT(state.passed && !state.pressed && !state.tooltip);
+        AT(state.normal_background && !state.indicator);
+        state.flags = DVZ_GUI_ICON_BUTTON_FLAGS_ACTIVE;
+        AT(_gui_icon_frame(&state));
+        AT(state.normal_background && state.indicator);
         ImGuiIO_AddMousePosEvent(io, state.center.x, state.center.y);
         AT(_gui_icon_frame(&state));
         AT(state.tooltip);
+        AT(state.hovered_background && state.indicator && !state.held_background);
         ImGuiIO_AddMouseButtonEvent(io, 0, true);
         AT(_gui_icon_frame(&state));
+        AT(state.held_background && state.indicator && !state.hovered_background);
         ImGuiIO_AddMouseButtonEvent(io, 0, false);
         AT(_gui_icon_frame(&state));
         AT(state.pressed);
@@ -1302,26 +1347,10 @@ static int test_gui_compact_icons(TstContext* suite, const TstCase* item)
         ImGuiIO_AddKeyEvent(io, ImGuiKey_Space, false);
         AT(_gui_icon_frame(&state));
         AT(!state.pressed && state.passed);
+        AT(state.indicator && !state.held_background);
         igDestroyContext(context);
     }
     return 0;
-}
-
-
-/**
- * Count vertices using one exact color in newly emitted GUI geometry.
- *
- * @param draw native draw list
- * @param start first vertex
- * @param color expected packed color
- * @return matching vertex count
- */
-static uint32_t _gui_vertices_with_color(const ImDrawList* draw, int start, ImU32 color)
-{
-    uint32_t count = 0;
-    for (int i = start; i < draw->VtxBuffer.Size; i++)
-        count += draw->VtxBuffer.Data[i].col == color;
-    return count;
 }
 
 
