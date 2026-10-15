@@ -386,6 +386,53 @@ DVZ_EXPORT bool dvz_gui_current_window_rect(DvzGui* gui, DvzRect* out);
 
 
 /**
+ * Set a bounded rectangle for the next ordinary GUI window.
+ *
+ * Coordinates and extents are host-window logical pixels. Positive finite extents respect the
+ * native window minimum, are clamped to the host display, then the position is clamped to keep
+ * the entire window inside it. A display smaller than the native minimum rejects the request.
+ * Call before dvz_gui_begin(); the explicit size takes precedence over default_window_width.
+ * Use Dear ImGui window flags such as NoDocking in dvz_gui_begin() for floating tool windows.
+ * This does not open a popup or change window lifetime; always pair begin/end as usual.
+ *
+ * @param gui the GUI overlay
+ * @param rect borrowed requested rectangle
+ * @param condition Dear ImGui condition: 0 or 1 Always, 2 Once, 4 FirstUseEver, 8 Appearing
+ * @return DVZ_OK if accepted, DVZ_ERROR for invalid arguments or an unavailable display
+ */
+DVZ_EXPORT DvzResult dvz_gui_set_next_window_rect(DvzGui* gui, const DvzRect* rect, int condition);
+
+
+
+/**
+ * Return available content width and height in host-window logical pixels.
+ *
+ * Call inside a window or child region. The active font and user scale already affect layout;
+ * callers must not apply either scale again to the returned distances.
+ *
+ * @param gui the GUI overlay
+ * @param out_size output width and height
+ * @return whether the size was written
+ */
+DVZ_EXPORT bool dvz_gui_content_avail(DvzGui* gui, float out_size[2]);
+
+
+
+/**
+ * Set the width of the next input or other width-aware item in logical pixels.
+ *
+ * A positive width is fixed; zero uses the native default. A negative width aligns the item's
+ * right edge that many logical pixels before the available right edge (-1 leaves one pixel).
+ * Font and user scaling are not applied to explicit logical distances.
+ *
+ * @param gui the GUI overlay
+ * @param width finite logical width or right-edge offset
+ */
+DVZ_EXPORT void dvz_gui_set_next_item_width(DvzGui* gui, float width);
+
+
+
+/**
  * End the current ImGui window.
  *
  * @param gui the GUI overlay
@@ -423,6 +470,21 @@ DVZ_EXPORT void dvz_gui_tooltip(DvzGui* gui, const char* text);
  */
 DVZ_EXPORT bool
 dvz_gui_input_text(DvzGui* gui, const char* label, char* value, uint32_t capacity);
+
+
+
+/**
+ * Show a fixed-capacity UTF-8 input with a hint while its value is empty.
+ *
+ * @param gui the GUI overlay
+ * @param label stable input label or hidden identifier
+ * @param hint text shown when the buffer is empty
+ * @param value mutable null-terminated buffer borrowed for the call
+ * @param capacity buffer capacity in bytes, including the terminator
+ * @return whether the value changed
+ */
+DVZ_EXPORT bool dvz_gui_input_text_with_hint(
+    DvzGui* gui, const char* label, const char* hint, char* value, uint32_t capacity);
 
 
 

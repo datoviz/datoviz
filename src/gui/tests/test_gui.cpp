@@ -961,6 +961,157 @@ static int test_gui_style_scale(TstContext* suite, const TstCase* item)
 
 
 
+typedef struct GuiCompactLayoutTest
+{
+    float scale;
+    bool passed;
+    uint32_t frame;
+} GuiCompactLayoutTest;
+
+
+/**
+ * Check logical geometry, width sentinels, ordinary placement, and balanced nested scopes.
+ *
+ * @param gui CPU-only GUI wrapper
+ * @param view unused view
+ * @param user_data test state
+ */
+static void _gui_compact_layout_callback(DvzGui* gui, DvzView* view, void* user_data)
+{
+    (void)view;
+#define GUI_LAYOUT_CHECK(condition)                                                               \
+    do                                                                                            \
+    {                                                                                             \
+        if (!(condition))                                                                         \
+        {                                                                                         \
+            log_error("compact layout check failed at line %d", __LINE__);                        \
+            state->passed = false;                                                                \
+        }                                                                                         \
+    } while (0)
+    GuiCompactLayoutTest* state = (GuiCompactLayoutTest*)user_data;
+    const float scale = state->scale;
+    const int flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoDocking;
+    DvzRect requested = {50, 60, 320, 240}, actual = {};
+    uint64_t frame = 0;
+    GUI_LAYOUT_CHECK(!_dvz_gui_data_draw_context(gui, &frame));
+    GUI_LAYOUT_CHECK(dvz_gui_set_next_window_rect(gui, &requested, 0) == DVZ_OK);
+    dvz_gui_begin(gui, "logical layout", NULL, flags);
+    GUI_LAYOUT_CHECK(dvz_gui_current_window_rect(gui, &actual));
+    GUI_LAYOUT_CHECK(fabsf(actual.x - requested.x) < 1 / scale);
+    GUI_LAYOUT_CHECK(fabsf(actual.y - requested.y) < 1 / scale);
+    GUI_LAYOUT_CHECK(fabsf(actual.width - requested.width) < 1 / scale);
+    GUI_LAYOUT_CHECK(fabsf(actual.height - requested.height) < 1 / scale);
+    float available[2] = {};
+    ImVec2 native_available = {};
+    igGetContentRegionAvail(&native_available);
+    GUI_LAYOUT_CHECK(dvz_gui_content_avail(gui, available));
+    GUI_LAYOUT_CHECK(fabsf(available[0] * scale - native_available.x) < 0.001f);
+    GUI_LAYOUT_CHECK(fabsf(available[1] * scale - native_available.y) < 0.001f);
+    char text[32] = "";
+    dvz_gui_set_next_item_width(gui, 80);
+    GUI_LAYOUT_CHECK(!dvz_gui_input_text_with_hint(gui, "##hint", "Search", text, sizeof(text)));
+    ImVec2 item_size = {};
+    igGetItemRectSize(&item_size);
+    GUI_LAYOUT_CHECK(fabsf(item_size.x - 80 * scale) < 0.001f);
+    igGetContentRegionAvail(&native_available);
+    dvz_gui_set_next_item_width(gui, -7);
+    dvz_gui_input_text_with_hint(gui, "##right", "Search", text, sizeof(text));
+    igGetItemRectSize(&item_size);
+    GUI_LAYOUT_CHECK(fabsf(item_size.x - (native_available.x - 7 * scale)) < 1.0f);
+    dvz_gui_set_next_item_width(gui, 0);
+    const float default_width = igCalcItemWidth();
+    dvz_gui_input_text_with_hint(gui, "##default", "Search", text, sizeof(text));
+    igGetItemRectSize(&item_size);
+    GUI_LAYOUT_CHECK(fabsf(item_size.x - default_width) < 0.001f);
+    GUI_LAYOUT_CHECK(!dvz_gui_input_text_with_hint(gui, "##zero", "Search", text, 0));
+    dvz_gui_begin_child(gui, "remaining", 0, 25, 0);
+    igGetContentRegionAvail(&native_available);
+    GUI_LAYOUT_CHECK(dvz_gui_content_avail(gui, available));
+    GUI_LAYOUT_CHECK(fabsf(available[0] * scale - native_available.x) < 0.001f);
+    dvz_gui_end_child(gui);
+    igSetNextWindowCollapsed(true, ImGuiCond_Always);
+    const bool nested_visible = dvz_gui_begin(gui, "collapsed nested", NULL, flags);
+    GUI_LAYOUT_CHECK(_dvz_gui_data_draw_context(gui, &frame) == nested_visible);
+    if (state->frame > 0)
+        GUI_LAYOUT_CHECK(!nested_visible);
+    dvz_gui_end(gui);
+    GUI_LAYOUT_CHECK(_dvz_gui_data_draw_context(gui, &frame));
+    dvz_gui_end(gui);
+    GUI_LAYOUT_CHECK(!_dvz_gui_data_draw_context(gui, &frame));
+
+    dvz_gui_begin(gui, "default width", NULL, flags);
+    dvz_gui_current_window_rect(gui, &actual);
+    GUI_LAYOUT_CHECK(fabsf(actual.width - 200) < 1.0f);
+    dvz_gui_end(gui);
+    igSetNextWindowSize(ImVec2{300 * scale, 100 * scale}, ImGuiCond_Always);
+    dvz_gui_begin(gui, "raw explicit width", NULL, flags);
+    dvz_gui_current_window_rect(gui, &actual);
+    GUI_LAYOUT_CHECK(fabsf(actual.width - 300) < 1.0f);
+    dvz_gui_end(gui);
+
+    requested = {700, -20, 900, 600};
+    GUI_LAYOUT_CHECK(dvz_gui_set_next_window_rect(gui, &requested, 0) == DVZ_OK);
+    dvz_gui_begin(gui, "bounded tool", NULL, flags);
+    dvz_gui_current_window_rect(gui, &actual);
+    GUI_LAYOUT_CHECK(fabsf(actual.x) < 0.001f && fabsf(actual.y) < 0.001f);
+    GUI_LAYOUT_CHECK(fabsf(actual.width - 720) < 0.001f);
+    GUI_LAYOUT_CHECK(fabsf(actual.height - 480) < 0.001f);
+    dvz_gui_end(gui);
+
+    requested = {10, 15, state->frame == 0 ? 250.0f : 400.0f, 150};
+    GUI_LAYOUT_CHECK(dvz_gui_set_next_window_rect(gui, &requested, ImGuiCond_Once) == DVZ_OK);
+    dvz_gui_begin(gui, "once placement", NULL, flags);
+    dvz_gui_current_window_rect(gui, &actual);
+    GUI_LAYOUT_CHECK(fabsf(actual.width - 250) < 0.001f);
+    dvz_gui_end(gui);
+    GUI_LAYOUT_CHECK(dvz_gui_set_next_window_rect(gui, &requested, 3) == DVZ_ERROR);
+    requested.width = NAN;
+    GUI_LAYOUT_CHECK(dvz_gui_set_next_window_rect(gui, &requested, 0) == DVZ_ERROR);
+    GUI_LAYOUT_CHECK(dvz_gui_set_next_window_rect(gui, NULL, 0) == DVZ_ERROR);
+    GUI_LAYOUT_CHECK(!dvz_gui_content_avail(gui, NULL));
+#undef GUI_LAYOUT_CHECK
+}
+
+
+/**
+ * Verify curated geometry at coordinate scales one/two and user scales one/one-and-a-half.
+ *
+ * @param suite test context
+ * @param item test item
+ * @return zero on success
+ */
+static int test_gui_compact_layout(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        ImGuiContext* context = igCreateContext(NULL);
+        AT(context != NULL);
+        const float scale = i < 2 ? 1.0f : 2.0f;
+        const float user_scale = i % 2 ? 1.5f : 1.0f;
+        ImGuiIO* io = igGetIO_Nil();
+        io->DisplaySize = ImVec2{720 * scale, 480 * scale};
+        io->DeltaTime = 1.0f / 60.0f;
+        io->IniFilename = NULL;
+        io->FontGlobalScale = scale * user_scale;
+        _dvz_gui_style_scale(scale * user_scale);
+        AT(ImFontAtlas_Build(io->Fonts));
+        GuiCompactLayoutTest state = {scale, true, 0};
+        for (state.frame = 0; state.frame < 3; state.frame++)
+        {
+            igNewFrame();
+            AT(_dvz_gui_debug_callback(_gui_compact_layout_callback, &state, scale, 200));
+            igRender();
+            AT(state.passed);
+        }
+        igDestroyContext(context);
+    }
+    return 0;
+}
+
+
+
 /**
  * Check that the curated GUI widget wrappers are exported with C-callable signatures.
  *
@@ -1687,6 +1838,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_data_tree_controlled_model);
     TST_CASE(test_gui_data_tree_controlled_draw);
     TST_CASE(test_gui_data_table_model);
+    TST_CASE(test_gui_compact_layout);
     TST_CASE(test_gui_widget_wrapper_symbols);
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);

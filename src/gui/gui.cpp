@@ -17,6 +17,7 @@
 #include "datoviz/gui.h"
 #include "_gui.h"
 
+#include <algorithm>
 #include <array>
 #include <math.h>
 #include <stdbool.h>
@@ -143,7 +144,6 @@ struct DvzGui
     bool had_active_item;
     bool had_open_popup;
     bool callback_active;
-    bool data_window_visible;
     uint32_t data_window_depth;
     uint64_t frame_index;
 };
@@ -325,6 +325,31 @@ void _dvz_gui_set_current(DvzGui* gui)
 
 
 /**
+ * Exercise curated GUI callbacks in the current CPU-only ImGui frame without a renderer.
+ *
+ * @param callback synchronous callback borrowed for this call
+ * @param user_data borrowed callback data
+ * @param coordinate_scale logical-to-ImGui coordinate scale
+ * @param default_width default logical window width
+ * @return whether all ordinary window scopes were balanced
+ */
+bool _dvz_gui_debug_callback(
+    DvzGuiCallback callback, void* user_data, float coordinate_scale, uint32_t default_width)
+{
+    if (callback == NULL || ImGui::GetCurrentContext() == NULL)
+        return false;
+    DvzGui gui = {};
+    gui.context = ImGui::GetCurrentContext();
+    gui.coordinate_scale = coordinate_scale;
+    gui.config.default_window_width = default_width;
+    gui.callback_active = true;
+    gui.frame_index = (uint64_t)ImGui::GetFrameCount();
+    callback(&gui, NULL, user_data);
+    return gui.data_window_depth == 0;
+}
+
+
+/**
  * Validate the retained data-widget draw context.
  *
  * @param gui GUI overlay
@@ -336,7 +361,8 @@ bool _dvz_gui_data_draw_context(DvzGui* gui, uint64_t* frame_index)
     if (gui == NULL || frame_index == NULL)
         return false;
     _gui_set_current(gui);
-    if (!gui->callback_active || gui->data_window_depth == 0 || !gui->data_window_visible)
+    if (!gui->callback_active || gui->data_window_depth == 0 ||
+        ImGui::GetCurrentWindow()->SkipItems)
         return false;
     *frame_index = gui->frame_index;
     return true;
@@ -2161,7 +2187,6 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
     ImGui::NewFrame();
     gui->frame_index++;
     gui->data_window_depth = 0;
-    gui->data_window_visible = false;
     for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
         _gui_viewport_reset_frame_request(viewport);
     if (
@@ -2457,7 +2482,8 @@ bool dvz_gui_begin(DvzGui* gui, const char* title, bool* open, int flags)
     ANN(gui);
     ANN(title);
     _gui_set_current(gui);
-    if (gui->config.default_window_width > 0)
+    if (gui->config.default_window_width > 0 &&
+        !(ImGui::GetCurrentContext()->NextWindowData.HasFlags & ImGuiNextWindowDataFlags_HasSize))
     {
         ImGui::SetNextWindowSize(
             ImVec2(
@@ -2468,7 +2494,6 @@ bool dvz_gui_begin(DvzGui* gui, const char* title, bool* open, int flags)
     }
     const bool visible = ImGui::Begin(title, open, flags);
     gui->data_window_depth++;
-    gui->data_window_visible = visible;
     return visible;
 }
 
@@ -2517,11 +2542,87 @@ bool dvz_gui_current_window_rect(DvzGui* gui, DvzRect* out)
     _gui_set_current(gui);
     const ImVec2 pos = ImGui::GetWindowPos();
     const ImVec2 size = ImGui::GetWindowSize();
-    out->x = pos.x;
-    out->y = pos.y;
-    out->width = size.x;
-    out->height = size.y;
+    const float scale = _gui_valid_scale(gui->coordinate_scale);
+    out->x = pos.x / scale;
+    out->y = pos.y / scale;
+    out->width = size.x / scale;
+    out->height = size.y / scale;
     return true;
+}
+
+
+
+/**
+ * Bound the next ordinary window to the host display using logical pixel coordinates.
+ *
+ * @param gui GUI overlay
+ * @param rect requested logical rectangle
+ * @param condition supported Dear ImGui placement condition
+ * @return DVZ_OK if accepted, DVZ_ERROR on invalid input
+ */
+DvzResult dvz_gui_set_next_window_rect(DvzGui* gui, const DvzRect* rect, int condition)
+{
+    if (gui == NULL || rect == NULL || !isfinite(rect->x) || !isfinite(rect->y) ||
+        !isfinite(rect->width) || !isfinite(rect->height) || rect->width <= 0 ||
+        rect->height <= 0 ||
+        (condition != 0 && condition != ImGuiCond_Always && condition != ImGuiCond_Once &&
+         condition != ImGuiCond_FirstUseEver && condition != ImGuiCond_Appearing))
+        return DVZ_ERROR;
+    _gui_set_current(gui);
+    const float scale = _gui_valid_scale(gui->coordinate_scale);
+    const ImVec2 display = ImGui::GetIO().DisplaySize;
+    if (!(display.x > 0) || !(display.y > 0))
+        return DVZ_ERROR;
+    const ImGuiStyle& style = ImGui::GetStyle();
+    const float min_height = std::max(
+        style.WindowMinSize.y, ImGui::GetFrameHeight() + std::max(0.0f, style.WindowRounding - 1));
+    if (display.x < style.WindowMinSize.x || display.y < min_height)
+        return DVZ_ERROR;
+    const float width = std::min(std::max(rect->width * scale, style.WindowMinSize.x), display.x);
+    const float height = std::min(std::max(rect->height * scale, min_height), display.y);
+    const float x = std::max(0.0f, std::min(rect->x, (display.x - width) / scale)) * scale;
+    const float y = std::max(0.0f, std::min(rect->y, (display.y - height) / scale)) * scale;
+    ImGui::SetNextWindowPos(ImVec2(x, y), condition);
+    ImGui::SetNextWindowSize(ImVec2(width, height), condition);
+    return DVZ_OK;
+}
+
+
+
+/**
+ * Query remaining content distances in host logical pixels.
+ *
+ * @param gui GUI overlay
+ * @param out_size output width and height
+ * @return whether the output was written
+ */
+bool dvz_gui_content_avail(DvzGui* gui, float out_size[2])
+{
+    if (gui == NULL || out_size == NULL)
+        return false;
+    _gui_set_current(gui);
+    const ImVec2 available = ImGui::GetContentRegionAvail();
+    const float scale = _gui_valid_scale(gui->coordinate_scale);
+    out_size[0] = available.x / scale;
+    out_size[1] = available.y / scale;
+    return true;
+}
+
+
+
+/**
+ * Set the next native item width using logical distances, including negative offsets.
+ *
+ * @param gui GUI overlay
+ * @param width logical width, zero default, or negative right-edge offset
+ */
+void dvz_gui_set_next_item_width(DvzGui* gui, float width)
+{
+    ANN(gui);
+    if (!isfinite(width))
+        return;
+    _gui_set_current(gui);
+    ImGui::SetNextItemWidth(width * _gui_valid_scale(gui->coordinate_scale));
 }
 
 
@@ -2538,8 +2639,6 @@ void dvz_gui_end(DvzGui* gui)
     ImGui::End();
     if (gui->data_window_depth > 0)
         gui->data_window_depth--;
-    if (gui->data_window_depth == 0)
-        gui->data_window_visible = false;
 }
 
 
@@ -2577,6 +2676,31 @@ bool dvz_gui_input_text(DvzGui* gui, const char* label, char* value, uint32_t ca
         return false;
     _gui_set_current(gui);
     return ImGui::InputText(label, value, capacity);
+}
+
+
+
+/**
+ * Show a UTF-8 input with an empty-value hint.
+ *
+ * @param gui GUI overlay
+ * @param label stable label
+ * @param hint empty-value hint
+ * @param value borrowed mutable buffer
+ * @param capacity capacity including terminator
+ * @return whether the value changed
+ */
+bool dvz_gui_input_text_with_hint(
+    DvzGui* gui, const char* label, const char* hint, char* value, uint32_t capacity)
+{
+    ANN(gui);
+    ANN(label);
+    ANN(hint);
+    ANN(value);
+    if (capacity == 0)
+        return false;
+    _gui_set_current(gui);
+    return ImGui::InputTextWithHint(label, hint, value, capacity);
 }
 
 

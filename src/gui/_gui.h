@@ -89,6 +89,8 @@ _dvz_gui_create(
     const DvzGuiConfig* config, const DvzFontDefaults* font_defaults);
 bool _dvz_gui_config_validate(const DvzGuiConfig* config);
 void _dvz_gui_set_current(DvzGui* gui);
+bool _dvz_gui_debug_callback(
+    DvzGuiCallback callback, void* user_data, float coordinate_scale, uint32_t default_width);
 bool _dvz_gui_data_draw_context(DvzGui* gui, uint64_t* frame_index);
 uint8_t _dvz_gui_srgb_to_linear_u8(uint8_t value);
 DvzFontDefaults _dvz_gui_font_defaults(const DvzGui* gui);
