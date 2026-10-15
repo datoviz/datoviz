@@ -761,6 +761,40 @@ void _scene_emit_visual_buffer_payloads(
                 continue;
             }
         }
+        else if (payload->screen_space_offset_count > 0)
+        {
+            if (byte_size > SIZE_MAX || payload->screen_space_offset_count > 2)
+                continue;
+            uint8_t* owned = dvz_malloc((size_t)byte_size);
+            if (owned == NULL)
+                continue;
+            dvz_memcpy(owned, (size_t)byte_size, payload->data, (size_t)byte_size);
+            bool valid = true;
+            for (uint32_t field = 0; field < payload->screen_space_offset_count; field++)
+            {
+                uint32_t offset = payload->screen_space_offsets[field];
+                if (offset > payload->item_size || sizeof(float) > payload->item_size - offset)
+                {
+                    valid = false;
+                    break;
+                }
+                for (uint64_t row = 0; row < payload->item_count; row++)
+                {
+                    float value = 0;
+                    uint8_t* ptr = owned + row * payload->item_size + offset;
+                    dvz_memcpy(&value, sizeof(value), ptr, sizeof(value));
+                    value *= _scene_screen_scale(figure);
+                    dvz_memcpy(ptr, sizeof(value), &value, sizeof(value));
+                }
+            }
+            if (!valid || !dvz_frame_plan_upload_bytes(
+                              plan, resource_id, 0, byte_size, payload->name, owned))
+            {
+                dvz_free(owned);
+                continue;
+            }
+            plan->nodes[plan->count - 1].u.upload.owned_data = owned;
+        }
         else if (!_scene_frame_plan_upload_style_bytes(
                      figure, visual, plan, resource_id, 0, byte_size, payload->name,
                      payload->data))

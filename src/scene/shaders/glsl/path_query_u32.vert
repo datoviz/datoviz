@@ -2,6 +2,8 @@
 
 #include "common.glsl"
 #include "stroke.glsl"
+#define DVZ_PATH_GAP_VERTEX
+#include "path_gap.glsl"
 
 layout(set = 1, binding = 0) uniform SceneMaterial {
     vec4 params;
@@ -22,6 +24,8 @@ layout(location = 4) in uint inId;
 layout(location = 5) in float inLineWidth;
 layout(location = 6) in uint inPathFlags;
 layout(location = 7) in float inPathDistance;
+layout(location = 8) in vec4 inEndpointStart;
+layout(location = 9) in vec4 inEndpointEnd;
 
 layout(location = 0) noperspective out vec2 fragCoord;
 layout(location = 1) out float fragLength;
@@ -31,6 +35,9 @@ layout(location = 4) out float fragHasNext;
 layout(location = 5) noperspective out vec2 fragBevelDistance;
 layout(location = 6) out float fragJoinSplitDistance;
 layout(location = 7) flat out uint fragId;
+
+layout(location = 8) noperspective out vec3 fragGapStart;
+layout(location = 9) noperspective out vec3 fragGapEnd;
 
 const uint SIDE_NEGATIVE = 0x01u;
 const uint ENDPOINT_END = 0x02u;
@@ -63,6 +70,8 @@ float computeU(vec2 p0, vec2 p1, vec2 p)
 
 void main()
 {
+    fragGapStart = vec3(0.0);
+    fragGapEnd = vec3(0.0);
     bool sideNegative = (inPathFlags & SIDE_NEGATIVE) != 0u;
     bool endpointEnd = (inPathFlags & ENDPOINT_END) != 0u;
     bool hasPrev = (inPathFlags & HAS_PREV) != 0u;
@@ -198,6 +207,8 @@ void main()
         }
     }
 
+    fragGapStart = dvz_path_endpoint_delta(pixel, inEndpointStart);
+    fragGapEnd = dvz_path_endpoint_delta(pixel, inEndpointEnd);
     vec4 referenceClip = endpointEnd ? p2Clip : p1Clip;
     gl_Position = topLeftPixelToDeviceClip(pixel, referenceClip);
 

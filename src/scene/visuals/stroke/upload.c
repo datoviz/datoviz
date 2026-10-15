@@ -202,7 +202,9 @@ bool _path_stroke_upload_payloads(
     out_payloads[7] = (DvzVisualUploadPayload){
         .name = "path_distance",
         .data = cache->path_distance,
-        .item_size = sizeof(float),
+        .item_size = DVZ_PATH_VERTEX_DATA_FLOATS * sizeof(float),
+        .screen_space_offset_count = 2,
+        .screen_space_offsets = {4 * sizeof(float), 8 * sizeof(float)},
         .item_count = cache->vertex_count,
     };
     out_payloads[8] = (DvzVisualUploadPayload){

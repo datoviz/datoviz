@@ -2324,6 +2324,71 @@ int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.item_id == 1);
     AT(!dvz_scene_poll_query(scene, &query));
 
+    // A 28px start disk crosses the first 24px segment and must also mask the
+    // second segment. Overlapping disks erase short paths; zero restores them.
+    const float radii[][2] = {{28, 0}, {28, 0}, {0, 20}, {30, 30}, {0, 0}};
+    const double samples[] = {32, 44, 48, 32, 32};
+    const bool hits[] = {false, true, false, false, true};
+    for (uint32_t i = 0; i < 5; i++)
+    {
+        AT(dvz_path_set_endpoint_gaps(path, radii[i][0], radii[i][1]) == DVZ_OK);
+        DvzQueryRequest request = {
+            DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 80 + i,
+            .target = DVZ_SCENE_TARGET_ITEM};
+        AT(dvz_panel_query_px(panel, samples[i], 32, &request) == DVZ_OK);
+        AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+        AT(dvz_scene_poll_query(scene, &query));
+        AT(query.request_id == 80 + i);
+        AT(query.hit == hits[i]);
+    }
+
+
+    // Queries use logical panel pixels even at a device scale of two. User
+    // scale affects gaps; panel offset must not enter endpoint distances.
+    figure->device_scale_x = 2;
+    figure->device_scale_y = 2;
+    panel->desc.x = 0.25f;
+    panel->desc.y = 0.25f;
+    panel->desc.width = 0.5f;
+    panel->desc.height = 0.5f;
+    const float users[] = {1, 2, 1};
+    const float gap[] = {10, 10, 10};
+    const double sample_x[] = {16, 16, 24};
+    const bool scaled_hits[] = {true, false, true};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        figure->user_scale = users[i];
+        AT(dvz_path_set_endpoint_gaps(path, gap[i], 0) == DVZ_OK);
+        DvzQueryRequest request = {
+            DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 90 + i,
+            .target = DVZ_SCENE_TARGET_ITEM};
+        AT(dvz_panel_query_px(panel, sample_x[i], 16, &request) == DVZ_OK);
+        AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+        AT(dvz_scene_poll_query(scene, &query));
+        if (query.hit != scaled_hits[i])
+            log_warn("scaled gap query %u user=%g hit=%d status=%d",
+                     i, users[i], query.hit, query.status);
+        AT(query.hit == scaled_hits[i]);
+    }
+    figure->device_scale_x = figure->device_scale_y = figure->user_scale = 1;
+    panel->desc = (DvzPanelDesc){0, 0, 1, 1};
+    // A near/far-clipped authored endpoint must not erase the visible remainder.
+    const float hidden_depths[] = {-2, 2};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        path_position[0][2] = hidden_depths[i];
+        AT(dvz_visual_set_data(path, "position", path_position, 3) == DVZ_OK);
+        AT(dvz_path_set_endpoint_gaps(path, 100, 0) == DVZ_OK);
+        DvzQueryRequest request = {
+            DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 95 + i,
+            .target = DVZ_SCENE_TARGET_ITEM};
+        AT(dvz_panel_query_px(panel, 48, 32, &request) == DVZ_OK);
+        AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+        AT(dvz_scene_poll_query(scene, &query));
+        AT(query.hit);
+    }
+
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
     dvz_scene_destroy(scene);
     dvz_drp2_runtime_destroy(runtime);
     dvz_gpu_ctx_destroy(ctx);
@@ -2364,6 +2429,7 @@ int test_scene_path_duplicate_lowering_preserves_source(TstContext* suite, const
     AT(dvz_visual_set_data(path, "color", colors, 9) == DVZ_OK);
     AT(dvz_visual_set_data(path, "stroke_width_px", widths, 9) == DVZ_OK);
     AT(dvz_path_set_subpaths(path, 2, lengths) == DVZ_OK);
+    AT(dvz_path_set_endpoint_gaps(path, 15, 8) == DVZ_OK);
     AT(_path_stroke_cache_rebuild(path));
     const DvzPathGpuCache* cache = &_visual_family_state(path)->path.gpu;
     AT(cache->point_count == 9 && cache->segment_count == 3);
@@ -2387,7 +2453,31 @@ int test_scene_path_duplicate_lowering_preserves_source(TstContext* suite, const
     AC(scratch.query_line_width[6], widths[5], 1e-6);
     AT(memcmp(scratch.query_position_start, cache->position_prev, 12 * sizeof(vec3)) == 0);
     AT(memcmp(scratch.query_position_next, cache->position_next, 12 * sizeof(vec3)) == 0);
+
+    AT(memcmp(scratch.query_path_distance, cache->path_distance,
+              cache->vertex_count * DVZ_PATH_VERTEX_DATA_FLOATS * sizeof(float)) == 0);
+    for (uint64_t row = 0; row < cache->vertex_count; row++)
+    {
+        const float* data = cache->path_distance + DVZ_PATH_VERTEX_DATA_FLOATS * row;
+        uint32_t first = row < 8 ? 0 : 6;
+        uint32_t last = row < 8 ? 5 : 8;
+        AT(memcmp(data + 1, positions[first], sizeof(vec3)) == 0);
+        AT(memcmp(data + 5, positions[last], sizeof(vec3)) == 0);
+        AC(data[4], 15, 1e-6);
+        AC(data[8], 8, 1e-6);
+    }
     _scene_query_scratch_destroy(&scratch);
+
+    // A repeated first/last sentinel suppresses both disks for the entire ring.
+    for (uint32_t k = 0; k < 3; k++)
+        positions[5][k] = positions[0][k];
+    AT(dvz_visual_set_data(path, "position", positions, 9) == DVZ_OK);
+    AT(_path_stroke_cache_rebuild(path));
+    for (uint64_t row = 0; row < 12; row++)
+    {
+        AC(cache->path_distance[DVZ_PATH_VERTEX_DATA_FLOATS * row + 4], 0, 1e-6);
+        AC(cache->path_distance[DVZ_PATH_VERTEX_DATA_FLOATS * row + 8], 0, 1e-6);
+    }
     dvz_scene_destroy(scene);
     return 0;
 }

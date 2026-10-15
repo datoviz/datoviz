@@ -225,18 +225,21 @@ typedef struct DvzSceneVisualShaderDesc
 
 
 
+// Several vertex attributes may share one resource binding. Match the runtime attribute limit.
+#define DVZ_SCENE_MAX_VERTEX_ATTRS 16
+
 typedef struct DvzSceneVisualPipelineDesc
 {
     uint32_t vertex_buffer_count;
     DvzPrimitiveTopology topology;
     uint32_t binding_count;
     uint32_t attr_count;
-    uint32_t strides[DVZ_SCENE_MAX_NODE_RESOURCES];
-    uint32_t step_modes[DVZ_SCENE_MAX_NODE_RESOURCES];
-    uint32_t bindings[DVZ_SCENE_MAX_NODE_RESOURCES];
-    uint32_t locations[DVZ_SCENE_MAX_NODE_RESOURCES];
-    DvzFormat formats[DVZ_SCENE_MAX_NODE_RESOURCES];
-    uint32_t offsets[DVZ_SCENE_MAX_NODE_RESOURCES];
+    uint32_t strides[DVZ_SCENE_MAX_VERTEX_ATTRS];
+    uint32_t step_modes[DVZ_SCENE_MAX_VERTEX_ATTRS];
+    uint32_t bindings[DVZ_SCENE_MAX_VERTEX_ATTRS];
+    uint32_t locations[DVZ_SCENE_MAX_VERTEX_ATTRS];
+    DvzFormat formats[DVZ_SCENE_MAX_VERTEX_ATTRS];
+    uint32_t offsets[DVZ_SCENE_MAX_VERTEX_ATTRS];
     bool needs_common_layout;
     bool needs_image_layout;
     bool uses_textured_mesh_layout;

@@ -308,7 +308,9 @@ bool _path_stroke_cache_rebuild(DvzVisual* visual)
         !_path_stroke_cache_resize((void**)&cache->color, vertex_count, sizeof(DvzColor)) ||
         !_path_stroke_cache_resize((void**)&cache->line_width, vertex_count, sizeof(float)) ||
         !_path_stroke_cache_resize((void**)&cache->path_flags, vertex_count, sizeof(uint32_t)) ||
-        !_path_stroke_cache_resize((void**)&cache->path_distance, vertex_count, sizeof(float)) ||
+        !_path_stroke_cache_resize(
+            (void**)&cache->path_distance, vertex_count,
+            DVZ_PATH_VERTEX_DATA_FLOATS * sizeof(float)) ||
         !_path_stroke_cache_resize((void**)&cache->indices, index_count, sizeof(uint32_t)))
     {
         log_error("failed to allocate path visual derived GPU cache");
@@ -376,7 +378,18 @@ bool _path_stroke_cache_rebuild(DvzVisual* visual)
                 cache->line_width[dst] = line_width[point_idx];
                 cache->path_flags[dst] = _path_stroke_vertex_flags(
                     side_negative, endpoint_end, has_prev, has_next, subpath_start, subpath_end);
-                cache->path_distance[dst] = endpoint_end ? cumulative + edge_length : cumulative;
+                cache->path_distance[DVZ_PATH_VERTEX_DATA_FLOATS * dst] =
+                    endpoint_end ? cumulative + edge_length : cumulative;
+                float* endpoint_data = &cache->path_distance[DVZ_PATH_VERTEX_DATA_FLOATS * dst];
+                dvz_memcpy(
+                    endpoint_data + 1, 3 * sizeof(float), position + 3 * offset,
+                    3 * sizeof(float));
+                dvz_memcpy(
+                    endpoint_data + 5, 3 * sizeof(float), position + 3 * (offset + length - 1),
+                    3 * sizeof(float));
+                const bool use_gaps = !closed && visual->type == DVZ_VISUAL_TYPE_PATH;
+                endpoint_data[4] = use_gaps ? _visual_family_state(visual)->path.gap_start_px : 0;
+                endpoint_data[8] = use_gaps ? _visual_family_state(visual)->path.gap_end_px : 0;
             }
             cache->indices[6 * segment + 0] = (uint32_t)(4 * segment + 0);
             cache->indices[6 * segment + 1] = (uint32_t)(4 * segment + 1);

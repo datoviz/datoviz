@@ -9,6 +9,8 @@ struct FragmentIn {
     @location(5) has_next: f32,
     @location(6) @interpolate(linear) bevel_distance: vec2f,
     @location(7) join_split_distance: f32,
+    @location(8) @interpolate(linear) gap_start: vec3f,
+    @location(9) @interpolate(linear) gap_end: vec3f,
 }
 
 fn stroke_alpha(distance: f32, line_width: f32) -> f32 {
@@ -130,6 +132,14 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
         }
         alpha = stroke_alpha(distance, input.line_width);
     }
+    var gap_coverage = 1.0;
+    if (input.gap_start.z > 0.0) {
+        gap_coverage = min(gap_coverage, smoothstep(0.0, 1.0, length(input.gap_start.xy) - input.gap_start.z));
+    }
+    if (input.gap_end.z > 0.0) {
+        gap_coverage = min(gap_coverage, smoothstep(0.0, 1.0, length(input.gap_end.xy) - input.gap_end.z));
+    }
+    alpha *= gap_coverage;
     if (alpha <= 0.0) {
         discard;
     }

@@ -3750,6 +3750,23 @@ DVZ_EXPORT DvzVisual* dvz_path(DvzScene* scene, uint32_t flags);
 DVZ_EXPORT DvzResult
 dvz_path_set_caps(DvzVisual* visual, DvzSegmentCap start_cap, DvzSegmentCap end_cap);
 
+/**
+ * Exclude disks around each open stroked subpath's authored endpoints.
+ *
+ * All segments exclude the union of the endpoint disks, including later returns into a disk.
+ * Radii use logical screen pixels, default to zero, and must be finite and nonnegative.
+ * Coverage is zero through the radius and feathers over one physical pixel outside it.
+ * Closed subpaths and primitive line-strip paths ignore these gaps. An endpoint outside the
+ * camera's near/far depth interval contributes no disk. Positions and depth testing are unchanged.
+ *
+ * @param visual path visual
+ * @param start_px start disk radius in logical pixels
+ * @param end_px end disk radius in logical pixels
+ * @return DVZ_OK on success, or an error on invalid input or forbidden mutation
+ */
+DVZ_EXPORT DvzResult dvz_path_set_endpoint_gaps(DvzVisual* visual, float start_px, float end_px);
+
+
 
 /**
  * Configure the join style and miter limit for stroked path corners.

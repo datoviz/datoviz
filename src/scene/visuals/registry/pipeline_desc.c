@@ -44,7 +44,7 @@ void _scene_visual_pipeline_attr(
     DvzFormat format, uint32_t stride)
 {
     ANN(out);
-    ASSERT(index < DVZ_SCENE_MAX_NODE_RESOURCES);
+    ASSERT(index < DVZ_SCENE_MAX_VERTEX_ATTRS);
 
     out->bindings[index] = binding;
     out->locations[index] = location;

@@ -62,6 +62,16 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(dvz_visual_set_data(point, "size", size, 1) == 0);
     AT(dvz_panel_add_visual(panel, point, NULL) == 0);
 
+    DvzVisual* path = dvz_path(scene, 0);
+    vec3 path_pos[2] = {{-0.5f, 0, 0}, {0.5f, 0, 0}};
+    DvzColor path_color[2] = {{255, 255, 255, 255}, {255, 255, 255, 255}};
+    float path_width[2] = {4, 4};
+    AT(dvz_visual_set_data(path, "position", path_pos, 2) == DVZ_OK);
+    AT(dvz_visual_set_data(path, "color", path_color, 2) == DVZ_OK);
+    AT(dvz_visual_set_data(path, "stroke_width_px", path_width, 2) == DVZ_OK);
+    AT(dvz_path_set_endpoint_gaps(path, 15, 8) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, path, NULL) == DVZ_OK);
+
     DvzVisual* image = dvz_image(scene, 0);
     AT(image != NULL);
     vec3 image_pos[1] = {{10.0f, 20.0f, 0.0f}};
@@ -101,12 +111,30 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     bool found_viewport_uniform = false;
     bool found_size_upload = false;
     bool found_image_position_upload = false;
+    bool found_path_endpoint_upload = false;
     uint32_t count = dvz_drp2_stream_count(stream);
     for (uint32_t i = 0; i < count; i++)
     {
         const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
         if (cmd == NULL)
             continue;
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+            cmd->u.write_buffer.size == 4 * 9 * sizeof(float))
+        {
+            const char* label = dvz_drp2_stream_label(stream, cmd->u.write_buffer.buffer_id);
+            if (label != NULL && strstr(label, "path_distance") != NULL)
+            {
+                const float* data = cmd->u.write_buffer.data_raw;
+                for (uint32_t row = 0; row < 4; row++)
+                {
+                    AC(data[9 * row + 1], -0.5f, 1e-6f);
+                    AC(data[9 * row + 5], 0.5f, 1e-6f);
+                    AC(data[9 * row + 4], 45.0f, 1e-6f);
+                    AC(data[9 * row + 8], 24.0f, 1e-6f);
+                }
+                found_path_endpoint_upload = true;
+            }
+        }
         if (cmd->type == DVZ_DRP2_COMMAND_SET_VIEWPORT)
         {
             AC(cmd->u.set_viewport.viewport[0], 200.0f, 1e-6f);
@@ -177,6 +205,9 @@ static int test_scene_dpi_physical_viewport_and_screen_scale(
     AT(found_viewport_uniform);
     AT(found_size_upload);
     AT(found_image_position_upload);
+    AT(found_path_endpoint_upload);
+    AC(_visual_family_state(path)->path.gpu.path_distance[4], 15, 1e-6f);
+    AC(_visual_family_state(path)->path.gpu.path_distance[8], 8, 1e-6f);
 
     _test_scene_stream_destroy(stream);
 

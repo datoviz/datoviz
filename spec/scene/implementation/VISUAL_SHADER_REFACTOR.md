@@ -24,9 +24,12 @@ Locations and bindings must match `_scene_visual_pipeline_desc()` and shader sou
 | Point/pixel picking | `0`: `vec3 position`, `2`: `float size`; item id is derived from vertex index |
 | Marker | `0`: `vec3 position`, `1`: `rgba8 color`, `2`: `float size`, `3`: `float angle`, `4`: `uint32 shape` |
 | Primitive/mesh/path-strip | `0`: `vec3 position`, `1`: `rgba8 color`, optional `2`: `vec3 normal` |
-| Segment/path-stroke | `0`: `vec3 start`, `1`: `vec3 end`, `2`: `rgba8 color`, `3`: `float width` |
+| Segment | `0`: `vec3 start`, `1`: `vec3 end`, `2`: `rgba8 color`, `3`: `float width` |
+| Path stroke / curved vector | `0..3`: `vec3 previous/start/end/next`, `4`: `rgba8 color`, `5`: `float width`, `6`: `uint flags`, `7`: `float distance`, `8..9`: `vec4 original endpoint xyz/disk radius` |
 | Image | `0`: `vec3 position`, `1`: `vec2 texcoord` |
 | Volume | `0`: `vec3 position`, `1`: `vec3 texcoord` |
+
+Path attributes `7..9` share resource binding `7` with a 36-byte stride and byte offsets `0`, `4`, and `20`. This keeps eight buffers while allowing ten attributes. Closed paths and curved vectors store zero disk radii. Endpoint deltas use linear screen interpolation, including request-centered query projections; the endpoint centers always come from the whole authored subpath.
 
 Use the same `DvzFormat`, stride, binding, and location in shader inputs and DRP2 pipeline metadata.
 Picking variants may intentionally drop color/material bindings; keep that special case explicit.

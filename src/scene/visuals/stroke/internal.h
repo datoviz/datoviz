@@ -90,3 +90,6 @@ bool _stroke_query_readout(const DvzSceneQueryReadoutContext* ctx, DvzQueryResul
 int _stroke_set_path_subpaths(
     DvzVisual* visual, uint32_t subpath_count, const uint32_t* lengths, const char* label,
     uint32_t** out_lengths, uint32_t* out_count, DvzPathGpuCache* cache);
+
+// Packed private path-distance payload: distance + two xyz/radius endpoint disks.
+#define DVZ_PATH_VERTEX_DATA_FLOATS 9u

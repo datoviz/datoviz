@@ -19,10 +19,10 @@
 #include "_assertions.h"
 #include "_log.h"
 #include "_scene.h"
-#include "core/scene_notify_internal.h"
 #include "_visual_internal.h"
-#include "stroke/internal.h"
+#include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
+#include "stroke/internal.h"
 
 
 /*************************************************************************************************/
@@ -150,4 +150,34 @@ DvzResult dvz_path_set_subpaths(DvzVisual* visual, uint32_t subpath_count, const
     return _stroke_set_path_subpaths(
         visual, subpath_count, lengths, "path", &_visual_family_state(visual)->path.subpath_lengths,
         &_visual_family_state(visual)->path.subpath_count, &_visual_family_state(visual)->path.gpu);
+}
+
+
+
+/**
+ * Configure disk exclusion at every open subpath's authored endpoints.
+ *
+ * @param visual path visual
+ * @param start_px nonnegative finite start radius in logical pixels
+ * @param end_px nonnegative finite end radius in logical pixels
+ * @return DVZ_OK on success, or an error on invalid input or forbidden mutation
+ */
+DvzResult dvz_path_set_endpoint_gaps(DvzVisual* visual, float start_px, float end_px)
+{
+    if (visual == NULL || visual->type != DVZ_VISUAL_TYPE_PATH || !isfinite(start_px) ||
+        !isfinite(end_px) || start_px < 0 || end_px < 0)
+    {
+        log_error("path endpoint gaps require a path and finite nonnegative radii");
+        return -1;
+    }
+    if (!_scene_visual_mutation_allowed(visual->scene, "update path endpoint gaps"))
+        return -1;
+    DvzPathState* state = &_visual_family_state(visual)->path;
+    if (state->gap_start_px == start_px && state->gap_end_px == end_px)
+        return DVZ_OK;
+    state->gap_start_px = start_px;
+    state->gap_end_px = end_px;
+    state->gpu.dirty = true;
+    _scene_notify_visual_changed(visual);
+    return DVZ_OK;
 }

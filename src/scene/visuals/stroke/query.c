@@ -20,14 +20,15 @@
 
 #include <vulkan/vulkan_core.h>
 
-#include "datoviz/math/_cglm.h"
+#include "../../query/internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
 #include "_overflow.h"
 #include "_visual_internal.h"
-#include "../../query/internal.h"
+#include "core/panel_layout_internal.h"
+#include "datoviz/math/_cglm.h"
 #include "stroke/internal.h"
 
 
@@ -342,6 +343,21 @@ bool _stroke_query_build(
         return false;
     }
 
+    // Query targets use logical panel dimensions. Only user scale applies here;
+    // render uploads separately lower styles to the physical framebuffer plane.
+    const float screen_scale = _scene_scale_or_one(ctx->figure->user_scale);
+    for (uint64_t i = 0; i < vertex_count; i++)
+    {
+        out_plan->scratch.query_line_width[i] *= screen_scale;
+        if (desc->path_stroke)
+        {
+            out_plan->scratch.query_path_distance[DVZ_PATH_VERTEX_DATA_FLOATS * i + 4] *=
+                screen_scale;
+            out_plan->scratch.query_path_distance[DVZ_PATH_VERTEX_DATA_FLOATS * i + 8] *=
+                screen_scale;
+        }
+    }
+
     uint64_t position_bytes = 0;
     uint64_t id_bytes = 0;
     uint64_t width_bytes = 0;
@@ -354,7 +370,8 @@ bool _stroke_query_build(
         _dvz_mul_u64_overflows(vertex_count, sizeof(float), &width_bytes) ||
         (desc->path_stroke &&
          (_dvz_mul_u64_overflows(vertex_count, sizeof(uint32_t), &flags_bytes) ||
-          _dvz_mul_u64_overflows(vertex_count, sizeof(float), &distance_bytes))) ||
+          _dvz_mul_u64_overflows(
+              vertex_count, DVZ_PATH_VERTEX_DATA_FLOATS * sizeof(float), &distance_bytes))) ||
         _dvz_mul_u64_overflows(index_count, sizeof(uint32_t), &index_bytes))
     {
         log_error("%s query request buffer size overflow", desc->label);
@@ -719,7 +736,8 @@ bool _path_stroke_query_geometry(
         !_stroke_query_alloc(
             "path", (void**)&scratch->query_path_flags, vertex_count, sizeof(uint32_t)) ||
         !_stroke_query_alloc(
-            "path", (void**)&scratch->query_path_distance, vertex_count, sizeof(float)) ||
+            "path", (void**)&scratch->query_path_distance, vertex_count,
+            DVZ_PATH_VERTEX_DATA_FLOATS * sizeof(float)) ||
         !_stroke_query_alloc(
             "path", (void**)&scratch->query_indices, index_count, sizeof(uint32_t)))
     {
@@ -786,8 +804,19 @@ bool _path_stroke_query_geometry(
                 scratch->query_line_width[dst] = line_width[point_idx];
                 scratch->query_path_flags[dst] = _path_query_vertex_flags(
                     side_negative, endpoint_end, has_prev, has_next, subpath_start, subpath_end);
-                scratch->query_path_distance[dst] =
+                scratch->query_path_distance[DVZ_PATH_VERTEX_DATA_FLOATS * dst] =
                     endpoint_end ? cumulative + edge_length : cumulative;
+                float* endpoint_data =
+                    &scratch->query_path_distance[DVZ_PATH_VERTEX_DATA_FLOATS * dst];
+                dvz_memcpy(
+                    endpoint_data + 1, 3 * sizeof(float), position + 3 * offset,
+                    3 * sizeof(float));
+                dvz_memcpy(
+                    endpoint_data + 5, 3 * sizeof(float), position + 3 * (offset + length - 1),
+                    3 * sizeof(float));
+                const bool use_gaps = !closed && visual->type == DVZ_VISUAL_TYPE_PATH;
+                endpoint_data[4] = use_gaps ? _visual_family_state(visual)->path.gap_start_px : 0;
+                endpoint_data[8] = use_gaps ? _visual_family_state(visual)->path.gap_end_px : 0;
             }
             scratch->query_indices[6 * segment + 0] = (uint32_t)(4 * segment + 0);
             scratch->query_indices[6 * segment + 1] = (uint32_t)(4 * segment + 1);

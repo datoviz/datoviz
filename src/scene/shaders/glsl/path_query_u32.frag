@@ -1,6 +1,7 @@
 #version 450
 
 #include "stroke.glsl"
+#include "path_gap.glsl"
 
 layout(location = 0) noperspective in vec2 fragCoord;
 layout(location = 1) in float fragLength;
@@ -10,6 +11,9 @@ layout(location = 4) in float fragHasNext;
 layout(location = 5) noperspective in vec2 fragBevelDistance;
 layout(location = 6) in float fragJoinSplitDistance;
 layout(location = 7) flat in uint fragId;
+
+layout(location = 8) noperspective in vec3 fragGapStart;
+layout(location = 9) noperspective in vec3 fragGapEnd;
 
 layout(location = 0) out uint outId;
 
@@ -97,6 +101,7 @@ void main()
             distance = fragBevelDistance.y - miterClip;
         alpha = dvz_stroke_alpha(distance, fragLineWidth);
     }
+    alpha *= dvz_path_endpoint_coverage(fragGapStart, fragGapEnd);
     if (alpha <= 0.0)
         discard;
     outId = fragId;
