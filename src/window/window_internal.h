@@ -145,3 +145,14 @@ void _dvz_window_metrics_resolve(
 void _dvz_window_backend_emit_metrics(DvzWindow* window, const DvzWindowMetrics* metrics);
 
 void _dvz_window_glfw_shutdown(void);
+
+
+/**
+ * Fit native content bounds to a monitor workarea, accounting for window decorations.
+ *
+ * @param bounds in/out x, y, width, height in native window coordinates
+ * @param workarea monitor x, y, width, height in the same coordinates
+ * @param frame left, top, right, bottom decoration widths
+ */
+void _dvz_window_fit_workarea(
+    int32_t bounds[4], const int32_t workarea[4], const int32_t frame[4]);

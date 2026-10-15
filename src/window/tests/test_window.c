@@ -142,6 +142,68 @@ int test_window_headless(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Verify workarea fitting uses window coordinates, decorations, and monitor origins.
+ *
+ * @param suite test context
+ * @param item test item
+ * @return zero on success
+ */
+static int test_window_fit_workarea(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const int32_t workarea[4] = {-1920, 40, 1920, 1040};
+    const int32_t frame[4] = {8, 30, 8, 8};
+    int32_t bounds[4] = {-2000, 0, 2800, 2000};
+    _dvz_window_fit_workarea(bounds, workarea, frame);
+    AT(bounds[0] == -1912 && bounds[1] == 70);
+    AT(bounds[2] == 1904 && bounds[3] == 1002);
+    // A smaller requested size is preserved; only its position needs fitting.
+    int32_t exact[4] = {-1800, 100, 800, 600};
+    _dvz_window_fit_workarea(exact, workarea, frame);
+    AT(exact[0] == -1800 && exact[1] == 100);
+    AT(exact[2] == 800 && exact[3] == 600);
+    // Native HiDPI windows may use twice the logical extent. Fit in native coordinates.
+    int32_t hidpi[4] = {300, 200, 5600, 4000};
+    const int32_t native_workarea[4] = {0, 0, 3840, 2080};
+    _dvz_window_fit_workarea(hidpi, native_workarea, frame);
+    AT(hidpi[2] == 3824 && hidpi[3] == 2042);
+    AT(hidpi[0] == 8 && hidpi[1] == 30);
+    return 0;
+}
+
+
+
+/**
+ * Verify the opt-in interactive fitting policy preserves exact offscreen dimensions.
+ *
+ * @param suite test context
+ * @param item test item
+ * @return zero on success
+ */
+static int test_window_fit_workarea_offscreen(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    ANN(host);
+    DvzWindowConfig config = dvz_window_config();
+    AT(!config.fit_workarea);
+    config.fit_workarea = true;
+    config.width = 2800;
+    config.height = 2000;
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &config);
+    ANN(window);
+    const DvzWindowMetrics* metrics = dvz_window_metrics(window);
+    AT(metrics->logical_size.width == 2800 && metrics->logical_size.height == 2000);
+    AT(metrics->surface_size.width == 2800 && metrics->surface_size.height == 2000);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
 int test_window_config_rejects_invalid_abi(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -638,6 +700,8 @@ int test_window(TstSuite* suite)
     const char* tags = "window";
     TST_MODULE(suite, tags);
     TST_CASE(test_window_headless);
+    TST_CASE(test_window_fit_workarea);
+    TST_CASE(test_window_fit_workarea_offscreen);
     TST_CASE(test_window_config_rejects_invalid_abi);
     TST_CASE(test_window_resize_events);
     TST_CASE(test_window_frame_requests);

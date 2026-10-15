@@ -455,6 +455,35 @@ static DvzWindowMetrics _glfw_configure_initial_metrics(
 
 
 /**
+ * Fit one initial native window frame to its current monitor workarea.
+ *
+ * @param handle GLFW window handle after initial HiDPI sizing
+ */
+static void _glfw_fit_workarea(GLFWwindow* handle)
+{
+    GLFWmonitor* monitor = _glfw_window_monitor(handle);
+    if (monitor == NULL)
+        return;
+    int x = 0, y = 0, width = 0, height = 0;
+    int left = 0, top = 0, right = 0, bottom = 0;
+    int mx = 0, my = 0, mw = 0, mh = 0;
+    glfwGetWindowPos(handle, &x, &y);
+    glfwGetWindowSize(handle, &width, &height);
+    glfwGetWindowFrameSize(handle, &left, &top, &right, &bottom);
+    glfwGetMonitorWorkarea(monitor, &mx, &my, &mw, &mh);
+    int32_t bounds[4] = {x, y, width, height};
+    const int32_t workarea[4] = {mx, my, mw, mh};
+    const int32_t frame[4] = {left, top, right, bottom};
+    _dvz_window_fit_workarea(bounds, workarea, frame);
+    if (bounds[2] != width || bounds[3] != height)
+        glfwSetWindowSize(handle, bounds[2], bounds[3]);
+    if (bounds[0] != x || bounds[1] != y)
+        glfwSetWindowPos(handle, bounds[0], bounds[1]);
+}
+
+
+
+/**
  * Requery GLFW metrics and emit the normalized resize event.
  *
  * @param handle GLFW window handle
@@ -825,6 +854,12 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
 
     DvzWindowMetrics metrics = _glfw_configure_initial_metrics(
         handle, _glfw_requested_logical_extent(config), config->hidpi_policy);
+    if (config->fit_workarea)
+    {
+        // Workareas and frame extents use GLFW window coordinates, not framebuffer pixels.
+        _glfw_fit_workarea(handle);
+        metrics = _glfw_query_metrics(handle, (DvzExtent){0}, config->hidpi_policy, 0, NULL);
+    }
 
     glfwSetCursorPosCallback(handle, _glfw_cursor_pos_callback);
     glfwSetMouseButtonCallback(handle, _glfw_mouse_button_callback);
@@ -861,7 +896,16 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     surface->surface = vk_surface;
     _dvz_window_backend_emit_metrics(window, &metrics);
     if (config->visible)
+    {
         glfwShowWindow(handle);
+        if (config->fit_workarea)
+        {
+            // Some window managers report decoration extents only after the window is mapped.
+            _glfw_fit_workarea(handle);
+            metrics = _glfw_query_metrics(handle, (DvzExtent){0}, config->hidpi_policy, 0, NULL);
+            _dvz_window_backend_emit_metrics(window, &metrics);
+        }
+    }
     _glfw_state.window_count++;
     return true;
 }

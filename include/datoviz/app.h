@@ -278,6 +278,8 @@ struct DvzViewDesc
 
     const char* title;
 
+    // Fit an interactive window to its monitor workarea at startup; offscreen sizes stay exact.
+    bool fit_workarea;
     bool has_position;
     int32_t x;
     int32_t y;

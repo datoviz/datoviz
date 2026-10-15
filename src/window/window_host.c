@@ -1228,3 +1228,44 @@ void dvz_window_backend_emit_scale(DvzWindow* window, float content_scale_x, flo
         .content_scale_x = content_scale_x, .content_scale_y = content_scale_y};
     dvz_input_emit_scale(window->router, &scale);
 }
+
+
+
+/**
+ * Fit native content bounds to the available decorated monitor workarea.
+ *
+ * @param bounds in/out x, y, width, height in native window coordinates
+ * @param workarea monitor x, y, width, height
+ * @param frame left, top, right, bottom decoration widths
+ */
+void _dvz_window_fit_workarea(
+    int32_t bounds[4], const int32_t workarea[4], const int32_t frame[4])
+{
+    ANN(bounds);
+    ANN(workarea);
+    ANN(frame);
+    if (workarea[2] <= 0 || workarea[3] <= 0)
+        return;
+    for (uint32_t axis = 0; axis < 2; axis++)
+    {
+        const int64_t leading = frame[axis] > 0 ? frame[axis] : 0;
+        const int64_t trailing = frame[axis + 2] > 0 ? frame[axis + 2] : 0;
+        const int64_t available = (int64_t)workarea[axis + 2] - leading - trailing;
+        const int32_t limit = available > 0 ? (int32_t)available : 1;
+        if (bounds[axis + 2] > limit)
+            bounds[axis + 2] = limit;
+        const int64_t low = (int64_t)workarea[axis] + leading;
+        const int64_t high = (int64_t)workarea[axis] + workarea[axis + 2] -
+                             bounds[axis + 2] - trailing;
+        int64_t position = bounds[axis];
+        if (position > high)
+            position = high;
+        if (position < low)
+            position = low;
+        if (position < INT32_MIN)
+            position = INT32_MIN;
+        if (position > INT32_MAX)
+            position = INT32_MAX;
+        bounds[axis] = (int32_t)position;
+    }
+}

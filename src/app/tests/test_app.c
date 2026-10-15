@@ -520,6 +520,8 @@ static int test_app_view_size_policy_resolve(TstContext* suite, const TstCase* i
     ANN(suite);
     ANN(item);
 
+    const DvzViewDesc desc = dvz_view_desc(DVZ_VIEW_WINDOW);
+    AT(!desc.fit_workarea);
     DvzViewSizeDesc framebuffer = dvz_view_size_desc_framebuffer_px(640, 480);
     framebuffer.requested_device_scale = 2.0;
     DvzResolvedViewSize resolved = dvz_view_size_resolve(&framebuffer, DVZ_VIEW_OFFSCREEN);

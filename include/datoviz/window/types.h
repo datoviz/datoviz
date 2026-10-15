@@ -80,6 +80,8 @@ struct DvzWindowConfig
     bool visible;
     float user_scale;
     DvzHiDpiPolicy hidpi_policy;
+    // Clamp the initial GLFW outer frame to its monitor workarea; ignored by other backends.
+    bool fit_workarea;
     bool has_position;
     int32_t x;
     int32_t y;

@@ -52,6 +52,13 @@ Inspect `resolved.framebuffer_per_canvas_px_x` and
 large or too small.
 
 
+## Fit a desktop window to the display
+
+Set `desc.fit_workarea = true` before `dvz_view()` to shrink an oversized interactive window and place its outer frame inside the current monitor's usable area. The monitor is selected by the window's greatest overlap, including an explicit `desc.has_position` placement. The fit accounts for window decorations and uses native window coordinates after HiDPI sizing, so framebuffer scale does not inflate the available desktop area. Smaller windows keep their requested dimensions.
+
+This startup option defaults to false. It applies to GLFW windows only, leaves offscreen captures unchanged, and does not resize a window again when it is later moved between monitors. Direct window users can set `DvzWindowConfig.fit_workarea` before `dvz_window_create()`.
+
+
 ## Size spaces
 
 | Space | Meaning |

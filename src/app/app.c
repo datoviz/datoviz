@@ -4814,7 +4814,7 @@ _view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t 
 
 static DvzView* _view_create_glfw(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title,
-    bool has_position, int32_t x, int32_t y);
+    bool fit_workarea, bool has_position, int32_t x, int32_t y);
 
 
 static DvzView* _view_create_external_surface(
@@ -4974,7 +4974,8 @@ DvzView* dvz_view(DvzApp* app, DvzFigure* figure, const DvzViewDesc* desc)
     case DVZ_VIEW_WINDOW:
         win = _view_create_glfw(
             app, figure, resolved.logical_width, resolved.logical_height, resolved.desc.title,
-            resolved.desc.has_position, resolved.desc.x, resolved.desc.y);
+            resolved.desc.fit_workarea, resolved.desc.has_position, resolved.desc.x,
+            resolved.desc.y);
         break;
     case DVZ_VIEW_EXTERNAL_SURFACE:
         log_error("use dvz_view_external_surface() to create external-surface views");
@@ -5067,7 +5068,7 @@ _view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t 
 static DvzView*
 _view_create_glfw(
     DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t height, const char* title,
-    bool has_position, int32_t x, int32_t y)
+    bool fit_workarea, bool has_position, int32_t x, int32_t y)
 {
     ANN(app);
     ANN(figure);
@@ -5081,6 +5082,7 @@ _view_create_glfw(
     wcfg.height = height;
     if (title != NULL)
         wcfg.title = title;
+    wcfg.fit_workarea = fit_workarea;
     wcfg.has_position = has_position;
     wcfg.x = x;
     wcfg.y = y;
@@ -5147,6 +5149,7 @@ _view_create_glfw(
     (void)width;
     (void)height;
     (void)title;
+    (void)fit_workarea;
     (void)has_position;
     (void)x;
     (void)y;
