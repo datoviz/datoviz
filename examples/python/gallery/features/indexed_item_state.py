@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Two mesh groups share a fixed state bank; hover changes two four-byte words."""
+"""Complementary clipped halves share a fixed state bank; hover changes two four-byte words."""
 from __future__ import annotations
 
 import ctypes
@@ -12,13 +12,16 @@ from examples.python.gallery import common as ex
 def main():
     scene, figure, panel = ex.scene_panel()
     mesh = dvz.dvz_mesh(scene, 0)
-    positions = np.array([[-.85,-.65,0],[-.05,-.65,0],[-.45,.65,0],
-                          [.05,-.65,0],[.85,-.65,0],[.45,.65,0]], dtype=np.float32)
+    positions = np.array([[-.85,-.65,0],[.85,-.65,0],[0,.65,0]]*2, dtype=np.float32)
+    fragment_clip = np.array([[.85,0],[-.85,0],[-0.,0],
+                              [-.85,1],[.85,1],[0.,1]], dtype=np.float32)
     dvz.dvz_visual_set_data(mesh, 'position', positions)
     dvz.dvz_visual_set_data(mesh, 'normal', np.tile(np.array([0,0,1], np.float32), (6,1)))
     dvz.dvz_visual_set_data(mesh, 'color', np.array([[38,132,167,255]]*3 +
                                                    [[42,176,142,255]]*3, np.uint8))
     dvz.dvz_visual_set_index_data(mesh, np.arange(6, dtype=np.uint32))
+    if dvz.dvz_mesh_set_fragment_clip(mesh, fragment_clip) != 0:
+        raise RuntimeError('fragment clip binding failed')
     desc = dvz.dvz_item_state_buffer_desc()
     desc.slot_count = 4096
     bank = dvz.dvz_item_state_buffer(scene, ctypes.byref(desc))

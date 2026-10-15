@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: MIT
  */
 
-/* This example styles two indexed mesh groups through one copied state bank.
+/* This example styles complementary clipped halves through one copied state bank.
  *
- * What to look for: the left triangle remains selected while a white hover tint alternates
- * between both triangles. Selection context dims the right triangle. The application composes
+ * What to look for: the left half remains selected while a white hover tint alternates
+ * between both halves. Selection context dims the right half. The application composes
  * complete replacement words and updates only slots 11 and 4000, without replacing geometry
- * or author colors. The same retained lookup runs through native and WebGPU WBOIT shaders.
+ * or author colors. Complementary signed distances preserve a full source triangle footprint with
+ * exact-zero ownership. The same retained lookup and coverage run through native and WebGPU WBOIT
+ * shaders.
  *
  * Scenario: features_indexed_item_state
  * Build: just example-c features/indexed_item_state
@@ -37,7 +39,7 @@ typedef struct IndexedStateExample
 
 
 
-/** Create two triangles whose vertices share two widely separated presentation slots.
+/** Duplicate a full crossing triangle, with complementary half-open fragment coverage.
  * @param ctx scenario context
  * @param out_user application compositor state
  * @return whether construction succeeded
@@ -54,8 +56,9 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     if (panel == NULL || mesh == NULL)
         return false;
     example_graphite_cyan_set_panel_background(panel);
-    vec3 positions[6] = {{-.85f, -.65f, 0}, {-.05f, -.65f, 0}, {-.45f, .65f, 0},
-                         {.05f, -.65f, 0},  {.85f, -.65f, 0},  {.45f, .65f, 0}};
+    vec3 positions[6] = {{-.85f, -.65f, 0}, {.85f, -.65f, 0}, {0, .65f, 0},
+                         {-.85f, -.65f, 0},  {.85f, -.65f, 0},  {0, .65f, 0}};
+    vec2 clip[6] = {{.85f, 0}, {-.85f, 0}, {-0.f, 0}, {-.85f, 1}, {.85f, 1}, {0, 1}};
     vec3 normals[6] = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
     DvzColor colors[6] = {{38, 132, 167, 255}, {38, 132, 167, 255}, {38, 132, 167, 255},
                           {42, 176, 142, 255}, {42, 176, 142, 255}, {42, 176, 142, 255}};
@@ -65,6 +68,8 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         dvz_visual_set_data(mesh, "normal", normals, 6) != DVZ_OK ||
         dvz_visual_set_data(mesh, "color", colors, 6) != DVZ_OK ||
         dvz_visual_set_index_data(mesh, geometry_indices, 6) != DVZ_OK)
+        return false;
+    if (dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 6) != DVZ_OK)
         return false;
     DvzItemStateBufferDesc desc = dvz_item_state_buffer_desc();
     desc.slot_count = 4096;

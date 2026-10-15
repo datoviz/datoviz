@@ -9,7 +9,7 @@
 </div>
 </nav>
 
-This example styles two indexed mesh groups through one copied state bank.
+This example styles complementary clipped halves through one copied state bank.
 
 ## Preview
 
@@ -37,7 +37,7 @@ object lifetimes and data shapes intact while adapting the data and styling.
 
 ## What To Look For
 
-The left triangle remains selected while a white hover tint alternates between both triangles. Selection context dims the right triangle. The application composes complete replacement words and updates only slots 11 and 4000, without replacing geometry or author colors. The same lookup runs through native and WebGPU WBOIT shaders.
+The left half remains selected while a white hover tint alternates between both halves. Selection context dims the right half. The application composes complete replacement words and updates only slots 11 and 4000, without replacing geometry or author colors. Complementary signed distances preserve a full source triangle footprint with exact-zero ownership. The same lookup and coverage run through native and WebGPU WBOIT shaders.
 
 ## Source
 
@@ -65,7 +65,7 @@ The left triangle remains selected while a white hover tint alternates between b
     - Python adaptation: Available; direct-engine adaptation
     - Browser support: Live in browser
     - WebGPU live route: <a href="../../webgpu/live.html?id=features_indexed_item_state"><code>examples/webgpu/live.html?id=features_indexed_item_state</code></a>
-    - Browser capability tags: `mesh`, `frame-callbacks`, `wboit`
+    - Browser capability tags: `mesh`, `fragment-clip`, `frame-callbacks`, `wboit`
     - Browser rendering effects: `wboit` (supported)
     - Validation: `smoke+animation+screenshot`
 

@@ -911,7 +911,7 @@ This example queries and selects individual raycast spheres in a 3D cluster.
 
 `features`
 
-This example styles two indexed mesh groups through one copied state bank.
+This example styles complementary clipped halves through one copied state bank.
 
 </div>
 

@@ -3694,7 +3694,7 @@
       "source": "examples/c/features/indexed_item_state.c",
       "source_url": "https://github.com/datoviz/datoviz/blob/main/examples/c/features/indexed_item_state.c",
       "page": "features/indexed-item-state.md",
-      "summary": "This example styles two indexed mesh groups through one copied state bank.",
+      "summary": "This example styles complementary clipped halves through one copied state bank.",
       "validation": "smoke+animation+screenshot",
       "build_command": "just example-c features/indexed_item_state",
       "smoke_command": "./build/examples/c/features/indexed_item_state --png",
@@ -3715,6 +3715,7 @@
       "webgpu_status_label": "Live in browser",
       "webgpu_requirements": [
         "mesh",
+        "fragment-clip",
         "frame-callbacks",
         "wboit"
       ],
@@ -3723,6 +3724,7 @@
         "route": "examples/webgpu/live.html?id=features_indexed_item_state",
         "requirements": [
           "mesh",
+          "fragment-clip",
           "frame-callbacks",
           "wboit"
         ],

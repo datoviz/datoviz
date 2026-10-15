@@ -685,13 +685,19 @@ function expectSphereImpostorShaderContract(stream, pipeline, label) {
 function expectIndexedItemStateScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   const pipeline = expectPipeline(stream, label, (pipeline) =>
-    pipeline.builtin_pipeline === "scene.primitive" && pipeline.vertex_buffer_slots === 4);
+    pipeline.builtin_pipeline === "scene.primitive" && pipeline.vertex_buffer_slots === 5);
   requireOk(pipeline.color_targets.length === 2, `${label}: WBOIT outputs missing`);
   const shaders = commandsOf(stream, "CreateShaderModule");
   const vertex = shaders.find((shader) => shader.id === pipeline.vertex_shader_module_id);
   requireOk(vertex?.code.includes("var<storage, read> item_state_words: array<u32>") &&
     vertex.code.includes("item_state_words[input.state_index]") &&
     vertex.code.includes("apply_item_state_color"), `${label}: indexed state lookup absent`);
+  const fragment = shaders.find((shader) => shader.id === pipeline.fragment_shader_module_id);
+  requireOk(vertex.code.includes("@location(8) fragment_clip: vec2f") &&
+    vertex.code.includes("@location(6) @interpolate(flat) clip_include_zero: u32") &&
+    fragment?.code.includes("mesh_fragment_covered") &&
+    fragment.code.includes("distance == 0.0 && include_zero != 0u"),
+    `${label}: complementary half-open fragment clip missing`);
   requireOk(commandsOf(stream, "CreateBindGroup").some((group) =>
     group.entries.some((entry) => entry.binding === 2 &&
       entry.binding_type === "storage_buffer" && entry.size === 4096 * 4)),

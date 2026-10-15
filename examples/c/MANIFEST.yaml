@@ -2267,6 +2267,7 @@ examples:
       route: examples/webgpu/live.html?id=features_indexed_item_state
       requirements:
         - mesh
+        - fragment-clip
         - frame-callbacks
         - wboit
       rendering_effects:

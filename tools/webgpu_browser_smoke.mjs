@@ -869,6 +869,7 @@ async function smokeAnimatedWasmPage(
     return "animation did not advance after pointer movement";
   })()`);
   requireOk(pointerContinuity === true, `${path}: ${pointerContinuity}`);
+  let indexedCapture = null;
   if (expectedScenarioId === 'features_indexed_item_state') {
     const changed = await page.evaluate(`(async () => {
       const session = window.__datovizWasmSession;
@@ -880,34 +881,70 @@ async function smokeAnimatedWasmPage(
       scene.scenarioFrame(0, 1 / 60);
       await session.render();
       await scene.gpu.device.queue.onSubmittedWorkDone();
-      const brightness = () => {
-        const copy = document.createElement("canvas");
-        copy.width = canvas.width; copy.height = canvas.height;
-        const ctx = copy.getContext("2d");
-        ctx.drawImage(canvas, 0, 0);
-        const pixels = ctx.getImageData(0, 0, copy.width, copy.height).data;
+      // Read the retained presentation through the actual presentation shader into an owned
+      // texture. The canvas swapchain texture may expire while awaiting GPU completion.
+      const snapshot = async () => {
+        const device = scene.gpu.device;
+        const present = scene.runtime.state.browserPresent;
+        const record = present.current;
+        const resources = present.resources;
+        const width = record.width, height = record.height;
+        const bytesPerRow = Math.ceil(width * 4 / 256) * 256;
+        const target = device.createTexture({size: [width, height], format: scene.gpu.format,
+          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC});
+        const readback = device.createBuffer({size: bytesPerRow * height,
+          usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ});
+        const group = device.createBindGroup({layout: resources.bindGroupLayout, entries: [
+          {binding: 0, resource: record.texture.createView()},
+          {binding: 1, resource: resources.sampler},
+        ]});
+        const encoder = device.createCommandEncoder();
+        const pass = encoder.beginRenderPass({colorAttachments: [{view: target.createView(),
+          loadOp: "clear", storeOp: "store", clearValue: {r: 0, g: 0, b: 0, a: 1}}]});
+        pass.setPipeline(resources.pipeline); pass.setBindGroup(0, group); pass.draw(3); pass.end();
+        encoder.copyTextureToBuffer({texture: target}, {buffer: readback, bytesPerRow}, [width, height]);
+        device.queue.submit([encoder.finish()]);
+        await readback.mapAsync(GPUMapMode.READ);
+        const bytes = new Uint8Array(readback.getMappedRange());
+        const rgba = new Uint8ClampedArray(width * height * 4);
         const sums = [0, 0];
-        for (let y = 0; y < copy.height; y += 2)
-          for (let x = 0; x < copy.width; x += 2) {
-            const i = 4 * (y * copy.width + x);
-            sums[x < copy.width / 2 ? 0 : 1] += pixels[i] + pixels[i + 1] + pixels[i + 2];
+        const bgra = scene.gpu.format.startsWith("bgra");
+        for (let y = 0; y < height; y++)
+          for (let x = 0; x < width; x++) {
+            const src = y * bytesPerRow + x * 4, dst = (y * width + x) * 4;
+            rgba[dst] = bytes[src + (bgra ? 2 : 0)]; rgba[dst + 1] = bytes[src + 1];
+            rgba[dst + 2] = bytes[src + (bgra ? 0 : 2)]; rgba[dst + 3] = bytes[src + 3];
+            if (x % 2 === 0 && y % 2 === 0)
+              sums[x < width / 2 ? 0 : 1] += rgba[dst] + rgba[dst + 1] + rgba[dst + 2];
           }
-        return sums;
+        readback.unmap(); readback.destroy(); target.destroy();
+        const copy = document.createElement("canvas"); copy.width = width; copy.height = height;
+        copy.getContext("2d").putImageData(new ImageData(rgba, width, height), 0, 0);
+        return {sums, dataUrl: copy.toDataURL("image/png")};
       };
-      const before = brightness();
+      const before = (await snapshot()).sums;
       scene.scenarioFrame(1.1, 1 / 60);
       await session.render();
       await scene.gpu.device.queue.onSubmittedWorkDone();
-      const after = brightness();
-      return {before, after, changed: after[0] < before[0] - 1000 && after[1] > before[1] + 1000};
+      const captured = await snapshot();
+      const after = captured.sums;
+      return {before, after, dataUrl: captured.dataUrl, changed: after[0] < before[0] - 1000 && after[1] > before[1] + 1000};
     })()`);
-    requireOk(changed.changed, `${path}: sparse indexed-state brightness mismatch ${JSON.stringify(changed)}`);
+    requireOk(changed.changed, `${path}: sparse indexed-state brightness mismatch ${JSON.stringify({before: changed.before, after: changed.after})}`);
+    indexedCapture = Buffer.from(changed.dataUrl.split(",")[1], "base64");
   }
 
-  await page.screenshotCanvas(screenshotPath, {
-    width: CAPTURE_CANVAS_WIDTH,
-    height: CAPTURE_CANVAS_HEIGHT,
-  });
+  if (indexedCapture !== null) {
+    await writeFile(screenshotPath, indexedCapture);
+    const coverage = assertPngNonblank(indexedCapture, screenshotPath);
+    requireOk(coverage.width === CAPTURE_CANVAS_WIDTH && coverage.height === CAPTURE_CANVAS_HEIGHT,
+      `${path}: indexed presentation capture has unexpected dimensions`);
+  } else {
+    await page.screenshotCanvas(screenshotPath, {
+      width: CAPTURE_CANVAS_WIDTH,
+      height: CAPTURE_CANVAS_HEIGHT,
+    });
+  }
   await page.evaluate(`(() => {
     window.__datovizWasmSession?.stopAnimationLoop();
   })()`);

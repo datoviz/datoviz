@@ -357,7 +357,7 @@ This example compares the same sphere cluster under three panel-owned light conf
 
 `features`
 
-This example styles two indexed mesh groups through one copied state bank.
+This example styles complementary clipped halves through one copied state bank.
 
 </div>
 
