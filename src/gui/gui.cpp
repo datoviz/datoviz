@@ -2708,9 +2708,14 @@ _gui_icon_draw(ImDrawList* draw, DvzGuiIcon icon, ImVec2 center, float extent, I
         break;
     case DVZ_GUI_ICON_EXPAND:
     case DVZ_GUI_ICON_COLLAPSE:
-        draw->AddLine(ImVec2(x - r, y), ImVec2(x + r, y), color, stroke);
-        if (icon == DVZ_GUI_ICON_EXPAND)
-            draw->AddLine(ImVec2(x, y - r), ImVec2(x, y + r), color, stroke);
+        for (int side = -1; side <= 1; side += 2)
+        {
+            const bool outward = icon == DVZ_GUI_ICON_EXPAND;
+            const float tip = y + side * r * (outward ? 1.1f : 0.3f);
+            const float shoulder = y + side * r * (outward ? 0.3f : 1.1f);
+            draw->AddLine(ImVec2(x - r, shoulder), ImVec2(x, tip), color, stroke);
+            draw->AddLine(ImVec2(x, tip), ImVec2(x + r, shoulder), color, stroke);
+        }
         break;
     case DVZ_GUI_ICON_MULTISELECT:
         draw->AddRect(
