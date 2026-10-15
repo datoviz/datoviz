@@ -396,6 +396,10 @@ int test_scene_interaction_descriptor_abi_rejects_invalid_structs(
     selection_desc.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_selection(scene, &selection_desc) == NULL);
 
+    selection_desc = dvz_selection_desc();
+    selection_desc.selection_flags = 0x0002;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_selection(scene, &selection_desc) == NULL);
+
     DvzHoverDesc hover_desc = dvz_hover_desc();
     hover_desc.struct_size = DVZ_STRUCT_SIZE(DvzHoverDesc) - 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_hover(scene, &hover_desc) == NULL);
@@ -1996,6 +2000,69 @@ int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const
     item_state = (const uint32_t*)mesh->attrs[state_idx].data;
     AT(item_state[1] == DVZ_ITEM_STATE_NONE);
 
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+/**
+ * Verify opting out of metadata cards preserves query selection and visual highlighting.
+ *
+ * @param suite the test context
+ * @param item the test case
+ * @return zero on success
+ */
+int test_scene_selection_no_card_preserves_item_state(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 640, 480, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzVisual* pixel = dvz_pixel(scene, 0);
+    vec3 position[1] = {{0, 0, 0}};
+    AT(dvz_visual_set_data(pixel, "position", position, 1) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, pixel, NULL) == DVZ_OK);
+
+    DvzSelectionDesc desc = dvz_selection_desc();
+    AT(desc.selection_flags == DVZ_SELECTION_FLAGS_NONE);
+    DvzSelection* defaults = dvz_selection(scene, NULL);
+    ANN(defaults);
+    AT(defaults->card_enabled);
+    desc.target = DVZ_SCENE_TARGET_ITEM;
+    desc.selection_flags = DVZ_SELECTION_FLAGS_NO_CARD;
+    DvzSelection* selection = dvz_selection(scene, &desc);
+    ANN(selection);
+    AT(!selection->card_enabled);
+    DvzQueryResult hit = {
+        .scene_id = dvz_scene_id(scene),
+        .status = DVZ_QUERY_STATUS_HIT,
+        .hit = true,
+        .panel_id = _scene_panel_public_id(figure, panel),
+        .visual_id = _scene_visual_public_id(scene, pixel),
+        .visual_family = DVZ_SCENE_VISUAL_FAMILY_PIXEL,
+        .resolved_target = DVZ_SCENE_TARGET_ITEM,
+        .resolved_id = 0,
+        .item_id = 0,
+    };
+    AT(dvz_selection_apply_query(selection, &hit) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 1);
+    int state_idx = _attr_index(pixel, "item_state");
+    AT(state_idx >= 0);
+    const uint32_t* state = (const uint32_t*)pixel->attrs[state_idx].data;
+    ANN(state);
+    AT(state[0] == DVZ_ITEM_STATE_SELECTED);
+    _scene_prepare_text_visuals(figure);
+    AT(selection->card_panel == NULL);
+    AT(!selection->card.visible);
+    AT(selection->card.text[0] == '\0');
+    AT(selection->card.background_visual == NULL);
+    AT(selection->card.text_visual == NULL);
+    AT(dvz_selection_clear(selection) == DVZ_OK);
+    AT(dvz_selection_count(selection) == 0);
+    state = (const uint32_t*)pixel->attrs[state_idx].data;
+    AT(state[0] == DVZ_ITEM_STATE_NONE);
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -5848,6 +5915,7 @@ int test_scene_interaction(TstSuite* suite)
     TST_CASE(test_scene_pixel_hover_selection_item_state);
     TST_CASE(test_scene_sphere_hover_selection_item_state);
     TST_CASE(test_scene_mesh_instance_hover_selection_item_state);
+    TST_CASE(test_scene_selection_no_card_preserves_item_state);
     TST_CASE(test_scene_selection_card_realizes_query_metadata);
     TST_CASE(test_scene_overlay_card_public_api);
     TST_CASE(test_scene_overlay_card_desc_defaults);

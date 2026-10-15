@@ -5883,7 +5883,7 @@ DvzResult dvz_visual_set_item_state_buffer(
 | `indices` | `const` `uint32_t` * | copied per-vertex state slots; ignored when clearing the binding |
 | `vertex_count` | `uint32_t` | exact vertex count; ignored when clearing the binding |
 
-_Declared in `include/datoviz/scene/interaction.h`:593._
+_Declared in `include/datoviz/scene/interaction.h`:597._
 
 #### `dvz_visual_set_link_keys()` { #dvz_visual_set_link_keys .dvz-api-function }
 

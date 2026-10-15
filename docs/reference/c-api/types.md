@@ -446,6 +446,7 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzSelectMode`](scene.md#type-dvzselectmode) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzSelection`](scene.md#type-dvzselection) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSelectionDesc`](scene.md#type-dvzselectiondesc) | record | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzSelectionFlags`](scene.md#type-dvzselectionflags) | enum | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSelectionItem`](scene.md#type-dvzselectionitem) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSelectionVisualStyle`](scene.md#type-dvzselectionvisualstyle) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzSemaphore`](runtime-vklite.md#type-dvzsemaphore) | typedef | vklite API | `include/datoviz/vklite/sync.h` |

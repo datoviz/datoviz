@@ -214,9 +214,13 @@ DVZ_EXPORT DvzItemStateVisualStyle dvz_item_state_visual_style(void);
 /**
  * Create a retained selection object.
  *
+ * By default, selected queries display a metadata card. Set
+ * `desc.selection_flags` to `DVZ_SELECTION_FLAGS_NO_CARD` to suppress that card while
+ * preserving query selection and visual highlighting. Unknown selection flags are rejected.
+ *
  * @param scene the scene
  * @param desc selection descriptor, or NULL for defaults
- * @return the selection
+ * @return the selection, or NULL for an invalid descriptor or allocation failure
  */
 DVZ_EXPORT DvzSelection* dvz_selection(DvzScene* scene, const DvzSelectionDesc* desc);
 

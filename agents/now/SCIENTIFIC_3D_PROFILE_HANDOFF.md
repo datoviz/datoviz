@@ -2,6 +2,12 @@
 
 Status: narrow RC3 implementation complete at `d0e904705`, 2026-10-13; RC4 source checkpoints are integrated locally on `rc4/scientific-3d`, while profile acceptance and exact-candidate proof remain pending. The required native non-volume target and RC4/RC5/final boundaries are in [the profile slice](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md). This record separates source inspection from delivered behavior; it does not close a release gate. Preserve [current release evidence](STATUS.md) and its recorded revisions.
 
+## Selection metadata card opt-out, 2026-10-15
+
+`DvzSelectionDesc.selection_flags` now accepts `DVZ_SELECTION_FLAGS_NO_CARD` to disable the automatic selected-item metadata card while retaining query selection and item-state highlighting. Defaults continue to show the card; unsupported bits reject construction. The descriptor layout and scene-owned selection lifetime are unchanged. Consumer applications can supply this selection through their item-interaction descriptor when they present domain-specific details themselves.
+
+Validation passes: `just build`, all five focused selection tests, both interaction core/descriptor tests, `just ctypes`, `just ctypes-check`, generated API checks, strict documentation build under the configured Vulkan environment, documentation status, and whitespace checks. Focused CPU regression coverage checks default and disabled cards, query selection, selected item state, card overlay absence, clearing, and unknown-bit rejection. This engine option does not establish the downstream application's scientific visual or interaction acceptance gate.
+
 ## RC3 implementation and validation, 2026-10-13
 
 Implementation head `d0e904705` closes the narrow RC3 queue. Visual validation and figure preflight reject unsupported family/alpha/scene-occluder combinations before planning; direct shader selection also guards invalid variants. Unsupported alpha modes advertise no render products. The executable inventory and preflight tests live in `src/scene/tests/visuals/runtime.c`; [native technique coverage](../../docs/how-to/depth-blending.md#current-native-technique-coverage) records the supported/excluded matrix.

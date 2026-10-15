@@ -158,6 +158,11 @@ static bool _selection_desc_validate(const DvzSelectionDesc* desc)
         log_error("invalid DvzSelectionDesc ABI prologue");
         return false;
     }
+    if ((desc->selection_flags & ~(uint32_t)DVZ_SELECTION_FLAGS_NO_CARD) != 0)
+    {
+        log_error("unsupported selection flags");
+        return false;
+    }
     return true;
 }
 
@@ -1839,7 +1844,7 @@ DvzSelectionDesc dvz_selection_desc(void)
         DVZ_STRUCT_INIT_FIELDS(DvzSelectionDesc),
         .mode = DVZ_SELECT_REPLACE,
         .target = DVZ_SCENE_TARGET_NONE,
-        .selection_flags = 0,
+        .selection_flags = DVZ_SELECTION_FLAGS_NONE,
     };
 }
 
@@ -1867,7 +1872,8 @@ DvzSelection* dvz_selection(DvzScene* scene, const DvzSelectionDesc* desc)
     selection->scene = scene;
     selection->desc = desc != NULL ? *desc : dvz_selection_desc();
     selection->visual_style = dvz_selection_visual_style();
-    selection->card_enabled = true;
+    selection->card_enabled =
+        (selection->desc.selection_flags & DVZ_SELECTION_FLAGS_NO_CARD) == 0;
     return selection;
 }
 

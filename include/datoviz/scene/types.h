@@ -1261,13 +1261,22 @@ struct DvzFormatDesc
 typedef struct DvzFormatDesc DvzFormatDesc;
 
 
+/** Selection behavior flags. */
+typedef enum
+{
+    DVZ_SELECTION_FLAGS_NONE = 0,
+    /** Disable the automatic metadata card; preserve selection and highlighting. */
+    DVZ_SELECTION_FLAGS_NO_CARD = 0x0001,
+} DvzSelectionFlags;
+
+
 struct DvzSelectionDesc
 {
     uint32_t struct_size;
     uint32_t flags;
     DvzSelectMode mode;
     DvzSceneTargetKind target;
-    uint32_t selection_flags;
+    uint32_t selection_flags; /* DvzSelectionFlags bitmask; defaults to NONE. */
 };
 typedef struct DvzSelectionDesc DvzSelectionDesc;
 

@@ -3030,6 +3030,15 @@ DVZ_SELECT_SUBTRACT = DvzSelectMode.DVZ_SELECT_SUBTRACT
 DVZ_SELECT_TOGGLE = DvzSelectMode.DVZ_SELECT_TOGGLE
 
 
+class DvzSelectionFlags(CtypesEnum):
+    DVZ_SELECTION_FLAGS_NONE = 0
+    DVZ_SELECTION_FLAGS_NO_CARD = 1
+
+
+DVZ_SELECTION_FLAGS_NONE = DvzSelectionFlags.DVZ_SELECTION_FLAGS_NONE
+DVZ_SELECTION_FLAGS_NO_CARD = DvzSelectionFlags.DVZ_SELECTION_FLAGS_NO_CARD
+
+
 class DvzShaderCompileStatus(CtypesEnum):
     DVZ_SHADER_COMPILE_SUCCESS = 0
     DVZ_SHADER_COMPILE_ADAPTER_UNAVAILABLE = 1
@@ -28925,9 +28934,13 @@ else:
     dvz_selection.__doc__ = """/**
  * Create a retained selection object.
  *
+ * By default, selected queries display a metadata card. Set
+ * `desc.selection_flags` to `DVZ_SELECTION_FLAGS_NO_CARD` to suppress that card while
+ * preserving query selection and visual highlighting. Unknown selection flags are rejected.
+ *
  * @param scene the scene
  * @param desc selection descriptor, or NULL for defaults
- * @return the selection
+ * @return the selection, or NULL for an invalid descriptor or allocation failure
  */"""
     dvz_selection.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzSelectionDesc)]
     dvz_selection.restype = ctypes.POINTER(DvzSelection)
