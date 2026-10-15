@@ -2787,8 +2787,10 @@ bool dvz_gui_icon_button(
     ImGui::EndDisabled();
     if (active)
         ImGui::PopStyleColor();
+    const bool navigation_focus =
+        ImGui::GetCurrentContext()->NavCursorVisible && ImGui::IsItemFocused();
     if (tooltip != NULL && tooltip[0] != '\0' &&
-        (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) || ImGui::IsItemFocused()))
+        (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) || navigation_focus))
         ImGui::SetTooltip("%s", tooltip);
     ImGui::PopID();
     return pressed;

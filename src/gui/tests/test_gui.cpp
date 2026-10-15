@@ -1255,9 +1255,8 @@ static int test_gui_compact_icons(TstContext* suite, const TstCase* item)
         ImGuiIO_AddMousePosEvent(io, -100, -100);
         AT(_gui_icon_frame(&state));
         AT(_gui_icon_frame(&state));
-        // Native keyboard navigation may focus the first item when a new window appears.
-        AT(state.passed && !state.pressed);
-        AT(!state.tooltip || state.focused);
+        // Initial native focus alone must not display help before navigation starts.
+        AT(state.passed && !state.pressed && !state.tooltip);
         ImGuiIO_AddMousePosEvent(io, state.center.x, state.center.y);
         AT(_gui_icon_frame(&state));
         AT(state.tooltip);
@@ -1266,6 +1265,10 @@ static int test_gui_compact_icons(TstContext* suite, const TstCase* item)
         ImGuiIO_AddMouseButtonEvent(io, 0, false);
         AT(_gui_icon_frame(&state));
         AT(state.pressed);
+        // Mouse focus remains after the click; help must disappear when the pointer leaves.
+        ImGuiIO_AddMousePosEvent(io, -100, -100);
+        AT(_gui_icon_frame(&state));
+        AT(!state.tooltip);
         ImGuiIO_AddMousePosEvent(io, state.disabled_center.x, state.disabled_center.y);
         AT(_gui_icon_frame(&state));
         AT(state.tooltip);
