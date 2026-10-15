@@ -628,6 +628,10 @@ void _visual_material_mark_dirty(DvzVisual* visual)
     if (ops != NULL && ops->sync_point_style_material)
         _point_style_sync_params(&_visual_family_state(visual)->material_params, &visual->material.point_style);
     _sphere_params_sync_mode(visual);
+    // Stroke families own params[0..3] for caps/joins, independently of the
+    // shared material model and alpha controls synchronized above.
+    if (ops != NULL && ops->sync_material_params != NULL)
+        ops->sync_material_params(visual);
     _visual_bump_version(&visual->material.version);
     _visual_family_state(visual)->material_params_dirty = true;
     _scene_notify_visual_changed(visual);

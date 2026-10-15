@@ -425,6 +425,14 @@ int test_scene_path_stroke_style(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(visual)->path.cap_end == DVZ_SEGMENT_CAP_ROUND);
     AT(_visual_family_state(visual)->path.join == DVZ_PATH_JOIN_ROUND);
     AT(_visual_family_state(visual)->path.miter_limit == 4.0f);
+    // Match insertion setup: alpha changes followed by no-op default setters
+    // must retain the path-family payload, never Phong coefficients.
+    AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_OPAQUE) == DVZ_OK);
+    AT(dvz_visual_set_depth_test(visual, true) == DVZ_OK);
+    AT(dvz_path_set_caps(visual, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND) == DVZ_OK);
+    AT(dvz_path_set_join(visual, DVZ_PATH_JOIN_ROUND, 4.0f) == DVZ_OK);
+    AT(_visual_family_state(visual)->material_params.params[2] == (float)DVZ_PATH_JOIN_ROUND);
+    AT(_visual_family_state(visual)->material_params.params[3] == 4.0f);
     AT(_visual_family_state(visual)->material_params.params[0] == (float)DVZ_SEGMENT_CAP_ROUND);
     AT(_visual_family_state(visual)->material_params.params[1] == (float)DVZ_SEGMENT_CAP_ROUND);
     AT(_visual_family_state(visual)->material_params.params[2] == (float)DVZ_PATH_JOIN_ROUND);
@@ -436,6 +444,10 @@ int test_scene_path_stroke_style(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(visual)->path.cap_end == DVZ_SEGMENT_CAP_SQUARE);
     AT(_visual_family_state(visual)->path.join == DVZ_PATH_JOIN_MITER);
     AT(_visual_family_state(visual)->path.miter_limit == 2.5f);
+    AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) == DVZ_OK);
+    AT(_visual_family_state(visual)->material_params.params[0] == (float)DVZ_SEGMENT_CAP_BUTT);
+    AT(_visual_family_state(visual)->material_params.params[2] == (float)DVZ_PATH_JOIN_MITER);
+    AT(_visual_family_state(visual)->material_params.params[3] == 2.5f);
     AT(_visual_family_state(visual)->material_params.params[0] == (float)DVZ_SEGMENT_CAP_BUTT);
     AT(_visual_family_state(visual)->material_params.params[1] == (float)DVZ_SEGMENT_CAP_SQUARE);
     AT(_visual_family_state(visual)->material_params.params[2] == (float)DVZ_PATH_JOIN_MITER);

@@ -70,6 +70,7 @@ typedef bool (*DvzVisualFamilyMetadataFn)(
     DvzFramePlanVisualMeta* metadata);
 typedef void (*DvzVisualFamilyInitFn)(DvzVisual* visual);
 typedef void (*DvzVisualFamilyResetFn)(DvzVisual* visual);
+typedef void (*DvzVisualFamilyMaterialSyncFn)(DvzVisual* visual);
 typedef bool (*DvzVisualFamilyValidateAttrFn)(
     const DvzVisual* visual, const char* attr_name, const void* data, uint32_t item_count);
 typedef bool (*DvzVisualFamilyAfterAttrFn)(
@@ -106,6 +107,7 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyDescFn resolve_desc;
     DvzVisualFamilyMetadataFn fill_metadata;
     DvzVisualFamilyInitFn init_state;
+    DvzVisualFamilyMaterialSyncFn sync_material_params;
     DvzVisualFamilyResetFn reset_state;
     DvzVisualFamilyValidateAttrFn validate_attr;
     const char* (*eligibility_error)(const DvzVisual* visual);

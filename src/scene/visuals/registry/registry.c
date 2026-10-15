@@ -16,6 +16,7 @@
 /*************************************************************************************************/
 
 #include "registry/registry.h"
+#include "stroke/state.h"
 
 #include "bounds_internal.h"
 #include "glyph/internal.h"
@@ -306,7 +307,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attrs = SEGMENT_ATTRS, .attr_count = DVZ_ARRAY_COUNT(SEGMENT_ATTRS),
      .expected_attrs = "position_start, position_end, color, stroke_width_px",
      .attr_alias_public = "stroke_width_px", .attr_alias_storage = "line_width",
-     .init_state = _scene_segment_visual_init_state,
+     .init_state = _scene_segment_visual_init_state, .sync_material_params = _segment_sync_params,
      .after_attr_set = _scene_stroke_visual_after_attr_set},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_PATH, "path", _scene_path_visual_lowering,
@@ -321,7 +322,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attrs = PATH_ATTRS, .attr_count = DVZ_ARRAY_COUNT(PATH_ATTRS),
      .expected_attrs = "position, color, stroke_width_px",
      .attr_alias_public = "stroke_width_px", .attr_alias_storage = "line_width",
-     .init_state = _scene_path_visual_init_state,
+     .init_state = _scene_path_visual_init_state, .sync_material_params = _path_sync_params,
      .after_attr_set = _scene_stroke_visual_after_attr_set,
      .upload_position_topology = true},
     {VISUAL_OPS(
@@ -452,7 +453,7 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .attrs = VECTOR_ATTRS, .attr_count = DVZ_ARRAY_COUNT(VECTOR_ATTRS),
      .expected_attrs = "position, optional vector, color, stroke_width_px",
      .attr_alias_public = "stroke_width_px", .attr_alias_storage = "line_width",
-     .init_state = _scene_vector_visual_init_state,
+     .init_state = _scene_vector_visual_init_state, .sync_material_params = _vector_sync_params,
      .after_attr_set = _scene_stroke_visual_after_attr_set},
 };
 
