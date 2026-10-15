@@ -18,6 +18,7 @@
 
 #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "../_gui.h"
@@ -1112,6 +1113,294 @@ static int test_gui_compact_layout(TstContext* suite, const TstCase* item)
 
 
 
+typedef struct GuiIconTest
+{
+    float scale;
+    uint32_t flags;
+    bool pressed;
+    bool focused;
+    bool tooltip;
+    ImGuiID id;
+    ImVec2 center;
+    ImVec2 disabled_center;
+    bool passed;
+} GuiIconTest;
+
+
+/**
+ * Draw icon controls with stable IDs and collect native geometry and input behavior.
+ *
+ * @param gui CPU-only GUI wrapper
+ * @param view unused view
+ * @param user_data test state
+ */
+static void _gui_icon_callback(DvzGui* gui, DvzView* view, void* user_data)
+{
+    (void)view;
+#define GUI_ICON_CHECK(condition)                                                                 \
+    do                                                                                            \
+    {                                                                                             \
+        if (!(condition))                                                                         \
+        {                                                                                         \
+            log_error("compact icon check failed at line %d", __LINE__);                          \
+            state->passed = false;                                                                \
+        }                                                                                         \
+    } while (0)
+    GuiIconTest* state = (GuiIconTest*)user_data;
+    const float scale = state->scale;
+    DvzRect rect = {20, 30, 650, 300};
+    GUI_ICON_CHECK(dvz_gui_set_next_window_rect(gui, &rect, 0) == DVZ_OK);
+    dvz_gui_begin(gui, "icon CPU", NULL, ImGuiWindowFlags_NoSavedSettings);
+    state->pressed = dvz_gui_icon_button(
+        gui, "primary", DVZ_GUI_ICON_CLEAR, 28, "Clear selection", state->flags);
+    const ImGuiID id = igGetItemID();
+    GUI_ICON_CHECK(state->id == 0 || id == state->id);
+    state->id = id;
+    state->focused = igIsItemFocused();
+    ImVec2 size = {}, a = {}, b = {};
+    igGetItemRectSize(&size);
+    GUI_ICON_CHECK(fabsf(size.x - 28 * scale) < 0.001f);
+    GUI_ICON_CHECK(fabsf(size.y - 28 * scale) < 0.001f);
+    igGetItemRectMin(&a);
+    igGetItemRectMax(&b);
+    state->center = ImVec2{(a.x + b.x) / 2, (a.y + b.y) / 2};
+    const float primary_right = b.x;
+    dvz_gui_same_line(gui, 0, 7);
+    const bool disabled_pressed = dvz_gui_icon_button(
+        gui, "disabled", DVZ_GUI_ICON_SETTINGS, 28, "Disabled settings",
+        DVZ_GUI_ICON_BUTTON_FLAGS_DISABLED);
+    GUI_ICON_CHECK(!disabled_pressed && !igIsItemFocused() && id != igGetItemID());
+    igGetItemRectMin(&a);
+    igGetItemRectMax(&b);
+    GUI_ICON_CHECK(fabsf(a.x - primary_right - 7 * scale) < 0.001f);
+    state->disabled_center = ImVec2{(a.x + b.x) / 2, (a.y + b.y) / 2};
+    ImVec2 window_pos = {};
+    igGetWindowPos(&window_pos);
+    dvz_gui_same_line(gui, 150, 0);
+    dvz_gui_icon_button(gui, "font sized", DVZ_GUI_ICON_INFO, 0, NULL, 0);
+    igGetItemRectMin(&a);
+    igGetItemRectSize(&size);
+    GUI_ICON_CHECK(fabsf(a.x - window_pos.x - 150 * scale) < 0.001f);
+    GUI_ICON_CHECK(fabsf(size.x - igGetFrameHeight()) < 0.001f);
+    GUI_ICON_CHECK(fabsf(size.y - igGetFrameHeight()) < 0.001f);
+    dvz_gui_same_line(gui, 0, -1);
+    dvz_gui_icon_button(gui, "native gap", DVZ_GUI_ICON_EXPAND, 28, NULL, 0);
+    igGetItemRectMin(&b);
+    GUI_ICON_CHECK(fabsf(b.x - a.x - size.x - igGetStyle()->ItemSpacing.x) < 0.001f);
+    // Every vector glyph adds geometry through the existing draw list.
+    for (int icon = DVZ_GUI_ICON_CLEAR; icon <= DVZ_GUI_ICON_SORT; icon++)
+    {
+        char identifier[32] = {};
+        snprintf(identifier, sizeof(identifier), "glyph %d", icon);
+        const int vertices = igGetWindowDrawList()->VtxBuffer.Size;
+        dvz_gui_icon_button(gui, identifier, (DvzGuiIcon)icon, 18, NULL, 0);
+        GUI_ICON_CHECK(igGetWindowDrawList()->VtxBuffer.Size > vertices);
+        dvz_gui_same_line(gui, 0, 2);
+    }
+    GUI_ICON_CHECK(!dvz_gui_icon_button(gui, "", DVZ_GUI_ICON_CLEAR, 28, NULL, 0));
+    GUI_ICON_CHECK(!dvz_gui_icon_button(gui, "bad", (DvzGuiIcon)99, 28, NULL, 0));
+    GUI_ICON_CHECK(!dvz_gui_icon_button(gui, "bad", DVZ_GUI_ICON_CLEAR, -1, NULL, 0));
+    GUI_ICON_CHECK(!dvz_gui_icon_button(gui, "bad", DVZ_GUI_ICON_CLEAR, NAN, NULL, 0));
+    GUI_ICON_CHECK(!dvz_gui_icon_button(gui, "bad", DVZ_GUI_ICON_CLEAR, 28, NULL, 4));
+    dvz_gui_end(gui);
+    const ImGuiWindow* tooltip = igFindWindowByName("##Tooltip_00");
+    state->tooltip = tooltip != NULL && tooltip->Active;
+#undef GUI_ICON_CHECK
+}
+
+
+/**
+ * Advance one CPU icon frame.
+ *
+ * @param state borrowed frame state
+ * @return whether ordinary GUI scopes balanced
+ */
+static bool _gui_icon_frame(GuiIconTest* state)
+{
+    igNewFrame();
+    const bool balanced = _dvz_gui_debug_callback(_gui_icon_callback, state, state->scale, 200);
+    igRender();
+    return balanced;
+}
+
+
+/**
+ * Verify vector icons, logical row gaps, stable IDs, mouse/keyboard input, and disabled help.
+ *
+ * @param suite test context
+ * @param item test item
+ * @return zero on success
+ */
+static int test_gui_compact_icons(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        ImGuiContext* context = igCreateContext(NULL);
+        AT(context != NULL);
+        const float scale = i < 2 ? 1.0f : 2.0f;
+        const float user = i % 2 ? 1.5f : 1.0f;
+        ImGuiIO* io = igGetIO_Nil();
+        io->DisplaySize = ImVec2{720 * scale, 480 * scale};
+        io->DeltaTime = 1.0f / 60.0f;
+        io->IniFilename = NULL;
+        io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io->FontGlobalScale = scale * user;
+        _dvz_gui_style_scale(scale * user);
+        AT(ImFontAtlas_Build(io->Fonts));
+        GuiIconTest state = {};
+        state.scale = scale;
+        state.passed = true;
+        ImGuiIO_AddMousePosEvent(io, -100, -100);
+        AT(_gui_icon_frame(&state));
+        AT(_gui_icon_frame(&state));
+        // Native keyboard navigation may focus the first item when a new window appears.
+        AT(state.passed && !state.pressed);
+        AT(!state.tooltip || state.focused);
+        ImGuiIO_AddMousePosEvent(io, state.center.x, state.center.y);
+        AT(_gui_icon_frame(&state));
+        AT(state.tooltip);
+        ImGuiIO_AddMouseButtonEvent(io, 0, true);
+        AT(_gui_icon_frame(&state));
+        ImGuiIO_AddMouseButtonEvent(io, 0, false);
+        AT(_gui_icon_frame(&state));
+        AT(state.pressed);
+        ImGuiIO_AddMousePosEvent(io, state.disabled_center.x, state.disabled_center.y);
+        AT(_gui_icon_frame(&state));
+        AT(state.tooltip);
+        ImGuiIO_AddMouseButtonEvent(io, 0, true);
+        AT(_gui_icon_frame(&state));
+        ImGuiIO_AddMouseButtonEvent(io, 0, false);
+        AT(_gui_icon_frame(&state));
+        AT(!state.pressed);
+        ImGuiIO_AddMousePosEvent(io, -100, -100);
+        // Tab enters native navigation from mouse mode and skips the disabled button.
+        for (uint32_t step = 0; step < 16; step++)
+        {
+            ImGuiIO_AddKeyEvent(io, ImGuiKey_Tab, true);
+            AT(_gui_icon_frame(&state));
+            ImGuiIO_AddKeyEvent(io, ImGuiKey_Tab, false);
+            AT(_gui_icon_frame(&state));
+            if (state.focused)
+                break;
+        }
+        AT(state.focused && state.tooltip);
+        ImGuiIO_AddKeyEvent(io, ImGuiKey_Space, true);
+        AT(_gui_icon_frame(&state));
+        const bool key_pressed = state.pressed;
+        ImGuiIO_AddKeyEvent(io, ImGuiKey_Space, false);
+        AT(_gui_icon_frame(&state));
+        AT(key_pressed || state.pressed);
+        state.flags = DVZ_GUI_ICON_BUTTON_FLAGS_ACTIVE | DVZ_GUI_ICON_BUTTON_FLAGS_DISABLED;
+        ImGuiIO_AddKeyEvent(io, ImGuiKey_Space, true);
+        AT(_gui_icon_frame(&state));
+        AT(!state.pressed);
+        ImGuiIO_AddKeyEvent(io, ImGuiKey_Space, false);
+        AT(_gui_icon_frame(&state));
+        AT(!state.pressed && state.passed);
+        igDestroyContext(context);
+    }
+    return 0;
+}
+
+
+/**
+ * Count vertices using one exact color in newly emitted GUI geometry.
+ *
+ * @param draw native draw list
+ * @param start first vertex
+ * @param color expected packed color
+ * @return matching vertex count
+ */
+static uint32_t _gui_vertices_with_color(const ImDrawList* draw, int start, ImU32 color)
+{
+    uint32_t count = 0;
+    for (int i = start; i < draw->VtxBuffer.Size; i++)
+        count += draw->VtxBuffer.Data[i].col == color;
+    return count;
+}
+
+
+/**
+ * Verify opt-in tree density and secondary text while preserving missing-value styling.
+ *
+ * @param suite test context
+ * @param item test item
+ * @return zero on success
+ */
+static int test_gui_compact_tree_layout(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    ImGuiContext* context = igCreateContext(NULL);
+    AT(context != NULL);
+    ImGuiIO* io = igGetIO_Nil();
+    io->DisplaySize = ImVec2{720, 600};
+    io->DeltaTime = 1.0f / 60.0f;
+    io->IniFilename = NULL;
+    AT(ImFontAtlas_Build(io->Fonts));
+    ImGuiStyle* style = igGetStyle();
+    style->FramePadding.y = 10;
+    style->ItemSpacing.y = 8;
+    style->Colors[ImGuiCol_Text] = ImVec4{1, 0, 0, 1};
+    style->Colors[ImGuiCol_TextDisabled] = ImVec4{0, 1, 0, 1};
+    DvzGuiTree* tree = dvz_gui_tree("density", 0);
+    const uint64_t keys[] = {1, 2};
+    const uint32_t parents[] = {UINT32_MAX, UINT32_MAX};
+    const char* labels[] = {"First", "Second"};
+    const char* secondary[] = {"description", "description"};
+    AT(dvz_gui_tree_set_rows(tree, 2, keys, parents, labels, secondary, 0) == DVZ_OK);
+    igNewFrame();
+    igSetNextWindowSize(ImVec2{700, 580}, ImGuiCond_Always);
+    igBegin("density CPU", NULL, ImGuiWindowFlags_NoSavedSettings);
+    ImDrawList* draw = igGetWindowDrawList();
+    const ImU32 dim = igGetColorU32_Col(ImGuiCol_TextDisabled, 1);
+    DvzGuiDataEvent events[32] = {};
+    uint32_t written = 0, dropped = 0;
+    ImVec2 start = {}, end = {};
+    igGetCursorScreenPos(&start);
+    int vertices = draw->VtxBuffer.Size;
+    AT(_dvz_gui_tree_debug_draw(tree, events, 32, &written, &dropped) == DVZ_OK);
+    igGetCursorScreenPos(&end);
+    const float default_height = end.y - start.y;
+    AT(_gui_vertices_with_color(draw, vertices, dim) > 0);
+    DvzGuiTreeLayout layout = dvz_gui_tree_layout();
+    AT(layout.flags == 0);
+    layout.flags =
+        DVZ_GUI_TREE_LAYOUT_FLAGS_EXACT_SPACING | DVZ_GUI_TREE_LAYOUT_FLAGS_READABLE_SECONDARY;
+    layout.row_padding_em = 0.1f;
+    layout.item_spacing_em = 0;
+    AT(dvz_gui_tree_set_layout(tree, &layout) == DVZ_OK);
+    igGetCursorScreenPos(&start);
+    vertices = draw->VtxBuffer.Size;
+    AT(_dvz_gui_tree_debug_draw(tree, events, 32, &written, &dropped) == DVZ_OK);
+    igGetCursorScreenPos(&end);
+    const float exact_height = end.y - start.y;
+    AC(exact_height, 2 * igGetFontSize() * 1.2f, 2.0f);
+    AT(exact_height < default_height);
+    AT(_gui_vertices_with_color(draw, vertices, dim) == 0);
+    AC(style->FramePadding.y, 10, 0.001f);
+    AC(style->ItemSpacing.y, 8, 0.001f);
+    DvzGuiTreeAnnotation annotation = dvz_gui_tree_annotation();
+    annotation.row_key = keys[0];
+    annotation.flags = DVZ_GUI_TREE_ANNOTATION_FLAGS_MISSING;
+    annotation.value_text = "missing";
+    AT(dvz_gui_tree_set_annotations(tree, 1, &annotation) == DVZ_OK);
+    vertices = draw->VtxBuffer.Size;
+    AT(_dvz_gui_tree_debug_draw(tree, events, 32, &written, &dropped) == DVZ_OK);
+    AT(_gui_vertices_with_color(draw, vertices, dim) > 0);
+    layout.flags = 4;
+    AT(dvz_gui_tree_set_layout(tree, &layout) == DVZ_ERROR);
+    igEnd();
+    igRender();
+    dvz_gui_tree_destroy(tree);
+    igDestroyContext(context);
+    return 0;
+}
+
+
+
 /**
  * Check that the curated GUI widget wrappers are exported with C-callable signatures.
  *
@@ -1423,6 +1712,7 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
         AT(dvz_view_set_user_scale(win, user_scale) == DVZ_OK);
 
         DvzGuiConfig gui_config = dvz_gui_config();
+        gui_config.gui_flags |= DVZ_GUI_FLAGS_NAV_KEYBOARD;
         DvzGui* gui = dvz_view_gui(win, i == 0 ? NULL : &gui_config);
         if (gui == NULL)
         {
@@ -1446,6 +1736,7 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
         AT(io != NULL);
         AT(io->FontDefault != NULL);
         AC(io->FontGlobalScale, 1.0f, 1e-6f);
+        AT(((io->ConfigFlags & ImGuiConfigFlags_NavEnableKeyboard) != 0) == (i != 0));
         if (i == 0)
             base_font_size = io->FontDefault->FontSize;
         else
@@ -1839,6 +2130,8 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_data_tree_controlled_draw);
     TST_CASE(test_gui_data_table_model);
     TST_CASE(test_gui_compact_layout);
+    TST_CASE(test_gui_compact_icons);
+    TST_CASE(test_gui_compact_tree_layout);
     TST_CASE(test_gui_widget_wrapper_symbols);
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);

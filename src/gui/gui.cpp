@@ -2073,6 +2073,8 @@ DvzGui* _dvz_gui_create(
     _gui_set_current(gui);
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    if (gui->config.gui_flags & DVZ_GUI_FLAGS_NAV_KEYBOARD)
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.IniFilename = gui->config.ini_path;
     ImGui::StyleColorsDark();
     _gui_sync_scale(gui, true);
@@ -2667,6 +2669,133 @@ void dvz_gui_tooltip(DvzGui* gui, const char* text)
 }
 
 
+/**
+ * Draw one built-in vector glyph inside a native button rectangle.
+ *
+ * @param draw native draw list
+ * @param icon glyph
+ * @param center button center
+ * @param extent native square extent
+ * @param color text color including disabled alpha
+ */
+static void
+_gui_icon_draw(ImDrawList* draw, DvzGuiIcon icon, ImVec2 center, float extent, ImU32 color)
+{
+    const float x = center.x, y = center.y, r = extent * 0.24f;
+    const float stroke = std::max(1.0f, extent / 15.0f);
+    switch (icon)
+    {
+    case DVZ_GUI_ICON_CLEAR:
+        draw->AddLine(ImVec2(x - r, y - r), ImVec2(x + r, y + r), color, stroke);
+        draw->AddLine(ImVec2(x - r, y + r), ImVec2(x + r, y - r), color, stroke);
+        break;
+    case DVZ_GUI_ICON_SETTINGS:
+        draw->AddCircle(center, r * 0.75f, color, 16, stroke);
+        draw->AddCircle(center, r * 0.28f, color, 12, stroke);
+        for (uint32_t i = 0; i < 8; i++)
+        {
+            const float angle = (float)i * IM_PI / 4;
+            const float dx = cosf(angle), dy = sinf(angle);
+            draw->AddLine(
+                ImVec2(x + r * 0.75f * dx, y + r * 0.75f * dy),
+                ImVec2(x + r * 1.15f * dx, y + r * 1.15f * dy), color, stroke);
+        }
+        break;
+    case DVZ_GUI_ICON_INFO:
+        draw->AddCircle(center, r * 1.1f, color, 20, stroke);
+        draw->AddCircleFilled(ImVec2(x, y - r * 0.5f), stroke * 0.7f, color);
+        draw->AddLine(ImVec2(x, y - r * 0.1f), ImVec2(x, y + r * 0.55f), color, stroke);
+        break;
+    case DVZ_GUI_ICON_EXPAND:
+    case DVZ_GUI_ICON_COLLAPSE:
+        draw->AddLine(ImVec2(x - r, y), ImVec2(x + r, y), color, stroke);
+        if (icon == DVZ_GUI_ICON_EXPAND)
+            draw->AddLine(ImVec2(x, y - r), ImVec2(x, y + r), color, stroke);
+        break;
+    case DVZ_GUI_ICON_MULTISELECT:
+        draw->AddRect(
+            ImVec2(x - r * 1.1f, y - r * 1.1f), ImVec2(x + r * 0.5f, y + r * 0.5f), color, 0, 0,
+            stroke);
+        draw->AddRect(
+            ImVec2(x - r * 0.5f, y - r * 0.5f), ImVec2(x + r * 1.1f, y + r * 1.1f), color, 0, 0,
+            stroke);
+        draw->AddLine(
+            ImVec2(x - r * 0.2f, y + r * 0.2f), ImVec2(x + r * 0.2f, y + r * 0.65f), color,
+            stroke);
+        draw->AddLine(
+            ImVec2(x + r * 0.2f, y + r * 0.65f), ImVec2(x + r * 0.8f, y - r * 0.1f), color,
+            stroke);
+        break;
+    case DVZ_GUI_ICON_ELLIPSIS:
+        for (int i = -1; i <= 1; i++)
+            draw->AddCircleFilled(ImVec2(x + i * r, y), stroke, color);
+        break;
+    case DVZ_GUI_ICON_SORT:
+        draw->AddLine(ImVec2(x - r * 0.5f, y - r), ImVec2(x - r * 0.5f, y + r), color, stroke);
+        draw->AddLine(ImVec2(x - r, y - r * 0.5f), ImVec2(x - r * 0.5f, y - r), color, stroke);
+        draw->AddLine(ImVec2(x, y - r * 0.5f), ImVec2(x - r * 0.5f, y - r), color, stroke);
+        draw->AddLine(ImVec2(x + r * 0.5f, y - r), ImVec2(x + r * 0.5f, y + r), color, stroke);
+        draw->AddLine(ImVec2(x, y + r * 0.5f), ImVec2(x + r * 0.5f, y + r), color, stroke);
+        draw->AddLine(ImVec2(x + r, y + r * 0.5f), ImVec2(x + r * 0.5f, y + r), color, stroke);
+        break;
+    default:
+        break;
+    }
+}
+
+
+
+/**
+ * Draw a native keyboard-navigable button with a vector glyph and conditional tooltip.
+ *
+ * @param gui GUI overlay
+ * @param id stable identifier
+ * @param icon glyph
+ * @param size logical extent, or zero for font-relative size
+ * @param tooltip optional borrowed text
+ * @param flags active/disabled flags
+ * @return whether the button activated
+ */
+bool dvz_gui_icon_button(
+    DvzGui* gui, const char* id, DvzGuiIcon icon, float size, const char* tooltip, uint32_t flags)
+{
+    const uint32_t known_flags =
+        DVZ_GUI_ICON_BUTTON_FLAGS_ACTIVE | DVZ_GUI_ICON_BUTTON_FLAGS_DISABLED;
+    if (gui == NULL || id == NULL || id[0] == '\0' || icon < DVZ_GUI_ICON_CLEAR ||
+        icon > DVZ_GUI_ICON_SORT || !isfinite(size) || size < 0 || (flags & ~known_flags))
+        return false;
+    _gui_set_current(gui);
+    if (ImGui::GetCurrentWindow()->SkipItems)
+        return false;
+    const float extent =
+        size > 0 ? size * _gui_valid_scale(gui->coordinate_scale) : ImGui::GetFrameHeight();
+    if (!isfinite(extent))
+        return false;
+    const bool active = (flags & DVZ_GUI_ICON_BUTTON_FLAGS_ACTIVE) != 0;
+    const bool disabled = (flags & DVZ_GUI_ICON_BUTTON_FLAGS_DISABLED) != 0;
+    ImGui::PushID(id);
+    if (active)
+        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+    ImGui::BeginDisabled(disabled);
+    const bool native_pressed = ImGui::Button("##icon", ImVec2(extent, extent));
+    // Native navigation intents can have been queued before this frame disabled the item.
+    const bool pressed = native_pressed && !(ImGui::GetItemFlags() & ImGuiItemFlags_Disabled);
+    const ImVec2 a = ImGui::GetItemRectMin(), b = ImGui::GetItemRectMax();
+    _gui_icon_draw(
+        ImGui::GetWindowDrawList(), icon, ImVec2((a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f), extent,
+        ImGui::GetColorU32(ImGuiCol_Text));
+    ImGui::EndDisabled();
+    if (active)
+        ImGui::PopStyleColor();
+    if (tooltip != NULL && tooltip[0] != '\0' &&
+        (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) || ImGui::IsItemFocused()))
+        ImGui::SetTooltip("%s", tooltip);
+    ImGui::PopID();
+    return pressed;
+}
+
+
+
 bool dvz_gui_input_text(DvzGui* gui, const char* label, char* value, uint32_t capacity)
 {
     ANN(gui);
@@ -3110,7 +3239,10 @@ void dvz_gui_same_line(DvzGui* gui, float offset_from_start_x, float spacing)
 {
     ANN(gui);
     _gui_set_current(gui);
-    ImGui::SameLine(offset_from_start_x, spacing);
+    const float scale = _gui_valid_scale(gui->coordinate_scale);
+    ImGui::SameLine(
+        offset_from_start_x > 0 ? offset_from_start_x * scale : offset_from_start_x,
+        spacing >= 0 ? spacing * scale : spacing);
 }
 
 

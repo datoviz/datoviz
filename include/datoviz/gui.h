@@ -49,8 +49,9 @@ typedef void (*DvzGuiCallback)(DvzGui* gui, DvzView* view, void* user_data);
 typedef enum DvzGuiFlags
 {
     DVZ_GUI_FLAGS_NONE = 0,
-    DVZ_GUI_FLAGS_DOCKING = 1u << 0,   /* enable ImGui docking support */
-    DVZ_GUI_FLAGS_DOCKSPACE = 1u << 1, /* create the default full-view dockspace */
+    DVZ_GUI_FLAGS_DOCKING = 1u << 0,      /* enable ImGui docking support */
+    DVZ_GUI_FLAGS_DOCKSPACE = 1u << 1,    /* create the default full-view dockspace */
+    DVZ_GUI_FLAGS_NAV_KEYBOARD = 1u << 2, /* opt in to native keyboard navigation */
 } DvzGuiFlags;
 
 
@@ -101,6 +102,41 @@ typedef enum DvzGuiDataWidgetFlags
     /* Tree only: the host owns projection, selection, expansion, and navigation semantics. */
     DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED = 1u << 2,
 } DvzGuiDataWidgetFlags;
+
+/** Built-in vector glyphs; no font, texture, or caller asset is required. */
+typedef enum DvzGuiIcon
+{
+    DVZ_GUI_ICON_CLEAR = 0,
+    DVZ_GUI_ICON_SETTINGS,
+    DVZ_GUI_ICON_INFO,
+    DVZ_GUI_ICON_EXPAND,
+    DVZ_GUI_ICON_COLLAPSE,
+    DVZ_GUI_ICON_MULTISELECT,
+    DVZ_GUI_ICON_ELLIPSIS,
+    DVZ_GUI_ICON_SORT,
+} DvzGuiIcon;
+
+
+
+typedef enum DvzGuiIconButtonFlags
+{
+    DVZ_GUI_ICON_BUTTON_FLAGS_NONE = 0,
+    DVZ_GUI_ICON_BUTTON_FLAGS_ACTIVE = 1u << 0,   /* persistent selected appearance */
+    DVZ_GUI_ICON_BUTTON_FLAGS_DISABLED = 1u << 1, /* no mouse or keyboard activation */
+} DvzGuiIconButtonFlags;
+
+
+
+typedef enum DvzGuiTreeLayoutFlags
+{
+    DVZ_GUI_TREE_LAYOUT_FLAGS_NONE = 0,
+    /* Use requested row padding and item spacing without global style minimums. */
+    DVZ_GUI_TREE_LAYOUT_FLAGS_EXACT_SPACING = 1u << 0,
+    /* Use ordinary foreground text for secondary labels. */
+    DVZ_GUI_TREE_LAYOUT_FLAGS_READABLE_SECONDARY = 1u << 1,
+} DvzGuiTreeLayoutFlags;
+
+
 
 typedef enum DvzGuiTreeAnnotationFlags
 {
@@ -227,7 +263,7 @@ typedef struct DvzGuiDataStyle
 typedef struct DvzGuiTreeLayout
 {
     uint32_t struct_size;
-    uint32_t flags;
+    uint32_t flags; /* Bitwise OR of DvzGuiTreeLayoutFlags. */
     float indent_em;
     float row_padding_em;
     float item_spacing_em;
@@ -457,6 +493,27 @@ DVZ_EXPORT void dvz_gui_text(DvzGui* gui, const char* text);
  * @param text null-terminated tooltip text
  */
 DVZ_EXPORT void dvz_gui_tooltip(DvzGui* gui, const char* text);
+
+
+/**
+ * Show a square vector-icon button with ordinary native navigation.
+ *
+ * Set DVZ_GUI_FLAGS_NAV_KEYBOARD in the GUI config to enable keyboard navigation.
+ *
+ * The identifier is stable and scopes native state; it is never drawn as a label. An optional
+ * tooltip appears only while hovered (including disabled buttons) or keyboard focused.
+ * ACTIVE provides a persistent selected appearance; DISABLED suppresses all activation.
+ *
+ * @param gui the GUI overlay
+ * @param id stable, non-empty UTF-8 identifier
+ * @param icon built-in glyph
+ * @param size square extent in logical pixels, or 0 for active font height plus frame padding
+ * @param tooltip optional borrowed tooltip text, or NULL
+ * @param flags bitwise OR of DvzGuiIconButtonFlags
+ * @return whether activated; false for invalid input or a disabled button
+ */
+DVZ_EXPORT bool dvz_gui_icon_button(
+    DvzGui* gui, const char* id, DvzGuiIcon icon, float size, const char* tooltip, uint32_t flags);
 
 
 /**
@@ -762,8 +819,8 @@ DVZ_EXPORT bool dvz_gui_collapsing_header(DvzGui* gui, const char* label, int fl
  * Place the next item on the same line.
  *
  * @param gui the GUI overlay
- * @param offset_from_start_x x offset from start, or 0
- * @param spacing spacing between items, or -1 for default
+ * @param offset_from_start_x logical x offset from start, or 0 for following the previous item
+ * @param spacing logical spacing between items, or -1 for the native default
  */
 DVZ_EXPORT void dvz_gui_same_line(DvzGui* gui, float offset_from_start_x, float spacing);
 

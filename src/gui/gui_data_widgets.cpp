@@ -29,7 +29,8 @@
 #define COLUMN_FLAGS                                                                              \
     (DVZ_GUI_TABLE_COLUMN_FLAGS_SORTABLE | DVZ_GUI_TABLE_COLUMN_FLAGS_SEARCHABLE |                \
      DVZ_GUI_TABLE_COLUMN_FLAGS_STRETCH)
-#define TREE_LAYOUT_KNOWN_FLAGS 0u
+#define TREE_LAYOUT_KNOWN_FLAGS                                                                   \
+    (DVZ_GUI_TREE_LAYOUT_FLAGS_EXACT_SPACING | DVZ_GUI_TREE_LAYOUT_FLAGS_READABLE_SECONDARY)
 
 typedef struct _KeyIndex
 {
@@ -1292,10 +1293,17 @@ static DvzResult _tree_draw(
     const float font_size = ImGui::GetFontSize();
     // Keep deep retained trees compact while deriving distances from the active ImGui font size.
     const float indent_spacing = font_size * tree->layout.indent_em;
-    const float row_padding = std::max(
-        imgui_style.FramePadding.y, font_size * tree->layout.row_padding_em);
-    const float item_spacing_y = std::max(
-        imgui_style.ItemSpacing.y, font_size * tree->layout.item_spacing_em);
+    const bool exact_spacing = (tree->layout.flags & DVZ_GUI_TREE_LAYOUT_FLAGS_EXACT_SPACING) != 0;
+    const bool readable_secondary =
+        (tree->layout.flags & DVZ_GUI_TREE_LAYOUT_FLAGS_READABLE_SECONDARY) != 0;
+    const float row_padding =
+        exact_spacing
+            ? font_size * tree->layout.row_padding_em
+            : std::max(imgui_style.FramePadding.y, font_size * tree->layout.row_padding_em);
+    const float item_spacing_y =
+        exact_spacing
+            ? font_size * tree->layout.item_spacing_em
+            : std::max(imgui_style.ItemSpacing.y, font_size * tree->layout.item_spacing_em);
     const float disclosure_gap = font_size * tree->layout.disclosure_gap_em;
     const float swatch_gap = font_size * tree->layout.swatch_gap_em;
     const float secondary_gap = font_size * tree->layout.secondary_gap_em;
@@ -1466,7 +1474,9 @@ static DvzResult _tree_draw(
             {
                 ImGui::SameLine(0, secondary_gap);
                 ImGui::PushStyleColor(
-                    ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+                    ImGuiCol_Text,
+                    ImGui::GetStyleColorVec4(
+                        readable_secondary ? ImGuiCol_Text : ImGuiCol_TextDisabled));
                 _tree_text(
                     tree->secondary[row], annotation ? annotation->secondary_span_count : 0,
                     annotation ? annotation->secondary_spans : NULL);

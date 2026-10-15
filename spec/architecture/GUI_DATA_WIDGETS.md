@@ -36,6 +36,10 @@ Tree rows use unique `uint64_t` keys and validated parent indices in depth-first
 
 Table rows use the same unique key rule. Table values are installed through typed column setters for text, signed integer, double, boolean, and color data. The public API does not expose a variant union or one setter call per cell.
 
+### Compact tree layout
+
+`DvzGuiTreeLayout` expresses indentation, row padding, item spacing, and label gaps in active-font em units. Its zero flags preserve global style minimums and dim secondary labels. `DVZ_GUI_TREE_LAYOUT_FLAGS_EXACT_SPACING` uses the requested row padding and item spacing without those global floors. `DVZ_GUI_TREE_LAYOUT_FLAGS_READABLE_SECONDARY` uses the row foreground for secondary labels while preserving disabled-row alpha and dim missing-value annotations. These independent flags are opt-in and do not change model, projection, selection, or event ownership. See [compact GUI layout](GUI_COMPACT_LAYOUT.md) for the surrounding ordinary-window and icon-button contracts.
+
 ### Cached display order and clipping
 
 Trees are rendered from a cached flat visible-row order with explicit indentation and disclosure controls. The implementation does not maintain a nested `TreeNodeEx()` stack because nested tree stacks do not safely compose with `ImGuiListClipper`.
