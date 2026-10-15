@@ -15,12 +15,12 @@ struct VertexIn {
 struct VertexOut {
     @builtin(position) position: vec4f,
     @location(0) color: vec4f,
-    @location(1) coord: vec2f,
+    @location(1) @interpolate(linear) coord: vec2f,
     @location(2) length_px: f32,
-    @location(3) line_width: f32,
+    @location(3) @interpolate(linear) line_width: f32,
     @location(4) has_prev: f32,
     @location(5) has_next: f32,
-    @location(6) bevel_distance: vec2f,
+    @location(6) @interpolate(linear) bevel_distance: vec2f,
     @location(7) join_split_distance: f32,
 }
 
@@ -140,6 +140,10 @@ fn main(input: VertexIn) -> VertexOut {
             let cap_half_width = stroke_cap_half_width(cap_type, stroke_width_px);
             pixel = p1 - cap_extension * v1 + side * cap_half_width * n1;
             output.coord = vec2f(-cap_extension, side * cap_half_width);
+        } else if (join_type == 1) {
+            // Match the bounded segment-capsule geometry of the native path.
+            pixel = p1 - half_width * v1 + side * half_width * n1;
+            output.coord = vec2f(-half_width, side * half_width);
         } else {
             pixel = p1 + side * length_start * miter_start;
             output.coord = vec2f(compute_u(p1, p2, pixel), side * half_width);
@@ -150,6 +154,9 @@ fn main(input: VertexIn) -> VertexOut {
             let cap_half_width = stroke_cap_half_width(cap_type, stroke_width_px);
             pixel = p2 + cap_extension * v1 + side * cap_half_width * n1;
             output.coord = vec2f(length_px + cap_extension, side * cap_half_width);
+        } else if (join_type == 1) {
+            pixel = p2 + half_width * v1 + side * half_width * n1;
+            output.coord = vec2f(length_px + half_width, side * half_width);
         } else {
             pixel = p2 + side * length_end * miter_end;
             output.coord = vec2f(compute_u(p1, p2, pixel), side * half_width);
@@ -168,6 +175,17 @@ fn main(input: VertexIn) -> VertexOut {
     let end_distance = line_distance(p2 + d1 * n1 * half_width, p2 + d1 * n2 * half_width, pixel);
     output.bevel_distance.x = select(-start_distance, select(side * d0 * start_distance, -start_distance, endpoint_end), has_prev);
     output.bevel_distance.y = select(-end_distance, select(-end_distance, -side * d1 * end_distance, endpoint_end), has_next);
+    if (join_type == 1) {
+        let start_split = v0 + v1;
+        let end_split = v1 + v2;
+        output.bevel_distance = vec2f(1.0, -1.0);
+        if (has_prev && length(start_split) > 1e-3 && length_px > 1e-6) {
+            output.bevel_distance.x = dot(pixel - p1, normalize(start_split));
+        }
+        if (has_next && length(end_split) > 1e-3 && length_px > 1e-6) {
+            output.bevel_distance.y = dot(pixel - p2, normalize(end_split));
+        }
+    }
     output.length_px = length_px;
     output.line_width = stroke_width_px;
     output.has_prev = select(0.0, 1.0, has_prev);

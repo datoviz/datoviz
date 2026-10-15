@@ -23,12 +23,12 @@ layout(location = 5) in float inLineWidth;
 layout(location = 6) in uint inPathFlags;
 layout(location = 7) in float inPathDistance;
 
-layout(location = 0) out vec2 fragCoord;
+layout(location = 0) noperspective out vec2 fragCoord;
 layout(location = 1) out float fragLength;
-layout(location = 2) out float fragLineWidth;
+layout(location = 2) noperspective out float fragLineWidth;
 layout(location = 3) out float fragHasPrev;
 layout(location = 4) out float fragHasNext;
-layout(location = 5) out vec2 fragBevelDistance;
+layout(location = 5) noperspective out vec2 fragBevelDistance;
 layout(location = 6) out float fragJoinSplitDistance;
 layout(location = 7) flat out uint fragId;
 
@@ -162,6 +162,14 @@ void main()
             pixel = p1 - capExtension * v1 + side * capHalfWidth * n1;
             fragCoord = vec2(-capExtension, side * capHalfWidth);
         }
+        else if (joinType == 1)
+        {
+            // A round join is the union of segment capsules. Its support is
+            // bounded even when neighbours coincide or reverse direction.
+            float extension = joinPrev ? halfWidth : 0.0;
+            pixel = p1 - extension * v1 + side * halfWidth * n1;
+            fragCoord = vec2(-extension, side * halfWidth);
+        }
         else
         {
             pixel = p1 + side * lengthStart * miterStart;
@@ -176,6 +184,12 @@ void main()
             float capHalfWidth = dvz_stroke_cap_half_width(capType, strokeWidth);
             pixel = p2 + capExtension * v1 + side * capHalfWidth * n1;
             fragCoord = vec2(lengthPx + capExtension, side * capHalfWidth);
+        }
+        else if (joinType == 1)
+        {
+            float extension = joinNext ? halfWidth : 0.0;
+            pixel = p2 + extension * v1 + side * halfWidth * n1;
+            fragCoord = vec2(lengthPx + extension, side * halfWidth);
         }
         else
         {
@@ -199,6 +213,19 @@ void main()
                                   : -startDistance;
     fragBevelDistance.y = hasNext ? (endpointEnd ? -side * d1 * endDistance : -endDistance)
                                   : -endDistance;
+    if (joinType == 1)
+    {
+        // Adjacent capsules share one hard bisector boundary, so coverage and
+        // authored alpha are applied once. A true reversal has no bisector;
+        // keep its bounded retracing geometry instead of erasing a branch.
+        vec2 startSplit = v0 + v1;
+        vec2 endSplit = v1 + v2;
+        fragBevelDistance = vec2(1.0, -1.0);
+        if (joinPrev && length(startSplit) > 1e-3 && lengthPx > 1e-6)
+            fragBevelDistance.x = dot(pixel - p1, normalize(startSplit));
+        if (joinNext && length(endSplit) > 1e-3 && lengthPx > 1e-6)
+            fragBevelDistance.y = dot(pixel - p2, normalize(endSplit));
+    }
     fragLength = lengthPx;
     fragLineWidth = strokeWidth;
     fragHasPrev = hasPrev ? 1.0 : 0.0;

@@ -21,6 +21,8 @@
 #include "../query/internal.h"
 #include "../visuals/image/internal.h"
 #include "_assertions.h"
+#include "_log.h"
+#include "visuals/stroke/internal.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/drp2.h"
 #include "datoviz/geom.h"
@@ -2322,6 +2324,165 @@ int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item)
     AT(query.item_id == 1);
     AT(!dvz_scene_poll_query(scene, &query));
 
+    dvz_scene_destroy(scene);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
+/**
+ * Preserve retained rows, endpoint styles, and authored edge IDs when duplicates are lowered.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_path_duplicate_lowering_preserves_source(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzVisual* path = dvz_path(scene, 0);
+    ANN(path);
+    vec3 positions[9] = {
+        {-0.5f, 0, 0}, {-0.5f, 0, 0}, {0, 0.5f, 0}, {0, 0.5f, 0},
+        {0.5f, 0, 0}, {0.5f, 0, 0}, {0.75f, 0.75f, 0},
+        {0.75f, 0.75f, 0}, {0.75f, 0.75f, 0},
+    };
+    DvzColor colors[9] = {0};
+    float widths[9] = {0};
+    for (uint32_t i = 0; i < 9; i++)
+    {
+        colors[i] = dvz_color_rgba(10 + i, 0, 0, 255);
+        widths[i] = 2.0f + (float)i;
+    }
+    uint32_t lengths[2] = {6, 3};
+    AT(dvz_visual_set_data(path, "position", positions, 9) == DVZ_OK);
+    AT(dvz_visual_set_data(path, "color", colors, 9) == DVZ_OK);
+    AT(dvz_visual_set_data(path, "stroke_width_px", widths, 9) == DVZ_OK);
+    AT(dvz_path_set_subpaths(path, 2, lengths) == DVZ_OK);
+    AT(_path_stroke_cache_rebuild(path));
+    const DvzPathGpuCache* cache = &_visual_family_state(path)->path.gpu;
+    AT(cache->point_count == 9 && cache->segment_count == 3);
+    AT(cache->vertex_count == 12 && cache->index_count == 18);
+    // The first/last coincident source rows remain the open path's styles.
+    AC(cache->line_width[0], widths[0], 1e-6);
+    AC(cache->line_width[6], widths[5], 1e-6);
+    AT(memcmp(&cache->color[0], &colors[0], sizeof(DvzColor)) == 0);
+    AT(memcmp(&cache->color[6], &colors[5], sizeof(DvzColor)) == 0);
+    AC(cache->position_next[0], positions[4][0], 1e-6);
+    AC(cache->position_prev[12], positions[1][0], 1e-6);
+    const DvzVisualAttr* retained = &path->attrs[_attr_index(path, "position")];
+    AT(retained->item_count == 9);
+    AT(memcmp(retained->data, positions, sizeof(positions)) == 0);
+    DvzSceneQueryScratch scratch = {0};
+    uint64_t vertex_count = 0, index_count = 0;
+    AT(_path_stroke_query_geometry(path, &scratch, &vertex_count, &index_count));
+    AT(vertex_count == cache->vertex_count && index_count == cache->index_count);
+    AT(scratch.query_ids[0] == 2 && scratch.query_ids[4] == 4 && scratch.query_ids[8] == 6);
+    AC(scratch.query_line_width[0], widths[0], 1e-6);
+    AC(scratch.query_line_width[6], widths[5], 1e-6);
+    AT(memcmp(scratch.query_position_start, cache->position_prev, 12 * sizeof(vec3)) == 0);
+    AT(memcmp(scratch.query_position_next, cache->position_next, 12 * sizeof(vec3)) == 0);
+    _scene_query_scratch_destroy(&scratch);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Require round path queries to cover the same bounded capsules as rendered strokes.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_scene_path_query_round_degenerate_coverage(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel_full(figure);
+    ANN(panel);
+    DvzVisual* path = dvz_path(scene, 0);
+    ANN(path);
+    vec3 positions[6] = {
+        {-0.6f, -0.3f, 0}, {-0.6f, -0.3f, 0}, {0, 0, 0},
+        {-0.6f, -0.29f, 0}, {-0.6f, -0.29f, 0}, {-0.60001f, -0.29001f, 0},
+    };
+    DvzColor colors[6] = {0};
+    float widths[6] = {0};
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        colors[i] = dvz_color_rgba(255, 0, 0, 255);
+        widths[i] = 12.0f;
+    }
+    dvz_visual_set_query_capabilities(path, DVZ_QUERY_CAPABILITY_ITEM);
+    AT(dvz_visual_set_data(path, "position", positions, 6) == DVZ_OK);
+    AT(dvz_visual_set_data(path, "color", colors, 6) == DVZ_OK);
+    AT(dvz_visual_set_data(path, "stroke_width_px", widths, 6) == DVZ_OK);
+    AT(dvz_path_set_join(path, DVZ_PATH_JOIN_ROUND, 4.0f) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, path, NULL) == DVZ_OK);
+
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    caps.shader_format_glsl = true;
+
+    // The reversal at (32,32) must include its outer round disk. Samples more
+    // than the stroke radius plus AA away from every edge must still miss.
+    const double points[][2] = {
+        {32, 32}, {35, 32}, {32, 28}, {33, 35}, {35, 34},
+        {40, 32}, {32, 22}, {43, 42}, {10, 20}, {50, 50},
+    };
+    for (uint32_t i = 0; i < 10; i++)
+    {
+        DvzQueryRequest request = {
+            DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 100 + i,
+            .target = DVZ_SCENE_TARGET_ITEM};
+        AT(dvz_panel_query_px(panel, points[i][0], points[i][1], &request) == DVZ_OK);
+    }
+    AT(dvz_figure_process_queries(figure, runtime, &caps) == 10);
+    for (uint32_t i = 0; i < 10; i++)
+    {
+        DvzQueryResult result = {0};
+        AT(dvz_scene_poll_query(scene, &result));
+        AT(result.request_id == 100 + i);
+        if (result.hit != (i < 5))
+            log_warn("round path query sample %u (%g,%g) hit %d status %d",
+                     i, points[i][0], points[i][1], result.hit, result.status);
+        AT(result.hit == (i < 5));
+        if (result.hit)
+        {
+            AT(result.visual_family == DVZ_SCENE_VISUAL_FAMILY_PATH);
+            AT(result.item_id < 5);
+        }
+        else
+            AT(result.status == DVZ_QUERY_STATUS_MISS);
+    }
     dvz_scene_destroy(scene);
     dvz_drp2_runtime_destroy(runtime);
     dvz_gpu_ctx_destroy(ctx);
@@ -5172,6 +5333,8 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_sphere_query_preserves_camera_arcball_y_orientation);
     TST_SCENE_QUERY_GPU_CASE(test_scene_segment_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_path_query_resolves_item);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_path_query_round_degenerate_coverage);
+    TST_CASE(test_scene_path_duplicate_lowering_preserves_source);
     TST_SCENE_QUERY_GPU_CASE(test_scene_vector_query_resolves_straight_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_vector_query_resolves_curved_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_primitive_query_resolves_item);

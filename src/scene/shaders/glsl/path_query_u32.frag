@@ -2,12 +2,12 @@
 
 #include "stroke.glsl"
 
-layout(location = 0) in vec2 fragCoord;
+layout(location = 0) noperspective in vec2 fragCoord;
 layout(location = 1) in float fragLength;
-layout(location = 2) in float fragLineWidth;
+layout(location = 2) noperspective in float fragLineWidth;
 layout(location = 3) in float fragHasPrev;
 layout(location = 4) in float fragHasNext;
-layout(location = 5) in vec2 fragBevelDistance;
+layout(location = 5) noperspective in vec2 fragBevelDistance;
 layout(location = 6) in float fragJoinSplitDistance;
 layout(location = 7) flat in uint fragId;
 
@@ -29,6 +29,13 @@ void main()
     float distance = fragCoord.y;
     float alpha = dvz_stroke_alpha(distance, fragLineWidth);
     int joinType = int(round(material.params.z));
+    // Bias the shared boundary identically on both sides. Request-centered
+    // queries can put a pixel exactly on a joint; interpolation roundoff must
+    // not make both adjacent segments reject that pixel.
+    const float splitBoundary = -1e-4;
+    if (joinType == 1 &&
+        (fragBevelDistance.x < splitBoundary || fragBevelDistance.y >= splitBoundary))
+        discard;
     float aa = 1.0;
     if (fragCoord.x < 0.0)
     {

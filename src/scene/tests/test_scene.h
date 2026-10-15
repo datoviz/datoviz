@@ -1161,6 +1161,10 @@ int test_scene_segment_query_resolves_item(TstContext* suite, const TstCase* ite
 
 int test_scene_path_query_resolves_item(TstContext* suite, const TstCase* item);
 
+int test_scene_path_query_round_degenerate_coverage(TstContext* suite, const TstCase* item);
+
+int test_scene_path_duplicate_lowering_preserves_source(TstContext* suite, const TstCase* item);
+
 int test_scene_vector_query_resolves_straight_item(TstContext* suite, const TstCase* item);
 
 int test_scene_vector_query_resolves_curved_item(TstContext* suite, const TstCase* item);
@@ -1413,6 +1417,10 @@ int test_app_offscreen_path_preserves_miter_join_overlap(
 int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_path_join_modes_are_ordered(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_path_round_degenerate_envelope(TstContext* suite, const TstCase* item);
+
+int test_app_offscreen_path_round_alpha_subdivision(TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_path_closed_star_seam_has_pixels(TstContext* suite, const TstCase* item);
 

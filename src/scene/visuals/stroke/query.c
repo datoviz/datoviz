@@ -77,6 +77,23 @@ static uint32_t _path_query_vertex_flags(
 
 
 /**
+ * Compare authored coordinates exactly without a squared-distance underflow tolerance.
+ *
+ * @param position flat vec3 position array
+ * @param i0 first point index
+ * @param i1 second point index
+ * @return whether the coordinates are equal
+ */
+static bool _path_query_same_point(const float* position, uint64_t i0, uint64_t i1)
+{
+    return position[3 * i0 + 0] == position[3 * i1 + 0] &&
+           position[3 * i0 + 1] == position[3 * i1 + 1] &&
+           position[3 * i0 + 2] == position[3 * i1 + 2];
+}
+
+
+
+/**
  * Return the Euclidean distance between two path points.
  *
  * @param position flat vec3 position array
@@ -122,6 +139,7 @@ static bool _path_query_subpath_is_closed(
 /**
  * Return the previous adjacency point for one temporary query endpoint.
  *
+ * @param position flat vec3 position array
  * @param point_idx endpoint point index
  * @param offset first point index of the subpath
  * @param length subpath point count
@@ -129,12 +147,20 @@ static bool _path_query_subpath_is_closed(
  * @return previous adjacency point index
  */
 static uint64_t _path_query_prev_index(
-    uint64_t point_idx, uint64_t offset, uint32_t length, bool closed)
+    const float* position, uint64_t point_idx, uint64_t offset, uint32_t length, bool closed)
 {
-    if (closed && point_idx == offset)
-        return offset + length - 2;
-    if (point_idx > offset)
-        return point_idx - 1;
+    uint64_t candidate = point_idx;
+    for (uint32_t step = 0; step + 1 < length; step++)
+    {
+        if (candidate > offset)
+            candidate--;
+        else if (closed)
+            candidate = offset + length - 2;
+        else
+            return point_idx;
+        if (!_path_query_same_point(position, candidate, point_idx))
+            return candidate;
+    }
     return point_idx;
 }
 
@@ -143,6 +169,7 @@ static uint64_t _path_query_prev_index(
 /**
  * Return the next adjacency point for one temporary query endpoint.
  *
+ * @param position flat vec3 position array
  * @param point_idx endpoint point index
  * @param offset first point index of the subpath
  * @param length subpath point count
@@ -150,13 +177,20 @@ static uint64_t _path_query_prev_index(
  * @return next adjacency point index
  */
 static uint64_t _path_query_next_index(
-    uint64_t point_idx, uint64_t offset, uint32_t length, bool closed)
+    const float* position, uint64_t point_idx, uint64_t offset, uint32_t length, bool closed)
 {
-    const uint64_t end = offset + length;
-    if (closed && point_idx + 1 == end)
-        return offset + 1;
-    if (point_idx + 1 < end)
-        return point_idx + 1;
+    uint64_t candidate = point_idx;
+    for (uint32_t step = 0; step + 1 < length; step++)
+    {
+        if (candidate + 1 < offset + length)
+            candidate++;
+        else if (closed)
+            candidate = offset + 1;
+        else
+            return point_idx;
+        if (!_path_query_same_point(position, candidate, point_idx))
+            return candidate;
+    }
     return point_idx;
 }
 
@@ -695,6 +729,7 @@ bool _path_stroke_query_geometry(
     const float* position = (const float*)pos_attr->data;
     const float* line_width = (const float*)width_attr->data;
     uint64_t segment = 0;
+    uint64_t authored_segment = 0;
     uint64_t offset = 0;
     uint32_t effective_subpath_count = subpath_count > 0 ? subpath_count : 1;
     for (uint32_t sp = 0; sp < effective_subpath_count; sp++)
@@ -702,22 +737,38 @@ bool _path_stroke_query_geometry(
         uint32_t length = subpath_count > 0 ? subpath_lengths[sp] : (uint32_t)point_count;
         bool closed = _path_query_subpath_is_closed(position, offset, length);
         float cumulative = 0.0f;
+        bool has_extent = false;
+        for (uint32_t i = 0; i + 1 < length; i++)
+            has_extent = has_extent ||
+                         !_path_query_same_point(position, offset + i, offset + i + 1);
+        closed = closed && has_extent;
         for (uint32_t i = 0; i + 1 < length; i++)
         {
+            uint64_t segment_id = authored_segment++;
             uint64_t i0 = offset + i;
             uint64_t i1 = i0 + 1;
-            uint64_t prev_idx = _path_query_prev_index(i0, offset, length, closed);
-            uint64_t next_idx = _path_query_next_index(i1, offset, length, closed);
+            float edge_length = _path_query_point_distance(position, i0, i1);
+            // Keep source rows and endpoint styles intact. Only the derived
+            // zero-length edges disappear; a point-only subpath keeps one disk.
+            if (_path_query_same_point(position, i0, i1) && (has_extent || i > 0))
+                continue;
+            uint64_t prev_idx = _path_query_prev_index(position, i0, offset, length, closed);
+            uint64_t next_idx = _path_query_next_index(position, i1, offset, length, closed);
             bool has_prev = prev_idx != i0;
             bool has_next = next_idx != i1;
-            float edge_length = _path_query_point_distance(position, i0, i1);
             for (uint32_t j = 0; j < 4; j++)
             {
                 bool endpoint_end = j >= 2;
                 bool side_negative = j == 1 || j == 2;
                 uint64_t point_idx = endpoint_end ? i1 : i0;
-                bool subpath_start = !closed && point_idx == offset;
-                bool subpath_end = !closed && point_idx + 1 == offset + length;
+                // Coincident open endpoints retain the authored first/last
+                // style; interior nonzero edges retain their own endpoint styles.
+                if (!closed && !has_prev && !endpoint_end)
+                    point_idx = offset;
+                if (!closed && !has_next && endpoint_end)
+                    point_idx = offset + length - 1;
+                bool subpath_start = !closed && !has_prev && !endpoint_end;
+                bool subpath_end = !closed && !has_next && endpoint_end;
                 uint64_t dst = 4 * segment + j;
                 dvz_memcpy(
                     &scratch->query_position_start[3 * dst], 3 * sizeof(float),
@@ -731,7 +782,7 @@ bool _path_stroke_query_geometry(
                 dvz_memcpy(
                     &scratch->query_position_next[3 * dst], 3 * sizeof(float),
                     &position[3 * next_idx], 3 * sizeof(float));
-                scratch->query_ids[dst] = (uint32_t)segment + 1u;
+                scratch->query_ids[dst] = (uint32_t)segment_id + 1u;
                 scratch->query_line_width[dst] = line_width[point_idx];
                 scratch->query_path_flags[dst] = _path_query_vertex_flags(
                     side_negative, endpoint_end, has_prev, has_next, subpath_start, subpath_end);
@@ -750,7 +801,7 @@ bool _path_stroke_query_geometry(
         offset += length;
     }
 
-    *out_vertex_count = vertex_count;
-    *out_index_count = index_count;
+    *out_vertex_count = 4 * segment;
+    *out_index_count = 6 * segment;
     return true;
 }

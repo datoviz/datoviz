@@ -2,12 +2,12 @@
 
 struct FragmentIn {
     @location(0) color: vec4f,
-    @location(1) coord: vec2f,
+    @location(1) @interpolate(linear) coord: vec2f,
     @location(2) length_px: f32,
-    @location(3) line_width: f32,
+    @location(3) @interpolate(linear) line_width: f32,
     @location(4) has_prev: f32,
     @location(5) has_next: f32,
-    @location(6) bevel_distance: vec2f,
+    @location(6) @interpolate(linear) bevel_distance: vec2f,
     @location(7) join_split_distance: f32,
 }
 
@@ -76,6 +76,11 @@ fn main(input: FragmentIn) -> @location(0) vec4f {
     var distance = input.coord.y;
     var alpha = stroke_alpha(distance, input.line_width);
     let join_type = i32(material.params.z + 0.5);
+    let split_boundary = -1e-4;
+    if (join_type == 1 &&
+        (input.bevel_distance.x < split_boundary || input.bevel_distance.y >= split_boundary)) {
+        discard;
+    }
     let aa = 1.0;
     if (input.coord.x < 0.0) {
         if (input.has_prev >= 0.5 && join_type == 1) {

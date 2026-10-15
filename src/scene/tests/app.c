@@ -3440,17 +3440,19 @@ int test_app_offscreen_has_nonblank_pixels(TstContext* suite, const TstCase* ite
  * @param miter_limit miter limit
  * @param camera optional perspective camera descriptor
  * @param out output capture whose RGBA storage is owned by the caller
+ * @param projected optional output projected centerline in capture pixels
+ * @param alpha authored path alpha; partial alpha selects source-over blending
  * @return 0 on success, -1 when GPU setup is unavailable
  */
 static int _app_capture_path(
     TstContext* suite, uint32_t point_count, vec3* positions, float stroke_width,
     DvzSegmentCap start_cap, DvzSegmentCap end_cap, DvzPathJoin join, float miter_limit,
-    const DvzCameraDesc* camera, AppRgbaCapture* out)
+    const DvzCameraDesc* camera, AppRgbaCapture* out, vec2* projected, uint8_t alpha)
 {
     ANN(suite);
     ANN(positions);
     ANN(out);
-    AT(point_count >= 2 && point_count <= 3);
+    AT(point_count >= 2 && point_count <= 16);
     *out = (AppRgbaCapture){0};
 
     DvzScene* scene = dvz_scene();
@@ -3465,12 +3467,15 @@ static int _app_capture_path(
 
     DvzVisual* visual = dvz_path(scene, 0);
     AT(visual != NULL);
-    DvzColor colors[3] = {
-        {255, 0, 0, 255},
-        {255, 0, 0, 255},
-        {255, 0, 0, 255},
-    };
-    float widths[3] = {stroke_width, stroke_width, stroke_width};
+    DvzColor colors[16] = {0};
+    float widths[16] = {0};
+    for (uint32_t i = 0; i < point_count; i++)
+    {
+        colors[i] = dvz_color_rgba(255, 0, 0, alpha);
+        widths[i] = stroke_width;
+    }
+    AT(dvz_visual_set_alpha_mode(
+           visual, alpha == 255 ? DVZ_ALPHA_OPAQUE : DVZ_ALPHA_BLENDED) == DVZ_OK);
     AT(dvz_visual_set_data(visual, "position", positions, point_count) == DVZ_OK);
     AT(dvz_visual_set_data(visual, "color", colors, point_count) == DVZ_OK);
     AT(dvz_visual_set_data(visual, "stroke_width_px", widths, point_count) == DVZ_OK);
@@ -3494,6 +3499,22 @@ static int _app_capture_path(
     ANN(out->rgba);
     AT(out->width == 96);
     AT(out->height == 96);
+    if (projected != NULL)
+    {
+        DvzMVP mvp = {0};
+        _scene_panel_apply_mvp(panel, &mvp);
+        for (uint32_t i = 0; i < point_count; i++)
+        {
+            vec4 world = {positions[i][0], positions[i][1], positions[i][2], 1.0f};
+            vec4 model = {0}, view = {0}, clip = {0};
+            glm_mat4_mulv(mvp.model, world, model);
+            glm_mat4_mulv(mvp.view, model, view);
+            glm_mat4_mulv(mvp.proj, view, clip);
+            AT(clip[3] > 0.0f);
+            projected[i][0] = 48.0f * (1.0f + clip[0] / clip[3]);
+            projected[i][1] = 48.0f * (1.0f - clip[1] / clip[3]);
+        }
+    }
 
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
@@ -3524,7 +3545,7 @@ int test_app_offscreen_path_clips_behind_camera(TstContext* suite, const TstCase
     AppRgbaCapture capture = {0};
     if (_app_capture_path(
             suite, 2, positions, 12.0f, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT,
-            DVZ_PATH_JOIN_ROUND, 4.0f, &camera, &capture) != 0)
+            DVZ_PATH_JOIN_ROUND, 4.0f, &camera, &capture, NULL, 255) != 0)
     {
         log_warn("behind-camera path clipping test skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
@@ -3574,7 +3595,7 @@ int test_app_offscreen_path_preserves_lateral_stroke_overlap(
     AppRgbaCapture capture = {0};
     if (_app_capture_path(
             suite, 2, positions, 16.0f, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT,
-            DVZ_PATH_JOIN_ROUND, 4.0f, NULL, &capture) != 0)
+            DVZ_PATH_JOIN_ROUND, 4.0f, NULL, &capture, NULL, 255) != 0)
     {
         log_warn("lateral path stroke overlap test skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
@@ -3618,7 +3639,7 @@ int test_app_offscreen_path_preserves_rotated_cap_overlap(
     AppRgbaCapture capture = {0};
     if (_app_capture_path(
             suite, 2, positions, 16.0f, DVZ_SEGMENT_CAP_SQUARE, DVZ_SEGMENT_CAP_BUTT,
-            DVZ_PATH_JOIN_ROUND, 4.0f, NULL, &capture) != 0)
+            DVZ_PATH_JOIN_ROUND, 4.0f, NULL, &capture, NULL, 255) != 0)
     {
         log_warn("rotated path cap overlap test skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
@@ -3666,7 +3687,7 @@ int test_app_offscreen_path_preserves_miter_join_overlap(
     AppRgbaCapture capture = {0};
     if (_app_capture_path(
             suite, 3, positions, 8.0f, DVZ_SEGMENT_CAP_BUTT, DVZ_SEGMENT_CAP_BUTT,
-            DVZ_PATH_JOIN_MITER, 4.0f, NULL, &capture) != 0)
+            DVZ_PATH_JOIN_MITER, 4.0f, NULL, &capture, NULL, 255) != 0)
     {
         log_warn("path miter overlap test skipped: GPU context creation failed");
         tst_skip(suite, "GPU context creation failed");
@@ -3763,6 +3784,144 @@ int test_app_offscreen_path_join_has_no_center_gap(TstContext* suite, const TstC
     dvz_scene_destroy(scene);
     return 0;
 }
+
+
+/**
+ * Measure pixel distance to one projected authored segment, including repeated endpoints.
+ *
+ * @param a segment start
+ * @param b segment end
+ * @param x pixel center x
+ * @param y pixel center y
+ * @return shortest pixel distance
+ */
+static float _app_path_segment_distance(const vec2 a, const vec2 b, float x, float y)
+{
+    float dx = b[0] - a[0], dy = b[1] - a[1];
+    float length2 = dx * dx + dy * dy;
+    float t = length2 > 0.0f ? ((x - a[0]) * dx + (y - a[1]) * dy) / length2 : 0.0f;
+    t = fminf(fmaxf(t, 0.0f), 1.0f);
+    return hypotf(x - a[0] - t * dx, y - a[1] - t * dy);
+}
+
+
+
+/**
+ * Bound round strokes by their authored centerline and require solid interior coverage.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_app_offscreen_path_round_degenerate_envelope(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+
+    // Duplicate channel sites, subpixel edges, near reversals, and a point-only path.
+    vec3 paths[][6] = {
+        {{-0.6f, -0.4f, 0}, {-0.6f, -0.4f, 0}, {0, 0, 0},
+         {0, 0, 0}, {0.6f, 0.4f, 0}, {0.6f, 0.4f, 0}},
+        {{-0.4f, -0.3f, 0}, {0, 0, 0}, {-0.4f, -0.29f, 0},
+         {-0.4f, -0.29f, 0}, {0.4f, 0.6f, 0}, {0.4f, 0.6f, 0}},
+        {{-0.6f, -0.4f, 0}, {0, 0, 0}, {0.00001f, 0.00002f, 0},
+         {0.00002f, 0.00001f, 0}, {0.6f, 0.4f, 0}, {0.6f, 0.4f, 0}},
+        {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
+        {{-0.4f, -0.3f, 0}, {0, 0, 1.0f}, {-0.2f, -0.145f, 1.5f},
+         {-0.2f, -0.145f, 1.5f}, {0.4f, 0.6f, 0}, {0.4f, 0.6f, 0}},
+        {{-0.6f, -0.4f, 0}, {0, 0, 0}, {-0.6f, -0.4f, 0},
+         {-0.6f, -0.4f, 0}, {0, 0, 0}, {-0.6f, -0.4f, 0}},
+    };
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.view.eye[2] = 3.0f;
+    camera.projection.fov_y = GLM_PI_4f;
+    const float stroke_width = 7.0f;
+    for (uint32_t k = 0; k < sizeof(paths) / sizeof(paths[0]); k++)
+    {
+        AppRgbaCapture capture = {0};
+        vec2 projected[6] = {0};
+        if (_app_capture_path(
+                suite, 6, paths[k], stroke_width, DVZ_SEGMENT_CAP_ROUND,
+                DVZ_SEGMENT_CAP_ROUND, DVZ_PATH_JOIN_ROUND, 4.0f,
+                k == 4 ? &camera : NULL, &capture, projected, 255) != 0)
+        {
+            tst_skip(suite, "GPU context creation failed");
+            return 0;
+        }
+        uint32_t interior = 0;
+        for (uint32_t y = 0; y < capture.height; y++)
+        {
+            for (uint32_t x = 0; x < capture.width; x++)
+            {
+                float distance = INFINITY;
+                for (uint32_t i = 0; i + 1 < 6; i++)
+                    distance = fminf(distance, _app_path_segment_distance(
+                        projected[i], projected[i + 1], x + 0.5f, y + 0.5f));
+                const uint8_t* px = _pixel_at(capture.rgba, capture.width, capture.height, x, y);
+                if (px[0] > 5)
+                    AT(distance <= stroke_width * 0.5f + 1.5f);
+                if (distance < stroke_width * 0.5f - 1.5f)
+                {
+                    if (px[0] <= 120)
+                        log_warn("round capsule case %u pixel (%u,%u) distance %.3f red %u",
+                                 k, x, y, distance, px[0]);
+                    AT(px[0] > 120);
+                    interior++;
+                }
+            }
+        }
+        AT(interior > 0);
+        dvz_free(capture.rgba);
+    }
+    return 0;
+}
+
+
+
+/**
+ * Ensure ordinary translucent round joins apply alpha once after subdivision and duplication.
+ *
+ * @param suite the active test suite
+ * @param item the active test item
+ * @return 0 on success
+ */
+int test_app_offscreen_path_round_alpha_subdivision(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+    vec3 line[2] = {{-0.6f, -0.3f, 0}, {0.6f, 0.3f, 0}};
+    vec3 subdivided[7] = {
+        {-0.6f, -0.3f, 0}, {-0.6f, -0.3f, 0}, {-0.3f, -0.15f, 0},
+        {0, 0, 0}, {0, 0, 0}, {0.3f, 0.15f, 0}, {0.6f, 0.3f, 0},
+    };
+    AppRgbaCapture baseline = {0}, split = {0};
+    if (_app_capture_path(
+            suite, 2, line, 9.0f, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND,
+            DVZ_PATH_JOIN_ROUND, 4.0f, NULL, &baseline, NULL, 128) != 0)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    AT(_app_capture_path(
+           suite, 7, subdivided, 9.0f, DVZ_SEGMENT_CAP_ROUND, DVZ_SEGMENT_CAP_ROUND,
+           DVZ_PATH_JOIN_ROUND, 4.0f, NULL, &split, NULL, 128) == 0);
+    uint32_t colored = 0;
+    for (uint32_t i = 0; i < 96 * 96; i++)
+    {
+        // A subdivision is a representation change; no bright join disks,
+        // dark seams, or doubled source alpha may appear in the captured stroke.
+        AT(abs((int)baseline.rgba[4 * i] - (int)split.rgba[4 * i]) <= 2);
+        if (baseline.rgba[4 * i] > 40)
+            colored++;
+    }
+    AT(colored > 0);
+    dvz_free(baseline.rgba);
+    dvz_free(split.rgba);
+    return 0;
+}
+
 
 
 /**
@@ -11123,6 +11282,8 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_preserves_miter_join_overlap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_has_no_center_gap);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_join_modes_are_ordered);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_round_degenerate_envelope);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_round_alpha_subdivision);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_path_closed_star_seam_has_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_pixel_square_has_nonblank_pixels);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_points_edl_renders);

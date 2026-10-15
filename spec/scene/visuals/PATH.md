@@ -34,6 +34,10 @@ The implemented path supports:
    paths, while `segment` remains the independent endpoint-pair stroke pipeline;
 10. GPU-backed item picking for stroked paths.
 
+Retained positions and styles preserve every authored row. Stroked lowering omits exact zero-length edges and uses distinct neighbors for joins; an all-identical subpath retains one degenerate stroke. Coincident open endpoints use the original first/last styles, while interior nonzero edges use their authored endpoint styles. GPU query IDs keep the original edge numbering across omitted edges.
+
+Round joins use bounded screen-space segment capsules with a shared bisector boundary between ordinary adjacent segments, so subdivision does not accumulate authored alpha. Exact reversals and nonadjacent self-intersections retain layered overlap behavior. Color and query coverage use the same geometry and linear screen-space interpolation. Alpha-mode changes preserve family-owned cap, join, and miter parameters.
+
 `stroke_width_px` is the public attribute name. The current retained storage and shader width input
 still use the historical internal name `line_width`.
 
