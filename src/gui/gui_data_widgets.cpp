@@ -896,7 +896,7 @@ DvzResult dvz_gui_tree_set_projection(
     const bool* branches, const bool* selectable)
 {
     if (tree == NULL || !(tree->core.flags & DVZ_GUI_DATA_WIDGET_FLAGS_CONTROLLED) ||
-        n > tree->core.count || n > SIZE_MAX / sizeof(uint32_t) ||
+        n > tree->core.count || (size_t)n > SIZE_MAX / sizeof(uint32_t) ||
         (n && (!keys || !depths || !branches || !selectable)))
         return DVZ_ERROR;
     uint32_t* order = n ? (uint32_t*)dvz_calloc(n, sizeof(uint32_t)) : NULL;
@@ -964,7 +964,7 @@ DvzGuiTreeAnnotation dvz_gui_tree_annotation(void)
  */
 static bool _tree_spans(const char* text, uint32_t n, const DvzGuiTreeTextSpan* spans)
 {
-    if (n > SIZE_MAX / sizeof(DvzGuiTreeTextSpan) || (n && spans == NULL))
+    if ((size_t)n > SIZE_MAX / sizeof(DvzGuiTreeTextSpan) || (n && spans == NULL))
         return false;
     const size_t size = strlen(text);
     size_t previous = 0;
@@ -993,7 +993,7 @@ static bool _tree_spans(const char* text, uint32_t n, const DvzGuiTreeTextSpan* 
 DvzResult
 dvz_gui_tree_set_annotations(DvzGuiTree* tree, uint32_t n, const DvzGuiTreeAnnotation* annotations)
 {
-    if (tree == NULL || n > tree->core.count || n > SIZE_MAX / sizeof(DvzGuiTreeAnnotation) ||
+    if (tree == NULL || n > tree->core.count || (size_t)n > SIZE_MAX / sizeof(DvzGuiTreeAnnotation) ||
         (n && annotations == NULL))
         return DVZ_ERROR;
     DvzGuiTreeAnnotation* copy = n ? (DvzGuiTreeAnnotation*)dvz_calloc(n, sizeof(*copy)) : NULL;

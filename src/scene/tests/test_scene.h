@@ -1313,6 +1313,8 @@ int test_scene_sphere_hover_selection_item_state(TstContext* suite, const TstCas
 
 int test_scene_mesh_instance_hover_selection_item_state(TstContext* suite, const TstCase* item);
 
+int test_scene_selection_no_card_preserves_item_state(TstContext* suite, const TstCase* item);
+
 int test_scene_selection_card_realizes_query_metadata(TstContext* suite, const TstCase* item);
 
 int test_scene_overlay_card_public_api(TstContext* suite, const TstCase* item);
