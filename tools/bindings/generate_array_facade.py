@@ -45,8 +45,8 @@ def _raw_pointer(value):
     return hasattr(value, '_as_parameter_')
 
 
-def _array_arg(value, name, raw_func, pointer_index, dtype=None, shape_tail=None):
-    if _raw_pointer(value):
+def _array_arg(value, name, raw_func, pointer_index, dtype=None, shape_tail=None, nullable=False):
+    if _raw_pointer(value) or (value is None and nullable):
         return value, None
     array = np.asarray(value)
     if dtype is not None:
@@ -602,7 +602,12 @@ def _array_facade_policy_fallback(path: Path) -> dict:
             continue
         if current_section == 'groups' and current_group is not None and indent == 8:
             key, value = stripped.split(':', 1)
-            current_group[key.strip()] = value.strip()
+            key, value = key.strip(), value.strip()
+            if key == 'shape_tail':
+                value = json.loads(value)
+            elif key == 'nullable':
+                value = value == 'true'
+            current_group[key] = value
     return facade
 
 
@@ -904,9 +909,10 @@ dvz_colorbar_set_ticks.restype = getattr(_raw.dvz_colorbar_set_ticks, "restype",
         dtype = group.get('dtype')
         shape_tail = group.get('shape_tail')
         dtype_arg = repr(dtype) if dtype else 'None'
+        nullable_arg = ', nullable=True' if group.get('nullable') else ''
         lines.append(
             f"    {pointer_local}, {array_local} = _array_arg("
-            f"{pointer_arg}, '{pointer_arg}', _raw.{name}, {param_index[pointer_arg]}, {dtype_arg}, {shape_tail!r})\n"
+            f"{pointer_arg}, '{pointer_arg}', _raw.{name}, {param_index[pointer_arg]}, {dtype_arg}, {shape_tail!r}{nullable_arg})\n"
         )
         call_args[pointer_arg] = pointer_local
         keepalive_names.append(array_local)

@@ -138,6 +138,18 @@ bool _scene_mesh_visual_desc_from_metadata(
         out->item_state_style_buffer_id = item_state_style_id;
     }
 
+    uint64_t clip_id = _scene_visual_desc_resource(emitter, meta->fragment_clip_id);
+    if (meta->fragment_clip_id[0] != '\0' && clip_id == 0)
+    {
+        if (error != NULL)
+            *error = "typed mesh metadata missing fragment-clip resource";
+        return false;
+    }
+    if (clip_id != 0)
+    {
+        out->has_fragment_clip = true;
+        out->vbuf_ids[out->vbuf_count++] = clip_id;
+    }
     uint64_t pos_buf = out->vbuf_ids[0];
     out->topology = _scene_visual_desc_resource_topology(emitter, pos_buf);
     if (out->topology == UINT32_MAX)

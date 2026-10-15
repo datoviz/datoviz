@@ -168,7 +168,9 @@ void _scene_visual_pipeline_desc_apply_query_pick(
         pipeline->attr_count = pipeline->binding_count > 2 ? 3 : 2;
         _scene_visual_pipeline_attr(
             pipeline, 1, 1, 1, DVZ_FORMAT_R32G32_UINT, 2 * sizeof(uint32_t));
-        if (pipeline->attr_count > 2)
+        if (visual->has_fragment_clip)
+            _scene_visual_pipeline_attr(pipeline, 2, 2, 8, DVZ_FORMAT_R32G32_SFLOAT, sizeof(vec2));
+        else if (pipeline->attr_count > 2)
             _scene_visual_pipeline_attr(pipeline, 2, 2, 2, DVZ_FORMAT_R32_SFLOAT, sizeof(float));
     }
     else if (visual->kind == DVZ_SCENE_VISUAL_DESC_SEGMENT && pipeline->attr_count > 2)

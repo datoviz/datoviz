@@ -20,6 +20,8 @@
 #include "testing.h"
 #include "visuals/_visual_internal.h"
 #include <string.h>
+#include "visuals/mesh/internal.h"
+#include <math.h>
 
 
 static DvzGeometry* _indexed_state_triangle(bool lit)
@@ -514,5 +516,245 @@ int test_scene_indexed_item_state_shader_profile_matrix(TstContext* suite, const
                     wgsl ? DVZ_SCENE_SHADER_FORMAT_WGSL : DVZ_SCENE_SHADER_FORMAT_GLSL;
                 AT(_indexed_state_profile_emits(suite, lit != 0, mode, format) == 0);
             }
+    return 0;
+}
+
+
+int test_scene_mesh_fragment_clip_contract(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    vec3 pos[6] = {{-.8f, -.8f, 0}, {.8f, -.8f, 0}, {0, .8f, 0},
+                   {-.8f, -.8f, 0}, {.8f, -.8f, 0}, {0, .8f, 0}};
+    DvzIndex indices[6] = {0, 1, 2, 3, 4, 5};
+    vec2 clip[6] = {{.8f, 0}, {-.8f, 0}, {-0.f, 0}, {-.8f, 1}, {.8f, 1}, {0, 1}};
+    AT(dvz_visual_set_data(mesh, "position", pos, 6) == DVZ_OK);
+    AT(dvz_visual_set_index_data(mesh, indices, 6) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+    uint64_t query_version = figure->query_input_revision;
+    AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 6) == DVZ_OK);
+    AT(figure->query_input_revision > query_version);
+    int attr_idx = _attr_index(mesh, "fragment_clip");
+    AT(attr_idx >= 0);
+    DvzVisualAttr* attr = &mesh->attrs[attr_idx];
+    uint64_t version = attr->version;
+    clip[0][0] = 9;
+    AT(((vec2*)attr->data)[0][0] == .8f);
+    clip[1][1] = 1;
+    AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 6) == DVZ_ERROR);
+    AT(attr->version == version);
+    clip[1][1] = 0;
+    clip[0][0] = NAN;
+    AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 6) == DVZ_ERROR);
+    clip[0][0] = 1;
+    clip[0][1] = .5f;
+    AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 6) == DVZ_ERROR);
+    AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 5) == DVZ_ERROR);
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data(mesh, "fragment_clip", clip, 6) == DVZ_ERROR);
+    uint32_t dense = 0;
+    AT_EXPECTED_ERROR_STRICT(
+        suite, dvz_visual_set_data(mesh, "item_state", &dense, 1) == DVZ_ERROR);
+    AT(_scene_mesh_fragment_clip_error(mesh) == NULL);
+    indices[2] = 3;
+    AT(dvz_visual_set_index_data(mesh, indices, 6) == DVZ_OK);
+    AT(_scene_mesh_fragment_clip_error(mesh) != NULL);
+    indices[2] = 2;
+    AT(dvz_visual_set_index_data(mesh, indices, 6) == DVZ_OK);
+    AT(_scene_mesh_fragment_clip_error(mesh) == NULL);
+    // A new u16 buffer identity is revalidated even when all counts remain unchanged.
+    DvzSceneBufferDesc index_desc = dvz_scene_buffer_desc();
+    index_desc.usage = DVZ_SCENE_BUFFER_USAGE_INDEX;
+    index_desc.stride = sizeof(uint16_t);
+    DvzSceneBuffer* narrow = dvz_scene_buffer(scene, &index_desc);
+    uint16_t narrow_data[6] = {0, 1, 2, 3, 4, 5};
+    AT(dvz_scene_buffer_set_data(narrow, narrow_data, sizeof(narrow_data)) == DVZ_OK);
+    AT(dvz_visual_set_buffer(mesh, "index", narrow) == DVZ_OK);
+    AT(_scene_mesh_fragment_clip_error(mesh) == NULL);
+    narrow_data[2] = 3;
+    AT(dvz_scene_buffer_set_data(narrow, narrow_data, sizeof(narrow_data)) == DVZ_OK);
+    AT(_scene_mesh_fragment_clip_error(mesh) != NULL);
+    narrow_data[2] = 2;
+    AT(dvz_scene_buffer_set_data(narrow, narrow_data, sizeof(narrow_data)) == DVZ_OK);
+    AT(_scene_mesh_fragment_clip_error(mesh) == NULL);
+    AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_MASK) == DVZ_OK);
+    AT(_scene_mesh_fragment_clip_error(mesh) != NULL);
+    AT(dvz_visual_set_alpha_mode(mesh, DVZ_ALPHA_OPAQUE) == DVZ_OK);
+    AT(_scene_mesh_fragment_clip_error(mesh) == NULL);
+    query_version = figure->query_input_revision;
+    AT(dvz_mesh_set_fragment_clip(mesh, NULL, 0) == DVZ_OK);
+    AT(attr->data == NULL && attr->item_count == 0);
+    AT(figure->query_input_revision > query_version);
+    AT(dvz_visual_set_data(mesh, "item_state", &dense, 1) == DVZ_OK);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+int test_scene_mesh_fragment_clip_shader_matrix(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzAlphaMode modes[] = {DVZ_ALPHA_OPAQUE, DVZ_ALPHA_BLENDED, DVZ_ALPHA_WBOIT};
+    for (uint32_t bank_bound = 0; bank_bound < 2; bank_bound++)
+        for (uint32_t lit = 0; lit < 2; lit++)
+            for (uint32_t mode = 0; mode < 3; mode++)
+                for (uint32_t wgsl = 0; wgsl < 2; wgsl++)
+                {
+                    DvzScene* scene = dvz_scene();
+                    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+                    DvzPanel* panel = dvz_panel_full(figure);
+                    DvzVisual* mesh = dvz_mesh(scene, 0);
+                    DvzGeometry* geometry = _indexed_state_triangle(lit != 0);
+                    AT(geometry != NULL);
+                    AT(dvz_mesh_set_geometry(mesh, geometry) == DVZ_OK);
+                    dvz_geometry_destroy(geometry);
+                    vec2 clip[3] = {{-1, 1}, {1, 1}, {0, 1}};
+                    AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 3) == DVZ_OK);
+                    if (bank_bound)
+                    {
+                        DvzItemStateBufferDesc desc = dvz_item_state_buffer_desc();
+                        desc.slot_count = 2;
+                        DvzItemStateBuffer* bank = dvz_item_state_buffer(scene, &desc);
+                        uint32_t slots[3] = {0, 0, 0};
+                        AT(dvz_visual_set_item_state_buffer(mesh, bank, slots, 3) == DVZ_OK);
+                    }
+                    AT(dvz_visual_set_alpha_mode(mesh, modes[mode]) == DVZ_OK);
+                    AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+                    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+                    caps.max_color_attachments = 3;
+                    caps.render_target_format_rgba16float = true;
+                    caps.render_target_format_r16float = true;
+                    caps.supports_render_target_sampling = true;
+                    caps.supports_color_blending = true;
+                    DvzDiagnosticReport report;
+                    dvz_diagnostic_report_init(&report);
+                    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+                    cfg.shader_format =
+                        wgsl ? DVZ_SCENE_SHADER_FORMAT_WGSL : DVZ_SCENE_SHADER_FORMAT_GLSL;
+                    DvzDrp2CommandStream* stream =
+                        _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+                    AT(dvz_diagnostic_report_count(&report) == 0);
+                    AT(stream != NULL);
+                    bool found = false;
+                    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+                    {
+                        const DvzDrp2Command* c = dvz_drp2_stream_get(stream, i);
+                        if (c->type != DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE)
+                            continue;
+                        for (uint32_t ai = 0; ai < c->u.create_render_pipeline.attr_count; ai++)
+                            if (c->u.create_render_pipeline.attr_locations[ai] == 8)
+                            {
+                                AT(c->u.create_render_pipeline.attr_formats[ai] ==
+                                   DVZ_FORMAT_R32G32_SFLOAT);
+                                uint32_t binding = c->u.create_render_pipeline.attr_bindings[ai];
+                                AT(c->u.create_render_pipeline.binding_step_modes[binding] ==
+                                   DVZ_DRP2_VERTEX_STEP_MODE_VERTEX);
+                                found = true;
+                            }
+                    }
+                    AT(found);
+                    _test_scene_stream_destroy(stream);
+                    dvz_scene_destroy(scene);
+                }
+    return 0;
+}
+
+
+int test_scene_mesh_fragment_clip_consumers_retry(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    for (uint32_t bank_bound = 0; bank_bound < 2; bank_bound++)
+    {
+        DvzScene* scene = dvz_scene();
+        DvzVisual* mesh = dvz_mesh(scene, 0);
+        DvzGeometry* geometry = _indexed_state_triangle(false);
+        AT(dvz_mesh_set_geometry(mesh, geometry) == DVZ_OK);
+        dvz_geometry_destroy(geometry);
+        vec2 clip[3] = {{1, 0}, {-1, 0}, {0, 0}};
+        AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 3) == DVZ_OK);
+        DvzItemStateBufferDesc desc = dvz_item_state_buffer_desc();
+        desc.slot_count = 2;
+        DvzItemStateBuffer* bank = bank_bound ? dvz_item_state_buffer(scene, &desc) : NULL;
+        uint32_t slots[3] = {0, 0, 0};
+        if (bank_bound)
+            AT(dvz_visual_set_item_state_buffer(mesh, bank, slots, 3) == DVZ_OK);
+        DvzFigure* figures[2];
+        DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+        for (uint32_t fi = 0; fi < 2; fi++)
+        {
+            figures[fi] = dvz_figure(scene, 64, 64, 0);
+            AT(dvz_panel_add_visual(dvz_panel_full(figures[fi]), mesh, NULL) == DVZ_OK);
+            DvzDiagnosticReport report;
+            dvz_diagnostic_report_init(&report);
+            DvzDrp2CommandStream* stream = _test_scene_emit_stream(figures[fi], &caps, &report);
+            AT(stream != NULL && dvz_diagnostic_report_count(&report) == 0);
+            _test_scene_stream_destroy(stream);
+        }
+        clip[0][0] = -1;
+        clip[1][0] = 1;
+        AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 3) == DVZ_OK);
+        if (bank_bound)
+        {
+            slots[0] = slots[1] = slots[2] = 1;
+            AT(dvz_visual_set_item_state_buffer(mesh, bank, slots, 3) == DVZ_OK);
+        }
+        uint64_t consumed = figures[0]->typed_attr_consumed[0][1];
+        DvzFramePlan* failed = dvz_frame_plan("clip.failure", 0);
+        uint32_t count = failed->count, capacity = failed->capacity;
+        failed->count = failed->capacity = UINT32_MAX;
+        DvzDiagnosticReport failure_report;
+        dvz_diagnostic_report_init(&failure_report);
+        AT_EXPECTED_ERROR_STRICT(
+            suite, !_scene_emit_visual_uploads(figures[0], failed, &failure_report));
+        failed->count = count;
+        failed->capacity = capacity;
+        dvz_frame_plan_destroy(failed);
+        AT(figures[0]->typed_attr_consumed[0][1] == consumed);
+        for (uint32_t fi = 0; fi < 2; fi++)
+        {
+            AT(_scene_figure_has_pending_render_work(figures[fi]));
+            DvzDiagnosticReport report;
+            dvz_diagnostic_report_init(&report);
+            DvzDrp2CommandStream* stream = _test_scene_emit_stream(figures[fi], &caps, &report);
+            AT(stream != NULL && dvz_diagnostic_report_count(&report) == 0);
+            uint64_t clip_id = dvz_drp2_stream_label_id(stream, "v0_fragment_clip");
+            uint64_t indices_id = dvz_drp2_stream_label_id(stream, "v0_state_index");
+            uint32_t clips = 0, indices = 0;
+            for (uint32_t ci = 0; ci < dvz_drp2_stream_count(stream); ci++)
+            {
+                const DvzDrp2Command* c = dvz_drp2_stream_get(stream, ci);
+                if (c->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+                    c->u.write_buffer.buffer_id == clip_id)
+                {
+                    AT(c->u.write_buffer.size == sizeof(clip));
+                    clips++;
+                }
+                if (c->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+                    c->u.write_buffer.buffer_id == indices_id)
+                {
+                    AT(c->u.write_buffer.size == sizeof(slots));
+                    indices++;
+                }
+            }
+            AT(clips == 1 && indices == bank_bound);
+            _test_scene_stream_destroy(stream);
+            AT(!_scene_figure_has_pending_render_work(figures[fi]));
+        }
+        AT(dvz_mesh_set_fragment_clip(mesh, NULL, 0) == DVZ_OK);
+        for (uint32_t fi = 0; fi < 2; fi++)
+        {
+            DvzDiagnosticReport report;
+            dvz_diagnostic_report_init(&report);
+            DvzDrp2CommandStream* stream = _test_scene_emit_stream(figures[fi], &caps, &report);
+            AT(stream != NULL && dvz_diagnostic_report_count(&report) == 0);
+            _test_scene_stream_destroy(stream);
+        }
+        dvz_scene_destroy(scene);
+    }
     return 0;
 }

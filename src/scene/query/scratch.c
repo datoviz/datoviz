@@ -59,6 +59,8 @@ void _scene_query_scratch_destroy(DvzSceneQueryScratch* plan)
     plan->plan = NULL;
     dvz_free(plan->query_positions);
     plan->query_positions = NULL;
+    dvz_free(plan->query_fragment_clip);
+    plan->query_fragment_clip = NULL;
     dvz_free(plan->query_texcoords);
     plan->query_texcoords = NULL;
     dvz_free(plan->query_colors);

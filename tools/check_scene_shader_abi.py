@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -11,6 +12,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCENE_SHADER_DIR = REPO_ROOT / "src" / "scene" / "shaders"
 GLSL_DIR = SCENE_SHADER_DIR / "glsl"
 WGSL_DIR = SCENE_SHADER_DIR / "wgsl"
+
+
+def _shader_source(path: Path, seen: frozenset[Path] = frozenset()) -> str:
+    """Read shared stock shader bodies while retaining include declarations for ABI checks."""
+    if path in seen:
+        raise ValueError(f"recursive shader include: {path}")
+    text = path.read_text(encoding="utf8")
+    for name in re.findall(r'^#include "([^"]+)"', text, re.MULTILINE):
+        text += "\n" + _shader_source(path.parent / name, seen | {path})
+    return text
+
 
 MATERIAL_FIELDS = [
     "params",
@@ -145,7 +157,7 @@ def _failures() -> list[str]:
                 )
 
     for name in ["path.vert", "path_query_u32.vert", "segment.vert", "segment_query_u32.vert"]:
-        text = (GLSL_DIR / name).read_text(encoding="utf8")
+        text = _shader_source(GLSL_DIR / name)
         if "deviceClipToTopLeftPixel" not in text or "topLeftPixelToDeviceClip" not in text:
             failures.append(f"GLSL screen-space shader bypasses common pixel conversion: {name}")
         if "clipToPixel" in text or "pixelToClip" in text:
@@ -202,7 +214,7 @@ def _failures() -> list[str]:
             failures.append(f"{language} panel-light payload declarations are incomplete")
 
     for name in COMMON_GLSL_VERTEX_SHADERS:
-        text = (GLSL_DIR / name).read_text(encoding="utf8")
+        text = _shader_source(GLSL_DIR / name)
         if '#include "common.glsl"' not in text:
             failures.append(f"missing common.glsl include: src/scene/shaders/glsl/{name}")
 
@@ -227,6 +239,27 @@ def _failures() -> list[str]:
         failures.append("image.frag still uses combined sampler2D binding")
     if "uniform texture2D tex" not in image_frag or "uniform sampler samp" not in image_frag:
         failures.append("image.frag does not use split texture/sampler bindings")
+    clip_vertices = ["primitive", "primitive_lit", "primitive_indexed_item_state",
+                     "primitive_lit_indexed_item_state", "primitive_query_valid_u32"]
+    for stem in clip_vertices:
+        glsl = _shader_source(GLSL_DIR / f"{stem}_clip.vert")
+        wgsl = _shader_source(WGSL_DIR / f"{stem}_clip.vert.wgsl")
+        if not all(token in glsl for token in ["location = 8", "location = 5",
+                                               "location = 6) flat out uint"]):
+            failures.append(f"GLSL mesh clip vertex ABI differs: {stem}")
+        if not all(token in wgsl for token in ["@location(8) fragment_clip: vec2f",
+                                               "@location(5) clip_distance: f32",
+                                               "@location(6) @interpolate(flat) clip_include_zero: u32"]):
+            failures.append(f"WGSL mesh clip vertex ABI differs: {stem}")
+    for stem in ["primitive", "primitive_lit", "wboit_accum", "wboit_accum_lit",
+                 "primitive_query_valid_u32"]:
+        glsl = _shader_source(GLSL_DIR / f"{stem}_clip.frag")
+        wgsl = _shader_source(WGSL_DIR / f"{stem}_clip.frag.wgsl")
+        if "applyFragmentClip();" not in glsl or "fragClipDistance == 0.0" not in glsl:
+            failures.append(f"GLSL mesh clip predicate missing: {stem}")
+        if "mesh_fragment_covered(input.clip_distance, input.clip_include_zero)" not in wgsl or \
+                "distance == 0.0 && include_zero != 0u" not in wgsl:
+            failures.append(f"WGSL mesh clip predicate missing: {stem}")
     return failures
 
 

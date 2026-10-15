@@ -40,6 +40,8 @@ static void _query_mark_static_upload(
 {
     ANN(executor);
     ANN(plan);
+    _Static_assert(sizeof(executor->query_static_cache_keys) == sizeof(plan->static_cache_keys),
+                   "query cache producer and executor key capacities must agree");
     if (
         !plan->mark_static_cache_uploaded || plan->static_cache_visual == NULL ||
         plan->static_cache_key_count > DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT)

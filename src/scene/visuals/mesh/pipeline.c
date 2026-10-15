@@ -113,6 +113,14 @@ static void _mesh_primitive_pipeline_desc(
                                        : DVZ_DRP2_VERTEX_STEP_MODE_INSTANCE;
     }
 
+    if (visual->has_fragment_clip)
+    {
+        _scene_visual_pipeline_attr(
+            out, out->attr_count++, out->binding_count++, 8, DVZ_FORMAT_R32G32_SFLOAT,
+            sizeof(vec2));
+        out->vertex_buffer_count++;
+    }
+
     out->needs_common_layout = caps->uses_common_set;
     out->needs_material_layout = caps->needs_material_layout && !picking;
     out->needs_item_state_style_layout = visual->has_item_state && !picking;

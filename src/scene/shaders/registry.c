@@ -174,6 +174,21 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "sphere_a2c_frag" : "sphere_vert";
     case DVZ_SCENE_BUILTIN_SHADER_SPHERE_GBUFFER:
         return fragment ? "sphere_gbuffer_frag" : "sphere_gbuffer_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_CLIP:
+        return fragment ? "primitive_clip_frag" : "primitive_clip_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_CLIP:
+        return fragment ? "primitive_lit_clip_frag" : "primitive_lit_clip_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INDEXED_ITEM_STATE_CLIP:
+        return fragment ? "primitive_clip_frag" : "primitive_indexed_item_state_clip_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INDEXED_ITEM_STATE_CLIP:
+        return fragment ? "primitive_lit_clip_frag" : "primitive_lit_indexed_item_state_clip_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_CLIP:
+        return fragment ? "wboit_accum_clip_frag" : "primitive_clip_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT_CLIP:
+        return fragment ? "wboit_accum_lit_clip_frag" : "primitive_lit_clip_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_VALID_U32_CLIP:
+        return fragment ? "primitive_query_valid_u32_clip_frag"
+                        : "primitive_query_valid_u32_clip_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
         return fragment ? "primitive_frag" : "primitive_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INDEXED_ITEM_STATE:

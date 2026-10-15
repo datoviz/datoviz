@@ -126,6 +126,15 @@ def fake_facade(monkeypatch):
     raw.dvz_scene_buffer_set_data = _raw_function(
         [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint64], ctypes.c_bool
     )
+    raw.dvz_item_state_buffer_update = _raw_function(
+        [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
+    )
+    raw.dvz_visual_set_item_state_buffer = _raw_function(
+        [ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
+    )
+    raw.dvz_mesh_set_fragment_clip = _raw_function(
+        [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32]
+    )
     raw.dvz_visual_set_data = _raw_function(
         [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p, ctypes.c_uint32]
     )
@@ -787,3 +796,21 @@ def test_top_level_datoviz_resolves_facade_lazily(fake_facade):
 
     assert datoviz.dvz_visual_set_data(ctypes.c_void_p(6), 'color', np.zeros((1, 4), np.uint8)) == 17
     assert raw.dvz_visual_set_data.calls[-1][1] == b'color'
+
+
+def test_mesh_fragment_clip_infers_pairs_and_supports_explicit_clear(fake_facade):
+    raw, facade = fake_facade
+    mesh = ctypes.c_void_p(71)
+    clip = np.array([[-1, 1], [1, 1], [0, 1]], np.float32)
+    assert facade.dvz_mesh_set_fragment_clip(mesh, clip) == 17
+    mesh_arg, pointer, count = raw.dvz_mesh_set_fragment_clip.calls[-1]
+    assert mesh_arg is mesh and pointer.value == clip.ctypes.data and count == 3
+    assert facade.dvz_mesh_set_fragment_clip(mesh, None, 0) == 17
+    assert raw.dvz_mesh_set_fragment_clip.calls[-1][2] == 0
+
+
+def test_mesh_fragment_clip_rejects_wrong_shape_before_native_call(fake_facade):
+    raw, facade = fake_facade
+    with pytest.raises(ValueError, match='must have shape'):
+        facade.dvz_mesh_set_fragment_clip(ctypes.c_void_p(71), np.zeros((3, 3), np.float32))
+    assert raw.dvz_mesh_set_fragment_clip.calls == []

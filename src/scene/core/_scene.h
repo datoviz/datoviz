@@ -42,6 +42,7 @@
 #define DVZ_SCENE_MAX_GRID_ROWS  32
 #define DVZ_SCENE_MAX_GRID_COLS  32
 #define DVZ_SCENE_MAX_PANELS     64
+#define DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT 12
 #define DVZ_SCENE_MAX_VISUALS    256
 #define DVZ_SCENE_MAX_LIGHTS     64
 #define DVZ_SCENE_MAX_COMPOSITES 128
@@ -1448,7 +1449,7 @@ struct DvzSceneRequestExecutor
     DvzDrp2RuntimeConfig runtime_cfg;
     DvzSceneVisualFamily query_static_cache_family;
     DvzVisual* query_static_cache_visual;
-    uint64_t query_static_cache_keys[11];
+    uint64_t query_static_cache_keys[DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT];
     uint32_t query_static_cache_key_count;
     bool active_query_composed;
     DvzSceneVisualFamily active_query_family;
@@ -1830,6 +1831,7 @@ struct DvzVisualFamilyState
     DvzVolumeState         volume;
     uint64_t               labels_realized_version;
     uint64_t               volume_realized_version;
+    uint64_t fragment_clip_validation[6];
 };
 
 
@@ -2226,6 +2228,8 @@ struct DvzFigure
     bool has_last_frame_plan_trace;
     bool emit_timing_enabled;
     DvzSceneEmitTiming last_emit_timing;
+    uint64_t typed_attr_consumed[DVZ_SCENE_MAX_VISUALS][2];
+    DvzId typed_attr_visual_ids[DVZ_SCENE_MAX_VISUALS];
 };
 
 

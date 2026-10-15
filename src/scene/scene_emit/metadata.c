@@ -213,6 +213,11 @@ bool _scene_visual_frame_plan_metadata(
                 sizeof(metadata->item_state_style_id)))
             return false;
     }
+    if (_scene_visual_has_dense_attr(visual, "fragment_clip") &&
+        !_scene_attr_resource_key(
+            figure, visual, visual_index, "fragment_clip", metadata->fragment_clip_id,
+            sizeof(metadata->fragment_clip_id)))
+        return false;
     bool path_stroke = renderable_kind == DVZ_RENDERABLE_PATH_STROKE;
     bool stroke_quad = renderable_kind == DVZ_RENDERABLE_STROKE_QUAD;
     bool stroke = path_stroke || stroke_quad;

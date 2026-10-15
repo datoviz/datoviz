@@ -52,3 +52,5 @@ bool _scene_mesh_visual_draw_desc(
 
 bool _scene_mesh_visual_query_target_count(
     const DvzVisual* visual, DvzSceneTargetKind target, uint32_t* out_count);
+
+const char* _scene_mesh_fragment_clip_error(const DvzVisual* visual);

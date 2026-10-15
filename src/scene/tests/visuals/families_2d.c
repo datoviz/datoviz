@@ -138,8 +138,12 @@ int test_scene_sphere_analytic_shader_contract(TstContext* suite, const TstCase*
     {
         const char* source = _builtin_shader_glsl(device_depth_shaders[i], true);
         ANN(source);
-        AT(strstr(source, "layout(location = 1) out float outSurfaceDepth;") != NULL);
-        AT(strstr(source, "writeSurfaceDepthFromDevice();") != NULL);
+        // Inspect the resolved stock source consumed by rendering, including shared bodies.
+        char* resolved = _shader_glsl_variant(source, NULL);
+        ANN(resolved);
+        AT(strstr(resolved, "layout(location = 1) out float outSurfaceDepth;") != NULL);
+        AT(strstr(resolved, "writeSurfaceDepthFromDevice();") != NULL);
+        _shader_glsl_variant_destroy(resolved);
     }
 
     const char* edl = _builtin_shader_glsl(DVZ_SCENE_BUILTIN_SHADER_EDL_RESOLVE, true);

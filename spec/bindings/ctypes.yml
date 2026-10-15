@@ -482,6 +482,16 @@ array_facade:
         dtype: uint32
         lifetime: copied_before_return
 
+  dvz_mesh_set_fragment_clip:
+    groups:
+      - pointer_arg: clip
+        count_arg: vertex_count
+        count_from: shape0
+        dtype: float32
+        shape_tail: [2]
+        nullable: true
+        lifetime: copied_before_return
+
   dvz_visual_set_index_data:
     groups:
       - pointer_arg: indices

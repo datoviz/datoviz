@@ -38,6 +38,7 @@
 #include "query/internal.h"
 #include "annotation/text_visual_bridge.h"
 #include "text/text_internal.h"
+#include "_visual_pipeline_internal.h"
 
 
 
@@ -424,7 +425,8 @@ static bool _item_state_visual_supports(const DvzVisual* visual)
         return false;
     if (visual->type == DVZ_VISUAL_TYPE_MESH)
         return _visual_family_state(visual)->field == NULL &&
-               _visual_family_state(visual)->item_state_bank == NULL;
+               _visual_family_state(visual)->item_state_bank == NULL &&
+               !_scene_visual_has_dense_attr(visual, "fragment_clip");
     return visual->type == DVZ_VISUAL_TYPE_POINT || visual->type == DVZ_VISUAL_TYPE_PIXEL ||
            visual->type == DVZ_VISUAL_TYPE_MARKER || visual->type == DVZ_VISUAL_TYPE_SPHERE;
 }

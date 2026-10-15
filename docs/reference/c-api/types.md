@@ -298,6 +298,8 @@ Alphabetical index of public C types. Canonical definitions live beside the func
 | [`DvzItemInteraction`](scene.md#type-dvziteminteraction) | typedef | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzItemInteractionDesc`](scene.md#type-dvziteminteractiondesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzItemRange`](scene.md#type-dvzitemrange) | record | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) | typedef | Scene API | `include/datoviz/scene/types.h` |
+| [`DvzItemStateBufferDesc`](scene.md#type-dvzitemstatebufferdesc) | record | Scene API | `include/datoviz/scene/types.h` |
 | [`DvzItemStateKind`](scene.md#type-dvzitemstatekind) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzItemStateVisualFlag`](scene.md#type-dvzitemstatevisualflag) | enum | Scene API | `include/datoviz/scene/enums.h` |
 | [`DvzItemStateVisualStyle`](scene.md#type-dvzitemstatevisualstyle) | record | Scene API | `include/datoviz/scene/types.h` |

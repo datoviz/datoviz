@@ -19,8 +19,8 @@ Common workflows:
 - [Configure cameras](../../how-to/configure-cameras.md)
 - [Pick items](../../how-to/pick-items.md)
 
-Functions: 378
-Types: 198
+Functions: 383
+Types: 200
 
 ## Symbol Groups
 
@@ -55,7 +55,7 @@ Types: 198
 | [Horizontal](#horizontal) | 0 | 1 | `include/datoviz/scene/enums.h` |
 | [Hover](#hover) | 7 | 3 | `include/datoviz/scene/interaction.h`, `include/datoviz/scene/types.h` |
 | [Interaction](#interaction) | 7 | 1 | `include/datoviz/scene/interaction.h`, `include/datoviz/scene/types.h` |
-| [Item](#item) | 6 | 6 | 3 headers |
+| [Item](#item) | 11 | 8 | 3 headers |
 | [Label](#label) | 1 | 1 | `include/datoviz/scene/annotation.h`, `include/datoviz/scene/types.h` |
 | [Legend](#legend) | 9 | 3 | 3 headers |
 | [Lighting](#lighting) | 11 | 3 | 3 headers |
@@ -330,6 +330,11 @@ Types: 198
     | [`dvz_item_interaction_destroy()`](#dvz_item_interaction_destroy) | `include/datoviz/scene/interaction.h` |
     | [`dvz_item_interaction_hover()`](#dvz_item_interaction_hover) | `include/datoviz/scene/interaction.h` |
     | [`dvz_item_interaction_selection()`](#dvz_item_interaction_selection) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_item_state_buffer()`](#dvz_item_state_buffer) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_item_state_buffer_desc()`](#dvz_item_state_buffer_desc) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_item_state_buffer_destroy()`](#dvz_item_state_buffer_destroy) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_item_state_buffer_style()`](#dvz_item_state_buffer_style) | `include/datoviz/scene/interaction.h` |
+    | [`dvz_item_state_buffer_update()`](#dvz_item_state_buffer_update) | `include/datoviz/scene/interaction.h` |
     | [`dvz_item_state_visual_style()`](#dvz_item_state_visual_style) | `include/datoviz/scene/interaction.h` |
 
     **Label**
@@ -1219,7 +1224,7 @@ _Declared in `include/datoviz/scene/annotation.h`:91._
     typedef struct DvzAnnotation DvzAnnotation;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:94._
+    _Declared in `include/datoviz/scene/types.h`:95._
 
 <a id="type-dvzannotationdesc"></a>
 
@@ -1235,7 +1240,7 @@ _Declared in `include/datoviz/scene/annotation.h`:91._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1613._
+    _Declared in `include/datoviz/scene/types.h`:1625._
 
 <a id="type-dvzannotationkind"></a>
 
@@ -1551,7 +1556,7 @@ _Declared in `include/datoviz/scene.h`:1652._
     typedef struct DvzAxis DvzAxis;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:100._
+    _Declared in `include/datoviz/scene/types.h`:101._
 
 <a id="type-dvzaxisstyle"></a>
 
@@ -1588,7 +1593,7 @@ _Declared in `include/datoviz/scene.h`:1652._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:761._
+    _Declared in `include/datoviz/scene/types.h`:762._
 
 <a id="type-dvzaxistickpolicy"></a>
 
@@ -1604,7 +1609,7 @@ _Declared in `include/datoviz/scene.h`:1652._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:739._
+    _Declared in `include/datoviz/scene/types.h`:740._
 
 <a id="type-dvzaxisticks"></a>
 
@@ -1620,7 +1625,7 @@ _Declared in `include/datoviz/scene.h`:1652._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:750._
+    _Declared in `include/datoviz/scene/types.h`:751._
 
 ## Blend { #blend }
 
@@ -1656,7 +1661,7 @@ _Declared in `include/datoviz/scene.h`:1652._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1226._
+    _Declared in `include/datoviz/scene/types.h`:1238._
 
 <a id="type-dvzboundsspace"></a>
 
@@ -1669,7 +1674,7 @@ _Declared in `include/datoviz/scene.h`:1652._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1219._
+    _Declared in `include/datoviz/scene/types.h`:1231._
 
 ## Camera { #camera }
 
@@ -1735,7 +1740,7 @@ _Declared in `include/datoviz/scene/animation.h`:422._
     typedef int64_t DvzCategoryId;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:106._
+    _Declared in `include/datoviz/scene/types.h`:107._
 
 ## Color { #color }
 
@@ -1993,7 +1998,7 @@ _Declared in `include/datoviz/scene/scale.h`:501._
     typedef struct DvzColorbar DvzColorbar;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:86._
+    _Declared in `include/datoviz/scene/types.h`:87._
 
 <a id="type-dvzcolorbardesc"></a>
 
@@ -2019,7 +2024,7 @@ _Declared in `include/datoviz/scene/scale.h`:501._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1454._
+    _Declared in `include/datoviz/scene/types.h`:1466._
 
 <a id="type-dvzcolorbarorientation"></a>
 
@@ -2061,7 +2066,7 @@ _Declared in `include/datoviz/scene/scale.h`:501._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1475._
+    _Declared in `include/datoviz/scene/types.h`:1487._
 
 ## Colormap { #colormap }
 
@@ -2297,7 +2302,7 @@ _Declared in `include/datoviz/scene/scale.h`:467._
     typedef struct DvzColormap DvzColormap;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:85._
+    _Declared in `include/datoviz/scene/types.h`:86._
 
 <a id="type-dvzcolormapdesc"></a>
 
@@ -2314,7 +2319,7 @@ _Declared in `include/datoviz/scene/scale.h`:467._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1442._
+    _Declared in `include/datoviz/scene/types.h`:1454._
 
 <a id="type-dvzcolormapkind"></a>
 
@@ -2340,7 +2345,7 @@ _Declared in `include/datoviz/scene/scale.h`:467._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1434._
+    _Declared in `include/datoviz/scene/types.h`:1446._
 
 ## Controller { #controller }
 
@@ -2594,7 +2599,7 @@ _Declared in `include/datoviz/scene.h`:481._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:169._
+    _Declared in `include/datoviz/scene/types.h`:170._
 
 ## Data { #data }
 
@@ -2611,7 +2616,7 @@ _Declared in `include/datoviz/scene.h`:481._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:651._
+    _Declared in `include/datoviz/scene/types.h`:652._
 
 ## Datetime { #datetime }
 
@@ -2708,7 +2713,7 @@ _Declared in `include/datoviz/scene/scale.h`:167._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:148._
+    _Declared in `include/datoviz/scene/types.h`:149._
 
 <a id="type-dvzdatetimeformat"></a>
 
@@ -2718,7 +2723,7 @@ _Declared in `include/datoviz/scene/scale.h`:167._
     typedef struct DvzDateTimeFormat DvzDateTimeFormat;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:103._
+    _Declared in `include/datoviz/scene/types.h`:104._
 
 ## Diagnostic { #diagnostic }
 
@@ -2737,7 +2742,7 @@ _Declared in `include/datoviz/scene/scale.h`:167._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:186._
+    _Declared in `include/datoviz/scene/types.h`:187._
 
 ## Dim { #dim }
 
@@ -2751,7 +2756,7 @@ _Declared in `include/datoviz/scene/scale.h`:167._
     typedef uint32_t DvzDimMask;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:155._
+    _Declared in `include/datoviz/scene/types.h`:156._
 
 <a id="type-dvzdimmaskflag"></a>
 
@@ -2768,7 +2773,7 @@ _Declared in `include/datoviz/scene/scale.h`:167._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:158._
+    _Declared in `include/datoviz/scene/types.h`:159._
 
 ## Field { #field }
 
@@ -3284,7 +3289,7 @@ _Declared in `include/datoviz/scene/text.h`:87._
     typedef struct DvzFont DvzFont;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:90._
+    _Declared in `include/datoviz/scene/types.h`:91._
 
 ## Font Atlas { #font-atlas }
 
@@ -3415,7 +3420,7 @@ _Declared in `include/datoviz/scene/scale.h`:188._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1237._
+    _Declared in `include/datoviz/scene/types.h`:1249._
 
 ## Grid { #grid }
 
@@ -3622,7 +3627,7 @@ _Declared in `include/datoviz/scene.h`:424._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:325._
+    _Declared in `include/datoviz/scene/types.h`:326._
 
 <a id="type-dvzgridsizemode"></a>
 
@@ -3665,7 +3670,7 @@ _Declared in `include/datoviz/scene.h`:424._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:603._
+    _Declared in `include/datoviz/scene/types.h`:604._
 
 <a id="type-dvzguidekind"></a>
 
@@ -3682,7 +3687,7 @@ _Declared in `include/datoviz/scene.h`:424._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:527._
+    _Declared in `include/datoviz/scene/types.h`:528._
 
 <a id="type-dvzguidelayout"></a>
 
@@ -3709,7 +3714,7 @@ _Declared in `include/datoviz/scene.h`:424._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:581._
+    _Declared in `include/datoviz/scene/types.h`:582._
 
 <a id="type-dvzguideorientation"></a>
 
@@ -3722,7 +3727,7 @@ _Declared in `include/datoviz/scene.h`:424._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:375._
+    _Declared in `include/datoviz/scene/types.h`:376._
 
 <a id="type-dvzguidepart"></a>
 
@@ -3742,7 +3747,7 @@ _Declared in `include/datoviz/scene.h`:424._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:559._
+    _Declared in `include/datoviz/scene/types.h`:560._
 
 <a id="type-dvzguiderole"></a>
 
@@ -3769,7 +3774,7 @@ _Declared in `include/datoviz/scene.h`:424._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:538._
+    _Declared in `include/datoviz/scene/types.h`:539._
 
 ## Guide Line { #guide-line }
 
@@ -3860,7 +3865,7 @@ _Declared in `include/datoviz/scene/plot.h`:82._
     typedef struct DvzGuideLine DvzGuideLine;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:96._
+    _Declared in `include/datoviz/scene/types.h`:97._
 
 <a id="type-dvzguidelinedesc"></a>
 
@@ -3881,7 +3886,7 @@ _Declared in `include/datoviz/scene/plot.h`:82._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:391._
+    _Declared in `include/datoviz/scene/types.h`:392._
 
 ## Guide Span { #guide-span }
 
@@ -3975,7 +3980,7 @@ _Declared in `include/datoviz/scene/plot.h`:115._
     typedef struct DvzGuideSpan DvzGuideSpan;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:97._
+    _Declared in `include/datoviz/scene/types.h`:98._
 
 <a id="type-dvzguidespandesc"></a>
 
@@ -3996,7 +4001,7 @@ _Declared in `include/datoviz/scene/plot.h`:115._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:407._
+    _Declared in `include/datoviz/scene/types.h`:408._
 
 ## Horizontal { #horizontal }
 
@@ -4163,7 +4168,7 @@ _Declared in `include/datoviz/scene/interaction.h`:350._
     typedef struct DvzHover DvzHover;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:78._
+    _Declared in `include/datoviz/scene/types.h`:79._
 
 <a id="type-dvzhoverdesc"></a>
 
@@ -4179,7 +4184,7 @@ _Declared in `include/datoviz/scene/interaction.h`:350._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1294._
+    _Declared in `include/datoviz/scene/types.h`:1306._
 
 <a id="type-dvzhoverstate"></a>
 
@@ -4193,7 +4198,7 @@ _Declared in `include/datoviz/scene/interaction.h`:350._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1403._
+    _Declared in `include/datoviz/scene/types.h`:1415._
 
 ## Interaction { #interaction }
 
@@ -4339,7 +4344,7 @@ _Declared in `include/datoviz/scene/interaction.h`:67._
     typedef struct DvzInteractionPolicy DvzInteractionPolicy;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:76._
+    _Declared in `include/datoviz/scene/types.h`:77._
 
 ## Item { #item }
 
@@ -4430,6 +4435,99 @@ DvzSelection * dvz_item_interaction_selection(
 
 _Declared in `include/datoviz/scene/interaction.h`:425._
 
+#### `dvz_item_state_buffer()` { #dvz_item_state_buffer .dvz-api-function }
+
+Create a bank, synchronously copying desc->words. Zero slots and unknown bits fail.
+
+```c
+DvzItemStateBuffer * dvz_item_state_buffer(
+    DvzScene * scene,
+    const DvzItemStateBufferDesc * desc
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `scene` | [`DvzScene`](scene.md#type-dvzscene) * |  |
+| `desc` | `const` [`DvzItemStateBufferDesc`](scene.md#type-dvzitemstatebufferdesc) * |  |
+
+_Declared in `include/datoviz/scene/interaction.h`:534._
+
+#### `dvz_item_state_buffer_desc()` { #dvz_item_state_buffer_desc .dvz-api-function }
+
+Return the descriptor for a fixed-cardinality, scene-owned state bank.
+
+```c
+DvzItemStateBufferDesc dvz_item_state_buffer_desc(void);
+```
+
+Related: [`dvz_item_state_buffer()`](#dvz_item_state_buffer).
+
+_Declared in `include/datoviz/scene/interaction.h`:530._
+
+#### `dvz_item_state_buffer_destroy()` { #dvz_item_state_buffer_destroy .dvz-api-function }
+
+Destroy a bank and clear its visual bindings. Safe to call again before slot reuse.
+
+```c
+void dvz_item_state_buffer_destroy(
+    DvzItemStateBuffer * buffer
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * |  |
+
+_Declared in `include/datoviz/scene/interaction.h`:537._
+
+#### `dvz_item_state_buffer_style()` { #dvz_item_state_buffer_style .dvz-api-function }
+
+Set shared color/alpha styles and explicit selection context. NULL styles restore defaults.
+SCALE is unsupported in the indexed slice. Words do not imply selection context.
+
+```c
+DvzResult dvz_item_state_buffer_style(
+    DvzItemStateBuffer * buffer,
+    const DvzSelectionVisualStyle * selection,
+    const DvzItemStateVisualStyle * hovered,
+    _Bool selection_active
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * |  |
+| `selection` | `const` [`DvzSelectionVisualStyle`](scene.md#type-dvzselectionvisualstyle) * |  |
+| `hovered` | `const` [`DvzItemStateVisualStyle`](scene.md#type-dvzitemstatevisualstyle) * |  |
+| `selection_active` | `_Bool` |  |
+
+_Declared in `include/datoviz/scene/interaction.h`:552._
+
+#### `dvz_item_state_buffer_update()` { #dvz_item_state_buffer_update .dvz-api-function }
+
+Atomically replace complete words at slots. Arrays are copied synchronously; repeated slots
+use the last word. Zero updates is a no-op. The application composes all writers' bits.
+Changes request rendering without invalidating geometry/alpha query inputs.
+
+```c
+DvzResult dvz_item_state_buffer_update(
+    DvzItemStateBuffer * buffer,
+    const uint32_t * slots,
+    const uint32_t * words,
+    uint32_t update_count
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * |  |
+| `slots` | `const` `uint32_t` * |  |
+| `words` | `const` `uint32_t` * |  |
+| `update_count` | `uint32_t` |  |
+
+_Declared in `include/datoviz/scene/interaction.h`:544._
+
 #### `dvz_item_state_visual_style()` { #dvz_item_state_visual_style .dvz-api-function }
 
 Return the default item-state visual style.
@@ -4454,7 +4552,7 @@ _Declared in `include/datoviz/scene/interaction.h`:211._
     typedef struct DvzItemInteraction DvzItemInteraction;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:79._
+    _Declared in `include/datoviz/scene/types.h`:80._
 
 <a id="type-dvziteminteractiondesc"></a>
 
@@ -4476,7 +4574,7 @@ _Declared in `include/datoviz/scene/interaction.h`:211._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1305._
+    _Declared in `include/datoviz/scene/types.h`:1317._
 
 <a id="type-dvzitemrange"></a>
 
@@ -4489,7 +4587,32 @@ _Declared in `include/datoviz/scene/interaction.h`:211._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1211._
+    _Declared in `include/datoviz/scene/types.h`:1223._
+
+<a id="type-dvzitemstatebuffer"></a>
+
+??? abstract "`DvzItemStateBuffer` · typedef"
+
+    ```c
+    typedef struct DvzItemStateBuffer DvzItemStateBuffer;
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:76._
+
+<a id="type-dvzitemstatebufferdesc"></a>
+
+??? abstract "`DvzItemStateBufferDesc` · record"
+
+    ```c
+    struct DvzItemStateBufferDesc {
+        uint32_t struct_size;
+        uint32_t flags;
+        uint32_t slot_count;
+        const uint32_t * words;
+    };
+    ```
+
+    _Declared in `include/datoviz/scene/types.h`:963._
 
 <a id="type-dvzitemstatekind"></a>
 
@@ -4540,7 +4663,7 @@ _Declared in `include/datoviz/scene/interaction.h`:211._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1263._
+    _Declared in `include/datoviz/scene/types.h`:1275._
 
 ## Label { #label }
 
@@ -4575,7 +4698,7 @@ _Declared in `include/datoviz/scene/annotation.h`:44._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1624._
+    _Declared in `include/datoviz/scene/types.h`:1636._
 
 ## Legend { #legend }
 
@@ -4760,7 +4883,7 @@ _Declared in `include/datoviz/scene/scale.h`:674._
     typedef struct DvzLegend DvzLegend;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:87._
+    _Declared in `include/datoviz/scene/types.h`:88._
 
 <a id="type-dvzlegenddesc"></a>
 
@@ -4785,7 +4908,7 @@ _Declared in `include/datoviz/scene/scale.h`:674._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1486._
+    _Declared in `include/datoviz/scene/types.h`:1498._
 
 <a id="type-dvzlegendplacementmode"></a>
 
@@ -5045,7 +5168,7 @@ _Declared in `include/datoviz/scene.h`:203._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:972._
+    _Declared in `include/datoviz/scene/types.h`:984._
 
 <a id="type-dvzlighttype"></a>
 
@@ -5129,7 +5252,7 @@ _Declared in `include/datoviz/scene/interaction.h`:182._
     typedef struct DvzLinkChannel DvzLinkChannel;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:80._
+    _Declared in `include/datoviz/scene/types.h`:81._
 
 ## Orientation { #orientation }
 
@@ -5218,7 +5341,7 @@ _Declared in `include/datoviz/scene.h`:1103._
     typedef struct DvzOrientationGizmo DvzOrientationGizmo;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:88._
+    _Declared in `include/datoviz/scene/types.h`:89._
 
 <a id="type-dvzorientationgizmodesc"></a>
 
@@ -5238,7 +5361,7 @@ _Declared in `include/datoviz/scene.h`:1103._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:816._
+    _Declared in `include/datoviz/scene/types.h`:817._
 
 ## Overlay { #overlay }
 
@@ -5303,7 +5426,7 @@ _Declared in `include/datoviz/scene/overlay.h`:132._
     typedef struct DvzOverlay DvzOverlay;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:82._
+    _Declared in `include/datoviz/scene/types.h`:83._
 
 <a id="type-dvzoverlayrichtextdesc"></a>
 
@@ -5539,7 +5662,7 @@ _Declared in `include/datoviz/scene/overlay.h`:116._
     typedef struct DvzOverlayCard DvzOverlayCard;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:83._
+    _Declared in `include/datoviz/scene/types.h`:84._
 
 <a id="type-dvzoverlaycarddesc"></a>
 
@@ -6902,7 +7025,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:793._
+    _Declared in `include/datoviz/scene/types.h`:794._
 
 <a id="type-dvzpanelbackgrounddesc"></a>
 
@@ -6919,7 +7042,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:363._
+    _Declared in `include/datoviz/scene/types.h`:364._
 
 <a id="type-dvzpanelbackgroundgradient"></a>
 
@@ -6934,7 +7057,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:344._
+    _Declared in `include/datoviz/scene/types.h`:345._
 
 <a id="type-dvzpanelbackgroundimage"></a>
 
@@ -6948,7 +7071,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:354._
+    _Declared in `include/datoviz/scene/types.h`:355._
 
 <a id="type-dvzpanelbackgroundtype"></a>
 
@@ -6963,7 +7086,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:335._
+    _Declared in `include/datoviz/scene/types.h`:336._
 
 <a id="type-dvzpanelborderdesc"></a>
 
@@ -6980,7 +7103,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:461._
+    _Declared in `include/datoviz/scene/types.h`:462._
 
 <a id="type-dvzpanelcoordspace"></a>
 
@@ -7012,7 +7135,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:286._
+    _Declared in `include/datoviz/scene/types.h`:287._
 
 <a id="type-dvzpanelframeinfo"></a>
 
@@ -7061,7 +7184,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:483._
+    _Declared in `include/datoviz/scene/types.h`:484._
 
 <a id="type-dvzpanelframesnapshot"></a>
 
@@ -7086,7 +7209,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:641._
+    _Declared in `include/datoviz/scene/types.h`:642._
 
 <a id="type-dvzpanelview2daspect"></a>
 
@@ -7099,7 +7222,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:666._
+    _Declared in `include/datoviz/scene/types.h`:667._
 
 <a id="type-dvzpanelview2ddesc"></a>
 
@@ -7119,7 +7242,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:673._
+    _Declared in `include/datoviz/scene/types.h`:674._
 
 <a id="type-dvzpanelview2dmode"></a>
 
@@ -7132,7 +7255,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:659._
+    _Declared in `include/datoviz/scene/types.h`:660._
 
 <a id="type-dvzpanelview2dstate"></a>
 
@@ -7160,7 +7283,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:688._
+    _Declared in `include/datoviz/scene/types.h`:689._
 
 <a id="type-dvzpanelview3ddesc"></a>
 
@@ -7175,7 +7298,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:711._
+    _Declared in `include/datoviz/scene/types.h`:712._
 
 <a id="type-dvzpanelview3dstate"></a>
 
@@ -7198,7 +7321,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:721._
+    _Declared in `include/datoviz/scene/types.h`:722._
 
 <a id="type-dvzpanelviewkind"></a>
 
@@ -7212,7 +7335,7 @@ _Declared in `include/datoviz/scene.h`:2293._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:195._
+    _Declared in `include/datoviz/scene/types.h`:196._
 
 ## Panzoom { #panzoom }
 
@@ -7305,7 +7428,7 @@ _Declared in `include/datoviz/scene/interaction.h`:525._
     typedef struct DvzPinnedReadout DvzPinnedReadout;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:81._
+    _Declared in `include/datoviz/scene/types.h`:82._
 
 ## Placement { #placement }
 
@@ -7400,7 +7523,7 @@ _Declared in `include/datoviz/scene.h`:1057._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:803._
+    _Declared in `include/datoviz/scene/types.h`:804._
 
 <a id="type-dvzplacementspace"></a>
 
@@ -7432,7 +7555,7 @@ _Declared in `include/datoviz/scene.h`:1057._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:382._
+    _Declared in `include/datoviz/scene/types.h`:383._
 
 ## Query { #query }
 
@@ -7516,7 +7639,7 @@ _Declared in `include/datoviz/scene/interaction.h`:438._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1333._
+    _Declared in `include/datoviz/scene/types.h`:1345._
 
 <a id="type-dvzqueryresult"></a>
 
@@ -7576,7 +7699,7 @@ _Declared in `include/datoviz/scene/interaction.h`:438._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1345._
+    _Declared in `include/datoviz/scene/types.h`:1357._
 
 <a id="type-dvzquerystatus"></a>
 
@@ -7638,7 +7761,7 @@ _Declared in `include/datoviz/scene/interaction.h`:438._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:473._
+    _Declared in `include/datoviz/scene/types.h`:474._
 
 ## Reference Grid { #reference-grid }
 
@@ -7726,7 +7849,7 @@ _Declared in `include/datoviz/scene.h`:1146._
     typedef struct DvzReferenceGrid DvzReferenceGrid;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:89._
+    _Declared in `include/datoviz/scene/types.h`:90._
 
 <a id="type-dvzreferencegriddesc"></a>
 
@@ -7756,7 +7879,7 @@ _Declared in `include/datoviz/scene.h`:1146._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:831._
+    _Declared in `include/datoviz/scene/types.h`:832._
 
 <a id="type-dvzreferencegridplane"></a>
 
@@ -7797,7 +7920,7 @@ _Declared in `include/datoviz/scene.h`:1146._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:624._
+    _Declared in `include/datoviz/scene/types.h`:625._
 
 <a id="type-dvzrenderedcontributionkind"></a>
 
@@ -7811,7 +7934,7 @@ _Declared in `include/datoviz/scene.h`:1146._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:573._
+    _Declared in `include/datoviz/scene/types.h`:574._
 
 ## Sampled Field { #sampled-field }
 
@@ -8609,7 +8732,7 @@ _Declared in `include/datoviz/scene/scale.h`:275._
     typedef struct DvzScale DvzScale;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:84._
+    _Declared in `include/datoviz/scene/types.h`:85._
 
 <a id="type-dvzscalecategory"></a>
 
@@ -8625,7 +8748,7 @@ _Declared in `include/datoviz/scene/scale.h`:275._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1423._
+    _Declared in `include/datoviz/scene/types.h`:1435._
 
 <a id="type-dvzscaledesc"></a>
 
@@ -8641,7 +8764,7 @@ _Declared in `include/datoviz/scene/scale.h`:275._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1412._
+    _Declared in `include/datoviz/scene/types.h`:1424._
 
 <a id="type-dvzscalekind"></a>
 
@@ -8841,7 +8964,7 @@ _Declared in `include/datoviz/scene/annotation.h`:146._
     typedef struct DvzAnnotation DvzScaleBar;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:95._
+    _Declared in `include/datoviz/scene/types.h`:96._
 
 <a id="type-dvzscalebardesc"></a>
 
@@ -8871,7 +8994,7 @@ _Declared in `include/datoviz/scene/annotation.h`:146._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1634._
+    _Declared in `include/datoviz/scene/types.h`:1646._
 
 <a id="type-dvzscalebarlabelposition"></a>
 
@@ -9643,7 +9766,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:961._
+    _Declared in `include/datoviz/scene/types.h`:973._
 
 <a id="type-dvzscenebufferusage"></a>
 
@@ -9697,7 +9820,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:984._
+    _Declared in `include/datoviz/scene/types.h`:996._
 
 <a id="type-dvzscenecomputedesc"></a>
 
@@ -9715,7 +9838,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:991._
+    _Declared in `include/datoviz/scene/types.h`:1003._
 
 <a id="type-dvzsceneframeartifact"></a>
 
@@ -9738,7 +9861,7 @@ _Declared in `include/datoviz/scene/animation.h`:312._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:179._
+    _Declared in `include/datoviz/scene/types.h`:180._
 
 <a id="type-dvzsceneshaderformat"></a>
 
@@ -9978,7 +10101,7 @@ _Declared in `include/datoviz/scene/interaction.h`:249._
     typedef struct DvzSelection DvzSelection;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:77._
+    _Declared in `include/datoviz/scene/types.h`:78._
 
 <a id="type-dvzselectiondesc"></a>
 
@@ -9994,7 +10117,7 @@ _Declared in `include/datoviz/scene/interaction.h`:249._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1252._
+    _Declared in `include/datoviz/scene/types.h`:1264._
 
 <a id="type-dvzselectionitem"></a>
 
@@ -10010,7 +10133,7 @@ _Declared in `include/datoviz/scene/interaction.h`:249._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1322._
+    _Declared in `include/datoviz/scene/types.h`:1334._
 
 <a id="type-dvzselectionvisualstyle"></a>
 
@@ -10033,7 +10156,7 @@ _Declared in `include/datoviz/scene/interaction.h`:249._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1276._
+    _Declared in `include/datoviz/scene/types.h`:1288._
 
 ## Text { #text }
 
@@ -10460,7 +10583,7 @@ _Declared in `include/datoviz/scene/text.h`:41._
     typedef struct DvzText DvzText;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:91._
+    _Declared in `include/datoviz/scene/types.h`:92._
 
 <a id="type-dvztextalign"></a>
 
@@ -10494,7 +10617,7 @@ _Declared in `include/datoviz/scene/text.h`:41._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1586._
+    _Declared in `include/datoviz/scene/types.h`:1598._
 
 <a id="type-dvztextlayout"></a>
 
@@ -10511,7 +10634,7 @@ _Declared in `include/datoviz/scene/text.h`:41._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1601._
+    _Declared in `include/datoviz/scene/types.h`:1613._
 
 <a id="type-dvztextplacement"></a>
 
@@ -10532,7 +10655,7 @@ _Declared in `include/datoviz/scene/text.h`:41._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1570._
+    _Declared in `include/datoviz/scene/types.h`:1582._
 
 <a id="type-dvztextplacementmode"></a>
 
@@ -10583,7 +10706,7 @@ _Declared in `include/datoviz/scene/text.h`:41._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1506._
+    _Declared in `include/datoviz/scene/types.h`:1518._
 
 ## Text Atlas { #text-atlas }
 
@@ -10674,7 +10797,7 @@ _Declared in `include/datoviz/scene/text.h`:97._
     typedef struct DvzTextAtlas DvzTextAtlas;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:92._
+    _Declared in `include/datoviz/scene/types.h`:93._
 
 <a id="type-dvztextatlasbackend"></a>
 
@@ -10689,7 +10812,7 @@ _Declared in `include/datoviz/scene/text.h`:97._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:203._
+    _Declared in `include/datoviz/scene/types.h`:204._
 
 <a id="type-dvztextatlasencoding"></a>
 
@@ -10703,7 +10826,7 @@ _Declared in `include/datoviz/scene/text.h`:97._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:212._
+    _Declared in `include/datoviz/scene/types.h`:213._
 
 <a id="type-dvztextatlasglyph"></a>
 
@@ -10725,7 +10848,7 @@ _Declared in `include/datoviz/scene/text.h`:97._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1553._
+    _Declared in `include/datoviz/scene/types.h`:1565._
 
 <a id="type-dvztextatlasinfo"></a>
 
@@ -10751,7 +10874,7 @@ _Declared in `include/datoviz/scene/text.h`:97._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1532._
+    _Declared in `include/datoviz/scene/types.h`:1544._
 
 <a id="type-dvztextatlasspec"></a>
 
@@ -10766,7 +10889,7 @@ _Declared in `include/datoviz/scene/text.h`:97._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1522._
+    _Declared in `include/datoviz/scene/types.h`:1534._
 
 ## Time { #time }
 
@@ -10790,7 +10913,7 @@ _Declared in `include/datoviz/scene/text.h`:97._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:134._
+    _Declared in `include/datoviz/scene/types.h`:135._
 
 ## Timer { #timer }
 
@@ -10822,7 +10945,7 @@ _Declared in `include/datoviz/scene/text.h`:97._
     typedef int64_t DvzTimestamp;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:107._
+    _Declared in `include/datoviz/scene/types.h`:108._
 
 ## Track { #track }
 
@@ -11438,7 +11561,7 @@ _Declared in `include/datoviz/scene/scale.h`:49._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:126._
+    _Declared in `include/datoviz/scene/types.h`:127._
 
 <a id="type-dvzunitladder"></a>
 
@@ -11448,7 +11571,7 @@ _Declared in `include/datoviz/scene/scale.h`:49._
     typedef struct DvzUnitLadder DvzUnitLadder;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:101._
+    _Declared in `include/datoviz/scene/types.h`:102._
 
 <a id="type-dvzunitladderbuiltin"></a>
 
@@ -11462,7 +11585,7 @@ _Declared in `include/datoviz/scene/scale.h`:49._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:118._
+    _Declared in `include/datoviz/scene/types.h`:119._
 
 ## Units { #units }
 
@@ -11592,7 +11715,7 @@ _Declared in `include/datoviz/scene/scale.h`:115._
     typedef struct DvzUnits DvzUnits;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:102._
+    _Declared in `include/datoviz/scene/types.h`:103._
 
 ## Vertical { #vertical }
 

@@ -108,6 +108,7 @@ struct DvzVisualFamilyOps
     DvzVisualFamilyInitFn init_state;
     DvzVisualFamilyResetFn reset_state;
     DvzVisualFamilyValidateAttrFn validate_attr;
+    const char* (*eligibility_error)(const DvzVisual* visual);
     DvzVisualFamilyAfterAttrFn after_attr_set;
     DvzVisualFamilyAttrStorageNameFn attr_storage_name;
     DvzVisualFamilyQueryTargetCountFn query_target_count;

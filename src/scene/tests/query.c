@@ -4970,6 +4970,170 @@ static int test_scene_query_stationary_hover_updates(TstContext* suite, const Ts
 
 
 
+int test_scene_mesh_fragment_clip_queries(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+    DvzGpuCtxConfig gpu_cfg = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES};
+    features13.dynamicRendering = true;
+    features13.synchronization2 = true;
+    dvz_gpu_ctx_config_features13(&gpu_cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&gpu_cfg);
+    AT(ctx != NULL);
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    AT(runtime != NULL);
+    DvzAlphaMode modes[] = {DVZ_ALPHA_OPAQUE, DVZ_ALPHA_BLENDED, DVZ_ALPHA_WBOIT};
+    for (uint32_t lit = 0; lit < 2; lit++)
+        for (uint32_t mode = 0; mode < 3; mode++)
+        {
+            DvzScene* scene = dvz_scene();
+            DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+            DvzPanel* panel = dvz_panel_full(figure);
+            DvzVisual* mesh = dvz_mesh(scene, 0);
+            dvz_visual_set_query_capabilities(
+                mesh, DVZ_QUERY_CAPABILITY_ITEM | DVZ_QUERY_CAPABILITY_FACE);
+            vec3 pos[6] = {{-.8f, -.8f, 0}, {.8f, -.8f, 0}, {0, .8f, 0},
+                           {-.8f, -.8f, 0}, {.8f, -.8f, 0}, {0, .8f, 0}};
+            vec3 normals[6] = {{0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+            DvzColor colors[6];
+            for (uint32_t i = 0; i < 6; i++)
+                colors[i] = (DvzColor){255, 255, 255, 255};
+            DvzIndex indices[6] = {0, 1, 2, 3, 4, 5};
+            // Identical complete footprints lie exactly on the generic signed boundary.
+            // Only the second presentation includes +0 and -0, regardless of facing.
+            vec2 clip[6] = {{-0.f, 0}, {0, 0}, {0, 0}, {0, 1}, {-0.f, 1}, {0, 1}};
+            AT(dvz_visual_set_data(mesh, "position", pos, 6) == DVZ_OK);
+            AT(dvz_visual_set_data(mesh, "color", colors, 6) == DVZ_OK);
+            if (lit)
+                AT(dvz_visual_set_data(mesh, "normal", normals, 6) == DVZ_OK);
+            AT(dvz_visual_set_index_data(mesh, indices, 6) == DVZ_OK);
+            AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 6) == DVZ_OK);
+            for (uint32_t revision = 0; revision < 3; revision++)
+                AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 6) == DVZ_OK);
+
+            DvzItemStateBufferDesc desc = dvz_item_state_buffer_desc();
+            desc.slot_count = 2;
+            DvzItemStateBuffer* bank = dvz_item_state_buffer(scene, &desc);
+            uint32_t slots[6] = {0, 0, 0, 1, 1, 1};
+            AT(dvz_visual_set_item_state_buffer(mesh, bank, slots, 6) == DVZ_OK);
+            AT(dvz_visual_set_alpha_mode(mesh, modes[mode]) == DVZ_OK);
+            AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+            _dvz_scene_query_timing_enable(scene, true);
+            DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+            caps.shader_format_glsl = true;
+            for (uint32_t facing = 0; facing < 2; facing++)
+            {
+                if (facing)
+                {
+                    for (uint32_t i = 0; i < 6; i++)
+                        pos[i][0] = -pos[i][0];
+                    AT(dvz_visual_set_data(mesh, "position", pos, 6) == DVZ_OK);
+                }
+                AT(dvz_panel_query_px(
+                       panel, 32, 32,
+                       &(DvzQueryRequest){
+                           DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 101 + facing,
+                           .target = DVZ_SCENE_TARGET_FACE}) == DVZ_OK);
+                AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+                DvzQueryResult result = {0};
+                AT(dvz_scene_poll_query(scene, &result));
+                AT(result.hit && result.face_id == 1);
+            }
+            uint64_t query_revision = figure->query_input_revision;
+            uint64_t uploads = scene->query_executor.query_static_cache_upload_count;
+            AT(scene->query_executor.query_static_cache_key_count == DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT);
+            uint32_t slot = 1, word = DVZ_ITEM_STATE_HOVERED;
+            AT(dvz_item_state_buffer_update(bank, &slot, &word, 1) == DVZ_OK);
+            AT(figure->query_input_revision == query_revision);
+            DvzItemStateVisualStyle style = dvz_item_state_visual_style();
+            style.visual_flags = DVZ_ITEM_STATE_VISUAL_ALPHA;
+            style.alpha = 0;
+            AT(dvz_item_state_buffer_style(bank, NULL, &style, false) == DVZ_OK);
+            AT(figure->query_input_revision == query_revision);
+            AT(dvz_panel_query_px(
+                   panel, 32, 32,
+                   &(DvzQueryRequest){
+                       DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 110,
+                       .target = DVZ_SCENE_TARGET_FACE}) == DVZ_OK);
+            AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+            DvzQueryResult result = {0};
+            AT(dvz_scene_poll_query(scene, &result));
+            AT(result.hit && result.face_id == 1);
+            // Several spatial requests and bank updates reuse the same authored profile.
+            for (uint32_t repeat = 0; repeat < 3; repeat++)
+            {
+                word = repeat % 2 ? DVZ_ITEM_STATE_SELECTED : DVZ_ITEM_STATE_HOVERED;
+                AT(dvz_item_state_buffer_update(bank, &slot, &word, 1) == DVZ_OK);
+                AT(dvz_panel_query_px(panel, 30 + repeat, 32,
+                       &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+                           .request_id = 120 + repeat, .target = DVZ_SCENE_TARGET_FACE}) == DVZ_OK);
+                AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+                AT(dvz_scene_poll_query(scene, &result));
+                AT(result.hit && result.face_id == 1);
+                AT(scene->query_executor.query_static_cache_key_count == DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT);
+                AT(scene->query_executor.query_static_cache_upload_count == uploads);
+                DvzSceneQueryTiming timing = {0};
+                AT(_dvz_scene_query_timing_get(scene, &timing));
+                AT(timing.static_upload_count == 0 && timing.static_upload_bytes == 0);
+            }
+
+            // Authored clip replacement and clearing invalidate retained query coverage.
+            for (uint32_t i = 3; i < 6; i++)
+                clip[i][1] = 0;
+            AT(dvz_mesh_set_fragment_clip(mesh, (const vec2*)clip, 6) == DVZ_OK);
+            AT(dvz_panel_query_px(
+                   panel, 32, 32,
+                   &(DvzQueryRequest){
+                       DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 113,
+                       .target = DVZ_SCENE_TARGET_FACE}) == DVZ_OK);
+            AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+            AT(dvz_scene_poll_query(scene, &result));
+            AT(!result.hit);
+            AT(scene->query_executor.query_static_cache_upload_count == uploads + 1);
+            AT(dvz_mesh_set_fragment_clip(mesh, NULL, 0) == DVZ_OK);
+            AT(dvz_panel_query_px(
+                   panel, 32, 32,
+                   &(DvzQueryRequest){
+                       DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 114,
+                       .target = DVZ_SCENE_TARGET_FACE}) == DVZ_OK);
+            AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+            AT(dvz_scene_poll_query(scene, &result));
+            AT(result.hit);
+            AT(scene->query_executor.query_static_cache_upload_count == uploads + 2);
+            // Authored zero alpha remains ineligible even when decoration is hovered.
+            for (uint32_t i = 0; i < 6; i++)
+                colors[i].a = 0;
+            AT(dvz_visual_set_data(mesh, "color", colors, 6) == DVZ_OK);
+            AT(dvz_panel_query_px(
+                   panel, 32, 32,
+                   &(DvzQueryRequest){
+                       DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 112,
+                       .target = DVZ_SCENE_TARGET_FACE}) == DVZ_OK);
+            AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+            AT(dvz_scene_poll_query(scene, &result));
+            AT(!result.hit);
+            for (uint32_t i = 0; i < 6; i++)
+                colors[i].a = 255;
+            AT(dvz_visual_set_data(mesh, "color", colors, 6) == DVZ_OK);
+            AT(dvz_panel_query_px(panel, 32, 32,
+                   &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest),
+                       .request_id = 130, .target = DVZ_SCENE_TARGET_ITEM}) == DVZ_OK);
+            AT(dvz_figure_process_queries(figure, runtime, &caps) == 1);
+            AT(dvz_scene_poll_query(scene, &result));
+            AT(result.hit && result.item_id == 0);
+            dvz_scene_destroy(scene);
+        }
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
 int test_scene_query(TstSuite* suite)
 {
     ANN(suite);
@@ -5012,6 +5176,7 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_vector_query_resolves_curved_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_primitive_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_item);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_fragment_clip_queries);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_scientific_composition);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_stationary_hover_updates);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_effective_alpha);

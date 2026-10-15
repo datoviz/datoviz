@@ -217,6 +217,19 @@ bool _scene_query_indexed_primitive_geometry(
         return false;
     }
 
+    const DvzVisualAttr* fragment_clip = NULL;
+    int clip_idx = _attr_index(visual, "fragment_clip");
+    if (clip_idx >= 0 && visual->attrs[clip_idx].data != NULL)
+    {
+        fragment_clip = &visual->attrs[clip_idx];
+        if (fragment_clip->item_count != vertex_count ||
+            !_dvz_scene_query_alloc(
+                label, (void**)&scratch->query_fragment_clip, draw_vertex_count, sizeof(vec2)))
+        {
+            _scene_query_scratch_destroy(scratch);
+            return false;
+        }
+    }
     float* expanded_alpha = NULL;
     if (scratch->query_alpha != NULL &&
         !_dvz_scene_query_alloc(label, (void**)&expanded_alpha, draw_vertex_count, sizeof(float)))
@@ -284,6 +297,10 @@ bool _scene_query_indexed_primitive_geometry(
                 scratch->query_positions[dst], sizeof(vec3), &position[3 * source_index],
                 sizeof(vec3));
             scratch->query_ids[dst] = (uint32_t)prim + 1u;
+            if (fragment_clip != NULL)
+                dvz_memcpy(
+                    scratch->query_fragment_clip[dst], sizeof(vec2),
+                    ((const vec2*)fragment_clip->data)[source_index], sizeof(vec2));
             if (expanded_alpha != NULL)
                 expanded_alpha[dst] = scratch->query_alpha[source_index];
         }

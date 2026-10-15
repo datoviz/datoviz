@@ -363,10 +363,11 @@ void dvz_item_state_buffer_destroy(DvzItemStateBuffer* buffer)
  */
 bool _visual_indexed_state_attr_mutation_allowed(const DvzVisual* visual, const char* name)
 {
-    if (_visual_family_state(visual)->item_state_bank != NULL &&
+    if ((_visual_family_state(visual)->item_state_bank != NULL ||
+         _scene_visual_has_dense_attr(visual, "fragment_clip")) &&
         (strcmp(name, "item_state") == 0 || strcmp(name, "instance_transform") == 0))
     {
-        log_error("dense item_state and instancing conflict with indexed state binding");
+        log_error("dense item_state and instancing conflict with typed mesh state or coverage");
         return false;
     }
     return true;

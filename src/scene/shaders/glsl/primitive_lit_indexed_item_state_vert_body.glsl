@@ -1,0 +1,30 @@
+#include "mesh_fragment_clip_vertex.glsl"
+#include "common.glsl"
+#include "item_state_style.glsl"
+
+layout(location = 0) in vec3 inPos;
+layout(location = 1) in vec4 inColor;
+layout(location = 2) in vec3 inNormal;
+layout(location = 7) in uint inStateIndex;
+layout(std430, set = 1, binding = 2) readonly buffer ItemStateWords {
+    uint words[];
+} itemStateWords;
+layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec3 fragNormal;
+layout(location = 2) out vec3 fragWorldPos;
+layout(location = 3) out vec3 fragCameraPos;
+layout(location = 4) out float fragDepth;
+
+void main()
+{
+    passFragmentClip();
+    vec4 local = vec4(inPos, 1.0);
+    vec4 world = mvp.model * local;
+    vec4 tr = sceneClipToDeviceClip(mvp.proj * mvp.view * world);
+    gl_Position = tr;
+    fragColor = applyItemStateColor(inColor, itemStateWords.words[inStateIndex]);
+    fragWorldPos = world.xyz;
+    fragCameraPos = (inverse(mvp.view) * vec4(0, 0, 0, 1)).xyz;
+    fragNormal = transpose(inverse(mat3(mvp.model))) * inNormal;
+    fragDepth = tr.z / max(abs(tr.w), 1e-6);
+}

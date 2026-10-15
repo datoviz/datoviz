@@ -268,6 +268,9 @@ static void _scene_mark_runtime_payloads_dirty(DvzScene* scene)
         dvz_memset(
             figure->item_state_consumed, sizeof(figure->item_state_consumed), 0,
             sizeof(figure->item_state_consumed));
+        dvz_memset(
+            figure->typed_attr_consumed, sizeof(figure->typed_attr_consumed), 0,
+            sizeof(figure->typed_attr_consumed));
         if (figure->scene != scene)
             continue;
         for (uint32_t pi = 0; pi < figure->panel_count; pi++)

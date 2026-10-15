@@ -45,6 +45,48 @@ bool _scene_primitive_visual_shader_desc(
     if (visual->kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE)
         return false;
 
+    if (visual->has_fragment_clip && !picking)
+    {
+        bool lit = visual->has_normal;
+        bool indexed = visual->has_indexed_item_state;
+        DvzSceneBuiltinShader vertex =
+            indexed ? (lit ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_INDEXED_ITEM_STATE_CLIP
+                           : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INDEXED_ITEM_STATE_CLIP)
+                    : (lit ? DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_CLIP
+                           : DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_CLIP);
+        DvzSceneBuiltinShader fragment = wboit_accumulation
+                                             ? (lit ? DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_LIT_CLIP
+                                                    : DVZ_SCENE_BUILTIN_SHADER_WBOIT_ACCUM_CLIP)
+                                             : vertex;
+        _scene_shader_desc_set_builtin(out, fragment);
+        out->vertex_glsl = _builtin_shader_glsl(vertex, false);
+        out->vertex_wgsl = _builtin_shader_wgsl(vertex, false);
+        out->vertex_spirv_key = indexed
+                                    ? (lit ? "primitive_lit_indexed_item_state_clip_vert"
+                                           : "primitive_indexed_item_state_clip_vert")
+                                    : (lit ? "primitive_lit_clip_vert" : "primitive_clip_vert");
+        out->fragment_spirv_key =
+            wboit_accumulation ? (lit ? "wboit_accum_lit_clip_frag" : "wboit_accum_clip_frag")
+                               : (lit ? "primitive_lit_clip_frag" : "primitive_clip_frag");
+        dvz_snprintf(
+            out->vertex_key, sizeof(out->vertex_key), "_vs_prim_clip_n%u_s%u%s", lit, indexed,
+            format_tag);
+        dvz_snprintf(
+            out->fragment_key, sizeof(out->fragment_key), "_fs_prim_clip_n%u_o%u%s", lit,
+            wboit_accumulation, format_tag);
+        dvz_snprintf(
+            out->pipeline_key, sizeof(out->pipeline_key), "_pipe_prim_clip_t%u_n%u_s%u_o%u%s",
+            visual->topology, lit, indexed, wboit_accumulation, format_tag);
+        _scene_shader_desc_set_identity(
+            out, "scene.primitive",
+            indexed ? (wboit_accumulation
+                           ? (lit ? "wboit_lit_indexed_item_state_clip"
+                                  : "wboit_indexed_item_state_clip")
+                           : (lit ? "lit_indexed_item_state_clip" : "indexed_item_state_clip"))
+                    : (wboit_accumulation ? (lit ? "wboit_lit_clip" : "wboit_clip")
+                                          : (lit ? "lit_clip" : "clip")));
+        return true;
+    }
     if (visual->has_indexed_item_state && !picking)
     {
         bool lit = visual->has_normal;

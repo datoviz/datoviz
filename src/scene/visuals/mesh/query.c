@@ -107,11 +107,12 @@ static bool _mesh_query_eligible(
  */
 static bool _mesh_query_inputs_supported(const DvzVisual* visual)
 {
-    const char* const inputs[] = {"position", "color", "instance_transform"};
+    const char* const inputs[] = {"position", "color", "instance_transform", "fragment_clip"};
     const DvzSceneBuffer* index = _visual_family_state(visual)->buffer;
     return _visual_family_state(visual)->field == NULL && visual->alpha_mode != DVZ_ALPHA_MASK &&
            visual->material.model != DVZ_MATERIAL_MODEL_LIMB &&
-           _scene_query_dense_inputs_supported(visual, inputs, 3) &&
+           _scene_query_dense_inputs_supported(visual, inputs, 4) &&
+           _scene_mesh_fragment_clip_error(visual) == NULL &&
            (index == NULL || index->desc.byte_size == 0 || index->data != NULL);
 }
 
@@ -155,6 +156,9 @@ static bool _mesh_query_static_versions(
     out_versions[9] = visual->material.version;
     // Primitive material shading is selected by normals; item-state parameters only style color.
     out_versions[10] = _scene_visual_has_dense_attr(visual, "normal");
+    int clip = _attr_index(visual, "fragment_clip");
+    if (clip >= 0)
+        out_versions[11] = visual->attrs[clip].version;
     return true;
 }
 
@@ -274,6 +278,8 @@ static bool _mesh_query_build(
         return false;
     }
 
+    bool clipped = _scene_visual_has_dense_attr(ctx->visual, "fragment_clip");
+    uint64_t clip_bytes = clipped ? vertex_count * sizeof(vec2) : 0;
     uint64_t position_bytes = 0;
     uint64_t id_bytes = 0;
     if (_dvz_mul_u64_overflows(vertex_count, sizeof(vec3), &position_bytes) ||
@@ -299,6 +305,10 @@ static bool _mesh_query_build(
         ok = ok &&
              dvz_frame_plan_upload_bytes(
                  plan, "query0_id", 0, id_bytes, "query_id", out_plan->scratch.query_identity);
+        if (clipped)
+            ok = ok && dvz_frame_plan_upload_bytes(
+                           plan, "query0_fragment_clip", 0, clip_bytes, "fragment_clip",
+                           out_plan->scratch.query_fragment_clip);
         out_plan->mark_static_cache_uploaded = true;
         out_plan->static_cache_family = DVZ_SCENE_VISUAL_FAMILY_MESH;
         out_plan->static_cache_visual = ctx->visual;
@@ -320,6 +330,9 @@ static bool _mesh_query_build(
     metadata.vertex_count = (uint32_t)vertex_count;
     dvz_strlcpy(metadata.position_id, "query0_position", sizeof(metadata.position_id));
     dvz_strlcpy(metadata.color_id, "query0_id", sizeof(metadata.color_id));
+    if (clipped)
+        dvz_strlcpy(
+            metadata.fragment_clip_id, "query0_fragment_clip", sizeof(metadata.fragment_clip_id));
 
     ok = ok && dvz_frame_plan_render_panel(
                    plan, "panel.query", "target.query", true,
@@ -358,8 +371,8 @@ static bool _mesh_query_build(
     out_plan->format = DVZ_FORMAT_R32_UINT;
     out_plan->byte_size = sizeof(uint32_t);
     out_plan->derived_vertex_count = vertex_count;
-    out_plan->static_upload_bytes = include_static_uploads ? position_bytes + id_bytes : 0;
-    out_plan->retained_resource_bytes = position_bytes + id_bytes;
+    out_plan->static_upload_bytes = include_static_uploads ? position_bytes + id_bytes + clip_bytes : 0;
+    out_plan->retained_resource_bytes = position_bytes + id_bytes + clip_bytes;
     return true;
 }
 

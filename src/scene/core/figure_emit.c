@@ -572,6 +572,19 @@ static bool _scene_panel_has_pending_visual_work(const DvzPanel* panel)
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         const DvzVisual* visual = panel->visuals[i].visual;
+        if (visual != NULL && visual->visible)
+        {
+            uint32_t index = (uint32_t)(visual - visual->scene->visuals);
+            const char* names[2] = {"state_index", "fragment_clip"};
+            for (uint32_t slot = 0; slot < 2; slot++)
+            {
+                int ai = _attr_index(visual, names[slot]);
+                if (ai >= 0 && visual->attrs[ai].data != NULL &&
+                    (panel->figure->typed_attr_visual_ids[index] != visual->id ||
+                     panel->figure->typed_attr_consumed[index][slot] != visual->attrs[ai].version))
+                    return true;
+            }
+        }
         if (visual != NULL && visual->visible &&
             _visual_family_state(visual)->item_state_bank != NULL)
         {
@@ -651,6 +664,15 @@ static void _scene_commit_emit_success(DvzFigure* figure)
             DvzVisual* visual = panel->visuals[vi].visual;
             if (visual == NULL || !visual->visible)
                 continue;
+            uint32_t visual_index = (uint32_t)(visual - figure->scene->visuals);
+            const char* typed_names[2] = {"state_index", "fragment_clip"};
+            for (uint32_t slot = 0; slot < 2; slot++)
+            {
+                int ai = _attr_index(visual, typed_names[slot]);
+                if (ai >= 0 && visual->attrs[ai].data != NULL)
+                    figure->typed_attr_consumed[visual_index][slot] = visual->attrs[ai].version;
+            }
+            figure->typed_attr_visual_ids[visual_index] = visual->id;
             DvzItemStateBuffer* bank = _visual_family_state(visual)->item_state_bank;
             if (bank != NULL)
             {

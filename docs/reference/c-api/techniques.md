@@ -143,7 +143,7 @@ _Declared in `include/datoviz/scene.h`:1423._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:878._
+    _Declared in `include/datoviz/scene/types.h`:879._
 
 <a id="type-dvzaoquality"></a>
 
@@ -217,7 +217,7 @@ _Declared in `include/datoviz/scene.h`:1388._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:856._
+    _Declared in `include/datoviz/scene/types.h`:857._
 
 ## Multisample Antialiasing { #multisample-antialiasing }
 
@@ -275,7 +275,7 @@ _Declared in `include/datoviz/scene.h`:1401._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:867._
+    _Declared in `include/datoviz/scene/types.h`:868._
 
 ## Scene Occlusion { #scene-occlusion }
 
@@ -373,7 +373,7 @@ _Declared in `include/datoviz/scene.h`:1994._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:904._
+    _Declared in `include/datoviz/scene/types.h`:905._
 
 ## Volume Occlusion { #volume-occlusion }
 
@@ -450,4 +450,4 @@ _Declared in `include/datoviz/scene.h`:1431._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:892._
+    _Declared in `include/datoviz/scene/types.h`:893._

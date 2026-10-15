@@ -28,6 +28,7 @@
 #include "scene_emit/internal.h"
 #include "scene_emit/scene_emit.h"
 #include "visuals/bounds_internal.h"
+#include "_visual_pipeline_internal.h"
 
 
 /** Emit copied typed indices transactionally rather than treating them as optional uploads.
@@ -37,28 +38,30 @@
  * @param visual_index scene visual index
  * @return whether the required mapping upload was appended
  */
-static bool
-_emit_bank_indices(DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
+static bool _emit_typed_attr(DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index,
+    const char* name, uint32_t stride)
 {
-    int idx = _attr_index(visual, "state_index");
+    int idx = _attr_index(visual, name);
     if (idx < 0)
         return false;
     const DvzVisualAttr* attr = &visual->attrs[idx];
-    if (attr->dirty_item_count == 0)
+    uint32_t slot = strcmp(name, "fragment_clip") == 0 ? 1 : 0;
+    if (figure->typed_attr_visual_ids[visual_index] == visual->id &&
+        figure->typed_attr_consumed[visual_index][slot] == attr->version)
         return true;
     char key[DVZ_SCENE_LABEL_SIZE];
     if (!_scene_visual_attr_resource_key(
-            figure, visual, visual_index, "state_index", key, sizeof(key)))
+            figure, visual, visual_index, name, key, sizeof(key)))
         return false;
-    uint64_t offset = (uint64_t)attr->dirty_first_item * sizeof(uint32_t);
-    uint64_t bytes = (uint64_t)attr->dirty_item_count * sizeof(uint32_t);
+    uint64_t offset = 0;
+    uint64_t bytes = (uint64_t)attr->item_count * stride;
     if (!dvz_frame_plan_upload_bytes(
-            plan, key, offset, bytes, "state_index", (const uint8_t*)attr->data + offset))
+            plan, key, offset, bytes, name, (const uint8_t*)attr->data + offset))
         return false;
     _scene_attach_upload_metadata(
         plan, visual, visual_index, DVZ_FRAME_PLAN_RESOURCE_ROLE_ITEM_STATE,
         DVZ_FRAME_PLAN_RESOURCE_KIND_BUFFER, UINT32_MAX, attr->item_count);
-    plan->nodes[plan->count - 1].u.upload.item_stride = sizeof(uint32_t);
+    plan->nodes[plan->count - 1].u.upload.item_stride = stride;
     return true;
 }
 
@@ -161,12 +164,13 @@ bool _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan, DvzDiagno
             if (!_figure_visual_index(figure, visual, &vidx))
                 continue;
             DvzItemStateBuffer* bank = _visual_family_state(visual)->item_state_bank;
+            bool clipped = _scene_visual_has_dense_attr(visual, "fragment_clip");
             bool skip_dense_attrs = false;
             bool finished_visual = false;
             if (!_scene_emit_visual_family_derived_uploads(
                     figure, plan, visual, vidx, &skip_dense_attrs, &finished_visual))
             {
-                if (bank != NULL)
+                if (bank != NULL || clipped)
                     return false;
                 continue;
             }
@@ -182,16 +186,19 @@ bool _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan, DvzDiagno
             if (!_scene_emit_visual_material_upload_if_needed(
                     figure, plan, visual, vidx, upload_material_params))
             {
-                if (bank != NULL)
+                if (bank != NULL || clipped)
                     return false;
                 continue;
             }
-            if (bank == NULL &&
+            if (bank == NULL && !clipped &&
                 !_scene_emit_visual_item_state_style_upload(figure, plan, visual, vidx))
                 continue;
+            if (clipped &&
+                !_emit_typed_attr(figure, plan, visual, vidx, "fragment_clip", sizeof(vec2)))
+                return false;
             if (bank != NULL)
             {
-                if (!_emit_bank_indices(figure, plan, visual, vidx) ||
+                if (!_emit_typed_attr(figure, plan, visual, vidx, "state_index", sizeof(uint32_t)) ||
                     !_emit_bank_resource(figure, plan, bank, bank->words, emitted_buffers) ||
                     !_emit_bank_resource(figure, plan, bank, bank->style, emitted_buffers))
                 {

@@ -3073,6 +3073,27 @@ DVZ_EXPORT DvzVisual* dvz_primitive(
  */
 DVZ_EXPORT DvzVisual* dvz_mesh(DvzScene* scene, uint32_t flags);
 
+/**
+ * Copy authored per-vertex fragment coverage for an ordinary triangle mesh.
+ *
+ * Each vec2 stores signed distance and an exact 0/1 zero-inclusion flag. The distance is
+ * perspective-interpolated; positive fragments survive, negative fragments are discarded,
+ * and zero survives only when the triangle's flag is one. Flags must agree at all vertices
+ * of each triangle. NULL with vertex_count zero clears coverage. No epsilon is applied.
+ *
+ * Supported: untextured, noninstanced OPAQUE/BLENDED/WBOIT meshes, optionally with an indexed
+ * state bank. Dense item_state, MASK, depth peeling and scene-depth production/consumption
+ * conflict. Index data must be CPU-backed and must not advertise storage usage.
+ * These authored coverage inputs affect both rendering and FACE/ITEM identity queries.
+ *
+ * @param mesh the mesh
+ * @param clip copied float32 [vertex_count,2] values, or NULL to clear
+ * @param vertex_count exact position count, or zero when clearing
+ * @return DVZ_OK on success, DVZ_ERROR without mutation on invalid input
+ */
+DVZ_EXPORT DvzResult
+dvz_mesh_set_fragment_clip(DvzVisual* mesh, const vec2* clip, uint32_t vertex_count);
+
 
 /**
  * Upload a CPU geometry object into a mesh visual.

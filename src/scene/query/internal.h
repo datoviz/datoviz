@@ -29,7 +29,6 @@
 /*************************************************************************************************/
 
 #define DVZ_SCENE_QUERY_PAYLOAD_WORDS 4
-#define DVZ_SCENE_QUERY_STATIC_CACHE_KEY_COUNT 11
 
 
 
@@ -122,6 +121,7 @@ struct DvzSceneQueryScratch
     DvzFramePlan* plan;
     vec3* query_positions;
     vec2* query_texcoords;
+    vec2* query_fragment_clip;
     DvzColor* query_colors;
     uint32_t* query_ids;
     DvzSceneQueryIdentity* query_identity;

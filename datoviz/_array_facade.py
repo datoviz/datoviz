@@ -29,8 +29,8 @@ def _raw_pointer(value):
     return hasattr(value, '_as_parameter_')
 
 
-def _array_arg(value, name, raw_func, pointer_index, dtype=None, shape_tail=None):
-    if _raw_pointer(value):
+def _array_arg(value, name, raw_func, pointer_index, dtype=None, shape_tail=None, nullable=False):
+    if _raw_pointer(value) or (value is None and nullable):
         return value, None
     array = np.asarray(value)
     if dtype is not None:
@@ -1087,6 +1087,25 @@ dvz_item_state_buffer_update.argtypes = getattr(_raw.dvz_item_state_buffer_updat
 dvz_item_state_buffer_update.restype = getattr(_raw.dvz_item_state_buffer_update, "restype", None)
 
 
+def dvz_mesh_set_fragment_clip(mesh, clip, vertex_count=None):
+    _clip_ptr, _clip_array = _array_arg(clip, 'clip', _raw.dvz_mesh_set_fragment_clip, 1, 'float32', [2], nullable=True)
+    if _clip_array is not None:
+        _clip_count = _shape0_count(_clip_array, 'clip')
+        if vertex_count is None:
+            vertex_count = _clip_count
+        elif _clip_count != int(vertex_count):
+            raise ValueError(f'clip count {_clip_count} does not match vertex_count {vertex_count}')
+    elif vertex_count is None:
+        vertex_count = _shape0_count(_clip_array, 'clip')
+    _keepalive = (_clip_array,)
+    return _raw.dvz_mesh_set_fragment_clip(mesh, _clip_ptr, vertex_count)
+
+
+dvz_mesh_set_fragment_clip.__doc__ = getattr(_raw.dvz_mesh_set_fragment_clip, "__doc__", None)
+dvz_mesh_set_fragment_clip.argtypes = getattr(_raw.dvz_mesh_set_fragment_clip, "argtypes", None)
+dvz_mesh_set_fragment_clip.restype = getattr(_raw.dvz_mesh_set_fragment_clip, "restype", None)
+
+
 def dvz_panel_set_lights(panel, lights, count=None):
     if _raw_pointer(lights):
         if count is None:
@@ -1433,7 +1452,7 @@ dvz_visual_set_target_link_keys.restype = getattr(
     _raw.dvz_visual_set_target_link_keys, "restype", None)
 
 
-_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_colormap_custom', 'dvz_gui_table', 'dvz_gui_table_draw', 'dvz_gui_table_get_filter', 'dvz_gui_table_get_selection', 'dvz_gui_table_get_sort', 'dvz_gui_table_set_column_bool', 'dvz_gui_table_set_column_color', 'dvz_gui_table_set_column_double', 'dvz_gui_table_set_column_int64', 'dvz_gui_table_set_column_text', 'dvz_gui_table_set_matches', 'dvz_gui_table_set_rows', 'dvz_gui_table_set_selection', 'dvz_gui_table_set_styles', 'dvz_gui_table_set_visible', 'dvz_gui_tree_draw', 'dvz_gui_tree_get_expanded', 'dvz_gui_tree_get_filter', 'dvz_gui_tree_get_selection', 'dvz_gui_tree_set_annotations', 'dvz_gui_tree_set_expanded', 'dvz_gui_tree_set_matches', 'dvz_gui_tree_set_projection', 'dvz_gui_tree_set_rows', 'dvz_gui_tree_set_selection', 'dvz_gui_tree_set_styles', 'dvz_gui_tree_set_swatches', 'dvz_gui_tree_set_visible', 'dvz_item_state_buffer_update', 'dvz_panel_set_lights', 'dvz_path_set_subpaths', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_text_set_strings', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data', 'dvz_visual_set_item_state_buffer', 'dvz_visual_set_link_keys', 'dvz_visual_set_target_link_keys']
+_ARRAY_FACADE_FUNCTIONS = ['dvz_axis_set_ticks', 'dvz_band_set_bounds', 'dvz_band_set_center', 'dvz_bars_set_intervals', 'dvz_colorbar_set_ticks', 'dvz_colormap_custom', 'dvz_gui_table', 'dvz_gui_table_draw', 'dvz_gui_table_get_filter', 'dvz_gui_table_get_selection', 'dvz_gui_table_get_sort', 'dvz_gui_table_set_column_bool', 'dvz_gui_table_set_column_color', 'dvz_gui_table_set_column_double', 'dvz_gui_table_set_column_int64', 'dvz_gui_table_set_column_text', 'dvz_gui_table_set_matches', 'dvz_gui_table_set_rows', 'dvz_gui_table_set_selection', 'dvz_gui_table_set_styles', 'dvz_gui_table_set_visible', 'dvz_gui_tree_draw', 'dvz_gui_tree_get_expanded', 'dvz_gui_tree_get_filter', 'dvz_gui_tree_get_selection', 'dvz_gui_tree_set_annotations', 'dvz_gui_tree_set_expanded', 'dvz_gui_tree_set_matches', 'dvz_gui_tree_set_projection', 'dvz_gui_tree_set_rows', 'dvz_gui_tree_set_selection', 'dvz_gui_tree_set_styles', 'dvz_gui_tree_set_swatches', 'dvz_gui_tree_set_visible', 'dvz_item_state_buffer_update', 'dvz_mesh_set_fragment_clip', 'dvz_panel_set_lights', 'dvz_path_set_subpaths', 'dvz_scene_buffer_set_data', 'dvz_text_set_anchors', 'dvz_text_set_angles', 'dvz_text_set_colors', 'dvz_text_set_items', 'dvz_text_set_offsets', 'dvz_text_set_positions', 'dvz_text_set_sizes', 'dvz_text_set_strings', 'dvz_view_window', 'dvz_visual_set_data', 'dvz_visual_set_data_many', 'dvz_visual_set_data_range', 'dvz_visual_set_index_data', 'dvz_visual_set_item_state_buffer', 'dvz_visual_set_link_keys', 'dvz_visual_set_target_link_keys']
 
 for _name in getattr(_raw, "__all__", dir(_raw)):
     if _name not in globals():

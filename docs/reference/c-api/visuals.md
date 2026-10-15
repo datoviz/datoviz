@@ -19,7 +19,7 @@ Common workflows:
 - [Update visual data](../../how-to/update-visual-data.md)
 - [Visual families reference](../visual-families/index.md)
 
-Functions: 228
+Functions: 230
 Types: 90
 
 ## Symbol Groups
@@ -39,7 +39,7 @@ Types: 90
 | [Limb](#limb) | 0 | 1 | `include/datoviz/scene/types.h` |
 | [Marker](#marker) | 5 | 2 | 3 headers |
 | [Materials](#materials) | 5 | 4 | 3 headers |
-| [Mesh](#mesh) | 2 | 0 | `include/datoviz/scene.h` |
+| [Mesh](#mesh) | 3 | 0 | `include/datoviz/scene.h` |
 | [Path](#path) | 4 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/enums.h` |
 | [Pixel](#pixel) | 1 | 0 | `include/datoviz/scene.h` |
 | [Point](#point) | 3 | 1 | `include/datoviz/scene.h`, `include/datoviz/scene/types.h` |
@@ -55,7 +55,7 @@ Types: 90
 | [Triangulate](#triangulate) | 1 | 0 | `include/datoviz/geom.h` |
 | [Triangulation](#triangulation) | 1 | 2 | 3 headers |
 | [Vector](#vector) | 4 | 2 | 3 headers |
-| [Visual](#visual) | 50 | 20 | 6 headers |
+| [Visual](#visual) | 51 | 20 | 6 headers |
 | [Volume](#volume) | 16 | 5 | 3 headers |
 
 ??? info "Grouped function index"
@@ -222,6 +222,7 @@ Types: 90
     | Function | Header |
     | --- | --- |
     | [`dvz_mesh()`](#dvz_mesh) | `include/datoviz/scene.h` |
+    | [`dvz_mesh_set_fragment_clip()`](#dvz_mesh_set_fragment_clip) | `include/datoviz/scene.h` |
     | [`dvz_mesh_set_geometry()`](#dvz_mesh_set_geometry) | `include/datoviz/scene.h` |
 
     **Path**
@@ -404,6 +405,7 @@ Types: 90
     | [`dvz_visual_set_field_sampling()`](#dvz_visual_set_field_sampling) | `include/datoviz/scene/field.h` |
     | [`dvz_visual_set_index_data()`](#dvz_visual_set_index_data) | `include/datoviz/scene.h` |
     | [`dvz_visual_set_item_range()`](#dvz_visual_set_item_range) | `include/datoviz/scene.h` |
+    | [`dvz_visual_set_item_state_buffer()`](#dvz_visual_set_item_state_buffer) | `include/datoviz/scene/interaction.h` |
     | [`dvz_visual_set_link_keys()`](#dvz_visual_set_link_keys) | `include/datoviz/scene/interaction.h` |
     | [`dvz_visual_set_query_capabilities()`](#dvz_visual_set_query_capabilities) | `include/datoviz/scene/interaction.h` |
     | [`dvz_visual_set_scale()`](#dvz_visual_set_scale) | `include/datoviz/scene/scale.h` |
@@ -585,7 +587,7 @@ _Declared in `include/datoviz/scene/plot.h`:250._
     typedef struct DvzBand DvzBand;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:99._
+    _Declared in `include/datoviz/scene/types.h`:100._
 
 <a id="type-dvzbanddesc"></a>
 
@@ -606,7 +608,7 @@ _Declared in `include/datoviz/scene/plot.h`:250._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:445._
+    _Declared in `include/datoviz/scene/types.h`:446._
 
 ## Bars { #bars }
 
@@ -729,7 +731,7 @@ _Declared in `include/datoviz/scene/plot.h`:181._
     typedef struct DvzBars DvzBars;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:98._
+    _Declared in `include/datoviz/scene/types.h`:99._
 
 <a id="type-dvzbarsdesc"></a>
 
@@ -749,7 +751,7 @@ _Declared in `include/datoviz/scene/plot.h`:181._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:430._
+    _Declared in `include/datoviz/scene/types.h`:431._
 
 <a id="type-dvzbarsorientation"></a>
 
@@ -762,7 +764,7 @@ _Declared in `include/datoviz/scene/plot.h`:181._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:423._
+    _Declared in `include/datoviz/scene/types.h`:424._
 
 ## Bezier { #bezier }
 
@@ -817,7 +819,7 @@ void dvz_composite_destroy(
 | --- | --- | --- |
 | `composite` | [`DvzComposite`](visuals.md#type-dvzcomposite) * | the composite |
 
-_Declared in `include/datoviz/scene.h`:3670._
+_Declared in `include/datoviz/scene.h`:3691._
 
 #### `dvz_composite_visual()` { #dvz_composite_visual .dvz-api-function }
 
@@ -838,7 +840,7 @@ DvzVisual * dvz_composite_visual(
 | `composite` | [`DvzComposite`](visuals.md#type-dvzcomposite) * | the composite |
 | `role` | `const` `char` * | role name |
 
-_Declared in `include/datoviz/scene.h`:3701._
+_Declared in `include/datoviz/scene.h`:3722._
 
 #### `dvz_composite_visual_at()` { #dvz_composite_visual_at .dvz-api-function }
 
@@ -857,7 +859,7 @@ DvzVisual * dvz_composite_visual_at(
 | `composite` | [`DvzComposite`](visuals.md#type-dvzcomposite) * | the composite |
 | `index` | `uint32_t` | role index |
 
-_Declared in `include/datoviz/scene.h`:3689._
+_Declared in `include/datoviz/scene.h`:3710._
 
 #### `dvz_composite_visual_count()` { #dvz_composite_visual_count .dvz-api-function }
 
@@ -874,7 +876,7 @@ uint32_t dvz_composite_visual_count(
 | return | `uint32_t` | generated visual count |
 | `composite` | `const` [`DvzComposite`](visuals.md#type-dvzcomposite) * | the composite |
 
-_Declared in `include/datoviz/scene.h`:3679._
+_Declared in `include/datoviz/scene.h`:3700._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -951,7 +953,7 @@ _Declared in `include/datoviz/scene.h`:2668._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1050._
+    _Declared in `include/datoviz/scene/types.h`:1062._
 
 <a id="type-dvzdepthcuefalloff"></a>
 
@@ -2073,7 +2075,7 @@ DvzVisual * dvz_glyph(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-_Declared in `include/datoviz/scene.h`:3923._
+_Declared in `include/datoviz/scene.h`:3944._
 
 #### `dvz_glyph_set_atlas()` { #dvz_glyph_set_atlas .dvz-api-function }
 
@@ -2095,7 +2097,7 @@ DvzResult dvz_glyph_set_atlas(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the glyph visual |
 | `atlas` | `const` [`DvzTextAtlas`](scene.md#type-dvztextatlas) * | the text atlas |
 
-_Declared in `include/datoviz/scene.h`:3936._
+_Declared in `include/datoviz/scene.h`:3957._
 
 ## Graph { #graph }
 
@@ -2122,7 +2124,7 @@ DvzGraph * dvz_graph(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | reserved graph flags |
 
-_Declared in `include/datoviz/scene.h`:3101._
+_Declared in `include/datoviz/scene.h`:3122._
 
 #### `dvz_graph_composite()` { #dvz_graph_composite .dvz-api-function }
 
@@ -2143,7 +2145,7 @@ DvzComposite * dvz_graph_composite(
 | `graph` | [`DvzGraph`](visuals.md#type-dvzgraph) * | the source graph |
 | `flags` | `uint32_t` | reserved composite flags |
 
-_Declared in `include/datoviz/scene.h`:3298._
+_Declared in `include/datoviz/scene.h`:3319._
 
 #### `dvz_graph_destroy()` { #dvz_graph_destroy .dvz-api-function }
 
@@ -2159,7 +2161,7 @@ void dvz_graph_destroy(
 | --- | --- | --- |
 | `graph` | [`DvzGraph`](visuals.md#type-dvzgraph) * | the graph |
 
-_Declared in `include/datoviz/scene.h`:3109._
+_Declared in `include/datoviz/scene.h`:3130._
 
 #### `dvz_graph_edge_style()` { #dvz_graph_edge_style .dvz-api-function }
 
@@ -2173,7 +2175,7 @@ DvzGraphEdgeStyle dvz_graph_edge_style(void);
 | --- | --- | --- |
 | return | [`DvzGraphEdgeStyle`](visuals.md#type-dvzgraphedgestyle) | default graph edge style |
 
-_Declared in `include/datoviz/scene.h`:3117._
+_Declared in `include/datoviz/scene.h`:3138._
 
 #### `dvz_graph_set_edge_colors()` { #dvz_graph_set_edge_colors .dvz-api-function }
 
@@ -2196,7 +2198,7 @@ DvzResult dvz_graph_set_edge_colors(
 | `edge_count` | `uint32_t` | number of edges |
 | `colors` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) * | borrowed RGBA colors |
 
-_Declared in `include/datoviz/scene.h`:3271._
+_Declared in `include/datoviz/scene.h`:3292._
 
 #### `dvz_graph_set_edge_controls()` { #dvz_graph_set_edge_controls .dvz-api-function }
 
@@ -2223,7 +2225,7 @@ DvzResult dvz_graph_set_edge_controls(
 | `control0` | `const` [`dvec3`](runtime-math.md#type-dvec3) * | borrowed first control point array |
 | `control1` | `const` [`dvec3`](runtime-math.md#type-dvec3) * | borrowed second control point array |
 
-_Declared in `include/datoviz/scene.h`:3228._
+_Declared in `include/datoviz/scene.h`:3249._
 
 #### `dvz_graph_set_edge_count()` { #dvz_graph_set_edge_count .dvz-api-function }
 
@@ -2244,7 +2246,7 @@ DvzResult dvz_graph_set_edge_count(
 | `graph` | [`DvzGraph`](visuals.md#type-dvzgraph) * | the graph |
 | `edge_count` | `uint32_t` | number of edges |
 
-_Declared in `include/datoviz/scene.h`:3155._
+_Declared in `include/datoviz/scene.h`:3176._
 
 #### `dvz_graph_set_edge_endpoints()` { #dvz_graph_set_edge_endpoints .dvz-api-function }
 
@@ -2269,7 +2271,7 @@ DvzResult dvz_graph_set_edge_endpoints(
 | `edge_count` | `uint32_t` | number of edges |
 | `endpoints` | `const` `uint32_t` * | borrowed packed endpoint array: source0, target0, source1, target1, ... |
 
-_Declared in `include/datoviz/scene.h`:3170._
+_Declared in `include/datoviz/scene.h`:3191._
 
 #### `dvz_graph_set_edge_ids()` { #dvz_graph_set_edge_ids .dvz-api-function }
 
@@ -2292,7 +2294,7 @@ DvzResult dvz_graph_set_edge_ids(
 | `edge_count` | `uint32_t` | number of edges |
 | `ids` | `const` `uint64_t` * | borrowed user-id array |
 
-_Declared in `include/datoviz/scene.h`:3198._
+_Declared in `include/datoviz/scene.h`:3219._
 
 #### `dvz_graph_set_edge_style()` { #dvz_graph_set_edge_style .dvz-api-function }
 
@@ -2315,7 +2317,7 @@ DvzResult dvz_graph_set_edge_style(
 | `graph` | [`DvzGraph`](visuals.md#type-dvzgraph) * | the graph |
 | `style` | `const` [`DvzGraphEdgeStyle`](visuals.md#type-dvzgraphedgestyle) * | edge style descriptor |
 
-_Declared in `include/datoviz/scene.h`:3213._
+_Declared in `include/datoviz/scene.h`:3234._
 
 #### `dvz_graph_set_edge_widths()` { #dvz_graph_set_edge_widths .dvz-api-function }
 
@@ -2338,7 +2340,7 @@ DvzResult dvz_graph_set_edge_widths(
 | `edge_count` | `uint32_t` | number of edges |
 | `widths` | `const` `float` * | borrowed edge widths |
 
-_Declared in `include/datoviz/scene.h`:3285._
+_Declared in `include/datoviz/scene.h`:3306._
 
 #### `dvz_graph_set_node_colors()` { #dvz_graph_set_node_colors .dvz-api-function }
 
@@ -2361,7 +2363,7 @@ DvzResult dvz_graph_set_node_colors(
 | `node_count` | `uint32_t` | number of nodes |
 | `colors` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) * | borrowed RGBA colors |
 
-_Declared in `include/datoviz/scene.h`:3243._
+_Declared in `include/datoviz/scene.h`:3264._
 
 #### `dvz_graph_set_node_count()` { #dvz_graph_set_node_count .dvz-api-function }
 
@@ -2383,7 +2385,7 @@ DvzResult dvz_graph_set_node_count(
 | `graph` | [`DvzGraph`](visuals.md#type-dvzgraph) * | the graph |
 | `node_count` | `uint32_t` | number of nodes |
 
-_Declared in `include/datoviz/scene.h`:3130._
+_Declared in `include/datoviz/scene.h`:3151._
 
 #### `dvz_graph_set_node_ids()` { #dvz_graph_set_node_ids .dvz-api-function }
 
@@ -2406,7 +2408,7 @@ DvzResult dvz_graph_set_node_ids(
 | `node_count` | `uint32_t` | number of nodes |
 | `ids` | `const` `uint64_t` * | borrowed user-id array |
 
-_Declared in `include/datoviz/scene.h`:3184._
+_Declared in `include/datoviz/scene.h`:3205._
 
 #### `dvz_graph_set_node_positions()` { #dvz_graph_set_node_positions .dvz-api-function }
 
@@ -2429,7 +2431,7 @@ DvzResult dvz_graph_set_node_positions(
 | `node_count` | `uint32_t` | number of node positions to update |
 | `positions` | `const` [`dvec3`](runtime-math.md#type-dvec3) * | borrowed node positions |
 
-_Declared in `include/datoviz/scene.h`:3142._
+_Declared in `include/datoviz/scene.h`:3163._
 
 #### `dvz_graph_set_node_sizes()` { #dvz_graph_set_node_sizes .dvz-api-function }
 
@@ -2452,7 +2454,7 @@ DvzResult dvz_graph_set_node_sizes(
 | `node_count` | `uint32_t` | number of nodes |
 | `sizes` | `const` `float` * | borrowed node sizes |
 
-_Declared in `include/datoviz/scene.h`:3257._
+_Declared in `include/datoviz/scene.h`:3278._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -2498,7 +2500,7 @@ _Declared in `include/datoviz/scene.h`:3257._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:946._
+    _Declared in `include/datoviz/scene/types.h`:947._
 
 ## Image { #image }
 
@@ -2527,7 +2529,7 @@ DvzVisual * dvz_image(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-_Declared in `include/datoviz/scene.h`:3776._
+_Declared in `include/datoviz/scene.h`:3797._
 
 #### `dvz_image_set_sampling()` { #dvz_image_set_sampling .dvz-api-function }
 
@@ -2551,7 +2553,7 @@ DvzResult dvz_image_set_sampling(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the image visual |
 | `sampling` | [`DvzImageSampling`](visuals.md#type-dvzimagesampling) | the image sampler filter mode |
 
-_Declared in `include/datoviz/scene.h`:3791._
+_Declared in `include/datoviz/scene.h`:3812._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -2594,7 +2596,7 @@ DvzVisual * dvz_labels(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-_Declared in `include/datoviz/scene.h`:3806._
+_Declared in `include/datoviz/scene.h`:3827._
 
 #### `dvz_labels_clear_selected()` { #dvz_labels_clear_selected .dvz-api-function }
 
@@ -2611,7 +2613,7 @@ DvzResult dvz_labels_clear_selected(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on error |
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 
-_Declared in `include/datoviz/scene.h`:3845._
+_Declared in `include/datoviz/scene.h`:3866._
 
 #### `dvz_labels_set_background()` { #dvz_labels_set_background .dvz-api-function }
 
@@ -2630,7 +2632,7 @@ DvzResult dvz_labels_set_background(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `label_id` | [`DvzCategoryId`](scene.md#type-dvzcategoryid) | background label ID |
 
-_Declared in `include/datoviz/scene.h`:3826._
+_Declared in `include/datoviz/scene.h`:3847._
 
 #### `dvz_labels_set_boundary()` { #dvz_labels_set_boundary .dvz-api-function }
 
@@ -2653,7 +2655,7 @@ DvzResult dvz_labels_set_boundary(
 | `width_px` | `float` | boundary width in pixels |
 | `color` | [`DvzColor`](runtime-utilities.md#type-dvzcolor) | boundary color |
 
-_Declared in `include/datoviz/scene.h`:3870._
+_Declared in `include/datoviz/scene.h`:3891._
 
 #### `dvz_labels_set_fallback_seed()` { #dvz_labels_set_fallback_seed .dvz-api-function }
 
@@ -2672,7 +2674,7 @@ DvzResult dvz_labels_set_fallback_seed(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `seed` | `uint32_t` | fallback-color seed |
 
-_Declared in `include/datoviz/scene.h`:3880._
+_Declared in `include/datoviz/scene.h`:3901._
 
 #### `dvz_labels_set_hidden()` { #dvz_labels_set_hidden .dvz-api-function }
 
@@ -2693,7 +2695,7 @@ DvzResult dvz_labels_set_hidden(
 | `ids` | `const` [`DvzCategoryId`](scene.md#type-dvzcategoryid) * | hidden label IDs, or NULL when count is 0 |
 | `count` | `uint32_t` | hidden label ID count |
 
-_Declared in `include/datoviz/scene.h`:3857._
+_Declared in `include/datoviz/scene.h`:3878._
 
 #### `dvz_labels_set_opacity()` { #dvz_labels_set_opacity .dvz-api-function }
 
@@ -2712,7 +2714,7 @@ DvzResult dvz_labels_set_opacity(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `opacity` | `float` | opacity multiplier in [0, 1] |
 
-_Declared in `include/datoviz/scene.h`:3816._
+_Declared in `include/datoviz/scene.h`:3837._
 
 #### `dvz_labels_set_selected()` { #dvz_labels_set_selected .dvz-api-function }
 
@@ -2731,7 +2733,7 @@ DvzResult dvz_labels_set_selected(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `label_id` | [`DvzCategoryId`](scene.md#type-dvzcategoryid) | selected label ID |
 
-_Declared in `include/datoviz/scene.h`:3836._
+_Declared in `include/datoviz/scene.h`:3857._
 
 #### `dvz_labels_set_slice_axis()` { #dvz_labels_set_slice_axis .dvz-api-function }
 
@@ -2750,7 +2752,7 @@ DvzResult dvz_labels_set_slice_axis(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `axis` | [`DvzVolumeAxis`](visuals.md#type-dvzvolumeaxis) | slice axis |
 
-_Declared in `include/datoviz/scene.h`:3890._
+_Declared in `include/datoviz/scene.h`:3911._
 
 #### `dvz_labels_set_slice_position()` { #dvz_labels_set_slice_position .dvz-api-function }
 
@@ -2769,7 +2771,7 @@ DvzResult dvz_labels_set_slice_position(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 | `position` | `double` | normalized slice position in [0, 1] |
 
-_Declared in `include/datoviz/scene.h`:3900._
+_Declared in `include/datoviz/scene.h`:3921._
 
 #### `dvz_labels_state()` { #dvz_labels_state .dvz-api-function }
 
@@ -2786,7 +2788,7 @@ const DvzLabelsState * dvz_labels_state(
 | return | `const` [`DvzLabelsState`](visuals.md#type-dvzlabelsstate) * | the labels state, or NULL on error |
 | `visual` | `const` [`DvzVisual`](visuals.md#type-dvzvisual) * | the labels visual |
 
-_Declared in `include/datoviz/scene.h`:3909._
+_Declared in `include/datoviz/scene.h`:3930._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -2812,7 +2814,7 @@ _Declared in `include/datoviz/scene.h`:3909._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1137._
+    _Declared in `include/datoviz/scene/types.h`:1149._
 
 ## Limb { #limb }
 
@@ -2831,7 +2833,7 @@ _Declared in `include/datoviz/scene.h`:3909._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1025._
+    _Declared in `include/datoviz/scene/types.h`:1037._
 
 ## Marker { #marker }
 
@@ -2997,7 +2999,7 @@ _Declared in `include/datoviz/scene.h`:2847._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1077._
+    _Declared in `include/datoviz/scene/types.h`:1089._
 
 ## Materials { #materials }
 
@@ -3123,7 +3125,7 @@ _Declared in `include/datoviz/scene.h`:2645._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1035._
+    _Declared in `include/datoviz/scene/types.h`:1047._
 
 <a id="type-dvzmaterialmodel"></a>
 
@@ -3153,7 +3155,7 @@ _Declared in `include/datoviz/scene.h`:2645._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1004._
+    _Declared in `include/datoviz/scene/types.h`:1016._
 
 <a id="type-dvzstandardmaterial"></a>
 
@@ -3169,7 +3171,7 @@ _Declared in `include/datoviz/scene.h`:2645._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1014._
+    _Declared in `include/datoviz/scene/types.h`:1026._
 
 ## Mesh { #mesh }
 
@@ -3200,6 +3202,37 @@ DvzVisual * dvz_mesh(
 
 _Declared in `include/datoviz/scene.h`:3074._
 
+#### `dvz_mesh_set_fragment_clip()` { #dvz_mesh_set_fragment_clip .dvz-api-function }
+
+Copy authored per-vertex fragment coverage for an ordinary triangle mesh.
+
+Each vec2 stores signed distance and an exact 0/1 zero-inclusion flag. The distance is
+perspective-interpolated; positive fragments survive, negative fragments are discarded,
+and zero survives only when the triangle's flag is one. Flags must agree at all vertices
+of each triangle. NULL with vertex_count zero clears coverage. No epsilon is applied.
+
+Supported: untextured, noninstanced OPAQUE/BLENDED/WBOIT meshes, optionally with an indexed
+state bank. Dense item_state, MASK, depth peeling and scene-depth production/consumption
+conflict. Index data must be CPU-backed and must not advertise storage usage.
+These authored coverage inputs affect both rendering and FACE/ITEM identity queries.
+
+```c
+DvzResult dvz_mesh_set_fragment_clip(
+    DvzVisual * mesh,
+    const vec2 * clip,
+    uint32_t vertex_count
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR without mutation on invalid input |
+| `mesh` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the mesh |
+| `clip` | `const` [`vec2`](runtime-math.md#type-vec2) * | copied float32 [vertex_count,2] values, or NULL to clear |
+| `vertex_count` | `uint32_t` | exact position count, or zero when clearing |
+
+_Declared in `include/datoviz/scene.h`:3095._
+
 #### `dvz_mesh_set_geometry()` { #dvz_mesh_set_geometry .dvz-api-function }
 
 Upload a CPU geometry object into a mesh visual.
@@ -3220,7 +3253,7 @@ DvzResult dvz_mesh_set_geometry(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the mesh visual |
 | `geometry` | `const` [`DvzGeometry`](visuals.md#type-dvzgeometry) * | the CPU geometry object |
 
-_Declared in `include/datoviz/scene.h`:3087._
+_Declared in `include/datoviz/scene.h`:3108._
 
 ## Path { #path }
 
@@ -3247,7 +3280,7 @@ DvzVisual * dvz_path(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-_Declared in `include/datoviz/scene.h`:3715._
+_Declared in `include/datoviz/scene.h`:3736._
 
 #### `dvz_path_set_caps()` { #dvz_path_set_caps .dvz-api-function }
 
@@ -3271,7 +3304,7 @@ DvzResult dvz_path_set_caps(
 | `start_cap` | [`DvzSegmentCap`](visuals.md#type-dvzsegmentcap) | cap applied to each open subpath start |
 | `end_cap` | [`DvzSegmentCap`](visuals.md#type-dvzsegmentcap) | cap applied to each open subpath end |
 
-_Declared in `include/datoviz/scene.h`:3730._
+_Declared in `include/datoviz/scene.h`:3751._
 
 #### `dvz_path_set_join()` { #dvz_path_set_join .dvz-api-function }
 
@@ -3295,7 +3328,7 @@ DvzResult dvz_path_set_join(
 | `join` | [`DvzPathJoin`](visuals.md#type-dvzpathjoin) | the path join style |
 | `miter_limit` | `float` | positive finite miter limit |
 
-_Declared in `include/datoviz/scene.h`:3745._
+_Declared in `include/datoviz/scene.h`:3766._
 
 #### `dvz_path_set_subpaths()` { #dvz_path_set_subpaths .dvz-api-function }
 
@@ -3319,7 +3352,7 @@ DvzResult dvz_path_set_subpaths(
 | `subpath_count` | `uint32_t` | number of subpaths |
 | `lengths` | `const` `uint32_t` * | point count for each subpath |
 
-_Declared in `include/datoviz/scene.h`:3759._
+_Declared in `include/datoviz/scene.h`:3780._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3449,7 +3482,7 @@ _Declared in `include/datoviz/scene.h`:2680._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1066._
+    _Declared in `include/datoviz/scene/types.h`:1078._
 
 ## Polygon { #polygon }
 
@@ -3474,7 +3507,7 @@ DvzPolygon * dvz_polygon(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | reserved polygon flags |
 
-_Declared in `include/datoviz/scene.h`:3310._
+_Declared in `include/datoviz/scene.h`:3331._
 
 #### `dvz_polygon_composite()` { #dvz_polygon_composite .dvz-api-function }
 
@@ -3493,7 +3526,7 @@ DvzComposite * dvz_polygon_composite(
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the source polygon |
 | `flags` | `uint32_t` | reserved composite flags |
 
-_Declared in `include/datoviz/scene.h`:3460._
+_Declared in `include/datoviz/scene.h`:3481._
 
 #### `dvz_polygon_desc()` { #dvz_polygon_desc .dvz-api-function }
 
@@ -3525,7 +3558,7 @@ void dvz_polygon_destroy(
 | --- | --- | --- |
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the polygon |
 
-_Declared in `include/datoviz/scene.h`:3318._
+_Declared in `include/datoviz/scene.h`:3339._
 
 #### `dvz_polygon_set_fill_color()` { #dvz_polygon_set_fill_color .dvz-api-function }
 
@@ -3544,7 +3577,7 @@ DvzResult dvz_polygon_set_fill_color(
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the polygon |
 | `color` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) | RGBA fill color |
 
-_Declared in `include/datoviz/scene.h`:3406._
+_Declared in `include/datoviz/scene.h`:3427._
 
 #### `dvz_polygon_set_geometry()` { #dvz_polygon_set_geometry .dvz-api-function }
 
@@ -3563,7 +3596,7 @@ DvzResult dvz_polygon_set_geometry(
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the polygon |
 | `desc` | `const` [`DvzPolygonDesc`](visuals.md#type-dvzpolygondesc) * | borrowed polygon descriptor |
 
-_Declared in `include/datoviz/scene.h`:3336._
+_Declared in `include/datoviz/scene.h`:3357._
 
 #### `dvz_polygon_set_hole()` { #dvz_polygon_set_hole .dvz-api-function }
 
@@ -3589,7 +3622,7 @@ DvzResult dvz_polygon_set_hole(
 | `xy` | `const` [`dvec2`](runtime-math.md#type-dvec2) * | borrowed XY vertex array |
 | `count` | `uint32_t` | number of hole ring vertices |
 
-_Declared in `include/datoviz/scene.h`:3363._
+_Declared in `include/datoviz/scene.h`:3384._
 
 #### `dvz_polygon_set_id()` { #dvz_polygon_set_id .dvz-api-function }
 
@@ -3608,7 +3641,7 @@ DvzResult dvz_polygon_set_id(
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the polygon |
 | `id` | `uint64_t` | stable user id |
 
-_Declared in `include/datoviz/scene.h`:3373._
+_Declared in `include/datoviz/scene.h`:3394._
 
 #### `dvz_polygon_set_outer()` { #dvz_polygon_set_outer .dvz-api-function }
 
@@ -3629,7 +3662,7 @@ DvzResult dvz_polygon_set_outer(
 | `xy` | `const` [`dvec2`](runtime-math.md#type-dvec2) * | borrowed XY vertex array |
 | `count` | `uint32_t` | number of outer ring vertices |
 
-_Declared in `include/datoviz/scene.h`:3347._
+_Declared in `include/datoviz/scene.h`:3368._
 
 #### `dvz_polygon_set_stroke_caps()` { #dvz_polygon_set_stroke_caps .dvz-api-function }
 
@@ -3650,7 +3683,7 @@ DvzResult dvz_polygon_set_stroke_caps(
 | `start_cap` | [`DvzSegmentCap`](visuals.md#type-dvzsegmentcap) | cap applied to each ring start |
 | `end_cap` | [`DvzSegmentCap`](visuals.md#type-dvzsegmentcap) | cap applied to each ring end |
 
-_Declared in `include/datoviz/scene.h`:3438._
+_Declared in `include/datoviz/scene.h`:3459._
 
 #### `dvz_polygon_set_stroke_color()` { #dvz_polygon_set_stroke_color .dvz-api-function }
 
@@ -3669,7 +3702,7 @@ DvzResult dvz_polygon_set_stroke_color(
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the polygon |
 | `color` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) | RGBA stroke color |
 
-_Declared in `include/datoviz/scene.h`:3416._
+_Declared in `include/datoviz/scene.h`:3437._
 
 #### `dvz_polygon_set_stroke_join()` { #dvz_polygon_set_stroke_join .dvz-api-function }
 
@@ -3690,7 +3723,7 @@ DvzResult dvz_polygon_set_stroke_join(
 | `join` | [`DvzPathJoin`](visuals.md#type-dvzpathjoin) | join style |
 | `miter_limit` | `float` | positive finite miter limit |
 
-_Declared in `include/datoviz/scene.h`:3450._
+_Declared in `include/datoviz/scene.h`:3471._
 
 #### `dvz_polygon_set_stroke_width_px()` { #dvz_polygon_set_stroke_width_px .dvz-api-function }
 
@@ -3709,7 +3742,7 @@ DvzResult dvz_polygon_set_stroke_width_px(
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the polygon |
 | `width` | `float` | stroke width in pixels |
 
-_Declared in `include/datoviz/scene.h`:3426._
+_Declared in `include/datoviz/scene.h`:3447._
 
 #### `dvz_polygon_set_style()` { #dvz_polygon_set_style .dvz-api-function }
 
@@ -3731,7 +3764,7 @@ DvzResult dvz_polygon_set_style(
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the polygon |
 | `style` | `const` [`DvzPolygonStyle`](visuals.md#type-dvzpolygonstyle) * | polygon style descriptor |
 
-_Declared in `include/datoviz/scene.h`:3396._
+_Declared in `include/datoviz/scene.h`:3417._
 
 #### `dvz_polygon_set_visible()` { #dvz_polygon_set_visible .dvz-api-function }
 
@@ -3750,7 +3783,7 @@ DvzResult dvz_polygon_set_visible(
 | `polygon` | [`DvzPolygon`](visuals.md#type-dvzpolygon) * | the polygon |
 | `visible` | `_Bool` | whether the polygon should render |
 
-_Declared in `include/datoviz/scene.h`:3383._
+_Declared in `include/datoviz/scene.h`:3404._
 
 #### `dvz_polygon_style()` { #dvz_polygon_style .dvz-api-function }
 
@@ -3764,7 +3797,7 @@ DvzPolygonStyle dvz_polygon_style(void);
 | --- | --- | --- |
 | return | [`DvzPolygonStyle`](visuals.md#type-dvzpolygonstyle) | default polygon style |
 
-_Declared in `include/datoviz/scene.h`:3326._
+_Declared in `include/datoviz/scene.h`:3347._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -3826,7 +3859,7 @@ _Declared in `include/datoviz/scene.h`:3326._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:930._
+    _Declared in `include/datoviz/scene/types.h`:931._
 
 ## Polygons { #polygons }
 
@@ -3852,7 +3885,7 @@ DvzPolygons * dvz_polygons(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | reserved polygon-set flags |
 
-_Declared in `include/datoviz/scene.h`:3473._
+_Declared in `include/datoviz/scene.h`:3494._
 
 #### `dvz_polygons_add_region()` { #dvz_polygons_add_region .dvz-api-function }
 
@@ -3871,7 +3904,7 @@ uint32_t dvz_polygons_add_region(
 | `set` | [`DvzPolygons`](visuals.md#type-dvzpolygons) * | the polygon set |
 | `desc` | `const` [`DvzPolygonDesc`](visuals.md#type-dvzpolygondesc) * | borrowed polygon descriptor |
 
-_Declared in `include/datoviz/scene.h`:3491._
+_Declared in `include/datoviz/scene.h`:3512._
 
 #### `dvz_polygons_composite()` { #dvz_polygons_composite .dvz-api-function }
 
@@ -3890,7 +3923,7 @@ DvzComposite * dvz_polygons_composite(
 | `set` | [`DvzPolygons`](visuals.md#type-dvzpolygons) * | the polygon set |
 | `flags` | `uint32_t` | reserved composite flags |
 
-_Declared in `include/datoviz/scene.h`:3662._
+_Declared in `include/datoviz/scene.h`:3683._
 
 #### `dvz_polygons_destroy()` { #dvz_polygons_destroy .dvz-api-function }
 
@@ -3906,7 +3939,7 @@ void dvz_polygons_destroy(
 | --- | --- | --- |
 | `set` | [`DvzPolygons`](visuals.md#type-dvzpolygons) * | the polygon set |
 
-_Declared in `include/datoviz/scene.h`:3481._
+_Declared in `include/datoviz/scene.h`:3502._
 
 #### `dvz_polygons_set_region_fill_color()` { #dvz_polygons_set_region_fill_color .dvz-api-function }
 
@@ -3927,7 +3960,7 @@ DvzResult dvz_polygons_set_region_fill_color(
 | `polygon_index` | `uint32_t` | polygon index |
 | `color` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) | RGBA fill color |
 
-_Declared in `include/datoviz/scene.h`:3564._
+_Declared in `include/datoviz/scene.h`:3585._
 
 #### `dvz_polygons_set_region_fill_colors()` { #dvz_polygons_set_region_fill_colors .dvz-api-function }
 
@@ -3950,7 +3983,7 @@ DvzResult dvz_polygons_set_region_fill_colors(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `colors` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) * | RGBA fill colors |
 
-_Declared in `include/datoviz/scene.h`:3577._
+_Declared in `include/datoviz/scene.h`:3598._
 
 #### `dvz_polygons_set_region_geometry()` { #dvz_polygons_set_region_geometry .dvz-api-function }
 
@@ -3971,7 +4004,7 @@ DvzResult dvz_polygons_set_region_geometry(
 | `polygon_index` | `uint32_t` | polygon index |
 | `desc` | `const` [`DvzPolygonDesc`](visuals.md#type-dvzpolygondesc) * | borrowed polygon descriptor |
 
-_Declared in `include/datoviz/scene.h`:3502._
+_Declared in `include/datoviz/scene.h`:3523._
 
 #### `dvz_polygons_set_region_id()` { #dvz_polygons_set_region_id .dvz-api-function }
 
@@ -3992,7 +4025,7 @@ DvzResult dvz_polygons_set_region_id(
 | `polygon_index` | `uint32_t` | polygon index |
 | `id` | `uint64_t` | stable user id |
 
-_Declared in `include/datoviz/scene.h`:3515._
+_Declared in `include/datoviz/scene.h`:3536._
 
 #### `dvz_polygons_set_region_ids()` { #dvz_polygons_set_region_ids .dvz-api-function }
 
@@ -4015,7 +4048,7 @@ DvzResult dvz_polygons_set_region_ids(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `ids` | `const` `uint64_t` * | borrowed stable user id array |
 
-_Declared in `include/datoviz/scene.h`:3527._
+_Declared in `include/datoviz/scene.h`:3548._
 
 #### `dvz_polygons_set_region_stroke_color()` { #dvz_polygons_set_region_stroke_color .dvz-api-function }
 
@@ -4036,7 +4069,7 @@ DvzResult dvz_polygons_set_region_stroke_color(
 | `polygon_index` | `uint32_t` | polygon index |
 | `color` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) | RGBA stroke color |
 
-_Declared in `include/datoviz/scene.h`:3589._
+_Declared in `include/datoviz/scene.h`:3610._
 
 #### `dvz_polygons_set_region_stroke_colors()` { #dvz_polygons_set_region_stroke_colors .dvz-api-function }
 
@@ -4059,7 +4092,7 @@ DvzResult dvz_polygons_set_region_stroke_colors(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `colors` | `const` [`DvzColor`](runtime-utilities.md#type-dvzcolor) * | RGBA stroke colors |
 
-_Declared in `include/datoviz/scene.h`:3602._
+_Declared in `include/datoviz/scene.h`:3623._
 
 #### `dvz_polygons_set_region_stroke_width_px()` { #dvz_polygons_set_region_stroke_width_px .dvz-api-function }
 
@@ -4080,7 +4113,7 @@ DvzResult dvz_polygons_set_region_stroke_width_px(
 | `polygon_index` | `uint32_t` | polygon index |
 | `width` | `float` | stroke width in pixels |
 
-_Declared in `include/datoviz/scene.h`:3615._
+_Declared in `include/datoviz/scene.h`:3636._
 
 #### `dvz_polygons_set_region_stroke_widths_px()` { #dvz_polygons_set_region_stroke_widths_px .dvz-api-function }
 
@@ -4103,7 +4136,7 @@ DvzResult dvz_polygons_set_region_stroke_widths_px(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `widths` | `const` `float` * | stroke widths in pixels |
 
-_Declared in `include/datoviz/scene.h`:3627._
+_Declared in `include/datoviz/scene.h`:3648._
 
 #### `dvz_polygons_set_region_visibilities()` { #dvz_polygons_set_region_visibilities .dvz-api-function }
 
@@ -4126,7 +4159,7 @@ DvzResult dvz_polygons_set_region_visibilities(
 | `polygon_count` | `uint32_t` | number of regions to update |
 | `visible` | `const` `_Bool` * | borrowed visibility array |
 
-_Declared in `include/datoviz/scene.h`:3552._
+_Declared in `include/datoviz/scene.h`:3573._
 
 #### `dvz_polygons_set_region_visible()` { #dvz_polygons_set_region_visible .dvz-api-function }
 
@@ -4147,7 +4180,7 @@ DvzResult dvz_polygons_set_region_visible(
 | `polygon_index` | `uint32_t` | polygon index |
 | `visible` | `_Bool` | whether the region should render |
 
-_Declared in `include/datoviz/scene.h`:3540._
+_Declared in `include/datoviz/scene.h`:3561._
 
 #### `dvz_polygons_set_stroke_caps()` { #dvz_polygons_set_stroke_caps .dvz-api-function }
 
@@ -4168,7 +4201,7 @@ DvzResult dvz_polygons_set_stroke_caps(
 | `start_cap` | [`DvzSegmentCap`](visuals.md#type-dvzsegmentcap) | cap applied to each ring start |
 | `end_cap` | [`DvzSegmentCap`](visuals.md#type-dvzsegmentcap) | cap applied to each ring end |
 
-_Declared in `include/datoviz/scene.h`:3640._
+_Declared in `include/datoviz/scene.h`:3661._
 
 #### `dvz_polygons_set_stroke_join()` { #dvz_polygons_set_stroke_join .dvz-api-function }
 
@@ -4189,7 +4222,7 @@ DvzResult dvz_polygons_set_stroke_join(
 | `join` | [`DvzPathJoin`](visuals.md#type-dvzpathjoin) | join style |
 | `miter_limit` | `float` | positive finite miter limit |
 
-_Declared in `include/datoviz/scene.h`:3652._
+_Declared in `include/datoviz/scene.h`:3673._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -4638,7 +4671,7 @@ _Declared in `include/datoviz/scene.h`:2807._
     typedef uint32_t DvzSymbolId;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:108._
+    _Declared in `include/datoviz/scene/types.h`:109._
 
 <a id="type-dvzsymbolimagedesc"></a>
 
@@ -4653,7 +4686,7 @@ _Declared in `include/datoviz/scene.h`:2807._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1088._
+    _Declared in `include/datoviz/scene/types.h`:1100._
 
 <a id="type-dvzsymbolset"></a>
 
@@ -4663,7 +4696,7 @@ _Declared in `include/datoviz/scene.h`:2807._
     typedef struct DvzSymbolSet DvzSymbolSet;
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:93._
+    _Declared in `include/datoviz/scene/types.h`:94._
 
 <a id="type-dvzsymbolsourcekind"></a>
 
@@ -4964,7 +4997,7 @@ _Declared in `include/datoviz/scene.h`:2997._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:916._
+    _Declared in `include/datoviz/scene/types.h`:917._
 
 ## Visual { #visual }
 
@@ -5827,6 +5860,30 @@ DvzResult dvz_visual_set_item_range(
 
 _Declared in `include/datoviz/scene.h`:2241._
 
+#### `dvz_visual_set_item_state_buffer()` { #dvz_visual_set_item_state_buffer .dvz-api-function }
+
+Bind copied uint32 state indices, one per vertex, to an ordinary untextured indexed triangle
+mesh in the same scene. Dense item_state and instancing conflict. NULL buffer clears binding.
+Author colors, geometry indices, and query FACE identities are unchanged.
+
+```c
+DvzResult dvz_visual_set_item_state_buffer(
+    DvzVisual * visual,
+    DvzItemStateBuffer * buffer,
+    const uint32_t * indices,
+    uint32_t vertex_count
+);
+```
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * |  |
+| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * |  |
+| `indices` | `const` `uint32_t` * |  |
+| `vertex_count` | `uint32_t` |  |
+
+_Declared in `include/datoviz/scene/interaction.h`:561._
+
 #### `dvz_visual_set_link_keys()` { #dvz_visual_set_link_keys .dvz-api-function }
 
 Bind per-item link keys for a visual on one link channel.
@@ -6184,7 +6241,7 @@ _Declared in `include/datoviz/scene.h`:1877._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1166._
+    _Declared in `include/datoviz/scene/types.h`:1178._
 
 <a id="type-dvzvisualattrformat"></a>
 
@@ -6214,7 +6271,7 @@ _Declared in `include/datoviz/scene.h`:1877._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1200._
+    _Declared in `include/datoviz/scene/types.h`:1212._
 
 <a id="type-dvzvisualattrmutability"></a>
 
@@ -6286,7 +6343,7 @@ _Declared in `include/datoviz/scene.h`:1877._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1179._
+    _Declared in `include/datoviz/scene/types.h`:1191._
 
 <a id="type-dvzvisualdataview"></a>
 
@@ -6303,7 +6360,7 @@ _Declared in `include/datoviz/scene.h`:1877._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1188._
+    _Declared in `include/datoviz/scene/types.h`:1200._
 
 <a id="type-dvzvisualshaderdesc"></a>
 
@@ -6327,7 +6384,7 @@ _Declared in `include/datoviz/scene.h`:1877._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:307._
+    _Declared in `include/datoviz/scene/types.h`:308._
 
 <a id="type-dvzvisualshaderkind"></a>
 
@@ -6375,7 +6432,7 @@ _Declared in `include/datoviz/scene.h`:1877._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:294._
+    _Declared in `include/datoviz/scene/types.h`:295._
 
 <a id="type-dvzvisualtransformkind"></a>
 
@@ -6446,7 +6503,7 @@ DvzVisual * dvz_volume(
 | `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the scene |
 | `flags` | `uint32_t` | variant flags |
 
-_Declared in `include/datoviz/scene.h`:3950._
+_Declared in `include/datoviz/scene.h`:3971._
 
 #### `dvz_volume_clear_clipping()` { #dvz_volume_clear_clipping .dvz-api-function }
 
@@ -6463,7 +6520,7 @@ DvzResult dvz_volume_clear_clipping(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on error |
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 
-_Declared in `include/datoviz/scene.h`:4111._
+_Declared in `include/datoviz/scene.h`:4132._
 
 #### `dvz_volume_clear_clipping_plane()` { #dvz_volume_clear_clipping_plane .dvz-api-function }
 
@@ -6480,7 +6537,7 @@ DvzResult dvz_volume_clear_clipping_plane(
 | return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | 0 on success, -1 on error |
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 
-_Declared in `include/datoviz/scene.h`:4102._
+_Declared in `include/datoviz/scene.h`:4123._
 
 #### `dvz_volume_set_alpha_stops()` { #dvz_volume_set_alpha_stops .dvz-api-function }
 
@@ -6501,7 +6558,7 @@ DvzResult dvz_volume_set_alpha_stops(
 | `stops` | `const` [`DvzVolumeAlphaStop`](visuals.md#type-dvzvolumealphastop) * | alpha stops sorted or unsorted by position |
 | `count` | `uint32_t` | number of stops, at most 8 |
 
-_Declared in `include/datoviz/scene.h`:4064._
+_Declared in `include/datoviz/scene.h`:4085._
 
 #### `dvz_volume_set_axis_mapping()` { #dvz_volume_set_axis_mapping .dvz-api-function }
 
@@ -6526,7 +6583,7 @@ DvzResult dvz_volume_set_axis_mapping(
 | `axis_order` | `const` `uint32_t`[3] | texture-axis source order, a permutation of 0, 1, 2 |
 | `axis_flip` | `const` `_Bool`[3] | optional per-texture-axis flips |
 
-_Declared in `include/datoviz/scene.h`:4041._
+_Declared in `include/datoviz/scene.h`:4062._
 
 #### `dvz_volume_set_bounds()` { #dvz_volume_set_bounds .dvz-api-function }
 
@@ -6550,7 +6607,7 @@ DvzResult dvz_volume_set_bounds(
 | `bounds_min` | `const` `double`[3] | minimum object-space coordinate |
 | `bounds_max` | `const` `double`[3] | maximum object-space coordinate |
 
-_Declared in `include/datoviz/scene.h`:4026._
+_Declared in `include/datoviz/scene.h`:4047._
 
 #### `dvz_volume_set_clipping_box()` { #dvz_volume_set_clipping_box .dvz-api-function }
 
@@ -6571,7 +6628,7 @@ DvzResult dvz_volume_set_clipping_box(
 | `clip_min` | `const` `double`[3] | minimum normalized clip coordinate |
 | `clip_max` | `const` `double`[3] | maximum normalized clip coordinate |
 
-_Declared in `include/datoviz/scene.h`:4077._
+_Declared in `include/datoviz/scene.h`:4098._
 
 #### `dvz_volume_set_clipping_plane()` { #dvz_volume_set_clipping_plane .dvz-api-function }
 
@@ -6597,7 +6654,7 @@ DvzResult dvz_volume_set_clipping_plane(
 | `normal` | `const` `double`[3] | non-zero clipping plane normal |
 | `keep_positive` | `_Bool` | whether to keep the positive side of the plane |
 
-_Declared in `include/datoviz/scene.h`:4092._
+_Declared in `include/datoviz/scene.h`:4113._
 
 #### `dvz_volume_set_opacity()` { #dvz_volume_set_opacity .dvz-api-function }
 
@@ -6616,7 +6673,7 @@ DvzResult dvz_volume_set_opacity(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `opacity` | `float` | opacity multiplier in [0, 1] |
 
-_Declared in `include/datoviz/scene.h`:3960._
+_Declared in `include/datoviz/scene.h`:3981._
 
 #### `dvz_volume_set_render_mode()` { #dvz_volume_set_render_mode .dvz-api-function }
 
@@ -6635,7 +6692,7 @@ DvzResult dvz_volume_set_render_mode(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `mode` | [`DvzVolumeRenderMode`](visuals.md#type-dvzvolumerendermode) | the render mode |
 
-_Declared in `include/datoviz/scene.h`:3981._
+_Declared in `include/datoviz/scene.h`:4002._
 
 #### `dvz_volume_set_sampling()` { #dvz_volume_set_sampling .dvz-api-function }
 
@@ -6654,7 +6711,7 @@ DvzResult dvz_volume_set_sampling(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `sampling` | [`DvzVolumeSamplingMode`](visuals.md#type-dvzvolumesamplingmode) | the sampling mode |
 
-_Declared in `include/datoviz/scene.h`:3971._
+_Declared in `include/datoviz/scene.h`:3992._
 
 #### `dvz_volume_set_slice_axis()` { #dvz_volume_set_slice_axis .dvz-api-function }
 
@@ -6673,7 +6730,7 @@ DvzResult dvz_volume_set_slice_axis(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `axis` | [`DvzVolumeAxis`](visuals.md#type-dvzvolumeaxis) | axis normal for slicing planes (X/Y/Z) |
 
-_Declared in `include/datoviz/scene.h`:3991._
+_Declared in `include/datoviz/scene.h`:4012._
 
 #### `dvz_volume_set_slice_position()` { #dvz_volume_set_slice_position .dvz-api-function }
 
@@ -6692,7 +6749,7 @@ DvzResult dvz_volume_set_slice_position(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `position` | `double` | slice position in [0, 1], where 0 is the minimum axis coordinate |
 
-_Declared in `include/datoviz/scene.h`:4001._
+_Declared in `include/datoviz/scene.h`:4022._
 
 #### `dvz_volume_set_step_count()` { #dvz_volume_set_step_count .dvz-api-function }
 
@@ -6711,7 +6768,7 @@ DvzResult dvz_volume_set_step_count(
 | `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 | `step_count` | `uint32_t` | number of raymarch samples |
 
-_Declared in `include/datoviz/scene.h`:4011._
+_Declared in `include/datoviz/scene.h`:4032._
 
 #### `dvz_volume_set_value_range()` { #dvz_volume_set_value_range .dvz-api-function }
 
@@ -6732,7 +6789,7 @@ DvzResult dvz_volume_set_value_range(
 | `min` | `double` | minimum scalar value mapped to 0 |
 | `max` | `double` | maximum scalar value mapped to 1 |
 
-_Declared in `include/datoviz/scene.h`:4053._
+_Declared in `include/datoviz/scene.h`:4074._
 
 #### `dvz_volume_state()` { #dvz_volume_state .dvz-api-function }
 
@@ -6749,7 +6806,7 @@ const DvzVolumeState * dvz_volume_state(
 | return | `const` [`DvzVolumeState`](visuals.md#type-dvzvolumestate) * | the volume state, or NULL on error |
 | `visual` | `const` [`DvzVisual`](visuals.md#type-dvzvisual) * | the volume visual |
 
-_Declared in `include/datoviz/scene.h`:4120._
+_Declared in `include/datoviz/scene.h`:4141._
 
 <p class="dvz-api-kind-label" role="heading" aria-level="3"><strong>Types</strong></p>
 
@@ -6764,7 +6821,7 @@ _Declared in `include/datoviz/scene.h`:4120._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1098._
+    _Declared in `include/datoviz/scene/types.h`:1110._
 
 <a id="type-dvzvolumeaxis"></a>
 
@@ -6838,4 +6895,4 @@ _Declared in `include/datoviz/scene.h`:4120._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:1106._
+    _Declared in `include/datoviz/scene/types.h`:1118._

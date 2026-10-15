@@ -147,6 +147,7 @@ typedef struct DvzSceneVisualDesc
     bool point_style_enabled;
     bool has_item_state;
     bool has_indexed_item_state;
+    bool has_fragment_clip;
     bool volume_transfer_rgba;
     DvzColorRole volume_color_role;
     bool scene_occluded;

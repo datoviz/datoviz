@@ -173,7 +173,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:118._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:225._
+    _Declared in `include/datoviz/scene/types.h`:226._
 
 ## Diagnostic { #diagnostic }
 
@@ -321,7 +321,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:127._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:256._
+    _Declared in `include/datoviz/scene/types.h`:257._
 
 ## Emission { #emission }
 
@@ -504,7 +504,7 @@ _Declared in `include/datoviz/scene/frame_plan.h`:509._
     };
     ```
 
-    _Declared in `include/datoviz/scene/types.h`:264._
+    _Declared in `include/datoviz/scene/types.h`:265._
 
 <a id="type-dvzframeplanemitter"></a>
 

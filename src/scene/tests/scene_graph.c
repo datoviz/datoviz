@@ -34,6 +34,9 @@ int test_scene_graph(TstSuite* suite)
 
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_point_emit_glsl_executes);
     TST_SCENE_GRAPH_SHARED_GPU_CASE(test_scene_sphere_emit_glsl_executes);
+    TST_CASE(test_scene_mesh_fragment_clip_consumers_retry);
+    TST_CASE(test_scene_mesh_fragment_clip_contract);
+    TST_CASE(test_scene_mesh_fragment_clip_shader_matrix);
     TST_CASE(test_scene_indexed_item_state_shader_profile_matrix);
     TST_CASE(test_scene_indexed_item_state_sparse_updates_reach_each_figure);
     TST_CASE(test_scene_indexed_item_state_buffer_copies_and_updates_atomically);

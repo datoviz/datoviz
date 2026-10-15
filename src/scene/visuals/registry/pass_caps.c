@@ -75,6 +75,12 @@ const char* _scene_visual_technique_eligibility_error(const DvzVisual* visual)
     DvzVisualLowering lowering = {0};
     if (!_scene_visual_lowering_resolve(visual, &lowering))
         return "visual family lowering is unavailable";
+    if (visual->ops != NULL && visual->ops->eligibility_error != NULL)
+    {
+        const char* family_error = visual->ops->eligibility_error(visual);
+        if (family_error != NULL)
+            return family_error;
+    }
     const char* error = _scene_visual_alpha_eligibility_error(lowering.desc_kind, visual->alpha_mode);
     if (error != NULL)
         return error;
@@ -103,7 +109,8 @@ const char* _scene_visual_technique_eligibility_error(const DvzVisual* visual)
                        visual->alpha_mode == DVZ_ALPHA_DEPTH_PEEL))
         return "OIT shaders do not preserve mesh item-state visibility and styling";
     if (visual->scene_occluder && (item_state || instanced))
-        return "scene occlusion depth does not preserve item-state coverage or instanced transforms";
+        return "scene occlusion depth does not preserve item-state coverage or instanced "
+               "transforms";
     if (visual->scene_occluder && lowering.desc_kind != DVZ_SCENE_VISUAL_DESC_PRIMITIVE &&
         lowering.desc_kind != DVZ_SCENE_VISUAL_DESC_VOLUME)
         return "scene occlusion requires family-conformant depth coverage; currently supported "
@@ -314,7 +321,8 @@ bool _scene_visual_default_pass_caps(
         visual->material.depth_cue_enabled, visual->depth_test_enabled, ops->baseline_layer,
         ops->baseline_product_caps, ops->baseline_phase_participation, out);
     if (_scene_visual_has_dense_attr(visual, "item_state") ||
-        _scene_visual_has_dense_attr(visual, "instance_transform"))
+        _scene_visual_has_dense_attr(visual, "instance_transform") ||
+        _scene_visual_has_dense_attr(visual, "fragment_clip"))
     {
         out->eligible_for_gbuffer = false;
         out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;
@@ -453,7 +461,7 @@ bool _scene_visual_pass_caps_from_desc(
         visual->kind, alpha_mode, controller_mode, visual->has_normal,
         visual->material_buffer_id != 0, visual->depth_cue_enabled, visual->depth_test_enabled,
         baseline_layer, baseline_product_caps, baseline_phase_participation, out);
-    if (visual->has_item_state || visual->has_instance_transform)
+    if (visual->has_item_state || visual->has_instance_transform || visual->has_fragment_clip)
     {
         out->eligible_for_gbuffer = false;
         out->product_caps &= ~(uint32_t)DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SURFACE_NORMAL;

@@ -104,6 +104,7 @@ bool _dvz_scene_query_append_identity_uploads(
     out->metadata = render->u.render.visual_metadata[0];
     _query_namespace_id(out->metadata.position_id, slot);
     _query_namespace_id(out->metadata.color_id, slot);
+    _query_namespace_id(out->metadata.fragment_clip_id, slot);
     _query_namespace_id(out->metadata.size_id, slot);
     // The GPU selects the nearest surviving identity in one shared depth attachment.
     out->metadata.depth_test_enabled = true;

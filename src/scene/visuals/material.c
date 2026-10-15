@@ -30,6 +30,7 @@
 #include "datoviz/ffi.h"
 #include "datoviz/scene.h"
 #include "registry/registry.h"
+#include "_visual_pipeline_internal.h"
 
 
 /*************************************************************************************************/
@@ -757,7 +758,8 @@ DvzResult dvz_visual_set_alpha_mode(DvzVisual* visual, DvzAlphaMode mode)
         return -1;
     }
     bool indexed_technique_change =
-        _visual_family_state(visual)->item_state_bank != NULL &&
+        (_visual_family_state(visual)->item_state_bank != NULL ||
+         _scene_visual_has_dense_attr(visual, "fragment_clip")) &&
         (visual->alpha_mode == DVZ_ALPHA_OPAQUE || visual->alpha_mode == DVZ_ALPHA_BLENDED ||
          visual->alpha_mode == DVZ_ALPHA_WBOIT) &&
         (mode == DVZ_ALPHA_OPAQUE || mode == DVZ_ALPHA_BLENDED || mode == DVZ_ALPHA_WBOIT);

@@ -155,3 +155,12 @@ their scene if you remove them early.
     - Canonical complete example: [Picking](../examples/features/picking.md) - Source: `examples/c/features/picking.c`
     - [Pixel Selection](../examples/features/selection-pixel.md) - Source: `examples/c/features/selection_pixel.c`
     - [Label Probe](../examples/features/probe-labels.md) - Source: `examples/c/features/probe_labels.c`
+
+
+For authored half-open triangle coverage, pass a copied `float32` array of
+`[signed_distance, include_zero]` pairs to `dvz_mesh_set_fragment_clip()`.
+Rendering and FACE/ITEM queries use the same predicate: positive distance survives,
+negative distance is discarded, and exact zero survives only for an inclusive triangle.
+The flag must be constant across each triangle. This supports ordinary untextured
+OPAQUE/BLENDED/WBOIT meshes and composes with indexed state banks. Clip changes
+refresh retained query inputs; bank hover/selection updates preserve them.

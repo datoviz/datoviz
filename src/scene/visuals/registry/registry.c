@@ -186,6 +186,7 @@ static const DvzVisualFamilyAttrDesc MESH_ATTRS[] = {
     {"normal", 3 * sizeof(float), SRC_ITEM_ONLY, false},
     {"texcoords", 2 * sizeof(float), SRC_ITEM_ONLY, false},
     {"state_index", sizeof(uint32_t), SRC_ITEM_ONLY, false},
+    {"fragment_clip", sizeof(vec2), SRC_ITEM_ONLY, false},
     {"instance_transform", 16 * sizeof(float), SRC_ITEM_ONLY, true},
     {"item_state", sizeof(uint32_t), SRC_ITEM_ONLY, true},
 };
@@ -349,7 +350,8 @@ static const DvzVisualFamilyOps VISUAL_FAMILY_OPS[] = {
      .expected_attrs = "position, color, normal, texcoords, instance_transform, item_state",
      .after_attr_set = _scene_mesh_visual_after_attr_set, .upload_position_topology = true,
      .upload_material_params = true, .sampled_field_texture_upload = true,
-     .query_target_count = _scene_mesh_visual_query_target_count},
+     .query_target_count = _scene_mesh_visual_query_target_count,
+     .eligibility_error = _scene_mesh_fragment_clip_error},
     {VISUAL_OPS(
          DVZ_VISUAL_TYPE_VOLUME, "volume", _scene_volume_visual_lowering,
          _scene_volume_visual_bounds, _scene_volume_visual_bind_desc,
