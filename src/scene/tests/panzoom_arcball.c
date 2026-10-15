@@ -2177,6 +2177,93 @@ int test_arcball_pan_right_drag(TstContext* suite, const TstCase* item)
 }
 
 
+/**
+ * Keep screen-space panning proportional to drag pixels across camera zooms.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_arcball_pan_tracks_pixels_at_camera_depth(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    for (uint32_t scenario = 0; scenario < 4; scenario++)
+    {
+        bool orthographic = scenario >= 2;
+        bool wide = (scenario % 2) != 0;
+        uint32_t width = wide ? 1200 : 800;
+        uint32_t height = wide ? 400 : 600;
+        DvzScene* scene = dvz_scene();
+        ANN(scene);
+        DvzFigure* figure = dvz_figure(scene, width, height, 0);
+        DvzPanel* panel = dvz_panel_full(figure);
+        ANN(panel);
+        DvzCameraDesc desc = dvz_camera_desc();
+        glm_vec3_copy((vec3){0, 0, 3}, desc.view.eye);
+        glm_vec3_zero(desc.view.target);
+        desc.projection.type = orthographic ? DVZ_CAMERA_ORTHOGRAPHIC : DVZ_CAMERA_PERSPECTIVE;
+        desc.projection.fov_y = wide ? 1.2f : 0.72f;
+        desc.projection.ortho_height = 4.0f;
+        AT(dvz_panel_set_camera_desc(panel, &desc) == DVZ_OK);
+        DvzController* controller = dvz_arcball(scene, NULL);
+        DvzArcball* arc = dvz_controller_arcball(controller);
+        ANN(arc);
+        AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == DVZ_OK);
+        DvzInputRouter* router = dvz_input_router();
+        ANN(router);
+        AT(dvz_panel_connect_input(panel, router) == DVZ_OK);
+        const float zooms[] = {1.0f, expf(2.0f), expf(2.8f)};
+        for (uint32_t z = 0; z < 3; z++)
+        {
+            AT(dvz_arcball_reset(arc) == DVZ_OK);
+            AT(dvz_arcball_zoom(arc, zooms[z]) == DVZ_OK);
+            DvzMVP before = {0};
+            // Do not rely on a render initializing the input camera projection.
+            dvz_camera_mvp(dvz_panel_camera(panel), &before);
+            dvz_arcball_mvp(arc, &before);
+            DvzInputEvent event = {.type = DVZ_INPUT_EVENT_POINTER};
+            DvzPointerEvent* pointer = &event.content.pointer;
+            pointer->type = DVZ_POINTER_EVENT_DRAG_START;
+            pointer->button = DVZ_POINTER_BUTTON_RIGHT;
+            pointer->pos[0] = width / 2.0f;
+            pointer->pos[1] = height / 2.0f;
+            pointer->window_size[0] = (float)width;
+            pointer->window_size[1] = (float)height;
+            pointer->content_scale = 1.0f;
+            dvz_input_emit_event(router, &event);
+            pointer->type = DVZ_POINTER_EVENT_DRAG;
+            glm_vec2_copy(pointer->pos, pointer->content.d.press_pos);
+            glm_vec2_copy(pointer->pos, pointer->content.d.last_pos);
+            pointer->content.d.shift[0] = 40;
+            pointer->content.d.shift[1] = -30;
+            pointer->content.d.is_press_valid = true;
+            pointer->pos[0] += 40;
+            pointer->pos[1] -= 30;
+            dvz_input_emit_event(router, &event);
+            pointer->type = DVZ_POINTER_EVENT_DRAG_STOP;
+            dvz_input_emit_event(router, &event);
+            DvzMVP after = {0};
+            _scene_panel_apply_mvp(panel, &after);
+            vec4 eye_before = {0}, eye_after = {0}, clip_before = {0}, clip_after = {0};
+            glm_mat4_mulv(before.view, (vec4){0, 0, 0, 1}, eye_before);
+            glm_mat4_mulv(after.view, (vec4){0, 0, 0, 1}, eye_after);
+            glm_mat4_mulv(before.proj, eye_before, clip_before);
+            glm_mat4_mulv(after.proj, eye_after, clip_after);
+            float dx =
+                (clip_after[0] / clip_after[3] - clip_before[0] / clip_before[3]) * width / 2;
+            float dy =
+                (clip_after[1] / clip_after[3] - clip_before[1] / clip_before[3]) * height / 2;
+            AT(fabsf(dx - 40) < 1e-3f);
+            AT(fabsf(dy - 30) < 1e-3f);
+        }
+        dvz_scene_destroy(scene);
+        dvz_input_router_destroy(router);
+    }
+    return 0;
+}
+
+
 int test_arcball_interaction_state(TstContext* suite, const TstCase* item)
 {
     (void)suite;
@@ -2285,6 +2372,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_camera_view_preserves_drag_anchor);
     TST_CASE(test_arcball_zoom_wheel);
     TST_CASE(test_arcball_pan_right_drag);
+    TST_CASE(test_arcball_pan_tracks_pixels_at_camera_depth);
     TST_CASE(test_arcball_interaction_state);
     TST_CASE(test_arcball_double_click_resets);
     TST_CASE(test_arcball_scene_binding_uses_panel_input);

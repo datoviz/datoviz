@@ -164,8 +164,20 @@ static void _arcball_pan_drag(DvzArcball* arcball, vec2 shift_px)
     if (width <= 0.0f || height <= 0.0f)
         return;
 
-    arcball->pan[0] = arcball->pan_center[0] + 2.0f * shift_px[0] / width;
-    arcball->pan[1] = arcball->pan_center[1] - 2.0f * shift_px[1] / height;
+    // Unproject pixel displacements at the arcball's rotation centre. Dolly
+    // changes its eye-space depth, so a fixed view-space shift accelerates
+    // panning on screen as the camera approaches the object.
+    vec4 pivot = {arcball->view[3][0], arcball->view[3][1],
+                  arcball->view[3][2] + logf(arcball->zoom), arcball->view[3][3]};
+    vec4 clip = {0};
+    glm_mat4_mulv(arcball->projection, pivot, clip);
+    float depth = fmaxf(clip[3], 1e-6f);
+    float sx = fabsf(arcball->projection[0][0]);
+    float sy = fabsf(arcball->projection[1][1]);
+    if (sx <= 1e-6f || sy <= 1e-6f)
+        return;
+    arcball->pan[0] = arcball->pan_center[0] + 2.0f * depth * shift_px[0] / (width * sx);
+    arcball->pan[1] = arcball->pan_center[1] - 2.0f * depth * shift_px[1] / (height * sy);
 }
 
 
@@ -261,6 +273,7 @@ DvzArcball* _dvz_arcball(float width, float height, int flags)
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
     glm_mat4_identity(arcball->view);
+    glm_mat4_identity(arcball->projection);
     (void)dvz_arcball_reset(arcball);
     return arcball;
 }
@@ -298,7 +311,21 @@ void _dvz_arcball_view(DvzArcball* arcball, mat4 view)
 
 
 /**
- * Clear the camera view matrix used to interpret drag axes.
+ * Set the camera basis and projection used for rotation and pixel panning.
+ *
+ * @param arcball arcball controller
+ * @param view camera view matrix
+ * @param projection camera projection matrix
+ */
+void _dvz_arcball_camera(DvzArcball* arcball, mat4 view, mat4 projection)
+{
+    _dvz_arcball_view(arcball, view);
+    glm_mat4_copy(projection, arcball->projection);
+}
+
+
+/**
+ * Clear the camera view and projection used to interpret pointer motion.
  *
  * @param arcball arcball controller
  */
@@ -306,6 +333,7 @@ void _dvz_arcball_clear_view(DvzArcball* arcball)
 {
     ANN(arcball);
     glm_mat4_identity(arcball->view);
+    glm_mat4_identity(arcball->projection);
     arcball->has_view = false;
 }
 

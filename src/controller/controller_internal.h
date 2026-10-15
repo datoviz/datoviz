@@ -54,6 +54,7 @@ struct DvzArcball
     vec4 rotation;    /* in-flight quaternion while dragging; cglm versor layout */
     vec3 constrain;   /* constraint axis, or zero when unconstrained */
     mat4 view;        /* optional camera view used to interpret drag axes */
+    mat4 projection;  /* camera projection used for pixel-proportional panning */
     float zoom;       /* multiplicative camera dolly factor */
     vec2 pan;         /* camera view-plane pan offset */
     vec2 pan_center;  /* committed pan baseline used during right/middle drag */

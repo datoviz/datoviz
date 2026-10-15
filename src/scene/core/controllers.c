@@ -990,6 +990,8 @@ static bool _scene_panel_dispatch_pointer_controller(
         vec2 old_size = {arcball->viewport_size[0], arcball->viewport_size[1]};
         mat4 old_view = GLM_MAT4_IDENTITY_INIT;
         glm_mat4_copy(arcball->view, old_view);
+        mat4 old_projection = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_copy(arcball->projection, old_projection);
         bool old_has_view = arcball->has_view;
         DvzPointerEvent local = {0};
         _scene_panel_local_pointer(ev, x, y, &local);
@@ -1009,7 +1011,7 @@ static bool _scene_panel_dispatch_pointer_controller(
             glm_mat4_identity(camera_mvp.view);
             glm_mat4_identity(camera_mvp.proj);
             dvz_camera_mvp(panel->camera, &camera_mvp);
-            _dvz_arcball_view(arcball, camera_mvp.view);
+            _dvz_arcball_camera(arcball, camera_mvp.view, camera_mvp.proj);
         }
         else
         {
@@ -1025,6 +1027,7 @@ static bool _scene_panel_dispatch_pointer_controller(
         }
         glm_vec2_copy(old_size, arcball->viewport_size);
         glm_mat4_copy(old_view, arcball->view);
+        glm_mat4_copy(old_projection, arcball->projection);
         arcball->has_view = old_has_view;
         break;
     }

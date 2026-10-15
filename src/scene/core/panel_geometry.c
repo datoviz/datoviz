@@ -279,7 +279,7 @@ void _scene_panel_apply_mvp(const DvzPanel* panel, DvzMVP* out)
     if (panel->arcball != NULL)
     {
         if (panel->camera != NULL)
-            _dvz_arcball_view(panel->arcball, out->view);
+            _dvz_arcball_camera(panel->arcball, out->view, out->proj);
         else
             _dvz_arcball_clear_view(panel->arcball);
         dvz_arcball_mvp(panel->arcball, out);

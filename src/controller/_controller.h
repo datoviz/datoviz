@@ -37,6 +37,7 @@ DvzPanzoom* _dvz_panzoom(float width, float height, int flags);
 DvzArcball* _dvz_arcball(float width, float height, int flags);
 
 void _dvz_arcball_view(DvzArcball* arcball, mat4 view);
+void _dvz_arcball_camera(DvzArcball* arcball, mat4 view, mat4 projection);
 
 void _dvz_arcball_clear_view(DvzArcball* arcball);
 

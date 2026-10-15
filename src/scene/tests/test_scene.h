@@ -230,6 +230,7 @@ int test_arcball_camera_view_preserves_drag_anchor(TstContext* suite, const TstC
 int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item);
 
 int test_arcball_pan_right_drag(TstContext* suite, const TstCase* item);
+int test_arcball_pan_tracks_pixels_at_camera_depth(TstContext* suite, const TstCase* item);
 
 int test_arcball_interaction_state(TstContext* suite, const TstCase* item);
 
