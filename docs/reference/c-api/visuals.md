@@ -5877,12 +5877,13 @@ DvzResult dvz_visual_set_item_state_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * |  |
-| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * |  |
-| `indices` | `const` `uint32_t` * |  |
-| `vertex_count` | `uint32_t` |  |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR without replacing an invalid binding |
+| `visual` | [`DvzVisual`](visuals.md#type-dvzvisual) * | the mesh visual |
+| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * | the scene-owned bank, or NULL to clear the binding |
+| `indices` | `const` `uint32_t` * | copied per-vertex state slots; ignored when clearing the binding |
+| `vertex_count` | `uint32_t` | exact vertex count; ignored when clearing the binding |
 
-_Declared in `include/datoviz/scene/interaction.h`:561._
+_Declared in `include/datoviz/scene/interaction.h`:593._
 
 #### `dvz_visual_set_link_keys()` { #dvz_visual_set_link_keys .dvz-api-function }
 

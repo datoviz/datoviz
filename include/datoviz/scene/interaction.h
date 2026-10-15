@@ -526,20 +526,40 @@ DVZ_EXPORT DvzResult dvz_pinned_readout_set_format(
     DvzPinnedReadout* readout, const DvzFormatDesc* format);
 
 
-/** Return the descriptor for a fixed-cardinality, scene-owned state bank. */
+/**
+ * Return the descriptor for a fixed-cardinality, scene-owned state bank.
+ *
+ * @return a default size-versioned descriptor; set a positive slot_count before creation
+ */
 DVZ_EXPORT DvzItemStateBufferDesc dvz_item_state_buffer_desc(void);
 
-/** Create a bank, synchronously copying desc->words. Zero slots and unknown bits fail. */
+/**
+ * Create a bank, synchronously copying desc->words. Zero slots and unknown bits fail.
+ *
+ * @param scene the owning scene
+ * @param desc required descriptor borrowed for the call; NULL words initializes zero state
+ * @return the scene-owned bank, or NULL on error
+ */
 DVZ_EXPORT DvzItemStateBuffer*
 dvz_item_state_buffer(DvzScene* scene, const DvzItemStateBufferDesc* desc);
 
-/** Destroy a bank and clear its visual bindings. Safe to call again before slot reuse. */
+/**
+ * Destroy a bank and clear its visual bindings. Safe to call again before slot reuse.
+ *
+ * @param buffer the state bank
+ */
 DVZ_EXPORT void dvz_item_state_buffer_destroy(DvzItemStateBuffer* buffer);
 
 /**
  * Atomically replace complete words at slots. Arrays are copied synchronously; repeated slots
  * use the last word. Zero updates is a no-op. The application composes all writers' bits.
  * Changes request rendering without invalidating geometry/alpha query inputs.
+ *
+ * @param buffer the state bank
+ * @param slots slot indices copied for the call, or NULL when update_count is zero
+ * @param words complete replacement words copied for the call, or NULL for zero updates
+ * @param update_count number of slot and word pairs
+ * @return DVZ_OK on success, DVZ_ERROR without applying an invalid replacement
  */
 DVZ_EXPORT DvzResult dvz_item_state_buffer_update(
     DvzItemStateBuffer* buffer, const uint32_t* slots, const uint32_t* words,
@@ -548,6 +568,12 @@ DVZ_EXPORT DvzResult dvz_item_state_buffer_update(
 /**
  * Set shared color/alpha styles and explicit selection context. NULL styles restore defaults.
  * SCALE is unsupported in the indexed slice. Words do not imply selection context.
+ *
+ * @param buffer the state bank
+ * @param selection selection styles borrowed for the call, or NULL for defaults
+ * @param hovered hover style borrowed for the call, or NULL for defaults
+ * @param selection_active whether contextual selection styling is active
+ * @return DVZ_OK on success, DVZ_ERROR if the bank or styles are invalid
  */
 DVZ_EXPORT DvzResult dvz_item_state_buffer_style(
     DvzItemStateBuffer* buffer, const DvzSelectionVisualStyle* selection,
@@ -557,6 +583,12 @@ DVZ_EXPORT DvzResult dvz_item_state_buffer_style(
  * Bind copied uint32 state indices, one per vertex, to an ordinary untextured indexed triangle
  * mesh in the same scene. Dense item_state and instancing conflict. NULL buffer clears binding.
  * Author colors, geometry indices, and query FACE identities are unchanged.
+ *
+ * @param visual the mesh visual
+ * @param buffer the scene-owned bank, or NULL to clear the binding
+ * @param indices copied per-vertex state slots; ignored when clearing the binding
+ * @param vertex_count exact vertex count; ignored when clearing the binding
+ * @return DVZ_OK on success, DVZ_ERROR without replacing an invalid binding
  */
 DVZ_EXPORT DvzResult dvz_visual_set_item_state_buffer(
     DvzVisual* visual, DvzItemStateBuffer* buffer, const uint32_t* indices, uint32_t vertex_count);

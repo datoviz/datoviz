@@ -4448,10 +4448,11 @@ DvzItemStateBuffer * dvz_item_state_buffer(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `scene` | [`DvzScene`](scene.md#type-dvzscene) * |  |
-| `desc` | `const` [`DvzItemStateBufferDesc`](scene.md#type-dvzitemstatebufferdesc) * |  |
+| return | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * | the scene-owned bank, or NULL on error |
+| `scene` | [`DvzScene`](scene.md#type-dvzscene) * | the owning scene |
+| `desc` | `const` [`DvzItemStateBufferDesc`](scene.md#type-dvzitemstatebufferdesc) * | required descriptor borrowed for the call; NULL words initializes zero state |
 
-_Declared in `include/datoviz/scene/interaction.h`:534._
+_Declared in `include/datoviz/scene/interaction.h`:544._
 
 #### `dvz_item_state_buffer_desc()` { #dvz_item_state_buffer_desc .dvz-api-function }
 
@@ -4461,9 +4462,13 @@ Return the descriptor for a fixed-cardinality, scene-owned state bank.
 DvzItemStateBufferDesc dvz_item_state_buffer_desc(void);
 ```
 
+| Field | Type | Description |
+| --- | --- | --- |
+| return | [`DvzItemStateBufferDesc`](scene.md#type-dvzitemstatebufferdesc) | a default size-versioned descriptor; set a positive slot_count before creation |
+
 Related: [`dvz_item_state_buffer()`](#dvz_item_state_buffer).
 
-_Declared in `include/datoviz/scene/interaction.h`:530._
+_Declared in `include/datoviz/scene/interaction.h`:534._
 
 #### `dvz_item_state_buffer_destroy()` { #dvz_item_state_buffer_destroy .dvz-api-function }
 
@@ -4477,9 +4482,9 @@ void dvz_item_state_buffer_destroy(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * |  |
+| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * | the state bank |
 
-_Declared in `include/datoviz/scene/interaction.h`:537._
+_Declared in `include/datoviz/scene/interaction.h`:551._
 
 #### `dvz_item_state_buffer_style()` { #dvz_item_state_buffer_style .dvz-api-function }
 
@@ -4497,12 +4502,13 @@ DvzResult dvz_item_state_buffer_style(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * |  |
-| `selection` | `const` [`DvzSelectionVisualStyle`](scene.md#type-dvzselectionvisualstyle) * |  |
-| `hovered` | `const` [`DvzItemStateVisualStyle`](scene.md#type-dvzitemstatevisualstyle) * |  |
-| `selection_active` | `_Bool` |  |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR if the bank or styles are invalid |
+| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * | the state bank |
+| `selection` | `const` [`DvzSelectionVisualStyle`](scene.md#type-dvzselectionvisualstyle) * | selection styles borrowed for the call, or NULL for defaults |
+| `hovered` | `const` [`DvzItemStateVisualStyle`](scene.md#type-dvzitemstatevisualstyle) * | hover style borrowed for the call, or NULL for defaults |
+| `selection_active` | `_Bool` | whether contextual selection styling is active |
 
-_Declared in `include/datoviz/scene/interaction.h`:552._
+_Declared in `include/datoviz/scene/interaction.h`:578._
 
 #### `dvz_item_state_buffer_update()` { #dvz_item_state_buffer_update .dvz-api-function }
 
@@ -4521,12 +4527,13 @@ DvzResult dvz_item_state_buffer_update(
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * |  |
-| `slots` | `const` `uint32_t` * |  |
-| `words` | `const` `uint32_t` * |  |
-| `update_count` | `uint32_t` |  |
+| return | [`DvzResult`](runtime-utilities.md#type-dvzresult) | DVZ_OK on success, DVZ_ERROR without applying an invalid replacement |
+| `buffer` | [`DvzItemStateBuffer`](scene.md#type-dvzitemstatebuffer) * | the state bank |
+| `slots` | `const` `uint32_t` * | slot indices copied for the call, or NULL when update_count is zero |
+| `words` | `const` `uint32_t` * | complete replacement words copied for the call, or NULL for zero updates |
+| `update_count` | `uint32_t` | number of slot and word pairs |
 
-_Declared in `include/datoviz/scene/interaction.h`:544._
+_Declared in `include/datoviz/scene/interaction.h`:564._
 
 #### `dvz_item_state_visual_style()` { #dvz_item_state_visual_style .dvz-api-function }
 

@@ -89,6 +89,8 @@ The generated top-level facade currently adapts these policy-declared calls. Oth
 | --- | --- |
 | Dense visual data | `dvz_visual_set_data()`, `dvz_visual_set_data_many()`, `dvz_visual_set_data_range()`, `dvz_visual_set_index_data()` |
 | Scene buffers | `dvz_scene_buffer_set_data()` |
+| Indexed item state | `dvz_item_state_buffer_update()`, `dvz_visual_set_item_state_buffer()` |
+| Mesh fragment clipping | `dvz_mesh_set_fragment_clip()` |
 | Bands and bars | `dvz_band_set_bounds()`, `dvz_band_set_center()`, `dvz_bars_set_intervals()` |
 | Axis and colorbar ticks | `dvz_axis_set_ticks()`, `dvz_colorbar_set_ticks()` |
 | Text arrays | `dvz_text_set_items()`, `dvz_text_set_strings()`, `dvz_text_set_positions()`, `dvz_text_set_offsets()`, `dvz_text_set_anchors()`, `dvz_text_set_sizes()`, `dvz_text_set_colors()`, `dvz_text_set_angles()` |
@@ -96,7 +98,7 @@ The generated top-level facade currently adapts these policy-declared calls. Oth
 | Colormaps and lighting | `dvz_colormap_custom()`, `dvz_panel_set_lights()` |
 | Window strings | `dvz_view_window()` |
 | Retained GUI table | `dvz_gui_table()`, `dvz_gui_table_draw()`, `dvz_gui_table_get_filter()`, `dvz_gui_table_get_selection()`, `dvz_gui_table_get_sort()`, `dvz_gui_table_set_column_bool()`, `dvz_gui_table_set_column_color()`, `dvz_gui_table_set_column_double()`, `dvz_gui_table_set_column_int64()`, `dvz_gui_table_set_column_text()`, `dvz_gui_table_set_matches()`, `dvz_gui_table_set_rows()`, `dvz_gui_table_set_selection()`, `dvz_gui_table_set_styles()`, `dvz_gui_table_set_visible()` |
-| Retained GUI tree | `dvz_gui_tree_draw()`, `dvz_gui_tree_get_expanded()`, `dvz_gui_tree_get_filter()`, `dvz_gui_tree_get_selection()`, `dvz_gui_tree_set_expanded()`, `dvz_gui_tree_set_matches()`, `dvz_gui_tree_set_rows()`, `dvz_gui_tree_set_selection()`, `dvz_gui_tree_set_styles()`, `dvz_gui_tree_set_swatches()`, `dvz_gui_tree_set_visible()` |
+| Retained GUI tree | `dvz_gui_tree_draw()`, `dvz_gui_tree_get_expanded()`, `dvz_gui_tree_get_filter()`, `dvz_gui_tree_get_selection()`, `dvz_gui_tree_set_annotations()`, `dvz_gui_tree_set_expanded()`, `dvz_gui_tree_set_matches()`, `dvz_gui_tree_set_projection()`, `dvz_gui_tree_set_rows()`, `dvz_gui_tree_set_selection()`, `dvz_gui_tree_set_styles()`, `dvz_gui_tree_set_swatches()`, `dvz_gui_tree_set_visible()` |
 
 Retained GUI setters accept Python sequences or contiguous NumPy arrays and copy model data at the
 native boundary. `dvz_gui_tree_draw()` and `dvz_gui_table_draw()` each make one native draw call and

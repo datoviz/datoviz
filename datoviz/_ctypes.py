@@ -22984,7 +22984,13 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_item_state_buffer')
 else:
-    dvz_item_state_buffer.__doc__ = """/** Create a bank, synchronously copying desc->words. Zero slots and unknown bits fail. */"""
+    dvz_item_state_buffer.__doc__ = """/**
+ * Create a bank, synchronously copying desc->words. Zero slots and unknown bits fail.
+ *
+ * @param scene the owning scene
+ * @param desc required descriptor borrowed for the call; NULL words initializes zero state
+ * @return the scene-owned bank, or NULL on error
+ */"""
     dvz_item_state_buffer.argtypes = [ctypes.POINTER(DvzScene), ctypes.POINTER(DvzItemStateBufferDesc)]
     dvz_item_state_buffer.restype = ctypes.POINTER(DvzItemStateBuffer)
 
@@ -22994,7 +23000,11 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_item_state_buffer_desc')
 else:
-    dvz_item_state_buffer_desc.__doc__ = """/** Return the descriptor for a fixed-cardinality, scene-owned state bank. */"""
+    dvz_item_state_buffer_desc.__doc__ = """/**
+ * Return the descriptor for a fixed-cardinality, scene-owned state bank.
+ *
+ * @return a default size-versioned descriptor; set a positive slot_count before creation
+ */"""
     dvz_item_state_buffer_desc.argtypes = []
     dvz_item_state_buffer_desc.restype = DvzItemStateBufferDesc
 
@@ -23004,7 +23014,11 @@ try:
 except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_item_state_buffer_destroy')
 else:
-    dvz_item_state_buffer_destroy.__doc__ = """/** Destroy a bank and clear its visual bindings. Safe to call again before slot reuse. */"""
+    dvz_item_state_buffer_destroy.__doc__ = """/**
+ * Destroy a bank and clear its visual bindings. Safe to call again before slot reuse.
+ *
+ * @param buffer the state bank
+ */"""
     dvz_item_state_buffer_destroy.argtypes = [ctypes.POINTER(DvzItemStateBuffer)]
     dvz_item_state_buffer_destroy.restype = None
 
@@ -23017,6 +23031,12 @@ else:
     dvz_item_state_buffer_style.__doc__ = """/**
  * Set shared color/alpha styles and explicit selection context. NULL styles restore defaults.
  * SCALE is unsupported in the indexed slice. Words do not imply selection context.
+ *
+ * @param buffer the state bank
+ * @param selection selection styles borrowed for the call, or NULL for defaults
+ * @param hovered hover style borrowed for the call, or NULL for defaults
+ * @param selection_active whether contextual selection styling is active
+ * @return DVZ_OK on success, DVZ_ERROR if the bank or styles are invalid
  */"""
     dvz_item_state_buffer_style.argtypes = [ctypes.POINTER(DvzItemStateBuffer), ctypes.POINTER(DvzSelectionVisualStyle), ctypes.POINTER(DvzItemStateVisualStyle), ctypes.c_bool]
     dvz_item_state_buffer_style.restype = ctypes.c_int32
@@ -23031,6 +23051,12 @@ else:
  * Atomically replace complete words at slots. Arrays are copied synchronously; repeated slots
  * use the last word. Zero updates is a no-op. The application composes all writers' bits.
  * Changes request rendering without invalidating geometry/alpha query inputs.
+ *
+ * @param buffer the state bank
+ * @param slots slot indices copied for the call, or NULL when update_count is zero
+ * @param words complete replacement words copied for the call, or NULL for zero updates
+ * @param update_count number of slot and word pairs
+ * @return DVZ_OK on success, DVZ_ERROR without applying an invalid replacement
  */"""
     dvz_item_state_buffer_update.argtypes = [ctypes.POINTER(DvzItemStateBuffer), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
     dvz_item_state_buffer_update.restype = ctypes.c_int32
@@ -34051,6 +34077,12 @@ else:
  * Bind copied uint32 state indices, one per vertex, to an ordinary untextured indexed triangle
  * mesh in the same scene. Dense item_state and instancing conflict. NULL buffer clears binding.
  * Author colors, geometry indices, and query FACE identities are unchanged.
+ *
+ * @param visual the mesh visual
+ * @param buffer the scene-owned bank, or NULL to clear the binding
+ * @param indices copied per-vertex state slots; ignored when clearing the binding
+ * @param vertex_count exact vertex count; ignored when clearing the binding
+ * @return DVZ_OK on success, DVZ_ERROR without replacing an invalid binding
  */"""
     dvz_visual_set_item_state_buffer.argtypes = [ctypes.POINTER(DvzVisual), ctypes.POINTER(DvzItemStateBuffer), ctypes.POINTER(ctypes.c_uint32), ctypes.c_uint32]
     dvz_visual_set_item_state_buffer.restype = ctypes.c_int32
