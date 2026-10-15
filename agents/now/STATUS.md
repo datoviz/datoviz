@@ -70,6 +70,8 @@ RC5 is a contingency only if substantial scientific-profile gaps or RC4 feedback
 
 The RC4 scientific lane also implements bounded indexed mesh item-state banks for sparse GPU hover/selection decoration, with native and live WebGPU proof and real atlas consumer evidence; see [the follow-up](SCIENTIFIC_3D_PROFILE_HANDOFF.md#indexed-item-state-rc4-follow-up-2026-10-14). Full mesh parts and asynchronous picking remain post-v0.4. This source delivery does not freeze a release candidate or close physical-platform, installed-package or canonical-media gates.
 
+The same lane adds generic copied fragment coverage shared by supported mesh rendering and queries, with exact zero inclusion, native/WebGPU proof and original-space atlas boundary integration; see [the coverage record](SCIENTIFIC_3D_PROFILE_HANDOFF.md#original-space-fragment-coverage-follow-up-2026-10-15). The scene suite passes 793/793 and the consumer suite passes 590/590 without skips. These local source results preserve the release, platform and artifact gates above.
+
 The Windows/NVIDIA CUDA/Vulkan external-memory port is a planned non-blocking RC4 engineering lane with a durable task record in [../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md). It does not become an RC4 release gate unless the maintainer explicitly promotes it.
 
 ## Final Gate

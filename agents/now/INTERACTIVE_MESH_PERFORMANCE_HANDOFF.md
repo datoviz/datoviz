@@ -64,6 +64,8 @@ The same synthetic GUI runs measured 0.34 ms/frame for the empty GUI, 0.32 ms/fr
 
 ## Post-v0.4 Sequence
 
+The RC4 lane also adds copied generic fragment coverage for ordinary triangle meshes, shared by rendering and FACE/ITEM queries, so applications can preserve exact half-open source-space boundaries without moving or cutting vertices. The IBL consumer uses private crossing-face presentation copies and the same binary assets. Warm real-atlas queries retain static geometry; the query-cache capacity is now shared between the plan and executor and checked at compile time. See [the coverage follow-up](SCIENTIFIC_3D_PROFILE_HANDOFF.md#original-space-fragment-coverage-follow-up-2026-10-15) for bounded source evidence. This does not introduce mesh parts or asynchronous execution.
+
 The bounded indexed item-state bank is now implemented on the RC4 scientific lane: copied per-vertex u32 slots address a fixed-size scene-owned flags buffer; existing hover/selection styles apply in lit/unlit OPAQUE, BLENDED and WBOIT rendering. Sparse updates redraw without changing FACE/link identity or authored alpha coverage. It is a v0.4 capability, independent of the larger mesh-part API below. Full parts should reuse or evolve this bank machinery rather than introduce a second decoration mechanism. RC3 remains unchanged; RC5 is contingency for acceptance gaps, and final v0.4 validates the chosen capability rather than expanding it.
 
 1. Implement bounded asynchronous query execution and later-frame completion while retaining the explicit synchronous helper.
