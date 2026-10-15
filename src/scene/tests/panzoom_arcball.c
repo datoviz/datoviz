@@ -2334,6 +2334,63 @@ int test_arcball_double_click_resets(TstContext* suite, const TstCase* item)
 
 
 /**
+ * Equivalent drags around a panned pivot must produce the same rotation.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_arcball_rotation_gesture_follows_pan(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_perspective(0.72f, 800.0f / 600.0f, 0.01f, 100.0f, projection);
+    for (uint32_t zoomed = 0; zoomed < 2; zoomed++)
+    {
+        DvzArcball* original = _dvz_arcball(800, 600, 0);
+        DvzArcball* moved = _dvz_arcball(800, 600, 0);
+        ANN(original);
+        ANN(moved);
+        _dvz_arcball_camera(original, view, projection);
+        _dvz_arcball_camera(moved, view, projection);
+        AT(dvz_arcball_zoom(original, zoomed ? expf(2.0f) : 1.0f) == DVZ_OK);
+        AT(dvz_arcball_zoom(moved, zoomed ? expf(2.0f) : 1.0f) == DVZ_OK);
+        AT(dvz_arcball_pan(moved, (vec2){0.2f, -0.1f}) == DVZ_OK);
+        DvzMVP mvp = {0};
+        glm_mat4_copy(view, mvp.view);
+        glm_mat4_copy(projection, mvp.proj);
+        dvz_arcball_mvp(moved, &mvp);
+        vec4 eye = {0}, clip = {0};
+        glm_mat4_mulv(mvp.view, (vec4){0, 0, 0, 1}, eye);
+        glm_mat4_mulv(mvp.proj, eye, clip);
+        vec2 displacement = {clip[0] / clip[3] * 400, -clip[1] / clip[3] * 300};
+        DvzPointerEvent drag = {
+            .type = DVZ_POINTER_EVENT_DRAG, .button = DVZ_POINTER_BUTTON_LEFT,
+            .pos = {500, 300},
+            .content.d = {.press_pos = {320, 300}, .is_press_valid = true},
+        };
+        AT(dvz_arcball_pointer(original, &drag));
+        glm_vec2_add(drag.pos, displacement, drag.pos);
+        glm_vec2_add(drag.content.d.press_pos, displacement, drag.content.d.press_pos);
+        AT(dvz_arcball_pointer(moved, &drag));
+        mat4 original_model = GLM_MAT4_IDENTITY_INIT;
+        mat4 moved_model = GLM_MAT4_IDENTITY_INIT;
+        dvz_arcball_model(original, original_model);
+        dvz_arcball_model(moved, moved_model);
+        for (uint32_t col = 0; col < 4; col++)
+            for (uint32_t row = 0; row < 4; row++)
+                AC(original_model[col][row], moved_model[col][row], 1e-5f);
+        dvz_arcball_destroy(original);
+        dvz_arcball_destroy(moved);
+    }
+    return 0;
+}
+
+
+/**
  * Register scene panzoom and arcball tests.
  *
  * @param suite the active test suite
@@ -2375,6 +2432,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_pan_tracks_pixels_at_camera_depth);
     TST_CASE(test_arcball_interaction_state);
     TST_CASE(test_arcball_double_click_resets);
+    TST_CASE(test_arcball_rotation_gesture_follows_pan);
     TST_CASE(test_arcball_scene_binding_uses_panel_input);
     TST_CASE(test_arcball_panel_input_uses_hidpi_figure_coordinates);
     TST_CASE(test_arcball_linked_panel_wheel_targets_each_panel);

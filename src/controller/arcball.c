@@ -151,6 +151,21 @@ static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
 
 
 /**
+ * Project the rotation pivot after the current camera pan and dolly.
+ *
+ * @param arcball arcball controller
+ * @param clip output homogeneous clip coordinates
+ */
+static void _arcball_pivot_clip(DvzArcball* arcball, vec4 clip)
+{
+    vec4 pivot = {arcball->view[3][0] + arcball->pan[0],
+                  arcball->view[3][1] + arcball->pan[1],
+                  arcball->view[3][2] + logf(arcball->zoom), arcball->view[3][3]};
+    glm_mat4_mulv(arcball->projection, pivot, clip);
+}
+
+
+/**
  * Apply a drag-relative panel-plane pan shift.
  *
  * @param arcball arcball controller
@@ -167,10 +182,8 @@ static void _arcball_pan_drag(DvzArcball* arcball, vec2 shift_px)
     // Unproject pixel displacements at the arcball's rotation centre. Dolly
     // changes its eye-space depth, so a fixed view-space shift accelerates
     // panning on screen as the camera approaches the object.
-    vec4 pivot = {arcball->view[3][0], arcball->view[3][1],
-                  arcball->view[3][2] + logf(arcball->zoom), arcball->view[3][3]};
     vec4 clip = {0};
-    glm_mat4_mulv(arcball->projection, pivot, clip);
+    _arcball_pivot_clip(arcball, clip);
     float depth = fmaxf(clip[3], 1e-6f);
     float sx = fabsf(arcball->projection[0][0]);
     float sy = fabsf(arcball->projection[1][1]);
@@ -631,6 +644,17 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
                 -1.0f + 2.0f * ev->content.d.press_pos[0] / width,
                 +1.0f - 2.0f * ev->content.d.press_pos[1] / height,
             };
+            // The virtual trackball follows the projected geometric pivot,
+            // rather than staying at the viewport centre after a pan.
+            vec4 pivot_clip = {0};
+            _arcball_pivot_clip(arcball, pivot_clip);
+            if (pivot_clip[3] > 1e-6f)
+            {
+                vec2 center = {
+                    pivot_clip[0] / pivot_clip[3], pivot_clip[1] / pivot_clip[3]};
+                glm_vec2_sub(cur_pos, center, cur_pos);
+                glm_vec2_sub(last_pos, center, last_pos);
+            }
             (void)dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
         else if (

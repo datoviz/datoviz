@@ -235,6 +235,7 @@ int test_arcball_pan_tracks_pixels_at_camera_depth(TstContext* suite, const TstC
 int test_arcball_interaction_state(TstContext* suite, const TstCase* item);
 
 int test_arcball_double_click_resets(TstContext* suite, const TstCase* item);
+int test_arcball_rotation_gesture_follows_pan(TstContext* suite, const TstCase* item);
 
 int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase* item);
 
