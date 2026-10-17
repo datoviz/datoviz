@@ -2,6 +2,16 @@
 
 Status: narrow RC3 implementation complete at `d0e904705`, 2026-10-13; RC4 source checkpoints are integrated locally on `rc4/scientific-3d`, while profile acceptance and exact-candidate proof remain pending. The required native non-volume target and RC4/RC5/final boundaries are in [the profile slice](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md). This record separates source inspection from delivered behavior; it does not close a release gate. Preserve [current release evidence](STATUS.md) and its recorded revisions.
 
+## Viewport-centered arcball candidate, 2026-10-17
+
+Local branch `fix/arcball-viewport-orbit` starts from scientific revision `73d0f0bcdd595d2f76e2cdffcc2dd89c25a56858`. Pointer rotation uses a viewport-centered sphere and rebases its world target to the center ray at the retained eye depth without changing the rendered pose. Private orbit translation is composed through the view matrix; the public model matrix stays pure orientation. The pointer camera basis is frozen for each gesture. Full/PAN links carry live orbit translation, while rotation-only links keep gizmos centered; a PAN-only update preserves an active target's cumulative drag baseline.
+
+The original engine fails the large-pan regression. The candidate passes all 39 focused arcball/controller/rendering checks with zero skips, including repeated pan/zoom/orbit, perspective/orthographic and tilted cameras, reset, camera-context restoration and live full/partial linking. Independent high Sol 6.1 review reports no remaining blockers after the partial-link regression was strengthened to prove actual propagation and continued dragging. Both downstream numbered scientific review apps pass bounded startup using the candidate native library and supported Python facade. These checks do not establish interactive acceptance.
+
+The final native full suite passes 1,275/1,275 with zero failures and zero skips under a controlled Xvfb display. The earlier display-authentication run was discarded; it is not acceptance evidence. Build output has no compiler warnings.
+
+The candidate is prepared for interactive Linux review. Publication, integration into the scientific branch or main, and downstream immutable-pin promotion remain pending user review. No public headers or bindings changed.
+
 ## Selection metadata card opt-out, 2026-10-15
 
 `DvzSelectionDesc.selection_flags` now accepts `DVZ_SELECTION_FLAGS_NO_CARD` to disable the automatic selected-item metadata card while retaining query selection and item-state highlighting. Defaults continue to show the card; unsupported bits reject construction. The descriptor layout and scene-owned selection lifetime are unchanged. Consumer applications can supply this selection through their item-interaction descriptor when they present domain-specific details themselves.

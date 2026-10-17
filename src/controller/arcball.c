@@ -116,14 +116,15 @@ static void _arcball_drag_rotation_matrix(DvzArcball* arcball, mat4 out)
     ANN(out);
 
     glm_quat_mat4(arcball->rotation, out);
-    if (!arcball->has_view)
+    if (!arcball->has_view && !arcball->orbit_active)
         return;
+    mat4* basis = arcball->orbit_active ? &arcball->orbit_view : &arcball->view;
 
     mat4 view_rot = GLM_MAT4_IDENTITY_INIT;
     for (uint32_t col = 0; col < 3; col++)
     {
         for (uint32_t row = 0; row < 3; row++)
-            view_rot[col][row] = arcball->view[col][row];
+            view_rot[col][row] = (*basis)[col][row];
     }
 
     mat4 inv_view_rot = GLM_MAT4_IDENTITY_INIT;
@@ -133,6 +134,112 @@ static void _arcball_drag_rotation_matrix(DvzArcball* arcball, mat4 out)
     glm_mat4_mul(inv_view_rot, out, tmp);
     glm_mat4_mul(tmp, view_rot, out);
 }
+
+
+/**
+ * Evaluate the world translation for the current pointer orbit.
+ *
+ * @param arcball arcball controller
+ * @param out current world translation
+ */
+void _dvz_arcball_orbit_translation(DvzArcball* arcball, vec3 out)
+{
+    glm_vec3_copy(arcball->orbit_translation, out);
+    if (!arcball->orbit_active)
+        return;
+    mat4 delta = GLM_MAT4_IDENTITY_INIT;
+    _arcball_drag_rotation_matrix(arcball, delta);
+    vec3 offset = {0};
+    glm_vec3_sub(out, arcball->orbit_pivot, offset);
+    glm_mat4_mulv3(delta, offset, 0.0f, out);
+    glm_vec3_add(out, arcball->orbit_pivot, out);
+}
+
+
+
+/**
+ * Set the live world translation while preserving an active pointer rotation baseline.
+ *
+ * @param arcball arcball controller
+ * @param translation requested live world translation
+ */
+void _dvz_arcball_orbit_translation_set(DvzArcball* arcball, vec3 translation)
+{
+    if (!arcball->orbit_active)
+    {
+        glm_vec3_copy(translation, arcball->orbit_translation);
+        return;
+    }
+    mat4 delta = GLM_MAT4_IDENTITY_INIT;
+    mat4 inverse = GLM_MAT4_IDENTITY_INIT;
+    _arcball_drag_rotation_matrix(arcball, delta);
+    glm_mat4_inv(delta, inverse);
+    vec3 offset = {0};
+    glm_vec3_sub(translation, arcball->orbit_pivot, offset);
+    glm_mat4_mulv3(inverse, offset, 0.0f, arcball->orbit_translation);
+    glm_vec3_add(arcball->orbit_translation, arcball->orbit_pivot, arcball->orbit_translation);
+}
+
+
+
+/**
+ * Rebase the pointer orbit to the viewport center at the retained target depth.
+ *
+ * @param arcball arcball controller
+ * @return true when the camera matrices admit a finite center target
+ */
+static bool _arcball_orbit_begin(DvzArcball* arcball)
+{
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_copy(arcball->view, view);
+    view[3][0] += arcball->pan[0];
+    view[3][1] += arcball->pan[1];
+    view[3][2] += logf(arcball->zoom);
+    if (fabsf(glm_mat4_det(view)) < 1e-12f || fabsf(glm_mat4_det(arcball->projection)) < 1e-12f)
+        return false;
+
+    vec4 eye = {0}, clip = {0};
+    glm_mat4_mulv3(view, arcball->orbit_pivot, 1.0f, eye);
+    eye[3] = 1.0f;
+    glm_mat4_mulv(arcball->projection, eye, clip);
+    if (!isfinite(clip[3]) || fabsf(clip[3]) < 1e-12f)
+        return false;
+    // Intersect the center ray with the retained eye-depth plane directly.
+    // Reusing projected depth loses precision for perspective cameras with a small near plane.
+    mat4 inverse = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_inv(arcball->projection, inverse);
+    vec4 near = {0}, far = {0};
+    glm_mat4_mulv(inverse, (vec4){0, 0, 0, 1}, near);
+    glm_mat4_mulv(inverse, (vec4){0, 0, 0.5f, 1}, far);
+    if (fabsf(near[3]) < 1e-12f || fabsf(far[3]) < 1e-12f)
+        return false;
+    glm_vec4_scale(near, 1.0f / near[3], near);
+    glm_vec4_scale(far, 1.0f / far[3], far);
+    float dz = far[2] - near[2];
+    if (!isfinite(dz) || fabsf(dz) < 1e-12f)
+        return false;
+    float t = (eye[2] - near[2]) / dz;
+    for (uint32_t i = 0; i < 3; i++)
+        eye[i] = near[i] + t * (far[i] - near[i]);
+    eye[3] = 1.0f;
+    vec4 center = {0};
+    glm_mat4_inv(view, inverse);
+    glm_mat4_mulv(inverse, eye, center);
+    if (!isfinite(center[3]) || fabsf(center[3]) < 1e-12f)
+        return false;
+    vec3 pivot = {0};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        pivot[i] = center[i] / center[3];
+        if (!isfinite(pivot[i]))
+            return false;
+    }
+    glm_vec3_copy(pivot, arcball->orbit_pivot);
+    glm_mat4_copy(arcball->view, arcball->orbit_view);
+    arcball->orbit_active = true;
+    return true;
+}
+
 
 
 /**
@@ -158,9 +265,12 @@ static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
  */
 static void _arcball_pivot_clip(DvzArcball* arcball, vec4 clip)
 {
-    vec4 pivot = {arcball->view[3][0] + arcball->pan[0],
-                  arcball->view[3][1] + arcball->pan[1],
-                  arcball->view[3][2] + logf(arcball->zoom), arcball->view[3][3]};
+    vec4 pivot = {0};
+    glm_mat4_mulv3(arcball->view, arcball->orbit_pivot, 1.0f, pivot);
+    pivot[0] += arcball->pan[0];
+    pivot[1] += arcball->pan[1];
+    pivot[2] += logf(arcball->zoom);
+    pivot[3] = 1.0f;
     glm_mat4_mulv(arcball->projection, pivot, clip);
 }
 
@@ -211,6 +321,9 @@ static void _arcball_camera_mvp(DvzArcball* arcball, DvzMVP* mvp)
     mat4 view = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(mvp->view, view);
     glm_mat4_mul(translate, view, mvp->view);
+    vec3 offset = {0};
+    _dvz_arcball_orbit_translation(arcball, offset);
+    glm_translate(mvp->view, offset);
 }
 
 
@@ -373,6 +486,9 @@ DvzResult dvz_arcball_reset(DvzArcball* arcball)
     glm_vec2_zero(arcball->pan);
     glm_vec2_zero(arcball->pan_center);
     arcball->interacting = false;
+    arcball->orbit_active = false;
+    glm_vec3_zero(arcball->orbit_translation);
+    glm_vec3_zero(arcball->orbit_pivot);
     return DVZ_OK;
 }
 
@@ -382,6 +498,8 @@ DvzResult dvz_arcball_set(DvzArcball* arcball, vec3 angles)
 {
     if (arcball == NULL)
         return DVZ_ERROR;
+    _dvz_arcball_orbit_translation(arcball, arcball->orbit_translation);
+    arcball->orbit_active = false;
     glm_euler(angles, arcball->mat);
     glm_quat_identity(arcball->rotation);
     return DVZ_OK;
@@ -408,6 +526,7 @@ DvzResult dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, vec3 axis)
         return DVZ_ERROR;
     }
 
+    (void)dvz_arcball_end(arcball);
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     glm_rotate_make(rot, angle, axis);
     glm_mat4_mul(rot, arcball->mat, arcball->mat);
@@ -479,7 +598,8 @@ DvzResult dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px)
 
 DvzResult dvz_arcball_resize(DvzArcball* arcball, float width, float height)
 {
-    if (arcball == NULL || !isfinite(width) || !isfinite(height) || width <= 0.0f || height <= 0.0f)
+    if (arcball == NULL || !isfinite(width) || !isfinite(height) || width <= 0.0f ||
+        height <= 0.0f)
         return DVZ_ERROR;
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
@@ -568,6 +688,8 @@ DvzResult dvz_arcball_end(DvzArcball* arcball)
         return DVZ_ERROR;
     mat4 rot = GLM_MAT4_IDENTITY_INIT;
     _arcball_drag_rotation_matrix(arcball, rot);
+    _dvz_arcball_orbit_translation(arcball, arcball->orbit_translation);
+    arcball->orbit_active = false;
     glm_mat4_mul(rot, arcball->mat, arcball->mat);
     glm_quat_identity(arcball->rotation);
     return DVZ_OK;
@@ -626,6 +748,9 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
         if (ev->button == DVZ_POINTER_BUTTON_LEFT || ev->button == DVZ_POINTER_BUTTON_MIDDLE ||
             ev->button == DVZ_POINTER_BUTTON_RIGHT)
         {
+            (void)dvz_arcball_end(arcball);
+            if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+                (void)_arcball_orbit_begin(arcball);
             if (ev->button == DVZ_POINTER_BUTTON_MIDDLE || ev->button == DVZ_POINTER_BUTTON_RIGHT)
                 glm_vec2_copy(arcball->pan, arcball->pan_center);
             arcball->interacting = true;
@@ -636,6 +761,8 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
         if (ev->button == DVZ_POINTER_BUTTON_LEFT)
         {
             arcball->interacting = true;
+            if (!arcball->orbit_active && !_arcball_orbit_begin(arcball))
+                break;
             vec2 cur_pos = {
                 -1.0f + 2.0f * ev->pos[0] / width,
                 +1.0f - 2.0f * ev->pos[1] / height,
@@ -644,17 +771,6 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
                 -1.0f + 2.0f * ev->content.d.press_pos[0] / width,
                 +1.0f - 2.0f * ev->content.d.press_pos[1] / height,
             };
-            // The virtual trackball follows the projected geometric pivot,
-            // rather than staying at the viewport centre after a pan.
-            vec4 pivot_clip = {0};
-            _arcball_pivot_clip(arcball, pivot_clip);
-            if (pivot_clip[3] > 1e-6f)
-            {
-                vec2 center = {
-                    pivot_clip[0] / pivot_clip[3], pivot_clip[1] / pivot_clip[3]};
-                glm_vec2_sub(cur_pos, center, cur_pos);
-                glm_vec2_sub(last_pos, center, last_pos);
-            }
             (void)dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
         else if (

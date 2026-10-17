@@ -93,10 +93,9 @@ Applying a snapshot is semantically equivalent to a user gesture:
 4. axis/layout dirtiness is marked only when visible domains or layout-affecting values change;
 5. redraw is requested.
 
-Arcball pan is controller state, not visual geometry. Right/middle drag moves the apparent rotation
-center through panel-plane translation; fixed overlays attached with `DVZ_CONTROLLER_FIXED` remain
-unaffected. Pivot picking may later set the arcball center from a semantic pick target, but default
-pan remains lightweight and deterministic.
+Arcball pan is controller state, not visual geometry. Right/middle drag translates the scene in the view plane. Each left-drag orbits around the viewport center at the retained inspection target's eye-space depth; rebasing that target must not move the rendered pose. The virtual sphere stays viewport-centered after panning. Rotation preserves the target's position and depth, including with perspective or orthographic cameras and non-default camera orientations. Fixed overlays attached with `DVZ_CONTROLLER_FIXED` remain unaffected. Reset restores the initial orientation and clears navigation offsets.
+
+The public arcball model matrix remains pure orientation. Orbit translation belongs to the private navigation state and is applied through the effective view matrix. `ROTATION` links copy orientation only, keeping orientation gizmos centered; `PAN` links also copy the retained target and orbit translation, including a source's live gesture. The camera rotation basis is frozen for each pointer rotation, so panel-context restoration cannot change its live pose. Standalone rotation APIs continue to edit orientation without rebasing the inspection target.
 
 
 ## Binding, Linking, And Domain Queries

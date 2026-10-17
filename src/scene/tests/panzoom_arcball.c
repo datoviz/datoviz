@@ -2334,13 +2334,88 @@ int test_arcball_double_click_resets(TstContext* suite, const TstCase* item)
 
 
 /**
- * Equivalent drags around a panned pivot must produce the same rotation.
+ * A centered rotation drag must remain effective after panning the object offscreen.
  *
  * @param suite test suite
  * @param item test item
  * @return test status
  */
-int test_arcball_rotation_gesture_follows_pan(TstContext* suite, const TstCase* item)
+int test_arcball_rotation_after_large_pan(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_perspective(0.72f, 800.0f / 600.0f, 0.01f, 100.0f, projection);
+    const DvzPointerButton buttons[] = {DVZ_POINTER_BUTTON_RIGHT, DVZ_POINTER_BUTTON_MIDDLE};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        DvzArcball* original = _dvz_arcball(800, 600, 0);
+        DvzArcball* moved = _dvz_arcball(800, 600, 0);
+        ANN(original);
+        ANN(moved);
+        _dvz_arcball_camera(original, view, projection);
+        _dvz_arcball_camera(moved, view, projection);
+        DvzPointerEvent pan = {
+            .type = DVZ_POINTER_EVENT_DRAG_START,
+            .button = buttons[i],
+            .pos = {400, 300},
+        };
+        AT(dvz_arcball_pointer(moved, &pan));
+        pan.type = DVZ_POINTER_EVENT_DRAG;
+        pan.pos[0] = 2000;
+        glm_vec2_copy((vec2){400, 300}, pan.content.d.press_pos);
+        glm_vec2_copy((vec2){1600, 0}, pan.content.d.shift);
+        pan.content.d.is_press_valid = true;
+        AT(dvz_arcball_pointer(moved, &pan));
+        pan.type = DVZ_POINTER_EVENT_DRAG_STOP;
+        AT(dvz_arcball_pointer(moved, &pan));
+        DvzMVP before = {0};
+        glm_mat4_copy(view, before.view);
+        glm_mat4_copy(projection, before.proj);
+        dvz_arcball_mvp(moved, &before);
+        vec4 eye = {0}, clip = {0};
+        glm_mat4_mulv(before.view, (vec4){0, 0, 0, 1}, eye);
+        glm_mat4_mulv(before.proj, eye, clip);
+        AT(fabsf(clip[0] / clip[3]) > 1.0f);
+        DvzPointerEvent rotate = {
+            .type = DVZ_POINTER_EVENT_DRAG_START,
+            .button = DVZ_POINTER_BUTTON_LEFT,
+            .pos = {400, 300},
+        };
+        AT(dvz_arcball_pointer(original, &rotate));
+        AT(dvz_arcball_pointer(moved, &rotate));
+        rotate.type = DVZ_POINTER_EVENT_DRAG;
+        rotate.pos[0] = 500;
+        glm_vec2_copy((vec2){400, 300}, rotate.content.d.press_pos);
+        rotate.content.d.is_press_valid = true;
+        AT(dvz_arcball_pointer(original, &rotate));
+        AT(dvz_arcball_pointer(moved, &rotate));
+        mat4 original_model = GLM_MAT4_IDENTITY_INIT;
+        mat4 moved_model = GLM_MAT4_IDENTITY_INIT;
+        dvz_arcball_model(original, original_model);
+        dvz_arcball_model(moved, moved_model);
+        AT(fabsf(original_model[0][2]) > 0.1f);
+        for (uint32_t col = 0; col < 3; col++)
+            for (uint32_t row = 0; row < 3; row++)
+                AC(original_model[col][row], moved_model[col][row], 1e-5f);
+        dvz_arcball_destroy(original);
+        dvz_arcball_destroy(moved);
+    }
+    return 0;
+}
+
+
+
+/**
+ * Equivalent viewport drags must produce the same orientation regardless of pan.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_arcball_rotation_gesture_stays_viewport_centered(TstContext* suite, const TstCase* item)
 {
     (void)suite;
     (void)item;
@@ -2359,35 +2434,390 @@ int test_arcball_rotation_gesture_follows_pan(TstContext* suite, const TstCase* 
         AT(dvz_arcball_zoom(original, zoomed ? expf(2.0f) : 1.0f) == DVZ_OK);
         AT(dvz_arcball_zoom(moved, zoomed ? expf(2.0f) : 1.0f) == DVZ_OK);
         AT(dvz_arcball_pan(moved, (vec2){0.2f, -0.1f}) == DVZ_OK);
-        DvzMVP mvp = {0};
-        glm_mat4_copy(view, mvp.view);
-        glm_mat4_copy(projection, mvp.proj);
-        dvz_arcball_mvp(moved, &mvp);
-        vec4 eye = {0}, clip = {0};
-        glm_mat4_mulv(mvp.view, (vec4){0, 0, 0, 1}, eye);
-        glm_mat4_mulv(mvp.proj, eye, clip);
-        vec2 displacement = {clip[0] / clip[3] * 400, -clip[1] / clip[3] * 300};
         DvzPointerEvent drag = {
             .type = DVZ_POINTER_EVENT_DRAG, .button = DVZ_POINTER_BUTTON_LEFT,
             .pos = {500, 300},
             .content.d = {.press_pos = {320, 300}, .is_press_valid = true},
         };
         AT(dvz_arcball_pointer(original, &drag));
-        glm_vec2_add(drag.pos, displacement, drag.pos);
-        glm_vec2_add(drag.content.d.press_pos, displacement, drag.content.d.press_pos);
         AT(dvz_arcball_pointer(moved, &drag));
         mat4 original_model = GLM_MAT4_IDENTITY_INIT;
         mat4 moved_model = GLM_MAT4_IDENTITY_INIT;
         dvz_arcball_model(original, original_model);
         dvz_arcball_model(moved, moved_model);
-        for (uint32_t col = 0; col < 4; col++)
-            for (uint32_t row = 0; row < 4; row++)
+        for (uint32_t col = 0; col < 3; col++)
+            for (uint32_t row = 0; row < 3; row++)
                 AC(original_model[col][row], moved_model[col][row], 1e-5f);
         dvz_arcball_destroy(original);
         dvz_arcball_destroy(moved);
     }
     return 0;
 }
+
+
+
+/**
+ * Compose a controller's effective object-to-eye transform without a renderer.
+ *
+ * @param arc arcball controller
+ * @param view base camera view
+ * @param projection base camera projection
+ * @param out effective object-to-eye transform
+ */
+static void _test_arcball_eye_matrix(DvzArcball* arc, mat4 view, mat4 projection, mat4 out)
+{
+    DvzMVP mvp = {0};
+    glm_mat4_copy(view, mvp.view);
+    glm_mat4_copy(projection, mvp.proj);
+    dvz_arcball_mvp(arc, &mvp);
+    glm_mat4_mul(mvp.view, mvp.model, out);
+}
+
+
+
+/**
+ * Orbit the centered inspection target without jumps across pan, zoom, camera and reset changes.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_arcball_orbit_preserves_inspection_target(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    for (uint32_t scenario = 0; scenario < 4; scenario++)
+    {
+        mat4 view = GLM_MAT4_IDENTITY_INIT;
+        mat4 projection = GLM_MAT4_IDENTITY_INIT;
+        if ((scenario % 2) == 0)
+            glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+        else
+            glm_lookat((vec3){2, -3, 4}, (vec3){0, 0, 0}, (vec3){0, 0, 1}, view);
+        if (scenario >= 2)
+            glm_ortho(-2, 2, -1.5f, 1.5f, 0.01f, 100, projection);
+        else
+            glm_perspective(0.72f, 800.0f / 600.0f, 0.01f, 100, projection);
+        DvzArcball* arc = _dvz_arcball(800, 600, 0);
+        ANN(arc);
+        _dvz_arcball_camera(arc, view, projection);
+        AT(dvz_arcball_initial(arc, (vec3){0.2f, -0.4f, 0.1f}) == DVZ_OK);
+        mat4 initial_eye = GLM_MAT4_IDENTITY_INIT;
+        _test_arcball_eye_matrix(arc, view, projection, initial_eye);
+        vec4 previous_target = {0, 0, 0, 1};
+        for (uint32_t cycle = 0; cycle < 3; cycle++)
+        {
+            AT(dvz_arcball_zoom(arc, expf(0.5f * cycle)) == DVZ_OK);
+            DvzPointerEvent pan = {
+                .type = DVZ_POINTER_EVENT_DRAG_START,
+                .button = cycle == 1 ? DVZ_POINTER_BUTTON_MIDDLE : DVZ_POINTER_BUTTON_RIGHT,
+                .pos = {400, 300},
+            };
+            AT(dvz_arcball_pointer(arc, &pan));
+            pan.type = DVZ_POINTER_EVENT_DRAG;
+            glm_vec2_copy((vec2){400, 300}, pan.content.d.press_pos);
+            glm_vec2_copy((vec2){260 - 70.0f * cycle, -130 + 40.0f * cycle}, pan.content.d.shift);
+            glm_vec2_add(pan.content.d.press_pos, pan.content.d.shift, pan.pos);
+            pan.content.d.is_press_valid = true;
+            AT(dvz_arcball_pointer(arc, &pan));
+            pan.type = DVZ_POINTER_EVENT_DRAG_STOP;
+            AT(dvz_arcball_pointer(arc, &pan));
+
+            mat4 before = GLM_MAT4_IDENTITY_INIT;
+            _test_arcball_eye_matrix(arc, view, projection, before);
+            vec4 old_eye = {0};
+            glm_mat4_mulv(before, previous_target, old_eye);
+            // These symmetric projections put the viewport center on the eye's Z axis.
+            mat4 inverse_eye = GLM_MAT4_IDENTITY_INIT;
+            glm_mat4_inv(before, inverse_eye);
+            vec4 target = {0};
+            glm_mat4_mulv(inverse_eye, (vec4){0, 0, old_eye[2], 1}, target);
+            glm_vec4_scale(target, 1.0f / target[3], target);
+            vec4 target_eye = {0};
+            glm_mat4_mulv(before, target, target_eye);
+
+            DvzPointerEvent rotate = {
+                .type = DVZ_POINTER_EVENT_DRAG_START,
+                .button = DVZ_POINTER_BUTTON_LEFT,
+                .pos = {390, 310},
+            };
+            AT(dvz_arcball_pointer(arc, &rotate));
+            mat4 after = GLM_MAT4_IDENTITY_INIT;
+            _test_arcball_eye_matrix(arc, view, projection, after);
+            AT(_test_mat4_close(before, after, 2e-5f));
+            rotate.type = DVZ_POINTER_EVENT_DRAG;
+            glm_vec2_copy(rotate.pos, rotate.content.d.press_pos);
+            rotate.content.d.is_press_valid = true;
+            AT(dvz_arcball_pointer(arc, &rotate));
+            _test_arcball_eye_matrix(arc, view, projection, after);
+            AT(_test_mat4_close(before, after, 2e-5f));
+            for (uint32_t step = 0; step < 2; step++)
+            {
+                rotate.pos[0] = 470 + 35.0f * step;
+                rotate.pos[1] = 260 - 20.0f * step;
+                AT(dvz_arcball_pointer(arc, &rotate));
+                _test_arcball_eye_matrix(arc, view, projection, after);
+                AT(!_test_mat4_close(before, after, 1e-3f));
+                vec4 after_target = {0};
+                glm_mat4_mulv(after, target, after_target);
+                for (uint32_t axis = 0; axis < 4; axis++)
+                    AC(target_eye[axis], after_target[axis], 2e-4f);
+            }
+            mat4 live = GLM_MAT4_IDENTITY_INIT;
+            glm_mat4_copy(after, live);
+            rotate.type = DVZ_POINTER_EVENT_DRAG_STOP;
+            AT(dvz_arcball_pointer(arc, &rotate));
+            _test_arcball_eye_matrix(arc, view, projection, after);
+            AT(_test_mat4_close(live, after, 2e-5f));
+            glm_vec4_copy(target, previous_target);
+        }
+        AT(dvz_arcball_reset(arc) == DVZ_OK);
+        mat4 reset_eye = GLM_MAT4_IDENTITY_INIT;
+        _test_arcball_eye_matrix(arc, view, projection, reset_eye);
+        AT(_test_mat4_close(initial_eye, reset_eye, 2e-5f));
+        dvz_arcball_destroy(arc);
+    }
+    return 0;
+}
+
+
+
+/**
+ * A live orbit keeps its initial camera basis until its pose is committed.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_arcball_orbit_freezes_camera_basis(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 changed_view = GLM_MAT4_IDENTITY_INIT;
+    mat4 identity = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_lookat((vec3){3, 2, 4}, (vec3){0, 0, 0}, (vec3){0, 0, 1}, changed_view);
+    glm_perspective(0.72f, 800.0f / 600.0f, 0.01f, 100, projection);
+    DvzArcball* arc = _dvz_arcball(800, 600, 0);
+    ANN(arc);
+    _dvz_arcball_camera(arc, view, projection);
+    AT(dvz_arcball_pan(arc, (vec2){0.8f, -0.5f}) == DVZ_OK);
+    DvzPointerEvent rotate = {
+        .type = DVZ_POINTER_EVENT_DRAG_START,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+        .pos = {390, 310},
+    };
+    AT(dvz_arcball_pointer(arc, &rotate));
+    rotate.type = DVZ_POINTER_EVENT_DRAG;
+    glm_vec2_copy(rotate.pos, rotate.content.d.press_pos);
+    glm_vec2_copy((vec2){510, 250}, rotate.pos);
+    rotate.content.d.is_press_valid = true;
+    AT(dvz_arcball_pointer(arc, &rotate));
+    mat4 before = GLM_MAT4_IDENTITY_INIT;
+    // An identity supplied view exposes the same world pose across camera updates.
+    _test_arcball_eye_matrix(arc, identity, projection, before);
+    _dvz_arcball_camera(arc, changed_view, projection);
+    mat4 after = GLM_MAT4_IDENTITY_INIT;
+    _test_arcball_eye_matrix(arc, identity, projection, after);
+    AT(_test_mat4_close(before, after, 2e-5f));
+    AT(dvz_arcball_pointer(arc, &rotate));
+    _test_arcball_eye_matrix(arc, identity, projection, after);
+    AT(_test_mat4_close(before, after, 2e-5f));
+    _dvz_arcball_clear_view(arc);
+    _test_arcball_eye_matrix(arc, identity, projection, after);
+    AT(_test_mat4_close(before, after, 2e-5f));
+    AT(dvz_arcball_pointer(arc, &rotate));
+    _test_arcball_eye_matrix(arc, identity, projection, after);
+    AT(_test_mat4_close(before, after, 2e-5f));
+    rotate.type = DVZ_POINTER_EVENT_DRAG_STOP;
+    AT(dvz_arcball_pointer(arc, &rotate));
+    _test_arcball_eye_matrix(arc, identity, projection, after);
+    AT(_test_mat4_close(before, after, 2e-5f));
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
+
+/**
+ * Full links copy the live inspection pose while rotation links keep their target centered.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_controller_link_arcball_live_orbit_pose(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_perspective(0.72f, 800.0f / 600.0f, 0.01f, 100, projection);
+    for (uint32_t full = 0; full < 2; full++)
+    {
+        DvzScene* scene = dvz_scene();
+        ANN(scene);
+        DvzController* source = dvz_arcball(scene, NULL);
+        DvzController* target = dvz_arcball(scene, NULL);
+        ANN(source);
+        ANN(target);
+        DvzArcball* source_arc = dvz_controller_arcball(source);
+        DvzArcball* target_arc = dvz_controller_arcball(target);
+        ANN(source_arc);
+        ANN(target_arc);
+        _dvz_arcball_camera(source_arc, view, projection);
+        _dvz_arcball_camera(target_arc, view, projection);
+        AT(dvz_arcball_pan(source_arc, (vec2){0.8f, -0.5f}) == DVZ_OK);
+        AT(dvz_arcball_zoom(source_arc, 1.5f) == DVZ_OK);
+        uint32_t flags = DVZ_CONTROLLER_LINK_ROTATION;
+        if (full)
+            flags |= DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM;
+        DvzControllerLink* link =
+            dvz_controller_link(scene, source, target, flags, DVZ_CONTROLLER_LINK_ONE_WAY);
+        ANN(link);
+        DvzPointerEvent rotate = {
+            .type = DVZ_POINTER_EVENT_DRAG_START,
+            .button = DVZ_POINTER_BUTTON_LEFT,
+            .pos = {390, 310},
+        };
+        AT(dvz_arcball_pointer(source_arc, &rotate));
+        rotate.type = DVZ_POINTER_EVENT_DRAG;
+        glm_vec2_copy(rotate.pos, rotate.content.d.press_pos);
+        glm_vec2_copy((vec2){510, 250}, rotate.pos);
+        rotate.content.d.is_press_valid = true;
+        AT(dvz_arcball_pointer(source_arc, &rotate));
+        for (uint32_t committed = 0; committed < 2; committed++)
+        {
+            if (committed)
+            {
+                rotate.type = DVZ_POINTER_EVENT_DRAG_STOP;
+                AT(dvz_arcball_pointer(source_arc, &rotate));
+            }
+            _dvz_scene_controller_links_propagate(scene);
+            mat4 source_model = GLM_MAT4_IDENTITY_INIT;
+            mat4 target_model = GLM_MAT4_IDENTITY_INIT;
+            dvz_arcball_model(source_arc, source_model);
+            dvz_arcball_model(target_arc, target_model);
+            AT(_test_mat4_close(source_model, target_model, 2e-5f));
+            mat4 source_eye = GLM_MAT4_IDENTITY_INIT;
+            mat4 target_eye = GLM_MAT4_IDENTITY_INIT;
+            _test_arcball_eye_matrix(source_arc, view, projection, source_eye);
+            _test_arcball_eye_matrix(target_arc, view, projection, target_eye);
+            if (full)
+            {
+                AT(_test_mat4_close(source_eye, target_eye, 2e-5f));
+            }
+            else
+            {
+                vec4 target_origin = {0};
+                glm_mat4_mulv(target_eye, (vec4){0, 0, 0, 1}, target_origin);
+                AC(target_origin[0], 0, 2e-5f);
+                AC(target_origin[1], 0, 2e-5f);
+                AC(target_origin[2], -3, 2e-5f);
+            }
+        }
+        dvz_scene_destroy(scene);
+    }
+    return 0;
+}
+
+
+
+/**
+ * A pan-only link preserves a live target's frozen basis and cumulative drag anchor.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_controller_link_arcball_pan_keeps_active_rotation(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzController* source = dvz_arcball(scene, NULL);
+    DvzController* target = dvz_arcball(scene, NULL);
+    ANN(source);
+    ANN(target);
+    DvzArcball* source_arc = dvz_controller_arcball(source);
+    DvzArcball* target_arc = dvz_controller_arcball(target);
+    ANN(source_arc);
+    ANN(target_arc);
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 changed_view = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_lookat((vec3){3, 2, 4}, (vec3){0, 0, 0}, (vec3){0, 0, 1}, changed_view);
+    glm_perspective(0.72f, 800.0f / 600.0f, 0.01f, 100, projection);
+    DvzArcball* control_arc = _dvz_arcball(800, 600, 0);
+    ANN(control_arc);
+    _dvz_arcball_camera(control_arc, view, projection);
+    AT(dvz_arcball_pan(control_arc, (vec2){0.8f, -0.5f}) == DVZ_OK);
+    _dvz_arcball_camera(source_arc, view, projection);
+    _dvz_arcball_camera(target_arc, view, projection);
+    AT(dvz_arcball_pan(source_arc, (vec2){0.8f, -0.5f}) == DVZ_OK);
+    DvzControllerLink* link = dvz_controller_link(
+        scene, source, target, DVZ_CONTROLLER_LINK_PAN, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(link);
+    DvzPointerEvent rotate = {
+        .type = DVZ_POINTER_EVENT_DRAG_START,
+        .button = DVZ_POINTER_BUTTON_LEFT,
+        .pos = {390, 310},
+    };
+    AT(dvz_arcball_pointer(target_arc, &rotate));
+    AT(dvz_arcball_pointer(control_arc, &rotate));
+    rotate.type = DVZ_POINTER_EVENT_DRAG;
+    glm_vec2_copy(rotate.pos, rotate.content.d.press_pos);
+    glm_vec2_copy((vec2){510, 250}, rotate.pos);
+    rotate.content.d.is_press_valid = true;
+    AT(dvz_arcball_pointer(target_arc, &rotate));
+    AT(dvz_arcball_pointer(control_arc, &rotate));
+    _dvz_arcball_camera(target_arc, changed_view, projection);
+    _dvz_arcball_camera(control_arc, changed_view, projection);
+    mat4 before = GLM_MAT4_IDENTITY_INIT;
+    mat4 after = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(target_arc, before);
+    // Simultaneous input enables one-way propagation into the actively rotating target.
+    DvzPointerEvent source_press = {
+        .type = DVZ_POINTER_EVENT_PRESS, .button = DVZ_POINTER_BUTTON_RIGHT};
+    AT(dvz_arcball_pointer(source_arc, &source_press));
+    AT(dvz_arcball_pan(source_arc, (vec2){1.4f, 0.3f}) == DVZ_OK);
+    DvzArcballState target_state = {0};
+    AT(dvz_arcball_state(target_arc, &target_state));
+    AT(fabsf(target_state.pan[0] - 1.4f) > 0.1f);
+    _dvz_scene_controller_links_propagate(scene);
+    AT(dvz_arcball_state(target_arc, &target_state));
+    AC(target_state.pan[0], 1.4f, 1e-6f);
+    AC(target_state.pan[1], 0.3f, 1e-6f);
+    dvz_arcball_model(target_arc, after);
+    AT(_test_mat4_close(before, after, 2e-5f));
+    mat4 identity = GLM_MAT4_IDENTITY_INIT;
+    mat4 pose = GLM_MAT4_IDENTITY_INIT;
+    _test_arcball_eye_matrix(target_arc, identity, projection, pose);
+    // The source has no world offset, so only its explicit pan remains in translation.
+    AC(pose[3][0], 1.4f, 2e-5f);
+    AC(pose[3][1], 0.3f, 2e-5f);
+    AC(pose[3][2], 0, 2e-5f);
+    // A second propagation must not accumulate or reinterpret that live rotation.
+    _dvz_scene_controller_links_propagate(scene);
+    dvz_arcball_model(target_arc, after);
+    AT(_test_mat4_close(before, after, 2e-5f));
+    // Continue the same cumulative drag: propagation must retain its press baseline.
+    glm_vec2_copy((vec2){550, 220}, rotate.pos);
+    AT(dvz_arcball_pointer(target_arc, &rotate));
+    AT(dvz_arcball_pointer(control_arc, &rotate));
+    dvz_arcball_model(control_arc, before);
+    dvz_arcball_model(target_arc, after);
+    AT(_test_mat4_close(before, after, 2e-5f));
+    dvz_arcball_destroy(control_arc);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
 
 
 /**
@@ -2432,7 +2862,12 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_pan_tracks_pixels_at_camera_depth);
     TST_CASE(test_arcball_interaction_state);
     TST_CASE(test_arcball_double_click_resets);
-    TST_CASE(test_arcball_rotation_gesture_follows_pan);
+    TST_CASE(test_arcball_rotation_after_large_pan);
+    TST_CASE(test_arcball_rotation_gesture_stays_viewport_centered);
+    TST_CASE(test_arcball_orbit_preserves_inspection_target);
+    TST_CASE(test_arcball_orbit_freezes_camera_basis);
+    TST_CASE(test_controller_link_arcball_live_orbit_pose);
+    TST_CASE(test_controller_link_arcball_pan_keeps_active_rotation);
     TST_CASE(test_arcball_scene_binding_uses_panel_input);
     TST_CASE(test_arcball_panel_input_uses_hidpi_figure_coordinates);
     TST_CASE(test_arcball_linked_panel_wheel_targets_each_panel);

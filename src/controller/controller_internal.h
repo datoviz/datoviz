@@ -55,6 +55,10 @@ struct DvzArcball
     vec3 constrain;   /* constraint axis, or zero when unconstrained */
     mat4 view;        /* optional camera view used to interpret drag axes */
     mat4 projection;  /* camera projection used for pixel-proportional panning */
+    mat4 orbit_view;        /* frozen camera basis for the current pointer rotation */
+    vec3 orbit_pivot;       /* retained target in post-model world coordinates */
+    vec3 orbit_translation; /* committed world translation, separate from orientation */
+    bool orbit_active;      /* pointer rotation uses the retained viewport target */
     float zoom;       /* multiplicative camera dolly factor */
     vec2 pan;         /* camera view-plane pan offset */
     vec2 pan_center;  /* committed pan baseline used during right/middle drag */
@@ -154,3 +158,17 @@ struct DvzTurntable
 
     DvzCamera* camera;
 };
+
+/**
+ * Evaluate the world translation for the current pointer orbit.
+ * @param arcball arcball controller
+ * @param out current world translation
+ */
+void _dvz_arcball_orbit_translation(DvzArcball* arcball, vec3 out);
+
+/**
+ * Set the live world translation while preserving an active pointer rotation baseline.
+ * @param arcball arcball controller
+ * @param translation requested live world translation
+ */
+void _dvz_arcball_orbit_translation_set(DvzArcball* arcball, vec3 translation);

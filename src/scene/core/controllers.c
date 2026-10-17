@@ -518,12 +518,18 @@ static void _scene_controller_link_copy_arcball(
     {
         mat4 model = GLM_MAT4_IDENTITY_INIT;
         dvz_arcball_model(source, model);
+        _dvz_arcball_orbit_translation(target, target->orbit_translation);
+        target->orbit_active = false;
         glm_mat4_copy(model, target->mat);
         glm_quat_identity(target->rotation);
         target->interacting = false;
     }
     if ((components & DVZ_CONTROLLER_LINK_PAN) != 0)
     {
+        vec3 translation = {0};
+        _dvz_arcball_orbit_translation(source, translation);
+        glm_vec3_copy(source->orbit_pivot, target->orbit_pivot);
+        _dvz_arcball_orbit_translation_set(target, translation);
         glm_vec2_copy(source->pan, target->pan);
         glm_vec2_copy(source->pan_center, target->pan_center);
     }

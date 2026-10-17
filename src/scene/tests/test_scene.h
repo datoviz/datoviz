@@ -235,7 +235,12 @@ int test_arcball_pan_tracks_pixels_at_camera_depth(TstContext* suite, const TstC
 int test_arcball_interaction_state(TstContext* suite, const TstCase* item);
 
 int test_arcball_double_click_resets(TstContext* suite, const TstCase* item);
-int test_arcball_rotation_gesture_follows_pan(TstContext* suite, const TstCase* item);
+int test_arcball_rotation_after_large_pan(TstContext* suite, const TstCase* item);
+int test_arcball_rotation_gesture_stays_viewport_centered(TstContext* suite, const TstCase* item);
+int test_arcball_orbit_preserves_inspection_target(TstContext* suite, const TstCase* item);
+int test_arcball_orbit_freezes_camera_basis(TstContext* suite, const TstCase* item);
+int test_controller_link_arcball_live_orbit_pose(TstContext* suite, const TstCase* item);
+int test_controller_link_arcball_pan_keeps_active_rotation(TstContext* suite, const TstCase* item);
 
 int test_arcball_scene_binding_uses_panel_input(TstContext* suite, const TstCase* item);
 
