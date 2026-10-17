@@ -4225,15 +4225,16 @@ static int _app_resolve_gui_viewport(DvzView* source, void* user_data)
     ANN(app);
     if (!dvz_view_render_enabled(source))
         dvz_view_set_render_enabled(source, true);
-    if (!_view_needs_frame(source))
-        return 0;
-    int rc = dvz_view_render_once(source);
-    if (rc != DVZ_CANVAS_FRAME_READY)
-        return -1;
-    DvzDevice* device = dvz_gpu_ctx_device(app->gpu_ctx);
-    if (device != NULL)
-        dvz_device_wait(device);
-    return 0;
+    if (_view_needs_frame(source))
+    {
+        int rc = dvz_view_render_once(source);
+        if (rc != DVZ_CANVAS_FRAME_READY)
+            return -1;
+    }
+    /* Both source and parent use MAIN. Canvas image barriers order source writes and parent
+     * sampling; wait only for this source, never for unrelated later submissions or queues.
+     * Also cover a source that was submitted before this host iteration without new dirty work. */
+    return _dvz_canvas_wait_offscreen_frame(source->canvas);
 }
 #endif
 

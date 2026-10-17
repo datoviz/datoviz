@@ -186,6 +186,8 @@ int dvz_canvas_stream_start(DvzCanvas* canvas, const DvzStreamFrame* frame);
 
 int dvz_canvas_stream_submit(DvzCanvas* canvas, uint64_t wait_value);
 
+int _dvz_canvas_wait_offscreen_frame(DvzCanvas* canvas);
+
 int dvz_canvas_stream_enable_video(
     DvzCanvas* canvas, bool enable, const DvzVideoSinkConfig* cfg);
 

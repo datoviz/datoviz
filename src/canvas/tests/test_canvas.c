@@ -23,11 +23,13 @@
 #endif
 
 #include "_alloc.h"
+#include "../../thread/thread_internal.h"
 #include "../../vk/_memory.h"
 #include "_assertions.h"
 #include "_log.h"
 #include "_time_utils.h"
 #include "datoviz/canvas.h"
+#include "datoviz/common/functions.h"
 #include "datoviz/input/keycodes.h"
 #include "datoviz/video.h"
 #include "datoviz/vk/device.h"
@@ -76,6 +78,23 @@ typedef struct CanvasLiveGapProbeState
     uint64_t last_wait_value;
     uint32_t non_increasing_wait_count;
 } CanvasLiveGapProbeState;
+
+
+
+/**
+ * Release a deliberately blocked later submission so a regression cannot deadlock the test.
+ *
+ * @param user_data timeline semaphore owned by the test
+ * @return NULL
+ */
+static void* canvas_completion_gate_release(void* user_data)
+{
+    DvzSemaphore* gate = (DvzSemaphore*)user_data;
+    ANN(gate);
+    dvz_sleep(2000);
+    dvz_semaphore_signal(gate, 1);
+    return NULL;
+}
 
 
 
@@ -1876,6 +1895,116 @@ offscreen_live_wait_cleanup:
 
 
 /**
+ * Prove source completion waits for its submission rather than draining later MAIN queue work.
+ *
+ * @param suite test context
+ * @param item test descriptor
+ * @return zero on success
+ */
+static int test_canvas_offscreen_scoped_completion(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
+        goto scoped_completion_cleanup;
+
+    host = dvz_window_host();
+    ANN(host);
+    DvzWindowConfig window_cfg = dvz_window_config();
+    window_cfg.width = 64;
+    window_cfg.height = 64;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &window_cfg);
+    if (window == NULL)
+    {
+        skip_reason = "headless window creation failed";
+        goto scoped_completion_cleanup;
+    }
+    DvzCanvasConfig cfg = dvz_canvas_config();
+    cfg.window = window;
+    cfg.device = device;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+    AT_EXPECTED_ERROR_STRICT(suite, _dvz_canvas_wait_offscreen_frame(canvas) < 0);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(_dvz_canvas_wait_offscreen_frame(canvas) == 0);
+    AT(dvz_semaphore_query(canvas->timeline_semaphore) >= canvas->timeline_value);
+
+    DvzSemaphore* gate = dvz_semaphore_create_wrapper();
+    ANN(gate);
+    dvz_semaphore_timeline(device, 0, gate, 0);
+    DvzSemaphore* done = dvz_semaphore_create_wrapper();
+    ANN(done);
+    dvz_semaphore_timeline(device, 0, done, 0);
+    DvzSubmit* later = dvz_submit_create_wrapper();
+    ANN(later);
+    dvz_submit(later);
+    VkCommandBuffer later_command =
+        dvz_command_buffer_alloc(device, canvas->offscreen_queue_family);
+    DvzCommands* commands = dvz_commands_create_wrapper();
+    ANN(commands);
+    dvz_commands_wrap(device, later_command, commands);
+    dvz_cmd_begin(commands);
+    dvz_cmd_end(commands);
+    dvz_commands_free(commands);
+    dvz_submit_command(later, later_command);
+    dvz_submit_wait(later, dvz_semaphore_handle(gate), 1, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+    dvz_submit_signal(later, dvz_semaphore_handle(done), 1, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+    int32_t submit_result = dvz_submit_send(later, canvas->offscreen_queue, VK_NULL_HANDLE);
+    dvz_submit_free(later);
+    AT(submit_result == VK_SUCCESS);
+    DvzThread* release = dvz_thread(canvas_completion_gate_release, gate);
+    ANN(release);
+
+    /* A device/queue idle wait here would consume the watchdog release before returning. */
+    const int completion_result = _dvz_canvas_wait_offscreen_frame(canvas);
+    const uint64_t gate_at_completion = dvz_semaphore_query(gate);
+    dvz_thread_join(release);
+    dvz_semaphore_wait(done, 1);
+    dvz_command_buffer_free(device, canvas->offscreen_queue_family, later_command);
+    dvz_semaphore_destroy(done);
+    dvz_semaphore_free(done);
+    dvz_semaphore_destroy(gate);
+    dvz_semaphore_free(gate);
+    AT(completion_result == 0);
+    AT(gate_at_completion == 0);
+
+    /* Reuse and resource replacement keep the same monotonic completion contract. */
+    const uint64_t previous_value = canvas->timeline_value;
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(_dvz_canvas_wait_offscreen_frame(canvas) == 0);
+    AT(canvas->timeline_value > previous_value);
+    dvz_window_backend_emit_resize(window, 96, 80, 96, 80, 1.0f, 1.0f);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(_dvz_canvas_wait_offscreen_frame(canvas) == 0);
+    AT(canvas->offscreen_extent.width == 96);
+    AT(canvas->offscreen_extent.height == 80);
+
+scoped_completion_cleanup:
+    if (skip_reason != NULL)
+        tst_skip(suite, skip_reason);
+    if (canvas != NULL)
+        dvz_canvas_destroy(canvas);
+    if (window != NULL)
+        dvz_window_destroy(window);
+    if (host != NULL)
+        dvz_window_host_destroy(host);
+    canvas_test_destroy_instance_device(instance, device);
+    return 0;
+}
+
+
+
+/**
  * Validate live-image resource generations advance only when offscreen resources are recreated.
  */
 static int test_canvas_offscreen_live_generation_on_resize(TstContext* suite, const TstCase* item)
@@ -2391,6 +2520,9 @@ int test_canvas(TstSuite* suite)
     TST_CANVAS_CASE(
         test_canvas_offscreen_live_wait_monotonic_across_rebuild, TST_CANVAS_VK_RES,
         TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_scoped_completion,
+        TST_CANVAS_VK_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_offscreen_live_generation_on_resize, TST_CANVAS_VK_RES,
         TST_ISOLATION_PROCESS);

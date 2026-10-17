@@ -392,7 +392,7 @@ DvzDrp2ValidationResult _vklite_write_texture(
         &region, command->u.write_texture.origin_x, command->u.write_texture.origin_y,
         command->u.write_texture.origin_z);
 
-    if (dvz_cmd_begin_result(cmds) != 0)
+    if (_vklite_owned_commands_begin(cmds) != 0)
     {
         _vklite_owned_commands_destroy(cmds);
         dvz_buffer_destroy(staging);
@@ -438,7 +438,7 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_buffer(
     region.dstOffset = command->u.copy_buffer_to_buffer.dst_offset;
     region.size = command->u.copy_buffer_to_buffer.size;
 
-    if (dvz_cmd_begin_result(cmds) != 0)
+    if (_vklite_owned_commands_begin(cmds) != 0)
     {
         _vklite_owned_commands_destroy(cmds);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -497,7 +497,7 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
 
-    if (dvz_cmd_begin_result(cmds) != 0)
+    if (_vklite_owned_commands_begin(cmds) != 0)
     {
         _vklite_owned_commands_destroy(cmds);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -536,7 +536,7 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
     DvzDrp2ValidationResult result = _drp2_ok();
     if (timeline_handoff)
     {
-        if (dvz_cmd_end_result(cmds) != 0)
+        if (_vklite_owned_commands_end(cmds) != 0)
         {
             result = _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         }
@@ -606,7 +606,7 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
         command->u.copy_texture_to_buffer.bytes_per_row,
         command->u.copy_texture_to_buffer.rows_per_image, bytes_per_texel);
 
-    if (dvz_cmd_begin_result(cmds) != 0)
+    if (_vklite_owned_commands_begin(cmds) != 0)
     {
         _vklite_owned_commands_destroy(cmds);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
@@ -663,7 +663,7 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
         (int32_t)command->u.copy_texture_to_texture.dst_origin_y,
         (int32_t)command->u.copy_texture_to_texture.dst_origin_z);
 
-    if (dvz_cmd_begin_result(cmds) != 0)
+    if (_vklite_owned_commands_begin(cmds) != 0)
     {
         dvz_image_copy_free(copy);
         _vklite_owned_commands_destroy(cmds);

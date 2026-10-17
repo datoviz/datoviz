@@ -860,6 +860,7 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
 
     if (!_scene_emit_visual_uploads(figure, plan, report))
     {
+        (void)dvz_diagnostic_report_add(report, "scene visual upload preparation failed");
         dvz_frame_plan_destroy(plan);
         return NULL;
     }

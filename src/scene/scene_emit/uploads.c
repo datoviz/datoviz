@@ -135,8 +135,10 @@ static bool _emit_bank_resource(
  * @param figure the figure
  * @param plan the destination frame plan
  * @param report optional diagnostic report
+ * @return whether required upload preparation succeeded
  */
-bool _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report)
+bool _scene_emit_visual_uploads(
+    DvzFigure* figure, DvzFramePlan* plan, DvzDiagnosticReport* report)
 {
     ANN(figure);
     ANN(figure->scene);
@@ -208,7 +210,8 @@ bool _scene_emit_visual_uploads(DvzFigure* figure, DvzFramePlan* plan, DvzDiagno
                 }
             }
             _scene_emit_visual_index_buffer_upload(figure, plan, visual, vidx, emitted_buffers);
-            _scene_emit_visual_family_texture_uploads(figure, plan, visual, vidx);
+            if (!_scene_emit_visual_family_texture_uploads(figure, plan, visual, vidx))
+                return false;
         }
     }
     return true;

@@ -1987,6 +1987,49 @@ int dvz_canvas_submit(DvzCanvas* canvas)
 
 
 /**
+ * Wait for the last submitted offscreen frame without draining unrelated device work.
+ *
+ * The source's existing image barriers still own GPU memory visibility. This wait only proves
+ * completion of the source submission; it does not retire images or descriptors used by a host.
+ *
+ * @param canvas offscreen canvas with a successfully submitted frame
+ * @return 0 on success, negative when no submitted frame exists or completion fails
+ */
+int _dvz_canvas_wait_offscreen_frame(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (!canvas_is_offscreen_mode(canvas) || !canvas->timeline_ready ||
+        canvas->timeline_semaphore == NULL || canvas->timeline_value == 0)
+    {
+        log_error("offscreen frame completion requires a submitted source frame");
+        return -1;
+    }
+    if (canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return -1;
+
+    VkSemaphore semaphore = dvz_semaphore_handle(canvas->timeline_semaphore);
+    const uint64_t value = canvas->timeline_value;
+    VkSemaphoreWaitInfo wait = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
+        .semaphoreCount = 1,
+        .pSemaphores = &semaphore,
+        .pValues = &value,
+    };
+    VkResult result = vkWaitSemaphores(dvz_device_handle(canvas->device), &wait, UINT64_MAX);
+    if (result != VK_SUCCESS)
+    {
+        if (result == VK_ERROR_DEVICE_LOST)
+            canvas_offscreen_transition(
+                canvas, DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST, "completion device lost");
+        log_error("offscreen source frame completion failed (%d)", result);
+        return -1;
+    }
+    return 0;
+}
+
+
+
+/**
  * Return the render mode currently configured on the canvas.
  *
  * @param canvas canvas handle
