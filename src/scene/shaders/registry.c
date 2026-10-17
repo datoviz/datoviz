@@ -189,6 +189,9 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_VALID_U32_CLIP:
         return fragment ? "primitive_query_valid_u32_clip_frag"
                         : "primitive_query_valid_u32_clip_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_DEPTH_RG32_CLIP:
+        return fragment ? "primitive_query_depth_rg32_clip_frag"
+                        : "primitive_query_valid_u32_clip_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE:
         return fragment ? "primitive_frag" : "primitive_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_INDEXED_ITEM_STATE:
@@ -207,6 +210,8 @@ static const char* _builtin_shader_resource_key(DvzSceneBuiltinShader shader, bo
         return fragment ? "primitive_query_u32_frag" : "primitive_query_u32_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_VALID_U32:
         return fragment ? "primitive_query_valid_u32_frag" : "primitive_query_valid_u32_vert";
+    case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_QUERY_DEPTH_RG32:
+        return fragment ? "primitive_query_depth_rg32_frag" : "primitive_query_valid_u32_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT:
         return fragment ? "primitive_lit_frag" : "primitive_lit_vert";
     case DVZ_SCENE_BUILTIN_SHADER_PRIMITIVE_LIT_ITEM_STATE:

@@ -1421,6 +1421,13 @@ struct DvzPendingQueryRequest
     DvzQueryRequest request;
     DvzItemInteraction* item_interaction;
     uint32_t item_interaction_kind;
+    bool navigation_depth;
+    DvzScene* navigation_scene; /* borrowed parent owning this pending request */
+    DvzId navigation_controller_id;
+    uint64_t navigation_pan_epoch;
+    uint64_t navigation_query_input_revision;
+    DvzMVP navigation_mvp;
+    vec4 navigation_panel_rect;
 };
 
 
@@ -1454,6 +1461,7 @@ struct DvzSceneRequestExecutor
     bool active_query_composed;
     DvzSceneVisualFamily active_query_family;
     DvzSceneTargetKind active_query_target;
+    DvzQueryProfile active_query_profile;
     uint32_t runtime_create_count;
     uint32_t emitter_create_count;
     uint32_t query_static_cache_upload_count;

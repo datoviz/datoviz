@@ -65,7 +65,8 @@ bool _dvz_scene_query_append_identity_uploads(
     DvzFramePlan* plan, uint32_t slot, const DvzSceneQueryPlan* source,
     DvzSceneQueryAppend* out)
 {
-    if (source->format != DVZ_FORMAT_R32_UINT || source->scratch.plan == NULL)
+    if ((source->format != DVZ_FORMAT_R32_UINT && source->format != DVZ_FORMAT_R32G32_UINT) ||
+        source->scratch.plan == NULL)
         return false;
     const DvzFramePlanNode* render = NULL;
     for (uint32_t i = 0; i < source->scratch.plan->count; i++)
@@ -121,16 +122,19 @@ bool _dvz_scene_query_append_identity_uploads(
  *
  * @param plan composed plan
  * @param request_id readback correlation identity
+ * @param format integer identity or identity/depth pair format
  * @return whether the readback was appended
  */
-static bool _query_append_readback(DvzFramePlan* plan, uint64_t request_id)
+static bool _query_append_readback(DvzFramePlan* plan, uint64_t request_id, uint32_t format)
 {
+    const uint32_t payload_size =
+        format == DVZ_FORMAT_R32G32_UINT ? 2 * sizeof(uint32_t) : sizeof(uint32_t);
     DvzFramePlanCopyDesc copy = dvz_frame_plan_copy_desc();
     copy.src_resource_id = "target.query";
     copy.dst_resource_id = "buf.query";
     copy.extent[0] = copy.extent[1] = copy.extent[2] = 1;
-    copy.format = DVZ_FORMAT_R32_UINT;
-    copy.bytes_per_texel = copy.bytes_per_row = copy.byte_size = sizeof(uint32_t);
+    copy.format = format;
+    copy.bytes_per_texel = copy.bytes_per_row = copy.byte_size = payload_size;
     copy.rows_per_image = 1;
     copy.request_id = request_id;
     return dvz_frame_plan_copy_ex(plan, &copy) &&
@@ -173,8 +177,12 @@ bool _dvz_scene_query_process_composed(
     {
         const DvzPanelAttach* attach = &panel->visuals[order[i]];
         const DvzVisual* visual = attach->visual;
-        if (visual != NULL && visual->visible && attach->controller_mode != DVZ_CONTROLLER_FIXED &&
-            (visual->query_capabilities & capability) != 0)
+        if (visual == NULL || !visual->visible || attach->controller_mode == DVZ_CONTROLLER_FIXED)
+            continue;
+        bool eligible = pending->navigation_depth
+            ? _dvz_scene_query_family_ops_for_navigation_depth(panel, visual, &pending->request) != NULL
+            : (visual->query_capabilities & capability) != 0;
+        if (eligible)
             candidate_count++;
     }
     if (candidate_count < 2)
@@ -184,7 +192,9 @@ bool _dvz_scene_query_process_composed(
         result->status = DVZ_QUERY_STATUS_UNSUPPORTED_TARGET;
         return true;
     }
-    if (result->profile != DVZ_QUERY_PROFILE_U32_R32)
+    const bool with_depth = result->profile == DVZ_QUERY_PROFILE_U64_RG32 &&
+                            target == DVZ_SCENE_TARGET_FACE;
+    if (result->profile != DVZ_QUERY_PROFILE_U32_R32 && !with_depth)
     {
         result->status = DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE;
         return true;
@@ -195,6 +205,8 @@ bool _dvz_scene_query_process_composed(
         return true;
     }
 
+    const uint32_t payload_format = with_depth ? DVZ_FORMAT_R32G32_UINT : DVZ_FORMAT_R32_UINT;
+    const uint32_t payload_size = with_depth ? 2 * sizeof(uint32_t) : sizeof(uint32_t);
     uint64_t build_start = executor->timing_enabled ? dvz_time_monotonic_ns() : 0;
     QueryContribution* contributions =
         (QueryContribution*)dvz_calloc(candidate_count, sizeof(QueryContribution));
@@ -207,11 +219,15 @@ bool _dvz_scene_query_process_composed(
     {
         const DvzPanelAttach* attach = &panel->visuals[order[i]];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || !visual->visible || attach->controller_mode == DVZ_CONTROLLER_FIXED ||
-            (visual->query_capabilities & capability) == 0)
+        if (visual == NULL || !visual->visible || attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
-        const DvzSceneQueryFamilyOps* ops =
-            _dvz_scene_query_family_ops_for_visual(panel, visual, &pending->request);
+        if (!pending->navigation_depth && (visual->query_capabilities & capability) == 0)
+            continue;
+        const DvzSceneQueryFamilyOps* ops = pending->navigation_depth
+            ? _dvz_scene_query_family_ops_for_navigation_depth(panel, visual, &pending->request)
+            : _dvz_scene_query_family_ops_for_visual(panel, visual, &pending->request);
+        if (pending->navigation_depth && ops == NULL)
+            continue;
         result->visual_id = _scene_visual_public_id(figure->scene, visual);
         result->visual_family = ops != NULL ? ops->family : DVZ_SCENE_VISUAL_FAMILY_NONE;
         if (ops == NULL || ops->identity_count == NULL || ops->append_identity == NULL)
@@ -227,6 +243,15 @@ bool _dvz_scene_query_process_composed(
         };
         contribution->context.request_ndc[0] = request_ndc[0];
         contribution->context.request_ndc[1] = request_ndc[1];
+        bool supports_profile = ops->supports_profile != NULL
+                                    ? ops->supports_profile(&contribution->context, result->profile)
+                                    : result->profile == DVZ_QUERY_PROFILE_U32_R32;
+        if (!supports_profile)
+        {
+            result->status = DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE;
+            ok = false;
+            break;
+        }
         ok = ops->identity_count(&contribution->context, &contribution->count);
         if (!ok)
             break;
@@ -278,14 +303,14 @@ bool _dvz_scene_query_process_composed(
         }
     }
     if (ok)
-        ok = _query_append_readback(plan, pending->request.request_id);
+        ok = _query_append_readback(plan, pending->request.request_id, payload_format);
     if (!ok)
     {
         result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
         goto cleanup;
     }
 
-    if (!executor->active_query_composed)
+    if (!executor->active_query_composed || executor->active_query_profile != result->profile)
         _scene_request_executor_destroy(executor);
     if (!_scene_request_executor_prepare(executor, runtime))
     {
@@ -293,6 +318,7 @@ bool _dvz_scene_query_process_composed(
         goto cleanup;
     }
     executor->active_query_composed = true;
+    executor->active_query_profile = result->profile;
     if (executor->timing_enabled)
         executor->last_timing.build_ns += dvz_time_monotonic_ns() - build_start;
     for (uint32_t i = 0; i < count; i++)
@@ -303,11 +329,12 @@ bool _dvz_scene_query_process_composed(
         if (contributions[i].count > 0)
             executor->last_timing.static_upload_count++;
     }
-    uint32_t token = 0;
+    uint32_t payload[2] = {0};
     bool executed = false;
     ok = _dvz_scene_query_execute_readback(
-        figure->scene, executor, caps, plan, width, height, DVZ_FORMAT_R32_UINT,
-        (uint8_t*)&token, sizeof(token), &executed);
+        figure->scene, executor, caps, plan, width, height, payload_format,
+        (uint8_t*)payload, payload_size, &executed);
+    uint32_t token = payload[0];
     if (!ok)
     {
         result->status = executed ? DVZ_QUERY_STATUS_READBACK_FAILED : DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
@@ -320,10 +347,10 @@ bool _dvz_scene_query_process_composed(
         uint32_t base = contribution->context.identity_base;
         if (token <= base || token - base > contribution->count)
             continue;
-        uint32_t local_token = token - base;
+        uint32_t local_payload[2] = {token - base, payload[1]};
         DvzSceneQueryDecodeContext decode = {
             .build = &contribution->context, .plan = &contribution->retained,
-            .bytes = (const uint8_t*)&local_token, .byte_size = sizeof(local_token),
+            .bytes = (const uint8_t*)local_payload, .byte_size = payload_size,
         };
         if (contribution->ops->decode(&decode, result) && contribution->ops->readout != NULL)
         {

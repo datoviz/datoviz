@@ -56,8 +56,7 @@ Current implementation state:
    payload. CPU category lookup and text formatting remain post-GPU readout work.
 7. Old public pick/probe APIs and public pick/probe request/result structs have been removed from
    the v0.4 scene API. `examples/c` now uses the query API directly.
-8. The private compatibility flag that allowed old probe shims to bypass visual query capability
-   gates has been removed; query eligibility is now capability-driven.
+8. Scientific query eligibility is capability-driven; the old private compatibility flag has been removed. Private navigation-depth requests use a separate family-owned eligibility hook so visible mesh context can define a control plane without becoming scientifically selectable. They use the same GPU execution path and are consumed internally before public polling.
 9. Visual query capability APIs now use query terminology (`dvz_visual_set_query_capabilities()`
    and `DVZ_QUERY_CAPABILITY_*`).
 10. The unused CPU point-pick fallback and `DVZ_PICK_TRACE` hook have been removed from scene
@@ -378,6 +377,7 @@ Initial payload:
 5. optional barycentric coordinate,
 6. optional visual/world hit position.
 
+Mesh FACE queries may explicitly request `DVZ_QUERY_PROFILE_U64_RG32`. The GPU writes the opaque face token in the first word and the IEEE-754 bits of device-normalized fragment depth in the second; single-visual and composed frontmost queries preserve the winning pair through the shared depth test. Successful results set `has_depth` and `depth` in `[0, 1]`. Existing R32 queries are unchanged. This is a schema payload, not a 64-bit face identity. For the current common transform, camera-projection NDC Z is `2 * depth - 1`; consumers must use the matching projection snapshot for unprojection. No CPU geometry hit reconstruction or sampled-data fallback supplies this depth.
 Do not rely solely on backend primitive-id builtins. WebGPU parity and semantic stability are better
 served by explicit GPU query metadata buffers or flat attributes that carry face, region, source, and
 instance ids.

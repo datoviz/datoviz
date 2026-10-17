@@ -192,6 +192,8 @@ struct DvzSceneQueryFamilyOps
     const char* name;
     DvzSceneVisualFamily family;
     DvzSceneQueryEligible eligible;
+    // Private GPU depth eligibility is independent of semantic selection capabilities.
+    DvzSceneQueryEligible navigation_depth_eligible;
     DvzSceneQuerySupportsProfile supports_profile;
     DvzSceneQueryBuild build;
     DvzSceneQueryIdentityCount identity_count;
@@ -247,6 +249,9 @@ bool _dvz_scene_query_framebuffer_position(
 DvzVisual* _dvz_scene_query_candidate_visual(const DvzPanel* panel, uint32_t capability);
 
 const DvzSceneQueryFamilyOps* _dvz_scene_query_family_ops_for_visual(
+    const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request);
+
+const DvzSceneQueryFamilyOps* _dvz_scene_query_family_ops_for_navigation_depth(
     const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request);
 
 bool _dvz_scene_query_item_target_eligible(

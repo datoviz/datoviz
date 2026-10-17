@@ -160,7 +160,10 @@ void _scene_visual_pipeline_desc_apply_query_pick(
 {
     ANN(visual);
     ANN(pipeline);
-    if (color_target_format != DVZ_FORMAT_R32_UINT)
+    const bool primitive_depth_query =
+        visual->kind == DVZ_SCENE_VISUAL_DESC_PRIMITIVE && visual->query_explicit_ids &&
+        color_target_format == DVZ_FORMAT_R32G32_UINT;
+    if (color_target_format != DVZ_FORMAT_R32_UINT && !primitive_depth_query)
         return;
 
     if (visual->query_explicit_ids)

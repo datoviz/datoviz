@@ -307,6 +307,18 @@ static void _arcball_pan_drag(DvzArcball* arcball, vec2 shift_px)
     if (width <= 0.0f || height <= 0.0f)
         return;
 
+    glm_vec2_copy(shift_px, arcball->pan_pending_shift);
+    if (arcball->pan_depth_pending)
+        return;
+    if (arcball->pan_plane_active)
+    {
+        arcball->pan[0] = arcball->pan_center[0] +
+                          arcball->pan_depth * arcball->pan_pixel_scale[0] * shift_px[0];
+        arcball->pan[1] = arcball->pan_center[1] -
+                          arcball->pan_depth * arcball->pan_pixel_scale[1] * shift_px[1];
+        return;
+    }
+
     // Unproject pixel displacements at the arcball's rotation centre. Dolly
     // changes its eye-space depth, so a fixed view-space shift accelerates
     // panning on screen as the camera approaches the object.
@@ -320,6 +332,72 @@ static void _arcball_pan_drag(DvzArcball* arcball, vec2 shift_px)
     arcball->pan[0] = arcball->pan_center[0] + 2.0f * depth * shift_px[0] / (width * sx);
     arcball->pan[1] = arcball->pan_center[1] - 2.0f * depth * shift_px[1] / (height * sy);
 }
+
+
+/**
+ * Invalidate a pending navigation depth without changing the rendered pose.
+ *
+ * @param arcball arcball controller
+ */
+void _dvz_arcball_pan_depth_cancel(DvzArcball* arcball)
+{
+    arcball->pan_depth_pending = false;
+    arcball->pan_plane_active = false;
+    arcball->pan_pending_stopped = false;
+    arcball->pan_depth = 0.0f;
+    if (++arcball->pan_epoch == 0)
+        ++arcball->pan_epoch;
+}
+
+
+
+/**
+ * Freeze the pan frame while awaiting GPU surface depth.
+ *
+ * @param arcball arcball controller
+ */
+void _dvz_arcball_pan_depth_wait(DvzArcball* arcball)
+{
+    _dvz_arcball_pan_depth_cancel(arcball);
+    vec4 clip = {0};
+    _arcball_pivot_clip(arcball, clip);
+    arcball->pan_depth_fallback = isfinite(clip[3]) && clip[3] > 0.0f ? clip[3] : 0.0f;
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        float extent = arcball->viewport_size[i] * fabsf(arcball->projection[i][i]);
+        arcball->pan_pixel_scale[i] = extent > 1e-6f ? 2.0f / extent : 0.0f;
+    }
+    glm_vec2_copy(arcball->pan, arcball->pan_center);
+    glm_vec2_zero(arcball->pan_pending_shift);
+    arcball->pan_depth_pending = true;
+    arcball->pan_plane_active = true;
+}
+
+
+
+/**
+ * Resolve a press-time pan plane and apply the latest accumulated shift.
+ *
+ * @param arcball arcball controller
+ * @param clip_w positive surface clip W, or zero for the captured fallback plane
+ */
+void _dvz_arcball_pan_depth_resolve(DvzArcball* arcball, float clip_w)
+{
+    if (!arcball->pan_depth_pending)
+        return;
+    arcball->pan_depth = isfinite(clip_w) && clip_w > 0.0f ?
+                             clip_w : arcball->pan_depth_fallback;
+    arcball->pan_depth_pending = false;
+    vec2 shift = {arcball->pan_pending_shift[0], arcball->pan_pending_shift[1]};
+    _arcball_pan_drag(arcball, shift);
+    if (arcball->pan_pending_stopped)
+    {
+        glm_vec2_copy(arcball->pan, arcball->pan_center);
+        arcball->pan_plane_active = false;
+        arcball->pan_pending_stopped = false;
+    }
+}
+
 
 
 /**
@@ -506,6 +584,7 @@ DvzResult dvz_arcball_reset(DvzArcball* arcball)
 {
     if (arcball == NULL)
         return DVZ_ERROR;
+    _dvz_arcball_pan_depth_cancel(arcball);
     if (dvz_arcball_set(arcball, arcball->init) != DVZ_OK)
         return DVZ_ERROR;
     glm_quat_identity(arcball->rotation);
@@ -571,6 +650,7 @@ DvzResult dvz_arcball_zoom(DvzArcball* arcball, float zoom)
 {
     if (arcball == NULL)
         return DVZ_ERROR;
+    _dvz_arcball_pan_depth_cancel(arcball);
     arcball->zoom = _clampf(zoom, DVZ_ARCBALL_ZOOM_MIN, DVZ_ARCBALL_ZOOM_MAX);
     return DVZ_OK;
 }
@@ -586,6 +666,7 @@ DvzResult dvz_arcball_pan(DvzArcball* arcball, vec2 pan)
 {
     if (arcball == NULL)
         return DVZ_ERROR;
+    _dvz_arcball_pan_depth_cancel(arcball);
     glm_vec2_copy(pan, arcball->pan);
     glm_vec2_copy(pan, arcball->pan_center);
     return DVZ_OK;
@@ -615,6 +696,7 @@ DvzResult dvz_arcball_pan_shift(DvzArcball* arcball, vec2 shift_px)
 {
     if (arcball == NULL)
         return DVZ_ERROR;
+    _dvz_arcball_pan_depth_cancel(arcball);
     glm_vec2_copy(arcball->pan, arcball->pan_center);
     _arcball_pan_drag(arcball, shift_px);
     glm_vec2_copy(arcball->pan, arcball->pan_center);
@@ -760,6 +842,7 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
     switch (ev->type)
     {
     case DVZ_POINTER_EVENT_PRESS:
+        _dvz_arcball_pan_depth_cancel(arcball);
         if (ev->button == DVZ_POINTER_BUTTON_LEFT || ev->button == DVZ_POINTER_BUTTON_MIDDLE ||
             ev->button == DVZ_POINTER_BUTTON_RIGHT)
             arcball->interacting = true;
@@ -777,7 +860,10 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
         {
             (void)dvz_arcball_end(arcball);
             if (ev->button == DVZ_POINTER_BUTTON_LEFT)
+            {
+                _dvz_arcball_pan_depth_cancel(arcball);
                 (void)_arcball_orbit_begin(arcball);
+            }
             if (ev->button == DVZ_POINTER_BUTTON_MIDDLE || ev->button == DVZ_POINTER_BUTTON_RIGHT)
                 glm_vec2_copy(arcball->pan, arcball->pan_center);
             arcball->interacting = true;
@@ -813,6 +899,10 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
         break;
 
     case DVZ_POINTER_EVENT_DRAG_STOP:
+        if (arcball->pan_depth_pending)
+            arcball->pan_pending_stopped = true;
+        else
+            arcball->pan_plane_active = false;
         (void)dvz_arcball_end(arcball);
         glm_vec2_copy(arcball->pan, arcball->pan_center);
         arcball->interacting = false;

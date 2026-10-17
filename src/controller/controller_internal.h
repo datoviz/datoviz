@@ -64,6 +64,14 @@ struct DvzArcball
     float zoom_speed; /* wheel sensitivity multiplier, independent of programmatic zoom */
     vec2 pan;         /* camera view-plane pan offset */
     vec2 pan_center;  /* committed pan baseline used during right/middle drag */
+    float pan_depth; /* positive clip W of the press-time surface plane */
+    float pan_depth_fallback; /* press-time pivot plane when no depth is available */
+    vec2 pan_pixel_scale; /* frozen per-pixel scale before multiplying by clip W */
+    vec2 pan_pending_shift; /* latest press-relative shift, also while query is pending */
+    bool pan_depth_pending;
+    bool pan_plane_active;
+    bool pan_pending_stopped;
+    uint64_t pan_epoch; /* invalidates pending navigation queries */
     bool has_view;    /* true when view carries a camera-space drag basis */
     bool interacting; /* true while the pointer is controlling the arcball */
     DvzInputRouter* input_router;
@@ -174,3 +182,22 @@ void _dvz_arcball_orbit_translation(DvzArcball* arcball, vec3 out);
  * @param translation requested live world translation
  */
 void _dvz_arcball_orbit_translation_set(DvzArcball* arcball, vec3 translation);
+
+/**
+ * Freeze the pan frame while awaiting GPU surface depth.
+ * @param arcball arcball controller
+ */
+void _dvz_arcball_pan_depth_wait(DvzArcball* arcball);
+
+/**
+ * Resolve a press-time pan plane and apply the latest accumulated shift.
+ * @param arcball arcball controller
+ * @param clip_w positive surface clip W, or zero for the captured fallback plane
+ */
+void _dvz_arcball_pan_depth_resolve(DvzArcball* arcball, float clip_w);
+
+/**
+ * Invalidate a pending navigation depth without changing the rendered pose.
+ * @param arcball arcball controller
+ */
+void _dvz_arcball_pan_depth_cancel(DvzArcball* arcball);

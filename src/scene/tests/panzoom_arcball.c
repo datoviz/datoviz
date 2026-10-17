@@ -2953,6 +2953,98 @@ int test_arcball_pan_neutral_mapping_keeps_original_pivot(TstContext* suite, con
 
 
 /**
+ * Hold cumulative pan until depth resolves, then track the pressed surface across zoom levels.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return test status
+ */
+int test_arcball_pan_depth_plane_tracks_surface(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    float dollies[] = {0, 1, 2, 3.1f};
+    for (uint32_t scenario = 0; scenario < 4; scenario++)
+    {
+        for (uint32_t z = 0; z < 4; z++)
+        {
+            DvzArcball* arc = _dvz_arcball(800, 600, 0);
+            ANN(arc);
+            mat4 view = GLM_MAT4_IDENTITY_INIT;
+            mat4 projection = GLM_MAT4_IDENTITY_INIT;
+            glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+            if (scenario & 1)
+                glm_ortho(-2, 2, -1.5f, 1.5f, 0.01f, 100, projection);
+            else
+                glm_perspective(0.72f, 800.0f / 600, 0.01f, 100, projection);
+            _dvz_arcball_camera(arc, view, projection);
+            AT(dvz_arcball_zoom(arc, expf(dollies[z])) == DVZ_OK);
+            // At the last zoom the original pivot is behind the camera, but the far surface is not.
+            vec4 surface = {0, 0, z == 3 ? -0.5f : 0.5f, 1};
+            DvzMVP before = {0};
+            glm_mat4_copy(view, before.view);
+            glm_mat4_copy(projection, before.proj);
+            dvz_arcball_mvp(arc, &before);
+            vec4 eye = {0}, clip_before = {0};
+            glm_mat4_mulv(before.view, surface, eye);
+            glm_mat4_mulv(projection, eye, clip_before);
+            DvzPointerEvent event = {
+                .type = DVZ_POINTER_EVENT_PRESS,
+                .button = scenario >= 2 ? DVZ_POINTER_BUTTON_MIDDLE : DVZ_POINTER_BUTTON_RIGHT,
+                .pos = {400, 300},
+            };
+            AT(dvz_arcball_pointer(arc, &event));
+            _dvz_arcball_pan_depth_wait(arc);
+            uint64_t epoch = arc->pan_epoch;
+            event.type = DVZ_POINTER_EVENT_DRAG_START;
+            AT(dvz_arcball_pointer(arc, &event));
+            event.type = DVZ_POINTER_EVENT_DRAG;
+            event.content.d.is_press_valid = true;
+            glm_vec2_copy((vec2){400, 300}, event.content.d.press_pos);
+            glm_vec2_copy((vec2){20, -15}, event.content.d.shift);
+            AT(dvz_arcball_pointer(arc, &event));
+            glm_vec2_copy((vec2){40, -30}, event.content.d.shift);
+            AT(dvz_arcball_pointer(arc, &event));
+            AC(arc->pan[0], 0, 1e-6f);
+            AC(arc->pan[1], 0, 1e-6f);
+            if (scenario >= 2)
+            {
+                event.type = DVZ_POINTER_EVENT_DRAG_STOP;
+                AT(dvz_arcball_pointer(arc, &event));
+            }
+            _dvz_arcball_pan_depth_resolve(arc, clip_before[3]);
+            AT(!arc->pan_depth_pending);
+            AT(arc->pan_epoch == epoch);
+            DvzMVP after = {0};
+            glm_mat4_copy(view, after.view);
+            glm_mat4_copy(projection, after.proj);
+            dvz_arcball_mvp(arc, &after);
+            vec4 clip_after = {0};
+            glm_mat4_mulv(after.view, surface, eye);
+            glm_mat4_mulv(projection, eye, clip_after);
+            AC(400 * (clip_after[0] / clip_after[3] - clip_before[0] / clip_before[3]), 40, 1e-3f);
+            AC(300 * (clip_after[1] / clip_after[3] - clip_before[1] / clip_before[3]), 30, 1e-3f);
+            if (scenario < 2)
+            {
+                event.type = DVZ_POINTER_EVENT_DRAG_STOP;
+                AT(dvz_arcball_pointer(arc, &event));
+            }
+            AT(!arc->pan_plane_active);
+            AC(arc->pan_center[0], arc->pan[0], 1e-6f);
+            _dvz_arcball_pan_depth_wait(arc);
+            AT(dvz_arcball_reset(arc) == DVZ_OK);
+            AT(arc->pan_epoch != epoch);
+            _dvz_arcball_pan_depth_resolve(arc, clip_before[3]);
+            AC(arc->pan[0], 0, 1e-6f);
+            dvz_arcball_destroy(arc);
+        }
+    }
+    return 0;
+}
+
+
+
+/**
  * Register scene panzoom and arcball tests.
  *
  * @param suite the active test suite
@@ -2992,6 +3084,7 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_zoom_wheel);
     TST_CASE(test_arcball_pan_right_drag);
     TST_CASE(test_arcball_pan_tracks_pixels_at_camera_depth);
+    TST_CASE(test_arcball_pan_depth_plane_tracks_surface);
     TST_CASE(test_arcball_interaction_state);
     TST_CASE(test_arcball_double_click_resets);
     TST_CASE(test_arcball_rotation_after_large_pan);

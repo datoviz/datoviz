@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include <inttypes.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -95,6 +96,51 @@ static bool _mesh_query_eligible(
     if (request->target == DVZ_SCENE_TARGET_FACE)
         return (visual->query_capabilities & DVZ_QUERY_CAPABILITY_FACE) != 0;
     return _dvz_scene_query_item_target_eligible(visual, request, DVZ_VISUAL_TYPE_MESH);
+}
+
+
+
+/**
+ * Allow rendered mesh context to supply GPU navigation depth without enabling selection.
+ *
+ * @param panel panel receiving the navigation gesture
+ * @param visual retained visual
+ * @param request private face/depth request
+ * @return whether this is the mesh GPU navigation-depth path
+ */
+static bool _mesh_query_navigation_depth_eligible(
+    const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request)
+{
+    if (visual->type != DVZ_VISUAL_TYPE_MESH || request->target != DVZ_SCENE_TARGET_FACE ||
+        request->profile != DVZ_QUERY_PROFILE_U64_RG32)
+        return false;
+    // Panel/pixel overlays do not share the camera projection used to resolve the pan plane.
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        const DvzPanelAttach* attach = &panel->visuals[i];
+        if (attach->visual == visual && attach->controller_mode != DVZ_CONTROLLER_FIXED &&
+            (attach->coord_space == DVZ_VISUAL_COORD_DATA ||
+             attach->coord_space == DVZ_VISUAL_COORD_VIEW))
+            return true;
+    }
+    return false;
+}
+
+
+
+/**
+ * Accept ordinary identity queries and GPU face identity/depth pairs.
+ *
+ * @param ctx query build context
+ * @param profile selected query payload profile
+ * @return whether the requested target has a supported payload schema
+ */
+static bool _mesh_query_supports_profile(
+    const DvzSceneQueryBuildContext* ctx, DvzQueryProfile profile)
+{
+    return profile == DVZ_QUERY_PROFILE_U32_R32 ||
+           (profile == DVZ_QUERY_PROFILE_U64_RG32 &&
+            ctx->pending->request.target == DVZ_SCENE_TARGET_FACE);
 }
 
 
@@ -215,6 +261,11 @@ static bool _mesh_query_build(
     DvzSceneTargetKind target = ctx->pending->request.target;
     if (target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_OBJECT)
         target = DVZ_SCENE_TARGET_ITEM;
+    if (!_mesh_query_supports_profile(ctx, ctx->profile))
+        return false;
+    const bool with_depth = ctx->profile == DVZ_QUERY_PROFILE_U64_RG32;
+    const uint32_t payload_size = with_depth ? 2 * sizeof(uint32_t) : sizeof(uint32_t);
+    const uint32_t payload_format = with_depth ? DVZ_FORMAT_R32G32_UINT : DVZ_FORMAT_R32_UINT;
 
     if (!_mesh_query_inputs_supported(ctx->visual))
         return false;
@@ -349,11 +400,11 @@ static bool _mesh_query_build(
     copy.extent[0] = 1;
     copy.extent[1] = 1;
     copy.extent[2] = 1;
-    copy.format = DVZ_FORMAT_R32_UINT;
-    copy.bytes_per_texel = sizeof(uint32_t);
-    copy.bytes_per_row = sizeof(uint32_t);
+    copy.format = payload_format;
+    copy.bytes_per_texel = payload_size;
+    copy.bytes_per_row = payload_size;
     copy.rows_per_image = 1;
-    copy.byte_size = sizeof(uint32_t);
+    copy.byte_size = payload_size;
     copy.request_id = ctx->pending->request.request_id;
     ok = ok && dvz_frame_plan_copy_ex(plan, &copy) &&
          dvz_frame_plan_readback(plan, "buf.query", "request.query");
@@ -368,8 +419,8 @@ static bool _mesh_query_build(
 
     out_plan->target_width = target_width;
     out_plan->target_height = target_height;
-    out_plan->format = DVZ_FORMAT_R32_UINT;
-    out_plan->byte_size = sizeof(uint32_t);
+    out_plan->format = payload_format;
+    out_plan->byte_size = payload_size;
     out_plan->derived_vertex_count = vertex_count;
     out_plan->static_upload_bytes = include_static_uploads ? position_bytes + id_bytes + clip_bytes : 0;
     out_plan->retained_resource_bytes = position_bytes + id_bytes + clip_bytes;
@@ -391,8 +442,26 @@ static bool _mesh_query_decode(
     DvzSceneTargetKind target = ctx->build->pending->request.target;
     if (target == DVZ_SCENE_TARGET_NONE || target == DVZ_SCENE_TARGET_OBJECT)
         target = DVZ_SCENE_TARGET_ITEM;
-    return _dvz_scene_query_decode_target_id(
+    bool terminal = _dvz_scene_query_decode_target_id(
         ctx, DVZ_SCENE_VISUAL_FAMILY_MESH, target, out_result);
+    if (!terminal || !out_result->hit || ctx->build->profile != DVZ_QUERY_PROFILE_U64_RG32)
+        return terminal;
+    if (ctx->byte_size < 2 * sizeof(uint32_t))
+    {
+        out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
+        return true;
+    }
+    float depth = 0;
+    dvz_memcpy(&depth, sizeof(depth), ctx->bytes + sizeof(uint32_t), sizeof(depth));
+    if (!isfinite(depth) || depth < 0.0f || depth > 1.0f)
+    {
+        out_result->status = DVZ_QUERY_STATUS_DECODE_FAILED;
+        return true;
+    }
+    // The second GPU word is normalized fragment depth, not eye-space distance.
+    out_result->has_depth = true;
+    out_result->depth = depth;
+    return true;
 }
 
 
@@ -564,6 +633,8 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_mesh_ops(void)
         .name = "mesh",
         .family = DVZ_SCENE_VISUAL_FAMILY_MESH,
         .eligible = _mesh_query_eligible,
+        .navigation_depth_eligible = _mesh_query_navigation_depth_eligible,
+        .supports_profile = _mesh_query_supports_profile,
         .build = _mesh_query_build,
         .identity_count = _mesh_query_identity_count,
         .append_identity = _mesh_query_append_identity,

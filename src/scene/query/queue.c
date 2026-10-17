@@ -19,6 +19,7 @@
 
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
+#include "core/pan_anchor_internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
@@ -131,7 +132,7 @@ static bool _query_pending_superseded(
     const DvzPendingQueryRequest* pending, const DvzPanel* panel, uint64_t request_id)
 {
     ANN(pending);
-    return pending->panel == panel &&
+    return !pending->navigation_depth && pending->panel == panel &&
            _query_request_ids_share_scope(pending->request.request_id, request_id);
 }
 
@@ -190,12 +191,17 @@ static uint32_t _query_coalesce_pending_requests(DvzScene* scene, const DvzFigur
     {
         const DvzPendingQueryRequest* pending = &scene->pending_queries[i];
         bool keep_pending = true;
+        if (pending->navigation_depth)
+        {
+            keep[i] = true;
+            continue;
+        }
         if (pending->panel != NULL && pending->panel->figure == figure)
         {
             for (uint32_t j = (uint32_t)i + 1; j < scene->pending_query_count; j++)
             {
                 const DvzPendingQueryRequest* newer = &scene->pending_queries[j];
-                if (!keep[j])
+                if (!keep[j] || newer->navigation_depth)
                     continue;
                 if (newer->panel != pending->panel)
                     continue;
@@ -359,6 +365,14 @@ uint32_t dvz_figure_process_queries(
     for (uint32_t i = 0; i < scene->pending_query_count;)
     {
         const DvzPendingQueryRequest pending = scene->pending_queries[i];
+        // Reclaim dead private requests even when processing another surviving figure.
+        if (pending.navigation_depth && !_scene_arcball_pan_anchor_valid(&pending))
+        {
+            _query_remove_pending_at(scene, i);
+            _scene_arcball_pan_anchor_finish(&pending, NULL);
+            processed++;
+            continue;
+        }
         if (pending.panel == NULL || pending.panel->figure != figure)
         {
             i++;
@@ -366,12 +380,21 @@ uint32_t dvz_figure_process_queries(
         }
 
         DvzQueryResult result = {0};
-        if (_dvz_scene_query_process_pending(figure, runtime, executor, caps, &pending, &result))
+        bool completed =
+            _dvz_scene_query_process_pending(figure, runtime, executor, caps, &pending, &result);
+        // Remove before callbacks can append, supersede or compact the pending queue.
+        _query_remove_pending_at(scene, i);
+        if (pending.navigation_depth)
+            _scene_arcball_pan_anchor_finish(&pending, completed ? &result : NULL);
+        else if (completed)
         {
             _scene_item_interaction_apply_query_result(
                 pending.item_interaction, pending.item_interaction_kind, &result);
             (void)_dvz_scene_query_push_result(
                 scene, pending.panel, pending.freshness_serial, &result);
+        }
+        if (completed)
+        {
             executor->last_timing.completed_count++;
             if (
                 result.status == DVZ_QUERY_STATUS_GPU_EXEC_FAILED ||
@@ -382,7 +405,6 @@ uint32_t dvz_figure_process_queries(
             }
         }
 
-        _query_remove_pending_at(scene, i);
         processed++;
     }
 

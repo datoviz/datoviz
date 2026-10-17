@@ -116,3 +116,32 @@ const DvzSceneQueryFamilyOps* _dvz_scene_query_registry_find_visual_type(DvzVisu
     }
     return NULL;
 }
+
+
+
+/**
+ * Find a family's GPU depth path for private controller navigation.
+ *
+ * This does not enable public item/face selection on context visuals. The family still owns
+ * rendered coverage, GPU identity and depth; no CPU geometry hit test is involved.
+ *
+ * @param panel panel receiving the controller gesture
+ * @param visual currently attached visual
+ * @param request private depth request
+ * @return GPU family operations, or NULL when navigation depth is unsupported
+ */
+const DvzSceneQueryFamilyOps* _dvz_scene_query_family_ops_for_navigation_depth(
+    const DvzPanel* panel, const DvzVisual* visual, const DvzQueryRequest* request)
+{
+    ANN(panel);
+    ANN(visual);
+    ANN(request);
+    for (uint32_t i = 0; i < _dvz_scene_query_registry_count(); i++)
+    {
+        const DvzSceneQueryFamilyOps* ops = _dvz_scene_query_registry_get(i);
+        if (ops != NULL && ops->navigation_depth_eligible != NULL &&
+            ops->navigation_depth_eligible(panel, visual, request))
+            return ops;
+    }
+    return NULL;
+}

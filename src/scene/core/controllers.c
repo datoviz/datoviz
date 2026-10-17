@@ -25,6 +25,7 @@
 #include "datoviz/math/_cglm.h"
 #include "_scene.h"
 #include "frame_demand_internal.h"
+#include "pan_anchor_internal.h"
 #include "core/scene_notify_internal.h"
 #include "datoviz/scene.h"
 #include "interaction/internal.h"
@@ -743,6 +744,19 @@ static void _scene_controller_links_propagate_from(DvzController* source)
 
 
 /**
+ * Publish a resolved private navigation pan through the ordinary controller links.
+ *
+ * @param controller controller whose retained pan was resolved
+ */
+void _scene_controller_navigation_pan_changed(DvzController* controller)
+{
+    _scene_controller_links_propagate_from(controller);
+    _scene_notify_controller_figures(controller);
+}
+
+
+
+/**
  * Apply one camera controller state to all bound panel cameras.
  *
  * @param controller the controller
@@ -805,12 +819,16 @@ static void _scene_panel_local_pointer(
     *out = *ev;
     out->pos[0] -= x;
     out->pos[1] -= y;
-    if (ev->type == DVZ_POINTER_EVENT_DRAG || ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
+    if (ev->type == DVZ_POINTER_EVENT_DRAG_START || ev->type == DVZ_POINTER_EVENT_DRAG ||
+        ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
     {
         out->content.d.press_pos[0] -= x;
         out->content.d.press_pos[1] -= y;
-        out->content.d.last_pos[0] -= x;
-        out->content.d.last_pos[1] -= y;
+        if (ev->type != DVZ_POINTER_EVENT_DRAG_START)
+        {
+            out->content.d.last_pos[0] -= x;
+            out->content.d.last_pos[1] -= y;
+        }
     }
 }
 
@@ -854,12 +872,15 @@ static void _scene_panel_pointer_to_figure_coordinates(
     (void)dvz_figure_window_to_layout(
         panel->figure, ev->pos[0], ev->pos[1], window_width, window_height, content_scale_x,
         content_scale_y, &out->pos[0], &out->pos[1]);
-    if (ev->type == DVZ_POINTER_EVENT_DRAG || ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
+    if (ev->type == DVZ_POINTER_EVENT_DRAG_START || ev->type == DVZ_POINTER_EVENT_DRAG ||
+        ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
     {
         (void)dvz_figure_window_to_layout(
             panel->figure, ev->content.d.press_pos[0], ev->content.d.press_pos[1],
             window_width, window_height, content_scale_x, content_scale_y,
             &out->content.d.press_pos[0], &out->content.d.press_pos[1]);
+        if (ev->type == DVZ_POINTER_EVENT_DRAG_START)
+            return;
         (void)dvz_figure_window_to_layout(
             panel->figure, ev->content.d.last_pos[0], ev->content.d.last_pos[1],
             window_width, window_height, content_scale_x, content_scale_y,
@@ -906,7 +927,8 @@ static bool _scene_panel_pointer_targets(
     float h = 0.0f;
     _scene_panel_pixel_rect(panel, &x, &y, &w, &h);
     vec2 pos = {ev->pos[0], ev->pos[1]};
-    if (ev->type == DVZ_POINTER_EVENT_DRAG && ev->content.d.is_press_valid)
+    if ((ev->type == DVZ_POINTER_EVENT_DRAG_START || ev->type == DVZ_POINTER_EVENT_DRAG) &&
+        ev->content.d.is_press_valid)
     {
         pos[0] = ev->content.d.press_pos[0];
         pos[1] = ev->content.d.press_pos[1];
@@ -950,6 +972,7 @@ static bool _scene_panel_dispatch_pointer_controller(
 
     bool consumed = false;
     bool links_propagated = false;
+    bool deferred_pan = false;
     DvzPanzoom* transient_panzoom_interaction = NULL;
     bool old_panzoom_interacting = false;
     DvzArcball* transient_arcball_interaction = NULL;
@@ -1024,9 +1047,12 @@ static bool _scene_panel_dispatch_pointer_controller(
             _dvz_arcball_clear_view(arcball);
         }
         consumed = dvz_arcball_pointer(arcball, &local);
+        if (consumed)
+            _scene_arcball_pan_anchor_begin(panel, controller, &local);
+        deferred_pan = arcball->pan_depth_pending;
         if (transient_interaction && consumed)
             arcball->interacting = true;
-        if (consumed)
+        if (consumed && !deferred_pan)
         {
             _scene_controller_links_propagate_from(controller);
             links_propagated = true;
@@ -1084,7 +1110,9 @@ static bool _scene_panel_dispatch_pointer_controller(
     default:
         break;
     }
-    if (consumed)
+    if (consumed && deferred_pan)
+        _scene_notify_request_frame(panel->figure);
+    else if (consumed)
     {
         if (!links_propagated)
             _scene_controller_links_propagate_from(controller);

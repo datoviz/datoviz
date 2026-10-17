@@ -95,15 +95,18 @@ static void _query_result_init(
  * @param executor retained query executor
  * @param family query visual family
  * @param target query target
+ * @param profile selected payload profile
  */
 static void _query_executor_reset_for_schema(
-    DvzSceneRequestExecutor* executor, DvzSceneVisualFamily family, DvzSceneTargetKind target)
+    DvzSceneRequestExecutor* executor, DvzSceneVisualFamily family, DvzSceneTargetKind target,
+    DvzQueryProfile profile)
 {
     ANN(executor);
     if (
         executor->active_query_composed ||
         (executor->active_query_family != DVZ_SCENE_VISUAL_FAMILY_NONE &&
-        (executor->active_query_family != family || executor->active_query_target != target)))
+        (executor->active_query_family != family || executor->active_query_target != target ||
+         executor->active_query_profile != profile)))
     {
         _scene_request_executor_destroy(executor);
     }
@@ -165,6 +168,7 @@ bool _dvz_scene_query_process_pending(
         return true;
 
     bool native_attempted = false;
+    DvzVisual* navigation_visual = NULL;
     uint32_t order[DVZ_SCENE_MAX_VISUALS] = {0};
     _scene_panel_visual_order(pending->panel, order);
     for (int32_t oi = (int32_t)pending->panel->visual_count - 1; oi >= 0; oi--)
@@ -175,12 +179,16 @@ bool _dvz_scene_query_process_pending(
             continue;
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
-        if ((visual->query_capabilities & capability) == 0)
+        if (!pending->navigation_depth && (visual->query_capabilities & capability) == 0)
             continue;
-        const DvzSceneQueryFamilyOps* ops =
-            _dvz_scene_query_family_ops_for_visual(pending->panel, visual, &pending->request);
+        const DvzSceneQueryFamilyOps* ops = pending->navigation_depth
+            ? _dvz_scene_query_family_ops_for_navigation_depth(
+                  pending->panel, visual, &pending->request)
+            : _dvz_scene_query_family_ops_for_visual(pending->panel, visual, &pending->request);
         if (ops == NULL || ops->build == NULL || ops->decode == NULL)
             continue;
+        if (navigation_visual == NULL)
+            navigation_visual = visual;
         native_attempted = true;
         if (_dvz_scene_query_execute_family(
                 figure, runtime, executor, caps, pending, request_ndc, out_result->profile,
@@ -192,7 +200,8 @@ bool _dvz_scene_query_process_pending(
         }
     }
 
-    DvzVisual* visual = _dvz_scene_query_candidate_visual(pending->panel, capability);
+    DvzVisual* visual = pending->navigation_depth
+        ? navigation_visual : _dvz_scene_query_candidate_visual(pending->panel, capability);
     if (visual == NULL)
     {
         out_result->status = DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL;
@@ -299,7 +308,7 @@ bool _dvz_scene_query_execute_family(
         out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
         return true;
     }
-    _query_executor_reset_for_schema(executor, ops->family, pending->request.target);
+    _query_executor_reset_for_schema(executor, ops->family, pending->request.target, profile);
     if (!_scene_request_executor_prepare(executor, runtime))
     {
         out_result->status = DVZ_QUERY_STATUS_GPU_EXEC_FAILED;
@@ -307,6 +316,7 @@ bool _dvz_scene_query_execute_family(
     }
     executor->active_query_family = ops->family;
     executor->active_query_target = pending->request.target;
+    executor->active_query_profile = profile;
 
     DvzSceneQueryPlan plan = {0};
     uint64_t phase_start = executor->timing_enabled ? dvz_time_monotonic_ns() : 0;

@@ -24,6 +24,7 @@
 #include "_log.h"
 #include "visuals/stroke/internal.h"
 #include "core/scene_notify_internal.h"
+#include "controller_internal.h"
 #include "datoviz/drp2.h"
 #include "datoviz/geom.h"
 #include "datoviz/scene/panzoom.h"
@@ -4684,6 +4685,300 @@ static bool _query_test_center_pixel(DvzDrp2Runtime* runtime, DvzFigure* figure,
 
 
 /**
+ * Verify GPU face/depth payloads track the winning visible mesh in both projection modes.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+static int test_scene_query_mesh_gpu_depth(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+    DvzGpuCtxConfig config = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceVulkan13Features features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .dynamicRendering = true, .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&config, &features);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&config);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzDrp2RuntimeConfig runtime_config =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_config);
+    ANN(runtime);
+    for (uint32_t orthographic = 0; orthographic < 2; orthographic++)
+    {
+        DvzScene* scene = dvz_scene();
+        DvzFigure* figure = dvz_figure(scene, 160, 120, 0);
+        DvzPanel* panel = dvz_panel_full(figure);
+        DvzCameraDesc camera = dvz_camera_desc();
+        glm_vec3_copy((vec3){0, 0, 3}, camera.view.eye);
+        glm_vec3_zero(camera.view.target);
+        glm_vec3_copy((vec3){0, 1, 0}, camera.view.up);
+        camera.projection.type = orthographic ? DVZ_CAMERA_ORTHOGRAPHIC : DVZ_CAMERA_PERSPECTIVE;
+        camera.projection.fov_y = 0.8f;
+        camera.projection.near_clip = 0.1f;
+        camera.projection.far_clip = 20.0f;
+        AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+        DvzVisual* front = dvz_mesh(scene, 0);
+        DvzVisual* back = dvz_mesh(scene, 0);
+        vec3 positions[6] = {
+            {-1, -1, 0}, {-1, 1, 0}, {1, -1, 0},
+            {1, -1, 0}, {-1, 1, 0}, {1, 1, 0},
+        };
+        DvzColor colors[6];
+        vec2 fragment_clip[6];
+        for (uint32_t i = 0; i < 6; i++)
+        {
+            colors[i] = dvz_color_rgba(255, 255, 255, 255);
+            glm_vec2_copy((vec2){1, 1}, fragment_clip[i]);
+        }
+        DvzVisualDataUpdate updates[] = {
+            {.attr_name = "position", .data = positions, .item_count = 6},
+            {.attr_name = "color", .data = colors, .item_count = 6},
+        };
+        AT(dvz_visual_set_data_many(front, updates, 2) == DVZ_OK);
+        AT(dvz_visual_set_data_many(back, updates, 2) == DVZ_OK);
+        AT(dvz_mesh_set_fragment_clip(front, (const vec2*)fragment_clip, 6) == DVZ_OK);
+        mat4 transform = GLM_MAT4_IDENTITY_INIT;
+        transform[3][0] = 0.15f;
+        transform[3][2] = 0.5f;
+        AT(dvz_visual_set_transform(front, transform) == DVZ_OK);
+        AT(dvz_visual_set_query_capabilities(front, DVZ_QUERY_CAPABILITY_FACE) == DVZ_OK);
+        AT(dvz_visual_set_query_capabilities(back, DVZ_QUERY_CAPABILITY_FACE) == DVZ_OK);
+        AT(dvz_panel_add_visual(panel, front, NULL) == DVZ_OK);
+        AT(dvz_panel_add_visual(panel, back, NULL) == DVZ_OK);
+        uint64_t front_id = _scene_visual_public_id(scene, front);
+        uint64_t back_id = _scene_visual_public_id(scene, back);
+        DvzMVP mvp = {0};
+        _scene_panel_apply_mvp(panel, &mvp);
+        vec4 clip = {0};
+        glm_mat4_mulv(mvp.view, (vec4){0.2f, 0.1f, 0.5f, 1}, clip);
+        glm_mat4_mulv(mvp.proj, clip, clip);
+        double x = (1 + clip[0] / clip[3]) * 80;
+        double y = (1 - clip[1] / clip[3]) * 60;
+        // Common shader mapping converts projection NDC [-1,1] into GPU depth [0,1].
+        double expected_depth = 0.5 * (clip[2] / clip[3] + 1);
+        DvzQueryRequest request = dvz_query_request();
+        request.target = DVZ_SCENE_TARGET_FACE;
+        request.profile = DVZ_QUERY_PROFILE_U64_RG32;
+        DvzQueryResult result = {0};
+        for (uint32_t reverse = 0; reverse < 2; reverse++)
+        {
+            AT(dvz_panel_query_now_px(panel, runtime, x, y, &request, &result) == DVZ_OK);
+            AT(result.status == DVZ_QUERY_STATUS_HIT && result.visual_id == front_id);
+            AT(result.has_depth);
+            AC(result.depth, expected_depth, 2e-6);
+            DvzPanelAttach swapped = panel->visuals[0];
+            panel->visuals[0] = panel->visuals[1];
+            panel->visuals[1] = swapped;
+        }
+        // Both directions of an R32/RG32 schema change must use the correct attachment format.
+        request.profile = DVZ_QUERY_PROFILE_U32_R32;
+        AT(dvz_panel_query_now_px(panel, runtime, x, y, &request, &result) == DVZ_OK);
+        AT(result.hit && !result.has_depth && result.visual_id == front_id);
+        request.profile = DVZ_QUERY_PROFILE_U64_RG32;
+        AT(dvz_panel_query_now_px(panel, runtime, x, y, &request, &result) == DVZ_OK);
+        AT(result.has_depth);
+        AC(result.depth, expected_depth, 2e-6);
+        // A fully clipped nearer surface must leave the farther GPU depth in the payload.
+        for (uint32_t i = 0; i < 6; i++)
+            fragment_clip[i][0] = -1;
+        AT(dvz_mesh_set_fragment_clip(front, (const vec2*)fragment_clip, 6) == DVZ_OK);
+        AT(dvz_panel_query_now_px(panel, runtime, x, y, &request, &result) == DVZ_OK);
+        AT(result.hit && result.visual_id == back_id && result.has_depth);
+        AT(result.depth > expected_depth);
+        for (uint32_t i = 0; i < 6; i++)
+        {
+            fragment_clip[i][0] = 1;
+            colors[i].a = 0;
+        }
+        AT(dvz_mesh_set_fragment_clip(front, (const vec2*)fragment_clip, 6) == DVZ_OK);
+        AT(dvz_visual_set_data(front, "color", colors, 6) == DVZ_OK);
+        AT(dvz_panel_query_now_px(panel, runtime, x, y, &request, &result) == DVZ_OK);
+        AT(result.hit && result.visual_id == back_id && result.has_depth);
+        for (uint32_t i = 0; i < 6; i++)
+            colors[i].a = 255;
+        AT(dvz_visual_set_data(front, "color", colors, 6) == DVZ_OK);
+        // Hide the back mesh to exercise the single-family path and its cached uploads.
+        AT(dvz_visual_set_visible(back, false) == DVZ_OK);
+        for (uint32_t repeat = 0; repeat < 2; repeat++)
+        {
+            AT(dvz_panel_query_now_px(panel, runtime, x, y, &request, &result) == DVZ_OK);
+            AT(result.hit && result.visual_id == front_id && result.has_depth);
+            AC(result.depth, expected_depth, 2e-6);
+        }
+        // Navigation includes context meshes without making them public semantic pick targets.
+        AT(dvz_visual_set_query_capabilities(front, 0) == DVZ_OK);
+        AT(dvz_panel_query_now_px(panel, runtime, x, y, &request, &result) == DVZ_OK);
+        AT(!result.hit && result.status == DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL);
+        DvzPendingQueryRequest pending = {
+            .panel = panel, .x = x, .y = y, .request = request, .navigation_depth = true,
+        };
+        DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+        AT(_dvz_scene_query_process_pending(
+            figure, runtime, &scene->query_executor, &caps, &pending, &result));
+        AT(result.hit && result.visual_id == front_id && result.has_depth);
+        AC(result.depth, expected_depth, 2e-6);
+        AT(dvz_visual_set_visible(back, true) == DVZ_OK);
+        AT(dvz_visual_set_query_capabilities(back, 0) == DVZ_OK);
+        AT(_dvz_scene_query_process_pending(
+            figure, runtime, &scene->query_executor, &caps, &pending, &result));
+        AT(result.hit && result.visual_id == front_id && result.has_depth);
+        AC(result.depth, expected_depth, 2e-6);
+        dvz_scene_destroy(scene);
+    }
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
+/**
+ * Drive the actual private GPU-depth pan bridge and reproject the grabbed surface.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+static int test_scene_query_mesh_depth_drives_pan(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    TST_SCENE_QUERY_REQUIRE_VKLITE(suite);
+    DvzGpuCtxConfig config = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceVulkan13Features features = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .dynamicRendering = true, .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&config, &features);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&config);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzDrp2RuntimeConfig runtime_config =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_config);
+    ANN(runtime);
+    const float dollies[] = {0, 1, 2, 3.1f};
+    for (uint32_t scenario = 0; scenario < 2; scenario++)
+    {
+        for (uint32_t zoom_index = 0; zoom_index < 4; zoom_index++)
+        {
+            DvzScene* scene = dvz_scene();
+            DvzFigure* figure = dvz_figure(scene, 400, 300, 0);
+            DvzPanel* panel = dvz_panel_full(figure);
+            DvzCameraDesc camera = dvz_camera_desc();
+            glm_vec3_copy((vec3){0, 0, 3}, camera.view.eye);
+            glm_vec3_zero(camera.view.target);
+            glm_vec3_copy((vec3){0, 1, 0}, camera.view.up);
+            camera.projection.type = scenario ? DVZ_CAMERA_ORTHOGRAPHIC : DVZ_CAMERA_PERSPECTIVE;
+            camera.projection.fov_y = 0.72f;
+            camera.projection.ortho_height = 4;
+            camera.projection.near_clip = 0.01f;
+            camera.projection.far_clip = 100;
+            AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+            DvzController* controller = dvz_arcball(scene, NULL);
+            DvzArcball* arcball = dvz_controller_arcball(controller);
+            AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == DVZ_OK);
+            AT(dvz_arcball_zoom(arcball, expf(dollies[zoom_index])) == DVZ_OK);
+            DvzInputRouter* router = dvz_input_router();
+            AT(dvz_panel_connect_input(panel, router) == DVZ_OK);
+            float surface_z = zoom_index == 3 ? -0.5f : 0.5f;
+            vec3 positions[6] = {
+                {-1, -1, surface_z}, {-1, 1, surface_z}, {1, -1, surface_z},
+                {1, -1, surface_z}, {-1, 1, surface_z}, {1, 1, surface_z},
+            };
+            DvzColor colors[6];
+            for (uint32_t i = 0; i < 6; i++)
+                colors[i] = dvz_color_rgba(255, 255, 255, 100);
+            DvzVisualDataUpdate updates[] = {
+                {.attr_name = "position", .data = positions, .item_count = 6},
+                {.attr_name = "color", .data = colors, .item_count = 6},
+            };
+            DvzVisual* surface = dvz_mesh(scene, 0);
+            AT(dvz_visual_set_data_many(surface, updates, 2) == DVZ_OK);
+            AT(dvz_visual_set_alpha_mode(surface, DVZ_ALPHA_WBOIT) == DVZ_OK);
+            AT(dvz_visual_set_query_capabilities(surface, 0) == DVZ_OK);
+            AT(dvz_panel_add_visual(panel, surface, NULL) == DVZ_OK);
+            // A second context surface exercises composed GPU depth without semantic capabilities.
+            for (uint32_t i = 0; i < 6; i++)
+                positions[i][2] = -1;
+            DvzVisual* back = dvz_mesh(scene, 0);
+            AT(dvz_visual_set_data_many(back, updates, 2) == DVZ_OK);
+            AT(dvz_visual_set_query_capabilities(back, 0) == DVZ_OK);
+            AT(dvz_panel_add_visual(panel, back, NULL) == DVZ_OK);
+            vec3 anchor = {0, 0, surface_z};
+            DvzMVP before = {0};
+            _scene_panel_apply_mvp(panel, &before);
+            double before_x = 0, before_y = 0;
+            AT(_test_query_project_visible(&before, anchor, 400, 300, &before_x, &before_y));
+            DvzInputEvent event = {0};
+            event.type = DVZ_INPUT_EVENT_POINTER;
+            event.content.pointer.type = DVZ_POINTER_EVENT_PRESS;
+            event.content.pointer.button = DVZ_POINTER_BUTTON_RIGHT;
+            glm_vec2_copy((vec2){(float)before_x, (float)before_y}, event.content.pointer.pos);
+            dvz_input_emit_event(router, &event);
+            AT(scene->pending_query_count == 0 && !arcball->pan_depth_pending);
+            event.content.pointer.type = DVZ_POINTER_EVENT_DRAG_START;
+            dvz_input_emit_event(router, &event);
+            AT(scene->pending_query_count == 1 && arcball->pan_depth_pending);
+            event.content.pointer.type = DVZ_POINTER_EVENT_DRAG;
+            event.content.pointer.content.d.is_press_valid = true;
+            glm_vec2_copy((vec2){(float)before_x, (float)before_y},
+                          event.content.pointer.content.d.press_pos);
+            for (uint32_t part = 1; part <= 2; part++)
+            {
+                glm_vec2_copy((vec2){20.0f * part, -15.0f * part},
+                              event.content.pointer.content.d.shift);
+                event.content.pointer.pos[0] = (float)before_x + 20.0f * part;
+                event.content.pointer.pos[1] = (float)before_y - 15.0f * part;
+                dvz_input_emit_event(router, &event);
+                AC(arcball->pan[0], 0, 1e-6f);
+                AC(arcball->pan[1], 0, 1e-6f);
+            }
+            // Queue an unrelated public result after the private request; it must remain pollable.
+            DvzQueryRequest public_request = dvz_query_request();
+            public_request.request_id = 987;
+            public_request.target = DVZ_SCENE_TARGET_ITEM;
+            AT(dvz_panel_query_px(panel, 5, 5, &public_request) == DVZ_OK);
+            AT(dvz_figure_process_queries(figure, runtime, NULL) == 2);
+            AT(!arcball->pan_depth_pending && arcball->pan_plane_active);
+            DvzMVP after = {0};
+            _scene_panel_apply_mvp(panel, &after);
+            double after_x = 0, after_y = 0;
+            AT(_test_query_project_visible(&after, anchor, 400, 300, &after_x, &after_y));
+            AC(after_x - before_x, 40, 2e-3);
+            AC(after_y - before_y, -30, 2e-3);
+            DvzQueryResult public_result = {0};
+            AT(dvz_scene_poll_query(scene, &public_result));
+            AT(public_result.request_id == 987);
+            AT(public_result.status == DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL);
+            AT(!dvz_scene_poll_query(scene, &public_result));
+            event.content.pointer.type = DVZ_POINTER_EVENT_DRAG_STOP;
+            dvz_input_emit_event(router, &event);
+            AT(!arcball->pan_plane_active);
+            dvz_scene_destroy(scene);
+            dvz_input_router_destroy(router);
+        }
+    }
+    AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    return 0;
+}
+
+
+
+/**
  * Verify optional mesh color and public point/pixel size aliases reach canonical GPU query inputs.
  *
  * @param suite test context
@@ -5341,6 +5636,8 @@ int test_scene_query(TstSuite* suite)
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_query_resolves_item);
     TST_SCENE_QUERY_GPU_CASE(test_scene_mesh_fragment_clip_queries);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_scientific_composition);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_query_mesh_gpu_depth);
+    TST_SCENE_QUERY_GPU_CASE(test_scene_query_mesh_depth_drives_pan);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_stationary_hover_updates);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_effective_alpha);
     TST_SCENE_QUERY_GPU_CASE(test_scene_query_optional_color_and_size_aliases);
