@@ -2,6 +2,14 @@
 
 Status: narrow RC3 implementation complete at `d0e904705`, 2026-10-13; RC4 source checkpoints are integrated locally on `rc4/scientific-3d`, while profile acceptance and exact-candidate proof remain pending. The required native non-volume target and RC4/RC5/final boundaries are in [the profile slice](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md). This record separates source inspection from delivered behavior; it does not close a release gate. Preserve [current release evidence](STATUS.md) and its recorded revisions.
 
+## Arcball wheel sensitivity, 2026-10-17
+
+`DvzArcballDesc.zoom_speed` is a per-controller sensitivity multiplier: default 2 doubles the previous wheel response, 1 restores it, and zero selects the default. Negative and nonfinite values reject construction. Fractional deltas accumulate normally, reset preserves configuration, existing zoom limits remain, and programmatic zoom is unchanged. The descriptor layout and generated bindings change together; consumers must use the matching Python facade and native library, not the earlier library-only override with the supported facade. The downstream candidate runner is an ignored local helper, leaving its configured checkout and immutable pin unchanged.
+
+Validation passes: 1,276/1,276 native tests with zero skips, focused wheel/descriptor cases, regenerated bindings and ABI checks, and downstream candidate validation (1,087 tests pass, one registered-asset skip; both review apps start).
+
+Distance-relative dolly is not included: the existing exponential zoom state becomes additive camera travel after `log(zoom)`. Pan compensation is correct at the retained pivot depth, but off-plane surface points move at a depth ratio. If dolly crosses the pivot plane, pan's positive-depth clamp can nearly freeze movement. Exact surface grabbing needs a valid press-depth anchor; current native mesh queries expose identity but do not populate depth/data-position readout. These findings remain separate follow-up work, not a claimed regression fix.
+
 ## Pan-neutral fixed-pivot candidate, 2026-10-17
 
 The earlier viewport-orbit candidate was rejected as the default during interactive review. The current candidate keeps the original model-space rotation pivot and sphere/quaternion mapping, but computes the pointer sphere center with view-plane pan omitted. This preserves original zero-pan behavior for off-axis cameras, both projection types, zoom and edge drags when camera and zoom remain fixed during the gesture. The control frame remains frozen during concurrent camera/zoom changes. No physical target is recentered. The previous viewport-orbit implementation is retained behind `DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT` in `DvzArcballDesc.controller_flags`, disabled by default; its regression coverage explicitly enables the flag.

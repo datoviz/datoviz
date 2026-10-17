@@ -2070,7 +2070,7 @@ int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item)
     AT(arc->zoom > 1.0f);
     float zoom_in = arc->zoom;
 #if defined(__APPLE__)
-    AT(zoom_in < 1.02f);
+    AT(zoom_in < 1.03f);
 #endif
 
     DvzPointerEvent wheel_out = {
@@ -2100,6 +2100,48 @@ int test_arcball_zoom_wheel(TstContext* suite, const TstCase* item)
     AT(dvz_arcball_pointer(arc, &reset));
     AT(fabsf(arc->zoom - 1.0f) < 1e-5f);
 
+    DvzArcballDesc defaults = dvz_arcball_desc();
+    AC(defaults.zoom_speed, 2.0f, 1e-6f);
+    float speeds[] = {0.0f, 1.0f, 4.0f};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        DvzScene* scene = dvz_scene();
+        ANN(scene);
+        DvzArcballDesc desc = dvz_arcball_desc();
+        desc.zoom_speed = speeds[i];
+        DvzController* controller = dvz_arcball(scene, &desc);
+        ANN(controller);
+        DvzArcball* custom = dvz_controller_arcball(controller);
+        ANN(custom);
+        float speed = speeds[i] == 0.0f ? 2.0f : speeds[i];
+#if defined(__APPLE__)
+        float step = 0.0125f * speed;
+#else
+        float step = 0.05f * speed;
+#endif
+        wheel_in.content.w.dir[1] = 0.5f;
+        AT(dvz_arcball_pointer(custom, &wheel_in));
+        AC(logf(custom->zoom), 0.5f * step, 1e-5f);
+        AT(dvz_arcball_pointer(custom, &wheel_in));
+        AC(logf(custom->zoom), step, 1e-5f);
+        // Opposite input reverses the wheel step; reset preserves configuration.
+        wheel_in.content.w.dir[1] = -1.0f;
+        AT(dvz_arcball_pointer(custom, &wheel_in));
+        AC(custom->zoom, 1.0f, 1e-5f);
+        AT(dvz_arcball_reset(custom) == DVZ_OK);
+        wheel_in.content.w.dir[1] = 1.0f;
+        AT(dvz_arcball_pointer(custom, &wheel_in));
+        AC(logf(custom->zoom), step, 1e-5f);
+        AT(dvz_arcball_zoom(custom, 2.5f) == DVZ_OK);
+        AC(custom->zoom, 2.5f, 1e-6f);
+        wheel_in.content.w.dir[1] = 1e8f;
+        AT(dvz_arcball_pointer(custom, &wheel_in));
+        AC(custom->zoom, 1000.0f, 1e-5f);
+        wheel_in.content.w.dir[1] = -1e8f;
+        AT(dvz_arcball_pointer(custom, &wheel_in));
+        AC(custom->zoom, 0.001f, 1e-6f);
+        dvz_scene_destroy(scene);
+    }
     dvz_arcball_destroy(arc);
     return 0;
 }

@@ -61,6 +61,7 @@ struct DvzArcball
     vec3 orbit_translation; /* committed world translation, separate from orientation */
     bool orbit_active;      /* pointer rotation has a frozen basis and control center */
     float zoom;       /* multiplicative camera dolly factor */
+    float zoom_speed; /* wheel sensitivity multiplier, independent of programmatic zoom */
     vec2 pan;         /* camera view-plane pan offset */
     vec2 pan_center;  /* committed pan baseline used during right/middle drag */
     bool has_view;    /* true when view carries a camera-space drag basis */

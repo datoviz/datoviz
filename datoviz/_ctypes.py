@@ -5170,6 +5170,7 @@ DvzArcballDesc._fields_ = [
     ('width', ctypes.c_float),
     ('height', ctypes.c_float),
     ('controller_flags', ctypes.c_uint32),
+    ('zoom_speed', ctypes.c_float),
 ]
 
 
@@ -8818,7 +8819,7 @@ else:
     dvz_arcball_desc.__doc__ = """/**
  * Return the default standalone arcball descriptor.
  *
- * The default viewport is 800 by 600 pixels and no controller flags are enabled.
+ * The default viewport is 800 by 600 pixels, wheel zoom speed is 2, and no controller flags are enabled.
  *
  * @return a fully initialized descriptor that callers may modify
  */"""

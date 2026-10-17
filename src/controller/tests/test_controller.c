@@ -378,6 +378,14 @@ int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const Ts
     arcball.flags = 1;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_arcball_create(&arcball) == NULL);
 
+    float invalid_zoom_speeds[] = {-1.0f, NAN, INFINITY};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        arcball = dvz_arcball_desc();
+        arcball.zoom_speed = invalid_zoom_speeds[i];
+        AT_EXPECTED_ERROR_STRICT(suite, dvz_arcball_create(&arcball) == NULL);
+    }
+
     DvzCameraDesc camera = dvz_camera_desc();
     camera.struct_size = 0;
     AT_EXPECTED_ERROR_STRICT(suite, dvz_camera_create(&camera) == NULL);

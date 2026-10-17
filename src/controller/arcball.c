@@ -32,6 +32,7 @@
 #define DVZ_ARCBALL_ZOOM_MIN         0.001f
 #define DVZ_ARCBALL_ZOOM_MAX         1000.00f
 #define DVZ_ARCBALL_DESC_KNOWN_FLAGS 0u
+#define DVZ_ARCBALL_DEFAULT_ZOOM_SPEED 2.0f
 
 #if defined(__APPLE__)
 #define DVZ_ARCBALL_ZOOM_WHEEL_COEF 0.0125f
@@ -270,7 +271,7 @@ static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
     ANN(arcball);
     if (dir[1] == 0.0f)
         return;
-    (void)dvz_arcball_zoom(arcball, arcball->zoom * expf(DVZ_ARCBALL_ZOOM_WHEEL_COEF * dir[1]));
+    (void)dvz_arcball_zoom(arcball, arcball->zoom * expf(DVZ_ARCBALL_ZOOM_WHEEL_COEF * arcball->zoom_speed * dir[1]));
 }
 
 
@@ -384,6 +385,11 @@ static bool _arcball_desc_validate(const DvzArcballDesc* desc)
         log_error("invalid DvzArcballDesc ABI prologue");
         return false;
     }
+    if (!isfinite(desc->zoom_speed) || desc->zoom_speed < 0.0f)
+    {
+        log_error("invalid arcball zoom speed");
+        return false;
+    }
     return true;
 }
 
@@ -401,6 +407,7 @@ DvzArcballDesc dvz_arcball_desc(void)
         .width = 800.0f,
         .height = 600.0f,
         .controller_flags = 0,
+        .zoom_speed = DVZ_ARCBALL_DEFAULT_ZOOM_SPEED,
     };
 }
 
@@ -413,6 +420,7 @@ DvzArcball* _dvz_arcball(float width, float height, int flags)
 
     DvzArcball* arcball = (DvzArcball*)dvz_calloc(1, sizeof(DvzArcball));
     arcball->flags = flags;
+    arcball->zoom_speed = DVZ_ARCBALL_DEFAULT_ZOOM_SPEED;
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
     glm_mat4_identity(arcball->view);
@@ -435,7 +443,9 @@ DvzArcball* dvz_arcball_create(const DvzArcballDesc* desc)
         desc = &default_desc;
     if (!_arcball_desc_validate(desc))
         return NULL;
-    return _dvz_arcball(desc->width, desc->height, (int)desc->controller_flags);
+    DvzArcball* arcball = _dvz_arcball(desc->width, desc->height, (int)desc->controller_flags);
+    arcball->zoom_speed = desc->zoom_speed > 0.0f ? desc->zoom_speed : DVZ_ARCBALL_DEFAULT_ZOOM_SPEED;
+    return arcball;
 }
 
 

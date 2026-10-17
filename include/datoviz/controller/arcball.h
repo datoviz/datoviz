@@ -87,6 +87,8 @@ struct DvzArcballDesc
     float width;
     float height;
     uint32_t controller_flags;
+    // Wheel sensitivity multiplier; zero selects the default (2). Must be finite and nonnegative.
+    float zoom_speed;
 };
 
 
@@ -94,7 +96,7 @@ struct DvzArcballDesc
 /**
  * Return the default standalone arcball descriptor.
  *
- * The default viewport is 800 by 600 pixels and no controller flags are enabled.
+ * The default viewport is 800 by 600 pixels, wheel zoom speed is 2, and no controller flags are enabled.
  *
  * @return a fully initialized descriptor that callers may modify
  */

@@ -99,6 +99,8 @@ Arcball pan is controller state, not visual geometry. Right/middle drag translat
 
 The public arcball model matrix remains pure orientation. Optional orbit translation belongs to private navigation state and is applied through the effective view matrix. `ROTATION` links copy orientation only, keeping orientation gizmos centered; `PAN` links also copy the retained target and orbit translation, including a source's live gesture. The camera rotation basis and pointer sphere center are frozen for each pointer rotation, so panel-context restoration cannot change its live pose. Standalone rotation APIs continue to edit orientation without rebasing the inspection target.
 
+`DvzArcballDesc.zoom_speed` scales wheel sensitivity independently per controller. The default is 2, zero selects that default, and 1 restores the previous sensitivity. Values must be finite and nonnegative. The platform wheel coefficient is retained; speed changes only wheel input, not programmatic zoom, and survives reset. The current dolly remains additive in eye space because the rendered offset is `log(zoom)`; this setting does not introduce distance-relative dolly or change orthographic projection scale.
+
 
 ## Binding, Linking, And Domain Queries
 
