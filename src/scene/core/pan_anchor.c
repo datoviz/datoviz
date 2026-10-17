@@ -77,6 +77,8 @@ static bool _pan_anchor_matrix_equal(const float* a, const float* b)
 void _scene_arcball_pan_anchor_begin(
     DvzPanel* panel, DvzController* controller, const DvzPointerEvent* pointer)
 {
+    if (controller->arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN)
+        return;
     if (pointer->type != DVZ_POINTER_EVENT_DRAG_START ||
         (pointer->button != DVZ_POINTER_BUTTON_RIGHT &&
          pointer->button != DVZ_POINTER_BUTTON_MIDDLE))

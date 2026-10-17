@@ -1433,6 +1433,10 @@ DvzControllerLink* dvz_controller_link(
         return NULL;
     if (!_scene_controller_link_components_valid(source, target, components))
         return NULL;
+    if ((components & DVZ_CONTROLLER_LINK_PAN) && source->arcball != NULL &&
+        target->arcball != NULL &&
+        ((source->arcball->flags ^ target->arcball->flags) & DVZ_ARCBALL_FLAGS_SCREEN_PAN))
+        return NULL;
 
     DvzControllerLink* link = NULL;
     for (uint32_t i = 0; i < scene->controller_link_count; i++)

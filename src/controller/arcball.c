@@ -307,6 +307,13 @@ static void _arcball_pan_drag(DvzArcball* arcball, vec2 shift_px)
     if (width <= 0.0f || height <= 0.0f)
         return;
 
+    if (arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN)
+    {
+        arcball->pan[0] = arcball->pan_center[0] + 2.0f * shift_px[0] / width;
+        arcball->pan[1] = arcball->pan_center[1] - 2.0f * shift_px[1] / height;
+        return;
+    }
+
     glm_vec2_copy(shift_px, arcball->pan_pending_shift);
     if (arcball->pan_depth_pending)
         return;
@@ -412,7 +419,10 @@ static void _arcball_camera_mvp(DvzArcball* arcball, DvzMVP* mvp)
     ANN(mvp);
 
     mat4 translate = GLM_MAT4_IDENTITY_INIT;
-    glm_translate_make(translate, (vec3){arcball->pan[0], arcball->pan[1], logf(arcball->zoom)});
+    bool screen_pan = (arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) != 0;
+    glm_translate_make(
+        translate, (vec3){screen_pan ? 0.0f : arcball->pan[0],
+                          screen_pan ? 0.0f : arcball->pan[1], logf(arcball->zoom)});
 
     mat4 view = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(mvp->view, view);
@@ -420,6 +430,15 @@ static void _arcball_camera_mvp(DvzArcball* arcball, DvzMVP* mvp)
     vec3 offset = {0};
     _dvz_arcball_orbit_translation(arcball, offset);
     glm_translate(mvp->view, offset);
+    if (screen_pan)
+    {
+        // Translate clip XY by W so every visible depth moves by the same screen amount.
+        for (uint32_t col = 0; col < 4; col++)
+        {
+            mvp->proj[col][0] += arcball->pan[0] * mvp->proj[col][3];
+            mvp->proj[col][1] += arcball->pan[1] * mvp->proj[col][3];
+        }
+    }
 }
 
 
@@ -466,6 +485,12 @@ static bool _arcball_desc_validate(const DvzArcballDesc* desc)
     if (!isfinite(desc->zoom_speed) || desc->zoom_speed < 0.0f)
     {
         log_error("invalid arcball zoom speed");
+        return false;
+    }
+    if ((desc->controller_flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) &&
+        (desc->controller_flags & DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT))
+    {
+        log_error("screen pan and viewport orbit cannot be combined");
         return false;
     }
     return true;

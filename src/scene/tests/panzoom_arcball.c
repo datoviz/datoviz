@@ -3045,6 +3045,226 @@ int test_arcball_pan_depth_plane_tracks_surface(TstContext* suite, const TstCase
 
 
 /**
+ * Screen pan moves every projected depth by the same pixels without changing the camera or model.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_arcball_screen_pan_tracks_pixels_at_all_depths(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    const float dollies[] = {0, 1, 2, 2.8f, 3.1f};
+    for (uint32_t orthographic = 0; orthographic < 2; orthographic++)
+    {
+        DvzScene* scene = dvz_scene();
+        ANN(scene);
+        DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+        DvzPanel* panel = dvz_panel_full(figure);
+        DvzCameraDesc camera = dvz_camera_desc();
+        glm_vec3_copy((vec3){0, 0, 3}, camera.view.eye);
+        glm_vec3_zero(camera.view.target);
+        camera.projection.type = orthographic ? DVZ_CAMERA_ORTHOGRAPHIC : DVZ_CAMERA_PERSPECTIVE;
+        camera.projection.fov_y = 0.72f;
+        camera.projection.ortho_height = 4;
+        camera.projection.near_clip = 0.01f;
+        camera.projection.far_clip = 100;
+        AT(dvz_panel_set_camera_desc(panel, &camera) == DVZ_OK);
+        DvzArcballDesc desc = dvz_arcball_desc();
+        desc.controller_flags = DVZ_ARCBALL_FLAGS_SCREEN_PAN;
+        DvzController* controller = dvz_arcball(scene, &desc);
+        ANN(controller);
+        DvzArcball* arc = dvz_controller_arcball(controller);
+        ANN(arc);
+        AT(dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ) == DVZ_OK);
+        AT(dvz_arcball_initial(arc, (vec3){0.1f, -0.15f, 0.05f}) == DVZ_OK);
+        DvzInputRouter* router = dvz_input_router();
+        ANN(router);
+        AT(dvz_panel_connect_input(panel, router) == DVZ_OK);
+        // Even an eligible context mesh must not enqueue a navigation-depth query in this mode.
+        DvzVisual* mesh = dvz_mesh(scene, 0);
+        ANN(mesh);
+        AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+        DvzMVP initial = {0};
+        _scene_panel_apply_mvp(panel, &initial);
+        for (uint32_t z = 0; z < 5; z++)
+        {
+            AT(dvz_arcball_reset(arc) == DVZ_OK);
+            AT(dvz_arcball_zoom(arc, expf(dollies[z])) == DVZ_OK);
+            DvzMVP before = {0};
+            _scene_panel_apply_mvp(panel, &before);
+            vec4 points[3] = {{0}};
+            vec4 clip_before[3] = {{0}};
+            float front_z = fminf(0.5f, 3 - dollies[z] - 0.2f);
+            for (uint32_t point = 0; point < 3; point++)
+            {
+                glm_vec4_copy(
+                    (vec4){0.01f * point, 0.02f * point, front_z - 0.7f * point, 1},
+                    points[point]);
+                vec4 model = {0}, eye = {0};
+                glm_mat4_mulv(before.model, points[point], model);
+                glm_mat4_mulv(before.view, model, eye);
+                glm_mat4_mulv(before.proj, eye, clip_before[point]);
+                AT(clip_before[point][3] > 0);
+            }
+            DvzInputEvent event = {.type = DVZ_INPUT_EVENT_POINTER};
+            DvzPointerEvent* pointer = &event.content.pointer;
+            pointer->type = DVZ_POINTER_EVENT_PRESS;
+            pointer->button = z % 2 ? DVZ_POINTER_BUTTON_MIDDLE : DVZ_POINTER_BUTTON_RIGHT;
+            glm_vec2_copy((vec2){400, 300}, pointer->pos);
+            dvz_input_emit_event(router, &event);
+            pointer->type = DVZ_POINTER_EVENT_DRAG_START;
+            glm_vec2_copy(pointer->pos, pointer->content.d.press_pos);
+            pointer->content.d.is_press_valid = true;
+            dvz_input_emit_event(router, &event);
+            AT(!arc->pan_depth_pending);
+            AT(scene->pending_query_count == 0);
+            pointer->type = DVZ_POINTER_EVENT_DRAG;
+            glm_vec2_copy((vec2){20, -15}, pointer->content.d.shift);
+            glm_vec2_add(pointer->content.d.press_pos, pointer->content.d.shift, pointer->pos);
+            dvz_input_emit_event(router, &event);
+            glm_vec2_copy((vec2){40, -30}, pointer->content.d.shift);
+            glm_vec2_add(pointer->content.d.press_pos, pointer->content.d.shift, pointer->pos);
+            dvz_input_emit_event(router, &event);
+            DvzMVP after = {0};
+            _scene_panel_apply_mvp(panel, &after);
+            AT(_test_mat4_close(before.model, after.model, 1e-6f));
+            AT(_test_mat4_close(before.view, after.view, 1e-6f));
+            for (uint32_t point = 0; point < 3; point++)
+            {
+                vec4 model = {0}, eye = {0}, clip = {0};
+                glm_mat4_mulv(after.model, points[point], model);
+                glm_mat4_mulv(after.view, model, eye);
+                glm_mat4_mulv(after.proj, eye, clip);
+                float dx = 400 * (clip[0] / clip[3] -
+                                  clip_before[point][0] / clip_before[point][3]);
+                float dy = 300 * (clip[1] / clip[3] -
+                                  clip_before[point][1] / clip_before[point][3]);
+                AC(dx, 40, 1e-3f);
+                AC(dy, 30, 1e-3f);
+                AC(clip[2], clip_before[point][2], 1e-6f);
+                AC(clip[3], clip_before[point][3], 1e-6f);
+            }
+            pointer->type = DVZ_POINTER_EVENT_DRAG_STOP;
+            dvz_input_emit_event(router, &event);
+            DvzMVP stopped = {0};
+            _scene_panel_apply_mvp(panel, &stopped);
+            AT(_test_mat4_close(after.proj, stopped.proj, 1e-6f));
+            AT(dvz_arcball_reset(arc) == DVZ_OK);
+            DvzMVP reset = {0};
+            _scene_panel_apply_mvp(panel, &reset);
+            AT(_test_mat4_close(initial.model, reset.model, 1e-6f));
+            AT(_test_mat4_close(initial.view, reset.view, 1e-6f));
+            AT(_test_mat4_close(initial.proj, reset.proj, 1e-6f));
+        }
+        dvz_scene_destroy(scene);
+        dvz_input_router_destroy(router);
+    }
+    return 0;
+}
+
+
+
+/**
+ * Reject combining screen-space pan with a physically rebased orbit target.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_arcball_screen_pan_rejects_viewport_orbit(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    DvzArcballDesc desc = dvz_arcball_desc();
+    desc.controller_flags = DVZ_ARCBALL_FLAGS_SCREEN_PAN | DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_arcball_create(&desc) == NULL);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_arcball(scene, &desc) == NULL);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Screen-pan links propagate clip offsets and reject mixing incompatible pan units.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_arcball_screen_pan_link_units(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzArcballDesc desc = dvz_arcball_desc();
+    desc.controller_flags = DVZ_ARCBALL_FLAGS_SCREEN_PAN;
+    DvzController* source = dvz_arcball(scene, &desc);
+    DvzController* target = dvz_arcball(scene, &desc);
+    DvzController* legacy = dvz_arcball(scene, NULL);
+    ANN(source);
+    ANN(target);
+    ANN(legacy);
+    DvzArcball* source_arc = dvz_controller_arcball(source);
+    DvzArcball* target_arc = dvz_controller_arcball(target);
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_perspective(0.72f, 800.0f / 600, 0.01f, 100, projection);
+    _dvz_arcball_camera(source_arc, view, projection);
+    _dvz_arcball_camera(target_arc, view, projection);
+    DvzControllerLink* link = dvz_controller_link(
+        scene, source, target, DVZ_CONTROLLER_LINK_PAN, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(link);
+    const vec2 offsets[] = {{0.3f, -0.2f}, {-0.4f, 0.1f}, {0, 0}};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        vec2 pan = {offsets[i][0], offsets[i][1]};
+        AT(dvz_arcball_pan(source_arc, pan) == DVZ_OK);
+        _dvz_scene_controller_links_propagate(scene);
+        DvzMVP source_mvp = {0}, target_mvp = {0};
+        glm_mat4_copy(view, source_mvp.view);
+        glm_mat4_copy(view, target_mvp.view);
+        glm_mat4_copy(projection, source_mvp.proj);
+        glm_mat4_copy(projection, target_mvp.proj);
+        dvz_arcball_mvp(source_arc, &source_mvp);
+        dvz_arcball_mvp(target_arc, &target_mvp);
+        AT(_test_mat4_close(source_mvp.proj, target_mvp.proj, 1e-6f));
+        AT(_test_mat4_close(view, target_mvp.view, 1e-6f));
+        DvzArcballState state = {0};
+        AT(dvz_arcball_state(target_arc, &state));
+        AC(state.pan[0], offsets[i][0], 1e-6f);
+        AC(state.pan[1], offsets[i][1], 1e-6f);
+    }
+    AT(dvz_controller_link(
+           scene, source, legacy, DVZ_CONTROLLER_LINK_PAN, DVZ_CONTROLLER_LINK_ONE_WAY) == NULL);
+    AT(dvz_controller_link(
+           scene, legacy, source, DVZ_CONTROLLER_LINK_PAN, DVZ_CONTROLLER_LINK_TWO_WAY) == NULL);
+    AT(dvz_controller_link(
+           scene, source, legacy, DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ROTATION,
+           DVZ_CONTROLLER_LINK_ONE_WAY) == NULL);
+    // Orientation remains compatible: a screen-pan workspace can still drive a centered gizmo.
+    DvzControllerLink* rotation = dvz_controller_link(
+        scene, source, legacy, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(rotation);
+    AT(dvz_arcball_set(source_arc, (vec3){0.2f, -0.3f, 0.4f}) == DVZ_OK);
+    _dvz_scene_controller_links_propagate(scene);
+    mat4 source_model = GLM_MAT4_IDENTITY_INIT;
+    mat4 legacy_model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(source_arc, source_model);
+    dvz_arcball_model(dvz_controller_arcball(legacy), legacy_model);
+    AT(_test_mat4_close(source_model, legacy_model, 1e-6f));
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Register scene panzoom and arcball tests.
  *
  * @param suite the active test suite
@@ -3085,6 +3305,9 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_pan_right_drag);
     TST_CASE(test_arcball_pan_tracks_pixels_at_camera_depth);
     TST_CASE(test_arcball_pan_depth_plane_tracks_surface);
+    TST_CASE(test_arcball_screen_pan_tracks_pixels_at_all_depths);
+    TST_CASE(test_arcball_screen_pan_rejects_viewport_orbit);
+    TST_CASE(test_arcball_screen_pan_link_units);
     TST_CASE(test_arcball_interaction_state);
     TST_CASE(test_arcball_double_click_resets);
     TST_CASE(test_arcball_rotation_after_large_pan);

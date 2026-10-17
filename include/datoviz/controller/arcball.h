@@ -44,6 +44,8 @@ typedef enum
     DVZ_ARCBALL_FLAGS_CONSTRAIN = 0x01,
     // Rebase the physical orbit target to the viewport center at each pointer rotation.
     DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = 0x02,
+    // Pan the projected image in normalized clip units; incompatible with VIEWPORT_ORBIT.
+    DVZ_ARCBALL_FLAGS_SCREEN_PAN = 0x04,
 } DvzArcballFlags;
 
 
@@ -167,10 +169,10 @@ DVZ_EXPORT DvzResult dvz_arcball_zoom(DvzArcball* arcball, float zoom);
 
 
 /**
- * Set the camera view-plane pan offset.
+ * Set the camera view-plane pan offset, or normalized clip offset with SCREEN_PAN.
  *
  * @param arcball arcball controller
- * @param pan panel-plane pan offset
+ * @param pan pan offset; SCREEN_PAN uses +X right, +Y up, with 2 units per panel extent
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_pan(DvzArcball* arcball, vec2 pan);

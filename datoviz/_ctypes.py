@@ -358,11 +358,13 @@ class DvzArcballFlags(CtypesEnum):
     DVZ_ARCBALL_FLAGS_NONE = 0
     DVZ_ARCBALL_FLAGS_CONSTRAIN = 1
     DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = 2
+    DVZ_ARCBALL_FLAGS_SCREEN_PAN = 4
 
 
 DVZ_ARCBALL_FLAGS_NONE = DvzArcballFlags.DVZ_ARCBALL_FLAGS_NONE
 DVZ_ARCBALL_FLAGS_CONSTRAIN = DvzArcballFlags.DVZ_ARCBALL_FLAGS_CONSTRAIN
 DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = DvzArcballFlags.DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT
+DVZ_ARCBALL_FLAGS_SCREEN_PAN = DvzArcballFlags.DVZ_ARCBALL_FLAGS_SCREEN_PAN
 
 
 class DvzBackend(CtypesEnum):
@@ -8946,10 +8948,10 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_arcball_pan')
 else:
     dvz_arcball_pan.__doc__ = """/**
- * Set the camera view-plane pan offset.
+ * Set the camera view-plane pan offset, or normalized clip offset with SCREEN_PAN.
  *
  * @param arcball arcball controller
- * @param pan panel-plane pan offset
+ * @param pan pan offset; SCREEN_PAN uses +X right, +Y up, with 2 units per panel extent
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_pan.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2)]
