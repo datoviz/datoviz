@@ -271,7 +271,45 @@ static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
     ANN(arcball);
     if (dir[1] == 0.0f)
         return;
+    float old_zoom = arcball->zoom;
     (void)dvz_arcball_zoom(arcball, arcball->zoom * expf(DVZ_ARCBALL_ZOOM_WHEEL_COEF * arcball->zoom_speed * dir[1]));
+    if (!(arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) || arcball->zoom == old_zoom)
+        return;
+
+    // Dolly along the current viewport-center ray, including the image framing offset.
+    // Moving only along eye Z would instead zoom toward the pre-pan optical center.
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_copy(arcball->projection, projection);
+    for (uint32_t col = 0; col < 4; col++)
+    {
+        projection[col][0] += arcball->pan[0] * projection[col][3];
+        projection[col][1] += arcball->pan[1] * projection[col][3];
+    }
+    float determinant = glm_mat4_det(projection);
+    if (!isfinite(determinant) || fabsf(determinant) < 1e-12f)
+        return;
+    mat4 inverse = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_inv(projection, inverse);
+    vec4 near = {0}, far = {0};
+    glm_mat4_mulv(inverse, (vec4){0, 0, -0.5f, 1}, near);
+    glm_mat4_mulv(inverse, (vec4){0, 0, 0.5f, 1}, far);
+    if (!isfinite(near[3]) || !isfinite(far[3]) || fabsf(near[3]) < 1e-12f ||
+        fabsf(far[3]) < 1e-12f)
+        return;
+    glm_vec4_scale(near, 1.0f / near[3], near);
+    glm_vec4_scale(far, 1.0f / far[3], far);
+    float dz = far[2] - near[2];
+    if (!isfinite(dz) || fabsf(dz) < 1e-12f)
+        return;
+    float travel = logf(arcball->zoom) - logf(old_zoom);
+    vec2 offset = {0};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        offset[i] = arcball->zoom_offset[i] + travel * (far[i] - near[i]) / dz;
+        if (!isfinite(offset[i]))
+            return;
+    }
+    glm_vec2_copy(offset, arcball->zoom_offset);
 }
 
 
@@ -421,8 +459,9 @@ static void _arcball_camera_mvp(DvzArcball* arcball, DvzMVP* mvp)
     mat4 translate = GLM_MAT4_IDENTITY_INIT;
     bool screen_pan = (arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) != 0;
     glm_translate_make(
-        translate, (vec3){screen_pan ? 0.0f : arcball->pan[0],
-                          screen_pan ? 0.0f : arcball->pan[1], logf(arcball->zoom)});
+        translate, (vec3){screen_pan ? arcball->zoom_offset[0] : arcball->pan[0],
+                          screen_pan ? arcball->zoom_offset[1] : arcball->pan[1],
+                          logf(arcball->zoom)});
 
     mat4 view = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(mvp->view, view);
@@ -614,6 +653,7 @@ DvzResult dvz_arcball_reset(DvzArcball* arcball)
         return DVZ_ERROR;
     glm_quat_identity(arcball->rotation);
     arcball->zoom = 1.0f;
+    glm_vec2_zero(arcball->zoom_offset);
     glm_vec2_zero(arcball->pan);
     glm_vec2_zero(arcball->pan_center);
     arcball->interacting = false;

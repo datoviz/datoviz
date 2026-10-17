@@ -535,7 +535,12 @@ static void _scene_controller_link_copy_arcball(
         glm_vec2_copy(source->pan_center, target->pan_center);
     }
     if ((components & DVZ_CONTROLLER_LINK_ZOOM) != 0)
+    {
         target->zoom = source->zoom;
+        if ((source->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) &&
+            (target->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN))
+            glm_vec2_copy(source->zoom_offset, target->zoom_offset);
+    }
 }
 
 

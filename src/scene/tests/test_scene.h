@@ -236,6 +236,10 @@ int test_arcball_pan_tracks_pixels_at_camera_depth(TstContext* suite, const TstC
 int test_arcball_screen_pan_tracks_pixels_at_all_depths(TstContext* suite, const TstCase* item);
 int test_arcball_screen_pan_rejects_viewport_orbit(TstContext* suite, const TstCase* item);
 int test_arcball_screen_pan_link_units(TstContext* suite, const TstCase* item);
+int test_arcball_screen_pan_zoom_follows_viewport_center(TstContext* suite, const TstCase* item);
+int test_arcball_default_zoom_preserves_view_plane(TstContext* suite, const TstCase* item);
+int test_arcball_screen_pan_zoom_link_offsets(TstContext* suite, const TstCase* item);
+int test_arcball_screen_pan_zoom_off_axis_projection(TstContext* suite, const TstCase* item);
 
 int test_arcball_interaction_state(TstContext* suite, const TstCase* item);
 

@@ -2,6 +2,12 @@
 
 Status: narrow RC3 implementation complete at `d0e904705`, 2026-10-13; RC4 source checkpoints are integrated locally on `rc4/scientific-3d`, while profile acceptance and exact-candidate proof remain pending. The required native non-volume target and RC4/RC5/final boundaries are in [the profile slice](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md). This record separates source inspection from delivered behavior; it does not close a release gate. Preserve [current release evidence](STATUS.md) and its recorded revisions.
 
+## Viewport-centered wheel dolly after image pan, 2026-10-17
+
+Wheel zoom in `SCREEN_PAN` mode now follows the center ray of the currently shifted projection, accumulating its lateral eye-space component separately from the normalized image-pan offset. Previously, wheel movement along the original eye Z axis zoomed toward the displaced pre-pan optical center. Points at every visible depth on the current viewport-center ray now remain centered, while later panning remains exact in pixels. The original physical rotation pivot, pan-neutral sphere mapping, direct scalar zoom setter, wheel sensitivity/distance law and orthographic behavior are unchanged. Reset clears the retained displacement. ZOOM links copy it only between two screen-pan endpoints; mixed modes retain scalar-only sharing.
+
+All 1,289 native tests pass with zero failures/skips. Downstream validation passes 1,088 tests with one unmaterialized registered-asset skip; both numbered apps start, and strict downstream docs pass. Actual review-1 XTest pan plus wheel-in/out checks pass at dolly 0/1/2/2.8, retaining exact 60-pixel pan tracking. Focused tests verify center-ray invariance at three depths, repeated pan/zoom, tilted and off-axis cameras, orthographic behavior, reversibility, reset, default-mode behavior and link isolation. No public ABI or binding layout changes. Publication, pin promotion and manual interaction acceptance remain pending.
+
 ## Image-plane atlas pan, 2026-10-17
 
 Manual high-zoom feedback exposed a perceptual limitation of nearest-surface panning in translucent anatomy. Independent real-app pixel tracking found a 60-pixel pointer drag moved prominent deeper structures only 18 pixels at dolly 2 and 8 pixels at dolly 2.5. The earlier inferred-depth evidence below confirms GPU anchor selection, not visible-feature tracking. A high Sol 6.1 audit recommends explicit image-plane framing for this use case instead of a depth floor or global gain.
