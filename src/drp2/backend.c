@@ -23,6 +23,7 @@
 #include "_assertions.h"
 #include "_runtime.h"
 #include "_stream.h"
+#include "datoviz/vklite/sync.h"
 
 
 
@@ -503,6 +504,69 @@ void _vklite_owned_commands_destroy(DvzCommands* cmds)
 }
 
 
+
+/**
+ * Order immediate DRP2 work against earlier and later work on the same main queue.
+ *
+ * These conservative scopes preserve GPU resource dependencies across owned submissions and
+ * borrowed canvas submissions without idling unrelated queues. Cross-queue handoffs still require
+ * their explicit semaphore and ownership-transfer contracts.
+ *
+ * @param cmds owned command buffer currently recording outside a render pass
+ */
+static void _vklite_owned_commands_barrier(DvzCommands* cmds)
+{
+    ANN(cmds);
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierMemory* memory = dvz_barriers_memory(&barriers);
+    ANN(memory);
+    dvz_barrier_memory_stage(
+        memory, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+    dvz_barrier_memory_access(
+        memory, VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
+        VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT);
+    dvz_cmd_barriers(cmds, &barriers);
+}
+
+
+
+/**
+ * Begin owned immediate DRP2 commands after dependencies on preceding main-queue work.
+ *
+ * @param cmds owned command-buffer wrapper; never a borrowed frame wrapper
+ * @return 0 on success, non-zero on command-buffer state or Vulkan failure
+ */
+int _vklite_owned_commands_begin(DvzCommands* cmds)
+{
+    ANN(cmds);
+    int result = dvz_cmd_begin_result(cmds);
+    if (result != 0)
+        return result;
+    _vklite_owned_commands_barrier(cmds);
+    return 0;
+}
+
+
+
+/**
+ * End owned immediate DRP2 commands with dependencies for subsequent main-queue work.
+ *
+ * The caller must have begun this owned wrapper and ended any active rendering scope.
+ * This barrier covers device accesses; host readback requires its own host access dependency.
+ *
+ * @param cmds owned command-buffer wrapper currently recording outside a render pass
+ * @return 0 on success, non-zero on command-buffer state or Vulkan failure
+ */
+int _vklite_owned_commands_end(DvzCommands* cmds)
+{
+    ANN(cmds);
+    _vklite_owned_commands_barrier(cmds);
+    return dvz_cmd_end_result(cmds);
+}
+
+
+
 /**
  * Wrap a borrowed frame command buffer that is already recording.
  *
@@ -551,7 +615,7 @@ DvzDrp2ValidationResult
 _vklite_owned_commands_end_submit(DvzCommands* cmds, uint32_t command_index)
 {
     ANN(cmds);
-    if (dvz_cmd_end_result(cmds) != 0)
+    if (_vklite_owned_commands_end(cmds) != 0)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (dvz_cmd_submit_result(cmds) != 0)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);

@@ -253,6 +253,7 @@ int test_drp2(TstSuite* suite)
         TST_ISOLATION_EXCLUSIVE);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_owned_copy_between_borrowed_reads);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_destroys_submitted_buffer);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_releases_readback_buffer_after_download);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_uses_external_buffer);

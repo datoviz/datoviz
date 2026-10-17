@@ -472,6 +472,127 @@ int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const Tst
 
 
 /**
+ * Preserve resource dependencies between borrowed owner submissions and immediate DRP2 copies.
+ *
+ * @param suite the test suite
+ * @param item the test item
+ * @return 0 on success
+ */
+int test_drp2_runtime_vklite_owned_copy_between_borrowed_reads(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = drp2_test_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
+        return 0;
+    ANN(ctx);
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
+    ANN(queue);
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST |
+                          DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 2, 16, DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    for (uint64_t id = 3; id <= 4; id++)
+        AT(dvz_drp2_stream_create_buffer(
+            setup, id, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_write_buffer_base64(setup, 1, 0, 16, "AQIDBAUGBwgJCgsMDQ4PEA=="));
+    AT(dvz_drp2_stream_write_buffer_base64(setup, 2, 0, 16, "EBAQEBAQEBAQEBAQEBAQEA=="));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+
+    VkBuffer shared = dvz_buffer_handle(_vklite_find(runtime->vklite_state, 1)->buffer);
+    VkBuffer before = dvz_buffer_handle(_vklite_find(runtime->vklite_state, 3)->buffer);
+    VkBuffer after = dvz_buffer_handle(_vklite_find(runtime->vklite_state, 4)->buffer);
+    VkBufferCopy region = {.size = 16};
+
+    // The external owner submits a borrowed read without waiting for it to complete.
+    DvzCommands* owner_before = _vklite_owned_commands_create(device);
+    ANN(owner_before);
+    AT(dvz_cmd_begin_result(owner_before) == 0);
+    DvzCommands* borrowed = _vklite_borrowed_frame_commands_create(
+        device, dvz_commands_handle(owner_before));
+    ANN(borrowed);
+    vkCmdCopyBuffer(dvz_commands_handle(borrowed), shared, before, 1, &region);
+    _vklite_borrowed_frame_commands_free(borrowed);
+    AT(dvz_cmd_end_result(owner_before) == 0);
+    DvzSubmit* submit = dvz_submit_create_wrapper();
+    ANN(submit);
+    dvz_submit(submit);
+    dvz_submit_command(submit, dvz_commands_handle(owner_before));
+    AT(dvz_submit_send(submit, dvz_queue_handle(queue), VK_NULL_HANDLE) == VK_SUCCESS);
+
+    // This write needs an incoming execution dependency on the earlier borrowed read.
+    DvzDrp2CommandStream* copy = dvz_drp2_stream();
+    ANN(copy);
+    AT(dvz_drp2_stream_begin_command_encoder(copy, 10));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(copy, 10, 2, 0, 1, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(copy, 10, 11));
+    AT(dvz_drp2_stream_queue_submit(copy, 11, 12));
+    result = dvz_drp2_runtime_execute(runtime, copy);
+    AT(result.ok);
+
+    // The next owner read relies on the immediate copy's outgoing device memory dependency.
+    DvzCommands* owner_after = _vklite_owned_commands_create(device);
+    ANN(owner_after);
+    AT(dvz_cmd_begin_result(owner_after) == 0);
+    borrowed = _vklite_borrowed_frame_commands_create(device, dvz_commands_handle(owner_after));
+    ANN(borrowed);
+    vkCmdCopyBuffer(dvz_commands_handle(borrowed), shared, after, 1, &region);
+    _vklite_borrowed_frame_commands_free(borrowed);
+
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierMemory* memory = dvz_barriers_memory(&barriers);
+    ANN(memory);
+    dvz_barrier_memory_stage(
+        memory, VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_PIPELINE_STAGE_2_HOST_BIT);
+    dvz_barrier_memory_access(memory, VK_ACCESS_2_TRANSFER_WRITE_BIT, VK_ACCESS_2_HOST_READ_BIT);
+    dvz_cmd_barriers(owner_after, &barriers);
+    AT(dvz_cmd_end_result(owner_after) == 0);
+
+    DvzFence* fence = dvz_fence_create_wrapper();
+    ANN(fence);
+    dvz_fence(device, false, fence);
+    dvz_submit(submit);
+    dvz_submit_command(submit, dvz_commands_handle(owner_after));
+    VkFence handle = dvz_fence_handle(fence);
+    AT(dvz_submit_send(submit, dvz_queue_handle(queue), handle) == VK_SUCCESS);
+    AT(vkWaitForFences(dvz_device_handle(device), 1, &handle, VK_TRUE, UINT64_MAX) == VK_SUCCESS);
+
+    uint8_t downloaded_before[16] = {0};
+    uint8_t downloaded_after[16] = {0};
+    AT(dvz_drp2_runtime_download_buffer(runtime, 3, 0, 16, downloaded_before));
+    AT(dvz_drp2_runtime_download_buffer(runtime, 4, 0, 16, downloaded_after));
+    for (uint32_t i = 0; i < 16; i++)
+    {
+        AT(downloaded_before[i] == i + 1);
+        AT(downloaded_after[i] == 16);
+    }
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
+
+    dvz_fence_destroy(fence);
+    dvz_fence_free(fence);
+    dvz_submit_free(submit);
+    _vklite_owned_commands_destroy(owner_after);
+    _vklite_owned_commands_destroy(owner_before);
+    dvz_drp2_stream_destroy(copy);
+    dvz_drp2_stream_destroy(setup);
+    return 0;
+}
+
+
+
+/**
  * Destroy an owned buffer after the command buffer that captured it has been submitted.
  *
  * @param suite the test suite.

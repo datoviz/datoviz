@@ -355,6 +355,9 @@ void dvz_cmd_release(DvzCommands* cmds)
 /**
  * Submit a command buffer on its queue and report Vulkan failures.
  *
+ * Completion covers this queue only. Callers must record memory dependencies and synchronize
+ * resources shared with other queues explicitly.
+ *
  * @param cmds the commands wrapper
  * @return 0 on success, non-zero on Vulkan or state failure
  */
@@ -380,9 +383,6 @@ int dvz_cmd_submit_result(DvzCommands* cmds)
 
     DvzQueue* queue = cmds->queue;
     ANN(queue);
-
-    // NOTE: inefficient device-level wait.
-    dvz_device_wait(device);
 
     VkQueue vk_queue = dvz_queue_handle(queue);
     ANNVK(vk_queue);

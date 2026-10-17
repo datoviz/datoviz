@@ -262,6 +262,9 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
 
 int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const TstCase* item);
 
+int test_drp2_runtime_vklite_owned_copy_between_borrowed_reads(
+    TstContext* suite, const TstCase* item);
+
 int test_drp2_runtime_vklite_destroys_submitted_buffer(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_releases_readback_buffer_after_download(

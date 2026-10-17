@@ -1,8 +1,18 @@
 # Interactive Mesh Performance Handoff
 
-Status: active non-blocking v0.4-final measurement work and preserved early-v0.5 implementation sequence. Updated: 2026-10-17.
+Status: active non-blocking v0.4-final measurement work and preserved early-v0.5 implementation sequence. Updated: 2026-10-18.
 
 This handoff records execution evidence and task order for large semantically partitioned meshes. Durable query behavior lives in [GPU_QUERY_SYSTEM.md](../../spec/scene/interaction/GPU_QUERY_SYSTEM.md), asynchronous completion in [ASYNC_QUERY_EXECUTION.md](../../spec/scene/proposals/future/ASYNC_QUERY_EXECUTION.md), mesh-part state in [MESH_PART_STATE.md](../../spec/scene/proposals/future/MESH_PART_STATE.md), and embedded presentation in [GUI_VIEWPORT_PRESENTATION.md](../../spec/architecture/GUI_VIEWPORT_PRESENTATION.md).
+
+## Queue-Scoped Immediate Submission — October 18 2026
+
+Immediate vklite submission no longer idles the entire device before submitting. It still waits for its selected queue afterward, preserving synchronous command-buffer and staging-buffer lifetimes. The generic helper requires caller-supplied memory barriers and explicit cross-queue synchronization; its public signature is unchanged.
+
+Same-queue submission order alone was insufficient: a prior borrowed canvas frame can still read a buffer that an immediate DRP2 copy overwrites. Owned DRP2 command buffers now record conservative ALL_COMMANDS memory dependencies at begin and end, covering prior readers/writers and publishing writes to later device consumers on MAIN. All owned begin paths and the explicit timeline handoff end path use these helpers. Borrowed recording ownership is unchanged; host readback and cross-queue handoffs retain their separate dependencies.
+
+Synchronization validation and submit-time checking were explicitly enabled. An intentionally unsubmitted pair of unbarriered fills verifies the active validator reports WRITE_AFTER_WRITE. An actual borrowed-read / immediate-copy / borrowed-read regression passes with known old/new bytes and no validation errors. Temporarily removing the owned barriers makes this regression report WRITE_AFTER_READ; restoring them passes. Selected-queue completion and independence from an allocated unrelated queue both pass. The complete runtime-vklite lane passes 113 tests with no failures or skips. Binding generation and freshness/policy/ABI checks pass; no public API or binding output change remains. A high-effort Sol 6.1 implementation/audit and independent GUI-owner review found no remaining blockers.
+
+The independent-queue test uncovered a separate pre-existing metadata defect: device queue allocation retains family/index/handle but does not initialize role capability flags, so optional role lookup can fail despite allocated queues. The regression enumerates actual allocated handles; production queue-role behavior is unchanged. Repairing that metadata needs separate caller and cross-queue validation rather than silently enabling new queue choices in this patch.
 
 ## Unchanged Volume Transfer Uploads — October 17 2026
 

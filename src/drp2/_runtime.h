@@ -405,6 +405,8 @@ void _vklite_flush_deferred_for_command_buffer(
     Drp2VkliteState* state, VkCommandBuffer command_buffer);
 void _vklite_flush_deferred(Drp2VkliteState* state);
 DvzCommands* _vklite_owned_commands_create(DvzDevice* device);
+int _vklite_owned_commands_begin(DvzCommands* cmds);
+int _vklite_owned_commands_end(DvzCommands* cmds);
 void _vklite_owned_commands_destroy(DvzCommands* cmds);
 DvzCommands* _vklite_borrowed_frame_commands_create(
     DvzDevice* device, VkCommandBuffer command_buffer);

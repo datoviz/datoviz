@@ -944,7 +944,7 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         }
     }
 
-    if (!pass->borrowed_commands && dvz_cmd_begin_result(cmds) != 0)
+    if (!pass->borrowed_commands && _vklite_owned_commands_begin(cmds) != 0)
         return _vklite_fail_destroy_object(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     uint64_t skip_texture_ids[(2 * DVZ_DRP2_MAX_COLOR_ATTACHMENTS) + 1] = {0};
@@ -1047,7 +1047,7 @@ DvzDrp2ValidationResult _vklite_begin_compute_pass(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     pass->commands = cmds;
 
-    if (dvz_cmd_begin_result(cmds) != 0)
+    if (_vklite_owned_commands_begin(cmds) != 0)
         return _vklite_fail_destroy_object(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     return _drp2_ok();
@@ -1428,7 +1428,7 @@ DvzDrp2ValidationResult _vklite_resource_barrier(
     DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
     if (cmds == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (dvz_cmd_begin_result(cmds) != 0)
+    if (_vklite_owned_commands_begin(cmds) != 0)
     {
         _vklite_owned_commands_destroy(cmds);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
