@@ -1946,7 +1946,7 @@ function validateBufferReplacement(state, record, size, usage) {
 
 
 
-function prepareCreateBuffer(state, id, size, usage, options) {
+function prepareCreateBuffer(state, id, size, usage, options, committedBuffers) {
   const record = state.objects.get(id);
   if (record === undefined) {
     return null;
@@ -1960,7 +1960,8 @@ function prepareCreateBuffer(state, id, size, usage, options) {
   if (record.openRefs > 0 || record.recordedRefs > 0 || record.pendingReadbackRefs > 0) {
     throw new Error(`buffer ${id} is still referenced by pending work or readback`);
   }
-  if (!record.referencedByWork && options.replaceExistingResources !== true) {
+  if (!record.referencedByWork && !committedBuffers.has(record) &&
+      options.replaceExistingResources !== true) {
     throw new Error(`duplicate or reused object id ${id}`);
   }
   validateBufferReplacement(state, record, size, usage);
@@ -2726,17 +2727,18 @@ export class Drp2WebGpuRuntime {
       state: this.state,
       replaceExistingResources: options.replaceExistingResources ?? true,
     };
+    const definedBuffers = new Set();
     const runPackets = async () => {
       if (setupCommands.length > 0) {
-        await executeDrp2Stream(
+        await executeDrp2StreamInternal(
           this.device, this.context, this.canvasFormat, this.stream,
-          { ...baseOptions, commands: setupCommands },
+          { ...baseOptions, commands: setupCommands }, definedBuffers,
         );
       }
       if (updateCommands.length > 0) {
-        await executeDrp2Stream(
+        await executeDrp2StreamInternal(
           this.device, this.context, this.canvasFormat, this.stream,
-          { ...baseOptions, commands: updateCommands },
+          { ...baseOptions, commands: updateCommands }, definedBuffers,
         );
       }
       if (frameCommands.length === 0) {
@@ -2744,20 +2746,22 @@ export class Drp2WebGpuRuntime {
         this.packetFrameIndex = frameIndex;
         return null;
       }
-      const result = await executeDrp2Stream(
+      const result = await executeDrp2StreamInternal(
         this.device, this.context, this.canvasFormat, this.stream,
         {
           ...baseOptions,
           retireSubmittedRefs: options.retireSubmittedRefs ?? true,
           commands: frameCommands,
-        },
+        }, definedBuffers,
       );
       this.packetResourceVersion = resourceVersion;
       this.packetFrameIndex = frameIndex;
       return result;
     };
-    return options.errorScopes === false ? await runPackets()
-                                         : await executeWithErrorScopes(this.device, runPackets);
+    const result = options.errorScopes === false ? await runPackets()
+                                                : await executeWithErrorScopes(this.device, runPackets);
+    commitBufferDefinitions(this.state, definedBuffers);
+    return result;
   }
 
   async render(options = {}) {
@@ -2897,7 +2901,9 @@ export class WebGpuDemoSession {
 
 
 
-export async function executeDrp2Stream(device, context, canvasFormat, stream, options = {}) {
+async function executeDrp2StreamInternal(
+  device, context, canvasFormat, stream, options, definedBuffers,
+) {
   const capabilities = effectiveCapabilities(
     options.capabilities ?? runtimeCapabilities(device, canvasFormat),
     stream.capabilities,
@@ -2908,6 +2914,11 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
     state.canvas = options.canvas;
   }
   const buffers = state.buffers;
+  // Freeze prior successful definitions independently of this call's partial mutations.
+  const committedBuffers = new Set(
+    Array.from(state.objects.values()).filter((record) =>
+      record.kind === "buffer" && !record.destroyed && record.bufferDefinitionCommitted === true),
+  );
   const textures = state.textures;
   const textureViews = state.textureViews;
   const samplers = state.samplers;
@@ -2964,14 +2975,16 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
       case "CreateBuffer": {
         const size = required(command.size, "CreateBuffer needs size");
         const usage = new Set(command.usage ?? []);
-        const existing = prepareCreateBuffer(state, command.id, size, usage, options);
+        const existing = prepareCreateBuffer(
+          state, command.id, size, usage, options, committedBuffers);
         const buffer = device.createBuffer({
           label: command.label,
           size,
           usage: mapBufferUsage(command.usage),
         });
+        let record = existing;
         if (existing === null) {
-          registerObject(state, buffers, command.id, buffer, "buffer", { size, usage });
+          record = registerObject(state, buffers, command.id, buffer, "buffer", { size, usage });
         } else {
           if (typeof existing.object.destroy === "function") {
             existing.object.destroy();
@@ -2981,6 +2994,9 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
           existing.usage = usage;
           buffers.set(command.id, buffer);
         }
+        record.bufferDefinitionCommitted = false;
+        committedBuffers.delete(record);
+        definedBuffers.add(record);
         break;
       }
 
@@ -3993,6 +4009,27 @@ export async function executeDrp2Stream(device, context, canvasFormat, stream, o
 
 
 
+// Commit provenance only after the caller's complete execution/error scope succeeds.
+function commitBufferDefinitions(state, definedBuffers) {
+  for (const record of definedBuffers) {
+    if (!record.destroyed && state.objects.get(record.id) === record) {
+      record.bufferDefinitionCommitted = true;
+    }
+  }
+}
+
+
+
+export async function executeDrp2Stream(device, context, canvasFormat, stream, options = {}) {
+  const definedBuffers = new Set();
+  const result = await executeDrp2StreamInternal(
+    device, context, canvasFormat, stream, options, definedBuffers);
+  commitBufferDefinitions(result.state, definedBuffers);
+  return result;
+}
+
+
+
 export async function executeDrp2StreamChecked(
   device,
   context,
@@ -4000,8 +4037,12 @@ export async function executeDrp2StreamChecked(
   stream,
   options = {},
 ) {
-  return await executeWithErrorScopes(
+  const definedBuffers = new Set();
+  const result = await executeWithErrorScopes(
     device,
-    async () => await executeDrp2Stream(device, context, canvasFormat, stream, options),
+    async () => await executeDrp2StreamInternal(
+      device, context, canvasFormat, stream, options, definedBuffers),
   );
+  commitBufferDefinitions(result.state, definedBuffers);
+  return result;
 }

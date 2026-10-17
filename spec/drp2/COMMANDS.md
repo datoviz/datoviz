@@ -239,7 +239,8 @@ Semantics:
 
 1. `size` is the allocation size of the whole buffer, not an upload length,
 2. later write, copy, bind, or draw commands must stay within the declared size and usage constraints,
-3. reusing a live buffer id is a replacement only after that id has been captured by submitted work and has no open or unsubmitted capture and no pending readback; otherwise it is rejected as duplicate-id or active-use validation.
+3. reusing a live buffer id is a replacement when the buffer was defined by an earlier successfully executed stream, or has been captured by submitted work, and has no open or unsubmitted capture and no pending readback; a newly defined, unused buffer cannot be defined twice within the same execution,
+4. replacement preserves the live logical id and must still satisfy every dependent bind-group range and usage requirement; destroyed ids and ids belonging to other object kinds remain invalid.
 
 
 ### `DestroyBuffer`

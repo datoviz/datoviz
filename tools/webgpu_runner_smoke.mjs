@@ -746,7 +746,7 @@ async function smokeReadbackReplyOrder(executeDrp2Stream) {
 
 async function smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream) {
   const before = createdBindGroupCount;
-  await executeDrp2Stream(
+  const result = await executeDrp2Stream(
     device,
     context,
     'bgra8unorm',
@@ -809,6 +809,218 @@ async function smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream) {
       `buffer replacement expected bind-group creation plus two live rebinds, got ` +
         `${createdBindGroupCount - before}`,
     );
+  }
+  for (const [size, usage, message] of [
+    [128, ['STORAGE'], 'lacks UNIFORM usage'],
+    [8, ['UNIFORM'], 'bind-group range is out of range'],
+  ]) {
+    const previous = result.state.buffers.get(1);
+    await expectAsyncFailure(
+      async () => await executeDrp2Stream(
+        device, context, 'bgra8unorm',
+        { commands: [...header, { cmd: 'CreateBuffer', id: 1, size, usage }] },
+        { canvas: fakeCanvas, state: result.state },
+      ),
+      message,
+    );
+    if (result.state.buffers.get(1) !== previous) {
+      throw new Error('invalid bind-group replacement changed the live buffer');
+    }
+  }
+}
+
+async function smokeBufferReplacementExecutionBoundaries(executeDrp2Stream) {
+  const create = (size, id = 1, usage = ['COPY_SRC', 'COPY_DST']) =>
+    ({ cmd: 'CreateBuffer', id, size, usage });
+  const execute = async (commands, state) => await executeDrp2Stream(
+    device, context, 'bgra8unorm', { commands: [...header, ...commands] },
+    { canvas: fakeCanvas, state },
+  );
+
+  for (const secondSize of [64, 128]) {
+    await expectAsyncFailure(
+      async () => await execute([create(64), create(secondSize)]),
+      'duplicate or reused object id 1',
+    );
+  }
+
+  for (const recorded of [false, true]) {
+    const { state } = await execute([create(64), create(64, 2)]);
+    const previous = state.buffers.get(1);
+    const capture = [
+      { cmd: 'BeginCommandEncoder', id: 10 },
+      { cmd: 'CopyBufferToBuffer', encoder_id: 10, src_buffer_id: 1, src_offset: 0,
+        dst_buffer_id: 2, dst_offset: 0, size: 4 },
+    ];
+    if (recorded) {
+      capture.push({ cmd: 'FinishCommandEncoder', encoder_id: 10, command_buffer_id: 11 });
+    }
+    await expectAsyncFailure(
+      async () => await execute([...capture, create(128)], state),
+      'referenced by pending work or readback',
+    );
+    if (state.buffers.get(1) !== previous) {
+      throw new Error('replacement changed a buffer captured by open or recorded work');
+    }
+  }
+
+  const readback = await execute([
+    create(64, 1, ['MAP_READ']),
+    { cmd: 'BeginCommandEncoder', id: 2 },
+    { cmd: 'FinishCommandEncoder', encoder_id: 2, command_buffer_id: 3 },
+    { cmd: 'QueueSubmit', command_buffer_ids: [3], submission_id: 4,
+      readbacks: [{ buffer_id: 1, offset: 0, size: 4 }] },
+  ]);
+  const pinned = readback.state.buffers.get(1);
+  await expectAsyncFailure(
+    async () => await execute([create(128, 1, ['MAP_READ'])], readback.state),
+    'referenced by pending work or readback',
+  );
+  if (readback.state.buffers.get(1) !== pinned) {
+    throw new Error('replacement changed a buffer pinned by a pending readback');
+  }
+
+  // Direct execution preserves partial mutations on failure. Such definitions
+  // must not acquire successful-execution provenance merely at the next call.
+  const failed = await execute([]);
+  await expectAsyncFailure(
+    async () => await execute([
+      create(64),
+      { cmd: 'WriteBuffer', buffer_id: 999, offset: 0, size: 0, data: '' },
+    ], failed.state),
+    'unknown buffer 999',
+  );
+  if (!failed.state.buffers.has(1)) {
+    throw new Error('failed-execution test did not retain its partial buffer definition');
+  }
+  await execute([], failed.state);
+  await execute([create(64, 2)], failed.state);
+  await expectAsyncFailure(
+    async () => await execute([create(128)], failed.state),
+    'duplicate or reused object id 1',
+  );
+  // A failure involving another id must not revoke an existing committed definition.
+  await expectAsyncFailure(
+    async () => await execute([
+      { cmd: 'WriteBuffer', buffer_id: 999, offset: 0, size: 0, data: '' },
+    ], failed.state),
+    'unknown buffer 999',
+  );
+  await execute([create(128, 2)], failed.state);
+
+  const successful = await execute([create(64)]);
+  for (const size of [128, 256]) {
+    const previous = successful.state.buffers.get(1);
+    const before = createdBufferCount;
+    const result = await execute([create(size)], successful.state);
+    const current = successful.state.buffers.get(1);
+    if (result.state !== successful.state || current === previous || current.size !== size ||
+        createdBufferCount - before !== 1) {
+      throw new Error('prior-successful unused buffer was not replaced exactly once');
+    }
+  }
+
+  const previous = successful.state.buffers.get(1);
+  await expectAsyncFailure(
+    async () => await execute([create(512), create(1024)], successful.state),
+    'duplicate or reused object id 1',
+  );
+  const partial = successful.state.buffers.get(1);
+  if (partial === previous || partial.size !== 512) {
+    throw new Error('repeated replacement did not reject the second definition');
+  }
+  await expectAsyncFailure(
+    async () => await execute([create(1024)], successful.state),
+    'duplicate or reused object id 1',
+  );
+}
+
+async function smokeBufferReplacementCheckedProvenance(
+  executeDrp2Stream, executeDrp2StreamChecked, Drp2WebGpuRuntime,
+) {
+  const create = (size) => ({ cmd: 'CreateBuffer', id: 1, size, usage: ['COPY_DST'] });
+  const execute = async (commands, state) => await executeDrp2Stream(
+    device, context, 'bgra8unorm', { commands: [...header, ...commands] },
+    { canvas: fakeCanvas, state },
+  );
+  for (const replacing of [false, true]) {
+    const { state } = await execute(replacing ? [create(64)] : []);
+    const previous = state.buffers.get(1);
+    let poppedScopes = 0;
+    const rejectingDevice = {
+      ...device,
+      async popErrorScope() {
+        poppedScopes++;
+        return poppedScopes === 3 ? { message: 'synthetic buffer GPU validation failure' } : null;
+      },
+    };
+    await expectAsyncFailure(
+      async () => await executeDrp2StreamChecked(
+        rejectingDevice, context, 'bgra8unorm', { commands: [...header, create(128)] },
+        { canvas: fakeCanvas, state },
+      ),
+      'synthetic buffer GPU validation failure',
+    );
+    const partial = state.buffers.get(1);
+    if (poppedScopes !== 3 || partial === undefined || partial === previous || partial.size !== 128) {
+      throw new Error('checked-failure test did not reach GPU error-scope completion');
+    }
+    await execute([], state);
+    await expectAsyncFailure(
+      async () => await execute([create(256)], state),
+      'duplicate or reused object id 1',
+    );
+  }
+  const { state } = await execute([]);
+  await executeDrp2StreamChecked(
+    device, context, 'bgra8unorm', { commands: [...header, create(64)] },
+    { canvas: fakeCanvas, state },
+  );
+  await execute([create(128)], state);
+
+  for (const failing of [false, true]) {
+    let poppedScopes = 0;
+    const packetDevice = {
+      ...device,
+      async popErrorScope() {
+        poppedScopes++;
+        return failing && poppedScopes === 3
+          ? { message: 'synthetic packet GPU validation failure' } : null;
+      },
+    };
+    const runtime = new Drp2WebGpuRuntime(packetDevice, context, 'bgra8unorm', {
+      canvas: fakeCanvas,
+    });
+    try {
+      const packetSet = {
+        setup: { packet: createBufferPacket(1, 1, 7n, 64n) },
+        frame: { packet: emptyPacket(3, 1, 1) },
+      };
+      if (failing) {
+        await expectAsyncFailure(
+          async () => await runtime.executePacketSet(packetSet, { replaceExistingResources: false }),
+          'synthetic packet GPU validation failure',
+        );
+      } else {
+        await runtime.executePacketSet(packetSet, { replaceExistingResources: false });
+      }
+      if (poppedScopes !== 3 || runtime.state.buffers.get(7)?.size !== 64) {
+        throw new Error('packet provenance test did not reach GPU error-scope completion');
+      }
+      const replacement = async () => await executeDrp2Stream(
+        device, context, 'bgra8unorm',
+        { commands: [...header, { ...create(128), id: 7 }] },
+        { canvas: fakeCanvas, state: runtime.state },
+      );
+      if (failing) {
+        await execute([], runtime.state);
+        await expectAsyncFailure(replacement, 'duplicate or reused object id 7');
+      } else {
+        await replacement();
+      }
+    } finally {
+      runtime.destroy();
+    }
   }
 }
 
@@ -1224,11 +1436,21 @@ async function smokePacketSessionValidation(Drp2WebGpuRuntime, executeDrp2Stream
 }
 
 async function main() {
-  const { canvasMetrics, Drp2WebGpuRuntime, WebGpuDemoSession, executeDrp2Stream } = await import(
+  const { canvasMetrics, Drp2WebGpuRuntime, WebGpuDemoSession,
+    executeDrp2Stream, executeDrp2StreamChecked } = await import(
     '../web/drp2/webgpu.js'
   );
 
   const args = process.argv.slice(2);
+  if (args[0] === '--buffer-replacement-only') {
+    await smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream);
+    await smokeBufferReplacementCheckedProvenance(
+      executeDrp2Stream, executeDrp2StreamChecked, Drp2WebGpuRuntime,
+    );
+    await smokeBufferReplacementExecutionBoundaries(executeDrp2Stream);
+    console.log(passLine('WebGPU buffer replacement execution boundaries'));
+    return;
+  }
   if (args[0] === '--streams-only') {
     await smokeStreamPathsOnly(Drp2WebGpuRuntime, executeDrp2Stream, args.slice(1));
     return;
@@ -1435,6 +1657,10 @@ async function main() {
   await smokeReadbackPinSurvivesInvalidReply(executeDrp2Stream);
   await smokeReadbackReplyOrder(executeDrp2Stream);
   await smokeBufferReplacementRebuildsBindGroup(executeDrp2Stream);
+  await smokeBufferReplacementCheckedProvenance(
+    executeDrp2Stream, executeDrp2StreamChecked, Drp2WebGpuRuntime,
+  );
+  await smokeBufferReplacementExecutionBoundaries(executeDrp2Stream);
 
   await expectFailure(
     executeDrp2Stream,
