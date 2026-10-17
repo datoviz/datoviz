@@ -359,12 +359,14 @@ class DvzArcballFlags(CtypesEnum):
     DVZ_ARCBALL_FLAGS_CONSTRAIN = 1
     DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = 2
     DVZ_ARCBALL_FLAGS_SCREEN_PAN = 4
+    DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT = 8
 
 
 DVZ_ARCBALL_FLAGS_NONE = DvzArcballFlags.DVZ_ARCBALL_FLAGS_NONE
 DVZ_ARCBALL_FLAGS_CONSTRAIN = DvzArcballFlags.DVZ_ARCBALL_FLAGS_CONSTRAIN
 DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = DvzArcballFlags.DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT
 DVZ_ARCBALL_FLAGS_SCREEN_PAN = DvzArcballFlags.DVZ_ARCBALL_FLAGS_SCREEN_PAN
+DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT = DvzArcballFlags.DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT
 
 
 class DvzBackend(CtypesEnum):
@@ -5173,6 +5175,8 @@ DvzArcballDesc._fields_ = [
     ('height', ctypes.c_float),
     ('controller_flags', ctypes.c_uint32),
     ('zoom_speed', ctypes.c_float),
+    ('orbit_zoom_start', ctypes.c_float),
+    ('orbit_zoom_end', ctypes.c_float),
 ]
 
 

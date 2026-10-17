@@ -529,7 +529,8 @@ static void _scene_controller_link_copy_arcball(
     {
         vec3 translation = {0};
         _dvz_arcball_orbit_translation(source, translation);
-        glm_vec3_copy(source->orbit_pivot, target->orbit_pivot);
+        if (!target->orbit_active)
+            glm_vec3_copy(source->orbit_pivot, target->orbit_pivot);
         _dvz_arcball_orbit_translation_set(target, translation);
         glm_vec2_copy(source->pan, target->pan);
         glm_vec2_copy(source->pan_center, target->pan_center);

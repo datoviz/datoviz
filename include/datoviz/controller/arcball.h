@@ -46,6 +46,8 @@ typedef enum
     DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = 0x02,
     // Pan the projected image in normalized clip units; incompatible with VIEWPORT_ORBIT.
     DVZ_ARCBALL_FLAGS_SCREEN_PAN = 0x04,
+    // Blend anatomical and viewport rotation pivots with zoom; requires SCREEN_PAN.
+    DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT = 0x08,
 } DvzArcballFlags;
 
 
@@ -91,6 +93,10 @@ struct DvzArcballDesc
     uint32_t controller_flags;
     // Wheel sensitivity multiplier; zero selects the default (2). Must be finite and nonnegative.
     float zoom_speed;
+    // Perspective magnification thresholds for adaptive orbit; zero selects 1 and 3.
+    // Start must be >= 1, end > start. These are magnifications, not dolly factors.
+    float orbit_zoom_start;
+    float orbit_zoom_end;
 };
 
 

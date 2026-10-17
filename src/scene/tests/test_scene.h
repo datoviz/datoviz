@@ -240,6 +240,13 @@ int test_arcball_screen_pan_zoom_follows_viewport_center(TstContext* suite, cons
 int test_arcball_default_zoom_preserves_view_plane(TstContext* suite, const TstCase* item);
 int test_arcball_screen_pan_zoom_link_offsets(TstContext* suite, const TstCase* item);
 int test_arcball_screen_pan_zoom_off_axis_projection(TstContext* suite, const TstCase* item);
+int test_arcball_adaptive_orbit_transition(TstContext* suite, const TstCase* item);
+int test_arcball_adaptive_orbit_depth_and_history(TstContext* suite, const TstCase* item);
+int test_arcball_adaptive_orbit_preserves_legacy_mapping(TstContext* suite, const TstCase* item);
+int test_arcball_adaptive_orbit_validation(TstContext* suite, const TstCase* item);
+int test_arcball_adaptive_pan_link_keeps_target_policy(TstContext* suite, const TstCase* item);
+int test_arcball_adaptive_pan_link_preserves_active_pivot(TstContext* suite, const TstCase* item);
+int test_arcball_adaptive_orbit_small_pan_continuity(TstContext* suite, const TstCase* item);
 
 int test_arcball_interaction_state(TstContext* suite, const TstCase* item);
 

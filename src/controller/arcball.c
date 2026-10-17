@@ -33,6 +33,8 @@
 #define DVZ_ARCBALL_ZOOM_MAX         1000.00f
 #define DVZ_ARCBALL_DESC_KNOWN_FLAGS 0u
 #define DVZ_ARCBALL_DEFAULT_ZOOM_SPEED 2.0f
+#define DVZ_ARCBALL_ADAPTIVE_FRAMING 0.05f
+#define DVZ_ARCBALL_ADAPTIVE_DEPTH_FLOOR 0.1f
 
 #if defined(__APPLE__)
 #define DVZ_ARCBALL_ZOOM_WHEEL_COEF 0.0125f
@@ -184,6 +186,118 @@ void _dvz_arcball_orbit_translation_set(DvzArcball* arcball, vec3 translation)
 
 
 /**
+ * Apply normalized image framing to a camera projection.
+ *
+ * @param arcball screen-pan controller
+ * @param source camera projection
+ * @param out shifted projection; may alias source
+ */
+static void _arcball_screen_projection(DvzArcball* arcball, mat4 source, mat4 out)
+{
+    glm_mat4_copy(source, out);
+    for (uint32_t col = 0; col < 4; col++)
+    {
+        out[col][0] += arcball->pan[0] * out[col][3];
+        out[col][1] += arcball->pan[1] * out[col][3];
+    }
+}
+
+
+
+/**
+ * Select a zoom-dependent pivot without changing the committed rendered pose.
+ *
+ * @param arcball adaptive screen-pan controller
+ */
+static void _arcball_adaptive_pivot(DvzArcball* arcball)
+{
+    // The anatomical origin moves after a local orbit; never reuse the previous local pivot.
+    glm_vec3_copy(arcball->orbit_translation, arcball->orbit_pivot);
+    if (arcball->pan[0] == 0 && arcball->pan[1] == 0 &&
+        arcball->zoom_offset[0] == 0 && arcball->zoom_offset[1] == 0)
+        return;
+    float reference_depth = -arcball->view[3][2];
+    if (!isfinite(reference_depth) || reference_depth <= 1e-6f ||
+        fabsf(arcball->projection[2][3]) <= 1e-6f)
+        return;
+    float start = 1.0f - 1.0f / arcball->orbit_zoom_start;
+    float end = 1.0f - 1.0f / arcball->orbit_zoom_end;
+    if (end <= start)
+        return;
+    float u = _clampf((logf(arcball->zoom) / reference_depth - start) / (end - start), 0, 1);
+    float weight = u * u * (3 - 2 * u);
+    // Taper tiny framing changes to the exact unpanned policy, including at deep zoom.
+    float offset_x = arcball->projection[0][0] * arcball->zoom_offset[0] +
+                     arcball->projection[1][0] * arcball->zoom_offset[1];
+    float offset_y = arcball->projection[0][1] * arcball->zoom_offset[0] +
+                     arcball->projection[1][1] * arcball->zoom_offset[1];
+    float framing = hypotf(hypotf(arcball->pan[0], arcball->pan[1]),
+                           hypotf(offset_x, offset_y) / reference_depth);
+    if (!isfinite(framing))
+        return;
+    float activation = _clampf(framing / DVZ_ARCBALL_ADAPTIVE_FRAMING, 0, 1);
+    weight *= activation * activation * (3 - 2 * activation);
+    if (weight == 0)
+        return;
+
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_copy(arcball->view, view);
+    view[3][0] += arcball->zoom_offset[0];
+    view[3][1] += arcball->zoom_offset[1];
+    view[3][2] += logf(arcball->zoom);
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    _arcball_screen_projection(arcball, arcball->projection, projection);
+    float view_det = glm_mat4_det(view);
+    float proj_det = glm_mat4_det(projection);
+    if (!isfinite(view_det) || !isfinite(proj_det) ||
+        fabsf(view_det) < 1e-12f || fabsf(proj_det) < 1e-12f)
+        return;
+    mat4 inverse = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_inv(projection, inverse);
+    vec4 near = {0}, far = {0};
+    glm_mat4_mulv(inverse, (vec4){0, 0, -1, 1}, near);
+    glm_mat4_mulv(inverse, (vec4){0, 0, 0.5f, 1}, far);
+    if (!isfinite(near[3]) || !isfinite(far[3]) ||
+        fabsf(near[3]) < 1e-12f || fabsf(far[3]) < 1e-12f)
+        return;
+    glm_vec4_scale(near, 1.0f / near[3], near);
+    glm_vec4_scale(far, 1.0f / far[3], far);
+    float dz = far[2] - near[2];
+    if (!isfinite(dz) || fabsf(dz) < 1e-12f)
+        return;
+    vec4 eye = {0};
+    glm_mat4_mulv3(view, arcball->orbit_translation, 1.0f, eye);
+    // C1 positive floor: preserve the anatomical depth exactly above twice the floor.
+    // This is a stable inspection plane, independent of translucent surface picking.
+    float floor_depth = fmaxf(DVZ_ARCBALL_ADAPTIVE_DEPTH_FLOOR * reference_depth, -2.0f * near[2]);
+    float depth = -eye[2];
+    if (!isfinite(depth) || !isfinite(floor_depth) || floor_depth <= 0)
+        return;
+    if (depth < 2 * floor_depth)
+        depth = depth <= 0 ? floor_depth : floor_depth + depth * depth / (4 * floor_depth);
+    float t = (-depth - near[2]) / dz;
+    for (uint32_t i = 0; i < 3; i++)
+        eye[i] = near[i] + t * (far[i] - near[i]);
+    eye[3] = 1;
+    glm_mat4_inv(view, inverse);
+    vec4 center = {0};
+    glm_mat4_mulv(inverse, eye, center);
+    if (!isfinite(center[3]) || fabsf(center[3]) < 1e-12f)
+        return;
+    vec3 pivot = {0};
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        pivot[i] = arcball->orbit_translation[i] +
+                   weight * (center[i] / center[3] - arcball->orbit_translation[i]);
+        if (!isfinite(pivot[i]))
+            return;
+    }
+    glm_vec3_copy(pivot, arcball->orbit_pivot);
+}
+
+
+
+/**
  * Freeze pointer controls, optionally rebasing the physical target for viewport orbit.
  *
  * @param arcball arcball controller
@@ -194,6 +308,10 @@ static bool _arcball_orbit_begin(DvzArcball* arcball)
     glm_vec2_zero(arcball->orbit_center);
     if ((arcball->flags & DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT) == 0)
     {
+        if (arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN)
+            glm_vec3_copy(arcball->orbit_translation, arcball->orbit_pivot);
+        if (arcball->flags & DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT)
+            _arcball_adaptive_pivot(arcball);
         // Keep the original pointer mapping, excluding only view-plane pan.
         vec4 eye = {arcball->view[3][0], arcball->view[3][1],
                     arcball->view[3][2] + logf(arcball->zoom), arcball->view[3][3]};
@@ -279,12 +397,7 @@ static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
     // Dolly along the current viewport-center ray, including the image framing offset.
     // Moving only along eye Z would instead zoom toward the pre-pan optical center.
     mat4 projection = GLM_MAT4_IDENTITY_INIT;
-    glm_mat4_copy(arcball->projection, projection);
-    for (uint32_t col = 0; col < 4; col++)
-    {
-        projection[col][0] += arcball->pan[0] * projection[col][3];
-        projection[col][1] += arcball->pan[1] * projection[col][3];
-    }
+    _arcball_screen_projection(arcball, arcball->projection, projection);
     float determinant = glm_mat4_det(projection);
     if (!isfinite(determinant) || fabsf(determinant) < 1e-12f)
         return;
@@ -471,12 +584,7 @@ static void _arcball_camera_mvp(DvzArcball* arcball, DvzMVP* mvp)
     glm_translate(mvp->view, offset);
     if (screen_pan)
     {
-        // Translate clip XY by W so every visible depth moves by the same screen amount.
-        for (uint32_t col = 0; col < 4; col++)
-        {
-            mvp->proj[col][0] += arcball->pan[0] * mvp->proj[col][3];
-            mvp->proj[col][1] += arcball->pan[1] * mvp->proj[col][3];
-        }
+        _arcball_screen_projection(arcball, mvp->proj, mvp->proj);
     }
 }
 
@@ -532,6 +640,20 @@ static bool _arcball_desc_validate(const DvzArcballDesc* desc)
         log_error("screen pan and viewport orbit cannot be combined");
         return false;
     }
+    if ((desc->controller_flags & DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT) &&
+        !(desc->controller_flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN))
+    {
+        log_error("adaptive orbit requires screen pan");
+        return false;
+    }
+    float start = desc->orbit_zoom_start == 0 ? 1.0f : desc->orbit_zoom_start;
+    float end = desc->orbit_zoom_end == 0 ? 3.0f : desc->orbit_zoom_end;
+    if (!isfinite(start) || !isfinite(end) || start < 1 || end <= start ||
+        1.0f - 1.0f / start >= 1.0f - 1.0f / end)
+    {
+        log_error("invalid adaptive orbit magnification thresholds");
+        return false;
+    }
     return true;
 }
 
@@ -550,6 +672,8 @@ DvzArcballDesc dvz_arcball_desc(void)
         .height = 600.0f,
         .controller_flags = 0,
         .zoom_speed = DVZ_ARCBALL_DEFAULT_ZOOM_SPEED,
+        .orbit_zoom_start = 1.0f,
+        .orbit_zoom_end = 3.0f,
     };
 }
 
@@ -563,6 +687,8 @@ DvzArcball* _dvz_arcball(float width, float height, int flags)
     DvzArcball* arcball = (DvzArcball*)dvz_calloc(1, sizeof(DvzArcball));
     arcball->flags = flags;
     arcball->zoom_speed = DVZ_ARCBALL_DEFAULT_ZOOM_SPEED;
+    arcball->orbit_zoom_start = 1.0f;
+    arcball->orbit_zoom_end = 3.0f;
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;
     glm_mat4_identity(arcball->view);
@@ -587,6 +713,8 @@ DvzArcball* dvz_arcball_create(const DvzArcballDesc* desc)
         return NULL;
     DvzArcball* arcball = _dvz_arcball(desc->width, desc->height, (int)desc->controller_flags);
     arcball->zoom_speed = desc->zoom_speed > 0.0f ? desc->zoom_speed : DVZ_ARCBALL_DEFAULT_ZOOM_SPEED;
+    arcball->orbit_zoom_start = desc->orbit_zoom_start > 0 ? desc->orbit_zoom_start : 1.0f;
+    arcball->orbit_zoom_end = desc->orbit_zoom_end > 0 ? desc->orbit_zoom_end : 3.0f;
     return arcball;
 }
 

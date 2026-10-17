@@ -62,6 +62,8 @@ struct DvzArcball
     bool orbit_active;      /* pointer rotation has a frozen basis and control center */
     float zoom;       /* multiplicative camera dolly factor */
     float zoom_speed; /* wheel sensitivity multiplier, independent of programmatic zoom */
+    float orbit_zoom_start; /* adaptive orbit magnification threshold, default 1 */
+    float orbit_zoom_end; /* fully viewport-centered magnification, default 3 */
     vec2 zoom_offset; /* view-plane dolly displacement along the screen-pan center ray */
     vec2 pan;         /* camera view-plane pan offset */
     vec2 pan_center;  /* committed pan baseline used during right/middle drag */
