@@ -127,6 +127,21 @@ EXTERN_C_ON
 /**
  * Create an input event router.
  *
+ * All operations on a router must be serialized on one thread. Callbacks run synchronously and
+ * may emit nested events on that thread; concurrent router access is not supported. The router
+ * must outlive active emission calls and gesture handles. Callback data must remain valid until
+ * unsubscription or router destruction. Destroying a router from one of its callbacks is
+ * prohibited.
+ *
+ * Each emission freezes its typed and union callback audiences before invoking any callback.
+ * Callbacks run in subscription order within each stream. Removed subscriptions are skipped;
+ * new subscriptions are eligible for nested or later emissions, but not the remainder of the
+ * emission in progress. Nested emissions complete before the outer callback resumes.
+ *
+ * If an audience snapshot cannot be allocated, the emission invokes no callbacks and changes no
+ * gesture history or cached resize state. Void emitters log and drop the event; text emission
+ * returns `DVZ_ERROR`.
+ *
  * @return a new owned router, or NULL on allocation failure; destroy it with
  * `dvz_input_router_destroy()`
  */
@@ -136,6 +151,9 @@ DVZ_EXPORT DvzInputRouter* dvz_input_router(void);
 
 /**
  * Destroy a router.
+ *
+ * Destroy all gesture activation handles and finish all emission calls first. This function must
+ * not be called from a router callback. Destruction removes all remaining subscriptions.
  *
  * @param router router returned by dvz_input_router(); must not be NULL
  */
@@ -167,10 +185,11 @@ dvz_input_subscribe_pointer(DvzInputRouter* router, DvzPointerCallback callback,
 /**
  * Unsubscribe from any router callback by subscription id.
  *
- * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
- * currently registered on this router.
- * Subscriptions added during dispatch begin with the next event. A subscription removed before its
- * turn in the current dispatch is not invoked.
+ * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is
+ * not currently registered on this router. Subscriptions added during an emission begin with a
+ * nested or later emission, not a remaining derived, typed, or original-union stage of the current
+ * emission. A subscription removed before its turn is not invoked. Removing a subscription
+ * preserves the order of the remaining callbacks.
  *
  * @param router target router; must not be NULL
  * @param id subscription identifier returned by a subscribe function
@@ -182,6 +201,14 @@ DVZ_EXPORT bool dvz_input_unsubscribe(DvzInputRouter* router, DvzCallbackId id);
 
 /**
  * Emit a raw pointer event. Callbacks run synchronously on the emitting thread.
+ *
+ * The router copies the event and freezes both callback audiences, then processes its canonical
+ * gesture history once if recognition is active. It delivers a newly derived gesture to the union
+ * stream first, the original to typed pointer callbacks second, and the original to the union
+ * stream exactly once last. Both union stages use the same frozen audience. Already-semantic
+ * pointer events are forwarded without changing recognition history or deriving another event.
+ * Gesture activation changes inside callbacks affect nested and later emissions; any derived
+ * event already computed for this emission remains valid.
  *
  * @param router target router; must not be NULL
  * @param event event borrowed for the duration of the call; must not be NULL
@@ -235,7 +262,7 @@ DVZ_EXPORT DvzCallbackId dvz_input_subscribe_text(
  *
  * @param router target router; must not be NULL
  * @param event borrowed committed-text event; must not be NULL
- * @return `DVZ_OK` on dispatch, `DVZ_ERROR` on invalid input
+ * @return `DVZ_OK` on dispatch, `DVZ_ERROR` on invalid input or audience allocation failure
  */
 DVZ_EXPORT DvzResult
 dvz_input_emit_text(DvzInputRouter* router, const DvzInputTextEvent* event);
@@ -259,7 +286,9 @@ dvz_input_subscribe_resize(DvzInputRouter* router, DvzResizeCallback callback, v
 /**
  * Emit a resize event. Callbacks run synchronously on the emitting thread.
  *
- * The router copies the event and caches it for `dvz_input_router_last_resize()`.
+ * The router copies the event and caches it for `dvz_input_router_last_resize()` after preparing
+ * both callback audiences and before invoking callbacks. Allocation failure leaves the cache
+ * unchanged.
  *
  * @param router target router; must not be NULL
  * @param event event borrowed for the duration of the call; dimensions are in pixels; must not be
@@ -316,7 +345,7 @@ DVZ_EXPORT void dvz_input_emit_scale(DvzInputRouter* router, const DvzInputScale
  * Subscribe to routed union-style input events.
  *
  * This stream carries pointer, keyboard, text, resize, and scale events in one callback. When a
- * `DvzPointerGestureHandler` is attached to the router, this stream also receives
+ * `DvzPointerGestureHandler` activation is held for the router, this stream also receives
  * gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
  *
  * @param router target router; must not be NULL
@@ -332,6 +361,9 @@ dvz_input_subscribe_event(DvzInputRouter* router, DvzInputCallback callback, voi
 
 /**
  * Emit a union input event. Callbacks run synchronously on the emitting thread.
+ *
+ * The event is copied and delivered only to the frozen union audience. This does not invoke typed
+ * callbacks, advance gesture recognition, or update cached resize state.
  *
  * @param router target router; must not be NULL
  * @param event event borrowed for the duration of the call; must not be NULL

@@ -61,6 +61,7 @@ typedef struct GuiInputRecorder
 {
     uint32_t count;
     uint32_t drag_count;
+    uint32_t union_types[DVZ_POINTER_EVENT_WHEEL + 1];
     DvzPointerEventType last_type;
 } GuiInputRecorder;
 
@@ -508,9 +509,14 @@ static void _gui_record_input_event(
     ANN(event);
     GuiInputRecorder* recorder = (GuiInputRecorder*)user_data;
     ANN(recorder);
-    if (event->type == DVZ_INPUT_EVENT_POINTER &&
-        event->content.pointer.type == DVZ_POINTER_EVENT_DRAG)
-        recorder->drag_count++;
+    if (event->type == DVZ_INPUT_EVENT_POINTER)
+    {
+        DvzPointerEventType type = event->content.pointer.type;
+        if (type >= DVZ_POINTER_EVENT_RELEASE && type <= DVZ_POINTER_EVENT_WHEEL)
+            recorder->union_types[type]++;
+        if (type == DVZ_POINTER_EVENT_DRAG)
+            recorder->drag_count++;
+    }
 }
 
 
@@ -1114,6 +1120,7 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     _gui_emit_pointer(router_a, DVZ_POINTER_EVENT_MOVE);
     AT(recorder_a.count == 1);
     AT(recorder_a.last_type == DVZ_POINTER_EVENT_MOVE);
+    AT(recorder_a.union_types[DVZ_POINTER_EVENT_MOVE] == 1);
     AT(recorder_b.count == 0);
 
     _gui_emit_pointer(router_b, DVZ_POINTER_EVENT_PRESS);
@@ -1131,10 +1138,18 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     dvz_pointer_emit_position(
         router_a, DVZ_POINTER_EVENT_MOVE, 30.0f, 30.0f, 100.0f, 80.0f,
         DVZ_POINTER_BUTTON_NONE, 0, 1.0f, dvz_input_timestamp_ns(), NULL);
-    AT(recorder_a.drag_count > 0);
+    AT(recorder_a.drag_count == 1);
+    AT(recorder_a.union_types[DVZ_POINTER_EVENT_PRESS] == 1);
+    AT(recorder_a.union_types[DVZ_POINTER_EVENT_DRAG_START] == 1);
     dvz_pointer_emit_position(
         router_a, DVZ_POINTER_EVENT_RELEASE, 20.0f, 25.0f, 100.0f, 80.0f,
         DVZ_POINTER_BUTTON_LEFT, 0, 1.0f, dvz_input_timestamp_ns(), NULL);
+
+    AT(recorder_a.union_types[DVZ_POINTER_EVENT_DRAG_STOP] == 1);
+    AT(recorder_a.union_types[DVZ_POINTER_EVENT_RELEASE] == 1);
+    dvz_pointer_emit_wheel(
+        router_a, 30, 30, 100, 80, 0, -1, 0, 1, dvz_input_timestamp_ns(), NULL);
+    AT(recorder_a.union_types[DVZ_POINTER_EVENT_WHEEL] == 1);
 
     /* Stationary forwarding settles despite the query's own frame request. */
     DvzPanel* panel = dvz_panel_full(source_a);
@@ -1317,8 +1332,12 @@ static int test_gui_forwarded_viewport_arcball(TstContext* suite, const TstCase*
            DVZ_POINTER_BUTTON_LEFT, 0) == DVZ_OK);
     dvz_arcball_angles(arcball, after);
 
-    AT(recorder.count >= 3);
-    AT(recorder.drag_count > 0);
+    AT(recorder.count == 4);
+    AT(recorder.drag_count == 1);
+    AT(recorder.union_types[DVZ_POINTER_EVENT_PRESS] == 1);
+    AT(recorder.union_types[DVZ_POINTER_EVENT_DRAG_START] == 1);
+    AT(recorder.union_types[DVZ_POINTER_EVENT_DRAG_STOP] == 1);
+    AT(recorder.union_types[DVZ_POINTER_EVENT_RELEASE] == 1);
     AT(fabsf(after[0] - before[0]) > 1e-5f || fabsf(after[1] - before[1]) > 1e-5f);
     AT(!dvz_arcball_is_interacting(arcball));
 
@@ -1341,9 +1360,18 @@ static int test_gui_forwarded_viewport_arcball(TstContext* suite, const TstCase*
     dvz_free(after_rgba);
     dvz_free(before_rgba);
 
+    /* Destroying the borrowing viewport must preserve the source window interpreter. */
+    dvz_gui_viewport_destroy(viewport);
+    uint32_t clicks_before = recorder.union_types[DVZ_POINTER_EVENT_CLICK];
+    dvz_pointer_emit_position(
+        router, DVZ_POINTER_EVENT_PRESS, 10, 10, 160, 120, DVZ_POINTER_BUTTON_LEFT,
+        0, 1, 10000000000ULL, NULL);
+    dvz_pointer_emit_position(
+        router, DVZ_POINTER_EVENT_RELEASE, 10, 10, 160, 120, DVZ_POINTER_BUTTON_LEFT,
+        0, 1, 10010000000ULL, NULL);
+    AT(recorder.union_types[DVZ_POINTER_EVENT_CLICK] == clicks_before + 1);
     dvz_input_unsubscribe(router, pointer_id);
     dvz_input_unsubscribe(router, event_id);
-    dvz_gui_viewport_destroy(viewport);
     dvz_app_destroy(app);
     dvz_scene_destroy(scene);
     _gui_test_gpu_resources_destroy(&gpu_resources);

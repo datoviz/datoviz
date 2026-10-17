@@ -142,6 +142,55 @@ int test_window_headless(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Verify window ownership preserves canonical history when another activation is released.
+ */
+static void _window_record_pointer_event(
+    DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    (void)router;
+    uint32_t* counts = (uint32_t*)user_data;
+    if (event->type == DVZ_INPUT_EVENT_POINTER &&
+        event->content.pointer.type >= DVZ_POINTER_EVENT_RELEASE &&
+        event->content.pointer.type <= DVZ_POINTER_EVENT_WHEEL)
+        counts[event->content.pointer.type]++;
+}
+
+
+
+/**
+ * Exercise the window-owned interpreter through real raw pointer emissions.
+ */
+int test_window_canonical_pointer(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    ANN(window);
+    DvzInputRouter* router = dvz_window_router(window);
+    uint32_t counts[DVZ_POINTER_EVENT_WHEEL + 1] = {0};
+    dvz_input_subscribe_event(router, _window_record_pointer_event, counts);
+    DvzPointerGestureHandler* extra = dvz_pointer_gesture_handler(router);
+    ANN(extra);
+    dvz_pointer_emit_position(
+        router, DVZ_POINTER_EVENT_PRESS, 10, 10, 100, 100, DVZ_POINTER_BUTTON_LEFT,
+        0, 1, 1000000000, NULL);
+    dvz_pointer_gesture_handler_destroy(extra);
+    dvz_pointer_emit_position(
+        router, DVZ_POINTER_EVENT_RELEASE, 10, 10, 100, 100, DVZ_POINTER_BUTTON_LEFT,
+        0, 1, 1010000000, NULL);
+    dvz_pointer_emit_wheel(router, 10, 10, 100, 100, 0, -1, 0, 1, 1020000000, NULL);
+    AT(counts[DVZ_POINTER_EVENT_PRESS] == 1);
+    AT(counts[DVZ_POINTER_EVENT_RELEASE] == 1);
+    AT(counts[DVZ_POINTER_EVENT_CLICK] == 1);
+    AT(counts[DVZ_POINTER_EVENT_WHEEL] == 1);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
 int test_window_config_rejects_invalid_abi(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -638,6 +687,7 @@ int test_window(TstSuite* suite)
     const char* tags = "window";
     TST_MODULE(suite, tags);
     TST_CASE(test_window_headless);
+    TST_CASE(test_window_canonical_pointer);
     TST_CASE(test_window_config_rejects_invalid_abi);
     TST_CASE(test_window_resize_events);
     TST_CASE(test_window_frame_requests);

@@ -19,6 +19,8 @@
 
 #include "_alloc.h"
 #include "_assertions.h"
+#include "_input_router.h"
+#include "_pointer.h"
 #include "_time_utils.h"
 #include "datoviz/input/pointer.h"
 #include "datoviz/input/router.h"
@@ -30,7 +32,7 @@
 /*************************************************************************************************/
 
 #define NULL_EVENT                                                                                \
-    (DvzPointerEvent) { 0 }
+    (DvzPointerEvent) { .type = DVZ_POINTER_EVENT_NONE }
 
 
 
@@ -41,14 +43,6 @@
 struct DvzPointerGestureHandler
 {
     DvzInputRouter* router;
-    DvzCallbackId subscription_id;
-    DvzPointerState state;
-    DvzPointerButton button;
-    vec2 press_pos;
-    vec2 last_pos;
-    vec2 cur_pos;
-    double time;
-    double last_press;
 };
 
 
@@ -115,23 +109,6 @@ static uint64_t _now_ns(void)
 
 
 
-/**
- * Forward a pointer event to the union emitter.
- *
- * @param handler gesture handler that owns the router
- * @param event pointer event to re-emit
- */
-static void _emit_gesture_event(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
-{
-    if (event->type == DVZ_POINTER_EVENT_NONE)
-        return;
-    DvzInputEvent input_event = {0};
-    input_event.type = DVZ_INPUT_EVENT_POINTER;
-    input_event.content.pointer = *event;
-    dvz_input_emit_event(handler->router, &input_event);
-}
-
-
 /*************************************************************************************************/
 /*  State machine                                                                                */
 /*************************************************************************************************/
@@ -139,20 +116,16 @@ static void _emit_gesture_event(DvzPointerGestureHandler* handler, const DvzPoin
 /**
  * Update the pointer state for a wheel event.
  *
- * @param handler gesture handler owning the state
+ * @param state router-owned gesture history
  * @param event incoming wheel event
- * @return event to forward
  */
-static DvzPointerEvent
-_after_wheel(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
+static void _after_wheel(DvzPointerGestureState* state, const DvzPointerEvent* event)
 {
-    ANN(handler);
+    ANN(state);
     ANN(event);
-    handler->time = _resolve_time(handler->time, event->timestamp_ns);
-    DvzPointerEvent ev = *event;
-    if (handler->state == DVZ_POINTER_STATE_DOUBLE_CLICK)
-        handler->state = DVZ_POINTER_STATE_RELEASE;
-    return ev;
+    state->time = _resolve_time(state->time, event->timestamp_ns);
+    if (state->state == DVZ_POINTER_STATE_DOUBLE_CLICK)
+        state->state = DVZ_POINTER_STATE_RELEASE;
 }
 
 
@@ -160,23 +133,23 @@ _after_wheel(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 /**
  * Update the pointer state for a move event and report drags.
  *
- * @param handler gesture handler owning the state
+ * @param state router-owned gesture history
  * @param event incoming move event
- * @return event to forward (drag start/move or original)
+ * @return a new drag transition, or NONE
  */
-static DvzPointerEvent _after_move(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
+static DvzPointerEvent _after_move(DvzPointerGestureState* state, const DvzPointerEvent* event)
 {
-    ANN(handler);
+    ANN(state);
     ANN(event);
 
-    DvzPointerEvent ev = *event;
-    handler->time = _resolve_time(handler->time, event->timestamp_ns);
-    _vec2_copy(handler->cur_pos, handler->last_pos);
-    _vec2_copy(event->pos, handler->cur_pos);
+    DvzPointerEvent ev = NULL_EVENT;
+    state->time = _resolve_time(state->time, event->timestamp_ns);
+    _vec2_copy(state->cur_pos, state->last_pos);
+    _vec2_copy(event->pos, state->cur_pos);
 
-    float delta = _vec2_distance(handler->press_pos, handler->cur_pos);
+    float delta = _vec2_distance(state->press_pos, state->cur_pos);
 
-    switch (handler->state)
+    switch (state->state)
     {
     case DVZ_POINTER_STATE_RELEASE:
         break;
@@ -185,10 +158,11 @@ static DvzPointerEvent _after_move(DvzPointerGestureHandler* handler, const DvzP
     case DVZ_POINTER_STATE_CLICK_PRESS:
         if (delta > DVZ_POINTER_CLICK_MAX_SHIFT)
         {
-            handler->state = DVZ_POINTER_STATE_DRAGGING;
+            state->state = DVZ_POINTER_STATE_DRAGGING;
+            ev = *event;
             ev.type = DVZ_POINTER_EVENT_DRAG_START;
-            ev.button = handler->button;
-            _vec2_copy(handler->press_pos, ev.content.d.press_pos);
+            ev.button = state->button;
+            _vec2_copy(state->press_pos, ev.content.d.press_pos);
             ev.content.d.is_press_valid = true;
         }
         break;
@@ -196,21 +170,22 @@ static DvzPointerEvent _after_move(DvzPointerGestureHandler* handler, const DvzP
     case DVZ_POINTER_STATE_CLICK:
         if (delta > DVZ_POINTER_CLICK_MAX_SHIFT)
         {
-            handler->state = DVZ_POINTER_STATE_RELEASE;
+            state->state = DVZ_POINTER_STATE_RELEASE;
         }
         break;
 
     case DVZ_POINTER_STATE_DOUBLE_CLICK:
-        handler->state = DVZ_POINTER_STATE_RELEASE;
+        state->state = DVZ_POINTER_STATE_RELEASE;
         break;
 
     case DVZ_POINTER_STATE_DRAGGING:
+        ev = *event;
         ev.type = DVZ_POINTER_EVENT_DRAG;
-        ev.button = handler->button;
-        _vec2_copy(handler->press_pos, ev.content.d.press_pos);
-        _vec2_copy(handler->last_pos, ev.content.d.last_pos);
-        ev.content.d.shift[0] = handler->cur_pos[0] - handler->press_pos[0];
-        ev.content.d.shift[1] = handler->cur_pos[1] - handler->press_pos[1];
+        ev.button = state->button;
+        _vec2_copy(state->press_pos, ev.content.d.press_pos);
+        _vec2_copy(state->last_pos, ev.content.d.last_pos);
+        ev.content.d.shift[0] = state->cur_pos[0] - state->press_pos[0];
+        ev.content.d.shift[1] = state->cur_pos[1] - state->press_pos[1];
         ev.content.d.is_press_valid = true;
         break;
 
@@ -226,47 +201,41 @@ static DvzPointerEvent _after_move(DvzPointerGestureHandler* handler, const DvzP
 /**
  * Update the pointer state for a press event, handling double-click latency.
  *
- * @param handler gesture handler owning the state
+ * @param state router-owned gesture history
  * @param event incoming press event
- * @return event to forward or NULL_EVENT to drop
  */
-static DvzPointerEvent
-_after_press(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
+static void _after_press(DvzPointerGestureState* state, const DvzPointerEvent* event)
 {
-    ANN(handler);
+    ANN(state);
     ANN(event);
 
-    DvzPointerEvent ev = *event;
-    handler->time = _resolve_time(handler->time, event->timestamp_ns);
-    double delay = handler->time - handler->last_press;
+    state->time = _resolve_time(state->time, event->timestamp_ns);
+    double delay = state->time - state->last_press;
 
-    if (
-        handler->state == DVZ_POINTER_STATE_PRESS ||
-        handler->state == DVZ_POINTER_STATE_DRAGGING ||
-        handler->state == DVZ_POINTER_STATE_CLICK_PRESS)
-        return NULL_EVENT;
+    if (state->state == DVZ_POINTER_STATE_PRESS || state->state == DVZ_POINTER_STATE_DRAGGING ||
+        state->state == DVZ_POINTER_STATE_CLICK_PRESS)
+        return;
 
-    if (handler->state == DVZ_POINTER_STATE_RELEASE)
-        _vec2_copy(event->pos, handler->press_pos);
+    if (state->state == DVZ_POINTER_STATE_RELEASE)
+        _vec2_copy(event->pos, state->press_pos);
 
-    handler->button = event->button;
-    handler->cur_pos[0] = event->pos[0];
-    handler->cur_pos[1] = event->pos[1];
+    state->button = event->button;
+    state->cur_pos[0] = event->pos[0];
+    state->cur_pos[1] = event->pos[1];
 
-    handler->last_press = handler->time;
+    state->last_press = state->time;
 
-    switch (handler->state)
+    switch (state->state)
     {
     case DVZ_POINTER_STATE_RELEASE:
     case DVZ_POINTER_STATE_DOUBLE_CLICK:
-        handler->state = DVZ_POINTER_STATE_PRESS;
+        state->state = DVZ_POINTER_STATE_PRESS;
         break;
 
     case DVZ_POINTER_STATE_CLICK:
-        handler->state =
-            (delay >= 0 && delay <= DVZ_POINTER_DOUBLE_CLICK_MAX_DELAY)
-                ? DVZ_POINTER_STATE_CLICK_PRESS
-                : DVZ_POINTER_STATE_PRESS;
+        state->state = (delay >= 0 && delay <= DVZ_POINTER_DOUBLE_CLICK_MAX_DELAY)
+                           ? DVZ_POINTER_STATE_CLICK_PRESS
+                           : DVZ_POINTER_STATE_PRESS;
         break;
 
     case DVZ_POINTER_STATE_PRESS:
@@ -275,8 +244,6 @@ _after_press(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
     default:
         break;
     }
-
-    return ev;
 }
 
 
@@ -284,23 +251,22 @@ _after_press(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 /**
  * Update the pointer state for a release event and detect clicks/drags.
  *
- * @param handler gesture handler owning the state
+ * @param state router-owned gesture history
  * @param event incoming release event
- * @return event to forward or NULL_EVENT when suppressed
+ * @return a new click or drag-stop transition, or NONE
  */
-static DvzPointerEvent
-_after_release(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
+static DvzPointerEvent _after_release(DvzPointerGestureState* state, const DvzPointerEvent* event)
 {
-    ANN(handler);
+    ANN(state);
     ANN(event);
 
-    DvzPointerEvent ev = *event;
-    handler->time = _resolve_time(handler->time, event->timestamp_ns);
-    double delay = handler->time - handler->last_press;
-    DvzPointerState prev = handler->state;
-    handler->button = DVZ_POINTER_BUTTON_NONE;
-    handler->cur_pos[0] = event->pos[0];
-    handler->cur_pos[1] = event->pos[1];
+    DvzPointerEvent ev = NULL_EVENT;
+    state->time = _resolve_time(state->time, event->timestamp_ns);
+    double delay = state->time - state->last_press;
+    DvzPointerState prev = state->state;
+    state->button = DVZ_POINTER_BUTTON_NONE;
+    state->cur_pos[0] = event->pos[0];
+    state->cur_pos[1] = event->pos[1];
 
     switch (prev)
     {
@@ -309,14 +275,15 @@ _after_release(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
         return NULL_EVENT;
 
     case DVZ_POINTER_STATE_DOUBLE_CLICK:
-        handler->state = DVZ_POINTER_STATE_RELEASE;
+        state->state = DVZ_POINTER_STATE_RELEASE;
         break;
 
     case DVZ_POINTER_STATE_DRAGGING:
-        handler->state = DVZ_POINTER_STATE_RELEASE;
+        state->state = DVZ_POINTER_STATE_RELEASE;
+        ev = *event;
         ev.type = DVZ_POINTER_EVENT_DRAG_STOP;
-        _vec2_copy(handler->press_pos, ev.content.d.press_pos);
-        _vec2_copy(handler->last_pos, ev.content.d.last_pos);
+        _vec2_copy(state->press_pos, ev.content.d.press_pos);
+        _vec2_copy(state->last_pos, ev.content.d.last_pos);
         ev.content.d.is_press_valid = true;
         break;
 
@@ -324,13 +291,14 @@ _after_release(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
     case DVZ_POINTER_STATE_CLICK_PRESS:
         if (delay >= 0 && delay <= DVZ_POINTER_CLICK_MAX_DELAY)
         {
-            handler->state = DVZ_POINTER_STATE_CLICK;
+            state->state = DVZ_POINTER_STATE_CLICK;
+            ev = *event;
             ev.type = (prev == DVZ_POINTER_STATE_CLICK_PRESS) ? DVZ_POINTER_EVENT_DOUBLE_CLICK
                                                               : DVZ_POINTER_EVENT_CLICK;
         }
         else
         {
-            handler->state = DVZ_POINTER_STATE_RELEASE;
+            state->state = DVZ_POINTER_STATE_RELEASE;
         }
         break;
 
@@ -343,47 +311,58 @@ _after_release(DvzPointerGestureHandler* handler, const DvzPointerEvent* event)
 
 
 
-static void
-_pointer_router_callback(DvzInputRouter* router, const DvzPointerEvent* event, void* user_data)
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Reset canonical gesture history to the released state.
+ *
+ * @param state router-owned gesture history
+ */
+void _dvz_pointer_gesture_reset(DvzPointerGestureState* state)
 {
-    ANN(router);
-    ANN(event);
-    ANN(user_data);
-
-    DvzPointerGestureHandler* handler = (DvzPointerGestureHandler*)user_data;
-    DvzPointerEvent derived = NULL_EVENT;
-
-    switch (event->type)
-    {
-    case DVZ_POINTER_EVENT_PRESS:
-        derived = _after_press(handler, event);
-        break;
-
-    case DVZ_POINTER_EVENT_MOVE:
-        derived = _after_move(handler, event);
-        break;
-
-    case DVZ_POINTER_EVENT_RELEASE:
-        derived = _after_release(handler, event);
-        break;
-
-    case DVZ_POINTER_EVENT_WHEEL:
-        derived = _after_wheel(handler, event);
-        break;
-
-    default:
-        derived = *event;
-        break;
-    }
-
-    _emit_gesture_event(handler, &derived);
+    ANN(state);
+    *state = (DvzPointerGestureState){0};
+    state->state = DVZ_POINTER_STATE_RELEASE;
 }
 
 
 
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
+/**
+ * Process one raw event and copy only a newly derived transition to the output.
+ *
+ * @param state router-owned gesture history
+ * @param event original pointer event
+ * @param[out] derived new gesture transition, or a NONE event
+ */
+void _dvz_pointer_gesture_process(
+    DvzPointerGestureState* state, const DvzPointerEvent* event, DvzPointerEvent* derived)
+{
+    ANN(state);
+    ANN(event);
+    ANN(derived);
+    *derived = NULL_EVENT;
+    switch (event->type)
+    {
+    case DVZ_POINTER_EVENT_PRESS:
+        _after_press(state, event);
+        break;
+    case DVZ_POINTER_EVENT_MOVE:
+        *derived = _after_move(state, event);
+        break;
+    case DVZ_POINTER_EVENT_RELEASE:
+        *derived = _after_release(state, event);
+        break;
+    case DVZ_POINTER_EVENT_WHEEL:
+        _after_wheel(state, event);
+        break;
+    default:
+        break;
+    }
+}
+
+
 
 DvzPointerButton dvz_pointer_button_from_glfw(int button)
 {
@@ -470,14 +449,12 @@ DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router)
         (DvzPointerGestureHandler*)dvz_calloc(1, sizeof(DvzPointerGestureHandler));
     if (handler == NULL)
         return NULL;
-    handler->router = router;
-    handler->state = DVZ_POINTER_STATE_RELEASE;
-    handler->subscription_id = dvz_input_subscribe_pointer(router, _pointer_router_callback, handler);
-    if (handler->subscription_id == DVZ_CALLBACK_ID_NONE)
+    if (!_dvz_input_router_gestures_acquire(router))
     {
         dvz_free(handler);
         return NULL;
     }
+    handler->router = router;
     return handler;
 }
 
@@ -488,6 +465,6 @@ void dvz_pointer_gesture_handler_destroy(DvzPointerGestureHandler* handler)
     if (handler == NULL)
         return;
     if (handler->router != NULL)
-        dvz_input_unsubscribe(handler->router, handler->subscription_id);
+        _dvz_input_router_gestures_release(handler->router);
     dvz_free(handler);
 }

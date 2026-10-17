@@ -795,11 +795,22 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
     }
 
     DvzWindow* window = dvz_calloc(1, sizeof(DvzWindow));
-    ANN(window);
+    if (window == NULL)
+        return NULL;
     window->host = host;
     window->router = dvz_input_router();
-    ANN(window->router);
+    if (window->router == NULL)
+    {
+        dvz_free(window);
+        return NULL;
+    }
     window->gesture_handler = dvz_pointer_gesture_handler(window->router);
+    if (window->gesture_handler == NULL)
+    {
+        dvz_input_router_destroy(window->router);
+        dvz_free(window);
+        return NULL;
+    }
     _window_setup_config(window, &chosen);
     window->backend_index = (uint32_t)(slot - host->backends);
     if (!slot->backend.procs.create(&slot->backend, window, &window->config))

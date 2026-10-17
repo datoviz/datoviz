@@ -21681,6 +21681,9 @@ else:
     dvz_input_emit_event.__doc__ = """/**
  * Emit a union input event. Callbacks run synchronously on the emitting thread.
  *
+ * The event is copied and delivered only to the frozen union audience. This does not invoke typed
+ * callbacks, advance gesture recognition, or update cached resize state.
+ *
  * @param router target router; must not be NULL
  * @param event event borrowed for the duration of the call; must not be NULL
  */"""
@@ -21711,6 +21714,14 @@ else:
     dvz_input_emit_pointer.__doc__ = """/**
  * Emit a raw pointer event. Callbacks run synchronously on the emitting thread.
  *
+ * The router copies the event and freezes both callback audiences, then processes its canonical
+ * gesture history once if recognition is active. It delivers a newly derived gesture to the union
+ * stream first, the original to typed pointer callbacks second, and the original to the union
+ * stream exactly once last. Both union stages use the same frozen audience. Already-semantic
+ * pointer events are forwarded without changing recognition history or deriving another event.
+ * Gesture activation changes inside callbacks affect nested and later emissions; any derived
+ * event already computed for this emission remains valid.
+ *
  * @param router target router; must not be NULL
  * @param event event borrowed for the duration of the call; must not be NULL
  */"""
@@ -21726,7 +21737,9 @@ else:
     dvz_input_emit_resize.__doc__ = """/**
  * Emit a resize event. Callbacks run synchronously on the emitting thread.
  *
- * The router copies the event and caches it for `dvz_input_router_last_resize()`.
+ * The router copies the event and caches it for `dvz_input_router_last_resize()` after preparing
+ * both callback audiences and before invoking callbacks. Allocation failure leaves the cache
+ * unchanged.
  *
  * @param router target router; must not be NULL
  * @param event event borrowed for the duration of the call; dimensions are in pixels; must not be
@@ -21764,7 +21777,7 @@ else:
  *
  * @param router target router; must not be NULL
  * @param event borrowed committed-text event; must not be NULL
- * @return `DVZ_OK` on dispatch, `DVZ_ERROR` on invalid input
+ * @return `DVZ_OK` on dispatch, `DVZ_ERROR` on invalid input or audience allocation failure
  */"""
     dvz_input_emit_text.argtypes = [ctypes.POINTER(DvzInputRouter), ctypes.POINTER(DvzInputTextEvent)]
     dvz_input_emit_text.restype = ctypes.c_int32
@@ -21777,6 +21790,21 @@ except AttributeError:
 else:
     dvz_input_router.__doc__ = """/**
  * Create an input event router.
+ *
+ * All operations on a router must be serialized on one thread. Callbacks run synchronously and
+ * may emit nested events on that thread; concurrent router access is not supported. The router
+ * must outlive active emission calls and gesture handles. Callback data must remain valid until
+ * unsubscription or router destruction. Destroying a router from one of its callbacks is
+ * prohibited.
+ *
+ * Each emission freezes its typed and union callback audiences before invoking any callback.
+ * Callbacks run in subscription order within each stream. Removed subscriptions are skipped;
+ * new subscriptions are eligible for nested or later emissions, but not the remainder of the
+ * emission in progress. Nested emissions complete before the outer callback resumes.
+ *
+ * If an audience snapshot cannot be allocated, the emission invokes no callbacks and changes no
+ * gesture history or cached resize state. Void emitters log and drop the event; text emission
+ * returns `DVZ_ERROR`.
  *
  * @return a new owned router, or NULL on allocation failure; destroy it with
  * `dvz_input_router_destroy()`
@@ -21792,6 +21820,9 @@ except AttributeError:
 else:
     dvz_input_router_destroy.__doc__ = """/**
  * Destroy a router.
+ *
+ * Destroy all gesture activation handles and finish all emission calls first. This function must
+ * not be called from a router callback. Destruction removes all remaining subscriptions.
  *
  * @param router router returned by dvz_input_router(); must not be NULL
  */"""
@@ -21830,7 +21861,7 @@ else:
  * Subscribe to routed union-style input events.
  *
  * This stream carries pointer, keyboard, text, resize, and scale events in one callback. When a
- * `DvzPointerGestureHandler` is attached to the router, this stream also receives
+ * `DvzPointerGestureHandler` activation is held for the router, this stream also receives
  * gesture-derived pointer events such as click, double-click, drag-start, drag, and drag-stop.
  *
  * @param router target router; must not be NULL
@@ -22003,10 +22034,11 @@ else:
     _dvz_input_unsubscribe.__doc__ = """/**
  * Unsubscribe from any router callback by subscription id.
  *
- * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is not
- * currently registered on this router.
- * Subscriptions added during dispatch begin with the next event. A subscription removed before its
- * turn in the current dispatch is not invoked.
+ * Returns true when a callback was removed and false when @p id is `DVZ_CALLBACK_ID_NONE` or is
+ * not currently registered on this router. Subscriptions added during an emission begin with a
+ * nested or later emission, not a remaining derived, typed, or original-union stage of the current
+ * emission. A subscription removed before its turn is not invoked. Removing a subscription
+ * preserves the order of the remaining callbacks.
  *
  * @param router target router; must not be NULL
  * @param id subscription identifier returned by a subscribe function
@@ -25829,15 +25861,21 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_pointer_gesture_handler')
 else:
     dvz_pointer_gesture_handler.__doc__ = """/**
- * Attach the pointer gesture interpreter to the router.
+ * Acquire an activation of the router's canonical pointer gesture interpreter.
  *
- * The interpreter listens to raw pointer events and emits gesture-derived pointer events on the
- * router's union input stream. Subscribe with `dvz_input_subscribe_event()` to receive click,
- * double-click, drag-start, drag, and drag-stop events.
+ * Each successful call returns a distinct owned handle. All handles for a router activate one
+ * shared gesture history: the first activation initializes recognition, additional activations
+ * preserve history, and destroying the last handle disables recognition and resets history.
+ * Routers without an activation forward originals without synthesizing gestures.
+ *
+ * The router interprets raw pointer events once and emits only newly derived click, double-click,
+ * drag-start, drag, and drag-stop events on its union input stream. Subscribe with
+ * `dvz_input_subscribe_event()` to receive those gestures. Additional handles do not multiply
+ * delivery or reset an active click/drag sequence.
  *
  * @param router router to observe; borrowed and must outlive the handler
- * @return a new owned handler, or NULL on allocation or subscription failure; destroy it before
- * destroying @p router
+ * @return a new owned activation handle, or NULL on allocation or activation-count overflow;
+ * destroy it before destroying @p router
  */"""
     dvz_pointer_gesture_handler.argtypes = [ctypes.POINTER(DvzInputRouter)]
     dvz_pointer_gesture_handler.restype = ctypes.POINTER(DvzPointerGestureHandler)
@@ -25849,9 +25887,11 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_pointer_gesture_handler_destroy')
 else:
     dvz_pointer_gesture_handler_destroy.__doc__ = """/**
- * Destroy the gesture interpreter.
+ * Release one owned gesture activation handle.
  *
- * This also removes its raw-pointer subscription from the borrowed router.
+ * Other handles keep the canonical interpreter and its history active. Releasing the last handle
+ * disables recognition and resets history. This may be called from a router callback; changes
+ * affect nested and later emissions without invalidating an already-derived outer event.
  *
  * @param handler owned handler to destroy; may be NULL
  */"""

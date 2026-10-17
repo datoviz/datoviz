@@ -201,7 +201,6 @@ struct DvzGuiViewport
     bool mouse_hovered;
     float mouse_pos[2];
     float mouse_size[2];
-    DvzPointerGestureHandler* gesture_handler;
     DvzGuiViewport* next;
 };
 
@@ -1602,11 +1601,6 @@ static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
     }
     if (viewport->canvas != NULL)
         (void)dvz_canvas_configure_live_image_sink(viewport->canvas, false, NULL);
-    if (viewport->gesture_handler != NULL)
-    {
-        dvz_pointer_gesture_handler_destroy(viewport->gesture_handler);
-        viewport->gesture_handler = NULL;
-    }
     if (viewport->source != NULL && viewport->owns_source)
         dvz_view_set_render_enabled(viewport->source, false);
     if (viewport->source != NULL && viewport->source_managed)
@@ -3038,12 +3032,6 @@ static DvzGuiViewport* _gui_viewport_from_window(
     viewport->config = _gui_viewport_config_normalize(config);
     viewport->owns_source = owns_source;
     viewport->texture_dirty = true;
-    viewport->gesture_handler = dvz_pointer_gesture_handler(dvz_view_input(source));
-    if (viewport->gesture_handler == NULL)
-    {
-        dvz_free(viewport);
-        return NULL;
-    }
     dvz_view_logical_size(source, &viewport->requested_width, &viewport->requested_height);
     dvz_view_framebuffer_size(
         source, &viewport->requested_framebuffer_width, &viewport->requested_framebuffer_height);

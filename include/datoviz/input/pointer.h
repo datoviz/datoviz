@@ -170,24 +170,32 @@ DVZ_EXPORT void dvz_pointer_emit_wheel(
 
 
 /**
- * Attach the pointer gesture interpreter to the router.
+ * Acquire an activation of the router's canonical pointer gesture interpreter.
  *
- * The interpreter listens to raw pointer events and emits gesture-derived pointer events on the
- * router's union input stream. Subscribe with `dvz_input_subscribe_event()` to receive click,
- * double-click, drag-start, drag, and drag-stop events.
+ * Each successful call returns a distinct owned handle. All handles for a router activate one
+ * shared gesture history: the first activation initializes recognition, additional activations
+ * preserve history, and destroying the last handle disables recognition and resets history.
+ * Routers without an activation forward originals without synthesizing gestures.
+ *
+ * The router interprets raw pointer events once and emits only newly derived click, double-click,
+ * drag-start, drag, and drag-stop events on its union input stream. Subscribe with
+ * `dvz_input_subscribe_event()` to receive those gestures. Additional handles do not multiply
+ * delivery or reset an active click/drag sequence.
  *
  * @param router router to observe; borrowed and must outlive the handler
- * @return a new owned handler, or NULL on allocation or subscription failure; destroy it before
- * destroying @p router
+ * @return a new owned activation handle, or NULL on allocation or activation-count overflow;
+ * destroy it before destroying @p router
  */
 DVZ_EXPORT DvzPointerGestureHandler* dvz_pointer_gesture_handler(DvzInputRouter* router);
 
 
 
 /**
- * Destroy the gesture interpreter.
+ * Release one owned gesture activation handle.
  *
- * This also removes its raw-pointer subscription from the borrowed router.
+ * Other handles keep the canonical interpreter and its history active. Releasing the last handle
+ * disables recognition and resets history. This may be called from a router callback; changes
+ * affect nested and later emissions without invalidating an already-derived outer event.
  *
  * @param handler owned handler to destroy; may be NULL
  */

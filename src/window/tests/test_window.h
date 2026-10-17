@@ -26,6 +26,8 @@
 
 int test_window_headless(TstContext* suite, const TstCase* item);
 
+int test_window_canonical_pointer(TstContext* suite, const TstCase* item);
+
 int test_window_config_rejects_invalid_abi(TstContext* suite, const TstCase* item);
 
 int test_window_resize_events(TstContext* suite, const TstCase* item);

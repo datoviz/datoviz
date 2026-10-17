@@ -19,6 +19,7 @@
 #include "_assertions.h"
 #include "controller_internal.h"
 #include "datoviz/controller.h"
+#include "datoviz/input.h"
 #include "datoviz/math/_cglm.h"
 #include "test_controller.h"
 #include "testing.h"
@@ -404,6 +405,78 @@ int test_controller_desc_abi_rejects_invalid_structs(TstContext* suite, const Ts
 
 
 /**
+ * Apply a routed wheel once regardless of activation count or controller connection order.
+ *
+ * @param suite Test context.
+ * @param item Test case.
+ * @return Zero on success.
+ */
+int test_controller_panzoom_canonical_wheel(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    for (uint32_t active = 0; active <= 2; active++)
+    {
+        for (uint32_t connect_first = 0; connect_first < 2; connect_first++)
+        {
+            DvzInputRouter* router = dvz_input_router();
+            DvzPanzoomDesc desc = dvz_panzoom_desc();
+            desc.width = 640;
+            desc.height = 480;
+            DvzPanzoom* actual = dvz_panzoom_create(&desc);
+            DvzPanzoom* expected = dvz_panzoom_create(&desc);
+            AT(router != NULL && actual != NULL && expected != NULL);
+            DvzResult result = DVZ_OK;
+            if (connect_first)
+            {
+                result = dvz_panzoom_connect(actual, router);
+                AT(result == DVZ_OK);
+            }
+            DvzPointerGestureHandler* handles[2] = {0};
+            for (uint32_t i = 0; i < active; i++)
+            {
+                handles[i] = dvz_pointer_gesture_handler(router);
+                AT(handles[i] != NULL);
+            }
+            if (!connect_first)
+            {
+                result = dvz_panzoom_connect(actual, router);
+                AT(result == DVZ_OK);
+            }
+            // An off-centre anchor also detects repeated changes to pan, not just zoom.
+            vec2 direction = {0.5f, -1.5f};
+            vec2 anchor = {170, 135};
+            result = dvz_panzoom_zoom_wheel(expected, direction, anchor);
+            AT(result == DVZ_OK);
+            dvz_pointer_emit_wheel(
+                router, anchor[0], anchor[1], 640, 480, direction[0], direction[1], 0, 1,
+                1000000000, NULL);
+            DvzPanzoomState observed = {0}, wanted = {0};
+            bool actual_ok = dvz_panzoom_state(actual, &observed);
+            bool expected_ok = dvz_panzoom_state(expected, &wanted);
+            AT(actual_ok && expected_ok);
+            AT(fabsf(wanted.zoom[1] - 1) > 0.001f);
+            for (uint32_t axis = 0; axis < 2; axis++)
+            {
+                AC(observed.pan[axis], wanted.pan[axis], 0.000001f);
+                AC(observed.zoom[axis], wanted.zoom[axis], 0.000001f);
+            }
+            AT(observed.interacting == wanted.interacting);
+            result = dvz_panzoom_disconnect(actual, router);
+            AT(result == DVZ_OK);
+            dvz_panzoom_destroy(actual);
+            dvz_panzoom_destroy(expected);
+            for (uint32_t i = 0; i < active; i++)
+                dvz_pointer_gesture_handler_destroy(handles[i]);
+            dvz_input_router_destroy(router);
+        }
+    }
+    return 0;
+}
+
+
+
+/**
  * Register the controller module tests.
  *
  * @param suite test suite
@@ -414,6 +487,7 @@ int test_controller(TstSuite* suite)
     ANN(suite);
     const char* tags = "controller";
     TST_MODULE(suite, tags);
+    TST_CASE(test_controller_panzoom_canonical_wheel);
     TST_CASE(test_controller_panzoom_create);
     TST_CASE(test_controller_panzoom_keep_aspect_drag);
     TST_CASE(test_controller_arcball_create);
