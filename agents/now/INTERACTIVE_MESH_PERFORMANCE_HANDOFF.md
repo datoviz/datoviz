@@ -1,6 +1,6 @@
 # Interactive Mesh Performance Handoff
 
-Status: active non-blocking v0.4-final measurement work and preserved early-v0.5 implementation sequence. Updated: 2026-09-16.
+Status: active non-blocking v0.4-final measurement work and preserved early-v0.5 implementation sequence. Updated: 2026-10-17.
 
 This handoff records execution evidence and task order for large semantically partitioned meshes. Durable query behavior lives in [GPU_QUERY_SYSTEM.md](../../spec/scene/interaction/GPU_QUERY_SYSTEM.md), asynchronous completion in [ASYNC_QUERY_EXECUTION.md](../../spec/scene/proposals/future/ASYNC_QUERY_EXECUTION.md), mesh-part state in [MESH_PART_STATE.md](../../spec/scene/proposals/future/MESH_PART_STATE.md), and embedded presentation in [GUI_VIEWPORT_PRESENTATION.md](../../spec/architecture/GUI_VIEWPORT_PRESENTATION.md).
 
@@ -11,6 +11,8 @@ Volume transfer-texture preparation now follows the existing texture-dirty and v
 Transfer preparation/upload failures now propagate through internal upload helpers and abort figure emission before dirty/realized state commits. This closes a retry hazard exposed by suppressing unchanged uploads: logging a failed LUT update alone could otherwise leave an older resource while marking the new state clean. No public API, bindings, shader ABI, synchronization policy or application dependency pin changes.
 
 Validation: the scene-semantic lane passes 596 tests; the focused volume suite passes 23 tests including GPU volume queries. Regressions cover unchanged preparation/upload suppression, alpha updates, shared colormap changes, scale rebinding, categorical palette colors and width changes, new volumes, shared figures, allocation failure, failed capability conversion, valid retries and runtime reset. A high-effort Sol 6.1 read-only architecture/implementation audit found no remaining blockers. The optional ASan scene build is unavailable because unchanged runtime-test code lacks declarations for shader-pass helpers under its Clang configuration; no sanitizer pass is claimed.
+
+A visible scalar-volume offscreen capture and a three-frame preview sequence pass with Vulkan validation enabled; the captured volume was inspected. Real-desktop before/after timing remains unavailable: an isolated scientific-consumer pre-change build stalls in X11 window initialization before measured frames. Those attempts are excluded, and no native frame-time improvement is claimed. The consumer checkout, baseline pin and existing scientific candidate remain unchanged; the isolated validation checkout is ignored.
 
 A separate synchronization investigation found that the synchronous command helper's production DRP2 caller submits to the main queue and already waits for that queue before destroying staging/command resources. The candidate next change is to remove its pre-submit device-wide idle while retaining post-submit queue completion, with a regression proving an independent queue can remain blocked while the selected queue completes. Audit cross-queue callers and preserve explicit semaphore/timeline dependencies before implementation. The strict GUI source-to-parent wait is a separate dependency problem and remains unchanged.
 
