@@ -39,6 +39,16 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_mesh_fragment_clip_shader_matrix);
     TST_CASE(test_scene_indexed_item_state_shader_profile_matrix);
     TST_CASE(test_scene_indexed_item_state_sparse_updates_reach_each_figure);
+    {
+        TstCaseDesc desc = tst_case_desc(
+            "test_scene_indexed_item_state_retries_after_volume_preparation_failure",
+            "test_scene_indexed_item_state_retries_after_volume_preparation_failure",
+            test_scene_indexed_item_state_retries_after_volume_preparation_failure);
+        desc.tags = tags;
+        desc.resources = TST_RES_CPU | TST_RES_GLOBAL_STATE | TST_RES_LOG_CAPTURE;
+        desc.isolation = TST_ISOLATION_EXCLUSIVE;
+        tst_suite_add_case(suite, desc);
+    }
     TST_CASE(test_scene_indexed_item_state_buffer_copies_and_updates_atomically);
     TST_CASE(test_scene_indexed_item_state_buffer_rejects_invalid_cardinality);
     TST_CASE(test_scene_indexed_item_state_mesh_binding_copies_and_unbinds);

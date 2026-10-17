@@ -1580,6 +1580,9 @@ int test_scene_indexed_item_state_mesh_binding_copies_and_unbinds(TstContext* su
 
 int test_scene_indexed_item_state_sparse_updates_reach_each_figure(TstContext* suite, const TstCase* item);
 
+int test_scene_indexed_item_state_retries_after_volume_preparation_failure(
+    TstContext* suite, const TstCase* item);
+
 int test_scene_indexed_item_state_shader_profile_matrix(TstContext* suite, const TstCase* item);
 
 int test_scene_mesh_fragment_clip_contract(TstContext* suite, const TstCase* item);

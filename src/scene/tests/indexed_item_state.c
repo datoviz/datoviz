@@ -367,6 +367,160 @@ int test_scene_indexed_item_state_sparse_updates_reach_each_figure(
 }
 
 
+/**
+ * Reject the scalar-volume transfer staging allocation while preserving normal test allocations.
+ *
+ * @param count allocation item count
+ * @param size allocation item size
+ * @return allocated storage, or NULL for transfer staging
+ */
+static void* _indexed_state_reject_transfer_calloc(DvzSize count, DvzSize size)
+{
+    if (count == 1024 && size == 1)
+        return NULL;
+    return dvz_system_allocator()->calloc_fn(count, size);
+}
+
+
+
+/**
+ * Retry state-bank updates when later volume transfer preparation aborts the whole frame.
+ *
+ * @param suite test context
+ * @param item test descriptor
+ * @return zero on success
+ */
+int test_scene_indexed_item_state_retries_after_volume_preparation_failure(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    AT(panel != NULL);
+    DvzItemStateBufferDesc desc = dvz_item_state_buffer_desc();
+    desc.slot_count = 3;
+    DvzItemStateBuffer* bank = dvz_item_state_buffer(scene, &desc);
+    AT(bank != NULL);
+    DvzGeometry* geometry = _indexed_state_triangle(true);
+    AT(geometry != NULL);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(mesh != NULL);
+    AT(dvz_mesh_set_geometry(mesh, geometry) == DVZ_OK);
+    dvz_geometry_destroy(geometry);
+    const uint32_t state_indices[] = {0, 1, 2};
+    AT(dvz_visual_set_item_state_buffer(mesh, bank, state_indices, 3) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, mesh, NULL) == DVZ_OK);
+
+    // The bank uploads precede the volume, whose later preparation failure must abort both.
+    DvzVisual* volume = dvz_volume(scene, 0);
+    AT(volume != NULL);
+    DvzSampledFieldDesc field_desc = dvz_sampled_field_desc();
+    field_desc.dim = DVZ_FIELD_DIM_3D;
+    field_desc.format = DVZ_FIELD_FORMAT_R8_UNORM;
+    field_desc.semantic = DVZ_FIELD_SEMANTIC_SCALAR;
+    field_desc.color_role = DVZ_COLOR_ROLE_DATA;
+    field_desc.width = field_desc.height = field_desc.depth = 2;
+    DvzSampledField* field = dvz_sampled_field(scene, &field_desc);
+    AT(field != NULL);
+    const uint8_t values[] = {0, 64, 128, 255, 32, 96, 160, 224};
+    DvzFieldDataView data = {DVZ_STRUCT_INIT_FIELDS(DvzFieldDataView),
+                           .data = values, .bytes_per_row = 2, .rows_per_image = 2};
+    AT(dvz_sampled_field_set_data(field, &data) == DVZ_OK);
+    AT(dvz_visual_set_field(volume, "field", field) == DVZ_OK);
+    AT(dvz_volume_set_render_mode(volume, DVZ_VOLUME_RENDER_COMPOSITE) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, volume, NULL) == DVZ_OK);
+
+    DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+    DvzDiagnosticReport report;
+    dvz_diagnostic_report_init(&report);
+    DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+    cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+    DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    AT(stream != NULL);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    _test_scene_stream_destroy(stream);
+
+    uint32_t bank_index = _scene_buffer_index(scene, bank->words);
+    AT(bank_index < DVZ_SCENE_MAX_BUFFERS);
+    const uint64_t consumed = figure->item_state_consumed[bank_index];
+    const uint64_t consumed_id = figure->item_state_consumed_ids[bank_index];
+    AT(consumed == bank->words->content_revision);
+    const uint32_t slot = 1;
+    const uint32_t selected = DVZ_ITEM_STATE_SELECTED;
+    AT(dvz_item_state_buffer_update(bank, &slot, &selected, 1) == DVZ_OK);
+    AT(bank->words->content_revision > consumed);
+    const DvzVolumeAlphaStop alpha[] = {
+        {.position = 0, .alpha = 0.5f}, {.position = 1, .alpha = 0.5f}};
+    AT(dvz_volume_set_alpha_stops(volume, alpha, 2) == DVZ_OK);
+    const uint64_t realized = _visual_family_state(volume)->volume_realized_version;
+    dvz_free(_visual_family_state(volume)->texture.rgba);
+    _visual_family_state(volume)->texture.rgba = NULL;
+    _visual_family_state(volume)->texture.rgba_size = 0;
+
+    const DvzAllocator* saved_allocator = dvz_get_allocator();
+    DvzAllocator failing_allocator = *saved_allocator;
+    failing_allocator.calloc_fn = _indexed_state_reject_transfer_calloc;
+    tst_expect_error_begin(suite);
+    dvz_set_allocator(&failing_allocator);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    dvz_set_allocator(saved_allocator);
+    const int expected_error = tst_expect_error_end(suite);
+    AT(expected_error == 0);
+    AT(stream == NULL);
+    AT(dvz_diagnostic_report_count(&report) > 0);
+    AT(figure->item_state_consumed[bank_index] == consumed);
+    AT(figure->item_state_consumed_ids[bank_index] == consumed_id);
+    AT(_visual_family_state(volume)->volume_realized_version == realized);
+    // Alpha changes invalidate the transfer through its version, independently of source texture.
+    AT(_visual_family_state(volume)->volume_realized_version !=
+       _visual_family_state(volume)->volume.version);
+
+    char bank_key[DVZ_SCENE_LABEL_SIZE] = {0};
+    AT(dvz_scene_buffer_resource_key(bank->words, bank_key, sizeof(bank_key)));
+    for (uint32_t attempt = 0; attempt < 2; attempt++)
+    {
+        dvz_diagnostic_report_init(&report);
+        stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+        AT(stream != NULL);
+        AT(dvz_diagnostic_report_count(&report) == 0);
+        const uint64_t bank_id = dvz_drp2_stream_label_id(stream, bank_key);
+        uint32_t bank_writes = 0, transfer_writes = 0;
+        for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+        {
+            const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+            if (command->type == DVZ_DRP2_COMMAND_WRITE_BUFFER &&
+                command->u.write_buffer.buffer_id == bank_id)
+            {
+                bank_writes++;
+                AT(command->u.write_buffer.offset == sizeof(uint32_t));
+                AT(command->u.write_buffer.size == sizeof(uint32_t));
+                const uint32_t* word = command->u.write_buffer.data_raw;
+                AT(word != NULL && *word == selected);
+            }
+            if (command->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+                command->u.write_texture.width == 256 &&
+                command->u.write_texture.height == 1 && command->u.write_texture.depth == 1)
+            {
+                transfer_writes++;
+                const uint8_t* rgba = command->u.write_texture.data_raw;
+                AT(rgba != NULL && rgba[3] == 128 && rgba[4 * 255 + 3] == 128);
+            }
+        }
+        AT(bank_writes == (attempt == 0 ? 1u : 0u));
+        AT(transfer_writes == (attempt == 0 ? 1u : 0u));
+        AT(figure->item_state_consumed[bank_index] == bank->words->content_revision);
+        _test_scene_stream_destroy(stream);
+    }
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 static int _indexed_state_profile_emits(
     TstContext* suite, bool lit, DvzAlphaMode alpha_mode, DvzSceneShaderFormat shader_format)
 {
