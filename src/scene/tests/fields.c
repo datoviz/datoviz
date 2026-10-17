@@ -3817,6 +3817,34 @@ int test_scene_volume_label_slice_uses_categorical_scale(TstContext* suite, cons
     AT(_colorbar_stream_has_pipeline_label(stream, "_pipe_vol_labels_uint"));
 
     _test_scene_stream_destroy(stream);
+    for (uint32_t step = 0; step < 4; step++)
+    {
+        if (step == 1 || step == 2)
+        {
+            categories[2].color.r = 37;
+            if (step == 2)
+                categories[2].category_id = 4;
+            AT(dvz_scale_set_categories(scale, categories, 3) == DVZ_OK);
+        }
+        stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+        ANN(stream);
+        uint32_t palette_writes = 0;
+        for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+        {
+            const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+            if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+                cmd->u.write_texture.height == 1 && cmd->u.write_texture.depth == 1)
+            {
+                palette_writes++;
+                uint32_t width = step == 2 ? 5 : 3;
+                AT(cmd->u.write_texture.width == width);
+                const uint8_t* bytes = (const uint8_t*)cmd->u.write_texture.data_raw;
+                AT(bytes[4 * (width - 1)] == 37);
+            }
+        }
+        AT(palette_writes == (step == 1 || step == 2 ? 1u : 0u));
+        _test_scene_stream_destroy(stream);
+    }
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -4199,6 +4227,43 @@ int test_scene_volume_label_mip_reports_unsupported(TstContext* suite, const Tst
 
 
 
+/**
+ * Count scalar-volume transfer texture writes in a tiny-volume test stream.
+ *
+ * @param stream the emitted stream
+ * @return number of 256-entry RGBA transfer writes
+ */
+static uint32_t _volume_transfer_write_count(const DvzDrp2CommandStream* stream)
+{
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE && cmd->u.write_texture.width == 256 &&
+            cmd->u.write_texture.height == 1 && cmd->u.write_texture.depth == 1)
+            count++;
+    }
+    return count;
+}
+
+
+
+/**
+ * Reject transfer staging allocation to exercise a retained-volume retry.
+ *
+ * @param count allocation item count
+ * @param size allocation item size
+ * @return owned allocation or NULL for the transfer staging size
+ */
+static void* _reject_volume_transfer_calloc(DvzSize count, DvzSize size)
+{
+    if (count == 1024 && size == 1)
+        return NULL;
+    return dvz_system_allocator()->calloc_fn(count, size);
+}
+
+
+
 int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -4326,6 +4391,112 @@ int test_scene_volume_scalar_transfer_function_uploads_rgba(TstContext* suite, c
     AT(!field->dirty);
     AT(!_visual_family_state(volume)->texture.dirty);
 
+    _test_scene_stream_destroy(stream);
+
+    // An unchanged redraw must neither rebuild the payload nor write the LUT.
+    // Drop staging: if preparation runs, it would allocate again.
+    dvz_free(_visual_family_state(volume)->texture.rgba);
+    _visual_family_state(volume)->texture.rgba = NULL;
+    _visual_family_state(volume)->texture.rgba_size = 0;
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 0);
+    AT(_visual_family_state(volume)->texture.rgba == NULL);
+    _test_scene_stream_destroy(stream);
+
+    DvzVolumeAlphaStop alpha[2] = {{.position = 0, .alpha = 0.5f},
+                                 {.position = 1, .alpha = 0.5f}};
+    AT(dvz_volume_set_alpha_stops(volume, alpha, 2) == DVZ_OK);
+    uint64_t previous_version = _visual_family_state(volume)->volume_realized_version;
+    const DvzAllocator* saved_allocator = dvz_get_allocator();
+    DvzAllocator failing_allocator = *saved_allocator;
+    failing_allocator.calloc_fn = _reject_volume_transfer_calloc;
+    dvz_set_allocator(&failing_allocator);
+    tst_expect_error_begin(suite);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    dvz_set_allocator(saved_allocator);
+    int expected_error = tst_expect_error_end(suite);
+    AT(stream == NULL);
+    AT(expected_error == 0);
+    AT(_visual_family_state(volume)->volume_realized_version == previous_version);
+    AT(dvz_diagnostic_report_count(&report) > 0);
+    dvz_diagnostic_report_init(&report);
+
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 1);
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_WRITE_TEXTURE &&
+            cmd->u.write_texture.texture_id == transfer_texture_id)
+        {
+            const uint8_t* upload = (const uint8_t*)cmd->u.write_texture.data_raw;
+            AT(upload[3] == 128);
+            AT(upload[4 * 255 + 3] == 128);
+        }
+    }
+    _test_scene_stream_destroy(stream);
+
+    // Mutating a shared colormap invalidates its consuming volume.
+    stops[0].rgba[0] = 17;
+    dvz_colormap_set_stops(colormap, stops, 2);
+    AT(_visual_family_state(volume)->texture.dirty);
+    DvzCapabilitySnapshot limited_caps = caps;
+    limited_caps.max_texture_dimension_2d = 4;
+    stream = _test_scene_emit_stream_ex(figure, &limited_caps, &report, &cfg);
+    AT(stream == NULL);
+    AT(_visual_family_state(volume)->texture.dirty);
+    dvz_diagnostic_report_init(&report);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 1);
+    _test_scene_stream_destroy(stream);
+    AT(!_visual_family_state(volume)->texture.dirty);
+
+    AT(dvz_visual_set_scale(volume, "color", NULL) == DVZ_OK);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 1);
+    _test_scene_stream_destroy(stream);
+    AT(dvz_visual_set_scale(volume, "color", scale) == DVZ_OK);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 1);
+    _test_scene_stream_destroy(stream);
+
+    // Figures in one scene consume the same retained resource namespace.
+    DvzFigure* other = dvz_figure(scene, 64, 64, 0);
+    ANN(other);
+    DvzPanel* other_panel = dvz_panel(other, &(DvzPanelDesc){0, 0, 1, 1});
+    ANN(other_panel);
+    AT(dvz_panel_add_visual(other_panel, volume, NULL) == DVZ_OK);
+    stream = _test_scene_emit_stream_ex(other, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 0);
+    _test_scene_stream_destroy(stream);
+
+    // A new volume sharing an already-realized scale still needs its own LUT.
+    DvzVisual* new_volume = dvz_volume(scene, 0);
+    ANN(new_volume);
+    AT(dvz_visual_set_field(new_volume, "field", field) == DVZ_OK);
+    AT(dvz_visual_set_scale(new_volume, "color", scale) == DVZ_OK);
+    AT(dvz_panel_add_visual(panel, new_volume, NULL) == DVZ_OK);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 1);
+    _test_scene_stream_destroy(stream);
+
+    // A fresh runtime boundary needs complete resource creation and payloads.
+    AT(_scene_runtime_emitter_reset(scene));
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 2);
+    _test_scene_stream_destroy(stream);
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+    ANN(stream);
+    AT(_volume_transfer_write_count(stream) == 0);
+    AT(dvz_diagnostic_report_count(&report) == 0);
     _test_scene_stream_destroy(stream);
     dvz_scene_destroy(scene);
     return 0;

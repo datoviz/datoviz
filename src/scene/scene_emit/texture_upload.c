@@ -403,22 +403,29 @@ static void _scene_emit_volume_source_texture_upload(
  * @param plan the destination frame plan
  * @param visual the volume visual
  * @param visual_index the scene visual index
+ * @return whether transfer preparation and upload emission succeeded
  */
-static void _scene_emit_volume_transfer_texture_upload(
+static bool _scene_emit_volume_transfer_texture_upload(
     DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
     ANN(plan);
     ANN(visual);
+
+    const DvzVisualFamilyState* state = _visual_family_state(visual);
+    // Commit/reset of these retained versions follows the scene emitter lifecycle.
+    // Do not clear them here: a later planning failure must retry this upload.
+    if (!state->texture.dirty && state->volume_realized_version == state->volume.version)
+        return true;
 
     bool handled = false;
     DvzVolumeTransferTexturePayload payload = {0};
     if (!_volume_transfer_texture_payload_if_needed(visual, &payload, &handled))
     {
         log_error("volume transfer texture upload failed");
-        return;
+        return false;
     }
     if (!handled)
-        return;
+        return true;
 
     char transfer_resource_id[128];
     DvzFramePlanUploadMeta metadata = {
@@ -436,8 +443,9 @@ static void _scene_emit_volume_transfer_texture_upload(
             0, 0))
     {
         log_error("volume transfer texture upload failed");
-        return;
+        return false;
     }
+    return true;
 }
 
 
@@ -496,11 +504,13 @@ static void _scene_emit_volume_label_lookup_upload(
 /**
  * Emit family-owned texture uploads after shared buffer uploads.
  *
+ * @param figure the owning figure
  * @param plan the destination frame plan
  * @param visual the visual
  * @param visual_index the scene visual index
+ * @return whether required family texture preparation succeeded
  */
-void _scene_emit_visual_family_texture_uploads(
+bool _scene_emit_visual_family_texture_uploads(
     const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index)
 {
     ANN(figure);
@@ -509,6 +519,8 @@ void _scene_emit_visual_family_texture_uploads(
     _scene_emit_image_like_texture_upload(figure, plan, visual, visual_index);
     _scene_emit_marker_symbol_texture_upload(figure, plan, visual, visual_index);
     _scene_emit_volume_source_texture_upload(figure, plan, visual, visual_index);
-    _scene_emit_volume_transfer_texture_upload(plan, visual, visual_index);
+    if (!_scene_emit_volume_transfer_texture_upload(plan, visual, visual_index))
+        return false;
     _scene_emit_volume_label_lookup_upload(plan, visual, visual_index);
+    return true;
 }

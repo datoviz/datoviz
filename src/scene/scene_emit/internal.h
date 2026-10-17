@@ -93,7 +93,7 @@ bool _scene_emit_visual_family_derived_uploads(
     const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index,
     bool* out_skip_dense_attrs, bool* out_finished_visual);
 
-void _scene_emit_visual_family_texture_uploads(
+bool _scene_emit_visual_family_texture_uploads(
     const DvzFigure* figure, DvzFramePlan* plan, DvzVisual* visual, uint32_t visual_index);
 
 void _scene_emit_visual_buffer_payloads(
