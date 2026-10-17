@@ -24,6 +24,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+int test_controller_panzoom_canonical_wheel(TstContext* suite, const TstCase* item);
+
 int test_controller_panzoom_create(TstContext* suite, const TstCase* item);
 
 int test_controller_panzoom_keep_aspect_drag(TstContext* suite, const TstCase* item);

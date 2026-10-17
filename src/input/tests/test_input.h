@@ -42,6 +42,24 @@ int test_text_router_separates_keyboard_actions(TstContext* suite, const TstCase
 
 int test_text_router_subscription_mutation(TstContext* suite, const TstCase* item);
 
+int test_pointer_activation_during_dispatch(TstContext* suite, const TstCase* item);
+
+int test_pointer_derived_snapshot_stages(TstContext* suite, const TstCase* item);
+
+int test_pointer_canonical_drag_longpress(TstContext* suite, const TstCase* item);
+
+int test_router_stable_removal_order(TstContext* suite, const TstCase* item);
+
+int test_router_snapshot_failure(TstContext* suite, const TstCase* item);
+
+int test_pointer_activation_allocation_failure(TstContext* suite, const TstCase* item);
+
+int test_router_entry_audiences(TstContext* suite, const TstCase* item);
+
+int test_pointer_canonical_cardinality(TstContext* suite, const TstCase* item);
+
+int test_pointer_canonical_lifecycle(TstContext* suite, const TstCase* item);
+
 int test_pointer_gestures(TstContext* suite, const TstCase* item);
 
 int test_pointer_gesture_invalid_sequences(TstContext* suite, const TstCase* item);

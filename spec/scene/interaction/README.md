@@ -19,6 +19,7 @@ selection state, or animation timing.
 7. [EVENT_CALLBACKS.md](EVENT_CALLBACKS.md): callback delivery and observer semantics.
 8. [ANIMATION.md](ANIMATION.md): scene clocks, timelines, easing, and video export coordination.
 9. [KEYBOARD_INPUT.md](KEYBOARD_INPUT.md): physical key identity and layout-aware Unicode text input.
+10. [INPUT_ROUTING.md](INPUT_ROUTING.md): canonical gesture ownership, synchronous audiences, and nested dispatch.
 
 
 ## Active Proposal Inputs

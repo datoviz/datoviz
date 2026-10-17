@@ -71,6 +71,16 @@ typedef enum
 } Drp2ObjectKind;
 
 
+
+/** Provenance of a buffer's latest CreateBuffer definition. External registrations stay NONE. */
+typedef enum
+{
+    DRP2_BUFFER_DEFINITION_NONE,
+    DRP2_BUFFER_DEFINITION_CURRENT_EXECUTION,
+    DRP2_BUFFER_DEFINITION_COMMITTED_EXECUTION,
+} Drp2BufferDefinition;
+
+
 typedef enum
 {
     DRP2_TEXTURE_ACCESS_NONE,
@@ -145,14 +155,14 @@ struct DvzDrp2Runtime
 
 void _dvz_drp2_runtime_timing_enable(DvzDrp2Runtime* runtime, bool enabled);
 
-bool _dvz_drp2_runtime_timing_get(
-    const DvzDrp2Runtime* runtime, DvzDrp2RuntimeTiming* timing);
+bool _dvz_drp2_runtime_timing_get(const DvzDrp2Runtime* runtime, DvzDrp2RuntimeTiming* timing);
 
 
 struct Drp2Object
 {
     uint64_t id;
     Drp2ObjectKind kind;
+    Drp2BufferDefinition buffer_definition;
     uint64_t size;
     uint32_t usage;
     uint32_t format;

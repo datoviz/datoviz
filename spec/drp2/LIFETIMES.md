@@ -114,6 +114,7 @@ Rules:
 7. a buffer captured by an open encoder or finished but unsubmitted command buffer cannot be destroyed or replaced,
 8. ordinary submitted captures do not retain a buffer logically, so destruction or replacement may proceed after every capture submits,
 9. a pending readback retains its buffer until its matching `QueueSubmitReply` fully validates and consumes the request.
+10. a buffer defined by `CreateBuffer` in an earlier successful execution may be replaced before its first submitted use under the [`CreateBuffer` replacement rules](COMMANDS.md#createbuffer); this replaces its backing allocation without ending or reusing its logical lifetime.
 
 
 ## Texture Lifetime

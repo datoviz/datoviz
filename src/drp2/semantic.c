@@ -943,7 +943,8 @@ static DvzDrp2ValidationResult _validate_create_buffer(
     if (object != NULL)
     {
         if (object->destroyed || object->kind != DRP2_OBJECT_BUFFER ||
-            !object->referenced_by_work)
+            (!object->referenced_by_work &&
+             object->buffer_definition != DRP2_BUFFER_DEFINITION_COMMITTED_EXECUTION))
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         if (_reference_pending(state, id, DRP2_OBJECT_BUFFER) ||
             object->pending_readback_count > 0)
@@ -961,6 +962,7 @@ static DvzDrp2ValidationResult _validate_create_buffer(
     }
     object->size = size;
     object->usage = command->u.create_buffer.usage;
+    object->buffer_definition = DRP2_BUFFER_DEFINITION_CURRENT_EXECUTION;
     return _drp2_ok();
 }
 
@@ -2909,10 +2911,8 @@ bool _drp2_runtime_state_commit(DvzDrp2Runtime* runtime, Drp2RuntimeState* next_
  * @param next_state the validated next state
  * @return the validation result
  */
-DvzDrp2ValidationResult
-_drp2_runtime_validate_stream(
-    DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream,
-    Drp2RuntimeState* next_state)
+DvzDrp2ValidationResult _drp2_runtime_validate_stream(
+    DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream, Drp2RuntimeState* next_state)
 {
     ANN(runtime);
     ANN(stream);
@@ -2920,6 +2920,14 @@ _drp2_runtime_validate_stream(
 
     if (!_runtime_state_clone(next_state, runtime->semantic_state, runtime))
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, 0);
+
+    // Promote only stream definitions from committed state, never external registrations.
+    // Mutate the candidate so failed validation or execution cannot change persistent provenance.
+    for (uint32_t i = 0; i < next_state->count; i++)
+    {
+        if (next_state->objects[i].buffer_definition == DRP2_BUFFER_DEFINITION_CURRENT_EXECUTION)
+            next_state->objects[i].buffer_definition = DRP2_BUFFER_DEFINITION_COMMITTED_EXECUTION;
+    }
 
     DvzDrp2ValidationResult result = _drp2_ok();
     for (uint32_t i = 0; i < stream->count; i++)

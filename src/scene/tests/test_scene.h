@@ -465,6 +465,8 @@ int test_scene_mesh_indexed_default_color_emits_draw_indexed(
 int test_scene_mesh_geometry_replacement_uses_logical_index_count(
     TstContext* suite, const TstCase* item);
 
+int test_scene_mesh_unbound_texcoords_growth_executes(TstContext* suite, const TstCase* item);
+
 int test_scene_mesh_geometry_unchanged_indices_skip_upload(
     TstContext* suite, const TstCase* item);
 

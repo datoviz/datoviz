@@ -87,6 +87,24 @@ int test_drp2_runtime_rejects_draw_indexed_past_index_buffer(
 
 int test_drp2_runtime_rejects_duplicate_id(TstContext* suite, const TstCase* item);
 
+int test_drp2_runtime_buffer_replacement_unbound_committed(TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_buffer_replacement_rejects_unused_duplicate(
+    TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_buffer_replacement_failed_validation_preserves_state(
+    TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_buffer_replacement_preserves_pending_guards(
+    TstContext* suite, const TstCase* item);
+
+int test_drp2_runtime_buffer_replacement_preserves_bind_group_constraints(
+    TstContext* suite, const TstCase* item);
+
+
+int test_drp2_runtime_buffer_replacement_preserves_external_registration(
+    TstContext* suite, const TstCase* item);
+
 int test_drp2_runtime_failed_stream_does_not_commit_state(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_rejects_unknown_buffer_write(TstContext* suite, const TstCase* item);

@@ -238,6 +238,319 @@ int test_drp2_runtime_rejects_duplicate_id(TstContext* suite, const TstCase* ite
 
 
 
+/**
+ * Grow a live buffer that was committed in an earlier execution but never captured by work.
+ *
+ * @param suite Test context.
+ * @param item Test case.
+ * @return Zero on success.
+ */
+int test_drp2_runtime_buffer_replacement_unbound_committed(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_VERTEX;
+    AT(dvz_drp2_stream_create_buffer(setup, 1, 16, usage));
+    uint32_t value = 7;
+    AT(dvz_drp2_stream_write_buffer_bytes(setup, 1, 0, sizeof(value), &value));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    for (uint64_t size = 32; size <= 64; size *= 2)
+    {
+        DvzDrp2CommandStream* growth = dvz_drp2_stream();
+        ANN(growth);
+        AT(dvz_drp2_stream_create_buffer(growth, 1, size, usage));
+        AT(dvz_drp2_stream_write_buffer_bytes(
+            growth, 1, size - sizeof(value), sizeof(value), &value));
+        result = dvz_drp2_runtime_execute(runtime, growth);
+        AT(result.ok);
+        const Drp2Object* object = _drp2_find_any_object(runtime->semantic_state, 1);
+        AT(object != NULL && object->size == size && !object->referenced_by_work);
+        dvz_drp2_stream_destroy(growth);
+    }
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
+/**
+ * Reject unused duplicate definitions within one execution, including a second replacement.
+ *
+ * @param suite Test context.
+ * @param item Test case.
+ * @return Zero on success.
+ */
+int test_drp2_runtime_buffer_replacement_rejects_unused_duplicate(
+    TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    for (uint64_t size = 16; size <= 64; size *= 4)
+    {
+        DvzDrp2CommandStream* duplicate = dvz_drp2_stream();
+        ANN(duplicate);
+        AT(dvz_drp2_stream_hello_renderer(duplicate, "test-client"));
+        AT(dvz_drp2_stream_renderer_hello_reply(duplicate, "test-renderer"));
+        AT(dvz_drp2_stream_create_buffer(duplicate, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+        AT(dvz_drp2_stream_create_buffer(duplicate, 1, size, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+        DvzDrp2ValidationResult result = dvz_drp2_validate_stream(duplicate);
+        AT(!result.ok && result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+        AT(result.command_index == 3);
+        dvz_drp2_stream_destroy(duplicate);
+    }
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(setup, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    DvzDrp2CommandStream* duplicate = dvz_drp2_stream();
+    ANN(duplicate);
+    AT(dvz_drp2_stream_create_buffer(duplicate, 1, 32, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_create_buffer(duplicate, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    result = dvz_drp2_runtime_execute(runtime, duplicate);
+    AT(!result.ok && result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+    AT(result.command_index == 1);
+    const Drp2Object* object = _drp2_find_any_object(runtime->semantic_state, 1);
+    AT(object != NULL && object->size == 16);
+    DvzDrp2CommandStream* retry = dvz_drp2_stream();
+    ANN(retry);
+    AT(dvz_drp2_stream_create_buffer(retry, 1, 32, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    result = dvz_drp2_runtime_execute(runtime, retry);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(retry);
+    dvz_drp2_stream_destroy(duplicate);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
+/**
+ * Discard replacement metadata and capacity when a later command fails validation.
+ *
+ * @param suite Test context.
+ * @param item Test case.
+ * @return Zero on success.
+ */
+int test_drp2_runtime_buffer_replacement_failed_validation_preserves_state(
+    TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(setup, 1, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    DvzDrp2CommandStream* invalid = dvz_drp2_stream();
+    ANN(invalid);
+    uint32_t value = 9;
+    AT(dvz_drp2_stream_create_buffer(invalid, 1, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(invalid, 1, 64, sizeof(value), &value));
+    result = dvz_drp2_runtime_execute(runtime, invalid);
+    AT(!result.ok && result.code == DVZ_DRP2_VALIDATION_OUT_OF_RANGE);
+    AT(result.command_index == 1);
+    const Drp2Object* object = _drp2_find_any_object(runtime->semantic_state, 1);
+    AT(object != NULL && object->size == 16);
+    DvzDrp2CommandStream* retry = dvz_drp2_stream();
+    ANN(retry);
+    AT(dvz_drp2_stream_create_buffer(retry, 1, 32, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    AT(dvz_drp2_stream_write_buffer_bytes(retry, 1, 28, sizeof(value), &value));
+    result = dvz_drp2_runtime_execute(runtime, retry);
+    AT(result.ok);
+    object = _drp2_find_any_object(runtime->semantic_state, 1);
+    AT(object != NULL && object->size == 32 && !object->referenced_by_work);
+    dvz_drp2_stream_destroy(retry);
+    dvz_drp2_stream_destroy(invalid);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
+/**
+ * Keep open captures, recorded captures, and pending readbacks protected across executions.
+ *
+ * @param suite Test context.
+ * @param item Test case.
+ * @return Zero on success.
+ */
+int test_drp2_runtime_buffer_replacement_preserves_pending_guards(
+    TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    for (uint32_t pending = 0; pending < 3; pending++)
+    {
+        DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+        cfg.semantic_only = true;
+        DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+        ANN(runtime);
+        DvzDrp2CommandStream* setup = dvz_drp2_stream();
+        ANN(setup);
+        AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+        AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+        uint32_t usage =
+            pending == 2 ? DVZ_DRP2_BUFFER_USAGE_MAP_READ : DVZ_DRP2_BUFFER_USAGE_COPY_SRC;
+        AT(dvz_drp2_stream_create_buffer(setup, 1, 64, usage));
+        AT(dvz_drp2_stream_create_buffer(setup, 2, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+        AT(dvz_drp2_stream_begin_command_encoder(setup, 3));
+        if (pending < 2)
+            AT(dvz_drp2_stream_copy_buffer_to_buffer(setup, 3, 1, 0, 2, 0, 16));
+        if (pending > 0)
+            AT(dvz_drp2_stream_finish_command_encoder(setup, 3, 4));
+        if (pending == 2)
+            AT(dvz_drp2_stream_queue_submit_readback(setup, 4, 5, 1, 0, 16));
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+        AT(result.ok);
+        DvzDrp2CommandStream* replacement = dvz_drp2_stream();
+        ANN(replacement);
+        AT(dvz_drp2_stream_create_buffer(replacement, 1, 128, usage));
+        result = dvz_drp2_runtime_execute(runtime, replacement);
+        AT(!result.ok && result.code == DVZ_DRP2_VALIDATION_USAGE);
+        AT(result.command_index == 0);
+        dvz_drp2_stream_destroy(replacement);
+        dvz_drp2_stream_destroy(setup);
+        dvz_drp2_runtime_destroy(runtime);
+    }
+    return 0;
+}
+
+
+
+/**
+ * Check dependent binding ranges and usage before replacing a previously committed unused buffer.
+ *
+ * @param suite Test context.
+ * @param item Test case.
+ * @return Zero on success.
+ */
+int test_drp2_runtime_buffer_replacement_preserves_bind_group_constraints(
+    TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_UNIFORM | DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    AT(dvz_drp2_stream_create_buffer(setup, 1, 64, usage));
+    AT(dvz_drp2_stream_create_uniform_bind_group_layout(setup, 2));
+    AT(dvz_drp2_stream_create_uniform_bind_group(setup, 3, 2, 1, 0, 64));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    for (uint32_t invalid = 0; invalid < 2; invalid++)
+    {
+        DvzDrp2CommandStream* replacement = dvz_drp2_stream();
+        ANN(replacement);
+        AT(dvz_drp2_stream_create_buffer(
+            replacement, 1, invalid == 0 ? 32 : 128,
+            invalid == 0 ? usage : DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+        result = dvz_drp2_runtime_execute(runtime, replacement);
+        AT(!result.ok);
+        AT(result.code ==
+           (invalid == 0 ? DVZ_DRP2_VALIDATION_OUT_OF_RANGE : DVZ_DRP2_VALIDATION_USAGE));
+        dvz_drp2_stream_destroy(replacement);
+    }
+    DvzDrp2CommandStream* growth = dvz_drp2_stream();
+    ANN(growth);
+    AT(dvz_drp2_stream_create_buffer(growth, 1, 128, usage));
+    result = dvz_drp2_runtime_execute(runtime, growth);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(growth);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
+/**
+ * Keep unused externally registered buffers outside the committed stream-definition exception.
+ *
+ * @param suite Test context.
+ * @param item Test case.
+ * @return Zero on success.
+ */
+int test_drp2_runtime_buffer_replacement_preserves_external_registration(
+    TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    DvzDrp2RuntimeConfig cfg = dvz_drp2_runtime_vklite_config(NULL, NULL);
+    cfg.semantic_only = true;
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&cfg);
+    ANN(runtime);
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(setup, 2, 64, DVZ_DRP2_BUFFER_USAGE_COPY_DST));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+    uint32_t usage = DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST;
+    DvzDrp2ExternalBufferDesc external = dvz_drp2_external_buffer_desc();
+    external.size = 64;
+    external.usage = usage;
+    AT(dvz_drp2_runtime_register_external_buffer(runtime, 1, &external));
+    DvzDrp2CommandStream* replacement = dvz_drp2_stream();
+    DvzDrp2CommandStream* unrelated = dvz_drp2_stream();
+    ANN(replacement);
+    ANN(unrelated);
+    AT(dvz_drp2_stream_create_buffer(replacement, 1, 128, usage));
+    for (uint32_t attempt = 0; attempt < 2; attempt++)
+    {
+        result = dvz_drp2_runtime_execute(runtime, replacement);
+        AT(!result.ok && result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+        const Drp2Object* object = _drp2_find_any_object(runtime->semantic_state, 1);
+        AT(object != NULL && object->size == 64 && !object->referenced_by_work);
+        result = dvz_drp2_runtime_execute(runtime, unrelated);
+        AT(result.ok);
+    }
+    // Preserve the existing replacement path once the imported buffer has been submitted.
+    DvzDrp2CommandStream* submitted = dvz_drp2_stream();
+    ANN(submitted);
+    AT(dvz_drp2_stream_begin_command_encoder(submitted, 3));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(submitted, 3, 1, 0, 2, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(submitted, 3, 4));
+    AT(dvz_drp2_stream_queue_submit(submitted, 4, 5));
+    result = dvz_drp2_runtime_execute(runtime, submitted);
+    AT(result.ok);
+    result = dvz_drp2_runtime_execute(runtime, replacement);
+    AT(result.ok);
+    dvz_drp2_stream_destroy(submitted);
+    dvz_drp2_stream_destroy(unrelated);
+    dvz_drp2_stream_destroy(replacement);
+    dvz_drp2_stream_destroy(setup);
+    dvz_drp2_runtime_destroy(runtime);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_failed_stream_does_not_commit_state(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

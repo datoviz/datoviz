@@ -938,6 +938,85 @@ int test_scene_dense_geometry_empty_restore(TstContext* suite, const TstCase* it
 
 
 
+/**
+ * Execute repeated untextured mesh geometry growth against one persistent native runtime.
+ *
+ * @param suite Test context.
+ * @param item Test case.
+ * @return Zero on success.
+ */
+int test_scene_mesh_unbound_texcoords_growth_executes(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = _scene_graph_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
+        return 0;
+    AT(ctx != NULL);
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    AT(figure != NULL);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    AT(panel != NULL);
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    AT(mesh != NULL);
+    DvzResult status = dvz_panel_add_visual(panel, mesh, NULL);
+    AT(status == DVZ_OK);
+    // Geometry retains UV data even though this mesh never binds a texture field.
+    // Its UV upload is therefore created but never bound as a vertex input.
+    const uint32_t counts[] = {3, 6, 12, 3, 6, 12, 6, 3, 12};
+    uint64_t texcoords_id = 0;
+    for (uint32_t frame = 0; frame < sizeof(counts) / sizeof(counts[0]); frame++)
+    {
+        DvzGeometry* geometry = _mesh_replacement_geometry(counts[frame], counts[frame]);
+        AT(geometry != NULL && geometry->texcoords != NULL);
+        for (uint32_t i = 0; i < counts[frame]; i++)
+        {
+            geometry->texcoords[i][0] = (double)i / counts[frame];
+            geometry->texcoords[i][1] = 0.25;
+        }
+        status = dvz_mesh_set_geometry(mesh, geometry);
+        dvz_geometry_destroy(geometry);
+        AT(status == DVZ_OK);
+        DvzVisualDataView texcoords = {0};
+        status = dvz_visual_data(mesh, "texcoords", &texcoords);
+        AT(status == DVZ_OK && texcoords.item_count == counts[frame]);
+
+        DvzDrp2CommandStream* stream = _emit_mesh_replacement_stream(figure);
+        AT(stream != NULL);
+        AT(_stream_has_mesh_draw(stream, true, counts[frame], 1));
+        if (frame == 0)
+        {
+            char key[DVZ_SCENE_LABEL_SIZE] = {0};
+            bool key_ok = _scene_attr_resource_key(
+                figure, mesh, 0, "texcoords", key, sizeof(key));
+            AT(key_ok);
+            texcoords_id = dvz_drp2_stream_label_id(stream, key);
+            AT(texcoords_id != 0);
+            AT(_stream_buffer_command_count(
+                   stream, DVZ_DRP2_COMMAND_CREATE_BUFFER, texcoords_id) == 1);
+        }
+        for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+        {
+            const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+            if (command->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
+                AT(command->u.set_vertex_buffer.buffer_id != texcoords_id);
+        }
+        // Do not reset runtime between frames: unused buffers must survive and grow safely.
+        DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, stream);
+        _test_scene_stream_destroy(stream);
+        AT(result.ok);
+        AT(result.code == DVZ_DRP2_VALIDATION_OK);
+        AT(dvz_gpu_ctx_error_count(ctx) == 0);
+    }
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_mesh_geometry_unchanged_indices_skip_upload(
     TstContext* suite, const TstCase* item)
 {

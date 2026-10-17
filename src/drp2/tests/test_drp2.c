@@ -148,6 +148,12 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_runtime_rejects_draw_past_vertex_buffer);
     TST_CASE(test_drp2_runtime_rejects_draw_indexed_past_index_buffer);
     TST_CASE(test_drp2_runtime_rejects_duplicate_id);
+    TST_CASE(test_drp2_runtime_buffer_replacement_unbound_committed);
+    TST_CASE(test_drp2_runtime_buffer_replacement_rejects_unused_duplicate);
+    TST_CASE(test_drp2_runtime_buffer_replacement_failed_validation_preserves_state);
+    TST_CASE(test_drp2_runtime_buffer_replacement_preserves_pending_guards);
+    TST_CASE(test_drp2_runtime_buffer_replacement_preserves_bind_group_constraints);
+    TST_CASE(test_drp2_runtime_buffer_replacement_preserves_external_registration);
     TST_CASE(test_drp2_runtime_failed_stream_does_not_commit_state);
     TST_CASE(test_drp2_runtime_rejects_unknown_buffer_write);
     TST_CASE(test_drp2_runtime_rejects_draw_without_vertex_buffer);
