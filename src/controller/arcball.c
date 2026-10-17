@@ -199,6 +199,11 @@ static void _arcball_screen_projection(DvzArcball* arcball, mat4 source, mat4 ou
     {
         out[col][0] += arcball->pan[0] * out[col][3];
         out[col][1] += arcball->pan[1] * out[col][3];
+        if (arcball->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM)
+        {
+            out[col][0] *= arcball->zoom;
+            out[col][1] *= arcball->zoom;
+        }
     }
 }
 
@@ -224,15 +229,19 @@ static void _arcball_adaptive_pivot(DvzArcball* arcball)
     float end = 1.0f - 1.0f / arcball->orbit_zoom_end;
     if (end <= start)
         return;
-    float u = _clampf((logf(arcball->zoom) / reference_depth - start) / (end - start), 0, 1);
+    bool projection_zoom = (arcball->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM) != 0;
+    float travel = projection_zoom ? 1.0f - 1.0f / arcball->zoom
+                                   : logf(arcball->zoom) / reference_depth;
+    float u = _clampf((travel - start) / (end - start), 0, 1);
     float weight = u * u * (3 - 2 * u);
     // Taper tiny framing changes to the exact unpanned policy, including at deep zoom.
     float offset_x = arcball->projection[0][0] * arcball->zoom_offset[0] +
                      arcball->projection[1][0] * arcball->zoom_offset[1];
     float offset_y = arcball->projection[0][1] * arcball->zoom_offset[0] +
                      arcball->projection[1][1] * arcball->zoom_offset[1];
-    float framing = hypotf(hypotf(arcball->pan[0], arcball->pan[1]),
-                           hypotf(offset_x, offset_y) / reference_depth);
+    float framing = projection_zoom ? arcball->zoom * hypotf(arcball->pan[0], arcball->pan[1])
+                                    : hypotf(hypotf(arcball->pan[0], arcball->pan[1]),
+                                             hypotf(offset_x, offset_y) / reference_depth);
     if (!isfinite(framing))
         return;
     float activation = _clampf(framing / DVZ_ARCBALL_ADAPTIVE_FRAMING, 0, 1);
@@ -242,9 +251,12 @@ static void _arcball_adaptive_pivot(DvzArcball* arcball)
 
     mat4 view = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(arcball->view, view);
-    view[3][0] += arcball->zoom_offset[0];
-    view[3][1] += arcball->zoom_offset[1];
-    view[3][2] += logf(arcball->zoom);
+    if (!projection_zoom)
+    {
+        view[3][0] += arcball->zoom_offset[0];
+        view[3][1] += arcball->zoom_offset[1];
+        view[3][2] += logf(arcball->zoom);
+    }
     mat4 projection = GLM_MAT4_IDENTITY_INIT;
     _arcball_screen_projection(arcball, arcball->projection, projection);
     float view_det = glm_mat4_det(view);
@@ -313,14 +325,17 @@ static bool _arcball_orbit_begin(DvzArcball* arcball)
         if (arcball->flags & DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT)
             _arcball_adaptive_pivot(arcball);
         // Keep the original pointer mapping, excluding only view-plane pan.
+        bool projection_zoom = (arcball->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM) != 0;
         vec4 eye = {arcball->view[3][0], arcball->view[3][1],
-                    arcball->view[3][2] + logf(arcball->zoom), arcball->view[3][3]};
+                    arcball->view[3][2] + (projection_zoom ? 0 : logf(arcball->zoom)),
+                    arcball->view[3][3]};
         vec4 clip = {0};
         glm_mat4_mulv(arcball->projection, eye, clip);
         if (clip[3] > 1e-6f)
         {
-            arcball->orbit_center[0] = clip[0] / clip[3];
-            arcball->orbit_center[1] = clip[1] / clip[3];
+            float scale = projection_zoom ? arcball->zoom : 1;
+            arcball->orbit_center[0] = scale * clip[0] / clip[3];
+            arcball->orbit_center[1] = scale * clip[1] / clip[3];
         }
         glm_mat4_copy(arcball->view, arcball->orbit_view);
         arcball->orbit_active = true;
@@ -390,7 +405,12 @@ static void _arcball_zoom_wheel(DvzArcball* arcball, vec2 dir)
     if (dir[1] == 0.0f)
         return;
     float old_zoom = arcball->zoom;
-    (void)dvz_arcball_zoom(arcball, arcball->zoom * expf(DVZ_ARCBALL_ZOOM_WHEEL_COEF * arcball->zoom_speed * dir[1]));
+    float gain = DVZ_ARCBALL_ZOOM_WHEEL_COEF * arcball->zoom_speed;
+    if (arcball->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM)
+        gain /= 3.0f;
+    (void)dvz_arcball_zoom(arcball, arcball->zoom * expf(gain * dir[1]));
+    if (arcball->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM)
+        return;
     if (!(arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) || arcball->zoom == old_zoom)
         return;
 
@@ -460,8 +480,9 @@ static void _arcball_pan_drag(DvzArcball* arcball, vec2 shift_px)
 
     if (arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN)
     {
-        arcball->pan[0] = arcball->pan_center[0] + 2.0f * shift_px[0] / width;
-        arcball->pan[1] = arcball->pan_center[1] - 2.0f * shift_px[1] / height;
+        float scale = (arcball->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM) ? arcball->zoom : 1;
+        arcball->pan[0] = arcball->pan_center[0] + 2.0f * shift_px[0] / (width * scale);
+        arcball->pan[1] = arcball->pan_center[1] - 2.0f * shift_px[1] / (height * scale);
         return;
     }
 
@@ -571,10 +592,15 @@ static void _arcball_camera_mvp(DvzArcball* arcball, DvzMVP* mvp)
 
     mat4 translate = GLM_MAT4_IDENTITY_INIT;
     bool screen_pan = (arcball->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) != 0;
-    glm_translate_make(
-        translate, (vec3){screen_pan ? arcball->zoom_offset[0] : arcball->pan[0],
-                          screen_pan ? arcball->zoom_offset[1] : arcball->pan[1],
-                          logf(arcball->zoom)});
+    bool projection_zoom = (arcball->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM) != 0;
+    vec3 camera_offset = {0};
+    if (!projection_zoom)
+    {
+        camera_offset[0] = screen_pan ? arcball->zoom_offset[0] : arcball->pan[0];
+        camera_offset[1] = screen_pan ? arcball->zoom_offset[1] : arcball->pan[1];
+        camera_offset[2] = logf(arcball->zoom);
+    }
+    glm_translate_make(translate, camera_offset);
 
     mat4 view = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(mvp->view, view);
@@ -644,6 +670,12 @@ static bool _arcball_desc_validate(const DvzArcballDesc* desc)
         !(desc->controller_flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN))
     {
         log_error("adaptive orbit requires screen pan");
+        return false;
+    }
+    if ((desc->controller_flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM) &&
+        !(desc->controller_flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN))
+    {
+        log_error("projection zoom requires screen pan");
         return false;
     }
     float start = desc->orbit_zoom_start == 0 ? 1.0f : desc->orbit_zoom_start;
@@ -844,7 +876,16 @@ DvzResult dvz_arcball_zoom(DvzArcball* arcball, float zoom)
     if (arcball == NULL)
         return DVZ_ERROR;
     _dvz_arcball_pan_depth_cancel(arcball);
+    float old_zoom = arcball->zoom;
     arcball->zoom = _clampf(zoom, DVZ_ARCBALL_ZOOM_MIN, DVZ_ARCBALL_ZOOM_MAX);
+    if (arcball->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM)
+    {
+        // Keep a live cumulative pan stable when magnification changes mid-gesture.
+        float ratio = old_zoom / arcball->zoom;
+        for (uint32_t i = 0; i < 2; i++)
+            arcball->pan_center[i] =
+                arcball->pan[i] - (arcball->pan[i] - arcball->pan_center[i]) * ratio;
+    }
     return DVZ_OK;
 }
 

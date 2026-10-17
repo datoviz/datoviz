@@ -360,6 +360,7 @@ class DvzArcballFlags(CtypesEnum):
     DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = 2
     DVZ_ARCBALL_FLAGS_SCREEN_PAN = 4
     DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT = 8
+    DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM = 16
 
 
 DVZ_ARCBALL_FLAGS_NONE = DvzArcballFlags.DVZ_ARCBALL_FLAGS_NONE
@@ -367,6 +368,7 @@ DVZ_ARCBALL_FLAGS_CONSTRAIN = DvzArcballFlags.DVZ_ARCBALL_FLAGS_CONSTRAIN
 DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = DvzArcballFlags.DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT
 DVZ_ARCBALL_FLAGS_SCREEN_PAN = DvzArcballFlags.DVZ_ARCBALL_FLAGS_SCREEN_PAN
 DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT = DvzArcballFlags.DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT
+DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM = DvzArcballFlags.DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM
 
 
 class DvzBackend(CtypesEnum):
@@ -8955,7 +8957,8 @@ else:
  * Set the camera view-plane pan offset, or normalized clip offset with SCREEN_PAN.
  *
  * @param arcball arcball controller
- * @param pan pan offset; SCREEN_PAN uses +X right, +Y up, with 2 units per panel extent
+ * @param pan offset; SCREEN_PAN uses +X right, +Y up, 2 units per panel extent;
+ * PROJECTION_ZOOM expresses this offset before image magnification
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */"""
     dvz_arcball_pan.argtypes = [ctypes.POINTER(DvzArcball), (ctypes.c_float * 2)]
@@ -9100,7 +9103,7 @@ except AttributeError:
     _MISSING_FUNCTIONS.append('dvz_arcball_zoom')
 else:
     dvz_arcball_zoom.__doc__ = """/**
- * Set the camera dolly factor.
+ * Set the camera dolly factor, or image magnification with PROJECTION_ZOOM.
  *
  * @param arcball arcball controller
  * @param zoom uniform zoom factor

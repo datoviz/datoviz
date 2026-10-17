@@ -4180,6 +4180,434 @@ int test_arcball_adaptive_orbit_small_pan_continuity(TstContext* suite, const Ts
 
 
 /**
+ * Apply a complete right-drag using cumulative pixel shifts.
+ *
+ * @param arc arcball
+ * @param dx horizontal pixel shift
+ * @param dy vertical pixel shift
+ * @return whether all gesture events were consumed
+ */
+static bool _test_arcball_drag_pan(DvzArcball* arc, float dx, float dy)
+{
+    DvzPointerEvent event = {
+        .type = DVZ_POINTER_EVENT_DRAG_START, .button = DVZ_POINTER_BUTTON_RIGHT,
+        .pos = {400, 300},
+    };
+    if (!dvz_arcball_pointer(arc, &event))
+        return false;
+    event.type = DVZ_POINTER_EVENT_DRAG;
+    glm_vec2_copy(event.pos, event.content.d.press_pos);
+    glm_vec2_copy((vec2){dx, dy}, event.content.d.shift);
+    glm_vec2_add(event.content.d.press_pos, event.content.d.shift, event.pos);
+    event.content.d.is_press_valid = true;
+    if (!dvz_arcball_pointer(arc, &event))
+        return false;
+    event.type = DVZ_POINTER_EVENT_DRAG_STOP;
+    return dvz_arcball_pointer(arc, &event);
+}
+
+
+
+/**
+ * Repeated projection pan/zoom remains an invertible two-dimensional image similarity.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_arcball_projection_zoom_has_no_camera_history(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzArcballDesc desc = dvz_arcball_desc();
+    desc.controller_flags = DVZ_ARCBALL_FLAGS_SCREEN_PAN | DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM |
+                            DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT;
+    DvzArcball* arc = dvz_arcball_create(&desc);
+    ANN(arc);
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_perspective(0.72f, 800.0f / 600, 0.01f, 100, projection);
+    _dvz_arcball_camera(arc, view, projection);
+    AT(dvz_arcball_initial(arc, (vec3){0.2f, -0.3f, 0.1f}) == DVZ_OK);
+    DvzMVP initial = {0};
+    _test_arcball_snapshot(arc, view, projection, &initial);
+    vec4 landmarks[] = {{0, 0, 0.5f, 1}, {0.2f, -0.1f, -0.5f, 1}, {-0.1f, 0.2f, -1.5f, 1}};
+    vec3 expected[3] = {{0}}, baseline[3] = {{0}};
+    for (uint32_t point = 0; point < 3; point++)
+    {
+        _test_arcball_project_ndc(&initial, landmarks[point], expected[point]);
+        glm_vec3_copy(expected[point], baseline[point]);
+    }
+    for (uint32_t cycle = 0; cycle < 120; cycle++)
+    {
+        float dx = ((int32_t)(cycle % 7) - 3) * 11.0f;
+        float dy = ((int32_t)(cycle % 5) - 2) * 9.0f;
+        float direction = cycle % 2 ? 2.0f : -2.0f;
+        float wheel_ratio = 1;
+        for (uint32_t operation = 0; operation < 4; operation++)
+        {
+            if (operation == 0 || operation == 2)
+            {
+                float factor = operation == 0 ? 1.0f : -wheel_ratio;
+                AT(_test_arcball_drag_pan(arc, factor * dx, factor * dy));
+                for (uint32_t point = 0; point < 3; point++)
+                {
+                    expected[point][0] += factor * dx / 400;
+                    expected[point][1] -= factor * dy / 300;
+                }
+            }
+            else
+            {
+                DvzMVP before = {0};
+                _test_arcball_snapshot(arc, view, projection, &before);
+                mat4 combined = GLM_MAT4_IDENTITY_INIT;
+                mat4 inverse = GLM_MAT4_IDENTITY_INIT;
+                glm_mat4_mul(before.view, before.model, combined);
+                glm_mat4_mul(before.proj, combined, combined);
+                glm_mat4_inv(combined, inverse);
+                vec4 clip = {0}, center = {0};
+                glm_mat4_mulv(before.proj, (vec4){0, 0, -2, 1}, clip);
+                glm_mat4_mulv(inverse, (vec4){0, 0, clip[2] / clip[3], 1}, center);
+                glm_vec4_scale(center, 1 / center[3], center);
+                DvzArcballState old_state = {0}, new_state = {0};
+                AT(dvz_arcball_state(arc, &old_state));
+                DvzPointerEvent wheel = {
+                    .type = DVZ_POINTER_EVENT_WHEEL,
+                    .content.w.dir = {0, operation == 1 ? direction : -direction},
+                };
+                AT(dvz_arcball_pointer(arc, &wheel));
+                AT(dvz_arcball_state(arc, &new_state));
+                float ratio = new_state.zoom / old_state.zoom;
+                if (operation == 1)
+                    wheel_ratio = ratio;
+                for (uint32_t point = 0; point < 3; point++)
+                {
+                    expected[point][0] *= ratio;
+                    expected[point][1] *= ratio;
+                }
+                DvzMVP after = {0};
+                _test_arcball_snapshot(arc, view, projection, &after);
+                vec3 still_centered = {0};
+                _test_arcball_project_ndc(&after, center, still_centered);
+                AC(still_centered[0], 0, 3e-4f);
+                AC(still_centered[1], 0, 3e-4f);
+            }
+            DvzMVP actual = {0};
+            _test_arcball_snapshot(arc, view, projection, &actual);
+            AT(_test_mat4_close(initial.view, actual.view, 1e-7f));
+            AT(_test_mat4_close(initial.model, actual.model, 1e-7f));
+            for (uint32_t point = 0; point < 3; point++)
+            {
+                vec3 ndc = {0};
+                _test_arcball_project_ndc(&actual, landmarks[point], ndc);
+                for (uint32_t axis = 0; axis < 3; axis++)
+                    AC(ndc[axis], expected[point][axis], 2e-4f);
+            }
+        }
+        // Each four-operation loop is algebraically closed, including camera-side hidden state.
+        DvzMVP closed = {0};
+        _test_arcball_snapshot(arc, view, projection, &closed);
+        AT(_test_mat4_close(initial.view, closed.view, 1e-7f));
+        AT(_test_mat4_close(initial.proj, closed.proj, 2e-4f));
+        for (uint32_t point = 0; point < 3; point++)
+        {
+            vec3 ndc = {0};
+            _test_arcball_project_ndc(&closed, landmarks[point], ndc);
+            for (uint32_t axis = 0; axis < 3; axis++)
+                AC(ndc[axis], baseline[point][axis], 2e-4f);
+        }
+    }
+    AT(dvz_arcball_zoom(arc, 4) == DVZ_OK);
+    AT(dvz_arcball_zoom(arc, 1) == DVZ_OK);
+    DvzMVP scalar_roundtrip = {0};
+    _test_arcball_snapshot(arc, view, projection, &scalar_roundtrip);
+    AT(_test_mat4_close(initial.view, scalar_roundtrip.view, 1e-7f));
+    AT(_test_mat4_close(initial.proj, scalar_roundtrip.proj, 2e-4f));
+    // Hidden lateral history must not reappear when a later deep-zoom adaptive drag begins.
+    DvzArcball* reference = dvz_arcball_create(&desc);
+    ANN(reference);
+    _dvz_arcball_camera(reference, view, projection);
+    AT(dvz_arcball_initial(reference, (vec3){0.2f, -0.3f, 0.1f}) == DVZ_OK);
+    AT(dvz_arcball_zoom(arc, 3) == DVZ_OK);
+    AT(dvz_arcball_zoom(reference, 3) == DVZ_OK);
+    DvzPointerEvent rotate = {
+        .type = DVZ_POINTER_EVENT_DRAG_START, .button = DVZ_POINTER_BUTTON_LEFT,
+        .pos = {400, 300},
+    };
+    AT(dvz_arcball_pointer(arc, &rotate));
+    AT(dvz_arcball_pointer(reference, &rotate));
+    rotate.type = DVZ_POINTER_EVENT_DRAG;
+    glm_vec2_copy(rotate.pos, rotate.content.d.press_pos);
+    glm_vec2_copy((vec2){500, 260}, rotate.pos);
+    rotate.content.d.is_press_valid = true;
+    AT(dvz_arcball_pointer(arc, &rotate));
+    AT(dvz_arcball_pointer(reference, &rotate));
+    DvzMVP after_history = {0}, fresh = {0};
+    _test_arcball_snapshot(arc, view, projection, &after_history);
+    _test_arcball_snapshot(reference, view, projection, &fresh);
+    AT(_test_mat4_close(after_history.model, fresh.model, 1e-6f));
+    AT(_test_mat4_close(after_history.view, fresh.view, 1e-5f));
+    AT(_test_mat4_close(after_history.proj, fresh.proj, 2e-4f));
+    dvz_arcball_destroy(reference);
+    AT(dvz_arcball_reset(arc) == DVZ_OK);
+    DvzMVP reset = {0};
+    _test_arcball_snapshot(arc, view, projection, &reset);
+    AT(_test_mat4_close(initial.model, reset.model, 1e-7f));
+    AT(_test_mat4_close(initial.view, reset.view, 1e-7f));
+    AT(_test_mat4_close(initial.proj, reset.proj, 1e-7f));
+    dvz_arcball_destroy(arc);
+    return 0;
+}
+
+
+
+/**
+ * Projection magnification adapts the physical orbit target without changing the camera distance.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_arcball_projection_zoom_adaptive_pivot(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_perspective(0.72f, 800.0f / 600, 0.01f, 100, projection);
+    const float magnifications[] = {1, 3, 30};
+    for (uint32_t sample = 0; sample < 3; sample++)
+    {
+        DvzArcballDesc desc = dvz_arcball_desc();
+        desc.controller_flags = DVZ_ARCBALL_FLAGS_SCREEN_PAN | DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM |
+                                DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT;
+        DvzArcball* arc = dvz_arcball_create(&desc);
+        ANN(arc);
+        _dvz_arcball_camera(arc, view, projection);
+        DvzMVP initial = {0};
+        _test_arcball_snapshot(arc, view, projection, &initial);
+        AT(dvz_arcball_pan(arc, (vec2){0.4f, -0.2f}) == DVZ_OK);
+        AT(dvz_arcball_zoom(arc, magnifications[sample]) == DVZ_OK);
+        DvzMVP before = {0};
+        _test_arcball_snapshot(arc, view, projection, &before);
+        AT(_test_mat4_close(view, before.view, 1e-7f));
+        const float eye_z = before.view[3][2];
+        vec4 eye = {-before.proj[2][0] * eye_z / before.proj[0][0],
+                    -before.proj[2][1] * eye_z / before.proj[1][1], eye_z, 1};
+        mat4 inverse = GLM_MAT4_IDENTITY_INIT;
+        glm_mat4_inv(before.view, inverse);
+        vec4 anchor = {0, 0, 0, 1};
+        if (sample)
+            glm_mat4_mulv(inverse, eye, anchor);
+        vec3 fixed_before = {0}, fixed_after = {0};
+        _test_arcball_project_ndc(&before, anchor, fixed_before);
+        DvzPointerEvent event = {
+            .type = DVZ_POINTER_EVENT_DRAG_START, .button = DVZ_POINTER_BUTTON_LEFT,
+            .pos = {400, 300},
+        };
+        AT(dvz_arcball_pointer(arc, &event));
+        DvzMVP started = {0};
+        _test_arcball_snapshot(arc, view, projection, &started);
+        AT(_test_mat4_close(before.model, started.model, 1e-7f));
+        AT(_test_mat4_close(before.view, started.view, 1e-7f));
+        AT(_test_mat4_close(before.proj, started.proj, 1e-7f));
+        event.type = DVZ_POINTER_EVENT_DRAG;
+        glm_vec2_copy(event.pos, event.content.d.press_pos);
+        glm_vec2_copy((vec2){500, 260}, event.pos);
+        event.content.d.is_press_valid = true;
+        AT(dvz_arcball_pointer(arc, &event));
+        DvzMVP after = {0};
+        _test_arcball_snapshot(arc, view, projection, &after);
+        AT(!_test_mat4_close(before.model, after.model, 1e-3f));
+        _test_arcball_project_ndc(&after, anchor, fixed_after);
+        for (uint32_t axis = 0; axis < 3; axis++)
+            AC(fixed_before[axis], fixed_after[axis], 3e-4f);
+        event.type = DVZ_POINTER_EVENT_DRAG_STOP;
+        AT(dvz_arcball_pointer(arc, &event));
+        DvzMVP stopped = {0};
+        _test_arcball_snapshot(arc, view, projection, &stopped);
+        AT(_test_mat4_close(after.model, stopped.model, 1e-7f));
+        AT(_test_mat4_close(after.view, stopped.view, 1e-7f));
+        AT(dvz_arcball_reset(arc) == DVZ_OK);
+        DvzMVP reset = {0};
+        _test_arcball_snapshot(arc, view, projection, &reset);
+        AT(_test_mat4_close(initial.model, reset.model, 1e-7f));
+        AT(_test_mat4_close(initial.view, reset.view, 1e-7f));
+        AT(_test_mat4_close(initial.proj, reset.proj, 1e-7f));
+        dvz_arcball_destroy(arc);
+    }
+    return 0;
+}
+
+
+
+/**
+ * Reject incompatible magnification units while allowing compatible pose and orientation links.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_arcball_projection_zoom_validation_and_links(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    DvzArcballDesc desc = dvz_arcball_desc();
+    desc.controller_flags = DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_arcball_create(&desc) == NULL);
+    desc.controller_flags |= DVZ_ARCBALL_FLAGS_SCREEN_PAN | DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT;
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_arcball_create(&desc) == NULL);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    desc.controller_flags = DVZ_ARCBALL_FLAGS_SCREEN_PAN | DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM;
+    DvzController* source = dvz_arcball(scene, &desc);
+    DvzController* target = dvz_arcball(scene, &desc);
+    desc.controller_flags = DVZ_ARCBALL_FLAGS_SCREEN_PAN;
+    DvzController* dolly = dvz_arcball(scene, &desc);
+    ANN(source);
+    ANN(target);
+    ANN(dolly);
+    const uint32_t incompatible[] = {
+        DVZ_CONTROLLER_LINK_PAN, DVZ_CONTROLLER_LINK_ZOOM,
+        DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM | DVZ_CONTROLLER_LINK_ROTATION,
+    };
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        AT(dvz_controller_link(
+               scene, source, dolly, incompatible[i], DVZ_CONTROLLER_LINK_ONE_WAY) == NULL);
+        AT(dvz_controller_link(
+               scene, dolly, source, incompatible[i], DVZ_CONTROLLER_LINK_TWO_WAY) == NULL);
+    }
+    mat4 view = GLM_MAT4_IDENTITY_INIT;
+    mat4 projection = GLM_MAT4_IDENTITY_INIT;
+    glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+    glm_perspective(0.72f, 800.0f / 600, 0.01f, 100, projection);
+    DvzArcball* source_arc = dvz_controller_arcball(source);
+    DvzArcball* target_arc = dvz_controller_arcball(target);
+    _dvz_arcball_camera(source_arc, view, projection);
+    _dvz_arcball_camera(target_arc, view, projection);
+    AT(dvz_arcball_pan(source_arc, (vec2){0.3f, -0.2f}) == DVZ_OK);
+    AT(dvz_arcball_zoom(source_arc, 2.5f) == DVZ_OK);
+    AT(dvz_arcball_set(source_arc, (vec3){0.2f, -0.3f, 0.4f}) == DVZ_OK);
+    DvzControllerLink* pose = dvz_controller_link(
+        scene, source, target,
+        DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM | DVZ_CONTROLLER_LINK_ROTATION,
+        DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(pose);
+    DvzControllerLink* rotation = dvz_controller_link(
+        scene, source, dolly, DVZ_CONTROLLER_LINK_ROTATION, DVZ_CONTROLLER_LINK_ONE_WAY);
+    ANN(rotation);
+    _dvz_scene_controller_links_propagate(scene);
+    DvzMVP source_mvp = {0}, target_mvp = {0};
+    _test_arcball_snapshot(source_arc, view, projection, &source_mvp);
+    _test_arcball_snapshot(target_arc, view, projection, &target_mvp);
+    AT(_test_mat4_close(source_mvp.model, target_mvp.model, 1e-7f));
+    AT(_test_mat4_close(source_mvp.view, target_mvp.view, 1e-7f));
+    AT(_test_mat4_close(source_mvp.proj, target_mvp.proj, 1e-7f));
+    mat4 dolly_model = GLM_MAT4_IDENTITY_INIT;
+    dvz_arcball_model(dvz_controller_arcball(dolly), dolly_model);
+    AT(_test_mat4_close(source_mvp.model, dolly_model, 1e-7f));
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Wheel and linked magnification changes rebase the cumulative anchor of an ongoing pan.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_arcball_projection_zoom_during_pan_is_continuous(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    for (uint32_t linked = 0; linked < 2; linked++)
+    {
+        DvzScene* scene = dvz_scene();
+        ANN(scene);
+        DvzArcballDesc desc = dvz_arcball_desc();
+        desc.controller_flags = DVZ_ARCBALL_FLAGS_SCREEN_PAN | DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM;
+        DvzController* target = dvz_arcball(scene, &desc);
+        DvzController* source = dvz_arcball(scene, &desc);
+        ANN(target);
+        ANN(source);
+        DvzArcball* arc = dvz_controller_arcball(target);
+        DvzArcball* source_arc = dvz_controller_arcball(source);
+        mat4 view = GLM_MAT4_IDENTITY_INIT;
+        mat4 projection = GLM_MAT4_IDENTITY_INIT;
+        glm_lookat((vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0}, view);
+        glm_perspective(0.72f, 800.0f / 600, 0.01f, 100, projection);
+        _dvz_arcball_camera(arc, view, projection);
+        _dvz_arcball_camera(source_arc, view, projection);
+        DvzPointerEvent event = {
+            .type = DVZ_POINTER_EVENT_DRAG_START, .button = DVZ_POINTER_BUTTON_RIGHT,
+            .pos = {400, 300},
+        };
+        AT(dvz_arcball_pointer(arc, &event));
+        event.type = DVZ_POINTER_EVENT_DRAG;
+        glm_vec2_copy((vec2){400, 300}, event.content.d.press_pos);
+        glm_vec2_copy((vec2){40, -30}, event.content.d.shift);
+        glm_vec2_copy((vec2){440, 270}, event.pos);
+        event.content.d.is_press_valid = true;
+        AT(dvz_arcball_pointer(arc, &event));
+        DvzArcballState before = {0};
+        AT(dvz_arcball_state(arc, &before));
+        if (linked)
+        {
+            AT(dvz_arcball_zoom(source_arc, 2) == DVZ_OK);
+            DvzPointerEvent press = {
+                .type = DVZ_POINTER_EVENT_PRESS, .button = DVZ_POINTER_BUTTON_RIGHT};
+            AT(dvz_arcball_pointer(source_arc, &press));
+            DvzControllerLink* link = dvz_controller_link(
+                scene, source, target, DVZ_CONTROLLER_LINK_ZOOM, DVZ_CONTROLLER_LINK_ONE_WAY);
+            ANN(link);
+            _dvz_scene_controller_links_propagate(scene);
+        }
+        else
+        {
+            DvzPointerEvent wheel = {
+                .type = DVZ_POINTER_EVENT_WHEEL, .content.w.dir = {0, 2}};
+            AT(dvz_arcball_pointer(arc, &wheel));
+        }
+        DvzArcballState zoomed_state = {0};
+        AT(dvz_arcball_state(arc, &zoomed_state));
+        AT(zoomed_state.zoom > before.zoom);
+        AC(zoomed_state.pan[0], before.pan[0], 1e-6f);
+        AC(zoomed_state.pan[1], before.pan[1], 1e-6f);
+        DvzMVP zoomed = {0};
+        _test_arcball_snapshot(arc, view, projection, &zoomed);
+        AT(dvz_arcball_pointer(arc, &event));
+        DvzMVP unchanged = {0};
+        _test_arcball_snapshot(arc, view, projection, &unchanged);
+        AT(_test_mat4_close(zoomed.model, unchanged.model, 1e-7f));
+        AT(_test_mat4_close(zoomed.view, unchanged.view, 1e-7f));
+        AT(_test_mat4_close(zoomed.proj, unchanged.proj, 1e-6f));
+        event.content.d.shift[0] = 50;
+        event.pos[0] = 450;
+        AT(dvz_arcball_pointer(arc, &event));
+        DvzMVP continued = {0};
+        _test_arcball_snapshot(arc, view, projection, &continued);
+        for (uint32_t point = 0; point < 3; point++)
+        {
+            vec4 position = {0.1f, -0.1f, 0.5f - point, 1};
+            vec3 old_ndc = {0}, new_ndc = {0};
+            _test_arcball_project_ndc(&zoomed, position, old_ndc);
+            _test_arcball_project_ndc(&continued, position, new_ndc);
+            AC(400 * (new_ndc[0] - old_ndc[0]), 10, 1e-3f);
+            AC(300 * (new_ndc[1] - old_ndc[1]), 0, 1e-3f);
+        }
+        dvz_scene_destroy(scene);
+    }
+    return 0;
+}
+
+
+
+/**
  * Register scene panzoom and arcball tests.
  *
  * @param suite the active test suite
@@ -4234,6 +4662,10 @@ int test_scene_panzoom_arcball(TstSuite* suite)
     TST_CASE(test_arcball_adaptive_pan_link_keeps_target_policy);
     TST_CASE(test_arcball_adaptive_pan_link_preserves_active_pivot);
     TST_CASE(test_arcball_adaptive_orbit_small_pan_continuity);
+    TST_CASE(test_arcball_projection_zoom_has_no_camera_history);
+    TST_CASE(test_arcball_projection_zoom_adaptive_pivot);
+    TST_CASE(test_arcball_projection_zoom_validation_and_links);
+    TST_CASE(test_arcball_projection_zoom_during_pan_is_continuous);
     TST_CASE(test_arcball_interaction_state);
     TST_CASE(test_arcball_double_click_resets);
     TST_CASE(test_arcball_rotation_after_large_pan);

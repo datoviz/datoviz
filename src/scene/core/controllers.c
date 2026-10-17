@@ -515,6 +515,9 @@ static void _scene_controller_link_copy_arcball(
 {
     ANN(source);
     ANN(target);
+    float previous_zoom = target->zoom;
+    vec2 previous_pan_delta = {
+        target->pan[0] - target->pan_center[0], target->pan[1] - target->pan_center[1]};
     if ((components & DVZ_CONTROLLER_LINK_ROTATION) != 0)
     {
         mat4 model = GLM_MAT4_IDENTITY_INIT;
@@ -538,9 +541,18 @@ static void _scene_controller_link_copy_arcball(
     if ((components & DVZ_CONTROLLER_LINK_ZOOM) != 0)
     {
         target->zoom = source->zoom;
-        if ((source->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) &&
+        if (!(source->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM) &&
+            (source->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN) &&
             (target->flags & DVZ_ARCBALL_FLAGS_SCREEN_PAN))
             glm_vec2_copy(source->zoom_offset, target->zoom_offset);
+    }
+    if ((target->flags & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM) &&
+        (components & (DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM)))
+    {
+        float ratio = previous_zoom / target->zoom;
+        for (uint32_t i = 0; i < 2; i++)
+            target->pan_center[i] = target->pan[i] -
+                (target->interacting && !target->orbit_active ? previous_pan_delta[i] * ratio : 0);
     }
 }
 
@@ -1442,6 +1454,10 @@ DvzControllerLink* dvz_controller_link(
     if ((components & DVZ_CONTROLLER_LINK_PAN) && source->arcball != NULL &&
         target->arcball != NULL &&
         ((source->arcball->flags ^ target->arcball->flags) & DVZ_ARCBALL_FLAGS_SCREEN_PAN))
+        return NULL;
+    if ((components & (DVZ_CONTROLLER_LINK_PAN | DVZ_CONTROLLER_LINK_ZOOM)) &&
+        source->arcball != NULL && target->arcball != NULL &&
+        ((source->arcball->flags ^ target->arcball->flags) & DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM))
         return NULL;
 
     DvzControllerLink* link = NULL;

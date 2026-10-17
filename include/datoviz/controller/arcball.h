@@ -48,6 +48,8 @@ typedef enum
     DVZ_ARCBALL_FLAGS_SCREEN_PAN = 0x04,
     // Blend anatomical and viewport rotation pivots with zoom; requires SCREEN_PAN.
     DVZ_ARCBALL_FLAGS_ADAPTIVE_ORBIT = 0x08,
+    // Magnify the projected image without camera travel; requires SCREEN_PAN.
+    DVZ_ARCBALL_FLAGS_PROJECTION_ZOOM = 0x10,
 } DvzArcballFlags;
 
 
@@ -165,7 +167,7 @@ DVZ_EXPORT DvzResult dvz_arcball_rotate_axis(DvzArcball* arcball, float angle, v
 
 
 /**
- * Set the camera dolly factor.
+ * Set the camera dolly factor, or image magnification with PROJECTION_ZOOM.
  *
  * @param arcball arcball controller
  * @param zoom uniform zoom factor
@@ -178,7 +180,8 @@ DVZ_EXPORT DvzResult dvz_arcball_zoom(DvzArcball* arcball, float zoom);
  * Set the camera view-plane pan offset, or normalized clip offset with SCREEN_PAN.
  *
  * @param arcball arcball controller
- * @param pan pan offset; SCREEN_PAN uses +X right, +Y up, with 2 units per panel extent
+ * @param pan offset; SCREEN_PAN uses +X right, +Y up, 2 units per panel extent;
+ * PROJECTION_ZOOM expresses this offset before image magnification
  * @return DVZ_OK on success, DVZ_ERROR on validation error
  */
 DVZ_EXPORT DvzResult dvz_arcball_pan(DvzArcball* arcball, vec2 pan);

@@ -247,6 +247,10 @@ int test_arcball_adaptive_orbit_validation(TstContext* suite, const TstCase* ite
 int test_arcball_adaptive_pan_link_keeps_target_policy(TstContext* suite, const TstCase* item);
 int test_arcball_adaptive_pan_link_preserves_active_pivot(TstContext* suite, const TstCase* item);
 int test_arcball_adaptive_orbit_small_pan_continuity(TstContext* suite, const TstCase* item);
+int test_arcball_projection_zoom_has_no_camera_history(TstContext* suite, const TstCase* item);
+int test_arcball_projection_zoom_adaptive_pivot(TstContext* suite, const TstCase* item);
+int test_arcball_projection_zoom_validation_and_links(TstContext* suite, const TstCase* item);
+int test_arcball_projection_zoom_during_pan_is_continuous(TstContext* suite, const TstCase* item);
 
 int test_arcball_interaction_state(TstContext* suite, const TstCase* item);
 
