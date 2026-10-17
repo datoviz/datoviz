@@ -22,6 +22,7 @@
 
 #include "../_gui.h"
 #include "../../app/_app.h"
+#include "../../canvas/canvas_internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -894,6 +895,12 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     AT(dvz_view_render_once(host_win) == DVZ_CANVAS_FRAME_READY);
     AT(_dvz_gui_viewport_debug_state(smoke.viewport, &debug));
     AT(debug.source_frame_count == source_frame_count + 1);
+
+    /* Strict resolution publishes an image only after that exact source submission completes. */
+    DvzCanvas* source_canvas = dvz_view_canvas(source_win);
+    AT(source_canvas != NULL);
+    AT(source_canvas->timeline_value > 0);
+    AT(dvz_semaphore_query(source_canvas->timeline_semaphore) >= source_canvas->timeline_value);
 
     uint32_t width = 0;
     uint32_t height = 0;

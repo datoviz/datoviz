@@ -14,6 +14,12 @@ Synchronization validation and submit-time checking were explicitly enabled. An 
 
 The independent-queue test uncovered a separate pre-existing metadata defect: device queue allocation retains family/index/handle but does not initialize role capability flags, so optional role lookup can fail despite allocated queues. The regression enumerates actual allocated handles; production queue-role behavior is unchanged. Repairing that metadata needs separate caller and cross-queue validation rather than silently enabling new queue choices in this patch.
 
+## Scoped Strict GUI Viewport Completion — October 18 2026
+
+The strict GUI viewport resolver now waits for the exact source canvas timeline value instead of idling the device. Offscreen submissions already signal that owned timeline at ALL_COMMANDS. The helper checks wait results and device loss, and the resolver also covers a source submitted earlier without new dirty work. Existing same-MAIN-queue image transitions provide device write/read dependencies; a host timeline wait proves completion rather than replacing those barriers. Resize, descriptor/image retirement and teardown retain their existing waits.
+
+This is a synchronous scoped improvement, not the full nonblocking generation-promotion and fair-batching target in GUI_VIEWPORT_PRESENTATION. The source remains current for strict same-frame presentation. A Vulkan regression proves source completion returns while later MAIN work remains blocked, then checks reuse and resize. GUI resize/hidden, forwarded arcball and multiple-viewport input-router checks pass with synchronization validation explicitly enabled. The high-effort architecture auditor and independent DRP2 reviewer found no remaining blockers.
+
 ## Unchanged Volume Transfer Uploads — October 17 2026
 
 Volume transfer-texture preparation now follows the existing texture-dirty and volume-realized-version contract. Unchanged redraws skip both LUT rebuilding and upload emission. Alpha-stop changes, shared scale/colormap changes, field/scale binding and runtime-emitter reset still force refresh. This deliberately retains conservative invalidation for unrelated volume settings rather than introducing another cache or generation system. Scene figures share one emitter/resource namespace; new visuals and reset runtime boundaries retain initial uploads.
