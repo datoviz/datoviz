@@ -18,6 +18,7 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For 
 | Frame pacing | [Interaction latency contract and benchmarks](../../spec/testing/INTERACTION_LATENCY.md) |
 | Render products | [Graph techniques](../../spec/scene/implementation/GRAPH_TECHNIQUES.md), [occlusion](../../spec/scene/implementation/OCCLUSION_EFFECTS.md), [transparency/MSAA](../../spec/scene/implementation/TRANSPARENCY_MSAA.md); [landing evidence](RC3_RENDER_PRODUCTS_LANDING.md) and [affected QA](RC3_RENDER_PRODUCTS_AFFECTED_QA.md) |
 | Scientific 3D profile | [Required v0.4 native profile](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md), [release handoff](SCIENTIFIC_3D_PROFILE_HANDOFF.md); narrow RC3 guards, effective-alpha corrections, and local validation are complete at `d0e904705`; exact-candidate proof remains; RC4 delivers non-volume scientific 3D composition and integration acceptance; RC5 is contingency only for substantial remaining gaps or feedback |
+| Canonical input routing | [RC3 correction and validation](INPUT_ROUTING_HANDOFF.md); isolated local branch, shared gesture ownership and exact delivery; merge/publication and application-baseline promotion remain separate gates |
 | Input and mesh updates | [Integrated issues #139/#140](ISSUES_139_140_HANDOFF.md) |
 | Rolling fields and surfaces | [Issue #138 benchmarks and RC4/post-v0.4 boundary](ISSUE_138_PERFORMANCE_HANDOFF.md) |
 | Atlas and sampled fields | [Current capability, gaps, benchmark gates, and RC3/RC4/final/v0.5 allocation](ATLAS_SAMPLED_FIELDS_HANDOFF.md) |
