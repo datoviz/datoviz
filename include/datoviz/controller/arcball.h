@@ -42,6 +42,8 @@ typedef enum
 {
     DVZ_ARCBALL_FLAGS_NONE      = 0x00,
     DVZ_ARCBALL_FLAGS_CONSTRAIN = 0x01,
+    // Rebase the physical orbit target to the viewport center at each pointer rotation.
+    DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT = 0x02,
 } DvzArcballFlags;
 
 

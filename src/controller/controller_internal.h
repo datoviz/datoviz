@@ -55,10 +55,11 @@ struct DvzArcball
     vec3 constrain;   /* constraint axis, or zero when unconstrained */
     mat4 view;        /* optional camera view used to interpret drag axes */
     mat4 projection;  /* camera projection used for pixel-proportional panning */
+    vec2 orbit_center; /* frozen pan-neutral pointer sphere center */
     mat4 orbit_view;        /* frozen camera basis for the current pointer rotation */
     vec3 orbit_pivot;       /* retained target in post-model world coordinates */
     vec3 orbit_translation; /* committed world translation, separate from orientation */
-    bool orbit_active;      /* pointer rotation uses the retained viewport target */
+    bool orbit_active;      /* pointer rotation has a frozen basis and control center */
     float zoom;       /* multiplicative camera dolly factor */
     vec2 pan;         /* camera view-plane pan offset */
     vec2 pan_center;  /* committed pan baseline used during right/middle drag */

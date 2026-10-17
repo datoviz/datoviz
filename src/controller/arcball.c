@@ -183,13 +183,30 @@ void _dvz_arcball_orbit_translation_set(DvzArcball* arcball, vec3 translation)
 
 
 /**
- * Rebase the pointer orbit to the viewport center at the retained target depth.
+ * Freeze pointer controls, optionally rebasing the physical target for viewport orbit.
  *
  * @param arcball arcball controller
  * @return true when the camera matrices admit a finite center target
  */
 static bool _arcball_orbit_begin(DvzArcball* arcball)
 {
+    glm_vec2_zero(arcball->orbit_center);
+    if ((arcball->flags & DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT) == 0)
+    {
+        // Keep the original pointer mapping, excluding only view-plane pan.
+        vec4 eye = {arcball->view[3][0], arcball->view[3][1],
+                    arcball->view[3][2] + logf(arcball->zoom), arcball->view[3][3]};
+        vec4 clip = {0};
+        glm_mat4_mulv(arcball->projection, eye, clip);
+        if (clip[3] > 1e-6f)
+        {
+            arcball->orbit_center[0] = clip[0] / clip[3];
+            arcball->orbit_center[1] = clip[1] / clip[3];
+        }
+        glm_mat4_copy(arcball->view, arcball->orbit_view);
+        arcball->orbit_active = true;
+        return true;
+    }
     mat4 view = GLM_MAT4_IDENTITY_INIT;
     glm_mat4_copy(arcball->view, view);
     view[3][0] += arcball->pan[0];
@@ -771,6 +788,8 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
                 -1.0f + 2.0f * ev->content.d.press_pos[0] / width,
                 +1.0f - 2.0f * ev->content.d.press_pos[1] / height,
             };
+            glm_vec2_sub(cur_pos, arcball->orbit_center, cur_pos);
+            glm_vec2_sub(last_pos, arcball->orbit_center, last_pos);
             (void)dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
         else if (

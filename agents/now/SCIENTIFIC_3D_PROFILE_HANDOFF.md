@@ -2,6 +2,12 @@
 
 Status: narrow RC3 implementation complete at `d0e904705`, 2026-10-13; RC4 source checkpoints are integrated locally on `rc4/scientific-3d`, while profile acceptance and exact-candidate proof remain pending. The required native non-volume target and RC4/RC5/final boundaries are in [the profile slice](../../spec/scene/slices/V04_SCIENTIFIC_3D_PROFILE.md). This record separates source inspection from delivered behavior; it does not close a release gate. Preserve [current release evidence](STATUS.md) and its recorded revisions.
 
+## Pan-neutral fixed-pivot candidate, 2026-10-17
+
+The earlier viewport-orbit candidate was rejected as the default during interactive review. The current candidate keeps the original model-space rotation pivot and sphere/quaternion mapping, but computes the pointer sphere center with view-plane pan omitted. This preserves original zero-pan behavior for off-axis cameras, both projection types, zoom and edge drags when camera and zoom remain fixed during the gesture. The control frame remains frozen during concurrent camera/zoom changes. No physical target is recentered. The previous viewport-orbit implementation is retained behind `DVZ_ARCBALL_FLAGS_VIEWPORT_ORBIT` in `DvzArcballDesc.controller_flags`, disabled by default; its regression coverage explicitly enables the flag.
+
+Validation passes: 40/40 focused tests and 1,276/1,276 full native tests, zero failures or skips; regenerated Python bindings, 17 binding tests, policy and ABI checks; both downstream numbered apps start with the explicit candidate-library override. A high Sol 6.1 read-only audit found no blockers. Interactive acceptance remains pending. The configured downstream checkout, immutable pin and published branches are unchanged. Historical validation below describes the previous candidate.
+
 ## Viewport-centered arcball candidate, 2026-10-17
 
 Local branch `fix/arcball-viewport-orbit` starts from scientific revision `73d0f0bcdd595d2f76e2cdffcc2dd89c25a56858`. Pointer rotation uses a viewport-centered sphere and rebases its world target to the center ray at the retained eye depth without changing the rendered pose. Private orbit translation is composed through the view matrix; the public model matrix stays pure orientation. The pointer camera basis is frozen for each gesture. Full/PAN links carry live orbit translation, while rotation-only links keep gizmos centered; a PAN-only update preserves an active target's cumulative drag baseline.
