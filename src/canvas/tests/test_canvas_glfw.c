@@ -61,6 +61,7 @@ typedef struct CanvasGlfwClearContext
     VkFormat format;
     VkExtent2D latest_extent;
     uint32_t callback_count;
+    uint32_t latest_frame_slot;
 } CanvasGlfwClearContext;
 
 
@@ -159,6 +160,7 @@ static void canvas_glfw_clear_draw(DvzCanvas* canvas, const DvzStreamFrame* fram
     {
         return;
     }
+    ctx->latest_frame_slot = _dvz_canvas_frame_slot(canvas);
 
     VkImageView image_view = frame->image_view;
     if (image_view == VK_NULL_HANDLE)
@@ -542,6 +544,7 @@ static int _canvas_glfw_frame_slot_experiment(TstContext* suite, uint32_t reques
         uint32_t slot_index = _dvz_canvas_swapchain_last_presented_slot_index(canvas);
         uint32_t image_index = _dvz_canvas_swapchain_last_presented_image_index(canvas);
         AT(slot_index < _dvz_canvas_swapchain_slot_count(canvas));
+        AT(clear_ctx.latest_frame_slot == slot_index);
         AT(image_index < _dvz_canvas_swapchain_image_count(canvas));
         indices_diverged = indices_diverged || slot_index != image_index;
     }
@@ -579,6 +582,7 @@ static int _canvas_glfw_frame_slot_experiment(TstContext* suite, uint32_t reques
     }
     AT(recreated);
     AT(dvz_canvas_swapchain_recreate_count(canvas) == recreate_before + 1);
+    AT(clear_ctx.latest_frame_slot == _dvz_canvas_swapchain_last_presented_slot_index(canvas));
     image_count = _dvz_canvas_swapchain_image_count(canvas);
     slot_count = _dvz_canvas_swapchain_slot_count(canvas);
     // Canvas configuration remains stable during swapchain recreation.

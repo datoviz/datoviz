@@ -537,15 +537,58 @@ static void canvas_presentation_load(DvzCanvas* canvas, uint32_t slot)
 
 
 
+/**
+ * Drain earlier MAIN work after abandoning an unsent frame that replaced shared runtime resources.
+ *
+ * The unsent frame's own timeline cannot prove completion of earlier owners of those resources.
+ * This error-only drain must succeed before its command buffer can be reset, freed, or retired.
+ * A failed drain remains pending so later admission or teardown can retry it safely.
+ *
+ * @param canvas offscreen canvas requiring recovery, or a canvas with no pending recovery
+ * @return zero when recovery is complete, negative on a failed queue wait
+ */
+static int canvas_offscreen_recover_submission(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (!canvas->offscreen_recovery_pending)
+        return 0;
+    if (canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return -1;
+    VkResult result = VK_SUCCESS;
+    if (canvas->test_force_offscreen_recovery_status_set)
+    {
+        result = (VkResult)canvas->test_force_offscreen_recovery_status;
+        canvas->test_force_offscreen_recovery_status_set = false;
+    }
+    else
+        result = vkQueueWaitIdle(canvas->offscreen_queue);
+    if (result == VK_SUCCESS)
+    {
+        canvas->offscreen_recovery_pending = false;
+        return 0;
+    }
+    if (result == VK_ERROR_DEVICE_LOST)
+        canvas_offscreen_transition(
+            canvas, DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST, "recovery device lost");
+    log_error("offscreen abandoned-frame recovery failed (%d)", result);
+    return -1;
+}
+
+
+
 static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
 {
     if (!canvas)
     {
         return;
     }
+    if (canvas_offscreen_recover_submission(canvas) < 0 &&
+        canvas->offscreen_runtime_state != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return;
     // Pool callers have already observed both source and host completion for this exact slot.
     if (!canvas->presentation_enabled)
         dvz_device_wait(canvas->device);
+    _dvz_canvas_notify_commands_completed(canvas, canvas->offscreen_command_buffer);
     dvz_canvas_depth_destroy(
         &canvas->offscreen_depth_images, &canvas->offscreen_depth_views,
         &canvas->offscreen_depth_image, &canvas->offscreen_depth_view);
@@ -601,8 +644,12 @@ static void canvas_offscreen_destroy_retired_resources(DvzCanvas* canvas)
 {
     if (canvas == NULL || canvas->retired_offscreen_image == VK_NULL_HANDLE)
         return;
+    if (canvas_offscreen_recover_submission(canvas) < 0 &&
+        canvas->offscreen_runtime_state != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return;
 
     dvz_device_wait(canvas->device);
+    _dvz_canvas_notify_commands_completed(canvas, canvas->retired_offscreen_command_buffer);
     if (canvas->retired_offscreen_views != NULL)
     {
         dvz_image_views_destroy(canvas->retired_offscreen_views);
@@ -804,15 +851,53 @@ static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D exten
 
 
 
+/**
+ * Observe committed framebuffer-size changes separately from resource and submission generations.
+ *
+ * Intermediate requests observed by the owner invalidate earlier work even when a later request
+ * returns to the same extent. Unobserved requests can coalesce before any source work is admitted.
+ *
+ * @param canvas pool-enabled source canvas
+ * @return zero on success, negative when the request generation cannot advance
+ */
+static int canvas_presentation_observe_request(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    dvz_canvas_window_surface_refresh(canvas);
+    const VkExtent2D extent = canvas->surface != NULL ? canvas->surface->extent : (VkExtent2D){0};
+    if (canvas->presentation_request_generation != 0 &&
+        extent.width == canvas->presentation_requested_extent.width &&
+        extent.height == canvas->presentation_requested_extent.height)
+        return 0;
+    if (canvas->presentation_request_generation == UINT64_MAX)
+    {
+        log_error("canvas presentation request generation exhausted");
+        return -1;
+    }
+    canvas->presentation_requested_extent = extent;
+    canvas->presentation_request_generation++;
+    return 0;
+}
+
+
+
 static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* frame)
 {
     ANN(canvas);
     ANN(frame);
+    if (canvas_offscreen_recover_submission(canvas) < 0)
+        return -1;
     if (canvas->presentation_enabled && !canvas->presentation_admitted)
     {
         int admission = _dvz_canvas_presentation_try_admit(canvas);
         if (admission != 1)
             return -1;
+    }
+    if (canvas->presentation_enabled)
+    {
+        if (canvas_presentation_observe_request(canvas) < 0)
+            return -1;
+        canvas->presentation_recorded_request_generation = canvas->presentation_request_generation;
     }
     VkExtent2D extent = canvas->surface ? canvas->surface->extent : (VkExtent2D){0, 0};
     VkFormat format =
@@ -837,9 +922,12 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
             return -1;
         }
     }
-    if (!canvas->presentation_enabled && canvas->timeline_ready && canvas->timeline_value > 0)
+    if (!canvas->presentation_enabled)
     {
-        dvz_semaphore_wait(canvas->timeline_semaphore, canvas->timeline_value);
+        if (canvas->timeline_ready && canvas->timeline_value > 0 &&
+            _dvz_canvas_wait_offscreen_frame(canvas) < 0)
+            return -1;
+        _dvz_canvas_notify_commands_completed(canvas, canvas->offscreen_command_buffer);
     }
 
     DvzCommands* cmds = dvz_commands_create_wrapper();
@@ -999,8 +1087,11 @@ int _dvz_canvas_presentation_configure(DvzCanvas* canvas, bool enabled)
             canvas->presentation_slots[i].resources.memory_fd = DVZ_EXTERNAL_HANDLE_INVALID;
         canvas_presentation_store(canvas);
         canvas->presentation_enabled = true;
-        return 0;
+        return canvas_presentation_observe_request(canvas);
     }
+    if (canvas_offscreen_recover_submission(canvas) < 0 &&
+        canvas->offscreen_runtime_state != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return -1;
     canvas_presentation_store(canvas);
     if (canvas_presentation_wait(canvas, canvas->timeline_value) < 0 &&
         canvas->offscreen_runtime_state != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
@@ -1044,6 +1135,10 @@ int _dvz_canvas_presentation_try_admit(DvzCanvas* canvas)
     if (!canvas->presentation_enabled ||
         canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
         return -1;
+    if (canvas_offscreen_recover_submission(canvas) < 0)
+        return -1;
+    if (canvas_presentation_observe_request(canvas) < 0)
+        return -1;
     if (canvas->presentation_admitted)
         return 1;
     uint64_t completed = 0;
@@ -1068,6 +1163,7 @@ int _dvz_canvas_presentation_try_admit(DvzCanvas* canvas)
         slot->host = NULL;
         slot->host_value = 0;
         slot->publishable = false;
+        _dvz_canvas_notify_commands_completed(canvas, slot->resources.command_buffer);
         canvas_presentation_load(canvas, index);
         canvas->presentation_admitted = true;
         canvas->presentation_admission_value = canvas->timeline_value;
@@ -1123,9 +1219,11 @@ int _dvz_canvas_presentation_latest_completed(
 {
     ANN(canvas);
     ANN(frame);
-    if (!canvas->presentation_enabled)
+    if (!canvas->presentation_enabled ||
+        canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
         return -1;
-    dvz_canvas_window_surface_refresh(canvas);
+    if (canvas_presentation_observe_request(canvas) < 0)
+        return -1;
     uint64_t completed = 0;
     if (canvas_presentation_query(canvas, &completed) < 0)
         return -1;
@@ -1134,6 +1232,7 @@ int _dvz_canvas_presentation_latest_completed(
     {
         DvzCanvasPresentationSlot* slot = &canvas->presentation_slots[i];
         if (!slot->publishable || slot->source_value == 0 || slot->source_value > completed ||
+            slot->request_generation != canvas->presentation_request_generation ||
             canvas->surface == NULL || slot->frame.extent.width != canvas->surface->extent.width ||
             slot->frame.extent.height != canvas->surface->extent.height)
             continue;
@@ -1164,6 +1263,8 @@ int _dvz_canvas_presentation_pin_display(DvzCanvas* canvas, uint32_t slot)
         return -1;
     if (slot != UINT32_MAX)
     {
+        if (canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+            return -1;
         if (slot >= DVZ_CANVAS_PRESENTATION_SLOT_COUNT)
             return -1;
         uint64_t completed = 0;
@@ -1245,6 +1346,10 @@ int _dvz_canvas_presentation_pending(DvzCanvas* canvas)
     ANN(canvas);
     if (!canvas->presentation_enabled)
         return 0;
+    if (canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return -1;
+    if (canvas_presentation_observe_request(canvas) < 0)
+        return -1;
     uint64_t completed = 0;
     if (canvas_presentation_query(canvas, &completed) < 0)
         return -1;
@@ -1256,7 +1361,9 @@ int _dvz_canvas_presentation_pending(DvzCanvas* canvas)
     for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
     {
         const DvzCanvasPresentationSlot* slot = &canvas->presentation_slots[i];
-        if (slot->publishable && slot->source_value > displayed && canvas->surface != NULL &&
+        if (slot->publishable && slot->source_value > displayed &&
+            slot->request_generation == canvas->presentation_request_generation &&
+            canvas->surface != NULL &&
             slot->frame.extent.width == canvas->surface->extent.width &&
             slot->frame.extent.height == canvas->surface->extent.height)
             return 1;
@@ -1576,6 +1683,21 @@ void dvz_canvas_test_force_wait_semaphore_export_failure(DvzCanvas* canvas, bool
         return;
     }
     canvas->test_force_wait_semaphore_export_failure = enabled;
+}
+
+
+
+/**
+ * Force one abandoned-submission recovery result for instance-scoped failure testing.
+ *
+ * @param canvas canvas whose next recovery attempt should fail
+ * @param status Vulkan result returned by that recovery attempt
+ */
+void _dvz_canvas_test_force_offscreen_recovery_status(DvzCanvas* canvas, int32_t status)
+{
+    ANN(canvas);
+    canvas->test_force_offscreen_recovery_status = status;
+    canvas->test_force_offscreen_recovery_status_set = true;
 }
 
 
@@ -2159,6 +2281,12 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     {
         return;
     }
+    if (canvas_offscreen_recover_submission(canvas) < 0 &&
+        canvas->offscreen_runtime_state != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+    {
+        log_error("retaining canvas until abandoned-frame recovery can complete");
+        return;
+    }
     if (canvas->device != NULL)
     {
         dvz_device_wait(canvas->device);
@@ -2188,6 +2316,57 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_canvas_frame_pool_release(&canvas->frame_pool);
     dvz_canvas_timings_release(&canvas->timings);
     dvz_free(canvas);
+}
+
+
+
+/**
+ * Return the stable resource slot of the currently recording canvas frame.
+ *
+ * @param canvas canvas owning the active frame
+ * @return bounded slot index, or UINT32_MAX when no present slot is acquired
+ */
+uint32_t _dvz_canvas_frame_slot(const DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (canvas_is_offscreen_mode(canvas))
+        return canvas->presentation_enabled ? canvas->presentation_active_slot : 0;
+    return _dvz_canvas_swapchain_active_slot_index(canvas);
+}
+
+
+
+/**
+ * Set an owner-thread callback that retires borrowed runtime references after GPU completion.
+ *
+ * @param canvas canvas owning command-buffer lifetimes
+ * @param callback internal completion callback, or NULL to clear it
+ * @param user_data borrowed callback state retained until callback removal or canvas destruction
+ */
+void _dvz_canvas_set_commands_completed_callback(
+    DvzCanvas* canvas, DvzCanvasCommandsCompletedCallback callback, void* user_data)
+{
+    ANN(canvas);
+    canvas->commands_completed_callback = callback;
+    canvas->commands_completed_user_data = user_data;
+}
+
+
+
+/**
+ * Notify the runtime before reusing or freeing an owned command buffer proven no longer pending.
+ *
+ * @param canvas canvas owning the completed command buffer
+ * @param command_buffer completed or never-submitted owned handle
+ */
+void _dvz_canvas_notify_commands_completed(DvzCanvas* canvas, VkCommandBuffer command_buffer)
+{
+    ANN(canvas);
+    if (canvas->offscreen_recovery_pending &&
+        canvas->offscreen_runtime_state != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return;
+    if (command_buffer != VK_NULL_HANDLE && canvas->commands_completed_callback != NULL)
+        canvas->commands_completed_callback(command_buffer, canvas->commands_completed_user_data);
 }
 
 
@@ -2424,6 +2603,8 @@ int dvz_canvas_submit(DvzCanvas* canvas)
             {
                 canvas_offscreen_transition(
                     canvas, DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING, "submit failed");
+                canvas->offscreen_recovery_pending = true;
+                (void)canvas_offscreen_recover_submission(canvas);
             }
             log_error("offscreen canvas submit failed (%d)", submit_rc);
             return -1;
@@ -2434,6 +2615,7 @@ int dvz_canvas_submit(DvzCanvas* canvas)
             DvzCanvasPresentationSlot* slot =
                 &canvas->presentation_slots[canvas->presentation_active_slot];
             slot->source_value = wait_value;
+            slot->request_generation = canvas->presentation_recorded_request_generation;
             slot->publishable = false;
             slot->frame = (DvzCanvasLiveImageFrame){
                 .frame_id = canvas->frame_id,
@@ -2498,6 +2680,8 @@ int dvz_canvas_submit(DvzCanvas* canvas)
 int _dvz_canvas_wait_offscreen_frame(DvzCanvas* canvas)
 {
     ANN(canvas);
+    if (canvas_offscreen_recover_submission(canvas) < 0)
+        return -1;
     if (!canvas_is_offscreen_mode(canvas) || !canvas->timeline_ready ||
         canvas->timeline_semaphore == NULL || canvas->timeline_value == 0)
     {

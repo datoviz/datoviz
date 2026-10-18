@@ -1216,6 +1216,8 @@ static void canvas_swapchain_release_slot_state(DvzCanvasSwapchain* swapchain)
     {
         for (uint32_t i = 0; i < swapchain->initialized_slot_count; ++i)
         {
+            // Cleanup's device completion proof precedes every per-slot command-buffer free.
+            _dvz_canvas_notify_commands_completed(canvas, swapchain->slots[i].command_buffer);
             canvas_destroy_slot(
                 canvas->device, swapchain->queue_family, &swapchain->slots[i], canvas->allocator);
         }
@@ -1722,6 +1724,7 @@ static int canvas_select_acquire_slot(
     }
     state->canvas->current_slot_wait_us =
         (double)(dvz_time_monotonic_ns() - wait_start_ns) * 1e-3;
+    _dvz_canvas_notify_commands_completed(state->canvas, slot->command_buffer);
     dvz_fence_reset(slot->in_flight);
 
     *slot_idx_out = slot_idx;
@@ -2097,6 +2100,20 @@ uint32_t _dvz_canvas_swapchain_image_count(const DvzCanvas* canvas)
 uint32_t _dvz_canvas_swapchain_slot_count(const DvzCanvas* canvas)
 {
     return canvas != NULL && canvas->swapchain != NULL ? canvas->swapchain->slot_count : 0;
+}
+
+
+
+/**
+ * Return the acquired resource slot whose command buffer is currently owned by the canvas frame.
+ *
+ * @param canvas canvas owning the swapchain
+ * @return acquired slot index, or UINT32_MAX when no slot is acquired
+ */
+uint32_t _dvz_canvas_swapchain_active_slot_index(const DvzCanvas* canvas)
+{
+    return canvas != NULL && canvas->swapchain != NULL ?
+        canvas->swapchain->active_slot_index : UINT32_MAX;
 }
 
 

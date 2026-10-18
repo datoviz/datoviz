@@ -475,6 +475,11 @@ int dvz_canvas_stream_enable_video(
 {
     ANN(canvas);
     ANN(canvas->stream);
+    if (enable && canvas->presentation_enabled)
+    {
+        log_error("video capture is unavailable on a nonblocking presentation source");
+        return -1;
+    }
     if (!canvas_video_sink_config_validate(cfg))
         return -1;
 
