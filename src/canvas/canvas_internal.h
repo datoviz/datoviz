@@ -31,6 +31,7 @@
 #include "datoviz/window.h"
 #include "datoviz/vklite/images.h"
 #include "datoviz/vklite/sync.h"
+#include "_canvas_presentation.h"
 
 
 
@@ -65,6 +66,41 @@ struct DvzCanvasTimingState
     size_t count;
     size_t head;
 };
+
+
+
+typedef struct DvzCanvasOffscreenResources
+{
+    VkImage image;
+    VkImageView view;
+    DvzAllocation* alloc;
+    DvzImages* images;
+    DvzImageViews* views;
+    DvzImages* depth_images;
+    DvzImageViews* depth_views;
+    VkImage depth_image;
+    VkImageView depth_view;
+    VkImageLayout depth_layout;
+    VkImageLayout layout;
+    VkCommandBuffer command_buffer;
+    VkExtent2D extent;
+    VkFormat format;
+    uint64_t resource_generation;
+    DvzExternalHandle memory_fd;
+    bool ready;
+} DvzCanvasOffscreenResources;
+
+
+
+typedef struct DvzCanvasPresentationSlot
+{
+    DvzCanvasOffscreenResources resources;
+    DvzCanvasLiveImageFrame frame;
+    uint64_t source_value;
+    DvzCanvas* host;
+    uint64_t host_value;
+    bool publishable;
+} DvzCanvasPresentationSlot;
 
 
 
@@ -135,6 +171,13 @@ struct DvzCanvas
     DvzExternalHandle offscreen_memory_fd;
     bool offscreen_ready;
     DvzCanvasOffscreenRuntimeState offscreen_runtime_state;
+    DvzCanvasPresentationSlot presentation_slots[DVZ_CANVAS_PRESENTATION_SLOT_COUNT];
+    uint32_t presentation_active_slot;
+    uint32_t presentation_display_slot;
+    uint64_t presentation_resource_generation;
+    uint64_t presentation_admission_value;
+    bool presentation_enabled;
+    bool presentation_admitted;
     DvzCanvasSwapchain* swapchain;
 };
 
@@ -157,6 +200,8 @@ struct DvzCanvasSurfaceInfo
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+EXTERN_C_ON
 
 void dvz_canvas_frame_pool_init(DvzCanvasFramePool* pool, uint32_t frame_count);
 
@@ -282,3 +327,5 @@ void _dvz_canvas_allocator_destroy(DvzCanvas* canvas);
 void dvz_canvas_test_force_wait_semaphore_export_failure(DvzCanvas* canvas, bool enabled);
 
 void dvz_canvas_test_force_offscreen_submit_status(DvzCanvas* canvas, int32_t status);
+
+EXTERN_C_OFF

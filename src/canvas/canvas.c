@@ -469,13 +469,83 @@ void dvz_canvas_cmd_clear_new_target(
 
 
 
+/**
+ * Save the active canvas resource aliases into their owned presentation slot.
+ *
+ * @param canvas source canvas
+ */
+static void canvas_presentation_store(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    DvzCanvasOffscreenResources* resources =
+        &canvas->presentation_slots[canvas->presentation_active_slot].resources;
+#define CANVAS_STORE(field) resources->field = canvas->offscreen_##field
+    CANVAS_STORE(image);
+    CANVAS_STORE(view);
+    CANVAS_STORE(alloc);
+    CANVAS_STORE(images);
+    CANVAS_STORE(views);
+    CANVAS_STORE(depth_images);
+    CANVAS_STORE(depth_views);
+    CANVAS_STORE(depth_image);
+    CANVAS_STORE(depth_view);
+    CANVAS_STORE(depth_layout);
+    CANVAS_STORE(layout);
+    CANVAS_STORE(command_buffer);
+    CANVAS_STORE(extent);
+    CANVAS_STORE(format);
+    CANVAS_STORE(resource_generation);
+    CANVAS_STORE(memory_fd);
+    CANVAS_STORE(ready);
+#undef CANVAS_STORE
+}
+
+
+
+/**
+ * Select one owned presentation resource set through the existing canvas recording aliases.
+ *
+ * @param canvas source canvas
+ * @param slot index of the resource set
+ */
+static void canvas_presentation_load(DvzCanvas* canvas, uint32_t slot)
+{
+    ANN(canvas);
+    ASSERT(slot < DVZ_CANVAS_PRESENTATION_SLOT_COUNT);
+    const DvzCanvasOffscreenResources* resources = &canvas->presentation_slots[slot].resources;
+#define CANVAS_LOAD(field) canvas->offscreen_##field = resources->field
+    CANVAS_LOAD(image);
+    CANVAS_LOAD(view);
+    CANVAS_LOAD(alloc);
+    CANVAS_LOAD(images);
+    CANVAS_LOAD(views);
+    CANVAS_LOAD(depth_images);
+    CANVAS_LOAD(depth_views);
+    CANVAS_LOAD(depth_image);
+    CANVAS_LOAD(depth_view);
+    CANVAS_LOAD(depth_layout);
+    CANVAS_LOAD(layout);
+    CANVAS_LOAD(command_buffer);
+    CANVAS_LOAD(extent);
+    CANVAS_LOAD(format);
+    CANVAS_LOAD(resource_generation);
+    CANVAS_LOAD(memory_fd);
+    CANVAS_LOAD(ready);
+#undef CANVAS_LOAD
+    canvas->presentation_active_slot = slot;
+}
+
+
+
 static void canvas_offscreen_destroy_resources(DvzCanvas* canvas)
 {
     if (!canvas)
     {
         return;
     }
-    dvz_device_wait(canvas->device);
+    // Pool callers have already observed both source and host completion for this exact slot.
+    if (!canvas->presentation_enabled)
+        dvz_device_wait(canvas->device);
     dvz_canvas_depth_destroy(
         &canvas->offscreen_depth_images, &canvas->offscreen_depth_views,
         &canvas->offscreen_depth_image, &canvas->offscreen_depth_view);
@@ -722,7 +792,10 @@ static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D exten
     canvas->offscreen_depth_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     canvas->offscreen_extent = extent;
     canvas->offscreen_format = format;
-    canvas->offscreen_resource_generation++;
+    if (canvas->presentation_enabled)
+        canvas->offscreen_resource_generation = ++canvas->presentation_resource_generation;
+    else
+        canvas->offscreen_resource_generation++;
     if (canvas->offscreen_resource_generation == 0)
         canvas->offscreen_resource_generation = 1;
     canvas->offscreen_ready = true;
@@ -735,6 +808,12 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
 {
     ANN(canvas);
     ANN(frame);
+    if (canvas->presentation_enabled && !canvas->presentation_admitted)
+    {
+        int admission = _dvz_canvas_presentation_try_admit(canvas);
+        if (admission != 1)
+            return -1;
+    }
     VkExtent2D extent = canvas->surface ? canvas->surface->extent : (VkExtent2D){0, 0};
     VkFormat format =
         canvas->cfg.color_format != VK_FORMAT_UNDEFINED ? canvas->cfg.color_format : DVZ_DEFAULT_COLOR_FORMAT;
@@ -743,13 +822,22 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
         canvas->offscreen_extent.height != extent.height || canvas->offscreen_format != format;
     if (resource_recreated)
     {
-        canvas_offscreen_retire_resources(canvas);
+        if (canvas->presentation_enabled)
+        {
+            canvas_offscreen_destroy_resources(canvas);
+            canvas->presentation_slots[canvas->presentation_active_slot].source_value = 0;
+            canvas_presentation_store(canvas);
+        }
+        else
+            canvas_offscreen_retire_resources(canvas);
         if (canvas_offscreen_create_resources(canvas, extent, format) != 0)
         {
+            if (canvas->presentation_enabled)
+                canvas_presentation_store(canvas);
             return -1;
         }
     }
-    if (canvas->timeline_ready && canvas->timeline_value > 0)
+    if (!canvas->presentation_enabled && canvas->timeline_ready && canvas->timeline_value > 0)
     {
         dvz_semaphore_wait(canvas->timeline_semaphore, canvas->timeline_value);
     }
@@ -813,10 +901,395 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     frame->memory_size =
         canvas->offscreen_alloc != NULL ? dvz_allocation_size(canvas->offscreen_alloc) : 0;
     frame->memory_fd = canvas->offscreen_memory_fd;
-    frame->handles_dirty = resource_recreated;
+    frame->handles_dirty = resource_recreated ||
+        (canvas->presentation_enabled &&
+         canvas->stream_resource_generation != canvas->offscreen_resource_generation);
+    if (canvas->presentation_enabled)
+        canvas_presentation_store(canvas);
     dvz_commands_free(cmds);
     return 0;
 }
+
+/**
+ * Read a canvas timeline with checked errors, without waiting for pending work.
+ *
+ * @param canvas canvas owning the timeline
+ * @param value completed timeline value
+ * @return zero on success, negative on invalid state or Vulkan failure
+ */
+static int canvas_presentation_query(DvzCanvas* canvas, uint64_t* value)
+{
+    ANN(canvas);
+    ANN(value);
+    if (!canvas->timeline_ready || canvas->timeline_semaphore == NULL)
+        return -1;
+    VkResult result = vkGetSemaphoreCounterValue(
+        dvz_device_handle(canvas->device), dvz_semaphore_handle(canvas->timeline_semaphore), value);
+    if (result != VK_SUCCESS)
+    {
+        if (result == VK_ERROR_DEVICE_LOST)
+            canvas_offscreen_transition(
+                canvas, DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST, "presentation device lost");
+        log_error("canvas presentation completion query failed (%d)", result);
+        return -1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Wait for an exact submitted canvas timeline token during retirement or teardown.
+ *
+ * @param canvas canvas owning the token
+ * @param value submitted timeline value, or zero for no outstanding work
+ * @return zero on success, negative on Vulkan failure
+ */
+static int canvas_presentation_wait(DvzCanvas* canvas, uint64_t value)
+{
+    ANN(canvas);
+    if (value == 0)
+        return 0;
+    VkSemaphore semaphore = dvz_semaphore_handle(canvas->timeline_semaphore);
+    VkSemaphoreWaitInfo wait = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
+        .semaphoreCount = 1,
+        .pSemaphores = &semaphore,
+        .pValues = &value,
+    };
+    VkResult result = vkWaitSemaphores(dvz_device_handle(canvas->device), &wait, UINT64_MAX);
+    if (result != VK_SUCCESS)
+    {
+        if (result == VK_ERROR_DEVICE_LOST)
+            canvas_offscreen_transition(
+                canvas, DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST, "retirement device lost");
+        log_error("canvas presentation retirement wait failed (%d)", result);
+        return -1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Enable a bounded presentation pool before submission, or drain and release an existing pool.
+ *
+ * @param canvas offscreen source canvas
+ * @param enabled whether to enable nonblocking presentation
+ * @return zero on success, negative on invalid configuration or completion failure
+ */
+int _dvz_canvas_presentation_configure(DvzCanvas* canvas, bool enabled)
+{
+    ANN(canvas);
+    if (canvas->presentation_enabled == enabled)
+        return 0;
+    if (!canvas_is_offscreen_mode(canvas))
+        return -1;
+    if (enabled)
+    {
+        if (canvas->timeline_value != 0 || canvas->video_sink_enabled)
+        {
+            log_error("presentation pool must be enabled before source submission without video");
+            return -1;
+        }
+        canvas->presentation_active_slot = 0;
+        canvas->presentation_display_slot = UINT32_MAX;
+        canvas->presentation_resource_generation = canvas->offscreen_resource_generation;
+        for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
+            canvas->presentation_slots[i].resources.memory_fd = DVZ_EXTERNAL_HANDLE_INVALID;
+        canvas_presentation_store(canvas);
+        canvas->presentation_enabled = true;
+        return 0;
+    }
+    canvas_presentation_store(canvas);
+    if (canvas_presentation_wait(canvas, canvas->timeline_value) < 0 &&
+        canvas->offscreen_runtime_state != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return -1;
+    for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
+    {
+        DvzCanvasPresentationSlot* slot = &canvas->presentation_slots[i];
+        if (slot->host != NULL && canvas_presentation_wait(slot->host, slot->host_value) < 0)
+        {
+            if (slot->host->offscreen_runtime_state != DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+                return -1;
+        }
+    }
+    for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
+    {
+        canvas_presentation_load(canvas, i);
+        canvas_offscreen_destroy_resources(canvas);
+        dvz_memset(&canvas->presentation_slots[i], sizeof(canvas->presentation_slots[i]), 0,
+                   sizeof(canvas->presentation_slots[i]));
+        canvas->presentation_slots[i].resources.memory_fd = DVZ_EXTERNAL_HANDLE_INVALID;
+    }
+    canvas->presentation_enabled = false;
+    canvas->presentation_admitted = false;
+    canvas->presentation_display_slot = UINT32_MAX;
+    canvas_presentation_load(canvas, 0);
+    canvas->offscreen_resource_generation = canvas->presentation_resource_generation;
+    return 0;
+}
+
+
+
+/**
+ * Admit one source frame only when a non-displayed slot has completed source and host use.
+ *
+ * @param canvas pool-enabled source canvas
+ * @return one when admitted, zero when all slots remain in use, negative on error
+ */
+int _dvz_canvas_presentation_try_admit(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (!canvas->presentation_enabled ||
+        canvas->offscreen_runtime_state == DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+        return -1;
+    if (canvas->presentation_admitted)
+        return 1;
+    uint64_t completed = 0;
+    if (canvas_presentation_query(canvas, &completed) < 0)
+        return -1;
+    canvas_presentation_store(canvas);
+    for (uint32_t offset = 1; offset <= DVZ_CANVAS_PRESENTATION_SLOT_COUNT; offset++)
+    {
+        uint32_t index = (canvas->presentation_active_slot + offset) %
+                         DVZ_CANVAS_PRESENTATION_SLOT_COUNT;
+        DvzCanvasPresentationSlot* slot = &canvas->presentation_slots[index];
+        if (index == canvas->presentation_display_slot || slot->source_value > completed)
+            continue;
+        if (slot->host != NULL && slot->host_value > 0)
+        {
+            uint64_t host_completed = 0;
+            if (canvas_presentation_query(slot->host, &host_completed) < 0)
+                return -1;
+            if (slot->host_value > host_completed)
+                continue;
+        }
+        slot->host = NULL;
+        slot->host_value = 0;
+        slot->publishable = false;
+        canvas_presentation_load(canvas, index);
+        canvas->presentation_admitted = true;
+        canvas->presentation_admission_value = canvas->timeline_value;
+        return 1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Return the completed command buffer selected for reuse, before recording or resize replaces it.
+ *
+ * @param canvas pool-enabled source canvas with an admitted slot
+ * @return borrowed completed command buffer, or NULL when the slot has no resources yet
+ */
+VkCommandBuffer _dvz_canvas_presentation_admitted_command(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    return canvas->presentation_enabled && canvas->presentation_admitted ?
+        canvas->offscreen_command_buffer : VK_NULL_HANDLE;
+}
+
+
+
+/**
+ * Enumerate a bounded owned command buffer for retirement after source completion is proven.
+ *
+ * @param canvas pool-enabled source canvas
+ * @param slot pool slot index
+ * @return borrowed command buffer, or NULL for an unused or invalid slot
+ */
+VkCommandBuffer _dvz_canvas_presentation_slot_command(DvzCanvas* canvas, uint32_t slot)
+{
+    ANN(canvas);
+    if (!canvas->presentation_enabled || slot >= DVZ_CANVAS_PRESENTATION_SLOT_COUNT)
+        return VK_NULL_HANDLE;
+    return slot == canvas->presentation_active_slot ? canvas->offscreen_command_buffer :
+        canvas->presentation_slots[slot].resources.command_buffer;
+}
+
+
+
+/**
+ * Find the newest completed source frame matching the currently requested framebuffer extent.
+ *
+ * @param canvas pool-enabled source canvas
+ * @param frame completed frame metadata borrowed until slot retirement
+ * @return one when a frame is available, zero when none is compatible, negative on error
+ */
+int _dvz_canvas_presentation_latest_completed(
+    DvzCanvas* canvas, DvzCanvasPresentationFrame* frame)
+{
+    ANN(canvas);
+    ANN(frame);
+    if (!canvas->presentation_enabled)
+        return -1;
+    dvz_canvas_window_surface_refresh(canvas);
+    uint64_t completed = 0;
+    if (canvas_presentation_query(canvas, &completed) < 0)
+        return -1;
+    uint32_t latest = UINT32_MAX;
+    for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
+    {
+        DvzCanvasPresentationSlot* slot = &canvas->presentation_slots[i];
+        if (!slot->publishable || slot->source_value == 0 || slot->source_value > completed ||
+            canvas->surface == NULL || slot->frame.extent.width != canvas->surface->extent.width ||
+            slot->frame.extent.height != canvas->surface->extent.height)
+            continue;
+        if (latest == UINT32_MAX || slot->source_value > canvas->presentation_slots[latest].source_value)
+            latest = i;
+    }
+    if (latest == UINT32_MAX)
+        return 0;
+    frame->slot = latest;
+    frame->serial = canvas->presentation_slots[latest].source_value;
+    frame->frame = canvas->presentation_slots[latest].frame;
+    return 1;
+}
+
+
+
+/**
+ * Pin a completed slot for display, replacing the previous display pin atomically.
+ *
+ * @param canvas pool-enabled source canvas
+ * @param slot completed slot index, or UINT32_MAX to release the display pin
+ * @return zero on success, negative on invalid or incomplete slot
+ */
+int _dvz_canvas_presentation_pin_display(DvzCanvas* canvas, uint32_t slot)
+{
+    ANN(canvas);
+    if (!canvas->presentation_enabled)
+        return -1;
+    if (slot != UINT32_MAX)
+    {
+        if (slot >= DVZ_CANVAS_PRESENTATION_SLOT_COUNT)
+            return -1;
+        uint64_t completed = 0;
+        if (canvas_presentation_query(canvas, &completed) < 0 ||
+            !canvas->presentation_slots[slot].publishable ||
+            canvas->presentation_slots[slot].source_value > completed)
+            return -1;
+    }
+    canvas->presentation_display_slot = slot;
+    return 0;
+}
+
+
+
+/**
+ * Retain a displayed source image until the exact submitted host frame finishes sampling it.
+ *
+ * @param canvas pool-enabled source canvas
+ * @param slot displayed slot referenced by the submitted host frame
+ * @param host borrowed host canvas, kept live until release_host is called
+ * @param value actual successfully submitted host timeline token
+ * @return zero on success, negative on invalid host or slot
+ */
+int _dvz_canvas_presentation_mark_host_use(
+    DvzCanvas* canvas, uint32_t slot, DvzCanvas* host, uint64_t value)
+{
+    ANN(canvas);
+    ANN(host);
+    if (!canvas->presentation_enabled || slot >= DVZ_CANVAS_PRESENTATION_SLOT_COUNT ||
+        host == canvas || host->device != canvas->device || value == 0 || value > host->timeline_value)
+        return -1;
+    DvzCanvasPresentationSlot* resource = &canvas->presentation_slots[slot];
+    if (resource->host != NULL && resource->host != host)
+        return -1;
+    resource->host = host;
+    if (value > resource->host_value)
+        resource->host_value = value;
+    return 0;
+}
+
+
+
+/**
+ * Drain outstanding host sampling references before that host canvas can be destroyed.
+ *
+ * @param canvas source canvas
+ * @param host host whose references must be released
+ * @return zero on success, negative on completion failure
+ */
+int _dvz_canvas_presentation_release_host(DvzCanvas* canvas, DvzCanvas* host)
+{
+    ANN(canvas);
+    ANN(host);
+    if (!canvas->presentation_enabled)
+        return 0;
+    for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
+    {
+        DvzCanvasPresentationSlot* slot = &canvas->presentation_slots[i];
+        if (slot->host != host)
+            continue;
+        if (canvas_presentation_wait(host, slot->host_value) < 0)
+            return -1;
+        slot->host = NULL;
+        slot->host_value = 0;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Report source work requiring a later host completion poll.
+ *
+ * @param canvas pool-enabled source canvas
+ * @return one while compatible work remains to complete or promote, zero when idle, negative on error
+ */
+int _dvz_canvas_presentation_pending(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (!canvas->presentation_enabled)
+        return 0;
+    uint64_t completed = 0;
+    if (canvas_presentation_query(canvas, &completed) < 0)
+        return -1;
+    if (canvas->timeline_value > completed)
+        return 1;
+    const uint64_t displayed = canvas->presentation_display_slot <
+        DVZ_CANVAS_PRESENTATION_SLOT_COUNT ?
+        canvas->presentation_slots[canvas->presentation_display_slot].source_value : 0;
+    for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
+    {
+        const DvzCanvasPresentationSlot* slot = &canvas->presentation_slots[i];
+        if (slot->publishable && slot->source_value > displayed && canvas->surface != NULL &&
+            slot->frame.extent.width == canvas->surface->extent.width &&
+            slot->frame.extent.height == canvas->surface->extent.height)
+            return 1;
+    }
+    return 0;
+}
+
+
+
+/**
+ * Reject failed frame contents without discarding their submitted GPU lifetime token.
+ *
+ * @param canvas pool-enabled source canvas
+ */
+void _dvz_canvas_presentation_reject_submission(DvzCanvas* canvas)
+{
+    ANN(canvas);
+    if (!canvas->presentation_enabled)
+        return;
+    DvzCanvasPresentationSlot* slot = &canvas->presentation_slots[canvas->presentation_active_slot];
+    slot->publishable = false;
+    if (slot->source_value <= canvas->presentation_admission_value)
+    {
+        canvas->offscreen_layout = slot->source_value > 0 ? VK_IMAGE_LAYOUT_GENERAL :
+                                                          VK_IMAGE_LAYOUT_UNDEFINED;
+        canvas->offscreen_depth_layout = slot->source_value > 0 ?
+            dvz_canvas_depth_layout(canvas->cfg.depth_format) : VK_IMAGE_LAYOUT_UNDEFINED;
+    }
+    canvas_presentation_store(canvas);
+    canvas->presentation_admitted = false;
+}
+
+
 
 static bool canvas_device_check_extensions(DvzCanvas* canvas)
 {
@@ -1706,6 +2179,8 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
         dvz_stream_sink_registry_destroy(canvas->sink_registry);
         canvas->sink_registry = NULL;
     }
+    if (canvas->presentation_enabled)
+        (void)_dvz_canvas_presentation_configure(canvas, false);
     canvas_offscreen_destroy_retired_resources(canvas);
     canvas_offscreen_destroy_resources(canvas);
     canvas_destroy_timeline(canvas);
@@ -1954,6 +2429,27 @@ int dvz_canvas_submit(DvzCanvas* canvas)
             return -1;
         }
         offscreen_submit_signaled = true;
+        if (canvas->presentation_enabled)
+        {
+            DvzCanvasPresentationSlot* slot =
+                &canvas->presentation_slots[canvas->presentation_active_slot];
+            slot->source_value = wait_value;
+            slot->publishable = false;
+            slot->frame = (DvzCanvasLiveImageFrame){
+                .frame_id = canvas->frame_id,
+                .wait_value = wait_value,
+                .color_format = canvas->offscreen_format,
+                .image = canvas->offscreen_image,
+                .image_view = canvas->offscreen_view,
+                .command_buffer = canvas->offscreen_command_buffer,
+                .extent = canvas->offscreen_extent,
+                .resource_generation = canvas->offscreen_resource_generation,
+                .image_valid = true,
+                .memory_fd = canvas->offscreen_memory_fd,
+                .wait_semaphore_fd = DVZ_EXTERNAL_HANDLE_INVALID,
+            };
+            canvas_presentation_store(canvas);
+        }
     }
     int result = dvz_canvas_stream_submit(canvas, wait_value);
     if (canvas_is_offscreen_mode(canvas))
@@ -1965,13 +2461,17 @@ int dvz_canvas_submit(DvzCanvas* canvas)
         if (result == 0)
         {
             canvas_offscreen_transition(canvas, DVZ_CANVAS_OFFSCREEN_STATE_READY, "submit done");
-            canvas_offscreen_destroy_retired_resources(canvas);
+            if (canvas->presentation_enabled)
+                canvas->presentation_slots[canvas->presentation_active_slot].publishable = true;
+            else
+                canvas_offscreen_destroy_retired_resources(canvas);
         }
         else
         {
             canvas_offscreen_transition(
                 canvas, DVZ_CANVAS_OFFSCREEN_STATE_DRAW_PENDING, "stream submit failed");
         }
+        canvas->presentation_admitted = false;
     }
     else if (result == 0)
     {

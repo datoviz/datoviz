@@ -2007,6 +2007,230 @@ scoped_completion_cleanup:
 /**
  * Validate live-image resource generations advance only when offscreen resources are recreated.
  */
+/**
+ * Keep presentation images bounded, preserve displayed/in-flight slots, and retry rejected work.
+ *
+ * @param suite test context
+ * @param item test descriptor
+ * @return zero on success
+ */
+static int test_canvas_offscreen_presentation_pool(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const char* skip_reason = NULL;
+    DvzInstance* instance = NULL;
+    DvzDevice* device = NULL;
+    DvzWindowHost* host = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    if (!canvas_test_create_instance_device(suite, &instance, &device, &skip_reason))
+        goto presentation_cleanup;
+    host = dvz_window_host();
+    ANN(host);
+    DvzWindowConfig wc = dvz_window_config();
+    wc.width = 64;
+    wc.height = 64;
+    window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &wc);
+    if (window == NULL)
+    {
+        skip_reason = "headless window creation failed";
+        goto presentation_cleanup;
+    }
+    DvzCanvasConfig cfg = dvz_canvas_config();
+    cfg.device = device;
+    cfg.window = window;
+    cfg.render_mode = DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
+    canvas = dvz_canvas_create(&cfg);
+    AT(canvas != NULL);
+    AT(_dvz_canvas_presentation_configure(canvas, true) == 0);
+    DvzCanvasPresentationFrame completed = {0};
+    AT(_dvz_canvas_presentation_latest_completed(canvas, &completed) == 0);
+    AT(_dvz_canvas_presentation_try_admit(canvas) == 1);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(_dvz_canvas_wait_offscreen_frame(canvas) == 0);
+    AT(_dvz_canvas_presentation_latest_completed(canvas, &completed) == 1);
+    AT(_dvz_canvas_presentation_pin_display(canvas, completed.slot) == 0);
+    const uint32_t displayed_slot = completed.slot;
+    const VkImage displayed_image = completed.frame.image;
+    const uint64_t displayed_serial = completed.serial;
+    AT(_dvz_canvas_presentation_pending(canvas) == 0);
+
+    // Hold MAIN so two additional submitted source images are certainly still incomplete.
+    DvzSemaphore* gate = dvz_semaphore_create_wrapper();
+    ANN(gate);
+    dvz_semaphore_timeline(device, 0, gate, 0);
+    VkCommandBuffer gate_command =
+        dvz_command_buffer_alloc(device, canvas->offscreen_queue_family);
+    DvzCommands* cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(device, gate_command, cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_end(cmds);
+    dvz_commands_free(cmds);
+    DvzSubmit* gate_submit = dvz_submit_create_wrapper();
+    ANN(gate_submit);
+    dvz_submit(gate_submit);
+    dvz_submit_command(gate_submit, gate_command);
+    dvz_submit_wait(
+        gate_submit, dvz_semaphore_handle(gate), 1, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+    int gate_result = dvz_submit_send(gate_submit, canvas->offscreen_queue, VK_NULL_HANDLE);
+    dvz_submit_free(gate_submit);
+    AT(gate_result == VK_SUCCESS);
+    DvzThread* release = dvz_thread(canvas_completion_gate_release, gate);
+    ANN(release);
+    bool admitted[2] = {0};
+    uint32_t pending_slots[2] = {UINT32_MAX, UINT32_MAX};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        if (_dvz_canvas_presentation_try_admit(canvas) != 1)
+            break;
+        pending_slots[i] = canvas->presentation_active_slot;
+        if (dvz_canvas_frame(canvas) != DVZ_CANVAS_FRAME_READY || dvz_canvas_submit(canvas) != 0)
+            break;
+        admitted[i] = true;
+    }
+    const int exhausted = _dvz_canvas_presentation_try_admit(canvas);
+    DvzCanvasPresentationFrame while_pending = {0};
+    const int pending_latest = _dvz_canvas_presentation_latest_completed(canvas, &while_pending);
+    const int pending = _dvz_canvas_presentation_pending(canvas);
+    const uint64_t gate_when_returned = dvz_semaphore_query(gate);
+    dvz_thread_join(release);
+    const int drained = _dvz_canvas_wait_offscreen_frame(canvas);
+    dvz_command_buffer_free(device, canvas->offscreen_queue_family, gate_command);
+    dvz_semaphore_destroy(gate);
+    dvz_semaphore_free(gate);
+    AT(drained == 0);
+    AT(admitted[0] && admitted[1]);
+    AT(pending_slots[0] != displayed_slot && pending_slots[1] != displayed_slot);
+    AT(pending_slots[0] != pending_slots[1]);
+    AT(exhausted == 0);
+    AT(pending_latest == 1 && while_pending.serial == displayed_serial);
+    AT(while_pending.frame.image == displayed_image);
+    AT(pending == 1);
+    AT(gate_when_returned == 0);
+    AT(_dvz_canvas_presentation_latest_completed(canvas, &completed) == 1);
+    AT(completed.slot == pending_slots[1]);
+    AT(completed.serial > displayed_serial);
+    AT(_dvz_canvas_presentation_pin_display(canvas, completed.slot) == 0);
+
+    // A former display remains borrowed until its submitted host frame finishes sampling it.
+    DvzCanvas* sampling_host = dvz_canvas_create(&cfg);
+    AT(sampling_host != NULL);
+    DvzSemaphore* host_gate = dvz_semaphore_create_wrapper();
+    ANN(host_gate);
+    dvz_semaphore_timeline(device, 0, host_gate, 0);
+    VkCommandBuffer host_gate_command =
+        dvz_command_buffer_alloc(device, canvas->offscreen_queue_family);
+    cmds = dvz_commands_create_wrapper();
+    ANN(cmds);
+    dvz_commands_wrap(device, host_gate_command, cmds);
+    dvz_cmd_begin(cmds);
+    dvz_cmd_end(cmds);
+    dvz_commands_free(cmds);
+    gate_submit = dvz_submit_create_wrapper();
+    ANN(gate_submit);
+    dvz_submit(gate_submit);
+    dvz_submit_command(gate_submit, host_gate_command);
+    dvz_submit_wait(
+        gate_submit, dvz_semaphore_handle(host_gate), 1, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+    gate_result = dvz_submit_send(gate_submit, canvas->offscreen_queue, VK_NULL_HANDLE);
+    dvz_submit_free(gate_submit);
+    AT(gate_result == VK_SUCCESS);
+    release = dvz_thread(canvas_completion_gate_release, host_gate);
+    ANN(release);
+    bool host_submitted = dvz_canvas_frame(sampling_host) == DVZ_CANVAS_FRAME_READY;
+    if (host_submitted)
+        host_submitted = dvz_canvas_submit(sampling_host) == 0;
+    int mark_host = host_submitted ? _dvz_canvas_presentation_mark_host_use(
+        canvas, displayed_slot, sampling_host, sampling_host->timeline_value) : -1;
+    int host_admission = _dvz_canvas_presentation_try_admit(canvas);
+    uint32_t while_host_slot = canvas->presentation_active_slot;
+    bool submitted_while_host = host_admission == 1;
+    if (submitted_while_host)
+        submitted_while_host = dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY &&
+                               dvz_canvas_submit(canvas) == 0;
+    int host_exhausted = _dvz_canvas_presentation_try_admit(canvas);
+    uint64_t host_gate_when_returned = dvz_semaphore_query(host_gate);
+    dvz_thread_join(release);
+    int host_drained = _dvz_canvas_wait_offscreen_frame(canvas);
+    int host_released = _dvz_canvas_presentation_release_host(canvas, sampling_host);
+    dvz_command_buffer_free(device, canvas->offscreen_queue_family, host_gate_command);
+    dvz_semaphore_destroy(host_gate);
+    dvz_semaphore_free(host_gate);
+    dvz_canvas_destroy(sampling_host);
+    AT(host_submitted && mark_host == 0);
+    AT(host_admission == 1 && submitted_while_host);
+    AT(while_host_slot != displayed_slot && while_host_slot != completed.slot);
+    AT(host_exhausted == 0);
+    AT(host_gate_when_returned == 0);
+    AT(host_drained == 0 && host_released == 0);
+    AT(canvas->presentation_slots[displayed_slot].resources.image == displayed_image);
+
+    // A completed image from the previous extent must not promote after a new size is committed.
+    const uint32_t old_display = completed.slot;
+    const VkImage old_image = completed.frame.image;
+    dvz_window_backend_emit_resize(window, 96, 80, 96, 80, 1.0f, 1.0f);
+    AT(_dvz_canvas_presentation_latest_completed(canvas, &completed) == 0);
+    AT(canvas->presentation_slots[old_display].resources.image == old_image);
+    AT(_dvz_canvas_presentation_try_admit(canvas) == 1);
+    AT(canvas->presentation_active_slot != old_display);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(_dvz_canvas_wait_offscreen_frame(canvas) == 0);
+    AT(_dvz_canvas_presentation_latest_completed(canvas, &completed) == 1);
+    AT(completed.frame.extent.width == 96 && completed.frame.extent.height == 80);
+    AT(_dvz_canvas_presentation_pin_display(canvas, completed.slot) == 0);
+    const uint64_t valid_serial = completed.serial;
+
+    // An unsent failed frame cannot promote; a later valid retry still can.
+    AT(_dvz_canvas_presentation_try_admit(canvas) == 1);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    dvz_canvas_test_force_offscreen_submit_status(canvas, VK_ERROR_INITIALIZATION_FAILED);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_canvas_submit(canvas) < 0);
+    _dvz_canvas_presentation_reject_submission(canvas);
+    AT(_dvz_canvas_presentation_latest_completed(canvas, &completed) == 1);
+    AT(completed.serial == valid_serial);
+    AT(_dvz_canvas_presentation_try_admit(canvas) == 1);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(_dvz_canvas_wait_offscreen_frame(canvas) == 0);
+    // A submitted but rejected draw must retain its lifetime token without becoming visible.
+    _dvz_canvas_presentation_reject_submission(canvas);
+    AT(_dvz_canvas_presentation_latest_completed(canvas, &completed) == 1);
+    AT(completed.serial == valid_serial);
+    AT(_dvz_canvas_presentation_try_admit(canvas) == 1);
+    AT(dvz_canvas_frame(canvas) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_canvas_submit(canvas) == 0);
+    AT(_dvz_canvas_wait_offscreen_frame(canvas) == 0);
+    AT(_dvz_canvas_presentation_latest_completed(canvas, &completed) == 1);
+    AT(completed.serial > valid_serial);
+    AT(_dvz_canvas_presentation_pin_display(canvas, completed.slot) == 0);
+    AT(_dvz_canvas_presentation_pending(canvas) == 0);
+    uint32_t resource_count = 0;
+    for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
+        if (_dvz_canvas_presentation_slot_command(canvas, i) != VK_NULL_HANDLE)
+            resource_count++;
+    AT(resource_count == 3);
+    AT(_dvz_canvas_presentation_configure(canvas, false) == 0);
+    AT(!canvas->presentation_enabled && !canvas->offscreen_ready);
+
+presentation_cleanup:
+    if (skip_reason != NULL)
+        tst_skip(suite, skip_reason);
+    if (canvas != NULL)
+        dvz_canvas_destroy(canvas);
+    if (window != NULL)
+        dvz_window_destroy(window);
+    if (host != NULL)
+        dvz_window_host_destroy(host);
+    canvas_test_destroy_instance_device(instance, device);
+    return 0;
+}
+
+
+
 static int test_canvas_offscreen_live_generation_on_resize(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -2522,6 +2746,9 @@ int test_canvas(TstSuite* suite)
         TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_offscreen_scoped_completion,
+        TST_CANVAS_VK_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
+    TST_CANVAS_CASE(
+        test_canvas_offscreen_presentation_pool,
         TST_CANVAS_VK_RES | TST_RES_LOG_CAPTURE, TST_ISOLATION_PROCESS);
     TST_CANVAS_CASE(
         test_canvas_offscreen_live_generation_on_resize, TST_CANVAS_VK_RES,
