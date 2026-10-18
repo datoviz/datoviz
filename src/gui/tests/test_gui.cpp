@@ -2330,6 +2330,7 @@ static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* 
             break;
     }
     AT(state_a.displayed_serial > failed_submission_token + 1);
+    AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
 
     const uint64_t idle_source_frames_a = state_a.source_frame_count;
     const uint64_t idle_source_frames_b = state_b.source_frame_count;

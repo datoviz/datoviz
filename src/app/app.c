@@ -6854,6 +6854,10 @@ int dvz_view_render_once(DvzView* win)
 #endif
         if (submit_result != 0)
         {
+            // Emission consumed retained dirtiness, but an unsent command buffer applied none
+            // of its uploads or layout transitions. Rebuild runtime state before retrying.
+            if (win->canvas->timeline_value == previous_value)
+                _app_runtime_recovery_defer(win->app);
             win->dirty = win->dirty || dirty_before;
             win->frame_requested = win->frame_requested || requested_before;
             return -1;

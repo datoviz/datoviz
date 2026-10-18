@@ -8301,7 +8301,7 @@ static void _app_query_after_submit_callback(DvzView* view, void* user_data)
 
 
 /**
- * Query newly submitted geometry before a frame callback changes it for the next frame.
+ * Retry unsent geometry uploads and query them before a callback changes the following frame.
  *
  * @param suite active test context
  * @param item active test descriptor
@@ -8339,6 +8339,18 @@ int test_app_offscreen_query_observes_submitted_geometry_before_callback(
     DvzView* view = dvz_view_offscreen(app, figure, 64, 64);
     ANN(view);
     AT(dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY);
+    DvzCanvas* canvas = dvz_view_canvas(view);
+    ANN(canvas);
+    uint32_t capture_width = 0;
+    uint32_t capture_height = 0;
+    unsigned char* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(canvas, &capture_width, &capture_height, &rgba) == DVZ_OK);
+    AT(capture_width == 64 && capture_height == 64);
+    ANN(rgba);
+    const uint32_t center = 4 * (32 * 64 + 32);
+    AT(rgba[center] < 100 && rgba[center + 1] < 100 && rgba[center + 2] < 100);
+    dvz_free(rgba);
+    rgba = NULL;
 
     vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
     AT(dvz_visual_set_data(points, "position", position, 1) == 0);
@@ -8348,7 +8360,14 @@ int test_app_offscreen_query_observes_submitted_geometry_before_callback(
                               .target = DVZ_SCENE_TARGET_ITEM}) == 0);
     AppQueryAfterSubmitProbe probe = {.points = points, .mutation_status = -1};
     AT(dvz_view_set_frame_callback(view, _app_query_after_submit_callback, &probe) == DVZ_OK);
+    const uint64_t submitted_before_failure = canvas->timeline_value;
+    dvz_canvas_test_force_offscreen_submit_status(canvas, VK_ERROR_INITIALIZATION_FAILED);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_view_render_once(view) < 0);
+    AT(canvas->timeline_value == submitted_before_failure);
+    AT(probe.callback_count == 0);
+    AT(scene->pending_query_count == 1);
     AT(dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY);
+    AT(canvas->timeline_value > submitted_before_failure);
     AT(probe.callback_count == 1);
     AT(probe.query_ready);
     AT(probe.result.request_id == 101);
@@ -8356,6 +8375,15 @@ int test_app_offscreen_query_observes_submitted_geometry_before_callback(
     AT(probe.result.resolved_id == 0);
     AT(probe.mutation_status == 0);
     AT(scene->pending_query_count == 0);
+
+    // Query geometry has its own upload path. Check the actual submitted color target too:
+    // retained CPU data has already moved right, while this frame must show the retried center.
+    AT(dvz_canvas_capture_rgba(canvas, &capture_width, &capture_height, &rgba) == DVZ_OK);
+    AT(capture_width == 64 && capture_height == 64);
+    ANN(rgba);
+    AT(rgba[center] > 200 && rgba[center + 1] > 200 && rgba[center + 2] > 200);
+    dvz_free(rgba);
+    rgba = NULL;
 
     AT(dvz_view_set_frame_callback(view, NULL, NULL) == DVZ_OK);
     AT(dvz_panel_query_px(
