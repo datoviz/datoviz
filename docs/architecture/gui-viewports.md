@@ -42,6 +42,25 @@ The resulting windows are sibling docks. Resizing the sidebar therefore resizes 
 offscreen source app-window.
 
 
+## Presentation policy
+
+GUI viewports use strict same-frame presentation by default: the host resolves and waits for the requested source submission before sampling it. Native Vulkan applications can opt into last-completed-image presentation when creating a viewport:
+
+```c
+DvzGuiViewportConfig config = dvz_gui_viewport_config();
+config.viewport_flags |= DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING;
+DvzGuiViewport* viewport = dvz_gui_viewport(gui, figure, &config);
+```
+
+The equivalent Python configuration uses `config.viewport_flags |= dvz.DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING` before passing the configuration to `dvz_gui_viewport()`. This is the existing native Dear ImGui path; it does not add browser GUI viewport support.
+
+Nonblocking presentation keeps the latest completed source image visible while newer source work runs. It uses three canvas-owned targets and defers new source work when no target is safe to reuse. The first image may appear on a later host frame. Resize retains the previous image until a compatible replacement completes. Hidden viewports keep their image without submitting new source work unless background rendering is enabled.
+
+Input continues to update the source on the owner thread. The displayed image can therefore precede the current source state; use strict presentation for tools that require the image and current query or capture state to agree in the same frame. A source can belong to one GUI viewport. The advanced `dvz_gui_viewport_from_window()` path requires enabling nonblocking presentation before that source submits its first frame.
+
+With `DVZ_APP_FRAME_TIMING=1`, cumulative submission, promotion, reuse and busy-admission counts appear alongside the existing app frame timings. These counters distinguish a faster host loop from actual source-image progress; they do not measure input-to-photon latency.
+
+
 ## Raw ImGui C API
 
 Datoviz also exposes the generated cimgui binding through `datoviz/imgui.h`. This is the raw

@@ -1501,6 +1501,8 @@ int test_app_offscreen_resize_reuses_runtime_with_mesh_and_image(
     TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_query_request_steady_state(TstContext* suite, const TstCase* item);
+int test_app_offscreen_query_observes_submitted_geometry_before_callback(
+    TstContext* suite, const TstCase* item);
 
 int test_app_offscreen_gsp_first_slice_smoke(TstContext* suite, const TstCase* item);
 

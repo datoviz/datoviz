@@ -38,6 +38,7 @@
 
 #include "_alloc.h"
 #include "../app/_app.h"
+#include "../canvas/_canvas_presentation.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
@@ -144,6 +145,7 @@ struct DvzGui
     bool had_active_item;
     bool had_open_popup;
     bool callback_active;
+    bool resolving_viewports;
     uint32_t data_window_depth;
     uint64_t frame_index;
 };
@@ -158,6 +160,18 @@ struct DvzGuiViewport
     DvzGuiViewportConfig config;
     VkSampler sampler;
     VkDescriptorSet texture;
+    VkDescriptorSet presentation_textures[DVZ_CANVAS_PRESENTATION_SLOT_COUNT];
+    VkImageView presentation_views[DVZ_CANVAS_PRESENTATION_SLOT_COUNT];
+    uint64_t presentation_generations[DVZ_CANVAS_PRESENTATION_SLOT_COUNT];
+    uint32_t displayed_slot;
+    uint64_t displayed_serial;
+    uint64_t promotion_count;
+    uint64_t reuse_count;
+    uint64_t busy_count;
+    bool nonblocking;
+    bool frame_sampled;
+    bool destroy_requested;
+    bool source_failure_reported;
     VkDescriptorSet retired_textures[DVZ_GUI_VIEWPORT_RETIRED_TEXTURE_CAPACITY];
     uint32_t retired_texture_count;
     VkImage image;
@@ -852,6 +866,7 @@ static void _gui_viewport_reset_frame_request(DvzGuiViewport* viewport)
     ANN(viewport);
     viewport->frame_visible = false;
     viewport->frame_resolved = false;
+    viewport->frame_sampled = false;
     viewport->frame_request_width = 0;
     viewport->frame_request_height = 0;
     viewport->frame_request_framebuffer_width = 0;
@@ -897,7 +912,7 @@ static void _gui_viewport_draw_resolved(DvzGuiViewport* viewport)
     ANN(viewport);
     if (!viewport->frame_visible || viewport->frame_draw_list == NULL)
         return;
-    if (!_gui_viewport_frame_matches_request(viewport))
+    if (!viewport->nonblocking && !_gui_viewport_frame_matches_request(viewport))
         return;
     if (!_gui_viewport_display_drawable(viewport) || !_gui_viewport_ensure_texture(viewport))
         return;
@@ -906,6 +921,7 @@ static void _gui_viewport_draw_resolved(DvzGuiViewport* viewport)
         (ImTextureID)viewport->texture, viewport->frame_image_min, viewport->frame_image_max,
         ImVec2(0, 0), ImVec2(1, 1));
     viewport->frame_resolved = true;
+    viewport->frame_sampled = true;
 }
 
 
@@ -1255,6 +1271,29 @@ static bool _gui_viewport_ensure_texture(DvzGuiViewport* viewport)
     {
         return false;
     }
+    if (viewport->nonblocking)
+    {
+        const uint32_t slot = viewport->displayed_slot;
+        if (slot >= DVZ_CANVAS_PRESENTATION_SLOT_COUNT)
+            return false;
+        if (viewport->presentation_views[slot] != viewport->image_view ||
+            viewport->presentation_generations[slot] != viewport->resource_generation)
+        {
+            // Canvas only replaces reusable slots after all prior host uses complete.
+            _gui_viewport_free_texture(gui, viewport->presentation_textures[slot]);
+            viewport->presentation_textures[slot] = VK_NULL_HANDLE;
+            viewport->presentation_views[slot] = viewport->image_view;
+            viewport->presentation_generations[slot] = viewport->resource_generation;
+        }
+        if (viewport->presentation_textures[slot] == VK_NULL_HANDLE)
+        {
+            _gui_set_current(gui);
+            viewport->presentation_textures[slot] = ImGui_ImplVulkan_AddTexture(
+                viewport->sampler, viewport->image_view, VK_IMAGE_LAYOUT_GENERAL);
+        }
+        viewport->texture = viewport->presentation_textures[slot];
+        return viewport->texture != VK_NULL_HANDLE;
+    }
     if (!viewport->texture_dirty && viewport->texture != VK_NULL_HANDLE)
         return true;
 
@@ -1341,6 +1380,8 @@ static int _gui_viewport_live_image_callback(
     ANN(frame);
     DvzGuiViewport* viewport = (DvzGuiViewport*)user_data;
     ANN(viewport);
+    if (viewport->nonblocking)
+        return 0; // Submission notification is not a completed-image lease.
     if (!frame->image_valid || frame->image_view == VK_NULL_HANDLE || frame->extent.width == 0 ||
         frame->extent.height == 0 || frame->resource_generation == 0)
     {
@@ -1616,6 +1657,14 @@ static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
 {
     if (viewport == NULL)
         return;
+    // The current host command may already reference this descriptor/image but is not submitted
+    // yet. Keep its display pin and list entry until submission commits or cancels that use.
+    if (viewport->frame_sampled ||
+        (viewport->gui != NULL && viewport->gui->resolving_viewports))
+    {
+        viewport->destroy_requested = true;
+        return;
+    }
     DvzGui* gui = viewport->gui;
     if (gui != NULL)
     {
@@ -1633,6 +1682,17 @@ static void _gui_viewport_destroy(DvzGuiViewport* viewport, bool detach)
     {
         _dvz_view_gui_viewport_detach(viewport->source);
         viewport->source_managed = false;
+    }
+    if (viewport->nonblocking && viewport->canvas != NULL)
+    {
+        if (gui != NULL)
+            (void)_dvz_canvas_presentation_release_host(
+                viewport->canvas, dvz_view_canvas(gui->view));
+        (void)_dvz_canvas_presentation_pin_display(viewport->canvas, UINT32_MAX);
+        for (uint32_t i = 0; i < DVZ_CANVAS_PRESENTATION_SLOT_COUNT; i++)
+            _gui_viewport_free_texture(gui, viewport->presentation_textures[i]);
+        viewport->texture = VK_NULL_HANDLE;
+        (void)_dvz_canvas_presentation_configure(viewport->canvas, false);
     }
     _gui_viewport_retire_texture(viewport);
     _gui_viewport_collect_retired_textures(viewport, true);
@@ -2130,8 +2190,14 @@ void _dvz_gui_destroy(DvzGui* gui)
 
     dvz_window_glfw_set_input_callbacks(gui->window, NULL, NULL);
     _gui_set_current(gui);
+    gui->resolving_viewports = false;
     while (gui->viewports != NULL)
+    {
+        // Closing the host cancels any recorded frame that was never submitted. Submitted
+        // references already have committed tokens and are drained by viewport destruction.
+        gui->viewports->frame_sampled = false;
         _gui_viewport_destroy(gui->viewports, true);
+    }
     if (gui->vulkan_initialized)
         ImGui_ImplVulkan_Shutdown();
     if (gui->glfw_initialized)
@@ -2209,9 +2275,9 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
  * Resolve all visible GUI viewport presentation requests for the current ImGui frame.
  *
  * @param gui GUI overlay
- * @param callback callback synchronizing one offscreen source view when it has pending work
+ * @param callback callback admitting source work or synchronizing a strict source
  * @param user_data opaque callback user data
- * @return whether all visible viewport requests were resolved exactly
+ * @return whether no fatal presentation failure occurred
  */
 bool _dvz_gui_resolve_viewports(
     DvzGui* gui, DvzGuiViewportResolveCallback callback, void* user_data)
@@ -2219,43 +2285,195 @@ bool _dvz_gui_resolve_viewports(
     ANN(gui);
     _gui_set_current(gui);
     bool ok = true;
+    gui->resolving_viewports = true;
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+        if (!viewport->frame_visible)
+            _gui_viewport_set_visible(viewport, false);
+    // Admit every nonblocking source before any strict source can wait for completion.
+    for (uint32_t strict_pass = 0; strict_pass < 2; strict_pass++)
     for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
     {
-        if (!viewport->frame_visible)
+        if (viewport->destroy_requested || viewport->nonblocking != (strict_pass == 0))
+            continue;
+        const bool render_hidden =
+            (viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0;
+        if (!viewport->frame_visible && !(viewport->nonblocking && render_hidden))
             continue;
         if (viewport->source == NULL)
         {
             ok = false;
             continue;
         }
-
-        const uint32_t target_width = viewport->frame_request_width;
-        const uint32_t target_height = viewport->frame_request_height;
-        if (!_gui_viewport_resolve_resize(viewport, target_width, target_height))
+        if (viewport->frame_visible && !_gui_viewport_resolve_resize(
+                viewport, viewport->frame_request_width, viewport->frame_request_height))
         {
             viewport->frame_request_width = viewport->requested_width;
             viewport->frame_request_height = viewport->requested_height;
             viewport->frame_request_framebuffer_width = viewport->requested_framebuffer_width;
             viewport->frame_request_framebuffer_height = viewport->requested_framebuffer_height;
         }
-        if (callback == NULL || callback(viewport->source, user_data) < 0)
+        if (viewport->nonblocking)
+        {
+            DvzCanvasPresentationFrame completed = {};
+            const int ready = _dvz_canvas_presentation_latest_completed(viewport->canvas, &completed);
+            if (ready < 0)
+            {
+                ok = false;
+                continue;
+            }
+            if (ready > 0 && completed.serial > viewport->displayed_serial)
+            {
+                if (_dvz_canvas_presentation_pin_display(viewport->canvas, completed.slot) < 0)
+                {
+                    ok = false;
+                    continue;
+                }
+                viewport->displayed_slot = completed.slot;
+                viewport->displayed_serial = completed.serial;
+                viewport->image = completed.frame.image;
+                viewport->image_view = completed.frame.image_view;
+                viewport->extent = completed.frame.extent;
+                viewport->resource_generation = completed.frame.resource_generation;
+                viewport->image_valid = viewport->has_frame = true;
+                viewport->promotion_count++;
+            }
+            else if (viewport->has_frame)
+                viewport->reuse_count++;
+        }
+        const int result = callback == NULL ? -1 :
+            callback(viewport->source, viewport->nonblocking, user_data);
+        if (viewport->destroy_requested)
+            continue;
+        if (result < 0)
         {
             ok = false;
             continue;
         }
-        if (!_gui_viewport_frame_matches_request(viewport))
+        if (viewport->nonblocking)
         {
-            log_error(
-                "Datoviz GUI viewport unresolved: requested %ux%u framebuffer, got %ux%u",
-                viewport->frame_request_framebuffer_width,
-                viewport->frame_request_framebuffer_height,
-                viewport->extent.width, viewport->extent.height);
+            if (result == DVZ_GUI_VIEWPORT_SOURCE_RETRY && !viewport->source_failure_reported)
+                log_warn("Datoviz GUI viewport retains its completed image after source failure");
+            if (result == DVZ_GUI_VIEWPORT_SOURCE_RETRY)
+                viewport->source_failure_reported = true;
+            else if (result == DVZ_GUI_VIEWPORT_SOURCE_SUBMITTED)
+                viewport->source_failure_reported = false;
+            if (result == DVZ_GUI_VIEWPORT_SOURCE_BUSY)
+                viewport->busy_count++;
+            if (result == DVZ_GUI_VIEWPORT_SOURCE_SUBMITTED)
+                viewport->source_frame_count++;
+            const int pending = _dvz_canvas_presentation_pending(viewport->canvas);
+            if (pending < 0)
+                ok = false;
+            else if (pending > 0 || result > 0)
+                _gui_request_frame(gui);
+        }
+        else if (!_gui_viewport_frame_matches_request(viewport))
+        {
+            log_error("Datoviz GUI viewport did not resolve its requested framebuffer extent");
             ok = false;
             continue;
         }
-        _gui_viewport_draw_resolved(viewport);
     }
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+        if (!viewport->destroy_requested)
+            _gui_viewport_draw_resolved(viewport);
+    gui->resolving_viewports = false;
     return ok;
+}
+
+
+/**
+ * Commit host references only when the canvas actually submitted GPU work.
+ *
+ * @param gui host overlay
+ * @param host host canvas whose timeline owns the submitted commands
+ * @param value successful submission token, or zero to cancel unsubmitted references
+ */
+void _dvz_gui_frame_submitted(DvzGui* gui, DvzCanvas* host, uint64_t value)
+{
+    ANN(gui);
+    DvzGuiViewport* viewport = gui->viewports;
+    while (viewport != NULL)
+    {
+        DvzGuiViewport* next = viewport->next;
+        if (viewport->nonblocking && viewport->frame_sampled && value > 0)
+            if (_dvz_canvas_presentation_mark_host_use(
+                    viewport->canvas, viewport->displayed_slot, host, value) < 0)
+                gui->failed = true;
+        viewport->frame_sampled = false;
+        if (viewport->destroy_requested)
+            _gui_viewport_destroy(viewport, true);
+        viewport = next;
+    }
+}
+
+
+
+/**
+ * Report cumulative presentation progress alongside the opt-in app frame timing report.
+ *
+ * @param gui host overlay
+ * @param host_index owning view index in the app timing report
+ */
+void _dvz_gui_presentation_report(DvzGui* gui, uint32_t host_index)
+{
+    ANN(gui);
+    uint32_t index = 0;
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+    {
+        if (viewport->nonblocking)
+            dvz_fprintf(
+                stdout,
+                "gui_viewport_presentation: host=%u viewport=%u cumulative_submitted=%llu "
+                "displayed_serial=%llu cumulative_promotions=%llu cumulative_reuses=%llu "
+                "cumulative_busy=%llu\n",
+                host_index, index, (unsigned long long)viewport->source_frame_count,
+                (unsigned long long)viewport->displayed_serial,
+                (unsigned long long)viewport->promotion_count,
+                (unsigned long long)viewport->reuse_count,
+                (unsigned long long)viewport->busy_count);
+        index++;
+    }
+}
+
+
+
+/**
+ * Wake the host of a visible embedded source after explicit or scene demand.
+ *
+ * @param gui potential host overlay
+ * @param source source whose owner requested work
+ */
+void _dvz_gui_source_requested(DvzGui* gui, DvzView* source)
+{
+    ANN(gui);
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+        if (viewport->source == source && (viewport->visible ||
+            (viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0))
+        {
+            _gui_request_frame(gui);
+            return;
+        }
+}
+
+
+
+/**
+ * Inspect embedded demand on the owner thread after a worker has woken the app scheduler.
+ *
+ * @param gui potential host overlay
+ * @return whether a visible or explicitly background-rendered source needs admission
+ */
+bool _dvz_gui_sources_need_frame(DvzGui* gui)
+{
+    ANN(gui);
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+        if (!viewport->destroy_requested && viewport->source != NULL &&
+            (viewport->visible ||
+             (viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN) != 0) &&
+            _dvz_view_needs_frame(viewport->source))
+            return true;
+    return false;
 }
 
 
@@ -2407,6 +2625,10 @@ bool _dvz_gui_viewport_debug_state(
     }
     out->displayed_resource_generation = viewport->resource_generation;
     out->source_frame_count = viewport->source_frame_count;
+    out->displayed_serial = viewport->displayed_serial;
+    out->promotion_count = viewport->promotion_count;
+    out->reuse_count = viewport->reuse_count;
+    out->busy_count = viewport->busy_count;
     out->stale_frame_count = viewport->stale_frame_count;
     out->has_frame = viewport->has_frame;
     out->image_valid = viewport->image_valid;
@@ -3298,6 +3520,22 @@ static DvzGuiViewport* _gui_viewport_from_window(
     viewport->config = _gui_viewport_config_normalize(config);
     viewport->owns_source = owns_source;
     viewport->texture_dirty = true;
+    viewport->displayed_slot = UINT32_MAX;
+    viewport->nonblocking =
+        (viewport->config.viewport_flags & DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING) != 0;
+    if (!_dvz_view_gui_viewport_attach(source))
+    {
+        log_error("an offscreen source can belong to only one GUI viewport");
+        dvz_free(viewport);
+        return NULL;
+    }
+    viewport->source_managed = true;
+    if (viewport->nonblocking && _dvz_canvas_presentation_configure(canvas, true) < 0)
+    {
+        _dvz_view_gui_viewport_detach(source);
+        dvz_free(viewport);
+        return NULL;
+    }
     dvz_view_logical_size(source, &viewport->requested_width, &viewport->requested_height);
     dvz_view_framebuffer_size(
         source, &viewport->requested_framebuffer_width, &viewport->requested_framebuffer_height);
@@ -3316,8 +3554,6 @@ static DvzGuiViewport* _gui_viewport_from_window(
         return NULL;
     }
 
-    _dvz_view_gui_viewport_attach(source);
-    viewport->source_managed = true;
     _gui_viewport_attach(gui, viewport);
     return viewport;
 }
@@ -3518,10 +3754,7 @@ bool dvz_gui_viewport_window(DvzGuiViewport* viewport, const char* title, bool* 
         viewport->frame_image_min = image_min;
         viewport->frame_image_max = image_max;
         if (viewport->frame_visible)
-        {
-            _gui_request_frame(gui);
             shown = true;
-        }
     }
     ImGui::End();
     _gui_viewport_set_visible(viewport, window_visible);

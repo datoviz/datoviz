@@ -25,6 +25,7 @@
 #include "datoviz/input/router.h"
 #include "datoviz/window.h"
 #include "window_internal.h"
+#include "_window_wake.h"
 
 
 
@@ -1004,6 +1005,23 @@ void dvz_window_host_wait_timeout(DvzWindowHost* host, double seconds)
         sleep_us = 1000;
     dvz_sleep_us(sleep_us);
     _window_host_clear_frame_pending(host);
+}
+
+
+
+/**
+ * Interrupt the native event wait without inspecting mutable window or GUI registries.
+ *
+ * GLFW is the native blocking event backend; headless waits are bounded polling and wrapped
+ * hosts retain their explicit view request callback. This may be called from a worker while
+ * the owning host is alive, and deliberately does not mutate per-window frame demand.
+ *
+ * @param host live app window host
+ */
+void _dvz_window_host_wake(DvzWindowHost* host)
+{
+    ANN(host);
+    _dvz_window_glfw_wake();
 }
 
 

@@ -8272,6 +8272,108 @@ int test_app_offscreen_standard_emissive_survives_unlit_scene(
 }
 
 
+typedef struct AppQueryAfterSubmitProbe
+{
+    DvzVisual* points;
+    uint32_t callback_count;
+    bool query_ready;
+    DvzQueryResult result;
+    int mutation_status;
+} AppQueryAfterSubmitProbe;
+
+
+/**
+ * Observe this frame's query before mutating geometry for the following frame.
+ *
+ * @param view view whose frame was submitted
+ * @param user_data test-owned observation state
+ */
+static void _app_query_after_submit_callback(DvzView* view, void* user_data)
+{
+    (void)view;
+    AppQueryAfterSubmitProbe* probe = (AppQueryAfterSubmitProbe*)user_data;
+    ANN(probe);
+    probe->callback_count++;
+    probe->query_ready = dvz_scene_poll_query(probe->points->scene, &probe->result);
+    vec3 next_position[1] = {{0.75f, 0.0f, 0.0f}};
+    probe->mutation_status = dvz_visual_set_data(probe->points, "position", next_position, 1);
+}
+
+
+/**
+ * Query newly submitted geometry before a frame callback changes it for the next frame.
+ *
+ * @param suite active test context
+ * @param item active test descriptor
+ * @return zero on success
+ */
+int test_app_offscreen_query_observes_submitted_geometry_before_callback(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    TST_SCENE_APP_REQUIRE_VKLITE(suite);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){.width = 1, .height = 1});
+    ANN(panel);
+    DvzVisual* points = dvz_point(scene, 0);
+    ANN(points);
+    dvz_visual_set_query_capabilities(points, DVZ_QUERY_CAPABILITY_ITEM);
+    vec3 initial_position[1] = {{-0.75f, 0.0f, 0.0f}};
+    DvzColor color[1] = {{255, 255, 255, 255}};
+    float size[1] = {16.0f};
+    AT(dvz_visual_set_data(points, "position", initial_position, 1) == 0);
+    AT(dvz_visual_set_data(points, "color", color, 1) == 0);
+    AT(dvz_visual_set_data(points, "size", size, 1) == 0);
+    AT(dvz_panel_add_visual(panel, points, NULL) == 0);
+    DvzApp* app = _app_test_create(suite, scene);
+    if (app == NULL)
+    {
+        tst_skip(suite, "GPU context failed");
+        dvz_scene_destroy(scene);
+        return 0;
+    }
+    DvzView* view = dvz_view_offscreen(app, figure, 64, 64);
+    ANN(view);
+    AT(dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY);
+
+    vec3 position[1] = {{0.0f, 0.0f, 0.0f}};
+    AT(dvz_visual_set_data(points, "position", position, 1) == 0);
+    AT(dvz_panel_query_px(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 101,
+                              .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AppQueryAfterSubmitProbe probe = {.points = points, .mutation_status = -1};
+    AT(dvz_view_set_frame_callback(view, _app_query_after_submit_callback, &probe) == DVZ_OK);
+    AT(dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY);
+    AT(probe.callback_count == 1);
+    AT(probe.query_ready);
+    AT(probe.result.request_id == 101);
+    AT(probe.result.hit);
+    AT(probe.result.resolved_id == 0);
+    AT(probe.mutation_status == 0);
+    AT(scene->pending_query_count == 0);
+
+    AT(dvz_view_set_frame_callback(view, NULL, NULL) == DVZ_OK);
+    AT(dvz_panel_query_px(
+           panel, 32.0, 32.0,
+           &(DvzQueryRequest){DVZ_STRUCT_INIT_FIELDS(DvzQueryRequest), .request_id = 102,
+                              .target = DVZ_SCENE_TARGET_ITEM}) == 0);
+    AT(dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY);
+    DvzQueryResult result = {0};
+    AT(dvz_scene_poll_query(scene, &result));
+    AT(result.request_id == 102);
+    AT(!result.hit);
+    AT(!dvz_scene_poll_query(scene, &result));
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
 /**
  * Ensure app-owned request execution stays steady across repeated query frames.
  *
@@ -11318,6 +11420,7 @@ int test_scene_app(TstSuite* suite)
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_image_retained_render_second_frame);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_resize_reuses_runtime_with_mesh_and_image);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_request_steady_state);
+    TST_SCENE_APP_SHARED_CASE(test_app_offscreen_query_observes_submitted_geometry_before_callback);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_gsp_first_slice_smoke);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_gsp_image_nearest_point_no_stroke_smoke);
     TST_SCENE_APP_SHARED_CASE(test_app_offscreen_two_panel_points_light_both_halves);

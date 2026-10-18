@@ -17,6 +17,7 @@
 #include "test_gui.h"
 
 #include <math.h>
+#include <chrono>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,6 +25,8 @@
 #include "../_gui.h"
 #include "../../app/_app.h"
 #include "../../canvas/canvas_internal.h"
+#include "../../common/_time_utils.h"
+#include "../../thread/thread_internal.h"
 #include "_alloc.h"
 #include "_assertions.h"
 #include "_log.h"
@@ -37,6 +40,7 @@
 #include "datoviz/input/router.h"
 #include "datoviz/scene.h"
 #include "datoviz/vk/gpu_ctx.h"
+#include "datoviz/vklite/sync.h"
 #include "datoviz/window.h"
 #include "datoviz_testing.h"
 
@@ -74,6 +78,37 @@ typedef struct GuiTestGpuResources
     DvzGpuCtx* gpu_ctx;
     DvzWindowHost* window_host;
 } GuiTestGpuResources;
+
+
+
+typedef struct GuiNonblockingViewportTest
+{
+    DvzGuiViewport* viewport_a;
+    DvzGuiViewport* viewport_b;
+    uint32_t width_a;
+    uint32_t height_a;
+    bool show_b;
+    bool observe_old_image;
+    bool old_image_remained_drawable;
+    uint64_t expected_old_serial;
+} GuiNonblockingViewportTest;
+
+
+
+typedef struct GuiPostedWakeTest
+{
+    DvzView* source;
+    uint32_t callback_count;
+    int post_status;
+} GuiPostedWakeTest;
+
+
+
+typedef struct GuiDeferredViewportDestroyTest
+{
+    GuiNonblockingViewportTest* viewports;
+    uint32_t callback_count;
+} GuiDeferredViewportDestroyTest;
 
 
 
@@ -781,6 +816,169 @@ static void _gui_viewport_resize_callback(DvzGui* gui, DvzView* win, void* user_
         }
     }
     smoke->frame++;
+}
+
+
+
+/**
+ * Draw two nonblocking source windows in fixed, non-overlapping host positions.
+ *
+ * @param gui GUI overlay
+ * @param win host view
+ * @param user_data viewport pair
+ */
+static void _gui_nonblocking_viewports_callback(DvzGui* gui, DvzView* win, void* user_data)
+{
+    (void)gui;
+    (void)win;
+    GuiNonblockingViewportTest* test = (GuiNonblockingViewportTest*)user_data;
+    ANN(test);
+    if (test->viewport_a == NULL || test->viewport_b == NULL)
+        return;
+
+    igSetNextWindowPos(ImVec2{8, 8}, ImGuiCond_Always, ImVec2{0, 0});
+    igSetNextWindowSize(
+        ImVec2{(float)test->width_a, (float)test->height_a}, ImGuiCond_Always);
+    (void)dvz_gui_viewport_window(
+        test->viewport_a, "Nonblocking source A", NULL,
+        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+
+    if (test->observe_old_image)
+    {
+        DvzGuiViewportDebugState debug = {};
+        test->old_image_remained_drawable =
+            _dvz_gui_viewport_debug_state(test->viewport_a, &debug) && debug.display_drawable &&
+            debug.displayed_serial == test->expected_old_serial;
+    }
+    if (test->show_b)
+    {
+        igSetNextWindowPos(ImVec2{410, 8}, ImGuiCond_Always, ImVec2{0, 0});
+        igSetNextWindowSize(ImVec2{292, 210}, ImGuiCond_Always);
+        (void)dvz_gui_viewport_window(
+            test->viewport_b, "Nonblocking source B", NULL,
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse);
+    }
+}
+
+
+
+/**
+ * Destroy both nonblocking viewports from their source's post-submit callback.
+ *
+ * @param source source view whose frame just submitted
+ * @param user_data deferred-destroy test state
+ */
+static void _gui_destroy_viewports_from_source_frame(DvzView* source, void* user_data)
+{
+    ANN(source);
+    GuiDeferredViewportDestroyTest* test = (GuiDeferredViewportDestroyTest*)user_data;
+    ANN(test);
+    ANN(test->viewports);
+    test->callback_count++;
+    (void)dvz_view_set_frame_callback(source, NULL, NULL);
+    if (test->viewports->viewport_a != NULL)
+    {
+        dvz_gui_viewport_destroy(test->viewports->viewport_a);
+        test->viewports->viewport_a = NULL;
+    }
+    if (test->viewports->viewport_b != NULL)
+    {
+        dvz_gui_viewport_destroy(test->viewports->viewport_b);
+        test->viewports->viewport_b = NULL;
+    }
+}
+
+
+
+/**
+ * Wait only for the submitted frame on one offscreen source canvas, if present.
+ *
+ * @param source offscreen source view
+ * @return whether its latest submitted frame completed
+ */
+static bool _gui_wait_source_frame(DvzView* source)
+{
+    ANN(source);
+    DvzCanvas* canvas = dvz_view_canvas(source);
+    if (canvas == NULL)
+        return false;
+    if (canvas->timeline_value == 0)
+        return true;
+    if (canvas->timeline_semaphore == NULL)
+        return false;
+    const uint64_t value = canvas->timeline_value;
+    dvz_semaphore_wait(canvas->timeline_semaphore, value);
+    return dvz_semaphore_query(canvas->timeline_semaphore) >= value;
+}
+
+
+
+/**
+ * Release a deliberately blocked source queue after a bounded watchdog delay.
+ *
+ * @param user_data timeline semaphore used as the queue gate
+ * @return NULL
+ */
+static void* _gui_completion_gate_release(void* user_data)
+{
+    DvzSemaphore* gate = (DvzSemaphore*)user_data;
+    ANN(gate);
+    dvz_sleep(2000);
+    if (dvz_semaphore_query(gate) < 1)
+        dvz_semaphore_signal(gate, 1);
+    return NULL;
+}
+
+
+
+/**
+ * Count a callback drained from the source view's owner thread.
+ *
+ * @param view source view
+ * @param user_data posted-wake test state
+ */
+static void _gui_count_posted_callback(DvzView* view, void* user_data)
+{
+    (void)view;
+    GuiPostedWakeTest* test = (GuiPostedWakeTest*)user_data;
+    ANN(test);
+    test->callback_count++;
+}
+
+
+
+/**
+ * Post one source-view callback from a worker after a short delay.
+ *
+ * @param user_data posted-wake test state
+ * @return NULL
+ */
+static void* _gui_post_source_from_worker(void* user_data)
+{
+    GuiPostedWakeTest* test = (GuiPostedWakeTest*)user_data;
+    ANN(test);
+    dvz_sleep(50);
+    test->post_status = dvz_view_post(test->source, _gui_count_posted_callback, test);
+    return NULL;
+}
+
+
+
+/**
+ * Render one host frame and wait for only its two offscreen source submissions.
+ *
+ * @param host host view
+ * @param source_a first offscreen source
+ * @param source_b second offscreen source
+ * @return whether the host frame and source completions succeeded
+ */
+static bool _gui_pump_nonblocking_host(
+    DvzView* host, DvzView* source_a, DvzView* source_b)
+{
+    ANN(host);
+    if (dvz_view_render_once(host) < 0)
+        return false;
+    return _gui_wait_source_frame(source_a) && _gui_wait_source_frame(source_b);
 }
 
 
@@ -1531,7 +1729,7 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);
     DvzFigure* source_figure = _gui_test_figure(scene, 160, 120);
-    DvzFigure* host_figure = _gui_test_figure(scene, 640, 480);
+    DvzFigure* host_figure = _gui_test_figure(scene, 720, 480);
     AT(source_figure != NULL);
     AT(host_figure != NULL);
 
@@ -1791,6 +1989,547 @@ static int test_gui_config_inherits_app_font_defaults(TstContext* suite, const T
         dvz_scene_destroy(scene);
         _gui_test_gpu_resources_destroy(&gpu_resources);
     }
+    return 0;
+}
+
+
+
+/**
+ * Verify bounded promotion, fairness, and idle reuse for two nonblocking viewports.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    if (!_gui_smoke_available())
+    {
+        tst_skip(suite, "GUI/GLFW support unavailable");
+        return 0;
+    }
+
+    GuiTestGpuResources gpu_resources = {};
+    tst_expect_error_begin(suite);
+    const char* gpu_skip = _gui_test_gpu_resources_create(suite, &gpu_resources);
+    (void)tst_expect_error_end(suite);
+    if (gpu_skip != NULL)
+    {
+        tst_skip(suite, gpu_skip);
+        return 0;
+    }
+
+    DvzScene* scene = dvz_scene();
+    AT(scene != NULL);
+    DvzFigure* figure_a = _gui_test_figure(scene, 160, 120);
+    DvzFigure* figure_b = _gui_test_figure(scene, 160, 120);
+    DvzFigure* host_figure = _gui_test_figure(scene, 640, 480);
+    AT(figure_a != NULL);
+    AT(figure_b != NULL);
+    AT(host_figure != NULL);
+    dvz_panel_set_background_color(
+        dvz_panel_full(figure_a), dvz_color_from_unit(0.8f, 0.1f, 0.1f, 1.0f));
+    dvz_panel_set_background_color(
+        dvz_panel_full(figure_b), dvz_color_from_unit(0.1f, 0.1f, 0.8f, 1.0f));
+
+    DvzApp* app = _gui_test_app(scene, NULL, &gpu_resources);
+    if (app == NULL)
+    {
+        log_warn("test_gui_nonblocking_viewport_pool skipped: GPU context creation failed");
+        tst_skip(suite, "GPU context creation failed");
+        dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
+        return 0;
+    }
+    DvzView* source_a = dvz_view_offscreen(app, figure_a, 160, 120);
+    DvzView* source_b = dvz_view_offscreen(app, figure_b, 160, 120);
+    tst_expect_error_begin(suite);
+    DvzView* host =
+        dvz_view_window(app, host_figure, 720, 480, "test_gui_nonblocking_viewport_pool");
+    (void)tst_expect_error_end(suite);
+    if (source_a == NULL || source_b == NULL || host == NULL)
+    {
+        log_warn("test_gui_nonblocking_viewport_pool skipped: view creation failed");
+        tst_skip(suite, "view creation failed");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
+        return 0;
+    }
+    DvzGui* gui = dvz_view_gui(host, NULL);
+    if (gui == NULL)
+    {
+        log_warn("test_gui_nonblocking_viewport_pool skipped: GUI creation failed");
+        tst_skip(suite, "GUI creation failed");
+        dvz_app_destroy(app);
+        dvz_scene_destroy(scene);
+        _gui_test_gpu_resources_destroy(&gpu_resources);
+        return 0;
+    }
+
+    DvzGuiViewportConfig config = dvz_gui_viewport_config();
+    config.initial_width = 160;
+    config.initial_height = 120;
+    config.resize_step = 8;
+    config.viewport_flags |= DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING;
+    GuiNonblockingViewportTest test = {};
+    test.width_a = 292;
+    test.height_a = 210;
+    test.show_b = true;
+    test.viewport_a = dvz_gui_viewport_from_window(gui, source_a, &config);
+    test.viewport_b = dvz_gui_viewport_from_window(gui, source_b, &config);
+    AT(test.viewport_a != NULL);
+    AT(test.viewport_b != NULL);
+    dvz_view_set_gui_callback(host, _gui_nonblocking_viewports_callback, &test);
+
+    DvzGuiViewportDebugState state_a = {}, state_b = {};
+    bool settled = false;
+    for (uint32_t frame = 0; frame < 20; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+        settled = state_a.has_frame && state_a.image_valid && state_a.display_drawable &&
+                  state_a.display_ready && state_a.pending_width == 0 &&
+                  state_a.pending_height == 0 && state_b.has_frame && state_b.image_valid &&
+                  state_b.display_drawable && state_b.display_ready && state_b.pending_width == 0 &&
+                  state_b.pending_height == 0;
+        if (settled)
+            break;
+    }
+    AT(settled);
+    AT(state_a.displayed_serial > 0);
+    AT(state_b.displayed_serial > 0);
+    AT(state_a.promotion_count > 0);
+    AT(state_b.promotion_count > 0);
+
+    /* A recoverable source runtime failure retains the current image and can be retried. */
+    DvzCanvas* source_canvas_a = dvz_view_canvas(source_a);
+    AT(source_canvas_a != NULL);
+    const uint64_t runtime_failure_serial = state_a.displayed_serial;
+    const uint64_t runtime_failure_promotions = state_a.promotion_count;
+    const uint64_t runtime_failure_source_frames = state_a.source_frame_count;
+    AT(dvz_view_request_frame(source_a) == 0);
+    _dvz_view_test_force_runtime_failure(source_a, true);
+    tst_expect_error_begin(suite);
+    const int runtime_failure_host_status = dvz_view_render_once(host);
+    (void)tst_expect_error_end(suite);
+    _dvz_view_test_force_runtime_failure(source_a, false);
+    AT(runtime_failure_host_status == DVZ_CANVAS_FRAME_READY);
+    AT(_gui_wait_source_frame(source_a));
+    AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+    AT(state_a.display_drawable);
+    AT(state_a.displayed_serial == runtime_failure_serial);
+    AT(state_a.promotion_count == runtime_failure_promotions);
+    AT(state_a.source_frame_count == runtime_failure_source_frames);
+    const uint64_t runtime_failure_token = source_canvas_a->timeline_value;
+
+    AT(dvz_view_request_frame(source_a) == 0);
+    bool runtime_retry_promoted = false;
+    for (uint32_t frame = 0; frame < 8; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+        if (state_a.displayed_serial > runtime_failure_serial)
+        {
+            runtime_retry_promoted = true;
+            break;
+        }
+    }
+    AT(runtime_retry_promoted);
+    AT(state_a.displayed_serial >= runtime_failure_token + 1);
+    AT(state_a.promotion_count >= runtime_failure_promotions + 1);
+    AT(state_a.source_frame_count >= runtime_failure_source_frames + 1);
+
+    /* Runtime recovery may refresh every scene view; settle both sources before exact-count tests. */
+    bool recovery_settled = false;
+    uint32_t stable_refreshes = 0;
+    uint64_t previous_a_frames = state_a.source_frame_count;
+    uint64_t previous_b_frames = state_b.source_frame_count;
+    uint64_t previous_a_serial = state_a.displayed_serial;
+    uint64_t previous_b_serial = state_b.displayed_serial;
+    for (uint32_t frame = 0; frame < 16; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+        const bool unchanged = state_a.source_frame_count == previous_a_frames &&
+                               state_b.source_frame_count == previous_b_frames &&
+                               state_a.displayed_serial == previous_a_serial &&
+                               state_b.displayed_serial == previous_b_serial;
+        const bool ready = state_a.display_ready && state_a.pending_width == 0 &&
+                           state_a.pending_height == 0 && state_b.display_ready &&
+                           state_b.pending_width == 0 && state_b.pending_height == 0;
+        stable_refreshes = unchanged && ready ? stable_refreshes + 1 : 0;
+        previous_a_frames = state_a.source_frame_count;
+        previous_b_frames = state_b.source_frame_count;
+        previous_a_serial = state_a.displayed_serial;
+        previous_b_serial = state_b.displayed_serial;
+        if (stable_refreshes >= 2)
+        {
+            recovery_settled = true;
+            break;
+        }
+    }
+    AT(recovery_settled);
+
+    /* A failed source draw leaves its prior completed image in service and can be retried. */
+    DvzCanvas* host_canvas = dvz_view_canvas(host);
+    AT(host_canvas != NULL);
+    const uint64_t failed_serial_a = state_a.displayed_serial;
+    const uint64_t failed_promotions_a = state_a.promotion_count;
+    const uint64_t failed_source_frames_a = state_a.source_frame_count;
+    const uint64_t failed_serial_b = state_b.displayed_serial;
+    const uint64_t host_timeline_before_failure = host_canvas->timeline_value;
+    AT(dvz_view_request_frame(source_a) == 0);
+    _dvz_view_test_force_draw_failure(source_a, true);
+    tst_expect_error_begin(suite);
+    const int failed_source_host_status = dvz_view_render_once(host);
+    const int source_failure_errors = tst_expect_error_end(suite);
+    _dvz_view_test_force_draw_failure(source_a, false);
+    AT(source_failure_errors == 0);
+    AT(failed_source_host_status == DVZ_CANVAS_FRAME_READY);
+    AT(host_canvas->timeline_value > host_timeline_before_failure);
+    AT(_gui_wait_source_frame(source_a));
+    AT(_gui_wait_source_frame(source_b));
+    AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+    AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+    AT(state_a.display_drawable);
+    AT(state_a.displayed_serial == failed_serial_a);
+    AT(state_a.promotion_count == failed_promotions_a);
+    AT(state_a.source_frame_count == failed_source_frames_a);
+    const uint64_t failed_submission_token = source_canvas_a->timeline_value;
+    AT(failed_submission_token > failed_serial_a);
+    AT(state_b.display_drawable);
+
+    AT(dvz_view_request_frame(source_a) == 0);
+    bool retry_promoted = false;
+    for (uint32_t frame = 0; frame < 8; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+        if (state_a.displayed_serial > failed_serial_a)
+        {
+            retry_promoted = true;
+            break;
+        }
+    }
+    AT(retry_promoted);
+    AT(state_a.displayed_serial == failed_submission_token + 1);
+    AT(state_a.promotion_count == failed_promotions_a + 1);
+    AT(state_a.source_frame_count == failed_source_frames_a + 1);
+    AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+    AT(state_b.displayed_serial == failed_serial_b);
+
+    /* A failed host submit must not leak a timeline value or stop source rendering. */
+    const uint64_t host_timeline_before_submit_failure = host_canvas->timeline_value;
+    const uint64_t source_frames_before_submit_failure = state_a.source_frame_count;
+    const uint64_t source_timeline_before_submit_failure = source_canvas_a->timeline_value;
+    dvz_canvas_swapchain_test_force_submit_status(host_canvas, VK_ERROR_UNKNOWN);
+    AT(dvz_view_request_frame(source_a) == 0);
+    tst_expect_error_begin(suite);
+    const int failed_host_submit_status = dvz_view_render_once(host);
+    (void)tst_expect_error_end(suite);
+    AT(failed_host_submit_status < 0);
+    AT(host_canvas->timeline_value == host_timeline_before_submit_failure);
+    AT(_gui_wait_source_frame(source_a));
+    AT(dvz_semaphore_query(host_canvas->timeline_semaphore) >= host_canvas->timeline_value);
+    AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+    AT(state_a.source_frame_count == source_frames_before_submit_failure + 1);
+    AT(source_canvas_a->timeline_value > source_timeline_before_submit_failure);
+    AT(dvz_view_render_once(host) == DVZ_CANVAS_FRAME_READY);
+    AT(host_canvas->timeline_value > host_timeline_before_submit_failure);
+
+    /* Queue a source frame behind a timeline gate; the host call must return before it completes. */
+    DvzSemaphore* gate = dvz_semaphore_create_wrapper();
+    ANN(gate);
+    dvz_semaphore_timeline(source_canvas_a->device, 0, gate, 0);
+    DvzSemaphore* gate_done = dvz_semaphore_create_wrapper();
+    ANN(gate_done);
+    dvz_semaphore_timeline(source_canvas_a->device, 0, gate_done, 0);
+    DvzSubmit* later = dvz_submit_create_wrapper();
+    ANN(later);
+    dvz_submit(later);
+    VkCommandBuffer later_command =
+        dvz_command_buffer_alloc(source_canvas_a->device, source_canvas_a->offscreen_queue_family);
+    DvzCommands* commands = dvz_commands_create_wrapper();
+    ANN(commands);
+    dvz_commands_wrap(source_canvas_a->device, later_command, commands);
+    dvz_cmd_begin(commands);
+    dvz_cmd_end(commands);
+    dvz_commands_free(commands);
+    dvz_submit_command(later, later_command);
+    dvz_submit_wait(later, dvz_semaphore_handle(gate), 1, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+    dvz_submit_signal(
+        later, dvz_semaphore_handle(gate_done), 1, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+    const int gate_submit_status =
+        dvz_submit_send(later, source_canvas_a->offscreen_queue, VK_NULL_HANDLE);
+    dvz_submit_free(later);
+    if (gate_submit_status != VK_SUCCESS)
+    {
+        dvz_command_buffer_free(
+            source_canvas_a->device, source_canvas_a->offscreen_queue_family, later_command);
+        dvz_semaphore_destroy(gate_done);
+        dvz_semaphore_free(gate_done);
+        dvz_semaphore_destroy(gate);
+        dvz_semaphore_free(gate);
+        AT(gate_submit_status == VK_SUCCESS);
+    }
+    DvzThread* gate_release = dvz_thread(_gui_completion_gate_release, gate);
+    if (gate_release == NULL)
+    {
+        dvz_semaphore_signal(gate, 1);
+        dvz_semaphore_wait(gate_done, 1);
+        dvz_command_buffer_free(
+            source_canvas_a->device, source_canvas_a->offscreen_queue_family, later_command);
+        dvz_semaphore_destroy(gate_done);
+        dvz_semaphore_free(gate_done);
+        dvz_semaphore_destroy(gate);
+        dvz_semaphore_free(gate);
+        AT(gate_release != NULL);
+    }
+    const uint64_t gated_source_timeline = source_canvas_a->timeline_value;
+    const uint64_t host_timeline_before_gated_frame = host_canvas->timeline_value;
+    const int gate_request_status = dvz_view_request_frame(source_a);
+    const int gated_host_status =
+        gate_request_status == 0 ? dvz_canvas_frame(host_canvas) : -1;
+    const bool gate_still_closed = dvz_semaphore_query(gate) == 0;
+    const bool source_submission_waiting = source_canvas_a->timeline_value > gated_source_timeline &&
+                                           dvz_semaphore_query(source_canvas_a->timeline_semaphore) <
+                                               source_canvas_a->timeline_value;
+    dvz_thread_join(gate_release);
+    dvz_semaphore_wait(gate_done, 1);
+    const bool gated_source_completed = _gui_wait_source_frame(source_a);
+    const int gated_host_submit_status = dvz_canvas_submit(host_canvas);
+    if (gated_host_submit_status == 0)
+        _dvz_gui_frame_submitted(gui, host_canvas, host_canvas->timeline_value);
+    dvz_command_buffer_free(
+        source_canvas_a->device, source_canvas_a->offscreen_queue_family, later_command);
+    dvz_semaphore_destroy(gate_done);
+    dvz_semaphore_free(gate_done);
+    dvz_semaphore_destroy(gate);
+    dvz_semaphore_free(gate);
+    AT(gate_request_status == 0);
+    AT(gated_host_status == DVZ_CANVAS_FRAME_READY);
+    AT(gate_still_closed);
+    AT(source_submission_waiting);
+    AT(gated_source_completed);
+    AT(gated_host_submit_status == 0);
+    AT(host_canvas->timeline_value > host_timeline_before_gated_frame);
+
+    /* Let normal owner-thread rendering promote the gated submission before sampling idle state. */
+    AT(dvz_view_render_once(host) == DVZ_CANVAS_FRAME_READY);
+    AT(_gui_wait_source_frame(source_a));
+    for (uint32_t frame = 0; frame < 8; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+        if (state_a.displayed_serial > failed_submission_token + 1)
+            break;
+    }
+    AT(state_a.displayed_serial > failed_submission_token + 1);
+
+    const uint64_t idle_source_frames_a = state_a.source_frame_count;
+    const uint64_t idle_source_frames_b = state_b.source_frame_count;
+    const uint64_t idle_serial_a = state_a.displayed_serial;
+    const uint64_t idle_serial_b = state_b.displayed_serial;
+    for (uint32_t frame = 0; frame < 3; frame++)
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+    AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+    AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+    AT(state_a.source_frame_count == idle_source_frames_a);
+    AT(state_b.source_frame_count == idle_source_frames_b);
+    AT(state_a.displayed_serial == idle_serial_a);
+    AT(state_b.displayed_serial == idle_serial_b);
+    AT(state_a.reuse_count > 0);
+    AT(state_b.reuse_count > 0);
+
+    /* A worker-posted source callback wakes the host without crossing thread ownership. */
+    bool host_was_idle = false;
+    for (uint32_t attempt = 0; attempt < 8; attempt++)
+    {
+        dvz_window_host_poll(gpu_resources.window_host);
+        if (!_dvz_view_scheduler_should_render(host, UINT64_MAX))
+        {
+            host_was_idle = true;
+            break;
+        }
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+    }
+    AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+    AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+    const uint64_t wake_idle_source_frames_a = state_a.source_frame_count;
+    const uint64_t wake_idle_serial_a = state_a.displayed_serial;
+    GuiPostedWakeTest posted = {};
+    posted.source = source_a;
+    DvzThread* poster = dvz_thread(_gui_post_source_from_worker, &posted);
+    bool worker_woke_host = false;
+    double wake_elapsed_seconds = 2.0;
+    if (poster != NULL)
+    {
+        const auto wake_start = std::chrono::steady_clock::now();
+        wake_elapsed_seconds = 0.0;
+        while (!worker_woke_host && wake_elapsed_seconds < 2.0)
+        {
+            dvz_window_host_wait_timeout(gpu_resources.window_host, 2.0);
+            worker_woke_host = _dvz_view_scheduler_should_render(host, UINT64_MAX);
+            wake_elapsed_seconds = std::chrono::duration<double>(
+                                       std::chrono::steady_clock::now() - wake_start)
+                                       .count();
+        }
+        dvz_thread_join(poster);
+    }
+    const int posted_status = posted.post_status;
+    const uint32_t callback_count_before_owner_render = posted.callback_count;
+    int posted_host_status = -1;
+    bool posted_source_promoted = false;
+    uint64_t posted_serial = wake_idle_serial_a;
+    if (poster != NULL && posted_status == 0 && worker_woke_host)
+    {
+        posted_host_status = dvz_view_render_once(host);
+        posted_source_promoted = _gui_wait_source_frame(source_a);
+        for (uint32_t frame = 0; frame < 8; frame++)
+        {
+            AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+            AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+            if (state_a.displayed_serial > wake_idle_serial_a)
+                break;
+        }
+        posted_serial = state_a.displayed_serial;
+        for (uint32_t frame = 0; frame < 3; frame++)
+            AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+    }
+    AT(host_was_idle);
+    AT(poster != NULL);
+    AT(posted_status == 0);
+    AT(worker_woke_host);
+    AT(wake_elapsed_seconds < 1.0);
+    AT(callback_count_before_owner_render == 0);
+    AT(posted_host_status == DVZ_CANVAS_FRAME_READY);
+    AT(posted.callback_count == 1);
+    AT(posted_source_promoted);
+    AT(posted_serial > wake_idle_serial_a);
+    AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+    AT(state_a.source_frame_count == wake_idle_source_frames_a + 1);
+    AT(state_a.displayed_serial == posted_serial);
+
+    const uint64_t before_a_frames = state_a.source_frame_count;
+    const uint64_t before_a_serial = state_a.displayed_serial;
+    const uint64_t before_a_promotions = state_a.promotion_count;
+    AT(dvz_view_request_frame(source_a) == 0);
+    for (uint32_t frame = 0; frame < 8; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+        if (state_a.displayed_serial > before_a_serial)
+            break;
+    }
+    AT(state_a.source_frame_count == before_a_frames + 1);
+    AT(state_a.displayed_serial == before_a_serial + 1);
+    AT(state_a.promotion_count == before_a_promotions + 1);
+    AT(state_b.source_frame_count == idle_source_frames_b);
+    AT(state_b.displayed_serial == idle_serial_b);
+
+    const uint64_t before_b_frames = state_b.source_frame_count;
+    const uint64_t before_b_serial = state_b.displayed_serial;
+    const uint64_t before_b_promotions = state_b.promotion_count;
+    AT(dvz_view_request_frame(source_b) == 0);
+    for (uint32_t frame = 0; frame < 8; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+        if (state_b.displayed_serial > before_b_serial)
+            break;
+    }
+    AT(state_b.source_frame_count == before_b_frames + 1);
+    AT(state_b.displayed_serial == before_b_serial + 1);
+    AT(state_b.promotion_count == before_b_promotions + 1);
+    AT(state_a.source_frame_count == before_a_frames + 1);
+    AT(state_a.displayed_serial == before_a_serial + 1);
+
+    const uint64_t fair_frames_a = state_a.source_frame_count;
+    const uint64_t fair_frames_b = state_b.source_frame_count;
+    const uint64_t fair_serial_a = state_a.displayed_serial;
+    const uint64_t fair_serial_b = state_b.displayed_serial;
+    AT(dvz_view_request_frame(source_a) == 0);
+    AT(dvz_view_request_frame(source_b) == 0);
+    for (uint32_t frame = 0; frame < 8; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+        if (state_a.displayed_serial > fair_serial_a && state_b.displayed_serial > fair_serial_b)
+            break;
+    }
+    AT(state_a.source_frame_count == fair_frames_a + 1);
+    AT(state_b.source_frame_count == fair_frames_b + 1);
+    AT(state_a.displayed_serial == fair_serial_a + 1);
+    AT(state_b.displayed_serial == fair_serial_b + 1);
+
+    /* A resize keeps the last completed image drawable while the replacement is prepared. */
+    const uint64_t resize_serial = state_a.displayed_serial;
+    test.width_a = 360;
+    test.height_a = 270;
+    test.observe_old_image = true;
+    test.expected_old_serial = resize_serial;
+    AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+    AT(test.old_image_remained_drawable);
+    test.observe_old_image = false;
+    bool resize_settled = false;
+    for (uint32_t frame = 0; frame < 16; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
+        AT(state_a.display_drawable);
+        resize_settled = state_a.display_ready && state_a.pending_width == 0 &&
+                         state_a.pending_height == 0 && state_a.displayed_serial > resize_serial;
+        if (resize_settled)
+            break;
+    }
+    AT(resize_settled);
+
+    /* Hiding one viewport retains its completed image and stops its source submissions. */
+    const uint64_t hidden_serial_b = state_b.displayed_serial;
+    const uint64_t hidden_frames_b = state_b.source_frame_count;
+    test.show_b = false;
+    for (uint32_t frame = 0; frame < 3; frame++)
+    {
+        AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+        AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+        AT(state_b.display_drawable);
+        AT(state_b.displayed_serial == hidden_serial_b);
+        AT(state_b.source_frame_count == hidden_frames_b);
+    }
+    test.show_b = true;
+    AT(_gui_pump_nonblocking_host(host, source_a, source_b));
+    AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+    AT(state_b.display_drawable);
+    AT(state_b.displayed_serial == hidden_serial_b);
+    // Re-enabling the source refreshes hidden mutations while retaining its completed image.
+    AT(state_b.source_frame_count == hidden_frames_b + 1);
+
+    /* Destroy both viewports inside a source post-submit callback during host resolution. */
+    GuiDeferredViewportDestroyTest deferred_destroy = {};
+    deferred_destroy.viewports = &test;
+    AT(dvz_view_set_frame_callback(
+           source_a, _gui_destroy_viewports_from_source_frame, &deferred_destroy) == DVZ_OK);
+    AT(dvz_view_request_frame(source_a) == 0);
+    AT(dvz_view_render_once(host) == DVZ_CANVAS_FRAME_READY);
+    AT(deferred_destroy.callback_count == 1);
+    AT(test.viewport_a == NULL);
+    AT(test.viewport_b == NULL);
+    AT(!dvz_view_canvas(source_a)->presentation_enabled);
+    AT(!dvz_view_canvas(source_b)->presentation_enabled);
+    AT(dvz_view_request_frame(source_a) == 0);
+    AT(_dvz_view_scheduler_should_render(source_a, UINT64_MAX));
+    AT(dvz_view_request_frame(source_b) == 0);
+    AT(_dvz_view_scheduler_should_render(source_b, UINT64_MAX));
+
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    _gui_test_gpu_resources_destroy(&gpu_resources);
     return 0;
 }
 
@@ -2202,6 +2941,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_widget_wrapper_symbols);
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);
+    TST_GUI_GPU_CASE(test_gui_nonblocking_viewport_pool);
     TST_GUI_GPU_CASE(test_gui_multi_viewport_input_routers);
     TST_GUI_GPU_CASE(test_gui_forwarded_viewport_arcball);
 

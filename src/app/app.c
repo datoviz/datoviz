@@ -52,6 +52,9 @@
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
 #include <volk.h>
 #include "../canvas/canvas_internal.h"
+#include "../canvas/_canvas_presentation.h"
+#include "../canvas/_canvas_completion.h"
+#include "../window/_window_wake.h"
 #include "datoviz/canvas.h"
 #include "datoviz/drp2/recording.h"
 #include "datoviz/drp2/runtime.h"
@@ -281,7 +284,11 @@ struct DvzView
     bool frame_requested;
     bool dirty;
     bool draw_failed;
+    bool post_submit_pending;
+    bool queries_pending;
+    DvzCapabilitySnapshot query_caps;
     bool test_force_draw_failure;
+    bool test_force_runtime_failure;
     uint32_t gui_viewport_ref_count;
     uint64_t next_frame_ns;
     bool capture_dvzr_enabled;
@@ -1851,6 +1858,10 @@ static void _app_frame_timing_report(DvzApp* app)
         if (!state->enabled || state->sample_count == 0)
             continue;
 
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+        if (win->gui != NULL)
+            _dvz_gui_presentation_report(win->gui, vi);
+#endif
         DvzAppFrameTiming total = {0};
         double* sorted = (double*)dvz_calloc(state->sample_count, sizeof(double));
         if (sorted == NULL)
@@ -2386,9 +2397,25 @@ static bool _view_needs_frame(DvzView* win)
         return true;
     if (_view_has_continuous_work(win))
         return true;
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    if (win->gui != NULL && _dvz_gui_sources_need_frame(win->gui))
+        return true;
+#endif
     return false;
 }
 
+
+
+/**
+ * Inspect source demand on the owner thread, including mutex-protected posted callbacks.
+ *
+ * @param view offscreen source owned by one GUI viewport
+ * @return whether the source has pending one-shot or continuous work
+ */
+bool _dvz_view_needs_frame(DvzView* view)
+{
+    return view != NULL && _view_needs_frame(view);
+}
 
 
 static DvzAppPacingPolicy _view_pacing_policy(DvzView* win);
@@ -2485,15 +2512,18 @@ uint64_t _dvz_view_scene_revision(const DvzView* view)
 
 
 /**
- * Mark a view as managed by an embedded GUI viewport.
+ * Claim a source for one embedded GUI viewport.
  *
  * @param view source view
+ * @return whether no other viewport already owns this source
  */
-void _dvz_view_gui_viewport_attach(DvzView* view)
+bool _dvz_view_gui_viewport_attach(DvzView* view)
 {
     ANN(view);
-    ASSERT(view->gui_viewport_ref_count < UINT32_MAX);
+    if (view->gui_viewport_ref_count != 0)
+        return false;
     view->gui_viewport_ref_count++;
+    return true;
 }
 
 
@@ -3587,16 +3617,20 @@ static void _app_sync_figure_size(DvzView* win, const DvzStreamFrame* frame)
 
 
 /**
- * Return a frame-local scope key for mutable app-frame runtime intermediates.
+ * Return a bounded namespace for one view's logical frame slot across resource recreation.
  *
- * @param frame canvas frame attached to the DRP2 runtime
- * @return scope id based on the borrowed command buffer
+ * @param view owner of the canvas currently recording a frame
+ * @return stable nonzero scope, independent of Vulkan handle reuse and resize generations
  */
-static uint64_t _app_frame_runtime_scope(const DvzStreamFrame* frame)
+static uint64_t _app_frame_runtime_scope(const DvzView* view)
 {
-    ANN(frame);
-    uint64_t scope = (uint64_t)(uintptr_t)frame->command_buffer;
-    return scope != 0 ? scope : UINT64_C(1);
+    ANN(view);
+    const uint64_t view_index = view->target_id - DVZ_APP_CANVAS_TARGET_BASE + UINT64_C(1);
+    const uint32_t slot_index = _dvz_canvas_frame_slot(view->canvas);
+    ASSERT(view_index <= DVZ_APP_MAX_VIEWS);
+    ASSERT(slot_index != UINT32_MAX);
+    const uint64_t slot = (uint64_t)slot_index + UINT64_C(1);
+    return (view_index << 32) | slot;
 }
 
 
@@ -4212,13 +4246,14 @@ static void _app_render_gui_frame(DvzView* win, const DvzStreamFrame* frame)
 
 
 /**
- * Synchronize one GUI viewport source view during strict GUI viewport resolution.
+ * Resolve one GUI source using strict completion or nonblocking admission.
  *
  * @param source offscreen source view
+ * @param nonblocking whether to submit without waiting for completion
  * @param user_data parent app
- * @return 0 on success, negative on failure
+ * @return source resolution status
  */
-static int _app_resolve_gui_viewport(DvzView* source, void* user_data)
+static int _app_resolve_gui_viewport(DvzView* source, bool nonblocking, void* user_data)
 {
     ANN(source);
     DvzApp* app = (DvzApp*)user_data;
@@ -4227,16 +4262,52 @@ static int _app_resolve_gui_viewport(DvzView* source, void* user_data)
         dvz_view_set_render_enabled(source, true);
     if (_view_needs_frame(source))
     {
+        if (nonblocking)
+        {
+            const int admission = _dvz_canvas_presentation_try_admit(source->canvas);
+            if (admission <= 0)
+                return admission < 0 ? DVZ_GUI_VIEWPORT_SOURCE_ERROR : DVZ_GUI_VIEWPORT_SOURCE_BUSY;
+        }
         int rc = dvz_view_render_once(source);
         if (rc != DVZ_CANVAS_FRAME_READY)
-            return -1;
+        {
+            if (nonblocking)
+            {
+                _dvz_canvas_presentation_reject_submission(source->canvas);
+                if (source->canvas->offscreen_runtime_state ==
+                    DVZ_CANVAS_OFFSCREEN_STATE_FATAL_DEVICE_LOST)
+                    return DVZ_GUI_VIEWPORT_SOURCE_ERROR;
+                dvz_view_request_frame(source);
+                return DVZ_GUI_VIEWPORT_SOURCE_RETRY;
+            }
+            return DVZ_GUI_VIEWPORT_SOURCE_ERROR;
+        }
+        if (nonblocking)
+            return DVZ_GUI_VIEWPORT_SOURCE_SUBMITTED;
     }
+    if (nonblocking)
+        return DVZ_GUI_VIEWPORT_SOURCE_READY;
     /* Both source and parent use MAIN. Canvas image barriers order source writes and parent
      * sampling; wait only for this source, never for unrelated later submissions or queues.
      * Also cover a source that was submitted before this host iteration without new dirty work. */
     return _dvz_canvas_wait_offscreen_frame(source->canvas);
 }
 #endif
+
+
+
+/**
+ * Reclaim runtime objects when the canvas owner proves a command buffer's last use completed.
+ *
+ * @param command_buffer completed owned command buffer about to be reset or destroyed
+ * @param user_data app whose runtime borrows canvas commands
+ */
+static void _app_commands_completed(VkCommandBuffer command_buffer, void* user_data)
+{
+    DvzApp* app = (DvzApp*)user_data;
+    ANN(app);
+    _dvz_drp2_runtime_retire_completed_frame(app->runtime, command_buffer);
+}
 
 
 
@@ -4347,7 +4418,7 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     cfg.device_scale_y        = win->device_scale_y > 0.0f ? win->device_scale_y : 1.0f;
     cfg.render_scale          = win->render_scale > 0.0f ? win->render_scale : 1.0f;
     cfg.user_scale            = win->user_scale > 0.0f ? win->user_scale : 1.0f;
-    cfg.runtime_resource_scope_id = _app_frame_runtime_scope(frame);
+    cfg.runtime_resource_scope_id = _app_frame_runtime_scope(win);
     cfg.clear_color[0]        = 0.05f;
     cfg.clear_color[1]        = 0.05f;
     cfg.clear_color[2]        = 0.08f;
@@ -4409,6 +4480,12 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
 
     phase_start = timing != NULL ? dvz_time_monotonic_ns() : 0;
     DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(app->runtime, stream);
+    if (win->test_force_runtime_failure)
+    {
+        result.ok = false;
+        result.code = DVZ_DRP2_VALIDATION_INVALID_STATE;
+        result.command_index = 0;
+    }
     if (timing != NULL)
     {
         timing->execute_ns = dvz_time_monotonic_ns() - phase_start;
@@ -4423,20 +4500,15 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     }
     if (!result.ok)
     {
+        win->draw_failed = true;
         _app_log_runtime_failure(win, "_app_draw runtime execution failed", stream, result);
         _app_runtime_recovery_defer(app);
     }
     else
     {
         _app_runtime_failure_reset(win, "_app_draw runtime execution");
-        const uint64_t query_start_ns = timing != NULL ? dvz_time_monotonic_ns() : 0;
-        const uint32_t query_count = dvz_figure_process_queries(win->figure, app->runtime, &caps);
-        if (timing != NULL)
-        {
-            timing->query_ns = dvz_time_monotonic_ns() - query_start_ns;
-            timing->query_count = query_count;
-            (void)_dvz_scene_query_timing_get(win->figure->scene, &timing->query_detail);
-        }
+        win->queries_pending = true;
+        win->query_caps = caps;
     }
 
     if (result.ok)
@@ -4449,19 +4521,48 @@ static void _app_draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user
     _app_render_gui_frame(win, frame);
 #endif
 
-    phase_start = timing != NULL ? dvz_time_monotonic_ns() : 0;
+    win->post_submit_pending = true;
+    if (fly_active)
+        dvz_view_request_frame(win);
+    if (timing != NULL)
+        timing->draw_ns = dvz_time_monotonic_ns() - draw_start_ns;
+}
+
+
+
+/**
+ * Run queries after this frame's borrowed uploads have been submitted, before user mutations.
+ *
+ * @param win view whose canvas submission succeeded
+ */
+static void _app_post_submit(DvzView* win)
+{
+    ANN(win);
+    if (!win->post_submit_pending)
+        return;
+    win->post_submit_pending = false;
+    DvzAppFrameTiming* timing = win->frame_timing.enabled ? &win->frame_timing.current : NULL;
+    if (win->queries_pending)
+    {
+        win->queries_pending = false;
+        const uint64_t query_start_ns = timing != NULL ? dvz_time_monotonic_ns() : 0;
+        const uint32_t count =
+            dvz_figure_process_queries(win->figure, win->app->runtime, &win->query_caps);
+        if (timing != NULL)
+        {
+            timing->query_ns = dvz_time_monotonic_ns() - query_start_ns;
+            timing->query_count = count;
+            (void)_dvz_scene_query_timing_get(win->figure->scene, &timing->query_detail);
+        }
+    }
+    const uint64_t callback_start_ns = timing != NULL ? dvz_time_monotonic_ns() : 0;
     if (win->frame_callback != NULL && _app_frame_callback_allowed(win))
         win->frame_callback(win, win->frame_user_data);
     if (_view_has_pending_scene_work(win))
         dvz_view_request_frame(win);
-    if (fly_active)
-        dvz_view_request_frame(win);
     win->frame_index++;
     if (timing != NULL)
-    {
-        timing->callback_ns = dvz_time_monotonic_ns() - phase_start;
-        timing->draw_ns = dvz_time_monotonic_ns() - draw_start_ns;
-    }
+        timing->callback_ns = dvz_time_monotonic_ns() - callback_start_ns;
 }
 
 #endif
@@ -4687,19 +4788,24 @@ void dvz_app_destroy(DvzApp* app)
         if (device != NULL)
             dvz_device_wait(device);
     }
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    // Borrowed source views can precede their GUI hosts in the view array.
+    // Release every GUI image lease before any source or host canvas is destroyed.
+    for (uint32_t i = 0; i < app->view_count; i++)
+    {
+        if (app->views[i].gui != NULL)
+        {
+            _dvz_gui_destroy(app->views[i].gui);
+            app->views[i].gui = NULL;
+        }
+    }
+#endif
     for (uint32_t i = 0; i < app->view_count; i++)
     {
         DvzView* win = &app->views[i];
         dvz_free(win->frame_timing.samples);
         win->frame_timing.samples = NULL;
         _view_disconnect_figure_panels(win);
-#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
-        if (win->gui != NULL)
-        {
-            _dvz_gui_destroy(win->gui);
-            win->gui = NULL;
-        }
-#endif
         if (win->canvas != NULL)
         {
             dvz_canvas_destroy(win->canvas);
@@ -5054,6 +5160,7 @@ _view_create_offscreen(DvzApp* app, DvzFigure* figure, uint32_t width, uint32_t 
     app->view_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+    _dvz_canvas_set_commands_completed_callback(canvas, _app_commands_completed, app);
     _view_subscribe_input(win);
     _view_connect_figure_panels(win);
     return win;
@@ -5136,6 +5243,7 @@ _view_create_glfw(
     app->view_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+    _dvz_canvas_set_commands_completed_callback(canvas, _app_commands_completed, app);
     _view_subscribe_input(win);
     _view_connect_figure_panels(win);
 #if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
@@ -5228,6 +5336,7 @@ static DvzView* _view_create_external_surface(
     app->view_count++;
 
     dvz_canvas_set_draw_callback(canvas, _app_draw, win);
+    _dvz_canvas_set_commands_completed_callback(canvas, _app_commands_completed, app);
     _view_subscribe_input(win);
     _view_connect_figure_panels(win);
     return win;
@@ -6529,6 +6638,12 @@ DvzResult dvz_view_request_frame(DvzView* win)
     if (win == NULL)
         return DVZ_ERROR;
     _view_mark_dirty(win);
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+    if (win->app != NULL && win->gui_viewport_ref_count > 0)
+        for (uint32_t i = 0; i < win->app->view_count; i++)
+            if (win->app->views[i].gui != NULL)
+                _dvz_gui_source_requested(win->app->views[i].gui, win);
+#endif
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
     if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
         dvz_window_host_request_frame(win->app->window_host, win->window);
@@ -6550,8 +6665,8 @@ DvzResult dvz_view_wake(DvzView* win)
     if (win == NULL)
         return DVZ_ERROR;
 #if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
-    if (win->app != NULL && win->app->window_host != NULL && win->window != NULL)
-        dvz_window_host_request_frame(win->app->window_host, win->window);
+    if (win->app != NULL && win->app->window_host != NULL)
+        _dvz_window_host_wake(win->app->window_host);
 #endif
     if (win->request_frame_callback != NULL)
         win->request_frame_callback(win, win->request_frame_user_data);
@@ -6699,6 +6814,8 @@ int dvz_view_render_once(DvzView* win)
     win->dirty = false;
     win->frame_requested = false;
     win->draw_failed = false;
+    win->post_submit_pending = false;
+    win->queries_pending = false;
 
     const bool timing_enabled =
         win->frame_timing.enabled && win->replay_recording == NULL &&
@@ -6724,7 +6841,18 @@ int dvz_view_render_once(DvzView* win)
     if (rc == DVZ_CANVAS_FRAME_READY)
     {
         uint64_t submit_start_ns = timing_enabled ? dvz_time_monotonic_ns() : 0;
-        if (dvz_canvas_submit(win->canvas) != 0)
+        const uint64_t previous_value = win->canvas->timeline_value;
+        const int submit_result = dvz_canvas_submit(win->canvas);
+        const uint64_t submit_done_ns = timing_enabled ? dvz_time_monotonic_ns() : 0;
+#if defined(DVZ_HAS_GUI) && DVZ_HAS_GUI
+        if (win->gui != NULL)
+            _dvz_gui_frame_submitted(
+                win->gui, win->canvas,
+                win->canvas->timeline_value > previous_value ? win->canvas->timeline_value : 0);
+#else
+        (void)previous_value;
+#endif
+        if (submit_result != 0)
         {
             win->dirty = win->dirty || dirty_before;
             win->frame_requested = win->frame_requested || requested_before;
@@ -6736,10 +6864,11 @@ int dvz_view_render_once(DvzView* win)
             win->frame_requested = win->frame_requested || requested_before;
             return -1;
         }
+        _app_post_submit(win);
         if (timing_enabled)
         {
             DvzAppFrameTiming* current = &win->frame_timing.current;
-            current->submit_ns = dvz_time_monotonic_ns() - submit_start_ns;
+            current->submit_ns = submit_done_ns - submit_start_ns;
             current->total_ns = dvz_time_monotonic_ns() - frame_start_ns;
             const DvzFrameTiming* canvas_timing = _app_latest_canvas_timing(win->canvas);
             if (canvas_timing != NULL)
@@ -6749,7 +6878,6 @@ int dvz_view_render_once(DvzView* win)
             }
             if (current->input_sequence != 0)
             {
-                const uint64_t submit_done_ns = dvz_time_monotonic_ns();
                 if (submit_done_ns >= current->input_timestamp_ns)
                     current->input_to_submit_ns = submit_done_ns - current->input_timestamp_ns;
                 win->consumed_pointer_sequence = current->input_sequence;
@@ -6786,6 +6914,20 @@ void _dvz_view_test_force_draw_failure(DvzView* view, bool force)
 {
     ANN(view);
     view->test_force_draw_failure = force;
+}
+
+
+
+/**
+ * Inject a runtime-result failure after valid frame recording for presentation recovery tests.
+ *
+ * @param view source whose next runtime results should be rejected
+ * @param force whether to reject runtime results
+ */
+void _dvz_view_test_force_runtime_failure(DvzView* view, bool force)
+{
+    ANN(view);
+    view->test_force_runtime_failure = force;
 }
 
 

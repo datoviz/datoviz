@@ -6845,6 +6845,83 @@ int test_scene_visual_alpha_mode_emits_depth_peel_drp2(TstContext* suite, const 
         return 1;
     }
     AT(runtime->semantic_state->count == scoped_semantic_object_count);
+
+    // Logical canvas slots survive command-buffer replacement during resize. Their scoped
+    // textures and bind groups must reuse ids, while ordinary visual buffers remain shared.
+    uint64_t shared_vertex_id = 0;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* command = dvz_drp2_stream_get(stream, i);
+        if (command->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
+            command->u.set_vertex_buffer.slot == 0)
+        {
+            shared_vertex_id = command->u.set_vertex_buffer.buffer_id;
+            break;
+        }
+    }
+    AT(shared_vertex_id != 0);
+    const char* shared_vertex_label = dvz_drp2_stream_label(stream, shared_vertex_id);
+    ANN(shared_vertex_label);
+    AT(strstr(shared_vertex_label, "_scope_") == NULL);
+    char shared_vertex_key[DVZ_SCENE_LABEL_SIZE] = {0};
+    dvz_strlcpy(shared_vertex_key, shared_vertex_label, sizeof(shared_vertex_key));
+    ANN(scene->emitter);
+
+    uint32_t bounded_resource_count = 0;
+    uint32_t bounded_object_count = 0;
+    uint32_t bounded_semantic_live_count = 0;
+    for (uint32_t round = 0; round < 9; round++)
+    {
+        for (uint32_t slot = 0; slot < 3; slot++)
+        {
+            cfg.runtime_resource_scope_id = UINT64_C(0x7b) + slot;
+            cfg.target_width = 64 + 8 * ((3 * round + slot) % 5);
+            cfg.target_height = 48 + 8 * ((round + slot) % 4);
+            AT(dvz_figure_resize(figure, cfg.target_width, cfg.target_height) == DVZ_OK);
+            dvz_diagnostic_report_init(&report);
+            DvzDrp2CommandStream* resized_slot =
+                _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+            ANN(resized_slot);
+            AT(dvz_diagnostic_report_count(&report) == 0);
+
+            bool uses_shared_vertex = false;
+            for (uint32_t i = 0; i < dvz_drp2_stream_count(resized_slot); i++)
+            {
+                const DvzDrp2Command* command = dvz_drp2_stream_get(resized_slot, i);
+                if (command->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER &&
+                    command->u.set_vertex_buffer.buffer_id == shared_vertex_id)
+                    uses_shared_vertex = true;
+            }
+            AT(uses_shared_vertex);
+            // Reacquire the registry entry after emission can grow its backing storage.
+            const ResourceId* shared_vertex =
+                _resource_find(&scene->emitter->resources, shared_vertex_key);
+            ANN(shared_vertex);
+            AT(shared_vertex->id == shared_vertex_id);
+            AT(shared_vertex->texture_width == 0);
+
+            result = dvz_drp2_runtime_execute(runtime, resized_slot);
+            AT(result.ok);
+            uint32_t semantic_live_count = 0;
+            for (uint32_t i = 0; i < runtime->semantic_state->count; i++)
+                if (!runtime->semantic_state->objects[i].destroyed)
+                    semantic_live_count++;
+
+            if (round == 0 && slot == 2)
+            {
+                bounded_resource_count = scene->emitter->resources.count;
+                bounded_object_count = scene->emitter->objects.count;
+                bounded_semantic_live_count = semantic_live_count;
+            }
+            else if (round > 0)
+            {
+                AT(scene->emitter->resources.count == bounded_resource_count);
+                AT(scene->emitter->objects.count == bounded_object_count);
+                AT(semantic_live_count == bounded_semantic_live_count);
+            }
+            _test_scene_stream_destroy(resized_slot);
+        }
+    }
     dvz_drp2_runtime_destroy(runtime);
 
     _test_scene_stream_destroy(scoped_resize_stream);

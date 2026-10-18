@@ -45,6 +45,10 @@ typedef struct DvzGuiViewportDebugState
     float source_user_scale;
     uint64_t displayed_resource_generation;
     uint64_t source_frame_count;
+    uint64_t displayed_serial;
+    uint64_t promotion_count;
+    uint64_t reuse_count;
+    uint64_t busy_count;
     uint32_t stale_frame_count;
     bool has_frame;
     bool image_valid;
@@ -73,7 +77,17 @@ typedef struct DvzGuiScaleDebugState
 } DvzGuiScaleDebugState;
 
 
-typedef int (*DvzGuiViewportResolveCallback)(DvzView* view, void* user_data);
+typedef enum DvzGuiViewportSourceResult
+{
+    DVZ_GUI_VIEWPORT_SOURCE_ERROR = -1,
+    DVZ_GUI_VIEWPORT_SOURCE_READY = 0,
+    DVZ_GUI_VIEWPORT_SOURCE_BUSY = 1,
+    DVZ_GUI_VIEWPORT_SOURCE_SUBMITTED = 2,
+    DVZ_GUI_VIEWPORT_SOURCE_RETRY = 3,
+} DvzGuiViewportSourceResult;
+
+
+typedef int (*DvzGuiViewportResolveCallback)(DvzView* view, bool nonblocking, void* user_data);
 
 
 
@@ -109,6 +123,10 @@ bool _dvz_gui_resolve_viewports(
 void _dvz_gui_fps_overlay(
     DvzGui* gui, double fps, double frame_ms, uint32_t frames, double elapsed_s);
 void _dvz_gui_render_frame(DvzGui* gui, const DvzStreamFrame* frame);
+void _dvz_gui_frame_submitted(DvzGui* gui, DvzCanvas* host, uint64_t value);
+void _dvz_gui_presentation_report(DvzGui* gui, uint32_t host_index);
+void _dvz_gui_source_requested(DvzGui* gui, DvzView* source);
+bool _dvz_gui_sources_need_frame(DvzGui* gui);
 bool _dvz_gui_viewport_debug_state(
     const DvzGuiViewport* viewport, DvzGuiViewportDebugState* out);
 bool _dvz_gui_tree_debug_state(DvzGuiTree* tree, DvzGuiDataDebugState* out);

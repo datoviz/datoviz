@@ -1,10 +1,24 @@
 # GUI Viewport Presentation
 
-Status: normative target architecture for post-v0.4 embedded-viewport synchronization. The active v0.4 implementation remains synchronous where required for correctness.
+Status: normative embedded-viewport synchronization contract. The scientific candidate implements an opt-in bounded native presentation profile; strict same-frame presentation remains the default.
 
 ## Purpose
 
 An embedded `DvzGuiViewport` renders an offscreen Datoviz source view and samples its completed image inside a host Dear ImGui frame. This contract defines the ownership, freshness, synchronization, resize, and lifetime rules needed to remove steady-state device-wide waits without adding a parallel renderer or presentation path.
+
+## Native implementation profile
+
+`DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING` opts a native GUI viewport into last-completed-image presentation at creation. An advanced borrowed source must not have submitted a frame yet, and each source has one viewport consumer. The source canvas owns three lazily allocated color/depth/command-buffer resource sets. Source timeline tokens, a displayed-image pin and committed host timeline tokens control reuse. Descriptor identity includes both slot and resource generation; content serials and resize request generations remain independent.
+
+The app inspects all visible nonblocking sources before strict source resolution can wait. Each eligible source receives at most one admission per host iteration. Pending work requests further host iterations until completion can be promoted; worker posts wake the native event loop, and owner-thread scheduler inspection observes source demand. There is no worker traversal of GUI registries. Hidden sources preserve their image and suppress admission unless explicitly configured for background rendering.
+
+Borrowed DRP2 uploads, ordinary transfers, compute and resource barriers record into the source-owned command buffer without beginning, ending or submitting it. Buffer updates use ordered GPU transfers instead of overwriting mapped storage still used by earlier submissions. Borrowed uploads must occur outside rendering, and imported destinations require transfer-destination capability. External timeline transfer handoffs remain a standalone profile and are rejected explicitly within borrowed recording. Standalone synchronous execution retains its ownership contract.
+
+Canvas completion notifications reach the runtime before command-buffer reset or destruction, including resize and teardown. An abandoned recording also needs proof that earlier MAIN work using retired shared resources has completed; recoverable queue-submit failure therefore uses a checked queue-scoped recovery drain before that recording may be reused. This recovery operation is not part of steady-state presentation.
+
+Host image use is reserved by the displayed pin while GUI commands are recorded and committed only after actual successful GPU submission. Failed submission cancels unsubmitted use; a later presentation failure retains the successful GPU token. Destroying a viewport after recording defers reclamation until this submission boundary. Closing the app releases every GUI lease before destroying any source or host canvas, regardless of view creation order.
+
+The full future target remains broader than this native profile: applications still choose their strict freshness policy, and frame-state query/capture correlation and cross-backend GUI hosting are not added by this flag.
 
 ## Ownership
 

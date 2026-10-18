@@ -65,6 +65,10 @@ typedef enum DvzGuiViewportFlags
 
     /* Keep rendering the source figure even while the ImGui viewport window is hidden. */
     DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = 1u << 1,
+
+    /* Display the last completed source image without waiting for newer source work.
+     * Uses a bounded canvas-owned target pool; strict same-frame presentation is the default. */
+    DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING = 1u << 2,
 } DvzGuiViewportFlags;
 
 
@@ -863,6 +867,8 @@ dvz_gui_viewport(DvzGui* gui, DvzFigure* figure, const DvzGuiViewportConfig* con
  * prefer dvz_gui_viewport(), which creates the offscreen source from a figure. The source window
  * must use offscreen canvas rendering. The GUI overlay and source view are borrowed and must
  * outlive the returned viewport; destroying the viewport does not destroy or disable the source.
+ * A source can belong to only one GUI viewport. NONBLOCKING requires a source that has not yet
+ * submitted a frame; it may display a previous completed image while newer work is pending.
  *
  * @param gui the borrowed GUI overlay; must not be NULL
  * @param source the borrowed offscreen view providing the rendered image; must not be NULL

@@ -23,6 +23,7 @@
 #include "datoviz/input/router.h"
 #include "datoviz/window.h"
 #include "window_internal.h"
+#include "_window_wake.h"
 
 
 #include <math.h>
@@ -1159,5 +1160,18 @@ void _dvz_window_glfw_shutdown(void)
 {
 #if DVZ_HAS_GLFW
     _glfw_shutdown();
+#endif
+}
+
+
+
+/**
+ * Interrupt a GLFW event wait from any thread without touching window-owned state.
+ */
+void _dvz_window_glfw_wake(void)
+{
+#if DVZ_HAS_GLFW
+    if (_glfw_state.initialized)
+        glfwPostEmptyEvent();
 #endif
 }

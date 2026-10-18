@@ -1816,11 +1816,13 @@ class DvzGuiViewportFlags(CtypesEnum):
     DVZ_GUI_VIEWPORT_FLAGS_NONE = 0
     DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT = 1
     DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = 2
+    DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING = 4
 
 
 DVZ_GUI_VIEWPORT_FLAGS_NONE = DvzGuiViewportFlags.DVZ_GUI_VIEWPORT_FLAGS_NONE
 DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT = DvzGuiViewportFlags.DVZ_GUI_VIEWPORT_FLAGS_FORWARD_INPUT
 DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN = DvzGuiViewportFlags.DVZ_GUI_VIEWPORT_FLAGS_RENDER_WHEN_HIDDEN
+DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING = DvzGuiViewportFlags.DVZ_GUI_VIEWPORT_FLAGS_NONBLOCKING
 
 
 class DvzGuideKind(CtypesEnum):
@@ -20995,6 +20997,8 @@ else:
  * prefer dvz_gui_viewport(), which creates the offscreen source from a figure. The source window
  * must use offscreen canvas rendering. The GUI overlay and source view are borrowed and must
  * outlive the returned viewport; destroying the viewport does not destroy or disable the source.
+ * A source can belong to only one GUI viewport. NONBLOCKING requires a source that has not yet
+ * submitted a frame; it may display a previous completed image while newer work is pending.
  *
  * @param gui the borrowed GUI overlay; must not be NULL
  * @param source the borrowed offscreen view providing the rendered image; must not be NULL
