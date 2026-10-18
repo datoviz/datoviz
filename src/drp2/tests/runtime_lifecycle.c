@@ -409,6 +409,231 @@ int test_drp2_runtime_vklite_deferred_destroy_flush(TstContext* suite, const Tst
 
 
 
+/**
+ * Reclaim one completed owner's transient resources without consuming another pending owner.
+ *
+ * @param suite active test context
+ * @param item active test descriptor
+ * @return zero on success
+ */
+int test_drp2_runtime_vklite_owner_completed_frame_retirement(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    Drp2VkliteState state = {0};
+    DvzDrp2Runtime runtime = {.vklite_state = &state};
+    state.runtime = &runtime;
+    VkCommandBuffer completed = (VkCommandBuffer)(uintptr_t)0x123;
+    VkCommandBuffer pending = (VkCommandBuffer)(uintptr_t)0x456;
+
+    Drp2VkliteObject first = {.id = 1, .kind = DRP2_OBJECT_TEXTURE};
+    Drp2VkliteObject other = {.id = 2, .kind = DRP2_OBJECT_TEXTURE};
+    Drp2VkliteObject last = {.id = 3, .kind = DRP2_OBJECT_RENDER_PASS};
+    AT(_vklite_defer_destroy_object(&state, &first, completed));
+    AT(_vklite_defer_destroy_object(&state, &other, pending));
+    AT(_vklite_defer_destroy_object(&state, &last, completed));
+
+    Drp2VkliteObject* target = _vklite_add(&state, 4, DRP2_OBJECT_TEXTURE);
+    ANN(target);
+    target->borrowed_frame_target = true;
+    target->command_buffer = completed;
+    target->image_view = (VkImageView)(uintptr_t)0x789;
+    target->depth_images = dvz_images_create_wrapper();
+    target->depth_views = dvz_image_views_create_wrapper();
+    ANN(target->depth_images);
+    ANN(target->depth_views);
+    target->depth_image_layout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL;
+    target->depth_texture_access = DRP2_TEXTURE_ACCESS_DEPTH_ATTACHMENT_WRITE;
+
+    Drp2VkliteObject* other_target = _vklite_add(&state, 5, DRP2_OBJECT_TEXTURE);
+    ANN(other_target);
+    other_target->borrowed_frame_target = true;
+    other_target->command_buffer = pending;
+    other_target->borrowed_frame_depth = true;
+    other_target->depth_image = (VkImage)(uintptr_t)0xabc;
+    other_target->depth_image_view = (VkImageView)(uintptr_t)0xdef;
+    state.active_borrowed_command_buffer = pending;
+    state.retirement_borrowed_command_buffer = pending;
+
+    _dvz_drp2_runtime_retire_completed_frame(NULL, completed);
+    _dvz_drp2_runtime_retire_completed_frame(&runtime, VK_NULL_HANDLE);
+    AT(state.deferred_count == 3);
+    _dvz_drp2_runtime_retire_completed_frame(&runtime, completed);
+    AT(state.deferred_count == 1);
+    AT(state.deferred[0].command_buffer == pending);
+    AT(state.deferred[0].object.id == 2);
+    target = _vklite_find(&state, 4);
+    ANN(target);
+    AT(target->depth_images == NULL);
+    AT(target->depth_views == NULL);
+    AT(target->depth_image_layout == VK_IMAGE_LAYOUT_UNDEFINED);
+    AT(target->depth_texture_access == DRP2_TEXTURE_ACCESS_NONE);
+    AT(target->command_buffer == VK_NULL_HANDLE);
+    AT(target->image_view == (VkImageView)(uintptr_t)0x789);
+    other_target = _vklite_find(&state, 5);
+    ANN(other_target);
+    AT(other_target->command_buffer == pending);
+    AT(other_target->depth_image == (VkImage)(uintptr_t)0xabc);
+    AT(other_target->depth_image_view == (VkImageView)(uintptr_t)0xdef);
+    AT(other_target->borrowed_frame_depth);
+    AT(state.active_borrowed_command_buffer == pending);
+    AT(state.retirement_borrowed_command_buffer == pending);
+
+    // Repeated notifications do not consume a newer owner's resources.
+    _dvz_drp2_runtime_retire_completed_frame(&runtime, completed);
+    AT(state.deferred_count == 1);
+    _dvz_drp2_runtime_retire_completed_frame(&runtime, pending);
+    AT(state.deferred_count == 0);
+    AT(state.active_borrowed_command_buffer == VK_NULL_HANDLE);
+    AT(state.retirement_borrowed_command_buffer == VK_NULL_HANDLE);
+    AT(other_target->depth_image == VK_NULL_HANDLE);
+    AT(other_target->depth_image_view == VK_NULL_HANDLE);
+    AT(!other_target->borrowed_frame_depth);
+    _vklite_state_cleanup(&state);
+    return 0;
+}
+
+
+
+/**
+ * Keep live resources recoverable when their borrowed-owner retirement cannot be allocated.
+ *
+ * @param suite active test context
+ * @param item active test descriptor
+ * @return zero on success
+ */
+int test_drp2_runtime_vklite_destroy_retirement_allocation_failure(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    const Drp2ObjectKind kinds[] = {
+        DRP2_OBJECT_RENDER_PIPELINE, DRP2_OBJECT_COMPUTE_PIPELINE, DRP2_OBJECT_TEXTURE,
+        DRP2_OBJECT_BIND_GROUP, DRP2_OBJECT_SHADER_VERTEX};
+    const VkCommandBuffer owner = (VkCommandBuffer)(uintptr_t)0x123;
+    for (uint32_t i = 0; i < sizeof(kinds) / sizeof(kinds[0]); i++)
+    {
+        Drp2VkliteState state = {0};
+        DvzDrp2Runtime runtime = {.vklite_state = &state};
+        state.runtime = &runtime;
+        state.retirement_borrowed_command_buffer = owner;
+        ANN(_vklite_add(&state, 1, kinds[i]));
+        DvzDrp2Command command = {0};
+        switch (kinds[i])
+        {
+        case DRP2_OBJECT_RENDER_PIPELINE:
+            command.type = DVZ_DRP2_COMMAND_DESTROY_RENDER_PIPELINE;
+            command.u.destroy_render_pipeline.render_pipeline_id = 1;
+            break;
+        case DRP2_OBJECT_COMPUTE_PIPELINE:
+            command.type = DVZ_DRP2_COMMAND_DESTROY_COMPUTE_PIPELINE;
+            command.u.destroy_compute_pipeline.compute_pipeline_id = 1;
+            break;
+        case DRP2_OBJECT_TEXTURE:
+            command.type = DVZ_DRP2_COMMAND_DESTROY_TEXTURE;
+            command.u.destroy_texture.texture_id = 1;
+            break;
+        case DRP2_OBJECT_BIND_GROUP:
+            command.type = DVZ_DRP2_COMMAND_DESTROY_BIND_GROUP;
+            command.u.destroy_bind_group.bind_group_id = 1;
+            break;
+        default:
+            command.type = DVZ_DRP2_COMMAND_DESTROY_SHADER_MODULE;
+            command.u.destroy_shader_module.shader_module_id = 1;
+            break;
+        }
+        DvzDrp2CommandStream stream = {.commands = &command, .count = 1};
+        runtime.test_alloc_site = DRP2_TEST_ALLOC_DEFERRED_RESERVE;
+        runtime.test_alloc_fail_at = 1;
+        DvzDrp2ValidationResult result = _vklite_execute(&runtime, &stream);
+        AT(!result.ok);
+        AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+        AT(runtime.test_alloc_site == DRP2_TEST_ALLOC_NONE);
+        Drp2VkliteObject* retained = _vklite_find(&state, 1);
+        ANN(retained);
+        AT(retained->kind == kinds[i]);
+        AT(!retained->destroyed);
+        AT(state.deferred_count == 0);
+
+        result = _vklite_execute(&runtime, &stream);
+        AT(result.ok);
+        AT(_vklite_find(&state, 1) == NULL);
+        AT(state.deferred_count == 1);
+        AT(state.deferred[0].object.kind == kinds[i]);
+        AT(state.deferred[0].command_buffer == owner);
+        _vklite_retire_completed_command_buffer(&state, owner);
+        AT(state.deferred_count == 0);
+        _vklite_state_cleanup(&state);
+    }
+    return 0;
+}
+
+
+
+/**
+ * Allocate borrowed transient-depth ownership before recording, preserving it on failure.
+ *
+ * @param suite active test context
+ * @param item active test descriptor
+ * @return zero on success
+ */
+int test_drp2_runtime_vklite_depth_retirement_allocation_failure(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    Drp2VkliteState state = {0};
+    DvzDrp2Runtime runtime = {.vklite_state = &state};
+    state.runtime = &runtime;
+    VkCommandBuffer owner = (VkCommandBuffer)(uintptr_t)0x123;
+    state.active_borrowed_command_buffer = owner;
+    state.retirement_borrowed_command_buffer = (VkCommandBuffer)(uintptr_t)0x456;
+    Drp2VkliteObject* pass = _vklite_add(&state, 1, DRP2_OBJECT_RENDER_PASS);
+    ANN(pass);
+    pass->borrowed_commands = true;
+    // Uncreated wrappers make this a CPU test of the pre-recording ownership boundary.
+    pass->commands = dvz_commands_create_wrapper();
+    pass->depth_images = dvz_images_create_wrapper();
+    pass->depth_views = dvz_image_views_create_wrapper();
+    ANN(pass->commands);
+    ANN(pass->depth_images);
+    ANN(pass->depth_views);
+    DvzCommands* commands = pass->commands;
+    DvzImages* depth = pass->depth_images;
+    DvzImageViews* views = pass->depth_views;
+    runtime.test_alloc_site = DRP2_TEST_ALLOC_DEFERRED_RESERVE;
+    runtime.test_alloc_fail_at = 1;
+    AT(_vklite_defer_render_pass_depth(&state, pass) == NULL);
+    AT(runtime.test_alloc_site == DRP2_TEST_ALLOC_NONE);
+    AT(_vklite_find(&state, 1) == pass);
+    AT(!pass->destroyed);
+    AT(pass->commands == commands);
+    AT(pass->depth_images == depth);
+    AT(pass->depth_views == views);
+    AT(state.deferred_count == 0);
+    Drp2VkliteObject* deferred_depth = _vklite_defer_render_pass_depth(&state, pass);
+    ANN(deferred_depth);
+    AT(state.deferred_count == 1);
+    AT(state.deferred[0].command_buffer == owner);
+    AT(deferred_depth->depth_images == depth);
+    AT(deferred_depth->depth_views == views);
+    AT(pass->depth_images == NULL);
+    AT(pass->depth_views == NULL);
+    // Ending/freeing the pass cannot consume depth already referenced by its owner's recording.
+    _vklite_destroy_object_slot(&state, pass);
+    AT(state.deferred_count == 1);
+    _vklite_retire_completed_command_buffer(
+        &state, state.retirement_borrowed_command_buffer);
+    AT(state.deferred_count == 1);
+    _vklite_retire_completed_command_buffer(&state, owner);
+    AT(state.deferred_count == 0);
+    _vklite_state_cleanup(&state);
+    return 0;
+}
+
+
+
 int test_drp2_runtime_vklite_trims_destroyed_tail_slots(TstContext* suite, const TstCase* item)
 {
     ANN(suite);

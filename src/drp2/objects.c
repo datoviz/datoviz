@@ -454,6 +454,27 @@ void _vklite_flush_deferred_for_command_buffer(
     if (has_match && state->runtime != NULL && state->runtime->device != NULL)
         dvz_device_wait(state->runtime->device);
 
+    _vklite_retire_completed_command_buffer(state, command_buffer);
+}
+
+
+
+/**
+ * Reclaim only deferred objects whose borrowed command buffer has completed by owner proof.
+ *
+ * This function does not wait or inspect Vulkan state. The owner must establish completion of
+ * the previous recording before calling, and must not yet record runtime work into its next use.
+ *
+ * @param state vklite runtime state
+ * @param command_buffer borrowed command buffer with proven completed execution
+ */
+void _vklite_retire_completed_command_buffer(
+    Drp2VkliteState* state, VkCommandBuffer command_buffer)
+{
+    ANN(state);
+    if (command_buffer == VK_NULL_HANDLE || state->deferred_count == 0)
+        return;
+
     uint32_t write_idx = 0;
     for (uint32_t i = 0; i < state->deferred_count; i++)
     {
@@ -475,6 +496,56 @@ void _vklite_flush_deferred_for_command_buffer(
             sizeof(Drp2DeferredDestroy));
     }
     state->deferred_count = write_idx;
+}
+
+
+
+/**
+ * Release runtime-owned frame resources after the canvas owner proves command completion.
+ *
+ * Notify before the next runtime recording or command-buffer destruction. Reset may already have
+ * occurred, but a raw handle is not a generation token: notifying after new runtime work begins
+ * could release that recording's resources.
+ * This does not touch borrowed images, depth attachments, command buffers, or their ownership.
+ *
+ * @param runtime runtime receiving the owner completion notification, or NULL
+ * @param command_buffer borrowed command buffer whose previous recording has completed
+ */
+void _dvz_drp2_runtime_retire_completed_frame(
+    DvzDrp2Runtime* runtime, VkCommandBuffer command_buffer)
+{
+    if (runtime == NULL || runtime->vklite_state == NULL || command_buffer == VK_NULL_HANDLE)
+        return;
+    Drp2VkliteState* state = runtime->vklite_state;
+    for (uint32_t i = 0; i < state->count; i++)
+    {
+        Drp2VkliteObject* object = &state->objects[i];
+        if (object->destroyed || !object->borrowed_frame_target ||
+            object->command_buffer != command_buffer)
+            continue;
+
+        // Transient target depth may still be attached when its owner completes. Retire it now
+        // without allocating a deferred record that would miss this completion notification.
+        Drp2VkliteObject depth = {
+            .kind = DRP2_OBJECT_TEXTURE,
+            .depth_images = object->depth_images,
+            .depth_views = object->depth_views,
+        };
+        object->depth_images = NULL;
+        object->depth_views = NULL;
+        object->depth_image = VK_NULL_HANDLE;
+        object->depth_image_view = VK_NULL_HANDLE;
+        object->depth_image_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+        object->depth_texture_access = DRP2_TEXTURE_ACCESS_NONE;
+        object->borrowed_frame_depth = false;
+        object->command_buffer = VK_NULL_HANDLE;
+        _vklite_destroy_object(&depth);
+    }
+    _vklite_retire_completed_command_buffer(state, command_buffer);
+    if (state->active_borrowed_command_buffer == command_buffer)
+        state->active_borrowed_command_buffer = VK_NULL_HANDLE;
+    if (state->retirement_borrowed_command_buffer == command_buffer)
+        state->retirement_borrowed_command_buffer = VK_NULL_HANDLE;
 }
 
 

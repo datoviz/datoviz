@@ -1007,6 +1007,15 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
                 cmds, resolves[i], DRP2_TEXTURE_ACCESS_COLOR_ATTACHMENT_WRITE);
         }
     }
+    // Transfer ownership before the first recorded depth use. EndRenderPass must not need
+    // allocation while dynamic rendering is open, including when the stream later fails.
+    if (transient_depth_owner == pass && pass->borrowed_commands)
+    {
+        transient_depth_owner = _vklite_defer_render_pass_depth(state, pass);
+        if (transient_depth_owner == NULL)
+            return _vklite_fail_destroy_object(
+                pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     if (named_depth != NULL)
     {
         _vklite_transition_image_access(
@@ -1019,7 +1028,43 @@ DvzDrp2ValidationResult _vklite_begin_render_pass(
         _transition_depth_image_access(
             cmds, transient_depth_owner, _depth_texture_access(depth_transition_access));
     dvz_cmd_rendering_begin(cmds, rendering);
+    pass->rendering_active = true;
     return _drp2_ok();
+}
+
+
+/**
+ * Give borrowed pass depth to its completion owner before recording any use of it.
+ *
+ * The returned deferred record is borrowed until the next deferred-storage allocation.
+ * Failure preserves the pass and must be handled before BeginRendering.
+ *
+ * @param state vklite runtime state
+ * @param pass borrowed pass owning transient depth wrappers
+ * @return deferred depth owner, or NULL when retirement cannot be allocated
+ */
+Drp2VkliteObject* _vklite_defer_render_pass_depth(
+    Drp2VkliteState* state, Drp2VkliteObject* pass)
+{
+    ANN(state);
+    ANN(pass);
+    if (!pass->borrowed_commands ||
+        state->active_borrowed_command_buffer == VK_NULL_HANDLE ||
+        !_vklite_deferred_reserve(state, 1))
+        return NULL;
+
+    Drp2VkliteObject depth = {
+        .kind = DRP2_OBJECT_TEXTURE,
+        .depth_images = pass->depth_images,
+        .depth_views = pass->depth_views,
+        .depth_image_layout = pass->depth_image_layout,
+        .depth_texture_access = pass->depth_texture_access,
+    };
+    if (!_vklite_defer_destroy_object(state, &depth, state->active_borrowed_command_buffer))
+        return NULL;
+    pass->depth_images = NULL;
+    pass->depth_views = NULL;
+    return &state->deferred[state->deferred_count - 1].object;
 }
 
 
@@ -1042,15 +1087,13 @@ DvzDrp2ValidationResult _vklite_begin_compute_pass(
     if (pass == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
+    bool borrowed = false;
+    DvzCommands* cmds = _vklite_commands_begin(state, &borrowed);
     if (cmds == NULL)
         return _vklite_fail_destroy_object(
             pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     pass->commands = cmds;
-
-    if (_vklite_owned_commands_begin(cmds) != 0)
-        return _vklite_fail_destroy_object(
-            pass, DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    pass->borrowed_commands = borrowed;
     return _drp2_ok();
 }
 
@@ -1426,14 +1469,10 @@ DvzDrp2ValidationResult _vklite_resource_barrier(
     if (size == 0)
         size = VK_WHOLE_SIZE;
 
-    DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
+    bool borrowed = false;
+    DvzCommands* cmds = _vklite_commands_begin(state, &borrowed);
     if (cmds == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (_vklite_owned_commands_begin(cmds) != 0)
-    {
-        _vklite_owned_commands_destroy(cmds);
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    }
 
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
@@ -1441,15 +1480,15 @@ DvzDrp2ValidationResult _vklite_resource_barrier(
         &barriers, dvz_buffer_handle(buffer->buffer), command->u.resource_barrier.offset, size);
     if (bbuf == NULL)
     {
-        _vklite_owned_commands_destroy(cmds);
+        _vklite_commands_destroy(cmds, borrowed);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     dvz_barrier_buffer_stage(bbuf, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, dst_stage);
     dvz_barrier_buffer_access(bbuf, VK_ACCESS_2_SHADER_WRITE_BIT, dst_access);
     dvz_cmd_barriers(cmds, &barriers);
 
-    DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
-    _vklite_owned_commands_destroy(cmds);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, borrowed, command_index);
+    _vklite_commands_destroy(cmds, borrowed);
     return result;
 }
 
@@ -1516,6 +1555,7 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     dvz_cmd_rendering_end(pass->commands);
+    pass->rendering_active = false;
     if (!_vklite_resolve_deferred_color_regions(state, pass))
     {
         _vklite_destroy_object_slot(state, pass);
@@ -1530,14 +1570,6 @@ _vklite_end_render_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comma
             _vklite_destroy_object_slot(state, pass);
             return result;
         }
-    }
-    else if (
-        pass->depth_images != NULL &&
-        state->retirement_borrowed_command_buffer != VK_NULL_HANDLE &&
-        _vklite_defer_destroy_object(
-            state, pass, state->retirement_borrowed_command_buffer))
-    {
-        return _drp2_ok();
     }
     _vklite_destroy_object_slot(state, pass);
     return _drp2_ok();
@@ -1560,7 +1592,8 @@ _vklite_end_compute_pass(Drp2VkliteState* state, uint64_t pass_id, uint32_t comm
     if (pass == NULL || pass->kind != DRP2_OBJECT_COMPUTE_PASS || pass->commands == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(pass->commands, command_index);
+    DvzDrp2ValidationResult result =
+        _vklite_commands_end_submit(pass->commands, pass->borrowed_commands, command_index);
     if (!result.ok)
     {
         _vklite_destroy_object_slot(state, pass);

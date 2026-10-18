@@ -24,6 +24,7 @@
 #include "_base64.h"
 #include "_runtime.h"
 #include "_stream.h"
+#include "../vklite/_buffers.h"
 #include "datoviz/vklite/sync.h"
 
 
@@ -300,6 +301,114 @@ static bool _vklite_create_staging_buffer(
 }
 
 
+/**
+ * Order one borrowed-frame buffer update against earlier or later main-queue accesses.
+ *
+ * @param cmds borrowed recording wrapper outside a rendering scope
+ * @param buffer destination buffer handle
+ * @param offset first updated byte
+ * @param size number of updated bytes
+ * @param before whether this is the dependency preceding the transfer write
+ */
+static void _vklite_buffer_write_barrier(
+    DvzCommands* cmds, VkBuffer buffer, uint64_t offset, uint64_t size, bool before)
+{
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierBuffer* barrier = dvz_barriers_buffer(&barriers, buffer, offset, size);
+    ANN(barrier);
+    VkPipelineStageFlags2 stages = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+    VkAccessFlags2 accesses = VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT;
+    dvz_barrier_buffer_stage(
+        barrier, before ? stages : VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+        before ? VK_PIPELINE_STAGE_2_TRANSFER_BIT : stages);
+    dvz_barrier_buffer_access(
+        barrier, before ? accesses : VK_ACCESS_2_TRANSFER_WRITE_BIT,
+        before ? VK_ACCESS_2_TRANSFER_WRITE_BIT : accesses);
+    dvz_cmd_barriers(cmds, &barriers);
+}
+
+
+
+/**
+ * Record a borrowed-frame write without mapping storage still read by pending GPU frames.
+ *
+ * @param state runtime state with an active borrowed recording command buffer
+ * @param buffer destination buffer
+ * @param offset first updated byte
+ * @param size number of updated bytes
+ * @param data source bytes copied during recording
+ * @return whether recording and any staging-resource retention succeeded
+ */
+static bool _vklite_record_buffer_write(
+    Drp2VkliteState* state, DvzBuffer* buffer, uint64_t offset, uint64_t size, const void* data)
+{
+    ANN(state);
+    ANN(buffer);
+    ANN(data);
+    if ((dvz_buffer_usage_value(buffer) & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0)
+    {
+        log_error("borrowed frame buffer writes require transfer-destination storage");
+        return false;
+    }
+    // Vulkan transfer commands and their buffer barriers cannot be recorded inside rendering.
+    for (uint32_t i = 0; i < state->count; i++)
+        if (!state->objects[i].destroyed && state->objects[i].kind == DRP2_OBJECT_RENDER_PASS &&
+            state->objects[i].commands != NULL)
+        {
+            log_error("borrowed frame buffer writes must precede or follow render passes");
+            return false;
+        }
+
+    DvzCommands* cmds = _vklite_borrowed_frame_commands_create(
+        state->runtime->device, state->active_borrowed_command_buffer);
+    if (cmds == NULL)
+        return false;
+    DvzBuffer* staging = NULL;
+    const bool inline_update = size <= 65536 && offset % 4 == 0 && size % 4 == 0;
+    if (!inline_update)
+    {
+        // Reserve before recording: a failed allocation must never free a recorded staging use.
+        if (!_vklite_deferred_reserve(state, 1) ||
+            !_vklite_create_staging_buffer(state, size, &staging, VK_BUFFER_USAGE_TRANSFER_SRC_BIT))
+        {
+            _vklite_borrowed_frame_commands_free(cmds);
+            return false;
+        }
+        if (dvz_allocator_copy_to(staging->allocator, staging->alloc, 0, data, size) != 0)
+        {
+            dvz_buffer_destroy(staging);
+            dvz_buffer_free(staging);
+            _vklite_borrowed_frame_commands_free(cmds);
+            return false;
+        }
+        Drp2VkliteObject retirement = {.kind = DRP2_OBJECT_BUFFER, .buffer = staging};
+        if (!_vklite_defer_destroy_object(
+                state, &retirement, state->active_borrowed_command_buffer))
+        {
+            _vklite_destroy_object(&retirement);
+            _vklite_borrowed_frame_commands_free(cmds);
+            return false;
+        }
+    }
+
+    VkBuffer destination = dvz_buffer_handle(buffer);
+    _vklite_buffer_write_barrier(cmds, destination, offset, size, true);
+    if (inline_update)
+        vkCmdUpdateBuffer(dvz_commands_handle(cmds), destination, offset, size, data);
+    else
+    {
+        VkBufferCopy copy = {.dstOffset = offset, .size = size};
+        vkCmdCopyBuffer(
+            dvz_commands_handle(cmds), dvz_buffer_handle(staging), destination, 1, &copy);
+    }
+    _vklite_buffer_write_barrier(cmds, destination, offset, size, false);
+    _vklite_borrowed_frame_commands_free(cmds);
+    return true;
+}
+
+
+
 DvzDrp2ValidationResult _vklite_write_buffer(
     Drp2VkliteState* state, const DvzDrp2Command* command, uint32_t command_index)
 {
@@ -316,23 +425,28 @@ DvzDrp2ValidationResult _vklite_write_buffer(
     if (size == 0)
         return _drp2_ok();
 
-    if (command->u.write_buffer.data_raw != NULL)
+    const void* data = command->u.write_buffer.data_raw;
+    uint8_t* decoded = NULL;
+    if (data == NULL && command->u.write_buffer.data_base64 != NULL)
     {
-        dvz_buffer_upload(object->buffer, offset, size, command->u.write_buffer.data_raw);
-    }
-    else if (command->u.write_buffer.data_base64 != NULL)
-    {
-        uint8_t* data = NULL;
-        if (!_dvz_b64_decode_exact(command->u.write_buffer.data_base64, size, &data))
+        if (!_dvz_b64_decode_exact(command->u.write_buffer.data_base64, size, &decoded))
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
-        dvz_buffer_upload(object->buffer, offset, size, data);
-        dvz_free(data);
+        data = decoded;
+    }
+    if (data == NULL)
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
+
+    bool ok = true;
+    if (state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+    {
+        // Only the active recording authorizes commands. The retirement owner may refer to an
+        // earlier submitted frame and must never be used as a recording destination.
+        ok = _vklite_record_buffer_write(state, object->buffer, offset, size, data);
     }
     else
-    {
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_ARGUMENT, command_index);
-    }
-    return _drp2_ok();
+        dvz_buffer_upload(object->buffer, offset, size, data);
+    dvz_free(decoded);
+    return ok ? _drp2_ok() : _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 }
 
 
@@ -372,10 +486,17 @@ DvzDrp2ValidationResult _vklite_write_texture(
         dvz_free(decoded);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
-    dvz_buffer_upload(staging, 0, size, upload_src);
+    if (dvz_allocator_copy_to(staging->allocator, staging->alloc, 0, upload_src, size) != 0)
+    {
+        dvz_free(decoded);
+        dvz_buffer_destroy(staging);
+        dvz_buffer_free(staging);
+        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+    }
     dvz_free(decoded);
 
-    DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
+    bool borrowed = false;
+    DvzCommands* cmds = _vklite_commands_begin(state, &borrowed);
     if (cmds == NULL)
     {
         dvz_buffer_destroy(staging);
@@ -392,30 +513,31 @@ DvzDrp2ValidationResult _vklite_write_texture(
         &region, command->u.write_texture.origin_x, command->u.write_texture.origin_y,
         command->u.write_texture.origin_z);
 
-    if (_vklite_owned_commands_begin(cmds) != 0)
+    if (borrowed)
     {
-        _vklite_owned_commands_destroy(cmds);
-        dvz_buffer_destroy(staging);
-        dvz_buffer_free(staging);
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        Drp2VkliteObject retirement = {.kind = DRP2_OBJECT_BUFFER, .buffer = staging};
+        if (!_vklite_deferred_reserve(state, 1) ||
+            !_vklite_defer_destroy_object(
+                state, &retirement, state->active_borrowed_command_buffer))
+        {
+            _vklite_destroy_object(&retirement);
+            _vklite_commands_destroy(cmds, borrowed);
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        }
     }
     _vklite_transition_image_access(cmds, texture, DRP2_TEXTURE_ACCESS_TRANSFER_WRITE);
     dvz_cmd_copy_buffer_to_image(
         cmds, dvz_buffer_handle(staging), 0, dvz_image_handle(texture->images, 0),
         _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_WRITE), &region);
-    DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
-    if (!result.ok)
+    DvzDrp2ValidationResult result =
+        _vklite_commands_end_submit(cmds, borrowed, command_index);
+    _vklite_commands_destroy(cmds, borrowed);
+    if (!borrowed)
     {
-        _vklite_owned_commands_destroy(cmds);
         dvz_buffer_destroy(staging);
         dvz_buffer_free(staging);
-        return result;
     }
-
-    _vklite_owned_commands_destroy(cmds);
-    dvz_buffer_destroy(staging);
-    dvz_buffer_free(staging);
-    return _drp2_ok();
+    return result;
 }
 
 
@@ -429,7 +551,8 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_buffer(
     if (src == NULL || src->buffer == NULL || dst == NULL || dst->buffer == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
+    bool borrowed = false;
+    DvzCommands* cmds = _vklite_commands_begin(state, &borrowed);
     if (cmds == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
@@ -438,21 +561,16 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_buffer(
     region.dstOffset = command->u.copy_buffer_to_buffer.dst_offset;
     region.size = command->u.copy_buffer_to_buffer.size;
 
-    if (_vklite_owned_commands_begin(cmds) != 0)
-    {
-        _vklite_owned_commands_destroy(cmds);
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    }
     vkCmdCopyBuffer(
         dvz_commands_handle(cmds), dvz_buffer_handle(src->buffer), dvz_buffer_handle(dst->buffer),
         1, &region);
-    DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, borrowed, command_index);
     if (!result.ok)
     {
-        _vklite_owned_commands_destroy(cmds);
+        _vklite_commands_destroy(cmds, borrowed);
         return result;
     }
-    _vklite_owned_commands_destroy(cmds);
+    _vklite_commands_destroy(cmds, borrowed);
     return _drp2_ok();
 }
 
@@ -470,7 +588,14 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
     if (!_drp2_texture_format_bytes_per_texel(dst->format, &bytes_per_texel))
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
-    DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
+    if (src->external_timeline_pending && state->active_borrowed_command_buffer != VK_NULL_HANDLE)
+    {
+        log_error("external timeline copies require standalone execution outside borrowed frames");
+        return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
+    }
+
+    bool borrowed = false;
+    DvzCommands* cmds = _vklite_commands_begin(state, &borrowed);
     if (cmds == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
@@ -493,15 +618,10 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
         (timeline_semaphore == NULL || semantic_src == NULL ||
          !semantic_src->external_timeline_pending))
     {
-        _vklite_owned_commands_destroy(cmds);
+        _vklite_commands_destroy(cmds, borrowed);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
 
-    if (_vklite_owned_commands_begin(cmds) != 0)
-    {
-        _vklite_owned_commands_destroy(cmds);
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    }
     if (timeline_handoff)
     {
         DvzBarriers acquire = {0};
@@ -568,7 +688,7 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
     }
     else
     {
-        result = _vklite_owned_commands_end_submit(cmds, command_index);
+        result = _vklite_commands_end_submit(cmds, borrowed, command_index);
     }
 
     if (result.ok && timeline_handoff)
@@ -577,7 +697,7 @@ DvzDrp2ValidationResult _vklite_copy_buffer_to_texture(
         src->external_timeline_semaphore = NULL;
         semantic_src->external_timeline_pending = false;
     }
-    _vklite_owned_commands_destroy(cmds);
+    _vklite_commands_destroy(cmds, borrowed);
     return result;
 }
 
@@ -595,7 +715,8 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
     if (!_drp2_texture_format_bytes_per_texel(src->format, &bytes_per_texel))
         return _drp2_fail(DVZ_DRP2_VALIDATION_USAGE, command_index);
 
-    DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
+    bool borrowed = false;
+    DvzCommands* cmds = _vklite_commands_begin(state, &borrowed);
     if (cmds == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
@@ -606,24 +727,19 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_buffer(
         command->u.copy_texture_to_buffer.bytes_per_row,
         command->u.copy_texture_to_buffer.rows_per_image, bytes_per_texel);
 
-    if (_vklite_owned_commands_begin(cmds) != 0)
-    {
-        _vklite_owned_commands_destroy(cmds);
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    }
     _vklite_transition_image_access(cmds, src, DRP2_TEXTURE_ACCESS_TRANSFER_READ);
     dvz_cmd_copy_image_to_buffer(
         cmds, dvz_image_handle(src->images, 0),
         _vklite_texture_access_layout(DRP2_TEXTURE_ACCESS_TRANSFER_READ), &region,
         dvz_buffer_handle(dst->buffer), command->u.copy_texture_to_buffer.dst_offset);
-    DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, borrowed, command_index);
     if (!result.ok)
     {
-        _vklite_owned_commands_destroy(cmds);
+        _vklite_commands_destroy(cmds, borrowed);
         return result;
     }
 
-    _vklite_owned_commands_destroy(cmds);
+    _vklite_commands_destroy(cmds, borrowed);
     return _drp2_ok();
 }
 
@@ -638,14 +754,15 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
     if (src == NULL || src->images == NULL || dst == NULL || dst->images == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
-    DvzCommands* cmds = _vklite_owned_commands_create(state->runtime->device);
+    bool borrowed = false;
+    DvzCommands* cmds = _vklite_commands_begin(state, &borrowed);
     if (cmds == NULL)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
 
     DvzImageCopy* copy = dvz_image_copy_create();
     if (copy == NULL)
     {
-        _vklite_owned_commands_destroy(cmds);
+        _vklite_commands_destroy(cmds, borrowed);
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     }
     dvz_cmd_copy_source(
@@ -663,25 +780,19 @@ DvzDrp2ValidationResult _vklite_copy_texture_to_texture(
         (int32_t)command->u.copy_texture_to_texture.dst_origin_y,
         (int32_t)command->u.copy_texture_to_texture.dst_origin_z);
 
-    if (_vklite_owned_commands_begin(cmds) != 0)
-    {
-        dvz_image_copy_free(copy);
-        _vklite_owned_commands_destroy(cmds);
-        return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    }
     _vklite_transition_image_access(cmds, src, DRP2_TEXTURE_ACCESS_TRANSFER_READ);
     _vklite_transition_image_access(cmds, dst, DRP2_TEXTURE_ACCESS_TRANSFER_WRITE);
     dvz_cmd_copy_image(cmds, copy);
-    DvzDrp2ValidationResult result = _vklite_owned_commands_end_submit(cmds, command_index);
+    DvzDrp2ValidationResult result = _vklite_commands_end_submit(cmds, borrowed, command_index);
     if (!result.ok)
     {
         dvz_image_copy_free(copy);
-        _vklite_owned_commands_destroy(cmds);
+        _vklite_commands_destroy(cmds, borrowed);
         return result;
     }
 
     dvz_image_copy_free(copy);
-    _vklite_owned_commands_destroy(cmds);
+    _vklite_commands_destroy(cmds, borrowed);
     return _drp2_ok();
 }
 

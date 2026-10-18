@@ -240,6 +240,12 @@ int test_drp2_runtime_frame_lifecycle_edge_cases(TstContext* suite, const TstCas
 
 #if DVZ_DRP2_HAS_VKLITE
 int test_drp2_runtime_vklite_deferred_destroy_flush(TstContext* suite, const TstCase* item);
+int test_drp2_runtime_vklite_owner_completed_frame_retirement(
+    TstContext* suite, const TstCase* item);
+int test_drp2_runtime_vklite_destroy_retirement_allocation_failure(
+    TstContext* suite, const TstCase* item);
+int test_drp2_runtime_vklite_depth_retirement_allocation_failure(
+    TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_trims_destroyed_tail_slots(TstContext* suite, const TstCase* item);
 #endif
@@ -263,6 +269,10 @@ int test_drp2_runtime_vklite_writes_buffer_contents(TstContext* suite, const Tst
 int test_drp2_runtime_vklite_copies_buffer_contents(TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_owned_copy_between_borrowed_reads(
+    TstContext* suite, const TstCase* item);
+int test_drp2_runtime_vklite_borrowed_writes_order_copy_compute(
+    TstContext* suite, const TstCase* item);
+int test_drp2_runtime_vklite_borrowed_render_failure_closes_rendering(
     TstContext* suite, const TstCase* item);
 
 int test_drp2_runtime_vklite_destroys_submitted_buffer(TstContext* suite, const TstCase* item);

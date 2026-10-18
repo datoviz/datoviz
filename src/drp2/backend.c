@@ -37,7 +37,8 @@ static VkBufferUsageFlags _vklite_buffer_usage(uint32_t usage)
     VkBufferUsageFlags out = 0;
     if ((usage & DVZ_DRP2_BUFFER_USAGE_COPY_SRC) != 0)
         out |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-    if ((usage & DVZ_DRP2_BUFFER_USAGE_COPY_DST) != 0)
+    // Borrowed-frame writes execute as GPU transfers so pending frame reads remain ordered.
+    if ((usage & (DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE)) != 0)
         out |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     if ((usage & DVZ_DRP2_BUFFER_USAGE_VERTEX) != 0)
         out |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
@@ -389,7 +390,8 @@ bool _vklite_attach_frame_target(
             return false;
         runtime->vklite_state->runtime = runtime;
     }
-    _vklite_flush_deferred(runtime->vklite_state);
+    // Completion belongs to the frame owner. Attaching another recording does not prove that
+    // earlier borrowed command buffers have finished, so retain their deferred resources here.
 
     DvzImages* images = dvz_images_create_wrapper();
     if (images == NULL)
@@ -514,7 +516,7 @@ void _vklite_owned_commands_destroy(DvzCommands* cmds)
  *
  * @param cmds owned command buffer currently recording outside a render pass
  */
-static void _vklite_owned_commands_barrier(DvzCommands* cmds)
+static void _vklite_commands_barrier(DvzCommands* cmds)
 {
     ANN(cmds);
     DvzBarriers barriers = {0};
@@ -543,7 +545,7 @@ int _vklite_owned_commands_begin(DvzCommands* cmds)
     int result = dvz_cmd_begin_result(cmds);
     if (result != 0)
         return result;
-    _vklite_owned_commands_barrier(cmds);
+    _vklite_commands_barrier(cmds);
     return 0;
 }
 
@@ -561,7 +563,7 @@ int _vklite_owned_commands_begin(DvzCommands* cmds)
 int _vklite_owned_commands_end(DvzCommands* cmds)
 {
     ANN(cmds);
-    _vklite_owned_commands_barrier(cmds);
+    _vklite_commands_barrier(cmds);
     return dvz_cmd_end_result(cmds);
 }
 
@@ -623,6 +625,75 @@ _vklite_owned_commands_end_submit(DvzCommands* cmds, uint32_t command_index)
 }
 
 
+/**
+ * Select the active borrowed frame recording, or begin synchronous owned commands.
+ *
+ * Invoke outside rendering. Only the active frame scope authorizes borrowed recording; the
+ * sticky retirement owner may already be submitted and never authorizes new commands.
+ *
+ * @param state backend state
+ * @param borrowed output indicating owner-managed command-buffer lifetime
+ * @return recording wrapper, or NULL on failure
+ */
+DvzCommands* _vklite_commands_begin(Drp2VkliteState* state, bool* borrowed)
+{
+    ANN(state);
+    ANN(borrowed);
+    *borrowed = state->active_borrowed_command_buffer != VK_NULL_HANDLE;
+    DvzCommands* cmds = *borrowed
+                            ? _vklite_borrowed_frame_commands_create(
+                                  state->runtime->device, state->active_borrowed_command_buffer)
+                            : _vklite_owned_commands_create(state->runtime->device);
+    if (cmds == NULL)
+        return NULL;
+    if (*borrowed)
+        _vklite_commands_barrier(cmds);
+    else if (_vklite_owned_commands_begin(cmds) != 0)
+    {
+        _vklite_owned_commands_destroy(cmds);
+        return NULL;
+    }
+    return cmds;
+}
+
+
+
+/**
+ * Publish commands to later main-queue accesses, submitting only an owned recording.
+ *
+ * @param cmds recording wrapper outside rendering
+ * @param borrowed whether the frame owner retains recording and submission responsibility
+ * @param command_index DRP2 command index for error reporting
+ * @return backend validation result
+ */
+DvzDrp2ValidationResult _vklite_commands_end_submit(
+    DvzCommands* cmds, bool borrowed, uint32_t command_index)
+{
+    ANN(cmds);
+    if (!borrowed)
+        return _vklite_owned_commands_end_submit(cmds, command_index);
+    _vklite_commands_barrier(cmds);
+    return _drp2_ok();
+}
+
+
+
+/**
+ * Release a recording wrapper without changing a borrowed owner's Vulkan lifecycle.
+ *
+ * @param cmds recording wrapper, or NULL
+ * @param borrowed whether the wrapped command buffer belongs to the frame owner
+ */
+void _vklite_commands_destroy(DvzCommands* cmds, bool borrowed)
+{
+    if (borrowed)
+        _vklite_borrowed_frame_commands_free(cmds);
+    else
+        _vklite_owned_commands_destroy(cmds);
+}
+
+
+
 static DvzDrp2ValidationResult _vklite_destroy_backend_object(
     Drp2VkliteState* state, uint64_t id, Drp2ObjectKind kind, uint32_t command_index)
 {
@@ -632,11 +703,11 @@ static DvzDrp2ValidationResult _vklite_destroy_backend_object(
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
     if (state->retirement_borrowed_command_buffer != VK_NULL_HANDLE)
     {
-        if (_vklite_defer_destroy_object(
+        if (!_vklite_deferred_reserve(state, 1) ||
+            !_vklite_defer_destroy_object(
                 state, object, state->retirement_borrowed_command_buffer))
-            return _drp2_ok();
-        if (kind == DRP2_OBJECT_BUFFER)
             return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
+        return _drp2_ok();
     }
     else if (kind == DRP2_OBJECT_BUFFER && state->runtime != NULL &&
              state->runtime->device != NULL)
@@ -670,9 +741,13 @@ static DvzDrp2ValidationResult _vklite_destroy_shader_module(
         object->kind != DRP2_OBJECT_SHADER_FRAGMENT &&
         object->kind != DRP2_OBJECT_SHADER_COMPUTE)
         return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
-    if (state->retirement_borrowed_command_buffer != VK_NULL_HANDLE &&
-        _vklite_defer_destroy_object(state, object, state->retirement_borrowed_command_buffer))
+    if (state->retirement_borrowed_command_buffer != VK_NULL_HANDLE)
+    {
+        if (!_vklite_deferred_reserve(state, 1) ||
+            !_vklite_defer_destroy_object(state, object, state->retirement_borrowed_command_buffer))
+            return _drp2_fail(DVZ_DRP2_VALIDATION_INVALID_STATE, command_index);
         return _drp2_ok();
+    }
     _vklite_destroy_object_slot(state, object);
     return _drp2_ok();
 }
@@ -822,6 +897,27 @@ _vklite_execute(DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream)
             break;
     }
 
+    if (!result.ok)
+    {
+        // The canvas still owns finalization/submission of this recording on stream failure.
+        // Close dynamic rendering so its final image barriers remain legal. Transient depth
+        // was transferred to deferred ownership before BeginRendering and stays alive.
+        for (uint32_t i = state->count; i > 0; i--)
+        {
+            Drp2VkliteObject* pass = &state->objects[i - 1];
+            if (pass->destroyed ||
+                (pass->kind != DRP2_OBJECT_RENDER_PASS &&
+                 pass->kind != DRP2_OBJECT_COMPUTE_PASS) ||
+                !pass->borrowed_commands || pass->commands == NULL)
+                continue;
+            if (pass->rendering_active)
+            {
+                dvz_cmd_rendering_end(pass->commands);
+                pass->rendering_active = false;
+            }
+            _vklite_destroy_object_slot(state, pass);
+        }
+    }
     state->active_borrowed_command_buffer = VK_NULL_HANDLE;
     return result;
 }

@@ -30,10 +30,20 @@
 #include "test_drp2_helpers.h"
 #include "testing.h"
 
+#ifndef DVZ_TEST_HAS_THREAD
+#define DVZ_TEST_HAS_THREAD 0
+#endif
+
 #if DVZ_DRP2_HAS_VKLITE
 #include "_log.h"
 #include "../_runtime.h"
 #include "../../vklite/_buffers.h"
+#if DVZ_TEST_HAS_THREAD
+#include "../../thread/atomic_internal.h"
+#include "../../thread/thread_internal.h"
+#include "_time_utils.h"
+#endif
+#include "datoviz/common/functions.h"
 #include "datoviz/vk/device.h"
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vk/instance.h"
@@ -586,6 +596,344 @@ int test_drp2_runtime_vklite_owned_copy_between_borrowed_reads(
     _vklite_owned_commands_destroy(owner_after);
     _vklite_owned_commands_destroy(owner_before);
     dvz_drp2_stream_destroy(copy);
+    dvz_drp2_stream_destroy(setup);
+    return 0;
+}
+
+
+
+#if DVZ_TEST_HAS_THREAD
+typedef struct Drp2WriteGate
+{
+    DvzSemaphore* semaphore;
+    DvzAtomic finished;
+} Drp2WriteGate;
+
+
+
+/**
+ * Release a blocked read if a regression accidentally waits while recording its later write.
+ *
+ * @param user_data test-owned gate, live until this thread is joined
+ * @return NULL
+ */
+static void* _drp2_write_gate_release(void* user_data)
+{
+    Drp2WriteGate* gate = (Drp2WriteGate*)user_data;
+    uint64_t start = dvz_time_monotonic_ns();
+    while (!dvz_atomic_get(gate->finished))
+    {
+        if (dvz_time_monotonic_ns() - start >= UINT64_C(2000000000))
+        {
+            dvz_semaphore_signal(gate->semaphore, 1);
+            break;
+        }
+        dvz_sleep(1);
+    }
+    return NULL;
+}
+
+
+
+/**
+ * Exercise an inline or staged write between pending borrowed reads, copies and compute.
+ *
+ * @param suite active test context
+ * @param size updated byte count
+ * @param offset destination byte offset
+ * @return zero on success
+ */
+static int _drp2_borrowed_write_case(TstContext* suite, uint64_t size, uint64_t offset)
+{
+    DvzGpuCtxConfig cfg = dvz_testing_gpu_ctx_config(suite);
+    VkPhysicalDeviceVulkan12Features features12 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+        .timelineSemaphore = true,
+    };
+    dvz_gpu_ctx_config_features12(&cfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .synchronization2 = true,
+    };
+    dvz_gpu_ctx_config_features13(&cfg, &features13);
+    DvzGpuCtx* ctx = dvz_gpu_ctx(&cfg);
+    if (ctx == NULL)
+    {
+        tst_skip(suite, "borrowed transfer gate requires timeline semaphores and synchronization2");
+        return 0;
+    }
+    DvzDrp2RuntimeConfig runtime_cfg =
+        dvz_drp2_runtime_vklite_config(dvz_gpu_ctx_device(ctx), dvz_gpu_ctx_alloc(ctx));
+    DvzDrp2Runtime* runtime = dvz_drp2_runtime_vklite(&runtime_cfg);
+    ANN(runtime);
+    DvzDevice* device = dvz_gpu_ctx_device(ctx);
+    DvzQueue* queue = dvz_device_queue(device, DVZ_QUEUE_MAIN);
+    uint8_t* old_data = (uint8_t*)dvz_malloc(size + offset);
+    uint8_t* new_data = (uint8_t*)dvz_malloc(size);
+    uint8_t* old_snapshot = (uint8_t*)dvz_calloc(size, 1);
+    uint8_t* new_snapshot = (uint8_t*)dvz_calloc(size, 1);
+    ANN(old_data);
+    ANN(new_data);
+    ANN(old_snapshot);
+    ANN(new_snapshot);
+    dvz_memset(old_data, size + offset, 3, size + offset);
+    dvz_memset(new_data, size, 16, size);
+
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 1, size + offset, DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST |
+                                    DVZ_DRP2_BUFFER_USAGE_MAP_READ | DVZ_DRP2_BUFFER_USAGE_MAP_WRITE));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 2, size, DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_COPY_DST |
+                           DVZ_DRP2_BUFFER_USAGE_STORAGE));
+    for (uint64_t id = 3; id <= 4; id++)
+        AT(dvz_drp2_stream_create_buffer(
+            setup, id, size, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 5, 16, DVZ_DRP2_BUFFER_USAGE_COPY_SRC | DVZ_DRP2_BUFFER_USAGE_STORAGE));
+    AT(dvz_drp2_stream_create_buffer(
+        setup, 6, 16, DVZ_DRP2_BUFFER_USAGE_COPY_DST | DVZ_DRP2_BUFFER_USAGE_MAP_READ));
+    AT(dvz_drp2_stream_write_buffer_bytes(setup, 1, 0, size + offset, old_data));
+    AT(dvz_drp2_stream_create_shader_module_format(
+        setup, 7, "COMPUTE", "glsl",
+        "#version 450\nlayout(local_size_x=1)in;"
+        "layout(set=0,binding=0,std430)readonly buffer A{uint x[];}a;"
+        "layout(set=0,binding=1,std430)writeonly buffer B{uint x[];}b;"
+        "void main(){b.x[0]=a.x[0]+1u;}"));
+    AT(dvz_drp2_stream_create_storage_bind_group_layout(setup, 8));
+    AT(dvz_drp2_stream_create_storage_bind_group(setup, 9, 8, 2, 5, 16));
+    AT(dvz_drp2_stream_create_compute_pipeline_with_bind_group_layout(setup, 10, 7, 8));
+    DvzDrp2ValidationResult result = dvz_drp2_runtime_execute(runtime, setup);
+    AT(result.ok);
+
+    DvzCommands* earlier = _vklite_owned_commands_create(device);
+    DvzCommands* writing = _vklite_owned_commands_create(device);
+    ANN(earlier);
+    ANN(writing);
+    AT(dvz_cmd_begin_result(earlier) == 0);
+    VkBufferCopy read = {.srcOffset = offset, .size = size};
+    VkBuffer shared = dvz_buffer_handle(_vklite_find(runtime->vklite_state, 1)->buffer);
+    VkBuffer before = dvz_buffer_handle(_vklite_find(runtime->vklite_state, 3)->buffer);
+    VkBuffer after = dvz_buffer_handle(_vklite_find(runtime->vklite_state, 4)->buffer);
+    vkCmdCopyBuffer(dvz_commands_handle(earlier), shared, before, 1, &read);
+    AT(dvz_cmd_end_result(earlier) == 0);
+    AT(dvz_cmd_begin_result(writing) == 0);
+    VkCommandBuffer write_command = dvz_commands_handle(writing);
+
+    DvzDrp2CommandStream* updates = dvz_drp2_stream();
+    if (size == 16 && offset == 0)
+    {
+        AT(dvz_drp2_stream_write_buffer_base64(updates, 1, 0, 16, "EBAQEBAQEBAQEBAQEBAQEA=="));
+    }
+    else
+    {
+        AT(dvz_drp2_stream_write_buffer_bytes(updates, 1, offset, size, new_data));
+    }
+    AT(dvz_drp2_stream_begin_command_encoder(updates, 20));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(updates, 20, 1, offset, 2, 0, size));
+    AT(dvz_drp2_stream_begin_compute_pass(updates, 21, 20));
+    AT(dvz_drp2_stream_set_pipeline(updates, 21, 10));
+    AT(dvz_drp2_stream_set_bind_group(updates, 21, 0, 9));
+    AT(dvz_drp2_stream_dispatch_workgroups(updates, 21, 1, 1, 1));
+    AT(dvz_drp2_stream_end_compute_pass(updates, 21));
+    AT(dvz_drp2_stream_resource_barrier(
+        updates, 20, 5, "COMPUTE", "STORAGE_WRITE", "COPY", "COPY_READ", 0, 16));
+    AT(dvz_drp2_stream_copy_buffer_to_buffer(updates, 20, 5, 0, 6, 0, 16));
+    AT(dvz_drp2_stream_finish_command_encoder(updates, 20, 22));
+    AT(dvz_drp2_stream_queue_submit(updates, 22, 23));
+
+    DvzSemaphore* timeline = dvz_semaphore_create_wrapper();
+    dvz_semaphore_timeline(device, 0, timeline, 0);
+    DvzSubmit* submit = dvz_submit_create_wrapper();
+    dvz_submit(submit);
+    dvz_submit_command(submit, dvz_commands_handle(earlier));
+    dvz_submit_wait(submit, dvz_semaphore_handle(timeline), 1, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT);
+    Drp2WriteGate gate = {.semaphore = timeline, .finished = dvz_atomic()};
+    DvzThread* watchdog = dvz_thread(_drp2_write_gate_release, &gate);
+    ANN(watchdog);
+    const int32_t submitted = dvz_submit_send(submit, dvz_queue_handle(queue), VK_NULL_HANDLE);
+
+    Drp2VkliteState* state = runtime->vklite_state;
+    state->active_borrowed_command_buffer = write_command;
+    state->retirement_borrowed_command_buffer = write_command;
+    bool allocation_rejected_safely = true;
+    if (size > 65536)
+    {
+        runtime->test_alloc_site = DRP2_TEST_ALLOC_DEFERRED_RESERVE;
+        runtime->test_alloc_fail_at = 1;
+        DvzDrp2ValidationResult failed = _vklite_write_buffer(state, &updates->commands[0], 0);
+        allocation_rejected_safely = !failed.ok && state->deferred_count == 0;
+    }
+    result = dvz_drp2_runtime_execute(runtime, updates);
+    const uint32_t retained = state->deferred_count;
+    dvz_drp2_stream_destroy(updates);
+    const uint64_t gate_at_recording = dvz_semaphore_query(timeline);
+    dvz_atomic_set(gate.finished, 1);
+    dvz_thread_join(watchdog);
+    if (dvz_semaphore_query(timeline) == 0)
+        dvz_semaphore_signal(timeline, 1);
+
+    vkCmdCopyBuffer(write_command, shared, after, 1, &read);
+    DvzBarriers barriers = {0};
+    dvz_barriers(&barriers);
+    DvzBarrierMemory* memory = dvz_barriers_memory(&barriers);
+    dvz_barrier_memory_stage(
+        memory, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_2_HOST_BIT);
+    dvz_barrier_memory_access(memory, VK_ACCESS_2_MEMORY_WRITE_BIT, VK_ACCESS_2_HOST_READ_BIT);
+    dvz_cmd_barriers(writing, &barriers);
+    const int ended = dvz_cmd_end_result(writing);
+    DvzFence* fence = dvz_fence_create_wrapper();
+    dvz_fence(device, false, fence);
+    VkFence fence_handle = dvz_fence_handle(fence);
+    dvz_submit(submit);
+    dvz_submit_command(submit, write_command);
+    const int32_t write_submitted = dvz_submit_send(submit, dvz_queue_handle(queue), fence_handle);
+    const VkResult waited = write_submitted == VK_SUCCESS ?
+        vkWaitForFences(dvz_device_handle(device), 1, &fence_handle, VK_TRUE, UINT64_MAX) :
+        (VkResult)write_submitted;
+    uint32_t computed = 0;
+    const bool downloaded =
+        dvz_drp2_runtime_download_buffer(runtime, 3, 0, size, old_snapshot) &&
+        dvz_drp2_runtime_download_buffer(runtime, 4, 0, size, new_snapshot) &&
+        dvz_drp2_runtime_download_buffer(runtime, 6, 0, sizeof(computed), &computed);
+    _dvz_drp2_runtime_retire_completed_frame(runtime, write_command);
+    const bool released = state->deferred_count == 0;
+    const bool clean = drp2_test_vklite_validation_clean(suite, ctx);
+    bool bytes_match = true;
+    for (uint64_t i = 0; i < size; i++)
+        bytes_match = bytes_match && old_snapshot[i] == 3 && new_snapshot[i] == 16;
+
+    dvz_fence_destroy(fence);
+    dvz_fence_free(fence);
+    dvz_submit_free(submit);
+    dvz_atomic_destroy(gate.finished);
+    dvz_semaphore_destroy(timeline);
+    dvz_semaphore_free(timeline);
+    _vklite_owned_commands_destroy(writing);
+    _vklite_owned_commands_destroy(earlier);
+    dvz_drp2_stream_destroy(setup);
+    dvz_free(old_data);
+    dvz_free(new_data);
+    dvz_free(old_snapshot);
+    dvz_free(new_snapshot);
+    dvz_drp2_runtime_destroy(runtime);
+    dvz_gpu_ctx_destroy(ctx);
+    AT(submitted == VK_SUCCESS);
+    AT(result.ok);
+    AT(ended == 0);
+    AT(write_submitted == VK_SUCCESS);
+    AT(waited == VK_SUCCESS);
+    AT(gate_at_recording == 0);
+    AT(allocation_rejected_safely);
+    AT(retained == (size > 65536 ? 1u : 0u));
+    AT(downloaded);
+    AT(bytes_match);
+    AT(computed == UINT32_C(0x10101011));
+    AT(released);
+    AT(clean);
+    return 0;
+}
+#endif
+
+
+
+/**
+ * Require nonblocking inline and large unaligned borrowed writes with ordered copy/compute uses.
+ *
+ * @param suite active test context
+ * @param item active test descriptor
+ * @return zero on success
+ */
+int test_drp2_runtime_vklite_borrowed_writes_order_copy_compute(
+    TstContext* suite, const TstCase* item)
+{
+    (void)item;
+#if DVZ_TEST_HAS_THREAD
+    AT(_drp2_borrowed_write_case(suite, 16, 0) == 0);
+    AT(_drp2_borrowed_write_case(suite, 65537, 1) == 0);
+#else
+    tst_skip(suite, "borrowed transfer gate requires the thread component");
+#endif
+    return 0;
+}
+
+
+
+/**
+ * Finalize failed borrowed render/compute passes safely, retaining submitted transient depth.
+ *
+ * @param suite active test context
+ * @param item active test descriptor
+ * @return zero on success
+ */
+int test_drp2_runtime_vklite_borrowed_render_failure_closes_rendering(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzGpuCtx* ctx = NULL;
+    DvzDrp2Runtime* runtime = drp2_test_vklite_fixture_runtime(suite, &ctx);
+    if (runtime == NULL)
+        return 0;
+    ANN(ctx);
+    DvzDrp2CommandStream* setup = dvz_drp2_stream();
+    ANN(setup);
+    AT(dvz_drp2_stream_hello_renderer(setup, "test-client"));
+    AT(dvz_drp2_stream_renderer_hello_reply(setup, "test-renderer"));
+    AT(dvz_drp2_stream_create_texture_2d_usage(
+        setup, 1, 8, 8, DVZ_DRP2_TEXTURE_USAGE_RENDER_ATTACHMENT));
+    AT(dvz_drp2_runtime_execute(runtime, setup).ok);
+
+    DvzDrp2CommandStream* frame = dvz_drp2_stream();
+    ANN(frame);
+    AT(dvz_drp2_stream_begin_render_pass(frame, 11, 10, 1));
+    AT(dvz_drp2_stream_begin_render_pass_set_depth(frame, 1.0f));
+    // Invoke the backend directly to model a backend failure after semantic validation.
+    AT(dvz_drp2_stream_set_pipeline(frame, 11, 999));
+    DvzDrp2CommandStream* compute = dvz_drp2_stream();
+    ANN(compute);
+    AT(dvz_drp2_stream_begin_compute_pass(compute, 12, 10));
+    AT(dvz_drp2_stream_set_pipeline(compute, 12, 999));
+    for (uint32_t attempt = 0; attempt < 3; attempt++)
+    {
+        DvzCommands* owner = _vklite_owned_commands_create(dvz_gpu_ctx_device(ctx));
+        ANN(owner);
+        AT(_vklite_owned_commands_begin(owner) == 0);
+        VkCommandBuffer command = dvz_commands_handle(owner);
+        runtime->vklite_state->active_borrowed_command_buffer = command;
+        runtime->vklite_state->retirement_borrowed_command_buffer = command;
+        if (attempt == 0)
+        {
+            runtime->test_alloc_site = DRP2_TEST_ALLOC_DEFERRED_RESERVE;
+            runtime->test_alloc_fail_at = 1;
+        }
+        DvzDrp2ValidationResult result =
+            _vklite_execute(runtime, attempt == 2 ? compute : frame);
+        AT(!result.ok);
+        AT(result.code == DVZ_DRP2_VALIDATION_INVALID_STATE);
+        AT(runtime->test_alloc_site == DRP2_TEST_ALLOC_NONE);
+        AT(_vklite_find(runtime->vklite_state, 11) == NULL);
+        AT(_vklite_find(runtime->vklite_state, 12) == NULL);
+        AT(runtime->vklite_state->deferred_count == (attempt == 1 ? 1u : 0u));
+        if (attempt == 1)
+        {
+            Drp2DeferredDestroy* depth = &runtime->vklite_state->deferred[0];
+            AT(depth->command_buffer == command);
+            AT(depth->object.depth_images != NULL);
+            AT(depth->object.depth_views != NULL);
+        }
+        // Mimic the canvas finalizing a rejected frame. This must be legal even when a
+        // command failed after BeginRendering, and recorded depth must remain live.
+        AT(_vklite_owned_commands_end_submit(owner, 0).ok);
+        _dvz_drp2_runtime_retire_completed_frame(runtime, command);
+        AT(runtime->vklite_state->deferred_count == 0);
+        _vklite_owned_commands_destroy(owner);
+    }
+    AT(drp2_test_vklite_validation_clean(suite, ctx));
+    dvz_drp2_stream_destroy(compute);
+    dvz_drp2_stream_destroy(frame);
     dvz_drp2_stream_destroy(setup);
     return 0;
 }

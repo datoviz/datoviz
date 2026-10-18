@@ -323,6 +323,7 @@ struct Drp2VkliteObject
     bool borrowed_slots;
     bool borrowed_buffer;
     bool borrowed_commands;
+    bool rendering_active;
     bool borrowed_frame_target;
     bool borrowed_frame_depth;
     DvzSemaphore* external_timeline_semaphore;
@@ -394,6 +395,8 @@ bool _vklite_attach_frame_target(
     DvzDrp2Runtime* runtime, uint64_t texture_id, const DvzStreamFrame* frame);
 bool _vklite_retire_frame_target_depth(
     Drp2VkliteState* state, Drp2VkliteObject* object);
+Drp2VkliteObject* _vklite_defer_render_pass_depth(
+    Drp2VkliteState* state, Drp2VkliteObject* pass);
 DvzDrp2ValidationResult _vklite_execute(
     DvzDrp2Runtime* runtime, const DvzDrp2CommandStream* stream);
 VkImageView _vklite_object_image_view(const Drp2VkliteObject* object);
@@ -403,6 +406,11 @@ bool _vklite_defer_destroy_object(
 bool _vklite_deferred_reserve(Drp2VkliteState* state, uint32_t additional_count);
 void _vklite_flush_deferred_for_command_buffer(
     Drp2VkliteState* state, VkCommandBuffer command_buffer);
+void _vklite_retire_completed_command_buffer(
+    Drp2VkliteState* state, VkCommandBuffer command_buffer);
+// Owner proof applies to the previous recording; notify before its next runtime recording or free.
+void _dvz_drp2_runtime_retire_completed_frame(
+    DvzDrp2Runtime* runtime, VkCommandBuffer command_buffer);
 void _vklite_flush_deferred(Drp2VkliteState* state);
 DvzCommands* _vklite_owned_commands_create(DvzDevice* device);
 int _vklite_owned_commands_begin(DvzCommands* cmds);
@@ -413,6 +421,11 @@ DvzCommands* _vklite_borrowed_frame_commands_create(
 void _vklite_borrowed_frame_commands_free(DvzCommands* cmds);
 DvzDrp2ValidationResult _vklite_owned_commands_end_submit(
     DvzCommands* cmds, uint32_t command_index);
+// Borrowed transfers execute outside render passes; semaphore handoffs require standalone execution.
+DvzCommands* _vklite_commands_begin(Drp2VkliteState* state, bool* borrowed);
+DvzDrp2ValidationResult _vklite_commands_end_submit(
+    DvzCommands* cmds, bool borrowed, uint32_t command_index);
+void _vklite_commands_destroy(DvzCommands* cmds, bool borrowed);
 VkImageLayout _vklite_texture_access_layout(Drp2TextureAccess access);
 void _vklite_texture_access_scope(
     Drp2TextureAccess access, VkPipelineStageFlags2* stage, VkAccessFlags2* access_mask);

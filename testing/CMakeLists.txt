@@ -8,6 +8,11 @@ add_library(testing STATIC
 )
 
 get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
+if(TARGET datoviz_thread)
+    list(APPEND _dvz_compile_definitions DVZ_TEST_HAS_THREAD=1)
+else()
+    list(APPEND _dvz_compile_definitions DVZ_TEST_HAS_THREAD=0)
+endif()
 
 if(DVZ_HAS_CUDA)
     find_package(CUDAToolkit REQUIRED)
@@ -523,6 +528,12 @@ if(_dvz_has_core AND _dvz_has_drp2)
 
     if(_dvz_has_vk)
         target_link_libraries(dvztest_drp2 PRIVATE datoviz_vk datoviz_vklite datoviz_volk)
+    endif()
+    if(TARGET datoviz_thread)
+        target_link_libraries(dvztest_drp2 PRIVATE datoviz_thread)
+        if(DVZ_THREADING_TARGET)
+            target_link_libraries(dvztest_drp2 PRIVATE ${DVZ_THREADING_TARGET})
+        endif()
     endif()
 
     if(DVZ_HAS_CUDA)

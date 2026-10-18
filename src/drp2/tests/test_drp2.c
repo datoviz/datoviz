@@ -226,6 +226,9 @@ int test_drp2(TstSuite* suite)
         test_drp2_runtime_vklite_deferred_destroy_flush,
         TST_RES_CPU | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
     TST_CASE(test_drp2_runtime_vklite_trims_destroyed_tail_slots);
+    TST_CASE(test_drp2_runtime_vklite_owner_completed_frame_retirement);
+    TST_CASE(test_drp2_runtime_vklite_destroy_retirement_allocation_failure);
+    TST_CASE(test_drp2_runtime_vklite_depth_retirement_allocation_failure);
 #endif
     TST_DRP2_GPU_CASE(test_drp2_runtime_download_buffer_rejects_out_of_range);
 #if DVZ_DRP2_HAS_VKLITE
@@ -254,6 +257,8 @@ int test_drp2(TstSuite* suite)
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_writes_buffer_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_copies_buffer_contents);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_owned_copy_between_borrowed_reads);
+    TST_DRP2_GPU_CASE(test_drp2_runtime_vklite_borrowed_writes_order_copy_compute);
+    TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_borrowed_render_failure_closes_rendering);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_destroys_submitted_buffer);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_releases_readback_buffer_after_download);
     TST_DRP2_SHARED_GPU_CASE(test_drp2_runtime_vklite_uses_external_buffer);
