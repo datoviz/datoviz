@@ -653,8 +653,10 @@ int test_scene_runtime_emitter_reset_reemits_payloads(TstContext* suite, const T
     AT(stream2 != NULL);
     AT(_stream_visual_write_buffer_count(stream2) == 0);
     _test_scene_stream_destroy(stream2);
+    AT(!_scene_figure_has_pending_render_work(figure));
 
     AT(_scene_runtime_emitter_reset(scene));
+    AT(_scene_figure_has_pending_render_work(figure));
 
     dvz_diagnostic_report_init(&report);
     DvzDrp2CommandStream* stream3 = _test_scene_emit_stream(figure, &caps, &report);
@@ -677,6 +679,7 @@ int test_scene_runtime_emitter_reset_reemits_payloads(TstContext* suite, const T
     AT(dvz_drp2_validate_stream(stream3).ok);
 
     _test_scene_stream_destroy(stream3);
+    AT(!_scene_figure_has_pending_render_work(figure));
     dvz_scene_destroy(scene);
     return 0;
 }
@@ -890,6 +893,18 @@ int test_scene_pending_render_work_clears_unlit_background(TstContext* suite, co
     AT(stream != NULL);
     _test_scene_stream_destroy(stream);
 
+    AT(!_scene_figure_has_pending_render_work(figure));
+
+    // Recovery must re-upload this primitive without dirtying unrelated derived caches that
+    // its upload path cannot consume, or an idle background would request frames forever.
+    AT(_scene_runtime_emitter_reset(scene));
+    AT(_scene_figure_has_pending_render_work(figure));
+    dvz_diagnostic_report_init(&report);
+    DvzDrp2CommandStream* recovered = _test_scene_emit_stream(figure, &caps, &report);
+    AT(recovered != NULL);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    AT(_stream_visual_write_buffer_count(recovered) > 0);
+    _test_scene_stream_destroy(recovered);
     AT(!_scene_figure_has_pending_render_work(figure));
 
     dvz_scene_destroy(scene);

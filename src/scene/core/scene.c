@@ -223,11 +223,14 @@ static void _scene_mark_visual_runtime_dirty(DvzVisual* visual)
     {
         state->item_state_style_params_dirty = true;
     }
-    state->segment.gpu.dirty = true;
-    state->path.gpu.dirty = true;
-    state->vector.stroke_gpu.dirty = true;
-    state->vector.path_gpu.dirty = true;
-    state->image_gpu.dirty = true;
+    // Only realized derived geometry needs cache invalidation. Dirty attributes above already
+    // rebuild new geometry; setting unrelated family caches dirty would leave permanent demand
+    // on visuals whose upload path never consumes those caches.
+    state->segment.gpu.dirty |= state->segment.gpu.vertex_count > 0;
+    state->path.gpu.dirty |= state->path.gpu.vertex_count > 0;
+    state->vector.stroke_gpu.dirty |= state->vector.stroke_gpu.vertex_count > 0;
+    state->vector.path_gpu.dirty |= state->vector.path_gpu.vertex_count > 0;
+    state->image_gpu.dirty |= state->image_gpu.vertex_count > 0;
     state->labels_realized_version = 0;
     state->volume_realized_version = 0;
     state->field_sampling_realized_version = 0;
