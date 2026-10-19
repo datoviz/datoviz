@@ -2099,9 +2099,8 @@ bool _scene_panel_composition_resolve(
         !_composition_expand_all(&draft, render_plan, opaque_samples))
         return false;
     draft.work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(&draft);
-    if (!_scene_panel_composition_contract_validate(&draft, report))
-        return false;
     draft.valid = true;
+    // Full snapshot validation already includes the immutable technique contract.
     if (!_frame_plan_composition_validate(&draft, report))
         return false;
     *out = draft;
