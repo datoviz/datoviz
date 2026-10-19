@@ -557,7 +557,12 @@ bool _scene_panel_render_plan_build(
     DvzPanelRenderPlan draft = {0};
     if (!_scene_panel_render_plan_build_mutable(figure, panel_index, figure_id, &draft))
         return false;
-    if (!_scene_panel_composition_resolve(&draft, caps, &draft.composition, report))
+    DvzPanel* panel = &figure->panels[panel_index];
+    bool timing = figure->emit_timing_enabled || figure->panel_diagnostics_enabled;
+    uint64_t start = timing ? dvz_time_monotonic_ns() : 0;
+    bool resolved = _scene_panel_composition_resolve(&draft, caps, &draft.composition, report);
+    panel->composition_ns = timing ? dvz_time_monotonic_ns() - start : 0;
+    if (!resolved)
         return false;
     *out = draft;
     return true;

@@ -33,6 +33,7 @@
 #include "core/_scene_resource_key.h"
 #include "annotation/prepare_internal.h"
 #include "core/figure_emit_internal.h"
+#include "core/panel_diagnostics.h"
 #include "core/frame_artifact_internal.h"
 #include "core/frame_trace_internal.h"
 #include "domain/field_internal.h"
@@ -872,15 +873,27 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
         return NULL;
     }
 
+    _scene_panel_diagnostics_begin(figure);
     bool panels_ok = true;
     uint32_t graph_report_start = dvz_diagnostic_report_count(report);
     for (uint32_t pi = 0; pi < figure->panel_count; pi++)
-        panels_ok =
-            _scene_emit_panel_render_caps(figure, pi, plan, figure_id, caps, report) && panels_ok;
+    {
+        uint32_t first_node = plan->count;
+        uint64_t panel_start = 0;
+        if (figure->panel_diagnostics_enabled)
+            panel_start = dvz_time_monotonic_ns();
+        bool panel_ok =
+            _scene_emit_panel_render_caps(figure, pi, plan, figure_id, caps, report);
+        if (figure->panel_diagnostics_enabled)
+            _scene_panel_diagnostics_record(
+                figure, pi, plan, first_node, dvz_time_monotonic_ns() - panel_start, panel_ok);
+        panels_ok = panel_ok && panels_ok;
+    }
     if (!panels_ok)
     {
         if (dvz_diagnostic_report_count(report) == graph_report_start)
             (void)dvz_diagnostic_report_add(report, "scene FramePlan graph emission failed");
+        _scene_panel_diagnostics_finish(figure, false);
         dvz_frame_plan_destroy(plan);
         return NULL;
     }
@@ -906,6 +919,7 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
                     report, dvz_diagnostic_report_get_severity(&contract_report, i), message);
             }
         }
+        _scene_panel_diagnostics_finish(figure, false);
         dvz_frame_plan_destroy(plan);
         return NULL;
     }
@@ -932,6 +946,7 @@ DvzDrp2CommandStream* _scene_figure_emit_stream_ex(
         figure->scene->buffer_retirement_count = 0;
         _scene_commit_emit_success(figure);
     }
+    _scene_panel_diagnostics_finish(figure, stream != NULL);
     if (figure->emit_timing_enabled)
     {
         timing->emit_ns = dvz_time_monotonic_ns() - phase_start;

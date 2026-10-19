@@ -31,6 +31,8 @@ int test_scene_navigation_pan(TstSuite* suite);
 
 int test_scene_frame_demand(TstSuite* suite);
 
+int test_scene_panel_diagnostics(TstSuite* suite);
+
 int test_figure_frame_demand_panzoom(TstContext* suite, const TstCase* item);
 
 int test_figure_frame_demand_controller_families(TstContext* suite, const TstCase* item);

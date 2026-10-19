@@ -36,6 +36,7 @@
 #include "../../drp2/_stream.h"
 #include "_scene.h"
 #include "core/scene_notify_internal.h"
+#include "core/panel_diagnostics.h"
 #include "_technique.h"
 #include "_visual_internal.h"
 #include "core/frame_trace_internal.h"
@@ -532,6 +533,7 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t
     fig->render_scale = 1.0f;
     fig->user_scale = 1.0f;
     fig->frame_revision = 1;
+    fig->panel_diagnostics_enabled = _scene_panel_diagnostics_env_enabled();
     fig->color_pipeline = DVZ_COLOR_PIPELINE_LINEAR_SRGB;
     return fig;
 }
@@ -571,6 +573,7 @@ static void _scene_panel_reset(DvzPanel* panel, bool detach_grid)
         return;
     if (detach_grid && panel->grid != NULL)
         (void)_scene_grid_detach_panel(panel->grid, panel);
+    panel->composition_ns = 0;
     _scene_panel_lights_detach(panel);
     (void)dvz_panel_connect_input(panel, NULL);
     panel->panzoom = NULL;

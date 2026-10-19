@@ -145,3 +145,57 @@ bool _visual_family_supports_scalar_color_scale(DvzVisualType type)
     const DvzVisualFamilyOps* ops = _scene_visual_family_ops(type);
     return ops != NULL && ops->supports_scalar_color_scale;
 }
+
+
+
+/**
+ * Mix one observed revision into a non-authoritative diagnostic signature.
+ *
+ * @param hash current fingerprint
+ * @param value observed identity or revision
+ * @return updated fingerprint
+ */
+static uint64_t _visual_diagnostic_mix(uint64_t hash, uint64_t value)
+{
+    return (hash ^ value) * UINT64_C(1099511628211);
+}
+
+
+
+/**
+ * Expose observed visual and family-owned resource revisions for diagnostics.
+ *
+ * This fingerprint is deliberately not a complete cache-validity contract. GPU writes and some
+ * sampled-field changes have no matching CPU revision; unknown mutations remain unattributed.
+ *
+ * @param visual visual to inspect, or NULL
+ * @return non-authoritative diagnostic fingerprint, or zero for NULL
+ */
+uint64_t _visual_family_diagnostic_signature(const DvzVisual* visual)
+{
+    if (visual == NULL)
+        return 0;
+    uint64_t hash = UINT64_C(1469598103934665603);
+    hash = _visual_diagnostic_mix(hash, visual->id);
+    hash = _visual_diagnostic_mix(hash, visual->material.version);
+    hash = _visual_diagnostic_mix(hash, visual->local_transform_version);
+    hash = _visual_diagnostic_mix(hash, visual->attr_count);
+    for (uint32_t ai = 0; ai < visual->attr_count; ai++)
+        hash = _visual_diagnostic_mix(hash, visual->attrs[ai].version);
+    const DvzVisualFamilyState* state = _visual_family_state(visual);
+    if (state != NULL && state->item_state_bank != NULL)
+    {
+        const DvzItemStateBuffer* bank = state->item_state_bank;
+        if (bank->words != NULL)
+            hash = _visual_diagnostic_mix(hash, bank->words->content_revision);
+        if (bank->style != NULL)
+            hash = _visual_diagnostic_mix(hash, bank->style->content_revision);
+    }
+    if (state != NULL && state->buffer != NULL)
+        hash = _visual_diagnostic_mix(hash, state->buffer->content_revision);
+    if (state != NULL)
+        hash = _visual_diagnostic_mix(hash, state->texture.version);
+    if (state != NULL && state->field != NULL && state->field->buffer != NULL)
+        hash = _visual_diagnostic_mix(hash, state->field->buffer->content_revision);
+    return hash;
+}

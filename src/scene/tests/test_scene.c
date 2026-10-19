@@ -45,6 +45,7 @@ int test_scene(TstSuite* suite)
     test_scene_query(suite);
     test_scene_text_atlas(suite);
     test_scene_app(suite);
+    test_scene_panel_diagnostics(suite);
 
     return 0;
 }

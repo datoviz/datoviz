@@ -2092,6 +2092,7 @@ struct DvzPanel
     DvzGridCell grid_cell;
     DvzSceneTechniqueState techniques;
     DvzScenePanelLights lights;
+    uint64_t composition_ns;
 
     uint32_t       visual_count;
     DvzPanelAttach visuals[DVZ_SCENE_MAX_VISUALS];
@@ -2204,6 +2205,36 @@ typedef struct DvzSceneEmitTiming
 } DvzSceneEmitTiming;
 
 
+typedef struct DvzScenePanelDiagnostic
+{
+    bool has_previous;
+    uint64_t generation;
+    uint64_t elapsed_ns;
+    uint64_t composition_ns;
+    uint64_t planned_node_count;
+    uint64_t render_node_count;
+    uint64_t draw_count;
+    uint64_t upload_count;
+    uint64_t uniform_upload_count;
+    uint64_t resource_upload_count;
+    uint64_t prelude_upload_count;
+    uint64_t prelude_uniform_upload_count;
+    uint64_t prelude_resource_upload_count;
+    uint64_t observed_frame_revision; /* figure-scoped trigger; never a panel invalidation key */
+    uint64_t observed_query_revision;
+    uint64_t observed_view_revision;
+    uint64_t observed_mvp_signature;
+    uint64_t observed_layout_signature;
+    uint64_t observed_membership_signature;
+    uint64_t observed_visual_signature;
+    uint64_t observed_adornment_signature;
+    uint64_t observed_light_revision;
+    uint32_t change_mask; /* unknown-frame bit means no panel-local cause was observed */
+    bool panel_planning_succeeded;
+    bool stream_emitted;
+} DvzScenePanelDiagnostic;
+
+
 struct DvzFigure
 {
     DvzScene*  scene;
@@ -2238,6 +2269,9 @@ struct DvzFigure
     DvzSceneEmitTiming last_emit_timing;
     uint64_t typed_attr_consumed[DVZ_SCENE_MAX_VISUALS][2];
     DvzId typed_attr_visual_ids[DVZ_SCENE_MAX_VISUALS];
+    bool panel_diagnostics_enabled;
+    uint64_t panel_diagnostics_generation;
+    DvzScenePanelDiagnostic panel_diagnostics[DVZ_SCENE_MAX_PANELS];
 };
 
 

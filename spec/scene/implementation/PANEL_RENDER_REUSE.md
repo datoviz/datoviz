@@ -1,6 +1,6 @@
 # Panel planning and render-product reuse
 
-Status: implementation proposal. CPU composition reuse and native diagnostics are being evaluated; retained GPU panel images are not enabled. The normative invalidation rules remain in [INVALIDATION_AND_CACHING](../pipeline/INVALIDATION_AND_CACHING.md).
+Status: implementation proposal. Native panel diagnostics are implemented. A composition-only CPU cache was evaluated and not retained; retained GPU panel images are not enabled. The normative invalidation rules remain in [INVALIDATION_AND_CACHING](../pipeline/INVALIDATION_AND_CACHING.md).
 
 ## Decision
 
@@ -10,7 +10,11 @@ Retain panel-local final color products within the existing typed frame graph, t
 
 ## CPU boundary
 
-The first experiment caches only the value-owned `DvzPanelCompositionSnapshot`, after current visual classification and before graph assembly. Its exact normalized input signature covers all facts read by the resolver, including capabilities, placement, technique settings, visual pass participation, authored ordering, transparency groups and attachment requirements. Camera matrices, draw counts and data descriptors are refreshed normally. Graph assembly, dynamic uploads, compute, retirement, conversion and validation continue on every required frame.
+The first experiment cached only the value-owned `DvzPanelCompositionSnapshot`, after current visual classification and before graph assembly. Its exact normalized input signature covered all facts read by the resolver, including capabilities, placement, technique settings, visual pass participation, authored ordering, transparency groups and attachment requirements. Camera matrices, draw counts and data descriptors were refreshed normally. Graph assembly, dynamic uploads, compute, retirement, conversion and validation continued on every required frame.
+
+Eight alternating fresh-process runs, with three 240-frame trials per process, measured median source-frame time of 3.61 ms without that cache and 3.70 ms with it. Separate diagnostic samples put total composition resolution near 57 microseconds across four panels versus approximately 383 microseconds of panel planning; the cache reduced resolution work but did not establish an end-to-end gain. Four focused CPU tests passed, including dynamic descriptor refresh and maximum key bounds. Preserve the experiment as local evidence rather than adding its state and maintenance cost to the renderer.
+
+Before expanding cross-frame caching, measure repeated same-frame composition validation, fixed-capacity initialization/copies, accumulated-node searches during typed binding, and repeated prefix graph validation. Removing deterministic redundant work may be a simpler improvement than adding invalidation machinery.
 
 Do not retain `DvzPanelRenderPlan` wholesale: it contains live visual, attachment and technique pointers. A later topology-fragment cache must retain stable object identities and normalized structural facts, refresh dynamic descriptors, and relocate plan-local product/pass/node references during figure assembly. Adopt that larger cache only when counters show that classification or graph assembly merits the additional lifecycle machinery.
 
