@@ -24,6 +24,7 @@
 #endif
 
 #include "../_device.h"
+#include "../_gpu.h"
 #include "../_memory.h"
 #include "_alloc.h"
 #include "_assertions.h"
@@ -873,17 +874,54 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
         goto cleanup;
     }
 
+    const uint32_t gpu_index = dvz_testing_gpu_index(suite);
+    if (gpu_index >= gpu_count)
+    {
+        out = 1;
+        goto cleanup;
+    }
+    uint32_t probed_gpu_count = 0;
+    DvzGpu* gpus = dvz_instance_gpus(instance, &probed_gpu_count);
+    ANN(gpus);
+    if (gpu_index >= probed_gpu_count)
+    {
+        out = 1;
+        goto cleanup;
+    }
+    DvzGpu* gpu = &gpus[gpu_index];
+    dvz_gpu_probe_properties(gpu);
+    VkPhysicalDeviceProperties* properties = dvz_gpu_properties10(gpu);
+    dvz_gpu_probe_features(gpu);
+    VkPhysicalDeviceVulkan12Features* supported12 = dvz_gpu_features12(gpu);
+    VkPhysicalDeviceVulkan13Features* supported13 = dvz_gpu_features13(gpu);
+    if (
+        properties->apiVersion < VK_API_VERSION_1_3 || !supported12->timelineSemaphore ||
+        !supported13->synchronization2)
+    {
+        log_debug(
+            "test_memory_interop_buffer_export skipped: Vulkan 1.3, timeline semaphores, and "
+            "synchronization2 are required");
+        tst_skip(
+            suite, "Vulkan 1.3, timeline semaphores, and synchronization2 are required");
+        goto cleanup;
+    }
+
     DvzQueueCaps qc = {0};
-    AT(dvz_instance_gpu_queue_caps(instance, 0, &qc));
+    AT(dvz_instance_gpu_queue_caps(instance, gpu_index, &qc));
     DvzQueues queues = {0};
     dvz_queues(&qc, &queues);
 
     DvzDeviceConfig dcfg = dvz_device_config(instance);
-    dvz_device_config_set_gpu_index(&dcfg, 0);
+    dvz_device_config_set_gpu_index(&dcfg, gpu_index);
     VkPhysicalDeviceVulkan12Features features12 = {
         .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES};
     features12.timelineSemaphore = true;
     dvz_device_config_set_features12(&dcfg, &features12);
+    VkPhysicalDeviceVulkan13Features features13 = {
+        .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+        .synchronization2 = true,
+    };
+    dvz_device_config_set_features13(&dcfg, &features13);
     for (uint32_t i = 0; i < queues.queue_count; i++)
     {
         DvzQueue* queue = &queues.queues[i];
@@ -1017,7 +1055,7 @@ int test_memory_interop_buffer_export(TstContext* suite, const TstCase* tstitem)
         device, buffer, export_desc.size, semaphore, 12));
     AT(dvz_semaphore_query(semaphore) == 12);
 
-    interop_ctx = dvz_interop_gpu_ctx(0, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
+    interop_ctx = dvz_interop_gpu_ctx(gpu_index, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
     AT(interop_ctx != NULL);
     AT(dvz_allocator_external(dvz_gpu_ctx_alloc(interop_ctx)) ==
        VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);

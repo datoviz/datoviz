@@ -37,6 +37,8 @@ Cache misses, allocation failures and uncertain dependencies take the existing r
 | Capture/export | Read current fully composed output; changed export extent or pipeline requires compatible products or full rendering. |
 | Artifacts | Stateless emission cannot assume an earlier artifact executed. Without retained-session acknowledgement, emit complete rendering. Recording/replay must include all creation/content dependencies. |
 
+A prototype exposed an additional prerequisite: outward-rounded panel allocations and fractional logical viewports must share one explicit texel mapping. Preserving the fractional producer viewport and changing presentation fetch alone is insufficient: AO/EDL/transparency resolves and reconstruction still use allocation-normalized UVs. Declare allocation origin/extent, content viewport and coordinate invariance in normalized facts shared by producers, every sampled consumer and presentation. A 2D panel or a source-over-only pass is not proof of coordinate invariance; shaders may depend on absolute fragment coordinates. Derive allocation and consumer mapping from the same actual framebuffer extent and scale. Keep the current paths until that contract and fallback are validated in both shader transports.
+
 ## Submission state
 
 A cache entry progresses through invalid, recorded/pending and submitted states. Planning, conversion and command recording are not successful submission. A pending entry records the intended dependency signature and owner generation; only the execution owner can acknowledge that it was sent. Existing queue ordering may make a successfully submitted producer usable by later work without a CPU wait, but producer/consumer dependencies must remain explicit.

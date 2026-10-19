@@ -30,6 +30,7 @@
 #include "datoviz/vk/gpu.h"
 #include "datoviz/vk/instance.h"
 #include "datoviz/vk/queues.h"
+#include "datoviz/vklite/commands.h"
 #include "datoviz/vklite/surface.h"
 #include "datoviz/vklite/swapchain.h"
 #include "datoviz/vklite/sync.h"
@@ -479,6 +480,104 @@ static bool _present_ready_swapchain(
     AT(status == DVZ_PRESENT_STATUS_OK);
     AT(dvz_swapchain_ready(*swapchain));
     return true;
+}
+
+
+
+/**
+ * Submit a layout transition after acquiring an image and present it with explicit semaphore waits.
+ *
+ * @param fixture initialized Vulkan presentation fixture
+ * @param swapchain ready swapchain containing the acquired image
+ * @param image_idx acquired swapchain image index
+ * @param image_available semaphore signaled by image acquisition
+ * @return whether transition submission and presentation completed successfully
+ */
+static bool _present_acquired_image(
+    DvzVklitePresentFixture* fixture, DvzSwapchain* swapchain, uint32_t image_idx,
+    DvzSemaphore* image_available)
+{
+    ANN(fixture);
+    ANN(swapchain);
+    ANN(image_available);
+
+    bool ok = false;
+    bool submitted = false;
+    VkCommandBuffer command_buffer = VK_NULL_HANDLE;
+    DvzSemaphore* render_finished = dvz_semaphore_create_wrapper();
+    if (render_finished == NULL)
+        goto cleanup;
+    dvz_semaphore(fixture->device, render_finished);
+    if (dvz_semaphore_handle(render_finished) == VK_NULL_HANDLE)
+        goto cleanup;
+
+    VkImage image = VK_NULL_HANDLE;
+    if (!dvz_swapchain_image(swapchain, image_idx, &image) || image == VK_NULL_HANDLE)
+        goto cleanup;
+
+    command_buffer = dvz_command_buffer_alloc(fixture->device, fixture->queue_family);
+    if (command_buffer == VK_NULL_HANDLE)
+        goto cleanup;
+
+    VkCommandBufferBeginInfo begin_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+    };
+    if (vkBeginCommandBuffer(command_buffer, &begin_info) != VK_SUCCESS)
+        goto cleanup;
+
+    VkImageMemoryBarrier image_barrier = {
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = image,
+        .subresourceRange = {
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1,
+        },
+    };
+    vkCmdPipelineBarrier(
+        command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+        0, 0, NULL, 0, NULL, 1, &image_barrier);
+    if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS)
+        goto cleanup;
+
+    VkSemaphore acquire_wait = dvz_semaphore_handle(image_available);
+    VkSemaphore present_signal = dvz_semaphore_handle(render_finished);
+    VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    VkSubmitInfo submit_info = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &acquire_wait,
+        .pWaitDstStageMask = &wait_stage,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &command_buffer,
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = &present_signal,
+    };
+    if (vkQueueSubmit(fixture->queue, 1, &submit_info, VK_NULL_HANDLE) != VK_SUCCESS)
+        goto cleanup;
+    submitted = true;
+
+    DvzPresentStatus status =
+        dvz_swapchain_present(swapchain, fixture->queue, image_idx, present_signal);
+    ok = status == DVZ_PRESENT_STATUS_OK || status == DVZ_PRESENT_STATUS_RECREATE;
+
+cleanup:
+    if (submitted && vkQueueWaitIdle(fixture->queue) != VK_SUCCESS)
+        ok = false;
+    dvz_command_buffer_free(fixture->device, fixture->queue_family, command_buffer);
+    if (render_finished != NULL)
+    {
+        dvz_semaphore_destroy(render_finished);
+        dvz_semaphore_free(render_finished);
+    }
+    return ok;
 }
 
 
@@ -1310,8 +1409,8 @@ int test_vklite_swapchain_acquire_present_cycle(TstContext* suite, const TstCase
 
     AT(status == DVZ_PRESENT_STATUS_OK);
     AT(image_idx < dvz_swapchain_image_count(swapchain));
-    status = dvz_swapchain_present(swapchain, fixture.queue, image_idx, VK_NULL_HANDLE);
-    AT(status == DVZ_PRESENT_STATUS_OK || status == DVZ_PRESENT_STATUS_RECREATE);
+    const bool presented = _present_acquired_image(&fixture, swapchain, image_idx, image_available);
+    AT(presented);
 
     dvz_swapchain_destroy(swapchain);
 
