@@ -143,3 +143,6 @@ Diagnostics and tests should expose:
 Prefer explicit per-object dirty flags or version counters, dependency-driven recomputation, cached
 normalized resources shared across panels, threshold-driven axis regeneration, and `FramePlan` reuse
 for stable topology.
+
+
+The [panel reuse implementation proposal](../implementation/PANEL_RENDER_REUSE.md) separates CPU composition/topology reuse from retained GPU color products. It records the execution-acknowledgement and isolation requirements for image reuse; it does not imply that retained panel rendering is implemented.
