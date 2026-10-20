@@ -22,7 +22,7 @@ Paced GUI time advances at actual GUI processing frames; controlled GUI time use
 
 The initial runtime reports input delivery and queue completion. Application segment barriers, expected scientific checkpoints, source-generation/capture proof and end-to-end latency acceptance remain separate requirements. In particular, a complete input report is not an equal-work benchmark verdict. Cross-build comparisons require the fixture and evidence below; the IBL diagnostic adapter currently marks that verdict unavailable when rendered proof is absent.
 
-Linux validation covers 95 pure codec/player tests, binding freshness and ABI checks, 175 app-related native checks with synchronization validation, focused input/window/controller checks, 28 GUI checks and four Valgrind ingress regressions without errors or retained heap. An actual private-display GLFW recording contains 33 mouse observations; paced and controlled playback deliver every observation and rotate the scientific camera. Repeated controlled runs produce exactly equal final scientific state. These are correctness checks, not a before/after performance comparison or rendered scientific checkpoint proof.
+Linux validation covers 97 pure codec/player tests, binding freshness and ABI checks, 175 app-related native checks with synchronization validation, focused input/window/controller checks, 28 GUI checks and four Valgrind ingress regressions without errors or retained heap. An actual private-display GLFW recording contains 33 mouse observations; paced and controlled playback deliver every observation and rotate the scientific camera. Repeated controlled runs produce exactly equal final scientific state. These are correctness checks, not a before/after performance comparison or rendered scientific checkpoint proof.
 
 ## Standards Profile
 
@@ -120,7 +120,7 @@ Exact interchange succeeds only if every requested value and ordering relationsh
 
 ## Implementation Boundaries And Acceptance
 
-Land separately: shared host ingress preserving live behavior; replay-safe GUI state/frame preparation; owned recorder/validator/player; controlled processing and application readiness hooks; Actions interchange. Public API names/layouts and executable schemas are subsequent reviewed deliverables, not commitments in this proposal. After detailed acceptance, promote the shared contract to the canonical interaction spec and leave this proposal as a short decision record. No current canonical semantics have moved here.
+Land separately: shared host ingress preserving live behavior; replay-safe GUI state/frame preparation; owned recorder/validator/player; controlled processing and application readiness hooks; Actions interchange. Public API layouts and executable schemas now implement the initial boundary above; additional segment/checkpoint capabilities remain reviewed deliverables. After detailed acceptance, promote the shared contract to the canonical interaction spec and leave this proposal as a short decision record. No current canonical semantics have moved here.
 
 | Gate | Required evidence |
 | --- | --- |
@@ -130,4 +130,4 @@ Land separately: shared host ingress preserving live behavior; replay-safe GUI s
 | Timing and outcomes | Fake-clock tests cover ties, lateness and backlog; two builds receive matching offered sequences. Controlled tests verify pump boundaries, accepted gestures, final camera/cursor/selection and readiness; divergence is explicit. |
 | Performance evidence | Same-machine repeated paired runs identify the policy and completed work; primary runs omit profilers, diagnostic runs capture CPU/GPU, and validation-enabled correctness remains a separate required check. |
 
-Detailed review should settle the supported capabilities and controlled-pump contract before implementation. Default scope remains one host with complete GUI/scene coverage, fixed geometry, full-fidelity capture and opt-in execution; unsupported host features fail explicitly. Routine symbol/codec organization does not require a new architecture decision.
+The approved initial capabilities and fixed input/GUI pump contract are implemented above; additional benchmark acceptance capabilities require explicit fixtures and proof. Default scope remains one host with complete GUI/scene coverage, fixed geometry, full-fidelity capture and opt-in execution; unsupported host features fail explicitly. Routine symbol/codec organization does not require a new architecture decision.

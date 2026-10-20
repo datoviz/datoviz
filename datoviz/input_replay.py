@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import ctypes
 import hashlib
-import json
 import math
 import os
 import platform
@@ -276,10 +275,12 @@ class Recorder:
             if stamp < 0 or (self.records and stamp < self.records[-1].time_ns):
                 raise TraceError('host observation time precedes the capture boundary')
             record = Observation(len(self.records), stamp, 'host-0', event)
-            size = len(json.dumps(record.as_dict(), ensure_ascii=False).encode('utf-8')) + 1
+            # Bound owned observation storage without serializing on the input thread.
+            # Fixed event fields have bounded cardinality; Python text needs at most four
+            # bytes per source UTF-8 byte. The codec checks exact encoded limits at stop.
+            size = 2048 + (4 * int(value.byte_size) if int(value.type) == 5 else 0)
             if (
                 len(self.records) >= self.limits.events
-                or size > self.limits.event_bytes
                 or self._bytes + size > self.limits.total_bytes
             ):
                 raise TraceError('capture overflow: recording is incomplete')

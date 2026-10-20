@@ -741,3 +741,30 @@ def test_capture_unsubscription_failure_never_drops_owned_callback(destroyed):
     with pytest.raises(t.TraceError):
         host.unsubscribe(11)
     assert host._callbacks[11] is callback
+
+
+def test_capture_callback_copies_without_json_serialization(monkeypatch):
+    import json
+
+    host = Host(Clock())
+    recorder = r.Recorder(None, None, host=host).start()
+    with monkeypatch.context() as patch:
+
+        def encoding_is_not_input_dispatch(*args, **kwargs):
+            raise AssertionError('serialization belongs after capture, outside dispatch')
+
+        patch.setattr(json, 'dumps', encoding_is_not_input_dispatch)
+        host.callback(native(), 0)
+        assert recorder.error is None
+    assert len(recorder.stop().observations) == 1
+
+
+def test_capture_keeps_full_utf8_commit_within_declared_text_limit():
+    payload = ('🐭' * 4096).encode('utf-8')
+    assert len(payload) == t.DEFAULT_LIMITS.text_bytes
+    host = Host(Clock())
+    recorder = r.Recorder(None, None, host=host).start()
+    host.callback(native(5, utf8=payload, byte_size=len(payload)), 0)
+    assert recorder.error is None
+    saved = recorder.stop()
+    assert saved.observations[0].event['text'].encode('utf-8') == payload
