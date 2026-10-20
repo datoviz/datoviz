@@ -1,0 +1,596 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://datoviz.org/spec/scene/interaction/input_observation_v1.schema.json",
+  "title": "Datoviz native input observation profile 1",
+  "$comment": "Structural schema; codec additionally enforces canonical bytes, UTF-8 byte limits, monotonic ordering, supported capabilities, chord/key state and final neutrality.",
+  "type": "object",
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "time_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$"
+    },
+    "window": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,64}$"
+    },
+    "event": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pointermove"
+            },
+            "pointerId": {
+              "const": 1,
+              "type": "integer"
+            },
+            "pointerType": {
+              "const": "mouse"
+            },
+            "clientX": {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "clientY": {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "button": {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 4
+            },
+            "buttons": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 31
+            },
+            "ctrlKey": {
+              "type": "boolean"
+            },
+            "shiftKey": {
+              "type": "boolean"
+            },
+            "altKey": {
+              "type": "boolean"
+            },
+            "metaKey": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "pointerId",
+            "pointerType",
+            "clientX",
+            "clientY",
+            "button",
+            "buttons",
+            "ctrlKey",
+            "shiftKey",
+            "altKey",
+            "metaKey"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pointerdown"
+            },
+            "pointerId": {
+              "const": 1,
+              "type": "integer"
+            },
+            "pointerType": {
+              "const": "mouse"
+            },
+            "clientX": {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "clientY": {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "button": {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 4
+            },
+            "buttons": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 31
+            },
+            "ctrlKey": {
+              "type": "boolean"
+            },
+            "shiftKey": {
+              "type": "boolean"
+            },
+            "altKey": {
+              "type": "boolean"
+            },
+            "metaKey": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "pointerId",
+            "pointerType",
+            "clientX",
+            "clientY",
+            "button",
+            "buttons",
+            "ctrlKey",
+            "shiftKey",
+            "altKey",
+            "metaKey"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "pointerup"
+            },
+            "pointerId": {
+              "const": 1,
+              "type": "integer"
+            },
+            "pointerType": {
+              "const": "mouse"
+            },
+            "clientX": {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "clientY": {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "button": {
+              "type": "integer",
+              "minimum": -1,
+              "maximum": 4
+            },
+            "buttons": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 31
+            },
+            "ctrlKey": {
+              "type": "boolean"
+            },
+            "shiftKey": {
+              "type": "boolean"
+            },
+            "altKey": {
+              "type": "boolean"
+            },
+            "metaKey": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "pointerId",
+            "pointerType",
+            "clientX",
+            "clientY",
+            "button",
+            "buttons",
+            "ctrlKey",
+            "shiftKey",
+            "altKey",
+            "metaKey"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "wheel"
+            },
+            "clientX": {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "clientY": {
+              "type": "number",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "datoviz": {
+              "type": "object",
+              "properties": {
+                "convention": {
+                  "const": "glfw-scroll-v1"
+                },
+                "offsetX": {
+                  "type": "number",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "offsetY": {
+                  "type": "number",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "convention",
+                "offsetX",
+                "offsetY"
+              ],
+              "additionalProperties": false
+            },
+            "ctrlKey": {
+              "type": "boolean"
+            },
+            "shiftKey": {
+              "type": "boolean"
+            },
+            "altKey": {
+              "type": "boolean"
+            },
+            "metaKey": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "clientX",
+            "clientY",
+            "datoviz",
+            "ctrlKey",
+            "shiftKey",
+            "altKey",
+            "metaKey"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "keydown"
+            },
+            "code": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "key": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "location": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "repeat": {
+              "type": "boolean"
+            },
+            "datoviz": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 2147483647
+                },
+                "scancode": {
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 2147483647
+                },
+                "logicalKey": {
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 2147483647
+                },
+                "guiMods": {
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 2147483647
+                }
+              },
+              "required": [
+                "key",
+                "scancode",
+                "logicalKey",
+                "guiMods"
+              ],
+              "additionalProperties": false
+            },
+            "ctrlKey": {
+              "type": "boolean"
+            },
+            "shiftKey": {
+              "type": "boolean"
+            },
+            "altKey": {
+              "type": "boolean"
+            },
+            "metaKey": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "code",
+            "key",
+            "location",
+            "repeat",
+            "datoviz",
+            "ctrlKey",
+            "shiftKey",
+            "altKey",
+            "metaKey"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "keyup"
+            },
+            "code": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "key": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "location": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3
+            },
+            "repeat": {
+              "type": "boolean"
+            },
+            "datoviz": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 2147483647
+                },
+                "scancode": {
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 2147483647
+                },
+                "logicalKey": {
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 2147483647
+                },
+                "guiMods": {
+                  "type": "integer",
+                  "minimum": -1,
+                  "maximum": 2147483647
+                }
+              },
+              "required": [
+                "key",
+                "scancode",
+                "logicalKey",
+                "guiMods"
+              ],
+              "additionalProperties": false
+            },
+            "ctrlKey": {
+              "type": "boolean"
+            },
+            "shiftKey": {
+              "type": "boolean"
+            },
+            "altKey": {
+              "type": "boolean"
+            },
+            "metaKey": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "code",
+            "key",
+            "location",
+            "repeat",
+            "datoviz",
+            "ctrlKey",
+            "shiftKey",
+            "altKey",
+            "metaKey"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "datoviz.textcommit"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000]*$"
+            }
+          },
+          "required": [
+            "type",
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "datoviz.focus"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "focused"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "datoviz.enter"
+            },
+            "entered": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "type",
+            "entered"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "datoviz.metrics"
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "logicalWidth": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "logicalHeight": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "framebufferWidth": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "framebufferHeight": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "nativeWidth": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "nativeHeight": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                },
+                "scaleX": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 100
+                },
+                "scaleY": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 100
+                },
+                "nativeToLogicalX": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 100
+                },
+                "nativeToLogicalY": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 100
+                }
+              },
+              "required": [
+                "logicalWidth",
+                "logicalHeight",
+                "framebufferWidth",
+                "framebufferHeight",
+                "nativeWidth",
+                "nativeHeight",
+                "scaleX",
+                "scaleY",
+                "nativeToLogicalX",
+                "nativeToLogicalY"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "type",
+            "metrics"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "const": "datoviz.cancel"
+            },
+            "reason": {
+              "enum": [
+                "focus-loss",
+                "capture-stop",
+                "replay-abort",
+                "host-cancel"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "required": [
+    "seq",
+    "time_ns",
+    "window",
+    "event"
+  ],
+  "additionalProperties": false
+}

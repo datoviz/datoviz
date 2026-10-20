@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://datoviz.org/spec/scene/interaction/input_manifest_v1.schema.json",
+  "title": "Datoviz native input recording manifest profile 1",
+  "$comment": "Structural schema; codec validates capability support, all byte/UTF-8 limits, event digest and trace_sha256 over canonical manifest excluding trace_sha256.",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "datoviz-input-trace"
+    },
+    "version": {
+      "const": 1,
+      "type": "integer"
+    },
+    "standards": {
+      "const": {
+        "pointer": "https://www.w3.org/TR/2026/REC-pointerevents3-20260630/",
+        "keyboard-code": "https://www.w3.org/TR/2025/REC-uievents-code-20250422/",
+        "ui-events": "https://www.w3.org/TR/2026/WD-uievents-20260221/",
+        "actions": "https://www.w3.org/TR/2026/WD-webdriver2-20260702/#actions"
+      }
+    },
+    "required_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 32,
+      "items": {
+        "type": "string",
+        "maxLength": 128
+      }
+    },
+    "adapter": {
+      "const": "glfw-scroll-v1"
+    },
+    "coordinate_space": {
+      "const": "native-client"
+    },
+    "windows": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9_-]{1,64}$"
+      },
+      "minProperties": 1,
+      "maxProperties": 16,
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "logicalWidth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "logicalHeight": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "framebufferWidth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "framebufferHeight": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "nativeWidth": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "nativeHeight": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000
+              },
+              "scaleX": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100
+              },
+              "scaleY": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100
+              },
+              "nativeToLogicalX": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100
+              },
+              "nativeToLogicalY": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "logicalWidth",
+              "logicalHeight",
+              "framebufferWidth",
+              "framebufferHeight",
+              "nativeWidth",
+              "nativeHeight",
+              "scaleX",
+              "scaleY",
+              "nativeToLogicalX",
+              "nativeToLogicalY"
+            ],
+            "additionalProperties": false
+          },
+          "focused": {
+            "type": "boolean"
+          },
+          "pointerX": {
+            "type": "number",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pointerY": {
+            "type": "number",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "buttons": {
+            "const": 0,
+            "type": "integer"
+          },
+          "keys": {
+            "type": "array",
+            "maxItems": 0
+          }
+        },
+        "required": [
+          "metrics",
+          "focused",
+          "pointerX",
+          "pointerY",
+          "buttons",
+          "keys"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "fixture": {
+      "type": "object"
+    },
+    "event_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "events_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "trace_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "events_file": {
+      "type": "string",
+      "pattern": "^events-[0-9a-f]{64}\\.jsonl$"
+    },
+    "complete": {
+      "const": true
+    },
+    "final_neutral": {
+      "const": true
+    }
+  },
+  "required": [
+    "format",
+    "version",
+    "standards",
+    "required_capabilities",
+    "adapter",
+    "coordinate_space",
+    "windows",
+    "fixture",
+    "event_count",
+    "events_sha256",
+    "trace_sha256",
+    "events_file",
+    "complete",
+    "final_neutral"
+  ],
+  "additionalProperties": false
+}
