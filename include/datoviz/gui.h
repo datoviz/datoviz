@@ -881,6 +881,20 @@ dvz_gui_viewport_from_window(DvzGui* gui, DvzView* source, const DvzGuiViewportC
 
 
 /**
+ * Return the borrowed offscreen source view of a GUI viewport.
+ *
+ * Use only on the app owning thread while the viewport and its app remain alive. The caller
+ * must not destroy this view. An internally owned source is disabled when the viewport is
+ * destroyed. Rendering or capturing this source does not prove host-window presentation.
+ *
+ * @param viewport the live GUI viewport, or NULL
+ * @return the borrowed source view, or NULL
+ */
+DVZ_EXPORT DvzView* dvz_gui_viewport_source(DvzGuiViewport* viewport);
+
+
+
+/**
  * Return the input router used by a GUI viewport's offscreen view.
  *
  * Pass the returned router to dvz_panel_connect_input() to route input through scene panels

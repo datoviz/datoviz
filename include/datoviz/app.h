@@ -1146,6 +1146,21 @@ dvz_view_set_frame_callback(
 /*************************************************************************************************/
 
 /**
+ * Return the number of successful frame submissions for this view.
+ *
+ * Read on the app owning thread. The count starts at zero and advances only after a successful
+ * dvz_view_render_once() submission and its post-submit processing. Disabled, closed, skipped,
+ * and failed frames do not advance it. This is submission identity, not GPU completion or
+ * presentation proof; a blocking capture must establish completion separately.
+ *
+ * @param view the borrowed view, or NULL
+ * @return the per-view submission serial, or zero for NULL
+ */
+DVZ_EXPORT uint64_t dvz_view_render_serial(const DvzView* view);
+
+
+
+/**
  * Render one frame for a single view without polling any Datoviz-owned event loop.
  *
  * This is the primary hosted-loop primitive for Qt, SDL, Tk, IPython, and other integrations where

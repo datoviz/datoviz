@@ -48,6 +48,10 @@
 #include "datoviz/window/backend.h"
 #include "datoviz_testing.h"
 
+// Testing-only GLFW close injection uses the private test display.
+struct GLFWwindow;
+extern "C" void glfwSetWindowShouldClose(GLFWwindow* window, int value);
+
 
 
 /*************************************************************************************************/
@@ -1822,6 +1826,8 @@ static int test_gui_viewport_resize_hidden_smoke(TstContext* suite, const TstCas
     GuiViewportSmoke smoke = {};
     smoke.viewport = dvz_gui_viewport_from_window(gui, source_win, &config);
     AT(smoke.viewport != NULL);
+    AT(dvz_gui_viewport_source(NULL) == NULL);
+    AT(dvz_gui_viewport_source(smoke.viewport) == source_win);
     AT(dvz_view_request_frame(source_win) == 0);
     AT(!_dvz_view_scheduler_should_render(source_win, UINT64_MAX));
 
@@ -2229,6 +2235,7 @@ static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* 
 
     /* A failed host submit must not leak a timeline value or stop source rendering. */
     const uint64_t host_timeline_before_submit_failure = host_canvas->timeline_value;
+    const uint64_t host_serial_before_submit_failure = dvz_view_render_serial(host);
     const uint64_t source_frames_before_submit_failure = state_a.source_frame_count;
     const uint64_t source_timeline_before_submit_failure = source_canvas_a->timeline_value;
     dvz_canvas_swapchain_test_force_submit_status(host_canvas, VK_ERROR_UNKNOWN);
@@ -2237,6 +2244,7 @@ static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* 
     const int failed_host_submit_status = dvz_view_render_once(host);
     (void)tst_expect_error_end(suite);
     AT(failed_host_submit_status < 0);
+    AT(dvz_view_render_serial(host) == host_serial_before_submit_failure);
     AT(host_canvas->timeline_value == host_timeline_before_submit_failure);
     AT(_gui_wait_source_frame(source_a));
     AT(dvz_semaphore_query(host_canvas->timeline_semaphore) >= host_canvas->timeline_value);
@@ -2620,6 +2628,11 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     DvzGuiViewport* viewport_b = dvz_gui_viewport(gui, source_b, &config);
     AT(viewport_a != NULL);
     AT(viewport_b != NULL);
+    DvzView* borrowed_source_a = dvz_gui_viewport_source(viewport_a);
+    DvzView* borrowed_source_b = dvz_gui_viewport_source(viewport_b);
+    AT(borrowed_source_a != NULL && borrowed_source_b != NULL);
+    AT(borrowed_source_a != borrowed_source_b);
+    AT(dvz_view_input(borrowed_source_a) == dvz_gui_viewport_input(viewport_a));
     DvzGuiViewportDebugState debug_a = {};
     AT(_dvz_gui_viewport_debug_state(viewport_a, &debug_a));
     AC(debug_a.source_user_scale, 1.5f, 1e-6f);
@@ -2683,7 +2696,11 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     AT(dvz_panel_connect_input(panel, router_a) == DVZ_OK);
     DvzVisual* points = dvz_point(scene, 0);
     vec3 position[1] = {{0, 0, 0}};
+    DvzColor point_colors[1] = {{255, 255, 255, 255}};
+    float point_sizes[1] = {8.0f};
     AT(dvz_visual_set_data(points, "position", position, 1) == DVZ_OK);
+    AT(dvz_visual_set_data(points, "color", point_colors, 1) == DVZ_OK);
+    AT(dvz_visual_set_data(points, "size", point_sizes, 1) == DVZ_OK);
     AT(dvz_panel_add_visual(panel, points, NULL) == DVZ_OK);
     AT(_dvz_gui_viewport_forward_move(viewport_a, true, 50, 40, 160, 120, 0));
     uint32_t stationary_count = recorder_a.count;
@@ -2710,6 +2727,22 @@ static int test_gui_multi_viewport_input_routers(TstContext* suite, const TstCas
     dvz_input_unsubscribe(router_a, id_a);
     dvz_input_unsubscribe(router_a, event_id_a);
     dvz_input_unsubscribe(router_b, id_b);
+    /* A closing host retains its viewport source until explicit app/viewport destruction. */
+    DvzWindow* host_window = dvz_view_host_window(host_win);
+    AT(host_window != NULL);
+    glfwSetWindowShouldClose((GLFWwindow*)dvz_window_backend_handle(host_window), 1);
+    AT(dvz_window_should_close(host_window));
+    AT(dvz_view_set_render_enabled(borrowed_source_a, true) == DVZ_OK);
+    const uint64_t serial_before_close_capture = dvz_view_render_serial(borrowed_source_a);
+    AT(dvz_view_render_once(borrowed_source_a) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_serial(borrowed_source_a) == serial_before_close_capture + 1);
+    uint32_t capture_width = 0, capture_height = 0;
+    uint8_t* capture_rgba = NULL;
+    AT(dvz_canvas_capture_rgba(
+           dvz_view_canvas(borrowed_source_a), &capture_width, &capture_height, &capture_rgba) ==
+       DVZ_OK);
+    AT(capture_width > 0 && capture_height > 0 && capture_rgba != NULL);
+    dvz_free(capture_rgba);
     dvz_gui_viewport_destroy(viewport_a);
     dvz_gui_viewport_destroy(viewport_b);
     dvz_app_destroy(app);

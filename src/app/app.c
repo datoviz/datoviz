@@ -231,6 +231,7 @@ struct DvzView
     bool is_interactive;
     bool render_enabled;
     uint64_t frame_index;
+    uint64_t render_serial;
     DvzViewFrameCallback frame_callback;
     void* frame_user_data;
     DvzViewRequestFrameCallback request_frame_callback;
@@ -6809,6 +6810,19 @@ DvzResult dvz_view_set_gui_callback(
 /*************************************************************************************************/
 
 /**
+ * Return the successful submission serial of a view.
+ *
+ * @param win the borrowed view, or NULL
+ * @return the submission count, or zero for NULL
+ */
+uint64_t dvz_view_render_serial(const DvzView* win)
+{
+    return win != NULL ? win->render_serial : 0;
+}
+
+
+
+/**
  * Render one frame for a single view.
  *
  * @param win view to render
@@ -6887,6 +6901,7 @@ int dvz_view_render_once(DvzView* win)
             return -1;
         }
         _app_post_submit(win);
+        win->render_serial++;
         if (timing_enabled)
         {
             DvzAppFrameTiming* current = &win->frame_timing.current;

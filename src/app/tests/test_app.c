@@ -728,6 +728,60 @@ static int test_app_resources_owned_defaults(TstContext* suite, const TstCase* i
 
 
 /**
+ * Count only actual submissions, including source rendering after the app stops.
+ *
+ * @param suite the test context
+ * @param item the test case
+ * @return zero on success
+ */
+static int test_app_view_render_serial(TstContext* suite, const TstCase* item)
+{
+    ANN(item);
+    DvzGpuCtx* gpu_ctx = _test_app_gpu_ctx(suite);
+    if (gpu_ctx == NULL)
+    {
+        tst_skip(suite, "GPU context creation failed");
+        return 0;
+    }
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = dvz_figure(scene, 64, 48, 0);
+    DvzPanel* panel = dvz_panel_full(figure);
+    DvzColor background = {24, 27, 32, 255};
+    AT(dvz_panel_set_background_color(panel, background) == DVZ_OK);
+    DvzAppConfig config = _test_app_resource_config();
+    config.exit_policy = DVZ_APP_EXIT_NEVER;
+    DvzAppResources resources = dvz_app_resources();
+    resources.gpu_ctx = gpu_ctx;
+    DvzApp* app = dvz_app_with_resources(scene, &config, &resources);
+    AT(app != NULL);
+    DvzView* view = dvz_view_offscreen(app, figure, 64, 48);
+    AT(view != NULL);
+    AT(dvz_view_render_serial(NULL) == 0);
+    AT(dvz_view_render_serial(view) == 0);
+    AT(dvz_view_set_render_enabled(view, false) == DVZ_OK);
+    AT(dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_serial(view) == 0);
+    AT(dvz_view_set_render_enabled(view, true) == DVZ_OK);
+    AT(dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_serial(view) == 1);
+    AT(dvz_app_stop(app) == DVZ_OK);
+    AT(dvz_app_step(app, 0) == -2);
+    AT(dvz_view_render_once(view) == DVZ_CANVAS_FRAME_READY);
+    AT(dvz_view_render_serial(view) == 2);
+    uint32_t width = 0, height = 0;
+    uint8_t* rgba = NULL;
+    AT(dvz_canvas_capture_rgba(dvz_view_canvas(view), &width, &height, &rgba) == DVZ_OK);
+    AT(width == 64 && height == 48 && rgba != NULL);
+    dvz_free(rgba);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    dvz_gpu_ctx_destroy(gpu_ctx);
+    return 0;
+}
+
+
+
+/**
  * Report hosted-loop exit state from the public app helper.
  */
 static int test_app_should_exit_reflects_stop_request(TstContext* suite, const TstCase* item)
@@ -1801,6 +1855,7 @@ int test_app(TstSuite* suite)
     TST_CASE(test_app_abi_rejects_invalid_structs);
     TST_CASE(test_app_capture_config_env);
     TST_APP_GPU_DEFAULT_EXEMPT_CASE(test_app_resources_owned_defaults);
+    TST_APP_GPU_CASE(test_app_view_render_serial);
     TST_APP_GPU_CASE(test_app_should_exit_reflects_stop_request);
     TST_APP_GPU_CASE(test_app_reap_closed_views_noops_without_closed_views);
     TST_CASE(test_app_resources_reject_runtime_without_gpu);

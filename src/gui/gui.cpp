@@ -3845,6 +3845,19 @@ DvzGuiViewport* dvz_gui_viewport_from_window(
 
 
 /**
+ * Return the borrowed offscreen source of a live GUI viewport.
+ *
+ * @param viewport the GUI viewport, or NULL
+ * @return the borrowed source view, or NULL
+ */
+DvzView* dvz_gui_viewport_source(DvzGuiViewport* viewport)
+{
+    return viewport != NULL ? viewport->source : NULL;
+}
+
+
+
+/**
  * Return the input router used by a GUI viewport's offscreen view.
  *
  * @param viewport the GUI viewport
