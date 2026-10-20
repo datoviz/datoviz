@@ -537,7 +537,10 @@ static void _glfw_mouse_button_callback(GLFWwindow* handle, int button, int acti
     DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_BUTTON, .button = button,
                               .action = action, .mods = mods, .gui_mods = _glfw_gui_mods(handle),
                               .timestamp_ns = dvz_input_timestamp_ns()};
-    glfwGetCursorPos(handle, &event.x, &event.y);
+    // A native query can see later motion before its cursor callback has been delivered.
+    // Match the ordered cursor observations already supplied to GUI and scene consumers.
+    event.x = window->input_state.x;
+    event.y = window->input_state.y;
     (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
 }
 
@@ -552,7 +555,10 @@ static void _glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
     DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_WHEEL, .dx = dx, .dy = dy,
                               .mods = window->glfw_mods,
                               .timestamp_ns = dvz_input_timestamp_ns()};
-    glfwGetCursorPos(handle, &event.x, &event.y);
+    // A native query can see later motion before its cursor callback has been delivered.
+    // Match the ordered cursor observations already supplied to GUI and scene consumers.
+    event.x = window->input_state.x;
+    event.y = window->input_state.y;
     (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
 }
 

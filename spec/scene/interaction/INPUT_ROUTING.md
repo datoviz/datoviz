@@ -8,6 +8,10 @@ A router forwards raw originals without synthesizing gestures until a gesture ac
 
 Each window retains one activation, including offscreen windows. A GUI viewport borrows its source window's router and interpreter. Controllers subscribe to input; they do not create another recognition path.
 
+## Native host pointer observations
+
+GLFW button and wheel originals use the last cursor position observed through the host cursor callback, initialized from the host snapshot at creation or release of replay ownership. They do not query a newer OS cursor position during ingress: a query may run ahead of queued cursor callbacks and change the grab point relative to live GUI delivery. Cursor, button and wheel observations preserve callback order before GUI arbitration and scene routing; replay consumes those same coordinates without adding unobserved motion.
+
 ## Delivery
 
 For a typed pointer emission, the router captures both typed and union audiences, updates canonical gesture history once, then delivers any newly derived gesture to union subscribers, the original to typed subscribers, and the original to union subscribers. An idle move, wheel, or long press release does not create a duplicate original. Already-semantic pointer events pass through once without recognition. `dvz_input_emit_event()` is union-only and does not interpret gestures.

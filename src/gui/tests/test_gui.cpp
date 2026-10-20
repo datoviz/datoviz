@@ -51,6 +51,13 @@
 // Testing-only GLFW close injection uses the private test display.
 struct GLFWwindow;
 extern "C" void glfwSetWindowShouldClose(GLFWwindow* window, int value);
+typedef void (*GuiGlfwCursorPosFn)(GLFWwindow*, double, double);
+typedef void (*GuiGlfwMouseButtonFn)(GLFWwindow*, int, int, int);
+typedef void (*GuiGlfwScrollFn)(GLFWwindow*, double, double);
+extern "C" GuiGlfwCursorPosFn glfwSetCursorPosCallback(GLFWwindow*, GuiGlfwCursorPosFn);
+extern "C" GuiGlfwMouseButtonFn glfwSetMouseButtonCallback(GLFWwindow*, GuiGlfwMouseButtonFn);
+extern "C" GuiGlfwScrollFn glfwSetScrollCallback(GLFWwindow*, GuiGlfwScrollFn);
+extern "C" void glfwGetCursorPos(GLFWwindow*, double*, double*);
 
 
 
@@ -2999,6 +3006,125 @@ static void _gui_replay_frame_probe(DvzGui* gui, DvzView* view, void* user_data)
 
 
 
+/** Bounded copies of original pointer observations from installed native callbacks. */
+typedef struct GuiPointerOriginals
+{
+    DvzHostInputEvent events[8];
+    uint32_t count;
+} GuiPointerOriginals;
+
+
+
+/**
+ * Copy pointer originals before live GUI arbitration.
+ * @param window borrowed host window
+ * @param event borrowed original
+ * @param origin observation ownership
+ * @param user_data bounded recorder
+ */
+static void _gui_record_pointer_original(
+    DvzWindow* window, const DvzHostInputEvent* event, DvzHostInputOrigin origin, void* user_data)
+{
+    (void)window;
+    (void)origin;
+    GuiPointerOriginals* recorder = (GuiPointerOriginals*)user_data;
+    if (event->type == DVZ_HOST_INPUT_MOVE || event->type == DVZ_HOST_INPUT_BUTTON ||
+        event->type == DVZ_HOST_INPUT_WHEEL)
+    {
+        if (recorder->count < 8)
+            recorder->events[recorder->count] = *event;
+        recorder->count++;
+    }
+}
+
+
+
+/**
+ * Preserve observed cursor ordering when a native query is ahead of delivered callbacks.
+ * @param suite test context
+ * @param item test case
+ * @return zero on success
+ */
+static int test_gui_glfw_pointer_observation_order(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    if (!_gui_smoke_available())
+    {
+        tst_skip(suite, "GUI/GLFW support unavailable");
+        return 0;
+    }
+    GuiTestGpuResources resources = {};
+    const char* skip = _gui_test_gpu_resources_create(suite, &resources);
+    if (skip != NULL)
+    {
+        tst_skip(suite, skip);
+        return 0;
+    }
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = _gui_test_figure(scene, 320, 240);
+    DvzApp* app = _gui_test_app(scene, NULL, &resources);
+    AT(app != NULL);
+    DvzView* view = dvz_view_window(app, figure, 320, 240, "pointer-observation-order");
+    AT(view != NULL);
+    AT(dvz_view_gui(view, NULL) != NULL);
+    DvzWindow* window = dvz_view_host_window(view);
+    GLFWwindow* native = (GLFWwindow*)dvz_window_backend_handle(window);
+    AT(native != NULL);
+    dvz_window_host_poll(resources.window_host);
+
+    GuiGlfwCursorPosFn cursor = glfwSetCursorPosCallback(native, NULL);
+    GuiGlfwMouseButtonFn button = glfwSetMouseButtonCallback(native, NULL);
+    GuiGlfwScrollFn scroll = glfwSetScrollCallback(native, NULL);
+    glfwSetCursorPosCallback(native, cursor);
+    glfwSetMouseButtonCallback(native, button);
+    glfwSetScrollCallback(native, scroll);
+    AT(cursor != NULL && button != NULL && scroll != NULL);
+    double queried_x = 0, queried_y = 0;
+    glfwGetCursorPos(native, &queried_x, &queried_y);
+    GuiPointerOriginals originals = {};
+    DvzCallbackId observer =
+        dvz_window_subscribe_host_input(window, _gui_record_pointer_original, &originals);
+    AT(observer != DVZ_CALLBACK_ID_NONE);
+
+    /* The OS query sees a later position while callbacks deliver the earlier sequence. */
+    cursor(native, queried_x - 10.25, queried_y - 20.5);
+    cursor(native, queried_x - 3.25, queried_y - 2.5);
+    button(native, 0, 1, 0);
+    cursor(native, queried_x - 1.25, queried_y - 1.5);
+    button(native, 0, 0, 0);
+    scroll(native, 0.125, -0.75);
+    cursor(native, queried_x - 0.25, queried_y - 0.5);
+    scroll(native, -0.5, 1.25);
+    AT(originals.count == 8);
+    const double expected_x[8] = {-10.25, -3.25, -3.25, -1.25, -1.25, -1.25, -0.25, -0.25};
+    const double expected_y[8] = {-20.5, -2.5, -2.5, -1.5, -1.5, -1.5, -0.5, -0.5};
+    for (uint32_t i = 0; i < 8; i++)
+    {
+        AT(originals.events[i].x == queried_x + expected_x[i]);
+        AT(originals.events[i].y == queried_y + expected_y[i]);
+    }
+    AT(originals.events[2].type == DVZ_HOST_INPUT_BUTTON && originals.events[2].action == 1);
+    AT(originals.events[4].type == DVZ_HOST_INPUT_BUTTON && originals.events[4].action == 0);
+    AT(originals.events[5].dx == 0.125 && originals.events[5].dy == -0.75);
+    AT(originals.events[7].dx == -0.5 && originals.events[7].dy == 1.25);
+    AT(dvz_window_unsubscribe_host_input(window, observer));
+
+    /* The same originals remain accepted by the GUI's exclusive replay path. */
+    AT(dvz_window_input_replay(window, true) == DVZ_OK);
+    for (uint32_t i = 0; i < 8; i++)
+        AT(dvz_window_emit_host_input(window, &originals.events[i], DVZ_HOST_INPUT_REPLAY) == DVZ_OK);
+    AT(dvz_window_host_input_state(window)->x == queried_x - 0.25);
+    AT(dvz_window_host_input_state(window)->y == queried_y - 0.5);
+    AT(dvz_window_host_input_state(window)->buttons == 0);
+    AT(dvz_window_input_replay(window, false) == DVZ_OK);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    _gui_test_gpu_resources_destroy(&resources);
+    return 0;
+}
+
+
+
 /** The real hosted GUI consumes replay state, reports unsupported access, and cancels safely. */
 static int test_gui_host_replay_isolation(TstContext* suite, const TstCase* item)
 {
@@ -3191,6 +3317,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_compact_icons);
     TST_CASE(test_gui_compact_tree_layout);
     TST_CASE(test_gui_widget_wrapper_symbols);
+    TST_GUI_GPU_CASE(test_gui_glfw_pointer_observation_order);
     TST_GUI_GPU_CASE(test_gui_host_replay_isolation);
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);

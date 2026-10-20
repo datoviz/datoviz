@@ -36,6 +36,12 @@ The isolated f77 scientific candidate with both fixes passes **1,087 IBL tests w
 
 The approved main revision was merged into `rc4/scientific-3d` from `54c9ce13a`, preserving its scientific APIs and both sides of three test-only merge conflicts. The combined build passes **1,270/1,270 native tests with zero skips**; regenerated Python bindings and checks pass, including 210 ABI records. The main publication's [submodule-reachability workflow](https://github.com/datoviz/datoviz/actions/runs/39017284497) passed for its exact commit. No data gitlink or generated native binary is included in the integration commit. IBL promotion uses the exact published scientific integration revision and a separately configured matching native library.
 
+## Ordered native pointer capture
+
+Button and wheel originals now reuse the last observed host cursor coordinate instead of querying GLFW during their callbacks. A native query can see queued later motion before its cursor callback is delivered; recording that newer position changed the replay grab point relative to live GUI input. Creation and replay-release snapshots still query the host. No synthetic moves, coordinate tolerance, gesture changes or benchmark verdicts were added.
+
+The installed-GLFW-callback regression fails before the fix and passes afterward. It delivers multiple cursor callbacks, press/release and fractional wheel events while the native cursor query remains ahead, checks all eight recorded originals, and re-emits them through exclusive GUI replay. The build, 37 focused window-related checks, GUI replay isolation and forwarded arcball pass with no skips under private Xvfb and explicit Vulkan synchronization validation on llvmpipe; the new regression also passes on NVIDIA. Logs contain no validation errors or synchronization hazards. Exact real-data recording/replay terminal equality and final-head CI remain separate validation steps.
+
 ## Remaining gates
 
 Physical macOS/Windows input and interactive maintainer review remain unverified. Local Linux success does not approve release artifacts or baseline promotion. The maintainer approved merge/publication and IBL baseline promotion; those actions do not establish physical-platform or subjective interaction acceptance.
