@@ -133,6 +133,9 @@
           "keys": {
             "type": "array",
             "maxItems": 0
+          },
+          "entered": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -141,7 +144,8 @@
           "pointerX",
           "pointerY",
           "buttons",
-          "keys"
+          "keys",
+          "entered"
         ],
         "additionalProperties": false
       }

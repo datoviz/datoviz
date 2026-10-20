@@ -50,6 +50,7 @@ def windows():
                 'nativeToLogicalY': 1.0,
             },
             'focused': True,
+            'entered': True,
             'pointerX': 0.0,
             'pointerY': 0.0,
             'buttons': 0,
@@ -115,7 +116,7 @@ def mixed_events():
         },
         key(),
         key(repeat=True),
-        {'type': 'datoviz.textcommit', 'text': 'é🐭a\u0301'},
+        {'type': 'datoviz.textcommit', 'datoviz': {'nativeMods': 0}, 'text': 'é🐭a\u0301'},
         key('keyup'),
         {'type': 'datoviz.enter', 'entered': False},
         {'type': 'datoviz.metrics', 'metrics': windows()['host-0']['metrics']},
@@ -153,8 +154,8 @@ def test_owned_roundtrip_precision_chords_repeat_text(tmp_path):
         [{'type': 'future.event'}],
         [pointer(x=float('nan'))],
         [pointer(x=10**400)],
-        [{'type': 'datoviz.textcommit', 'text': '\ud800'}],
-        [{'type': 'datoviz.textcommit', 'text': ''}],
+        [{'type': 'datoviz.textcommit', 'datoviz': {'nativeMods': 0}, 'text': '\ud800'}],
+        [{'type': 'datoviz.textcommit', 'datoviz': {'nativeMods': 0}, 'text': ''}],
     ],
 )
 def test_invalid_states_and_values(events):
@@ -241,7 +242,10 @@ def test_limits_unknown_fields_and_unsafe_paths(tmp_path):
     with pytest.raises(t.TraceError, match='limit'):
         trace(pointer(), limits=t.Limits(event_bytes=10))
     with pytest.raises(t.TraceError):
-        trace({'type': 'datoviz.textcommit', 'text': 'a' * 20}, limits=t.Limits(text_bytes=10))
+        trace(
+            {'type': 'datoviz.textcommit', 'datoviz': {'nativeMods': 0}, 'text': 'a' * 20},
+            limits=t.Limits(text_bytes=10),
+        )
     with pytest.raises(t.TraceError):
         trace({**pointer(), 'unknown': 1})
     path = tmp_path / 'manifest.json'
@@ -274,7 +278,7 @@ def test_actions_exact_mouse_chords():
         ([pointer(x=0.25)], [0], {'actions_coordinates': 'native-client-equals-css-pixel'}),
         ([pointer()], [123], {'actions_coordinates': 'native-client-equals-css-pixel'}),
         ([pointer()], [0], {}),
-        ([{'type': 'datoviz.textcommit', 'text': 'é'}], [0], {}),
+        ([{'type': 'datoviz.textcommit', 'datoviz': {'nativeMods': 0}, 'text': 'é'}], [0], {}),
         ([pointer(0, 1, 'pointerdown', x=4), pointer(0, 0, 'pointerup', x=4)], [0, 0], {}),
     ],
 )

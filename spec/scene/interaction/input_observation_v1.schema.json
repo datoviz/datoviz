@@ -522,11 +522,26 @@
               "minLength": 1,
               "maxLength": 16384,
               "pattern": "^[^\\u0000]*$"
+            },
+            "datoviz": {
+              "type": "object",
+              "properties": {
+                "nativeMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
+                }
+              },
+              "required": [
+                "nativeMods"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
             "type",
-            "text"
+            "text",
+            "datoviz"
           ],
           "additionalProperties": false
         },

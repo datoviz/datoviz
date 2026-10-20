@@ -127,7 +127,7 @@ def test_paced_offered_times_do_not_stretch_after_slow_rendering():
     result = r.Player(engine, None, None, host=host, clock=clock).run(
         saved, mode='paced', tick_seconds=0.01, drain_seconds=0
     )
-    observed = host.emitted[2:]
+    observed = host.emitted[3:]
     assert [stamp for _, stamp in observed] == [1_000_000_000, 1_010_000_000, 1_020_000_000]
     assert result['lateness_ns'] == [0, 25_000_000, 15_000_000]
     assert result['delivered'] == result['offered'] == 3
@@ -148,6 +148,8 @@ def test_controlled_delivery_and_gui_ticks_ignore_render_cost():
         captures.append((host.frames, host.emitted))
         assert result['complete']
         assert result['logical_tick_ns'] == 10_000_000
+        assert result['lateness_ns'] is None
+        assert result['logical_delivery_delay_ns'] == [0, 6_000_000, 0]
     assert captures[0] == captures[1]
     assert [stamp for stamp, _ in captures[0][0]] == [1_000_000_000, 1_010_000_000, 1_020_000_000]
 
@@ -198,7 +200,7 @@ def test_recording_copies_chords_layout_repeat_and_text_commits():
         native(3),
         native(4, action=1),
         native(4, action=2),
-        native(5, utf8='é🐭'.encode(), byte_size=len('é🐭'.encode())),
+        native(5, utf8='é🐭'.encode(), byte_size=len('é🐭'.encode()), mods=48),
         native(4, action=0),
     ]
     for i, event in enumerate(events):
@@ -223,6 +225,7 @@ def test_recording_copies_chords_layout_repeat_and_text_commits():
     assert observed[5]['datoviz']['guiMods'] == 0
     assert observed[6]['repeat']
     assert observed[7]['text'] == 'é🐭'
+    assert observed[7]['datoviz']['nativeMods'] == 48
     assert len(observed) == len(events)
     assert int(saved.manifest['duration_ns']) >= saved.observations[-1].time_ns
 
@@ -402,8 +405,9 @@ def test_native_bridge_preserves_button_layout_modifier_text_and_wheel_values():
     assert calls[-1]['gui_mods'] == 18
     assert calls[-1]['mods'] == 34
     assert calls[-1]['action'] == 2
-    host.emit({'type': 'datoviz.textcommit', 'text': 'é🐭'}, 502)
+    host.emit({'type': 'datoviz.textcommit', 'datoviz': {'nativeMods': 32}, 'text': 'é🐭'}, 502)
     assert calls[-1]['text'] == 'é🐭'.encode()
+    assert calls[-1]['mods'] == 32
     assert calls[-1]['byte_size'] == len('é🐭'.encode())
     host.emit(
         {
@@ -476,4 +480,42 @@ def test_empty_controlled_replay_preserves_idle_tail_pump_duration():
     assert result['offered'] == result['delivered'] == 0
     assert result['complete']
     assert host.frames[-1][0] == 1_030_000_000
-    assert len(host.emitted) == 2  # Initial focus and virtual pointer state only.
+    assert len(host.emitted) == 3  # Initial focus, enter, and virtual pointer state only.
+
+
+def test_initial_entered_snapshot_and_restore_are_explicit():
+    clock = Clock()
+    host = Host(clock)
+    state = windows()
+    state['host-0']['entered'] = False
+    saved = t.build_trace([], state)
+    r.Player(Engine(clock), None, None, host=host, clock=clock).run(
+        saved, mode='controlled', drain_seconds=0
+    )
+    assert ({'type': 'datoviz.enter', 'entered': False}, 1_000_000_000) in host.emitted
+    api, _, _ = fake_native_api()
+    api.dvz_window_host_input_state = lambda window: SimpleNamespace(
+        contents=SimpleNamespace(
+            buttons=0,
+            mods=0,
+            held_key_count=0,
+            focused=True,
+            entered=False,
+            replaying=False,
+            x=1.25,
+            y=2.75,
+        )
+    )
+    initial = r.NativeHost(api, object()).snapshot()
+    assert initial['entered'] is False
+    assert initial['pointerX'] == 1.25
+
+
+def test_text_native_modifier_mask_is_bounded_and_owned():
+    value = {'type': 'datoviz.textcommit', 'text': 'é', 'datoviz': {'nativeMods': 48}}
+    saved = trace(value)
+    value['datoviz']['nativeMods'] = 0
+    assert saved.observations[0].event['datoviz']['nativeMods'] == 48
+    value['datoviz']['nativeMods'] = 64
+    with pytest.raises(t.TraceError, match='modifier'):
+        trace(value)

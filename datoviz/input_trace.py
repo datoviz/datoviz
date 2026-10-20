@@ -225,10 +225,13 @@ def _windows(windows, limits):
     for name, state in windows.items():
         if not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', name):
             _fail('invalid trace-local window name')
-        _fields(state, {'metrics', 'focused', 'pointerX', 'pointerY', 'buttons', 'keys'})
+        _fields(
+            state, {'metrics', 'focused', 'entered', 'pointerX', 'pointerY', 'buttons', 'keys'}
+        )
         _metrics(state['metrics'])
         if (
             type(state['focused']) is not bool
+            or type(state['entered']) is not bool
             or not _number(state['pointerX'])
             or not _number(state['pointerY'])
         ):
@@ -338,7 +341,10 @@ def _event(event, state, limits):
                 _fail('invalid key release')
             state['keys'].remove(identity)
     elif tag == 'datoviz.textcommit':
-        _fields(event, {'type', 'text'})
+        _fields(event, {'type', 'text', 'datoviz'})
+        _fields(event['datoviz'], {'nativeMods'})
+        if not _int(event['datoviz']['nativeMods'], 0, 63):
+            _fail('invalid native text modifier mask')
         if (
             not isinstance(event['text'], str)
             or not event['text']
