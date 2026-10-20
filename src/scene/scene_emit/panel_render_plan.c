@@ -21,6 +21,7 @@
 #include "_log.h"
 #include "_visual_internal.h"
 #include "_visual_pipeline.h"
+#include "datoviz/common/functions.h"
 #include "registry/registry.h"
 #include "render_contract/render_contract.h"
 #include "scene_emit/panel_render_plan.h"
