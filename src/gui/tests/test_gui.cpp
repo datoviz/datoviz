@@ -2359,6 +2359,14 @@ static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* 
     AT(state_a.reuse_count > 0);
     AT(state_b.reuse_count > 0);
 
+    /* Focus cancellation can demand both sources before the worker-wake idle boundary. */
+    DvzHostInputEvent focus_loss = {};
+    focus_loss.type = DVZ_HOST_INPUT_FOCUS;
+    focus_loss.focused = false;
+    focus_loss.timestamp_ns = dvz_input_timestamp_ns();
+    AT(dvz_window_emit_host_input(
+           dvz_view_host_window(host), &focus_loss, DVZ_HOST_INPUT_LIVE) == DVZ_OK);
+
     /* A worker-posted source callback wakes the host without crossing thread ownership. */
     bool host_was_idle = false;
     for (uint32_t attempt = 0; attempt < 8; attempt++)
@@ -2371,10 +2379,14 @@ static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* 
         }
         AT(_gui_pump_nonblocking_host(host, source_a, source_b));
     }
+    AT(host_was_idle);
     AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
     AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+    /* Polling may deliver source demand; measure independence from this settled boundary. */
     const uint64_t wake_idle_source_frames_a = state_a.source_frame_count;
     const uint64_t wake_idle_serial_a = state_a.displayed_serial;
+    const uint64_t wake_idle_source_frames_b = state_b.source_frame_count;
+    const uint64_t wake_idle_serial_b = state_b.displayed_serial;
     GuiPostedWakeTest posted = {};
     posted.source = source_a;
     DvzThread* poster = dvz_thread(_gui_post_source_from_worker, &posted);
@@ -2414,7 +2426,6 @@ static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* 
         for (uint32_t frame = 0; frame < 3; frame++)
             AT(_gui_pump_nonblocking_host(host, source_a, source_b));
     }
-    AT(host_was_idle);
     AT(poster != NULL);
     AT(posted_status == 0);
     AT(worker_woke_host);
@@ -2427,6 +2438,9 @@ static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* 
     AT(_dvz_gui_viewport_debug_state(test.viewport_a, &state_a));
     AT(state_a.source_frame_count == wake_idle_source_frames_a + 1);
     AT(state_a.displayed_serial == posted_serial);
+    AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+    AT(state_b.source_frame_count == wake_idle_source_frames_b);
+    AT(state_b.displayed_serial == wake_idle_serial_b);
 
     const uint64_t before_a_frames = state_a.source_frame_count;
     const uint64_t before_a_serial = state_a.displayed_serial;
@@ -2442,8 +2456,9 @@ static int test_gui_nonblocking_viewport_pool(TstContext* suite, const TstCase* 
     AT(state_a.source_frame_count == before_a_frames + 1);
     AT(state_a.displayed_serial == before_a_serial + 1);
     AT(state_a.promotion_count == before_a_promotions + 1);
-    AT(state_b.source_frame_count == idle_source_frames_b);
-    AT(state_b.displayed_serial == idle_serial_b);
+    AT(_dvz_gui_viewport_debug_state(test.viewport_b, &state_b));
+    AT(state_b.source_frame_count == wake_idle_source_frames_b);
+    AT(state_b.displayed_serial == wake_idle_serial_b);
 
     const uint64_t before_b_frames = state_b.source_frame_count;
     const uint64_t before_b_serial = state_b.displayed_serial;
