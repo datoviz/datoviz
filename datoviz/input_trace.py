@@ -387,6 +387,7 @@ def validate_trace(trace, *, limits=DEFAULT_LIMITS, supported_capabilities=CAPAB
             'windows',
             'fixture',
             'event_count',
+            'duration_ns',
             'events_sha256',
             'events_file',
             'complete',
@@ -420,6 +421,14 @@ def validate_trace(trace, *, limits=DEFAULT_LIMITS, supported_capabilities=CAPAB
         trace.observations
     ):
         _fail('invalid event count')
+    duration = manifest['duration_ns']
+    if (
+        not isinstance(duration, str)
+        or not re.fullmatch(r'0|[1-9][0-9]{0,19}', duration)
+        or not _int(int(duration), 0, limits.duration_ns)
+    ):
+        _fail('invalid recording duration')
+    duration = int(duration)
     digest = manifest['events_sha256']
     if (
         not isinstance(digest, str)
@@ -470,6 +479,8 @@ def validate_trace(trace, *, limits=DEFAULT_LIMITS, supported_capabilities=CAPAB
             _fail('trace event byte limit exceeded')
         hasher.update(line)
         previous_seq, previous_time = observation.seq, observation.time_ns
+    if previous_time > duration:
+        _fail('recording duration precedes final observation')
     if len(states) > 1:
         used.add('multiwindow')
     if used - set(caps):
@@ -493,6 +504,7 @@ def build_trace(
     fixture=None,
     required_capabilities=CAPABILITIES,
     limits=DEFAULT_LIMITS,
+    duration_ns=None,
 ):
     """Construct and validate a complete trace from owned normalized observations."""
     records = []
@@ -514,6 +526,10 @@ def build_trace(
             _fail('trace event byte limit exceeded')
         hasher.update(line)
         records.append(item)
+    if duration_ns is None:
+        duration_ns = records[-1].time_ns if records else 0
+    if not _int(duration_ns, 0, limits.duration_ns):
+        _fail('invalid recording duration')
     digest = hasher.hexdigest()
     manifest = {
         'format': FORMAT,
@@ -525,6 +541,7 @@ def build_trace(
         'windows': windows,
         'fixture': fixture or {},
         'event_count': len(records),
+        'duration_ns': str(duration_ns),
         'events_sha256': digest,
         'events_file': f'events-{digest}.jsonl',
         'complete': True,

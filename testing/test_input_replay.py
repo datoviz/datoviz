@@ -223,7 +223,8 @@ def test_recording_copies_chords_layout_repeat_and_text_commits():
     assert observed[5]['datoviz']['guiMods'] == 0
     assert observed[6]['repeat']
     assert observed[7]['text'] == 'é🐭'
-    assert observed[-1] == {'type': 'datoviz.cancel', 'reason': 'capture-stop'}
+    assert len(observed) == len(events)
+    assert int(saved.manifest['duration_ns']) >= saved.observations[-1].time_ns
 
 
 def test_replay_origins_are_never_recorded_twice():
@@ -232,7 +233,7 @@ def test_replay_origins_are_never_recorded_twice():
     recorder = r.Recorder(None, None, host=host).start()
     host.callback(native(), 1)
     saved = recorder.stop()
-    assert len(saved.observations) == 1  # Explicit stop cancellation only.
+    assert saved.observations == ()
 
 
 @pytest.mark.parametrize('failure', ['overflow', 'backwards', 'badbutton', 'clipboard', 'badtext'])
@@ -256,3 +257,223 @@ def test_failed_recording_unsubscribes_and_never_returns_complete(failure):
         recorder.stop()
     assert host.unsubscribed == [7]
     assert host.callback is None
+
+
+def fake_native_api():
+    import ctypes as c
+    import weakref
+
+    class Size(c.Structure):
+        _fields_ = [('width', c.c_uint32), ('height', c.c_uint32)]
+
+    class Vector(c.Structure):
+        _fields_ = [('x', c.c_double), ('y', c.c_double)]
+
+    class Metrics(c.Structure):
+        _fields_ = [
+            ('logical_size', Size),
+            ('native_size', Size),
+            ('surface_size', Size),
+            ('framebuffer_scale', Vector),
+            ('native_to_logical', Vector),
+            ('unprofiled', c.c_int),
+        ]
+
+    class Event(c.Structure):
+        _fields_ = [
+            ('type', c.c_int),
+            ('timestamp_ns', c.c_uint64),
+            ('x', c.c_double),
+            ('y', c.c_double),
+            ('dx', c.c_double),
+            ('dy', c.c_double),
+            ('button', c.c_int32),
+            ('key', c.c_int32),
+            ('logical_key', c.c_int32),
+            ('gui_mods', c.c_int32),
+            ('scancode', c.c_int32),
+            ('action', c.c_int32),
+            ('mods', c.c_int32),
+            ('utf8', c.c_char_p),
+            ('byte_size', c.c_uint32),
+            ('focused', c.c_bool),
+            ('entered', c.c_bool),
+            ('metrics', Metrics),
+        ]
+
+    metrics = Metrics(
+        Size(1280, 900), Size(1280, 900), Size(2560, 1800), Vector(2, 2), Vector(1, 1), 197
+    )
+    calls = []
+    api = SimpleNamespace(
+        DvzHostInputEvent=Event,
+        DvzHostInputCallback=lambda fn: fn,
+        dvz_view_host_window=lambda view: 1,
+        dvz_window_input_frame=lambda *args: 0,
+        dvz_window_input_replay=lambda *args: 0,
+        dvz_app_step=lambda *args: 0,
+        dvz_window_metrics=lambda window: c.pointer(metrics),
+    )
+
+    def emit(window, pointer, origin):
+        value = c.cast(pointer, c.POINTER(Event)).contents
+        calls.append(
+            {
+                name: getattr(value, name)
+                for name in (
+                    'type',
+                    'timestamp_ns',
+                    'x',
+                    'y',
+                    'dx',
+                    'dy',
+                    'button',
+                    'key',
+                    'logical_key',
+                    'gui_mods',
+                    'scancode',
+                    'action',
+                    'mods',
+                    'byte_size',
+                    'focused',
+                    'entered',
+                )
+            }
+        )
+        if value.type == 5:
+            calls[-1]['text'] = c.string_at(value.utf8, value.byte_size)
+        if value.type == 8:
+            calls[-1]['metrics'] = r._metrics(value.metrics)
+            calls[-1]['unprofiled'] = value.metrics.unprofiled
+        calls[-1]['origin'] = origin
+        return 0
+
+    def subscribe(window, callback, user_data):
+        api.callback_ref = weakref.ref(callback)
+        return 11
+
+    def unsubscribe(window, identifier):
+        assert api.callback_ref() is not None
+        calls.append({'unsubscribed': identifier})
+        return True
+
+    api.dvz_window_emit_host_input = emit
+    api.dvz_window_subscribe_host_input = subscribe
+    api.dvz_window_unsubscribe_host_input = unsubscribe
+    return api, metrics, calls
+
+
+def test_native_bridge_preserves_button_layout_modifier_text_and_wheel_values():
+    api, _, calls = fake_native_api()
+    host = r.NativeHost(api, object())
+    button = pointer(2, 2, 'pointerdown', x=1.25, y=-2.75)
+    button['datoviz'] = {'nativeMods': 16, 'guiMods': 32}
+    host.emit(button, 500)
+    assert calls[-1] | {'unused': None} == {
+        **calls[-1],
+        'unused': None,
+        'button': 1,
+        'mods': 16,
+        'gui_mods': 32,
+        'type': 2,
+        'action': 1,
+        'x': 1.25,
+        'y': -2.75,
+        'timestamp_ns': 500,
+        'origin': 1,
+    }
+    host.emit(
+        {
+            'type': 'keydown',
+            'repeat': True,
+            'datoviz': {
+                'key': 65,
+                'logicalKey': 81,
+                'scancode': 38,
+                'guiMods': 18,
+                'nativeMods': 34,
+            },
+        },
+        501,
+    )
+    assert calls[-1]['key'] == 65
+    assert calls[-1]['logical_key'] == 81
+    assert calls[-1]['scancode'] == 38
+    assert calls[-1]['gui_mods'] == 18
+    assert calls[-1]['mods'] == 34
+    assert calls[-1]['action'] == 2
+    host.emit({'type': 'datoviz.textcommit', 'text': 'é🐭'}, 502)
+    assert calls[-1]['text'] == 'é🐭'.encode()
+    assert calls[-1]['byte_size'] == len('é🐭'.encode())
+    host.emit(
+        {
+            'type': 'wheel',
+            'clientX': 2.25,
+            'clientY': -3.75,
+            'datoviz': {'offsetX': -0.03125, 'offsetY': 0.0625, 'nativeMods': 48},
+        },
+        503,
+    )
+    assert calls[-1]['dx'] == -0.03125
+    assert calls[-1]['dy'] == 0.0625
+    assert calls[-1]['mods'] == 48
+
+
+def test_native_metrics_emission_owns_copy_and_preserves_unprofiled_fields():
+    api, original, calls = fake_native_api()
+    metrics = windows()['host-0']['metrics']
+    metrics['logicalWidth'] = 1000
+    host = r.NativeHost(api, object())
+    host.emit({'type': 'datoviz.metrics', 'metrics': metrics}, 100)
+    assert calls[-1]['metrics'] == metrics
+    assert calls[-1]['unprofiled'] == 197
+    assert original.logical_size.width == 1280
+
+
+def test_native_callback_lives_until_unsubscription_then_is_released():
+    import gc
+
+    api, _, calls = fake_native_api()
+    host = r.NativeHost(api, object())
+    identifier = host.subscribe(lambda event, origin: None)
+    gc.collect()
+    assert api.callback_ref() is not None
+    host.unsubscribe(identifier)
+    gc.collect()
+    assert api.callback_ref() is None
+    assert calls == [{'unsubscribed': 11}]
+
+
+def test_empty_idle_recording_retains_duration_without_fabricating_input():
+    clock = Clock()
+    host = Host(clock)
+    recorder = r.Recorder(None, None, host=host).start()
+    clock.value = 500_000_000
+    saved = recorder.stop()
+    assert saved.observations == ()
+    assert saved.manifest['duration_ns'] == '500000000'
+    with pytest.raises(t.TraceError):
+        recorder.start()
+
+
+def test_recorder_stop_never_fabricates_successful_release():
+    clock = Clock()
+    host = Host(clock)
+    recorder = r.Recorder(None, None, host=host).start()
+    host.callback(native(2, button=0, action=1), 0)
+    with pytest.raises(t.TraceError, match='held'):
+        recorder.stop()
+    assert host.unsubscribed == [7]
+
+
+def test_empty_controlled_replay_preserves_idle_tail_pump_duration():
+    clock = Clock()
+    host = Host(clock)
+    saved = t.build_trace([], windows(), duration_ns=30_000_000)
+    result = r.Player(Engine(clock), None, None, host=host, clock=clock).run(
+        saved, mode='controlled', tick_seconds=0.01, drain_seconds=0
+    )
+    assert result['offered'] == result['delivered'] == 0
+    assert result['complete']
+    assert host.frames[-1][0] == 1_030_000_000
+    assert len(host.emitted) == 2  # Initial focus and virtual pointer state only.

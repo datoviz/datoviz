@@ -37,6 +37,9 @@ def export_actions(trace, *, binding=None):
     duration-zero action; timestamps must already be exact milliseconds.
     """
     validate_trace(trace)
+    final_event_time = trace.observations[-1].time_ns if trace.observations else 0
+    if int(trace.manifest['duration_ns']) != final_event_time:
+        raise TraceError('Actions subset cannot preserve a non-event recording tail')
     windows = trace.manifest['windows']
     binding = binding or ActionsBinding(next(iter(windows)))
     if (

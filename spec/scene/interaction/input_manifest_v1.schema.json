@@ -171,6 +171,10 @@
     },
     "final_neutral": {
       "const": true
+    },
+    "duration_ns": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,19})$"
     }
   },
   "required": [
@@ -187,7 +191,8 @@
     "trace_sha256",
     "events_file",
     "complete",
-    "final_neutral"
+    "final_neutral",
+    "duration_ns"
   ],
   "additionalProperties": false
 }

@@ -437,3 +437,43 @@ def test_actions_initial_pointer_and_pause_boundaries_are_explicit():
         }
         with pytest.raises(t.TraceError):
             a.import_actions(payload, windows(), fixture=fixture)
+
+
+def test_duration_preserves_idle_tail_and_rejects_impossible_end():
+    saved = t.build_trace([t.Observation(0, 10, 'host-0', pointer())], windows(), duration_ns=50)
+    assert saved.manifest['duration_ns'] == '50'
+    empty = t.build_trace([], windows(), duration_ns=500_000_000)
+    assert empty.observations == ()
+    assert empty.manifest['duration_ns'] == '500000000'
+    with pytest.raises(t.TraceError, match='duration'):
+        t.build_trace([t.Observation(0, 10, 'host-0', pointer())], windows(), duration_ns=9)
+    with pytest.raises(t.TraceError, match='duration'):
+        t.build_trace([], windows(), duration_ns=True)
+    with pytest.raises(t.TraceError, match='duration'):
+        t.build_trace([], windows(), duration_ns=t.DEFAULT_LIMITS.duration_ns + 1)
+
+
+def test_actions_reject_non_event_recording_tail():
+    saved = t.build_trace(
+        [],
+        windows(),
+        duration_ns=1,
+        fixture={'actions_coordinates': 'native-client-equals-css-pixel'},
+    )
+    with pytest.raises(t.TraceError, match='tail'):
+        a.export_actions(saved)
+
+
+def test_native_modifier_locks_are_preserved_and_standard_modifiers_must_agree():
+    event = pointer()
+    event['datoviz'] = {'nativeMods': 48, 'guiMods': 16}
+    saved = trace(event)
+    assert saved.observations[0].event['datoviz']['nativeMods'] == 48
+    event['datoviz']['nativeMods'] = 2
+    with pytest.raises(t.TraceError, match='disagree'):
+        trace(event)
+    event['ctrlKey'] = True
+    assert trace(event).observations[0].event['ctrlKey']
+    event['datoviz']['guiMods'] = 64
+    with pytest.raises(t.TraceError, match='modifier'):
+        trace(event)
