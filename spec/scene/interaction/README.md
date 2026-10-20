@@ -30,3 +30,4 @@ selection state, or animation timing.
 4. [../proposals/promoted/SELECTION_HIGHLIGHT_DESIGN.md](../proposals/promoted/SELECTION_HIGHLIGHT_DESIGN.md)
 5. [../proposals/promoted/TRANSFORM_CONTROLLER_DESIGN.md](../proposals/promoted/TRANSFORM_CONTROLLER_DESIGN.md)
 6. [../proposals/active/ASYNC_CALLBACKS.md](../proposals/active/ASYNC_CALLBACKS.md)
+7. [../proposals/active/INPUT_RECORD_REPLAY.md](../proposals/active/INPUT_RECORD_REPLAY.md): proposed host input recording/replay; existing router semantics remain unchanged.

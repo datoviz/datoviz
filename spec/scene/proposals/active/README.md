@@ -19,6 +19,7 @@ non-v0.4-blocking roadmaps live in [`../future/`](../future/).
    yet fully absorbed by annotation, panel reserve, and external UI specs.
 4. [THEMING_STYLING_SYSTEM.md](THEMING_STYLING_SYSTEM.md): theme/style token plan not yet
    canonicalized.
+5. [INPUT_RECORD_REPLAY.md](INPUT_RECORD_REPLAY.md): W3C-aligned host input capture, replay isolation and controlled benchmark proposal; not implemented or an RC gate.
 
 
 ## Resources, Transforms, Validation, And API Boundaries
