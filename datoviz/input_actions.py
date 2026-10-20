@@ -61,7 +61,11 @@ def export_actions(trace, *, binding=None):
             raise TraceError(
                 'Actions subset supports only mouse input; native/key/text/host loss rejected'
             )
-        if any(event[key] for key in MODIFIERS):
+        if (
+            any(event[key] for key in MODIFIERS)
+            or event['datoviz']['guiMods']
+            or event['datoviz']['nativeMods']
+        ):
             raise TraceError('Actions mouse source cannot represent keyboard modifiers')
         target = (event['clientX'], event['clientY'])
         if not all(type(value) in (int, float) and float(value).is_integer() for value in target):
@@ -189,6 +193,7 @@ def import_actions(payload, windows, *, binding=None, fixture=None):
             'clientY': y,
             'button': changed,
             'buttons': buttons,
+            'datoviz': {'guiMods': 0, 'nativeMods': 0},
             **dict.fromkeys(MODIFIERS, False),
         }
         records.append(Observation(len(records), stamp, binding.window, event))

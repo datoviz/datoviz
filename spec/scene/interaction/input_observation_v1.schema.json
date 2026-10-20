@@ -64,6 +64,26 @@
             },
             "metaKey": {
               "type": "boolean"
+            },
+            "datoviz": {
+              "type": "object",
+              "properties": {
+                "guiMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
+                },
+                "nativeMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
+                }
+              },
+              "required": [
+                "guiMods",
+                "nativeMods"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -77,7 +97,8 @@
             "ctrlKey",
             "shiftKey",
             "altKey",
-            "metaKey"
+            "metaKey",
+            "datoviz"
           ],
           "additionalProperties": false
         },
@@ -125,6 +146,26 @@
             },
             "metaKey": {
               "type": "boolean"
+            },
+            "datoviz": {
+              "type": "object",
+              "properties": {
+                "guiMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
+                },
+                "nativeMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
+                }
+              },
+              "required": [
+                "guiMods",
+                "nativeMods"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -138,7 +179,8 @@
             "ctrlKey",
             "shiftKey",
             "altKey",
-            "metaKey"
+            "metaKey",
+            "datoviz"
           ],
           "additionalProperties": false
         },
@@ -186,6 +228,26 @@
             },
             "metaKey": {
               "type": "boolean"
+            },
+            "datoviz": {
+              "type": "object",
+              "properties": {
+                "guiMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
+                },
+                "nativeMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
+                }
+              },
+              "required": [
+                "guiMods",
+                "nativeMods"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -199,7 +261,8 @@
             "ctrlKey",
             "shiftKey",
             "altKey",
-            "metaKey"
+            "metaKey",
+            "datoviz"
           ],
           "additionalProperties": false
         },
@@ -234,12 +297,18 @@
                   "type": "number",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
+                },
+                "nativeMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
                 }
               },
               "required": [
                 "convention",
                 "offsetX",
-                "offsetY"
+                "offsetY",
+                "nativeMods"
               ],
               "additionalProperties": false
             },
@@ -310,15 +379,21 @@
                 },
                 "guiMods": {
                   "type": "integer",
-                  "minimum": -1,
-                  "maximum": 2147483647
+                  "minimum": 0,
+                  "maximum": 63
+                },
+                "nativeMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
                 }
               },
               "required": [
                 "key",
                 "scancode",
                 "logicalKey",
-                "guiMods"
+                "guiMods",
+                "nativeMods"
               ],
               "additionalProperties": false
             },
@@ -391,15 +466,21 @@
                 },
                 "guiMods": {
                   "type": "integer",
-                  "minimum": -1,
-                  "maximum": 2147483647
+                  "minimum": 0,
+                  "maximum": 63
+                },
+                "nativeMods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 63
                 }
               },
               "required": [
                 "key",
                 "scancode",
                 "logicalKey",
-                "guiMods"
+                "guiMods",
+                "nativeMods"
               ],
               "additionalProperties": false
             },

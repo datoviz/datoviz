@@ -211,6 +211,12 @@ def _metrics(value):
 def _modifiers(event):
     if not all(type(event[key]) is bool for key in MODIFIERS):
         _fail('invalid modifiers')
+    native = event.get('datoviz')
+    if not isinstance(native, Mapping) or not _int(native.get('nativeMods'), 0, 63):
+        _fail('invalid native modifier mask')
+    expected = (bool(native['nativeMods'] & bit) for bit in (2, 1, 4, 8))
+    if any(event[key] != value for key, value in zip(MODIFIERS, expected, strict=True)):
+        _fail('native and standard modifiers disagree')
 
 
 def _windows(windows, limits):
@@ -250,6 +256,7 @@ def _event(event, state, limits):
                 'clientY',
                 'button',
                 'buttons',
+                'datoviz',
                 *MODIFIERS,
             },
         )
@@ -264,6 +271,9 @@ def _event(event, state, limits):
         ):
             _fail('invalid pointer values')
         _modifiers(event)
+        _fields(event['datoviz'], {'guiMods', 'nativeMods'})
+        if not _int(event['datoviz']['guiMods'], 0, 63):
+            _fail('invalid native GUI modifier mask')
         before, after, button = state['buttons'], event['buttons'], event['button']
         if not _int(button, -1, 4):
             _fail('invalid pointer button')
@@ -283,7 +293,7 @@ def _event(event, state, limits):
     elif tag == 'wheel':
         _fields(event, {'type', 'clientX', 'clientY', 'datoviz', *MODIFIERS})
         _modifiers(event)
-        _fields(event['datoviz'], {'convention', 'offsetX', 'offsetY'})
+        _fields(event['datoviz'], {'convention', 'offsetX', 'offsetY', 'nativeMods'})
         if event['datoviz']['convention'] != 'glfw-scroll-v1':
             _fail('unsupported native wheel convention')
         if not all(
@@ -299,10 +309,9 @@ def _event(event, state, limits):
     elif tag in ('keydown', 'keyup'):
         _fields(event, {'type', 'code', 'key', 'location', 'repeat', 'datoviz', *MODIFIERS})
         _modifiers(event)
-        _fields(event['datoviz'], {'key', 'scancode', 'logicalKey', 'guiMods'})
+        _fields(event['datoviz'], {'key', 'scancode', 'logicalKey', 'guiMods', 'nativeMods'})
         if not all(
-            _int(event['datoviz'][key], -1, 2**31 - 1)
-            for key in ('key', 'scancode', 'logicalKey', 'guiMods')
+            _int(event['datoviz'][key], -1, 2**31 - 1) for key in ('key', 'scancode', 'logicalKey')
         ):
             _fail('invalid native key identity')
         if (
@@ -314,6 +323,8 @@ def _event(event, state, limits):
             or type(event['repeat']) is not bool
         ):
             _fail('invalid keyboard fields')
+        if not _int(event['datoviz']['guiMods'], 0, 63):
+            _fail('invalid native GUI modifier mask')
         identity = (event['datoviz']['key'], event['datoviz']['scancode'])
         if identity == (-1, -1):
             _fail('key must have native identity')

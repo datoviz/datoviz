@@ -67,6 +67,7 @@ def pointer(button=-1, buttons=0, tag='pointermove', x=0.0, y=0.0):
         'clientY': y,
         'button': button,
         'buttons': buttons,
+        'datoviz': {'guiMods': 0, 'nativeMods': 0},
         **dict.fromkeys(t.MODIFIERS, False),
     }
 
@@ -78,7 +79,7 @@ def key(tag='keydown', repeat=False):
         'key': 'Unidentified',
         'location': 0,
         'repeat': repeat,
-        'datoviz': {'key': 65, 'scancode': 38, 'logicalKey': 81, 'guiMods': 0},
+        'datoviz': {'key': 65, 'scancode': 38, 'logicalKey': 81, 'guiMods': 0, 'nativeMods': 0},
         **dict.fromkeys(t.MODIFIERS, False),
     }
 
@@ -104,7 +105,12 @@ def mixed_events():
             'type': 'wheel',
             'clientX': 0.25,
             'clientY': 0.5,
-            'datoviz': {'convention': 'glfw-scroll-v1', 'offsetX': -0.002, 'offsetY': 1.25},
+            'datoviz': {
+                'convention': 'glfw-scroll-v1',
+                'offsetX': -0.002,
+                'offsetY': 1.25,
+                'nativeMods': 0,
+            },
             **dict.fromkeys(t.MODIFIERS, False),
         },
         key(),
