@@ -21,6 +21,7 @@ from types import MappingProxyType
 
 FORMAT = 'datoviz-input-trace'
 PROFILE = 1
+ADAPTER_PLATFORMS = frozenset({'linux', 'darwin', 'win32', 'unspecified'})
 SAFE_INTEGER = 2**53 - 1
 CAPABILITIES = frozenset(
     {'mouse', 'native-wheel-glfw-v1', 'physical-key', 'text-commit', 'host-state'}
@@ -389,6 +390,7 @@ def validate_trace(trace, *, limits=DEFAULT_LIMITS, supported_capabilities=CAPAB
             'standards',
             'required_capabilities',
             'adapter',
+            'adapter_platform',
             'coordinate_space',
             'windows',
             'fixture',
@@ -413,6 +415,11 @@ def validate_trace(trace, *, limits=DEFAULT_LIMITS, supported_capabilities=CAPAB
         or manifest['coordinate_space'] != 'native-client'
     ):
         _fail('unsupported standards/adapter profile')
+    if (
+        not isinstance(manifest['adapter_platform'], str)
+        or manifest['adapter_platform'] not in ADAPTER_PLATFORMS
+    ):
+        _fail('unsupported native adapter platform')
     caps = manifest['required_capabilities']
     if (
         not isinstance(caps, (list, tuple))
@@ -511,6 +518,7 @@ def build_trace(
     required_capabilities=CAPABILITIES,
     limits=DEFAULT_LIMITS,
     duration_ns=None,
+    adapter_platform='unspecified',
 ):
     """Construct and validate a complete trace from owned normalized observations."""
     records = []
@@ -543,6 +551,7 @@ def build_trace(
         'standards': STANDARDS,
         'required_capabilities': sorted(required_capabilities),
         'adapter': 'glfw-scroll-v1',
+        'adapter_platform': adapter_platform,
         'coordinate_space': 'native-client',
         'windows': windows,
         'fixture': fixture or {},

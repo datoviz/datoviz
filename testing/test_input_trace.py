@@ -510,3 +510,32 @@ def test_actions_reject_unsupported_initial_context_even_before_absolute_motion(
     }
     with pytest.raises(t.TraceError, match='initial pointer'):
         a.import_actions(payload, state, fixture=fixture)
+
+
+def test_adapter_platform_is_explicit_and_protected_by_manifest_digest(tmp_path):
+    records = [t.Observation(0, 0, 'host-0', pointer())]
+    traces = {
+        name: t.build_trace(records, windows(), adapter_platform=name)
+        for name in ('linux', 'darwin', 'win32', 'unspecified')
+    }
+    assert len({saved.manifest['trace_sha256'] for saved in traces.values()}) == 4
+    assert len({saved.manifest['events_sha256'] for saved in traces.values()}) == 1
+    assert t.build_trace(records, windows()).manifest['adapter_platform'] == 'unspecified'
+    path = tmp_path / 'manifest.json'
+    t.write_trace(traces['linux'], path)
+    manifest = json.loads(path.read_text())
+    manifest['adapter_platform'] = 'darwin'
+    path.write_text(json.dumps(manifest))
+    with pytest.raises(t.TraceError, match='manifest digest'):
+        t.read_trace(path)
+
+
+@pytest.mark.parametrize('adapter_platform', ['unknown', '', None, []])
+def test_unknown_or_missing_adapter_platform_is_rejected(adapter_platform):
+    with pytest.raises(t.TraceError, match='adapter platform'):
+        t.build_trace([], windows(), adapter_platform=adapter_platform)
+    saved = t.build_trace([], windows())
+    manifest = t.plain(saved.manifest)
+    del manifest['adapter_platform']
+    with pytest.raises(t.TraceError, match='fields'):
+        t.validate_trace(t.Trace(manifest, saved.observations))

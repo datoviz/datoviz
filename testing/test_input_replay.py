@@ -309,6 +309,8 @@ def fake_native_api():
     )
     calls = []
     api = SimpleNamespace(
+        DVZ_BACKEND_GLFW=1,
+        dvz_window_backend_type=lambda window: 1,
         DvzHostInputEvent=Event,
         DvzHostInputCallback=lambda fn: fn,
         dvz_view_host_window=lambda view: 1,
@@ -676,3 +678,38 @@ def test_reaped_host_replay_cleanup_does_not_dereference_destroyed_native_state(
     api.dvz_view_host_window = lambda view: None
     api.dvz_window_input_replay = lambda *args: pytest.fail('destroyed host must not be accessed')
     r.NativeHost(api, object()).replay(False)
+
+
+def test_native_adapter_rejects_unimplemented_host_before_snapshotting_state():
+    api, _, _ = fake_native_api()
+    api.dvz_window_backend_type = lambda window: 3
+    with pytest.raises(t.TraceError, match='requires a GLFW host'):
+        r.NativeHost(api, object()).snapshot()
+
+
+@pytest.mark.parametrize('source_platform', ['darwin', 'win32', 'unspecified'])
+def test_native_platform_mismatch_is_rejected_before_input_ownership(source_platform):
+    clock = Clock()
+    host = Host(clock)
+    host.platform = 'linux'
+    saved = t.build_trace([], windows(), adapter_platform=source_platform)
+    with pytest.raises(t.TraceError, match='platform'):
+        r.Player(Engine(clock), None, None, host=host, clock=clock).run(
+            saved, mode='controlled', drain_seconds=0
+        )
+    assert host.ownership == []
+    assert host.emitted == []
+
+
+def test_matching_native_platform_replays_and_recorder_preserves_platform():
+    clock = Clock()
+    host = Host(clock)
+    host.platform = 'darwin'
+    recorder = r.Recorder(None, None, host=host).start()
+    saved = recorder.stop()
+    assert saved.manifest['adapter_platform'] == 'darwin'
+    result = r.Player(Engine(clock), None, None, host=host, clock=clock).run(
+        saved, mode='controlled', drain_seconds=0
+    )
+    assert result['complete']
+    assert host.ownership == [True, False]

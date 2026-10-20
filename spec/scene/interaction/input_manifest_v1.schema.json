@@ -179,6 +179,15 @@
     "duration_ns": {
       "type": "string",
       "pattern": "^(0|[1-9][0-9]{0,19})$"
+    },
+    "adapter_platform": {
+      "type": "string",
+      "enum": [
+        "linux",
+        "darwin",
+        "win32",
+        "unspecified"
+      ]
     }
   },
   "required": [
@@ -196,7 +205,8 @@
     "events_file",
     "complete",
     "final_neutral",
-    "duration_ns"
+    "duration_ns",
+    "adapter_platform"
   ],
   "additionalProperties": false
 }
