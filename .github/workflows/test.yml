@@ -65,6 +65,7 @@ jobs:
           just present-check --frames 30
       - name: Test Python tooling
         run: |
+          PYTHON=python just ctypes
           PYTHON=python just ctypes-check
           python -m pytest testing tools/tests -q
       - name: Check shaderc runtime
