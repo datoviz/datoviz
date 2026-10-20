@@ -519,3 +519,98 @@ def test_text_native_modifier_mask_is_bounded_and_owned():
     value['datoviz']['nativeMods'] = 64
     with pytest.raises(t.TraceError, match='modifier'):
         trace(value)
+
+
+@pytest.mark.parametrize('payload', ['é🐭'.encode(), b'a\x00b'])
+def test_native_text_span_is_length_delimited_without_c_char_p_dereference(payload):
+    import ctypes as c
+
+    api, _, _ = fake_native_api()
+
+    class GuardedEvent(api.DvzHostInputEvent):
+        def __getattribute__(self, name):
+            if name == 'utf8':
+                raise AssertionError('c_char_p field must not scan a borrowed text span')
+            return super().__getattribute__(name)
+
+    # No NUL terminator: bytes after byte_size deliberately belong outside the commit.
+    buffer = (c.c_char * (len(payload) + 3)).from_buffer_copy(payload + b'XYZ')
+    value = GuardedEvent()
+    value.type, value.timestamp_ns, value.byte_size, value.mods = (
+        5,
+        1_000_000_000,
+        len(payload),
+        48,
+    )
+    value.utf8 = c.addressof(buffer)
+    host = Host(Clock())
+    recorder = r.Recorder(None, None, host=host).start()
+    assert recorder._copy(value)['text'] == payload.decode('utf-8')
+    host.callback(value, 0)
+    assert recorder.error is None
+    for index in range(len(buffer)):
+        buffer[index] = b'!'
+    if b'\x00' in payload:
+        with pytest.raises(t.TraceError, match='text commit'):
+            recorder.stop()
+    else:
+        saved = recorder.stop()
+        assert saved.observations[0].event['text'] == payload.decode('utf-8')
+        assert saved.observations[0].event['datoviz']['nativeMods'] == 48
+    assert host.unsubscribed == [7]
+
+
+def test_finalization_pumps_under_exclusive_ownership_outside_measured_phase():
+    clock = Clock()
+    host = Host(clock)
+    engine = Engine(clock, cost=5_000_000)
+
+    def finalize(pump):
+        assert host.ownership == [True]
+        assert len(host.emitted) == 4  # Three initial conditions and the offered motion.
+        assert host.pending() == 0
+        pump()
+        pump()
+        return {'completed_barriers': 2}
+
+    report = r.Player(engine, None, None, host=host, clock=clock).run(
+        trace(pointer()), mode='controlled', drain_seconds=0, finalize=finalize
+    )
+    assert report['complete']
+    assert report['wall_duration_ns'] == 5_000_000
+    assert report['finalization_duration_ns'] == 10_000_000
+    assert report['finalization'] == {'completed_barriers': 2}
+    assert report['scheduler_iteration_count'] == 1
+    assert report['scheduler_iteration_total_ns'] == 5_000_000
+    assert clock.value == 15_000_000
+    assert host.ownership == [True, False]
+
+
+@pytest.mark.parametrize('failure', ['callback', 'frame'])
+def test_finalization_failure_always_releases_replay_ownership(failure):
+    clock = Clock()
+    host = Host(clock)
+    engine = Engine(clock)
+
+    def finalize(pump):
+        assert host.ownership == [True]
+        if failure == 'callback':
+            raise RuntimeError('scientific checkpoint diverged')
+        engine.result = -1
+        pump()
+
+    expected = RuntimeError if failure == 'callback' else t.TraceError
+    with pytest.raises(expected):
+        r.Player(engine, None, None, host=host, clock=clock).run(
+            trace(pointer()), mode='controlled', drain_seconds=0, finalize=finalize
+        )
+    assert host.ownership == [True, False]
+
+
+def test_native_snapshot_rejects_host_already_owned_by_another_player():
+    api, _, _ = fake_native_api()
+    api.dvz_window_host_input_state = lambda window: SimpleNamespace(
+        contents=SimpleNamespace(replaying=True)
+    )
+    with pytest.raises(t.TraceError, match='already owned'):
+        r.NativeHost(api, object()).snapshot()
