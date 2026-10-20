@@ -223,11 +223,12 @@ async dispatch, and centralizes cleanup, but it should not be required for direc
 
 Generated raw callbacks are kept alive according to `spec/bindings/ctypes.yml`:
 
-1. `subscription` callbacks are keyed by callback type, owner pointer, callback identity, and
-   user-data value;
-2. `unsubscribe` callbacks remove the matching subscription callback;
-3. `setter` callbacks are keyed by function name, callback type, and owner pointer;
-4. `global` callbacks are keyed by function name and callback type.
+1. `subscription` callbacks are keyed by callback type, owner pointer, callback identity, and user-data value; `unsubscribe` removes the matching callback identity.
+2. `subscription_id` coerces a callback before the native call and retains it by owner pointer and returned subscription ID only after registration succeeds. ID zero retains nothing.
+3. `unsubscribe_id` calls the native removal first and releases the owner/ID keepalive only when removal succeeds; failed removal keeps the native callback alive.
+4. `setter` callbacks are keyed by function name, callback type, and owner pointer; `global` callbacks are keyed by function name and callback type.
+
+ID lifetime is selected by policy rather than function-name conventions. Input-router and original host-input subscriptions use the same ID rules. The ID profile requires an owner as the first argument, one callback and a `DvzCallbackId` result for registration, and owner/ID arguments plus a Boolean result for removal. Explicitly unsubscribe before destroying the native owner; these wrappers do not infer owner-destruction cleanup.
 
 Bound methods use a stable identity based on the instance and underlying function, so a helper can
 later unsubscribe `obj.method` even though Python creates a fresh bound-method object on each

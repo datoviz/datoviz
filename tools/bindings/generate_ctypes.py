@@ -1377,8 +1377,23 @@ def generate(
                 continue
             if name in owned_string_returns and result == 'ctypes.c_char_p':
                 result = 'ctypes.c_void_p'
+            callback_kind = callback_policy.get(name)
+            if callback_kind == 'subscription_id' and (
+                len(callback_param_indices) != 1
+                or callback_param_indices[0] == 0
+                or result != 'ctypes.c_uint64'
+            ):
+                raise ValueError(
+                    f'{name}: subscription_id requires owner, one callback, and DvzCallbackId result'
+                )
+            if callback_kind == 'unsubscribe_id' and (
+                callback_param_indices or len(argtypes) != 2 or result != 'ctypes.c_bool'
+            ):
+                raise ValueError(f'{name}: unsubscribe_id requires owner, ID, and bool result')
             lines.append('try:\n')
-            raw_name = f'_{name}' if callback_param_indices or name == 'dvz_input_unsubscribe' else name
+            raw_name = (
+                f'_{name}' if callback_param_indices or callback_kind == 'unsubscribe_id' else name
+            )
             lines.append(f'    {raw_name} = dvz.{name}\n')
             lines.append('except AttributeError:\n')
             lines.append(f"    _MISSING_FUNCTIONS.append('{name}')\n")
@@ -1402,40 +1417,26 @@ def generate(
                     else 'None'
                 )
                 lines.append(f'    def {name}({signature}):\n')
-                callback_kind = callback_policy.get(name)
-                if callback_kind == 'unsubscribe' or (
-                    callback_kind is None and name.startswith('dvz_input_unsubscribe')
-                ):
+                if callback_kind == 'subscription_id':
+                    lines.append(
+                        f'        {callback_name} = '
+                        f'_callback_coerce({callback_type}, {callback_name})\n'
+                    )
+                    lines.append(f'        subscription_id = {raw_name}({call_args})\n')
+                    lines.append(
+                        f'        return _callback_store_subscription_id'
+                        f'({owner_name}, subscription_id, {callback_name})\n'
+                    )
+                elif callback_kind == 'unsubscribe':
                     lines.append(
                         f'        {callback_name} = _callback_pop_subscription'
                         f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
                     )
-                elif callback_kind == 'subscription' or (
-                    callback_kind is None and name.startswith('dvz_input_subscribe')
-                ):
-                    if name.startswith('dvz_input_subscribe'):
-                        lines.append(
-                            f'        {callback_name} = '
-                            f'_callback_coerce({callback_type}, {callback_name})\n'
-                        )
-                        lines.append(
-                            f'        subscription_id = {raw_name}({call_args})\n'
-                        )
-                        lines.append(
-                            f'        return _callback_store_subscription_id'
-                            f'({owner_name}, subscription_id, {callback_name})\n'
-                        )
-                        lines.append(f'    {name}.__doc__ = {raw_name}.__doc__\n')
-                        lines.append(f'    {name}.argtypes = {raw_name}.argtypes\n')
-                        lines.append(f'    {name}.restype = {raw_name}.restype\n')
-                        lines.append('\n\n')
-                        emitted.append(name)
-                        continue
-                    else:
-                        lines.append(
-                            f'        {callback_name} = _callback_store_subscription'
-                            f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
-                        )
+                elif callback_kind == 'subscription':
+                    lines.append(
+                        f'        {callback_name} = _callback_store_subscription'
+                        f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
+                    )
                 elif callback_kind == 'setter' or (callback_kind is None and '_set_' in name):
                     lines.append(
                         f"        {callback_name} = _callback_store_setter('{name}', "
@@ -1453,11 +1454,12 @@ def generate(
                         f'        {callback_name} = _callback_store_subscription'
                         f'({callback_type}, {owner_name}, {callback_name}, {user_data_name})\n'
                     )
-                lines.append(f'        return {raw_name}({call_args})\n')
+                if callback_kind != 'subscription_id':
+                    lines.append(f'        return {raw_name}({call_args})\n')
                 lines.append(f'    {name}.__doc__ = {raw_name}.__doc__\n')
                 lines.append(f'    {name}.argtypes = {raw_name}.argtypes\n')
                 lines.append(f'    {name}.restype = {raw_name}.restype\n')
-            elif name == 'dvz_input_unsubscribe':
+            elif callback_kind == 'unsubscribe_id':
                 param_names = [
                     param.get('name') or f'arg{i}'
                     for i, param in enumerate(function.get('parameters', []))

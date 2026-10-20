@@ -4,12 +4,14 @@
 from __future__ import annotations
 
 import ctypes
+import gc
 import json
 import os
 from pathlib import Path
 import sys
 import tempfile
 import unittest
+import weakref
 from unittest import mock
 
 
@@ -281,6 +283,138 @@ class CallbackLifetimeTests(unittest.TestCase):
 
         self.assertIs(first, second)
         self.assertEqual(len(namespace["_CALLBACK_KEEPALIVE"]), 1)
+
+
+class SubscriptionIdLifetimeTests(unittest.TestCase):
+    def _generated(self):
+        api = {
+            'records': _input_event_support_records(),
+            'typedefs': [{'name': 'DvzWatchCallback', 'type': {'qualtype': 'void (*)(void *)'}}],
+            'functions': [
+                {
+                    'name': 'dvz_watch_begin',
+                    'result': {'qualtype': 'DvzCallbackId'},
+                    'parameters': [
+                        {'name': 'owner', 'type': {'qualtype': 'void *'}},
+                        {'name': 'callback', 'type': {'qualtype': 'DvzWatchCallback'}},
+                        {'name': 'user_data', 'type': {'qualtype': 'void *'}},
+                    ],
+                },
+                {
+                    'name': 'dvz_watch_end',
+                    'result': {'qualtype': 'bool'},
+                    'parameters': [
+                        {'name': 'owner', 'type': {'qualtype': 'void *'}},
+                        {'name': 'identifier', 'type': {'qualtype': 'DvzCallbackId'}},
+                    ],
+                },
+            ],
+        }
+        text, skipped = ctypes_gen.generate(
+            api,
+            callback_policy={
+                'dvz_watch_begin': 'subscription_id',
+                'dvz_watch_end': 'unsubscribe_id',
+            },
+        )
+        self.assertEqual(skipped, [])
+        return _execute_generated(text)
+
+    def test_policy_selects_id_lifetime_without_function_name_conventions(self):
+        policy = ctypes_gen._callback_policy_from_policy(ROOT / 'spec/bindings/ctypes.yml')
+        self.assertEqual(policy['dvz_window_subscribe_host_input'], 'subscription_id')
+        self.assertEqual(policy['dvz_window_unsubscribe_host_input'], 'unsubscribe_id')
+        self.assertEqual(policy['dvz_input_subscribe_pointer'], 'subscription_id')
+        self.assertEqual(policy['dvz_input_unsubscribe'], 'unsubscribe_id')
+        namespace = self._generated()
+        self.assertIn('_dvz_watch_begin', namespace)
+        self.assertIn('_dvz_watch_end', namespace)
+
+    def test_repeated_successful_unsubscribe_releases_closure_and_receiver(self):
+        namespace = self._generated()
+        callbacks = []
+        receivers = []
+
+        class Receiver:
+            def callback(self, _value):
+                pass
+
+        def subscribe(_owner, callback, _data):
+            callbacks.append(weakref.ref(callback))
+            return len(callbacks)
+
+        namespace['_dvz_watch_begin'] = subscribe
+        namespace['_dvz_watch_end'] = lambda _owner, _identifier: True
+        for _ in range(32):
+            receiver = Receiver()
+            receivers.append(weakref.ref(receiver))
+            identifier = namespace['dvz_watch_begin'](1234, receiver.callback, None)
+            del receiver
+            gc.collect()
+            self.assertIsNotNone(receivers[-1]())
+            self.assertIsNotNone(callbacks[-1]())
+            self.assertTrue(namespace['dvz_watch_end'](1234, identifier))
+            gc.collect()
+            self.assertIsNone(receivers[-1]())
+            self.assertIsNone(callbacks[-1]())
+            self.assertEqual(namespace['_CALLBACK_KEEPALIVE'], {})
+
+    def test_failed_subscribe_does_not_retain_callback(self):
+        namespace = self._generated()
+        callbacks = []
+
+        def subscribe(_owner, callback, _data):
+            callbacks.append(weakref.ref(callback))
+            return 0
+
+        namespace['_dvz_watch_begin'] = subscribe
+        self.assertEqual(namespace['dvz_watch_begin'](1234, lambda _value: None, None), 0)
+        gc.collect()
+        self.assertEqual(namespace['_CALLBACK_KEEPALIVE'], {})
+        self.assertIsNone(callbacks[0]())
+
+    def test_failed_unsubscribe_retains_until_native_success(self):
+        namespace = self._generated()
+        callbacks = []
+
+        def subscribe(_owner, callback, _data):
+            callbacks.append(weakref.ref(callback))
+            return 11
+
+        namespace['_dvz_watch_begin'] = subscribe
+        namespace['_dvz_watch_end'] = lambda _owner, _identifier: False
+        identifier = namespace['dvz_watch_begin'](1234, lambda _value: None, None)
+        self.assertFalse(namespace['dvz_watch_end'](1234, identifier))
+        gc.collect()
+        self.assertIsNotNone(callbacks[0]())
+        self.assertEqual(len(namespace['_CALLBACK_KEEPALIVE']), 1)
+        namespace['_dvz_watch_end'] = lambda _owner, _identifier: True
+        self.assertTrue(namespace['dvz_watch_end'](1234, identifier))
+        gc.collect()
+        self.assertIsNone(callbacks[0]())
+        self.assertEqual(namespace['_CALLBACK_KEEPALIVE'], {})
+
+    def test_equal_ids_on_different_owners_remain_independent(self):
+        namespace = self._generated()
+        callbacks = []
+
+        def subscribe(_owner, callback, _data):
+            callbacks.append(weakref.ref(callback))
+            return 1
+
+        namespace['_dvz_watch_begin'] = subscribe
+        namespace['_dvz_watch_end'] = lambda _owner, _identifier: True
+        namespace['dvz_watch_begin'](1234, lambda _value: None, None)
+        namespace['dvz_watch_begin'](5678, lambda _value: None, None)
+        self.assertEqual(len(namespace['_CALLBACK_KEEPALIVE']), 2)
+        namespace['dvz_watch_end'](1234, 1)
+        gc.collect()
+        self.assertIsNone(callbacks[0]())
+        self.assertIsNotNone(callbacks[1]())
+        namespace['dvz_watch_end'](5678, 1)
+        gc.collect()
+        self.assertIsNone(callbacks[1]())
+        self.assertEqual(namespace['_CALLBACK_KEEPALIVE'], {})
 
 
 class AlignedLayoutTests(unittest.TestCase):

@@ -80,9 +80,7 @@ function-pointer parameters as `ctypes.c_void_p`. This unblocks APIs such as:
 4. `dvz_view_set_request_frame_callback()`
 5. `dvz_view_post()`
 
-The generated Python binding must keep callback objects alive until the matching token-based
-unsubscribe, clear, or destroy path runs. A small registry keyed by returned subscription id is
-sufficient for the first slice.
+The generated Python binding keeps ID subscriptions alive under the `subscription_id` policy in `ctypes.yml`, keyed by native owner and returned ID. Zero IDs retain nothing. The matching `unsubscribe_id` wrapper releases the callback only after native removal succeeds. Hosts must unsubscribe before destroying the native owner; failed removal retains the callback. These shared rules cover input-router and original host-input subscriptions; see [callback lifetime](PYTHON_HELPERS.md#callback-lifetime) for the other policy kinds.
 
 
 ## Python Event Loop Integration
