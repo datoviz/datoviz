@@ -422,7 +422,7 @@ def test_actions_initial_pointer_and_pause_boundaries_are_explicit():
         state,
         fixture=fixture,
     )
-    with pytest.raises(t.TraceError, match='coordinate change'):
+    with pytest.raises(t.TraceError, match='initial pointer'):
         a.export_actions(saved)
     for actions in [
         [{'type': 'pause', 'duration': 0}],
@@ -481,3 +481,32 @@ def test_native_modifier_locks_are_preserved_and_standard_modifiers_must_agree()
     event['datoviz']['guiMods'] = 64
     with pytest.raises(t.TraceError, match='modifier'):
         trace(event)
+
+
+@pytest.mark.parametrize(
+    'field,value', [('pointerX', 0.25), ('pointerY', -2), ('focused', False), ('entered', False)]
+)
+def test_actions_reject_unsupported_initial_context_even_before_absolute_motion(field, value):
+    state = windows()
+    state['host-0'][field] = value
+    fixture = {'actions_coordinates': 'native-client-equals-css-pixel'}
+    # An absolute first motion cannot erase the native initial context from an exact trace.
+    saved = t.build_trace(
+        [t.Observation(0, 0, 'host-0', pointer(x=40, y=50))], state, fixture=fixture
+    )
+    with pytest.raises(t.TraceError, match='initial pointer'):
+        a.export_actions(saved)
+    payload = {
+        'actions': [
+            {
+                'type': 'pointer',
+                'id': 'mouse',
+                'parameters': {'pointerType': 'mouse'},
+                'actions': [
+                    {'type': 'pointerMove', 'duration': 0, 'origin': 'viewport', 'x': 40, 'y': 50}
+                ],
+            }
+        ]
+    }
+    with pytest.raises(t.TraceError, match='initial pointer'):
+        a.import_actions(payload, state, fixture=fixture)

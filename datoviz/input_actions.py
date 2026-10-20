@@ -29,12 +29,26 @@ class ActionsBinding:
     source_id: str = 'mouse'
 
 
+def _initial_context(windows, binding):
+    state = windows[binding.window]
+    # Actions has no native initial-pointer, focus, or window-entry observation.
+    # This first interchange profile accepts only the declared default context.
+    if (
+        state.get('pointerX') != 0
+        or state.get('pointerY') != 0
+        or state.get('focused') is not True
+        or state.get('entered') is not True
+    ):
+        raise TraceError('Actions requires initial pointer (0, 0), focused and entered host')
+
+
 def export_actions(trace, *, binding=None):
     """
     Export exactly representable discrete mouse input to standard Actions.
 
     Same-timestamp order is retained within one source. Every motion is a
     duration-zero action; timestamps must already be exact milliseconds.
+    The bound host must start focused and entered, with its pointer at (0, 0).
     """
     validate_trace(trace)
     final_event_time = trace.observations[-1].time_ns if trace.observations else 0
@@ -49,6 +63,7 @@ def export_actions(trace, *, binding=None):
         or not binding.source_id
     ):
         raise TraceError('Actions export requires one bound mouse source/window')
+    _initial_context(windows, binding)
     actions, previous = [], 0
     # A newly created WebDriver pointer source starts at viewport (0, 0).
     position = (0, 0)
@@ -121,6 +136,7 @@ def import_actions(payload, windows, *, binding=None, fixture=None):
     Returns (trace, binding); the source identifier remains external metadata.
     Native/viewport coordinate equivalence must be declared in the fixture.
     A trailing pause has no corresponding input observation and is rejected.
+    The bound host must start focused and entered, with its pointer at (0, 0).
     """
     _fields(payload, {'actions'})
     if not isinstance(payload['actions'], list) or len(payload['actions']) != 1:
@@ -140,6 +156,7 @@ def import_actions(payload, windows, *, binding=None, fixture=None):
     binding = binding or ActionsBinding(next(iter(windows)), source['id'])
     if binding.window not in windows or binding.source_id != source['id']:
         raise TraceError('Actions source binding mismatch')
+    _initial_context(windows, binding)
     fixture = fixture or {}
     if fixture.get('actions_coordinates') != 'native-client-equals-css-pixel':
         raise TraceError('Actions viewport coordinate equivalence must be declared by fixture')
