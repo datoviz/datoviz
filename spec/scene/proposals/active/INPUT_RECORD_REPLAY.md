@@ -1,6 +1,6 @@
 # User Input Recording And Replay
 
-Status: proposed; direction approved on 2026-10-20, detailed contract awaiting review. No recorder, trace codec, replay-safe GUI adapter or controlled replay API is implemented by this document. This is an opt-in diagnostic facility, not an RC release gate. Existing [input routing](../../interaction/INPUT_ROUTING.md), [keyboard/text](../../interaction/KEYBOARD_INPUT.md) and [latency measurement](../../../testing/INTERACTION_LATENCY.md) contracts remain authoritative for implemented behavior.
+Status: direction and detailed contract approved on 2026-10-20; initial implementation validated on Linux; manual interaction and other platforms remain separate gates. This is an opt-in diagnostic facility, not an RC release gate. Existing [input routing](../../interaction/INPUT_ROUTING.md), [keyboard/text](../../interaction/KEYBOARD_INPUT.md) and [latency measurement](../../../testing/INTERACTION_LATENCY.md) contracts remain authoritative. The remaining benchmark acceptance requirements below are not implied by successful input delivery.
 
 ## Decision
 
@@ -8,9 +8,25 @@ Record original host input once before GUI consumption, then replay through the 
 
 The canonical artifact preserves every event observed at the declared Datoviz host boundary. It cannot recover hardware samples already coalesced by the OS. Derived gestures, embedded-viewport forwarding and resulting render commands are consequences, not additional replay inputs.
 
+## Current implementation boundary
+
+| Boundary | Initial implementation |
+| --- | --- |
+| Native originals | `datoviz/window/input.h`: owner-thread ingress before GUI arbitration, owned subscriptions, replay exclusion, cancellation, virtual focus/cursor/metrics/time and queue diagnostics. GLFW-generated focus-loss releases are consequences of the recorded cancellation. |
+| GUI replay | Datoviz-owned adapter with observed layout and modifier tokens; no live GLFW input/time polling, cursor warping, clipboard or shell access during replay. Unsupported platform operations invalidate playback. |
+| Codec | `datoviz.input_trace`: immutable bounded manifest and canonical UTF-8 JSONL, duration including idle tail, event and manifest SHA-256, complete publication after validation. Native text spans are copied by declared length. |
+| Actions | `datoviz.input_actions`: strict discrete single-mouse import/export with proven coordinate equivalence, integer coordinates and millisecond times. Other actions and lossy conversions fail explicitly. |
+| Runtime | `datoviz.input_replay`: bounded Recorder, one fixed-geometry, matching-platform GLFW-host Player, paced ordinary scheduling through `dvz_app_step`, controlled fixed logical input/GUI ticks, exclusive finalization hook and explicit queue drain. |
+
+Paced GUI time advances at actual GUI processing frames; controlled GUI time uses declared ticks. Gesture timestamps remain independent of real input-arrival profiling timestamps. Controlled playback fixes input/GUI cadence, but does not freeze arbitrary scene animations or worker execution. Finalization pumps run outside the measured input phase while replay still excludes live input. Scheduler iteration duration includes waiting and must not be called CPU frame or GPU time.
+
+The initial runtime reports input delivery and queue completion. Application segment barriers, expected scientific checkpoints, source-generation/capture proof and end-to-end latency acceptance remain separate requirements. In particular, a complete input report is not an equal-work benchmark verdict. Cross-build comparisons require the fixture and evidence below; the IBL diagnostic adapter currently marks that verdict unavailable when rendered proof is absent.
+
+Linux validation covers 95 pure codec/player tests, binding freshness and ABI checks, 175 app-related native checks with synchronization validation, focused input/window/controller checks, 28 GUI checks and four Valgrind ingress regressions without errors or retained heap. An actual private-display GLFW recording contains 33 mouse observations; paced and controlled playback deliver every observation and rotate the scientific camera. Repeated controlled runs produce exactly equal final scientific state. These are correctness checks, not a before/after performance comparison or rendered scientific checkpoint proof.
+
 ## Standards Profile
 
-The manifest pins these dated references; updating a reference requires a profile revision and compatibility review rather than following a moving `latest` URL.
+The manifest identifies the native adapter platform; raw native offsets must not silently cross platform-specific wheel normalization. Portable Actions need explicit native binding before playback. The manifest pins these dated references; updating a reference requires a profile revision and compatibility review rather than following a moving `latest` URL.
 
 | Reference | Role and limits |
 | --- | --- |
@@ -53,7 +69,7 @@ An informative motion observation, with coordinates in the manifest's declared l
 {"seq":12,"time_ns":"8340000","window":"host-0","event":{"type":"pointermove","pointerId":1,"pointerType":"mouse","clientX":401.25,"clientY":210.5,"button":-1,"buttons":0,"ctrlKey":false,"shiftKey":false,"altKey":false,"metaKey":false}}
 ```
 
-The native profile defines the mapping between logical client units and W3C coordinate concepts explicitly; native units are not declared CSS pixels by inference. Required capabilities include precision, wheel convention, key identity and text commits. A consumer rejects an unknown required capability rather than ignoring it. A future executable schema must define bounded sizes, numeric ranges, enum mappings and the allowed fields for each tag before codec implementation.
+The native profile preserves original double coordinates in native client units, with an explicit native-to-logical transformation in the host metrics; it avoids a lossy conversion and round trip. W3C field names describe the event vocabulary; their native profile units are not declared CSS pixels by inference. Required capabilities include precision, wheel convention, key identity and text commits. A consumer rejects an unknown required capability rather than ignoring it. The executable [manifest](../../interaction/input_manifest_v1.schema.json) and [observation](../../interaction/input_observation_v1.schema.json) schemas define allowed fields; the pure codec additionally enforces ordering, transitions, bounds, capability use and integrity.
 
 | Input family | Fidelity rule |
 | --- | --- |

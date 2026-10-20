@@ -713,3 +713,31 @@ def test_matching_native_platform_replays_and_recorder_preserves_platform():
     )
     assert result['complete']
     assert host.ownership == [True, False]
+
+
+def test_paced_idle_uses_native_deadline_waiting_without_a_polling_tick():
+    clock = Clock()
+    host = Host(clock)
+    engine = Engine(clock, cost=0)
+    saved = t.build_trace([], windows(), duration_ns=1_000_000_000)
+    result = r.Player(engine, None, None, host=host, clock=clock).run(
+        saved, mode='paced', drain_seconds=0
+    )
+    assert result['complete']
+    assert engine.waits == [1.0, 0.0]
+    assert result['wall_duration_ns'] == 1_000_000_000
+
+
+@pytest.mark.parametrize('destroyed', [False, True])
+def test_capture_unsubscription_failure_never_drops_owned_callback(destroyed):
+    api, _, _ = fake_native_api()
+    host = r.NativeHost(api, object())
+    callback = object()
+    host._callbacks[11] = callback
+    if destroyed:
+        api.dvz_view_host_window = lambda view: None
+    else:
+        api.dvz_window_unsubscribe_host_input = lambda *args: False
+    with pytest.raises(t.TraceError):
+        host.unsubscribe(11)
+    assert host._callbacks[11] is callback
