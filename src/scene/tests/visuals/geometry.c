@@ -2276,7 +2276,7 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
                 found_pipeline = true;
                 AT(cmd->u.create_render_pipeline.topology == DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
                 AT(cmd->u.create_render_pipeline.binding_count == 8);
-                AT(cmd->u.create_render_pipeline.attr_count == 8);
+                AT(cmd->u.create_render_pipeline.attr_count == 10);
             }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_SET_VERTEX_BUFFER)
@@ -2296,6 +2296,37 @@ int test_scene_path_line_width_emit_glsl(TstContext* suite, const TstCase* item)
     AT(set_vertex_buffer_count == 8);
 
     _test_scene_stream_destroy(stream);
+    caps.shader_format_wgsl = true;
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    bool found_wgsl_path_pipeline = false;
+    bool found_wgsl_gap_shader = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+            cmd->u.create_render_pipeline.attr_count == 10)
+        {
+            AT(cmd->u.create_render_pipeline.binding_count == 8);
+            AT(cmd->u.create_render_pipeline.binding_strides[7] == 9 * sizeof(float));
+            AT(cmd->u.create_render_pipeline.attr_bindings[8] == 7);
+            AT(cmd->u.create_render_pipeline.attr_bindings[9] == 7);
+            AT(cmd->u.create_render_pipeline.attr_offsets[8] == sizeof(float));
+            AT(cmd->u.create_render_pipeline.attr_offsets[9] == 5 * sizeof(float));
+            found_wgsl_path_pipeline = true;
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE &&
+            strcmp(cmd->u.create_shader_module.format, "wgsl") == 0 &&
+            cmd->u.create_shader_module.code != NULL &&
+            strstr(cmd->u.create_shader_module.code, "endpoint_delta") != NULL)
+            found_wgsl_gap_shader = true;
+    }
+    AT(found_wgsl_path_pipeline);
+    AT(found_wgsl_gap_shader);
+    _test_scene_stream_destroy(stream);
+
     dvz_scene_destroy(scene);
     return 0;
 }

@@ -167,6 +167,15 @@ Setting both to the same value is equivalent to a single cap parameter.
 Use `cap_end = triangle_out` with `cap_start = butt` for directed paths (arrow at end only).
 
 
+### Endpoint disk gaps
+
+`dvz_path_set_endpoint_gaps(visual, start_px, end_px)` sets finite nonnegative disk radii in logical screen pixels, defaulting to zero. Each open stroked subpath uses its original authored first and last positions as disk centers. Every segment excludes the union of these disks, including later segments that return into an endpoint disk. The original positions, retained rows, adjacency, cap styles, and depth testing are unchanged.
+
+Coverage is zero through each positive radius and transitions to full stroke coverage over one physical pixel outside it. Overlapping disks may hide a short path completely. A zero radius bypasses the mask. Closed subpaths and primitive line-strip paths ignore gaps. An original endpoint behind the camera or outside its near/far depth interval contributes no disk; lateral offscreen endpoints remain eligible. Authored relationships to markers are explicit: changing marker size or visibility must update the gap style separately.
+
+Native color, picking, integer query, and surface-depth variants share disk coverage. WGSL color shaders use the same mask and packed vertex layout. Query targets use logical panel dimensions, so query style lowering applies user scale while render uploads apply device and user scale.
+
+
 ### `join`
 
 | Property | Value |

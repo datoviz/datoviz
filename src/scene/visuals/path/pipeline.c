@@ -47,7 +47,7 @@ static void _path_stroke_pipeline_desc(
 
     out->vertex_buffer_count = 8;
     out->binding_count = 8;
-    out->attr_count = 8;
+    out->attr_count = 10;
     _scene_visual_pipeline_attr(out, 0, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
     _scene_visual_pipeline_attr(out, 1, 1, 1, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
     _scene_visual_pipeline_attr(out, 2, 2, 2, DVZ_FORMAT_R32G32B32_SFLOAT, 3 * sizeof(float));
@@ -55,7 +55,11 @@ static void _path_stroke_pipeline_desc(
     _scene_visual_pipeline_attr(out, 4, 4, 4, DVZ_FORMAT_R8G8B8A8_UNORM, 4 * sizeof(uint8_t));
     _scene_visual_pipeline_attr(out, 5, 5, 5, DVZ_FORMAT_R32_SFLOAT, sizeof(float));
     _scene_visual_pipeline_attr(out, 6, 6, 6, DVZ_FORMAT_R32_UINT, sizeof(uint32_t));
-    _scene_visual_pipeline_attr(out, 7, 7, 7, DVZ_FORMAT_R32_SFLOAT, sizeof(float));
+    _scene_visual_pipeline_attr(out, 7, 7, 7, DVZ_FORMAT_R32_SFLOAT, 9 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 8, 7, 8, DVZ_FORMAT_R32G32B32A32_SFLOAT, 9 * sizeof(float));
+    _scene_visual_pipeline_attr(out, 9, 7, 9, DVZ_FORMAT_R32G32B32A32_SFLOAT, 9 * sizeof(float));
+    out->offsets[8] = sizeof(float);
+    out->offsets[9] = 5 * sizeof(float);
     out->needs_common_layout = caps->uses_common_set;
     out->needs_material_layout = caps->needs_material_layout;
     _scene_visual_pipeline_apply_standard_depth_state(

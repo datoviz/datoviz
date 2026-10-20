@@ -40,4 +40,7 @@ typedef struct DvzVisualUploadPayload
     uint32_t item_size;
     uint64_t item_count;
     bool index;
+    // Optional float fields, repeated at item_size stride, authored in logical pixels.
+    uint32_t screen_space_offset_count;
+    uint32_t screen_space_offsets[2];
 } DvzVisualUploadPayload;

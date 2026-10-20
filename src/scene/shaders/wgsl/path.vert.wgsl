@@ -10,6 +10,8 @@ struct VertexIn {
     @location(5) line_width: f32,
     @location(6) path_flags: u32,
     @location(7) path_distance: f32,
+    @location(8) endpoint_start: vec4f,
+    @location(9) endpoint_end: vec4f,
 }
 
 struct VertexOut {
@@ -22,6 +24,8 @@ struct VertexOut {
     @location(5) has_next: f32,
     @location(6) @interpolate(linear) bevel_distance: vec2f,
     @location(7) join_split_distance: f32,
+    @location(8) @interpolate(linear) gap_start: vec3f,
+    @location(9) @interpolate(linear) gap_end: vec3f,
 }
 
 const SIDE_NEGATIVE: u32 = 0x01u;
@@ -78,6 +82,17 @@ fn stroke_cap_half_width(cap: i32, line_width: f32) -> f32 {
         return stroke_triangle_head_half_width(line_width) + 1.0;
     }
     return stroke_outer_half_width(line_width);
+}
+
+fn endpoint_delta(pixel: vec2f, endpoint: vec4f) -> vec3f {
+    if (endpoint.w <= 0.0) {
+        return vec3f(0.0);
+    }
+    let clip = transform(endpoint.xyz);
+    if (clip.w <= 1e-6 || clip.z < 0.0 || clip.z > clip.w) {
+        return vec3f(0.0);
+    }
+    return vec3f(pixel - device_clip_to_top_left_pixel(clip), endpoint.w);
 }
 
 @vertex
@@ -163,6 +178,8 @@ fn main(input: VertexIn) -> VertexOut {
         }
     }
     let reference_clip = select(p1_clip, p2_clip, endpoint_end);
+    output.gap_start = endpoint_delta(pixel, input.endpoint_start);
+    output.gap_end = endpoint_delta(pixel, input.endpoint_end);
     output.position = top_left_pixel_to_device_clip(pixel, reference_clip);
     output.color = input.color;
     output.bevel_distance = vec2f(-half_width, -half_width);

@@ -1668,6 +1668,7 @@ struct DvzPathStrokeGpuCache
     DvzColor* color;
     float* line_width;
     uint32_t* path_flags;
+    // Per vertex: cumulative distance, start xyz/radius, end xyz/radius.
     float* path_distance;
     uint32_t* indices;
     uint64_t point_count;
@@ -1691,6 +1692,8 @@ struct DvzPathState
     DvzSegmentCap cap_end;
     DvzPathJoin join;
     float miter_limit;
+    float gap_start_px;
+    float gap_end_px;
     DvzPathGpuCache gpu;
 };
 

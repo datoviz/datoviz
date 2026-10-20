@@ -425,6 +425,17 @@ int test_scene_path_stroke_style(TstContext* suite, const TstCase* item)
     AT(_visual_family_state(visual)->path.cap_end == DVZ_SEGMENT_CAP_ROUND);
     AT(_visual_family_state(visual)->path.join == DVZ_PATH_JOIN_ROUND);
     AT(_visual_family_state(visual)->path.miter_limit == 4.0f);
+    AT(_visual_family_state(visual)->path.gap_start_px == 0.0f);
+    AT(_visual_family_state(visual)->path.gap_end_px == 0.0f);
+    AT(dvz_path_set_endpoint_gaps(visual, 15.0f, 8.0f) == DVZ_OK);
+    AT(_visual_family_state(visual)->path.gap_start_px == 15.0f);
+    AT(_visual_family_state(visual)->path.gap_end_px == 8.0f);
+    AT(_visual_family_state(visual)->path.gpu.dirty);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_path_set_endpoint_gaps(NULL, 0, 0) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_path_set_endpoint_gaps(visual, -1, 0) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_path_set_endpoint_gaps(visual, NAN, 0) < 0);
+    AT_EXPECTED_ERROR_STRICT(suite, dvz_path_set_endpoint_gaps(visual, 0, INFINITY) < 0);
+
     // Match insertion setup: alpha changes followed by no-op default setters
     // must retain the path-family payload, never Phong coefficients.
     AT(dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_OPAQUE) == DVZ_OK);
@@ -827,7 +838,7 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
             {
                 found_pipeline = true;
                 AT(cmd->u.create_render_pipeline.binding_count == 8);
-                AT(cmd->u.create_render_pipeline.attr_count == 8);
+                AT(cmd->u.create_render_pipeline.attr_count == 10);
             }
         }
         else if (cmd->type == DVZ_DRP2_COMMAND_CREATE_BUFFER)
@@ -836,7 +847,7 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
             if (label != NULL && strstr(label, "path_distance") != NULL)
             {
                 found_path_distance_buffer = true;
-                AT(cmd->u.create_buffer.size == 12 * sizeof(float));
+                AT(cmd->u.create_buffer.size == 12 * 9 * sizeof(float));
                 AT((cmd->u.create_buffer.usage & DVZ_DRP2_BUFFER_USAGE_VERTEX) != 0);
             }
         }
@@ -856,6 +867,37 @@ int test_scene_vector_curved_emit_glsl(TstContext* suite, const TstCase* item)
     AT(_stream_write_buffer_range_count(stream, 0, sizeof(DvzSceneMaterialParams)) >= 1);
 
     _test_scene_stream_destroy(stream);
+    caps.shader_format_wgsl = true;
+    emit_cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_WGSL;
+    stream = _test_scene_emit_stream_ex(figure, &caps, &report, &emit_cfg);
+    ANN(stream);
+    AT(dvz_diagnostic_report_count(&report) == 0);
+    bool found_wgsl_path_pipeline = false;
+    bool found_wgsl_gap_shader = false;
+    for (uint32_t i = 0; i < dvz_drp2_stream_count(stream); i++)
+    {
+        const DvzDrp2Command* cmd = dvz_drp2_stream_get(stream, i);
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_RENDER_PIPELINE &&
+            cmd->u.create_render_pipeline.attr_count == 10)
+        {
+            AT(cmd->u.create_render_pipeline.binding_count == 8);
+            AT(cmd->u.create_render_pipeline.binding_strides[7] == 9 * sizeof(float));
+            AT(cmd->u.create_render_pipeline.attr_bindings[8] == 7);
+            AT(cmd->u.create_render_pipeline.attr_bindings[9] == 7);
+            AT(cmd->u.create_render_pipeline.attr_offsets[8] == sizeof(float));
+            AT(cmd->u.create_render_pipeline.attr_offsets[9] == 5 * sizeof(float));
+            found_wgsl_path_pipeline = true;
+        }
+        if (cmd->type == DVZ_DRP2_COMMAND_CREATE_SHADER_MODULE &&
+            strcmp(cmd->u.create_shader_module.format, "wgsl") == 0 &&
+            cmd->u.create_shader_module.code != NULL &&
+            strstr(cmd->u.create_shader_module.code, "endpoint_delta") != NULL)
+            found_wgsl_gap_shader = true;
+    }
+    AT(found_wgsl_path_pipeline);
+    AT(found_wgsl_gap_shader);
+    _test_scene_stream_destroy(stream);
+
     dvz_scene_destroy(scene);
     return 0;
 }
