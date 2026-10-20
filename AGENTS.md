@@ -2,7 +2,7 @@
 
 Shared instructions for coding agents. Claude Code loads this file through [CLAUDE.md](CLAUDE.md).
 
-Datoviz v0.4 is a deep rewrite of v0.3. The active development and release-candidate branch is `main`.
+Datoviz v0.4 is a deep rewrite of v0.3. Keep RC3 finalization on `main` and ongoing RC4 development on `rc4/integration`. Do not create a branch for each RC4 batch. Carry reviewed RC3 corrections forward into RC4; do not merge RC4 features into `main` before an explicit maintainer decision.
 
 ## Required Boundaries
 

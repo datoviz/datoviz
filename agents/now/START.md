@@ -1,6 +1,6 @@
 # Datoviz v0.4 Dispatch
 
-The active branch is `main`. RC2 is closed; RC3 is the next release milestone, followed by RC4 and final v0.4.0. Current preparation is recorded in [STATUS.md](STATUS.md) and the [2026-09-08 candidate preparation](RELEASE.md#rc3-preparation-before-maintainer-review-2026-09-08); published artifacts retain their recorded evidence.
+Use `main` for RC3 finalization and `rc4/integration` for ongoing RC4 development. The former RC4 implementation lanes are consolidated; see [the consolidation record](SCIENTIFIC_3D_PROFILE_HANDOFF.md#rc4-branch-consolidation-2026-10-20). RC2 is closed; RC3 is the next release milestone, followed by RC4 and final v0.4.0. Current preparation is recorded in [STATUS.md](STATUS.md) and the [2026-09-08 candidate preparation](RELEASE.md#rc3-preparation-before-maintainer-review-2026-09-08); published artifacts retain their recorded evidence.
 
 Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For current Linux hardware evidence and the macOS/Windows return sequence, use [the current development queue](STATUS.md#next-development-checks); RC3 freeze waits for maintainer course proofreading. Read [STATUS.md](STATUS.md) when work affects release scope or readiness and [RELEASE.md](RELEASE.md) for release planning or packaging. Read only the matching lanes below.
 

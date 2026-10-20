@@ -6,7 +6,7 @@ Keep this file current and short. Durable behavior belongs in `spec/`; completed
 
 ## Current Position
 
-RC2 is closed at `v0.4.0rc2`, release commit `8a3bd7509`; its artifacts and exclusions remain immutable. Active development is `main`; protected `v0.3-maintenance` preserves v0.3 and `dev` remains frozen. [Branch cutover evidence](BRANCH_CUTOVER.md) records validation head `d3d7142f0`.
+RC2 is closed at `v0.4.0rc2`, release commit `8a3bd7509`; its artifacts and exclusions remain immutable. RC3 finalization stays on `main`, and ongoing RC4 development is consolidated on `rc4/integration`; protected `v0.3-maintenance` preserves v0.3 and `dev` remains frozen. [Branch cutover evidence](BRANCH_CUTOVER.md) records validation head `d3d7142f0`.
 
 RC3 remains unfrozen while the maintainer proofreads the course and may request minor code fixes. Continue development validation without selecting a final candidate or changing release identity. Previously recorded RC3 implementation lanes remain integrated at their cited heads; the scientific 3D audit's narrow RC3 guards, alpha correctness fixes, and documentation are locally complete at `d0e904705`. Required broader profile delivery remains RC4 work; exact-candidate proof remains pending. The automated course review and [candidate preparation](RELEASE.md#rc3-preparation-before-maintainer-review-2026-09-08) are complete; maintainer review, candidate freeze, and exact artifact/platform proof remain. Completed local validation is not release approval. Use the lane records below rather than replaying completed campaigns.
 
