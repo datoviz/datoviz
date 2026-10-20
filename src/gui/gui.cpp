@@ -16,6 +16,8 @@
 
 #include "datoviz/gui.h"
 #include "_gui.h"
+#include "gui_input_internal.h"
+#include "../window/window_internal.h"
 
 #include <algorithm>
 #include <array>
@@ -125,6 +127,15 @@ struct DvzGui
     ImGuiID docked_window_hashes[DVZ_GUI_MAX_DOCKED_WINDOWS];
     uint32_t docked_window_hash_count;
     int glfw_mods;
+    uint64_t replay_last_frame_ns;
+    bool was_replaying;
+    void* clipboard_data;
+    void* shell_data;
+    void* ime_user_data;
+    const char* (*clipboard_get)(ImGuiContext*);
+    void (*clipboard_set)(ImGuiContext*, const char*);
+    bool (*open_in_shell)(ImGuiContext*, const char*);
+    void (*ime_data)(ImGuiContext*, ImGuiViewport*, ImGuiPlatformImeData*);
     ImFont* font_regular;
     ImFont* font_bold;
     ImFont* font_mono;
@@ -203,6 +214,7 @@ struct DvzGuiViewport
     bool has_frame;
     bool texture_dirty;
     bool keyboard_focused;
+    bool input_keys[349];
     bool input_capturing;
     int input_button;
     DvzPointerButton input_dvz_button;
@@ -1502,6 +1514,55 @@ _gui_viewport_resolve_resize(DvzGuiViewport* viewport, uint32_t width, uint32_t 
 
 
 /**
+ * Preserve the replay processing clock when forwarding into an embedded source.
+ * @param viewport embedded source owner
+ * @param type original pointer type
+ * @param x source-local x
+ * @param y source-local y
+ * @param width source logical width
+ * @param height source logical height
+ * @param button changed button
+ * @param mods modifier snapshot
+ * @return dispatch result
+ */
+static DvzResult _gui_viewport_emit_pointer(
+    DvzGuiViewport* viewport, DvzPointerEventType type, float x, float y, float width,
+    float height, DvzPointerButton button, int mods)
+{
+    const DvzHostInputState* state = viewport->gui != NULL ?
+        dvz_window_host_input_state(viewport->gui->window) : NULL;
+    if (state == NULL || !state->replaying)
+        return dvz_view_emit_pointer(viewport->source, type, x, y, width, height, button, mods);
+    DvzInputRouter* router = dvz_view_input(viewport->source);
+    if (router == NULL)
+        return DVZ_ERROR;
+    dvz_pointer_emit_position(router, type, x, y, width, height, button, mods,
+                              dvz_view_device_scale(viewport->source), state->timestamp_ns, NULL);
+    dvz_view_request_frame(viewport->source);
+    return DVZ_OK;
+}
+
+
+
+/** Forward embedded wheel input using replay logical time when active. */
+static void _gui_viewport_emit_wheel(
+    DvzGuiViewport* viewport, float x, float y, float width, float height, float dx,
+    float dy, int mods)
+{
+    const DvzHostInputState* state = dvz_window_host_input_state(viewport->gui->window);
+    if (!state->replaying)
+    {
+        (void)dvz_view_emit_wheel(viewport->source, x, y, width, height, dx, dy, mods);
+        return;
+    }
+    dvz_pointer_emit_wheel(dvz_view_input(viewport->source), x, y, width, height, dx, dy, mods,
+                           dvz_view_device_scale(viewport->source), state->timestamp_ns, NULL);
+    dvz_view_request_frame(viewport->source);
+}
+
+
+
+/**
  * Forward changed pointer positions or refresh hover after a source figure mutation.
  *
  * @param viewport GUI viewport
@@ -1529,8 +1590,8 @@ bool _dvz_gui_viewport_forward_move(
         revision == viewport->input_move_revision)
         return false;
 
-    if (dvz_view_emit_pointer(
-            viewport->source, DVZ_POINTER_EVENT_MOVE, x, y, width, height,
+    if (_gui_viewport_emit_pointer(
+            viewport, DVZ_POINTER_EVENT_MOVE, x, y, width, height,
             DVZ_POINTER_BUTTON_NONE, mods) != DVZ_OK)
         return false;
     viewport->input_move_valid = true;
@@ -1593,8 +1654,8 @@ static void _gui_viewport_forward_input(
             viewport->input_capturing = true;
             viewport->input_button = i;
             viewport->input_dvz_button = buttons[i];
-            (void)dvz_view_emit_pointer(
-                viewport->source, DVZ_POINTER_EVENT_PRESS, x, y, window_x, window_y, buttons[i],
+            (void)_gui_viewport_emit_pointer(
+                viewport, DVZ_POINTER_EVENT_PRESS, x, y, window_x, window_y, buttons[i],
                 mods);
         }
     }
@@ -1605,16 +1666,16 @@ static void _gui_viewport_forward_input(
         return;
     if (hovered && (io.MouseWheel != 0.0f || io.MouseWheelH != 0.0f))
     {
-        (void)dvz_view_emit_wheel(
-            viewport->source, x, y, window_x, window_y, io.MouseWheelH, io.MouseWheel, mods);
+        (void)_gui_viewport_emit_wheel(
+            viewport, x, y, window_x, window_y, io.MouseWheelH, io.MouseWheel, mods);
     }
 
     if (
         viewport->input_capturing &&
         (ImGui::IsMouseReleased(viewport->input_button) || !io.MouseDown[viewport->input_button]))
     {
-        (void)dvz_view_emit_pointer(
-            viewport->source, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y,
+        (void)_gui_viewport_emit_pointer(
+            viewport, DVZ_POINTER_EVENT_RELEASE, x, y, window_x, window_y,
             viewport->input_dvz_button, mods);
         viewport->input_capturing = false;
         viewport->input_button = 0;
@@ -1758,56 +1819,10 @@ static bool _gui_viewport_forward_key(DvzGui* gui, int key, int action, int mods
     if (type == DVZ_KEYBOARD_EVENT_NONE)
         return false;
 
-    return dvz_view_emit_key(viewport->source, type, (DvzKeyCode)key, mods) == 0;
-}
-
-
-
-static uint32_t _gui_utf8_encode(uint32_t codepoint, char out[4])
-{
-    if (codepoint <= 0x7fu)
-    {
-        out[0] = (char)codepoint;
-        return 1;
-    }
-    if (codepoint <= 0x7ffu)
-    {
-        out[0] = (char)(0xc0u | (codepoint >> 6));
-        out[1] = (char)(0x80u | (codepoint & 0x3fu));
-        return 2;
-    }
-    if (codepoint >= 0xd800u && codepoint <= 0xdfffu)
-        return 0;
-    if (codepoint <= 0xffffu)
-    {
-        out[0] = (char)(0xe0u | (codepoint >> 12));
-        out[1] = (char)(0x80u | ((codepoint >> 6) & 0x3fu));
-        out[2] = (char)(0x80u | (codepoint & 0x3fu));
-        return 3;
-    }
-    if (codepoint <= 0x10ffffu)
-    {
-        out[0] = (char)(0xf0u | (codepoint >> 18));
-        out[1] = (char)(0x80u | ((codepoint >> 12) & 0x3fu));
-        out[2] = (char)(0x80u | ((codepoint >> 6) & 0x3fu));
-        out[3] = (char)(0x80u | (codepoint & 0x3fu));
-        return 4;
-    }
-    return 0;
-}
-
-
-
-static bool _gui_viewport_forward_text(DvzGui* gui, uint32_t codepoint)
-{
-    ANN(gui);
-    DvzGuiViewport* viewport = gui->keyboard_viewport;
-    if (viewport == NULL || viewport->source == NULL || !viewport->keyboard_focused)
-        return false;
-    char utf8[4] = {};
-    uint32_t byte_size = _gui_utf8_encode(codepoint, utf8);
-    return byte_size > 0 &&
-           dvz_view_emit_text(viewport->source, utf8, byte_size, gui->glfw_mods) == DVZ_OK;
+    bool emitted = dvz_view_emit_key(viewport->source, type, (DvzKeyCode)key, mods) == 0;
+    if (emitted && key >= 0 && key <= 348)
+        viewport->input_keys[key] = action != GLFW_RELEASE;
+    return emitted;
 }
 
 
@@ -1841,6 +1856,8 @@ static bool _gui_update_followup_frame_state(DvzGui* gui)
     bool active_item = ImGui::IsAnyItemActive() || io.WantTextInput;
     bool open_popup = ImGui::IsPopupOpen((const char*)NULL, ImGuiPopupFlags_AnyPopup);
     bool request_frame = active_item != gui->had_active_item || open_popup != gui->had_open_popup;
+    // GUI event trickling must continue to progress on an otherwise idle host.
+    request_frame = request_frame || ImGui::GetCurrentContext()->InputEventsQueue.Size > 0;
     for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
     {
         if (viewport->frame_visible && viewport->pending_width > 0 &&
@@ -1956,25 +1973,145 @@ _gui_glfw_key(DvzWindow* window, int key, int scancode, int action, int mods, vo
 
 
 /**
- * Forward a raw GLFW character event to ImGui.
- *
- * @param window Datoviz window
- * @param codepoint Unicode codepoint
- * @param user_data GUI pointer
- * @return whether Datoviz should consume the event
+ * Cancel GUI/viewport input immediately without synthesizing successful releases.
+ * @param gui current overlay
+ * @param timestamp_ns logical cancellation time
  */
-static bool _gui_glfw_char(DvzWindow* window, uint32_t codepoint, void* user_data)
+static void _gui_cancel_host_input(DvzGui* gui, uint64_t timestamp_ns)
 {
-    (void)window;
-    DvzGui* gui = (DvzGui*)user_data;
-    ANN(gui);
-    _gui_set_current(gui);
-    ImGui_ImplGlfw_CharCallback(gui->glfw_window, codepoint);
-    _gui_request_frame(gui);
-    if (_gui_want_capture_keyboard(gui))
-        return true;
-    return _gui_viewport_forward_text(gui, codepoint);
+    ImGuiIO& io = ImGui::GetIO();
+    io.ClearEventsQueue();
+    io.ClearInputKeys();
+    io.ClearInputMouse();
+    ImGui::ClearActiveID();
+    gui->glfw_mods = 0;
+    gui->keyboard_viewport = NULL;
+    for (DvzGuiViewport* viewport = gui->viewports; viewport != NULL; viewport = viewport->next)
+    {
+        viewport->input_capturing = false;
+        viewport->input_button = 0;
+        viewport->input_dvz_button = DVZ_POINTER_BUTTON_NONE;
+        viewport->input_move_valid = false;
+        viewport->keyboard_focused = false;
+        if (viewport->source != NULL)
+        {
+            for (int key = 0; key <= 348; key++)
+            {
+                if (viewport->input_keys[key])
+                    (void)dvz_view_emit_key(viewport->source, DVZ_KEYBOARD_EVENT_RELEASE,
+                                            (DvzKeyCode)key, 0);
+                viewport->input_keys[key] = false;
+            }
+            DvzPointerEvent cancel = {};
+            cancel.type = DVZ_POINTER_EVENT_CANCEL;
+            cancel.timestamp_ns = timestamp_ns;
+            DvzInputRouter* router = dvz_view_input(viewport->source);
+            if (router != NULL)
+            {
+                dvz_input_emit_pointer(router, &cancel);
+                dvz_view_request_frame(viewport->source);
+            }
+        }
+    }
 }
+
+
+
+/**
+ * Inspect queued GUI input without consuming it.
+ * @param user_data current overlay
+ * @return queued observations awaiting a GUI pump
+ */
+static uint32_t _gui_host_input_pending(void* user_data)
+{
+    DvzGui* gui = (DvzGui*)user_data;
+    _gui_set_current(gui);
+    return (uint32_t)ImGui::GetCurrentContext()->InputEventsQueue.Size;
+}
+
+
+
+/**
+ * Arbitrate one original after capture and before scene routing.
+ * @param window input host
+ * @param event borrowed validated original
+ * @param user_data borrowed GUI overlay
+ * @return whether application routing is consumed
+ */
+static bool _gui_host_input(DvzWindow* window, const DvzHostInputEvent* event, void* user_data)
+{
+    DvzGui* gui = (DvzGui*)user_data;
+    _gui_set_current(gui);
+    _gui_request_frame(gui);
+    bool replay = dvz_window_host_input_state(window)->replaying;
+    if (event->type == DVZ_HOST_INPUT_CANCEL ||
+        (event->type == DVZ_HOST_INPUT_FOCUS && !event->focused))
+    {
+        _gui_cancel_host_input(gui, event->timestamp_ns);
+        if (event->type == DVZ_HOST_INPUT_FOCUS)
+            ImGui::GetIO().AddFocusEvent(false);
+        return false;
+    }
+    if (replay)
+    {
+        _dvz_gui_input_apply(event);
+        switch (event->type)
+        {
+        case DVZ_HOST_INPUT_MOVE:
+        case DVZ_HOST_INPUT_BUTTON:
+        case DVZ_HOST_INPUT_WHEEL:
+            return _gui_want_capture_mouse(gui);
+        case DVZ_HOST_INPUT_KEY:
+            gui->glfw_mods = event->mods;
+            return _gui_want_capture_keyboard(gui) ||
+                   _gui_viewport_forward_key(gui, event->key, event->action, event->mods);
+        case DVZ_HOST_INPUT_TEXT:
+        {
+            if (_gui_want_capture_keyboard(gui))
+                return true;
+            DvzGuiViewport* viewport = gui->keyboard_viewport;
+            return viewport != NULL && viewport->source != NULL && viewport->keyboard_focused &&
+                   dvz_view_emit_text(viewport->source, event->utf8, event->byte_size,
+                                      event->mods) == DVZ_OK;
+        }
+        default:
+            return false;
+        }
+    }
+    switch (event->type)
+    {
+    case DVZ_HOST_INPUT_MOVE:
+        return _gui_glfw_cursor_pos(window, event->x, event->y, gui);
+    case DVZ_HOST_INPUT_BUTTON:
+        return _gui_glfw_mouse_button(window, event->button, event->action, event->mods, gui);
+    case DVZ_HOST_INPUT_WHEEL:
+        return _gui_glfw_scroll(window, event->dx, event->dy, gui);
+    case DVZ_HOST_INPUT_KEY:
+        return _gui_glfw_key(window, event->key, event->scancode, event->action, event->mods, gui);
+    case DVZ_HOST_INPUT_TEXT:
+        // Native GLFW commits one scalar; the bounded direct adapter also accepts hosted spans.
+        _dvz_gui_input_apply(event);
+        if (_gui_want_capture_keyboard(gui))
+            return true;
+        if (gui->keyboard_viewport != NULL && gui->keyboard_viewport->keyboard_focused)
+            return dvz_view_emit_text(gui->keyboard_viewport->source, event->utf8,
+                                      event->byte_size, event->mods) == DVZ_OK;
+        return false;
+    case DVZ_HOST_INPUT_FOCUS:
+        ImGui_ImplGlfw_WindowFocusCallback(gui->glfw_window, event->focused);
+        break;
+    case DVZ_HOST_INPUT_ENTER:
+        ImGui_ImplGlfw_CursorEnterCallback(gui->glfw_window, event->entered);
+        break;
+    default:
+        break;
+    }
+    return false;
+}
+
+
+
+static void _gui_host_input_mode(bool replay, void* user_data);
 
 
 
@@ -2142,13 +2279,10 @@ DvzGui* _dvz_gui_create(
     }
     gui->glfw_initialized = true;
 
-    DvzWindowGlfwInputCallbacks callbacks = {};
-    callbacks.cursor_pos = _gui_glfw_cursor_pos;
-    callbacks.mouse_button = _gui_glfw_mouse_button;
-    callbacks.scroll = _gui_glfw_scroll;
-    callbacks.key = _gui_glfw_key;
-    callbacks.character = _gui_glfw_char;
-    dvz_window_glfw_set_input_callbacks(window, &callbacks, gui);
+    _dvz_window_set_host_input_dispatch(
+        window, _gui_host_input, _gui_host_input_pending, _gui_host_input_mode, gui);
+    if (dvz_window_host_input_state(window)->replaying)
+        _gui_host_input_mode(true, gui);
 
     return gui;
 }
@@ -2188,7 +2322,8 @@ void _dvz_gui_destroy(DvzGui* gui)
     if (gui == NULL)
         return;
 
-    dvz_window_glfw_set_input_callbacks(gui->window, NULL, NULL);
+    _gui_host_input_mode(false, gui);
+    _dvz_window_set_host_input_dispatch(gui->window, NULL, NULL, NULL, NULL);
     _gui_set_current(gui);
     gui->resolving_viewports = false;
     while (gui->viewports != NULL)
@@ -2225,6 +2360,85 @@ void _dvz_gui_set_callback(DvzGui* gui, DvzGuiCallback callback, void* user_data
 
 
 /**
+ * Reject unrecorded clipboard reads while keeping the replay failure observable.
+ * @param context current GUI context
+ * @return empty clipboard data without reading the OS
+ */
+static const char* _gui_replay_clipboard_get(ImGuiContext* context)
+{
+    DvzGui* gui = (DvzGui*)context->PlatformIO.Platform_ClipboardUserData;
+    gui->window->input_state.unsupported_operation = true;
+    return "";
+}
+
+
+
+/**
+ * Reject clipboard writes rather than changing the user's desktop clipboard.
+ * @param context current GUI context
+ * @param text ignored clipboard text
+ */
+static void _gui_replay_clipboard_set(ImGuiContext* context, const char* text)
+{
+    (void)text;
+    DvzGui* gui = (DvzGui*)context->PlatformIO.Platform_ClipboardUserData;
+    gui->window->input_state.unsupported_operation = true;
+}
+
+
+
+/**
+ * Reject external shell actions during isolated replay.
+ * @param context current GUI context
+ * @param path ignored shell target
+ * @return false because the operation is unsupported
+ */
+static bool _gui_replay_shell(ImGuiContext* context, const char* path)
+{
+    (void)path;
+    DvzGui* gui = (DvzGui*)context->PlatformIO.Platform_OpenInShellUserData;
+    gui->window->input_state.unsupported_operation = true;
+    return false;
+}
+
+
+
+/**
+ * Preserve custom live platform integrations across exclusive replay ownership.
+ * @param replay whether replay owns this GUI's input
+ * @param user_data borrowed GUI overlay
+ */
+static void _gui_host_input_mode(bool replay, void* user_data)
+{
+    DvzGui* gui = (DvzGui*)user_data;
+    if (gui->was_replaying == replay)
+        return;
+    _gui_set_current(gui);
+    ImGuiPlatformIO& platform = ImGui::GetPlatformIO();
+    if (replay)
+    {
+        gui->clipboard_data = platform.Platform_ClipboardUserData;
+        gui->shell_data = platform.Platform_OpenInShellUserData;
+        gui->ime_user_data = platform.Platform_ImeUserData;
+        gui->clipboard_get = platform.Platform_GetClipboardTextFn;
+        gui->clipboard_set = platform.Platform_SetClipboardTextFn;
+        gui->open_in_shell = platform.Platform_OpenInShellFn;
+        gui->ime_data = platform.Platform_SetImeDataFn;
+        gui->replay_last_frame_ns = 0;
+    }
+    platform.Platform_GetClipboardTextFn = replay ? _gui_replay_clipboard_get : gui->clipboard_get;
+    platform.Platform_SetClipboardTextFn = replay ? _gui_replay_clipboard_set : gui->clipboard_set;
+    platform.Platform_OpenInShellFn = replay ? _gui_replay_shell : gui->open_in_shell;
+    platform.Platform_ClipboardUserData = replay ? gui : gui->clipboard_data;
+    platform.Platform_OpenInShellUserData = replay ? gui : gui->shell_data;
+    platform.Platform_ImeUserData = replay ? gui : gui->ime_user_data;
+    platform.Platform_SetImeDataFn = replay ? NULL : gui->ime_data;
+    gui->was_replaying = replay;
+}
+
+
+
+/**
  * Begin a new ImGui frame and call user GUI code.
  *
  * @param gui the GUI overlay
@@ -2245,7 +2459,16 @@ void _dvz_gui_begin_frame(DvzGui* gui, DvzView* win, const DvzStreamFrame* frame
     if (gui->failed)
         return;
     ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
+    bool replay = dvz_window_host_input_state(gui->window)->replaying;
+    if (replay)
+    {
+        _dvz_gui_input_frame(gui->window, &gui->replay_last_frame_ns);
+        // Paced GUI forwarding uses its actual processing time; controlled time stays declared.
+        if (gui->window->input_state.delta_seconds == 0)
+            gui->window->input_state.timestamp_ns = gui->replay_last_frame_ns;
+    }
+    else
+        ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     gui->frame_index++;
     gui->data_window_depth = 0;

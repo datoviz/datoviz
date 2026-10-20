@@ -278,7 +278,7 @@ struct DvzView
     double fps_frame_ms;
     double fps_last_sample_elapsed_s;
     DvzAppFrameTimingState frame_timing;
-    uint64_t latest_pointer_timestamp_ns;
+    uint64_t latest_pointer_arrival_ns;
     uint64_t latest_pointer_sequence;
     uint64_t consumed_pointer_sequence;
     bool frame_requested;
@@ -1695,7 +1695,8 @@ _view_input_event(DvzInputRouter* router, const DvzInputEvent* event, void* user
         return;
     if (event->type == DVZ_INPUT_EVENT_POINTER && event->content.pointer.timestamp_ns != 0)
     {
-        win->latest_pointer_timestamp_ns = event->content.pointer.timestamp_ns;
+        // Gesture timestamps may be virtual during replay; profiling always uses real arrival.
+        win->latest_pointer_arrival_ns = dvz_time_monotonic_ns();
         win->latest_pointer_sequence++;
         if (win->latest_pointer_sequence == 0)
             win->latest_pointer_sequence++;
@@ -5732,6 +5733,23 @@ struct DvzCanvas* dvz_view_canvas(DvzView* win)
 }
 
 
+/**
+ * Return a view's current borrowed host, without retaining it across application pumps.
+ * @param view view valid until app destruction
+ * @return host window, or NULL after close
+ */
+DvzWindow* dvz_view_host_window(DvzView* view)
+{
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    return view != NULL ? view->window : NULL;
+#else
+    (void)view;
+    return NULL;
+#endif
+}
+
+
+
 struct DvzInputRouter* dvz_view_input(DvzView* win)
 {
     ANN(win);
@@ -6827,12 +6845,12 @@ int dvz_view_render_once(DvzView* win)
         dvz_memset(current, sizeof(*current), 0, sizeof(*current));
         if (
             win->latest_pointer_sequence != win->consumed_pointer_sequence &&
-            win->latest_pointer_timestamp_ns != 0 &&
-            win->latest_pointer_timestamp_ns <= frame_start_ns)
+            win->latest_pointer_arrival_ns != 0 &&
+            win->latest_pointer_arrival_ns <= frame_start_ns)
         {
             current->input_sequence = win->latest_pointer_sequence;
-            current->input_timestamp_ns = win->latest_pointer_timestamp_ns;
-            current->input_to_render_start_ns = frame_start_ns - win->latest_pointer_timestamp_ns;
+            current->input_timestamp_ns = win->latest_pointer_arrival_ns;
+            current->input_to_render_start_ns = frame_start_ns - win->latest_pointer_arrival_ns;
         }
     }
     int rc = dvz_canvas_frame(win->canvas);
@@ -6967,6 +6985,91 @@ int dvz_app_render_once(DvzApp* app)
 
 
 
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+/**
+ * Advance the ordinary scheduler with an optional upper bound on host waiting.
+ *
+ * @param app app whose scheduler should advance
+ * @param timeout_seconds maximum host wait, or -1 for ordinary unbounded waiting
+ * @return submitted frame count, -2 when stopped, or -1 on render failure
+ */
+static int _app_step(DvzApp* app, double timeout_seconds)
+{
+    if (_app_should_exit(app))
+        return -2;
+    uint64_t now = _app_scheduler_now_ns();
+    uint64_t deadline = 0;
+    bool scheduler_work = _app_scheduler_deadline(app, now, &deadline);
+    if (timeout_seconds >= 0)
+    {
+        double delay_ns = timeout_seconds * 1e9;
+        uint64_t bound = delay_ns >= (double)(UINT64_MAX - now)
+                             ? UINT64_MAX : now + (uint64_t)delay_ns;
+        if (!scheduler_work || (deadline > 0 && deadline > bound))
+        {
+            deadline = bound;
+            scheduler_work = true;
+        }
+    }
+    if (!scheduler_work)
+        _app_host_wait(app);
+    else if (deadline > 0)
+        _app_host_wait_until(app, deadline);
+    else
+        _app_host_poll(app);
+
+    if (_app_should_exit(app))
+        return -2;
+    _app_reap_closed_views(app);
+    if (_app_should_exit(app))
+        return -2;
+    now = _app_scheduler_now_ns();
+    int frames = 0;
+    bool failed = false;
+    for (uint32_t i = 0; i < app->view_count; i++)
+    {
+        DvzView* win = &app->views[i];
+        DvzAppPacingPolicy policy = _view_pacing_policy(win);
+        if (policy.mode == DVZ_APP_PACING_HOST_DRIVEN || !_view_should_render(win, now))
+            continue;
+        int rc = dvz_view_render_once(win);
+        if (rc == DVZ_CANVAS_FRAME_READY)
+        {
+            _view_update_deadline(win, _app_scheduler_now_ns());
+            frames++;
+        }
+        else if (rc < 0)
+            failed = true;
+    }
+    return failed ? -1 : frames;
+}
+
+
+
+#endif
+
+
+
+/**
+ * Advance the ordinary app scheduler without an unbounded host wait.
+ *
+ * @param app borrowed app
+ * @param timeout_seconds finite nonnegative maximum event wait
+ * @return submitted view-frame count, -2 when stopped, or -1 on error
+ */
+int dvz_app_step(DvzApp* app, double timeout_seconds)
+{
+    if (app == NULL || !isfinite(timeout_seconds) || timeout_seconds < 0)
+        return -1;
+#if defined(DVZ_DRP2_HAS_VKLITE) && DVZ_DRP2_HAS_VKLITE
+    return _app_step(app, timeout_seconds);
+#else
+    return -1;
+#endif
+}
+
+
+
 void dvz_app_run(DvzApp* app, uint32_t frame_count)
 {
     ANN(app);
@@ -6985,45 +7088,14 @@ void dvz_app_run(DvzApp* app, uint32_t frame_count)
         /* Interactive mode: loop until the configured app exit policy or dvz_app_stop() trips. */
         for (;;)
         {
-            if (_app_should_exit(app))
+            int frames = _app_step(app, -1);
+            if (frames == -2)
                 break;
-            uint64_t now = _app_scheduler_now_ns();
-            uint64_t deadline = 0;
-            bool scheduler_work = _app_scheduler_deadline(app, now, &deadline);
-            if (scheduler_work)
-            {
-                if (deadline > 0)
-                    _app_host_wait_until(app, deadline);
-                else
-                    _app_host_poll(app);
-            }
-            else
-                _app_host_wait(app);
-
-            if (_app_should_exit(app))
-                break;
-            _app_reap_closed_views(app);
-            if (_app_should_exit(app))
-                break;
-
-            now = _app_scheduler_now_ns();
-            for (uint32_t i = 0; i < app->view_count; i++)
-            {
-                DvzView* win = &app->views[i];
-                DvzAppPacingPolicy policy = _view_pacing_policy(win);
-                if (policy.mode == DVZ_APP_PACING_HOST_DRIVEN)
-                    continue;
-                if (!_view_should_render(win, now))
-                    continue;
-                int rc = dvz_view_render_once(win);
-                if (rc == DVZ_CANVAS_FRAME_READY)
-                    _view_update_deadline(win, _app_scheduler_now_ns());
-                if (rc == DVZ_CANVAS_FRAME_READY && fps_enabled)
-                    fps_window_frames++;
-            }
+            if (fps_enabled && frames > 0)
+                fps_window_frames += (uint32_t)frames;
             if (fps_enabled)
             {
-                now = dvz_input_timestamp_ns();
+                uint64_t now = dvz_input_timestamp_ns();
                 uint64_t elapsed_ns = now - fps_window_start;
                 if (elapsed_ns >= 1000000000ULL)
                 {

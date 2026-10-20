@@ -693,6 +693,12 @@ bool dvz_panzoom_pointer(DvzPanzoom* pz, const DvzPointerEvent* ev)
 {
     ANN(pz);
     ANN(ev);
+    if (ev->type == DVZ_POINTER_EVENT_CANCEL)
+    {
+        pz->interacting = false;
+        (void)dvz_panzoom_end(pz);
+        return true;
+    }
     if (!_event_in_viewport(pz, ev))
         return false;
 

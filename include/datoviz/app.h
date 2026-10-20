@@ -34,6 +34,7 @@
 /*  Forward declarations                                                                         */
 /*************************************************************************************************/
 
+typedef struct DvzWindow DvzWindow;
 typedef struct DvzApp       DvzApp;
 typedef struct DvzAppCaptureConfig DvzAppCaptureConfig;
 typedef struct DvzAppConfig DvzAppConfig;
@@ -644,6 +645,13 @@ DVZ_EXPORT struct DvzCanvas* dvz_view_canvas(DvzView* view);
  */
 DVZ_EXPORT struct DvzInputRouter* dvz_view_input(DvzView* view);
 
+/**
+ * Return the borrowed host window, or NULL after the view closes.
+ * @param view borrowed view valid until app destruction
+ * @return window valid until view close; never retain across an app pump
+ */
+DVZ_EXPORT DvzWindow* dvz_view_host_window(DvzView* view);
+
 
 /**
  * Return the current device scale for a view.
@@ -1159,6 +1167,20 @@ DVZ_EXPORT int dvz_view_render_once(DvzView* view);
  * error
  */
 DVZ_EXPORT int dvz_app_render_once(DvzApp* app);
+
+
+/**
+ * Advance one ordinary scheduler iteration with a bounded host wait.
+ *
+ * Uses the same invalidation, pacing and close policy as the interactive run loop. The timeout
+ * bounds event waiting only: rendering and callbacks may take longer. A zero timeout polls.
+ * Does not wait for GPU completion or reset/report frame timing. Call on the owner thread.
+ *
+ * @param app borrowed app
+ * @param timeout_seconds finite nonnegative maximum host wait in seconds
+ * @return submitted view-frame count, -2 when the exit policy stops the app, or -1 on error
+ */
+DVZ_EXPORT int dvz_app_step(DvzApp* app, double timeout_seconds);
 
 
 /**

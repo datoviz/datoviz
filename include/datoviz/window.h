@@ -19,6 +19,7 @@
 #include <stdbool.h>
 
 #include "datoviz/window/types.h"
+#include "datoviz/window/input.h"
 
 
 
@@ -42,6 +43,15 @@ EXTERN_C_ON
  * @returns a newly allocated host, or NULL on allocation failure
  */
 DVZ_EXPORT DvzWindowHost* dvz_window_host(void);
+
+
+
+/**
+ * Return the borrowed host owning a window for owner-thread event polling.
+ * @param window borrowed window
+ * @return owning host, valid until host destruction, or NULL
+ */
+DVZ_EXPORT DvzWindowHost* dvz_window_host_for_window(DvzWindow* window);
 
 
 

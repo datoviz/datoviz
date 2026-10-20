@@ -354,6 +354,9 @@ void _dvz_pointer_gesture_process(
     case DVZ_POINTER_EVENT_RELEASE:
         *derived = _after_release(state, event);
         break;
+    case DVZ_POINTER_EVENT_CANCEL:
+        _dvz_pointer_gesture_reset(state);
+        break;
     case DVZ_POINTER_EVENT_WHEEL:
         _after_wheel(state, event);
         break;

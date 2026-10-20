@@ -23,6 +23,9 @@
 #include <string.h>
 
 #include "../_gui.h"
+#include "../gui_input_internal.h"
+#include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 #include "../../app/_app.h"
 #include "../../canvas/canvas_internal.h"
 #include "../../common/_time_utils.h"
@@ -42,6 +45,7 @@
 #include "datoviz/vk/gpu_ctx.h"
 #include "datoviz/vklite/sync.h"
 #include "datoviz/window.h"
+#include "datoviz/window/backend.h"
 #include "datoviz_testing.h"
 
 
@@ -2901,6 +2905,204 @@ static int test_gui_forwarded_viewport_arcball(TstContext* suite, const TstCase*
 
 
 
+// Testing-only GLFW input entry points simulate platform delivery on the private test display.
+struct _GLFWwindow;
+extern "C" void _glfwInputKey(
+    _GLFWwindow* window, int key, int scancode, int action, int mods);
+extern "C" void _glfwInputWindowFocus(_GLFWwindow* window, int focused);
+
+
+
+/** Count original host key releases independently of recognizer cleanup. */
+static void _gui_count_host_key_releases(
+    DvzWindow* window, const DvzHostInputEvent* event, DvzHostInputOrigin origin, void* user_data)
+{
+    (void)window;
+    (void)origin;
+    if (event->type == DVZ_HOST_INPUT_KEY && event->action == 0)
+        (*(uint32_t*)user_data)++;
+}
+
+
+
+/** Return a custom in-process clipboard value without reading or writing OS state. */
+static const char* _gui_replay_custom_clipboard(ImGuiContext* context)
+{
+    (void)context;
+    return "custom-live-integration";
+}
+
+
+
+/** Observe a replay frame without adding input or touching OS state. */
+static void _gui_replay_frame_probe(DvzGui* gui, DvzView* view, void* user_data)
+{
+    (void)gui;
+    (void)view;
+    float* observed = (float*)user_data;
+    ImGuiIO* io = igGetIO_Nil();
+    observed[0] = io->MousePos.x;
+    observed[1] = io->MousePos.y;
+    observed[2] = io->DeltaTime;
+    observed[3] = igIsKeyDown_Nil(ImGuiKey_A) ? 1.0f : 0.0f;
+    // A clipboard operation must remain observable as unsupported rather than reading the OS.
+    (void)igGetClipboardText();
+}
+
+
+
+/** The real hosted GUI consumes replay state, reports unsupported access, and cancels safely. */
+static int test_gui_host_replay_isolation(TstContext* suite, const TstCase* item)
+{
+    (void)item;
+    if (!_gui_smoke_available())
+    {
+        tst_skip(suite, "GUI/GLFW support unavailable");
+        return 0;
+    }
+    GuiTestGpuResources resources = {};
+    const char* reason = _gui_test_gpu_resources_create(suite, &resources);
+    if (reason != NULL)
+    {
+        tst_skip(suite, reason);
+        return 0;
+    }
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = _gui_test_figure(scene, 320, 240);
+    DvzApp* app = _gui_test_app(scene, NULL, &resources);
+    AT(app != NULL);
+    DvzView* view = dvz_view_window(app, figure, 320, 240, "host-replay-isolation");
+    AT(view != NULL);
+    DvzGui* gui = dvz_view_gui(view, NULL);
+    AT(gui != NULL);
+    DvzWindow* window = dvz_view_host_window(view);
+    AT(window != NULL);
+    _dvz_gui_set_current(gui);
+    igGetPlatformIO_Nil()->Platform_GetClipboardTextFn = _gui_replay_custom_clipboard;
+    AT(dvz_view_render_once(view) == DVZ_OK);
+    _dvz_gui_set_current(gui);
+    AT(igGetPlatformIO_Nil()->Platform_GetClipboardTextFn == _gui_replay_custom_clipboard);
+    AT(dvz_window_input_replay(window, true) == DVZ_OK);
+    DvzHostInputEvent event = {};
+    event.type = DVZ_HOST_INPUT_FOCUS;
+    event.focused = true;
+    event.timestamp_ns = 1000000000;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_REPLAY) == DVZ_OK);
+    event.type = DVZ_HOST_INPUT_MOVE;
+    event.x = 123.375;
+    event.y = 45.125;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_REPLAY) == DVZ_OK);
+    event.type = DVZ_HOST_INPUT_KEY;
+    event.key = 81;
+    event.logical_key = 65;
+    event.action = 1;
+    event.gui_mods = 0;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_REPLAY) == DVZ_OK);
+    AT(dvz_window_input_pending(window) > 0);
+    _dvz_gui_set_current(gui);
+    igGetIO_Nil()->ConfigInputTrickleEventQueue = false;
+    float observed[4] = {};
+    dvz_view_set_gui_callback(view, _gui_replay_frame_probe, observed);
+    AT(dvz_window_input_frame(window, 1010000000, 0.0125) == DVZ_OK);
+    AT(dvz_view_render_once(view) == DVZ_OK);
+    AC(observed[0], 123.0f, 1e-6f);
+    AC(observed[1], 45.0f, 1e-6f);
+    AC(observed[2], 0.0125f, 1e-6f);
+    AT(observed[3] == 1.0f);
+    AT(dvz_window_host_input_state(window)->unsupported_operation);
+    AT(dvz_window_input_pending(window) == 0);
+    event.type = DVZ_HOST_INPUT_CANCEL;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_REPLAY) == DVZ_OK);
+    AT(dvz_window_host_input_state(window)->held_key_count == 0);
+    AT(dvz_window_input_pending(window) == 0);
+    _dvz_gui_set_current(gui);
+    AT(!igIsKeyDown_Nil(ImGuiKey_A));
+    dvz_view_set_gui_callback(view, NULL, NULL);
+    AT(dvz_window_input_replay(window, false) == DVZ_OK);
+    _dvz_gui_set_current(gui);
+    AT(igGetPlatformIO_Nil()->Platform_GetClipboardTextFn == _gui_replay_custom_clipboard);
+    AT(strcmp(igGetClipboardText(), "custom-live-integration") == 0);
+    _GLFWwindow* native = (_GLFWwindow*)dvz_window_backend_handle(window);
+    uint32_t releases = 0;
+    DvzCallbackId observer = dvz_window_subscribe_host_input(
+        window, _gui_count_host_key_releases, &releases);
+    AT(observer != 0);
+    _glfwInputKey(native, 87, 0, 1, 0);
+    AT(dvz_window_host_input_state(window)->held_key_count == 1);
+    // GLFW synthesizes a release AFTER the focus callback; it is already represented by cancel.
+    _glfwInputWindowFocus(native, 0);
+    AT(dvz_window_host_input_state(window)->held_key_count == 0);
+    AT(releases == 0);
+    AT(dvz_window_input_replay(window, true) == DVZ_OK);
+    _glfwInputKey(native, 65, 0, 1, 0);
+    AT(dvz_window_host_input_state(window)->held_key_count == 0);
+    AT(dvz_window_input_replay(window, false) == DVZ_OK);
+    AT(dvz_window_host_input_state(window)->held_key_count == 1);
+    _glfwInputKey(native, 65, 0, 0, 0);
+    AT(dvz_window_host_input_state(window)->held_key_count == 0);
+    AT(releases == 1);
+    dvz_window_unsubscribe_host_input(window, observer);
+    dvz_app_destroy(app);
+    dvz_scene_destroy(scene);
+    _gui_test_gpu_resources_destroy(&resources);
+    return 0;
+}
+
+
+
+/** Replay GUI frames and input use virtual metrics, layout keys and complete UTF-8 commits. */
+static int test_gui_replay_input_adapter(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    ImGuiContext* context = igCreateContext(NULL);
+    AT(context != NULL);
+    ImGuiIO* io = igGetIO_Nil();
+    io->IniFilename = NULL;
+    io->ConfigInputTrickleEventQueue = false;
+    AT(ImFontAtlas_Build(io->Fonts));
+    DvzWindowHost* host = dvz_window_host();
+    DvzWindowConfig config = dvz_window_config();
+    config.width = 640;
+    config.height = 480;
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &config);
+    AT(dvz_window_input_replay(window, true) == DVZ_OK);
+    AT(dvz_window_input_frame(window, 1000000000, 0.0125) == DVZ_OK);
+    _dvz_gui_input_frame(window, NULL);
+    AC(io->DisplaySize.x, 640.0f, 1e-6f);
+    AC(io->DeltaTime, 0.0125f, 1e-6f);
+    DvzHostInputEvent event = {};
+    event.type = DVZ_HOST_INPUT_MOVE;
+    event.x = 123.375;
+    event.y = 45.125;
+    _dvz_gui_input_apply(&event);
+    event.type = DVZ_HOST_INPUT_KEY;
+    event.key = 81;
+    event.logical_key = 65;
+    event.action = 1;
+    event.gui_mods = 0;
+    _dvz_gui_input_apply(&event);
+    event.type = DVZ_HOST_INPUT_TEXT;
+    event.utf8 = "\xc3\xa9\xe6\xb0\xb4";
+    event.byte_size = 5;
+    _dvz_gui_input_apply(&event);
+    igNewFrame();
+    // The existing GUI floors positions during processing; host capture keeps fractions.
+    AC(io->MousePos.x, 123.0f, 1e-6f);
+    AC(io->MousePos.y, 45.0f, 1e-6f);
+    AT(igIsKeyDown_Nil(ImGuiKey_A));
+    AT(!igIsKeyDown_Nil(ImGuiKey_Q));
+    AT(io->InputQueueCharacters.Size == 2);
+    AT(io->InputQueueCharacters.Data[0] == 0xe9);
+    AT(io->InputQueueCharacters.Data[1] == 0x6c34);
+    igEndFrame();
+    dvz_window_host_destroy(host);
+    igDestroyContext(context);
+    return 0;
+}
+
+
+
 /**
  * Register GUI tests.
  *
@@ -2924,6 +3126,7 @@ int test_gui(TstSuite* suite)
         tst_suite_add_case((suite), _tst_desc);                                                   \
     } while (0)
 
+    TST_CASE(test_gui_replay_input_adapter);
     TST_CASE(test_gui_imgui_public_header);
     TST_CASE(test_gui_viewport_config_defaults);
     TST_CASE(test_gui_config_font_defaults);
@@ -2940,6 +3143,7 @@ int test_gui(TstSuite* suite)
     TST_CASE(test_gui_compact_icons);
     TST_CASE(test_gui_compact_tree_layout);
     TST_CASE(test_gui_widget_wrapper_symbols);
+    TST_GUI_GPU_CASE(test_gui_host_replay_isolation);
     TST_GUI_GPU_CASE(test_gui_config_inherits_app_font_defaults);
     TST_GUI_GPU_CASE(test_gui_viewport_resize_hidden_smoke);
     TST_GUI_GPU_CASE(test_gui_nonblocking_viewport_pool);

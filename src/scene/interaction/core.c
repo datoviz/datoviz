@@ -2556,6 +2556,14 @@ bool _scene_item_interaction_pointer(DvzItemInteraction* interaction, const DvzP
     if (interaction == NULL || ev == NULL || !interaction->active)
         return false;
     DvzFigure* figure = interaction->panel->figure;
+    if (ev->type == DVZ_POINTER_EVENT_CANCEL)
+    {
+        _item_interaction_suspend_hover(interaction);
+        interaction->hover_buttons = 0;
+        interaction->hover_dragging = false;
+        interaction->hover_pointer_valid = false;
+        return false;
+    }
     if (figure != NULL && ev->type != DVZ_POINTER_EVENT_CLICK)
     {
         double width = interaction->panel->desc.width * figure->width;

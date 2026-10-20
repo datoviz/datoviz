@@ -277,6 +277,7 @@ callback_functions:
     - dvz_input_subscribe_pointer
     - dvz_input_subscribe_resize
     - dvz_input_subscribe_scale
+    - dvz_window_subscribe_host_input
     - dvz_view_post
   setter:
     - dvz_canvas_set_draw_callback

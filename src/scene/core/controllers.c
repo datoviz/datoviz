@@ -936,6 +936,8 @@ static bool _scene_panel_pointer_targets(
 {
     ANN(panel);
     ANN(ev);
+    if (ev->type == DVZ_POINTER_EVENT_CANCEL)
+        return true;
     if (captured && ev->type == DVZ_POINTER_EVENT_DRAG_STOP)
         return true;
 
@@ -1172,7 +1174,8 @@ static bool _scene_panel_dispatch_pointer(DvzPanel* panel, const DvzPointerEvent
     {
         bool inside = _scene_panel_pointer_targets(panel, ev, false);
         // Finish captured gestures even when the pointer was released outside the panel.
-        bool finish = ev->type == DVZ_POINTER_EVENT_RELEASE ||
+        bool finish = ev->type == DVZ_POINTER_EVENT_CANCEL ||
+                      ev->type == DVZ_POINTER_EVENT_RELEASE ||
                       ev->type == DVZ_POINTER_EVENT_DRAG_STOP;
         if (inside || finish)
         {

@@ -484,6 +484,46 @@ int test_controller_panzoom_canonical_wheel(TstContext* suite, const TstCase* it
 
 
 
+/** Cancellation ends held controller state outside viewports without moving the camera. */
+static int test_controller_input_cancel(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzPanzoomDesc pd = dvz_panzoom_desc();
+    DvzPanzoom* panzoom = dvz_panzoom_create(&pd);
+    DvzArcballDesc ad = dvz_arcball_desc();
+    DvzArcball* arcball = dvz_arcball_create(&ad);
+    DvzFlyDesc fd = dvz_fly_desc();
+    DvzFly* fly = dvz_fly_create(&fd);
+    DvzTurntableDesc td = dvz_turntable_desc();
+    DvzTurntable* turntable = dvz_turntable_create(&td);
+    AT(panzoom != NULL && arcball != NULL && fly != NULL && turntable != NULL);
+    panzoom->interacting = true;
+    arcball->interacting = true;
+    fly->interacting = true;
+    fly->key_forward = true;
+    turntable->interacting = true;
+    vec2 pan = {panzoom->pan[0], panzoom->pan[1]};
+    vec3 position = {fly->position[0], fly->position[1], fly->position[2]};
+    DvzPointerEvent cancel = {.type = DVZ_POINTER_EVENT_CANCEL, .pos = {-999, -999}};
+    AT(dvz_panzoom_pointer(panzoom, &cancel));
+    AT(dvz_arcball_pointer(arcball, &cancel));
+    AT(dvz_fly_pointer(fly, &cancel));
+    AT(dvz_turntable_pointer(turntable, &cancel));
+    AT(!panzoom->interacting && !arcball->interacting && !fly->interacting &&
+       !turntable->interacting && !fly->key_forward);
+    AT(panzoom->pan[0] == pan[0] && panzoom->pan[1] == pan[1]);
+    AT(fly->position[0] == position[0] && fly->position[1] == position[1] &&
+       fly->position[2] == position[2]);
+    dvz_panzoom_destroy(panzoom);
+    dvz_arcball_destroy(arcball);
+    dvz_fly_destroy(fly);
+    dvz_turntable_destroy(turntable);
+    return 0;
+}
+
+
+
 /**
  * Register the controller module tests.
  *
@@ -495,6 +535,7 @@ int test_controller(TstSuite* suite)
     ANN(suite);
     const char* tags = "controller";
     TST_MODULE(suite, tags);
+    TST_CASE(test_controller_input_cancel);
     TST_CASE(test_controller_panzoom_canonical_wheel);
     TST_CASE(test_controller_panzoom_create);
     TST_CASE(test_controller_panzoom_keep_aspect_drag);

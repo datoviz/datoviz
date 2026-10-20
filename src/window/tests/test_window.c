@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "test_window.h"
+#include <math.h>
 #include "_assertions.h"
 #include "datoviz/common.h"
 #include "datoviz/input/router.h"
@@ -740,6 +741,212 @@ int test_window_required_extensions_headless(TstContext* suite, const TstCase* i
 
 
 
+/** Host observation/GUI/scene order and state captured by the regression fixture. */
+typedef struct HostInputRecorder
+{
+    uint32_t observed;
+    uint32_t arbitrated;
+    uint32_t routed;
+    uint32_t clicks;
+    uint32_t cancels;
+    uint32_t releases;
+    uint32_t text_size;
+    DvzPointerEvent pointer;
+    DvzCallbackId remove_id;
+    DvzCallbackId add_id;
+    bool mutate;
+    bool nested_rejected;
+} HostInputRecorder;
+
+
+
+/** Observe originals before arbitration, including mutation and nested-emission safeguards. */
+static void _window_host_observe(
+    DvzWindow* window, const DvzHostInputEvent* event, DvzHostInputOrigin origin, void* user_data)
+{
+    HostInputRecorder* recorder = (HostInputRecorder*)user_data;
+    recorder->observed++;
+    if (recorder->mutate)
+    {
+        recorder->mutate = false;
+        dvz_window_unsubscribe_host_input(window, recorder->remove_id);
+        recorder->add_id = dvz_window_subscribe_host_input(window, _window_host_observe, user_data);
+        recorder->nested_rejected =
+            dvz_window_emit_host_input(window, event, origin) == DVZ_ERROR;
+    }
+}
+
+
+
+/** Consume an original after its observer has seen it, without routing scene input. */
+static bool _window_host_arbitrate(
+    DvzWindow* window, const DvzHostInputEvent* event, void* user_data)
+{
+    (void)window;
+    (void)event;
+    HostInputRecorder* recorder = (HostInputRecorder*)user_data;
+    if (recorder->observed > recorder->arbitrated)
+        recorder->arbitrated++;
+    return true;
+}
+
+
+
+/** Record actual router outputs, separating cancellations from successful releases. */
+static void _window_host_routed(
+    DvzInputRouter* router, const DvzInputEvent* event, void* user_data)
+{
+    (void)router;
+    HostInputRecorder* recorder = (HostInputRecorder*)user_data;
+    recorder->routed++;
+    if (event->type == DVZ_INPUT_EVENT_POINTER)
+    {
+        recorder->pointer = event->content.pointer;
+        recorder->clicks += event->content.pointer.type == DVZ_POINTER_EVENT_CLICK;
+        recorder->cancels += event->content.pointer.type == DVZ_POINTER_EVENT_CANCEL;
+        recorder->releases += event->content.pointer.type == DVZ_POINTER_EVENT_RELEASE;
+    }
+    if (event->type == DVZ_INPUT_EVENT_TEXT)
+        recorder->text_size = event->content.text.byte_size;
+}
+
+
+
+/** Originals are observable before GUI consumption, with stable subscription mutation. */
+static int test_window_host_input_ingress(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    HostInputRecorder recorder = {0};
+    DvzCallbackId first = dvz_window_subscribe_host_input(window, _window_host_observe, &recorder);
+    recorder.remove_id = dvz_window_subscribe_host_input(window, _window_host_observe, &recorder);
+    DvzCallbackId routed = dvz_input_subscribe_event(window->router, _window_host_routed, &recorder);
+    recorder.mutate = true;
+    _dvz_window_set_host_input_dispatch(window, _window_host_arbitrate, NULL, NULL, &recorder);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_MOVE, .x = 12.375, .y = 23.125,
+                              .timestamp_ns = 100};
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_OK);
+    AT(recorder.observed == 1 && recorder.arbitrated == 1 && recorder.routed == 0);
+    AT(recorder.nested_rejected);
+    AT(dvz_window_host_input_state(window)->x == 12.375);
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_OK);
+    AT(recorder.observed == 3 && recorder.arbitrated == 2 && recorder.routed == 0);
+    AT(dvz_window_unsubscribe_host_input(window, first));
+    AT(dvz_window_unsubscribe_host_input(window, recorder.add_id));
+    AT(dvz_input_unsubscribe(window->router, routed));
+    _dvz_window_set_host_input_dispatch(window, NULL, NULL, NULL, NULL);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/** Full-fidelity host state feeds the canonical router with exactly one normalization. */
+static int test_window_host_input_routing(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    HostInputRecorder recorder = {0};
+    DvzCallbackId id = dvz_input_subscribe_event(window->router, _window_host_routed, &recorder);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_MOVE, .x = 12.375, .y = 23.125,
+                              .timestamp_ns = 1234567};
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_OK);
+    AT(recorder.routed == 1 && recorder.pointer.timestamp_ns == event.timestamp_ns);
+    AC(recorder.pointer.pos[0], 12.375f, 1e-6f);
+    event.type = DVZ_HOST_INPUT_WHEEL;
+    event.dx = 0.125;
+    event.dy = -0.375;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_OK);
+    AC(recorder.pointer.content.w.dir[0], 0.125f, 1e-6f);
+#if defined(__APPLE__)
+    AC(recorder.pointer.content.w.dir[1], 0.375f, 1e-6f);
+#else
+    AC(recorder.pointer.content.w.dir[1], -0.375f, 1e-6f);
+#endif
+    event.type = DVZ_HOST_INPUT_TEXT;
+    event.utf8 = "\xc3\xa9\xe6\xb0\xb4";
+    event.byte_size = 5;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_OK);
+    AT(recorder.text_size == 5);
+    dvz_input_unsubscribe(window->router, id);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/** Replay ownership rejects physical input and cancellation never completes a click. */
+static int test_window_host_input_replay_cancel(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    HostInputRecorder recorder = {0};
+    DvzCallbackId id = dvz_input_subscribe_event(window->router, _window_host_routed, &recorder);
+    AT(dvz_window_input_replay(window, true) == DVZ_OK);
+    AT(dvz_window_input_frame(window, 1000000000, 0.01) == DVZ_OK);
+    AT(dvz_window_input_pending(window) == 0);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_BUTTON, .button = 0, .action = 1,
+                              .timestamp_ns = 1000000000};
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_ERROR);
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_REPLAY) == DVZ_OK);
+    AT(dvz_window_host_input_state(window)->buttons == 1);
+    event.type = DVZ_HOST_INPUT_KEY;
+    event.key = 87;
+    event.mods = DVZ_KEY_MODIFIER_SHIFT;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_REPLAY) == DVZ_OK);
+    AT(dvz_window_host_input_state(window)->held_key_count == 1);
+    event.type = DVZ_HOST_INPUT_FOCUS;
+    event.focused = false;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_REPLAY) == DVZ_OK);
+    AT(dvz_window_host_input_state(window)->buttons == 0);
+    AT(dvz_window_host_input_state(window)->held_key_count == 0);
+    AT(dvz_window_host_input_state(window)->mods == 0);
+    AT(recorder.clicks == 0 && recorder.releases == 0 && recorder.cancels == 2);
+    AT(_dvz_window_cancelled_release(window, true, 87));
+    AT(!_dvz_window_cancelled_release(window, true, 87));
+    AT(_dvz_window_cancelled_release(window, false, 0));
+    AT(!_dvz_window_cancelled_release(window, false, 0));
+    AT(dvz_window_input_replay(window, false) == DVZ_OK);
+    AT(!dvz_window_host_input_state(window)->replaying);
+    AT(dvz_window_input_frame(window, 1, 0.01) == DVZ_ERROR);
+    dvz_input_unsubscribe(window->router, id);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
+/** Invalid observations fail before observers or virtual-state mutation. */
+static int test_window_host_input_invalid(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzWindowHost* host = dvz_window_host();
+    DvzWindow* window = dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, NULL);
+    HostInputRecorder recorder = {0};
+    DvzCallbackId id = dvz_window_subscribe_host_input(window, _window_host_observe, &recorder);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_TEXT, .utf8 = "\xc0\xaf", .byte_size = 2};
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_ERROR);
+    event.type = DVZ_HOST_INPUT_MOVE;
+    event.x = NAN;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_ERROR);
+    event.x = 0;
+    event.type = DVZ_HOST_INPUT_METRICS;
+    AT(dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE) == DVZ_ERROR);
+    AT(recorder.observed == 0);
+    dvz_window_unsubscribe_host_input(window, id);
+    dvz_window_host_destroy(host);
+    return 0;
+}
+
+
+
 /**
  * Register the window tests to the suite.
  */
@@ -748,6 +955,10 @@ int test_window(TstSuite* suite)
     ANN(suite);
     const char* tags = "window";
     TST_MODULE(suite, tags);
+    TST_CASE(test_window_host_input_ingress);
+    TST_CASE(test_window_host_input_routing);
+    TST_CASE(test_window_host_input_replay_cancel);
+    TST_CASE(test_window_host_input_invalid);
     TST_CASE(test_window_headless);
     TST_CASE(test_window_canonical_pointer);
     TST_CASE(test_window_fit_workarea);

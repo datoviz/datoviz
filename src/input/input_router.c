@@ -544,7 +544,7 @@ static DvzResult _emit_input(DvzInputRouter* router, const DvzInputEvent* event,
 
 
 
-static bool _utf8_valid(const char* utf8, uint32_t byte_size)
+bool _dvz_input_utf8_valid(const char* utf8, uint32_t byte_size)
 {
     if (utf8 == NULL || byte_size == 0)
         return false;
@@ -764,7 +764,7 @@ DvzCallbackId dvz_input_subscribe_text(
 
 DvzResult dvz_input_emit_text(DvzInputRouter* router, const DvzInputTextEvent* event)
 {
-    if (router == NULL || event == NULL || !_utf8_valid(event->utf8, event->byte_size))
+    if (router == NULL || event == NULL || !_dvz_input_utf8_valid(event->utf8, event->byte_size))
         return DVZ_ERROR;
 
     DvzInputEvent input = {.type = DVZ_INPUT_EVENT_TEXT};

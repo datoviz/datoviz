@@ -26,3 +26,6 @@ bool _dvz_input_router_gestures_acquire(DvzInputRouter* router);
  * @param router borrowed input router with an active recognition handle
  */
 void _dvz_input_router_gestures_release(DvzInputRouter* router);
+
+/** Validate a borrowed UTF-8 commit before any host or router dispatch. */
+bool _dvz_input_utf8_valid(const char* utf8, uint32_t byte_size);

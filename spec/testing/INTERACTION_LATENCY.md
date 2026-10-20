@@ -1,6 +1,6 @@
 # Interaction Latency Benchmark
 
-Status: implemented interaction-pacing and benchmark contract. Updated: 2026-08-03.
+Status: implemented interaction-pacing and benchmark contract. Updated: 2026-10-20.
 
 
 ## Purpose
@@ -12,10 +12,10 @@ The presentation throughput benchmarks answer how many frames Datoviz can produc
 
 The initial portable benchmark records these monotonic CPU intervals:
 
-1. `input_to_render_start_ms`: age of the newest benchmark input sample when rendering starts.
+1. `input_to_render_start_ms`: time since the newest input sample arrived at the view router when rendering starts.
 2. `slot_wait_ms`: time blocked waiting for the selected canvas frame slot to become reusable.
 3. `acquire_wait_ms`: time blocked acquiring a swapchain image.
-4. `input_to_submit_ms`: age of the newest benchmark input sample after queue submission and `vkQueuePresentKHR` return.
+4. `input_to_submit_ms`: time since the newest input sample arrived at the view router after queue submission and `vkQueuePresentKHR` return.
 
 These are input-to-submission and queue-pressure proxies. They are not physical input-to-photon measurements and must not be labeled as display or presentation latency. `vkQueuePresentKHR` returning does not mean that the image has been scanned out.
 
@@ -26,7 +26,7 @@ An optional later WSI timing tier may add a distinct `input_to_present_complete_
 
 Use the `start/scatter` scenario because it exercises the production pointer router, panzoom controller, scene frame plan, DRP2 runtime, canvas, and swapchain path. The latency workload must inject deterministic pointer press, drag, and release events through the same input API used by a native window. Directly changing panzoom state remains useful for throughput profiling but is not an interaction-latency workload.
 
-Each injected event carries a monotonic source timestamp and a sequence number. The rendered frame consumes the newest sequence known at render start. Samples are emitted only after warmup, and a sequence contributes at most one latency sample. Coalesced intermediate pointer events are expected; the benchmark measures freshness, not event delivery count.
+Each injected event carries a source timestamp for gesture semantics. The view records a separate monotonic wall-clock arrival timestamp and sequence number for profiling. Replay gesture timestamps may be virtual and must never be subtracted from a real render or submit timestamp; offered-schedule delay is reported separately by the input player. The rendered frame consumes the newest sequence known at render start. Samples are emitted only after warmup, and a sequence contributes at most one latency sample. Coalesced intermediate pointer events are expected; the benchmark measures freshness, not event delivery count.
 
 The workload must run for a fixed event count or duration and terminate without manual input. It must report the requested and resolved present modes, swapchain image count, frame-slot count, event count, rendered sample count, and p50/p95/p99/max values for every available interval.
 
@@ -36,7 +36,7 @@ The workload must run for a fixed event count or duration and terminate without 
 Keep the instrumentation opt-in and allocation-free in the steady-state frame path after initialization.
 
 1. The scenario runner owns synthetic event generation and source timestamps.
-2. The app associates the latest relevant input timestamp and sequence with a view, then records render-start and post-submit timestamps.
+2. The app associates the latest real input-arrival timestamp and sequence with a view, then records render-start and post-submit timestamps in the same clock domain.
 3. The canvas records slot-fence and image-acquire wait durations around the existing waits without adding synchronization.
 4. The reporting layer aggregates samples and prints one machine-readable summary line.
 

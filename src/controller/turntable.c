@@ -719,6 +719,11 @@ bool dvz_turntable_pointer(DvzTurntable* turntable, const DvzPointerEvent* ev)
 {
     ANN(turntable);
     ANN(ev);
+    if (ev->type == DVZ_POINTER_EVENT_CANCEL)
+    {
+        turntable->interacting = false;
+        return true;
+    }
     if (!_turntable_event_in_viewport(turntable, ev))
         return false;
 

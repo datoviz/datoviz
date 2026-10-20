@@ -757,7 +757,13 @@ static int test_app_should_exit_reflects_stop_request(TstContext* suite, const T
     }
 
     AT(!dvz_app_should_exit(app));
+    AT(dvz_app_step(app, -1) == -1);
+    AT(dvz_app_step(app, NAN) == -1);
+    AT(dvz_app_step(app, INFINITY) == -1);
+    AT(dvz_app_step(NULL, 0) == -1);
+    AT(dvz_app_step(app, 0) == 0);
     AT(dvz_app_stop(app) == DVZ_OK);
+    AT(dvz_app_step(app, 0) == -2);
     AT(dvz_app_should_exit(app));
 
     dvz_app_destroy(app);

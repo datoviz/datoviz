@@ -575,7 +575,7 @@ void _dvz_window_metrics_resolve(
  * @param window window whose router receives the resize event
  * @param metrics normalized metrics snapshot
  */
-void _dvz_window_backend_emit_metrics(DvzWindow* window, const DvzWindowMetrics* metrics)
+void _dvz_window_apply_metrics(DvzWindow* window, const DvzWindowMetrics* metrics)
 {
     ANN(window);
     ANN(metrics);
@@ -597,6 +597,20 @@ void _dvz_window_backend_emit_metrics(DvzWindow* window, const DvzWindowMetrics*
         .content_scale_y = metrics->device_scale.y,
     };
     dvz_input_emit_resize(window->router, &resize);
+}
+
+
+
+/**
+ * Send backend metric changes through the same capture boundary as other originals.
+ * @param window owning host
+ * @param metrics complete resolved metrics
+ */
+void _dvz_window_backend_emit_metrics(DvzWindow* window, const DvzWindowMetrics* metrics)
+{
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_METRICS, .metrics = *metrics,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
 }
 
 
@@ -809,6 +823,7 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
     if (window->gesture_handler == NULL)
     {
         dvz_input_router_destroy(window->router);
+        dvz_free(window->input_subscriptions);
         dvz_free(window);
         return NULL;
     }
@@ -822,11 +837,13 @@ dvz_window_create(DvzWindowHost* host, DvzBackend backend, const DvzWindowConfig
         slot->available = false;
         dvz_pointer_gesture_handler_destroy(window->gesture_handler);
         dvz_input_router_destroy(window->router);
+        dvz_free(window->input_subscriptions);
         dvz_free(window);
         if (slot->backend.type != DVZ_BACKEND_OFFSCREEN)
             return dvz_window_create(host, DVZ_BACKEND_OFFSCREEN, &chosen);
         return NULL;
     }
+    window->frame_pending = false;
     _window_array_add(host, window);
     return window;
 }
@@ -846,6 +863,7 @@ void dvz_window_destroy(DvzWindow* window)
     dvz_pointer_gesture_handler_destroy(window->gesture_handler);
     window->gesture_handler = NULL;
     dvz_input_router_destroy(window->router);
+    dvz_free(window->input_subscriptions);
     _window_array_remove(window->host, window);
     dvz_free(window);
 }

@@ -496,158 +496,144 @@ static void _glfw_emit_metrics(GLFWwindow* handle)
         return;
     DvzWindowMetrics metrics = _glfw_query_metrics(
         handle, (DvzExtent){0}, window->config.hidpi_policy, window->metrics.generation, NULL);
-    _dvz_window_backend_emit_metrics(window, &metrics);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_METRICS, .metrics = metrics,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
+}
+
+
+
+static int _glfw_gui_mods(GLFWwindow* handle);
+
+
+
+/**
+ * Capture a cursor position before any GUI consumption.
+ * @param handle GLFW host
+ * @param xpos native client x
+ * @param ypos native client y
+ */
+static void _glfw_cursor_pos_callback(GLFWwindow* handle, double xpos, double ypos)
+{
+    DvzWindow* window = _glfw_window(handle);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_MOVE, .x = xpos, .y = ypos,
+                              .mods = window != NULL ? window->glfw_mods : 0,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
+}
+
+
+
+/** Capture every native mouse-button transition before GUI arbitration. */
+static void _glfw_mouse_button_callback(GLFWwindow* handle, int button, int action, int mods)
+{
+    DvzWindow* window = _glfw_window(handle);
+    if (window == NULL || window->input_state.replaying)
+        return;
+    if (action == GLFW_RELEASE && _dvz_window_cancelled_release(window, false, button))
+        return;
+    if (action == GLFW_PRESS && button >= 0 && button < 8)
+        window->input_cancelled_buttons &= ~(1u << button);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_BUTTON, .button = button,
+                              .action = action, .mods = mods, .gui_mods = _glfw_gui_mods(handle),
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    glfwGetCursorPos(handle, &event.x, &event.y);
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
+}
+
+
+
+/** Capture raw fractional GLFW wheel offsets before platform normalization. */
+static void _glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
+{
+    DvzWindow* window = _glfw_window(handle);
+    if (window == NULL || window->input_state.replaying)
+        return;
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_WHEEL, .dx = dx, .dy = dy,
+                              .mods = window->glfw_mods,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    glfwGetCursorPos(handle, &event.x, &event.y);
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
 }
 
 
 
 /**
- * Convert GLFW native pointer coordinates to Datoviz logical coordinates.
- *
- * @param window Datoviz window
- * @param native_x GLFW native x coordinate
- * @param native_y GLFW native y coordinate
- * @param out_x logical x coordinate
- * @param out_y logical y coordinate
- * @param out_width logical window width
- * @param out_height logical window height
+ * Observe the layout token used by GUI letter shortcuts without fabricating a Unicode key.
+ * This mirrors the GLFW GUI adapter's ASCII layout translation, preserving keypad identity.
+ * @param key physical GLFW token
+ * @param scancode native scan code
+ * @return observed GUI token, with physical fallback for unrepresentable layout keys
  */
-static void _glfw_pointer_logical(
-    const DvzWindow* window, double native_x, double native_y, float* out_x, float* out_y,
-    float* out_width, float* out_height)
+static int _glfw_layout_key(int key, int scancode)
 {
-    ANN(window);
-    ANN(out_x);
-    ANN(out_y);
-    ANN(out_width);
-    ANN(out_height);
-    const DvzWindowMetrics* metrics = dvz_window_metrics(window);
-    ANN(metrics);
-    float sx = metrics->native_to_logical.x > 0.0f ? metrics->native_to_logical.x : 1.0f;
-    float sy = metrics->native_to_logical.y > 0.0f ? metrics->native_to_logical.y : 1.0f;
-    *out_x = (float)native_x * sx;
-    *out_y = (float)native_y * sy;
-    *out_width = metrics->logical_size.width > 0 ? (float)metrics->logical_size.width : 1.0f;
-    *out_height = metrics->logical_size.height > 0 ? (float)metrics->logical_size.height : 1.0f;
+    if (key >= GLFW_KEY_KP_0 && key <= GLFW_KEY_KP_EQUAL)
+        return key;
+    GLFWerrorfun previous = glfwSetErrorCallback(NULL);
+    const char* name = glfwGetKeyName(key, scancode);
+    glfwSetErrorCallback(previous);
+    (void)glfwGetError(NULL);
+    if (name == NULL || name[0] == 0 || name[1] != 0)
+        return key;
+    char c = name[0];
+    if (c >= '0' && c <= '9')
+        return GLFW_KEY_0 + c - '0';
+    if (c >= 'A' && c <= 'Z')
+        return GLFW_KEY_A + c - 'A';
+    if (c >= 'a' && c <= 'z')
+        return GLFW_KEY_A + c - 'a';
+    const char* names = "`-=[]\\,;\'./";
+    const int keys[] = {GLFW_KEY_GRAVE_ACCENT, GLFW_KEY_MINUS, GLFW_KEY_EQUAL,
+                        GLFW_KEY_LEFT_BRACKET, GLFW_KEY_RIGHT_BRACKET, GLFW_KEY_BACKSLASH,
+                        GLFW_KEY_COMMA, GLFW_KEY_SEMICOLON, GLFW_KEY_APOSTROPHE,
+                        GLFW_KEY_PERIOD, GLFW_KEY_SLASH};
+    const char* found = strchr(names, c);
+    return found != NULL ? keys[found - names] : key;
 }
 
 
 
-static void
-_glfw_emit_pointer(GLFWwindow* handle, DvzPointerEventType type, DvzPointerButton button, int mods)
+/**
+ * Snapshot the modifier state seen by the GUI, independently of callback modifier quirks.
+ * @param handle native host
+ * @return effective modifier mask
+ */
+static int _glfw_gui_mods(GLFWwindow* handle)
 {
-    DvzWindow* window = _glfw_window(handle);
-    if (window == NULL)
-        return;
-    DvzInputRouter* router = dvz_window_backend_router(window);
-    if (router == NULL)
-        return;
-    double xpos = 0.0;
-    double ypos = 0.0;
-    glfwGetCursorPos(handle, &xpos, &ypos);
-    float logical_x = 0.0f;
-    float logical_y = 0.0f;
-    float logical_width = 0.0f;
-    float logical_height = 0.0f;
-    _glfw_pointer_logical(
-        window, xpos, ypos, &logical_x, &logical_y, &logical_width, &logical_height);
-    dvz_pointer_emit_position(
-        router, type, logical_x, logical_y, logical_width, logical_height, button, mods,
-        window->surface.scale_x, dvz_input_timestamp_ns(), dvz_window_user_data(window));
+    int mods = 0;
+    if (glfwGetKey(handle, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+        glfwGetKey(handle, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
+        mods |= GLFW_MOD_CONTROL;
+    if (glfwGetKey(handle, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+        glfwGetKey(handle, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
+        mods |= GLFW_MOD_SHIFT;
+    if (glfwGetKey(handle, GLFW_KEY_LEFT_ALT) == GLFW_PRESS ||
+        glfwGetKey(handle, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS)
+        mods |= GLFW_MOD_ALT;
+    if (glfwGetKey(handle, GLFW_KEY_LEFT_SUPER) == GLFW_PRESS ||
+        glfwGetKey(handle, GLFW_KEY_RIGHT_SUPER) == GLFW_PRESS)
+        mods |= GLFW_MOD_SUPER;
+    return mods;
 }
 
 
 
-static void _glfw_cursor_pos_callback(GLFWwindow* handle, double xpos, double ypos)
-{
-    DvzWindow* window = _glfw_window(handle);
-    if (window != NULL && window->glfw_input_callbacks.cursor_pos != NULL &&
-        window->glfw_input_callbacks.cursor_pos(
-            window, xpos, ypos, window->glfw_input_user_data))
-    {
-        return;
-    }
-    _glfw_emit_pointer(handle, DVZ_POINTER_EVENT_MOVE, DVZ_POINTER_BUTTON_NONE, 0);
-}
-
-
-
-static void _glfw_mouse_button_callback(GLFWwindow* handle, int button, int action, int mods)
-{
-    DvzWindow* window = _glfw_window(handle);
-    if (window != NULL && window->glfw_input_callbacks.mouse_button != NULL &&
-        window->glfw_input_callbacks.mouse_button(
-            window, button, action, mods, window->glfw_input_user_data))
-    {
-        return;
-    }
-    DvzPointerButton dvz_button = dvz_pointer_button_from_glfw(button);
-    DvzPointerEventType type =
-        (action == GLFW_PRESS) ? DVZ_POINTER_EVENT_PRESS : DVZ_POINTER_EVENT_RELEASE;
-    _glfw_emit_pointer(handle, type, dvz_button, mods);
-}
-
-
-
-static void _glfw_scroll_callback(GLFWwindow* handle, double dx, double dy)
-{
-    DvzWindow* window = _glfw_window(handle);
-    if (window == NULL)
-        return;
-    if (window->glfw_input_callbacks.scroll != NULL &&
-        window->glfw_input_callbacks.scroll(window, dx, dy, window->glfw_input_user_data))
-    {
-        return;
-    }
-    DvzInputRouter* router = dvz_window_backend_router(window);
-    if (router == NULL)
-        return;
-    double xpos = 0.0;
-    double ypos = 0.0;
-    glfwGetCursorPos(handle, &xpos, &ypos);
-    float logical_x = 0.0f;
-    float logical_y = 0.0f;
-    float logical_width = 0.0f;
-    float logical_height = 0.0f;
-    _glfw_pointer_logical(
-        window, xpos, ypos, &logical_x, &logical_y, &logical_width, &logical_height);
-#if defined(__APPLE__)
-    /* Normalize macOS scroll-wheel direction so the input layer sees a single
-     * sign convention across platforms. */
-    dy = -dy;
-#endif
-    dvz_pointer_emit_wheel(
-        router, logical_x, logical_y, logical_width, logical_height, (float)dx, (float)dy, 0,
-        window->surface.scale_x, dvz_input_timestamp_ns(), dvz_window_user_data(window));
-}
-
-
-
+/** Capture physical key state and the observed GUI-layout token independently. */
 static void _glfw_key_callback(GLFWwindow* handle, int key, int scancode, int action, int mods)
 {
     DvzWindow* window = _glfw_window(handle);
-    if (window == NULL)
+    if (window == NULL || window->input_state.replaying)
         return;
-    window->glfw_mods = mods;
-    if (window->glfw_input_callbacks.key != NULL &&
-        window->glfw_input_callbacks.key(
-            window, key, scancode, action, mods, window->glfw_input_user_data))
-    {
+    if (action == GLFW_RELEASE && _dvz_window_cancelled_release(window, true, key))
         return;
-    }
-    DvzInputRouter* router = dvz_window_backend_router(window);
-    if (router == NULL)
-        return;
-    DvzKeyboardEventType type = DVZ_KEYBOARD_EVENT_NONE;
-    if (action == GLFW_PRESS)
-        type = DVZ_KEYBOARD_EVENT_PRESS;
-    else if (action == GLFW_RELEASE)
-        type = DVZ_KEYBOARD_EVENT_RELEASE;
-    else if (action == GLFW_REPEAT)
-        type = DVZ_KEYBOARD_EVENT_REPEAT;
-    if (type == DVZ_KEYBOARD_EVENT_NONE)
-        return;
-    dvz_keyboard_emit(router, type, (DvzKeyCode)key, mods, dvz_window_user_data(window));
+    if (action == GLFW_PRESS && key >= 0 && key < 349)
+        window->input_cancelled_keys[key] = false;
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_KEY, .key = key,
+                              .logical_key = _glfw_layout_key(key, scancode),
+                              .gui_mods = _glfw_gui_mods(handle),
+                              .scancode = scancode, .action = action, .mods = mods,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
 }
 
 
@@ -688,29 +674,38 @@ static uint32_t _glfw_utf8_encode(uint32_t codepoint, char out[4])
 
 
 
+/** Capture a native committed Unicode scalar as one borrowed UTF-8 span. */
 static void _glfw_char_callback(GLFWwindow* handle, unsigned int codepoint)
 {
     DvzWindow* window = _glfw_window(handle);
-    if (window == NULL)
-        return;
-    if (window->glfw_input_callbacks.character != NULL &&
-        window->glfw_input_callbacks.character(
-            window, (uint32_t)codepoint, window->glfw_input_user_data))
-        return;
-    DvzInputRouter* router = dvz_window_backend_router(window);
-    if (router == NULL)
+    if (window == NULL || window->input_state.replaying)
         return;
     char utf8[4] = {0};
-    uint32_t byte_size = _glfw_utf8_encode((uint32_t)codepoint, utf8);
-    if (byte_size == 0)
-        return;
-    DvzInputTextEvent event = {
-        .utf8 = utf8,
-        .byte_size = byte_size,
-        .mods = window->glfw_mods,
-        .user_data = dvz_window_user_data(window),
-    };
-    (void)dvz_input_emit_text(router, &event);
+    uint32_t size = _glfw_utf8_encode(codepoint, utf8);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_TEXT, .utf8 = utf8,
+                              .byte_size = size, .mods = window->glfw_mods,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
+}
+
+
+
+/** Capture native focus independently from GUI widget focus. */
+static void _glfw_focus_callback(GLFWwindow* handle, int focused)
+{
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_FOCUS, .focused = focused != 0,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(_glfw_window(handle), &event, DVZ_HOST_INPUT_LIVE);
+}
+
+
+
+/** Capture native pointer enter/leave without synthesizing cursor motion. */
+static void _glfw_enter_callback(GLFWwindow* handle, int entered)
+{
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_ENTER, .entered = entered != 0,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(_glfw_window(handle), &event, DVZ_HOST_INPUT_LIVE);
 }
 
 
@@ -768,7 +763,9 @@ static void _glfw_scale_callback(GLFWwindow* handle, float scale_x, float scale_
     DvzWindowMetrics metrics = _glfw_configure_initial_metrics(
         handle, requested_logical_size, window->config.hidpi_policy);
     metrics.generation = window->metrics.generation + 1;
-    _dvz_window_backend_emit_metrics(window, &metrics);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_METRICS, .metrics = metrics,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
 }
 
 
@@ -867,6 +864,21 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     glfwSetScrollCallback(handle, _glfw_scroll_callback);
     glfwSetKeyCallback(handle, _glfw_key_callback);
     glfwSetCharCallback(handle, _glfw_char_callback);
+    glfwSetWindowFocusCallback(handle, _glfw_focus_callback);
+    glfwSetCursorEnterCallback(handle, _glfw_enter_callback);
+    window->input_state.focused = glfwGetWindowAttrib(handle, GLFW_FOCUSED) != 0;
+    window->input_state.entered = glfwGetWindowAttrib(handle, GLFW_HOVERED) != 0;
+    glfwGetCursorPos(handle, &window->input_state.x, &window->input_state.y);
+    for (int key = GLFW_KEY_SPACE; key <= GLFW_KEY_LAST; key++)
+    {
+        window->input_keys[key] = glfwGetKey(handle, key) == GLFW_PRESS;
+        if (window->input_keys[key])
+            window->input_state.held_key_count++;
+    }
+    window->input_state.mods = window->glfw_mods = _glfw_gui_mods(handle);
+    for (int button = 0; button <= GLFW_MOUSE_BUTTON_LAST; button++)
+        if (glfwGetMouseButton(handle, button) == GLFW_PRESS)
+            window->input_state.buttons |= 1u << button;
     glfwSetFramebufferSizeCallback(handle, _glfw_framebuffer_callback);
     glfwSetWindowSizeCallback(handle, _glfw_window_size_callback);
     glfwSetWindowPosCallback(handle, _glfw_window_pos_callback);
@@ -895,7 +907,9 @@ _glfw_create(DvzWindowBackend* backend, DvzWindow* window, const DvzWindowConfig
     ANN(surface);
     surface->instance = vk_instance;
     surface->surface = vk_surface;
-    _dvz_window_backend_emit_metrics(window, &metrics);
+    DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_METRICS, .metrics = metrics,
+                              .timestamp_ns = dvz_input_timestamp_ns()};
+    (void)dvz_window_emit_host_input(window, &event, DVZ_HOST_INPUT_LIVE);
     if (config->visible)
     {
         glfwShowWindow(handle);
@@ -1135,6 +1149,53 @@ void dvz_window_register_glfw_backend(DvzWindowHost* host)
 
 
 #endif
+
+
+/**
+ * Restore observable live input state after exclusive replay without inventing button presses.
+ * @param window input host, ignored for non-GLFW backends
+ */
+void _dvz_window_glfw_refresh_input(DvzWindow* window)
+{
+#if DVZ_HAS_GLFW
+    if (window == NULL || dvz_window_backend_type(window) != DVZ_BACKEND_GLFW)
+        return;
+    GLFWwindow* handle = (GLFWwindow*)window->backend_handle;
+    if (handle == NULL)
+        return;
+    window->input_state.focused = glfwGetWindowAttrib(handle, GLFW_FOCUSED) != 0;
+    window->input_state.entered = glfwGetWindowAttrib(handle, GLFW_HOVERED) != 0;
+    glfwGetCursorPos(handle, &window->input_state.x, &window->input_state.y);
+    window->input_state.held_key_count = 0;
+    window->input_state.buttons = 0;
+    window->input_cancelled_buttons = 0;
+    for (int key = 0; key <= GLFW_KEY_LAST; key++)
+    {
+        window->input_keys[key] = key >= GLFW_KEY_SPACE && glfwGetKey(handle, key) == GLFW_PRESS;
+        window->input_cancelled_keys[key] = false;
+        if (window->input_keys[key])
+            window->input_state.held_key_count++;
+    }
+    for (int button = 0; button <= GLFW_MOUSE_BUTTON_LAST; button++)
+        if (glfwGetMouseButton(handle, button) == GLFW_PRESS)
+            window->input_state.buttons |= 1u << button;
+    window->input_state.mods = window->glfw_mods = _glfw_gui_mods(handle);
+    // Reconnect the GUI backend's cached hover/focus after suppressed physical callbacks.
+    if (window->input_dispatch != NULL)
+    {
+        DvzHostInputEvent event = {.type = DVZ_HOST_INPUT_FOCUS,
+                                  .focused = window->input_state.focused,
+                                  .timestamp_ns = dvz_input_timestamp_ns()};
+        (void)window->input_dispatch(window, &event, window->input_dispatch_data);
+        event.type = DVZ_HOST_INPUT_ENTER;
+        event.entered = window->input_state.entered;
+        (void)window->input_dispatch(window, &event, window->input_dispatch_data);
+    }
+#else
+    (void)window;
+#endif
+}
+
 
 
 /**

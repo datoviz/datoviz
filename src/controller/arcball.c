@@ -1069,6 +1069,15 @@ bool dvz_arcball_pointer(DvzArcball* arcball, const DvzPointerEvent* ev)
 {
     ANN(arcball);
     ANN(ev);
+    if (ev->type == DVZ_POINTER_EVENT_CANCEL)
+    {
+        _dvz_arcball_pan_depth_cancel(arcball);
+        (void)dvz_arcball_end(arcball);
+        glm_vec2_copy(arcball->pan, arcball->pan_center);
+        arcball->interacting = false;
+        return true;
+    }
+
 
     float width = arcball->viewport_size[0];
     float height = arcball->viewport_size[1];

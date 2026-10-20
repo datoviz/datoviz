@@ -1067,6 +1067,15 @@ bool dvz_fly_pointer(DvzFly* fly, const DvzPointerEvent* ev)
 {
     ANN(fly);
     ANN(ev);
+    if (ev->type == DVZ_POINTER_EVENT_CANCEL)
+    {
+        fly->interacting = false;
+        fly->key_forward = fly->key_backward = false;
+        fly->key_left = fly->key_right = false;
+        fly->key_up = fly->key_down = false;
+        fly->key_fast = fly->key_slow = false;
+        return true;
+    }
     if (!_fly_event_in_viewport(fly, ev))
         return false;
 
