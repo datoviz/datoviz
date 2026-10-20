@@ -132,6 +132,109 @@ static void _copy_label(char* dst, uint64_t dst_size, const char* src)
 
 
 
+/**
+ * Hash an arbitrary client-selected ID into a power-of-two label index.
+ *
+ * @param id nonzero DRP2 ID
+ * @param capacity power-of-two bucket count
+ * @return initial bucket
+ */
+static uint32_t _label_bucket(uint64_t id, uint32_t capacity)
+{
+    id ^= id >> 30;
+    id *= UINT64_C(0xbf58476d1ce4e5b9);
+    id ^= id >> 27;
+    id *= UINT64_C(0x94d049bb133111eb);
+    id ^= id >> 31;
+    return (uint32_t)id & (capacity - 1);
+}
+
+
+
+/**
+ * Insert one existing label slot into an index with available capacity.
+ *
+ * @param stream stream owning label storage
+ * @param index destination buckets
+ * @param capacity power-of-two bucket count
+ * @param slot label slot
+ */
+static void _label_index_insert(
+    const DvzDrp2CommandStream* stream, uint32_t* index, uint32_t capacity, uint32_t slot)
+{
+    uint32_t bucket = _label_bucket(stream->labels[slot].id, capacity);
+    while (index[bucket] != 0)
+        bucket = (bucket + 1) & (capacity - 1);
+    index[bucket] = slot + 1;
+}
+
+
+
+/**
+ * Prepare an optional index for one additional label, keeping load below one half.
+ *
+ * @param stream stream owning the index
+ * @return whether a complete index is available
+ * @note Failure leaves the existing labels usable through linear lookup.
+ */
+static bool _ensure_label_index(DvzDrp2CommandStream* stream)
+{
+    uint64_t required = 2 * ((uint64_t)stream->label_count + 1);
+    if (stream->label_index_capacity >= required)
+        return true;
+
+    uint32_t capacity = stream->label_index_capacity ? stream->label_index_capacity : 128;
+    while (capacity < required)
+    {
+        if (capacity > UINT32_MAX / 2)
+            return false;
+        capacity *= 2;
+    }
+    uint64_t bytes = 0;
+    if (_dvz_mul_u64_overflows(capacity, sizeof(uint32_t), &bytes))
+        return false;
+    uint32_t* index = (uint32_t*)dvz_calloc(capacity, sizeof(uint32_t));
+    if (index == NULL)
+        return false;
+    for (uint32_t i = 0; i < stream->label_count; i++)
+        _label_index_insert(stream, index, capacity, i);
+    dvz_free(stream->label_index);
+    stream->label_index = index;
+    stream->label_index_capacity = capacity;
+    return true;
+}
+
+
+
+/**
+ * Find a label slot, using the original linear path when indexing is unavailable.
+ *
+ * @param stream stream owning the labels
+ * @param id requested DRP2 ID
+ * @return label slot or UINT32_MAX
+ */
+static uint32_t _label_find(const DvzDrp2CommandStream* stream, uint64_t id)
+{
+    if (stream->label_index != NULL)
+    {
+        uint32_t bucket = _label_bucket(id, stream->label_index_capacity);
+        while (stream->label_index[bucket] != 0)
+        {
+            uint32_t slot = stream->label_index[bucket] - 1;
+            if (stream->labels[slot].id == id)
+                return slot;
+            bucket = (bucket + 1) & (stream->label_index_capacity - 1);
+        }
+        return UINT32_MAX;
+    }
+    for (uint32_t i = 0; i < stream->label_count; i++)
+        if (stream->labels[i].id == id)
+            return i;
+    return UINT32_MAX;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -224,6 +327,7 @@ void dvz_drp2_stream_destroy(DvzDrp2CommandStream* stream)
     }
     dvz_free(stream->commands);
     dvz_free(stream->labels);
+    dvz_free(stream->label_index);
     dvz_free(stream);
 }
 
@@ -381,21 +485,29 @@ bool dvz_drp2_stream_set_label(DvzDrp2CommandStream* stream, uint64_t id, const 
     if (stream == NULL || id == 0)
         return false;
 
-    for (uint32_t i = 0; i < stream->label_count; i++)
+    uint32_t slot = _label_find(stream, id);
+    if (slot != UINT32_MAX)
     {
-        if (stream->labels[i].id == id)
-        {
-            _copy_label(stream->labels[i].label, DVZ_DRP2_LABEL_SIZE, label ? label : "");
-            return true;
-        }
+        _copy_label(stream->labels[slot].label, DVZ_DRP2_LABEL_SIZE, label ? label : "");
+        return true;
     }
 
     if (!_ensure_label_capacity(stream))
         return false;
 
+    if (!_ensure_label_index(stream))
+    {
+        /* Indexing is an optimization: allocation failure cannot lose a debug label. */
+        dvz_free(stream->label_index);
+        stream->label_index = NULL;
+        stream->label_index_capacity = 0;
+    }
+    slot = stream->label_count;
     DvzDrp2DebugLabel* entry = &stream->labels[stream->label_count++];
     entry->id = id;
     _copy_label(entry->label, DVZ_DRP2_LABEL_SIZE, label ? label : "");
+    if (stream->label_index != NULL)
+        _label_index_insert(stream, stream->label_index, stream->label_index_capacity, slot);
     return true;
 }
 
@@ -413,12 +525,10 @@ const char* dvz_drp2_stream_label(const DvzDrp2CommandStream* stream, uint64_t i
     if (stream == NULL || id == 0)
         return NULL;
 
-    for (uint32_t i = 0; i < stream->label_count; i++)
-    {
-        if (stream->labels[i].id == id)
-            return stream->labels[i].label[0] != '\0' ? stream->labels[i].label : NULL;
-    }
-    return NULL;
+    uint32_t slot = _label_find(stream, id);
+    return slot != UINT32_MAX && stream->labels[slot].label[0] != '\0'
+               ? stream->labels[slot].label
+               : NULL;
 }
 
 

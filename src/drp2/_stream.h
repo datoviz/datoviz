@@ -383,6 +383,9 @@ struct DvzDrp2CommandStream
     uint32_t label_capacity;
     uint32_t label_count;
     DvzDrp2DebugLabel* labels;
+    /* Optional ID-to-label-slot index; zero entries are empty, slots are stored plus one. */
+    uint32_t label_index_capacity;
+    uint32_t* label_index;
     void* owner;
     DvzDrp2StreamOwnerRelease owner_release;
     bool owner_released;

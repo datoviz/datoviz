@@ -39,7 +39,6 @@
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-#if DVZ_DRP2_HAS_VKLITE
 /**
  * Reject a calloc request made through the process allocator.
  *
@@ -56,6 +55,7 @@ static void* _reject_calloc(DvzSize count, DvzSize size)
 
 
 
+#if DVZ_DRP2_HAS_VKLITE
 /**
  * Reject a realloc request made through the process allocator.
  *
@@ -76,6 +76,49 @@ static void* _reject_realloc(void* pointer, DvzSize size)
 /*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
+
+/**
+ * Keep every label available when optional ID-index growth fails, then recover indexing.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_drp2_stream_label_index_allocation_failure(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    for (uint64_t id = 1; id <= 64; id++)
+        AT(dvz_drp2_stream_set_label(stream, id, "before"));
+    AT(stream->label_index != NULL);
+    const DvzAllocator* previous_allocator = dvz_get_allocator();
+    DvzAllocator failing_allocator = *previous_allocator;
+    failing_allocator.calloc_fn = _reject_calloc;
+    dvz_set_allocator(&failing_allocator);
+    bool appended = dvz_drp2_stream_set_label(stream, UINT64_MAX, "during");
+    bool replaced = dvz_drp2_stream_set_label(stream, 1, "updated");
+    dvz_set_allocator(previous_allocator);
+    AT(appended && replaced);
+    AT(stream->label_index == NULL);
+    AT(stream->label_count == 65);
+    for (uint64_t id = 1; id <= 64; id++)
+    {
+        const char* label = dvz_drp2_stream_label(stream, id);
+        AT(label != NULL && strcmp(label, id == 1 ? "updated" : "before") == 0);
+    }
+    AT(strcmp(dvz_drp2_stream_label(stream, UINT64_MAX), "during") == 0);
+    AT(dvz_drp2_stream_label(stream, 12345) == NULL);
+    AT(dvz_drp2_stream_set_label(stream, 66, "after"));
+    AT(stream->label_index != NULL);
+    AT(strcmp(dvz_drp2_stream_label(stream, UINT64_MAX), "during") == 0);
+    AT(strcmp(dvz_drp2_stream_label(stream, 1), "updated") == 0);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
 
 #if DVZ_DRP2_HAS_VKLITE
 /**

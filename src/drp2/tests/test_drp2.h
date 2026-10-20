@@ -30,6 +30,10 @@ int test_drp2_stream_append(TstContext* suite, const TstCase* item);
 
 int test_drp2_stream_debug_labels(TstContext* suite, const TstCase* item);
 
+int test_drp2_stream_debug_label_growth(TstContext* suite, const TstCase* item);
+
+int test_drp2_stream_label_index_allocation_failure(TstContext* suite, const TstCase* item);
+
 int test_drp2_stream_json(TstContext* suite, const TstCase* item);
 
 int test_drp2_stream_texture_color_role_json(TstContext* suite, const TstCase* item);

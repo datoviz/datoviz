@@ -93,6 +93,10 @@ int test_drp2(TstSuite* suite)
     TST_CASE(test_drp2_stream_empty);
     TST_CASE(test_drp2_stream_append);
     TST_CASE(test_drp2_stream_debug_labels);
+    TST_CASE(test_drp2_stream_debug_label_growth);
+    TST_DRP2_CASE_EX(
+        test_drp2_stream_label_index_allocation_failure,
+        TST_RES_CPU | TST_RES_GLOBAL_STATE, TST_ISOLATION_EXCLUSIVE);
     TST_CASE(test_drp2_stream_json);
     TST_CASE(test_drp2_stream_texture_color_role_json);
     TST_CASE(test_drp2_stream_growth_json);

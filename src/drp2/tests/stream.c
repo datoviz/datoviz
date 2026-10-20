@@ -107,6 +107,48 @@ int test_drp2_stream_debug_labels(TstContext* suite, const TstCase* item)
 
 
 
+/**
+ * Verify sparse label IDs survive table growth, replacement and reverse-name lookup.
+ *
+ * @param suite test suite
+ * @param item test item
+ * @return zero on success
+ */
+int test_drp2_stream_debug_label_growth(TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    (void)item;
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    for (uint32_t i = 0; i < 4096; i++)
+    {
+        uint64_t id = UINT64_MAX - ((uint64_t)i << 32);
+        char label[64] = {0};
+        dvz_snprintf(label, sizeof(label), "label-%u", i);
+        AT(dvz_drp2_stream_set_label(stream, id, label));
+    }
+    AT(stream->label_count == 4096);
+    for (uint32_t i = 0; i < 4096; i++)
+    {
+        uint64_t id = UINT64_MAX - ((uint64_t)i << 32);
+        char label[64] = {0};
+        dvz_snprintf(label, sizeof(label), "label-%u", i);
+        const char* actual = dvz_drp2_stream_label(stream, id);
+        AT(actual != NULL && strcmp(actual, label) == 0);
+        AT(dvz_drp2_stream_set_label(stream, id, "shared"));
+    }
+    AT(stream->label_count == 4096);
+    AT(dvz_drp2_stream_label_id(stream, "shared") == UINT64_MAX);
+    AT(dvz_drp2_stream_set_label(stream, UINT64_MAX, NULL));
+    AT(dvz_drp2_stream_label(stream, UINT64_MAX) == NULL);
+    AT(dvz_drp2_stream_label_id(stream, "shared") == UINT64_MAX - (UINT64_C(1) << 32));
+    AT(dvz_drp2_stream_label(stream, 1) == NULL);
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
 int test_drp2_stream_json(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
