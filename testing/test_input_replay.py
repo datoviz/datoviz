@@ -614,3 +614,65 @@ def test_native_snapshot_rejects_host_already_owned_by_another_player():
     )
     with pytest.raises(t.TraceError, match='already owned'):
         r.NativeHost(api, object()).snapshot()
+
+
+def test_selected_host_close_aborts_even_when_global_app_would_continue():
+    api, _, _ = fake_native_api()
+    calls = []
+    api.dvz_app_should_exit = lambda app: False
+    api.dvz_window_should_close = lambda window: window == 1
+
+    def state_must_not_be_read(window):
+        raise AssertionError('closed host must abort before any later native state query')
+
+    api.dvz_window_host_input_state = state_must_not_be_read
+    api.dvz_window_input_replay = lambda window, enabled: calls.append((window, enabled)) or 0
+    host = r.NativeHost(api, object())
+    with pytest.raises(t.TraceError, match='selected replay host was closed'):
+        host.check()
+    # Cancellation still reaches the selected host rather than applying a health guard first.
+    host.replay(False)
+    assert calls == [(1, False)]
+
+
+def test_unsupported_platform_operation_aborts_selected_host_replay():
+    api, _, _ = fake_native_api()
+    state = SimpleNamespace(unsupported_operation=True)
+    api.dvz_window_should_close = lambda window: False
+    api.dvz_window_host_input_state = lambda window: SimpleNamespace(contents=state)
+    host = r.NativeHost(api, object())
+    with pytest.raises(t.TraceError, match='unsupported clipboard or platform operation'):
+        host.check()
+    state.unsupported_operation = False
+    host.check()
+
+
+@pytest.mark.parametrize('failure', ['close', 'unsupported'])
+def test_os_poll_checks_new_selected_host_failures_before_more_replay(failure):
+    api, _, _ = fake_native_api()
+    state = SimpleNamespace(closed=False, unsupported_operation=False)
+    calls = []
+    api.dvz_window_should_close = lambda window: state.closed
+    api.dvz_window_host_input_state = lambda window: SimpleNamespace(contents=state)
+    api.dvz_window_host_for_window = lambda window: 99
+
+    def poll(host):
+        calls.append(host)
+        if failure == 'close':
+            state.closed = True
+        else:
+            state.unsupported_operation = True
+
+    api.dvz_window_host_poll = poll
+    host = r.NativeHost(api, object())
+    host.check()
+    with pytest.raises(t.TraceError):
+        host.poll()
+    assert calls == [99]
+
+
+def test_reaped_host_replay_cleanup_does_not_dereference_destroyed_native_state():
+    api, _, _ = fake_native_api()
+    api.dvz_view_host_window = lambda view: None
+    api.dvz_window_input_replay = lambda *args: pytest.fail('destroyed host must not be accessed')
+    r.NativeHost(api, object()).replay(False)
