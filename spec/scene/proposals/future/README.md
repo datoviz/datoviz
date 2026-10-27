@@ -15,6 +15,7 @@ making v0.4 implementation depend on speculative public APIs.
 5. [VISUAL_MODIFIERS.md](VISUAL_MODIFIERS.md): v0.5+ visual-wide and item-state modifier semantics, capability rules, and reactive-endpoint pressure.
 6. [MESH_PART_STATE.md](MESH_PART_STATE.md): early-v0.5 candidate for independently transformed, styled, visible, and pickable indexed parts within one retained mesh visual.
 7. [ASYNC_QUERY_EXECUTION.md](ASYNC_QUERY_EXECUTION.md): early-v0.5 bounded submission, later-frame completion, freshness, scheduling, and lifetime contract for interactive GPU queries.
+8. [VISUAL_RENDER_PATHS.md](VISUAL_RENDER_PATHS.md): post-v0.4 semantic visual render paths, Slug/triangulation pressure tests, capability-driven selection, and future ray-work integration.
 
 
 ## Semantic Resources
