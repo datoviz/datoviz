@@ -48,3 +48,7 @@ making v0.4 implementation depend on speculative public APIs.
    rendering specs.
 6. [COMPOSITION_LAYER_RENDERING.md](COMPOSITION_LAYER_RENDERING.md): post-v0.4 plan for preserving
    underlay/data/overlay ordering across opaque and transparent render passes.
+
+## Presentation And Recording
+
+1. [COLORBAR_TYPOGRAPHY_AND_LAYOUT.md](COLORBAR_TYPOGRAPHY_AND_LAYOUT.md): configurable native colorbar text styles, measured reserves, and semantic title placement.
