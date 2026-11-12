@@ -52,3 +52,4 @@ making v0.4 implementation depend on speculative public APIs.
 ## Presentation And Recording
 
 1. [COLORBAR_TYPOGRAPHY_AND_LAYOUT.md](COLORBAR_TYPOGRAPHY_AND_LAYOUT.md): configurable native colorbar text styles, measured reserves, and semantic title placement.
+2. [NATIVE_VIDEO_WORKFLOW.md](NATIVE_VIDEO_WORKFLOW.md): thin Python recording ergonomics and discoverable direct-video recipes using the existing native pipeline.
