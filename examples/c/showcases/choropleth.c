@@ -9,7 +9,8 @@
  * What to look for: prepared Census boundaries are loaded as flat point, ring, fill-color,
  * stroke-color, stroke-width, and id arrays, then colored by log10 resident population density.
  * Compare the state shapes with the vertical colorbar labeled in people per square kilometer; the
- * topology is ring-based and interior holes are not preserved.
+ * topology is ring-based and interior holes are not preserved. Colors are unlit data paint.
+ * Explicit collection order draws all state fills before boundaries so shared borders stay visible.
  *
  * This workflow is useful for map-like scientific figures where real tabular values must be joined
  * to prepared geometry before rendering. Run the preparation command if the promoted data bundle is
@@ -629,6 +630,7 @@ static bool _add_choropleth_polygons(
     {
         DvzComposite* composite = dvz_polygons_composite(set, 0);
         ok = composite != NULL &&
+             dvz_polygon_composite_set_order(composite, DVZ_POLYGON_ORDER_COLLECTION) == 0 &&
              dvz_panel_add_composite(
                  panel, composite,
                  &(DvzVisualAttachDesc){DVZ_STRUCT_INIT_FIELDS(DvzVisualAttachDesc),

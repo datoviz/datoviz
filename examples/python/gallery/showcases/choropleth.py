@@ -258,6 +258,9 @@ def _add_choropleth_polygons(scene, panel, bundle: ChoroplethBundle) -> None:
     composite = dvz.dvz_polygons_composite(polygons, 0)
     if not composite:
         raise RuntimeError("dvz_polygons_composite() failed")
+    # Keep all state boundaries above the unlit data-color fills.
+    if dvz.dvz_polygon_composite_set_order(composite, dvz.DVZ_POLYGON_ORDER_COLLECTION) != 0:
+        raise RuntimeError("dvz_polygon_composite_set_order() failed")
     if dvz.dvz_panel_add_composite(panel, composite, ctypes.byref(attach)) != 0:
         raise RuntimeError("dvz_panel_add_composite() failed")
 

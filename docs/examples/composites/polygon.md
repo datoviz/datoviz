@@ -43,6 +43,8 @@ object lifetimes and data shapes intact while adapting the data and styling.
 
 The left shape uses outer and hole coordinate rings plus fill, stroke, width, join, and ID settings; the right shape uses three regions with per-region IDs and styles. Compare the transparent fills, hole, and beveled versus rounded joins to see how polygon composites support maps, masks, regions of interest, and segmented spatial data.
 
+Polygon colors are unlit paint: lights do not change their data colors. Fill and stroke use source-over transparency without scene depth; each region paints its fill then its stroke, in append order. Use dvz_polygon_composite_set_order(..., DVZ_POLYGON_ORDER_COLLECTION) to draw every fill before every stroke when all map boundaries should stay visible. Visible polygon paint currently makes panel picking report unsupported composition.
+
 ## Source
 
 === "Python"

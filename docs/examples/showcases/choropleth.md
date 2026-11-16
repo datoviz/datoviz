@@ -49,7 +49,7 @@ after verifying the linked API reference.
 
 ## What To Look For
 
-Prepared Census boundaries are loaded as flat point, ring, fill-color, stroke-color, stroke-width, and id arrays, then colored by log10 resident population density. Compare the state shapes with the vertical colorbar labeled in people per square kilometer; the topology is ring-based and interior holes are not preserved.
+Prepared Census boundaries are loaded as flat point, ring, fill-color, stroke-color, stroke-width, and id arrays, then colored by log10 resident population density. Compare the state shapes with the vertical colorbar labeled in people per square kilometer; the topology is ring-based and interior holes are not preserved. Colors are unlit data paint. Explicit collection order draws all state fills before boundaries so shared borders stay visible.
 
 This workflow is useful for map-like scientific figures where real tabular values must be joined to prepared geometry before rendering. Run the preparation command if the promoted data bundle is not present.
 

@@ -11,6 +11,12 @@
  * Compare the transparent fills, hole, and beveled versus rounded joins to see how polygon
  * composites support maps, masks, regions of interest, and segmented spatial data.
  *
+ * Polygon colors are unlit paint: lights do not change their data colors. Fill and stroke use
+ * source-over transparency without scene depth; each region paints its fill then its stroke,
+ * in append order. Use dvz_polygon_composite_set_order(..., DVZ_POLYGON_ORDER_COLLECTION) to
+ * draw every fill before every stroke when all map boundaries should stay visible.
+ * Visible polygon paint currently makes panel picking report unsupported composition.
+ *
  * Scenario: composites_polygon
  * Style: feature composite, graphite_cyan, 1280x720 window target
  *

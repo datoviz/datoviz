@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Semantic polygon composite with a hole and styled polygon set."""
+"""Unlit source-over polygon paint, with a hole and an append-ordered region set.
+
+Each region paints fill then stroke. COLLECTION order deliberately puts all strokes
+above all fills. Picking a panel with visible polygon paint is currently unsupported.
+"""
 
 from __future__ import annotations
 
