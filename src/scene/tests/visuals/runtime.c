@@ -3368,6 +3368,47 @@ int test_scene_visual_technique_eligibility_preflight(TstContext* suite, const T
     attach.visual = instanced;
     AT(_scene_visual_pass_caps_from_visual(instanced, &attach, &pass_caps));
     AT(!pass_caps.eligible_for_gbuffer);
+    /* Paint must diagnose semantic-policy failures before generic pass emission. */
+    DvzVisual* paint_mesh = dvz_mesh(scene, 0);
+    ANN(paint_mesh);
+    AT(dvz_visual_set_paint(paint_mesh, true) == DVZ_OK);
+    const char* paint_error = _scene_visual_technique_eligibility_error(paint_mesh);
+    AT(paint_error != NULL && strstr(paint_error, "unlit material") != NULL);
+    paint_mesh->material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        AT(dvz_visual_set_alpha_mode(paint_mesh, modes[i]) == DVZ_OK);
+        paint_error = _scene_visual_technique_eligibility_error(paint_mesh);
+        AT(paint_error != NULL && strstr(paint_error, "mask and OIT") != NULL);
+    }
+    AT(dvz_visual_set_alpha_mode(paint_mesh, DVZ_ALPHA_BLENDED) == DVZ_OK);
+    AT(dvz_visual_set_blend_mode(paint_mesh, DVZ_BLEND_ADDITIVE) == DVZ_OK);
+    paint_error = _scene_visual_technique_eligibility_error(paint_mesh);
+    AT(paint_error != NULL && strstr(paint_error, "source-over blending") != NULL);
+    AT(dvz_visual_set_blend_mode(paint_mesh, DVZ_BLEND_SOURCE_OVER) == DVZ_OK);
+    AT(dvz_visual_set_scene_occluder(paint_mesh, true) == DVZ_OK);
+    AT(_scene_visual_technique_eligibility_error(paint_mesh) == NULL);
+    DvzDepthCueDesc paint_cue = dvz_depth_cue_desc();
+    AT(dvz_visual_set_depth_cue(paint_mesh, &paint_cue) == DVZ_OK);
+    paint_error = _scene_visual_technique_eligibility_error(paint_mesh);
+    AT(paint_error != NULL && strstr(paint_error, "depth cueing") != NULL);
+    AT(dvz_visual_set_depth_cue(paint_mesh, NULL) == DVZ_OK);
+    AT(_scene_visual_technique_eligibility_error(paint_mesh) == NULL);
+
+    /* Analytic paths use material-shaped stroke storage without lit shading. */
+    DvzVisual* paint_path = dvz_path(scene, 0);
+    ANN(paint_path);
+    AT(dvz_visual_set_paint(paint_path, true) == DVZ_OK);
+    AT(_scene_visual_technique_eligibility_error(paint_path) == NULL);
+    DvzVisual* paint_image = dvz_image(scene, 0);
+    ANN(paint_image);
+    AT(dvz_visual_set_paint(paint_image, true) == DVZ_OK);
+    AT(_scene_visual_technique_eligibility_error(paint_image) == NULL);
+    DvzVisual* paint_volume = dvz_volume(scene, 0);
+    ANN(paint_volume);
+    AT(dvz_visual_set_paint(paint_volume, true) == DVZ_OK);
+    paint_error = _scene_visual_technique_eligibility_error(paint_volume);
+    AT(paint_error != NULL && strstr(paint_error, "volume proxies") != NULL);
     dvz_scene_destroy(scene);
     return 0;
 }

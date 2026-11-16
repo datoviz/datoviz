@@ -503,6 +503,7 @@ int _polygon_set_item_set_geometry(DvzPolygonsItem* item, const DvzPolygonDesc* 
     item->holes = holes;
     item->hole_count = hole_count;
     item->active = true;
+    item->geometry_version++;
     item->version++;
     return 0;
 }

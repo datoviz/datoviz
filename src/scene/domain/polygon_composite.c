@@ -32,11 +32,33 @@
 
 
 /*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+/** View-owned triangulations survive color and visibility changes. */
+typedef struct
+{
+    DvzGeometry* geometry;
+    uint64_t geometry_version;
+} PolygonPaintGeometry;
+
+
+typedef struct
+{
+    uint32_t count;
+    PolygonPaintGeometry* items;
+    bool geometry_dirty;
+} PolygonPaintCache;
+
+
+/*************************************************************************************************/
 /*  Function prototypes                                                                          */
 /*************************************************************************************************/
 
 static int _polygon_composite_prepare(DvzComposite* composite);
 static int _polygon_set_composite_prepare(DvzComposite* composite);
+static bool _polygon_set_item_borrowed_desc(
+    const DvzPolygonsItem* item, DvzPolygonRing* outer, DvzPolygonRing** holes);
 
 
 /*************************************************************************************************/
@@ -179,38 +201,177 @@ static bool _composite_attach_desc_valid(const DvzVisualAttachDesc* desc)
 
 
 /**
- * Upload the polygon fill role visual.
+ * Return normalized semantic paint data for either polygon source kind.
  *
- * @param polygon source polygon
- * @param fill fill mesh visual
- * @return 0 on success, -1 on error
+ * @param composite polygon view
+ * @param index region index
+ * @param single scratch record for a single polygon
+ * @return borrowed normalized region
  */
-static int _polygon_prepare_fill(DvzPolygon* polygon, DvzVisual* fill)
+static const DvzPolygonsItem* _polygon_paint_item(
+    const DvzComposite* composite, uint32_t index, DvzPolygonsItem* single)
 {
-    DvzPolygonRing outer = {0};
-    DvzPolygonRing* holes = NULL;
-    if (!_polygon_borrowed_desc(polygon, &outer, &holes))
+    if (composite->type == DVZ_COMPOSITE_TYPE_POLYGON_SET)
+        return &((DvzPolygons*)composite->source)->polygons[index];
+    const DvzPolygon* p = composite->source;
+    *single = (DvzPolygonsItem){
+        .active = p->active, .outer = p->outer, .holes = p->holes,
+        .hole_count = p->hole_count, .user_id = p->user_id, .visible = p->visible,
+        .fill_color = p->fill_color, .stroke_color = p->stroke_color,
+        .stroke_width_px = p->stroke_width_px, .geometry_version = p->geometry_version,
+    };
+    return single;
+}
+
+
+/**
+ * Publish a successfully prepared role's owned ordered draw spans.
+ *
+ * @param visual generated role
+ * @param spans new owned span allocation
+ * @param count region count
+ */
+static void _polygon_paint_publish_spans(
+    DvzVisual* visual, DvzVisualDrawSpan* spans, uint32_t count)
+{
+    dvz_free(visual->draw_spans);
+    visual->draw_spans = spans;
+    visual->draw_span_count = count;
+}
+
+
+/**
+ * Realize shared fill buffers while caching topology separately from paint attributes.
+ *
+ * @param composite polygon view
+ * @param fill fill role
+ * @param count retained region count
+ * @return success or allocation/triangulation failure
+ */
+static int _polygon_paint_prepare_fill(
+    DvzComposite* composite, DvzVisual* fill, uint32_t count)
+{
+    if (count == 0)
         return -1;
-
-    DvzGeometry* geometry = dvz_triangulate_polygon(
-        &(DvzPolygonDesc){
-            DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-            .outer = outer,
-            .holes = holes,
-            .hole_count = polygon->hole_count,
-        },
-        NULL);
-    dvz_free(holes);
-    if (geometry == NULL)
+    PolygonPaintCache* cache = composite->polygon_cache;
+    if (cache == NULL)
+    {
+        cache = dvz_calloc(1, sizeof(PolygonPaintCache));
+        if (cache == NULL)
+            return -1;
+        composite->polygon_cache = cache;
+    }
+    if (cache->count != count)
+    {
+        if (!_polygon_allocation_valid(count, sizeof(PolygonPaintGeometry)))
+            return -1;
+        PolygonPaintGeometry* items = dvz_calloc(count, sizeof(PolygonPaintGeometry));
+        if (items == NULL)
+            return -1;
+        uint32_t retained = cache->count < count ? cache->count : count;
+        if (retained > 0)
+            dvz_memcpy(items, count * sizeof(*items), cache->items, retained * sizeof(*items));
+        for (uint32_t i = retained; i < cache->count; i++)
+            dvz_geometry_destroy(cache->items[i].geometry);
+        dvz_free(cache->items);
+        cache->items = items;
+        cache->count = count;
+        cache->geometry_dirty = true;
+    }
+    DvzGeometry** geometries = dvz_calloc(count, sizeof(DvzGeometry*));
+    if (geometries == NULL)
         return -1;
-
-    for (uint32_t i = 0; i < geometry->vertex_count; i++)
-        _polygon_color_copy(&geometry->colors[i], polygon->fill_color);
-
-    const int out = dvz_mesh_set_geometry(fill, geometry);
-    fill->visible = polygon->visible && polygon->fill_color.a > 0;
-    dvz_geometry_destroy(geometry);
+    DvzVisualDrawSpan* spans = dvz_calloc(count, sizeof(DvzVisualDrawSpan));
+    if (spans == NULL)
+    {
+        dvz_free(geometries);
+        return -1;
+    }
+    uint64_t vertex_count = 0;
+    uint64_t index_count = 0;
+    bool visible = false;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        DvzPolygonsItem single = {0};
+        const DvzPolygonsItem* item = _polygon_paint_item(composite, i, &single);
+        PolygonPaintGeometry* entry = &cache->items[i];
+        if (entry->geometry == NULL || entry->geometry_version != item->geometry_version)
+        {
+            DvzPolygonRing outer = {0};
+            DvzPolygonRing* holes = NULL;
+            if (!_polygon_set_item_borrowed_desc(item, &outer, &holes))
+                goto error;
+            DvzGeometry* geometry = dvz_triangulate_polygon(
+                &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+                    .outer = outer, .holes = holes, .hole_count = item->hole_count}, NULL);
+            dvz_free(holes);
+            if (geometry == NULL)
+                goto error;
+            dvz_geometry_destroy(entry->geometry);
+            entry->geometry = geometry;
+            entry->geometry_version = item->geometry_version;
+            cache->geometry_dirty = true;
+        }
+        DvzGeometry* geometry = entry->geometry;
+        if (geometry == NULL || vertex_count + geometry->vertex_count > UINT32_MAX ||
+            index_count + geometry->index_count > UINT32_MAX)
+            goto error;
+        bool painted = item->active && item->visible && item->fill_color.a > 0;
+        spans[i] = (DvzVisualDrawSpan){
+            .item_index = composite->polygon_order == DVZ_POLYGON_ORDER_ITEMS ? i : 0,
+            .first_index = (uint32_t)index_count,
+            .index_count = painted ? geometry->index_count : 0,
+        };
+        visible |= painted;
+        for (uint32_t j = 0; j < geometry->vertex_count; j++)
+            _polygon_color_copy(&geometry->colors[j], item->fill_color);
+        vertex_count += geometry->vertex_count;
+        index_count += geometry->index_count;
+        geometries[i] = geometry;
+    }
+    int out = 0;
+    if (cache->geometry_dirty)
+    {
+        DvzGeometry* merged = dvz_geometry_merge(count, (const DvzGeometry* const*)geometries);
+        if (merged == NULL)
+            goto error;
+        out = dvz_mesh_set_geometry(fill, merged);
+        dvz_geometry_destroy(merged);
+        if (out == 0)
+            cache->geometry_dirty = false;
+    }
+    else
+    {
+        if (!_polygon_allocation_valid((uint32_t)vertex_count, sizeof(DvzColor)))
+            goto error;
+        DvzColor* colors = dvz_calloc((size_t)vertex_count, sizeof(DvzColor));
+        if (colors == NULL)
+            goto error;
+        uint32_t offset = 0;
+        for (uint32_t i = 0; i < count; i++)
+        {
+            DvzGeometry* geometry = geometries[i];
+            size_t bytes = geometry->vertex_count * sizeof(DvzColor);
+            dvz_memcpy(colors + offset, bytes, geometry->colors, bytes);
+            offset += geometry->vertex_count;
+        }
+        out = dvz_visual_set_data(fill, "color", colors, vertex_count);
+        dvz_free(colors);
+    }
+    if (out == 0)
+    {
+        _polygon_paint_publish_spans(fill, spans, count);
+        fill->visible = visible;
+    }
+    else
+        dvz_free(spans);
+    dvz_free(geometries);
     return out;
+
+error:
+    dvz_free(spans);
+    dvz_free(geometries);
+    return -1;
 }
 
 
@@ -257,7 +418,8 @@ static uint32_t _polygon_append_stroke_ring(
  * @param stroke stroke path visual
  * @return 0 on success, -1 on error
  */
-static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
+static int _polygon_prepare_stroke(
+    DvzComposite* composite, DvzPolygon* polygon, DvzVisual* stroke)
 {
     uint64_t total = (uint64_t)_polygon_stored_ring_count(&polygon->outer) + 1;
     for (uint32_t i = 0; i < polygon->hole_count; i++)
@@ -273,6 +435,9 @@ static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
     if (total == 0 || total > UINT32_MAX)
         return -1;
 
+    if (total - (polygon->hole_count + 1) > UINT32_MAX / 6u)
+        return -1;
+    (void)composite;
     const uint32_t point_count = (uint32_t)total;
     const uint32_t subpath_count = polygon->hole_count + 1;
     if (
@@ -288,12 +453,14 @@ static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
     DvzColor* colors = (DvzColor*)dvz_calloc(point_count, sizeof(DvzColor));
     float* widths = (float*)dvz_calloc(point_count, sizeof(float));
     uint32_t* lengths = (uint32_t*)dvz_calloc(subpath_count, sizeof(uint32_t));
-    if (positions == NULL || colors == NULL || widths == NULL || lengths == NULL)
+    DvzVisualDrawSpan* spans = dvz_calloc(1, sizeof(DvzVisualDrawSpan));
+    if (positions == NULL || colors == NULL || widths == NULL || lengths == NULL || spans == NULL)
     {
         dvz_free(positions);
         dvz_free(colors);
         dvz_free(widths);
         dvz_free(lengths);
+        dvz_free(spans);
         return -1;
     }
 
@@ -319,7 +486,19 @@ static int _polygon_prepare_stroke(DvzPolygon* polygon, DvzVisual* stroke)
         out = dvz_path_set_caps(stroke, polygon->stroke_cap_start, polygon->stroke_cap_end);
     if (out == 0)
         out = dvz_path_set_join(stroke, polygon->stroke_join, polygon->stroke_miter_limit);
-    stroke->visible = polygon->visible && polygon->stroke_color.a > 0 && polygon->stroke_width_px > 0.0f;
+    if (out == 0)
+    {
+        bool painted = polygon->visible && polygon->stroke_color.a > 0 &&
+                       polygon->stroke_width_px > 0;
+        spans[0] = (DvzVisualDrawSpan){
+            .item_index = 0, .first_index = 0,
+            .index_count = painted ? 6u * (uint32_t)(total - subpath_count) : 0,
+        };
+        _polygon_paint_publish_spans(stroke, spans, 1);
+        stroke->visible = painted;
+    }
+    else
+        dvz_free(spans);
 
     dvz_free(positions);
     dvz_free(colors);
@@ -361,83 +540,6 @@ static bool _polygon_set_item_borrowed_desc(
         };
     *holes = out;
     return true;
-}
-
-
-/**
- * Upload a polygon-set fill role visual.
- *
- * @param set source polygon set
- * @param fill fill mesh visual
- * @return 0 on success, -1 on error
- */
-static int _polygon_set_prepare_fill(DvzPolygons* set, DvzVisual* fill)
-{
-    if (set == NULL || set->polygon_count == 0)
-        return -1;
-    if (!_polygon_allocation_valid(set->polygon_count, sizeof(DvzGeometry*)))
-        return -1;
-
-    DvzGeometry** geometries = (DvzGeometry**)dvz_calloc(set->polygon_count, sizeof(DvzGeometry*));
-    if (geometries == NULL)
-        return -1;
-
-    uint32_t geometry_count = 0;
-    for (uint32_t i = 0; i < set->polygon_count; i++)
-    {
-        DvzPolygonsItem* item = &set->polygons[i];
-        if (!item->active || !item->visible)
-            continue;
-
-        DvzPolygonRing outer = {0};
-        DvzPolygonRing* holes = NULL;
-        if (!_polygon_set_item_borrowed_desc(item, &outer, &holes))
-            goto error;
-        DvzGeometry* geometry = dvz_triangulate_polygon(
-            &(DvzPolygonDesc){
-                DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
-                .outer = outer,
-                .holes = holes,
-                .hole_count = item->hole_count,
-            },
-            NULL);
-        dvz_free(holes);
-        if (geometry == NULL)
-            goto error;
-
-        for (uint32_t j = 0; j < geometry->vertex_count; j++)
-            _polygon_color_copy(&geometry->colors[j], item->fill_color);
-        geometries[geometry_count++] = geometry;
-    }
-
-    if (geometry_count == 0)
-    {
-        fill->visible = false;
-        dvz_free(geometries);
-        return 0;
-    }
-
-    DvzGeometry* merged = NULL;
-    if (geometry_count == 1)
-        merged = dvz_geometry_merge(1, (const DvzGeometry* const*)geometries);
-    else
-        merged = dvz_geometry_merge(geometry_count, (const DvzGeometry* const*)geometries);
-    if (merged == NULL)
-        goto error;
-
-    const int out = dvz_mesh_set_geometry(fill, merged);
-    fill->visible = true;
-    dvz_geometry_destroy(merged);
-    for (uint32_t i = 0; i < geometry_count; i++)
-        dvz_geometry_destroy(geometries[i]);
-    dvz_free(geometries);
-    return out;
-
-error:
-    for (uint32_t i = 0; i < geometry_count; i++)
-        dvz_geometry_destroy(geometries[i]);
-    dvz_free(geometries);
-    return -1;
 }
 
 
@@ -484,7 +586,8 @@ static uint32_t _polygon_set_append_stroke_ring(
  * @param stroke stroke path visual
  * @return 0 on success, -1 on error
  */
-static int _polygon_set_prepare_stroke(DvzPolygons* set, DvzVisual* stroke)
+static int _polygon_set_prepare_stroke(
+    DvzComposite* composite, DvzPolygons* set, DvzVisual* stroke)
 {
     uint64_t total_points = 0;
     uint64_t total_subpaths = 0;
@@ -492,10 +595,11 @@ static int _polygon_set_prepare_stroke(DvzPolygons* set, DvzVisual* stroke)
     for (uint32_t i = 0; i < set->polygon_count; i++)
     {
         const DvzPolygonsItem* item = &set->polygons[i];
-        if (!item->active || !item->visible)
+        if (!item->active)
             continue;
         any_visible_stroke =
-            any_visible_stroke || (item->stroke_width_px > 0.0f && item->stroke_color.a > 0);
+            any_visible_stroke ||
+            (item->visible && item->stroke_width_px > 0.0f && item->stroke_color.a > 0);
 
         uint64_t next = 0;
         if (_dvz_add_u64_overflows(
@@ -527,7 +631,9 @@ static int _polygon_set_prepare_stroke(DvzPolygons* set, DvzVisual* stroke)
         stroke->visible = false;
         return 0;
     }
-    if (total_points > UINT32_MAX || total_subpaths > UINT32_MAX)
+    if (total_points > UINT32_MAX || total_subpaths > UINT32_MAX ||
+        total_points - total_subpaths > UINT32_MAX / 6u ||
+        !_polygon_allocation_valid(set->polygon_count, sizeof(DvzVisualDrawSpan)))
         return -1;
 
     const uint32_t point_count = (uint32_t)total_points;
@@ -545,23 +651,37 @@ static int _polygon_set_prepare_stroke(DvzPolygons* set, DvzVisual* stroke)
     DvzColor* colors = (DvzColor*)dvz_calloc(point_count, sizeof(DvzColor));
     float* widths = (float*)dvz_calloc(point_count, sizeof(float));
     uint32_t* lengths = (uint32_t*)dvz_calloc(subpath_count, sizeof(uint32_t));
-    if (positions == NULL || colors == NULL || widths == NULL || lengths == NULL)
+    DvzVisualDrawSpan* spans = dvz_calloc(set->polygon_count, sizeof(DvzVisualDrawSpan));
+    if (positions == NULL || colors == NULL || widths == NULL || lengths == NULL || spans == NULL)
     {
         dvz_free(positions);
         dvz_free(colors);
         dvz_free(widths);
         dvz_free(lengths);
+        dvz_free(spans);
         return -1;
     }
 
     uint32_t offset = 0;
     uint32_t subpath = 0;
+    uint32_t first_index = 0;
     for (uint32_t i = 0; i < set->polygon_count; i++)
     {
         const DvzPolygonsItem* item = &set->polygons[i];
-        if (!item->active || !item->visible)
+        if (!item->active)
             continue;
 
+        uint64_t segment_count = _polygon_stored_ring_count(&item->outer);
+        for (uint32_t h = 0; h < item->hole_count; h++)
+            segment_count += _polygon_stored_ring_count(&item->holes[h]);
+        uint32_t index_count = 6u * (uint32_t)segment_count;
+        spans[i] = (DvzVisualDrawSpan){
+            .item_index = composite->polygon_order == DVZ_POLYGON_ORDER_ITEMS ? i : 0,
+            .first_index = first_index,
+            .index_count = item->visible && item->stroke_color.a > 0 &&
+                                   item->stroke_width_px > 0 ? index_count : 0,
+        };
+        first_index += index_count;
         lengths[subpath++] = _polygon_stored_ring_count(&item->outer) + 1;
         offset = _polygon_set_append_stroke_ring(
             &item->outer, item, positions, colors, widths, offset);
@@ -585,7 +705,13 @@ static int _polygon_set_prepare_stroke(DvzPolygons* set, DvzVisual* stroke)
         out = dvz_path_set_caps(stroke, set->stroke_cap_start, set->stroke_cap_end);
     if (out == 0)
         out = dvz_path_set_join(stroke, set->stroke_join, set->stroke_miter_limit);
-    stroke->visible = any_visible_stroke;
+    if (out == 0)
+    {
+        _polygon_paint_publish_spans(stroke, spans, set->polygon_count);
+        stroke->visible = any_visible_stroke;
+    }
+    else
+        dvz_free(spans);
 
     dvz_free(positions);
     dvz_free(colors);
@@ -623,9 +749,9 @@ static int _polygon_set_composite_prepare(DvzComposite* composite)
     if (fill_role == NULL || stroke_role == NULL)
         return -1;
 
-    if (fill_role->dirty && _polygon_set_prepare_fill(set, fill_role->visual) != 0)
+    if (fill_role->dirty && _polygon_paint_prepare_fill(composite, fill_role->visual, set->polygon_count) != 0)
         return -1;
-    if (stroke_role->dirty && _polygon_set_prepare_stroke(set, stroke_role->visual) != 0)
+    if (stroke_role->dirty && _polygon_set_prepare_stroke(composite, set, stroke_role->visual) != 0)
         return -1;
 
     composite->dirty = false;
@@ -684,9 +810,9 @@ static int _polygon_composite_prepare(DvzComposite* composite)
     if (fill_role == NULL || stroke_role == NULL)
         return -1;
 
-    if (fill_role->dirty && _polygon_prepare_fill(polygon, fill_role->visual) != 0)
+    if (fill_role->dirty && _polygon_paint_prepare_fill(composite, fill_role->visual, 1) != 0)
         return -1;
-    if (stroke_role->dirty && _polygon_prepare_stroke(polygon, stroke_role->visual) != 0)
+    if (stroke_role->dirty && _polygon_prepare_stroke(composite, polygon, stroke_role->visual) != 0)
         return -1;
 
     composite->dirty = false;
@@ -713,13 +839,53 @@ void _scene_composite_reset(DvzComposite* composite)
 
     for (uint32_t i = 0; i < composite->visual_count; i++)
     {
-        if (composite->visuals[i].visual != NULL)
-            composite->visuals[i].visual->visible = false;
+        DvzVisual* visual = composite->visuals[i].visual;
+        if (visual != NULL)
+        {
+            visual->visible = false;
+            dvz_free(visual->draw_spans);
+            visual->draw_spans = NULL;
+            visual->draw_span_count = 0;
+        }
+    }
+    PolygonPaintCache* cache = composite->polygon_cache;
+    if (cache != NULL)
+    {
+        for (uint32_t i = 0; i < cache->count; i++)
+            dvz_geometry_destroy(cache->items[i].geometry);
+        dvz_free(cache->items);
+        dvz_free(cache);
+        composite->polygon_cache = NULL;
     }
     composite->scene = NULL;
     composite->active = false;
     composite->source = NULL;
     composite->visual_count = 0;
+}
+
+
+/**
+ * Initialize persistent paint defaults once when a generated role is created.
+ *
+ * @param visual generated role
+ * @param fill whether this is the mesh fill role
+ * @return whether initialization succeeded
+ */
+static bool _polygon_paint_defaults(DvzVisual* visual, bool fill)
+{
+    if (visual == NULL)
+        return false;
+    DvzMaterialDesc material = dvz_material_desc();
+    material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    material.alpha_mode = DVZ_ALPHA_BLENDED;
+    if (fill && dvz_visual_set_material(visual, &material) != 0)
+        return false;
+    if (dvz_visual_set_alpha_mode(visual, DVZ_ALPHA_BLENDED) != 0 ||
+        dvz_visual_set_depth_test(visual, false) != 0)
+        return false;
+    visual->paint = true;
+    visual->paint_required = true;
+    return true;
 }
 
 
@@ -748,7 +914,7 @@ DvzComposite* dvz_polygon_composite(DvzPolygon* polygon, uint32_t flags)
     DvzVisual* fill = dvz_mesh(scene, 0);
     DvzVisual* stroke = dvz_path(scene, 0);
     if (
-        fill == NULL || stroke == NULL ||
+        !_polygon_paint_defaults(fill, true) || !_polygon_paint_defaults(stroke, false) ||
         !_composite_add_visual(composite, DVZ_POLYGON_COMPOSITE_FILL_ROLE, fill, 0) ||
         !_composite_add_visual(composite, DVZ_POLYGON_COMPOSITE_STROKE_ROLE, stroke, 1))
     {
@@ -789,7 +955,7 @@ DvzComposite* dvz_polygons_composite(DvzPolygons* set, uint32_t flags)
     DvzVisual* fill = dvz_mesh(scene, 0);
     DvzVisual* stroke = dvz_path(scene, 0);
     if (
-        fill == NULL || stroke == NULL ||
+        !_polygon_paint_defaults(fill, true) || !_polygon_paint_defaults(stroke, false) ||
         !_composite_add_visual(composite, DVZ_POLYGON_COMPOSITE_FILL_ROLE, fill, 0) ||
         !_composite_add_visual(composite, DVZ_POLYGON_COMPOSITE_STROKE_ROLE, stroke, 1))
     {
@@ -802,6 +968,34 @@ DvzComposite* dvz_polygons_composite(DvzPolygons* set, uint32_t flags)
     }
 
     return composite;
+}
+
+
+/**
+ * Change persistent overlap ordering for a polygon view.
+ *
+ * @param composite polygon or polygon-set view
+ * @param order item or collection composition
+ * @return success or invalid argument/mutation error
+ */
+DvzResult dvz_polygon_composite_set_order(DvzComposite* composite, DvzPolygonOrder order)
+{
+    if (composite == NULL || !composite->active || composite->scene == NULL ||
+        (composite->type != DVZ_COMPOSITE_TYPE_POLYGON &&
+         composite->type != DVZ_COMPOSITE_TYPE_POLYGON_SET) ||
+        (order != DVZ_POLYGON_ORDER_ITEMS && order != DVZ_POLYGON_ORDER_COLLECTION))
+        return -1;
+    if (!_scene_visual_mutation_allowed(composite->scene, "change polygon paint order"))
+        return -1;
+    composite->polygon_order = (uint32_t)order;
+    for (uint32_t i = 0; i < composite->visual_count; i++)
+    {
+        DvzVisual* visual = composite->visuals[i].visual;
+        for (uint32_t j = 0; j < visual->draw_span_count; j++)
+            visual->draw_spans[j].item_index = order == DVZ_POLYGON_ORDER_ITEMS ? j : 0;
+        _scene_notify_visual_changed(visual);
+    }
+    return 0;
 }
 
 
@@ -895,6 +1089,7 @@ DvzResult dvz_panel_add_composite(
     if (missing_count > DVZ_SCENE_MAX_VISUALS - panel->visual_count)
         return -1;
 
+    const uint32_t parent_insertion_index = panel->visual_count;
     for (uint32_t i = 0; i < composite->visual_count; i++)
     {
         DvzVisual* visual = composite->visuals[i].visual;
@@ -903,7 +1098,14 @@ DvzResult dvz_panel_add_composite(
 
         DvzPanelAttach* slot = &panel->visuals[panel->visual_count];
         slot->visual = visual;
-        slot->z_layer = (desc != NULL ? desc->z_layer : 0) + composite->visuals[i].z_offset;
+        slot->z_layer = (desc != NULL ? desc->z_layer : 0) +
+                        (visual->paint ? 0 : composite->visuals[i].z_offset);
+        if (visual->paint)
+        {
+            slot->has_parent_order = true;
+            slot->parent_insertion_index = parent_insertion_index;
+            slot->role_order = i;
+        }
         slot->controller_mode = desc != NULL ? desc->controller_mode : DVZ_CONTROLLER_APPLY;
         slot->coord_space = desc != NULL ? desc->coord_space : DVZ_VISUAL_COORD_VIEW;
         slot->clip_rect = desc != NULL ? desc->clip_rect : DVZ_VISUAL_CLIP_AUTO;

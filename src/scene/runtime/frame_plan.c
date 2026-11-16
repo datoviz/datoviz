@@ -131,7 +131,7 @@ static DvzDrp2CommandStream* _frame_plan_emitter_emit_drp2_candidate(
     bool clear_only = compute == NULL && clear != NULL && render == NULL;
     bool retained_render =
         upload == NULL && (compute == NULL || scene_compute) && render != NULL &&
-        render->u.render.visual_count > 0;
+        (render->u.render.visual_count > 0 || plan->composition_count > 0);
 
     if ((!clear_only && !retained_render && upload == NULL) || (!clear_only && render == NULL))
     {

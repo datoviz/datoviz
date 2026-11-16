@@ -153,12 +153,35 @@ bool _emitter_emit_render_multi_draws(
     uint64_t last_bg_set1 = 0;
     uint64_t last_bg_set2 = 0;
     uint64_t last_bg_set3 = 0;
-    for (uint32_t d = 0; ok && d < draw_count; d++)
+    uint32_t work_count = render->u.render.draw_span_count > 0 ?
+                              render->u.render.draw_span_count : draw_count;
+    for (uint32_t work = 0; ok && work < work_count; work++)
     {
+        uint32_t d = work;
+        const DvzFramePlanDrawSpan* span = render->u.render.draw_span_count > 0 ?
+                                             &render->u.render.draw_spans[work] : NULL;
+        if (span != NULL)
+        {
+            for (d = 0; d < draw_count; d++)
+                if (draws[d].visual_slot == span->visual_slot)
+                    break;
+            if (d == draw_count)
+                return false;
+        }
+        SceneDrawPacket packet = draws[d];
+        if (span != NULL && span->indexed_range)
+        {
+            if (!packet.indexed || span->first_index < packet.first_index ||
+                (uint64_t)span->first_index + span->index_count >
+                                      (uint64_t)packet.first_index + packet.index_count)
+                return false;
+            packet.first_index = span->first_index;
+            packet.index_count = span->index_count;
+        }
         DvzPanelDesc draw_viewport =
-            _render_viewport_rect(render, draws[d].viewport_rect, cfg, attachment_panel_local);
+            _render_viewport_rect(render, packet.viewport_rect, cfg, attachment_panel_local);
         DvzPanelDesc draw_scissor =
-            _render_scissor_rect(render, draws[d].clip_rect, cfg, attachment_panel_local);
+            _render_scissor_rect(render, packet.clip_rect, cfg, attachment_panel_local);
         if (draw_viewport.x != active_viewport.x || draw_viewport.y != active_viewport.y ||
             draw_viewport.width != active_viewport.width ||
             draw_viewport.height != active_viewport.height)
@@ -177,38 +200,38 @@ bool _emitter_emit_render_multi_draws(
                            draw_scissor.width, draw_scissor.height);
             active_scissor = draw_scissor;
         }
-        if (draws[d].pipeline_id != last_pipeline)
+        if (packet.pipeline_id != last_pipeline)
         {
-            ok = ok && dvz_drp2_stream_set_pipeline(stream, render_pass_id, draws[d].pipeline_id);
-            last_pipeline = draws[d].pipeline_id;
+            ok = ok && dvz_drp2_stream_set_pipeline(stream, render_pass_id, packet.pipeline_id);
+            last_pipeline = packet.pipeline_id;
             last_bg_set0 = 0;
             last_bg_set1 = 0;
             last_bg_set2 = 0;
             last_bg_set3 = 0;
         }
-        if (draws[d].bg_set0 != 0 && draws[d].bg_set0 != last_bg_set0)
+        if (packet.bg_set0 != 0 && packet.bg_set0 != last_bg_set0)
         {
-            ok = ok && dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, draws[d].bg_set0);
-            last_bg_set0 = draws[d].bg_set0;
+            ok = ok && dvz_drp2_stream_set_bind_group(stream, render_pass_id, 0, packet.bg_set0);
+            last_bg_set0 = packet.bg_set0;
         }
-        if (draws[d].bg_set1 != 0 && draws[d].bg_set1 != last_bg_set1)
+        if (packet.bg_set1 != 0 && packet.bg_set1 != last_bg_set1)
         {
-            ok = ok && dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, draws[d].bg_set1);
-            last_bg_set1 = draws[d].bg_set1;
+            ok = ok && dvz_drp2_stream_set_bind_group(stream, render_pass_id, 1, packet.bg_set1);
+            last_bg_set1 = packet.bg_set1;
         }
-        if (draws[d].bg_set2 != 0 && draws[d].bg_set2 != last_bg_set2)
+        if (packet.bg_set2 != 0 && packet.bg_set2 != last_bg_set2)
         {
-            ok = ok && dvz_drp2_stream_set_bind_group(stream, render_pass_id, 2, draws[d].bg_set2);
-            last_bg_set2 = draws[d].bg_set2;
+            ok = ok && dvz_drp2_stream_set_bind_group(stream, render_pass_id, 2, packet.bg_set2);
+            last_bg_set2 = packet.bg_set2;
         }
-        if (draws[d].bg_set3 != 0 && draws[d].bg_set3 != last_bg_set3)
+        if (packet.bg_set3 != 0 && packet.bg_set3 != last_bg_set3)
         {
             ok =
                 ok && dvz_drp2_stream_set_bind_group(
-                          stream, render_pass_id, DVZ_SCENE_DEPTH_PEEL_BIND_SET, draws[d].bg_set3);
-            last_bg_set3 = draws[d].bg_set3;
+                          stream, render_pass_id, DVZ_SCENE_DEPTH_PEEL_BIND_SET, packet.bg_set3);
+            last_bg_set3 = packet.bg_set3;
         }
-        ok = ok && _scene_draw_packet_emit(stream, render_pass_id, &draws[d]);
+        ok = ok && _scene_draw_packet_emit(stream, render_pass_id, &packet);
     }
 
     if (cache != NULL)

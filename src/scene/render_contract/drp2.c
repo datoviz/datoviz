@@ -1207,9 +1207,13 @@ bool _scene_frame_plan_drp2_contracts_validate(
             break;
         case DVZ_DRP2_COMMAND_DRAW:
         case DVZ_DRP2_COMMAND_DRAW_INDEXED:
+        {
             if (active_render == NULL)
                 break;
-            if (active_render->u.render.visual_count == 0)
+            const uint32_t work_count = active_render->u.render.draw_span_count > 0 ?
+                                            active_render->u.render.draw_span_count :
+                                            active_render->u.render.visual_count;
+            if (work_count == 0)
             {
                 if (!_contract_validate_drp2_fullscreen_pipeline(
                         command, active_pipeline, active_render->u.render.pass_role,
@@ -1217,14 +1221,51 @@ bool _scene_frame_plan_drp2_contracts_validate(
                     ok = false;
                 break;
             }
-            if (active_draw_index >= active_render->u.render.visual_count)
+            if (active_draw_index >= work_count)
             {
                 _contract_report(report, "DRP2 render pass has more draws than its contract");
                 ok = false;
                 break;
             }
+            const DvzFramePlanDrawSpan* span = NULL;
+            if (active_render->u.render.draw_span_count > 0)
+            {
+                if (active_render->u.render.draw_spans == NULL)
+                {
+                    _contract_report(report, "FramePlan ordered draw span storage is missing");
+                    ok = false;
+                    active_draw_index++;
+                    break;
+                }
+                span = &active_render->u.render.draw_spans[active_draw_index];
+            }
+            const uint32_t visual_slot = span != NULL ? span->visual_slot : active_draw_index;
+            if (visual_slot >= active_render->u.render.visual_count ||
+                active_render->u.render.visual_metadata == NULL)
+            {
+                _contract_report(report, "FramePlan ordered draw references an invalid visual slot");
+                ok = false;
+                active_draw_index++;
+                break;
+            }
             const DvzFramePlanVisualMeta* meta =
-                &active_render->u.render.visual_metadata[active_draw_index];
+                &active_render->u.render.visual_metadata[visual_slot];
+            if (span != NULL && span->indexed_range)
+            {
+                if (span->first_index > meta->index_count ||
+                    span->index_count > meta->index_count - span->first_index)
+                {
+                    _contract_report(report, "FramePlan ordered draw index range exceeds its visual");
+                    ok = false;
+                }
+                if (command->type != DVZ_DRP2_COMMAND_DRAW_INDEXED ||
+                    command->u.draw_indexed.first_index != span->first_index ||
+                    command->u.draw_indexed.index_count != span->index_count)
+                {
+                    _contract_report(report, "DRP2 indexed draw range does not match ordered work");
+                    ok = false;
+                }
+            }
             if (meta->has_draw_contract && !_contract_validate_drp2_draw_occlusion_bindings(
                                                stream, active_bind_groups, meta, report))
                 ok = false;
@@ -1238,12 +1279,17 @@ bool _scene_frame_plan_drp2_contracts_validate(
             }
             active_draw_index++;
             break;
+        }
         case DVZ_DRP2_COMMAND_END_RENDER_PASS:
             if (!_contract_validate_drp2_sampled_reads(
                     active_graph_pass, &active_pass_state, report))
                 ok = false;
-            if (active_render != NULL && active_render->u.render.visual_count > 0 &&
-                active_draw_index != active_render->u.render.visual_count)
+            if (active_render != NULL &&
+                (active_render->u.render.visual_count > 0 ||
+                 active_render->u.render.draw_span_count > 0) &&
+                active_draw_index != (active_render->u.render.draw_span_count > 0 ?
+                                          active_render->u.render.draw_span_count :
+                                          active_render->u.render.visual_count))
             {
                 _contract_report(report, "DRP2 render pass draw count does not match contract");
                 ok = false;

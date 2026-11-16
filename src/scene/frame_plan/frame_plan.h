@@ -352,6 +352,7 @@ typedef enum
     DVZ_SCENE_TECHNIQUE_WBOIT,
     DVZ_SCENE_TECHNIQUE_DEPTH_PEEL,
     DVZ_SCENE_TECHNIQUE_VOLUME_SHADING,
+    DVZ_SCENE_TECHNIQUE_PAINT_COMPOSITE,
     DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE,
     DVZ_SCENE_TECHNIQUE_PRESENTATION,
 } DvzSceneTechniqueId;
@@ -368,6 +369,7 @@ typedef enum
     DVZ_SCENE_PHASE_TRANSPARENT_SHADING,
     DVZ_SCENE_PHASE_VOLUME_SHADING,
     DVZ_SCENE_PHASE_SCENE_POSTPROCESS,
+    DVZ_SCENE_PHASE_PAINT,
     DVZ_SCENE_PHASE_OVERLAY,
     DVZ_SCENE_PHASE_PRESENTATION,
     DVZ_SCENE_PHASE_QUERY,
@@ -917,6 +919,16 @@ typedef enum DvzRenderableKind
 
 
 
+/* Ordered work references shared visual bindings without retaining a visual per item. */
+typedef struct DvzFramePlanDrawSpan
+{
+    uint32_t visual_slot;
+    bool indexed_range;
+    uint32_t first_index;
+    uint32_t index_count;
+} DvzFramePlanDrawSpan;
+
+
 typedef struct DvzFramePlanVisualMeta
 {
     bool has_metadata;
@@ -1089,6 +1101,8 @@ struct DvzFramePlanNode
             char render_target_id[DVZ_SCENE_LABEL_SIZE];
             uint32_t visual_count;
             uint32_t visual_capacity;
+            DvzFramePlanDrawSpan* draw_spans;
+            uint32_t draw_span_count;
             char (*visuals)[DVZ_SCENE_LABEL_SIZE];
             DvzFramePlanVisualMeta* visual_metadata;
             bool picking;

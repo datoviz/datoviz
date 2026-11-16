@@ -238,6 +238,7 @@ DvzResult dvz_polygon_set_geometry(DvzPolygon* polygon, const DvzPolygonDesc* de
     polygon->outer = outer;
     polygon->holes = holes;
     polygon->hole_count = desc->hole_count;
+    polygon->geometry_version++;
     polygon->version++;
     _polygon_mark_composites_dirty(polygon, true, true);
     return 0;

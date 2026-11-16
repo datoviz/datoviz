@@ -78,6 +78,7 @@ struct SceneDrawVertexBuffer
 
 struct SceneDrawPacket
 {
+    uint32_t visual_slot;
     DvzSceneVisualDescKind kind;
     uint64_t pipeline_id;
     uint64_t bg_set0; /* MVP bg; 0 = none */

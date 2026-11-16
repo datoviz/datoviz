@@ -1941,6 +1941,21 @@ DVZ_EXPORT DvzResult dvz_visual_set_blend_mode(DvzVisual* visual, DvzBlendMode m
 
 
 /**
+ * Select ordered source-over paint after world composition and before UI overlays.
+ *
+ * Paint ignores scene depth and occlusion. OPAQUE and BLENDED source-over modes are supported;
+ * other alpha/blend combinations are rejected during planning. Material-capable paint must use
+ * an unlit material. Semantic polygon roles require this policy and cannot opt out.
+ * Queries on panels containing visible drawable paint currently report unsupported composition.
+ *
+ * @param visual the visual
+ * @param enabled whether to participate in paint composition
+ * @return zero on success, negative on invalid mutation
+ */
+DVZ_EXPORT DvzResult dvz_visual_set_paint(DvzVisual* visual, bool enabled);
+
+
+/**
  * Return the visual blend mode.
  *
  * @param visual the visual
@@ -3636,6 +3651,21 @@ DVZ_EXPORT DvzComposite* dvz_polygons_composite(DvzPolygons* set, uint32_t flags
 
 
 /**
+ * Choose persistent overlap order for a polygon or polygon-set composite view.
+ *
+ * The default ITEMS order paints each region's fill then stroke in append order.
+ * COLLECTION paints all fills before all strokes, keeping map boundaries on top.
+ * This policy persists across geometry and style changes and can change after attachment.
+ *
+ * @param composite polygon or polygon-set view
+ * @param order overlap composition order
+ * @return success or an error for an invalid view or order
+ */
+DVZ_EXPORT DvzResult dvz_polygon_composite_set_order(
+    DvzComposite* composite, DvzPolygonOrder order);
+
+
+/**
  * Destroy a scene-owned composite render view.
  *
  * @param composite the composite
@@ -3665,7 +3695,10 @@ DVZ_EXPORT DvzVisual* dvz_composite_visual_at(DvzComposite* composite, uint32_t 
 /**
  * Return a generated visual by role name.
  *
- * Polygon composites currently expose "fill" and "stroke" roles.
+ * Polygon composites expose "fill" and "stroke" roles. Semantic geometry, color,
+ * visibility, and stroke style are regenerated from the polygon object. Presentation
+ * settings belong to the view and persist across these updates; paint composition
+ * remains unlit, depth-free source-over. Use a mesh for a physical lit surface.
  *
  * @param composite the composite
  * @param role role name

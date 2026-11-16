@@ -269,10 +269,24 @@ static const DvzSceneTechniqueContract TECHNIQUE_CONTRACTS[] = {
         .pass_templates = {{DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, COMPOSITION_PASS_ONCE}},
     },
     {
+        .id = DVZ_SCENE_TECHNIQUE_PAINT_COMPOSITE,
+        .version = 1,
+        .phase = DVZ_SCENE_PHASE_PAINT,
+        .must_follow_phase_mask = (1u << (uint32_t)DVZ_SCENE_PHASE_TRANSPARENT_SHADING) |
+                                  (1u << (uint32_t)DVZ_SCENE_PHASE_VOLUME_SHADING) |
+                                  (1u << (uint32_t)DVZ_SCENE_PHASE_SCENE_POSTPROCESS),
+        .required_inputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SCENE_COLOR),
+        .outputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SCENE_COLOR),
+        .participating_layer_mask = LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_PAINT),
+        .required_capability_mask = COMPOSITION_CAP_COLOR_BLEND,
+        .pass_template_count = 1,
+        .pass_templates = {{DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND, COMPOSITION_PASS_ONCE}},
+    },
+    {
         .id = DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE,
         .version = 1,
         .phase = DVZ_SCENE_PHASE_OVERLAY,
-        .must_follow_phase_mask = (1u << (uint32_t)DVZ_SCENE_PHASE_TRANSPARENT_SHADING) |
+        .must_follow_phase_mask = (1u << (uint32_t)DVZ_SCENE_PHASE_PAINT) | (1u << (uint32_t)DVZ_SCENE_PHASE_TRANSPARENT_SHADING) |
                                   (1u << (uint32_t)DVZ_SCENE_PHASE_VOLUME_SHADING) |
                                   (1u << (uint32_t)DVZ_SCENE_PHASE_SCENE_POSTPROCESS),
         .required_inputs = PRODUCT_BIT(DVZ_RENDER_PRODUCT_SCENE_COLOR),
@@ -286,7 +300,7 @@ static const DvzSceneTechniqueContract TECHNIQUE_CONTRACTS[] = {
         .id = DVZ_SCENE_TECHNIQUE_PRESENTATION,
         .version = 1,
         .phase = DVZ_SCENE_PHASE_PRESENTATION,
-        .must_follow_phase_mask = (1u << (uint32_t)DVZ_SCENE_PHASE_SURFACE_POSTPROCESS) |
+        .must_follow_phase_mask = (1u << (uint32_t)DVZ_SCENE_PHASE_PAINT) | (1u << (uint32_t)DVZ_SCENE_PHASE_SURFACE_POSTPROCESS) |
                                   (1u << (uint32_t)DVZ_SCENE_PHASE_TRANSPARENT_SHADING) |
                                   (1u << (uint32_t)DVZ_SCENE_PHASE_VOLUME_SHADING) |
                                   (1u << (uint32_t)DVZ_SCENE_PHASE_OVERLAY),
@@ -482,6 +496,8 @@ static const char* _composition_technique_name(DvzSceneTechniqueId id)
         return "depth peeling";
     case DVZ_SCENE_TECHNIQUE_VOLUME_SHADING:
         return "volume shading";
+    case DVZ_SCENE_TECHNIQUE_PAINT_COMPOSITE:
+        return "ordered paint composition";
     case DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE:
         return "overlay composition";
     default:
@@ -636,6 +652,8 @@ static uint32_t _composition_visual_phase_bit(DvzSceneTechniquePhase phase)
         return DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING;
     case DVZ_SCENE_PHASE_VOLUME_SHADING:
         return DVZ_SCENE_VISUAL_PHASE_VOLUME_SHADING;
+    case DVZ_SCENE_PHASE_PAINT:
+        return DVZ_SCENE_VISUAL_PHASE_PAINT;
     case DVZ_SCENE_PHASE_OVERLAY:
         return DVZ_SCENE_VISUAL_PHASE_OVERLAY;
     case DVZ_SCENE_PHASE_QUERY:
@@ -1668,6 +1686,10 @@ _composition_validate_visuals(const DvzPanelRenderPlan* plan, DvzDiagnosticRepor
             return _composition_report(
                 report, "panel %s volume visual %" PRIu32 " has incompatible phase participation",
                 plan->panel_id, visual->visual_index);
+        if (visual->layer == DVZ_SCENE_VISUAL_LAYER_PAINT &&
+            (visual->caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_PAINT) == 0)
+            return _composition_report(
+                report, "panel %s paint visual has incompatible phase participation", plan->panel_id);
         if (visual->layer == DVZ_SCENE_VISUAL_LAYER_OVERLAY &&
             (visual->caps.phase_participation & DVZ_SCENE_VISUAL_PHASE_OVERLAY) == 0)
             return _composition_report(
@@ -1965,12 +1987,15 @@ bool _scene_panel_composition_resolve(
             uint32_t group_layers =
                 _composition_blend_group_layers(render_plan, transparent->index);
             const uint32_t volume_layer = LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_VOLUME);
+            const uint32_t paint_layer = LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_PAINT);
             const uint32_t overlay_layer = LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_OVERLAY);
             const uint32_t transparent_layer = LAYER_BIT(DVZ_SCENE_VISUAL_LAYER_TRANSPARENT);
-            if (group_layers == overlay_layer)
+            if (group_layers == overlay_layer || group_layers == paint_layer)
             {
                 if (!_composition_add_technique(
-                        &draft, DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE, scene_color, scene_color, 0,
+                        &draft, group_layers == paint_layer ? DVZ_SCENE_TECHNIQUE_PAINT_COMPOSITE :
+                                                            DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE,
+                        scene_color, scene_color, 0,
                         DVZ_SCENE_TECHNIQUE_FALLBACK_NONE))
                     return _composition_report(
                         report, "panel %s overlay composition selection failed",

@@ -151,8 +151,8 @@ static bool _scene_panel_has_visible_scene_occlusion_target(const DvzPanel* pane
         const DvzVisual* visual = panel->visuals[i].visual;
         if (!_scene_panel_render_visual_is_visible_drawable(visual))
             continue;
-        has_occluder = has_occluder || visual->scene_occluder;
-        has_occluded = has_occluded || visual->scene_occluded;
+        has_occluder = has_occluder || (!visual->paint && visual->scene_occluder);
+        has_occluded = has_occluded || (!visual->paint && visual->scene_occluded);
     }
     return has_occluder && has_occluded;
 }
@@ -220,10 +220,12 @@ static uint32_t _scene_panel_render_plan_layer_phase(DvzSceneVisualLayer layer)
         return 0;
     case DVZ_SCENE_VISUAL_LAYER_VOLUME:
         return 1;
-    case DVZ_SCENE_VISUAL_LAYER_OVERLAY:
+    case DVZ_SCENE_VISUAL_LAYER_PAINT:
         return 2;
-    default:
+    case DVZ_SCENE_VISUAL_LAYER_OVERLAY:
         return 3;
+    default:
+        return 4;
     }
 }
 
@@ -369,14 +371,17 @@ static uint32_t _scene_panel_render_plan_phase_bucket(
     }
     const uint32_t transparent = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_TRANSPARENT;
     const uint32_t volume = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_VOLUME;
+    const uint32_t paint = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_PAINT;
     const uint32_t overlay = 1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_OVERLAY;
     if (layers == transparent)
         return 0;
     if (layers == volume)
         return 1;
-    if (layers == overlay)
+    if (layers == paint)
         return 2;
-    return 3;
+    if (layers == overlay)
+        return 3;
+    return 4;
 }
 
 
@@ -386,7 +391,7 @@ static void _scene_panel_render_plan_order_phases(DvzPanelRenderPlan* plan)
     ANN(plan);
     DvzPanelRenderTransparentPassPlan ordered[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t count = 0;
-    for (uint32_t bucket = 0; bucket < 4; bucket++)
+    for (uint32_t bucket = 0; bucket < 5; bucket++)
     {
         for (uint32_t i = 0; i < plan->transparent_pass_count; i++)
         {
@@ -487,12 +492,12 @@ static bool _scene_panel_render_plan_build_mutable(
 
         DvzSceneVisualPassCaps caps = {0};
         if (!_scene_visual_pass_caps_from_visual(visual, attach, &caps))
-            continue;
+            return false;
         if (!_scene_panel_render_plan_append(
                 out->visuals, &out->visual_count, visual, attach, vidx, k, &caps))
             return false;
 
-        if (out->scene_occlusion_enabled && visual->scene_occluder)
+        if (out->scene_occlusion_enabled && !visual->paint && visual->scene_occluder)
         {
             if (!_scene_panel_render_plan_append(
                     out->scene_occlusion, &out->scene_occlusion_count, visual, attach, vidx, k,

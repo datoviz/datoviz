@@ -99,6 +99,7 @@ void dvz_frame_plan_destroy(DvzFramePlan* plan)
         }
         else if (plan->nodes[i].type == DVZ_FRAME_PLAN_NODE_RENDER)
         {
+            dvz_free(plan->nodes[i].u.render.draw_spans);
             dvz_free(plan->nodes[i].u.render.visuals);
             dvz_free(plan->nodes[i].u.render.visual_metadata);
             dvz_free(plan->nodes[i].u.render.controller_modes);

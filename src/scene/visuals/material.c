@@ -865,3 +865,25 @@ DvzResult dvz_visual_set_scene_occluded(DvzVisual* visual, bool enabled)
     _scene_notify_visual_changed(visual);
     return 0;
 }
+
+
+/**
+ * Select ordered, depth-free source-over paint composition for a visual.
+ * @param visual the visual
+ * @param enabled whether the visual participates in paint composition
+ * @return zero on success, negative on invalid mutation
+ */
+DvzResult dvz_visual_set_paint(DvzVisual* visual, bool enabled)
+{
+    ANN(visual);
+    if (!_scene_visual_mutation_allowed(visual->scene, "mutate visual paint composition"))
+        return -1;
+    if (visual->paint_required && !enabled)
+        return -1;
+    if (visual->paint == enabled)
+        return 0;
+    visual->paint = enabled;
+    _visual_bump_version(&visual->material.version);
+    _scene_notify_visual_changed(visual);
+    return 0;
+}

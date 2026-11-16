@@ -16,6 +16,7 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <vulkan/vulkan_core.h>
@@ -620,6 +621,14 @@ static bool _scene_append_visual_to_render_pass(
         _scene_emit_graph_report(report, "visual %s has no typed FramePlan metadata", visual_id);
         return false;
     }
+    if (visual->paint)
+    {
+        metadata.alpha_mode = DVZ_ALPHA_BLENDED;
+        metadata.depth_test_enabled = false;
+        metadata.depth_cue_enabled = false;
+        metadata.scene_occluded = false;
+        metadata.volume_occluded = false;
+    }
     metadata.clip_rect = _scene_visual_clip_rect(panel, visual, attach);
     metadata.viewport_rect = _scene_visual_viewport_rect(panel, visual, attach);
     if (!_scene_resource_key_panel_lights(
@@ -873,6 +882,116 @@ static bool _scene_bind_auxiliary_upload(
 }
 
 
+typedef struct
+{
+    DvzFramePlanDrawSpan span;
+    int32_t z_layer;
+    uint32_t parent_order;
+    uint32_t item_order;
+    uint32_t role_order;
+    uint32_t source_order;
+} DvzOrderedPaintWork;
+
+
+/**
+ * Compare paint work by attachment, semantic item, and generated role.
+ * @param lhs first work item
+ * @param rhs second work item
+ * @return ordering comparison
+ */
+static int _scene_ordered_paint_compare(const void* lhs, const void* rhs)
+{
+    const DvzOrderedPaintWork* a = lhs;
+    const DvzOrderedPaintWork* b = rhs;
+    if (a->z_layer != b->z_layer)
+        return a->z_layer < b->z_layer ? -1 : 1;
+    if (a->parent_order != b->parent_order)
+        return a->parent_order < b->parent_order ? -1 : 1;
+    if (a->item_order != b->item_order)
+        return a->item_order < b->item_order ? -1 : 1;
+    if (a->role_order != b->role_order)
+        return a->role_order < b->role_order ? -1 : 1;
+    if (a->source_order != b->source_order)
+        return a->source_order < b->source_order ? -1 : 1;
+    return 0;
+}
+
+
+/**
+ * Freeze ordered paint spans while sharing retained visual bindings and geometry.
+ * @param node destination render node
+ * @param render_plan source normalized panel plan
+ * @param group blend group to expand
+ * @return whether owned work storage was constructed
+ */
+static bool _scene_emit_ordered_paint_work(
+    DvzFramePlanNode* node, const DvzPanelRenderPlan* render_plan, uint32_t group)
+{
+    uint64_t count = 0;
+    for (uint32_t i = 0; i < render_plan->blended_visual_count; i++)
+    {
+        const DvzPanelRenderVisualPlan* v = &render_plan->blended_visuals[i];
+        if (v->blend_group == group)
+            count += v->visual->draw_span_count > 0 ? v->visual->draw_span_count : 1;
+    }
+    if (count == 0 || count > UINT32_MAX || count > SIZE_MAX / sizeof(DvzOrderedPaintWork))
+        return false;
+    DvzOrderedPaintWork* work = dvz_calloc(count, sizeof(DvzOrderedPaintWork));
+    DvzFramePlanDrawSpan* spans = dvz_calloc(count, sizeof(DvzFramePlanDrawSpan));
+    if (work == NULL || spans == NULL)
+    {
+        dvz_free(work);
+        dvz_free(spans);
+        return false;
+    }
+    uint32_t n = 0;
+    uint32_t slot = 0;
+    for (uint32_t i = 0; i < render_plan->blended_visual_count; i++)
+    {
+        const DvzPanelRenderVisualPlan* v = &render_plan->blended_visuals[i];
+        if (v->blend_group != group)
+            continue;
+        uint32_t span_count = v->visual->draw_span_count;
+        for (uint32_t j = 0; j < (span_count > 0 ? span_count : 1); j++)
+        {
+            const DvzVisualDrawSpan* source = span_count > 0 ? &v->visual->draw_spans[j] : NULL;
+            if (source != NULL && source->index_count == 0)
+                continue;
+            work[n++] = (DvzOrderedPaintWork){
+                .span = {.visual_slot = slot, .indexed_range = source != NULL,
+                         .first_index = source != NULL ? source->first_index : 0,
+                         .index_count = source != NULL ? source->index_count : 0},
+                .z_layer = v->attach->z_layer,
+                .parent_order = v->attach->has_parent_order ?
+                                    v->attach->parent_insertion_index : v->attach->insertion_index,
+                .item_order = source != NULL ? source->item_index : 0,
+                .role_order = v->attach->role_order,
+                .source_order = j,
+            };
+        }
+        slot++;
+    }
+    qsort(work, n, sizeof(DvzOrderedPaintWork), _scene_ordered_paint_compare);
+    uint32_t merged_count = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        DvzFramePlanDrawSpan next = work[i].span;
+        DvzFramePlanDrawSpan* previous = merged_count > 0 ? &spans[merged_count - 1] : NULL;
+        if (previous != NULL && previous->indexed_range && next.indexed_range &&
+            previous->visual_slot == next.visual_slot &&
+            (uint64_t)previous->first_index + previous->index_count == next.first_index &&
+            (uint64_t)previous->index_count + next.index_count <= UINT32_MAX)
+            previous->index_count += next.index_count;
+        else
+            spans[merged_count++] = next;
+    }
+    dvz_free(work);
+    node->u.render.draw_spans = spans;
+    node->u.render.draw_span_count = merged_count;
+    return true;
+}
+
+
 static bool _scene_emit_blended_group_node(
     const DvzFigure* figure, DvzFramePlan* plan, const DvzPanel* panel,
     const DvzPanelRenderPlan* render_plan, const DvzMVP* panel_apply_mvp,
@@ -906,6 +1025,18 @@ static bool _scene_emit_blended_group_node(
                 render_plan->scene_occlusion_enabled ? &panel->scene_occlusion : NULL,
                 render_plan->volume_occlusion_enabled ? &panel->volume_occlusion : NULL, report))
             graph_ok = false;
+    }
+    if (graph_ok && node->u.render.visual_count > 0)
+    {
+        for (uint32_t i = 0; i < render_plan->blended_visual_count; i++)
+        {
+            if (render_plan->blended_visuals[i].blend_group == group &&
+                render_plan->blended_visuals[i].layer == DVZ_SCENE_VISUAL_LAYER_PAINT)
+            {
+                graph_ok = _scene_emit_ordered_paint_work(node, render_plan, group);
+                break;
+            }
+        }
     }
     return graph_ok;
 }

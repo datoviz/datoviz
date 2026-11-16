@@ -1771,7 +1771,16 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     DvzVisual* stroke = dvz_composite_visual(composite, "stroke");
     ANN(fill);
     ANN(stroke);
+    AT(fill->paint && stroke->paint);
+    AT(fill->material.model == DVZ_MATERIAL_MODEL_UNLIT);
+    AT(fill->alpha_mode == DVZ_ALPHA_BLENDED && stroke->alpha_mode == DVZ_ALPHA_BLENDED);
+    AT(!fill->depth_test_enabled && !stroke->depth_test_enabled);
     AT(dvz_composite_visual_at(composite, 0) == fill);
+    DvzMaterialDesc paint_material = dvz_material_desc();
+    paint_material.model = DVZ_MATERIAL_MODEL_UNLIT;
+    paint_material.alpha_mode = DVZ_ALPHA_BLENDED;
+    paint_material.opacity = 0.75f;
+    AT(dvz_visual_set_material(fill, &paint_material) == 0);
 
     DvzVisualAttachDesc attach = dvz_visual_attach_desc();
     attach.z_layer = 5;
@@ -1782,8 +1791,12 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     AT(panel->visuals[0].z_layer == 5);
     AT(panel->visuals[0].coord_space == DVZ_VISUAL_COORD_DATA);
     AT(panel->visuals[1].visual == stroke);
-    AT(panel->visuals[1].z_layer == 6);
+    AT(panel->visuals[1].z_layer == 5);
     AT(panel->visuals[1].coord_space == DVZ_VISUAL_COORD_DATA);
+    AT(panel->visuals[0].has_parent_order && panel->visuals[1].has_parent_order);
+    AT(panel->visuals[0].parent_insertion_index == panel->visuals[1].parent_insertion_index);
+    AT(fill->draw_span_count == 1 && fill->draw_spans[0].index_count == 6);
+    AT(stroke->draw_span_count == 1 && stroke->draw_spans[0].index_count == 24);
     AT(dvz_panel_add_composite(panel, composite, NULL) == 0);
     AT(panel->visual_count == 2);
 
@@ -1851,6 +1864,17 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     AT(fill_colors[0] == fill_update.r);
     AT(fill_colors[1] == fill_update.g);
     AT(fill_colors[2] == fill_update.b);
+    AT(fill->attrs[_attr_index(fill, "position")].version == fill_position_version);
+    AT(fill->material.model == DVZ_MATERIAL_MODEL_UNLIT);
+    AT(fill->alpha_mode == DVZ_ALPHA_BLENDED && !fill->depth_test_enabled);
+    DvzColor transparent = fill_update;
+    transparent.a = 0;
+    AT(dvz_polygon_set_fill_color(polygon, transparent) == 0);
+    _scene_prepare_composite_visuals(figure);
+    AT(!fill->visible && fill->draw_spans[0].index_count == 0);
+    AT(dvz_polygon_set_fill_color(polygon, fill_update) == 0);
+    _scene_prepare_composite_visuals(figure);
+    AT(fill->visible && fill->draw_spans[0].index_count == 6);
 
     const dvec2 hole[4] = {
         {0.25, 0.25},
@@ -1862,6 +1886,8 @@ int test_scene_polygon_composite(TstContext* suite, const TstCase* item)
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "position", &fill_position_view) == 0);
     AT(fill_position_view.item_count == 8);
+    AC(fill->material.opacity, 0.75f, EPS);
+    AT(fill->alpha_mode == DVZ_ALPHA_BLENDED && !fill->depth_test_enabled);
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
     AT(stroke_position_view.item_count == 10);
     AT(_visual_family_state(stroke)->path.subpath_count == 2);
@@ -1954,7 +1980,7 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     AT(panel->visuals[0].z_layer == 3);
     AT(panel->visuals[0].coord_space == DVZ_VISUAL_COORD_DATA);
     AT(panel->visuals[1].visual == stroke);
-    AT(panel->visuals[1].z_layer == 4);
+    AT(panel->visuals[1].z_layer == 3);
     AT(panel->visuals[1].coord_space == DVZ_VISUAL_COORD_DATA);
 
     DvzVisualDataView position_view = {0};
@@ -2022,6 +2048,16 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     AT(colors[16] == blue.r);
     AT(colors[17] == blue.g);
     AT(colors[18] == blue.b);
+    AT(fill->attrs[_attr_index(fill, "position")].version == fill_position_version);
+    AT(fill->draw_span_count == 2 && stroke->draw_span_count == 2);
+    AT(fill->draw_spans[0].first_index == 0 && fill->draw_spans[1].first_index == 6);
+    AT(stroke->draw_spans[0].first_index == 0 && stroke->draw_spans[1].first_index == 24);
+    AT(fill->draw_spans[1].item_index == 1 && stroke->draw_spans[1].item_index == 1);
+    AT(dvz_polygon_composite_set_order(composite, DVZ_POLYGON_ORDER_COLLECTION) == 0);
+    AT(fill->draw_spans[1].item_index == 0 && stroke->draw_spans[1].item_index == 0);
+    AT(dvz_polygon_composite_set_order(composite, DVZ_POLYGON_ORDER_ITEMS) == 0);
+    AT(fill->draw_spans[1].item_index == 1 && stroke->draw_spans[1].item_index == 1);
+    AT(dvz_polygon_composite_set_order(composite, (DvzPolygonOrder)99) != 0);
 
     const DvzColor bulk_fill[2] = {{11, 22, 33, 255}, {44, 55, 66, 255}};
     const DvzColor bulk_stroke[2] = {{77, 88, 99, 255}, {111, 122, 133, 255}};
@@ -2043,13 +2079,34 @@ int test_scene_polygon_set_composite(TstContext* suite, const TstCase* item)
     AT(dvz_polygons_set_region_visibilities(set, 0, 2, one_visible) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(dvz_visual_data(fill, "position", &position_view) == 0);
-    AT(position_view.item_count == 4);
+    AT(position_view.item_count == 8);
+    AT(fill->draw_spans[0].index_count == 6 && fill->draw_spans[1].index_count == 0);
     AT(dvz_visual_data(stroke, "position", &stroke_position_view) == 0);
-    AT(stroke_position_view.item_count == 5);
+    AT(stroke_position_view.item_count == 10);
+    AT(stroke->draw_spans[0].index_count == 24 && stroke->draw_spans[1].index_count == 0);
     AT(dvz_polygons_set_region_visible(set, left_index, false) == 0);
     _scene_prepare_composite_visuals(figure);
     AT(!fill->visible);
     AT(!stroke->visible);
+
+    // Collection size may exceed the retained-visual capacity without allocating region visuals.
+    uint32_t retained_visuals = scene->visual_count;
+    for (uint32_t i = 0; i < 300; i++)
+    {
+        uint32_t region = dvz_polygons_add_region(
+            set, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+                .outer = {.xy = left, .count = 4}});
+        AT(region == i + 2);
+    }
+    _scene_prepare_composite_visuals(figure);
+    AT(scene->visual_count == retained_visuals);
+    AT(panel->visual_count == 2);
+    AT(fill->draw_span_count == 302 && stroke->draw_span_count == 302);
+    AT(fill->draw_spans[301].item_index == 301);
+    AT(fill->draw_spans[301].first_index == 301 * 6);
+    AT(fill->draw_spans[0].index_count == 0 && fill->draw_spans[1].index_count == 0);
+    AT(fill->draw_spans[301].index_count == 6);
+    AT(stroke->draw_spans[301].index_count == 24);
 
     dvz_scene_destroy(scene);
     return 0;

@@ -982,6 +982,7 @@ bool _emitter_prepare_render_multi(
             vis_bg_set3, clip_rect, viewport_rect, shader_format, report, &draws[draw_count]);
         if (!ok)
             break;
+        draws[draw_count].visual_slot = i;
         draw_count++;
     }
 

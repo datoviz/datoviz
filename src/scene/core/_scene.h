@@ -181,6 +181,7 @@ struct DvzPolygon
     DvzPathJoin stroke_join;
     float stroke_miter_limit;
     uint64_t version;
+    uint64_t geometry_version;
 };
 
 
@@ -197,6 +198,7 @@ struct DvzPolygonsItem
     DvzColor stroke_color;
     float stroke_width_px;
     uint64_t version;
+    uint64_t geometry_version;
 };
 
 
@@ -266,6 +268,14 @@ struct DvzGraph
 
 
 
+typedef struct DvzVisualDrawSpan
+{
+    uint32_t item_index;
+    uint32_t first_index;
+    uint32_t index_count;
+} DvzVisualDrawSpan;
+
+
 struct DvzCompositeVisual
 {
     char role[DVZ_COMPOSITE_ROLE_SIZE];
@@ -287,6 +297,8 @@ struct DvzComposite
     uint64_t source_version_seen;
     uint32_t visual_count;
     DvzCompositeVisual visuals[DVZ_COMPOSITE_MAX_VISUALS];
+    uint32_t polygon_order;
+    void* polygon_cache;
 };
 
 
@@ -1826,6 +1838,10 @@ struct DvzVisual
     void*        family_state;
     uint32_t     flags;
     bool         visible;
+    bool         paint; /* ordered, depth-free source-over composition */
+    bool         paint_required; /* semantic owner fixes the composition policy */
+    DvzVisualDrawSpan* draw_spans; /* owned by semantic view */
+    uint32_t draw_span_count;
     int32_t      z_layer;
     DvzAlphaMode alpha_mode;
     DvzBlendMode blend_mode;
@@ -2048,6 +2064,9 @@ struct DvzPanelAttach
     bool              has_generated_role;
     DvzGeneratedVisualRole generated_role;
     uint32_t          insertion_index; /* used as stable tie-breaker when z_layer ties */
+    bool has_parent_order;
+    uint32_t parent_insertion_index;
+    uint32_t role_order;
 };
 
 

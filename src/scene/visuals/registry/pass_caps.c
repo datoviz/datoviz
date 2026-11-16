@@ -72,6 +72,24 @@ const char* _scene_visual_technique_eligibility_error(const DvzVisual* visual)
     DvzVisualLowering lowering = {0};
     if (!_scene_visual_lowering_resolve(visual, &lowering))
         return "visual family lowering is unavailable";
+    if (visual->paint)
+    {
+        if (visual->material.depth_cue_enabled)
+            return "ordered paint does not support depth cueing";
+        if (lowering.renderable_kind == DVZ_RENDERABLE_VOLUME_PROXY)
+            return "ordered paint requires raster coverage; volume proxies are unsupported";
+        const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
+        if (ops != NULL && ops->supports_material &&
+            visual->material.model != DVZ_MATERIAL_MODEL_UNLIT)
+            return "ordered paint requires an unlit material to preserve authored colors";
+        if (visual->alpha_mode != DVZ_ALPHA_OPAQUE && visual->alpha_mode != DVZ_ALPHA_BLENDED)
+            return "ordered paint supports only opaque or blended source-over alpha; "
+                   "mask and OIT modes are unsupported";
+        if (visual->blend_mode != DVZ_BLEND_SOURCE_OVER)
+            return "ordered paint requires source-over blending";
+        /* Scene-occlusion flags do not participate in normalized paint composition. */
+        return NULL;
+    }
     const char* error = _scene_visual_alpha_eligibility_error(lowering.desc_kind, visual->alpha_mode);
     if (error != NULL)
         return error;
@@ -371,6 +389,32 @@ bool _scene_visual_pass_caps_from_visual(
         return false;
     if (!ops->resolve_pass_caps(visual, attach, &lowering, out))
         return false;
+
+    if (visual->paint)
+    {
+        if (visual->material.depth_cue_enabled ||
+            lowering.renderable_kind == DVZ_RENDERABLE_VOLUME_PROXY ||
+            (ops->supports_material && visual->material.model != DVZ_MATERIAL_MODEL_UNLIT))
+            return false;
+        if ((visual->alpha_mode != DVZ_ALPHA_OPAQUE && visual->alpha_mode != DVZ_ALPHA_BLENDED) ||
+            visual->blend_mode != DVZ_BLEND_SOURCE_OVER)
+            return false;
+        out->layer = DVZ_SCENE_VISUAL_LAYER_PAINT;
+        out->phase_participation = DVZ_SCENE_VISUAL_PHASE_PAINT;
+        out->draws_in_opaque_pass = false;
+        out->draws_in_wboit_pass = false;
+        out->draws_in_depth_peel_pass = false;
+        out->draws_in_transparent_blend_pass = true;
+        out->can_depth_test = false;
+        out->can_write_depth = false;
+        out->writes_depth = false;
+        out->samples_depth = false;
+        out->needs_depth_attachment = false;
+        out->eligible_for_depth_postprocess = false;
+        out->eligible_for_gbuffer = false;
+        out->product_caps = DVZ_SCENE_VISUAL_PRODUCT_CAP_PRODUCE_SCENE_COLOR;
+        return true;
+    }
 
     if (attach->has_generated_role)
         _scene_visual_pass_caps_apply_generated_role(attach->generated_role, out);

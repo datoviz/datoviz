@@ -634,14 +634,18 @@ void _scene_panel_visual_order(const DvzPanel* panel, uint32_t* order)
     {
         uint32_t cur = order[i];
         int32_t cur_z = panel->visuals[cur].z_layer;
-        uint32_t cur_ins = panel->visuals[cur].insertion_index;
+        uint32_t cur_ins = panel->visuals[cur].has_parent_order ?
+            panel->visuals[cur].parent_insertion_index : panel->visuals[cur].insertion_index;
         uint32_t j = i;
         while (j > 0)
         {
             uint32_t prev = order[j - 1];
             int32_t prev_z = panel->visuals[prev].z_layer;
-            uint32_t prev_ins = panel->visuals[prev].insertion_index;
-            if (prev_z < cur_z || (prev_z == cur_z && prev_ins <= cur_ins))
+            uint32_t prev_ins = panel->visuals[prev].has_parent_order ?
+                panel->visuals[prev].parent_insertion_index : panel->visuals[prev].insertion_index;
+            if (prev_z < cur_z || (prev_z == cur_z &&
+                (prev_ins < cur_ins || (prev_ins == cur_ins &&
+                 panel->visuals[prev].role_order <= panel->visuals[cur].role_order))))
                 break;
             order[j] = order[j - 1];
             j--;

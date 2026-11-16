@@ -304,6 +304,14 @@ typedef enum
 } DvzPathJoin;
 
 
+/** Polygon overlap composition order within one composite view. */
+typedef enum
+{
+    DVZ_POLYGON_ORDER_ITEMS = 0,      /**< Each region's fill followed by its stroke. */
+    DVZ_POLYGON_ORDER_COLLECTION = 1, /**< All fills followed by all strokes. */
+} DvzPolygonOrder;
+
+
 typedef enum
 {
     DVZ_GRAPH_EDGE_MODE_SEGMENT = 0,
