@@ -60,7 +60,7 @@ The hosted Windows ARM64 smoke uses native Python 3.11-3.14 because the setup-py
 
 ## RC4 Gate
 
-The complete 16-chapter course and previews are already implemented on `main`; RC4 accepts that implementation, resolves reader feedback, regenerates previews from the frozen candidate, freezes the tutorial-facing API profile, and proves every chapter from exact installed packages on supported hosted platforms. Generated geometry and a procedural texture are the required path; Suzanne and committed binary tutorial assets are optional polish, not blockers.
+The complete 16-chapter course ships in RC3; RC4 resolves reader feedback, regenerates previews from the frozen candidate, freezes the tutorial-facing API profile, and proves every chapter from exact installed packages on supported hosted platforms. Generated geometry and a procedural texture are the required path; Suzanne and committed binary tutorial assets are optional polish, not blockers.
 
 RC4 also owns the official conda Qt/PyQt provider: use the published Vulkan-enabled Qt/PyQt runtime, build the exact split `libdatoviz`, `datoviz`, and `datoviz-qtbridge` artifacts against the managed runtime, and complete clean-prefix hosted provider validation. Upstream publication is complete. Windows provider runtime proof and frozen-candidate validation remain pending; any promotion into RC3 requires an explicit scope decision.
 

@@ -32,7 +32,7 @@ The scientific-profile correction at `d0e904705` updates native technique covera
 ## Remaining RC3 Documentation Work
 
 1. Obtain maintainer review of the four-page visual pilot before broad rollout.
-2. Collect the in-progress Claude course review before scheduling another audit; confirm its coverage and resolve findings. Maintainer acceptance of voice, pacing, API profile, ownership explanations, package-first instructions and previews remains separate.
+2. Finish the 2026-11-16 Claude course review fixes (see [RELEASE.md](RELEASE.md)); the complete course ships in RC3. Maintainer acceptance of voice, pacing, API profile, ownership explanations, package-first instructions and previews remains separate.
 3. Resolve the polygon-color/alpha concerns and small raster residuals in the gallery review, then approve exact screenshot and animation/card candidates if they should replace canonical assets.
 4. Review the local RC3 release-notes draft; finalize its exact identity, validation evidence, and release-specific known issues only when artifact scope is fixed.
 5. Review exact outreach drafts before any dataset-author or public GitHub communication.
@@ -47,7 +47,7 @@ The contributor reviewed PR #136 and requested namespaced shader-tool settings a
 
 ## RC4 Documentation Gate
 
-Accept the already implemented 16-chapter course and epilogue through an interactive textured and lit generated mesh. Complete the fresh revised-course isolated-reader audit, regenerate previews from exact candidate code, freeze the tutorial-facing API and advanced/unstable compatibility profile, validate every chapter against exact installed artifacts on supported hosted platforms, and resolve or record reader feedback. Development implementation and preview generation do not close these acceptance gates.
+Resolve RC3 course feedback and repeat the isolated-reader audit after the RC3 revision pass, regenerate previews from exact candidate code, freeze the tutorial-facing API and advanced/unstable compatibility profile, validate every chapter against exact installed artifacts on supported hosted platforms, and resolve or record reader feedback. Development implementation and preview generation do not close these acceptance gates.
 
 The required course uses generated geometry and a procedural texture. Suzanne and committed binary course assets are optional polish and must not become release blockers.
 

@@ -30,13 +30,13 @@ The earlier validated implementation head passes the complete 1,128-case native 
 
 Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_140_HANDOFF.md) and [ISSUE_138_PERFORMANCE_HANDOFF.md](ISSUE_138_PERFORMANCE_HANDOFF.md). The #140 scene-buffer lifecycle and coherent mesh replacement, #139 physical-key/committed-text split, and #138 benchmark-backed bounded corrections are integrated into `main`. The chapter-5 explicit-reload input path is locally proven without a watcher or new API; exact-candidate package and hosted validation remain separate gates. Optional RC4 sampled-field foundations and post-v0.4 GPU displacement retain the boundaries below.
 
-The course expanded on `main` in `30ee8ea3a` and received cumulative-path corrections in `078bcb809`. On 2026-11-16, all 16 step programs pass reproducible in-tree rendering, all 173 C/GLSL excerpts synchronize, and all 18 media outputs generate. This closes implementation work, not the fresh reader audit or exact installed-package/hosted acceptance. RC3 retains its foundation/package gates; RC4 retains complete-course acceptance and API freeze. The maintainer reports that Claude is currently reviewing the course; collect that review and assess its coverage before scheduling another audit. See [the course queue](VKLITE_GRAPHICS_TUTORIAL.md).
+The course expanded on `main` in `30ee8ea3a` and received cumulative-path corrections in `078bcb809`. On 2026-11-16, all 16 step programs pass reproducible in-tree rendering, all 173 C/GLSL excerpts synchronize, and all 18 media outputs generate. This closes implementation work, not the fresh reader audit or exact installed-package/hosted acceptance. The maintainer decided on 2026-11-16 to ship the complete course in RC3; RC4 keeps reader feedback and the tutorial API freeze. The 2026-11-16 Claude review covered a fresh-clone reader run of all 16 chapters (all built and ran with zero validation errors), voice, clarity and correctness, consistency, learner experience and pacing. Must-fix findings landed in `3d2397637`; a concise template, voice and learner pass follows. Deferred past v0.4: reordering part 4 (upload, sampling, then uniform buffers), moving viewport/scissor from chapter 3 to 4, and a canvas format query before the first frame. See [the course queue](VKLITE_GRAPHICS_TUTORIAL.md).
 
 Remaining RC3 deliverables:
 
 1. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates. The refreshed embedding-portability implementation is merged through #157, and original PR #132 is closed as superseded, so this lane is no longer an RC3 gate.
 2. Complete subjective documentation and media review plus the remaining multi-machine review without admitting deferred dependency work; local documentation, WebGPU, input, Qt, gallery-cache, and animation/card pipeline gates are complete.
-3. Prove the rewritten course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
+3. Prove the complete course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
 4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, base conda layouts, third-party notices, and checksum/signing policy.
 5. Freeze the exact RC3 candidate, carry forward the completed local source-quality and media-pipeline evidence, and run the immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
 6. Freeze RC3 notes, known issues, validation evidence, artifacts, and feedback request only after the exact release scope is fixed.
@@ -54,7 +54,7 @@ The maintainer is not ready to freeze RC3 before proofreading the course and res
 
 Required deliverables:
 
-1. Review and accept the implemented 16-chapter course and epilogue, including the uniform-buffer/descriptor chapter and generated textured, lit mesh; complete a fresh isolated-reader audit of the revised course and fix reported failures or ambiguities.
+1. Resolve or record RC3 course feedback, and repeat the isolated-reader audit after the RC3 revision pass.
 2. Regenerate and validate each chapter preview from exact candidate programs without committed binary prerequisites or `data` submodule changes; development previews already exist for every chapter.
 3. Freeze the tutorial-facing API profile and document vklite as advanced/unstable with exact release compatibility.
 4. Build and run every chapter from exact installed source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`, packaged runtime shaderc, deterministic offscreen proof, and bounded live resize, input, depth, repeated-frame, and shutdown smoke.
