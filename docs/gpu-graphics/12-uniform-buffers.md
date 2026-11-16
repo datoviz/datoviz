@@ -217,7 +217,7 @@ The cube keeps its shape and controls, with the cooler tint above. The terminal 
 !!! tip "Try it"
 
     1. Change the tint to `{1.0f, 0.45f, 0.45f, 1.0f}` and rebuild. The cube turns redder; geometry, camera, and vertex colors are untouched.
-    2. In `shader.frag`, change `binding = 0` to `binding = 1` and press **R**. Validation reports that the shader uses set 0 binding 1, which the layout does not declare, at pipeline creation and again at the draw. Restore it and press **R**.
+    2. In `shader.frag`, change `binding = 0` to `binding = 1` and press **R**. Validation reports that the shader uses set 0 binding 1, which the layout does not declare, at pipeline creation and again at the draw. The pipeline is still created, and drawing with it is undefined behavior: some drivers crash. Restore the line, and restart the program if it exited.
     3. Comment out `dvz_cmd_bind_descriptors()` and rebuild. Validation reports at the draw that the pipeline uses descriptor set 0 but none was bound.
 
 ??? info "Under the hood: what the descriptor names"

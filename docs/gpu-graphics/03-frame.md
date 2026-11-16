@@ -4,7 +4,7 @@
 
 <picture>
   <source media="(prefers-reduced-motion: no-preference)" srcset="../../assets/gpu-graphics/03-frame.webp">
-  <img src="../../assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues and greys.">
+  <img src="../../assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues, greens, and purples.">
 </picture>
 
 Chapter 2 asked you to accept five lines on faith. This chapter takes them apart and adds a sixth, because together they set the shape of every frame in the course. The triangle in chapter 4 and the final lit, textured mesh both fit between the same two calls. Then you make the window pulse, which proves the loop is running rather than showing one frame forever.
@@ -179,7 +179,7 @@ Update the initializer:
 
 ## Build and run
 
-Build and run as in chapter 2. The window now breathes slowly through blues and greys. Drag an edge while it runs: the animation continues because each callback reads the new `extent`.
+Build and run as in chapter 2. The window now drifts slowly through blues, greens, and purples. Drag an edge while it runs: the animation continues because each callback reads the new `extent`.
 
 === "Linux and macOS"
 
@@ -212,9 +212,9 @@ The first two PNG files are identical; the third captures another point of the s
         dvz_attachment_ops(color, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
         ```
 
-        Nothing overwrites the image now, so you see the canvas's initial black clear. Once later chapters draw, `LOAD` would keep each target's previous frame, and since several images take turns, older frames would flicker through. Vulkan does not define a fresh image's contents; this works only because the canvas clears every target before first use. Write your own images before you read them.
+        Nothing overwrites the image now, so you see the canvas's initial black clear. Once later chapters draw, `LOAD` would keep whatever the target held from its previous use. Vulkan does not define a fresh image's contents; this works only because the canvas clears every target before first use. Write your own images before you read them.
     2. Divide the three `sinf` frequencies by 10. The window drifts almost imperceptibly.
-    3. Every 60 frames, print `frame_index` divided by elapsed seconds. On a live window it is close to the display's refresh rate, because presentation waits for vertical sync.
+    3. Every 60 frames, print `frame_index` divided by elapsed seconds. On a live window it is usually close to the display's refresh rate, because presentation waits for vertical sync. Some drivers and virtual displays don't wait, and you will see hundreds or thousands.
     4. Print `frame->image_view` and `frame->extent` in the callback, then resize the window. The extent changes, and the image view may too. That is why size comes from the current frame and the view is never kept.
 
 ??? info "Under the hood: the frame you did not have to orchestrate"

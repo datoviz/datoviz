@@ -128,7 +128,7 @@ You see the square above, and the terminal ends with `validation errors: 0`.
 
     1. Change the color of vertex 3 (a copy of vertex 0) without changing vertex 0. A hard color edge appears along the diagonal, because the two triangles no longer agree at that corner.
     2. Draw only the first three vertices. Half the square remains.
-    3. Swap the `position` and `color` fields in `Vertex`, and the two brace groups in every `VERTICES` entry. The image stays correct: `offsetof` and `sizeof` follow the new layout. Then replace one `offsetof` with `0`. The square scrambles, because the GPU now reads color bytes as positions.
+    3. Swap the `position` and `color` fields in `Vertex`, and the two brace groups in every `VERTICES` entry. The image stays correct: `offsetof` and `sizeof` follow the new layout. Then replace `offsetof(Vertex, position)` with `0`. The square scrambles, because the GPU now reads color bytes as positions.
 
 ??? info "Under the hood: a buffer and its memory"
 
@@ -136,7 +136,7 @@ You see the square above, and the terminal ends with `validation errors: 0`.
 
 !!! warning "When it goes wrong"
 
-    Wild geometry or flat colors usually mean a wrong stride, format, or offset. A validation error at draw time often means the buffer lacks `VK_BUFFER_USAGE_VERTEX_BUFFER_BIT`, or was destroyed while a submitted frame still used it.
+    Wild geometry or flat colors usually mean a wrong stride, format, or offset. A validation error at draw time often means the buffer lacks `VK_BUFFER_USAGE_VERTEX_BUFFER_BIT`, or was destroyed while a submitted frame still used it. Red `has not been destroyed` messages after `validation errors: 0`, or a VMA `Some allocations were not freed` assertion, mean a buffer is missing from cleanup: those checks run when the device is destroyed, after the count is printed.
 
 ## Checkpoint
 

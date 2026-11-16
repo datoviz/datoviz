@@ -48,7 +48,21 @@ Add the window size and a small error-handling macro:
 
 ## A window, or a file
 
-You choose once, at startup, whether to render to a window or to an image. At the top of `main`:
+You choose once, at startup, whether to render to a window or to an image, so `main` now takes arguments. Change its signature and declare the objects the cleanup block releases:
+
+```c
+int main(int argc, char** argv)
+{
+    int exit_code = 1;
+    DvzWindowHost* host = NULL;
+    DvzGpuCtx* gpu = NULL;
+    DvzWindow* window = NULL;
+    DvzCanvas* canvas = NULL;
+    DvzCommands* commands = NULL;
+    DvzRendering* rendering = NULL;
+```
+
+Below the declarations, parse `--png`:
 
 ```c
     // With --png PATH the program renders offscreen and saves an image instead of opening a window.
@@ -61,20 +75,6 @@ You choose once, at startup, whether to render to a window or to an image. At th
     DvzBackend backend = live ? DVZ_BACKEND_GLFW : DVZ_BACKEND_OFFSCREEN;
     DvzCanvasRenderMode mode =
         live ? DVZ_CANVAS_RENDER_MODE_PRESENT : DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
-```
-
-`main` now takes arguments. Change its signature and initialize the objects the cleanup block releases:
-
-```c
-int main(int argc, char** argv)
-{
-    int exit_code = 1;
-    DvzWindowHost* host = NULL;
-    DvzGpuCtx* gpu = NULL;
-    DvzWindow* window = NULL;
-    DvzCanvas* canvas = NULL;
-    DvzCommands* commands = NULL;
-    DvzRendering* rendering = NULL;
 ```
 
 The **backend** decides who provides the window. GLFW talks to the desktop; the offscreen backend provides a windowless target of the same size.
@@ -111,7 +111,7 @@ This is where your program gets a GPU. Two Vulkan terms matter from here on:
 
 `dvz_canvas_configure_gpu_ctx()` adds the extensions and features the canvas needs, so an unsuitable device fails here rather than later.
 
-`dvz_gpu_ctx_config_validation()` requests the Vulkan **validation layers**. When installed, they sit between your code and the driver and report API misuse in words. Without them, a mistake may look like a blank window or a crash. Keep them on for the whole course. A missing layer shows up as `validation layer is not supported` at startup; set `DVZ_LOG_LEVEL=info` to see the rest of the startup log.
+`dvz_gpu_ctx_config_validation()` requests the Vulkan **validation layers**. When installed, they sit between your code and the driver and report API misuse in words. Without them, a mistake may look like a blank window or a crash. Keep them on for the whole course. A missing layer shows up as `validation layer is not supported` at startup; set `DVZ_LOG_LEVEL=trace` to see the full startup log, including the layer's own messages.
 
 Print which GPU you got:
 
@@ -311,7 +311,7 @@ The terminal must end with `validation errors: 0`.
 !!! tip "Try it"
 
     1. Change the clear color to `{1.0f, 1.0f, 1.0f, 1.0f}`. The window turns white. Then try `{255.0f, 0.0f, 0.0f, 1.0f}`: the window is pure red, not brighter, because values are clamped to 1.0.
-    2. Comment out the two `dvz_cmd_rendering_*` calls. The window turns black. That black is worth understanding: Vulkan promises *nothing* about an image you have not written. You see black only because the canvas clears each target once before your callback first sees it.
+    2. Comment out `dvz_cmd_rendering_begin()` and `dvz_cmd_rendering_end()`. The window turns black. That black is worth understanding: Vulkan promises *nothing* about an image you have not written. You see black only because the canvas clears each target once before your callback first sees it.
     3. Delete `dvz_window_host_poll()` from the loop. The window still shows the color but stops responding: it no longer resizes, and the close button does nothing.
     4. Open `chapter02.png` in an image viewer that shows pixel values. The red channel is 89, not the 26 you might expect from `0.10 × 255`, because the offscreen target uses an sRGB format that encodes the value for display. Chapter 15 returns to this.
 

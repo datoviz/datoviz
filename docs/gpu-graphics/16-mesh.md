@@ -23,8 +23,6 @@ Delete `VERTICES` and `INDICES`; keep `Vertex`, `Push`, and both size assertions
 Add this helper between `create_texture()` and `draw()`. It loads an OBJ file when given a path and generates a sphere otherwise:
 
 ```c
-
-
 /**
  * Convert generated CPU geometry to the pipeline's float vertices and uint32 indices.
  * @param renderer Renderer that owns the uploaded GPU buffers.
@@ -178,7 +176,7 @@ You see a smooth sphere with a curved checkerboard and a specular highlight. The
 !!! tip "Try it"
 
     1. Lower `rings` to `8` and `sectors` to `16`, and rebuild. The silhouette turns visibly polygonal.
-    2. Recompute the normals: insert this after the geometry checks in `create_mesh()` and rebuild. The capture looks unchanged, because averaged triangle normals closely match the radial ones. Drag the texture seam into view: each side of it averaged only its own triangles, so a faint lighting line can appear there.
+    2. Recompute the normals: insert this after the geometry checks in `create_mesh()` and rebuild. The capture looks unchanged, because averaged triangle normals closely match the radial ones. Each side of the texture seam averages only its own triangles, which is why recomputed normals can differ from the generator's there.
 
         ```c
             DvzResult normal_result = dvz_geometry_compute_normals(geometry);

@@ -100,9 +100,10 @@ The programmable stages run code you supply. The fixed-function stages follow st
 
 The window system picks the swapchain format; the canvas learns it at the first acquire, and the pipeline must name that exact format. A window may use BGRA where an offscreen canvas uses RGBA, so you cannot guess.
 
-After creating the canvas and setting `renderer.device`, run one frame before creating the pipeline. No draw callback is installed yet, so the canvas records its default clear. Then read the resolved format:
+After creating the canvas, set `renderer.device` and run one frame before creating the pipeline. No draw callback is installed yet, so the canvas records its default clear. Then read the resolved format:
 
 ```c
+    renderer.device = dvz_gpu_ctx_device(gpu);
     // Acquire and submit one default clear before creating a format-dependent pipeline.
     int initial_status = DVZ_CANVAS_FRAME_WAIT_SURFACE;
     while (initial_status == DVZ_CANVAS_FRAME_WAIT_SURFACE)
@@ -122,7 +123,7 @@ After creating the canvas and setting `renderer.device`, run one frame before cr
     COURSE_CHECK(renderer.color_format != VK_FORMAT_UNDEFINED, "canvas color format is unresolved");
 ```
 
-If the surface is temporarily unavailable, keep polling until a frame is acquired or the window closes. The draw loop still starts at frame zero, and an offscreen capture reads the next frame, the one with the triangle.
+If the surface is temporarily unavailable, keep polling until a frame is acquired or the window closes. This warm-up frame doesn't count: the loop's first frame draws the triangle, and that is the one `--png` saves.
 
 ## Compile and build the pipeline
 
@@ -263,7 +264,7 @@ Bind the pipeline after rendering begins, set the dynamic viewport and scissor, 
 
 ## Build and run
 
-Save the completed listing as `main.c` in your `vkcourse` directory. Build and run from that directory, close the window, then capture the same result offscreen:
+Build and run from your `vkcourse` directory, close the window, then capture the same result offscreen:
 
 === "Linux and macOS"
 
