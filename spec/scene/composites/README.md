@@ -11,7 +11,7 @@ semantic object -> composite view -> built-in visual roles -> scene frame plan -
 ```
 
 
-The accepted [polygon paint contract and RC3 plan](../semantics/POLYGON_PAINT.md) governs the pending correction of polygon color, alpha, ordering, ownership, and query behavior. Existing mesh/path lowering does not yet establish that contract.
+The accepted [polygon paint contract and RC3 plan](../semantics/POLYGON_PAINT.md) governs polygon color, alpha, ordering, ownership, and query behavior. The correction is locally validated; rendered region picking remains explicitly unsupported and release acceptance follows the linked plan.
 
 ## Purpose
 

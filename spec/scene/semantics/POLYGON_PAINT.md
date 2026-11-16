@@ -1,12 +1,12 @@
 # Polygon Paint Contract And RC3 Plan
 
-Status: accepted target semantics and implementation roadmap, approved 2026-11-17 after an independent architecture audit. Implementation and validation are pending. This is a blocking requirement before freezing or releasing v0.4.0rc3; it is not deferred to RC4. Existing headers describe the currently installed API, not proof that this target is implemented.
+Status: accepted target semantics and implementation roadmap, approved 2026-11-17 after an independent architecture audit. The correction is implemented and locally validated; headed-browser proof, canonical-media approval, and exact-candidate acceptance remain pending. This is a blocking requirement before freezing or releasing v0.4.0rc3; it is not deferred to RC4. Existing headers describe the currently installed API, not proof that this target is implemented.
 
 ## Decision And Rationale
 
 Semantic polygons represent planar 2D paint, with F64 XY rings, holes, region identity, fill, and stroke. Their colors must behave like chart or map colors. Triangulating a polygon into a mesh is an implementation detail and must not turn it into a lit physical surface.
 
-The current fill inherits Phong lighting and opaque alpha mode from `dvz_mesh()`. Merely choosing unlit/blended does not fix composition: phase separation can move translucent fills after opaque strokes, role `z + 1` interleaves separate composites incorrectly, and an aggregated polygon set cannot reproduce per-item ordering with just one fill draw and one stroke draw. The [gallery review](../../../agents/now/GALLERY_REFERENCE_REVIEW.md) preserves the diagnostic evidence.
+Before this correction, the fill inherited Phong lighting and opaque alpha mode from `dvz_mesh()`. Merely choosing unlit/blended does not fix composition: phase separation can move translucent fills after opaque strokes, role `z + 1` interleaves separate composites incorrectly, and an aggregated polygon set cannot reproduce per-item ordering with just one fill draw and one stroke draw. The [gallery review](../../../agents/now/GALLERY_REFERENCE_REVIEW.md) preserves the diagnostic evidence.
 
 ## Required Behavior
 
@@ -29,9 +29,17 @@ For a physical lit surface, use `dvz_triangulate_polygon()` followed by `dvz_mes
 
 The semantic object owns topology, region IDs, RGBA, visibility, and stroke style. The view owns persistent presentation and ordering. Establish defaults at construction or explicit reset; geometry preparation must not repeatedly overwrite user-owned presentation choices. Account for material descriptors that also carry alpha mode so setters do not accidentally reset composition.
 
-Generated role access must document ownership per field. Mutable advanced access may remain if semantic-owned fields are explicitly documented as regenerated and user-owned presentation fields persist through updates. Const inspection and typed view setters are an option when justified, not a prerequisite or an excuse to introduce duplicate owners. API compatibility may break before RC3 when needed for this contract; exact signatures remain an implementation decision.
+Generated role access must document ownership per field. `dvz_polygon_composite_set_order()` selects persistent `DVZ_POLYGON_ORDER_ITEMS` (default) or explicit `DVZ_POLYGON_ORDER_COLLECTION`; `dvz_visual_set_paint(visual, true)` explicitly admits an image or compatible visual to ordered paint composition. Mutable advanced access may remain if semantic-owned fields are explicitly documented as regenerated and user-owned presentation fields persist through updates. The semantic owner fixes paint composition on generated roles: `dvz_visual_set_paint(role, false)` must fail. Paint validation rejects lit material models where the visual consumes a material, enabled depth cueing, volume proxies, additive blending, and mask/OIT alpha modes; unused material-shaped stroke storage does not imply lighting. Const inspection and typed view setters are an option when justified, not a prerequisite or an excuse to introduce duplicate owners. API compatibility may break before RC3 when needed for this contract; exact signatures remain an implementation decision.
 
 Do not introduce a generic composite opacity setter in this fix. Fill/stroke RGBA already expresses per-role transparency. Multiplying both roles independently is not isolated whole-object opacity; isolated group opacity would require a separate contract.
+
+## Current Implementation Boundary
+
+The correction introduces normalized paint composition and shared-buffer item draw spans while retaining one generated fill visual and one stroke visual per polygon set. Public constructors remain unchanged; the order setter controls view overlap policy. Unlit source-over paint is independent of panel lights, generated normals, and per-frame alpha values.
+
+Rendered semantic region queries are not implemented by this correction. Until a combined GPU-authoritative paint query path can preserve coverage and order, the executor conservatively returns `DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY` for a panel containing visible drawable paint, before trying background visuals. This applies regardless of role query capabilities or fixed-controller attachment. Hidden/empty roles do not block queries. The diagnostic is panel-wide rather than a CPU geometry test; holes or pixels outside a visible polygon do not permit a background fallback. Stored region IDs must not be advertised as working rendered identity.
+
+This diagnosed unsupported query route satisfies the plan's explicit unsupported-route boundary; it does not claim region picking support. The full target above remains the required behavior for any future supported paint query path. The [implementation evidence and remaining release gates](../../../agents/now/GALLERY_REFERENCE_REVIEW.md#polygon-paint-implementation-2026-11-17) distinguish completed local acceptance from pending browser and canonical-media approval.
 
 ## Implementation Sequence
 
@@ -53,3 +61,7 @@ All four steps are required before RC3 freeze and release. A two-flag visual fix
 - For public API/binding changes run `just ctypes` and `just ctypes-check` before Python validation; apply relevant shader ABI, specification/DRP2, documentation, and example-manifest checks. Run `git diff --check`.
 
 Close the RC3 blocker only when implementation, focused regressions, cross-language/backend evidence, and regenerated media review are recorded. The earlier gallery and lighting test passes do not establish this new contract.
+
+## Related Composite Audit
+
+Bars and bands use primitives without normal attributes, so they already take the unlit primitive shader path and do not share the polygon fill-lighting bug. Their alpha-dependent defaults and fill/outline attachment ordering remain a separate bounded migration candidate for the reusable paint policy; this polygon correction does not claim to change their overlap semantics.

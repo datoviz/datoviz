@@ -131,6 +131,20 @@ API; it renders categorical sampled fields. Use `dvz_glyph()` only when you need
 over atlas glyph quads.
 
 
+## Planar polygons and maps
+
+Use `dvz_polygon()` with `dvz_polygon_composite()` for one filled region with optional holes and an outline. Use `dvz_polygons()` with `dvz_polygons_composite()` for a collection with per-region colors, IDs, visibility, and stroke widths. See the [polygon example](../examples/composites/polygon.md) and [choropleth](../examples/showcases/choropleth.md).
+
+Polygon fill and stroke are unlit 2D paint: panel lights do not change data colors. RGBA colors use sRGB-authored RGB and linear alpha; source-over blending runs in linear light. Both roles remain in the same composition policy when alpha changes between 0, a fractional value, and 255. Paint does not test or write scene depth and does not supply scene occlusion or AO surfaces.
+
+The default `DVZ_POLYGON_ORDER_ITEMS` paints each region's fill and then its outline, following append order. A later overlapping region can cover an earlier region's outline, just as if the regions had been added as individual polygons. For a map where all boundaries should remain above every fill, select `DVZ_POLYGON_ORDER_COLLECTION` with `dvz_polygon_composite_set_order(composite, DVZ_POLYGON_ORDER_COLLECTION)`. This view setting persists through geometry and style updates.
+
+Paint is composed after the world/volume scene and before UI overlays. Use attachment `z_layer` to order paint objects within that composition phase; it does not reorder unrelated phases. To interleave a raster image with polygons, opt the image into paint using `dvz_visual_set_paint(image, true)` and then set its attachment order. A polygon's generated fill and stroke stay together within their parent attachment order.
+
+Change topology, colors, visibility, and stroke style through the semantic polygon APIs. Those fields are regenerated on the `"fill"` and `"stroke"` visuals. Advanced role access does not transfer ownership of those fields; supported presentation choices belong to the view and persist across refreshes. The semantic owner fixes paint composition on both roles: `dvz_visual_set_paint(role, false)` returns an error. Lit materials, depth cueing, additive blending, and mask/OIT alpha modes are invalid for paint and produce validation diagnostics. Paint remains unlit, depth-free source-over. For a physical lit surface, triangulate with `dvz_triangulate_polygon()`, upload with `dvz_mesh_set_geometry()`, and choose mesh material, alpha, and depth policies explicitly.
+
+Queries currently return `DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY` for a panel containing any visible drawable paint. This conservative whole-panel limitation prevents reporting a background visual or an internal mesh triangle as the region under the pointer. Region IDs remain semantic data; storing them does not imply rendered region picking is supported. Hidden or empty paint does not trigger this restriction. See [queries](../reference/queries.md).
+
 ## Important details
 
 Visual families are lower-level than plotting functions. A composed chart may use several visuals

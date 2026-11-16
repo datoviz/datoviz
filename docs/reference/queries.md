@@ -77,6 +77,12 @@ picking is absent.
 | `DVZ_SCENE_TARGET_GUIDE` | Deferred. | `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET`; no visual id or hit payload. |
 | `DVZ_SCENE_TARGET_ALL_RENDERED` | Deferred while guide picking is absent. | `DVZ_QUERY_STATUS_UNSUPPORTED_TARGET`; no data-only fallback. |
 
+## Ordered Paint Limitation
+
+A panel containing visible drawable paint currently returns `DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY` for supported query targets, including item, object, and face requests. This includes polygon fill/stroke roles and images explicitly opted into paint with `dvz_visual_set_paint()`. The diagnostic identifies a paint visual and reports no hit; it does not return an internal triangle ID or fall through to a background visual.
+
+The limitation applies conservatively to the whole panel, even outside a particular polygon's apparent coverage and even when the paint role has no query capabilities or uses a fixed controller. Existing per-visual identity passes cannot reproduce ordered paint composition or resolve its semantic region IDs. Hidden or empty paint does not block a query. Paint with no enabled draw spans or provably zero effective material alpha also does not block: for material-shaded geometry, either zero opacity or zero base-color alpha eliminates the whole contribution. These roles remain excluded from ordinary mesh/path identity queries even if their query capabilities are enabled. Unsupported targets and unavailable GPU query profiles retain their own diagnostic statuses. See [polygon paint and ordering](../how-to/choose-a-visual-family.md#planar-polygons-and-maps).
+
 ## GPU Authority
 
 Rendered visual queries are GPU-authoritative. CPU code may queue requests, track freshness, decode
