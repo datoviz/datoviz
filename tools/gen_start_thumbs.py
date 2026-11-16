@@ -5,8 +5,8 @@ Reads source PNGs from data/gallery/v0.4/, applies per-image crop boxes,
 and writes 240×180 WebP files to build/gallery-webp/v0.4/thumbs/.
 Skips files whose source PNG is older than the existing thumbnail.
 
-All crop boxes are exact 4:3 (verified) so PIL resize to 240×180 has zero distortion.
-Content bounds were measured via pixel analysis of each source PNG.
+Crop boxes were measured on 1600×1200 reference images. Scale them to the
+actual capture dimensions and fit the result to 4:3 without padding or distortion.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ OUT = ROOT / "build/gallery-webp/v0.4/thumbs"
 THUMB_W, THUMB_H = 240, 180
 
 # (output_stem, source_path_relative_to_SRC, crop_box)
-# crop_box = (x1, y1, x2, y2) in source pixels (all sources are 1600×1200)
+    # crop_box = (x1, y1, x2, y2) in 1600×1200 reference coordinates
 THUMBS: list[tuple[str, str, tuple[int, int, int, int]]] = [
 
     # ── Visual families (order matches tools/visuals_catalog.yaml) ────────────
@@ -46,14 +46,14 @@ THUMBS: list[tuple[str, str, tuple[int, int, int, int]]] = [
     ("v_image",   "visuals/visuals_image.png",       (100,  100, 1500, 1100)),
     # glyph: tight crop on the text
     ("v_glyph",   "visuals/visuals_glyph.png",       ( 50,  282,  850,  882)),
-    # text: content=(134,183,1263,745) — left text block
-    ("v_text",    "visuals/visuals_text.png",        (100,  155,  920,  770)),
+    # text: retain the complete left text block in current 1280×720 captures
+    ("v_text",    "visuals/visuals_text.png",        (  0,    0, 1200, 1200)),
     # primitive: colorful triangles content=(33,108,1535,1151) — tight 4:3
     ("v_primitive","visuals/visuals_primitive.png",  ( 50,   75, 1550, 1200)),
 
     # 3D
     # mesh: cube content=(362,82,1256,1078) — keep whole shape
-    ("v_mesh",    "visuals/visuals_mesh.png",        (150,   20, 1350,  920)),
+    ("v_mesh",    "visuals/visuals_mesh.png",        (  0,    0, 1600, 1200)),
     # volume: sphere content=(268,1,1365,1199) — keep whole shape
     ("v_volume",  "visuals/visuals_volume.png",             (200,   50, 1400,  950)),
     # sphere: 2x zoom into central cluster
@@ -65,7 +65,7 @@ THUMBS: list[tuple[str, str, tuple[int, int, int, int]]] = [
     ("f_panzoom",  "features/features_axes_2d.png",               (200,  100, 1400, 1000)),
     ("f_arcball",  "features/features_controller_arcball.png", (200,  150, 1400, 1050)),
     ("f_colorbar", "features/features_colorbar.png",                   ( 50,  100, 1550, 1225)),
-    ("f_axes",     "features/features_axis_labels.png",        (150,   60, 1350,  960)),
+    ("f_axes",     "features/features_axis_labels.png",        (  0,    0, 1200, 1200)),
     # pick: selection_sphere — shows highlighted spheres in 3D scene
     ("f_pick",     "features/features_selection_sphere.png",   (200,  100, 1400, 1000)),
     # panels: 4-panel grid
@@ -81,15 +81,16 @@ def needs_update(png: Path, webp: Path, force: bool = False) -> bool:
     return png.stat().st_mtime_ns > webp.stat().st_mtime_ns
 
 
-def generate(force: bool = False, output_dir: Path | None = None) -> None:
+def generate(force: bool = False, output_dir: Path | None = None, image_dir: Path | None = None) -> None:
     try:
-        from PIL import Image
+        from PIL import Image, ImageOps
     except ImportError:
         print("gen_start_thumbs: Pillow not available, skipping thumbnail generation")
         return
 
-    if not SRC.exists():
-        print(f"gen_start_thumbs: source PNG dir not found ({SRC}), skipping")
+    source = image_dir or SRC
+    if not source.exists():
+        print(f"gen_start_thumbs: source PNG dir not found ({source}), skipping")
         return
 
     output = output_dir or OUT
@@ -98,7 +99,7 @@ def generate(force: bool = False, output_dir: Path | None = None) -> None:
     skipped = 0
 
     for name, rel_src, box in THUMBS:
-        png = SRC / rel_src
+        png = source / rel_src
         webp = output / f"{name}.webp"
 
         if not png.exists():
@@ -109,8 +110,14 @@ def generate(force: bool = False, output_dir: Path | None = None) -> None:
             skipped += 1
             continue
 
-        img = Image.open(png).crop(box).resize((THUMB_W, THUMB_H), Image.LANCZOS)
-        img.save(webp, "webp", quality=88)
+        with Image.open(png) as image:
+            width, height = image.size
+            scaled = tuple(
+                max(0, min(limit, round(value * limit / reference)))
+                for value, limit, reference in zip(box, (width, height, width, height), (1600, 1200, 1600, 1200))
+            )
+            img = ImageOps.fit(image.crop(scaled), (THUMB_W, THUMB_H), method=Image.Resampling.LANCZOS)
+            img.save(webp, "webp", quality=88)
         updated += 1
 
     print(f"gen_start_thumbs: updated={updated} skipped={skipped}")
@@ -122,5 +129,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--force", action="store_true", help="regenerate even when up to date")
     parser.add_argument("--output-dir", type=Path, default=OUT)
+    parser.add_argument("--image-dir", type=Path, default=SRC)
     args = parser.parse_args()
-    generate(force=args.force, output_dir=args.output_dir)
+    generate(force=args.force, output_dir=args.output_dir, image_dir=args.image_dir)

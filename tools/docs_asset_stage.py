@@ -90,7 +90,10 @@ def required_gallery_products(manifest: dict) -> list[Path]:
     import gallery_media
 
     required: list[Path] = []
+    reviewed_ids = gallery_media.reviewed_example_ids(manifest)
     for entry in manifest.get("examples", []):
+        if reviewed_ids and str(entry.get("id", "")) not in reviewed_ids:
+            continue
         if "screenshot" not in (entry.get("validation") or []):
             continue
         lane, example_id = gallery_media.entry_key(entry)

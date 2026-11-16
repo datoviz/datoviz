@@ -12,6 +12,17 @@ pytest.importorskip("PIL")
 import docs_asset_stage
 
 
+def test_publish_requirements_match_reviewed_gallery_scope():
+    manifest = {
+        'batches': {'review': ['approved']},
+        'examples': [
+            {'id': 'approved', 'category': 'showcase', 'validation': ['screenshot']},
+            {'id': 'experimental', 'category': 'showcase', 'validation': ['screenshot']},
+        ],
+    }
+    assert docs_asset_stage.required_gallery_products(manifest) == [Path('showcases/approved.webp')]
+
+
 def write_manifest(path: Path, preferred: str = "") -> Path:
     card = (
         f"\n        card:\n          preferred: {preferred}"

@@ -5,10 +5,12 @@
 
 import ast
 import os
+import re
 import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from mkdocs.plugins import event_priority
 from mkdocs.structure.files import File
@@ -224,6 +226,26 @@ def on_page_markdown(markdown, page, config, files):
     elif name in ROOT_DOCS:
         return read(f'../{name}.md')
     return markdown
+
+
+def on_post_page(output, config, **kwargs):
+    """Keep authored root-relative media and redirects inside a mounted site."""
+    prefix = urlsplit(config['site_url']).path.rstrip('/')
+    if not prefix:
+        return output
+
+    def mounted(match):
+        url = match.group(2)
+        if url == prefix or url.startswith(prefix + '/'):
+            return match.group(0)
+        return match.group(1) + prefix + url
+
+    return re.sub(
+        r'''(\b(?:href|src|srcset|poster|data-src)=["']|\bcontent=["']\d+;\s*url=)(/(?!/)[^"']*)''',
+        mounted,
+        output,
+        flags=re.IGNORECASE,
+    )
 
 
 @event_priority(-99)

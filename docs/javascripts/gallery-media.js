@@ -2,7 +2,7 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const saveData = navigator.connection && navigator.connection.saveData;
   const localPreview = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
-  const localVideoManifest = "/assets/gallery/v0.4/local-video-assets.json";
+  const localVideoManifest = new URL("../assets/gallery/v0.4/local-video-assets.json", document.currentScript.src).href;
   let localVideoUrls = null;
   const localCacheKey = Date.now().toString(36);
   const mediaUrl = (value) => {
