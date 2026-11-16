@@ -1,6 +1,6 @@
 # Gallery Reference Review, 2026-11-16
 
-Status: all 69 screenshots outside the reference tolerance have an explicit disposition. Of these, 64 are consistent with intentional source changes, two polygon cases require a focused semantic correction, and three small raster residuals retain a comparison/disposition gate. This is a review record, not approval to replace canonical media.
+Status: all 69 screenshots outside the reference tolerance have an explicit disposition. Of these, 64 are consistent with intentional source changes, two polygon cases were corrected and locally revalidated on 2026-11-17, and three small raster residuals retain a comparison/disposition gate. This is a review record, not approval to replace canonical media.
 
 ## Evidence And Limits
 
@@ -16,9 +16,27 @@ Build-local evidence is under `build/gateway-docs/reference-review/`: comparison
 2. **The polygon transparency demonstration needs an explicit alpha policy.** The polygon example describes transparent fills and supplies alpha 210/220, but its fill mesh inherits opaque alpha mode. In diagnostic captures, explicit unlit/opaque produces the raw source RGB, while explicit unlit/blended gives RGB `(86, 177, 124)` for the green region and `(34, 139, 164)` for the holed polygon over background `(22, 27, 34)`, matching linear-light source-over composition. Do not approve a reference merely because the new shading resembles an older screenshot.
 3. **Three small residuals need disposition, not speculative runtime changes.** Point Cloud has maximum delta 7, with 95% of changed components at delta 3 or less, but changes 30.6494% of components. The grid has maximum delta 19 with only nine components above delta 8; the volume has maximum delta 15 with 145 components above delta 8. No obvious lost geometry or new blank output was observed. Driver/rasterization is a hypothesis rather than an established cause.
 
-Accepted decision, 2026-11-17: the independent architecture audit supersedes the initial unlit/alpha-only fix with the [polygon paint contract and implementation plan](../../spec/scene/semantics/POLYGON_PAINT.md). Stable source-over for both roles also requires explicit item/collection ordering, persistent ownership, and semantic query behavior. Implementation and C/Python/WebGPU validation are pending and block RC3 freeze/release. Regenerate affected local media after the fix; keep canonical promotion separate.
+Accepted decision, 2026-11-17: the independent architecture audit supersedes the initial unlit/alpha-only fix with the [polygon paint contract and implementation plan](../../spec/scene/semantics/POLYGON_PAINT.md). Stable source-over for both roles also requires explicit item/collection ordering, persistent ownership, and semantic query behavior. The correction and local C/Python/WASM validation are complete as recorded below. Headed-browser acceptance and exact canonical-media approval remain RC3 gates; keep canonical promotion separate.
 
 For the three residuals, compare the same source on the reference provider/driver when practical, or prepare a new provenance-bearing two-run candidate set and obtain explicit maintainer disposition. Do not loosen the tolerance globally or label an unavailable driver comparison a pass.
+
+## Polygon Paint Implementation, 2026-11-17
+
+Rendering implementation `e919403ab`, query guard `9dbdbce10` with zero-coverage follow-up `7fa7a432b`, regression suite `6ae5c2fd8`, and C/Python example update `c18907140` implement the [accepted contract](../../spec/scene/semantics/POLYGON_PAINT.md). Defaults are unlit source-over without scene depth; item order is fill/stroke per region, while explicit COLLECTION batches fills then boundaries. FramePlan owns ordered spans over shared visual bindings, with existing DRP2 indexed draws; color-only updates reuse cached triangulations and position/index buffers.
+
+Local validation uses Linux, NVIDIA RTX 5090, driver 595.99.02, and Vulkan validation. The complete native suite passes 1,244/1,244 with zero failures/skips, including 777 scene tests. The final focused polygon run passes 10/10, draw-contract checks 2/2, and technique-eligibility checks 2/2. After the zero-effective-alpha query follow-up, the focused query campaign passes 65/65 with zero failures/skips; the earlier full-suite count is retained as its own validation snapshot. Bindings refresh/policy/ABI, shader ABI, specification/DRP2 and boundary checks, generated documentation/manifests, documentation status, and the strict docs build pass. Bounded cppcheck covers four changed implementation units; its nullable-cache warning was addressed and the domain recheck is clean, with the tool's default 12-configuration limit retained.
+
+C captures and Python direct-engine smoke pass for polygon and choropleth. Two independent 1280×720 C capture sets under ignored `build/polygon-paint-review/run-1/` and `run-2/` are byte-identical and were visually inspected: holes and outlines remain intact, and the map's data colors are flat. The polygon green pixel is `(86, 177, 124)` and the holed fill is `(34, 139, 164)`, matching the earlier linear-light alpha diagnostic. Capture SHA256 values are `1822da64b688994d0389812d246c9a0677addae41e3fbf97ee5109bfdbc50954` (polygon) and `dfe84ff28a42eb990b4d3fc29eee6d29370e4040be7129b7c95e99aa7f37699f` (choropleth). These are development candidates, not promoted references.
+
+The large-set fixture retains two visuals for 302 regions. An 80-region ordered set emits 160 draws; COLLECTION coalesces to two draws. A zero-alpha fill gap and an additional hidden region correctly split runs into three and five draws rather than painting skipped geometry. The canonical choropleth explicitly selects COLLECTION and emits two paint draws covering 32,517 fill and 65,898 stroke indices. WASM build and packet smoke pass with exact order/range, source-over blend, and no-depth assertions.
+
+Both focused browser routes reach `QueueSubmit` but skip on the previously recorded external WebGPU instance-loss failure. This is unavailable browser rendering proof, not a pass. The required next check is a headed run on a working WebGPU provider; do not waive it by treating packet validation as pixel validation.
+
+Rendered polygon region picking remains explicitly unsupported: a panel containing visible drawable paint reports `DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY`, including fixed-controller or query-disabled roles, rather than returning internal triangles or background hits. Hidden, empty, and provably zero-coverage paint must not contribute. A future supported implementation must query combined GPU paint coverage in item order and return semantic region IDs; stored IDs alone are insufficient.
+
+For the next documentation pass, preserve the distinction between default item order and explicit map collection order, the phase limits of `z_layer`, and the panel-wide query limitation. The generated polygon/choropleth pages come from canonical C comments, so edit those comments before regenerating gallery pages. Do not overwrite the ongoing course edits with this lane's changes.
+
+Remaining RC3 gates: working headed-browser proof, exact candidate validation, and explicit approval of the regenerated canonical assets. No `data` commit, gitlink, binary payload, or reference image was staged or promoted by this implementation.
 
 ## Disposition Of All 69 Images
 
@@ -26,7 +44,7 @@ For the three residuals, compare the same source on the reference provider/drive
 
 | Example | Disposition | Group |
 | --- | --- | --- |
-| `composites_polygon` | Hold: semantic correction | polygon-color |
+| `composites_polygon` | Corrected locally; canonical promotion pending | polygon-color |
 | `features_alpha_blending` | Expected source change | lighting |
 | `features_animation_tracks` | Expected source change | lighting |
 | `features_annotation_readout` | Expected source change | font |
@@ -75,7 +93,7 @@ For the three residuals, compare the same source on the reference provider/drive
 | `features_technique_transparency` | Expected source change | effects |
 | `features_text_block` | Expected source change | font |
 | `features_user_scale` | Expected source change | font |
-| `showcases_choropleth` | Hold: semantic correction | polygon-color |
+| `showcases_choropleth` | Corrected locally; canonical promotion pending | polygon-color |
 | `showcases_cortical_activity` | Expected source change | lighting |
 | `showcases_linked_probe_colorbar` | Expected source change | font |
 | `showcases_panel_linked_axes` | Expected source change | font |
