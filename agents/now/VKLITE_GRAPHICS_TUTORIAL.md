@@ -1,18 +1,18 @@
 # Modern GPU Graphics In Vulkan Course Execution
 
-Status: executable 15-chapter baseline, generated previews, automated checks, live validation, and an isolated-reader pass complete; conceptual-depth revision to 16 substantive chapters plus an epilogue is active. Exact post-RC2 package proof remains a release gate. Updated: 2026-09-14.
+Status: the complete 16-chapter implementation, epilogue, canonical programs, synchronized excerpts and generated previews are present. The 2026-11-16 in-tree smoke passes all 16 steps; exact post-RC2 package proof and a fresh isolated-reader audit of the revised course remain release gates. The independent reader pass of the earlier 15-chapter baseline remains historical evidence. Updated: 2026-11-16.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
 ## Implemented Baseline
 
-- `docs/gpu-graphics/` contains the overview, chapters 1-15, and the epilogue; `examples/c/vulkan/step01.c` through `step15.c` are their canonical programs.
+- `docs/gpu-graphics/` contains the overview, substantive chapters 1-16, and epilogue 17; `examples/c/vulkan/step01.c` through `step16.c` are the canonical programs. Uniform buffers occupy chapter 12, texture upload/sampling 13-14, lighting 15, and the generated mesh 16.
 - `just vulkan-course-check` verifies synchronized C and GLSL excerpts, and `just vulkan-course-smoke` builds and runs all current steps with deterministic captures and Vulkan validation.
 - The documentation build generates chapter media from canonical programs, including deterministic animations and still fallbacks.
 - Canvas-owned targets start with defined contents, making empty or load-based first frames reproducible.
 - Installed loader discovery reports explicit search routes and works from a source install without manual runtime-directory arguments.
 - `just vulkan-course-wheel-smoke <version>` tests the exact package-first instructions. It correctly reports that `0.4.0rc2` lacks the post-RC2 tutorial API.
-- Technical, prose, and consistency reviews cover the current complete baseline. A fresh isolated worker followed the rendered course from a clean source clone and external student directory, built and ran every chapter, inspected captures, exercised live interaction and shader failure recovery, and reported no course-caused defect after the setup correction.
+- The earlier 15-chapter baseline received technical, prose, consistency and isolated-reader review. That reader followed rendered pages from a clean clone and external student directory, inspected captures, and exercised interaction and shader recovery. This result does not establish independent acceptance of the later 16-chapter revision.
 - The chapter-5 Canvas input path is proven through focused input tests, synthetic hosted-view injection, and a physical X11 `r` injection that delivered one physical-key press, one committed-text event, and one release. The safe reload shape is callback-to-flag only, followed outside event dispatch by candidate shader/pipeline creation, failure-preserving rollback, device wait, pointer swap, and old-pipeline destruction; it requires no watcher or new public API.
 
 The deleted `docs/tutorials/`, `examples/c/tutorial/`, `vulkan-tutorial-*` recipes, and old pilot previews are historical. Do not restore or reference them as current course content.
@@ -23,15 +23,17 @@ The reusable API work is complete: Canvas GPU-context augmentation and resolved 
 
 Official-package shaderc proof on supported platforms, package installation proof for the rewritten course, and platform-delivered live resize remain release evidence rather than new API design work.
 
-## Active Conceptual-Depth Revision
+## Completed Revision And Remaining Review
 
-1. Deepen first-introduction explanations and diagrams across chapters 3-11 without changing their completed behavior.
-2. Insert chapter 12 on uniform buffers and descriptors: a static fragment `Material` tint at set 0 binding 0, with the MVP retained as a vertex-stage push constant.
-3. Shift texture upload to chapter 13; put the combined image sampler at set 0 binding 1 in chapter 14; extend the material uniform with aligned lighting parameters in chapter 15; shift the generated mesh to chapter 16 and the epilogue to 17.
-4. Extend canonical programs, shaders, navigation, checks, smokes, media, and installed-consumer validation through step 16.
-5. Run conceptual and prose consistency review, then repeat the full isolated-reader audit with a fresh independent worker until one complete pass reports no course-caused failure or ambiguity.
+The maintainer reports on 2026-11-16 that Claude is currently checking the course. Treat that review as in progress and collect its findings before scheduling another course audit. Its isolation, chapter coverage, execution evidence and recovery/interaction coverage are not yet recorded, so it does not automatically close the independent-reader or maintainer-review gates.
 
-Use generated geometry and a procedural asymmetric checkerboard. No committed Suzanne OBJ, PNG, `data` update, Blender recipe, or binary-asset approval is required for the course. Optional external-mesh polish may be considered only after the required course is complete.
+`30ee8ea3a` implements the uniform-buffer/descriptor chapter and the 16-chapter sequence; `078bcb809` repairs the cumulative code path and mesh progression, and `fd65af119` makes the documented source setup independent of CUDA. On 2026-11-16, `just vulkan-course-check` verifies 16 chapters and 173 excerpts; `just vulkan-course-smoke` passes all 16 canonical steps with valid, reproducible captures. The strict documentation build generates all 18 media outputs.
+
+1. Obtain maintainer proofreading of all chapters, diagrams, exercises, previews, ownership explanations and package-first instructions.
+2. Collect the current Claude review and check its evidence against the full isolated-reader contract for the revised 16-chapter course. If it covers that contract, use its results; otherwise record the uncovered checks and arrange only the required remaining audit. The earlier 15-chapter pass is not a substitute. Fix course-caused failures or ambiguities before repeating a required complete reader pass.
+3. Validate exact installed artifacts and hosted/live behavior under the RC4 freeze below; retain the first official post-RC2 package gate for RC3.
+
+Use generated geometry and a procedural asymmetric checkerboard. No committed Suzanne OBJ, PNG, `data` update, Blender recipe, or binary-asset approval is required for the course. Optional external-mesh polish is not a release blocker.
 
 ## RC4 Freeze
 

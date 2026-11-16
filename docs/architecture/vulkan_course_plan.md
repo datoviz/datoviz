@@ -1,24 +1,24 @@
 # Vulkan course — rewrite plan
 
-**Status: conceptual-depth revision approved. The existing 15-chapter course, epilogue, canonical programs, shader sources, checks, smokes, previews, and isolated-reader proof form the working baseline. The revision expands the course to 16 substantive chapters plus an epilogue by adding a uniform-buffer and descriptor chapter, then repeats the complete isolated-reader gate. Supersedes the deleted RC3 Vulkan tutorial pilot.**
+**Status: the conceptual-depth revision is implemented as 16 substantive chapters plus epilogue 17, with canonical programs, shaders, synchronized excerpts and generated previews. The 2026-11-16 in-tree smoke passes every step. The independent reader proof covers the earlier 15-chapter baseline; a fresh revised-course reader audit and exact installed-package acceptance remain. Supersedes the deleted RC3 Vulkan tutorial pilot.**
 
 This note records the full rewrite of the AI-generated Vulkan tutorial that lived at `docs/tutorials/vulkan/`. The rewrite changed the section, pedagogy, code delivery model, and end goal.
 
-Current baseline in `docs/gpu-graphics/` and `examples/c/vulkan/`; chapters 12 onward will be revised as specified below:
+Current implementation in `docs/gpu-graphics/` and `examples/c/vulkan/`:
 
 | Chapter | Page | Step program | Result |
 | --- | --- | --- | --- |
-| 1 | `01-setup.md` | `step01.c` (9 lines) | Datoviz links; version prints |
-| 2 | `02-window.md` | `step02.c` (148 lines) | resizable window in a chosen color, or a PNG |
-| 3 | `03-frame.md` | `step03.c` (173 lines) | the frame anatomy, and a pulsing window |
-| 4 | `04-triangle.md` | `step04.c` (267 lines) | an RGB triangle |
-| 5 | `05-shader-files.md` | `step05.c` (350 lines) | external shaders with safe live reload |
-| 6 | `06-vertex-buffers.md` | `step06.c` (390 lines) | a square from vertex data |
-| 7 | `07-index-buffers.md` | `step07.c` (409 lines) | the square with shared vertices |
-| 8 | `08-push-constants.md` | `step08.c` (444 lines) | a rotating, pulsing square |
-| 9 | `09-matrices.md` | `step09.c` (527 lines) | a projected cube without depth |
-| 10 | `10-depth-culling.md` | `step10.c` (539 lines) | depth-tested, culled cube |
-| 11 | `11-mouse-control.md` | `step11.c` (519 lines) | mouse-controlled cube |
+| 1 | `01-setup.md` | `step01.c` | Datoviz links; version prints |
+| 2 | `02-window.md` | `step02.c` | resizable window in a chosen color, or a PNG |
+| 3 | `03-frame.md` | `step03.c` | the frame anatomy, and a pulsing window |
+| 4 | `04-triangle.md` | `step04.c` | an RGB triangle |
+| 5 | `05-shader-files.md` | `step05.c` | external shaders with safe live reload |
+| 6 | `06-vertex-buffers.md` | `step06.c` | a square from vertex data |
+| 7 | `07-index-buffers.md` | `step07.c` | the square with shared vertices |
+| 8 | `08-push-constants.md` | `step08.c` | a rotating, pulsing square |
+| 9 | `09-matrices.md` | `step09.c` | a projected cube without depth |
+| 10 | `10-depth-culling.md` | `step10.c` | depth-tested, culled cube |
+| 11 | `11-mouse-control.md` | `step11.c` | mouse-controlled cube |
 | 12 | `12-uniform-buffers.md` | `step12.c` | material tint supplied by a uniform buffer and descriptor |
 | 13 | `13-texture-upload.md` | `step13.c` | checkerboard uploaded to a GPU image |
 | 14 | `14-texture-sampling.md` | `step14.c` | textured cube |
@@ -230,7 +230,7 @@ RC3 verification confirmed the Canvas input route for chapter 5 through focused 
 
 ## 10. Pre-generation editorial gate (settled 2026-09-14)
 
-Before revising chapters 4-16:
+The completed revision follows these editorial rules; apply them to feedback-driven corrections:
 
 1. Keep the foundational object-model, coordinate, interaction, query, and project-boundary explanations under **Get Started → Concepts**. Reserve **Advanced** for scene planning, retained-resource machinery, GPU ownership, runtime layers, contributors, and release work.
 2. In teaching excerpts, keep checks that explain a failure mode or protect a boundary the chapter introduces. Consolidate routine constructor and teardown failures in complete programs so error handling does not obscure the graphics sequence.

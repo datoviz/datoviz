@@ -10,7 +10,7 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For 
 | --- | --- |
 | Agent instructions | [Follow-up status and recommended order](AGENT_INSTRUCTIONS_FOLLOWUP.md); not a release gate |
 | Autonomous Linux code hardening | [Fractal campaign evidence and follow-ups](FRACTAL_CODE_HARDENING.md); completed transactional buffer growth, constructor/import/readback failure coverage, vendor and NVIDIA diagnosis, and bounded prose passes |
-| Documentation and media | [Documentation gates](DOCUMENTATION.md), [visual pilot and required rollout review](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) |
+| Documentation and media | [Documentation gates](DOCUMENTATION.md), [current 69-image reference review](GALLERY_REFERENCE_REVIEW.md), [visual pilot and required rollout review](HANDOFF_VISUAL_DOCUMENTATION_PASS.md) |
 | Vulkan course | [Execution queue](VKLITE_GRAPHICS_TUTORIAL.md), [durable contract](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) |
 | Packaging | [C/C++ distribution](C_DISTRIBUTION.md), [exact-artifact checklist](DISTRIBUTION_RELEASE_CHECKLIST.md) |
 | Qt/PyQt | [Provider sequence and local proof](QT_MACOS_VULKAN_HANDOFF.md); published-runtime Linux/macOS proof is complete, macOS/Windows machines are unavailable, Windows retains a dependency trust blocker, and RC3 promotion remains undecided |

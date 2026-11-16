@@ -50,7 +50,7 @@ Exit criteria:
 9. source archives and wheels build, install, compile external shaders, and pass installed smoke tests on supported platforms;
 10. static-analysis, memory/UB, Vulkan validation, long-running loop, docs link, gallery smoke, and example smoke results are either clean or recorded as known issues;
 11. checksums/signing policy and required third-party notices are decided;
-12. RC3 feedback explicitly asks whether setup, first-window latency, C guidance, ownership, frame-command explanation, runtime diagnostics, resize behavior, and the tutorial API profile are suitable before chapters 4-15 are implemented.
+12. RC3 feedback explicitly asks whether setup, first-window latency, C guidance, ownership, frame-command explanation, runtime diagnostics, resize behavior, and the tutorial API profile are suitable before final acceptance of the implemented 16-chapter course and tutorial API profile.
 13. the pre-v0.4 native scientific 3D profile has scoped capability, validation, and documentation updates plus correctness fixes for supported paths, with gaps and evidence recorded in the [profile specification](../scene/slices/V04_SCIENTIFIC_3D_PROFILE.md) and [release handoff](../../agents/now/SCIENTIFIC_3D_PROFILE_HANDOFF.md).
 
 
@@ -115,4 +115,4 @@ Each RC should have issue labels or project fields that separate:
 5. documentation issues;
 6. final-release blockers.
 
-After each RC feedback window, summarize findings before the next candidate. RC1 feedback produced a narrow RC2 packaged native-window hotfix, moving its former planned scope to RC3. RC3 now proves the tutorial-facing API and rewritten chapters 1-3 in addition to the documentation, packaging, and quality surface; RC4 completes chapters 4-15 and freezes the tutorial and installed developer experience before final v0.4.0.
+After each RC feedback window, summarize findings before the next candidate. RC1 feedback produced a narrow RC2 packaged native-window hotfix, moving its former planned scope to RC3. RC3 now proves the tutorial-facing API and rewritten chapters 1-3 in addition to the documentation, packaging, and quality surface. All 16 chapters and their development previews are already implemented on `main`; RC4 completes independent reader and exact-package acceptance and freezes the tutorial and installed developer experience before final v0.4.0.

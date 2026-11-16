@@ -1,6 +1,6 @@
 # Modern GPU Graphics In Vulkan Tutorial Contract
 
-Status: required final-v0.4 tutorial. The executable 15-chapter baseline is implemented and independently proven; the approved conceptual-depth revision expands it to 16 substantive chapters plus an epilogue and requires a fresh isolated-reader proof. Updated: 2026-09-14.
+Status: required final-v0.4 tutorial. All 16 substantive chapters plus an epilogue are implemented and pass in-tree synchronization, capture and media checks. The earlier 15-chapter baseline received independent reader proof; a fresh reader audit of the revised course and exact installed-artifact acceptance remain. Updated: 2026-11-16.
 
 Use [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline and [../../agents/now/VKLITE_GRAPHICS_TUTORIAL.md](../../agents/now/VKLITE_GRAPHICS_TUTORIAL.md) for current execution status. This document owns the durable educational, abstraction, delivery, versioning, and validation contract.
 
@@ -14,7 +14,7 @@ Datoviz Canvas and vklite remove platform bootstrap and presentation boilerplate
 
 RC3 owns the reusable tutorial-enabling API, shader-toolchain implementation, and rewritten chapters 1-3: setup, first window, and frame command recording. These chapters must work as standalone installed CMake consumers and establish the course voice, code-growth model, ownership vocabulary, validation path, and deterministic capture infrastructure.
 
-RC4 owns the complete 16-chapter course, preview media for every chapter, exact installed-package validation, the frozen tutorial-facing API profile, and reader feedback. Final v0.4.0 owns feedback-driven fixes, regenerated final media, release-pinned compatibility wording, and publication; it is not a new API-design phase.
+RC4 owns acceptance of the complete 16-chapter course, exact-candidate preview media, exact installed-package validation, the frozen tutorial-facing API profile, and reader feedback. Development implementation is already complete; this allocation does not imply that chapters 4-16 remain to be written. Final v0.4.0 owns feedback-driven fixes, regenerated final media, release-pinned compatibility wording, and publication; it is not a new API-design phase.
 
 ## Audience And Promise
 

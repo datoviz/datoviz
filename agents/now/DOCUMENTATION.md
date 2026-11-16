@@ -1,13 +1,13 @@
 # Datoviz v0.4 Documentation Status
 
-Status: RC3 implementation inventory, rewritten course previews, and automated course prose review complete; maintainer review, exact release artifacts, and publication decisions remain. Scientific technique scope updated: 2026-10-13; earlier prose, PR, and gallery evidence retains its recorded identities.
+Status: complete 16-chapter course implementation and development previews reconciled on 2026-11-16; maintainer review, a fresh revised-course reader audit, exact release artifacts, and publication decisions remain. Earlier automated prose review retains its recorded scope. Scientific technique scope updated: 2026-10-13; earlier prose, PR, and gallery evidence retains its recorded identities.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 
 ## Completed RC3 Documentation Work
 
 - The public v0.4 structure, navigation, status vocabulary, Known limitations page, and preserved `/v0.3/` route are implemented.
-- Generated C reference covers all 1,597 exported functions across 13 pages with drift checking.
+- Generated C reference covers 1,643 classified functions across 13 pages with drift checking at `4f39d031e`; the input-router page was regenerated from current headers.
 - Python guidance covers all 18 NumPy-adapted calls, three generated helpers, exact `datoviz.raw` use, ownership, callbacks, and the GSP/VisPy2 boundary.
 - All 12 real or prepared dataset showcases pass attribution and provenance checks.
 - Gallery tooling enforces canonical `1280x720` animation media, bounded FPS/CRF fallback, encoded-output validation, isolated deterministic parallelism, and capture-worker limits.
@@ -17,7 +17,7 @@ Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wid
 - The canonical histogram is published through `data` commit `6a9091c10e08e477af5b07496cac602aefc7c999` and parent commit `9b0884f507f76f5a982db85cd2f6e59f094512e1`; all 107 reviewed stills pass full-pixel validation, and the example has C, Python, and live WebGPU routes.
 - The four-page visual-system pilot passes strict build and software-rendered desktop/mobile inspection.
 - PR #157 merged the refreshed embedding and platform-portability work at `fccf83061b05b7373f5caa1ba40bdecfc3578306` with green Linux, macOS, Windows, agent-instruction, and submodule-reachability checks. PR #136 is merged and superseded by #157; original PR #132 is closed as superseded.
-- Rewritten course chapters 1-3, their canonical programs, source synchronization, and installed source-prefix smoke are implemented.
+- All 16 substantive course chapters and epilogue 17 are implemented, including uniform buffers/descriptors and the generated textured, lit mesh. Current source synchronization verifies 173 excerpts, in-tree smoke passes all 16 steps with reproducible captures, and the documentation build generates 18 media outputs. Earlier installed-source and independent-reader evidence retains its original revision/chapter scope.
 - Rewritten course previews are generated from the canonical programs with real stdout, exact flat-color validation, deterministic fixed-time animation, and no `data` dependency.
 - The 2026-09-08 automated course prose review covers the overview and chapters 1-3. Setup now gives corrected Windows Developer PowerShell, Release-configuration source-install, package DLL `PATH`, and configuration-specific executable guidance; maintainer review of voice and pacing remains required.
 
@@ -25,11 +25,15 @@ The two bounded Fractal prose batches (`c4adddfd8` and `6d4affab6`) clarify twel
 
 The scientific-profile correction at `d0e904705` updates native technique coverage, known limitations, feature status, and point/mesh specifications. Unsupported family/alpha/producer combinations, mask cutoff, item-state/instancing exclusions, and native/WGSL differences are explicit; the [profile handoff](SCIENTIFIC_3D_PROFILE_HANDOFF.md) retains implementation and GPU regression evidence.
 
+## Current Gallery Reference Review, 2026-11-16
+
+[The complete review](GALLERY_REFERENCE_REVIEW.md) classifies all 69 changed screenshots against the protected references: 64 are consistent with intentional font, lighting, rendering, GUI or showcase changes; two polygon cases expose color/alpha semantics requiring a focused correction; three small raster residuals retain a matched-provider/explicit-disposition gate. Current generation produced 107 nonblank, repeatable PNGs, 38 changing motion previews and 29 budget-compliant MP4 cards/posters. No reference image or `data` gitlink was promoted by this review.
+
 ## Remaining RC3 Documentation Work
 
 1. Obtain maintainer review of the four-page visual pilot before broad rollout.
-2. Review the rewritten course voice, pacing, API profile, ownership explanations, package-first instructions, and generated previews.
-3. Approve exact animation/card publication candidates if they should replace canonical website assets.
+2. Collect the in-progress Claude course review before scheduling another audit; confirm its coverage and resolve findings. Maintainer acceptance of voice, pacing, API profile, ownership explanations, package-first instructions and previews remains separate.
+3. Resolve the polygon-color/alpha concerns and small raster residuals in the gallery review, then approve exact screenshot and animation/card candidates if they should replace canonical assets.
 4. Review the local RC3 release-notes draft; finalize its exact identity, validation evidence, and release-specific known issues only when artifact scope is fixed.
 5. Review exact outreach drafts before any dataset-author or public GitHub communication.
 
@@ -43,7 +47,7 @@ The contributor reviewed PR #136 and requested namespaced shader-tool settings a
 
 ## RC4 Documentation Gate
 
-Complete course chapters 4-16 and the epilogue through an interactive textured and lit generated mesh. Generate a preview for every chapter, freeze the tutorial-facing API and advanced/unstable compatibility profile, validate every chapter against exact installed artifacts on supported hosted platforms, and resolve or record reader feedback.
+Accept the already implemented 16-chapter course and epilogue through an interactive textured and lit generated mesh. Complete the fresh revised-course isolated-reader audit, regenerate previews from exact candidate code, freeze the tutorial-facing API and advanced/unstable compatibility profile, validate every chapter against exact installed artifacts on supported hosted platforms, and resolve or record reader feedback. Development implementation and preview generation do not close these acceptance gates.
 
 The required course uses generated geometry and a procedural texture. Suzanne and committed binary course assets are optional polish and must not become release blockers.
 
