@@ -32,13 +32,15 @@ Current maintainer-feedback work follows [ISSUES_139_140_HANDOFF.md](ISSUES_139_
 
 The course expanded on `main` in `30ee8ea3a` and received cumulative-path corrections in `078bcb809`. On 2026-11-16, all 16 step programs pass reproducible in-tree rendering, all 173 C/GLSL excerpts synchronize, and all 18 media outputs generate. This closes implementation work, not the fresh reader audit or exact installed-package/hosted acceptance. The maintainer decided on 2026-11-16 to ship the complete course in RC3; RC4 keeps reader feedback and the tutorial API freeze. The 2026-11-16 Claude review covered a fresh-clone reader run of all 16 chapters (all built and ran with zero validation errors), voice, clarity and correctness, consistency, learner experience and pacing. Must-fix findings landed in `3d2397637`; a concise template, voice and learner pass follows. Deferred past v0.4: reordering part 4 (upload, sampling, then uniform buffers), moving viewport/scissor from chapter 3 to 4, and a canvas format query before the first frame. See [the course queue](VKLITE_GRAPHICS_TUTORIAL.md).
 
+The maintainer accepted the [polygon paint contract and implementation plan](../../spec/scene/semantics/POLYGON_PAINT.md) on 2026-11-17. Its implementation, focused C/Python/WebGPU validation, and regenerated-media review are mandatory before RC3 freeze and release, not RC4 follow-up. The independent audit and plan are complete; the runtime fix is pending.
+
 Remaining RC3 deliverables:
 
 1. Obtain maintainer review of the visual pilot, rewritten course voice and previews, and exact gallery publication candidates. The refreshed embedding-portability implementation is merged through #157, and original PR #132 is closed as superseded, so this lane is no longer an RC3 gate.
 2. Complete subjective documentation and media review plus the remaining multi-machine review without admitting deferred dependency work; local documentation, WebGPU, input, Qt, gallery-cache, and animation/card pipeline gates are complete.
 3. Prove the complete course and runtime shaderc against the first official package newer than RC2 on supported hosted platforms; retain honest live-resize and physical-machine exclusions.
 4. Validate the final source bundle, six-wheel matrix, installed Python/CMake consumers, Windows vcpkg overlay, base conda layouts, third-party notices, and checksum/signing policy.
-5. Freeze the exact RC3 candidate, carry forward the completed local source-quality and media-pipeline evidence, and run the immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
+5. Close the polygon-paint blocker above, freeze the exact RC3 candidate, carry forward the completed local source-quality and media-pipeline evidence, and run the immutable package/artifact, installed-consumer, hosted-platform, and physical-platform gates with explicit limitations.
 6. Freeze RC3 notes, known issues, validation evidence, artifacts, and feedback request only after the exact release scope is fixed.
 7. Close the scoped scientific-profile capability, validation, documentation, and supported-path correctness gaps without broadening RC3 into major rendering features.
 

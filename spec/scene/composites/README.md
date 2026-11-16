@@ -11,6 +11,8 @@ semantic object -> composite view -> built-in visual roles -> scene frame plan -
 ```
 
 
+The accepted [polygon paint contract and RC3 plan](../semantics/POLYGON_PAINT.md) governs the pending correction of polygon color, alpha, ordering, ownership, and query behavior. Existing mesh/path lowering does not yet establish that contract.
+
 ## Purpose
 
 Use composites when a user-facing object has semantic identity that is larger than one visual:

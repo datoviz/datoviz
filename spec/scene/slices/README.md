@@ -64,6 +64,8 @@ Each implementation slice should answer these questions before code starts:
 
 ## Current Implementation Order
 
+The accepted [polygon paint contract and implementation sequence](../semantics/POLYGON_PAINT.md) is a blocking pre-RC3 correction and takes priority over optional extensions below. Implementation and acceptance evidence remain pending.
+
 Use this order unless a concrete user task changes priority:
 
 1. Carry the completed [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md) through exact-candidate native and browser validation without expanding it into full PBR.

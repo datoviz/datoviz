@@ -24,6 +24,7 @@ Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For 
 | Atlas and sampled fields | [Current capability, gaps, benchmark gates, and RC3/RC4/final/v0.5 allocation](ATLAS_SAMPLED_FIELDS_HANDOFF.md) |
 | GSP and VisPy2 future integration | [Durable post-RC3 roadmap](../../spec/api/GSP_VISPY2_FUTURE_WORK.md); panel titles and exact image texel identity are not RC3 gates, while mesh-face picking is currently downstream GSP work |
 | Interactive mesh performance | [Atlas-scale query, mesh-part, and GUI viewport evidence and implementation sequence](INTERACTIVE_MESH_PERFORMANCE_HANDOFF.md) |
+| Polygon paint (RC3 blocker) | [Accepted contract and implementation plan](../../spec/scene/semantics/POLYGON_PAINT.md); unlit stable source-over, ordered items/collections, persistent ownership, semantic picking, and C/Python/WebGPU validation must land before RC3 freeze/release |
 | Lighting | [Completed RC3 foundation](../../spec/scene/slices/RC3_LIGHTING_FOUNDATION_SLICE.md); preserve panel-light ownership and direct/indirect contracts; broader PBR and the optional multi-light showcase remain deferred |
 | ImPlot and docking | [Deferred integration](GUI_IMPLOT_DOCKING_HANDOFF.md); keep the experimental example default-off and partial integration out of RC3 |
 | Windows CUDA/Vulkan interop | [Status](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/STATUS.md), [next steps](../../docs/tasks/2026-08-02-windows-cuda-vulkan-interop/NEXT_STEPS.md); non-blocking RC4 work unless explicitly promoted |

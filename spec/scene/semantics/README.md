@@ -27,6 +27,7 @@ transparency, clipping, transforms, or geometry utilities.
 15. [CLIPPING.md](CLIPPING.md): clip modes and data-area clipping.
 16. [NONLINEAR_TRANSFORMS.md](NONLINEAR_TRANSFORMS.md): non-linear coordinate transforms.
 17. [GEOMETRY_UTILITIES.md](GEOMETRY_UTILITIES.md): CPU-side geometry utility layer.
+18. [POLYGON_PAINT.md](POLYGON_PAINT.md): accepted polygon paint contract and blocking pre-RC3 implementation plan; implementation pending.
 
 
 ## Active Proposal Inputs

@@ -5,6 +5,8 @@ Status: normative transparency semantics. A declared alpha mode does not establi
 This document defines how the scene layer handles transparent visuals, depth ordering, and order-independent transparency.
 
 
+The accepted [polygon paint contract](POLYGON_PAINT.md) specifies a separate ordered, depth-free source-over policy for semantic 2D polygons. Its implementation is pending and blocks RC3; it does not change the ordinary visual defaults below.
+
 ## Alpha Modes
 
 Every visual declares an `alpha_mode` that tells the scene how to handle its fragments:

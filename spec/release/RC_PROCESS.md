@@ -52,6 +52,7 @@ Exit criteria:
 11. checksums/signing policy and required third-party notices are decided;
 12. RC3 feedback explicitly asks whether setup, first-window latency, C guidance, ownership, frame-command explanation, runtime diagnostics, resize behavior, and the tutorial API profile are suitable before final acceptance of the implemented 16-chapter course and tutorial API profile.
 13. the pre-v0.4 native scientific 3D profile has scoped capability, validation, and documentation updates plus correctness fixes for supported paths, with gaps and evidence recorded in the [profile specification](../scene/slices/V04_SCIENTIFIC_3D_PROFILE.md) and [release handoff](../../agents/now/SCIENTIFIC_3D_PROFILE_HANDOFF.md).
+14. the accepted [polygon paint contract](../scene/semantics/POLYGON_PAINT.md) is implemented and validated before RC3 freeze/release: unlit colors, stable source-over, item/collection ordering, persistent ownership, correct semantic picking or explicit unsupported-route diagnostics, focused C/Python/WebGPU evidence, and regenerated polygon/choropleth media review. A plan or screenshot-only correction does not close this blocker.
 
 
 ## RC4: Tutorial And Installed Developer Experience Candidate
