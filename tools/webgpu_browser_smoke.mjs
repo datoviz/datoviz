@@ -1111,6 +1111,8 @@ async function main() {
         ['features_reference_grid', { label: 'Reference Grid' }],
         ['features_bounds_overlay', { label: 'Bounds Overlay' }],
         ['composites_graph', { label: 'Graph Composite' }],
+        ['composites_polygon', { label: 'Polygon Composite' }],
+        ['showcases_choropleth', { label: 'U.S. State Choropleth' }],
         ['features_orientation_gizmo', { label: 'Orientation Gizmo', kind: 'animated' }],
         ['features_probe_labels', { label: 'Label Probe', kind: 'query' }],
         ['start_scatter', { label: 'Scatter Plot' }],

@@ -7391,6 +7391,97 @@ int test_scene_splat_alpha_mode_emits_wboit_drp2(TstContext* suite, const TstCas
 
 
 /**
+ * Verify ordered draw work validates shared slots, exact ranges, and exact draw counts.
+ *
+ * @param suite active test context
+ * @return success or a failed assertion
+ */
+static int _test_scene_drp2_ordered_draw_contracts(TstContext* suite)
+{
+    DvzFramePlanVisualMeta metadata[3] = {
+        {.index_count = 12}, {.index_count = 24}, {.index_count = 12},
+    };
+    DvzFramePlanDrawSpan spans[4] = {
+        {.visual_slot = 0, .indexed_range = true, .first_index = 0, .index_count = 6},
+        {.visual_slot = 1, .indexed_range = true, .first_index = 6, .index_count = 12},
+        {.visual_slot = 0, .indexed_range = true, .first_index = 6, .index_count = 6},
+        {.visual_slot = 0, .indexed_range = true, .first_index = 0, .index_count = 6},
+    };
+    DvzFramePlanNode render = {0};
+    render.type = DVZ_FRAME_PLAN_NODE_RENDER;
+    render.u.render.pass_role = DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE;
+    render.u.render.has_pass_contract = true;
+    dvz_strlcpy(render.u.render.pass_contract_id, "ordered-contract",
+                sizeof(render.u.render.pass_contract_id));
+    render.u.render.visual_count = 2;
+    render.u.render.visual_metadata = metadata;
+    render.u.render.draw_spans = spans;
+    render.u.render.draw_span_count = 3;
+    DvzFramePlan plan = {.count = 1, .nodes = &render};
+    DvzDrp2CommandStream* stream = dvz_drp2_stream();
+    ANN(stream);
+    AT(dvz_drp2_stream_set_label(stream, 7, "ordered-contract"));
+    AT(dvz_drp2_stream_begin_render_pass(stream, 7, 1, 2));
+    AT(dvz_drp2_stream_draw_indexed(stream, 7, 6, 1, 0, 0, 0));
+    AT(dvz_drp2_stream_draw_indexed(stream, 7, 12, 1, 6, 0, 0));
+    AT(dvz_drp2_stream_draw_indexed(stream, 7, 6, 1, 6, 0, 0));
+    AT(dvz_drp2_stream_end_render_pass(stream, 7));
+    DvzDiagnosticReport report = {0};
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) == 0);
+
+    spans[1].visual_slot = 2;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    AT(dvz_diagnostic_report_count(&report) > 0);
+    spans[1].visual_slot = 1;
+
+    stream->commands[1].u.draw_indexed.first_index = 1;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    stream->commands[1].u.draw_indexed.first_index = 0;
+    stream->commands[1].u.draw_indexed.index_count = 7;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    stream->commands[1].u.draw_indexed.index_count = 6;
+
+    spans[0].first_index = UINT32_MAX;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    spans[0].first_index = 0;
+    render.u.render.draw_spans = NULL;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    render.u.render.draw_spans = spans;
+
+    render.u.render.draw_span_count = 2;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    render.u.render.draw_span_count = 4;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    render.u.render.draw_span_count = 3;
+    stream->commands[1].type = DVZ_DRP2_COMMAND_DRAW;
+    dvz_diagnostic_report_init(&report);
+    AT(!_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    stream->commands[1].type = DVZ_DRP2_COMMAND_DRAW_INDEXED;
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+
+    // Ordinary visual lists retain their existing one-draw-per-visual contract.
+    render.u.render.draw_span_count = 0;
+    render.u.render.draw_spans = NULL;
+    render.u.render.visual_count = 3;
+    dvz_diagnostic_report_init(&report);
+    AT(_scene_frame_plan_drp2_contracts_validate(&plan, stream, &report));
+    dvz_drp2_stream_destroy(stream);
+    return 0;
+}
+
+
+
+/**
  * Verify scene DRP2 contract validation catches emitted pipeline policy drift.
  *
  * @param suite the active test suite
@@ -7401,6 +7492,7 @@ int test_scene_drp2_contract_checker_rejects_pipeline_drift(TstContext* suite, c
 {
     ANN(suite);
     (void)item;
+    AT(_test_scene_drp2_ordered_draw_contracts(suite) == 0);
 
     DvzScene* scene = dvz_scene();
     AT(scene != NULL);

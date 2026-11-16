@@ -1436,6 +1436,32 @@ function expectPanelBackgroundScenarioStreamShape(stream, label) {
   requireOk(commandsOf(stream, "Draw").length >= 1, `${label}: expected primitive draw`);
 }
 
+function orderedIndexedDraws(stream, pipelineNames) {
+  const pipelines = new Map(commandsOf(stream, "CreateRenderPipeline").map((p) => [p.id, p]));
+  const active = new Map();
+  const draws = [];
+  for (const command of stream.commands) {
+    if (command.cmd === "SetPipeline") active.set(command.pass_id, command.pipeline_id);
+    if (command.cmd !== "DrawIndexed") continue;
+    const pipeline = pipelines.get(active.get(command.pass_id));
+    if (pipelineNames.includes(pipeline?.builtin_pipeline)) draws.push({ ...command, pipeline });
+  }
+  return draws;
+}
+
+function expectPaintPipeline(pipeline, label) {
+  requireOk(pipeline.topology === "triangle-list", `${label}: expected triangle-list paint coverage`);
+  requireOk(pipeline.depth_stencil === undefined, `${label}: paint must not carry depth state`);
+  const blend = pipeline.color_targets?.[0]?.blend;
+  requireOk(
+    blend?.color.src_factor === "src-alpha" &&
+      blend.color.dst_factor === "one-minus-src-alpha" && blend.color.operation === "add" &&
+      blend.alpha.src_factor === "one" &&
+      blend.alpha.dst_factor === "one-minus-src-alpha" && blend.alpha.operation === "add",
+    `${label}: paint must use linear source-over color and alpha blend state`,
+  );
+}
+
 function expectCompositePolygonScenarioStreamShape(stream, label) {
   expectAllShadersWgsl(stream, label);
   expectPipelineMetadata(stream, label);
@@ -1451,8 +1477,24 @@ function expectCompositePolygonScenarioStreamShape(stream, label) {
   );
   expectDrawIndexed(stream, 42, 1, `${label} holed polygon fill`);
   expectDrawIndexed(stream, 84, 1, `${label} holed polygon stroke`);
-  expectDrawIndexed(stream, 36, 1, `${label} polygon-set fills`);
-  expectDrawIndexed(stream, 108, 1, `${label} polygon-set strokes`);
+  const draws = orderedIndexedDraws(stream, ["scene.primitive", "scene.path"]);
+  const expected = [
+    ["scene.primitive", 0, 42], ["scene.path", 0, 84],
+    ["scene.primitive", 0, 24], ["scene.path", 0, 60],
+    ["scene.primitive", 24, 6], ["scene.path", 60, 24],
+    ["scene.primitive", 30, 6], ["scene.path", 84, 24],
+  ];
+  requireOk(draws.length === expected.length, `${label}: expected eight ordered fill/stroke spans`);
+  for (let i = 0; i < expected.length; i++) {
+    const [name, first, count] = expected[i];
+    const draw = draws[i];
+    requireOk(
+      draw.pipeline.builtin_pipeline === name && draw.first_index === first &&
+        draw.index_count === count && draw.instance_count === 1 && draw.base_vertex === 0,
+      `${label}: unexpected polygon span ${i}: ${JSON.stringify(draw)}`,
+    );
+    expectPaintPipeline(draw.pipeline, `${label} span ${i}`);
+  }
   requireOk(
     commandsOf(stream, "Draw").length + commandsOf(stream, "DrawIndexed").length >= 2,
     `${label}: expected polygon fill and stroke draws`,
@@ -1550,6 +1592,19 @@ function expectChoroplethScenarioStreamShape(stream, label) {
     `${label} labels`,
     (pipeline) => pipeline.builtin_pipeline === "scene.glyph",
   );
+  const draws = orderedIndexedDraws(stream, ["scene.primitive", "scene.path"]);
+  requireOk(draws.length === 2, `${label}: COLLECTION must retain two batched paint draws`);
+  const expected = [["scene.primitive", 32517], ["scene.path", 65898]];
+  for (let i = 0; i < expected.length; i++) {
+    const [name, count] = expected[i];
+    requireOk(
+      draws[i].pipeline.builtin_pipeline === name && draws[i].first_index === 0 &&
+        draws[i].index_count === count && draws[i].instance_count === 1 &&
+        draws[i].base_vertex === 0,
+      `${label}: unexpected collection paint draw ${i}`,
+    );
+    expectPaintPipeline(draws[i].pipeline, `${label} collection role ${i}`);
+  }
   requireOk(commandsOf(stream, "SetViewport").length >= 1, `${label}: expected viewport command`);
   requireOk(commandsOf(stream, "SetScissor").length >= 1, `${label}: expected scissor command`);
   requireOk(

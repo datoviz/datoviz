@@ -26,6 +26,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
+int test_scene_polygon_paint(TstSuite* suite);
+
 int test_scene_panzoom_arcball(TstSuite* suite);
 
 int test_scene_frame_demand(TstSuite* suite);
