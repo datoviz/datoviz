@@ -45,6 +45,7 @@ FENCE = re.compile(r"^(?P<indent> *)```(?P<lang>[a-z]*)\s*$", re.MULTILINE)
 ALLOWED_DIVERGENCE = {
     "03-frame.md": ("VK_ATTACHMENT_LOAD_OP_LOAD",),
     "10-depth-culling.md": ("fillModeNonSolid", "VK_POLYGON_MODE_LINE"),
+    "16-mesh.md": ("dvz_geometry_compute_normals", "dvz_geometry_torus"),
 }
 
 

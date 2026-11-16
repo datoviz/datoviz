@@ -8,7 +8,6 @@
 
 #include <datoviz.h>
 #include <datoviz/canvas.h>
-#include <datoviz/common/functions.h>
 #include <datoviz/controller.h>
 #include <datoviz/fileio.h>
 #include <datoviz/math/types.h>

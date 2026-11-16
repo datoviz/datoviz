@@ -8,7 +8,6 @@
 
 #include <datoviz.h>
 #include <datoviz/canvas.h>
-#include <datoviz/common/functions.h>
 #include <datoviz/controller.h>
 #include <datoviz/fileio.h>
 #include <datoviz/math/types.h>
@@ -18,18 +17,18 @@
 #include <datoviz/vklite.h>
 #include <datoviz/window.h>
 
-#define WIDTH  800
-#define HEIGHT 600
+#define WIDTH        800
+#define HEIGHT       600
 #define TEXTURE_SIZE 64
 
-#define COURSE_CHECK(condition, message)                                                         \
-    do                                                                                           \
-    {                                                                                            \
-        if (!(condition))                                                                        \
-        {                                                                                        \
-            fprintf(stderr, "%s\n", message);                                                   \
-            goto cleanup;                                                                        \
-        }                                                                                        \
+#define COURSE_CHECK(condition, message)                                                          \
+    do                                                                                            \
+    {                                                                                             \
+        if (!(condition))                                                                         \
+        {                                                                                         \
+            fprintf(stderr, "%s\n", message);                                                     \
+            goto cleanup;                                                                         \
+        }                                                                                         \
     } while (0)
 
 typedef struct
@@ -222,15 +221,16 @@ static int create_pipeline(Renderer* renderer)
 
     int vertex_result =
         dvz_shader(renderer->device, vertex.spirv_size, vertex.spirv, renderer->vertex_shader);
-    int fragment_result =
-        dvz_shader(renderer->device, fragment.spirv_size, fragment.spirv, renderer->fragment_shader);
+    int fragment_result = dvz_shader(
+        renderer->device, fragment.spirv_size, fragment.spirv, renderer->fragment_shader);
     dvz_shader_compile_result_destroy(&vertex);
     dvz_shader_compile_result_destroy(&fragment);
     if (vertex_result != 0 || fragment_result != 0)
         return -1;
 
     dvz_slots(renderer->device, renderer->slots);
-    dvz_slots_binding(renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    dvz_slots_binding(
+        renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_slots_push(renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Push));
     if (dvz_slots_create(renderer->slots) != 0)
         return -1;
@@ -267,10 +267,17 @@ static int create_pipeline(Renderer* renderer)
     if (renderer->descriptors == NULL)
         return -1;
     dvz_descriptors(renderer->slots, renderer->descriptors);
-    dvz_descriptors_buffer(renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0, sizeof(Material));
+    dvz_descriptors_buffer(
+        renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0,
+        sizeof(Material));
     return dvz_descriptors_handle(renderer->descriptors, 0) != VK_NULL_HANDLE ? 0 : -1;
 }
 
+/**
+ * Create the persistent material uniform buffer.
+ * @param renderer Renderer that owns the buffer.
+ * @return Zero on success.
+ */
 static int create_material(Renderer* renderer)
 {
     Material material = {.tint = {0.75f, 0.9f, 1.0f, 1.0f}};
@@ -280,7 +287,8 @@ static int create_material(Renderer* renderer)
     dvz_buffer(renderer->device, renderer->allocator, renderer->material_buffer);
     dvz_buffer_size(renderer->material_buffer, sizeof(Material));
     dvz_buffer_usage(renderer->material_buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-    dvz_buffer_flags(renderer->material_buffer, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+    dvz_buffer_flags(
+        renderer->material_buffer, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
     if (dvz_buffer_create(renderer->material_buffer) != 0)
         return -1;
     dvz_buffer_upload(renderer->material_buffer, 0, sizeof(material), &material);
@@ -453,7 +461,8 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
     dvz_cmd_rendering_begin(renderer->commands, renderer->rendering);
     dvz_cmd_bind_graphics(renderer->commands, renderer->pipeline);
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
-    dvz_cmd_bind_descriptors(renderer->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
+    dvz_cmd_bind_descriptors(
+        renderer->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
     DvzResult push_result = dvz_cmd_push_constants(
         renderer->commands, renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push), &push);
     if (push_result != DVZ_OK)
@@ -539,7 +548,8 @@ int main(int argc, char** argv)
     int initial_submit_result = dvz_canvas_submit(canvas);
     COURSE_CHECK(initial_submit_result == 0, "initial frame submission failed");
     renderer.color_format = dvz_canvas_frame_format(canvas);
-    COURSE_CHECK(renderer.color_format != VK_FORMAT_UNDEFINED, "canvas color format is unresolved");
+    COURSE_CHECK(
+        renderer.color_format != VK_FORMAT_UNDEFINED, "canvas color format is unresolved");
 
     renderer.commands = dvz_commands_create_wrapper();
     renderer.rendering = dvz_rendering_create_wrapper();
@@ -578,7 +588,8 @@ int main(int argc, char** argv)
     camera_desc.projection.fov_y = 1.0471976f;
     renderer.camera = dvz_camera_create(&camera_desc);
     renderer.arcball = dvz_arcball_create(NULL);
-    COURSE_CHECK(renderer.camera != NULL && renderer.arcball != NULL, "controller creation failed");
+    COURSE_CHECK(
+        renderer.camera != NULL && renderer.arcball != NULL, "controller creation failed");
     DvzResult initial_result = dvz_arcball_initial(renderer.arcball, (vec3){-0.35f, 0.65f, 0.0f});
     COURSE_CHECK(initial_result == DVZ_OK, "initial rotation failed");
     DvzResult connect_result = dvz_arcball_connect(renderer.arcball, dvz_canvas_input(canvas));

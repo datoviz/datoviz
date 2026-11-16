@@ -1,14 +1,14 @@
 # 9. Matrices and perspective
 
-**Your program at the end of this chapter: 527 C lines. The raw Vulkan equivalent: around 1550 lines, a rough estimate. The rotating cube's faces overlap in the wrong order.**
+*About 526 lines of C; raw Vulkan would need about 1550.*
 
 ![A spinning cube with deliberately incorrect face order.](../assets/gpu-graphics/09-matrices.webp)
 
-The square from chapter 8 becomes a cube. The same vertex buffer, index buffer, shader-file compiler, and reload loop stay in place. Rotation and scaling move from the vertex shader into a model matrix on the CPU, then the shader applies a combined model-view-projection matrix.
+Time for 3D. The square becomes a cube, seen through a perspective camera. Rotation and scaling move from the vertex shader to the CPU, which combines three matrices into one and pushes it each frame. The result looks wrong on purpose: faces overlap in the wrong order until chapter 10.
 
 ## Eight corners and twelve triangles
 
-Include `<datoviz/math/types.h>` for `mat4`. Change the position to three floats and replace the two-float `Push` with a matrix:
+Include `<datoviz/math/types.h>` for `mat4`. Give positions three floats, and replace the two-float `Push` with a matrix:
 
 ```c
 typedef struct
@@ -23,7 +23,7 @@ typedef struct
 } Push;
 ```
 
-Replace both geometry arrays. Each face uses two triangles, and each triangle lists its corners counter-clockwise when viewed from outside the cube:
+Replace both geometry arrays. Each face is two triangles, and each triangle lists its corners counter-clockwise when seen from outside the cube:
 
 ```c
 static const Vertex VERTICES[8] = {
@@ -48,14 +48,14 @@ static const uint16_t INDICES[36] = {
 };
 ```
 
-The buffer sizes already use `sizeof(VERTICES)` and `sizeof(INDICES)`, so they follow the new arrays. Change the position attribute to three floats:
+The buffer sizes use `sizeof(VERTICES)` and `sizeof(INDICES)`, so they follow. Change the position attribute to three floats:
 
 ```c
     dvz_graphics_vertex_attr(
         renderer->pipeline, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position));
 ```
 
-Change the indexed draw count from six to 36:
+Change the indexed draw count from 6 to 36:
 
 ```c
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, 36, 0, 1);
@@ -63,7 +63,13 @@ Change the indexed draw count from six to 36:
 
 ## Homogeneous coordinates
 
-The same position passes through several coordinate spaces, each chosen for a different job. The cube's stored coordinates begin in **object space**. The model matrix places them in **world space**. The view matrix expresses the world relative to the camera in **view space**. The projection matrix produces homogeneous **clip space**. Vulkan clips there, divides x, y, and z by `w` to reach **normalized device coordinates**, then the viewport maps those values into framebuffer coordinates.
+One position passes through several coordinate spaces, each suited to a different job:
+
+- **Object space**: the cube's stored coordinates.
+- **World space**: where the model matrix places the object.
+- **View space**: the world relative to the camera, after the view matrix.
+- **Clip space**: the projection matrix's output. Vulkan clips here.
+- **Normalized device coordinates** (NDC): clip coordinates divided by `w`. The viewport maps them to framebuffer pixels.
 
 ```mermaid
 flowchart LR
@@ -74,9 +80,11 @@ flowchart LR
     E -->|viewport| F[Framebuffer coordinates]
 ```
 
-A position is represented during these transforms as a four-component vector `(x, y, z, 1)`, which lets a matrix express translation as well as rotation and scale. A direction would use `w = 0` because translation should not move it. Perspective comes from the division by clip `w`: in this projection, more distant points acquire a larger `w`, so their x and y values become smaller after division.
+A position is a four-component vector `(x, y, z, 1)`, so a 4 × 4 matrix can translate it as well as rotate and scale it. A direction uses `w = 0`, so translation leaves it alone. Perspective comes from the division by `w`: this projection gives distant points a larger `w`, so they shrink after division.
 
-Add these two helpers before `create_pipeline()`. `mat4` stores columns, so an element is indexed as `[column][row]`. The temporary product makes multiplication safe when the output is also an input:
+The three matrices combine into one **model-view-projection (MVP) matrix**, `projection * view * model`. The matrix nearest the vector applies first: the model matrix moves the vertex into the world, then the view, then the projection.
+
+Add these two helpers before `create_pipeline()`. `mat4` stores columns, so an element is `[column][row]`. The temporary product makes it safe to pass the same matrix as input and output:
 
 ```c
 static void multiply_mat4(mat4 left, mat4 right, mat4 out)
@@ -92,7 +100,7 @@ static void multiply_mat4(mat4 left, mat4 right, mat4 out)
 }
 ```
 
-The model matrix keeps chapter 8's size pulse and rotates the object about y, with a fixed tilt to show three faces. The view matrix represents a camera three units along positive z looking toward the origin. The projection uses a 60-degree vertical field of view (`1.0471976` radians), the framebuffer aspect ratio, and near/far distances of 0.1 and 100:
+In the initializers below, each inner brace of a `mat4` is one column, so the matrices read transposed on the page. The model matrix keeps chapter 8's pulse and rotates the cube about y, with a fixed tilt to show three faces. The view puts the camera three units along positive z, looking at the origin. The projection uses a 60-degree vertical field of view (`1.0471976` radians), the framebuffer aspect ratio, and near and far distances of 0.1 and 100:
 
 ```c
 static void make_mvp(float aspect, float time, mat4 out)
@@ -133,11 +141,11 @@ static void make_mvp(float aspect, float time, mat4 out)
 }
 ```
 
-For a point in front of this camera, view-space z is negative. The `-1` in `projection[2][3]` therefore makes clip `w` positive. The depth coefficients map the near plane to normalized-device z = 0 and the far plane to z = 1, as Vulkan requires. The negative y scale compensates for the positive-height viewport, so world-space positive y appears upward on the image.
+Points in front of this camera have negative view-space z, so the `-1` in `projection[2][3]` makes clip `w` positive. The depth terms map the near plane to NDC z = 0 and the far plane to z = 1, as Vulkan requires. Vulkan's NDC y points down, which is why chapter 4's triangle needed a negative y for its top vertex; the negative y scale here flips it, so world-space up appears up.
 
 ## Send the matrix
 
-In `draw()`, keep the elapsed-time calculation but replace the old `Push` initializer with:
+In `draw()`, keep the elapsed-time calculation but replace the old `Push` initializer:
 
 ```c
     Push push = {0};
@@ -145,7 +153,7 @@ In `draw()`, keep the elapsed-time calculation but replace the old `Push` initia
     make_mvp(aspect, time, push.mvp);
 ```
 
-`sizeof(Push)` now declares and uploads a 64-byte range. Replace `shader.vert` with this version; `shader.frag` stays unchanged:
+Dividing by the current aspect ratio fixes chapter 8's shear and keeps the cube square after a resize. `sizeof(Push)` now declares and pushes 64 bytes. Replace `shader.vert`; `shader.frag` is unchanged:
 
 ```glsl
 #version 450
@@ -162,59 +170,70 @@ void main()
 }
 ```
 
-Recomputing aspect from the current frame prevents stretching after a resize. Live frames still use the monotonic clock; `--png` uses the fixed capture time. The old shader-side `time` and `pulse` members disappear because their effects are now included in `mvp`.
-
 ## Why it looks wrong
 
-The cube has no depth attachment yet. A triangle drawn later overwrites an earlier one wherever they overlap, even if the later triangle is farther from the camera. This is the expected result for this chapter; chapter 10 adds visibility testing.
-
-## Try it
-
-1. Change `fov_y` from `1.0471976f` to `0.5235988f` (60 to 30 degrees). The cube becomes larger, like zooming in with a narrower lens.
-2. Move `near_clip` to `3.0f`. The near plane cuts through the cube.
-3. Set `angle` to zero. Keep the tilt and inspect which faces overwrite one another.
-
-??? info "Under the hood: matrix math belongs to the application"
-
-    Vulkan copies 64 bytes through `vkCmdPushConstants` and runs the vertex shader. It provides no model or camera matrix. The coordinate convention and multiplication order are choices made by this program.
-
-!!! warning "When it goes wrong"
-
-    An invisible cube often means clip w has the wrong sign or multiplication order is reversed. Incorrect face overlap is expected here. If the cube stretches on resize, check the framebuffer aspect ratio.
+The cube has no depth attachment yet. A triangle drawn later overwrites an earlier one wherever they overlap, even if it is farther from the camera. Chapter 10 adds visibility testing.
 
 ## Build and run
 
-Keep using the project from chapter 1. Save `main.c`, `shader.vert`, and `shader.frag` in the project directory, then run these commands there. Press **R** in the live window to rebuild the pipeline from the shader files.
+Build and run as before; the capture goes to `chapter09.png`.
 
-```sh
-cmake --build build
-./build/vkcourse
-./build/vkcourse --png frame.png
-```
+=== "Linux and macOS"
 
-??? example "Your `main.c` at the end of chapter 9"
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ./build/vkcourse --png chapter09.png
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    cmake --build build --config Release
+    .\build\Release\vkcourse.exe
+    .\build\Release\vkcourse.exe --png chapter09.png
+    ```
+
+The cube spins with some back faces drawn over front ones. The terminal ends with `validation errors: 0`.
+
+!!! tip "Try it"
+
+    1. Change `fov_y` from `1.0471976f` to `0.5235988f` (60 to 30 degrees). The cube looks bigger, as through a narrower lens.
+    2. Move `near_clip` to `3.0f`. The near plane slices off the front of the cube, and you see into it.
+    3. Set `angle` to zero and keep the tilt. The cube stops rotating, and you can study which faces wrongly cover others.
+    4. Swap the arguments in the last `multiply_mat4()` call. The cube vanishes: matrix multiplication does not commute.
+
+??? info "Under the hood: matrix math belongs to the application"
+
+    Vulkan copies 64 bytes through `vkCmdPushConstants` and runs the vertex shader. It has no model or camera matrix. The coordinate conventions and multiplication order are this program's choices.
+
+!!! warning "When it goes wrong"
+
+    An invisible cube often means clip `w` has the wrong sign or the multiplication order is reversed. Wrong face overlap is expected here. If the cube stretches on resize, check the aspect ratio.
+
+## Checkpoint
+
+1. What does the perspective divide do?
+2. Starting from one stored cube position, name each coordinate space it passes through before reaching a framebuffer pixel.
+3. Why is the order `projection * view * model`?
+4. Which depth values do the near and far planes produce?
+
+??? example "Your `main.c` after chapter 9"
 
     ```c
     --8<-- "examples/c/vulkan/step09.c"
     ```
 
-??? example "Your `shader.vert` at the end of this chapter"
+??? example "Your `shader.vert` after chapter 9"
 
     ```glsl
     --8<-- "examples/c/vulkan/step09/shader.vert"
     ```
 
-??? example "Your `shader.frag` at the end of this chapter"
+??? example "Your `shader.frag` after chapter 9"
 
     ```glsl
     --8<-- "examples/c/vulkan/step09/shader.frag"
     ```
 
-## Checkpoint
-
-- What does the perspective divide do?
-- Starting with one stored cube position, name each coordinate space it passes through before reaching a framebuffer location.
-- Why is the order `projection * view * model`?
-- Which depth values do the near and far planes produce?
-
-Next, add depth testing and cull faces that point away from the camera.
+Next: [Depth and culling](10-depth-culling.md).

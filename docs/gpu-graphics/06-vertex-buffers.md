@@ -1,16 +1,14 @@
 # 6. Vertex buffers
 
-**Your program at the end of this chapter: 390 C lines. The raw Vulkan equivalent: around 1300 lines, a rough estimate.**
+*About 390 lines of C; raw Vulkan would need about 1300.*
 
 ![A colored square made from two triangles.](../assets/gpu-graphics/06-vertex-buffers.webp)
 
-The shader has contained the triangle's data until now. Real applications generate, load, or update geometry on the CPU, then copy its bytes into a buffer the GPU can read. You will define a vertex record, upload six records, and draw a square as two triangles.
-
-The external shader files, **R** reload callback, and candidate-pipeline swap from chapter 5 stay in place. Shader modules may be destroyed after successful pipeline creation; this program keeps them with the pipeline so startup, reload, and cleanup share one ownership path. The pipeline now describes a vertex buffer, and the draw binds that buffer before requesting vertices.
+Real applications don't hard-code geometry in shaders. They generate, load, or update it on the CPU, then copy its bytes into a buffer the GPU can read. In this chapter you define a vertex record, upload six of them, and draw a square as two triangles.
 
 ## Describe one vertex
 
-A **vertex record** collects every attribute for one input vertex. This first record has a two-component position and a three-component color. The field names help the C reader, but the GPU sees only bytes; the pipeline description below tells it how to decode them.
+A **vertex record** collects every attribute of one vertex. This one has a two-component position and a three-component color. The field names help you, but the GPU sees only bytes; the pipeline description below tells it how to decode them.
 
 ```c
 typedef struct
@@ -33,7 +31,7 @@ static const Vertex VERTICES[6] = {
 };
 ```
 
-Replace your external `shader.vert` with the following shader. Keep `shader.frag` beside it, unchanged from chapter 5.
+Replace `shader.vert` with this version; `shader.frag` is unchanged:
 
 ```glsl
 #version 450
@@ -49,7 +47,9 @@ void main()
 }
 ```
 
-The pipeline needs the same layout in Vulkan terms. A vertex-buffer **binding** identifies one byte stream and its **stride**, the distance from one record to the next. A vertex **attribute** describes one value inside each record: the buffer binding that supplies it, the shader **location** that receives it, its numeric **format**, and its byte offset. A binding number chooses a byte stream; a location names a shader input. They happen to be small integers here, but they serve different purposes. `offsetof` asks C for the actual field offsets instead of assuming that a struct has no padding.
+The pipeline needs the same layout in Vulkan terms. A **vertex binding** is one byte stream with a stride, the distance from one record to the next.
+
+A vertex **attribute** is one value inside each record: which vertex binding supplies it, which shader location receives it, its format, and its byte offset. A binding number picks a byte stream; a location names a shader input. `offsetof` asks C for the real field offsets instead of assuming the struct has no padding.
 
 ```c
     dvz_graphics_vertex_binding(
@@ -60,7 +60,7 @@ The pipeline needs the same layout in Vulkan terms. A vertex-buffer **binding** 
         renderer->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color));
 ```
 
-Locations 0 and 1 must agree with `in_position` and `in_color` in the vertex shader. `VK_FORMAT_R32G32_SFLOAT` reads two consecutive 32-bit floats, while `VK_FORMAT_R32G32B32_SFLOAT` reads three. A format mismatch does not convert arbitrary memory into the intended values; it makes vertex fetch interpret the same bytes differently before each vertex-shader invocation.
+Locations 0 and 1 must match `in_position` and `in_color`. `VK_FORMAT_R32G32_SFLOAT` reads two 32-bit floats, `VK_FORMAT_R32G32B32_SFLOAT` three. Get the format wrong and the GPU reads the same bytes as something else.
 
 ## Allocate and upload
 
@@ -79,9 +79,9 @@ Add `DvzBuffer* vertex_buffer;` to `Renderer`. In `main()`, after creating the p
     dvz_buffer_upload(renderer.vertex_buffer, 0, sizeof(VERTICES), VERTICES);
 ```
 
-The `DvzBuffer` is the durable GPU resource referenced by draw commands. This course starts with a host-visible mapped allocation, which lets the CPU copy bytes directly into memory the device can access and keeps the data path easy to inspect. A device-local allocation can offer better access for frequently drawn static geometry on some hardware, but filling it generally requires a host-visible staging buffer and a transfer command. The texture-upload chapter uses that two-step pattern for an image in chapter 13.
+GPUs have two broad kinds of memory. Device-local memory is fast GPU memory the CPU usually cannot write; host-visible memory is CPU-mappable. The two allocation flags make this buffer host-visible and mapped, so `dvz_buffer_upload()` can copy directly. Chapter 13 uses a staging copy to fill a device-local image.
 
-`dvz_buffer_upload()` copies `VERTICES` before it returns, so the CPU array does not need to remain alive for the draw. The `DvzBuffer` and its Vulkan allocation do need to remain alive until submitted draws finish.
+`dvz_buffer_upload()` copies `VERTICES` before it returns, so the CPU array need not stay alive. The `DvzBuffer` must stay alive until every submitted draw that reads it has finished.
 
 ## Bind, then draw
 
@@ -92,9 +92,9 @@ The `DvzBuffer` is the durable GPU resource referenced by draw commands. This co
     dvz_cmd_draw(renderer->commands, 0, 6, 0, 1);
 ```
 
-The triangle-list topology consumes six vertices as two independent triples. The duplicated corner records make the square simple, though wasteful. Chapter 7 removes that duplication.
+The triangle-list topology reads six vertices as two independent triples. The duplicated corners are simple but wasteful; chapter 7 removes them.
 
-Before `destroy_pipeline(&renderer)` in cleanup, destroy and free the vertex buffer. Keep the device wait first: a submitted frame may still read the allocation.
+A submitted frame may still read the buffer, so in cleanup destroy it after the device wait and before `destroy_pipeline(&renderer)`:
 
 ```c
     if (renderer.vertex_buffer != NULL)
@@ -102,21 +102,9 @@ Before `destroy_pipeline(&renderer)` in cleanup, destroy and free the vertex buf
     dvz_buffer_free(renderer.vertex_buffer);
 ```
 
-## Try it
+## Build and run
 
-- Change one duplicated corner's color without changing its twin. A diagonal color seam should appear because the two triangles no longer share the same value there.
-- Draw only the first three vertices. You should see half of the square.
-- Exchange the `position` and `color` fields in `Vertex`, and swap the two brace groups in every `VERTICES` entry to match. `offsetof` and `sizeof` follow the new C layout, so the image stays correct. Then replace one `offsetof` with an incorrect literal such as `0`: the GPU reads color bytes as positions, which shows why those helpers matter.
-
-!!! info "Under the hood"
-    A buffer needs a Vulkan buffer object, memory requirements, a suitable memory type, an allocation, binding, and mapping or transfer commands. Datoviz's allocator handles that machinery, while usage and allocation flags still express the choices Vulkan needs.
-
-!!! failure "When it goes wrong"
-    Wild geometry or flat colors usually point to a wrong stride, format, or offset. A validation error at draw time often means the buffer lacks `VK_BUFFER_USAGE_VERTEX_BUFFER_BIT` or was destroyed while a submitted frame still used it.
-
-## Build, run, and capture
-
-Keep using the project from chapter 1. Save `main.c`, `shader.vert`, and `shader.frag` in the `vkcourse` directory, then build and launch the executable from that directory. Press **R** in the live window to rebuild the pipeline from the shader files.
+Build and run as before; the capture goes to `chapter06.png`. Press **R** in the live window to reload the shaders.
 
 === "Linux and macOS"
 
@@ -134,31 +122,45 @@ Keep using the project from chapter 1. Save `main.c`, `shader.vert`, and `shader
     .\build\Release\vkcourse.exe --png chapter06.png
     ```
 
-The terminal should end with `validation errors: 0`, and `chapter06.png` should contain the square shown above.
+You see the square above, and the terminal ends with `validation errors: 0`.
 
-??? example "Your `main.c` at the end of chapter 6"
+!!! tip "Try it"
 
-    ```c
-    --8<-- "examples/c/vulkan/step06.c"
-    ```
+    1. Change the color of vertex 3 (a copy of vertex 0) without changing vertex 0. A hard color edge appears along the diagonal, because the two triangles no longer agree at that corner.
+    2. Draw only the first three vertices. Half the square remains.
+    3. Swap the `position` and `color` fields in `Vertex`, and the two brace groups in every `VERTICES` entry. The image stays correct: `offsetof` and `sizeof` follow the new layout. Then replace one `offsetof` with `0`. The square scrambles, because the GPU now reads color bytes as positions.
 
-??? example "Your `shader.vert` at the end of this chapter"
+??? info "Under the hood: a buffer and its memory"
 
-    ```glsl
-    --8<-- "examples/c/vulkan/step06/shader.vert"
-    ```
+    Raw Vulkan creates a buffer object, queries its memory requirements, picks a suitable memory type, allocates and binds memory, then maps it or records a transfer. It also fills a `VkPipelineVertexInputStateCreateInfo` with the binding and attribute descriptions. Datoviz's allocator handles the memory; you still choose the usage and allocation flags.
 
-??? example "Your `shader.frag` at the end of this chapter"
+!!! warning "When it goes wrong"
 
-    ```glsl
-    --8<-- "examples/c/vulkan/step06/shader.frag"
-    ```
+    Wild geometry or flat colors usually mean a wrong stride, format, or offset. A validation error at draw time often means the buffer lacks `VK_BUFFER_USAGE_VERTEX_BUFFER_BIT`, or was destroyed while a submitted frame still used it.
 
 ## Checkpoint
 
 1. What is the difference between a binding stride and an attribute offset?
 2. Why use `offsetof` instead of writing `8` by hand?
-3. Which object must outlive the submitted draw: `VERTICES`, the GPU buffer, or both?
-4. What tradeoff does host-visible memory make?
+3. Which must outlive the submitted draw: `VERTICES`, the GPU buffer, or both?
+4. What does host-visible memory make easy, and what does chapter 13 do instead for an image?
 
-Next, an index buffer will let both triangles reuse the same four vertices.
+??? example "Your `main.c` after chapter 6"
+
+    ```c
+    --8<-- "examples/c/vulkan/step06.c"
+    ```
+
+??? example "Your `shader.vert` after chapter 6"
+
+    ```glsl
+    --8<-- "examples/c/vulkan/step06/shader.vert"
+    ```
+
+??? example "Your `shader.frag` after chapter 6"
+
+    ```glsl
+    --8<-- "examples/c/vulkan/step06/shader.frag"
+    ```
+
+Next: [Index buffers](07-index-buffers.md).

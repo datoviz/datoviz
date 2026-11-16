@@ -1,21 +1,21 @@
 # 11. Mouse control
 
-**Your program at the end of this chapter: 519 C lines. The raw Vulkan equivalent: around 1750 lines, a rough estimate. You can rotate and zoom the cube with the mouse.**
+*About 518 lines of C; raw Vulkan would need about 1750.*
 
 ![A perspective cube ready for mouse rotation.](../assets/gpu-graphics/11-mouse-control.webp)
 
-Keep the cube, buffers, shader files, depth attachment, culling, and matrix push from chapter 10. Mouse events change controller state on the CPU. The draw callback asks those controllers for matrices, combines them, and copies the resulting 64-byte value into the push constants. The shaders receive only that matrix; they never see a mouse event, window coordinate, camera object, or arcball object.
+A cube that spins on its own is hard to inspect. In this chapter you drag to rotate it and scroll to zoom. Mouse events update controller state on the CPU; the draw callback asks the controllers for matrices and pushes the same 64-byte MVP as before. The shaders never see a mouse event.
 
 ## Create a camera and arcball
 
-Include `<datoviz/controller.h>`. In `Renderer`, replace `start_ns`, `capture_time`, and `animate` with these two owned objects:
+Include `<datoviz/controller.h>`. In `Renderer`, replace `start_ns`, `capture_time`, and `animate` with two owned objects:
 
 ```c
     DvzArcball* arcball;
     DvzCamera* camera;
 ```
 
-Remove the `make_mvp()` helper; keep `multiply_mat4()`. A **camera** is CPU state and math that produces view and projection matrices. An **arcball** turns pointer motion into object rotation and view changes for pan and dolly. These objects replace the automatic pulse with interaction while preserving the shader's matrix interface.
+Remove `make_mvp()`; keep `multiply_mat4()`. A **camera** is CPU state that produces view and projection matrices. An **arcball** turns pointer drags into a model rotation and scrolls into a zoom of the view. Together they replace chapter 10's automatic rotation.
 
 In `main()`, replace the clock initialization before `dvz_canvas_set_draw_callback()` with:
 
@@ -31,7 +31,7 @@ In `main()`, replace the clock initialization before `dvz_canvas_set_draw_callba
     COURSE_CHECK(connect_result == DVZ_OK, "arcball connection failed");
 ```
 
-The camera uses the same 60-degree field of view and default eye at `(0, 0, 3)`. The initial arcball angle makes the cube readable before any input. Connecting to `dvz_canvas_input(canvas)` subscribes the controller to pointer events; the existing `dvz_window_host_poll()` delivers those events. Keep the keyboard subscriber too, so **R** still reloads shaders.
+The camera uses chapter 9's 60-degree field of view and an eye at `(0, 0, 3)`. `(vec3){-0.35f, 0.65f, 0.0f}` are the initial rotation angles in radians about x, y, and z, so the cube starts tilted with three faces showing. `dvz_canvas_input(canvas)` returns the window's input router, the same one `dvz_window_router(window)` gives the keyboard callback; connecting subscribes the arcball to its pointer events, and the existing `dvz_window_host_poll()` delivers them.
 
 ## Compose the matrices
 
@@ -67,15 +67,17 @@ Replace the elapsed-time and `make_mvp()` code at the beginning of `draw()` with
     multiply_mat4(clip_correction, projection_view_model, push.mvp);
 ```
 
-The camera fills `view` and `proj`; the arcball fills `model` and applies pan and dolly to `view`. Calling them in that order matters. The camera uses framebuffer pixels for the projection aspect. The arcball uses the latest window size reported by the input router because pointer positions are measured in window coordinates. These sizes may differ on a display with a high pixel density. Before any resize event arrives, the framebuffer extent is a usable fallback. This is the complete input path: the host polls an event, the router updates the controllers, the controllers produce matrices, and the push-constant command copies those matrix bytes for the vertex shader.
+`draw()` now uses `canvas`, so delete its `(void)canvas;` line.
 
-The camera helper currently produces OpenGL-style clip coordinates: z spans -w through w. Our Vulkan draw uses z from zero through w and a positive-height viewport. `clip_correction` flips y and changes z to `(z + w) / 2`, matching chapter 9's explicit projection. This correction belongs before the perspective divide.
+The camera fills `view` and `proj`; the arcball then fills `model` and adjusts `view` for zoom, so call them in that order. The camera needs framebuffer pixels for the aspect ratio, while the arcball needs window coordinates, because that is how pointer positions are measured. The two differ on high-density displays. Until the first resize event arrives, the framebuffer extent is a usable fallback.
 
-The remaining rendering code, including the depth attachment and push-constant call, stays the same. The complete program reports a failed resize or push update through `draw_failed` before submitting.
+The camera helper produces OpenGL-style clip coordinates: y up, depth from −1 to 1. `clip_correction` converts them to Vulkan's, with y down and depth from 0 to 1, which chapter 9 built directly into its projection.
+
+The rest of `draw()` is unchanged. A failed resize or push sets `draw_failed`, which the loop checks before submitting.
 
 ## Disconnect before cleanup
 
-After the device wait and buffer cleanup, but before destroying the canvas or input router, release the controller objects:
+The arcball holds a subscription on the canvas's router, so release it before the canvas goes. After the device wait and buffer cleanup:
 
 ```c
     if (renderer.arcball != NULL && canvas != NULL)
@@ -85,54 +87,66 @@ After the device wait and buffer cleanup, but before destroying the canvas or in
     dvz_camera_destroy(renderer.camera);
 ```
 
-Remove the old `--time` parsing and fixed-time initialization. Offscreen mode draws one frame at the fixed initial camera pose, so repeated captures remain deterministic without simulated input.
-
-## Try it
-
-1. Drag with the left mouse button to rotate the cube around its center.
-2. Scroll to move toward or away from the cube. The arcball adjusts the view; the mesh data stays fixed.
-3. Resize the window while the cube is rotated. It should keep its proportions.
-
-??? info "Under the hood: input is CPU work"
-
-    Vulkan has no input API or camera type. A window toolkit delivers events, a controller tracks pointer state, and matrix math turns it into a view and model transform. The GPU still receives a matrix and an indexed draw.
-
-!!! warning "When it goes wrong"
-
-    A cube that never responds may be connected to the wrong router or missing event polling. If scrolling has no effect, check that `dvz_camera_mvp()` runs before `dvz_arcball_mvp()`, so the camera does not overwrite the arcball's view adjustment. Disconnect the controller before destroying its router.
+Remove the old `--time` parsing and fixed-time initialization. Offscreen mode draws one frame at the initial pose, so captures stay deterministic without simulated input.
 
 ## Build and run
 
-Keep using the project from chapter 1. Save `main.c`, `shader.vert`, and `shader.frag` in the project directory, then run these commands there. Press **R** in the live window to rebuild the pipeline from the shader files.
+Build and run as before; the capture goes to `chapter11.png`.
 
-```sh
-cmake --build build
-./build/vkcourse
-./build/vkcourse --png frame.png
-```
+=== "Linux and macOS"
 
-??? example "Your `main.c` at the end of chapter 11"
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ./build/vkcourse --png chapter11.png
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    cmake --build build --config Release
+    .\build\Release\vkcourse.exe
+    .\build\Release\vkcourse.exe --png chapter11.png
+    ```
+
+Drag with the left button to rotate the cube; scroll to zoom. The terminal ends with `validation errors: 0`.
+
+!!! tip "Try it"
+
+    1. Replace `clip_correction` with the identity matrix. The cube turns upside down, and you see its inside: flipping y also reverses the winding, so culling now drops the front faces.
+    2. Change the initial angles to `(vec3){0.0f, 0.0f, 0.0f}`. The capture shows one face straight on, as a plain square.
+    3. Swap the `dvz_camera_mvp()` and `dvz_arcball_mvp()` calls. Scrolling stops working, because the camera now overwrites the arcball's zoom.
+
+??? info "Under the hood: input is CPU work"
+
+    Vulkan has no input API and no camera. A window toolkit such as GLFW delivers events, a controller tracks pointer state, and matrix math turns it into model and view transforms. The GPU still receives one matrix and an indexed draw.
+
+!!! warning "When it goes wrong"
+
+    A cube that never responds is connected to the wrong router, or the loop stopped polling events. If scrolling has no effect, check that `dvz_camera_mvp()` runs before `dvz_arcball_mvp()`. A crash at exit can mean the arcball was disconnected after its router was destroyed.
+
+## Checkpoint
+
+1. Which part of the program handles mouse events, and which part never sees them?
+2. Why does the callback refresh the camera and arcball sizes every frame?
+3. What does the clip correction change, and why did chapter 9 not need it?
+
+??? example "Your `main.c` after chapter 11"
 
     ```c
     --8<-- "examples/c/vulkan/step11.c"
     ```
 
-??? example "Your `shader.vert` at the end of this chapter"
+??? example "Your `shader.vert` after chapter 11"
 
     ```glsl
     --8<-- "examples/c/vulkan/step11/shader.vert"
     ```
 
-??? example "Your `shader.frag` at the end of this chapter"
+??? example "Your `shader.frag` after chapter 11"
 
     ```glsl
     --8<-- "examples/c/vulkan/step11/shader.frag"
     ```
 
-## Checkpoint
-
-- Which part of the program handles mouse events?
-- Why does the callback refresh the camera and arcball sizes?
-- What does the clip correction change before the perspective divide?
-
-You now have an interactive 3D cube. Next, give its fragment shader a material value through a uniform buffer and descriptor set.
+Next: [Uniform buffers and descriptors](12-uniform-buffers.md).

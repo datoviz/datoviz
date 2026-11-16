@@ -1,23 +1,21 @@
 # 5. Shaders in their own files
 
-**Your program at the end of this chapter: 350 C lines. The raw Vulkan equivalent: around 1250 lines, a rough estimate. You can now edit and reload the triangle's shaders.**
+*About 350 lines of C; raw Vulkan would need about 1250.*
 
 ![The RGB triangle rendered from shaders loaded as separate files.](../assets/gpu-graphics/05-shader-files.webp)
 
-Inline strings were useful while the triangle was new, but they are awkward to edit. This chapter moves them into ordinary `.vert` and `.frag` files, reports compiler diagnostics with their filenames, and rebuilds the pipeline when you press ++r++.
-
-The image is deliberately identical to chapter 4. The pixels do not change in this chapter; the improvement is the shader-editing workflow and the ability to recover from a bad reload without closing the program.
+Shaders inside C strings are awkward to edit. This chapter moves them into ordinary `.vert` and `.frag` files, reports compiler errors with file names and line numbers, and rebuilds the pipeline when you press **R**, without restarting the program. The image is identical to chapter 4; what changes is how fast you can experiment.
 
 ## Load and compile source
 
-Delete the `VERTEX_GLSL` and `FRAGMENT_GLSL` strings from `main.c`. Create `shader.vert` and `shader.frag` beside it, using the shader bodies from chapter 4, and add `<datoviz/fileio.h>`. The two filenames in C are relative to the directory where you launch `vkcourse`:
+Delete the `VERTEX_GLSL` and `FRAGMENT_GLSL` strings from `main.c`. Create `shader.vert` and `shader.frag` beside it, and add `<datoviz/fileio.h>`. The paths are relative to the directory where you launch `vkcourse`:
 
 ```c
 #define VERTEX_PATH   "shader.vert"
 #define FRAGMENT_PATH "shader.frag"
 ```
 
-Write the complete shader files as follows:
+The two files hold the chapter 4 shader bodies:
 
 ```glsl
 --8<-- "examples/c/vulkan/step05/shader.vert"
@@ -27,7 +25,7 @@ Write the complete shader files as follows:
 --8<-- "examples/c/vulkan/step05/shader.frag"
 ```
 
-`dvz_read_text()` returns an owned, null-terminated copy of the file. `compile_file()` frees that source copy after the compiler returns because compilation consumes the text before returning; neither the result nor a later shader module refers to it. The typed compiler request supplies the stage, the `main` entry point, and the reader-local filename used in diagnostics.
+`compile_file()` replaces chapter 4's `dvz_compile_glsl()` with `dvz_shader_compile()`, which returns a typed status and diagnostics that name the file and line. `dvz_read_text()` returns an owned, null-terminated copy of the file; the helper frees it once the compiler returns. `source_name` is the file name used in diagnostics.
 
 ```c
 static bool compile_file(
@@ -61,9 +59,9 @@ static bool compile_file(
 }
 ```
 
-GLSL expresses shader types, control flow, stage inputs, and stage outputs as source text. Compilation checks those language rules and produces SPIR-V, the device-independent intermediate instructions passed to `vkCreateShaderModule`. The resulting shader module still is not a complete executable rendering pipeline: the driver combines it with the other shader stage and fixed-function state when the graphics pipeline is created. Runtime compilation is convenient for learning and live editing. Production applications often compile shaders during the build so startup is faster and a missing compiler cannot break deployment.
+Compiling at startup is convenient for learning and live editing. Production applications often compile shaders at build time, so startup is faster and deployment does not need a compiler.
 
-In `create_pipeline()`, replace the `dvz_compile_glsl()` calls with `compile_file()`. A `DvzShaderCompileResult` owns its SPIR-V words and diagnostics, so release both results with `dvz_shader_compile_result_destroy()` on every path, success or failure, once the shader modules hold their own copy:
+In `create_pipeline()`, replace the `dvz_compile_glsl()` calls with `compile_file()`. A `DvzShaderCompileResult` owns its SPIR-V words and diagnostics, so destroy both results on every path:
 
 ```c
     DvzShaderCompileResult vertex = {0};
@@ -77,7 +75,7 @@ In `create_pipeline()`, replace the `dvz_compile_glsl()` calls with `compile_fil
     }
 ```
 
-The wrapper allocation that follows is unchanged, except that its failure branch now destroys the two results instead of freeing raw SPIR-V. The shader modules read `spirv` and `spirv_size` from each result:
+The wrapper allocation that follows is unchanged, except that its failure branch destroys the two results instead of freeing raw SPIR-V. The shader modules read `spirv` and `spirv_size` from each result:
 
 ```c
     int vertex_result =
@@ -92,7 +90,7 @@ The wrapper allocation that follows is unchanged, except that its failure branch
 
 ## Reload safely
 
-Move the pipeline, shader-module, and slots teardown from `main()` into a `destroy_pipeline()` helper, and call it at `cleanup:` right after the device wait:
+Reload needs to tear down a pipeline from two places, so move the pipeline, shader-module, and slots teardown from `main()` into a helper. Call it at `cleanup:` right after the device wait:
 
 ```c
 static void destroy_pipeline(Renderer* renderer)
@@ -116,9 +114,9 @@ static void destroy_pipeline(Renderer* renderer)
 }
 ```
 
-The helper clears each pointer after freeing it, so it can clean either a complete active pipeline or a candidate that failed partway through creation.
+Clearing each pointer lets the helper clean either a complete pipeline or a candidate that failed halfway.
 
-Add `bool reload_requested;` to `Renderer`. The keyboard callback only sets that flag; it does not destroy GPU resources while input is being dispatched.
+Add `bool reload_requested;` to `Renderer`. The keyboard callback only sets that flag; destroying GPU resources in the middle of event dispatch would be unsafe.
 
 ```c
 static void keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void* user_data)
@@ -130,7 +128,7 @@ static void keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void
 }
 ```
 
-Subscribe after installing the draw callback:
+Subscribe after installing the draw callback. The router keeps the `&renderer` pointer, so `renderer` must outlive the subscription:
 
 ```c
     DvzCallbackId keyboard_id =
@@ -138,7 +136,7 @@ Subscribe after installing the draw callback:
     COURSE_CHECK(keyboard_id != DVZ_CALLBACK_ID_NONE, "keyboard subscription failed");
 ```
 
-The main loop builds a complete candidate pipeline outside event dispatch. If compilation or pipeline creation fails, `destroy_pipeline()` releases the incomplete candidate and the working pipeline stays active. On success, wait for prior GPU work to finish before destroying the active pipeline and moving the candidate pointers into `renderer`. A shader edit requires a new graphics pipeline because shader stages are part of the pipeline's compiled state; Vulkan does not replace one stage inside an existing pipeline. Pass the resolved `color_format` from chapter 4 into each candidate as well because the replacement pipeline must remain compatible with the canvas attachment.
+Vulkan cannot swap one stage inside an existing pipeline, so a shader edit means a new pipeline. The main loop builds a complete candidate first. If it fails, `destroy_pipeline()` releases the partial candidate and the working pipeline stays. If it succeeds, wait for earlier frames to finish, destroy the old pipeline, and move the candidate's pointers into `renderer`. The candidate needs the resolved `color_format` from chapter 4 to stay compatible with the canvas.
 
 ```c
         if (renderer.reload_requested)
@@ -167,19 +165,18 @@ The main loop builds a complete candidate pipeline outside event dispatch. If co
         }
 ```
 
-Put this block in the render loop right after `dvz_window_host_poll(host);`. It reuses the `int pipeline_result` declared where chapter 4 created the first pipeline.
+Put this block in the render loop right after `dvz_window_host_poll(host);`. It reuses the `pipeline_result` variable from chapter 4.
 
-After `dvz_graphics_create()` succeeds, the shader modules may be destroyed without invalidating the pipeline. This course keeps them until `destroy_pipeline()` so startup failure, failed candidates, successful reload, and final cleanup all use the same short ownership path.
+## Build and run
 
-## Build, run, and capture
-
-Build from your `vkcourse` directory. Run the executable from that same directory, where `shader.vert` and `shader.frag` live; changing into `build` would make the relative shader paths fail.
+From now on, run the executable from your `vkcourse` directory, where `shader.vert` and `shader.frag` live. Running it from `build` would break the relative shader paths.
 
 === "Linux and macOS"
 
     ```sh
     cmake --build build
     ./build/vkcourse
+    ./build/vkcourse --png chapter05.png
     ```
 
 === "Windows (Visual Studio)"
@@ -187,43 +184,24 @@ Build from your `vkcourse` directory. Run the executable from that same director
     ```powershell
     cmake --build build --config Release
     .\build\Release\vkcourse.exe
-    ```
-
-Edit either shader, save it, and press ++r++. A syntax error prints the filename, status, and compiler message while the existing triangle remains usable. Correct the file and press ++r++ again to install the new pipeline.
-
-Capture the triangle from the same directory:
-
-=== "Linux and macOS"
-
-    ```sh
-    ./build/vkcourse --png chapter05.png
-    ```
-
-=== "Windows (Visual Studio)"
-
-    ```powershell
     .\build\Release\vkcourse.exe --png chapter05.png
     ```
 
-The terminal should end with `validation errors: 0`. With the supplied shaders, `chapter05.png` should match chapter 4 exactly.
+Edit either shader, save, and press **R** in the live window. `chapter05.png` matches chapter 4 exactly, and the terminal ends with `validation errors: 0`.
 
-## Try it
+!!! tip "Try it"
 
-- In `shader.frag`, change the output to `vec4(color.r, 0.0, color.b, 1.0)`, save, and press ++r++. The green drains out of the triangle without recompiling the C program.
-- Remove a semicolon and reload. The terminal should name the shader file and source line.
-- Change the three clip-space positions. The pipeline rebuild is necessary because those constants belong to the shader module.
+    1. In `shader.frag`, change the output to `vec4(color.r, 0.0, color.b, 1.0)`, save, and press **R**. The green drains out of the triangle without recompiling C.
+    2. Remove a semicolon and press **R**. The terminal names the file and line, prints `reload failed; keeping the current pipeline`, and the triangle keeps drawing. Fix it and press **R** again.
+    3. Scale the three positions in `shader.vert` by 0.5 and press **R**. The triangle shrinks: the positions are constants inside the shader module, so they change only with a new pipeline.
 
-!!! info "Under the hood"
-    Vulkan shader modules are immutable. A graphics pipeline incorporates their code when it is created, and Vulkan provides no operation that patches one shader stage in place. Live reload is therefore destroy-and-create work around the same pipeline description.
+??? info "Under the hood: immutable shader modules"
 
-!!! failure "When it goes wrong"
-    `could not read` means the process cannot find `shader.vert` or `shader.frag`; start it from the directory containing those files. A compiler error is different: the file was found, and its diagnostic tells you which GLSL rule failed.
+    Raw Vulkan reads the file, calls a compiler library such as shaderc, and passes the SPIR-V to `vkCreateShaderModule`. Shader modules and pipelines are immutable: no Vulkan call patches one stage in place. Live reload is therefore destroy-and-create work around the same pipeline description, guarded by `vkDeviceWaitIdle` or fences.
 
-??? example "Full current listing"
+!!! warning "When it goes wrong"
 
-    ```c
-    --8<-- "examples/c/vulkan/step05.c"
-    ```
+    `could not read shader.vert` means the program cannot find the shader files; start it from the directory that contains them. A compiler error is different: the file was found, and the message names the GLSL rule that failed.
 
 ## Checkpoint
 
@@ -231,4 +209,10 @@ The terminal should end with `validation errors: 0`. With the supplied shaders, 
 2. Why must a shader edit rebuild the graphics pipeline?
 3. Why does reload wait for the device before destroying the old pipeline?
 
-The next chapter replaces shader-owned positions and colors with application data in a vertex buffer.
+??? example "Your `main.c` after chapter 5"
+
+    ```c
+    --8<-- "examples/c/vulkan/step05.c"
+    ```
+
+Next: [Vertex buffers](06-vertex-buffers.md).

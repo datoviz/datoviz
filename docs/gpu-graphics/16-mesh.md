@@ -1,10 +1,10 @@
 # 16. A real mesh
 
-**Your program at the end of this chapter: 756 C lines. The raw Vulkan equivalent: around 2200 lines, a rough estimate. The final viewer displays a rotatable, textured, lit sphere or a Wavefront OBJ you supply.**
+*About 774 lines of C; raw Vulkan would need about 2200.*
 
 ![The final generated sphere viewer, textured and lit.](../assets/gpu-graphics/16-mesh.webp)
 
-Continue from chapter 15. Replace the hand-authored cube with a generated sphere. A **mesh** is CPU-side data describing vertex attributes and the indices that assemble them into primitives; Vulkan has no mesh object of its own. The renderer converts those arrays into the established `Vertex` format and uploads them into Vulkan buffers. The shaders, material uniform, sampled image, descriptor set, 128-byte push block, depth test, culling, input handling, and safe **R** reload all stay the same because their interface has not changed.
+A hand-typed cube only goes so far. In this final chapter you replace it with a generated sphere, or with a Wavefront OBJ file of your own, and the result is a complete textured, lit, mouse-controlled mesh viewer. A **mesh** is CPU-side data: vertex attributes plus the indices that assemble them into triangles. Vulkan has no mesh object; you convert the arrays to your `Vertex` format and upload them, and the shaders, descriptors, and push-constant block stay exactly as they are.
 
 ## Replace the cube arrays
 
@@ -14,20 +14,21 @@ Add this include:
 #include <datoviz/geom.h>
 ```
 
-Delete the complete `VERTICES` and `INDICES` definitions. Keep `Vertex`, `Push`, and both size assertions. Generated and imported meshes determine their vertex count at runtime, so the conversion helper will allocate exactly the checked capacity it needs.
-
-Add this field beside the buffers in `Renderer`:
+Delete `VERTICES` and `INDICES`; keep `Vertex`, `Push`, and both size assertions. A generated or loaded mesh knows its size only at run time, so the renderer must remember its index count. Add this field beside the buffers in `Renderer`:
 
 ```c
     uint32_t index_count;
 ```
 
-Add this complete helper between `create_texture()` and `draw()`:
+Add this helper between `create_texture()` and `draw()`. It loads an OBJ file when given a path and generates a sphere otherwise:
 
 ```c
+
+
 /**
  * Convert generated CPU geometry to the pipeline's float vertices and uint32 indices.
  * @param renderer Renderer that owns the uploaded GPU buffers.
+ * @param obj_path Wavefront OBJ file to load, or NULL for the generated sphere.
  * @return Zero on success.
  */
 static int create_mesh(Renderer* renderer, const char* obj_path)
@@ -93,54 +94,44 @@ cleanup:
 }
 ```
 
-Both geometry routes return an owned `DvzGeometry` whose positions, normals, and texture coordinates use doubles. The pipeline contract expects 32-bit float attributes, so the conversion copies and narrows each component explicitly before upload. The indices remain `DvzIndex`, a 32-bit unsigned type. Before allocating or multiplying byte counts, the helper checks that both counts fit their element sizes. It then allocates exactly `vertex_count` converted records rather than imposing the sphere's size on an arbitrary file.
-
-`dvz_buffer_upload()` copies CPU bytes before returning. The temporary converted array and owned `geometry` can therefore be freed after both uploads. The GPU buffers remain owned by `Renderer` and keep the existing device-wait cleanup.
+Both routes return an owned `DvzGeometry` whose attributes are doubles. The pipeline expects 32-bit floats, so the helper narrows each component into a `Vertex` array sized to this mesh, after checking that the byte counts cannot overflow. Indices stay `DvzIndex`, a 32-bit unsigned type, and upload as they are. Once both uploads have copied their bytes, the converted array and the geometry are freed; the GPU buffers stay with `Renderer`.
 
 ## Change initialization and the draw count
 
-In `main()`, replace the entire vertex/index allocation and upload block, from `renderer.vertex_buffer = ...` through the index upload, with:
-
-```text
-    int mesh_result = create_mesh(&renderer, NULL);
-    COURSE_CHECK(mesh_result == 0, "mesh creation failed");
-```
-
-Keep the cumulative order shown in the full listing: create the material buffer first, then the selected mesh, texture with its view and sampler, pipeline with its descriptors, and controllers. In `draw()`, replace the index binding and indexed draw with:
-
-```c
-    dvz_cmd_bind_index_buffer(renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT32);
-    dvz_cmd_draw_indexed(renderer->commands, 0, 0, renderer->index_count, 0, 1);
-```
-
-The index type changes from `VK_INDEX_TYPE_UINT16` to `VK_INDEX_TYPE_UINT32`; the draw count changes from 36 to the selected mesh's actual count. The vertex layout and both shader files are unchanged from chapter 15.
-
-## Load your own OBJ
-
-The default branch creates the sphere. Passing `--obj PATH` instead calls `dvz_geometry_obj(PATH, NULL)` and sends the returned geometry through the same conversion, buffer upload, pipeline, and draw path. Add this variable beside `png_path`:
+Add an `--obj PATH` option. Declare its variable beside `png_path`:
 
 ```c
     const char* obj_path = NULL;
 ```
 
-Add this branch after `--png` in the argument loop:
+Add a branch to the argument loop:
 
 ```c
         else if (strcmp(argv[argument_index], "--obj") == 0)
             obj_path = argv[++argument_index];
 ```
 
-Then replace the `NULL` argument in the initialization call so the selected path reaches the loader:
+In `main()`, replace the whole vertex- and index-buffer block, from `renderer.vertex_buffer = ...` through the index upload, with:
 
 ```c
     int mesh_result = create_mesh(&renderer, obj_path);
+    COURSE_CHECK(mesh_result == 0, "mesh creation failed");
 ```
 
-The loader supports Wavefront `v`, `vt`, `vn`, and polygonal `f` records, including independent and negative face indices. Polygonal faces are triangulated as fans. Materials, object names, groups, and smoothing records are ignored. When normals are absent, the loader computes them from the triangles. When texture coordinates are absent, it supplies `(0, 0)`, so the mesh still draws but every vertex samples the same checker texel. The loader expands face references into indexed vertices as needed, which is why the dynamic checked allocation matters for files larger than the built-in sphere.
+Geometry indices are 32-bit `DvzIndex` values, and the count comes from the mesh. In `draw()`, replace the index binding and the draw:
 
-`dvz_geometry_obj()` returns an owned geometry or `NULL` for an unreadable, malformed, or unsupported file. `create_mesh()` destroys that geometry on every exit after copying successful data into the vertex and index buffers. The file itself and its parsed CPU arrays do not need to remain alive during rendering.
+```c
+    dvz_cmd_bind_index_buffer(renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT32);
+    dvz_cmd_draw_indexed(renderer->commands, 0, 0, renderer->index_count, 0, 1);
+```
 
-Run an imported mesh with:
+The listing also accepts `--width`, `--height`, and `--time`, used to render the documentation preview.
+
+## Load your own OBJ
+
+`dvz_geometry_obj()` reads `v`, `vt`, `vn`, and polygonal `f` records, triangulates polygons, and ignores materials and groups. It computes missing normals; missing UVs become `(0, 0)`, so the whole mesh samples one checker texel.
+
+It returns `NULL` for an unreadable or unsupported file, and the program then exits cleanly with `mesh creation failed`. The camera expects a model near the origin, about one unit across. Anything far off-center or much larger will be clipped or invisible; check its bounds with `dvz_geometry_bounds()`.
 
 === "Linux and macOS"
 
@@ -156,152 +147,86 @@ Run an imported mesh with:
     .\build\Release\vkcourse.exe --obj path\to\model.obj --png model.png
     ```
 
-A valid mesh should use the same checker texture, lighting, depth test, and mouse controls as the sphere. An OBJ without normals should still light after generated normals are computed. An OBJ without UVs should render with one constant sampled texel. An unreadable path prints the loader error followed by `mesh creation failed`; malformed or unsupported geometry may print only `mesh creation failed`. Both cases exit cleanly. Records outside the supported geometry subset, including material and grouping records, are ignored.
-
-## Add deterministic preview controls
-
-The documentation build renders the final animation at 1280 × 720, 24 frames per second, and 48 frames over the interval from 0 seconds through the last sampled instant before 2 seconds. Add `<errno.h>` for checked dimension parsing, then replace the existing argument loop with:
-
-```c
-    const char* png_path = NULL;
-    const char* obj_path = NULL;
-    float capture_time = 0.0f;
-    uint32_t width = WIDTH;
-    uint32_t height = HEIGHT;
-    for (int argument_index = 1; argument_index + 1 < argc; argument_index++)
-    {
-        if (strcmp(argv[argument_index], "--png") == 0)
-            png_path = argv[++argument_index];
-        else if (strcmp(argv[argument_index], "--time") == 0)
-            capture_time = strtof(argv[++argument_index], NULL);
-        else if (strcmp(argv[argument_index], "--obj") == 0)
-            obj_path = argv[++argument_index];
-        else if (
-            strcmp(argv[argument_index], "--width") == 0 ||
-            strcmp(argv[argument_index], "--height") == 0)
-        {
-            const bool is_width = strcmp(argv[argument_index], "--width") == 0;
-            char* end = NULL;
-            errno = 0;
-            long value = strtol(argv[++argument_index], &end, 10);
-            if (errno == ERANGE || end == argv[argument_index] || *end != '\0' || value <= 0 ||
-                value > MAX_DIMENSION)
-            {
-                fprintf(stderr, "%s must be an integer from 1 to %d\n", is_width ? "--width" : "--height", MAX_DIMENSION);
-                return 1;
-            }
-            if (is_width)
-                width = (uint32_t)value;
-            else
-                height = (uint32_t)value;
-        }
-    }
-```
-
-Add `MAX_DIMENSION` beside the default dimensions:
-
-```c
-#define WIDTH        800
-#define HEIGHT       600
-#define MAX_DIMENSION 8192
-```
-
-Use the selected dimensions when configuring the window:
-
-```c
-    window_config.width = width;
-    window_config.height = height;
-```
-
-Use that value only when choosing the arcball's initial orientation:
-
-```c
-    DvzResult initial_result = dvz_arcball_initial(
-        renderer.arcball, (vec3){-0.35f, 0.65f + (float)DVZ_PI * capture_time, 0.0f});
-```
-
-The live viewer still responds to the mouse. `--time` makes offscreen preview frames reproducible without synthesizing input events, while `--width` and `--height` let the media builder request the widescreen frame without changing interactive defaults. The angle advances by π radians per second, so the two-second preview completes one full turn. Its 48 frames sample time at 1/24-second intervals from `0` through `47 / 24`; looping to the first frame advances by the same 7.5 degrees as every other transition.
-
 ## Keep the sphere's smooth normals
 
-The sphere generator supplies radial normals: each points away from its center. Duplicated seam vertices share the same normal even though one uses U = 0 and its counterpart uses U = 1. Copy these normals as the helper does above. Sharing a position does not require sharing its UV, but a smooth seam should still share its lighting direction.
+The sphere generator supplies radial normals, each pointing away from the center. Along the texture seam, duplicated vertices share a position and a normal but differ in UV (U = 0 on one side, U = 1 on the other). That is the rule from chapter 7 in action: split a vertex where attributes differ, and nowhere else.
 
-For an indexed mesh that has positions and storage for normals but needs their values computed, insert this optional block after validating `geometry` and before the conversion loop:
-
-```text
-DvzResult normal_result = dvz_geometry_compute_normals(geometry);
-if (normal_result != DVZ_OK)
-    goto cleanup;
-```
-
-This function accumulates triangle normals at each indexed vertex, then normalizes the result. It averages only triangles sharing that index. It will not automatically smooth duplicated UV-seam vertices together or preserve a crease if both faces share a vertex. Recomputing the sphere's analytic normals is an experiment, not a required step: it can introduce small seam or pole artifacts. For the canonical sphere, keep the normals the generator already supplies.
+`dvz_geometry_compute_normals()` recomputes normals by averaging the triangles that share each index. It cannot know that two seam vertices are the same point, so recomputed normals can show a faint seam. For the sphere, keep the generator's normals.
 
 ## Build and run
 
-Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from chapter 1. Run these commands there, so the program can find the shader files.
+Build and run as before; the capture goes to `chapter16.png`.
 
 === "Linux and macOS"
 
     ```sh
     cmake --build build
-    ./build/vkcourse --png chapter16.png
     ./build/vkcourse
+    ./build/vkcourse --png chapter16.png
     ```
 
 === "Windows (Visual Studio)"
 
     ```powershell
     cmake --build build --config Release
-    .\build\Release\vkcourse.exe --png chapter16.png
     .\build\Release\vkcourse.exe
+    .\build\Release\vkcourse.exe --png chapter16.png
     ```
 
-You should see a smooth sphere with a curved checkerboard and a specular highlight. UVs compress near the poles because a rectangular image is mapped around a sphere. Drag to rotate, scroll to zoom, and press **R** to reload shader calculations. Two offscreen captures should match and each run should report `validation errors: 0`. The optional `--time` argument changes the deterministic starting angle used by generated course previews; it does not replace mouse control in the live viewer.
+You see a smooth sphere with a curved checkerboard and a specular highlight. The tiles shrink toward the poles, where a rectangular image wraps around a point. The terminal ends with `validation errors: 0`.
 
 !!! tip "Try it"
 
-    1. Lower the sphere's `rings` to `8` and `sectors` to `16`, rebuild, and inspect the silhouette. The conversion allocation follows the smaller generated vertex count.
-    2. Compare the analytic normals with the optional recomputation, especially across the texture seam. Restore the analytic normals afterward.
-    3. Replace the sphere initializer with the complete torus initializer below. Its generated count determines the conversion allocation, while the existing vertex layout and pipeline still apply.
+    1. Lower `rings` to `8` and `sectors` to `16`, and rebuild. The silhouette turns visibly polygonal.
+    2. Recompute the normals: insert this after the geometry checks in `create_mesh()` and rebuild. The capture looks unchanged, because averaged triangle normals closely match the radial ones. Drag the texture seam into view: each side of it averaged only its own triangles, so a faint lighting line can appear there.
 
-```text
-DvzGeometry* geometry = dvz_geometry_torus(&(DvzGeometryTorusDesc){
-    DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc),
-    .major_radius = 0.6,
-    .minor_radius = 0.25,
-    .rings = 24,
-    .sectors = 24,
-});
-```
+        ```c
+            DvzResult normal_result = dvz_geometry_compute_normals(geometry);
+            if (normal_result != DVZ_OK)
+                goto cleanup;
+        ```
+
+    3. Draw a torus: replace the sphere arm of the ternary in `create_mesh()` with the code below. The torus draws with the same pipeline, texture, and lighting; only the vertex and index counts change.
+
+        ```c
+                                        : dvz_geometry_torus(&(DvzGeometryTorusDesc){
+                                              DVZ_STRUCT_INIT_FIELDS(DvzGeometryTorusDesc),
+                                              .major_radius = 0.6,
+                                              .minor_radius = 0.25,
+                                              .rings = 24,
+                                              .sectors = 24});
+        ```
 
 ??? info "Under the hood: geometry is CPU data"
 
-    Vulkan accepts buffers and draw commands; it has no sphere or mesh object. A generator or loader prepares arrays, the application chooses a GPU format, and the draw selects an index range. Changing the source geometry leaves the descriptor layout, shader stages, frame attachments, and synchronization unchanged.
+    Vulkan accepts buffers and draw commands; it has no sphere or mesh. A generator or loader fills arrays, you choose a GPU format, and the draw selects an index range. Changing the geometry leaves the descriptor layout, shaders, attachments, and synchronization untouched.
 
 !!! warning "When it goes wrong"
 
-    A garbled mesh usually means the index binding still says `UINT16` while the buffer holds 32-bit values. Missing triangles can mean the draw count is still 36. A very large import can fail its checked conversion allocation or GPU-buffer allocation; report that failure rather than truncating counts. Dark seams after recomputing normals can result from averaging separated vertices independently; they are not necessarily a shader error.
+    A garbled mesh means the index binding still says `UINT16` while the buffer holds 32-bit values. Missing triangles mean the draw count is still 36. A blank window with an OBJ usually means the model is off-center or far too large; check its bounds.
 
 ## Checkpoint
 
-1. Which changes were needed to draw generated geometry through the existing pipeline?
-2. Why can CPU geometry be freed after upload while GPU buffers must survive submitted work?
+1. What had to change to draw generated geometry through the existing pipeline?
+2. Why does this chapter switch to 32-bit indices?
 3. What does normal recomputation average, and why can that matter at a UV seam?
 
-??? example "Full current listing"
+??? example "Your `main.c` after chapter 16"
 
     ```c
     --8<-- "examples/c/vulkan/step16.c"
     ```
 
-??? example "Current shader.vert"
+??? example "Your `shader.vert` after chapter 16"
 
     ```glsl
     --8<-- "examples/c/vulkan/step16/shader.vert"
     ```
 
-??? example "Current shader.frag"
+??? example "Your `shader.frag` after chapter 16"
 
     ```glsl
     --8<-- "examples/c/vulkan/step16/shader.frag"
     ```
+
+Next: [Where to go next](17-next.md).

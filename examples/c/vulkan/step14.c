@@ -8,7 +8,6 @@
 
 #include <datoviz.h>
 #include <datoviz/canvas.h>
-#include <datoviz/common/functions.h>
 #include <datoviz/controller.h>
 #include <datoviz/fileio.h>
 #include <datoviz/math/types.h>
@@ -247,8 +246,11 @@ static int create_pipeline(Renderer* renderer)
         return -1;
 
     dvz_slots(renderer->device, renderer->slots);
-    dvz_slots_binding(renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    dvz_slots_binding(renderer->slots, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    dvz_slots_binding(
+        renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    dvz_slots_binding(
+        renderer->slots, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     dvz_slots_push(renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Push));
     if (dvz_slots_create(renderer->slots) != 0)
         return -1;
@@ -287,10 +289,17 @@ static int create_pipeline(Renderer* renderer)
     dvz_descriptors_image(
         renderer->descriptors, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         dvz_image_views_handle(renderer->texture_view, 0), dvz_sampler_handle(renderer->sampler));
-    dvz_descriptors_buffer(renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0, sizeof(Material));
+    dvz_descriptors_buffer(
+        renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0,
+        sizeof(Material));
     return dvz_descriptors_handle(renderer->descriptors, 0) != VK_NULL_HANDLE ? 0 : -1;
 }
 
+/**
+ * Create the persistent material uniform buffer.
+ * @param renderer Renderer that owns the buffer.
+ * @return Zero on success.
+ */
 static int create_material(Renderer* renderer)
 {
     Material material = {.tint = {1.0f, 1.0f, 1.0f, 1.0f}};
@@ -300,7 +309,8 @@ static int create_material(Renderer* renderer)
     dvz_buffer(renderer->device, renderer->allocator, renderer->material_buffer);
     dvz_buffer_size(renderer->material_buffer, sizeof(Material));
     dvz_buffer_usage(renderer->material_buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-    dvz_buffer_flags(renderer->material_buffer, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
+    dvz_buffer_flags(
+        renderer->material_buffer, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
     if (dvz_buffer_create(renderer->material_buffer) != 0)
         return -1;
     dvz_buffer_upload(renderer->material_buffer, 0, sizeof(material), &material);
@@ -573,7 +583,8 @@ int main(int argc, char** argv)
     int initial_submit_result = dvz_canvas_submit(canvas);
     COURSE_CHECK(initial_submit_result == 0, "initial frame submission failed");
     renderer.color_format = dvz_canvas_frame_format(canvas);
-    COURSE_CHECK(renderer.color_format != VK_FORMAT_UNDEFINED, "canvas color format is unresolved");
+    COURSE_CHECK(
+        renderer.color_format != VK_FORMAT_UNDEFINED, "canvas color format is unresolved");
 
     renderer.commands = dvz_commands_create_wrapper();
     renderer.rendering = dvz_rendering_create_wrapper();

@@ -1,10 +1,10 @@
 # 15. Lighting
 
-**Your program at the end of this chapter: 714 C lines. The raw Vulkan equivalent: around 2150 lines, a rough estimate. The textured cube now responds to light.**
+*About 729 lines of C; raw Vulkan would need about 2150.*
 
 ![A checkerboard cube with ambient, diffuse, and specular light.](../assets/gpu-graphics/15-lighting.webp)
 
-Continue from chapter 14's textured cube. Surface color describes how a material reflects light; a **normal** is a direction perpendicular to the surface and tells the lighting calculation which way that surface faces. You will add face normals and calculate ambient, diffuse, and specular terms in the fragment shader. The texture upload, descriptors, reload path, depth, and mouse controls stay in place.
+A flat-colored cube hides its shape; light reveals it. In this chapter each face gets brighter or darker depending on how it faces a light, with a highlight on the shiny side. Surface color says how a material reflects light; a **normal** is a direction perpendicular to the surface that says which way it faces. You add face normals and compute ambient, diffuse, and specular light per fragment.
 
 ## Add face normals
 
@@ -19,7 +19,7 @@ typedef struct
 } Vertex;
 ```
 
-The 24 vertices already split the cube at face boundaries for UVs. Use that same split for normals: every vertex on one face has the same outward direction. Sharing one normal across adjacent faces would smooth the edge; duplicating the records preserves the cube's hard creases. Replace `VERTICES` with this complete array; keep chapter 14's `INDICES`:
+The 24 vertices already split the cube at its edges for UVs. The same split gives each face its own outward normal; sharing normals across faces would round off the edges. Replace `VERTICES`, and keep chapter 14's `INDICES`:
 
 ```c
 static const Vertex VERTICES[24] = {
@@ -56,7 +56,7 @@ static const Vertex VERTICES[24] = {
 };
 ```
 
-In `create_pipeline()`, replace the UV attribute declaration with these normal and UV declarations. Position remains at location 0, normal takes location 1, and UV moves to location 2:
+In `create_pipeline()`, replace the UV attribute with these two. Normal takes location 1, and UV moves to location 2:
 
 ```c
     dvz_graphics_vertex_attr(
@@ -67,7 +67,7 @@ In `create_pipeline()`, replace the UV attribute declaration with these normal a
 
 ## Extend the material uniform
 
-The material buffer from chapter 12 already occupies set 0 binding 0. Extend its C structure with a second aligned `vec4` rather than introducing another data path:
+The lighting coefficients are shared by every draw, so they belong in the material uniform from chapter 12. Add a second `vec4`-sized member:
 
 ```c
 typedef struct
@@ -76,20 +76,22 @@ typedef struct
     float lighting[4];
 } Material;
 
-_Static_assert(sizeof(Material) == 32, "the aligned material block must match two shader vec4 values");
+_Static_assert(
+    sizeof(Material) == 32, "the aligned material block must match two shader vec4 values");
 ```
 
-Replace the local initializer in `create_material()` with:
+Replace the initializer in `create_material()`:
 
 ```c
-    Material material = {.tint = {1.0f, 1.0f, 1.0f, 1.0f}, .lighting = {0.16f, 0.84f, 0.35f, 32.0f}};
+    Material material = {
+        .tint = {1.0f, 1.0f, 1.0f, 1.0f}, .lighting = {0.16f, 0.84f, 0.35f, 32.0f}};
 ```
 
-The four `lighting` components are ambient strength, diffuse strength, specular strength, and specular exponent. Both members are `vec4`-sized, so C and GLSL retain the simple `std140` agreement introduced in chapter 12. The buffer remains initialized once before drawing; the descriptor at binding 0 automatically covers the new `sizeof(Material)` range when the pipeline is created.
+The four `lighting` values are the ambient, diffuse, and specular strengths, then the specular exponent. Both members are 16 bytes, so `std140` and C still agree. The descriptor covers `sizeof(Material)`, so it grows with the struct.
 
 ## Fit the matrices into 128 bytes
 
-Replace `Push` with:
+Lighting needs positions and normals in view space, before projection, so the vertex shader needs the model-view matrix on its own. Send projection and model-view as two matrices: two `mat4`s are exactly the 128 bytes every device guarantees. Replace `Push`:
 
 ```c
 typedef struct
@@ -105,16 +107,14 @@ Add the size assertion after the material assertion:
 _Static_assert(sizeof(Push) == 128, "the lighting push block must fit in 128 bytes");
 ```
 
-Vulkan guarantees at least 128 bytes of push constants. Two 4 × 4 float matrices use exactly that amount. They remain per-draw push data, while the material and lighting coefficients remain persistent uniform data. Sending projection and model-view separately lets the shaders perform lighting in view space, where the eye is at the origin. The light position is a shader constant editable with **R**; a movable light could become another aligned member of the material uniform.
-
-In `draw()`, keep the camera and arcball updates and `clip_correction`. Replace the two local intermediate matrices and the three `multiply_mat4()` calls after that correction with:
+In `draw()`, keep the camera, arcball, and `clip_correction`, but replace the two intermediate matrices and three `multiply_mat4()` calls with:
 
 ```c
     multiply_mat4(mvp.view, mvp.model, push.model_view);
     multiply_mat4(clip_correction, mvp.proj, push.projection);
 ```
 
-The existing `sizeof(Push)` declaration and `sizeof(push)` upload now cover 128 bytes. Keep `VK_SHADER_STAGE_VERTEX_BIT` in both places: only the vertex shader reads the push block. The fragment shader receives interpolated view-space positions and normals.
+`sizeof(Push)` now covers 128 bytes. Only the vertex shader reads the push-constant block, so keep `VK_SHADER_STAGE_VERTEX_BIT`.
 
 ## Shade each fragment
 
@@ -141,7 +141,7 @@ void main()
 }
 ```
 
-`model_view` transforms positions into the camera's coordinate system before projection. Its upper-left 3 × 3 part rotates normals. This works because this program uses rotation and translation without nonuniform scale. Under nonuniform scale, transforming a normal by that same matrix can make it cease to be perpendicular to the surface; the correct normal matrix is the inverse transpose of the model-view matrix's linear 3 × 3 part. Translation never belongs in a normal because a direction has no position.
+`model_view` moves positions into view space. Its upper-left 3 × 3 part rotates normals, which works because this program only rotates and translates. Under nonuniform scale, that matrix would tilt normals off the perpendicular; the correct normal matrix is then the inverse transpose of that 3 × 3 part. Normals never take translation: a direction has no position.
 
 Replace `shader.frag` with:
 
@@ -169,66 +169,72 @@ void main()
 }
 ```
 
-All lighting vectors are in view space. The light is at `(2, 2, 0)`; the eye is at `(0, 0, 0)`, so the view direction is `-view_position`. Keeping position, normal, light direction, and view direction in one space makes their dot products meaningful. Normalize the interpolated normal again because interpolation does not preserve unit length.
+Every vector here is in view space, where the eye sits at the origin, so the view direction is `-view_position`. The light at `(2, 2, 0)` is in view space too: it moves with the camera, like a headlight. Interpolation shortens normals, so normalize again.
 
-The ambient coefficient `material.lighting.x` gives surfaces a baseline brightness. The diffuse term uses the positive part of the normal/light dot product. Blinn-Phong specular uses the halfway vector between light and view directions, with `material.lighting.w` controlling highlight width. Specular is suppressed when the face points away from the light. Because the texture is concretely `VK_FORMAT_R8G8B8A8_SRGB`, sampling always decodes its RGB texels to linear values before this arithmetic; alpha remains linear. The final conversion depends on `renderer.color_format`, which the program resolves from the canvas. An sRGB attachment encodes the shader's linear output for display. A non-sRGB surface format stores the output without that automatic encoding, so the displayed brightness can differ. A production renderer should require an sRGB presentation format or add an explicit output conversion for the fallback.
+Ambient gives every surface a baseline brightness. Diffuse uses the positive part of the normal-light dot product. Blinn-Phong specular uses the halfway vector between the light and view directions, with the exponent setting the highlight's width, and is skipped on faces turned away from the light.
+
+??? note "Linear light and sRGB"
+
+    Lighting math assumes linear values. The texture is `VK_FORMAT_R8G8B8A8_SRGB`, so sampling decodes its RGB to linear before this arithmetic. On output, an sRGB attachment encodes the result for display, as you saw in chapter 2. A non-sRGB surface format stores the linear value as is, so the image looks darker. A production renderer requires an sRGB format or converts explicitly.
 
 ## Build and run
 
-Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from chapter 1. Run these commands there, so the program can find the shader files.
+Build and run as before; the capture goes to `chapter15.png`.
 
 === "Linux and macOS"
 
     ```sh
     cmake --build build
-    ./build/vkcourse --png chapter15.png
     ./build/vkcourse
+    ./build/vkcourse --png chapter15.png
     ```
 
 === "Windows (Visual Studio)"
 
     ```powershell
     cmake --build build --config Release
-    .\build\Release\vkcourse.exe --png chapter15.png
     .\build\Release\vkcourse.exe
+    .\build\Release\vkcourse.exe --png chapter15.png
     ```
 
-Compare the image with chapter 14: the checkerboard remains, but the visible faces now have different brightness. Drag the cube and watch the faces move through the light. Scroll and pan to check that the highlight still uses the camera's actual view-space position. The offscreen initial pose remains deterministic and reports `validation errors: 0`.
+The checkerboard remains, but each visible face has its own brightness. Drag the cube and watch the faces move through the light. The terminal ends with `validation errors: 0`.
 
 !!! tip "Try it"
 
-    1. Set the C initializer's ambient value `0.16f` to `0.0f`, rebuild, and inspect the contribution of unlit faces.
-    2. Change the C initializer's specular exponent `32.0f` to `4.0f` for a broad highlight or `128.0f` for a tight one, then rebuild.
-    3. Move the shader's light from `(2, 2, 0)` to `(-2, 2, 0)`. The bright side should change without a C rebuild.
+    1. Set the ambient `0.16f` to `0.0f` and rebuild. Faces turned away from the light go completely black.
+    2. Change the exponent `32.0f` to `4.0f` and rebuild. The highlight spreads into a broad sheen; `128.0f` shrinks it to a small spot.
+    3. Move the light in `shader.frag` from `(2, 2, 0)` to `(-2, 2, 0)` and press **R**. The lit side switches from right to left, without a C rebuild.
 
 ??? info "Under the hood: values between shader stages"
 
-    Raw Vulkan declares the same vertex formats, attribute locations, and push-constant range. The rasterizer interpolates vertex outputs before invoking the fragment shader. vklite records the pipeline declarations and push update; it does not choose the lighting model or reconcile mismatched coordinate spaces.
+    Raw Vulkan declares the same vertex attributes and push-constant range. The rasterizer interpolates vertex outputs before the fragment shader runs. Vulkan has no lighting model; the shading is all your shader code, and keeping its vectors in one space is your job.
 
 !!! warning "When it goes wrong"
 
-    A push-range validation error usually means one of the shader files still declares the old block, or C and GLSL disagree about its size. A face that stays bright while turning away from the light suggests an untransformed normal. A moving highlight that disagrees with zoom or pan suggests mixing world-space and view-space values. Keep the light, eye direction, surface position, and normal in one space.
+    A push-range validation error means one shader still declares the old block, or C and GLSL disagree on its size. A face that stays bright as it turns away suggests an untransformed normal. A highlight that slides oddly when you zoom suggests mixing world-space and view-space vectors.
 
 ## Checkpoint
 
 1. Why does the lighting calculation need a position before projection?
-2. How does the view-space choice keep the push block at 128 bytes?
+2. Why does the push-constant block split into projection and model-view, and why does it still fit?
 3. Why do cube faces need separate normals, and when is an inverse-transpose normal matrix necessary?
 
-??? example "Full current listing"
+??? example "Your `main.c` after chapter 15"
 
     ```c
     --8<-- "examples/c/vulkan/step15.c"
     ```
 
-??? example "Current shader.vert"
+??? example "Your `shader.vert` after chapter 15"
 
     ```glsl
     --8<-- "examples/c/vulkan/step15/shader.vert"
     ```
 
-??? example "Current shader.frag"
+??? example "Your `shader.frag` after chapter 15"
 
     ```glsl
     --8<-- "examples/c/vulkan/step15/shader.frag"
     ```
+
+Next: [A real mesh](16-mesh.md).

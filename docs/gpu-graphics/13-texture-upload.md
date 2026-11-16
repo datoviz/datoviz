@@ -1,12 +1,31 @@
 # 13. Uploading a texture
 
-**Your program at the end of this chapter: 667 C lines. The raw Vulkan equivalent: around 1950 lines, a rough estimate. The tinted cube now has a texture image prepared on the GPU.**
+*About 680 lines of C; raw Vulkan would need about 1950.*
 
 ![The untextured cube remains visible while its texture is prepared on the GPU.](../assets/gpu-graphics/13-texture-upload.webp)
 
-Start with chapter 12's `main.c` and keep both shader files. Keep the 16-byte `Material` assertion too; the uniform layout has not changed. The cube still uses vertex colors and the material uniform. You will generate a checkerboard in C, copy it into an image on the GPU, and leave that image ready for sampling in chapter 14. The cube, tint, camera, mouse controls, depth test, culling, and **R** reload all keep working.
+The result of this chapter is invisible by design: a checkerboard image lands on the GPU, ready for chapter 14 to sample. Getting it there is the most explicit Vulkan in the course. You generate pixels in C, copy them into a staging buffer, record a copy into an image, and use barriers to move the image between uses. The cube looks exactly as in chapter 12.
 
-The initialization frame from chapter 4 resolves the canvas color format before pipeline creation. Keep `renderer.color_format` and copy it into reload candidates: a live window may use BGRA while offscreen images use RGBA. The pipeline must match the actual attachment in either mode.
+## Buffers, images, and barriers
+
+A buffer is a linear range of bytes. An **image** adds dimensions, a texel format, and a tiling.
+
+The texture uses optimal tiling, a GPU-private pixel order the CPU can't write directly; hence the **staging buffer**, a temporary host-visible buffer the CPU fills and the GPU copies from.
+
+```mermaid
+flowchart LR
+    A[CPU RGBA array] -->|synchronous upload| B[Mapped staging buffer]
+    B -->|recorded GPU copy| C[Optimally tiled image]
+    C -->|layout and visibility barrier| D[Shader-readable image]
+```
+
+An **image layout** is the state an image's memory is arranged in for one kind of access: `TRANSFER_DST_OPTIMAL` for receiving a copy, `SHADER_READ_ONLY_OPTIMAL` for sampling. Moving between them takes a **barrier**, which does three things:
+
+1. waits for the listed pipeline stages to finish,
+2. makes their memory writes visible to the next access,
+3. changes the image layout.
+
+The upload needs two barriers: `UNDEFINED` to `TRANSFER_DST_OPTIMAL` before the copy (no old pixels to keep), and `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL` after it, so the copy finishes before any fragment shader samples. The `VK_PIPELINE_STAGE_2_*` and `VK_ACCESS_2_*` names come from the synchronization2 feature the canvas enabled in chapter 2.
 
 ## Add the image and its upload
 
@@ -16,13 +35,13 @@ Add this constant beside `WIDTH` and `HEIGHT`:
 #define TEXTURE_SIZE 64
 ```
 
-Keep the allocator added in chapter 12 and add the image beside the buffers. The allocator remains borrowed from the GPU context; the renderer owns the image.
+Add the image beside the buffers in `Renderer`. The renderer owns it; the allocator from chapter 12 stays borrowed.
 
 ```c
     DvzImages* texture;
 ```
 
-Add this complete helper between `keyboard()` and `draw()`. It generates 64 × 64 RGBA pixels, with eight-pixel checker tiles. The first tile, at row 0 and column 0, is white: a plain checkerboard looks the same flipped or rotated, so this marker lets chapter 14 show which way the image lands on the cube. Each texel occupies four bytes; the offset includes both its row and its position within that row.
+Add this helper between `keyboard()` and `draw()`. It generates 64 × 64 RGBA pixels in eight-pixel tiles, four bytes per texel. The first tile, at row 0 and column 0, is white: a plain checkerboard looks the same flipped or rotated, so this marker shows in chapter 14 which way the image lands.
 
 ```c
 /**
@@ -122,29 +141,20 @@ error:
 }
 ```
 
-A **buffer** is a linear range of bytes. An **image** adds dimensions, texel format, tiling, and image-specific access rules. `dvz_buffer_upload()` copies the CPU pixels into a host-visible **staging buffer**, temporary storage chosen so the CPU can write it. The sampled image uses a device-local, optimally tiled allocation chosen for GPU image access; `dvz_cmd_copy_buffer_to_image()` transfers the linear staging bytes into that image representation. We use `VK_FORMAT_R8G8B8A8_SRGB` because the checker values represent display colors. Sampling this concrete format later converts its RGB channels to linear values for shader calculations; alpha remains linear.
+`dvz_images()` takes a count because a `DvzImages` wrapper holds an array of images; this one holds `1`, and `dvz_image_handle(renderer->texture, 0)` returns its first. The texture uses `VK_FORMAT_R8G8B8A8_SRGB` because the checker values are display colors; chapter 15 explains what sampling an sRGB image does.
 
-```mermaid
-flowchart LR
-    A[CPU RGBA array] -->|synchronous upload| B[Mapped staging buffer]
-    B -->|recorded GPU copy| C[Optimally tiled image]
-    C -->|layout and visibility barrier| D[Shader-readable image]
-```
-
-The image has two allowed uses: transfer destination and sampled image. An image **layout** names the kind of access for which its contents are prepared. Its first barrier changes `UNDEFINED` to `TRANSFER_DST_OPTIMAL`; no old pixels need preserving. The second changes `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL`. A **barrier** establishes ordering and memory visibility as well as the layout transition: the copy must finish, and its writes must become visible, before fragment-shader sampling. An image usage flag permits an operation over the resource's lifetime, while a layout describes its state for a particular access.
-
-This helper owns its upload command buffer, so it may begin, end, and submit it. `dvz_cmd_submit_result()` waits for this upload to finish. Only then does the helper destroy the staging buffer and upload commands. The canvas's frame command buffer remains borrowed, as in earlier chapters.
+This helper owns its upload command buffer, unlike the canvas's borrowed one, so it may begin, end, and submit it. `dvz_cmd_submit_result()` blocks until the upload finishes; only then does the helper destroy the staging buffer.
 
 ## Call the helper and release the image
 
-In `main()`, keep chapter 12's material and pipeline creation where they are, before the vertex and index buffers. Insert the texture call immediately after the index-buffer upload and before camera creation:
+In `main()`, upload the texture after the index buffer and before creating the camera:
 
 ```c
     int texture_result = create_texture(&renderer);
     COURSE_CHECK(texture_result == 0, "texture upload failed");
 ```
 
-At `cleanup:`, after the material-buffer cleanup and before the index-buffer cleanup, insert:
+At `cleanup:`, release the image after the material buffer and before the index buffer:
 
 ```c
     if (renderer.texture != NULL)
@@ -152,64 +162,66 @@ At `cleanup:`, after the material-buffer cleanup and before the index-buffer cle
     dvz_images_free(renderer.texture);
 ```
 
-The device wait protects the lifetime of submitted GPU work. The CPU `pixels` array may disappear when `create_texture()` returns; `renderer.texture` stays alive until teardown. There is no image view, sampler, descriptor, or shader change in this chapter.
+The CPU `pixels` array dies when `create_texture()` returns; the image lives until teardown.
 
 ## Build and run
 
-Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from chapter 1. Run these commands there, so the program can find the shader files.
+Build and run as before; the capture goes to `chapter13.png`.
 
 === "Linux and macOS"
 
     ```sh
     cmake --build build
-    ./build/vkcourse --png chapter13.png
     ./build/vkcourse
+    ./build/vkcourse --png chapter13.png
     ```
 
 === "Windows (Visual Studio)"
 
     ```powershell
     cmake --build build --config Release
-    .\build\Release\vkcourse.exe --png chapter13.png
     .\build\Release\vkcourse.exe
+    .\build\Release\vkcourse.exe --png chapter13.png
     ```
 
-The captured cube should match chapter 12 because uploading an image does not make a shader use it. Successful creation, submission, and `validation errors: 0` establish that Vulkan accepted the upload path and its synchronization; they do not prove that every intended checker byte is correct. Chapter 14 provides the visual check by sampling the image. Drag to rotate, scroll to zoom, and press **R** to reload the existing color-and-tint shaders.
+The capture matches chapter 12, because no shader reads the image yet. The terminal ends with `validation errors: 0`; chapter 14 checks the pixels themselves.
 
 !!! tip "Try it"
 
-    1. Change `TEXTURE_SIZE` to `32`. Image creation and the copy region both use this constant, so they change together.
-    2. Change the checker tile size from `8` to `4`. The generated and uploaded pixels change, but the cube remains the same until chapter 14 samples them.
-    3. Trace which object owns each byte copy: the C array, the staging buffer, and finally the GPU image.
+    1. Comment out the first `dvz_cmd_barriers(upload, &barriers);` call. Validation reports at submission that the copy expects the image in `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`, but its layout is still `VK_IMAGE_LAYOUT_UNDEFINED`.
+    2. Change `TEXTURE_SIZE` to `32`. Nothing changes on screen and validation stays at zero: the image size and the copy region both use the constant.
+    3. Remove `VK_IMAGE_USAGE_TRANSFER_DST_BIT` from the image usage. Validation reports three errors, against both barriers and the copy: the image was not created to receive transfers.
 
 ??? info "Under the hood: an image upload"
 
-    Raw Vulkan needs image and buffer creation, memory allocation and binding, command allocation, two `VkImageMemoryBarrier2` structures, `vkCmdCopyBufferToImage`, submission, and a wait before staging cleanup. vklite exposes the usage flags, stages, access masks, layouts, and copy region while the device and allocator handle the supporting resources.
+    Raw Vulkan needs image and buffer creation, memory allocation and binding, a command pool and buffer, two `VkImageMemoryBarrier2` structures, `vkCmdCopyBufferToImage`, a submission, and a fence wait before freeing the staging buffer. vklite still makes you choose the usage flags, stages, access masks, layouts, and copy region.
 
 !!! warning "When it goes wrong"
 
-    An unchanged cube is the expected result. An upload error instead points to image creation, an out-of-bounds copy region, or an incompatible layout. Read the validation message before changing the shader. A teardown error can mean staging storage was released before the upload completed; preserve the blocking submit before its cleanup.
+    An unchanged cube is expected. A validation error during upload points to image creation, the copy region, or a layout mismatch; read it before touching the shaders. An error at teardown can mean the staging buffer was freed before the upload finished; keep the blocking submit before its cleanup.
 
 ## Checkpoint
 
-1. Why does this image use a staging buffer while the vertex buffer can be written directly?
-2. Which layout is valid during `dvz_cmd_copy_buffer_to_image()`?
-3. Why do the CPU pixel array, staging buffer, and destination image have different lifetimes?
+1. Why does this image need a staging buffer while the vertex buffer could be written directly?
+2. Which image layout must the image be in during `dvz_cmd_copy_buffer_to_image()`?
+3. What three things does each barrier do?
 
-??? example "Full current listing"
+??? example "Your `main.c` after chapter 13"
 
     ```c
     --8<-- "examples/c/vulkan/step13.c"
     ```
 
-??? example "Current shader.vert"
+??? example "Your `shader.vert` after chapter 13"
 
     ```glsl
     --8<-- "examples/c/vulkan/step13/shader.vert"
     ```
 
-??? example "Current shader.frag"
+??? example "Your `shader.frag` after chapter 13"
 
     ```glsl
     --8<-- "examples/c/vulkan/step13/shader.frag"
     ```
+
+Next: [Sampling the texture](14-texture-sampling.md).

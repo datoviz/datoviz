@@ -1,20 +1,18 @@
 # 8. Push constants
 
-**Your program at the end of this chapter: 444 C lines. The raw Vulkan equivalent: around 1450 lines, a rough estimate. The indexed square rotates and changes size.**
+*About 443 lines of C; raw Vulkan would need about 1450.*
 
-![A colorful quad rotating over a dark background.](../assets/gpu-graphics/08-push-constants.webp)
+![A colorful square rotating over a dark background.](../assets/gpu-graphics/08-push-constants.webp)
 
-The quad from chapter 7 already has a vertex buffer and an index buffer. This chapter gives its vertex shader a small piece of changing data. The result moves every frame, and the CPU does not rebuild either buffer.
+To animate the square, you need to change a value every frame without rebuilding the pipeline or re-uploading the buffers. In this chapter the indexed square rotates and pulses, driven by two floats the CPU sends with each draw.
 
-## Three routes to shader data
+## Push constants
 
-**Push constants** are a small block of values copied into the command stream and exposed directly to selected shader stages. Each draw can receive different values without referring to a buffer or descriptor set. Vulkan guarantees that every device supports at least 128 bytes, though a device may support more; this example uses eight bytes for two floats.
+**Push constants** are a small block of values copied into the command buffer and visible to the shader stages you choose. Each draw can receive different values without any buffer. Every Vulkan device supports at least 128 bytes; this chapter uses eight, for two floats.
 
-A **uniform buffer** stores read-only shader parameters in a buffer range reached through a descriptor, while a **storage buffer** permits broader access patterns, including large arrays and shader writes when declared that way. These choices depend on capacity, access, update frequency, sharing, and device limits. Push constants are often convenient for small per-draw values; uniform buffers commonly hold structured parameters shared across draws; storage buffers suit data that needs their larger or less restricted interface. Chapter 12 builds the complete uniform-buffer and descriptor path.
+The shader and the pipeline layout must agree on the block's size, offset, and visible stages. `dvz_slots_push()` declares that range in the layout; `dvz_cmd_push_constants()` copies the current value into the recorded commands. Because the bytes are copied, the C variable can be reused as soon as the call returns. Chapter 12 introduces data that is referenced instead of copied.
 
-The shader interface and the **pipeline layout** must agree about the block's size, offset, and visible stages. `dvz_slots_push()` declares that contract while `dvz_cmd_push_constants()` copies the current value into the recorded commands. The local C `Push` variable can therefore be reused when that call returns; submitted work does not retain its address. A descriptor works differently: it refers to a resource that must remain valid while the GPU may use it.
-
-## Declare the slot
+## Declare the range
 
 Add this struct after `Vertex`. Its two floats match the GLSL block in the same order:
 
@@ -35,7 +33,7 @@ Declare the range before creating the pipeline layout:
         return -1;
 ```
 
-Replace `shader.vert` with this version. The input records and fragment shader are unchanged. Rotation happens in the shader; `pulse` scales the same positions before rotating them.
+Replace `shader.vert` with this version; `shader.frag` is unchanged. `pulse` scales the positions, then `time` rotates them:
 
 ```glsl
 #version 450
@@ -59,7 +57,7 @@ void main()
 
 ## Update every frame
 
-Include `<math.h>` and `<datoviz/common/functions.h>`, and make sure `<stdlib.h>` is still included: the restored `--time` option uses `strtof`. Add these fields to `Renderer`, keeping the existing resources and reload flag:
+Include `<math.h>`, and keep `<stdlib.h>`: the restored `--time` option uses `strtof`. `dvz_time_monotonic_ns()` comes from `<datoviz.h>`, as in chapter 3. Add these fields to `Renderer`:
 
 ```c
     uint64_t start_ns;
@@ -68,7 +66,7 @@ Include `<math.h>` and `<datoviz/common/functions.h>`, and make sure `<stdlib.h>
     bool draw_failed;
 ```
 
-At the beginning of `draw()`, after obtaining `renderer`, calculate the elapsed time and fill the two values:
+At the beginning of `draw()`, compute the elapsed time and fill the block:
 
 ```c
     float time = renderer->capture_time;
@@ -77,7 +75,7 @@ At the beginning of `draw()`, after obtaining `renderer`, calculate the elapsed 
     Push push = {.time = time, .pulse = 1.0f + 0.08f * sinf(time * 3.0f)};
 ```
 
-After setting the viewport and before binding the vertex buffer, record the push-constant update:
+The values must be recorded before the draw that uses them, so push them after setting the viewport and before binding the vertex buffer:
 
 ```c
     DvzResult push_result = dvz_cmd_push_constants(
@@ -86,7 +84,7 @@ After setting the viewport and before binding the vertex buffer, record the push
         renderer->draw_failed = true;
 ```
 
-Replace the old PNG argument parsing in `main()` with the following block. `--time` overrides the default `capture_time` of `0.75f` for a still image. Only the live path reads the clock.
+Replace the argument parsing in `main()`. Offscreen runs use `capture_time`, `0.75f` unless `--time` overrides it; only live runs read the clock.
 
 ```c
     const char* png_path = NULL;
@@ -101,7 +99,7 @@ Replace the old PNG argument parsing in `main()` with the following block. `--ti
     COURSE_CHECK(isfinite(capture_time), "capture time must be finite");
 ```
 
-Then add this initialization before installing the draw callback:
+Then initialize the timing fields before installing the draw callback:
 
 ```c
     renderer.start_ns = dvz_time_monotonic_ns();
@@ -109,61 +107,74 @@ Then add this initialization before installing the draw callback:
     renderer.animate = live;
 ```
 
-After `dvz_canvas_frame()` reports a ready frame, check `renderer.draw_failed` before submitting. The callback cannot return a status, so this flag passes a failed update back to the frame loop.
+The callback cannot return a status, so `draw_failed` carries a failed push back to the loop. Check it after `dvz_canvas_frame()` reports a ready frame, before submitting:
 
 ```c
         COURSE_CHECK(!renderer.draw_failed, "push-constant update failed");
 ```
 
-The shader-file compiler and **R** reload path keep working. A successful reload builds the same push-constant declaration into the replacement pipeline layout. If C declares eight bytes but GLSL expects another size or member order, the shader reads a different interface from the one the command supplies.
+Reload keeps working: each candidate pipeline declares the same range.
 
-## Try it
-
-1. Double the time used for `cos` and `sin` in the shader, save, and press **R**. Rotation speeds up without changing the breathing rate.
-2. Set the C initializer's `.pulse` value to `1.0f` and rebuild. Rotation continues while the square stays the same size.
-3. Change `VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST` to `VK_PRIMITIVE_TOPOLOGY_LINE_LIST`; the six indices now describe three independent lines.
-
-??? info "Under the hood: one small Vulkan update"
-
-    Raw Vulkan needs a `VkPushConstantRange` in `VkPipelineLayoutCreateInfo`, then a `vkCmdPushConstants` call with the exact stage mask, offset, and byte count. Datoviz's slots wrapper keeps the declaration and validation together. The command still belongs to the borrowed Canvas command buffer, so the Canvas remains responsible for ending and submitting it.
-
-!!! warning "When it goes wrong"
-
-    A validation message about a push-constant range usually means the offset or size is not four-byte aligned, or the pipeline layout did not declare the range. A quad that stays still usually has `animate` disabled because it was rendered with `--png`, or the shader is reading a different member order than the C struct.
-
+The square shears as it turns: x and y are still normalized device coordinates, which span the whole 4:3 window, so one unit is wider than it is tall. Chapter 9 fixes this with the aspect ratio.
 
 ## Build and run
 
-Keep using the project from chapter 1. Save `main.c`, `shader.vert`, and `shader.frag` in the project directory, then run these commands there. Press **R** in the live window to rebuild the pipeline from the shader files.
+Build and run as before; the capture goes to `chapter08.png`.
 
-```sh
-cmake --build build
-./build/vkcourse
-./build/vkcourse --png frame.png
-```
+=== "Linux and macOS"
 
-??? example "Your `main.c` at the end of chapter 8"
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ./build/vkcourse --png chapter08.png
+    ```
+
+=== "Windows (Visual Studio)"
+
+    ```powershell
+    cmake --build build --config Release
+    .\build\Release\vkcourse.exe
+    .\build\Release\vkcourse.exe --png chapter08.png
+    ```
+
+The live square rotates and breathes; the capture is the still above. The terminal ends with `validation errors: 0`.
+
+!!! tip "Try it"
+
+    1. In the shader, use `push_data.time * 2.0` for `cos` and `sin`, save, and press **R**. Rotation doubles in speed; the breathing rate is unchanged.
+    2. Set `.pulse` to `1.0f` in the C initializer and rebuild. The square keeps rotating at a constant size.
+    3. Run `--png` with `--time 0` and `--time 0.75`. The first capture is unrotated; the second is rotated by 0.75 radians, about 43 degrees.
+
+??? info "Under the hood: one small Vulkan update"
+
+    Raw Vulkan puts a `VkPushConstantRange` in `VkPipelineLayoutCreateInfo`, then calls `vkCmdPushConstants` with the exact stage mask, offset, and size. The slots wrapper keeps the declaration and its checks together.
+
+!!! warning "When it goes wrong"
+
+    A validation message about a push-constant range usually means the offset or size is not a multiple of four, or the pipeline layout does not declare the range. A square that stays still was rendered with `--png`, or the shader reads the members in a different order than the C struct.
+
+## Checkpoint
+
+1. Why does a push constant need to be declared in the pipeline layout?
+2. What limits how much data you can send as push constants?
+3. Why can the `Push` variable be reused immediately after `dvz_cmd_push_constants()` returns?
+
+??? example "Your `main.c` after chapter 8"
 
     ```c
     --8<-- "examples/c/vulkan/step08.c"
     ```
 
-??? example "Your `shader.vert` at the end of this chapter"
+??? example "Your `shader.vert` after chapter 8"
 
     ```glsl
     --8<-- "examples/c/vulkan/step08/shader.vert"
     ```
 
-??? example "Your `shader.frag` at the end of this chapter"
+??? example "Your `shader.frag` after chapter 8"
 
     ```glsl
     --8<-- "examples/c/vulkan/step08/shader.frag"
     ```
 
-## Checkpoint
-
-- Why does a push constant need to be declared in the pipeline layout?
-- Which values belong in a uniform buffer instead of a push constant?
-- Why can the `Push` variable be reused immediately after `dvz_cmd_push_constants()` returns?
-
-The next chapter replaces the quad's screen coordinates with a cube and pushes a complete model-view-projection matrix.
+Next: [Matrices and perspective](09-matrices.md).

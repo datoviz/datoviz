@@ -1,18 +1,18 @@
 # 4. Your first triangle
 
-**Your program at the end of this chapter: 267 C lines. The raw Vulkan equivalent: around 1200 lines, a rough estimate. You draw a triangle with two shaders and a graphics pipeline.**
+*About 267 lines of C; raw Vulkan would need about 1200.*
 
 ![An RGB triangle on a dark background.](../assets/gpu-graphics/04-triangle.webp)
 
-The frame from chapter 3 now has something to draw. A **shader** is a small GPU program that runs at a defined stage of the graphics pipeline. You will compile two shaders, create the pipeline that joins them to Vulkan's fixed-function stages, and issue one draw command. The vertex positions live in the shader for now, so no vertex buffer is needed.
+The frame from chapter 3 finally gets something to draw: a triangle, built from two shaders, one graphics pipeline, and one draw command. A **shader** is a small GPU program that runs at a defined stage of the graphics pipeline. The vertex positions live in the shader for now, so no vertex buffer is needed yet.
 
-Start from your chapter 3 `main.c`. The pulsing clear has served its purpose, so remove `<math.h>`, the three animation fields in `Renderer`, the `--time` option, and the time calculation in `draw()`. Remove the GPU-name and rendered-frame prints as well; validation errors remain the one diagnostic printed on every run. Keep the `--png` option and replace the animated clear with this fixed dark color:
+Start from your chapter 3 `main.c`. The pulsing clear has done its job, so remove `<math.h>`, the three animation fields in `Renderer`, the `--time` option, and the time calculation in `draw()`. Remove the GPU-name and frame-count prints too; validation errors remain the one diagnostic on every run. Keep `--png`, and use this fixed dark clear color:
 
 ```c
     VkClearValue clear = {.color.float32 = {0.04f, 0.05f, 0.08f, 1.0f}};
 ```
 
-Add the pipeline fields below to `Renderer`. From this chapter onward, that structure holds every object used by the draw callback. The full listing also trims the chapter 3 guide comments now that the setup calls are familiar.
+Add the pipeline fields to `Renderer`. From now on, this struct holds every object the draw callback uses. The full listing also trims chapter 3's guide comments.
 
 ```c
 typedef struct
@@ -28,14 +28,14 @@ typedef struct
 } Renderer;
 ```
 
-Because cleanup now releases everything through `renderer`, declare it with the other handles at the top of `main()`, zero-initialized, so a failure before the pipeline exists still reaches `cleanup:` with every field `NULL`. Delete the separate `commands` and `rendering` locals and the chapter 2 `Renderer renderer = {...}` initializer:
+Cleanup now releases everything through `renderer`, so declare it zero-initialized with the other handles at the top of `main()`. A failure before the pipeline exists then reaches `cleanup:` with every field `NULL`. Delete the separate `commands` and `rendering` locals and chapter 2's `Renderer renderer = {...}` initializer:
 
 ```c
     DvzCanvas* canvas = NULL;
     Renderer renderer = {0};
 ```
 
-The argument loop now only looks for `--png`:
+The argument loop now looks only for `--png`:
 
 ```c
     for (int argument_index = 1; argument_index + 1 < argc; argument_index++)
@@ -45,9 +45,9 @@ The argument loop now only looks for `--png`:
 
 ## Two shader stages
 
-A **shader invocation** is one execution of a shader for one item of work. The **vertex shader** runs once for each requested vertex and must write that vertex's clip-space position. `gl_VertexIndex` is 0, 1, then 2, so each invocation selects one position and one color from the arrays. No CPU pointer survives into the draw: these arrays are constants compiled into the shader.
+A **shader invocation** is one execution of a shader for one item of work. The vertex shader runs once per requested vertex and writes that vertex's position. `gl_VertexIndex` is 0, 1, then 2, so each invocation picks one position and one color from constant arrays compiled into the shader.
 
-These positions are already in **clip space**, the homogeneous coordinate system produced by a vertex shader. Because every position has `w = 1`, division by `w` leaves x and y spanning the visible range from -1 to +1 and z in Vulkan's visible depth range from 0 to 1. The positive-height viewport used here maps normalized-device positive y downward, which is why the first point uses a negative y coordinate to appear at the top. Chapter 9 returns to clip coordinates when `w` varies with depth.
+These positions are in clip space: for now, x and y run from −1 to 1, and y points down. Chapter 9 explains why.
 
 ```c
 static const char* VERTEX_GLSL =
@@ -63,7 +63,7 @@ static const char* VERTEX_GLSL =
     "}\n";
 ```
 
-After the vertex stage, **primitive assembly** groups the three outputs into a triangle. **Rasterization** determines which framebuffer samples the triangle covers and produces **fragments**, candidate contributions to those samples. It also interpolates the three vertex colors across the triangle. The **fragment shader** runs for those fragments and produces a color at location 0. A fragment is not simply a pixel: later tests can reject it, and multisampling can evaluate coverage at more than one sample within a pixel.
+After the vertex stage, primitive assembly groups the three outputs into a triangle, and rasterization finds which framebuffer samples it covers. For each one it produces a **fragment**, a candidate contribution to that sample, with the vertex colors interpolated across the triangle. The fragment shader then runs for each fragment and writes a color to location 0. A fragment is not simply a pixel: later tests can reject it, and multisampling can evaluate several samples per pixel.
 
 ```c
 static const char* FRAGMENT_GLSL =
@@ -94,13 +94,13 @@ flowchart LR
     end
 ```
 
-The programmable stages run code you supply. The fixed-function stages follow pipeline state that you configure, such as triangle topology, viewport, depth testing, and blending. A **graphics pipeline** packages those shaders and most of that fixed state into one device object. The command buffer later binds the pipeline so subsequent draws use that complete configuration.
+The programmable stages run code you supply. The fixed-function stages follow state you configure, such as topology, viewport, depth testing, and blending. A **graphics pipeline** packages the shaders and most of that state into one device object. A command later binds it, and the following draws use that whole configuration.
 
 ## Resolve the canvas color format
 
-The graphics pipeline must name the same color format as the image it draws into. A live window may choose a different channel order from an offscreen canvas, so do not assume the default format will fit both. For a window, the canvas only learns the selected format when it acquires its first frame.
+The window system picks the swapchain format; the canvas learns it at the first acquire, and the pipeline must name that exact format. A window may use BGRA where an offscreen canvas uses RGBA, so you cannot guess.
 
-After creating the canvas and setting `renderer.device`, add the following initialization before allocating the renderer wrappers or creating the pipeline. No draw callback is installed yet, so the canvas records its default clear. Submit that frame, then read the resolved format into `renderer.color_format`:
+After creating the canvas and setting `renderer.device`, run one frame before creating the pipeline. No draw callback is installed yet, so the canvas records its default clear. Then read the resolved format:
 
 ```c
     // Acquire and submit one default clear before creating a format-dependent pipeline.
@@ -122,7 +122,7 @@ After creating the canvas and setting `renderer.device`, add the following initi
     COURSE_CHECK(renderer.color_format != VK_FORMAT_UNDEFINED, "canvas color format is unresolved");
 ```
 
-If the surface is temporarily unavailable, keep polling until a frame can be acquired or the window closes. This adds one initial clear frame. The ordinary draw loop still starts at frame zero, and an offscreen capture reads the subsequent frame containing the triangle.
+If the surface is temporarily unavailable, keep polling until a frame is acquired or the window closes. The draw loop still starts at frame zero, and an offscreen capture reads the next frame, the one with the triangle.
 
 ## Compile and build the pipeline
 
@@ -133,7 +133,7 @@ static int create_pipeline(Renderer* renderer)
 {
 ```
 
-Add `<stdint.h>` and `<datoviz/shader.h>`. **GLSL** is the human-readable shading language used for both source strings. `dvz_compile_glsl()` translates each string into **SPIR-V**, Vulkan's standardized binary intermediate representation. SPIR-V is not the GPU's native machine code; the driver can translate it further for the selected device. `dvz_shader()` copies the SPIR-V into a **shader module**, the Vulkan object that presents one compiled stage to pipeline creation. The CPU-side SPIR-V arrays can then be freed because the shader modules no longer refer to those arrays.
+Add `<stdint.h>` and `<datoviz/shader.h>`. GLSL is the shading language of both source strings. `dvz_compile_glsl()` translates each into **SPIR-V**, Vulkan's binary intermediate representation. SPIR-V is not machine code; the driver translates it further for your GPU.
 
 ```c
     uint64_t vertex_size = 0;
@@ -148,7 +148,21 @@ Add `<stdint.h>` and `<datoviz/shader.h>`. **GLSL** is the human-readable shadin
     }
 ```
 
-Create the shader, layout, and pipeline wrappers, then create both shader modules. The complete helper checks each allocation and creation so a compiler or GPU failure reaches the shared cleanup path rather than leaving a half-built renderer in use.
+Every vklite object you own follows the same lifecycle:
+
+!!! note "vklite object lifecycle"
+
+    | Step | Call | Effect |
+    | --- | --- | --- |
+    | 1 | `dvz_*_create_wrapper()` | allocate an empty C wrapper; no Vulkan object yet |
+    | 2 | `dvz_slots()`, `dvz_graphics()`, ... | attach it to a device, then configure it |
+    | 3 | `dvz_*_create()` | create the Vulkan object |
+    | 4 | `dvz_*_destroy()` | destroy the Vulkan object |
+    | 5 | `dvz_*_free()` | free the wrapper |
+
+    `dvz_shader()` is the one shortcut: it does steps 2 and 3 in a single call.
+
+Allocate the four wrappers:
 
 ```c
     renderer->vertex_shader = dvz_shader_create_wrapper();
@@ -164,6 +178,8 @@ Create the shader, layout, and pipeline wrappers, then create both shader module
     }
 ```
 
+`dvz_shader()` copies each SPIR-V array into a **shader module**, the Vulkan object that hands one compiled stage to pipeline creation. The CPU arrays can then be freed.
+
 ```c
     int vertex_result =
         dvz_shader(renderer->device, vertex_size, vertex_spirv, renderer->vertex_shader);
@@ -175,7 +191,7 @@ Create the shader, layout, and pipeline wrappers, then create both shader module
         return -1;
 ```
 
-The empty `DvzSlots` layout declares that this pipeline has no descriptors or push constants. It contributes to the **pipeline layout**, the contract for resources and small values that shaders may access; later chapters add both. Here the graphics pipeline combines the shader stages with state that says: group vertices in threes, render to the canvas color format, and set viewport and scissor dynamically for each frame.
+`DvzSlots` is Datoviz's wrapper for the **pipeline layout**, the list of resources and small values shaders may access. It is empty here; chapter 8 adds its first entry. The pipeline combines the shader stages with state that says: group vertices in threes, render to the canvas color format, and set the viewport and scissor every frame.
 
 ```c
     dvz_slots(renderer->device, renderer->slots);
@@ -201,7 +217,7 @@ The empty `DvzSlots` layout declares that this pipeline has no descriptors or pu
     return dvz_graphics_create(renderer->pipeline);
 ```
 
-Store the wrappers directly in `renderer`, then call `create_pipeline()` before registering the draw callback:
+In `main()`, store the command and rendering wrappers in `renderer`, then build the pipeline before registering the draw callback:
 
 ```c
     renderer.commands = dvz_commands_create_wrapper();
@@ -212,7 +228,7 @@ Store the wrappers directly in `renderer`, then call `create_pipeline()` before 
     COURSE_CHECK(pipeline_result == 0, "graphics pipeline creation failed");
 ```
 
-At `cleanup:`, wait for submitted work, then destroy and free the pipeline, shader modules, and slots before the wrappers and the GPU context:
+Submitted frames may still use the pipeline, so cleanup waits for the device first. Then it destroys and frees the pipeline, shader modules, and slots before the other wrappers and the GPU context:
 
 ```c
     if (renderer.device != NULL)
@@ -233,11 +249,11 @@ At `cleanup:`, wait for submitted work, then destroy and free the pipeline, shad
     dvz_commands_free(renderer.commands);
 ```
 
-Each `destroy` releases the Vulkan object and each `free` releases the wrapper. The `NULL` checks skip wrappers that were never allocated, and `free` accepts `NULL`, so this one cleanup path is correct whichever step failed. After `dvz_graphics_create()` succeeds, Vulkan permits you to destroy the shader modules because the pipeline has retained the compiled stage code it needs. This program keeps the modules until pipeline cleanup; chapter 5 uses that single ownership group while replacing a pipeline safely.
+The `NULL` checks skip wrappers that were never allocated, and `free` accepts `NULL`, so this one path works whichever step failed. Vulkan lets you destroy shader modules as soon as the pipeline exists; the course keeps them with the pipeline so one cleanup path covers both.
 
 ## Draw three vertices
 
-Bind the pipeline after rendering begins, set the dynamic viewport and scissor, then ask for three vertices. The four numeric arguments are first vertex, vertex count, first instance, and instance count.
+Bind the pipeline after rendering begins, set the dynamic viewport and scissor, then ask for three vertices. The numbers are first vertex, vertex count, first instance, and instance count; one instance means "draw the shape once".
 
 ```c
     dvz_cmd_bind_graphics(renderer->commands, renderer->pipeline);
@@ -245,15 +261,16 @@ Bind the pipeline after rendering begins, set the dynamic viewport and scissor, 
     dvz_cmd_draw(renderer->commands, 0, 3, 0, 1);
 ```
 
-## Build, run, and capture
+## Build and run
 
-Save the completed listing as `main.c` in the `vkcourse` directory you created in chapter 1. Build and start the live program from that directory:
+Save the completed listing as `main.c` in your `vkcourse` directory. Build and run from that directory, close the window, then capture the same result offscreen:
 
 === "Linux and macOS"
 
     ```sh
     cmake --build build
     ./build/vkcourse
+    ./build/vkcourse --png chapter04.png
     ```
 
 === "Windows (Visual Studio)"
@@ -261,47 +278,36 @@ Save the completed listing as `main.c` in the `vkcourse` directory you created i
     ```powershell
     cmake --build build --config Release
     .\build\Release\vkcourse.exe
-    ```
-
-Close the window, then capture the same result without opening one:
-
-=== "Linux and macOS"
-
-    ```sh
-    ./build/vkcourse --png chapter04.png
-    ```
-
-=== "Windows (Visual Studio)"
-
-    ```powershell
     .\build\Release\vkcourse.exe --png chapter04.png
     ```
 
-The terminal should end with `validation errors: 0`, and `chapter04.png` should contain the triangle shown above.
+`chapter04.png` shows the triangle above, and the terminal ends with `validation errors: 0`.
 
-## Try it
+!!! tip "Try it"
 
-- Swap the red and blue entries in `colors`. The matching corners should exchange colors, while the geometry stays fixed.
-- Change `VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST` to `VK_PRIMITIVE_TOPOLOGY_LINE_LIST`. Three vertices describe one complete line and leave one unmatched vertex, so you will no longer get a filled triangle.
-- Exchange the last two positions. The triangle should still appear because face culling is not enabled yet, but its winding changes. Chapter 10 will make that distinction visible.
+    1. Swap the red and blue entries in `colors`. The two corners exchange colors; the geometry stays put.
+    2. Change `VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST` to `VK_PRIMITIVE_TOPOLOGY_LINE_LIST`. Three vertices make one line and one leftover vertex, so you see a single line, not a triangle.
+    3. Exchange the last two positions. The triangle still appears because face culling is off, but its winding is reversed. Chapter 10 makes that visible.
 
-!!! info "Under the hood"
-    Raw Vulkan needs shader-module create structures, a pipeline layout, several fixed-function state structures, dynamic-rendering attachment formats, and a graphics-pipeline create call. Datoviz fills the routine defaults, but the resulting object is still a Vulkan pipeline.
+??? info "Under the hood: a Vulkan pipeline"
 
-!!! failure "When it goes wrong"
-    A shader compile error stops startup: the compiler message is followed by `graphics pipeline creation failed`. A blank frame with zero validation errors usually means the triangle is off-screen or the draw call is missing. A draw recorded outside the rendering pass, or a pipeline color format that does not match the canvas, produces validation errors; read them first. A triangle with an unexpected vertical orientation usually comes from assuming OpenGL's viewport convention.
+    Raw Vulkan needs a shader-module create structure per stage, a pipeline layout, about ten fixed-function state structures, the dynamic-rendering attachment formats, and a graphics-pipeline create call. Datoviz fills the routine defaults, but the result is still an ordinary Vulkan pipeline.
 
-??? example "Full current listing"
+!!! warning "When it goes wrong"
 
-    ```c
-    --8<-- "examples/c/vulkan/step04.c"
-    ```
+    A shader compile error stops startup: the compiler message is followed by `graphics pipeline creation failed`. A blank frame with zero validation errors usually means the triangle is off-screen or the draw call is missing. A draw outside the rendering pass, or a pipeline format that does not match the canvas, produces validation errors; read them first. An upside-down triangle comes from assuming OpenGL's y-up convention.
 
 ## Checkpoint
 
 1. What supplies vertex positions when there is no vertex buffer?
 2. Which stage interpolates the colors between vertices?
-3. Which pipeline state remains dynamic in this program?
+3. Which pipeline state is dynamic in this program?
 4. Why can the CPU-side SPIR-V arrays be freed after shader-module creation?
 
-Next, move the shaders out of the C string literals so you can edit and reload them directly.
+??? example "Your `main.c` after chapter 4"
+
+    ```c
+    --8<-- "examples/c/vulkan/step04.c"
+    ```
+
+Next: [Shaders in their own files](05-shader-files.md).

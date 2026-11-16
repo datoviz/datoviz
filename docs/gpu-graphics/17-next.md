@@ -1,44 +1,46 @@
 # 17. Where to go next
 
-You now have the core loop of a small Vulkan renderer. The CPU owns application state, prepares resources, and records commands. Submission places those commands on a device queue. The GPU fetches vertex records through an index buffer, runs the vertex shader, assembles and rasterizes triangles, interpolates their outputs, runs the fragment shader, tests depth, and writes the color attachment. The canvas presents that attachment or copies it back for a capture.
-
-The shader inputs now have three clear routes. Vertex attributes come from bound buffers according to the pipeline's stride, formats, offsets, and locations. Push constants copy the current matrices into the command stream for a draw. Descriptor set 0 refers to persistent resources: the material uniform buffer at binding 0 and the texture view plus sampler at binding 1. Those resources stay alive while submitted work can use them.
+You now have the core loop of a small Vulkan renderer: the CPU prepares resources and records commands, and the GPU turns them into pixels along this path.
 
 ## The complete path
 
 ```text
 CPU mesh arrays  -> vertex/index buffers --+
-CPU matrices     -> push constants --------+-> vertex shader -> triangles
-                                              -> rasterization and interpolation
-CPU material     -> uniform buffer --------+-> fragment shader -> depth/color attachments
-CPU pixels       -> staging -> image/view --+
-sampler rules    -> sampler ----------------+
-                                                        |
-                                                        v
-                                             present or capture
+CPU matrices     -> push constants --------+-> vertex shader
+                                                     |
+                                      rasterization and interpolation
+                                                     |
+CPU material     -> uniform buffer --------+         v
+CPU pixels       -> staging -> image/view -+-> fragment shader
+sampler rules    -> sampler ---------------+         |
+                                                     v
+                                      depth test and color attachment
+                                                     |
+                                                     v
+                                            present or capture
 ```
 
-The arrows do not all mean the same thing. Upload calls copy CPU bytes. A descriptor stores a resource reference. A bind command selects resources for later draws. Queue submission schedules recorded work, and a completion signal establishes when referenced resources may be changed or destroyed.
+The arrows mean different things. Uploads copy CPU bytes. Descriptors store references. Bind commands select resources for later draws. Submission queues recorded work, and a completion signal says when referenced resources may be changed or destroyed.
 
 ## The Vulkan pieces you did not write
 
-The GPU context creates the Vulkan instance, chooses a physical device, enables features, creates the logical device, and selects queue families. `dvz_gpu_ctx` is where those decisions live. The logical device is the parent of the buffers, images, shader modules, pipelines, and other device resources you created.
+The GPU context creates the Vulkan instance, chooses a physical device, enables features, selects queue families, and creates the logical device that owns every resource you made.
 
-Before any of that, Datoviz finds and loads the **Vulkan loader**, the system library that discovers installed drivers and routes each Vulkan call to the right one. Every call you made through vklite went through it. The loader can also insert **layers** between your program and the driver. `dvz_gpu_ctx_config_validation()` asked for the Khronos validation layer: when it is installed, the loader places it in front of the driver, it checks each call against the specification, and Datoviz's debug messenger prints its messages and counts the errors that `dvz_gpu_ctx_error_count()` reported at the end of every chapter. Validation costs time on every call, so release applications usually leave it off.
+Before any of that, Datoviz finds and loads the **Vulkan loader**, the system library that discovers installed drivers and routes each Vulkan call to the right one. Every call you made through vklite went through it. The loader can also insert **layers** between your program and the driver. `dvz_gpu_ctx_config_validation()` asked for the Khronos validation layer: when it is installed, the loader places it in front of the driver, it checks each call against the specification, and Datoviz's debug messenger prints its messages and counts the errors that `dvz_gpu_ctx_error_count()` reported at the end of every chapter. Validation slows every call, so release builds usually turn it off.
 
-The window and canvas create the surface and swapchain, acquire the next image, recover from a resize, and present the rendered image. `dvz_canvas_frame` and `dvz_canvas_submit` wrap that frame contract.
+The window and canvas create the surface and swapchain, acquire images, recover from resizes, and present. `dvz_canvas_frame()` and `dvz_canvas_submit()` wrap that contract.
 
-The canvas also owns per-frame command pools, command buffers, semaphores, and fences. Semaphores order GPU operations such as acquisition, rendering, and presentation. Fences let the CPU learn that submitted work has completed. Together they let the CPU prepare later work while the GPU executes an earlier frame, then make command buffers and frame resources safe to reuse.
+The canvas also owns each frame slot's command pool, command buffer, semaphores, and fence. Semaphores order GPU operations such as acquisition, rendering, and presentation. Fences tell the CPU that submitted work has finished. Together they let the CPU record one frame while the GPU executes another, and say when a frame slot is safe to reuse.
 
-The rendering wrapper records dynamic rendering with color and depth attachments. Raw Vulkan can use classic render passes and framebuffers or modern dynamic rendering; the attachment descriptions and layout transitions still have to agree.
+The rendering wrapper records dynamic rendering with color and depth attachments. Raw Vulkan can also use classic render passes and framebuffers; either way, attachments and image layout transitions must agree.
 
-`DvzSlots` and `DvzDescriptors` stand in for descriptor set layouts, pipeline-layout integration, descriptor pools, allocation, and `vkUpdateDescriptorSets`. The vklite objects expose the set and binding decisions while the device manages the pool. The descriptor set still refers to the uniform buffer, image view, and sampler that your renderer owns.
+`DvzSlots` and `DvzDescriptors` stand in for descriptor set layouts, pipeline layouts, descriptor pools, and `vkUpdateDescriptorSets`. You still choose every set and descriptor binding; the device manages the pool.
 
-The VMA-backed allocator chooses memory types and binds buffers and images. You still decide which resources are host visible, which are device local, how bytes reach them, and when a submitted resource is safe to change or destroy.
+The VMA-backed allocator chooses memory types and binds memory. You still decide which resources are host-visible or device-local, how bytes reach them, and when they are safe to change or destroy.
 
 ## What changes when
 
-The final program separates state by how often it changes. This is a useful starting point for larger renderers, though real applications may make different choices.
+The final program sorts its state by how often it changes, a useful starting point for larger renderers.
 
 | Frequency | State in this course | Delivery |
 | --- | --- | --- |
@@ -51,9 +53,9 @@ The final program separates state by how often it changes. This is a useful star
 
 ## Good next experiments
 
-Try a compute shader that writes a storage image, then use a barrier and sample that image in a graphics pass. Add a second graphics pipeline for a wireframe or outline pass. Enable MSAA to evaluate more than one coverage sample per pixel, and study blending and transparency once opaque depth ordering is clear. An ImGui overlay is a useful way to expose camera and material controls.
+Write a compute shader that fills a storage image, then barrier and sample it in a graphics pass. Add a second pipeline for a wireframe or outline pass. Enable MSAA, then study blending and transparency. Add an ImGui overlay for camera and material controls.
 
-When the renderer itself is no longer the lesson, move up to the Scene API. It keeps the same GPU foundations but handles retained resources, visuals, camera state, and planning for you. The low-level path remains available whenever a custom pipeline or unusual data flow earns the extra control.
+When the renderer itself is no longer the lesson, move up to the Scene API. It runs on the same GPU foundations but manages resources, visuals, and cameras for you. The low-level path remains there whenever a custom pipeline earns the extra control.
 
 ## Checkpoint
 

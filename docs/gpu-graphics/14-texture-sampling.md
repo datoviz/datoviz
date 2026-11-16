@@ -1,16 +1,16 @@
 # 14. Sampling the texture
 
-**Your program at the end of this chapter: 710 C lines. The raw Vulkan equivalent: around 2050 lines, a rough estimate. Each cube face now samples the checkerboard.**
+*About 723 lines of C; raw Vulkan would need about 2050.*
 
 ![A checkerboard covers each face of the mouse-controlled cube.](../assets/gpu-graphics/14-texture-sampling.webp)
 
-Continue from chapter 13. Keep the 16-byte `Material` assertion because its GLSL block is unchanged. The image is uploaded, but drawing still needs UV coordinates, an image view, a sampler, and a descriptor entry. This chapter adds those pieces to the same cube. The material uniform remains at set 0 binding 0; the texture joins the same descriptor set at binding 1. Mouse rotation, zoom, depth, culling, and shader reload stay in place.
+Chapter 13 put the checkerboard on the GPU. Now the cube shows it on every face. Drawing a texture takes four more pieces: UV (texture) coordinates on each vertex, an image view, a sampler, and a descriptor that hands the view and sampler to the fragment shader. The texture joins the material in descriptor set 0, at descriptor binding 1.
 
 ## Give each face its own UVs
 
-A vertex index selects a whole vertex, including its position and UV. The eight shared cube corners cannot give all six faces separate rectangular UV maps. Split the corners into four vertices per face: 24 vertices still draw 12 triangles, but each face can now cover the complete image. Sharing positions is harmless; sharing a vertex with conflicting UVs is not.
+An index selects a whole vertex, UV included. Eight shared corners cannot give six faces their own square UV maps, so split them: four vertices per face, 24 in total, still drawn as 12 triangles. Sharing positions is harmless; sharing a vertex with conflicting UVs is not.
 
-Replace `Vertex` with this format. The texture replaces vertex colors, so remove the color field:
+The texture replaces the vertex colors, so replace `Vertex` with:
 
 ```c
 typedef struct
@@ -20,7 +20,7 @@ typedef struct
 } Vertex;
 ```
 
-Replace both `VERTICES` and `INDICES` with these complete arrays. Each face uses `(0, 0)`, `(1, 0)`, `(1, 1)`, `(0, 1)` and keeps the outward winding from chapter 10:
+Replace `VERTICES` and `INDICES`. Each face runs `(0, 0)`, `(1, 0)`, `(1, 1)`, `(0, 1)` and keeps chapter 10's outward winding:
 
 ```c
 static const Vertex VERTICES[24] = {
@@ -63,7 +63,7 @@ static const uint16_t INDICES[36] = {
 };
 ```
 
-The existing `sizeof(VERTICES)`, `sizeof(INDICES)`, `sizeof(Vertex)`, and 36-index draw adapt automatically. In `create_pipeline()`, replace the color attribute declaration with the UV declaration:
+The sizes and the 36-index draw adapt automatically. In `create_pipeline()`, replace the color attribute with the UV attribute:
 
 ```c
     dvz_graphics_vertex_attr(
@@ -103,11 +103,11 @@ void main()
 }
 ```
 
-The rasterizer interpolates UVs across each triangle. Perspective-correct interpolation accounts for clip `w`, so the texture follows a receding surface rather than sliding through screen space. `texture(tex, uv)` uses the interpolated coordinate and applies the sampler's filtering and address rules while reading the image.
+The rasterizer interpolates UVs across each triangle, correcting for perspective so the texture stays fixed to a receding surface. `texture(tex, uv)` reads the image at that coordinate using the sampler's rules.
 
 UV `(0, 0)` reads texel row 0, column 0: the white tile from chapter 13. Each face puts `(0, 0)` on its first vertex, so every face shows the white tile in that corner. Vulkan has no notion of which way up an image is; `v = 0` is simply the first row you wrote. Image files usually store their top row first, so if a loaded picture appears upside down, sample at `1.0 - v` or swap the UVs.
 
-The tint still multiplies the result. Set it to white in `create_material()` so the checkerboard shows its own colors:
+Set the tint to white in `create_material()`, so the checkerboard shows its own colors:
 
 ```c
     Material material = {.tint = {1.0f, 1.0f, 1.0f, 1.0f}};
@@ -115,14 +115,14 @@ The tint still multiplies the result. Set it to white in `create_material()` so 
 
 ## Create a view and sampler
 
-Add the view and sampler as owned fields after `texture`. Keep the existing descriptor field from chapter 12:
+The view and sampler describe this one texture, and the descriptor needs both, so create them in `create_texture()` with the image. Reload then reuses them instead of rebuilding them. Add them as owned fields after `texture`:
 
 ```c
     DvzImageViews* texture_view;
     DvzSampler* sampler;
 ```
 
-Inside `create_texture()`, after the checked `dvz_cmd_end_result()` / `dvz_cmd_submit_result()` block and before `dvz_commands_destroy(upload)`, insert:
+The view needs the uploaded image, so in `create_texture()` add this after the checked submit and before `dvz_commands_destroy(upload)`:
 
 ```c
     renderer->texture_view = dvz_image_views_create_wrapper();
@@ -143,17 +143,21 @@ Inside `create_texture()`, after the checked `dvz_cmd_end_result()` / `dvz_cmd_s
         goto error;
 ```
 
-An **image view** selects which image subresources and format interpretation the shader can access; the descriptor refers to the view rather than to the image allocation directly. A **sampler** supplies the lookup rules independently of the stored pixels. Here nearest filtering selects one texel and preserves crisp checker boundaries, while repeat addressing wraps coordinates outside `[0, 1]`. This small example uses a single mip level.
+An **image view** selects which part of an image a shader sees, and how to interpret its format; descriptors refer to views, not to images. A **sampler** holds the lookup rules, separately from the pixels. Nearest filtering picks one texel, keeping the checker edges crisp; repeat addressing wraps coordinates outside `[0, 1]`.
 
 ## Declare and write the descriptor
 
-In `create_pipeline()`, after the binding-0 `dvz_slots_binding()` call from chapter 12 and before `dvz_slots_push()`, insert:
+In `create_pipeline()`, declare descriptor binding 1 as a combined image sampler for the fragment stage, beside binding 0:
 
 ```c
-    dvz_slots_binding(renderer->slots, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    dvz_slots_binding(
+        renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    dvz_slots_binding(
+        renderer->slots, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 ```
 
-Set 0 binding 0 remains the material uniform from chapter 12. Set 0 binding 1 now agrees with the fragment shader's `sampler2D`. A combined image sampler descriptor refers to both the image view and sampler, though those remain separate Vulkan resources with separate jobs and lifetimes. Replace the final descriptor creation with this version:
+A combined image sampler descriptor refers to both the view and the sampler, which remain separate objects. Write it beside the material entry when the descriptor set is created:
 
 ```c
     if (dvz_graphics_create(renderer->pipeline) != 0)
@@ -165,13 +169,13 @@ Set 0 binding 0 remains the material uniform from chapter 12. Set 0 binding 1 no
     dvz_descriptors_image(
         renderer->descriptors, 0, 1, 0, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         dvz_image_views_handle(renderer->texture_view, 0), dvz_sampler_handle(renderer->sampler));
-    dvz_descriptors_buffer(renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0, sizeof(Material));
+    dvz_descriptors_buffer(
+        renderer->descriptors, 0, 0, 0, dvz_buffer_handle(renderer->material_buffer), 0,
+        sizeof(Material));
     return dvz_descriptors_handle(renderer->descriptors, 0) != VK_NULL_HANDLE ? 0 : -1;
 ```
 
-The descriptor belongs with this pipeline's `slots`: its wrapper retains a pointer to them. Keeping it in the pipeline creation path also lets a reload build a complete candidate before changing the current draw resources.
-
-Keep `create_material()` in its existing position before vertex and index setup. Move only the checked pipeline creation from before `create_texture()` to immediately after it. Chapter 13 could build the pipeline first because no shader referred to the prepared image. The new binding 1 descriptor is populated inside `create_pipeline()`, so the image view and sampler must now exist first. The resulting order is:
+The descriptor now needs the view and sampler, so the pipeline must be created after the texture. Move the checked pipeline creation to just after `create_texture()`:
 
 ```c
     int texture_result = create_texture(&renderer);
@@ -180,11 +184,11 @@ Keep `create_material()` in its existing position before vertex and index setup.
     COURSE_CHECK(pipeline_result == 0, "graphics pipeline creation failed");
 ```
 
-`draw()` needs no change: it already binds descriptor set 0 from chapter 12, and the new binding 1 is part of that set.
+`draw()` needs no change: it already binds set 0, and binding 1 is part of it.
 
 ## Keep reload and cleanup safe
 
-`destroy_pipeline()` already releases the descriptor before its layout from chapter 12. In the reload branch, add the view and sampler to the candidate initializer:
+A reload candidate builds a new descriptor set, so it needs the view and sampler. Add them to its initializer:
 
 ```c
             Renderer candidate = {
@@ -196,11 +200,9 @@ Keep `create_material()` in its existing position before vertex and index setup.
             };
 ```
 
-The candidate borrows the existing view and sampler while owning its new pipeline, slots, shaders, and descriptor set. The successful reload branch already transfers `candidate.descriptors` since chapter 12, so it needs no change.
+The candidate borrows them and owns its pipeline, slots, shaders, and descriptor set; the rest of the reload path is unchanged from chapter 12. Reload covers shader calculations within the existing interface; changing locations, descriptor bindings, or the push-constant block also needs C edits and a rebuild.
 
-Keep the existing device wait before destroying the old resources, and the failed-candidate cleanup when compilation fails. A failed shader edit leaves the old pipeline and descriptor usable. Reload shader calculations within the existing interface; changing attribute locations, bindings, or the push layout also requires matching C edits and a rebuild.
-
-At `cleanup:`, after the material-buffer cleanup and before destroying `renderer.texture`, insert this sampler and view cleanup:
+The descriptor set must go before the view and sampler it names, and the view before its image. At `cleanup:`, after the material buffer and before `renderer.texture`, add:
 
 ```c
     if (renderer.sampler != NULL)
@@ -211,64 +213,64 @@ At `cleanup:`, after the material-buffer cleanup and before destroying `renderer
     dvz_image_views_free(renderer.texture_view);
 ```
 
-The descriptor is freed before its slots, view, and sampler. The image is freed after its view. Keep the buffer cleanup, arcball disconnection, controller destruction, and canvas cleanup that follow.
-
 ## Build and run
 
-Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from chapter 1. Run these commands there, so the program can find the shader files.
+Build and run as before; the capture goes to `chapter14.png`.
 
 === "Linux and macOS"
 
     ```sh
     cmake --build build
-    ./build/vkcourse --png chapter14.png
     ./build/vkcourse
+    ./build/vkcourse --png chapter14.png
     ```
 
 === "Windows (Visual Studio)"
 
     ```powershell
     cmake --build build --config Release
-    .\build\Release\vkcourse.exe --png chapter14.png
     .\build\Release\vkcourse.exe
+    .\build\Release\vkcourse.exe --png chapter14.png
     ```
 
-The checkerboard should form squares on every face, each with one white corner tile, including the sides when you rotate the cube. Offscreen captures use the same fixed camera pose as chapter 13 and should end with `validation errors: 0`.
+Every face shows a square checkerboard with one white corner tile. The terminal ends with `validation errors: 0`.
 
 !!! tip "Try it"
 
-    1. Replace both `VK_FILTER_NEAREST` values with `VK_FILTER_LINEAR`, rebuild, and zoom in. Linear filtering blends neighboring texels, so the checker boundaries should soften.
-    2. Change one face's maximum U from `1.0` to `2.0`. Compare repeat addressing with `VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE` after rebuilding.
-    3. Change the fragment output to a constant color, save, and press **R**. Then restore sampling and reload again. The cube and mouse controls should remain usable throughout.
+    1. Replace both `VK_FILTER_NEAREST` values with `VK_FILTER_LINEAR`, rebuild, and zoom in. The checker edges blur, because linear filtering blends neighboring texels.
+    2. On the front face, change the U of its second and third vertices (`(1.0f, 0.0f)` and `(1.0f, 1.0f)`) to `2.0f`. That face shows the checkerboard twice. With `VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE` on the U axis, the right half instead smears the last texel column.
+    3. In `shader.frag`, output `vec4(uv, 0.0, 1.0)` and press **R**. Each face shows a gradient from black at its white-tile corner to yellow at the opposite corner: you are looking at the UVs themselves.
 
 ??? info "Under the hood: descriptor layouts and sets"
 
-    Raw Vulkan declares a descriptor set layout, allocates a descriptor set from a pool, and writes a `VkDescriptorImageInfo` with `vkUpdateDescriptorSets`. `DvzSlots` owns the layout; `DvzDescriptors` owns the allocated sets and borrows the slots wrapper. The device owns the pool. None of these objects owns the image view or sampler named by the descriptor.
+    Raw Vulkan creates a `VkImageView` and a `VkSampler`, adds a combined-image-sampler entry to the descriptor set layout, and writes a `VkDescriptorImageInfo` with `vkUpdateDescriptorSets`. `DvzSlots` owns the layout; `DvzDescriptors` owns the set and borrows the slots. The device owns the pool. None of them owns the view or sampler.
 
 !!! warning "When it goes wrong"
 
-    A set/binding validation error means the GLSL declaration, slots declaration, or descriptor write disagrees. A stretched side face usually means you kept eight shared vertices; each face needs its own UV corners. If the first frame works but **R** fails, check that the candidate receives the view and sampler and that its new descriptor replaces the old one before the old slots are freed.
+    A set/binding validation error means the GLSL declaration, the slots, or the descriptor write disagree. A stretched side face means it still shares corners with its neighbors. If **R** fails after the first frame worked, check that the candidate receives the view and sampler.
 
 ## Checkpoint
 
-1. Why do eight positions become 24 vertices when each cube face needs separate UVs?
+1. Why do eight positions become 24 vertices when each face needs its own UVs?
 2. What do the image view, sampler, and descriptor each contribute?
-3. Why must shader reload replace the descriptor wrapper along with its slots?
+3. Why must reload replace the descriptor set along with its slots?
 
-??? example "Full current listing"
+??? example "Your `main.c` after chapter 14"
 
     ```c
     --8<-- "examples/c/vulkan/step14.c"
     ```
 
-??? example "Current shader.vert"
+??? example "Your `shader.vert` after chapter 14"
 
     ```glsl
     --8<-- "examples/c/vulkan/step14/shader.vert"
     ```
 
-??? example "Current shader.frag"
+??? example "Your `shader.frag` after chapter 14"
 
     ```glsl
     --8<-- "examples/c/vulkan/step14/shader.frag"
     ```
+
+Next: [Lighting](15-lighting.md).
