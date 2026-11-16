@@ -24,6 +24,8 @@ The arrows do not all mean the same thing. Upload calls copy CPU bytes. A descri
 
 The GPU context creates the Vulkan instance, chooses a physical device, enables features, creates the logical device, and selects queue families. `dvz_gpu_ctx` is where those decisions live. The logical device is the parent of the buffers, images, shader modules, pipelines, and other device resources you created.
 
+Before any of that, Datoviz finds and loads the **Vulkan loader**, the system library that discovers installed drivers and routes each Vulkan call to the right one. Every call you made through vklite went through it. The loader can also insert **layers** between your program and the driver. `dvz_gpu_ctx_config_validation()` asked for the Khronos validation layer: when it is installed, the loader places it in front of the driver, it checks each call against the specification, and Datoviz's debug messenger prints its messages and counts the errors that `dvz_gpu_ctx_error_count()` reported at the end of every chapter. Validation costs time on every call, so release applications usually leave it off.
+
 The window and canvas create the surface and swapchain, acquire the next image, recover from a resize, and present the rendered image. `dvz_canvas_frame` and `dvz_canvas_submit` wrap that frame contract.
 
 The canvas also owns per-frame command pools, command buffers, semaphores, and fences. Semaphores order GPU operations such as acquisition, rendering, and presentation. Fences let the CPU learn that submitted work has completed. Together they let the CPU prepare later work while the GPU executes an earlier frame, then make command buffers and frame resources safe to reuse.

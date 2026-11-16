@@ -28,6 +28,21 @@ typedef struct
 } Renderer;
 ```
 
+Because cleanup now releases everything through `renderer`, declare it with the other handles at the top of `main()`, zero-initialized, so a failure before the pipeline exists still reaches `cleanup:` with every field `NULL`. Delete the separate `commands` and `rendering` locals and the chapter 2 `Renderer renderer = {...}` initializer:
+
+```c
+    DvzCanvas* canvas = NULL;
+    Renderer renderer = {0};
+```
+
+The argument loop now only looks for `--png`:
+
+```c
+    for (int argument_index = 1; argument_index + 1 < argc; argument_index++)
+        if (strcmp(argv[argument_index], "--png") == 0)
+            png_path = argv[argument_index + 1];
+```
+
 ## Two shader stages
 
 A **shader invocation** is one execution of a shader for one item of work. The **vertex shader** runs once for each requested vertex and must write that vertex's clip-space position. `gl_VertexIndex` is 0, 1, then 2, so each invocation selects one position and one color from the arrays. No CPU pointer survives into the draw: these arrays are constants compiled into the shader.
@@ -111,6 +126,13 @@ If the surface is temporarily unavailable, keep polling until a frame can be acq
 
 ## Compile and build the pipeline
 
+All the pipeline code lives in one helper that fills the renderer's pipeline fields and returns zero on success:
+
+```c
+static int create_pipeline(Renderer* renderer)
+{
+```
+
 Add `<stdint.h>` and `<datoviz/shader.h>`. **GLSL** is the human-readable shading language used for both source strings. `dvz_compile_glsl()` translates each string into **SPIR-V**, Vulkan's standardized binary intermediate representation. SPIR-V is not the GPU's native machine code; the driver can translate it further for the selected device. `dvz_shader()` copies the SPIR-V into a **shader module**, the Vulkan object that presents one compiled stage to pipeline creation. The CPU-side SPIR-V arrays can then be freed because the shader modules no longer refer to those arrays.
 
 ```c
@@ -179,7 +201,39 @@ The empty `DvzSlots` layout declares that this pipeline has no descriptors or pu
     return dvz_graphics_create(renderer->pipeline);
 ```
 
-Call `create_pipeline()` after allocating the command and rendering wrappers, before registering the draw callback. At cleanup, wait for submitted work, then destroy and free the pipeline, shader modules, and slots before destroying the GPU context. The full listing shows the complete dependency order. After `dvz_graphics_create()` succeeds, Vulkan permits you to destroy the shader modules because the pipeline has retained the compiled stage code it needs. This program keeps the modules until pipeline cleanup; chapter 5 uses that single ownership group while replacing a pipeline safely.
+Store the wrappers directly in `renderer`, then call `create_pipeline()` before registering the draw callback:
+
+```c
+    renderer.commands = dvz_commands_create_wrapper();
+    renderer.rendering = dvz_rendering_create_wrapper();
+    COURSE_CHECK(
+        renderer.commands != NULL && renderer.rendering != NULL, "renderer allocation failed");
+    int pipeline_result = create_pipeline(&renderer);
+    COURSE_CHECK(pipeline_result == 0, "graphics pipeline creation failed");
+```
+
+At `cleanup:`, wait for submitted work, then destroy and free the pipeline, shader modules, and slots before the wrappers and the GPU context:
+
+```c
+    if (renderer.device != NULL)
+        dvz_device_wait(renderer.device);
+    if (renderer.pipeline != NULL)
+        dvz_graphics_destroy(renderer.pipeline);
+    dvz_graphics_free(renderer.pipeline);
+    if (renderer.fragment_shader != NULL)
+        dvz_shader_destroy(renderer.fragment_shader);
+    dvz_shader_free(renderer.fragment_shader);
+    if (renderer.vertex_shader != NULL)
+        dvz_shader_destroy(renderer.vertex_shader);
+    dvz_shader_free(renderer.vertex_shader);
+    if (renderer.slots != NULL)
+        dvz_slots_destroy(renderer.slots);
+    dvz_slots_free(renderer.slots);
+    dvz_rendering_free(renderer.rendering);
+    dvz_commands_free(renderer.commands);
+```
+
+Each `destroy` releases the Vulkan object and each `free` releases the wrapper. The `NULL` checks skip wrappers that were never allocated, and `free` accepts `NULL`, so this one cleanup path is correct whichever step failed. After `dvz_graphics_create()` succeeds, Vulkan permits you to destroy the shader modules because the pipeline has retained the compiled stage code it needs. This program keeps the modules until pipeline cleanup; chapter 5 uses that single ownership group while replacing a pipeline safely.
 
 ## Draw three vertices
 
@@ -235,7 +289,7 @@ The terminal should end with `validation errors: 0`, and `chapter04.png` should 
     Raw Vulkan needs shader-module create structures, a pipeline layout, several fixed-function state structures, dynamic-rendering attachment formats, and a graphics-pipeline create call. Datoviz fills the routine defaults, but the resulting object is still a Vulkan pipeline.
 
 !!! failure "When it goes wrong"
-    A blank frame usually means shader compilation failed, the pipeline's color format does not match the canvas, or the draw was recorded outside the rendering pass. Read the compiler output first. A triangle with an unexpected vertical orientation usually comes from assuming OpenGL's viewport convention.
+    A shader compile error stops startup: the compiler message is followed by `graphics pipeline creation failed`. A blank frame with zero validation errors usually means the triangle is off-screen or the draw call is missing. A draw recorded outside the rendering pass, or a pipeline color format that does not match the canvas, produces validation errors; read them first. A triangle with an unexpected vertical orientation usually comes from assuming OpenGL's viewport convention.
 
 ??? example "Full current listing"
 

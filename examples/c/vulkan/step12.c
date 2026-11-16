@@ -422,7 +422,7 @@ int main(int argc, char** argv)
     DvzWindowConfig window_config = dvz_window_config();
     window_config.width = WIDTH;
     window_config.height = HEIGHT;
-    window_config.title = "Mouse control: drag to rotate, scroll to zoom, R to reload";
+    window_config.title = "Uniform buffers: drag to rotate, scroll to zoom, R to reload";
     window = dvz_window_create(host, backend, &window_config);
     COURSE_CHECK(window != NULL, "window creation failed");
 

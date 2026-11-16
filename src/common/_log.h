@@ -48,9 +48,10 @@ extern "C"
 #if DEBUG
 #define DVZ_DEFAULT_LOG_LEVEL LOG_INFO
 #else
-// In RELEASE mode, by default (when DVZ_LOG_LEVEL env variable is not set), effectively
-// disables all logging.
-#define DVZ_DEFAULT_LOG_LEVEL 10
+// In RELEASE mode, by default (when DVZ_LOG_LEVEL env variable is not set), only warnings and
+// errors are logged, so missing loaders, missing validation layers, and validation messages stay
+// visible.
+#define DVZ_DEFAULT_LOG_LEVEL LOG_WARN
 #endif
 
 #define log_trace(...) log_log(LOG_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)

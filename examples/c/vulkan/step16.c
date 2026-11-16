@@ -310,11 +310,13 @@ static int create_texture(Renderer* renderer)
     {
         for (uint32_t x = 0; x < TEXTURE_SIZE; x++)
         {
+            // The first tile is white so the image's orientation stays visible on the cube.
+            bool marker = x < 8 && y < 8;
             bool check = ((x / 8 + y / 8) & 1) != 0;
             size_t i = ((size_t)y * TEXTURE_SIZE + x) * 4;
-            pixels[i + 0] = check ? 235 : 35;
-            pixels[i + 1] = check ? 170 : 80;
-            pixels[i + 2] = check ? 55 : 190;
+            pixels[i + 0] = marker ? 245 : check ? 235 : 35;
+            pixels[i + 1] = marker ? 245 : check ? 170 : 80;
+            pixels[i + 2] = marker ? 245 : check ? 55 : 190;
             pixels[i + 3] = 255;
         }
     }

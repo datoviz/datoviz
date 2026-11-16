@@ -105,6 +105,14 @@ void main()
 
 The rasterizer interpolates UVs across each triangle. Perspective-correct interpolation accounts for clip `w`, so the texture follows a receding surface rather than sliding through screen space. `texture(tex, uv)` uses the interpolated coordinate and applies the sampler's filtering and address rules while reading the image.
 
+UV `(0, 0)` reads texel row 0, column 0: the white tile from chapter 13. Each face puts `(0, 0)` on its first vertex, so every face shows the white tile in that corner. Vulkan has no notion of which way up an image is; `v = 0` is simply the first row you wrote. Image files usually store their top row first, so if a loaded picture appears upside down, sample at `1.0 - v` or swap the UVs.
+
+The tint still multiplies the result. Set it to white in `create_material()` so the checkerboard shows its own colors:
+
+```c
+    Material material = {.tint = {1.0f, 1.0f, 1.0f, 1.0f}};
+```
+
 ## Create a view and sampler
 
 Add the view and sampler as owned fields after `texture`. Keep the existing descriptor field from chapter 12:
@@ -139,7 +147,7 @@ An **image view** selects which image subresources and format interpretation the
 
 ## Declare and write the descriptor
 
-In `create_pipeline()`, immediately after `dvz_slots(renderer->device, renderer->slots);` and before `dvz_slots_push()`, insert:
+In `create_pipeline()`, after the binding-0 `dvz_slots_binding()` call from chapter 12 and before `dvz_slots_push()`, insert:
 
 ```c
     dvz_slots_binding(renderer->slots, 0, 1, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -172,12 +180,7 @@ Keep `create_material()` in its existing position before vertex and index setup.
     COURSE_CHECK(pipeline_result == 0, "graphics pipeline creation failed");
 ```
 
-In `draw()`, after setting the viewport and scissor and before pushing constants, bind the descriptor:
-
-```c
-    dvz_cmd_bind_descriptors(
-        renderer->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
-```
+`draw()` needs no change: it already binds descriptor set 0 from chapter 12, and the new binding 1 is part of that set.
 
 ## Keep reload and cleanup safe
 
@@ -193,15 +196,11 @@ In `draw()`, after setting the viewport and scissor and before pushing constants
             };
 ```
 
-The candidate borrows the existing view and sampler while owning its new pipeline, slots, shaders, and descriptor set. In the successful reload branch, immediately after `destroy_pipeline(&renderer);` and before assigning `renderer.slots`, transfer the descriptor too:
-
-```c
-                renderer.descriptors = candidate.descriptors;
-```
+The candidate borrows the existing view and sampler while owning its new pipeline, slots, shaders, and descriptor set. The successful reload branch already transfers `candidate.descriptors` since chapter 12, so it needs no change.
 
 Keep the existing device wait before destroying the old resources, and the failed-candidate cleanup when compilation fails. A failed shader edit leaves the old pipeline and descriptor usable. Reload shader calculations within the existing interface; changing attribute locations, bindings, or the push layout also requires matching C edits and a rebuild.
 
-At `cleanup:`, move the existing `destroy_pipeline(&renderer);` from its old position to immediately after the device wait. After it, insert this sampler and view cleanup, before destroying `renderer.texture`:
+At `cleanup:`, after the material-buffer cleanup and before destroying `renderer.texture`, insert this sampler and view cleanup:
 
 ```c
     if (renderer.sampler != NULL)
@@ -234,7 +233,7 @@ Keep `main.c`, `shader.vert`, and `shader.frag` in the project directory from ch
     .\build\Release\vkcourse.exe
     ```
 
-The checkerboard should form squares on every face, including the sides when you rotate the cube. Offscreen captures use the same fixed camera pose as chapter 13 and should end with `validation errors: 0`.
+The checkerboard should form squares on every face, each with one white corner tile, including the sides when you rotate the cube. Offscreen captures use the same fixed camera pose as chapter 13 and should end with `validation errors: 0`.
 
 !!! tip "Try it"
 

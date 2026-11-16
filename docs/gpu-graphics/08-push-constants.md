@@ -59,7 +59,7 @@ void main()
 
 ## Update every frame
 
-Include `<math.h>` and `<datoviz/common/functions.h>`. Add these fields to `Renderer`, keeping the existing resources and reload flag:
+Include `<math.h>` and `<datoviz/common/functions.h>`, and make sure `<stdlib.h>` is still included: the restored `--time` option uses `strtof`. Add these fields to `Renderer`, keeping the existing resources and reload flag:
 
 ```c
     uint64_t start_ns;

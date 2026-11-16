@@ -106,7 +106,7 @@ Before `destroy_pipeline(&renderer)` in cleanup, destroy and free the vertex buf
 
 - Change one duplicated corner's color without changing its twin. A diagonal color seam should appear because the two triangles no longer share the same value there.
 - Draw only the first three vertices. You should see half of the square.
-- Exchange `position` and `color` in `Vertex` and rebuild. `offsetof` and `sizeof` follow the new C layout, so the image stays correct. Replacing an offset with an incorrect literal demonstrates why those helpers matter.
+- Exchange the `position` and `color` fields in `Vertex`, and swap the two brace groups in every `VERTICES` entry to match. `offsetof` and `sizeof` follow the new C layout, so the image stays correct. Then replace one `offsetof` with an incorrect literal such as `0`: the GPU reads color bytes as positions, which shows why those helpers matter.
 
 !!! info "Under the hood"
     A buffer needs a Vulkan buffer object, memory requirements, a suitable memory type, an allocation, binding, and mapping or transfer commands. Datoviz's allocator handles that machinery, while usage and allocation flags still express the choices Vulkan needs.

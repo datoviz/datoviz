@@ -78,7 +78,7 @@ Every chapter ends with a complete listing of the file as it should look at that
 **Part 4: Surfaces, textures, and light**
 
 <ol start="12">
-  <li><a href="12-uniform-buffers/">Uniform buffers</a>: shader data shared across draws.</li>
+  <li><a href="12-uniform-buffers/">Uniform buffers and descriptors</a>: shader data shared across draws.</li>
   <li><a href="13-texture-upload/">Uploading a texture</a>: staging buffers, image layouts, and barriers.</li>
   <li><a href="14-texture-sampling/">Sampling the texture</a>: samplers, descriptors, and UV coordinates.</li>
   <li><a href="15-lighting/">Lighting</a>: normals, diffuse, and specular.</li>

@@ -63,9 +63,60 @@ static bool compile_file(
 
 GLSL expresses shader types, control flow, stage inputs, and stage outputs as source text. Compilation checks those language rules and produces SPIR-V, the device-independent intermediate instructions passed to `vkCreateShaderModule`. The resulting shader module still is not a complete executable rendering pipeline: the driver combines it with the other shader stage and fixed-function state when the graphics pipeline is created. Runtime compilation is convenient for learning and live editing. Production applications often compile shaders during the build so startup is faster and a missing compiler cannot break deployment.
 
+In `create_pipeline()`, replace the `dvz_compile_glsl()` calls with `compile_file()`. A `DvzShaderCompileResult` owns its SPIR-V words and diagnostics, so release both results with `dvz_shader_compile_result_destroy()` on every path, success or failure, once the shader modules hold their own copy:
+
+```c
+    DvzShaderCompileResult vertex = {0};
+    DvzShaderCompileResult fragment = {0};
+    if (!compile_file(VERTEX_PATH, DVZ_SHADER_STAGE_VERTEX, &vertex) ||
+        !compile_file(FRAGMENT_PATH, DVZ_SHADER_STAGE_FRAGMENT, &fragment))
+    {
+        dvz_shader_compile_result_destroy(&vertex);
+        dvz_shader_compile_result_destroy(&fragment);
+        return -1;
+    }
+```
+
+The wrapper allocation that follows is unchanged, except that its failure branch now destroys the two results instead of freeing raw SPIR-V. The shader modules read `spirv` and `spirv_size` from each result:
+
+```c
+    int vertex_result =
+        dvz_shader(renderer->device, vertex.spirv_size, vertex.spirv, renderer->vertex_shader);
+    int fragment_result = dvz_shader(
+        renderer->device, fragment.spirv_size, fragment.spirv, renderer->fragment_shader);
+    dvz_shader_compile_result_destroy(&vertex);
+    dvz_shader_compile_result_destroy(&fragment);
+    if (vertex_result != 0 || fragment_result != 0)
+        return -1;
+```
+
 ## Reload safely
 
-Move the pipeline, shader-module, and slots teardown from `main()` into `destroy_pipeline()`, as shown in the full listing. The helper clears each pointer after freeing it, so it can clean either a complete active pipeline or a candidate that failed partway through creation.
+Move the pipeline, shader-module, and slots teardown from `main()` into a `destroy_pipeline()` helper, and call it at `cleanup:` right after the device wait:
+
+```c
+static void destroy_pipeline(Renderer* renderer)
+{
+    if (renderer->pipeline != NULL)
+        dvz_graphics_destroy(renderer->pipeline);
+    dvz_graphics_free(renderer->pipeline);
+    renderer->pipeline = NULL;
+    if (renderer->fragment_shader != NULL)
+        dvz_shader_destroy(renderer->fragment_shader);
+    dvz_shader_free(renderer->fragment_shader);
+    renderer->fragment_shader = NULL;
+    if (renderer->vertex_shader != NULL)
+        dvz_shader_destroy(renderer->vertex_shader);
+    dvz_shader_free(renderer->vertex_shader);
+    renderer->vertex_shader = NULL;
+    if (renderer->slots != NULL)
+        dvz_slots_destroy(renderer->slots);
+    dvz_slots_free(renderer->slots);
+    renderer->slots = NULL;
+}
+```
+
+The helper clears each pointer after freeing it, so it can clean either a complete active pipeline or a candidate that failed partway through creation.
 
 Add `bool reload_requested;` to `Renderer`. The keyboard callback only sets that flag; it does not destroy GPU resources while input is being dispatched.
 
@@ -116,6 +167,8 @@ The main loop builds a complete candidate pipeline outside event dispatch. If co
         }
 ```
 
+Put this block in the render loop right after `dvz_window_host_poll(host);`. It reuses the `int pipeline_result` declared where chapter 4 created the first pipeline.
+
 After `dvz_graphics_create()` succeeds, the shader modules may be destroyed without invalidating the pipeline. This course keeps them until `destroy_pipeline()` so startup failure, failed candidates, successful reload, and final cleanup all use the same short ownership path.
 
 ## Build, run, and capture
@@ -156,7 +209,7 @@ The terminal should end with `validation errors: 0`. With the supplied shaders, 
 
 ## Try it
 
-- Change one fragment color component to `0.0`, save, and press ++r++. The window should update without recompiling the C program.
+- In `shader.frag`, change the output to `vec4(color.r, 0.0, color.b, 1.0)`, save, and press ++r++. The green drains out of the triangle without recompiling the C program.
 - Remove a semicolon and reload. The terminal should name the shader file and source line.
 - Change the three clip-space positions. The pipeline rebuild is necessary because those constants belong to the shader module.
 
@@ -164,7 +217,7 @@ The terminal should end with `validation errors: 0`. With the supplied shaders, 
     Vulkan shader modules are immutable. A graphics pipeline incorporates their code when it is created, and Vulkan provides no operation that patches one shader stage in place. Live reload is therefore destroy-and-create work around the same pipeline description.
 
 !!! failure "When it goes wrong"
-    “Could not read” means the process cannot find `shader.vert` or `shader.frag`; start it from the directory containing those files. A compiler error is different: the file was found, and its diagnostic tells you which GLSL rule failed.
+    `could not read` means the process cannot find `shader.vert` or `shader.frag`; start it from the directory containing those files. A compiler error is different: the file was found, and its diagnostic tells you which GLSL rule failed.
 
 ??? example "Full current listing"
 

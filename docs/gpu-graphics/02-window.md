@@ -113,7 +113,7 @@ A **resource** is storage or executable state that later GPU work refers to, suc
 
 `dvz_canvas_configure_gpu_ctx` adds the extensions and Vulkan features required by the canvas: dynamic rendering, synchronization2, and timeline semaphores. Requesting them here means that an incompatible device fails during setup instead of causing an obscure error later.
 
-`dvz_gpu_ctx_config_validation(&gpu_config, true)` requests the Vulkan **validation layers**. When the layers are installed, they sit between your code and the driver and complain, in words, when you misuse the API. Without them, a Vulkan mistake may look like nothing more than a blank window or an unexplained crash. Keep them requested throughout the course, and check the startup log if you need to confirm that they were available.
+`dvz_gpu_ctx_config_validation(&gpu_config, true)` requests the Vulkan **validation layers**. When the layers are installed, they sit between your code and the driver and complain, in words, when you misuse the API. Without them, a Vulkan mistake may look like nothing more than a blank window or an unexplained crash. Keep them requested throughout the course. Datoviz prints warnings and errors by default, so a missing layer shows up as `validation layer is not supported` at startup; set the environment variable `DVZ_LOG_LEVEL=info` if you want to see the rest of the startup log.
 
 Print which GPU you got:
 
@@ -336,7 +336,7 @@ validation errors: 0
 | --- | --- |
 | `no usable GPU found` | No Vulkan driver, or the driver is too old for the features the canvas requires. Verify your Vulkan installation first; `vulkaninfo` is the usual tool. |
 | `canvas creation failed` in live mode but `--png` works | The window surface could not be created. Typical on a headless machine or over plain SSH without a display. |
-| The window appears but is white or garbage | The `draw` callback is not being called. Check that `dvz_canvas_set_draw_callback` runs *before* the loop, and that the renderer you pass outlives it. |
+| The window stays black instead of blue | The canvas cleared it once, but your `draw` callback never ran. Check that `dvz_canvas_set_draw_callback` runs *before* the loop, and that the renderer you pass outlives it. |
 | `validation errors: 3` and messages on the terminal | Read them; they name the offending call. Do not proceed to the next chapter with a nonzero count. |
 | The window closes immediately | `dvz_canvas_frame` returned something other than `READY` or `WAIT_SURFACE`, so the loop broke out. Print `status` to see it. |
 

@@ -44,6 +44,7 @@ FENCE = re.compile(r"^(?P<indent> *)```(?P<lang>[a-z]*)\s*$", re.MULTILINE)
 # which by definition are not in the finished chapter. Matched as a substring of the block.
 ALLOWED_DIVERGENCE = {
     "03-frame.md": ("VK_ATTACHMENT_LOAD_OP_LOAD",),
+    "10-depth-culling.md": ("fillModeNonSolid", "VK_POLYGON_MODE_LINE"),
 }
 
 

@@ -33,7 +33,7 @@ int test_log_default_level(TstContext* suite, const TstCase* tstitem)
 #if DEBUG
     AT(DVZ_DEFAULT_LOG_LEVEL == LOG_INFO);
 #else
-    AT(DVZ_DEFAULT_LOG_LEVEL > LOG_FATAL);
+    AT(DVZ_DEFAULT_LOG_LEVEL == LOG_WARN);
 #endif
     return 0;
 }

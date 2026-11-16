@@ -7,7 +7,7 @@
   <img src="/assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues and greys.">
 </picture>
 
-Chapter 2 asked you to accept five lines on faith. This chapter takes them apart because they establish the shape of every frame in the course. The triangle in chapter 4 and the final lit, textured mesh will both fit between the same two calls.
+Chapter 2 asked you to accept five lines on faith. This chapter takes them apart and adds a sixth, because together they establish the shape of every frame in the course. The triangle in chapter 4 and the final lit, textured mesh will both fit between the same two calls.
 
 You will then make the window pulse, proving that the loop is running rather than displaying one frame forever.
 
@@ -84,7 +84,7 @@ This distinction can matter on mobile and tiled GPUs, where discarding contents 
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
 ```
 
-The viewport maps normalized device coordinates into pixels, and the scissor limits drawing to a rectangular pixel region. This helper sets both to the full current frame. They are dynamic pipeline state, so you record them for the current extent before issuing draw calls. The clear does not need them, but the triangle in chapter 4 will.
+This is the one new line: add it right after `dvz_cmd_rendering_begin`. The viewport maps normalized device coordinates into pixels, and the scissor limits drawing to a rectangular pixel region. This helper sets both to the full current frame. The clear does not need them, but the triangle in chapter 4 will. Chapter 4's pipeline declares these two values *dynamic*, meaning they are recorded every frame rather than fixed when the pipeline is created, so a resized window only needs the new extent here.
 
 ```c
     dvz_cmd_rendering_end(renderer->commands);
@@ -239,7 +239,7 @@ The first two files are identical. The third captures another reproducible point
         dvz_attachment_ops(color, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
         ```
 
-        Nothing overwrites the image now, so you see whatever it already contained. A `--png` run shows the canvas's initial opaque-black clear. In a live run, frame targets may show stale contents from their previous use. This is a useful reminder that presentation involves several images taking turns, not one permanent "screen" image.
+        Nothing overwrites the image now, so you see whatever it already contained: the canvas's initial opaque-black clear, in both live and `--png` runs, because nothing in this chapter draws. Once later chapters draw, `LOAD` would keep each target's previous frame instead, and since several images take turns being presented, you would see older frames flicker through.
 
         Vulkan does not define the contents of a fresh image. Loading this one is meaningful only because the canvas clears every target before first use. Follow the same rule for images you create later: write them before you read them.
     2. **Slow it down** by dividing the three `sinf` frequencies by 10. The window drifts almost imperceptibly.
@@ -254,7 +254,6 @@ The first two files are identical. The third captures another reproducible point
 | The animation runs at wildly different speeds on two machines | The color is being derived from `frame_index` rather than elapsed time. |
 | Two `--png` runs differ | `t` is coming from the clock in offscreen mode. That breaks reproducible captures. |
 | Validation complains about a command buffer in the wrong state | Check whether code began, ended, reset, or submitted the borrowed command buffer. Draw commands also require an active rendering pass. |
-| Alternating stale colors or flicker in live mode | A load op of `LOAD` may be preserving the previous contents of each reused frame target. Restore `CLEAR` unless preserving those contents is intentional. |
 
 ??? example "Your `main.c` at the end of chapter 3"
 

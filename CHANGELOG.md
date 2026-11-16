@@ -6,7 +6,7 @@ RC3 prepares the documentation, packaging, and tutorial foundation for the v0.4 
 
 ### Highlights
 
-* Add the first three chapters of the Vulkan graphics course, with canonical C programs, generated previews, and installed CMake-consumer checks.
+* Add the complete Vulkan graphics course, sixteen chapters from setup to a textured, lit, interactive mesh, with canonical C programs, generated previews, and installed CMake-consumer checks.
 * Support installed-course validation from source paths with spaces or non-ASCII characters and from multi-configuration CMake generators.
 * Provide the tutorial-facing Canvas and vklite operations and typed runtime GLSL compilation through shaderc.
 * Extend retained rendering with render products, ambient occlusion, and the scene-owned lighting foundation.
@@ -18,7 +18,8 @@ RC3 prepares the documentation, packaging, and tutorial foundation for the v0.4 
 
 * `dvz_buffer_resize()` now returns an integer status. Growth replaces the allocation; failure preserves the old buffer, and requests no larger than the current size are successful no-ops.
 * The course requires a build newer than the published RC2 package. Its package warning remains until an official newer artifact passes the course checks.
-* Low-level APIs remain advanced/unstable. Chapters 4–15 remain planned for RC4; high-level Python plotting remains in GSP/VisPy2.
+* Release builds now log warnings and errors by default instead of staying silent, so a missing Vulkan loader, a missing validation layer, and validation messages are visible. Set `DVZ_LOG_LEVEL` to change the level.
+* Low-level APIs remain advanced/unstable; course feedback during RC3 informs the RC4 tutorial API freeze. High-level Python plotting remains in GSP/VisPy2.
 * Published Vulkan-enabled Qt/PyQt enable RC3 evaluation of the optional conda provider. Linux and Apple Silicon development-package checks pass; Windows runtime and frozen-candidate proof remain pending. RC4 remains the fallback for official provider artifacts, and base wheels remain independent of Qt.
 
 ### Fixes

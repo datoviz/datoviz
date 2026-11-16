@@ -22,7 +22,7 @@ Keep the allocator added in chapter 12 and add the image beside the buffers. The
     DvzImages* texture;
 ```
 
-Add this complete helper between `keyboard()` and `draw()`. It generates 64 × 64 RGBA pixels, with eight-pixel checker tiles. Each texel occupies four bytes; the offset includes both its row and its position within that row.
+Add this complete helper between `keyboard()` and `draw()`. It generates 64 × 64 RGBA pixels, with eight-pixel checker tiles. The first tile, at row 0 and column 0, is white: a plain checkerboard looks the same flipped or rotated, so this marker lets chapter 14 show which way the image lands on the cube. Each texel occupies four bytes; the offset includes both its row and its position within that row.
 
 ```c
 /**
@@ -37,11 +37,13 @@ static int create_texture(Renderer* renderer)
     {
         for (uint32_t x = 0; x < TEXTURE_SIZE; x++)
         {
+            // The first tile is white so the image's orientation stays visible on the cube.
+            bool marker = x < 8 && y < 8;
             bool check = ((x / 8 + y / 8) & 1) != 0;
             size_t i = ((size_t)y * TEXTURE_SIZE + x) * 4;
-            pixels[i + 0] = check ? 235 : 35;
-            pixels[i + 1] = check ? 170 : 80;
-            pixels[i + 2] = check ? 55 : 190;
+            pixels[i + 0] = marker ? 245 : check ? 235 : 35;
+            pixels[i + 1] = marker ? 245 : check ? 170 : 80;
+            pixels[i + 2] = marker ? 245 : check ? 55 : 190;
             pixels[i + 3] = 255;
         }
     }
@@ -142,7 +144,7 @@ In `main()`, keep chapter 12's material and pipeline creation where they are, be
     COURSE_CHECK(texture_result == 0, "texture upload failed");
 ```
 
-At `cleanup:`, after the existing device wait and before the buffer cleanup, insert:
+At `cleanup:`, after the material-buffer cleanup and before the index-buffer cleanup, insert:
 
 ```c
     if (renderer.texture != NULL)

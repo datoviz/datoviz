@@ -57,6 +57,20 @@ Depth and culling do different jobs. Depth resolves visibility among overlapping
 1. Set the depth-write Boolean to `false` and temporarily use `VK_CULL_MODE_NONE`. With no writes, the clear value stays in the depth image and draw order matters again.
 2. Restore depth writes and back-face culling, then flip the front face to `VK_FRONT_FACE_CLOCKWISE`. You see the inner faces of the cube.
 3. Restore counter-clockwise fronts and switch between `VK_CULL_MODE_NONE` and `VK_CULL_MODE_BACK_BIT`. Correct depth testing should keep the solid cube's visible surfaces the same.
+4. See the triangles. Wireframe drawing is an optional device feature, so request it before creating the GPU context:
+
+    ```c
+    VkPhysicalDeviceFeatures features = {.fillModeNonSolid = VK_TRUE};
+    dvz_gpu_ctx_config_features10(&gpu_config, &features);
+    ```
+
+    Then, in `create_pipeline()`, draw polygons as lines:
+
+    ```c
+    dvz_graphics_polygon_mode(renderer->pipeline, VK_POLYGON_MODE_LINE, DVZ_GRAPHICS_FLAGS_FIXED);
+    ```
+
+    Each face splits into its two triangles, and with back-face culling on you see only the three faces turned toward you. Switch to `VK_CULL_MODE_NONE` to see all twelve.
 
 ??? info "Under the hood: another image and two pipeline states"
 

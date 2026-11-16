@@ -170,7 +170,16 @@ After the existing device wait and `destroy_pipeline(&renderer)`, transfer the s
                 renderer.descriptors = candidate.descriptors;
 ```
 
-A failed shader compile releases only the incomplete candidate and leaves the active descriptor and pipeline usable. A successful reload waits before destroying resources referenced by older submissions. At final cleanup, preserve the cumulative program's dependency order: wait for the device, call `destroy_pipeline()` so the descriptor and its layout disappear, then destroy and free `material_buffer`, followed by the geometry buffers, controllers, canvas objects, and GPU context. This keeps both the descriptor-to-buffer and device-to-resource dependencies valid.
+A failed shader compile releases only the incomplete candidate and leaves the active descriptor and pipeline usable. A successful reload waits before destroying resources referenced by older submissions.
+
+At `cleanup:`, move `destroy_pipeline(&renderer);` from after the camera cleanup to immediately after the device wait, so the descriptor disappears before the buffer it points to. Then destroy and free `material_buffer` before the geometry buffers:
+
+```c
+    destroy_pipeline(&renderer);
+    if (renderer.material_buffer != NULL)
+        dvz_buffer_destroy(renderer.material_buffer);
+    dvz_buffer_free(renderer.material_buffer);
+```
 
 ## Build and run
 
