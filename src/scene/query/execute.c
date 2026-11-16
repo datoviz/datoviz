@@ -22,6 +22,7 @@
 #include "_log.h"
 #include "_time_utils.h"
 #include "internal.h"
+#include "scene_emit/panel_render_plan.h"
 
 
 
@@ -154,6 +155,25 @@ bool _dvz_scene_query_process_pending(
     {
         out_result->status = caps->supports_readback ? DVZ_QUERY_STATUS_UNSUPPORTED_QUERY_PROFILE
                                                      : DVZ_QUERY_STATUS_READBACK_FAILED;
+        return true;
+    }
+
+    /* Ordered paint is composited after world geometry, independently of ordinary
+     * visual attachment order and query capability bits. The current per-visual
+     * identity passes cannot reproduce its item/role composition or semantic
+     * identity. Conservatively reject the panel query until a combined GPU
+     * composition path exists; never return a background hit or triangle ID.
+     * Empty/hidden paint contributes no coverage and does not block querying. */
+    for (uint32_t i = 0; i < pending->panel->visual_count; i++)
+    {
+        DvzVisual* visual = pending->panel->visuals[i].visual;
+        if (visual == NULL || !visual->paint ||
+            !_scene_panel_render_visual_is_visible_drawable(visual))
+        {
+            continue;
+        }
+        out_result->visual_id = _scene_visual_public_id(figure->scene, visual);
+        out_result->status = DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY;
         return true;
     }
 

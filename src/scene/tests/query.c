@@ -368,6 +368,122 @@ int test_scene_query_volume_sample_is_explicitly_unsupported(TstContext* suite, 
 
 
 
+/**
+ * Reject generated paint identity instead of leaking face IDs or background hits.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return 0 on success
+ */
+static int test_scene_query_paint_composition_is_explicitly_unsupported(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzPolygon* polygon = dvz_polygon(scene, 0);
+    const dvec2 outer[4] = {{-0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}, {-0.5, 0.5}};
+    AT(dvz_polygon_set_geometry(
+           polygon, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+                                     .outer = {.xy = outer, .count = 4}}) == 0);
+    AT(dvz_polygon_set_id(polygon, 12345) == 0);
+    DvzComposite* composite = dvz_polygon_composite(polygon, 0);
+    ANN(composite);
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.controller_mode = DVZ_CONTROLLER_FIXED;
+    AT(dvz_panel_add_composite(panel, composite, &attach) == 0);
+    DvzVisual* fill = dvz_composite_visual(composite, "fill");
+    DvzVisual* stroke = dvz_composite_visual(composite, "stroke");
+    ANN(fill);
+    ANN(stroke);
+    AT(dvz_visual_set_paint(fill, false) != DVZ_OK);
+    AT(dvz_visual_set_paint(stroke, false) != DVZ_OK);
+    AT(fill->paint && stroke->paint);
+    dvz_visual_set_query_capabilities(fill, 0);
+    dvz_visual_set_query_capabilities(stroke, 0);
+
+    /* A later world attachment must not bypass paint's separate composition phase. */
+    DvzVisual* background = dvz_point(scene, 0);
+    const vec3 position[1] = {{0, 0, 0}};
+    AT(dvz_visual_set_data(background, "position", position, 1) == 0);
+    dvz_visual_set_query_capabilities(background, DVZ_QUERY_CAPABILITY_ITEM);
+    attach = dvz_visual_attach_desc();
+    attach.z_layer = 100;
+    AT(dvz_panel_add_visual(panel, background, &attach) == 0);
+
+    const DvzSceneTargetKind targets[] = {
+        DVZ_SCENE_TARGET_NONE, DVZ_SCENE_TARGET_ITEM, DVZ_SCENE_TARGET_OBJECT,
+        DVZ_SCENE_TARGET_FACE, DVZ_SCENE_TARGET_TRIANGLE,
+    };
+    for (uint32_t i = 0; i < sizeof(targets) / sizeof(targets[0]); i++)
+    {
+        DvzQueryRequest request = dvz_query_request();
+        request.request_id = 700 + i;
+        request.target = targets[i];
+        AT(dvz_panel_query_px(panel, 32, 32, &request) == 0);
+        AT(dvz_figure_process_queries(figure, NULL, NULL) == 1);
+        DvzQueryResult result = {0};
+        AT(dvz_scene_poll_query(scene, &result));
+        AT(!result.hit);
+        AT(result.status == DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY);
+        AT(result.visual_id == _scene_visual_public_id(scene, fill));
+        AT(result.item_id == 0);
+        AT(result.face_id == 0);
+    }
+
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
+ * Hidden and empty paint must not turn a no-contribution panel into an error.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return 0 on success
+ */
+static int test_scene_query_ignores_hidden_and_empty_paint(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzVisual* paint = dvz_point(scene, 0);
+    paint->paint = true;
+    dvz_visual_set_query_capabilities(paint, 0);
+    AT(dvz_panel_add_visual(panel, paint, NULL) == 0);
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        if (i == 1)
+        {
+            const vec3 position[1] = {{0, 0, 0}};
+            AT(dvz_visual_set_data(paint, "position", position, 1) == 0);
+            AT(dvz_visual_set_visible(paint, false) == 0);
+        }
+        AT(dvz_panel_query_px(panel, 32, 32, NULL) == 0);
+        AT(dvz_figure_process_queries(figure, NULL, NULL) == 1);
+        DvzQueryResult result = {0};
+        AT(dvz_scene_poll_query(scene, &result));
+        AT(!result.hit);
+        AT(result.status == DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL);
+        AT(result.visual_id == 0);
+    }
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -4208,6 +4324,8 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_queue_preserves_panel_local_y_orientation);
     TST_CASE(test_scene_query_deferred_guide_targets_are_unsupported);
     TST_CASE(test_scene_query_volume_sample_is_explicitly_unsupported);
+    TST_CASE(test_scene_query_paint_composition_is_explicitly_unsupported);
+    TST_CASE(test_scene_query_ignores_hidden_and_empty_paint);
     TST_CASE(test_scene_query_skips_fixed_visuals);
     TST_CASE(test_scene_query_rejects_missing_query_profile);
     TST_CASE(test_scene_query_does_not_auto_select_2xr32_profile);
