@@ -484,6 +484,76 @@ static int test_scene_query_ignores_hidden_and_empty_paint(
 
 
 
+/**
+ * Exclude provably transparent paint from both guards and ordinary family queries.
+ *
+ * @param suite test context
+ * @param item test case
+ * @return 0 on success
+ */
+static int test_scene_query_ignores_zero_effective_alpha_paint(
+    TstContext* suite, const TstCase* item)
+{
+    ANN(suite);
+    ANN(item);
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 64, 64, 0);
+    DvzPanel* panel = dvz_panel(figure, &(DvzPanelDesc){0, 0, 1, 1});
+    ANN(panel);
+    DvzPolygon* polygon = dvz_polygon(scene, 0);
+    const dvec2 outer[4] = {{-0.5, -0.5}, {0.5, -0.5}, {0.5, 0.5}, {-0.5, 0.5}};
+    AT(dvz_polygon_set_geometry(
+           polygon, &(DvzPolygonDesc){DVZ_STRUCT_INIT_FIELDS(DvzPolygonDesc),
+                                     .outer = {.xy = outer, .count = 4}}) == DVZ_OK);
+    AT(dvz_polygon_set_stroke_color(polygon, (DvzColor){0, 0, 0, 0}) == DVZ_OK);
+    DvzComposite* composite = dvz_polygon_composite(polygon, 0);
+    ANN(composite);
+    AT(dvz_panel_add_composite(panel, composite, NULL) == DVZ_OK);
+    DvzVisual* fill = dvz_composite_visual(composite, "fill");
+    ANN(fill);
+    AT(!dvz_composite_visual(composite, "stroke")->visible);
+    dvz_visual_set_query_capabilities(
+        fill, DVZ_QUERY_CAPABILITY_ITEM | DVZ_QUERY_CAPABILITY_FACE);
+    const DvzSceneTargetKind targets[] = {DVZ_SCENE_TARGET_ITEM, DVZ_SCENE_TARGET_FACE};
+    for (uint32_t state = 0; state < 3; state++)
+    {
+        DvzMaterialDesc material = dvz_material_desc();
+        material.model = DVZ_MATERIAL_MODEL_UNLIT;
+        material.alpha_mode = DVZ_ALPHA_BLENDED;
+        material.opacity = state == 0 ? 0 : 1;
+        material.base_color_factor[3] = state == 1 ? 0 : 1;
+        AT(dvz_visual_set_material(fill, &material) == DVZ_OK);
+        for (uint32_t i = 0; i < 2; i++)
+        {
+            DvzQueryRequest request = dvz_query_request();
+            request.target = targets[i];
+            AT(dvz_panel_query_px(panel, 32, 32, &request) == DVZ_OK);
+            AT(dvz_figure_process_queries(figure, NULL, NULL) == 1);
+            DvzQueryResult result = {0};
+            AT(dvz_scene_poll_query(scene, &result));
+            AT(!result.hit);
+            AT(result.status == (state < 2 ? DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL :
+                                            DVZ_QUERY_STATUS_UNSUPPORTED_VISUAL_FAMILY));
+            AT(result.visual_id == (state < 2 ? 0 : _scene_visual_public_id(scene, fill)));
+            AT(result.item_id == 0 && result.face_id == 0);
+        }
+    }
+    /* Excluded semantic spans must not reappear through family query capabilities. */
+    for (uint32_t i = 0; i < fill->draw_span_count; i++)
+        fill->draw_spans[i].index_count = 0;
+    AT(dvz_panel_query_px(panel, 32, 32, NULL) == DVZ_OK);
+    AT(dvz_figure_process_queries(figure, NULL, NULL) == 1);
+    DvzQueryResult result = {0};
+    AT(dvz_scene_poll_query(scene, &result));
+    AT(result.status == DVZ_QUERY_STATUS_NO_CAPABLE_VISUAL);
+    AT(!result.hit && result.visual_id == 0);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
 int test_scene_query_skips_fixed_visuals(TstContext* suite, const TstCase* item)
 {
     ANN(suite);
@@ -4326,6 +4396,7 @@ int test_scene_query(TstSuite* suite)
     TST_CASE(test_scene_query_volume_sample_is_explicitly_unsupported);
     TST_CASE(test_scene_query_paint_composition_is_explicitly_unsupported);
     TST_CASE(test_scene_query_ignores_hidden_and_empty_paint);
+    TST_CASE(test_scene_query_ignores_zero_effective_alpha_paint);
     TST_CASE(test_scene_query_skips_fixed_visuals);
     TST_CASE(test_scene_query_rejects_missing_query_profile);
     TST_CASE(test_scene_query_does_not_auto_select_2xr32_profile);

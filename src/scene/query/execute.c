@@ -23,12 +23,44 @@
 #include "_time_utils.h"
 #include "internal.h"
 #include "scene_emit/panel_render_plan.h"
+#include "scene_emit/visual_lowering.h"
+#include "registry/registry.h"
 
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
+
+/**
+ * Return whether paint has any contribution that is not provably transparent.
+ *
+ * @param visual visible drawable paint visual
+ * @return whether its spans and effective material alpha permit coverage
+ */
+static bool _query_paint_contributes(const DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->draw_span_count > 0)
+    {
+        bool has_span = false;
+        for (uint32_t i = 0; i < visual->draw_span_count; i++)
+            has_span = has_span || visual->draw_spans[i].index_count > 0;
+        if (!has_span)
+            return false;
+    }
+    DvzVisualLowering lowering = {0};
+    const DvzVisualFamilyOps* ops = _scene_visual_family_ops(visual->type);
+    if (ops != NULL && ops->supports_material &&
+        _scene_visual_lowering_resolve(visual, &lowering) && lowering.needs_material_params &&
+        (visual->material.opacity <= 0 || visual->material.base_color_factor[3] <= 0))
+    {
+        return false;
+    }
+    return true;
+}
+
+
 
 /**
  * Mark retained static uploads after a successful command execution.
@@ -163,12 +195,14 @@ bool _dvz_scene_query_process_pending(
      * identity passes cannot reproduce its item/role composition or semantic
      * identity. Conservatively reject the panel query until a combined GPU
      * composition path exists; never return a background hit or triangle ID.
-     * Empty/hidden paint contributes no coverage and does not block querying. */
+     * Empty/hidden/zero-effective-alpha paint contributes no coverage and does not
+     * block querying. All paint is excluded from the ordinary family paths below. */
     for (uint32_t i = 0; i < pending->panel->visual_count; i++)
     {
         DvzVisual* visual = pending->panel->visuals[i].visual;
         if (visual == NULL || !visual->paint ||
-            !_scene_panel_render_visual_is_visible_drawable(visual))
+            !_scene_panel_render_visual_is_visible_drawable(visual) ||
+            !_query_paint_contributes(visual))
         {
             continue;
         }
@@ -192,7 +226,7 @@ bool _dvz_scene_query_process_pending(
         {
             const DvzPanelAttach* attach = &pending->panel->visuals[face_order[oi]];
             DvzVisual* visual = attach->visual;
-            if (visual == NULL || !visual->visible ||
+            if (visual == NULL || !visual->visible || visual->paint ||
                 attach->controller_mode == DVZ_CONTROLLER_FIXED ||
                 (visual->query_capabilities & capability) == 0)
                 continue;
@@ -215,7 +249,7 @@ bool _dvz_scene_query_process_pending(
     {
         const DvzPanelAttach* attach = &pending->panel->visuals[order[oi]];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || !visual->visible)
+        if (visual == NULL || !visual->visible || visual->paint)
             continue;
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;

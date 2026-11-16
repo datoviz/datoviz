@@ -145,7 +145,7 @@ DvzVisual* _dvz_scene_query_candidate_visual(const DvzPanel* panel, uint32_t cap
     {
         const DvzPanelAttach* attach = &panel->visuals[order[oi]];
         DvzVisual* visual = attach->visual;
-        if (visual == NULL || !visual->visible)
+        if (visual == NULL || !visual->visible || visual->paint)
             continue;
         if (attach->controller_mode == DVZ_CONTROLLER_FIXED)
             continue;
