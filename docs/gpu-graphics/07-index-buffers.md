@@ -4,11 +4,28 @@
 
 ![The same colored square drawn with four vertices and six indices.](../assets/gpu-graphics/07-index-buffers.webp)
 
-The chapter 6 square stores six vertex records for only four distinct corners. An **index buffer** fixes that: it is an integer array that tells primitive assembly which vertex records to fetch, and in what order. The records stay unique; the indices describe the triangles. The image is identical to chapter 6.
+Chapter 6 moved the geometry into a vertex buffer: the square is six vertex records, read in threes as two triangles. But a square has only four corners. The two corners on the diagonal are stored twice, and the vertex shader runs on each copy.
+
+For a square, that is two extra records. For a real mesh it is most of the data, because each corner is shared by several triangles. Chapter 9's cube has 8 corners but 12 triangles, which would be 36 records without sharing. We want to store each corner once and describe the triangles separately.
+
+This chapter adds an **index buffer** to do exactly that. The image stays identical to chapter 6; what changes is how the geometry is stored, the form every later mesh in the course takes.
+
+In this chapter you will:
+
+1. shrink the vertex array to the four unique corners;
+2. describe the two triangles as six indices into that array;
+3. upload the indices into a second buffer;
+4. bind it and replace the draw with an indexed draw.
+
+## Vertices and the triangles that use them
+
+An index buffer is an array of integers. Without one, a draw takes vertex records in order, three at a time. With one, it reads the indices in order, three at a time, and each index says which vertex record to fetch. The vertex records stay unique; the indices describe the triangles.
+
+The split pays twice. Memory: an index here is 2 bytes, while a `Vertex` is 20. Work: when the same index comes back soon, the GPU can often reuse the vertex shader's result instead of running it again.
 
 ## Four vertices, six references
 
-Replace the six-record `VERTICES` array with these four corners:
+Start with the data. Replace the six-record `VERTICES` array with these four corners, which go around the square in order:
 
 ```c
 static const Vertex VERTICES[4] = {
@@ -19,7 +36,7 @@ static const Vertex VERTICES[4] = {
 };
 ```
 
-Then add the index array:
+Then add the index array below it:
 
 ```c
 static const uint16_t INDICES[6] = {0, 1, 2, 0, 2, 3};
@@ -27,11 +44,11 @@ static const uint16_t INDICES[6] = {0, 1, 2, 0, 2, 3};
 
 The first three indices form one triangle, the last three the other; corners 0 and 2 are reused. An index selects the complete record, not just its position, so a reused vertex also reuses its color and, later, its texture coordinates and normal. When two faces meet at one position but need different attributes, as at texture seams and sharp lighting creases, duplicate the vertex on purpose.
 
-`uint16_t` covers indices up to 65535 and halves index bandwidth compared with `uint32_t`; larger meshes need 32-bit indices. The C element type, the bound `VkIndexType`, and the uploaded byte count must agree.
+The index type is a size trade-off. `uint16_t` covers indices up to 65535 and halves index bandwidth compared with `uint32_t`; larger meshes need 32-bit indices. The GPU cannot see the C type, so three things must agree: the C element type, the `VkIndexType` you bind with, and the uploaded byte count.
 
 ## Create the second buffer
 
-Add `DvzBuffer* index_buffer;` to `Renderer`. Allocate its wrapper beside the vertex-buffer wrapper and check both:
+The indices need GPU memory too, in a second buffer created exactly like chapter 6's. Add `DvzBuffer* index_buffer;` to `Renderer`. In `main()`, allocate its wrapper beside the vertex-buffer wrapper, and replace the single check with one that covers both:
 
 ```c
     renderer.vertex_buffer = dvz_buffer_create_wrapper();
@@ -41,7 +58,7 @@ Add `DvzBuffer* index_buffer;` to `Renderer`. Allocate its wrapper beside the ve
         "buffer allocation failed");
 ```
 
-After uploading the vertices, create and upload the index buffer. Only the usage flag differs from the vertex buffer:
+With two buffer results in scope, rename the vertex buffer's `buffer_result` to `vertex_buffer_result`. Then, after uploading the vertices, create and upload the index buffer. Only the usage flag differs from the vertex buffer: `VK_BUFFER_USAGE_INDEX_BUFFER_BIT` declares that draws will read it as indices.
 
 ```c
     dvz_buffer(renderer.device, dvz_gpu_ctx_alloc(gpu), renderer.index_buffer);
@@ -56,15 +73,19 @@ After uploading the vertices, create and upload the index buffer. Only the usage
 
 ## Indexed drawing
 
+The vertex buffer stays bound as in chapter 6, and the index buffer joins it. In `draw()`, after binding the vertex buffer, bind the index buffer and replace `dvz_cmd_draw()` with its indexed form:
+
 ```c
     dvz_cmd_bind_index_buffer(
         renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT16);
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, 6, 0, 1);
 ```
 
-The arguments to `dvz_cmd_draw_indexed()` are first index, vertex offset, index count, first instance, and instance count. `VK_INDEX_TYPE_UINT16` tells Vulkan to read each entry as an unsigned 16-bit value. Each value selects a record from the bound vertex buffer, after adding the vertex offset (zero here).
+Read the bind call as: read this buffer from byte offset 0, as unsigned 16-bit indices. Only one index buffer is bound at a time, so there is no binding number.
 
-In cleanup, after the device wait, release the index buffer before the vertex buffer:
+The arguments to `dvz_cmd_draw_indexed()` are first index, vertex offset, index count, first instance, and instance count. So this draw reads 6 indices starting at index 0, one instance. Each value selects a record from the bound vertex buffer, after adding the vertex offset (zero here).
+
+The index buffer follows the same lifetime rule as the vertex buffer. In cleanup, after the device wait, release it before the vertex buffer:
 
 ```c
     if (renderer.index_buffer != NULL)
@@ -107,6 +128,12 @@ Build and run as before; the capture goes to `chapter07.png`.
 !!! warning "When it goes wrong"
 
     Spikes or missing triangles often mean an index exceeds the vertex count. A scrambled mesh suggests the bound index type disagrees with the array's element type.
+
+## What carries over
+
+- An indexed mesh, unique vertices plus triangles that refer to them, is the standard form in every GPU API and in mesh files such as OBJ and glTF.
+- An index selects a whole vertex, not a position. Share a vertex only when every attribute agrees; duplicate it where they differ.
+- Index width is a range-for-size trade-off: 16 bits suit meshes with at most 65536 vertices, 32 bits the rest.
 
 ## Checkpoint
 

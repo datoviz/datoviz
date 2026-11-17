@@ -4,17 +4,30 @@
 
 ![A colorful square rotating over a dark background.](../assets/gpu-graphics/08-push-constants.webp)
 
-To animate the square, you need to change a value every frame without rebuilding the pipeline or re-uploading the buffers. In this chapter the indexed square rotates and pulses, driven by two floats the CPU sends with each draw.
+Chapters 6 and 7 put the square's geometry in GPU buffers: four corners and six indices, uploaded once at startup. The square is drawn every frame, but it never moves.
 
-## Push constants
+To animate it, something must change every frame. We could rewrite the corner positions on the CPU and upload them again each frame. That works for four vertices, but it scales with the mesh, and the buffer may still be in use by an earlier frame in flight (chapter 3). A better idea: keep the geometry fixed, send the few numbers that describe the motion, and let the vertex shader apply them to every vertex. Here that is two numbers: an angle and a scale.
 
-**Push constants** are a small block of values copied into the command buffer and visible to the shader stages you choose. Each draw can receive different values without any buffer. Every Vulkan device supports at least 128 bytes; this chapter uses eight, for two floats.
+This chapter sends those two floats with each draw as **push constants**, and the square rotates and pulses. Chapter 9 keeps the same mechanism but sends a 4×4 matrix, which can describe any rotation, scaling, camera or perspective.
 
-The shader and the pipeline layout must agree on the block's size, offset, and visible stages. `dvz_slots_push()` declares that range in the layout; `dvz_cmd_push_constants()` copies the current value into the recorded commands. Because the bytes are copied, the C variable can be reused as soon as the call returns. Chapter 12 introduces data that is referenced instead of copied.
+In this chapter you will:
 
-## Declare the range
+1. declare a push-constant range in the pipeline layout;
+2. read the two values in the vertex shader to rotate and scale the square;
+3. compute them from the clock and push them before every draw;
+4. add a fixed capture time so that `--png` stays reproducible.
 
-Add this struct after `Vertex`. Its two floats match the GLSL block in the same order:
+## Small values that travel with the draw
+
+**Push constants** are a small block of values copied into the command buffer and visible to the shader stages you choose. Since chapter 3, `draw()` records the frame's commands every frame, so each frame can push new values. A push applies to the draws recorded after it, until the next push, so two draws in one frame can also receive different values. No buffer is involved.
+
+The price of copying is size. Every Vulkan device supports at least 128 bytes; this chapter uses eight, for two floats, and chapter 9 uses 64, for one matrix.
+
+The shader and the pipeline layout must agree on the block's size, offset, and visible stages. The pipeline layout is chapter 4's `DvzSlots`, empty until now; this is its first entry. `dvz_slots_push()` declares that range in the layout; `dvz_cmd_push_constants()` copies the current value into the recorded commands. Because the bytes are copied, the C variable can be reused as soon as the call returns. Chapter 12 introduces data that is referenced instead of copied.
+
+## Declare the range in the pipeline layout
+
+Start with the C side of the block. Add this struct after `Vertex`. Its two floats match the GLSL block in the same order:
 
 ```c
 typedef struct
@@ -24,7 +37,7 @@ typedef struct
 } Push;
 ```
 
-Declare the range before creating the pipeline layout:
+The layout must know about the range before it is created, and the pipeline is built from the layout. In `create_pipeline()`, declare the range between `dvz_slots()` and `dvz_slots_create()`:
 
 ```c
     dvz_slots(renderer->device, renderer->slots);
@@ -33,7 +46,11 @@ Declare the range before creating the pipeline layout:
         return -1;
 ```
 
-Replace `shader.vert` with this version; `shader.frag` is unchanged. `pulse` scales the positions, then `time` rotates them:
+Read the new call as: the vertex stage may read a push-constant range starting at byte 0, `sizeof(Push)` bytes long, here 8.
+
+## Read the values in the vertex shader
+
+The shader side of the contract is a `layout(push_constant)` block with the same two floats in the same order. Replace `shader.vert` with this version; `shader.frag` is unchanged. `pulse` scales the positions, then `time` rotates them:
 
 ```glsl
 #version 450
@@ -55,7 +72,9 @@ void main()
 }
 ```
 
-## Update every frame
+The last lines are the standard 2D rotation by an angle, here `time` in radians: x becomes `cos·x − sin·y` and y becomes `sin·x + cos·y`. Every vertex runs the same code with the same two values, so the whole square turns as one. The vertex buffer never changes.
+
+## Push new values every frame
 
 Include `<math.h>`, and keep `<stdlib.h>`: the restored `--time` option uses `strtof`. `dvz_time_monotonic_ns()` comes from `<datoviz.h>`, as in chapter 3. Add these fields to `Renderer`:
 
@@ -66,7 +85,7 @@ Include `<math.h>`, and keep `<stdlib.h>`: the restored `--time` option uses `st
     bool draw_failed;
 ```
 
-At the beginning of `draw()`, compute the elapsed time and fill the block:
+`start_ns` is the clock at startup, `capture_time` the fixed time for captures, `animate` picks between them, and `draw_failed` reports a failed push. At the beginning of `draw()`, compute the elapsed time and fill the block:
 
 ```c
     float time = renderer->capture_time;
@@ -74,6 +93,8 @@ At the beginning of `draw()`, compute the elapsed time and fill the block:
         time = (float)(dvz_time_monotonic_ns() - renderer->start_ns) * 1e-9f;
     Push push = {.time = time, .pulse = 1.0f + 0.08f * sinf(time * 3.0f)};
 ```
+
+Live runs use the seconds elapsed since start. `pulse` swings between 0.92 and 1.08 about every two seconds, so the square grows and shrinks by 8%.
 
 The values must be recorded before the draw that uses them, so push them after setting the viewport and before binding the vertex buffer:
 
@@ -84,7 +105,11 @@ The values must be recorded before the draw that uses them, so push them after s
         renderer->draw_failed = true;
 ```
 
-Replace the argument parsing in `main()`. Offscreen runs use `capture_time`, `0.75f` unless `--time` overrides it; only live runs read the clock.
+Read the push as: into this command buffer, with the layout in `slots`, for the vertex stage, copy `sizeof(push)` bytes from `&push` to offset 0 of the range. It returns an error if that range is not declared in the layout, is not four-byte aligned, or is not visible to the requested stages.
+
+## Keep captures reproducible
+
+A capture should give the same image on every run, so tests and documentation screenshots can compare it. A clock would make each one different. Replace the argument parsing in `main()`. Offscreen runs use `capture_time`, `0.75f` unless `--time` overrides it; only live runs read the clock.
 
 ```c
     const char* png_path = NULL;
@@ -107,13 +132,13 @@ Then initialize the timing fields before installing the draw callback:
     renderer.animate = live;
 ```
 
-The callback cannot return a status, so `draw_failed` carries a failed push back to the loop. Check it after `dvz_canvas_frame()` reports a ready frame, before submitting:
+The draw callback cannot return a status, so `draw_failed` carries a failed push back to the loop. `dvz_canvas_frame()` runs the callback, so check the flag after it reports a ready frame, before submitting:
 
 ```c
         COURSE_CHECK(!renderer.draw_failed, "push-constant update failed");
 ```
 
-Reload keeps working: each candidate pipeline declares the same range.
+Reload keeps working: each candidate pipeline declares the same range, and after a swap `draw()` pushes through the new `renderer->slots`.
 
 The square shears as it turns: x and y are still normalized device coordinates, which span the whole 4:3 window, so one unit is wider than it is tall. Chapter 9 fixes this with the aspect ratio.
 
@@ -152,6 +177,12 @@ The live square rotates and breathes; the capture is the still above. The termin
 !!! warning "When it goes wrong"
 
     A validation message about a push-constant range usually means the offset or size is not a multiple of four, or the pipeline layout does not declare the range. A square that stays still was rendered with `--png`, or the shader reads the members in a different order than the C struct.
+
+## What carries over
+
+- Keep large data fixed on the GPU and send a few parameters that describe how it changes; the vertex shader applies them to every vertex. Chapter 9's matrices are this idea in general form.
+- A command buffer is an ordered list: a value set before a draw applies to that draw and to later ones until it is set again. Pipelines and vertex buffers follow the same rule.
+- Make time an input of rendering rather than something it reads, so a frame can be reproduced exactly.
 
 ## Checkpoint
 

@@ -4,11 +4,40 @@
 
 ![A colored square made from two triangles.](../assets/gpu-graphics/06-vertex-buffers.webp)
 
-Real applications don't hard-code geometry in shaders. They generate, load, or update it on the CPU, then copy its bytes into a buffer the GPU can read. In this chapter you define a vertex record, upload six of them, and draw a square as two triangles.
+Since chapter 4, the program draws a triangle, and since chapter 5 its shaders live in their own files and reload with **R**. But the triangle's three positions and colors are constants inside the vertex shader, which picks one with `gl_VertexIndex`. To change the shape, you have to change the shader.
+
+Real applications don't work that way. A plot, a mesh or a map is data: the program generates, loads or updates it on the CPU. So the geometry must travel from a C array into GPU memory, and the shader must receive it as ordinary inputs. That route, the **vertex buffer**, is how every later chapter feeds geometry to the GPU.
+
+This chapter moves the geometry out of the shader and draws a square as two triangles: six vertices read from a buffer.
+
+In this chapter you will:
+
+1. define a vertex record in C and matching inputs in GLSL;
+2. describe the record's byte layout to the pipeline;
+3. create a GPU buffer and copy the vertices into it;
+4. bind the buffer and draw six vertices.
+
+## From a C array to shader inputs
+
+Three pieces work together:
+
+- The **data**: an array of vertex records, copied into a GPU buffer.
+- The **description**, part of the pipeline: how many bytes separate one vertex from the next, and where each value sits inside a vertex. The GPU cannot see your C struct, so you spell this out.
+- The **bind command**, recorded before the draw: which buffer the following draws read.
+
+When the draw runs, a fixed-function stage called **vertex input** uses the description to fetch each vertex's bytes from the bound buffer and hands the values to the vertex shader's `in` variables. The vertex shader still runs once per vertex, as in chapter 4, but its inputs now come from your data instead of constant arrays.
+
+```mermaid
+flowchart TD
+    A[C array VERTICES] -->|upload copies bytes| B[Vertex buffer]
+    B -->|bound before the draw| C[Vertex input]
+    D[Pipeline: stride, offsets, formats] --> C
+    C -->|locations 0 and 1| E[Vertex shader]
+```
 
 ## Describe one vertex
 
-A **vertex record** collects every attribute of one vertex. This one has a two-component position and a three-component color. The field names help you, but the GPU sees only bytes; the pipeline description below tells it how to decode them.
+Start with the data. A **vertex record** collects every attribute of one vertex. This one has a two-component position and a three-component color. The field names help you, but the GPU sees only bytes; the pipeline description below tells it how to decode them.
 
 ```c
 typedef struct
@@ -18,7 +47,7 @@ typedef struct
 } Vertex;
 ```
 
-Add `<stddef.h>` for `offsetof`, and place these six records below `Vertex`. The two triangles duplicate their shared corners:
+A square has four corners, but the pipeline still groups vertices in threes, as set up in chapter 4. So the square is two triangles, and the two corners on the diagonal appear in both. Add `<stddef.h>` for `offsetof`, which the pipeline description will use, and place these six records below `Vertex`:
 
 ```c
 static const Vertex VERTICES[6] = {
@@ -31,7 +60,7 @@ static const Vertex VERTICES[6] = {
 };
 ```
 
-Replace `shader.vert` with this version; `shader.frag` is unchanged:
+On the shader side, the constant arrays and `gl_VertexIndex` give way to two inputs. Each `in` variable has a **location**, a number the pipeline description will refer to. Replace `shader.vert` with this version; `shader.frag` is unchanged:
 
 ```glsl
 #version 450
@@ -47,9 +76,14 @@ void main()
 }
 ```
 
-The pipeline needs the same layout in Vulkan terms. A **vertex binding** is one byte stream with a stride, the distance from one record to the next.
+## Describe the layout to the pipeline
 
-A vertex **attribute** is one value inside each record: which vertex binding supplies it, which shader location receives it, its format, and its byte offset. A binding number picks a byte stream; a location names a shader input. `offsetof` asks C for the real field offsets instead of assuming the struct has no padding.
+The pipeline connects the `Vertex` records to the shader inputs with two kinds of entries:
+
+- A **vertex binding** is one byte stream with a **stride**, the distance in bytes from one record to the next.
+- A vertex **attribute** is one value inside each record: which vertex binding supplies it, which shader location receives it, its format, and its byte offset within the record.
+
+A binding number picks a byte stream; a location names a shader input. Here there is one stream and two attributes. In `create_pipeline()`, add the description after the two `dvz_graphics_shader()` calls. `offsetof` asks C for the real field offsets instead of assuming the struct has no padding:
 
 ```c
     dvz_graphics_vertex_binding(
@@ -60,11 +94,15 @@ A vertex **attribute** is one value inside each record: which vertex binding sup
         renderer->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color));
 ```
 
-Locations 0 and 1 must match `in_position` and `in_color`. `VK_FORMAT_R32G32_SFLOAT` reads two 32-bit floats, `VK_FORMAT_R32G32B32_SFLOAT` three. Get the format wrong and the GPU reads the same bytes as something else.
+Read the first call as: binding 0 advances by `sizeof(Vertex)`, 20 bytes, once per vertex. The attribute calls read: from binding 0, location 0 receives two floats at the offset of `position`, and location 1 receives three floats at the offset of `color`.
+
+Locations 0 and 1 must match `in_position` and `in_color`. `VK_FORMAT_R32G32_SFLOAT` reads two 32-bit floats, `VK_FORMAT_R32G32B32_SFLOAT` three; Vulkan reuses its image-format names, so R, G and B just count components. Get the format wrong and the GPU reads the same bytes as something else.
+
+The description is part of the pipeline, so it is fixed when the pipeline is created. The buffer it reads is chosen later, at draw time. That split lets one pipeline draw many meshes that share a layout.
 
 ## Allocate and upload
 
-Add `DvzBuffer* vertex_buffer;` to `Renderer`. In `main()`, after creating the pipeline, allocate the wrapper, configure the buffer, create it, and upload the records:
+Now the bytes. A **buffer** is a block of GPU-accessible memory with no type of its own; its usage flags say what it may be used for. Add `DvzBuffer* vertex_buffer;` to `Renderer`. In `main()`, after creating the pipeline, allocate the wrapper, configure the buffer, create it, and upload the records. The steps follow chapter 4's object lifecycle:
 
 ```c
     renderer.vertex_buffer = dvz_buffer_create_wrapper();
@@ -79,11 +117,15 @@ Add `DvzBuffer* vertex_buffer;` to `Renderer`. In `main()`, after creating the p
     dvz_buffer_upload(renderer.vertex_buffer, 0, sizeof(VERTICES), VERTICES);
 ```
 
-GPUs have two broad kinds of memory. Device-local memory is fast GPU memory the CPU usually cannot write; host-visible memory is CPU-mappable. The two allocation flags make this buffer host-visible and mapped, so `dvz_buffer_upload()` can copy directly. Chapter 13 uses a staging copy to fill a device-local image.
+The buffer is `sizeof(VERTICES)` bytes, 120, and `VK_BUFFER_USAGE_VERTEX_BUFFER_BIT` declares that draws will read it as vertex data.
 
-`dvz_buffer_upload()` copies `VERTICES` before it returns, so the CPU array need not stay alive. The `DvzBuffer` must stay alive until every submitted draw that reads it has finished.
+The allocation flags choose *where* the memory lives. GPUs have two broad kinds of memory. Device-local memory is fast GPU memory the CPU usually cannot write; host-visible memory is CPU-mappable. `DVZ_ALLOC_MAPPED` keeps the memory mapped to a CPU pointer, and `DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE` says the CPU will only write it, in order. Together they make this buffer host-visible, so `dvz_buffer_upload()` can copy directly. Chapter 13 uses a staging copy to fill a device-local image.
+
+`dvz_buffer_upload()` copies `VERTICES` before it returns, so the CPU array need not stay alive. The `DvzBuffer` is different: recorded commands only refer to it, so by chapter 3's rule it must stay alive until every submitted draw that reads it has finished.
 
 ## Bind, then draw
+
+In `draw()`, after setting the viewport and scissor, bind the buffer to vertex binding 0 and ask for six vertices instead of three:
 
 ```c
     DvzSize vertex_offset = 0;
@@ -91,6 +133,8 @@ GPUs have two broad kinds of memory. Device-local memory is fast GPU memory the 
         renderer->commands, 0, 1, renderer->vertex_buffer, &vertex_offset);
     dvz_cmd_draw(renderer->commands, 0, 6, 0, 1);
 ```
+
+Read the bind call as: starting at binding 0, bind 1 buffer, read from byte offset 0. The draw arguments are chapter 4's: first vertex 0, 6 vertices, first instance 0, 1 instance.
 
 The triangle-list topology reads six vertices as two independent triples. The duplicated corners are simple but wasteful; chapter 7 removes them.
 
@@ -137,6 +181,12 @@ You see the square above, and the terminal ends with `validation errors: 0`.
 !!! warning "When it goes wrong"
 
     Wild geometry or flat colors usually mean a wrong stride, format, or offset. A validation error at draw time often means the buffer lacks `VK_BUFFER_USAGE_VERTEX_BUFFER_BIT`, or was destroyed while a submitted frame still used it. Red `has not been destroyed` messages after `validation errors: 0`, or a VMA `Some allocations were not freed` assertion, mean a buffer is missing from cleanup: those checks run when the device is destroyed, after the count is printed.
+
+## What carries over
+
+- Every GPU API splits vertex data into the bytes, in a buffer, and a description of how to read them: stride, offsets and formats. WebGPU calls the description a vertex buffer layout; OpenGL sets it with vertex attribute pointers.
+- The GPU never sees your C types. Matching the two sides is your job, and `sizeof` and `offsetof` keep the description correct when the struct changes.
+- Where memory lives is a trade-off: CPU-writable memory is simplest to fill, while the fastest GPU memory usually needs an extra copy.
 
 ## Checkpoint
 
