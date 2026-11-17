@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "publication_authorized": false,
+  "description": "Exact selected homepage videos and posters. Primary visual selections are approved; the compatibility fallback and publication action require final package review.",
+  "examples": [
+    {
+      "id": "showcases_protein",
+      "capture_frames_sha256": "a051aea342bf3eea6b6f23cba0e678fab473e62a9fddf55af191bda970c8a4a1",
+      "assets": [
+        {
+          "path": "showcases/showcases_protein.mp4",
+          "role": "primary",
+          "codec": "h264",
+          "bytes": 947150,
+          "sha256": "8ec5d226269ac0559e94857ede6bc9133947554c822bfc7f5ab91e9b40157059",
+          "review_state": "approved",
+          "width": 1280,
+          "height": 720,
+          "fps": 30,
+          "duration": 14.4
+        },
+        {
+          "path": "showcases/showcases_protein.poster.webp",
+          "role": "poster",
+          "codec": "webp",
+          "bytes": 50044,
+          "sha256": "64a5a9873e75b356fd19788a604bab836319faaff0f5a66fd752be52fccc3376",
+          "review_state": "approved"
+        }
+      ]
+    },
+    {
+      "id": "showcases_point_cloud",
+      "capture_frames_sha256": "d49049be42a45676fa7281143d70aa8dceb04650dde66f12882cc2e5ecf52baf",
+      "assets": [
+        {
+          "path": "showcases/showcases_point_cloud.av1.mp4",
+          "role": "primary",
+          "codec": "av1",
+          "bytes": 4713781,
+          "sha256": "5e7e15bfd2b7f274becaea5fcf49545576566ab5f4814f814fb017087f6db61a",
+          "review_state": "approved",
+          "width": 1280,
+          "height": 720,
+          "fps": 30,
+          "duration": 9.6
+        },
+        {
+          "path": "showcases/showcases_point_cloud.poster.webp",
+          "role": "poster",
+          "codec": "webp",
+          "bytes": 337992,
+          "sha256": "8731197da8b204cda7ddab6c6a33541b9d185c2d9bec8c155fc7701af468815d",
+          "review_state": "approved"
+        },
+        {
+          "path": "showcases/showcases_point_cloud.mp4",
+          "role": "fallback",
+          "codec": "h264",
+          "bytes": 3537225,
+          "sha256": "32025fc601554784301e23dff7acf8d2c81931f0585a0512bb0c45c54598b07a",
+          "review_state": "pending-final-package-review",
+          "width": 1280,
+          "height": 720,
+          "fps": 30,
+          "duration": 9.6,
+          "profile": "High",
+          "level": "3.1"
+        }
+      ]
+    },
+    {
+      "id": "showcases_cortical_activity",
+      "capture_frames_sha256": "4b297d27dcd92761c7215132a135d4debe7be9c3d2b1ede7571c86a878d37855",
+      "assets": [
+        {
+          "path": "showcases/showcases_cortical_activity.mp4",
+          "role": "primary",
+          "codec": "h264",
+          "bytes": 619412,
+          "sha256": "aabfbb093023aa5b0125207efafc9dc0227730f1621ab40cf8317c41d54e1383",
+          "review_state": "approved",
+          "width": 1280,
+          "height": 720,
+          "fps": 60,
+          "duration": 14.4
+        },
+        {
+          "path": "showcases/showcases_cortical_activity.poster.webp",
+          "role": "poster",
+          "codec": "webp",
+          "bytes": 11202,
+          "sha256": "cfe0cd5609ac83ad3a03ede9e77f19666b5ef1a38ff882b8a8a3c319a00c0a5a",
+          "review_state": "approved"
+        }
+      ]
+    },
+    {
+      "id": "showcases_textured_planet",
+      "capture_frames_sha256": "56fe027c8e598e3779d0df3547be4461d027709d167dea09a737fc10d47d59e2",
+      "assets": [
+        {
+          "path": "showcases/showcases_textured_planet.mp4",
+          "role": "primary",
+          "codec": "h264",
+          "bytes": 635081,
+          "sha256": "a4ef1de8777886a48362330bf1ac10635d8cc50a50fddb1b380af6e0d846abab",
+          "review_state": "approved",
+          "width": 1280,
+          "height": 720,
+          "fps": 30,
+          "duration": 14.4
+        },
+        {
+          "path": "showcases/showcases_textured_planet.poster.webp",
+          "role": "poster",
+          "codec": "webp",
+          "bytes": 43414,
+          "sha256": "3ed195f51e0fd0ed7d5feb514c7520c7d0d522e51f783cd9ac4173f144268043",
+          "review_state": "approved"
+        }
+      ]
+    }
+  ],
+  "snapshot_id": "ba8268855acc18e7a356640746ef2e2853f584c0e57127117c253db5240e01b8",
+  "publication": {
+    "repository": "datoviz/assets",
+    "release_tag": "homepage-v0.4-ba8268855acc",
+    "asset_base_url": "https://github.com/datoviz/assets/releases/download/homepage-v0.4-ba8268855acc/",
+    "authorized": false
+  }
+}

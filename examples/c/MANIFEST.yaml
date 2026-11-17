@@ -1,3 +1,6 @@
+homepage_media:
+  selection: spec/docs/homepage-media.json
+
 version: 2
 status: v04_example_tree_reset
 source_of_truth:
@@ -3861,8 +3864,21 @@ examples:
           card:
             mp4_crf: 28
             mp4_max_crf: 28
-            video_budget_bytes: 20000000
+            mp4_bitrate_kbps: 3000
+            mp4_preset: veryslow
+            mp4_fps: 30
+            mp4_two_pass: true
+            video_budget_bytes: 4000000
             webp_quality: 85
+            av1:
+              encoder_version: 4.3.0
+              preset: 3
+              tune: 4
+              crf: 56
+              fps: 30
+              video_budget_bytes: 5000000
+              temporal_filtering: false
+              film_grain: 0
           presentation:
             kind: sway
             amplitude_deg: 20

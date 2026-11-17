@@ -13,6 +13,7 @@ import hashlib
 import html
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -70,6 +71,10 @@ class EncodingProfile:
     compare: bool = False
     mp4_max_crf: int = gallery_media.MP4_MAX_CRF
     video_budget_bytes: int = BUDGETS["video_card"]
+    av1: dict | None = None
+    mp4_bitrate_kbps: int = 0
+    mp4_preset: str = "slow"
+    mp4_two_pass: bool = False
 
 
 @dataclass(frozen=True)
@@ -105,6 +110,7 @@ class MediaComparison:
     mp4_base_crf: int | None = None
     mp4_max_crf: int = gallery_media.MP4_MAX_CRF
     video_budget_bytes: int = BUDGETS["video_card"]
+    codec_provenance: dict | None = None
 
 
 @dataclass(frozen=True)
@@ -275,6 +281,10 @@ def profile_for(
     if not args.no_manifest_card and getattr(args, "profile", ""):
         fields["mp4_max_crf"] = int(card.get("mp4_max_crf", fields["mp4_max_crf"]))
         fields["video_budget_bytes"] = int(card.get("video_budget_bytes", fields["video_budget_bytes"]))
+        fields["av1"] = card.get("av1")
+        fields["mp4_bitrate_kbps"] = int(card.get("mp4_bitrate_kbps", 0))
+        fields["mp4_preset"] = str(card.get("mp4_preset", "slow"))
+        fields["mp4_two_pass"] = bool(card.get("mp4_two_pass", False))
     preview_fps = int(getattr(preview, "fps"))
     if fields["preferred_kind"] == "video-mp4" and fields["fps"] > 0:
         expected_source_fps = fields["fps"] * fields["step"]
@@ -333,6 +343,7 @@ def comparison_input_hash(
         "generated_kinds": sorted(generated_variant_kinds(profile, args.webm)),
         "output_dir": str(args.output_dir.resolve()),
         "encoder_fingerprint": encoder_fingerprint,
+        "av1_encoder": svt_av1_identity(profile.av1) if profile.av1 else None,
     }
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf8")
@@ -493,6 +504,67 @@ def encode_mp4(frame_pattern: str, output: Path, fps: int, crf: int) -> None:
             str(output),
         ]
     )
+
+
+def svt_av1_executable() -> str:
+    """Select the explicitly configured or PATH-provided SVT candidate encoder."""
+    executable = os.environ.get("SVT_AV1_ENC") or shutil.which("SvtAv1EncApp")
+    if not executable or not Path(executable).is_file():
+        raise RuntimeError("SVT-AV1 encoder unavailable; set SVT_AV1_ENC or install SvtAv1EncApp")
+    return executable
+
+
+def svt_av1_identity(settings: dict) -> dict:
+    executable = svt_av1_executable()
+    result = subprocess.run([executable, "--version"], cwd=ROOT, check=True, capture_output=True, text=True)
+    version = result.stdout + result.stderr
+    match = re.search(r"SVT-AV1 v(\d+\.\d+\.\d+)(?![\w.-])", version)
+    if not match or match.group(1) != settings["encoder_version"] or match.group(1) != "4.3.0":
+        raise RuntimeError("AV1 candidate requires SVT-AV1 version 4.3.0")
+    return {"encoder": "SVT-AV1", "version": match.group(1), "binary_sha256": file_sha256(Path(executable))}
+
+
+def encode_av1(frame_pattern: str, output: Path, source_fps: int, source_frames: int, settings: dict, workspace: Path) -> dict:
+    """Reproduce the explicit 10-bit SVT candidate path from canonical source frames."""
+    identity = svt_av1_identity(settings)
+    ffmpeg = require_tool("ffmpeg")
+    y4m, ivf = workspace / "av1-source.y4m", workspace / "av1.ivf"
+    fps = int(settings["fps"])
+    keyint = source_frames * fps // source_fps
+    common = [ffmpeg, "-hide_banner", "-loglevel", "error", "-y"]
+    run([*common, "-framerate", str(source_fps), "-i", frame_pattern,
+         "-vf", f"fps={fps},format=yuv420p10le", "-strict", "-1", "-f", "yuv4mpegpipe", str(y4m)])
+    run([svt_av1_executable(), "--passes", "1", "--rc", "0", "--crf", str(settings["crf"]),
+         "--preset", str(settings["preset"]), "--lp", "3", "--tune", str(settings["tune"]),
+         "--enable-tf", "0", "--film-grain", "0", "--fps-num", str(fps), "--fps-denom", "1",
+         "--keyint", str(keyint), "--input-depth", "10", "--progress", "0", "-i", str(y4m), "-b", str(ivf)])
+    output.parent.mkdir(parents=True, exist_ok=True)
+    run([*common, "-i", str(ivf), "-c:v", "copy", "-movflags", "+faststart", str(output)])
+    if output.stat().st_size > settings["video_budget_bytes"]:
+        raise RuntimeError(f"AV1 exceeds its {settings['video_budget_bytes']}-byte budget; settings were preserved")
+    return {**identity, "settings": settings, "bit_depth": 10, "logical_processors": 3,
+            "keyint": keyint, "sha256": file_sha256(output)}
+
+
+def encode_bitrate_mp4(frame_pattern: str, output: Path, source_fps: int, source_frames: int, profile: EncodingProfile, workspace: Path) -> None:
+    """Encode an explicit fixed-rate fallback without hidden quality or rate changes."""
+    ffmpeg = require_tool("ffmpeg")
+    fps = profile.fps or source_fps // profile.step
+    keyint = source_frames * fps // source_fps
+    common = [ffmpeg, "-hide_banner", "-loglevel", "error", "-y", "-framerate", str(source_fps),
+              "-i", frame_pattern, "-an", "-vf", f"fps={fps},format=yuv420p", "-threads", "8",
+              "-c:v", "libx264", "-preset", profile.mp4_preset, "-profile:v", "high",
+              "-level:v", "3.1", "-refs", "4", "-bf", "3", "-b:v", f"{profile.mp4_bitrate_kbps}k",
+              "-g", str(keyint)]
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if profile.mp4_two_pass:
+        common.extend(["-passlogfile", str(workspace / "h264-pass")])
+        run([*common, "-pass", "1", "-f", "null", os.devnull])
+        run([*common, "-pass", "2", "-movflags", "+faststart", str(output)])
+    else:
+        run([*common, "-movflags", "+faststart", str(output)])
+    if output.stat().st_size > profile.video_budget_bytes:
+        raise RuntimeError(f"H264 fallback exceeds its {profile.video_budget_bytes}-byte budget; target rate was preserved")
 
 
 def mp4_attempt_plan(source_fps: int, initial_step: int, base_crf: int, max_crf: int = gallery_media.MP4_MAX_CRF) -> list[Mp4Attempt]:
@@ -702,6 +774,7 @@ def compare_preview(
         shutil.rmtree(base)
     animated_webp = base / f"{getattr(preview, 'id')}.card.webp"
     mp4 = base / f"{getattr(preview, 'id')}.card.mp4"
+    av1 = base / f"{getattr(preview, 'id')}.av1.mp4"
     webm = base / f"{getattr(preview, 'id')}.card.webm"
     poster = base / f"{getattr(preview, 'id')}.poster.webp"
     out_fps = output_fps(preview, profile)
@@ -712,6 +785,7 @@ def compare_preview(
     stale_variants = {
         "animated-webp-card": animated_webp,
         "mp4-card": mp4,
+        "av1-card": av1,
         "webm-card": webm,
     }
     for kind, path in stale_variants.items():
@@ -736,6 +810,7 @@ def compare_preview(
         )
 
     notes: list[str] = []
+    codec_provenance = {}
     with media_workspace(getattr(preview, "id")) as tmp:
         frame_root = Path(tmp)
         frames = cached_frames(preview, frame_sequence.frame_dir)
@@ -747,7 +822,15 @@ def compare_preview(
         selected_crf = 0
         if "animated-webp-card" in generated_kinds:
             encode_webp(selected, animated_webp, profile.webp_quality)
-        if "mp4-card" in generated_kinds:
+        source_pattern = str(frame_sequence.frame_dir / "frame_%04d.png")
+        if "av1-card" in generated_kinds:
+            codec_provenance["av1"] = encode_av1(source_pattern, av1, int(getattr(preview, "fps")), int(getattr(preview, "frames")), profile.av1, frame_root)
+        if "mp4-card" in generated_kinds and profile.mp4_bitrate_kbps:
+            encode_bitrate_mp4(source_pattern, mp4, int(getattr(preview, "fps")), int(getattr(preview, "frames")), profile, frame_root)
+            codec_provenance["h264"] = {"encoder": "libx264", "preset": profile.mp4_preset,
+                "bitrate_kbps": profile.mp4_bitrate_kbps, "two_pass": profile.mp4_two_pass,
+                "fps": out_fps, "threads": 8, "profile": "high", "level": "3.1", "refs": 4, "bframes": 3, "keyint": int(getattr(preview, "frames")) * out_fps // int(getattr(preview, "fps")), "sha256": file_sha256(mp4)}
+        elif "mp4-card" in generated_kinds:
             attempts = mp4_attempt_plan(
                 int(getattr(preview, "fps")), profile.step, profile.mp4_crf, profile.mp4_max_crf
             )
@@ -778,6 +861,8 @@ def compare_preview(
     variants = [variant("poster", poster, BUDGETS["poster"])]
     if "animated-webp-card" in generated_kinds:
         variants.append(variant("animated-webp-card", animated_webp, BUDGETS["animated_webp_card"]))
+    if "av1-card" in generated_kinds:
+        variants.append(variant("av1-card", av1, profile.av1["video_budget_bytes"]))
     if "mp4-card" in generated_kinds:
         variants.append(variant("mp4-card", mp4, profile.video_budget_bytes))
     if "webm-card" in generated_kinds:
@@ -805,6 +890,7 @@ def compare_preview(
         source_duration=getattr(preview, "frames") / getattr(preview, "fps"),
         encoded_duration=encoded_frames / out_fps,
         notes=tuple(notes),
+        codec_provenance=codec_provenance or None,
     )
 
 
@@ -928,6 +1014,8 @@ def generated_variant_kinds(profile: EncodingProfile, include_webm: bool) -> set
         raise ValueError(f"unsupported preferred media kind: {profile.preferred_kind}")
 
     kinds = {preferred}
+    if profile.av1:
+        kinds.update({"av1-card", "mp4-card"})
     if profile.compare:
         kinds.update({"animated-webp-card", "mp4-card"})
         if include_webm:
@@ -940,6 +1028,9 @@ def budgeted_variants(item: MediaComparison) -> list[MediaVariant]:
     preferred = optional_variant_for(item, preferred_variant_kind(item.preferred_kind))
     if preferred is not None:
         variants.append(preferred)
+    av1 = optional_variant_for(item, "av1-card")
+    if av1 is not None:
+        variants.append(av1)
     return variants
 
 
@@ -960,10 +1051,12 @@ def write_site_assets(
         (output_dir / item.lane / f"{item.id}.webp").unlink(missing_ok=True)
         mp4 = variant_for(item, "mp4-card")
         poster = variant_for(item, "poster")
-        for source, target in (
-            (ROOT / mp4.path, output_dir / item.lane / f"{item.id}.mp4"),
-            (ROOT / poster.path, output_dir / item.lane / f"{item.id}.poster.webp"),
-        ):
+        products = [(ROOT / mp4.path, output_dir / item.lane / f"{item.id}.mp4"),
+                    (ROOT / poster.path, output_dir / item.lane / f"{item.id}.poster.webp")]
+        av1 = optional_variant_for(item, "av1-card")
+        if av1 is not None:
+            products.append((ROOT / av1.path, output_dir / item.lane / f"{item.id}.av1.mp4"))
+        for source, target in products:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)
             copied += 1

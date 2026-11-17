@@ -93,13 +93,51 @@ def resolve_media_entry(entry: dict, profile: str = "") -> dict:
     if required_inputs:
         preview["required_inputs"] = list(required_inputs)
     card_overrides = overrides.get("card", {})
-    if not isinstance(card_overrides, dict) or set(card_overrides) - {"mp4_crf", "mp4_max_crf", "video_budget_bytes", "webp_quality"}:
+    if not isinstance(card_overrides, dict) or set(card_overrides) - {"mp4_crf", "mp4_max_crf", "video_budget_bytes", "webp_quality", "av1", "mp4_bitrate_kbps", "mp4_preset", "mp4_fps", "mp4_two_pass"}:
         raise ValueError(f"{entry_id}: invalid homepage card override fields")
     # Only explicit named-profile policy can raise the default gallery byte budget.
     preview.setdefault("card", {}).update(card_overrides)
     preview["card"].update({"fps": preview["fps"], "sample_step": 1})
+    validate_profile_codecs(entry_id, preview)
     validate_animation_media_policy(result)
     return result
+
+
+def validate_profile_codecs(entry_id: str, preview: dict) -> None:
+    """Validate the narrowly supported homepage candidate codec settings."""
+    card = preview["card"]
+    def integer(value: object, label: str, low: int, high: int) -> int:
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or int(value) != value or not low <= value <= high:
+            raise ValueError(f"{entry_id}: {label} must be a finite integer between {low} and {high}")
+        return int(value)
+    source_fps = integer(preview["fps"], "preview fps", 1, 240)
+    if "mp4_bitrate_kbps" in card:
+        integer(card["mp4_bitrate_kbps"], "mp4_bitrate_kbps", 1, 1_000_000)
+    if "mp4_preset" in card and (not isinstance(card["mp4_preset"], str) or card["mp4_preset"] not in {"ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow", "placebo"}):
+        raise ValueError(f"{entry_id}: unsupported mp4_preset")
+    if "mp4_two_pass" in card and not isinstance(card["mp4_two_pass"], bool):
+        raise ValueError(f"{entry_id}: mp4_two_pass must be boolean")
+    if card.get("mp4_two_pass") and "mp4_bitrate_kbps" not in card:
+        raise ValueError(f"{entry_id}: mp4_two_pass requires mp4_bitrate_kbps")
+    if "mp4_fps" in card:
+        fps = integer(card["mp4_fps"], "mp4_fps", 1, source_fps)
+        if source_fps % fps:
+            raise ValueError(f"{entry_id}: mp4_fps must divide capture fps")
+        card.update({"fps": fps, "sample_step": source_fps // fps})
+    av1 = card.get("av1")
+    if "av1" not in card:
+        return
+    keys = {"encoder_version", "preset", "tune", "crf", "fps", "video_budget_bytes", "temporal_filtering", "film_grain"}
+    if not isinstance(av1, dict) or set(av1) != keys:
+        raise ValueError(f"{entry_id}: av1 must specify exactly {sorted(keys)}")
+    if av1["encoder_version"] != "4.3.0":
+        raise ValueError(f"{entry_id}: AV1 requires SVT-AV1 4.3.0")
+    for key, low, high in (("preset", 0, 13), ("tune", 0, 4), ("crf", 0, 70), ("fps", 1, source_fps), ("video_budget_bytes", 1, 1_000_000_000), ("film_grain", 0, 0)):
+        av1[key] = integer(av1[key], f"av1.{key}", low, high)
+    if source_fps % av1["fps"]:
+        raise ValueError(f"{entry_id}: AV1 fps must divide capture fps")
+    if av1["temporal_filtering"] is not False:
+        raise ValueError(f"{entry_id}: AV1 temporal_filtering must be false")
 
 
 def configure_profile_paths(args: object, defaults: dict[str, tuple[Path, str]]) -> None:
