@@ -132,6 +132,7 @@ class ComparisonOutcome:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=["homepage"], default="")
     parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -250,6 +251,7 @@ def profile_for(
         entry = manifest_entries.get(preview_key)
         if entry is None:
             raise ValueError(f"{getattr(preview, 'id')}: missing manifest entry")
+        entry = gallery_media.resolve_media_entry(entry, getattr(args, "profile", ""))
         gallery_media.validate_animation_media_policy(entry)
         card = gallery_media.preview_metadata(entry).get("card") or {}
         fields.update(
@@ -402,11 +404,11 @@ def selected_previews(args: argparse.Namespace) -> list[object]:
     if args.site_video_previews:
         site_ids = {example_id for _, example_id in site_video_keys(args.manifest)}
         ids = ids & site_ids if ids else site_ids
-    elif not ids and not lanes and not args.all_animated:
+    elif not ids and not lanes and not args.all_animated and not getattr(args, "profile", ""):
         ids = set(DEFAULT_CANDIDATE_IDS)
     selected = []
     for preview in gallery_frames.collect_previews(
-        args.manifest, ROOT / "build/examples/c", ids, lanes
+        args.manifest, ROOT / "build/examples/c", ids, lanes, **({"profile": args.profile} if getattr(args, "profile", "") else {})
     ):
         if not args.all_animated and ids and getattr(preview, "id") not in ids:
             continue
@@ -1168,6 +1170,16 @@ def main() -> int:
     started_at = time.perf_counter()
     args = parse_args()
     try:
+        gallery_media.configure_profile_paths(args, {
+            "input_dir": (DEFAULT_INPUT_DIR, "animations/homepage"),
+            "output_dir": (DEFAULT_OUTPUT_DIR, "cards/homepage"),
+            "site_output_dir": (DEFAULT_SITE_OUTPUT_DIR, "assets/profiles/homepage"),
+            "frame_dir": (DEFAULT_FRAME_DIR, "frames/homepage"),
+            "frame_cache_dir": (DEFAULT_FRAME_CACHE_DIR, "cache/frames/homepage"),
+            "cache_dir": (DEFAULT_MEDIA_CACHE_DIR, "cache/cards/homepage"),
+            "report": (DEFAULT_REPORT, "reports/homepage/report.json"),
+            "html_report": (DEFAULT_HTML_REPORT, "reports/homepage/index.html"),
+        })
         jobs = gallery_workers.parse_jobs(args.jobs)
         capture_jobs = gallery_workers.parse_jobs(args.capture_jobs)
         if args.step <= 0:

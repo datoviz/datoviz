@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -44,6 +45,10 @@ class AnimatedPreview:
     motion_phase: str = ""
     manifest_input_hash: str = ""
     dataset_input_hash: str = ""
+    profile: str = ""
+    presentation: str = ""
+    presentation_amplitude_deg: float = 0.0
+    presentation_period: float = 0.0
 
     @property
     def frame_dir(self) -> Path:
@@ -65,6 +70,7 @@ def collect_previews(
     build_examples_dir: Path,
     ids: set[str],
     lanes: set[str],
+    profile: str = "",
 ) -> list[AnimatedPreview]:
     manifest = gallery_media.load_manifest(manifest_path)
     previews: list[AnimatedPreview] = []
@@ -81,6 +87,9 @@ def collect_previews(
         if lanes and lane not in lanes:
             continue
 
+        if profile and id_ not in gallery_media.HOMEPAGE_IDS:
+            continue
+        entry = gallery_media.resolve_media_entry(entry, profile)
         preview = gallery_media.preview_metadata(entry)
         if preview.get("kind") != gallery_media.ANIMATED_WEBP_KIND:
             continue
@@ -95,7 +104,7 @@ def collect_previews(
             raise ValueError(f"{id_}: media.preview frames and fps must be positive")
         if sample_stride <= 0:
             raise ValueError(f"{id_}: media.preview sample_stride must be positive")
-        if time_scale <= 0.0:
+        if not math.isfinite(time_scale) or time_scale <= 0.0:
             raise ValueError(f"{id_}: media.preview time_scale must be positive")
         if not 0 <= webp_quality <= 100:
             raise ValueError(f"{id_}: media.preview.webp_quality must be between 0 and 100")
@@ -124,6 +133,10 @@ def collect_previews(
                 motion_phase=motion["phase"],
                 manifest_input_hash=capture_manifest_hash(entry),
                 dataset_input_hash=gallery_media.prepared_dataset_fingerprint(entry),
+                profile=profile,
+                presentation=preview.get("presentation", {}).get("kind", ""),
+                presentation_amplitude_deg=float(preview.get("presentation", {}).get("amplitude_deg", 0)),
+                presentation_period=frames / fps if profile else 0.0,
             )
         )
     previews.sort(key=lambda item: (item.lane, item.id))
@@ -132,6 +145,7 @@ def collect_previews(
 
 def capture_manifest_hash(entry: dict) -> str:
     """Hash only manifest fields that can affect one preview capture."""
+    entry = gallery_media.resolve_media_entry(entry)
     motion = entry.get("motion") or {}
     payload = {
         "id": entry.get("id"),
@@ -284,6 +298,10 @@ def input_hash_for(
         preview.motion_phase,
         preview.manifest_input_hash,
         preview.dataset_input_hash,
+        preview.profile,
+        preview.presentation,
+        f"{preview.presentation_amplitude_deg:g}",
+        f"{preview.presentation_period:g}",
     )
     for field in fields:
         digest.update(field.encode("utf8"))
@@ -296,7 +314,28 @@ def input_hash_for(
         ROOT / "tools/gallery_media.py",
     ):
         _hash_file(digest, path)
+    for path in renderer_library_paths(preview.executable):
+        gallery_media._hash_path_content(digest, "renderer:" + path.name, path)
     return digest.hexdigest()
+
+
+def renderer_library_paths(executable: Path) -> tuple[Path, ...]:
+    """Find only linked Datoviz renderer libraries, excluding system dependencies."""
+    if not executable.exists():
+        return ()
+    try:
+        result = subprocess.run(["ldd", str(executable)], capture_output=True, text=True, check=False)
+    except OSError:
+        return ()
+    paths = set()
+    for line in result.stdout.splitlines():
+        if "libdatoviz" not in line or "=>" not in line:
+            continue
+        value = line.split("=>", 1)[1].strip().split(" ", 1)[0]
+        path = Path(value)
+        if path.is_absolute() and path.is_file() and path.name.startswith("libdatoviz"):
+            paths.add(path.resolve())
+    return tuple(sorted(paths))
 
 
 def cache_path(preview: AnimatedPreview, cache_dir: Path) -> Path:
@@ -367,6 +406,10 @@ def capture_sequence(preview: AnimatedPreview, frame_dir: Path) -> None:
         cmd.extend(["--preview-motion-cycles", f"{preview.motion_cycles:g}"])
         if preview.motion_phase:
             cmd.extend(["--preview-motion-phase", preview.motion_phase])
+    if preview.presentation:
+        cmd.extend(["--preview-presentation", preview.presentation,
+                    "--preview-presentation-amplitude-deg", f"{preview.presentation_amplitude_deg:g}",
+                    "--preview-presentation-period", f"{preview.presentation_period:g}"])
     subprocess.run(cmd, cwd=ROOT, env=env, check=True)
 
 

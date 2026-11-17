@@ -85,3 +85,13 @@ capacity for the separate text-first Start here grid. The current visual set is:
 2. brain volume plus transparent mesh;
 3. wind field;
 4. choropleth.
+
+## Homepage Media Profiles
+
+Homepage presentation is a derivative of the existing gallery capture pipeline, selected explicitly from `media.profiles.homepage`. Default gallery capture semantics and assets are unchanged. Resolve the selected profile once into an effective capture descriptor; capture, encoding and validation consume that descriptor. Profile output and cache namespaces must not collide with the default gallery or other profiles, and unrelated editorial or unused-profile edits must not invalidate a selected capture.
+
+Output playback time, scientific data time and presentation motion are distinct. Presentation overrides may hold a fixed pose or follow a bounded periodic sway, preserving the scenario's existing axes, pivots and registered layers. They must not rescale activity interpolation, simulation time or orbital time. A periodic presentation path must match pose and velocity at its loop boundary without duplicating the endpoint; data periodicity is validated independently. Existing default presentation behavior is retained without an override.
+
+The homepage retains muted preview playback and explicit pause controls. Loading near the viewport does not authorize offscreen playback; previews pause when outside the viewport or the document is hidden, preserve a user's pause decision, and remain static for reduced motion or data-saving preferences. Video failure or absent JavaScript leaves a useful poster and example link.
+
+Candidate generation, source commits and local review are separate from binary publication. Review evidence records exact asset hashes, source and renderer identity, selected settings, scientific timing checks and loop limitations. Only the exact manually approved assets may be published to approved destinations.

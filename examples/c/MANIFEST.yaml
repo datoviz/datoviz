@@ -3091,6 +3091,14 @@ examples:
           webp_quality: 50
           mp4_crf: 29
           webm_crf: 34
+      profiles:
+        homepage:
+          frames: 864
+          fps: 60
+          sample_stride: 1
+          presentation:
+            kind: sway
+            amplitude_deg: 12
     data:
       kind: real
     webgpu:
@@ -3685,6 +3693,13 @@ examples:
           sample_step: 1
           fps: 60
           mp4_crf: 24
+      profiles:
+        homepage:
+          frames: 864
+          fps: 60
+          sample_stride: 1
+          presentation:
+            kind: static
     data:
       kind: prepared
     webgpu:
@@ -3835,6 +3850,14 @@ examples:
           webp_quality: 1
           mp4_crf: 38
           webm_crf: 50
+      profiles:
+        homepage:
+          frames: 864
+          fps: 60
+          sample_stride: 1
+          presentation:
+            kind: sway
+            amplitude_deg: 7
     data:
       kind: prepared
     webgpu:
@@ -3916,6 +3939,13 @@ examples:
           webp_quality: 70
           mp4_crf: 26
           webm_crf: 28
+      profiles:
+        homepage:
+          frames: 864
+          fps: 60
+          sample_stride: 1
+          presentation:
+            kind: static
     data:
       kind: prepared
     webgpu:

@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
+import math
 from pathlib import Path
 import subprocess
 from typing import Iterable
@@ -30,6 +32,73 @@ LANE_TO_CATEGORY = {lane: category for category, lane in CATEGORY_TO_LANE.items(
 ANIMATED_WEBP_KIND = "animated-webp"
 CANONICAL_ANIMATION_SIZE = "1280x720"
 MP4_MAX_CRF = 40
+
+
+HOMEPAGE_PRODUCTS_ROOT = ROOT / "build/homepage-review/products"
+HOMEPAGE_IDS = frozenset({
+    "showcases_protein", "showcases_point_cloud", "showcases_cortical_activity",
+    "showcases_textured_planet",
+})
+
+
+def resolve_media_entry(entry: dict, profile: str = "") -> dict:
+    """Resolve one capture profile without mutating the source manifest entry."""
+    if profile not in {"", "homepage"}:
+        raise ValueError(f"unknown media profile {profile!r}")
+    result = copy.deepcopy(entry)
+    media = result.setdefault("media", {})
+    profiles = media.pop("profiles", {})
+    if not profile:
+        return result
+    entry_id = str(entry.get("id", ""))
+    if entry_id not in HOMEPAGE_IDS:
+        raise ValueError(f"{entry_id}: homepage profile is restricted to homepage videos")
+    if not isinstance(profiles, dict) or not isinstance(profiles.get(profile), dict):
+        raise ValueError(f"{entry_id}: missing media.profiles.{profile} mapping")
+    overrides = profiles[profile]
+    allowed = {"frames", "fps", "sample_stride", "time_scale", "presentation"}
+    unknown = set(overrides) - allowed
+    if unknown:
+        raise ValueError(f"{entry_id}: unknown homepage profile fields: {sorted(unknown)}")
+    preview = media.setdefault("preview", {})
+    for key, value in overrides.items():
+        if key == "presentation":
+            continue
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+            raise ValueError(f"{entry_id}: profile {key} must be positive and finite")
+        if key != "time_scale" and int(value) != value:
+            raise ValueError(f"{entry_id}: profile {key} must be an integer")
+        preview[key] = value
+    presentation = overrides.get("presentation", {})
+    if not isinstance(presentation, dict) or set(presentation) - {"kind", "amplitude_deg"}:
+        raise ValueError(f"{entry_id}: invalid profile presentation fields")
+    kind = presentation.get("kind", "static")
+    amplitude = presentation.get("amplitude_deg", 0)
+    if kind not in {"static", "sway"}:
+        raise ValueError(f"{entry_id}: presentation kind must be static or sway")
+    if isinstance(amplitude, bool) or not isinstance(amplitude, (int, float)) or not math.isfinite(amplitude) or amplitude < 0:
+        raise ValueError(f"{entry_id}: presentation amplitude must be nonnegative and finite")
+    preview["presentation"] = {"kind": kind, "amplitude_deg": amplitude}
+    # Homepage cards retain the existing encoding quality and duration policy.
+    preview.setdefault("card", {}).update({"fps": preview["fps"], "sample_step": 1})
+    validate_animation_media_policy(result)
+    return result
+
+
+def configure_profile_paths(args: object, defaults: dict[str, tuple[Path, str]]) -> None:
+    """Keep every named-profile CLI artifact in its isolated product tree."""
+    profile = getattr(args, "profile", "")
+    if not profile:
+        return
+    if profile != "homepage":
+        raise ValueError(f"unknown media profile {profile!r}")
+    for name, (default, relative) in defaults.items():
+        path = getattr(args, name)
+        if path == default:
+            path = HOMEPAGE_PRODUCTS_ROOT / relative
+        if not path.resolve().is_relative_to(HOMEPAGE_PRODUCTS_ROOT.resolve()):
+            raise ValueError(f"--{name.replace('_', '-')} with --profile must be within {HOMEPAGE_PRODUCTS_ROOT}")
+        setattr(args, name, path)
 
 
 def prepared_dataset_paths(entry: dict) -> tuple[str, ...]:

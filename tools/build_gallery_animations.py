@@ -40,6 +40,7 @@ class AnimationResult:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=["homepage"], default="")
     parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument("--build-examples-dir", type=Path, default=DEFAULT_BUILD_EXAMPLES_DIR)
     parser.add_argument("--frame-dir", type=Path, default=DEFAULT_FRAME_DIR)
@@ -273,10 +274,17 @@ def main() -> int:
     ids = split_values(args.id)
     lanes = split_values(args.lane)
     try:
+        gallery_media.configure_profile_paths(args, {
+            "frame_dir": (DEFAULT_FRAME_DIR, "frames/homepage"),
+            "frame_cache_dir": (DEFAULT_FRAME_CACHE_DIR, "cache/frames/homepage"),
+            "output_dir": (DEFAULT_OUTPUT_DIR, "animations/homepage"),
+            "cache_dir": (DEFAULT_CACHE_DIR, "cache/animations/homepage"),
+        })
         manifest = gallery_media.load_manifest(args.manifest)
-        previews = collect_previews(args.manifest, args.build_examples_dir, ids, lanes)
+        profile = getattr(args, "profile", "")
+        previews = collect_previews(args.manifest, args.build_examples_dir, ids, lanes, **({"profile": profile} if profile else {}))
         previews = select_owned_previews(
-            previews, manifest, ids, args.include_video_previews
+            previews, manifest, ids, args.include_video_previews or bool(profile)
         )
         if not 0 <= args.quality <= 100:
             raise ValueError("--quality must be between 0 and 100")
