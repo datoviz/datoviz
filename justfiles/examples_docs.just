@@ -335,7 +335,7 @@ docs-api-check: check-api-docs
 docs-assets:
     @python3 tools/build_gallery_webp.py --output-dir build/gallery-webp/v0.4 --require-image-dir --quiet-missing
     @python3 tools/gen_start_thumbs.py --output-dir build/gallery-webp/v0.4/thumbs
-    @python3 tools/docs_asset_stage.py --profile local --gallery-products build/gallery-webp/v0.4 --homepage-products build/homepage-review/products/assets/profiles/homepage --stage-root build/docs-assets/local
+    @python3 tools/docs_asset_stage.py --profile local --gallery-products build/gallery-webp/v0.4 --homepage-products build/homepage-review/selected-homepage-media --stage-root build/docs-assets/local
 #
 
 docs-video-assets-status: docs-assets
@@ -474,7 +474,7 @@ publish confirm='no' source_branch='main' seed_legacy='no':
     fi
 
     site_repo=${DATOVIZ_SITE_REPO:-../datoviz.github.io}
-    if [ ! -d "$site_repo/.git" ]; then
+    if [ ! -e "$site_repo/.git" ]; then
         echo "Website checkout not found at '$site_repo'." >&2
         exit 1
     fi
@@ -482,6 +482,7 @@ publish confirm='no' source_branch='main' seed_legacy='no':
         echo "Refusing docs publish with a dirty website checkout." >&2
         exit 1
     fi
+    python3 tools/homepage_media.py --publication
     git -C "$site_repo" pull --ff-only
 
     just wasm-scene-build-if-needed
@@ -499,11 +500,12 @@ publish confirm='no' source_branch='main' seed_legacy='no':
         --strict
     python3 tools/hydrate_docs_video_assets.py --capture-profile homepage --strict
     python3 tools/check_gallery_media_freshness.py --profile homepage
-    python3 tools/docs_asset_stage.py --profile publish --gallery-products build/gallery-webp/v0.4 --homepage-products build/homepage-review/products/assets/profiles/homepage --stage-root build/docs-assets/publish
+    python3 tools/docs_asset_stage.py --profile publish --gallery-products build/gallery-webp/v0.4 --homepage-products build/homepage-review/selected-homepage-media --stage-root build/docs-assets/publish
 
     deploy_tmp=$(mktemp -d)
     trap 'rm -rf "$deploy_tmp"' EXIT
-    DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/publish uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
+    homepage_asset_base=$(python3 -c 'import json; print(json.load(open("spec/docs/homepage-media.json"))["publication"]["asset_base_url"])')
+    DATOVIZ_HOMEPAGE_ASSET_BASE_URL="$homepage_asset_base" DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/publish uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
         mkdocs build --strict --site-dir "$deploy_tmp/built"
     just wasm-scene-export-check \
         "$deploy_tmp/built/build-wasm-scene/wasm/datoviz_wasm_scene.mjs"

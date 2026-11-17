@@ -22,6 +22,8 @@ CURDIR = Path(__file__).parent
 ROOT = CURDIR.parent
 ROOT_DOCS = ('ARCHITECTURE', 'BUILD', 'CONTRIBUTING', 'MAINTAINERS')
 ASSET_STAGE_ENV = 'DATOVIZ_DOCS_ASSET_STAGE'
+HOMEPAGE_ASSET_BASE_ENV = 'DATOVIZ_HOMEPAGE_ASSET_BASE_URL'
+HOMEPAGE_GALLERY_PREFIX = 'assets/gallery/v0.4/profiles/homepage/'
 # Util functions
 # -------------------------------------------------------------------------------------------------
 
@@ -99,6 +101,54 @@ def asset_stage_root():
     return stage
 
 
+def homepage_asset_base_url():
+    """Return an optional HTTPS origin directory for immutable homepage products."""
+    value = os.environ.get(HOMEPAGE_ASSET_BASE_ENV)
+    if value is None:
+        return None
+    parsed = urlsplit(value)
+    if (parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password
+            or parsed.query or parsed.fragment or any(character.isspace() for character in value)
+            or '\\' in value):
+        raise ValueError(f"{HOMEPAGE_ASSET_BASE_ENV} must be an HTTPS URL without credentials, query or fragment")
+    return value.rstrip('/')
+
+
+def rewrite_homepage_asset_urls(output, config):
+    """Externalize only authored homepage media attributes; leave other site URLs alone."""
+    base = homepage_asset_base_url()
+    if base is None:
+        return output
+    mount = urlsplit(config['site_url']).path.rstrip('/')
+
+    def rewrite_url(value):
+        parsed = urlsplit(value)
+        if parsed.scheme or parsed.netloc or parsed.query or parsed.fragment:
+            return value
+        path = parsed.path
+        if mount and path.startswith(mount + '/'):
+            path = path[len(mount):]
+        path = re.sub(r'^(?:\.\./|\./)*', '', path.lstrip('/'))
+        prefix = HOMEPAGE_GALLERY_PREFIX + 'showcases/'
+        if not path.startswith(prefix):
+            return value
+        name = path[len(prefix):]
+        if not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]*\.(?:mp4|webp)', name):
+            return value
+        return base + '/' + name
+
+    def attribute(match):
+        value = match.group(3)
+        if match.group(1).lower() == 'srcset':
+            value = re.sub(r'(^|,)(\s*)([^,\s]+)',
+                           lambda item: item.group(1) + item.group(2) + rewrite_url(item.group(3)), value)
+        else:
+            value = rewrite_url(value)
+        return match.group(1) + '=' + match.group(2) + value + match.group(2)
+
+    return re.sub(r"\b(srcset|src|poster|data-src)=([\"'])(.*?)\2", attribute, output, flags=re.IGNORECASE)
+
+
 def gallery_output_path():
     """Return the staged gallery directory for the current documentation build."""
     return asset_stage_root() / 'gallery/v0.4'
@@ -131,6 +181,16 @@ def copy_webgpu_live_assets(site_dir):
 
 def copy_gallery_webp_assets(site_dir):
     site = Path(site_dir)
+    if homepage_asset_base_url() is not None:
+        source = gallery_output_path()
+        destination = site / 'assets/gallery/v0.4'
+        if source.resolve() == destination.resolve():
+            raise ValueError("external homepage publication requires a separate gallery stage")
+        if destination.exists():
+            shutil.rmtree(destination)
+        shutil.copytree(source, destination, ignore=lambda directory, names:
+                        ['homepage'] if Path(directory) == source / 'profiles' and 'homepage' in names else [])
+        return
     copy_tree_if_exists(
         gallery_output_path(), site / 'assets/gallery/v0.4', 'gallery WebP asset'
     )
@@ -155,6 +215,10 @@ def add_generated_tree(files, config, src, dst_prefix, label='asset'):
         if not path.is_file():
             continue
         rel = path.relative_to(src_path).as_posix()
+        if (dst_prefix.rstrip('/') == 'assets/gallery/v0.4'
+                and homepage_asset_base_url() is not None
+                and rel.startswith('profiles/homepage/')):
+            continue
         files.append(
             File.generated(
                 config,
@@ -230,6 +294,7 @@ def on_page_markdown(markdown, page, config, files):
 
 def on_post_page(output, config, **kwargs):
     """Keep authored root-relative media and redirects inside a mounted site."""
+    output = rewrite_homepage_asset_urls(output, config)
     prefix = urlsplit(config['site_url']).path.rstrip('/')
     if not prefix:
         return output
