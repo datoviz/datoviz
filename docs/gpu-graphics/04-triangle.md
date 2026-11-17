@@ -76,22 +76,13 @@ static const char* FRAGMENT_GLSL =
 The full path for this draw is:
 
 ```mermaid
-flowchart LR
-    A[gl_VertexIndex] --> B[Vertex shader]
+flowchart TD
+    A[gl_VertexIndex] --> B[Vertex shader: your code]
     B --> C[Primitive assembly]
     C --> D[Rasterization and interpolation]
-    D --> E[Fragment shader]
+    D --> E[Fragment shader: your code]
     E --> F[Color and depth operations]
     F --> G[Color attachment]
-    subgraph Programmable stages
-        B
-        E
-    end
-    subgraph Fixed-function stages
-        C
-        D
-        F
-    end
 ```
 
 The programmable stages run code you supply. The fixed-function stages follow state you configure, such as topology, viewport, depth testing, and blending. A **graphics pipeline** packages the shaders and most of that state into one device object. A command later binds it, and the following draws use that whole configuration.

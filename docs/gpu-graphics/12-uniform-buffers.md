@@ -21,16 +21,11 @@ Think of the layout as a function signature, the set as the bound arguments, and
 C and GLSL must agree on the set number, the binding number, and the descriptor type, and the C stage flags must include the stage that reads it. `DvzSlots`, the pipeline-layout wrapper from chapter 4, holds both the descriptor set layout and the push-constant range.
 
 ```mermaid
-flowchart LR
-    A[C Material value] -->|upload copies bytes| B[Uniform buffer]
-    C[DvzSlots declarations] --> D[Pipeline layout]
-    D --> E[Set layout 0: uniform at binding 0]
-    D --> F[Vertex push range: MVP]
-    E -->|layout-compatible| G[Populated descriptor set 0]
-    B -->|descriptor refers to range| G
-    G -->|bind before draw| H[Fragment shader]
-    I[GLSL set 0 binding 0] --> H
-    F -->|push before draw| J[Vertex shader]
+flowchart TD
+    M[C Material] -->|upload copies bytes| U[Uniform buffer]
+    U -->|referenced by| S[Descriptor set 0, binding 0]
+    S -->|bound before the draw| F[Fragment shader]
+    P[MVP matrices] -->|push constants| V[Vertex shader]
 ```
 
 ## Define an aligned material

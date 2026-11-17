@@ -72,7 +72,7 @@ One position passes through several coordinate spaces, each suited to a differen
 - **Normalized device coordinates** (NDC): clip coordinates divided by `w`. The viewport maps them to framebuffer pixels.
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Object space] -->|model| B[World space]
     B -->|view| C[View space]
     C -->|projection| D[Clip space]

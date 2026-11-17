@@ -117,7 +117,7 @@ A buffer is a linear range of bytes. An **image** adds dimensions, a texel forma
 The texture uses optimal tiling, a GPU-private pixel order the CPU can't write directly; hence the **staging buffer**, a temporary host-visible buffer the CPU fills and the GPU copies from.
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[CPU RGBA array] -->|synchronous upload| B[Mapped staging buffer]
     B -->|recorded GPU copy| C[Optimally tiled image]
     C -->|layout and visibility barrier| D[Shader-readable image]
