@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import compare_gallery_media as comparison_media
+import check_docs_video_assets
 import gallery_frames
 import gallery_media
 import gallery_workers
@@ -200,10 +201,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--product-cache-dir', type=Path, default=DEFAULT_PRODUCT_CACHE_DIR)
     parser.add_argument('--frame-dir', type=Path, default=DEFAULT_FRAME_DIR)
     parser.add_argument('--frame-cache-dir', type=Path, default=DEFAULT_FRAME_CACHE_DIR)
-    parser.add_argument('--staging-root', type=Path, default=DEFAULT_STAGING_ROOT)
+    parser.add_argument('--staging-root', type=Path)
     parser.add_argument('--availability-manifest', type=Path)
-    parser.add_argument('--watched-sentinel', type=Path, default=DEFAULT_WATCHED_SENTINEL)
-    parser.add_argument('--lock-dir', type=Path, default=DEFAULT_LOCK_DIR)
+    parser.add_argument('--watched-sentinel', type=Path)
+    parser.add_argument('--lock-dir', type=Path)
     parser.add_argument(
         '--stale-lock-seconds',
         type=float,
@@ -228,10 +229,14 @@ def parse_args() -> argparse.Namespace:
         args.product_cache_dir = root / 'cache/cards/homepage'
         args.frame_dir = root / 'frames/homepage'
         args.frame_cache_dir = root / 'cache/frames/homepage'
-        args.staging_root = root / 'assets/profiles/homepage'
-        args.availability_manifest = root / 'assets/local-video-assets.json'
-        args.watched_sentinel = root / '.homepage-video-assets.ready'
-        args.lock_dir = root / '.homepage-hydration.lock'
+        args.staging_root = args.staging_root or root / 'assets/profiles/homepage'
+        args.availability_manifest = args.availability_manifest or root / 'assets/local-video-assets.json'
+        args.watched_sentinel = args.watched_sentinel or root / '.homepage-video-assets.ready'
+        args.lock_dir = args.lock_dir or root / '.homepage-hydration.lock'
+    else:
+        args.staging_root = args.staging_root or DEFAULT_STAGING_ROOT
+        args.watched_sentinel = args.watched_sentinel or DEFAULT_WATCHED_SENTINEL
+        args.lock_dir = args.lock_dir or DEFAULT_LOCK_DIR
     return args
 
 
@@ -471,9 +476,18 @@ def hydrate(args: argparse.Namespace, lease: DirectoryLease) -> HydrationResult:
         if args.availability_manifest is not None
         else args.staging_root / 'local-video-assets.json'
     )
+    # Retain only opposite-namespace URLs backed by declared nonempty staged files.
+    # The current namespace still exposes only this worker's verified successes.
+    served_root = args.staging_root
+    if getattr(args, 'capture_profile', '') and served_root.parts[-2:] == ('profiles', 'homepage'):
+        served_root = served_root.parent.parent
+    opposite_profile = '' if getattr(args, 'capture_profile', '') else 'homepage'
+    opposite, _, opposite_expected = check_docs_video_assets.namespace_video_assets(
+        manifest, served_root, opposite_profile
+    )
     payload: dict[str, object] = {
-        'available': sorted(available),
-        'expected': len(expected_keys),
+        'available': sorted(set(available + opposite)),
+        'expected': len(expected_keys) + opposite_expected,
     }
     if failures:
         payload['failed'] = sorted({failure.label for failure in failures})

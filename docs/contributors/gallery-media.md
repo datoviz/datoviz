@@ -50,4 +50,6 @@ Presentation motion is separate from scientific data playback. A bounded sinusoi
 
 Capture at the existing native 60 FPS; the existing encoding ladder may downsample to 30 FPS while preserving duration. Keep canonical 1280×720 dimensions and the existing video budget. Profile settings, capture inputs, renderer identity and encoding inputs participate in freshness checks. Use `python3 tools/check_gallery_media_freshness.py --profile homepage` for the selected products.
 
+The standard `just docs-video-assets` and `just serve` workflows hydrate both gallery and homepage namespaces into one local availability inventory. The guarded publish recipe generates and validates the profile before staging. Explicit hydration stage and manifest paths are honored.
+
 Supply the verified profile subtree with `tools/docs_asset_stage.py --homepage-products build/homepage-review/products/assets/profiles/homepage` alongside the normal gallery products. Publish stages require homepage videos and posters; local stages can show existing gallery posters until the profile is generated, while hermetic builds use generated stand-ins. Do not put experimental profile products into the normal watched gallery directory. Review generation and local preview do not approve canonical promotion or public deployment.

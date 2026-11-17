@@ -40,11 +40,35 @@ def available_video_urls(
     available = []
     missing = []
     for lane, example_id in expected:
-        if (output_dir / lane / f'{example_id}.mp4').is_file():
+        path = output_dir / lane / f'{example_id}.mp4'
+        if path.is_file() and path.stat().st_size:
             available.append(f'/assets/gallery/v0.4/{lane}/{example_id}.mp4')
         else:
             missing.append(f'{lane}/{example_id}')
     return available, missing
+
+
+def namespace_video_assets(manifest: dict, output_dir: Path, profile: str = '') -> tuple[list[str], list[str], int]:
+    """Discover declared, nonempty videos in one served gallery namespace."""
+    if profile:
+        from docs_asset_stage import homepage_keys
+        expected = homepage_keys(manifest)
+        directory = output_dir / 'profiles/homepage'
+    else:
+        expected = expected_video_assets(manifest)
+        directory = output_dir
+    available, missing = available_video_urls(expected, directory)
+    if profile:
+        available = [url.replace('/v0.4/', '/v0.4/profiles/homepage/') for url in available]
+        missing = [f'profiles/homepage/{label}' for label in missing]
+    return available, missing, len(expected)
+
+
+def combined_video_assets(manifest: dict, output_dir: Path) -> tuple[list[str], list[str], int]:
+    """Rebuild browser availability from both namespaces, never from stale JSON."""
+    default = namespace_video_assets(manifest, output_dir)
+    homepage = namespace_video_assets(manifest, output_dir, 'homepage')
+    return sorted(default[0] + homepage[0]), default[1] + homepage[1], default[2] + homepage[2]
 
 
 def write_availability_manifest(path: Path, available: list[str], expected_count: int) -> None:
@@ -58,15 +82,15 @@ def main() -> int:
     """Write availability metadata and report missing local MP4 previews."""
     args = parse_args()
     manifest = gallery_media.load_manifest(args.manifest)
+    output_dir = args.output_dir
+    availability_manifest = args.availability_manifest
     if getattr(args, "capture_profile", ""):
-        from docs_asset_stage import homepage_keys
-        expected = homepage_keys(manifest)
-        available, missing = available_video_urls(expected, args.output_dir / 'profiles/homepage')
-        available = [url.replace('/v0.4/', '/v0.4/profiles/homepage/') for url in available]
-    else:
-        expected = expected_video_assets(manifest)
-        available, missing = available_video_urls(expected, args.output_dir)
-    write_availability_manifest(args.availability_manifest, available, len(expected))
+        if output_dir == DEFAULT_OUTPUT_DIR:
+            output_dir = gallery_media.HOMEPAGE_PRODUCTS_ROOT / 'assets'
+        if availability_manifest == DEFAULT_AVAILABILITY_MANIFEST:
+            availability_manifest = output_dir / 'local-video-assets.json'
+    available, missing, expected_count = combined_video_assets(manifest, output_dir)
+    write_availability_manifest(availability_manifest, available, expected_count)
     if missing:
         print(
             f'WARNING: {len(missing)} gallery MP4 preview(s) are missing; '
@@ -74,7 +98,7 @@ def main() -> int:
             'Posters will be shown until generation finishes.'
         )
     else:
-        print(f'Local gallery MP4 previews: {len(available)}/{len(expected)} available.')
+        print(f'Local gallery MP4 previews: {len(available)}/{expected_count} available.')
     return 0
 
 

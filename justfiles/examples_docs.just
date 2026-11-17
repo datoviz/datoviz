@@ -335,7 +335,7 @@ docs-api-check: check-api-docs
 docs-assets:
     @python3 tools/build_gallery_webp.py --output-dir build/gallery-webp/v0.4 --require-image-dir --quiet-missing
     @python3 tools/gen_start_thumbs.py --output-dir build/gallery-webp/v0.4/thumbs
-    @python3 tools/docs_asset_stage.py --profile local --gallery-products build/gallery-webp/v0.4 --stage-root build/docs-assets/local
+    @python3 tools/docs_asset_stage.py --profile local --gallery-products build/gallery-webp/v0.4 --homepage-products build/homepage-review/products/assets/profiles/homepage --stage-root build/docs-assets/local
 #
 
 docs-video-assets-status: docs-assets
@@ -345,6 +345,7 @@ docs-video-assets-status: docs-assets
 docs-video-assets:
     @just docs-assets
     @python3 tools/hydrate_docs_video_assets.py --staging-root build/docs-assets/local/gallery/v0.4 --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json --watched-sentinel build/docs-assets/local/.gallery-video-assets.ready --strict
+    @python3 tools/hydrate_docs_video_assets.py --capture-profile homepage --staging-root build/docs-assets/local/gallery/v0.4/profiles/homepage --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json --watched-sentinel build/docs-assets/local/.gallery-video-assets.ready --strict
 #
 
 serve: docs-video-assets-status wasm-scene-build-if-needed
@@ -427,7 +428,12 @@ serve: docs-video-assets-status wasm-scene-build-if-needed
             --staging-root build/docs-assets/local/gallery/v0.4 \
             --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json \
             --watched-sentinel build/docs-assets/local/.gallery-video-assets.ready \
-            > build/docs-video-assets.log 2>&1; then
+            > build/docs-video-assets.log 2>&1 && \
+            python3 tools/hydrate_docs_video_assets.py --capture-profile homepage \
+                --staging-root build/docs-assets/local/gallery/v0.4/profiles/homepage \
+                --availability-manifest build/docs-assets/local/gallery/v0.4/local-video-assets.json \
+                --watched-sentinel build/docs-assets/local/.gallery-video-assets.ready \
+                >> build/docs-video-assets.log 2>&1; then
             echo "Local gallery video hydration finished; the preview will reload automatically."
         else
             echo "WARNING: local gallery video hydration failed; see build/docs-video-assets.log." >&2
@@ -491,7 +497,9 @@ publish confirm='no' source_branch='main' seed_legacy='no':
         --availability-manifest build/docs-assets/publish-video-status.json \
         --watched-sentinel build/docs-assets/.publish-video-assets.ready \
         --strict
-    python3 tools/docs_asset_stage.py --profile publish --gallery-products build/gallery-webp/v0.4 --stage-root build/docs-assets/publish
+    python3 tools/hydrate_docs_video_assets.py --capture-profile homepage --strict
+    python3 tools/check_gallery_media_freshness.py --profile homepage
+    python3 tools/docs_asset_stage.py --profile publish --gallery-products build/gallery-webp/v0.4 --homepage-products build/homepage-review/products/assets/profiles/homepage --stage-root build/docs-assets/publish
 
     deploy_tmp=$(mktemp -d)
     trap 'rm -rf "$deploy_tmp"' EXIT

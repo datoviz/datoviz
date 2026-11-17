@@ -267,3 +267,63 @@ def test_optional_failure_keeps_existing_poster_and_main_is_soft_by_default(
 
     args.strict = True
     assert hydration.main() == 1
+
+
+def test_profile_parse_preserves_explicit_served_stage_and_shared_sentinel(tmp_path, monkeypatch):
+    stage = tmp_path / 'gallery/profiles/homepage'
+    availability = tmp_path / 'gallery/local-video-assets.json'
+    # Explicitly passing the ordinary default sentinel must also be respected.
+    sentinel = hydration.DEFAULT_WATCHED_SENTINEL
+    monkeypatch.setattr(sys, 'argv', ['hydrate', '--capture-profile', 'homepage',
+        '--staging-root', str(stage), '--availability-manifest', str(availability),
+        '--watched-sentinel', str(sentinel)])
+    args = hydration.parse_args()
+    assert args.staging_root == stage
+    assert args.availability_manifest == availability
+    assert args.watched_sentinel == sentinel
+    assert args.product_dir == hydration.gallery_media.HOMEPAGE_PRODUCTS_ROOT / 'cards/homepage'
+    assert args.frame_dir == hydration.gallery_media.HOMEPAGE_PRODUCTS_ROOT / 'frames/homepage'
+
+
+def test_profile_parse_without_destinations_is_isolated(tmp_path, monkeypatch):
+    monkeypatch.setattr(sys, 'argv', ['hydrate', '--capture-profile', 'homepage'])
+    args = hydration.parse_args()
+    root = hydration.gallery_media.HOMEPAGE_PRODUCTS_ROOT
+    assert args.staging_root == root / 'assets/profiles/homepage'
+    assert args.availability_manifest == root / 'assets/local-video-assets.json'
+    assert args.watched_sentinel == root / '.homepage-video-assets.ready'
+
+
+@pytest.mark.parametrize("external_report", [False, True])
+def test_sequential_default_and_profile_hydration_share_verified_availability(tmp_path, monkeypatch, external_report):
+    args = make_args(tmp_path)
+    served_root = args.staging_root
+    args.availability_manifest = (tmp_path / 'reports/video-status.json'
+                                  if external_report else served_root / 'local-video-assets.json')
+    manifest = {'examples': [{'id': 'video', 'category': 'showcase', 'media': {
+        'preview': {'kind': 'animated-webp', 'card': {'preferred': 'video-mp4'}},
+        'profiles': {'homepage': {}}}}]}
+    preview = type('Preview', (), {'id': 'video', 'lane': 'showcases'})()
+    product = comparison(tmp_path)
+    monkeypatch.setattr(hydration.gallery_media, 'load_manifest', lambda unused: manifest)
+    monkeypatch.setattr(hydration.comparison_media, 'selected_previews', lambda unused: [preview])
+    monkeypatch.setattr(hydration, 'prepare_preview', lambda item, *unused: hydration.PreparedPreview(item, object(), object()))
+    monkeypatch.setattr(hydration.comparison_media, 'toolchain_fingerprint', lambda: 'tools')
+    monkeypatch.setattr(hydration, 'ensure_product', lambda *unused: hydration.ProductOutcome(product, True))
+    monkeypatch.setattr(hydration, 'ROOT', tmp_path)
+    served_root.mkdir(parents=True)
+    args.availability_manifest.parent.mkdir(parents=True, exist_ok=True)
+    args.availability_manifest.write_text(json.dumps({'available': ['/stale.mp4']}))
+    for profile in ('', 'homepage', ''):
+        args.capture_profile = profile
+        args.staging_root = served_root / 'profiles/homepage' if profile else served_root
+        with hydration.DirectoryLease(args.lock_dir, 3600) as lease:
+            hydration.hydrate(args, lease)
+    payload = json.loads(args.availability_manifest.read_text())
+    assert payload == {'available': [
+        '/assets/gallery/v0.4/profiles/homepage/showcases/video.mp4',
+        '/assets/gallery/v0.4/showcases/video.mp4'], 'expected': 2}
+    (served_root / 'profiles/homepage/showcases/video.mp4').unlink()
+    with hydration.DirectoryLease(args.lock_dir, 3600) as lease:
+        hydration.hydrate(args, lease)
+    assert json.loads(args.availability_manifest.read_text())['available'] == ['/assets/gallery/v0.4/showcases/video.mp4']

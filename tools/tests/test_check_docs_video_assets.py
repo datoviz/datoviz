@@ -66,3 +66,46 @@ def test_main_warns_without_failing_when_mp4_assets_are_missing(
     assert check.main() == 0
     assert 'WARNING: 1 gallery MP4 preview(s) are missing' in capsys.readouterr().out
     assert json.loads(availability.read_text(encoding='utf8'))['available'] == []
+
+
+def test_default_checker_discovers_both_namespaces_and_ignores_stale_json(tmp_path, monkeypatch):
+    manifest = {'examples': [{'id': 'video', 'category': 'showcase', 'media': {
+        'preview': {'kind': 'animated-webp', 'card': {'preferred': 'video-mp4'}},
+        'profiles': {'homepage': {}}}}]}
+    for namespace in ('', 'profiles/homepage/'):
+        path = tmp_path / f'{namespace}showcases/video.mp4'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b'video')
+    availability = tmp_path / 'local-video-assets.json'
+    availability.write_text(json.dumps({'available': ['/stale.mp4']}))
+    args = type('Args', (), {'manifest': tmp_path / 'manifest', 'output_dir': tmp_path,
+                             'availability_manifest': availability})()
+    monkeypatch.setattr(check, 'parse_args', lambda: args)
+    monkeypatch.setattr(check.gallery_media, 'load_manifest', lambda unused: manifest)
+    assert check.main() == 0
+    payload = json.loads(availability.read_text())
+    assert payload == {'available': [
+        '/assets/gallery/v0.4/profiles/homepage/showcases/video.mp4',
+        '/assets/gallery/v0.4/showcases/video.mp4'], 'expected': 2}
+    (tmp_path / 'profiles/homepage/showcases/video.mp4').write_bytes(b'')
+    assert check.main() == 0
+    assert json.loads(availability.read_text())['available'] == ['/assets/gallery/v0.4/showcases/video.mp4']
+
+
+def test_profile_checker_default_outputs_remain_in_product_tree(tmp_path, monkeypatch):
+    root = tmp_path / 'products'
+    path = root / 'assets/profiles/homepage/showcases/video.mp4'
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b'video')
+    manifest = {'examples': [{'id': 'video', 'category': 'showcase', 'media': {
+        'preview': {'kind': 'animated-webp', 'card': {'preferred': 'video-mp4'}},
+        'profiles': {'homepage': {}}}}]}
+    args = type('Args', (), {'capture_profile': 'homepage', 'manifest': tmp_path / 'manifest',
+        'output_dir': check.DEFAULT_OUTPUT_DIR,
+        'availability_manifest': check.DEFAULT_AVAILABILITY_MANIFEST})()
+    monkeypatch.setattr(check, 'parse_args', lambda: args)
+    monkeypatch.setattr(check.gallery_media, 'load_manifest', lambda unused: manifest)
+    monkeypatch.setattr(check.gallery_media, 'HOMEPAGE_PRODUCTS_ROOT', root)
+    assert check.main() == 0
+    payload = json.loads((root / 'assets/local-video-assets.json').read_text())
+    assert payload['available'] == ['/assets/gallery/v0.4/profiles/homepage/showcases/video.mp4']
