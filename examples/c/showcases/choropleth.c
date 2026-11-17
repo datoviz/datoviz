@@ -750,7 +750,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
         goto fail;
 
     dvz_fprintf(
-        stderr, "choropleth: %u regions, %u rings, %u points from %s\n",
+        stdout, "choropleth: %u regions, %u rings, %u points from %s\n",
         state->bundle.region_count, state->bundle.ring_count, state->bundle.point_count,
         state->bundle.path);
 

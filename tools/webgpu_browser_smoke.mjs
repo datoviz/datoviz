@@ -41,6 +41,9 @@ const CAPTURE_DEVICE_SCALE_FACTOR = 1;
 const routeFilterArgument = process.argv.find((argument) => argument.startsWith('--route='));
 const routeFilter = routeFilterArgument?.slice('--route='.length) ?? null;
 const headed = process.argv.includes('--headed');
+const requireRendering = process.argv.includes('--require-render');
+const gpuBackendArgument = process.argv.find((argument) => argument.startsWith('--gpu-backend='));
+const gpuBackend = gpuBackendArgument?.slice('--gpu-backend='.length) ?? 'default';
 
 function useColor() {
   if (process.env.FORCE_COLOR !== undefined && process.env.FORCE_COLOR !== '0') return true;
@@ -82,7 +85,7 @@ function listen(server, port = 0) {
   });
 }
 
-async function startStaticServer() {
+export async function startStaticServer() {
   const server = createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://127.0.0.1');
@@ -132,7 +135,11 @@ async function waitForJson(url, timeoutMs = 10000) {
   throw lastError ?? new Error(`timed out waiting for ${url}`);
 }
 
-async function startChrome() {
+export async function startChrome() {
+  requireOk(['default', 'vulkan'].includes(gpuBackend), `unknown GPU backend: ${gpuBackend}`);
+  // Opt in on Linux hosts where the default ANGLE path cannot present WebGPU canvases.
+  const backendArgs = gpuBackend === 'vulkan'
+    ? ['--use-angle=vulkan', '--enable-features=Vulkan'] : [];
   const userDataDir = await mkdtemp(join(tmpdir(), 'datoviz-webgpu-smoke-'));
   const debugServer = createServer();
   const debugPort = await listen(debugServer);
@@ -146,6 +153,7 @@ async function startChrome() {
     '--disable-background-networking',
     '--disable-gpu-sandbox',
     '--enable-unsafe-webgpu',
+    ...backendArgs,
     'about:blank',
   ];
   if (!headed) {
@@ -158,17 +166,39 @@ async function startChrome() {
     stderr += chunk.toString();
   });
 
+  let browser;
+  let deadline;
   try {
-    await waitForJson(`http://127.0.0.1:${debugPort}/json/version`);
+    const version = await waitForJson(`http://127.0.0.1:${debugPort}/json/version`);
+    browser = new CdpPage(version.webSocketDebuggerUrl);
+    const initializeGpu = async () => {
+      await new Promise((accept, reject) => {
+        browser.ws.addEventListener('open', accept, { once: true });
+        browser.ws.addEventListener('error', reject, { once: true });
+      });
+      // Initialize and record the GPU process before a headless page requests its adapter.
+      return await browser.send('SystemInfo.getInfo');
+    };
+    const systemInfo = await Promise.race([
+      initializeGpu(),
+      new Promise((_, reject) => {
+        deadline = setTimeout(() => reject(new Error('Chrome GPU initialization timed out')), 15000);
+      }),
+    ]);
+    return { chrome, debugPort, userDataDir, getStderr: () => stderr,
+      args: chromeArgs, version, systemInfo };
   } catch (error) {
     chrome.kill('SIGTERM');
-    throw new Error(`failed to start Chrome CDP: ${error.message}\n${stderr}`);
+    await waitForProcessExit(chrome);
+    await removeWithRetry(userDataDir);
+    throw new Error(`failed to initialize Chrome CDP/GPU: ${error.message}\n${stderr}`);
+  } finally {
+    clearTimeout(deadline);
+    browser?.close();
   }
-
-  return { chrome, debugPort, userDataDir };
 }
 
-async function waitForProcessExit(process, timeoutMs = 5000) {
+export async function waitForProcessExit(process, timeoutMs = 5000) {
   if (process.exitCode !== null || process.signalCode !== null) {
     return;
   }
@@ -181,7 +211,7 @@ async function waitForProcessExit(process, timeoutMs = 5000) {
   });
 }
 
-async function removeWithRetry(path, attempts = 20) {
+export async function removeWithRetry(path, attempts = 20) {
   let lastError = null;
   for (let i = 0; i < attempts; i++) {
     try {
@@ -300,7 +330,8 @@ class CdpPage {
       returnByValue: true,
     });
     if (result.exceptionDetails !== undefined) {
-      throw new Error(result.exceptionDetails.text ?? 'Runtime.evaluate failed');
+      throw new Error(result.exceptionDetails.exception?.description ??
+        result.exceptionDetails.text ?? 'Runtime.evaluate failed');
     }
     return result.result.value;
   }
@@ -563,7 +594,7 @@ async function smokeFixedDesignHiDpi(page, path, screenshotPath) {
   return metrics;
 }
 
-async function createPage(debugPort) {
+export async function createPage(debugPort) {
   const response = await fetch(`http://127.0.0.1:${debugPort}/json/new?about:blank`, {
     method: 'PUT',
   });
@@ -1066,11 +1097,13 @@ function assertNoBrowserErrors(page, label) {
   );
 }
 
-function isKnownHeadlessWebGpuInstanceLoss(status) {
+function isSkippableWebGpuInstanceLoss(status) {
   const text = String(status);
-  return text.includes('A valid external Instance reference no longer exists') ||
-         text.includes('Instance dropped in popErrorScope') ||
-         text.includes('Instance dropped error in getCompilationInfo');
+  return !requireRendering && (
+    text.includes('A valid external Instance reference no longer exists') ||
+    text.includes('Instance dropped in popErrorScope') ||
+    text.includes('Instance dropped error in getCompilationInfo')
+  );
 }
 
 async function main() {
@@ -1183,12 +1216,12 @@ async function main() {
           );
         }
       } catch (error) {
-        if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        if (!isSkippableWebGpuInstanceLoss(error.message)) {
           throw error;
         }
         console.log(
           skipLine(
-            `filtered live ${routeFilter}: headless WebGPU instance loss (${error.message})`,
+            `filtered live ${routeFilter}: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`,
           ),
         );
         return;
@@ -1223,10 +1256,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_timer_animation.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live basic smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live basic smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmColorbar = await smokeWasmPage(
@@ -1237,10 +1270,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_colorbar.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live colorbar smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live colorbar smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmScalebar = await smokeWasmPage(
@@ -1251,10 +1284,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_scale_bar.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live scale-bar smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live scale-bar smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmScalebarUnits = await smokeWasmPage(
@@ -1265,11 +1298,11 @@ async function main() {
         join(artifactsDir, 'webgpu_live_scalebar_units.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
       console.log(
-        skipLine(`WebGPU live scale-bar units smoke: headless WebGPU instance loss (${error.message})`),
+        skipLine(`WebGPU live scale-bar units smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`),
       );
     }
     try {
@@ -1281,10 +1314,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_legend_categorical.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live legend smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live legend smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmReadout = await smokeWasmPage(
@@ -1295,10 +1328,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_annotation_readout.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live annotation readout smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live annotation readout smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmQuery = await smokeQueryWasmPage(
@@ -1313,10 +1346,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_picking.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live query smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live query smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmLinkedProbe = await smokeQueryWasmPage(
@@ -1332,10 +1365,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_linked_probe_colorbar.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live linked-probe smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live linked-probe smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmScientific = await smokeWasmPage(
@@ -1346,10 +1379,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_scientific_plotting.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live scientific plotting smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live scientific plotting smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmVector = await smokeWasmPage(
@@ -1360,10 +1393,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_vector.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live vector smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live vector smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmSegment = await smokeWasmPage(
@@ -1374,10 +1407,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_visual_segment.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live segment smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live segment smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmLabels = await smokeWasmPage(
@@ -1388,10 +1421,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_visual_labels.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live labels smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live labels smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmWindField = await smokeAnimatedWasmPage(
@@ -1403,10 +1436,10 @@ async function main() {
         'showcases_wind_field',
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live wind-field smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live wind-field smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmIsolines = await smokeWasmPage(
@@ -1417,10 +1450,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_isolines.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live isolines smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live isolines smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmParticleSmoke = await smokeAnimatedWasmPage(
@@ -1432,10 +1465,10 @@ async function main() {
         'showcases_gpu_particle_smoke',
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live particle-smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live particle-smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmPanelGrid = await smokeWasmPage(
@@ -1446,10 +1479,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_panel_grid.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live panel-grid smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live panel-grid smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmPanzoom = await smokeWasmPage(
@@ -1460,10 +1493,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_panzoom.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live panzoom smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live panzoom smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     try {
       wasmAxisLabels = await smokeWasmPage(
@@ -1474,10 +1507,10 @@ async function main() {
         join(artifactsDir, 'webgpu_live_axis_labels.png'),
       );
     } catch (error) {
-      if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+      if (!isSkippableWebGpuInstanceLoss(error.message)) {
         throw error;
       }
-      console.log(skipLine(`WebGPU live axis-labels smoke: headless WebGPU instance loss (${error.message})`));
+      console.log(skipLine(`WebGPU live axis-labels smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
     }
     const promotedLiveRoutes = [
       ['features_coordinate_system', 'Coordinate System', 'webgpu_live_coordinate_system.png', 'coordinate-system'],
@@ -1569,10 +1602,10 @@ async function main() {
         );
         console.log(passLine(`live ${shortLabel}: ${result.initialStatus}`));
       } catch (error) {
-        if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        if (!isSkippableWebGpuInstanceLoss(error.message)) {
           throw error;
         }
-        console.log(skipLine(`WebGPU live ${shortLabel} smoke: headless WebGPU instance loss (${error.message})`));
+        console.log(skipLine(`WebGPU live ${shortLabel} smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
       }
     }
 
@@ -1658,10 +1691,10 @@ async function main() {
         );
         console.log(passLine(`live ${shortLabel}: ${result.initialStatus}`));
       } catch (error) {
-        if (!isKnownHeadlessWebGpuInstanceLoss(error.message)) {
+        if (!isSkippableWebGpuInstanceLoss(error.message)) {
           throw error;
         }
-        console.log(skipLine(`WebGPU live ${shortLabel} smoke: headless WebGPU instance loss (${error.message})`));
+        console.log(skipLine(`WebGPU live ${shortLabel} smoke: ${headed ? 'headed' : 'headless'} WebGPU instance loss (${error.message})`));
       }
     }
     if (wasmBasic !== null) {
@@ -1733,8 +1766,14 @@ async function main() {
     await new Promise((resolveClose) => server.close(resolveClose));
     chrome.chrome.kill('SIGTERM');
     await waitForProcessExit(chrome.chrome);
+    await writeFile(join(artifactsDir, 'chrome.stderr.log'), chrome.getStderr());
+    await writeFile(join(artifactsDir, 'chrome.json'), JSON.stringify({
+      headed, gpuBackend, requireRendering, args: chrome.args, version: chrome.version, systemInfo: chrome.systemInfo,
+    }, null, 2) + '\n');
     await removeWithRetry(chrome.userDataDir);
   }
 }
 
-await main();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  await main();
+}
