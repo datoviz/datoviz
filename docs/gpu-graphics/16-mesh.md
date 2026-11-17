@@ -4,11 +4,40 @@
 
 ![The final generated sphere viewer, textured and lit.](../assets/gpu-graphics/16-mesh.webp)
 
-A hand-typed cube only goes so far. In this final chapter you replace it with a generated sphere, or with a Wavefront OBJ file of your own, and the result is a complete textured, lit, mouse-controlled mesh viewer. A **mesh** is CPU-side data: vertex attributes plus the indices that assemble them into triangles. Vulkan has no mesh object; you convert the arrays to your `Vertex` format and upload them, and the shaders, descriptors, and push-constant block stay exactly as they are.
+The program now draws a textured, lit cube that turns under the mouse. Its geometry, though, is 24 vertices and 36 indices typed by hand into C arrays (chapters 13 and 15). Real models have thousands of vertices or more. They come from a generator or a file, and their size is only known when the program runs.
+
+This final chapter replaces the cube with a generated sphere, or with a Wavefront OBJ file of your own. The surprising part is how little changes. The shaders, the texture, the descriptors, and the push constants stay exactly as they are; only how the vertex and index buffers are filled, and how many indices the draw reads, change. At the end you have a complete textured, lit, mouse-controlled mesh viewer.
+
+In this chapter you will:
+
+1. generate a sphere, or load an OBJ file, as CPU arrays;
+2. convert those arrays to your `Vertex` format and upload them into buffers sized at run time;
+3. switch to 32-bit indices and draw as many indices as the mesh has;
+4. load a model of your own.
+
+## What the pipeline fixes, and what it does not
+
+A **mesh** is CPU-side data: vertex attributes plus the indices that assemble them into triangles. Vulkan has no mesh object. It only sees buffers and a draw command that says how many indices to read.
+
+Look at what the pipeline actually fixed in earlier chapters: the layout of one vertex record (position, normal, and UV at locations 0, 1, and 2, from chapter 15), the triangle-list topology, and the shaders. It fixed nothing about how many vertices there are or what shape they make. So any geometry converted to the same `Vertex` layout draws through the same pipeline.
+
+Three things do change with a real mesh:
+
+- **The counts come at run time.** Buffer sizes and the index count must come from the mesh, not from `sizeof` on a static array.
+- **The data needs converting.** Datoviz's geometry library stores doubles; the pipeline reads 32-bit floats. Your code is the bridge between the two formats.
+- **Indices outgrow 16 bits.** A `uint16_t` index stops at 65535 (chapter 7). Large meshes need 32-bit indices, and the index binding must say so.
+
+```mermaid
+flowchart TD
+    G[Generator or OBJ file] --> M[DvzGeometry in doubles]
+    M -->|convert| V[Vertex array in floats]
+    V -->|upload| VB[Vertex buffer]
+    M -->|upload as is| IB[Index buffer, 32-bit]
+```
 
 ## Replace the cube arrays
 
-Add this include:
+The geometry functions live in a separate header. Add this include:
 
 ```c
 #include <datoviz/geom.h>
@@ -20,7 +49,7 @@ Delete `VERTICES` and `INDICES`; keep `Vertex`, `Push`, and both size assertions
     uint32_t index_count;
 ```
 
-Add this helper between `create_texture()` and `draw()`. It loads an OBJ file when given a path and generates a sphere otherwise:
+The vertex and index buffers used to be created in `main()` from the static arrays. Now one helper builds the geometry, converts it, and creates both buffers at the right size. Add this helper between `create_texture()` and `draw()`. It loads an OBJ file when given a path and generates a sphere otherwise:
 
 ```c
 /**
@@ -92,7 +121,11 @@ cleanup:
 }
 ```
 
+The helper runs in three phases. First it gets a `DvzGeometry`: from the OBJ loader, or from the sphere generator with a radius of 0.9 and a grid of 24 rings by 48 sectors. Then it checks that every array it needs exists. Last, it converts and uploads.
+
 Both routes return an owned `DvzGeometry` whose attributes are doubles. The pipeline expects 32-bit floats, so the helper narrows each component into a `Vertex` array sized to this mesh, after checking that the byte counts cannot overflow. Indices stay `DvzIndex`, a 32-bit unsigned type, and upload as they are. Once both uploads have copied their bytes, the converted array and the geometry are freed; the GPU buffers stay with `Renderer`.
+
+The buffer setup is chapter 6's and chapter 7's, unchanged except for the sizes, which now come from the mesh.
 
 ## Change initialization and the draw count
 
@@ -109,25 +142,29 @@ Add a branch to the argument loop:
             obj_path = argv[++argument_index];
 ```
 
-In `main()`, replace the whole vertex- and index-buffer block, from `renderer.vertex_buffer = ...` through the index upload, with:
+The helper now creates both buffers, so the old code in `main()` goes. In `main()`, replace the whole vertex- and index-buffer block, from `renderer.vertex_buffer = ...` through the index upload, with:
 
 ```c
     int mesh_result = create_mesh(&renderer, obj_path);
     COURSE_CHECK(mesh_result == 0, "mesh creation failed");
 ```
 
-Geometry indices are 32-bit `DvzIndex` values, and the count comes from the mesh. In `draw()`, replace the index binding and the draw:
+The draw must match the new buffers in two ways: the index type and the index count. Geometry indices are 32-bit `DvzIndex` values, and the count comes from the mesh. In `draw()`, replace the index binding and the draw:
 
 ```c
     dvz_cmd_bind_index_buffer(renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT32);
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, renderer->index_count, 0, 1);
 ```
 
+Read the draw as chapter 7 did: from index 0, with vertex offset 0, draw `index_count` indices, as 1 instance starting at instance 0. `VK_INDEX_TYPE_UINT32` tells Vulkan to read each index as 4 bytes.
+
 The listing also accepts `--width`, `--height`, and `--time`, used to render the documentation preview.
 
 ## Load your own OBJ
 
-`dvz_geometry_obj()` reads `v`, `vt`, `vn`, and polygonal `f` records, triangulates polygons, and ignores materials and groups. It computes missing normals; missing UVs become `(0, 0)`, so the whole mesh samples one checker texel.
+Wavefront OBJ is a plain-text format that most 3D tools export. `dvz_geometry_obj()` reads `v`, `vt`, `vn`, and polygonal `f` records, triangulates polygons, and ignores materials and groups. It computes missing normals; missing UVs become `(0, 0)`, so the whole mesh samples one checker texel.
+
+An OBJ face indexes positions, UVs, and normals separately, while a Vulkan index selects one whole vertex (chapter 7). The loader bridges the two by writing a separate vertex for each triangle corner.
 
 It returns `NULL` for an unreadable or unsupported file, and the program then exits cleanly with `mesh creation failed`. The camera expects a model near the origin, about one unit across. Anything far off-center or much larger will be clipped or invisible; check its bounds with `dvz_geometry_bounds()`.
 
@@ -146,6 +183,8 @@ It returns `NULL` for an unreadable or unsupported file, and the program then ex
     ```
 
 ## Keep the sphere's smooth normals
+
+The cube needed one flat normal per face (chapter 15). A sphere is curved everywhere, so each vertex gets its own normal and the lighting varies smoothly across triangles.
 
 The sphere generator supplies radial normals, each pointing away from the center. Along the texture seam, duplicated vertices share a position and a normal but differ in UV (U = 0 on one side, U = 1 on the other). That is the rule from chapter 7 in action: split a vertex where attributes differ, and nowhere else.
 
@@ -202,6 +241,12 @@ You see a smooth sphere with a curved checkerboard and a specular highlight. The
 !!! warning "When it goes wrong"
 
     A garbled mesh means the index binding still says `UINT16` while the buffer holds 32-bit values. Missing triangles mean the draw count is still 36. A blank window with an OBJ usually means the model is off-center or far too large; check its bounds.
+
+## What carries over
+
+- A pipeline describes the format of one vertex, never the shape. Any geometry converted to that format draws through it, whatever its source or size.
+- File formats and GPU formats rarely match. Loading a model always ends with a conversion step: choosing precision, building one index per vertex, and sizing buffers at run time.
+- Smooth or sharp is a property of the normals, not the triangles: shared normals blend across an edge, separate ones keep it crisp.
 
 ## Checkpoint
 

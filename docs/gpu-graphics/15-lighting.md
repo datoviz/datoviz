@@ -4,11 +4,42 @@
 
 ![A checkerboard cube with ambient, diffuse, and specular light.](../assets/gpu-graphics/15-lighting.webp)
 
-A flat-colored cube hides its shape; light reveals it. In this chapter each face gets brighter or darker depending on how it faces a light, with a highlight on the shiny side. Surface color says how a material reflects light; a **normal** is a direction perpendicular to the surface that says which way it faces. You add face normals and compute ambient, diffuse, and specular light per fragment.
+The cube is now textured: each face samples a checkerboard through a descriptor (chapter 14), and it turns under the mouse (chapter 11). Yet every face is equally bright, whichever way it points. The cube reads as 3D only through its outline and the perspective of the tiles.
+
+In the real world, shape shows through light. A face turned toward a lamp is bright, a face turned away is dark, and a shiny surface shows a highlight where it reflects the lamp toward your eye. This chapter adds one light and computes that effect in the fragment shader. It reuses everything so far: a new vertex attribute (chapter 6), new values in the material uniform (chapter 12), and a reorganized push-constant block (chapter 8). At the end, each face of the textured cube has its own brightness, with a highlight that moves as you turn it.
+
+In this chapter you will:
+
+1. give each vertex a **normal**, the direction its surface faces;
+2. add the lighting strengths to the material uniform;
+3. send the model-view matrix on its own, so the shaders can work before projection;
+4. compute ambient, diffuse, and specular light for each fragment.
+
+## How light reveals a shape
+
+The lighting model in this chapter adds up three simple effects. Each answers one question about a point on the surface.
+
+**Diffuse light: does the surface face the light?** Hold a sheet of paper under a lamp. Facing the lamp, it is brightest. Tilted, the same light spreads over a larger area, so each point gets less. Turned edge-on or away, it gets none. A matte surface scatters that light equally in all directions, so its brightness does not depend on where you stand.
+
+**Specular light: does the surface reflect the light toward the eye?** A shiny surface also acts a little like a mirror. Where it would bounce the light straight into your eye, you see a bright highlight. Unlike diffuse light, the highlight moves when you move.
+
+**Ambient light: what about the rest?** In a real room, light bounces off walls and reaches surfaces that face away from the lamp. Computing that is expensive, so we add a small constant instead, and no face goes fully black.
+
+To answer the first two questions, the shader needs the direction the surface faces at each point. That is the **normal**: a unit-length vector perpendicular to the surface, pointing outward. It also needs two more directions from the same point: toward the light, and toward the eye.
+
+With those vectors, the questions become arithmetic:
+
+- Diffuse is the cosine of the angle between the normal and the light direction. For unit vectors, that cosine is their dot product: 1 when the surface faces the light, 0 when edge-on, negative when turned away, so we clamp it at 0.
+- Specular uses the **halfway vector**, midway between the light and eye directions. When the normal lines up with it, the surface reflects the light into the eye. Raising that dot product to a power, the **specular exponent**, makes the highlight tight (large exponent) or broad (small one). This is the **Blinn-Phong** model.
+- Ambient is a constant.
+
+The texture and tint give the surface color, its **albedo**. Ambient and diffuse light scale it. Specular is added on top in white, because a highlight shows the light's color, not the surface's.
+
+One rule makes it all work: every vector must be in the same coordinate space. We use **view space**, where the camera sits at the origin. It comes after the model and view matrices but before projection, which would distort angles.
 
 ## Add face normals
 
-Replace `Vertex` with:
+Normals are one more vertex attribute, between position and UV. Replace `Vertex` with:
 
 ```c
 typedef struct
@@ -56,6 +87,8 @@ static const Vertex VERTICES[24] = {
 };
 ```
 
+The normals are simple for a cube: each face points along one axis, so the front face's four vertices all carry `(0, 0, 1)` and the left face's carry `(-1, 0, 0)`.
+
 In `create_pipeline()`, replace the UV attribute with these two. Normal takes location 1, and UV moves to location 2:
 
 ```c
@@ -65,9 +98,11 @@ In `create_pipeline()`, replace the UV attribute with these two. Normal takes lo
         renderer->pipeline, 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv));
 ```
 
+Read them as: from vertex binding 0, location 1 is three floats at the `normal` offset, and location 2 is two floats at the `uv` offset. The vertex shader will use the same locations.
+
 ## Extend the material uniform
 
-The lighting coefficients are shared by every draw, so they belong in the material uniform from chapter 12. Add a second `vec4`-sized member:
+The model needs four numbers: how strong ambient, diffuse, and specular light are, and the specular exponent. They describe the surface and are shared by every draw, so they belong in the material uniform from chapter 12. Add a second `vec4`-sized member:
 
 ```c
 typedef struct
@@ -87,11 +122,11 @@ Replace the initializer in `create_material()`:
         .tint = {1.0f, 1.0f, 1.0f, 1.0f}, .lighting = {0.16f, 0.84f, 0.35f, 32.0f}};
 ```
 
-The four `lighting` values are the ambient, diffuse, and specular strengths, then the specular exponent. Both members are 16 bytes, so `std140` and C still agree. The descriptor covers `sizeof(Material)`, so it grows with the struct.
+The four `lighting` values are the ambient, diffuse, and specular strengths, then the specular exponent. Ambient and diffuse add up to 1, so a face that looks straight at the light shows the texture at full brightness. Both members are 16 bytes, so `std140` and C still agree. The descriptor covers `sizeof(Material)`, so it grows with the struct.
 
 ## Fit the matrices into 128 bytes
 
-Lighting needs positions and normals in view space, before projection, so the vertex shader needs the model-view matrix on its own. Send projection and model-view as two matrices: two `mat4`s are exactly the 128 bytes every device guarantees. Replace `Push`:
+So far the vertex shader received one combined matrix, model-view-projection, and only needed the final clip-space position (chapter 9). Lighting needs positions and normals in view space, before projection, so the vertex shader needs the model-view matrix on its own. Send projection and model-view as two matrices: two `mat4`s are exactly the 128 bytes every device guarantees. Replace `Push`:
 
 ```c
 typedef struct
@@ -107,7 +142,7 @@ Add the size assertion after the material assertion:
 _Static_assert(sizeof(Push) == 128, "the lighting push block must fit in 128 bytes");
 ```
 
-In `draw()`, keep the camera, arcball, and `clip_correction`, but replace the two intermediate matrices and three `multiply_mat4()` calls with:
+The C side now computes two products instead of one chain. The model-view matrix combines model and view; the projection matrix absorbs chapter 9's `clip_correction`. In `draw()`, keep the camera, arcball, and `clip_correction`, but replace the two intermediate matrices and three `multiply_mat4()` calls with:
 
 ```c
     multiply_mat4(mvp.view, mvp.model, push.model_view);
@@ -118,7 +153,7 @@ In `draw()`, keep the camera, arcball, and `clip_correction`, but replace the tw
 
 ## Shade each fragment
 
-Replace `shader.vert` with:
+The vertex shader now does the last two multiplications itself: model-view first, to get the view-space position the lighting needs, then projection, for `gl_Position`. It passes the view-space position, normal, and UV on to the fragment shader. Replace `shader.vert` with:
 
 ```glsl
 #version 450
@@ -143,7 +178,7 @@ void main()
 
 `model_view` moves positions into view space. Its upper-left 3 × 3 part rotates normals, which works because this program only rotates and translates. Under nonuniform scale, that matrix would tilt normals off the perpendicular; the correct normal matrix is then the inverse transpose of that 3 × 3 part. Normals never take translation: a direction has no position.
 
-Replace `shader.frag` with:
+The fragment shader turns the model from the start of the chapter into code, one line per vector or term. Replace `shader.frag` with:
 
 ```glsl
 #version 450
@@ -171,7 +206,7 @@ void main()
 
 Every vector here is in view space, where the eye sits at the origin, so the view direction is `-view_position`. The light at `(2, 2, 0)` is in view space too: it moves with the camera, like a headlight. Interpolation shortens normals, so normalize again.
 
-Ambient gives every surface a baseline brightness. Diffuse uses the positive part of the normal-light dot product. Blinn-Phong specular uses the halfway vector between the light and view directions, with the exponent setting the highlight's width, and is skipped on faces turned away from the light.
+Map each line back to the model. `n`, `l`, and `v` are the normal, the light direction, and the eye direction, all unit length; `h` is the halfway vector. Ambient gives every surface a baseline brightness. Diffuse uses the positive part of the normal-light dot product. Blinn-Phong specular uses the halfway vector between the light and view directions, with the exponent setting the highlight's width, and is skipped on faces turned away from the light. The last lines scale the albedo by ambient plus diffuse and add the white highlight.
 
 ??? note "Linear light and sRGB"
 
@@ -212,6 +247,12 @@ The checkerboard remains, but each visible face has its own brightness. Drag the
 !!! warning "When it goes wrong"
 
     A push-range validation error means one shader still declares the old block, or C and GLSL disagree on its size. A face that stays bright as it turns away suggests an untransformed normal. A highlight that slides oddly when you zoom suggests mixing world-space and view-space vectors.
+
+## What carries over
+
+- Lighting is your shader code, not a GPU feature. Ambient, diffuse, and specular terms are a starting point that physically based models refine, with the same inputs: a normal, a light direction, and an eye direction.
+- Pick one coordinate space for all lighting vectors and transform everything into it. Positions take the full matrix; directions such as normals take only its 3 × 3 part, or its inverse transpose under nonuniform scale.
+- Do lighting math on linear values, and let sRGB formats decode inputs and encode outputs.
 
 ## Checkpoint
 
