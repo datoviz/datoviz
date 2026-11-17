@@ -71,7 +71,7 @@ With two buffer results in scope, rename the vertex buffer's `buffer_result` to 
     dvz_buffer_upload(renderer.index_buffer, 0, sizeof(INDICES), INDICES);
 ```
 
-## Indexed drawing
+## Bind the indices and draw
 
 The vertex buffer stays bound as in chapter 6, and the index buffer joins it. In `draw()`, after binding the vertex buffer, bind the index buffer and replace `dvz_cmd_draw()` with its indexed form:
 
@@ -131,7 +131,7 @@ Build and run as before; the capture goes to `chapter07.png`.
 
 ## What carries over
 
-- An indexed mesh, unique vertices plus triangles that refer to them, is the standard form in every GPU API and in mesh files such as OBJ and glTF.
+- An indexed mesh, unique vertices plus triangles that refer to them, is the standard form in every GPU API and in mesh formats such as glTF. OBJ indexes each attribute separately, so loaders convert it (chapter 16).
 - An index selects a whole vertex, not a position. Share a vertex only when every attribute agrees; duplicate it where they differ.
 - Index width is a range-for-size trade-off: 16 bits suit meshes with at most 65536 vertices, 32 bits the rest.
 

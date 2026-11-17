@@ -296,7 +296,7 @@ cleanup:
 }
 ```
 
-Destruction order follows dependencies. A GPU object cannot outlive its device, and the GPU context owns the device, so the context goes last.
+This follows the ownership rule from the start of the chapter: the GPU context, which owns the device, goes last.
 
 `dvz_gpu_ctx_error_count()` reports how many validation errors the layers recorded. Query it *before* destroying the context. It should print `0` in every chapter, but only if startup did not warn `validation layer is not supported`; without the layer, zero proves nothing.
 

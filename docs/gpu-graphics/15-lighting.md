@@ -35,7 +35,7 @@ With those vectors, the questions become arithmetic:
 
 The texture and tint give the surface color, its **albedo**. Ambient and diffuse light scale it. Specular is added on top in white, because a highlight shows the light's color, not the surface's.
 
-One rule makes it all work: every vector must be in the same coordinate space. We use **view space**, where the camera sits at the origin. It comes after the model and view matrices but before projection, which would distort angles.
+One rule makes it all work: every vector must be in the same coordinate space. We use view space (chapter 9), where the camera sits at the origin. It comes after the model and view matrices but before projection, which would distort angles.
 
 ## Add face normals
 
@@ -142,7 +142,7 @@ Add the size assertion after the material assertion:
 _Static_assert(sizeof(Push) == 128, "the lighting push block must fit in 128 bytes");
 ```
 
-The C side now computes two products instead of one chain. The model-view matrix combines model and view; the projection matrix absorbs chapter 9's `clip_correction`. In `draw()`, keep the camera, arcball, and `clip_correction`, but replace the two intermediate matrices and three `multiply_mat4()` calls with:
+The C side now computes two products instead of one chain. The model-view matrix combines model and view; the projection matrix absorbs chapter 11's `clip_correction`. In `draw()`, keep the camera, arcball, and `clip_correction`, but replace the two intermediate matrices and three `multiply_mat4()` calls with:
 
 ```c
     multiply_mat4(mvp.view, mvp.model, push.model_view);
@@ -206,7 +206,7 @@ void main()
 
 Every vector here is in view space, where the eye sits at the origin, so the view direction is `-view_position`. The light at `(2, 2, 0)` is in view space too: it moves with the camera, like a headlight. Interpolation shortens normals, so normalize again.
 
-Map each line back to the model. `n`, `l`, and `v` are the normal, the light direction, and the eye direction, all unit length; `h` is the halfway vector. Ambient gives every surface a baseline brightness. Diffuse uses the positive part of the normal-light dot product. Blinn-Phong specular uses the halfway vector between the light and view directions, with the exponent setting the highlight's width, and is skipped on faces turned away from the light. The last lines scale the albedo by ambient plus diffuse and add the white highlight.
+Map each line back to the model: `n`, `l`, `v` and `h` are the normal, light, eye and halfway vectors. Specular is skipped on faces turned away from the light.
 
 ??? note "Linear light and sRGB"
 

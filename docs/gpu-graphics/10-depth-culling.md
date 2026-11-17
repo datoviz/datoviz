@@ -6,7 +6,7 @@
 
 Chapter 9 gave us a cube in perspective, but it does not look solid. The GPU draws its twelve triangles in index order, each overwriting the pixels it covers, so a back face drawn after a front face shows through it. As the cube turns, faces pop in front of each other.
 
-The GPU needs to remember, for every pixel, how far the surface already drawn there is, and keep only the nearest one: the **depth test**. A second, cheaper idea helps too: on a closed object, faces turned away from the camera are always hidden, so the GPU can skip them: **back-face culling**. By the end, the cube is solid from every angle.
+The GPU needs to remember, for every pixel, how far the surface already drawn there is, and keep only the nearest one: the depth test. A second, cheaper idea helps too: on a closed object, faces turned away from the camera are always hidden, so the GPU can skip them: **back-face culling**. By the end, the cube is solid from every angle.
 
 In this chapter you will:
 
@@ -40,11 +40,11 @@ In chapter 9, every triangle of the cube lists its corners counter-clockwise whe
 
 Back-face culling drops triangles that show their back, before any fragment is produced. On a closed solid, those faces are always behind front faces, so dropping them leaves the image unchanged and saves rasterizing about half the triangles.
 
-Depth makes the image correct, fragment by fragment. Culling skips whole triangles and is mostly a saving; it never looks at distance, so you still need depth whenever front-facing triangles overlap.
+Culling never looks at distance, so you still need depth whenever front-facing triangles overlap.
 
 ## Request and attach depth
 
-Since chapter 3, the canvas owns the image each frame draws into. It can also own a depth image for each set of frame resources. In `main()`, before creating the canvas, request a 32-bit float depth format:
+Since chapter 2, the canvas owns the image each frame draws into. It can also own a depth image for each frame slot (chapter 3). In `main()`, before creating the canvas, request a 32-bit float depth format:
 
 ```c
     canvas_config.depth_format = VK_FORMAT_D32_SFLOAT;
@@ -73,7 +73,7 @@ The attachment gives the GPU somewhere to store depth, but the pipeline decides 
         renderer->pipeline, false, true, VK_COMPARE_OP_LESS, DVZ_GRAPHICS_FLAGS_FIXED);
 ```
 
-The first call declares the depth format, which must match the canvas. Read the second as: no depth clamping, depth writes on, keep fragments with a lesser depth, as fixed pipeline state. Depth clamping would pin depths outside the near and far planes to the range instead of clipping them. The last argument makes the settings fixed rather than set from the command buffer; passing a nonzero flag here is also what turns the depth test on.
+The first call declares the depth format, which must match the canvas. Read the second as: no depth clamping, depth writes on, keep fragments whose depth is less than the stored one. There is no separate switch for the depth test: passing `DVZ_GRAPHICS_FLAGS_FIXED`, a nonzero flag, both enables it and bakes these settings into the pipeline. Depth clamping, off here, would pin out-of-range depths to the near and far planes instead of clipping them.
 
 ## Cull back faces
 

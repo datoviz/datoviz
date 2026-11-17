@@ -22,13 +22,11 @@ In this chapter you will:
 
 ## Two processors, one to-do list
 
-A rendering program coordinates two processors. The CPU runs your C code and prepares work. The GPU executes the graphics commands and shaders that produce the image.
-
 The CPU decides *what* to draw and writes down instructions: use this pipeline, draw these three vertices, clear to this color. It does not draw the image itself. That recorded list is a **command buffer**.
 
 Why a list rather than direct calls? The GPU is a separate processor. If the CPU sent each instruction on its own and waited for it, each processor would spend most of its time waiting for the other. A whole frame's list, handed over at once, lets both run at full speed.
 
-Submission puts recorded command buffers on a device **queue**, the line of work waiting for the GPU. The GPU executes them later, asynchronously; synchronization constrains when that execution happens and when the resources it uses may be reused. By then your callback has returned, and the CPU may be preparing the next frame while the GPU works on an earlier one. The canvas keeps a few sets of per-frame resources so this overlap is possible; each set is a **frame slot** (a frame in flight). Reusing a frame slot can still make the CPU wait. Managing that overlap safely is why Vulkan needs synchronization, and why the canvas earns its keep.
+Submission puts recorded command buffers on a device **queue**, the line of work waiting for the GPU. The GPU runs them later; by then your callback has returned. To keep both processors busy, the canvas keeps a few sets of per-frame resources, called **frame slots** (or frames in flight), so the CPU can record the next frame while the GPU executes an earlier one. Before reusing a slot, the CPU waits on a **fence**, a signal the GPU raises when it has finished that slot's work. If the GPU is still busy, that wait makes the CPU pause. Managing this overlap safely is what Vulkan's synchronization is for, and why the canvas earns its keep.
 
 ```mermaid
 sequenceDiagram
@@ -45,7 +43,7 @@ sequenceDiagram
 
 This separation has two consequences that often confuse new Vulkan programmers:
 
-- *Recording happens on the CPU; drawing happens later, on the GPU.* When `draw` returns, the commands exist but have not been submitted. `dvz_canvas_submit()` queues them.
+- *Recording is not drawing.* `dvz_canvas_submit()` queues the commands after `draw` returns.
 - *GPU resources referenced by recorded commands must stay valid until execution finishes.* A submitted command buffer may still refer to buffers, images, pipelines, and descriptor sets after your callback returns, so do not destroy them while the GPU may use them. A CPU array is different: once an upload call has copied its bytes, you may reuse or free it. Each upload chapter points out that copy.
 
 ## What the canvas hands you
@@ -60,7 +58,7 @@ Your callback receives a `DvzStreamFrame*`. Three of its fields matter for now:
 
 An image view is how Vulkan refers to an image for a particular use; chapter 14 makes one. The command buffer and image view are **borrowed** handles, valid only during this callback. Do not store or free them, and do not submit the command buffer yourself; the canvas does that. A later frame may use a different image view, especially after a resize.
 
-The `extent` is a copied value, so storing it is safe, but it goes stale after a resize. Read it from each frame before recording size-dependent commands.
+Read `frame->extent` from each frame before recording size-dependent commands.
 
 ## The frame calls, one at a time
 
@@ -97,7 +95,7 @@ On mobile and tiled GPUs, discarding contents you will overwrite can save memory
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
 ```
 
-This is the new line: add it right after `dvz_cmd_rendering_begin()`. The viewport maps normalized device coordinates (chapter 9 explains them) to pixels, and the scissor limits drawing to a pixel rectangle. This helper sets both to the full frame. The clear does not need them, but chapter 4's triangle will. Its pipeline declares them *dynamic*, recorded every frame rather than fixed at pipeline creation, so a resized window only needs the new extent here.
+This is the new line: add it right after `dvz_cmd_rendering_begin()`. The viewport maps clip-space x and y, from −1 to 1, to pixels (with w = 1 these are the normalized device coordinates chapter 9 explains), and the scissor limits drawing to a pixel rectangle. This helper sets both to the full frame. The clear does not need them, but chapter 4's triangle will. Its pipeline declares them *dynamic*, recorded every frame rather than fixed at pipeline creation, so a resized window only needs the new extent here.
 
 ```c
     dvz_cmd_rendering_end(renderer->commands);
@@ -227,7 +225,7 @@ The first two PNG files are identical; the third captures another point of the s
         dvz_attachment_ops(color, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
         ```
 
-        Nothing overwrites the image now, so you see the canvas's initial black clear. Once later chapters draw, `LOAD` would keep whatever the target held from its previous use. Vulkan does not define a fresh image's contents; this works only because the canvas clears every target before first use. Write your own images before you read them.
+        Nothing overwrites the image now, so you see the canvas's initial black clear (chapter 2's Try it explains why it is black). Once later chapters draw, `LOAD` would keep whatever the target held from its previous use.
     2. Divide the three `sinf` frequencies by 10. The window drifts almost imperceptibly.
     3. Every 60 frames, print `frame_index` divided by elapsed seconds. On a live window it is usually close to the display's refresh rate, because presentation waits for vertical sync. Some drivers and virtual displays don't wait, and you will see hundreds or thousands.
     4. Print `frame->image_view` and `frame->extent` in the callback, then resize the window. The extent changes, and the image view may too. That is why size comes from the current frame and the view is never kept.
@@ -258,7 +256,7 @@ The first two PNG files are identical; the third captures another point of the s
 
 ## What carries over
 
-- Every modern GPU API records commands on the CPU and executes them later on the GPU: Vulkan command buffers, WebGPU command encoders, Metal command buffers. Whatever the recorded commands refer to must stay valid until the GPU has finished with them.
+- Every modern GPU API records commands on the CPU and executes them later on the GPU: Vulkan command buffers, WebGPU command encoders, Metal command buffers.
 - Clearing is part of starting a render pass, and keeping the result is part of ending it. WebGPU and Metal use the same load and store operations.
 - Animate from elapsed time, never from a frame count, and fix the time when you need a reproducible image.
 

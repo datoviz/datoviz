@@ -19,8 +19,8 @@ In this chapter you will:
 
 To read a texture, the GPU needs answers to three questions, and Vulkan gives each its own object:
 
-- **Which pixels?** The **image** from chapter 13: memory, a size, and a texel format.
-- **Which part of them, seen how?** An **image view** is a window onto an image: its type (2D here), which aspect (color, as opposed to depth), and which mip levels and array layers. Shaders and descriptors refer to views, never to images directly. You have used one since chapter 3: the canvas hands you the frame's image view, not its image. Ours covers the whole texture.
+- **Which pixels?** The image from chapter 13: memory, a size, and a texel format.
+- **Which part of them, seen how?** An **image view** is a window onto an image: its type (2D here), which aspect (color, as opposed to depth), and which mip levels and array layers (mip levels are smaller precomputed copies of the image; array layers are stacked slices; ours has one of each). Shaders and descriptors refer to views, never to images directly. You have used one since chapter 3: the canvas hands you the frame's image view, not its image. Ours covers the whole texture.
 - **Read by which rules?** A **sampler** holds the lookup rules, with no pixels at all. **Filtering** says what to return when a fragment falls between texel centers. **Addressing** says what a UV outside `[0, 1]` means.
 
 Why three objects instead of one? They vary independently. One image can have several views, for example one per layer of an image array. One sampler can serve every texture that wants the same rules. Keeping data, window, and rules apart avoids duplicating any of them.
@@ -107,7 +107,7 @@ Now the descriptor, in two steps exactly like chapter 12's: declare the slot, th
 
 Read the second call as: in set 0, binding 1, there is 1 descriptor, visible to the fragment shader, and it is a combined image sampler.
 
-A combined image sampler descriptor refers to both the view and the sampler, which remain separate objects. Write it beside the material entry when the descriptor set is created:
+Write it beside the material entry when the descriptor set is created:
 
 ```c
     if (dvz_graphics_create(renderer->pipeline) != 0)
@@ -206,7 +206,6 @@ Every face shows a square checkerboard, its white tile where chapter 13 showed b
 
 - GPU APIs keep the pixels, the window onto them, and the rules for reading them apart. WebGPU has `GPUTexture`, `GPUTextureView`, and `GPUSampler`, bound as separate entries; Vulkan's combined image sampler only puts a view and a sampler in one slot.
 - Filtering and addressing belong to the lookup, not the image: the same texture can look crisp, smooth, tiled, or clamped depending on the sampler.
-- A view is how the GPU refers to an image for one use: the same idea serves a sampled texture here and a render target in chapter 3.
 
 ## Checkpoint
 

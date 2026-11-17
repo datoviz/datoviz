@@ -15,8 +15,6 @@ Vulkan gives you direct control over a GPU, but that control creates a steep sta
 
 The course explains those concepts without asking you to implement the platform machinery. Datoviz's low-level layers (vklite and its canvas) own that code, so from chapter 2 onward you can work on shaders, pipelines, buffers, textures, matrices, and lighting. These low-level APIs are advanced and unstable. Use the Datoviz version given in the setup chapter; the course does not promise compatibility with other releases.
 
-The result feels like a classic OpenGL graphics course, even though Vulkan runs underneath it.
-
 ## How the pieces fit
 
 A computer that draws has two processors. The CPU runs your C program, one step after another. The GPU is a separate processor with its own memory, built for one kind of work: running the same small program on many items at once, such as every vertex of a shape or every pixel of an image. It does not run your C code. Your program prepares data and a list of commands, hands them over, and the GPU produces the image.

@@ -42,7 +42,7 @@ The camera produces OpenGL-style clip coordinates, a convention many libraries s
 
 ## Create a camera and arcball
 
-Include `<datoviz/controller.h>`. The controllers replace chapter 10's timer, so in `Renderer`, replace `start_ns`, `capture_time`, and `animate` with two owned objects:
+Include `<datoviz/controller.h>`. The controllers replace chapter 8's timer, so in `Renderer`, replace `start_ns`, `capture_time`, and `animate` with two owned objects:
 
 ```c
     DvzArcball* arcball;
@@ -166,7 +166,7 @@ Drag with the left button to rotate the cube; scroll to zoom. The terminal ends 
 
 ## What carries over
 
-- Interaction never reaches the GPU. Whatever the API, events update CPU state, and each frame turns that state into data the shader already knows how to read.
+- Interaction never reaches the GPU: each frame turns CPU-side input state into data the shader already reads.
 - Camera and controller libraries often follow OpenGL's clip conventions. One correction matrix, applied last, adapts them to Vulkan, so you can reuse such code instead of rewriting it.
 - Pointer positions and framebuffer pixels are different units on high-density displays. Use window coordinates for input and pixels for rendering.
 

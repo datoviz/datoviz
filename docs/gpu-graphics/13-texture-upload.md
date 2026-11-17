@@ -19,9 +19,9 @@ In this chapter you will:
 
 ## Pinning an image to a face
 
-To lay an image over a face, each vertex says which point of the image it covers. These are **UV coordinates**, or texture coordinates: `u` runs across the image and `v` down it, both from 0 to 1 whatever the image's size. A vertex at UV `(0.5, 0.5)` covers the middle of the image. Between the vertices, the rasterizer interpolates UVs like it interpolated colors, so every fragment knows which point of the image lies under it.
+To lay an image over a face, each vertex says which point of the image it covers. These are **UV coordinates**, or texture coordinates: `u` runs across the image and `v` down it, both from 0 to 1 whatever the image's size. A vertex at UV `(0.5, 0.5)` covers the middle of the image. Between the vertices, the rasterizer interpolates UVs like it interpolated colors, correcting for perspective, so every fragment knows which point of the image lies under it.
 
-A UV is one more vertex attribute, beside the position. That creates a problem with the cube's eight shared corners. An index selects a whole vertex, UV included (chapter 7), and a corner is shared by three faces that each want a different UV there. So we split the corners: four vertices per face, 24 in total, still drawn as the same 12 triangles. This is the same reason chapter 7 gave for duplicating vertices on purpose.
+A UV is one more vertex attribute, beside the position. That creates a problem with the cube's eight shared corners. An index selects a whole vertex, UV included (chapter 7), and a corner is shared by three faces that each want a different UV there. So we split the corners: four vertices per face, 24 in total, still drawn as the same 12 triangles.
 
 Before any texture exists, we can check the UVs by drawing them: `u` as red and `v` as green.
 
@@ -37,7 +37,7 @@ typedef struct
 } Vertex;
 ```
 
-Replace `VERTICES` and `INDICES`. Each face runs `(0, 0)`, `(1, 0)`, `(1, 1)`, `(0, 1)` and keeps chapter 10's outward winding:
+Replace `VERTICES` and `INDICES`. Each face runs `(0, 0)`, `(1, 0)`, `(1, 1)`, `(0, 1)` and keeps chapter 9's outward winding, which chapter 10's culling relies on:
 
 ```c
 static const Vertex VERTICES[24] = {
@@ -123,7 +123,7 @@ void main()
 }
 ```
 
-The rasterizer interpolates UVs across each triangle, correcting for perspective. With `u` as red and `v` as green, each face runs from black at `(0, 0)` through red and yellow to green. Colors break at the edges because each face has its own corners.
+With `u` as red and `v` as green, each face runs from black at `(0, 0)` through red and yellow to green. Colors break at the edges because each face has its own corners.
 
 Chapter 12's orange tint would hide that gradient. Set the tint to white in `create_material()` so the gradient keeps its colors:
 
@@ -135,7 +135,7 @@ Chapter 12's orange tint would hide that gradient. Set the tint to white in `cre
 
 Now the second half: getting an image onto the GPU. You already know how to put bytes there, with a buffer (chapter 6). Why not store the pixels in one?
 
-A buffer is a linear range of bytes, and only the shader decides what they mean. An **image** is memory that the GPU itself understands as pixels: it has a width and height, a **texel format** (here, four 8-bit channels per texel), and a **tiling**, the order in which texels sit in memory. That knowledge is what lets the texture hardware filter between neighboring texels and handle out-of-range coordinates, as chapter 14 will show.
+A buffer is a linear range of bytes, and only the shader decides what they mean. An **image** is memory that the GPU itself understands as pixels: it has a width and height, a **texel format** (a texel is one pixel of a texture; here, four 8-bit channels per texel), and a **tiling**, the order in which texels sit in memory. That knowledge is what lets the texture hardware filter between neighboring texels and handle out-of-range coordinates, as chapter 14 will show.
 
 The tiling is the catch. Row by row is a poor order for a GPU, because a triangle reads texels that are close in 2D, not along one row. So GPUs use **optimal tiling**, a private order, chosen by the driver, that keeps 2D neighbors close in memory. Your texture uses it. Because the order is private, the CPU cannot write pixels into the image directly.
 
@@ -154,7 +154,7 @@ Two more ideas complete the upload. Both exist because Vulkan makes you state ho
 
 First, an image's memory can be arranged differently for different jobs. An **image layout** names one arrangement: `TRANSFER_DST_OPTIMAL` suits receiving a copy, `SHADER_READ_ONLY_OPTIMAL` suits sampling. A new image starts in `UNDEFINED`, which means its contents are meaningless. Each kind of use expects its layout, so before using the image a new way, you change its layout.
 
-Second, the GPU does not finish one command before starting the next. It overlaps work, so without a rule, a later fragment shader could read the image while the copy is still writing it. A **barrier** is that rule. It sits between two commands and states what comes before and what comes after. It does three things:
+Second, the GPU does not finish one command before starting the next. It overlaps work, so without a rule, a later fragment shader could read the image while the copy is still writing it. A **barrier** is that rule. The steps of GPU work, such as the copy, the vertex shader and the fragment shader, are called **pipeline stages**; a barrier names stages along with the memory accesses they make. It sits between two commands and states what comes before and what comes after. It does three things:
 
 1. waits for the listed pipeline stages to finish,
 2. makes their memory writes visible to the next access,
@@ -297,7 +297,7 @@ Take the helper one phase at a time.
 
 **The second barrier** reuses the same barrier entry with new values, and is recorded again: before it, copy writes; after it, fragment shader sampled reads; the layout moves to `SHADER_READ_ONLY_OPTIMAL`.
 
-Recording does not run anything. The work happens at `dvz_cmd_submit_result()`, which submits and blocks until the queue is idle, so the copy has finished when it returns. Only then is it safe to destroy the staging buffer and the command buffer. The image is now ready for shaders, and it is the only object that survives the helper.
+Recording does not run anything. The work happens at `dvz_cmd_submit_result()`, which submits and blocks until the queue is idle, so the copy has finished when it returns. Only then is it safe to destroy the staging buffer and the command buffer.
 
 ## Call the helper and release the image
 
@@ -340,7 +340,7 @@ Build and run as before; the capture goes to `chapter13.png`.
 
 Every face shows its UV gradient. The terminal ends with `validation errors: 0`.
 
-The checkerboard does not appear, and that is expected: the image is in GPU memory, but no descriptor refers to it and no shader reads it. Chapter 14 connects it.
+The checkerboard does not appear yet; chapter 14 connects it.
 
 !!! tip "Try it"
 
@@ -359,7 +359,7 @@ The checkerboard does not appear, and that is expected: the image is in GPU memo
 ## What carries over
 
 - A UV is an address into an image that does not depend on its size, so the same mesh works with a 64-texel or a 4096-texel texture.
-- GPUs keep images in a private memory order, so pixels always travel through a linear staging buffer and a GPU copy. WebGPU's `writeTexture` and OpenGL's `glTexImage2D` do the same staging for you.
+- GPUs keep images in a private memory order, so pixels usually travel through a linear staging buffer and a GPU copy. WebGPU's `writeTexture` and OpenGL's `glTexImage2D` do the same staging for you.
 - The GPU overlaps work. Whenever one operation writes what a later one reads, something must order them: in Vulkan you write the barrier yourself; WebGPU and Metal track resource use and insert it for you.
 
 ## Checkpoint

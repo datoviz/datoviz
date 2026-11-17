@@ -25,7 +25,6 @@ A C program that uses a library needs three things from it, at three different m
 
 Each kind of failure points at one of these. A missing header is a compile error, a missing package is a configure error, and a library the system cannot find is a run-time error.
 
-
 ## Install Datoviz
 
 !!! warning "This course needs a build newer than v0.4.0rc2"

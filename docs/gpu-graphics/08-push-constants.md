@@ -8,7 +8,7 @@ Chapters 6 and 7 put the square's geometry in GPU buffers: four corners and six 
 
 To animate it, something must change every frame. We could rewrite the corner positions on the CPU and upload them again each frame. That works for four vertices, but it scales with the mesh, and the buffer may still be in use by an earlier frame in flight (chapter 3). A better idea: keep the geometry fixed, send the few numbers that describe the motion, and let the vertex shader apply them to every vertex. Here that is two numbers: an angle and a scale.
 
-This chapter sends those two floats with each draw as **push constants**, and the square rotates and pulses. Chapter 9 keeps the same mechanism but sends a 4×4 matrix, which can describe any rotation, scaling, camera or perspective.
+This chapter sends those two floats with each draw as push constants, and the square rotates and pulses. Chapter 9 keeps the same mechanism but sends a 4×4 matrix, which can describe any rotation, scaling, camera or perspective.
 
 In this chapter you will:
 
@@ -109,7 +109,7 @@ Read the push as: into this command buffer, with the layout in `slots`, for the 
 
 ## Keep captures reproducible
 
-A capture should give the same image on every run, so tests and documentation screenshots can compare it. A clock would make each one different. Replace the argument parsing in `main()`. Offscreen runs use `capture_time`, `0.75f` unless `--time` overrides it; only live runs read the clock.
+As in chapter 3, captures use a fixed time. Replace the argument parsing in `main()`. Offscreen runs use `capture_time`, `0.75f` unless `--time` overrides it; only live runs read the clock.
 
 ```c
     const char* png_path = NULL;
@@ -140,7 +140,7 @@ The draw callback cannot return a status, so `draw_failed` carries a failed push
 
 Reload keeps working: each candidate pipeline declares the same range, and after a swap `draw()` pushes through the new `renderer->slots`.
 
-The square shears as it turns: x and y are still normalized device coordinates, which span the whole 4:3 window, so one unit is wider than it is tall. Chapter 9 fixes this with the aspect ratio.
+The square shears as it turns: x and y are still clip-space coordinates, from −1 to 1 across the whole 4:3 window, so one unit is wider than it is tall. Chapter 9 fixes this with the aspect ratio.
 
 ## Build and run
 
@@ -182,7 +182,6 @@ The live square rotates and breathes; the capture is the still above. The termin
 
 - Keep large data fixed on the GPU and send a few parameters that describe how it changes; the vertex shader applies them to every vertex. Chapter 9's matrices are this idea in general form.
 - A command buffer is an ordered list: a value set before a draw applies to that draw and to later ones until it is set again. Pipelines and vertex buffers follow the same rule.
-- Make time an input of rendering rather than something it reads, so a frame can be reproduced exactly.
 
 ## Checkpoint
 

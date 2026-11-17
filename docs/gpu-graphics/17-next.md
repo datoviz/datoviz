@@ -1,6 +1,6 @@
 # 17. Where to go next
 
-Look back at what you built. You started from an empty window (chapters 1 to 3) and learned the frame loop that every later chapter filled in: the canvas hands you a command buffer, you record into it, the canvas submits and presents. You drew a triangle with a pipeline and shaders (chapters 4 and 5), then fed it from vertex and index buffers (chapters 6 and 7).
+Look back at what you built. You started from an empty program and a window (chapters 1 to 3) and learned the frame loop that every later chapter filled in: the canvas hands you a command buffer, you record into it, the canvas submits and presents. You drew a triangle with a pipeline and shaders (chapters 4 and 5), then fed it from vertex and index buffers (chapters 6 and 7).
 
 Then came motion and depth. Push constants animated the square from the CPU every frame (chapter 8), matrices and perspective turned it into a cube (chapter 9), the depth buffer and culling made it solid (chapter 10), and the mouse made it turn (chapter 11). Descriptors gave shaders access to GPU memory (chapter 12), which brought in a texture: uploaded through a staging buffer and barriers (chapter 13), then sampled through a view and a sampler (chapter 14). Normals and a light gave the surface shape (chapter 15), and a generated or loaded mesh replaced the hand-typed cube without touching the pipeline (chapter 16).
 
@@ -32,11 +32,11 @@ The arrows mean different things. Uploads copy CPU bytes. Descriptors store refe
 
 The GPU context creates the Vulkan instance, chooses a physical device, enables features, selects queue families, and creates the logical device that owns every resource you made.
 
-Before any of that, Datoviz finds and loads the **Vulkan loader**, the system library that discovers installed drivers and routes each Vulkan call to the right one. Every call you made through vklite went through it. The loader can also insert **layers** between your program and the driver. `dvz_gpu_ctx_config_validation()` asked for the Khronos validation layer: when it is installed, the loader places it in front of the driver, it checks each call against the specification, and Datoviz's debug messenger prints its messages and counts the errors that `dvz_gpu_ctx_error_count()` reported at the end of every chapter. Validation slows every call, so release builds usually turn it off.
+Before any of that, Datoviz loads the Vulkan loader (chapter 1), which routes each call to the driver and can insert layers. The validation layer you enabled in chapter 2 checked every call and fed `dvz_gpu_ctx_error_count()`. Validation slows every call, so release builds usually turn it off.
 
 The window and canvas create the surface and swapchain, acquire images, recover from resizes, and present. `dvz_canvas_frame()` and `dvz_canvas_submit()` wrap that contract.
 
-The canvas also owns each frame slot's command pool, command buffer, semaphores, and fence. Semaphores order GPU operations such as acquisition, rendering, and presentation. Fences tell the CPU that submitted work has finished. Together they let the CPU record one frame while the GPU executes another, and say when a frame slot is safe to reuse.
+The canvas also owns each frame slot's command pool, command buffer, semaphores, and fence. Semaphores order GPU operations such as acquisition, rendering, and presentation. Fences (chapter 3) tell the CPU that submitted work has finished. Together they let the CPU record one frame while the GPU executes another, and say when a frame slot is safe to reuse.
 
 The rendering wrapper records dynamic rendering with color and depth attachments. Raw Vulkan can also use classic render passes and framebuffers; either way, attachments and image layout transitions must agree.
 
@@ -61,9 +61,9 @@ The final program sorts its state by how often it changes, a useful starting poi
 
 Write a compute shader that fills a storage image, then barrier and sample it in a graphics pass. Add a second pipeline for a wireframe or outline pass. Enable MSAA, then study blending and transparency. Add an ImGui overlay for camera and material controls.
 
-Each of these reuses something you already know in a new place. The barrier between a compute write and a fragment read is chapter 13's barrier with different stages and access masks. A wireframe pass is a second pipeline built like chapter 4's, with different fixed state.
+Each of these reuses something you already know in a new place. The barrier between a compute write and a fragment read is chapter 13's barrier with different stages and access masks. A wireframe pass is a second pipeline built like chapter 4's, with chapter 10's line polygon mode.
 
-When the renderer itself is no longer the lesson, move up to the Scene API. It runs on the same GPU foundations but manages resources, visuals, and cameras for you. The low-level path remains there whenever a custom pipeline earns the extra control.
+When the renderer itself is no longer the lesson, move up to the [Scene API](../how-to/create-a-scene.md). It runs on the same GPU foundations but manages resources, visuals, and cameras for you. The low-level path remains there whenever a custom pipeline earns the extra control.
 
 ## Checkpoint
 

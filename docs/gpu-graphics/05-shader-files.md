@@ -32,8 +32,6 @@ flowchart TD
     B -->|failure| F[Destroy the candidate, keep the old one]
 ```
 
-The same two rules apply whenever you replace a GPU object that frames may be using.
-
 ## Move the shaders into files
 
 Delete the `VERTEX_GLSL` and `FRAGMENT_GLSL` strings from `main.c`. Create `shader.vert` and `shader.frag` beside it, and add `<datoviz/fileio.h>`. The paths are relative to the directory where you launch `vkcourse`:
@@ -162,7 +160,7 @@ static void keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void
 }
 ```
 
-Subscribe after installing the draw callback. The router keeps the `&renderer` pointer, so `renderer` must outlive the subscription:
+The window delivers input through a `DvzInputRouter`, its event dispatcher: you subscribe callbacks to it, and it calls them as events arrive. `dvz_window_router()` returns the window's router, borrowed and valid until the window is destroyed. Subscribe after installing the draw callback. The router keeps the `&renderer` pointer, so `renderer` must outlive the subscription:
 
 ```c
     DvzCallbackId keyboard_id =

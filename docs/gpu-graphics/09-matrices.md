@@ -26,7 +26,7 @@ Think of taking a photo: the object has a shape, it stands somewhere in a room, 
 - **View space**: the same scene seen from the camera, which sits at the origin and looks down negative z. The **view matrix** takes world space to view space. Moving the camera means changing this matrix.
 - **Clip space**: the output of the **projection matrix**, which plays the lens: field of view, aspect ratio, and the nearest and farthest distances drawn. This is the space `gl_Position` is written in, and Vulkan clips triangles against its bounds.
 - **Normalized device coordinates** (NDC): clip coordinates divided by their fourth component, `w`, which the GPU does itself. x and y run from −1 to 1 across the viewport, z from 0 at the near plane to 1 at the far plane. Chapters 4 to 8 wrote `w = 1`, so their clip coordinates were already NDC.
-- **Framebuffer coordinates**: pixels. The viewport, set since chapter 4, maps NDC to them.
+- **Framebuffer coordinates**: pixels. The viewport, set since chapter 3, maps NDC to them.
 
 Vulkan only knows clip space and what follows. The earlier spaces and their matrices are this program's conventions, which is why the matrix code lives in C.
 
@@ -253,7 +253,7 @@ The cube spins with some back faces drawn over front ones. The terminal ends wit
 
 ## What carries over
 
-- Model, view, and projection matrices, then the divide by `w`, are how every real-time 3D API gets from stored vertices to the screen. Only conventions differ: Vulkan's NDC has y down and depth from 0 to 1, OpenGL's has y up and depth from −1 to 1.
+- Model, view, and projection matrices, then the divide by `w`, are how real-time 3D renderers get from stored vertices to the screen. Only conventions differ: Vulkan's NDC has y down and depth from 0 to 1, OpenGL's has y up and depth from −1 to 1.
 - Work that is the same for every vertex, such as combining matrices, belongs on the CPU once per draw, not in the shader once per vertex.
 - C and the shader must agree on how a matrix is laid out in memory. GLSL stores columns; C code that writes rows sends the transposed matrix.
 

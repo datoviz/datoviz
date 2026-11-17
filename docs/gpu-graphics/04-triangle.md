@@ -46,7 +46,7 @@ typedef struct
 } Renderer;
 ```
 
-Cleanup now releases everything through `renderer`, so declare it zero-initialized with the other handles at the top of `main()`. A failure before the pipeline exists then reaches `cleanup:` with every field `NULL`. Delete the separate `commands` and `rendering` locals and chapter 2's `Renderer renderer = {...}` initializer:
+Cleanup now releases everything through `renderer`, so declare it zero-initialized with the other handles at the top of `main()`. A failure before the pipeline exists then reaches `cleanup:` with every field `NULL`. Delete the separate `commands` and `rendering` locals and chapter 3's `Renderer renderer = {...}` initializer:
 
 ```c
     DvzCanvas* canvas = NULL;
@@ -63,9 +63,9 @@ The argument loop now looks only for `--png`:
 
 ## Write the two shaders
 
-Shaders are written in **GLSL**, a C-like language for GPU programs. For now they live in C strings; chapter 5 moves them into files. A **shader invocation** is one execution of a shader for one item of work. The vertex shader runs once per requested vertex and writes that vertex's position. `gl_VertexIndex` is 0, 1, then 2, so each invocation picks one position and one color from constant arrays compiled into the shader.
+Shaders are written in **GLSL**, a C-like language for GPU programs. For now they live in C strings; chapter 5 moves them into files. A **shader invocation** is one execution of a shader for one item of work. `gl_VertexIndex` is 0, 1, then 2, so each invocation picks one position and one color from constant arrays compiled into the shader.
 
-These positions are in clip space: for now, x and y run from −1 to 1, and y points down. Chapter 9 explains why.
+These positions are in clip space, the −1 to 1 space of chapter 3's viewport: x and y run from −1 to 1, and y points down. Chapter 9 explains why.
 
 ```c
 static const char* VERTEX_GLSL =
@@ -81,7 +81,7 @@ static const char* VERTEX_GLSL =
     "}\n";
 ```
 
-After the vertex stage, primitive assembly groups the three outputs into a triangle, and rasterization finds which framebuffer samples it covers. For each one it produces a **fragment**, a candidate contribution to that sample, with the vertex colors interpolated across the triangle. The fragment shader then runs for each fragment and writes a color to location 0. A fragment is not simply a pixel: later tests can reject it, and multisampling can evaluate several samples per pixel.
+After the vertex stage, the GPU groups the three outputs into a triangle (**primitive assembly**) and finds which pixels it covers (**rasterization**). For each covered pixel it makes a **fragment**, a candidate color for that pixel that carries the vertex colors, interpolated across the triangle. The fragment shader runs once per fragment and writes a color to location 0. A fragment is not yet a pixel: later tests, such as chapter 10's depth test, can discard it, and multisampling can make several fragments per pixel.
 
 ```c
 static const char* FRAGMENT_GLSL =
@@ -105,11 +105,11 @@ flowchart TD
     F --> G[Color attachment]
 ```
 
-The programmable stages run code you supply. The fixed-function stages follow state you configure, such as topology, viewport, depth testing, and blending. The pipeline packages the shaders and most of that state into one device object. A command later binds it, and the following draws use that whole configuration.
+The programmable stages run code you supply. The fixed-function stages follow state you configure, such as topology, viewport, depth testing, and blending.
 
 ## Wait for the canvas color format
 
-The pipeline is compiled to write one exact pixel format, so it must know the format of the image it draws into. The window system picks the swapchain format; the canvas learns it at the first acquire, and the pipeline must name that exact format. A window may use BGRA where an offscreen canvas uses RGBA, so you cannot guess.
+The pipeline is compiled to write one exact pixel format, so it must know the format of the image it draws into. That image is the canvas's frame target, and it uses the swapchain's format so the canvas can copy it into the swapchain image (chapter 2). The window system chooses that format, and the canvas learns it at the first acquire. A window may use BGRA where an offscreen canvas uses RGBA, so you cannot guess.
 
 After creating the canvas, set `renderer.device` and run one frame before creating the pipeline. No draw callback is installed yet, so the canvas records its default clear. Then read the resolved format:
 
@@ -145,7 +145,7 @@ static int create_pipeline(Renderer* renderer)
 {
 ```
 
-Add `<stdint.h>` and `<datoviz/shader.h>`. GLSL is the shading language of both source strings. `dvz_compile_glsl()` translates each into **SPIR-V**, Vulkan's binary intermediate representation. SPIR-V is not machine code; the driver translates it further for your GPU.
+Add `<stdint.h>` and `<datoviz/shader.h>`. `dvz_compile_glsl()` translates each into **SPIR-V**, Vulkan's binary intermediate representation. SPIR-V is not machine code; the driver translates it further for your GPU.
 
 ```c
     uint64_t vertex_size = 0;
@@ -267,7 +267,7 @@ The `NULL` checks skip wrappers that were never allocated, and `free` accepts `N
 
 ## Draw three vertices
 
-Last, the draw itself, inside chapter 3's rendering pass. A draw uses whatever pipeline is bound at that moment, so the order is: bind the pipeline, set the dynamic viewport and scissor, then ask for three vertices. The numbers are first vertex, vertex count, first instance, and instance count; one instance means "draw the shape once".
+Last, the draw itself, inside chapter 3's rendering pass. A draw uses whatever pipeline is bound at that moment. Insert the bind right after `dvz_cmd_rendering_begin()`, so chapter 3's `dvz_cmd_set_viewport_scissor()` call moves below it, and add the draw after that call; do not add a second viewport call. The final order is: begin rendering, bind the pipeline, set the dynamic viewport and scissor, draw three vertices. The numbers are first vertex, vertex count, first instance, and instance count; one instance means "draw the shape once".
 
 ```c
     dvz_cmd_bind_graphics(renderer->commands, renderer->pipeline);
@@ -317,7 +317,7 @@ Build and run from your `vkcourse` directory, close the window, then capture the
 
 - Every modern API draws through a pipeline object that fixes shaders and most drawing state ahead of time: render pipelines in WebGPU, pipeline states in Metal and Direct3D 12. Changing a fixed setting means another pipeline.
 - A draw runs one program per vertex and one per fragment, in parallel, with fixed hardware between them. Stages pass data by location number, not by name.
-- Shader source is compiled twice: once to a portable form such as SPIR-V, then by the driver into code for your GPU.
+- In Vulkan and Direct3D 12, shader source is compiled twice: once to a portable form (SPIR-V, DXIL), then by the driver into code for your GPU.
 
 ## Checkpoint
 

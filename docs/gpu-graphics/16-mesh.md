@@ -6,7 +6,7 @@
 
 The program now draws a textured, lit cube that turns under the mouse. Its geometry, though, is 24 vertices and 36 indices typed by hand into C arrays (chapters 13 and 15). Real models have thousands of vertices or more. They come from a generator or a file, and their size is only known when the program runs.
 
-This final chapter replaces the cube with a generated sphere, or with a Wavefront OBJ file of your own. The surprising part is how little changes. The shaders, the texture, the descriptors, and the push constants stay exactly as they are; only how the vertex and index buffers are filled, and how many indices the draw reads, change. At the end you have a complete textured, lit, mouse-controlled mesh viewer.
+This final chapter replaces the cube with a generated sphere, or with a Wavefront OBJ file of your own. The surprising part is how little changes: the shaders, texture, descriptors and push constants stay as they are. At the end you have a complete textured, lit, mouse-controlled mesh viewer.
 
 In this chapter you will:
 
@@ -25,7 +25,7 @@ Three things do change with a real mesh:
 
 - **The counts come at run time.** Buffer sizes and the index count must come from the mesh, not from `sizeof` on a static array.
 - **The data needs converting.** Datoviz's geometry library stores doubles; the pipeline reads 32-bit floats. Your code is the bridge between the two formats.
-- **Indices outgrow 16 bits.** A `uint16_t` index stops at 65535 (chapter 7). Large meshes need 32-bit indices, and the index binding must say so.
+- **Indices outgrow 16 bits.** A `uint16_t` index stops at 65535 (chapter 7). Large meshes need 32-bit indices, and the index-buffer bind must say so.
 
 ```mermaid
 flowchart TD
@@ -158,7 +158,7 @@ The draw must match the new buffers in two ways: the index type and the index co
 
 Read the draw as chapter 7 did: from index 0, with vertex offset 0, draw `index_count` indices, as 1 instance starting at instance 0. `VK_INDEX_TYPE_UINT32` tells Vulkan to read each index as 4 bytes.
 
-The listing also accepts `--width`, `--height`, and `--time`, used to render the documentation preview.
+The full listing also accepts `--width`, `--height` and `--time`, used only to render the documentation preview. You don't need them, so your file will be slightly shorter.
 
 ## Load your own OBJ
 
@@ -188,7 +188,7 @@ The cube needed one flat normal per face (chapter 15). A sphere is curved everyw
 
 The sphere generator supplies radial normals, each pointing away from the center. Along the texture seam, duplicated vertices share a position and a normal but differ in UV (U = 0 on one side, U = 1 on the other). That is the rule from chapter 7 in action: split a vertex where attributes differ, and nowhere else.
 
-`dvz_geometry_compute_normals()` recomputes normals by averaging the triangles that share each index. It cannot know that two seam vertices are the same point, so recomputed normals can show a faint seam. For the sphere, keep the generator's normals.
+For the sphere, keep the generator's normals: `dvz_geometry_compute_normals()` averages only triangles that share an index, so it can show a faint seam (Try it 2).
 
 ## Build and run
 
