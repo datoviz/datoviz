@@ -31,6 +31,7 @@ The maintainer reports on 2026-11-16 that Claude is currently checking the cours
 
 1. Obtain maintainer proofreading of all chapters, diagrams, exercises, previews, ownership explanations and package-first instructions.
 2. The 2026-11-16 Claude review covered a fresh-clone reader run of all 16 chapters (all built and ran with zero validation errors), voice, clarity and correctness, consistency, learner experience and pacing. Must-fix findings landed in `3d2397637`; a concise template, voice and learner pass follows. Deferred past v0.4: reordering part 4 (upload, sampling, then uniform buffers), moving viewport/scissor from chapter 3 to 4, and a canvas format query before the first frame. The fresh-clone reader run covers the isolated-reader contract for the revised course except live input on a physical display (exercised under Xvfb with lavapipe) and hosted platforms. Repeat the reader pass after the revision pass lands.
+   On 2026-11-17 the maintainer judged the concise pass too terse. Chapter 12 (`7f7ea430c`) is the approved model for a fuller explanatory pass over every chapter; follow [../rules/VULKAN_COURSE_STYLE.md](../rules/VULKAN_COURSE_STYLE.md).
 3. Validate exact installed artifacts and hosted/live behavior under the RC4 freeze below; retain the first official post-RC2 package gate for RC3.
 
 Use generated geometry and a procedural asymmetric checkerboard. No committed Suzanne OBJ, PNG, `data` update, Blender recipe, or binary-asset approval is required for the course. Optional external-mesh polish is not a release blocker.
