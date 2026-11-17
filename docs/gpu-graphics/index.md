@@ -79,8 +79,8 @@ Every coding chapter ends with a complete listing of the file as it should look 
 
 <ol start="12" markdown>
 <li markdown>[Uniform buffers and descriptors](12-uniform-buffers.md): shader data shared across draws.</li>
-<li markdown>[Uploading a texture](13-texture-upload.md): staging buffers, image layouts, and barriers.</li>
-<li markdown>[Sampling the texture](14-texture-sampling.md): samplers, descriptors, and UV coordinates.</li>
+<li markdown>[Uploading a texture](13-texture-upload.md): UV coordinates, staging buffers, image layouts, and barriers.</li>
+<li markdown>[Sampling the texture](14-texture-sampling.md): image views, samplers, and descriptors.</li>
 <li markdown>[Lighting](15-lighting.md): normals, diffuse, and specular.</li>
 <li markdown>[A real mesh](16-mesh.md): from a hand-typed cube to generated geometry.</li>
 </ol>

@@ -51,7 +51,7 @@ STEPS = (
     Step("step10", expect_geometry=True),
     Step("step11", expect_geometry=True),
     Step("step12", expect_geometry=True),
-    Step("step13", expect_geometry=True, same_as_previous=True),
+    Step("step13", expect_geometry=True),
     Step("step14", expect_geometry=True),
     Step("step15", expect_geometry=True),
     Step("step16", expect_geometry=True),

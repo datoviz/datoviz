@@ -1,10 +1,114 @@
 # 13. Uploading a texture
 
-*About 680 lines of C; raw Vulkan would need about 1950.*
+*About 691 lines of C; raw Vulkan would need about 1960.*
 
-![The untextured cube remains visible while its texture is prepared on the GPU.](../assets/gpu-graphics/13-texture-upload.webp)
+![Each face of the cube shows its UV coordinates as a black, red, yellow, and green gradient.](../assets/gpu-graphics/13-texture-upload.webp)
 
-The result of this chapter is invisible by design: a checkerboard image lands on the GPU, ready for chapter 14 to sample. Getting it there is the most explicit Vulkan in the course. You generate pixels in C, copy them into a staging buffer, record a copy into an image, and use barriers to move the image between uses. The cube looks exactly as in chapter 12.
+First, give each face its own UV coordinates and show them as colors. Then upload a checkerboard image, the most explicit Vulkan in the course: you generate pixels in C, copy them into a staging buffer, record a copy into an image, and use barriers between uses. It stays invisible until chapter 14 samples it.
+
+## Give each face its own UVs
+
+**UV coordinates** (texture coordinates) give each vertex a point in the image: `u` across, `v` down, both from 0 to 1. An index selects a whole vertex, UV included. Eight shared corners cannot give six faces their own square UV maps, so split them: four vertices per face, 24 in total, still drawn as 12 triangles.
+
+The UVs replace the vertex colors, so replace `Vertex` with:
+
+```c
+typedef struct
+{
+    float position[3];
+    float uv[2];
+} Vertex;
+```
+
+Replace `VERTICES` and `INDICES`. Each face runs `(0, 0)`, `(1, 0)`, `(1, 1)`, `(0, 1)` and keeps chapter 10's outward winding:
+
+```c
+static const Vertex VERTICES[24] = {
+    // Back face.
+    {{0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
+    {{-0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
+    {{-0.65f, 0.65f, -0.65f}, {1.0f, 1.0f}},
+    {{0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
+    // Front face.
+    {{-0.65f, -0.65f, 0.65f}, {0.0f, 0.0f}},
+    {{0.65f, -0.65f, 0.65f}, {1.0f, 0.0f}},
+    {{0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
+    {{-0.65f, 0.65f, 0.65f}, {0.0f, 1.0f}},
+    // Bottom face.
+    {{-0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
+    {{0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
+    {{0.65f, -0.65f, 0.65f}, {1.0f, 1.0f}},
+    {{-0.65f, -0.65f, 0.65f}, {0.0f, 1.0f}},
+    // Top face.
+    {{-0.65f, 0.65f, -0.65f}, {0.0f, 0.0f}},
+    {{-0.65f, 0.65f, 0.65f}, {1.0f, 0.0f}},
+    {{0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
+    {{0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
+    // Right face.
+    {{0.65f, -0.65f, 0.65f}, {0.0f, 0.0f}},
+    {{0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
+    {{0.65f, 0.65f, -0.65f}, {1.0f, 1.0f}},
+    {{0.65f, 0.65f, 0.65f}, {0.0f, 1.0f}},
+    // Left face.
+    {{-0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
+    {{-0.65f, -0.65f, 0.65f}, {1.0f, 0.0f}},
+    {{-0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
+    {{-0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
+};
+
+// Each face winds counter-clockwise when seen from outside the cube.
+static const uint16_t INDICES[36] = {
+    0,  1,  2,  0,  2,  3,  4,  5,  6,  4,  6,  7,  8,  9,  10, 8,  10, 11,
+    12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
+};
+```
+
+The sizes and the 36-index draw adapt automatically. In `create_pipeline()`, replace the color attribute with the UV attribute:
+
+```c
+    dvz_graphics_vertex_attr(
+        renderer->pipeline, 0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv));
+```
+
+Replace `shader.vert` with:
+
+```glsl
+#version 450
+
+layout(push_constant) uniform Push { mat4 mvp; } push_data;
+layout(location = 0) in vec3 in_position;
+layout(location = 1) in vec2 in_uv;
+layout(location = 0) out vec2 uv;
+
+void main()
+{
+    gl_Position = push_data.mvp * vec4(in_position, 1.0);
+    uv = in_uv;
+}
+```
+
+Replace `shader.frag` to show the UVs as colors:
+
+```glsl
+#version 450
+
+layout(set = 0, binding = 0) uniform Material { vec4 tint; } material;
+layout(location = 0) in vec2 uv;
+layout(location = 0) out vec4 out_color;
+
+void main()
+{
+    out_color = vec4(uv, 0.0, 1.0) * material.tint;
+}
+```
+
+The rasterizer interpolates UVs across each triangle, correcting for perspective. With `u` as red and `v` as green, each face runs from black at `(0, 0)` through red and yellow to green. Colors break at the edges because each face has its own corners.
+
+Set the tint to white in `create_material()` so the gradient keeps its colors:
+
+```c
+    Material material = {.tint = {1.0f, 1.0f, 1.0f, 1.0f}};
+```
 
 ## Buffers, images, and barriers
 
@@ -184,7 +288,7 @@ Build and run as before; the capture goes to `chapter13.png`.
     .\build\Release\vkcourse.exe --png chapter13.png
     ```
 
-The capture matches chapter 12, because no shader reads the image yet. The terminal ends with `validation errors: 0`; chapter 14 checks the pixels themselves.
+Every face shows its UV gradient. The terminal ends with `validation errors: 0`.
 
 !!! tip "Try it"
 
@@ -198,13 +302,14 @@ The capture matches chapter 12, because no shader reads the image yet. The termi
 
 !!! warning "When it goes wrong"
 
-    An unchanged cube is expected. A validation error during upload points to image creation, the copy region, or a layout mismatch; read it before touching the shaders. An error at teardown can mean the staging buffer was freed before the upload finished; keep the blocking submit before its cleanup.
+    A stretched side face means it still shares corners with its neighbors. A validation error during upload points to image creation, the copy region, or a layout mismatch; read it before touching the shaders. An error at teardown can mean the staging buffer was freed before the upload finished; keep the blocking submit before its cleanup.
 
 ## Checkpoint
 
-1. Why does this image need a staging buffer while the vertex buffer could be written directly?
-2. Which image layout must the image be in during `dvz_cmd_copy_buffer_to_image()`?
-3. What three things does each barrier do?
+1. Why do eight positions become 24 vertices when each face needs its own UVs?
+2. Why does this image need a staging buffer while the vertex buffer could be written directly?
+3. Which image layout must the image be in during `dvz_cmd_copy_buffer_to_image()`?
+4. What three things does each barrier do?
 
 ??? example "Your `main.c` after chapter 13"
 

@@ -19,7 +19,7 @@ typedef struct
 } Vertex;
 ```
 
-The 24 vertices already split the cube at its edges for UVs. The same split gives each face its own outward normal; sharing normals across faces would round off the edges. Replace `VERTICES`, and keep chapter 14's `INDICES`:
+The 24 vertices already split the cube at its edges for UVs. The same split gives each face its own outward normal; sharing normals across faces would round off the edges. Replace `VERTICES`, and keep chapter 13's `INDICES`:
 
 ```c
 static const Vertex VERTICES[24] = {

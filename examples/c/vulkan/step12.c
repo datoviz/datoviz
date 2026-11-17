@@ -281,7 +281,7 @@ static int create_pipeline(Renderer* renderer)
  */
 static int create_material(Renderer* renderer)
 {
-    Material material = {.tint = {0.75f, 0.9f, 1.0f, 1.0f}};
+    Material material = {.tint = {1.0f, 0.55f, 0.25f, 1.0f}};
     renderer->material_buffer = dvz_buffer_create_wrapper();
     if (renderer->material_buffer == NULL)
         return -1;

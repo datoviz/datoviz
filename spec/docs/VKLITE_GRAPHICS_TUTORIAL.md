@@ -71,8 +71,8 @@ The required course has sixteen substantive chapters plus an epilogue:
 10. Depth and culling: request Canvas-owned depth, configure depth testing, winding, culling, and wireframe experiments.
 11. Mouse control: connect Canvas input, camera, and arcball state without the retained scene layer.
 12. Uniform buffers and descriptors: keep the MVP in its vertex-stage push range; add a static, 16-byte-aligned fragment `Material` tint in a host-visible uniform buffer; declare it at set 0 binding 0; populate and bind a descriptor set; distinguish layouts, sets, bindings, copied values, referenced resources, alignment, and lifetime.
-13. Texture upload: create procedural pixels, staging resources, an image, transitions, copy commands, and one-shot submission while retaining the material uniform.
-14. Texture sampling: add image views, a sampler, UVs, filtering, and address-mode experiments; declare the combined image sampler at set 0 binding 1 beside the material uniform at binding 0.
+13. Texture upload: add per-face UVs with a UV visualization, then create procedural pixels, staging resources, an image, transitions, copy commands, and one-shot submission while retaining the material uniform.
+14. Texture sampling: add image views, a sampler, filtering, and address-mode experiments; declare the combined image sampler at set 0 binding 1 beside the material uniform at binding 0.
 15. Lighting: add normals, normal transforms, ambient, diffuse, and specular light; extend the existing aligned material uniform with light and material parameters while keeping projection and model-view matrices in the 128-byte push range.
 16. Real mesh: use generated sphere or torus geometry and show `dvz_geometry_obj()` as the path for readers’ own models.
 

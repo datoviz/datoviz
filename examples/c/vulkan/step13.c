@@ -34,7 +34,7 @@
 typedef struct
 {
     float position[3];
-    float color[3];
+    float uv[2];
 } Vertex;
 
 typedef struct
@@ -49,25 +49,43 @@ typedef struct
 
 _Static_assert(sizeof(Material) == 16, "the material block must match four shader floats");
 
-static const Vertex VERTICES[8] = {
-    {{-0.65f, -0.65f, -0.65f}, {1.0f, 0.2f, 0.2f}},
-    {{ 0.65f, -0.65f, -0.65f}, {1.0f, 0.7f, 0.2f}},
-    {{ 0.65f,  0.65f, -0.65f}, {0.2f, 0.9f, 0.3f}},
-    {{-0.65f,  0.65f, -0.65f}, {0.2f, 0.5f, 1.0f}},
-    {{-0.65f, -0.65f,  0.65f}, {0.5f, 0.2f, 1.0f}},
-    {{ 0.65f, -0.65f,  0.65f}, {1.0f, 0.3f, 0.7f}},
-    {{ 0.65f,  0.65f,  0.65f}, {0.3f, 1.0f, 0.9f}},
-    {{-0.65f,  0.65f,  0.65f}, {0.9f, 0.9f, 0.2f}},
+static const Vertex VERTICES[24] = {
+    // Back face.
+    {{0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
+    {{-0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
+    {{-0.65f, 0.65f, -0.65f}, {1.0f, 1.0f}},
+    {{0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
+    // Front face.
+    {{-0.65f, -0.65f, 0.65f}, {0.0f, 0.0f}},
+    {{0.65f, -0.65f, 0.65f}, {1.0f, 0.0f}},
+    {{0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
+    {{-0.65f, 0.65f, 0.65f}, {0.0f, 1.0f}},
+    // Bottom face.
+    {{-0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
+    {{0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
+    {{0.65f, -0.65f, 0.65f}, {1.0f, 1.0f}},
+    {{-0.65f, -0.65f, 0.65f}, {0.0f, 1.0f}},
+    // Top face.
+    {{-0.65f, 0.65f, -0.65f}, {0.0f, 0.0f}},
+    {{-0.65f, 0.65f, 0.65f}, {1.0f, 0.0f}},
+    {{0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
+    {{0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
+    // Right face.
+    {{0.65f, -0.65f, 0.65f}, {0.0f, 0.0f}},
+    {{0.65f, -0.65f, -0.65f}, {1.0f, 0.0f}},
+    {{0.65f, 0.65f, -0.65f}, {1.0f, 1.0f}},
+    {{0.65f, 0.65f, 0.65f}, {0.0f, 1.0f}},
+    // Left face.
+    {{-0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
+    {{-0.65f, -0.65f, 0.65f}, {1.0f, 0.0f}},
+    {{-0.65f, 0.65f, 0.65f}, {1.0f, 1.0f}},
+    {{-0.65f, 0.65f, -0.65f}, {0.0f, 1.0f}},
 };
 
 // Each face winds counter-clockwise when seen from outside the cube.
 static const uint16_t INDICES[36] = {
-    0, 2, 1, 0, 3, 2,
-    4, 5, 6, 4, 6, 7,
-    0, 1, 5, 0, 5, 4,
-    3, 7, 6, 3, 6, 2,
-    1, 2, 6, 1, 6, 5,
-    0, 4, 7, 0, 7, 3,
+    0,  1,  2,  0,  2,  3,  4,  5,  6,  4,  6,  7,  8,  9,  10, 8,  10, 11,
+    12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
 };
 
 #define VERTEX_PATH   "shader.vert"
@@ -76,8 +94,8 @@ static const uint16_t INDICES[36] = {
 typedef struct
 {
     DvzDevice* device;
-    DvzVma* allocator;
     VkFormat color_format;
+    DvzVma* allocator;
     DvzCommands* commands;
     DvzRendering* rendering;
     DvzSlots* slots;
@@ -91,8 +109,8 @@ typedef struct
     DvzBuffer* vertex_buffer;
     DvzBuffer* index_buffer;
     DvzBuffer* material_buffer;
-    DvzDescriptors* descriptors;
     DvzImages* texture;
+    DvzDescriptors* descriptors;
 } Renderer;
 
 
@@ -114,8 +132,6 @@ static void multiply_mat4(mat4 left, mat4 right, mat4 out)
         for (uint32_t row = 0; row < 4; row++)
             out[column][row] = product[column][row];
 }
-
-
 
 
 
@@ -154,8 +170,7 @@ static void destroy_pipeline(Renderer* renderer)
  * @param result Compilation result that the caller must destroy.
  * @return Whether compilation succeeded.
  */
-static bool compile_file(
-    const char* path, DvzShaderStage stage, DvzShaderCompileResult* result)
+static bool compile_file(const char* path, DvzShaderStage stage, DvzShaderCompileResult* result)
 {
     DvzSize source_size = 0;
     char* source = dvz_read_text(path, &source_size);
@@ -247,15 +262,14 @@ static int create_pipeline(Renderer* renderer)
     dvz_graphics_vertex_attr(
         renderer->pipeline, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position));
     dvz_graphics_vertex_attr(
-        renderer->pipeline, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color));
+        renderer->pipeline, 0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv));
     dvz_graphics_primitive(
         renderer->pipeline, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_attachment_color(renderer->pipeline, 0, renderer->color_format);
     dvz_graphics_attachment_depth(renderer->pipeline, VK_FORMAT_D32_SFLOAT);
     dvz_graphics_depth(
         renderer->pipeline, false, true, VK_COMPARE_OP_LESS, DVZ_GRAPHICS_FLAGS_FIXED);
-    dvz_graphics_cull_mode(
-        renderer->pipeline, VK_CULL_MODE_BACK_BIT, DVZ_GRAPHICS_FLAGS_FIXED);
+    dvz_graphics_cull_mode(renderer->pipeline, VK_CULL_MODE_BACK_BIT, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_front_face(
         renderer->pipeline, VK_FRONT_FACE_COUNTER_CLOCKWISE, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_layout(renderer->pipeline, dvz_slots_handle(renderer->slots));
@@ -280,7 +294,7 @@ static int create_pipeline(Renderer* renderer)
  */
 static int create_material(Renderer* renderer)
 {
-    Material material = {.tint = {0.75f, 0.9f, 1.0f, 1.0f}};
+    Material material = {.tint = {1.0f, 1.0f, 1.0f, 1.0f}};
     renderer->material_buffer = dvz_buffer_create_wrapper();
     if (renderer->material_buffer == NULL)
         return -1;
@@ -468,10 +482,8 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
     if (push_result != DVZ_OK)
         renderer->draw_failed = true;
     DvzSize vertex_offset = 0;
-    dvz_cmd_bind_vertex_buffers(
-        renderer->commands, 0, 1, renderer->vertex_buffer, &vertex_offset);
-    dvz_cmd_bind_index_buffer(
-        renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT16);
+    dvz_cmd_bind_vertex_buffers(renderer->commands, 0, 1, renderer->vertex_buffer, &vertex_offset);
+    dvz_cmd_bind_index_buffer(renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT16);
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, 36, 0, 1);
     dvz_cmd_rendering_end(renderer->commands);
     dvz_commands_unwrap(renderer->commands);
@@ -509,8 +521,7 @@ int main(int argc, char** argv)
     COURSE_CHECK(host != NULL, "window host creation failed");
     DvzGpuCtxConfig gpu_config = dvz_gpu_ctx_config();
     dvz_gpu_ctx_config_validation(&gpu_config, true);
-    DvzResult configure_result =
-        dvz_canvas_configure_gpu_ctx(host, backend, mode, &gpu_config);
+    DvzResult configure_result = dvz_canvas_configure_gpu_ctx(host, backend, mode, &gpu_config);
     COURSE_CHECK(configure_result == DVZ_OK, "GPU configuration failed");
     gpu = dvz_gpu_ctx(&gpu_config);
     COURSE_CHECK(gpu != NULL, "no usable GPU found");
