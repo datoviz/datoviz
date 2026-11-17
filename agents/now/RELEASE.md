@@ -173,3 +173,7 @@ The development preview and its `identity.json` are local artifacts under `build
 ## RC4 dependency refresh recommendation
 
 The 2026-11-17 read-only assessment recommends a targeted post-RC3 refresh, not a blanket dependency sweep. [External dependency notes](../../spec/architecture/EXTERNAL_DEPENDENCIES.md#rc4-refresh-assessment-2026-11-17) record the observed pins, current upstream candidates, risks and validation sequence. Prioritize a coherent Vulkan toolchain baseline without raising the Vulkan 1.3 runtime requirement, and coordinate GUI updates with the existing ImGui/cimgui/ImPlot lane. GLFW/cglm/MSDF changes remain separate, fix-driven decisions; Kvazaar has no immediate upgrade need. RC3 dependency pins remain unchanged.
+
+## Homepage media delivery preparation
+
+[The current media handoff](DOCUMENTATION.md#homepage-motion-review) records the accepted two-video public pilot, complete-set private-mirror validation and prepared release attachments. New homepage media will use versioned GitHub Release URLs without binary website Git commits. Additional uploads and the live website update have separate maintainer approval gates; the live site remains unchanged during RC3 preparation. This narrow delivery slice does not make the broader data migration an RC3 requirement.
