@@ -52,4 +52,27 @@ The normal documentation workflow consumes the hash-locked snapshot declared by 
 
 `tools/docs_asset_stage.py --homepage-products build/homepage-review/selected-homepage-media` stages both AV1 primaries and their H.264 compatibility streams. Publish stages require the complete verified snapshot; hermetic builds use generated placeholders without requiring media or encoder binaries. `python3 tools/check_gallery_media_freshness.py --profile homepage` validates selected hashes and video timing. Use the explicit comparison tools for candidate freshness and encoding experiments.
 
-`python3 tools/homepage_media.py --package build/homepage-review/publication/homepage-media.tar.gz` creates a deterministic local publication draft. It performs no upload. The selected RC3 publication mode uses the existing website repository and local media URLs; it requires no new asset repository or data migration. The guarded publisher verifies the selection before any publication preparation. An optional `DATOVIZ_HOMEPAGE_ASSET_BASE_URL` supports a later immutable HTTPS origin; only that mode excludes homepage binaries from website Git output. The standard publisher clears inherited origin overrides for website-hosted selections. Private review builds serve local copies. Selecting an animation or generating a package does not authorize external binary publication.
+## Homepage Release Delivery
+
+The selected homepage media are prepared as GitHub Release attachments in the existing website repository. They are served through versioned release URLs rather than committed as website Git blobs. This delivery change does not deploy the website, create a repository, migrate datasets or remove the data submodule.
+
+Verify the selected local files and prepare the exact flat attachment set from a committed producer revision:
+
+```sh
+python3 tools/homepage_media.py
+python3 tools/homepage_media.py --producer-commit "$(git rev-parse HEAD)" --release-dir build/homepage-review/release-attachments
+```
+
+The output contains ten media files, `homepage-media.json` and `SHA256SUMS`. The manifest records the producer source commit, capture-frame identities, video dimensions/timing, exact file hashes and versioned public URLs. Preparation verifies the entire source set before writing, never encodes or uploads anything, and refuses to replace a different existing draft. Use a new output directory after changing the producer revision. Review receipts and publication decisions remain separate from technical media identity.
+
+`python3 tools/homepage_media.py --package build/homepage-review/publication/homepage-media.tar.gz` also creates a deterministic local backup archive. Its technical descriptor excludes hosting and approval state, so changing those does not change the approved media bundle. The archive is not required as another public attachment.
+
+Create, upload and publish a media release only after explicit approval of its repository, tag, notes and exact attachment list. Use a draft for upload/re-download verification, publish as a prerelease with latest disabled, then verify every public file anonymously:
+
+```sh
+python3 tools/homepage_media.py --verify-public
+```
+
+The public verifier checks bounded downloads against every selected byte count and SHA-256. The guarded website publisher requires both final website approval and successful public verification before preparing deployment. Publishing media attachments and publishing the documentation website are separate operations.
+
+`DATOVIZ_HOMEPAGE_ASSET_BASE_URL` selects the versioned delivery origin. In that mode homepage URLs are rewritten and their binary subtree is excluded from website Git output. A private WIP preview can use a verified private mirror while the proposed public release awaits approval; this demonstrates the same URL layout without uploading unpublished files. Ordinary local and hermetic builds retain their explicit local staging behavior. Mirror checks do not establish availability of a future public release.
