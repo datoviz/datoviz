@@ -483,7 +483,8 @@ publish confirm='no' source_branch='main' seed_legacy='no':
         exit 1
     fi
     python3 tools/homepage_media.py --publication
-    git -C "$site_repo" pull --ff-only
+    git -C "$site_repo" fetch origin main
+    git -C "$site_repo" merge --ff-only origin/main
 
     just wasm-scene-build-if-needed
     just wasm-scene-export-check
@@ -504,8 +505,13 @@ publish confirm='no' source_branch='main' seed_legacy='no':
 
     deploy_tmp=$(mktemp -d)
     trap 'rm -rf "$deploy_tmp"' EXIT
-    homepage_asset_base=$(python3 -c 'import json; print(json.load(open("spec/docs/homepage-media.json"))["publication"]["asset_base_url"])')
-    DATOVIZ_HOMEPAGE_ASSET_BASE_URL="$homepage_asset_base" DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/publish uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
+    homepage_asset_base=$(python3 -c 'import json; print(json.load(open("spec/docs/homepage-media.json"))["publication"].get("asset_base_url", ""))')
+    if [ -n "$homepage_asset_base" ]; then
+        export DATOVIZ_HOMEPAGE_ASSET_BASE_URL="$homepage_asset_base"
+    else
+        unset DATOVIZ_HOMEPAGE_ASSET_BASE_URL
+    fi
+    DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/publish uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow \
         mkdocs build --strict --site-dir "$deploy_tmp/built"
     just wasm-scene-export-check \
         "$deploy_tmp/built/build-wasm-scene/wasm/datoviz_wasm_scene.mjs"
@@ -539,7 +545,7 @@ publish confirm='no' source_branch='main' seed_legacy='no':
         exit 1
     fi
     git -C "$site_repo" commit -m "Deploy Datoviz ${current_branch} at $(git rev-parse --short HEAD)"
-    git -C "$site_repo" push origin main
+    git -C "$site_repo" push origin HEAD:main
 #
 
 docs-publish confirm='no' source_branch='main' seed_legacy='no':
