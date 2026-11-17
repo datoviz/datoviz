@@ -4,7 +4,25 @@
 
 ![An RGB triangle on a dark background.](../assets/gpu-graphics/04-triangle.webp)
 
-The frame from chapter 3 finally gets something to draw: a triangle, built from two shaders, one graphics pipeline, and one draw command. A **shader** is a small GPU program that runs at a defined stage of the graphics pipeline. The vertex positions live in the shader for now, so no vertex buffer is needed yet.
+Chapter 3 gave every frame its shape: a rendering pass that clears the image, with a gap between `dvz_cmd_rendering_begin()` and `dvz_cmd_rendering_end()` where drawing goes. So far that gap is empty. Now we fill it with a triangle.
+
+The triangle is the GPU's basic shape: every surface in this course, up to the final mesh, is made of triangles. Drawing one takes three new things: **shaders**, small programs that run on the GPU; a **graphics pipeline**, which combines the shaders with the settings for how to draw; and a draw command, recorded in the callback. To keep the chapter to those three, the vertex positions are written inside the shader itself. Chapter 6 moves them into a buffer.
+
+In this chapter you will:
+
+1. remove chapter 3's animation and give `Renderer` fields for the pipeline;
+2. write a vertex shader and a fragment shader in GLSL;
+3. wait until the canvas knows its color format;
+4. compile the shaders and build the graphics pipeline;
+5. bind the pipeline and draw three vertices.
+
+## What a draw needs
+
+On the CPU, you would draw a triangle with a loop over pixels. The GPU works the other way around. You supply two small programs, and the GPU runs them many times in parallel: the **vertex shader** once per vertex, to say where it goes, and the **fragment shader** once per covered pixel, to say what color it gets. Between the two, fixed hardware does the part that never changes: it assembles vertices into triangles and finds which pixels each one covers.
+
+The pipeline ties these together. Vulkan wants everything that shapes a draw, such as the shaders, the kind of primitive, and the output format, known up front in one object. The driver can then compile it all into GPU code once, when the pipeline is created, rather than at each draw. Creating a pipeline is slow; binding one is cheap. The price is that a pipeline cannot change afterwards. Only the few settings you mark *dynamic*, such as chapter 3's viewport, are left to the command buffer. Chapter 5 meets this limit when it reloads shaders.
+
+## Start from chapter 3
 
 Start from your chapter 3 `main.c`. The pulsing clear has done its job, so remove `<math.h>`, the three animation fields in `Renderer`, the `--time` option, and the time calculation in `draw()`. Remove the GPU-name and frame-count prints too; validation errors remain the one diagnostic on every run. Keep `--png`, and use this fixed dark clear color:
 
@@ -43,9 +61,9 @@ The argument loop now looks only for `--png`:
             png_path = argv[argument_index + 1];
 ```
 
-## Two shader stages
+## Write the two shaders
 
-A **shader invocation** is one execution of a shader for one item of work. The vertex shader runs once per requested vertex and writes that vertex's position. `gl_VertexIndex` is 0, 1, then 2, so each invocation picks one position and one color from constant arrays compiled into the shader.
+Shaders are written in **GLSL**, a C-like language for GPU programs. For now they live in C strings; chapter 5 moves them into files. A **shader invocation** is one execution of a shader for one item of work. The vertex shader runs once per requested vertex and writes that vertex's position. `gl_VertexIndex` is 0, 1, then 2, so each invocation picks one position and one color from constant arrays compiled into the shader.
 
 These positions are in clip space: for now, x and y run from −1 to 1, and y points down. Chapter 9 explains why.
 
@@ -73,6 +91,8 @@ static const char* FRAGMENT_GLSL =
     "void main() { out_color = vec4(color, 1.0); }\n";
 ```
 
+The two shaders connect through numbered locations. The vertex shader's `out vec3 color` at location 0 becomes the fragment shader's `in vec3 color` at location 0: the numbers, not the names, link them. The fragment shader's own output at location 0 goes to the pipeline's color attachment 0, which you set up below.
+
 The full path for this draw is:
 
 ```mermaid
@@ -85,11 +105,11 @@ flowchart TD
     F --> G[Color attachment]
 ```
 
-The programmable stages run code you supply. The fixed-function stages follow state you configure, such as topology, viewport, depth testing, and blending. A **graphics pipeline** packages the shaders and most of that state into one device object. A command later binds it, and the following draws use that whole configuration.
+The programmable stages run code you supply. The fixed-function stages follow state you configure, such as topology, viewport, depth testing, and blending. The pipeline packages the shaders and most of that state into one device object. A command later binds it, and the following draws use that whole configuration.
 
-## Resolve the canvas color format
+## Wait for the canvas color format
 
-The window system picks the swapchain format; the canvas learns it at the first acquire, and the pipeline must name that exact format. A window may use BGRA where an offscreen canvas uses RGBA, so you cannot guess.
+The pipeline is compiled to write one exact pixel format, so it must know the format of the image it draws into. The window system picks the swapchain format; the canvas learns it at the first acquire, and the pipeline must name that exact format. A window may use BGRA where an offscreen canvas uses RGBA, so you cannot guess.
 
 After creating the canvas, set `renderer.device` and run one frame before creating the pipeline. No draw callback is installed yet, so the canvas records its default clear. Then read the resolved format:
 
@@ -118,7 +138,7 @@ If the surface is temporarily unavailable, keep polling until a frame is acquire
 
 ## Compile and build the pipeline
 
-All the pipeline code lives in one helper that fills the renderer's pipeline fields and returns zero on success:
+Now the pipeline itself. Building it takes four steps: compile the GLSL to SPIR-V, wrap each result in a shader module, create an empty pipeline layout, and combine everything into the pipeline. All the pipeline code lives in one helper that fills the renderer's pipeline fields and returns zero on success:
 
 ```c
 static int create_pipeline(Renderer* renderer)
@@ -209,6 +229,8 @@ Allocate the four wrappers:
     return dvz_graphics_create(renderer->pipeline);
 ```
 
+`DVZ_GRAPHICS_FLAGS_FIXED` bakes the triangle-list topology into the pipeline. Color attachment 0 is the one `dvz_cmd_rendering_default()` sets up in each frame. The zeros in the viewport and scissor calls are placeholders: the dynamic flag means the real values come from `dvz_cmd_set_viewport_scissor()`, which you added in chapter 3.
+
 In `main()`, store the command and rendering wrappers in `renderer`, then build the pipeline before registering the draw callback:
 
 ```c
@@ -245,13 +267,15 @@ The `NULL` checks skip wrappers that were never allocated, and `free` accepts `N
 
 ## Draw three vertices
 
-Bind the pipeline after rendering begins, set the dynamic viewport and scissor, then ask for three vertices. The numbers are first vertex, vertex count, first instance, and instance count; one instance means "draw the shape once".
+Last, the draw itself, inside chapter 3's rendering pass. A draw uses whatever pipeline is bound at that moment, so the order is: bind the pipeline, set the dynamic viewport and scissor, then ask for three vertices. The numbers are first vertex, vertex count, first instance, and instance count; one instance means "draw the shape once".
 
 ```c
     dvz_cmd_bind_graphics(renderer->commands, renderer->pipeline);
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
     dvz_cmd_draw(renderer->commands, 0, 3, 0, 1);
 ```
+
+No vertex buffer is bound, and none is needed: the GPU numbers the vertices 0, 1, 2 and runs the vertex shader for each, which looks up its position from `gl_VertexIndex`.
 
 ## Build and run
 
@@ -288,6 +312,12 @@ Build and run from your `vkcourse` directory, close the window, then capture the
 !!! warning "When it goes wrong"
 
     A shader compile error stops startup: the compiler message is followed by `graphics pipeline creation failed`. A blank frame with zero validation errors usually means the triangle is off-screen or the draw call is missing. A draw outside the rendering pass, or a pipeline format that does not match the canvas, produces validation errors; read them first. An upside-down triangle comes from assuming OpenGL's y-up convention.
+
+## What carries over
+
+- Every modern API draws through a pipeline object that fixes shaders and most drawing state ahead of time: render pipelines in WebGPU, pipeline states in Metal and Direct3D 12. Changing a fixed setting means another pipeline.
+- A draw runs one program per vertex and one per fragment, in parallel, with fixed hardware between them. Stages pass data by location number, not by name.
+- Shader source is compiled twice: once to a portable form such as SPIR-V, then by the driver into code for your GPU.
 
 ## Checkpoint
 

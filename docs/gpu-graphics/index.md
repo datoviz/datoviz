@@ -17,6 +17,24 @@ The course explains those concepts without asking you to implement the platform 
 
 The result feels like a classic OpenGL graphics course, even though Vulkan runs underneath it.
 
+## How the pieces fit
+
+A computer that draws has two processors. The CPU runs your C program, one step after another. The GPU is a separate processor with its own memory, built for one kind of work: running the same small program on many items at once, such as every vertex of a shape or every pixel of an image. It does not run your C code. Your program prepares data and a list of commands, hands them over, and the GPU produces the image.
+
+**Vulkan** is the interface between the two. It is a C API, specified by the Khronos Group and implemented by each GPU vendor's driver, through which a program creates GPU objects, records commands, and submits them. Vulkan is explicit: the driver makes few decisions for you, so you state formats, memory, ordering, and lifetimes yourself. That makes it fast and predictable, and long to set up.
+
+Datoviz sits between your program and Vulkan. Its vklite layer wraps Vulkan objects in small C types, and its canvas runs the window and the frame loop. You call Datoviz functions, but Vulkan's own types and flags, such as `VkFormat`, appear directly in your code, so what you learn is Vulkan.
+
+```mermaid
+flowchart TD
+    A[Your C code and shaders] --> B[Datoviz: vklite and canvas]
+    B --> C[Vulkan API]
+    C --> D[GPU driver]
+    D --> E[GPU]
+```
+
+The ideas are not specific to Vulkan either. WebGPU, Metal, and Direct3D 12 are built on the same objects: devices, command buffers, pipelines, buffers, textures, and descriptors. Each chapter points out what carries over to them.
+
 ## What you write, and what is handled for you
 
 | Handled for you | Yours to write |
@@ -50,6 +68,8 @@ Every coding chapter ends with a complete listing of the file as it should look 
 - **When it goes wrong**: the symptoms you are most likely to hit in that chapter, and their causes.
 
 ## The chapters
+
+The parts follow the order in which a renderer grows. First, a frame that reaches the screen. Then a triangle and the pipeline that draws it, with geometry from your own memory. Then 3D: matrices, depth, and a camera. Last, what makes a surface look real: textures and light.
 
 **Part 1: A window and a frame**
 

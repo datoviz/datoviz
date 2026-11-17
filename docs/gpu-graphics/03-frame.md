@@ -7,7 +7,18 @@
   <img src="../../assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues, greens, and purples.">
 </picture>
 
-Chapter 2 asked you to accept five lines on faith. This chapter takes them apart and adds a sixth, because together they set the shape of every frame in the course. The triangle in chapter 4 and the final lit, textured mesh both fit between the same two calls. Then you make the window pulse, which proves the loop is running rather than showing one frame forever.
+Chapter 2 opened a window and cleared it to a color, and asked you to accept the five lines of the draw callback on faith. Those lines matter more than their size suggests: they set the shape of every frame in the course. The triangle in chapter 4 and the final lit, textured mesh both fit between two of them.
+
+To read them, you need one idea first: the CPU and the GPU work at different times. Your callback does not draw anything. It writes down instructions that the GPU carries out later. Once that is clear, each call explains itself, and so do Vulkan's rules about how long objects must live.
+
+This chapter takes the five calls apart and adds a sixth, which chapter 4's triangle will need. Then you make the window pulse, which proves the loop is running rather than showing one frame forever.
+
+In this chapter you will:
+
+1. see how the CPU records commands that the GPU executes later;
+2. learn which values the canvas lends your callback, and for how long;
+3. read each frame call, and add the viewport and scissor;
+4. drive the clear color from a clock, with a fixed time for offscreen captures.
 
 ## Two processors, one to-do list
 
@@ -15,7 +26,9 @@ A rendering program coordinates two processors. The CPU runs your C code and pre
 
 The CPU decides *what* to draw and writes down instructions: use this pipeline, draw these three vertices, clear to this color. It does not draw the image itself. That recorded list is a **command buffer**.
 
-Submission puts recorded command buffers on a device queue. The GPU executes them later, asynchronously; synchronization constrains when that execution happens and when the resources it uses may be reused. By then your callback has returned, and the CPU may be preparing the next frame while the GPU works on an earlier one. The canvas keeps a few sets of per-frame resources so this overlap is possible; each set is a **frame slot** (a frame in flight). Reusing a frame slot can still make the CPU wait. Managing that overlap safely is why Vulkan needs synchronization, and why the canvas earns its keep.
+Why a list rather than direct calls? The GPU is a separate processor. If the CPU sent each instruction on its own and waited for it, each processor would spend most of its time waiting for the other. A whole frame's list, handed over at once, lets both run at full speed.
+
+Submission puts recorded command buffers on a device **queue**, the line of work waiting for the GPU. The GPU executes them later, asynchronously; synchronization constrains when that execution happens and when the resources it uses may be reused. By then your callback has returned, and the CPU may be preparing the next frame while the GPU works on an earlier one. The canvas keeps a few sets of per-frame resources so this overlap is possible; each set is a **frame slot** (a frame in flight). Reusing a frame slot can still make the CPU wait. Managing that overlap safely is why Vulkan needs synchronization, and why the canvas earns its keep.
 
 ```mermaid
 sequenceDiagram
@@ -50,6 +63,8 @@ An image view is how Vulkan refers to an image for a particular use; chapter 14 
 The `extent` is a copied value, so storing it is safe, but it goes stale after a resize. Read it from each frame before recording size-dependent commands.
 
 ## The frame calls, one at a time
+
+Here are the six calls in the order they run. Only three of them, `begin`, the viewport and scissor, and `end`, record anything into the command buffer. The others connect your wrapper to the canvas's buffer or describe the pass.
 
 ```c
     dvz_commands_wrap_borrowed_recording(renderer->device, frame->command_buffer, renderer->commands);
@@ -108,7 +123,7 @@ Who owns what, for this chapter:
 
 ## Make it move
 
-A static color cannot tell you whether the loop runs at 60 frames per second or froze after the first frame. Drive the color from a clock.
+Now put the loop to work. A static color cannot tell you whether the loop runs at 60 frames per second or froze after the first frame. Drive the color from a clock.
 
 Add `<math.h>` to the top of the file:
 
@@ -240,6 +255,12 @@ The first two PNG files are identical; the third captures another point of the s
     | The animation runs at different speeds on two machines | The color comes from `frame_index` rather than elapsed time. |
     | Two `--png` runs differ | `t` comes from the clock in offscreen mode. |
     | Validation complains about a command buffer in the wrong state | Your code began, ended, reset, or submitted the borrowed command buffer, or recorded a draw outside a rendering pass. |
+
+## What carries over
+
+- Every modern GPU API records commands on the CPU and executes them later on the GPU: Vulkan command buffers, WebGPU command encoders, Metal command buffers. Whatever the recorded commands refer to must stay valid until the GPU has finished with them.
+- Clearing is part of starting a render pass, and keeping the result is part of ending it. WebGPU and Metal use the same load and store operations.
+- Animate from elapsed time, never from a frame count, and fix the time when you need a reproducible image.
 
 ## Checkpoint
 

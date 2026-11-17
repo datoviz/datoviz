@@ -4,7 +4,27 @@
 
 ![A terminal running the chapter 1 program and printing the Datoviz version.](../assets/gpu-graphics/01-setup.webp)
 
-This chapter draws nothing. You create a project, set up a repeatable build, and check that your compiler, the Datoviz headers, and the Datoviz library agree. Every later chapter depends on this, so diagnose problems here rather than in chapter 12.
+Before we draw anything, we need a build we can trust. A Datoviz program is ordinary C: you compile your source file against Datoviz's headers and link it with the Datoviz library. This chapter sets up that build once, for the whole course.
+
+The program you write here prints the Datoviz version and draws nothing. That is deliberate. If your compiler, your Datoviz installation, or the library path is wrong, you find out now, in a nine-line program, rather than in chapter 12 among hundreds of lines of graphics code.
+
+In this chapter you will:
+
+1. install Datoviz, from source or from a package;
+2. write a `main.c` that prints the Datoviz version;
+3. write a `CMakeLists.txt` that finds Datoviz and links it;
+4. configure, build, and run: the loop you will repeat in every chapter.
+
+## What a build needs
+
+A C program that uses a library needs three things from it, at three different moments:
+
+- The **headers** declare the library's functions and types. The compiler reads them when it compiles `main.c`.
+- The **library** holds the compiled code. The linker uses it when it builds the executable, and because Datoviz is a shared library, the system loads it again each time the program starts.
+- The **CMake package**, `DatovizConfig.cmake`, tells CMake where the other two are, so your build file never names a path.
+
+Each kind of failure points at one of these. A missing header is a compile error, a missing package is a configure error, and a library the system cannot find is a run-time error.
+
 
 ## Install Datoviz
 
@@ -64,7 +84,7 @@ mkdir vkcourse
 cd vkcourse
 ```
 
-Create `main.c` and type it out:
+Create `main.c` and type it out. It calls one Datoviz function, which needs the header at compile time and the library at link and run time, so it exercises the whole chain:
 
 ```c
 #include <stdio.h>
@@ -97,7 +117,7 @@ if(NOT WIN32)
 endif()
 ```
 
-This build file serves all sixteen chapters. The `datoviz::datoviz` target supplies the include paths, library, and dependencies, including the Vulkan headers. On Unix, `m` supplies the math functions used from chapter 3; MSVC needs no separate library.
+Read it as: find the Datoviz package or stop with an error, build one executable from `main.c`, and link it with Datoviz. This build file serves all sixteen chapters. The `datoviz::datoviz` target supplies the include paths, library, and dependencies, including the Vulkan headers. On Unix, `m` supplies the math functions used from chapter 3; MSVC needs no separate library.
 
 Configure the project once and point CMake to your Datoviz installation:
 
@@ -161,6 +181,11 @@ A package prints its own version. The important check is that the program prints
     | `command not found: datoviz-config` | Either the environment is not activated, you built from source (where the helper is not installed), or the package installation did not provide its console scripts. For a source install, use `CMAKE_PREFIX_PATH`. |
 
     This program never touches the GPU, so it needs no Vulkan driver yet. If a later chapter prints `no Vulkan loader could be loaded`, Datoviz could not find the Vulkan *loader* at run time. Packages include one; source installs rely on your system or SDK. Check the loader, the installed driver (ICD), and `VULKAN_SDK`. [No Vulkan loader found](../how-to/diagnose-platform.md#no-vulkan-loader-found) lists every location Datoviz checks.
+
+## What carries over
+
+- A GPU program is still an ordinary program: headers at compile time, a library at link time, and shared libraries at run time. Knowing which step failed tells you where to look.
+- Vulkan itself is reached the same way. A small **loader** library, found at run time, locates the driver installed for your GPU. Chapter 2 is the first program that needs it.
 
 ## Checkpoint
 

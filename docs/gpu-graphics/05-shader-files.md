@@ -4,9 +4,37 @@
 
 ![The RGB triangle rendered from shaders loaded as separate files.](../assets/gpu-graphics/05-shader-files.webp)
 
-Shaders inside C strings are awkward to edit. This chapter moves them into ordinary `.vert` and `.frag` files, reports compiler errors with file names and line numbers, and rebuilds the pipeline when you press **R**, without restarting the program. The image is identical to chapter 4; what changes is how fast you can experiment.
+Chapter 4 drew a triangle with two shaders written as C strings. That works, but it is awkward: every shader edit means editing quoted lines, rebuilding the C program, and restarting it, and a GLSL error points into a string rather than a file. The shaders grow in almost every chapter from here on, so it is worth fixing how you work with them now.
 
-## Load and compile source
+This chapter moves the shaders into ordinary `.vert` and `.frag` files, reports compiler errors with file names and line numbers, and rebuilds the pipeline when you press **R**, without restarting the program. The image is identical to chapter 4; what changes is how fast you can experiment.
+
+In this chapter you will:
+
+1. move the two shaders into their own files;
+2. compile them with a call that reports errors by file and line;
+3. gather the pipeline teardown into one helper;
+4. rebuild the pipeline when you press **R**, and keep the old one if the new one fails.
+
+## Why reloading means a new pipeline
+
+Reloading a shader sounds like replacing one file. Vulkan does not allow that: shader modules and pipelines cannot change once created, because the driver has already compiled them into GPU code (chapter 4). A shader edit therefore means building a whole new pipeline and throwing the old one away.
+
+Two rules make that swap safe:
+
+- Build the new pipeline completely before touching the old one. If your edit does not compile, you keep drawing with the pipeline you have.
+- Do not destroy the old pipeline while the GPU may still use it. Chapter 3 showed that submitted frames run later, so a frame recorded with the old pipeline may still be executing. Wait for the GPU to finish, then swap.
+
+```mermaid
+flowchart TD
+    K[R pressed] --> B[Build a candidate pipeline]
+    B -->|success| W[Wait for the GPU]
+    W --> S[Destroy the old one, keep the candidate]
+    B -->|failure| F[Destroy the candidate, keep the old one]
+```
+
+The same two rules apply whenever you replace a GPU object that frames may be using.
+
+## Move the shaders into files
 
 Delete the `VERTEX_GLSL` and `FRAGMENT_GLSL` strings from `main.c`. Create `shader.vert` and `shader.frag` beside it, and add `<datoviz/fileio.h>`. The paths are relative to the directory where you launch `vkcourse`:
 
@@ -25,7 +53,9 @@ The two files hold the chapter 4 shader bodies:
 --8<-- "examples/c/vulkan/step05/shader.frag"
 ```
 
-`compile_file()` replaces chapter 4's `dvz_compile_glsl()` with `dvz_shader_compile()`, which returns a typed status and diagnostics that name the file and line. `dvz_read_text()` returns an owned, null-terminated copy of the file; the helper frees it once the compiler returns. `source_name` is the file name used in diagnostics.
+## Compile from a file
+
+Next, a helper that reads one file and compiles it. `compile_file()` replaces chapter 4's `dvz_compile_glsl()` with `dvz_shader_compile()`, which returns a typed status and diagnostics that name the file and line. `dvz_read_text()` returns an owned, null-terminated copy of the file; the helper frees it once the compiler returns. `source_name` is the file name used in diagnostics.
 
 ```c
 static bool compile_file(
@@ -59,6 +89,8 @@ static bool compile_file(
 }
 ```
 
+Read the request as: compile this source as a graphics-stage shader, report errors under the file's name, and start at `main`. The graphics profile targets Vulkan 1.0 and SPIR-V 1.0, enough for every shader in the course. On failure, the helper prints the status name and the compiler's message, then returns `false`.
+
 Compiling at startup is convenient for learning and live editing. Production applications often compile shaders at build time, so startup is faster and deployment does not need a compiler.
 
 In `create_pipeline()`, replace the `dvz_compile_glsl()` calls with `compile_file()`. A `DvzShaderCompileResult` owns its SPIR-V words and diagnostics, so destroy both results on every path:
@@ -88,7 +120,7 @@ The wrapper allocation that follows is unchanged, except that its failure branch
         return -1;
 ```
 
-## Reload safely
+## Gather the teardown in one helper
 
 Reload needs to tear down a pipeline from two places, so move the pipeline, shader-module, and slots teardown from `main()` into a helper. Call it at `cleanup:` right after the device wait:
 
@@ -116,6 +148,8 @@ static void destroy_pipeline(Renderer* renderer)
 
 Clearing each pointer lets the helper clean either a complete pipeline or a candidate that failed halfway.
 
+## Request a reload from the keyboard
+
 Add `bool reload_requested;` to `Renderer`. The keyboard callback only sets that flag; destroying GPU resources in the middle of event dispatch would be unsafe.
 
 ```c
@@ -136,7 +170,9 @@ Subscribe after installing the draw callback. The router keeps the `&renderer` p
     COURSE_CHECK(keyboard_id != DVZ_CALLBACK_ID_NONE, "keyboard subscription failed");
 ```
 
-Vulkan cannot swap one stage inside an existing pipeline, so a shader edit means a new pipeline. The main loop builds a complete candidate first. If it fails, `destroy_pipeline()` releases the partial candidate and the working pipeline stays. If it succeeds, wait for earlier frames to finish, destroy the old pipeline, and move the candidate's pointers into `renderer`. The candidate needs the resolved `color_format` from chapter 4 to stay compatible with the canvas.
+## Swap pipelines in the loop
+
+The loop applies the two rules from the start of the chapter. It builds a complete candidate first. If it fails, `destroy_pipeline()` releases the partial candidate and the working pipeline stays. If it succeeds, wait for earlier frames to finish, destroy the old pipeline, and move the candidate's pointers into `renderer`. The candidate needs the resolved `color_format` from chapter 4 to stay compatible with the canvas.
 
 ```c
         if (renderer.reload_requested)
@@ -202,6 +238,12 @@ Edit either shader, save, and press **R** in the live window. `chapter05.png` ma
 !!! warning "When it goes wrong"
 
     `could not read shader.vert` means the program cannot find the shader files; start it from the directory that contains them. A compiler error is different: the file was found, and the message names the GLSL rule that failed.
+
+## What carries over
+
+- Treat shaders as source files of their own, with real names, so compiler errors point at a file and line as in any other language.
+- To replace a GPU object safely, build the replacement first, wait until no submitted work uses the old one, then swap and destroy.
+- Input callbacks should record what the user asked for, and the main loop should act on it at a point where the program controls what the GPU is doing.
 
 ## Checkpoint
 
