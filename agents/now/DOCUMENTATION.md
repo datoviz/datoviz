@@ -4,6 +4,10 @@ Status: complete 16-chapter course implementation and development previews recon
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 
+## Private Review Entry Points
+
+The Datoviz category on the private gateway index is the front door for three distinct workflows; the older `/datoviz-workspace/` URL remains available for compatibility. WIP documentation (`/datoviz-docs/`) is rebuilt automatically from the working tree and keeps the last successful build on failure. The campaign dashboard (`/datoviz/`) retains its independent application workflow. Temporary visual reviews (`/datoviz-review/`) hold dated screenshot/video comparisons and exact proposed asset hashes. No ad hoc preview port or separate certificate is needed. Agents should edit the source, run required checks, and let the managed preview update; viewing a candidate does not approve publication.
+
 ## Completed RC3 Documentation Work
 
 - The public v0.4 structure, navigation, status vocabulary, Known limitations page, and preserved `/v0.3/` route are implemented.

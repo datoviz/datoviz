@@ -13,7 +13,7 @@ You start with an empty file and end with an interactive 3D mesh viewer: a persp
 
 Vulkan gives you direct control over a GPU, but that control creates a steep starting point. Before a raw Vulkan program can draw its first triangle, it needs an instance, a physical device, a queue family, a logical device, a window surface, a swapchain and its image views, a command pool, and synchronization for every frame in flight. By then you may have written around 1000 lines, and none of them describes the triangle.
 
-The course explains those concepts without asking you to implement the platform machinery. Datoviz's low-level layers (vklite and its canvas) own that code, so from chapter 2 onward you can work on shaders, pipelines, buffers, textures, matrices, and lighting. These low-level APIs are advanced and unstable. Use the Datoviz version given in the setup chapter; the course does not promise compatibility with other releases.
+The course explains those concepts without asking you to implement the platform machinery. Datoviz's low-level layers (vklite and its canvas) own that code, so from chapter 2 onward you can work on shaders, pipelines, buffers, textures, matrices, and lighting. These advanced low-level APIs are still evolving and may change between releases. Use the Datoviz version given in the setup chapter; the course does not promise compatibility with other releases.
 
 ## How the pieces fit
 
@@ -106,3 +106,7 @@ The parts follow the order in which a renderer grows. First, a frame that reache
 The course closes with [what Datoviz handled for you and where to go next](17-next.md).
 
 Start with [Setup](01-setup.md).
+
+## Acknowledgment
+
+This course was written with the help of OpenAI Codex and Claude Code.
