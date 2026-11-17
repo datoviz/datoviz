@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "publication_authorized": false,
-  "description": "Exact approved homepage primary videos and posters. Compatibility fallbacks and publication action await final package review.",
+  "description": "Exact approved homepage primary videos and posters; the planet H264 fallback is approved. The point-cloud H264 fallback and full-release uploads await final approval.",
   "examples": [
     {
       "id": "showcases_protein",
@@ -125,7 +125,7 @@
           "codec": "h264",
           "bytes": 3562063,
           "sha256": "68c5bd51379fc1ff6631eb44422a6e9df47ac9454bba301536ec61269f5f2c79",
-          "review_state": "pending-final-package-review",
+          "review_state": "approved",
           "width": 1280,
           "height": 720,
           "fps": 30,
@@ -138,8 +138,11 @@
   ],
   "snapshot_id": "ff1b026c82565a1045f3f58e5983b284a2afc971391aaa25a138cfdd1324e80d",
   "publication": {
-    "mode": "website",
+    "mode": "release-assets",
     "repository": "datoviz/datoviz.github.io",
-    "asset_path": "assets/gallery/v0.4/profiles/homepage/"
+    "release_tag": "homepage-media-ff1b026c8256",
+    "asset_base_url": "https://github.com/datoviz/datoviz.github.io/releases/download/homepage-media-ff1b026c8256/",
+    "state": "prepared-awaiting-upload-approval",
+    "validated_pilot": "https://github.com/datoviz/datoviz.github.io/releases/tag/homepage-delivery-pilot-ff1b026c8256"
   }
 }

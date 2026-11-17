@@ -482,7 +482,7 @@ publish confirm='no' source_branch='main' seed_legacy='no':
         echo "Refusing docs publish with a dirty website checkout." >&2
         exit 1
     fi
-    python3 tools/homepage_media.py --publication
+    python3 tools/homepage_media.py --publication --verify-public
     git -C "$site_repo" fetch origin main
     git -C "$site_repo" merge --ff-only origin/main
 

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+import tempfile
 from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +40,7 @@ def validate_selection(selection: dict) -> None:
         roles = []
         for asset in entry.get('assets', []):
             path = PurePosixPath(asset['path'])
-            if path.is_absolute() or '..' in path.parts or path.parts[:1] != ('showcases',):
+            if '\\' in asset['path'] or path.is_absolute() or '..' in path.parts or path.parts[:1] != ('showcases',):
                 raise ValueError('Unsafe homepage asset path')
             if len(path.parts) != 2 or not path.name.startswith(entry['id'] + '.') or str(path) in paths:
                 raise ValueError('Duplicate or mismatched homepage asset path')
@@ -83,8 +85,99 @@ def video_urls(selection: dict) -> list[str]:
             for asset in assets_for(selection) if asset['role'] != 'poster']
 
 
+def technical_snapshot(selection: dict) -> dict:
+    """Keep binary identity independent of review receipts and hosting decisions."""
+    return {'schema_version': 1, 'snapshot_id': selection.get('snapshot_id'),
+            'examples': [dict(entry, assets=[{key: value for key, value in asset.items()
+                                            if key != 'review_state'} for asset in entry['assets']])
+                         for entry in selection['examples']]}
+
+
+def release_origin(selection: dict) -> str:
+    """Require a canonical versioned GitHub release origin for the prepared set."""
+    publication = selection.get('publication', {})
+    repository, tag = publication.get('repository', ''), publication.get('release_tag', '')
+    if (publication.get('mode') != 'release-assets'
+            or not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository)
+            or not re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]*', tag)):
+        raise ValueError('Selected homepage publication requires a repository and versioned release tag')
+    origin = f'https://github.com/{repository}/releases/download/{tag}/'
+    if publication.get('asset_base_url') != origin:
+        raise ValueError('Homepage asset origin does not match its repository and release tag')
+    return origin
+
+
+def prepare_release(selection: dict, products: Path, destination: Path, producer_commit: str) -> dict:
+    """Prepare exact flat release attachments locally, without any network or publication."""
+    validate_selection(selection)
+    origin = release_origin(selection)
+    if not isinstance(producer_commit, str) or not re.fullmatch(r'[0-9a-f]{40}', producer_commit):
+        raise ValueError('Release preparation requires the full producer source commit')
+    target, source = destination.resolve(), products.resolve()
+    if target.is_relative_to(source) or source.is_relative_to(target):
+        raise ValueError('Release preparation must not overlap selected products')
+    # Verify all inputs before writing a destination, and never regenerate a missing input.
+    verified = [(asset, verify_asset(products, asset)) for asset in assets_for(selection)]
+    manifest = technical_snapshot(selection)
+    manifest['producer'] = {'repository': 'datoviz/datoviz', 'commit': producer_commit,
+                            'manifest': 'examples/c/MANIFEST.yaml', 'capture_profile': 'homepage'}
+    manifest['publication'] = {key: selection['publication'][key]
+                               for key in ('repository', 'release_tag', 'asset_base_url')}
+    for entry in manifest['examples']:
+        for asset in entry['assets']:
+            asset['release_asset'] = Path(asset['path']).name
+            asset['url'] = origin + asset['release_asset']
+    payloads = {path.name: path.read_bytes() for _, path in verified}
+    if len(payloads) != len(verified):
+        raise ValueError('Release asset names must be unique')
+    payloads['homepage-media.json'] = (json.dumps(manifest, indent=2) + '\n').encode()
+    payloads['SHA256SUMS'] = ''.join(f'{hashlib.sha256(data).hexdigest()}  {name}\n'
+                                   for name, data in sorted(payloads.items())).encode()
+    if target.exists():
+        if (not target.is_dir() or {p.name for p in target.iterdir()} != set(payloads)
+                or any((target / name).is_symlink() or not (target / name).is_file()
+                       or (target / name).read_bytes() != data for name, data in payloads.items())):
+            raise ValueError('Refusing to replace an existing release draft with different bytes')
+        return manifest
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.homepage-release-', dir=target.parent) as temporary:
+        temporary_path = Path(temporary)
+        for name, data in payloads.items():
+            (temporary_path / name).write_bytes(data)
+        temporary_path.rename(target)
+    return manifest
+
+
+def verify_public_release(selection: dict) -> None:
+    """Read public assets anonymously and verify bounded exact bytes before site publication."""
+    from urllib.request import urlopen
+    from urllib.parse import urlsplit
+
+    origin = release_origin(selection)
+    for asset in assets_for(selection):
+        name = Path(asset['path']).name
+        digest, count = hashlib.sha256(), 0
+        try:
+            with urlopen(origin + name, timeout=30) as response:
+                location = urlsplit(response.geturl())
+                if location.scheme != 'https' or location.hostname not in {
+                    'github.com', 'release-assets.githubusercontent.com', 'objects.githubusercontent.com'
+                }:
+                    raise ValueError(f'Unexpected public asset download origin: {name}')
+                while chunk := response.read(min(65536, asset['bytes'] + 1 - count)):
+                    count += len(chunk)
+                    if count > asset['bytes']:
+                        raise ValueError(f'Public asset exceeds selected byte count: {name}')
+                    digest.update(chunk)
+        except OSError:
+            # Do not include a redirected signed download URL in diagnostics.
+            raise ValueError(f'Public asset download failed: {name}') from None
+        if count != asset['bytes'] or digest.hexdigest() != asset['sha256']:
+            raise ValueError(f'Public asset hash or size mismatch: {name}')
+
+
 def main() -> int:
-    """Verify or package the selected bytes without performing any network operation."""
+    """Prepare local media artifacts or explicitly verify public reads; never publish."""
     import argparse
     import gzip
     import io
@@ -95,6 +188,9 @@ def main() -> int:
     parser.add_argument('--manifest', type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument('--products', type=Path, default=SELECTED_PRODUCTS)
     parser.add_argument('--package', type=Path, help='Write a deterministic local gzip/tar publication draft')
+    parser.add_argument('--release-dir', type=Path, help='Prepare flat release attachments locally; performs no upload')
+    parser.add_argument('--producer-commit', help='Full source commit recorded in a release attachment manifest')
+    parser.add_argument('--verify-public', action='store_true', help='Verify anonymous public release downloads; read-only network access')
     parser.add_argument('--publication', action='store_true', help='Require the recorded final publication gate')
     args = parser.parse_args()
     try:
@@ -104,14 +200,19 @@ def main() -> int:
         if args.publication and not selection.get('publication_authorized'):
             raise ValueError('Final manual publication approval is not recorded; no upload or deployment is authorized')
         verified = [(asset, verify_asset(args.products, asset)) for asset in assets_for(selection)]
+        if args.release_dir:
+            prepare_release(selection, args.products, args.release_dir, args.producer_commit)
+            print(f'Local release draft: {len(verified)} media files, manifest and checksums; no upload performed')
+        if args.verify_public:
+            verify_public_release(selection)
+            print('Public release asset hashes and sizes verified')
         if args.package:
             args.package.parent.mkdir(parents=True, exist_ok=True)
             temporary = args.package.with_name(args.package.name + '.tmp')
             with temporary.open('wb') as raw, gzip.GzipFile(filename='', mode='wb', fileobj=raw, mtime=0) as compressed:
                 with tarfile.open(fileobj=compressed, mode='w') as archive:
                     items = [(asset['path'], path.read_bytes()) for asset, path in verified]
-                    bundle = {'schema_version': 1, 'snapshot_id': selection.get('snapshot_id'),
-                              'examples': [dict(entry, assets=[{key: value for key, value in asset.items() if key != 'review_state'} for asset in entry['assets']]) for entry in selection['examples']]}
+                    bundle = technical_snapshot(selection)
                     items.append(('homepage-media.json', (json.dumps(bundle, indent=2) + '\n').encode()))
                     for name, content in sorted(items):
                         info = tarfile.TarInfo(name)
