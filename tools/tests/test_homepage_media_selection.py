@@ -20,7 +20,7 @@ def snapshot(tmp_path, monkeypatch):
     examples=[]
     for name in ['showcases_protein','showcases_point_cloud','showcases_cortical_activity','showcases_textured_planet']:
         assets=[]
-        variants=[('primary','.av1.mp4','av1'),('fallback','.mp4','h264'),('poster','.poster.webp','webp')] if name.endswith('point_cloud') else [('primary','.mp4','h264'),('poster','.poster.webp','webp')]
+        variants=[('primary','.av1.mp4','av1'),('fallback','.mp4','h264'),('poster','.poster.webp','webp')] if name.endswith(('point_cloud', 'textured_planet')) else [('primary','.mp4','h264'),('poster','.poster.webp','webp')]
         for role,suffix,codec in variants:
             content=(name+role).encode();path='showcases/'+name+suffix
             p=products/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(content)
@@ -38,7 +38,7 @@ def test_selected_multicodec_stage_and_inventory(tmp_path,monkeypatch):
     target=tmp_path/'stage';stage.stage_homepage_products(target,m,products,require_video=True)
     for asset in selected.assets_for(data):selected.verify_asset(target/'profiles/homepage',asset)
     urls,missing,expected=availability.combined_video_assets(manifest,target)
-    assert len(urls)==5 and expected==5 and not missing
+    assert len(urls)==6 and expected==6 and not missing
     assert any(url.endswith('.av1.mp4') for url in urls)
 
 
@@ -53,7 +53,7 @@ def test_hydration_preserves_reviewed_bytes_without_encoder(tmp_path,monkeypatch
     args=argparse.Namespace(capture_profile='homepage',manifest=m,jobs='1',capture_jobs='1',staging_root=tmp_path/'stage/profiles/homepage',availability_manifest=tmp_path/'stage/local-video-assets.json',watched_sentinel=tmp_path/'ready')
     with mock.patch.object(hydration,'comparison_args'),mock.patch.object(hydration.comparison_media,'selected_previews',side_effect=AssertionError('must not encode')):
         result=hydration.hydrate(args,mock.Mock())
-    assert result.generated==0 and result.expected==5 and len(result.available)==5
+    assert result.generated==0 and result.expected==6 and len(result.available)==6
     for asset in selected.assets_for(data):selected.verify_asset(args.staging_root,asset)
 
 

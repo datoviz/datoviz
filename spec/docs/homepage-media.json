@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "publication_authorized": false,
-  "description": "Exact selected homepage videos and posters. Primary visual selections are approved; the compatibility fallback and publication action require final package review.",
+  "description": "Exact approved homepage primary videos and posters. Compatibility fallbacks and publication action await final package review.",
   "examples": [
     {
       "id": "showcases_protein",
@@ -100,11 +100,11 @@
       "capture_frames_sha256": "56fe027c8e598e3779d0df3547be4461d027709d167dea09a737fc10d47d59e2",
       "assets": [
         {
-          "path": "showcases/showcases_textured_planet.mp4",
+          "path": "showcases/showcases_textured_planet.av1.mp4",
           "role": "primary",
-          "codec": "h264",
-          "bytes": 635081,
-          "sha256": "a4ef1de8777886a48362330bf1ac10635d8cc50a50fddb1b380af6e0d846abab",
+          "codec": "av1",
+          "bytes": 1960895,
+          "sha256": "3b0dfac76379861611ade742eb59fe38795a1fee895710037f3ed46056bb505c",
           "review_state": "approved",
           "width": 1280,
           "height": 720,
@@ -118,15 +118,28 @@
           "bytes": 43414,
           "sha256": "3ed195f51e0fd0ed7d5feb514c7520c7d0d522e51f783cd9ac4173f144268043",
           "review_state": "approved"
+        },
+        {
+          "path": "showcases/showcases_textured_planet.mp4",
+          "role": "fallback",
+          "codec": "h264",
+          "bytes": 3562063,
+          "sha256": "68c5bd51379fc1ff6631eb44422a6e9df47ac9454bba301536ec61269f5f2c79",
+          "review_state": "pending-final-package-review",
+          "width": 1280,
+          "height": 720,
+          "fps": 30,
+          "duration": 14.4,
+          "profile": "High",
+          "level": "3.1"
         }
       ]
     }
   ],
-  "snapshot_id": "ba8268855acc18e7a356640746ef2e2853f584c0e57127117c253db5240e01b8",
+  "snapshot_id": "ff1b026c82565a1045f3f58e5983b284a2afc971391aaa25a138cfdd1324e80d",
   "publication": {
-    "repository": "datoviz/assets",
-    "release_tag": "homepage-v0.4-ba8268855acc",
-    "asset_base_url": "https://github.com/datoviz/assets/releases/download/homepage-v0.4-ba8268855acc/",
-    "authorized": false
+    "mode": "website",
+    "repository": "datoviz/datoviz.github.io",
+    "asset_path": "assets/gallery/v0.4/profiles/homepage/"
   }
 }

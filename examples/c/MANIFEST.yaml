@@ -3968,6 +3968,21 @@ examples:
           frames: 864
           fps: 60
           sample_stride: 1
+          card:
+            mp4_crf: 24
+            mp4_max_crf: 24
+            mp4_preset: veryslow
+            mp4_fps: 30
+            video_budget_bytes: 4000000
+            av1:
+              encoder_version: 4.3.0
+              preset: 3
+              tune: 4
+              crf: 46.5
+              fps: 30
+              video_budget_bytes: 2000000
+              temporal_filtering: false
+              film_grain: 0
           presentation:
             kind: default
     data:

@@ -567,6 +567,21 @@ def encode_bitrate_mp4(frame_pattern: str, output: Path, source_fps: int, source
         raise RuntimeError(f"H264 fallback exceeds its {profile.video_budget_bytes}-byte budget; target rate was preserved")
 
 
+def encode_quality_fallback(source: Path, output: Path, source_fps: int, source_frames: int, profile: EncodingProfile) -> None:
+    """Encode fixed-quality H.264 from the same uncompressed 10-bit input as AV1."""
+    if not source.is_file():
+        raise ValueError("Quality fallback requires the AV1 uncompressed source")
+    fps = profile.fps or source_fps // profile.step
+    keyint = source_frames * fps // source_fps
+    output.parent.mkdir(parents=True, exist_ok=True)
+    run([require_tool("ffmpeg"), "-hide_banner", "-loglevel", "error", "-y", "-i", str(source),
+         "-an", "-vf", "format=yuv420p", "-threads", "8", "-c:v", "libx264",
+         "-preset", profile.mp4_preset, "-profile:v", "high", "-level:v", "3.1", "-refs", "4",
+         "-bf", "3", "-crf", str(profile.mp4_crf), "-g", str(keyint), "-movflags", "+faststart", str(output)])
+    if output.stat().st_size > profile.video_budget_bytes:
+        raise RuntimeError("H264 quality fallback exceeds its byte budget; quality was preserved")
+
+
 def mp4_attempt_plan(source_fps: int, initial_step: int, base_crf: int, max_crf: int = gallery_media.MP4_MAX_CRF) -> list[Mp4Attempt]:
     """Plan the deterministic FPS and CRF fallback ladder for one MP4 card."""
     if source_fps <= 0:
@@ -830,6 +845,13 @@ def compare_preview(
             codec_provenance["h264"] = {"encoder": "libx264", "preset": profile.mp4_preset,
                 "bitrate_kbps": profile.mp4_bitrate_kbps, "two_pass": profile.mp4_two_pass,
                 "fps": out_fps, "threads": 8, "profile": "high", "level": "3.1", "refs": 4, "bframes": 3, "keyint": int(getattr(preview, "frames")) * out_fps // int(getattr(preview, "fps")), "sha256": file_sha256(mp4)}
+        elif "mp4-card" in generated_kinds and profile.av1:
+            encode_quality_fallback(frame_root / "av1-source.y4m", mp4, int(getattr(preview, "fps")), int(getattr(preview, "frames")), profile)
+            selected_crf = profile.mp4_crf
+            codec_provenance["h264"] = {"encoder": "libx264", "preset": profile.mp4_preset,
+                "crf": selected_crf, "fps": out_fps, "input": "shared-av1-y4m-10bit",
+                "threads": 8, "profile": "high", "level": "3.1", "refs": 4, "bframes": 3,
+                "keyint": int(getattr(preview, "frames")) * out_fps // int(getattr(preview, "fps")), "sha256": file_sha256(mp4)}
         elif "mp4-card" in generated_kinds:
             attempts = mp4_attempt_plan(
                 int(getattr(preview, "fps")), profile.step, profile.mp4_crf, profile.mp4_max_crf

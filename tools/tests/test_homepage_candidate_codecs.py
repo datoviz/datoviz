@@ -190,3 +190,39 @@ def test_av1_budget_failure_keeps_settings_and_never_falls_back(tmp_path, monkey
         media.encode_av1('frames/frame_%04d.png', output, 60, 576, settings, tmp_path)
     assert len(calls) == 3
     assert calls[1][calls[1].index('--crf') + 1] == '56'
+
+
+@pytest.mark.parametrize('crf', [1, 46.25, 46.5, 70])
+def test_av1_accepts_quarter_step_quality(crf):
+    value = entry()
+    value['media']['profiles']['homepage']['card']['av1']['crf'] = crf
+    resolved = gallery_media.resolve_media_entry(value, 'homepage')
+    assert resolved['media']['preview']['card']['av1']['crf'] == crf
+
+
+@pytest.mark.parametrize('crf', [True, 0, 46.1, float('nan'), float('inf')])
+def test_av1_rejects_invalid_fractional_quality(crf):
+    value = entry()
+    value['media']['profiles']['homepage']['card']['av1']['crf'] = crf
+    with pytest.raises(ValueError):
+        gallery_media.resolve_media_entry(value, 'homepage')
+
+
+def test_quality_fallback_uses_shared_frames_and_preserves_quality_budget(tmp_path, monkeypatch):
+    source = tmp_path / 'av1-source.y4m'
+    source.write_bytes(b'uncompressed source')
+    output = tmp_path / 'fallback.mp4'
+    commands = []
+    def run(command):
+        commands.append(command)
+        output.write_bytes(b'video')
+    monkeypatch.setattr(media, 'run', run)
+    monkeypatch.setattr(media, 'require_tool', lambda name: name)
+    profile = media.EncodingProfile('video-mp4', 2, 85, 24, 38, fps=30, mp4_preset='veryslow')
+    media.encode_quality_fallback(source, output, 60, 864, profile)
+    assert commands[0] == ['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-i', str(source),
+        '-an', '-vf', 'format=yuv420p', '-threads', '8', '-c:v', 'libx264', '-preset', 'veryslow',
+        '-profile:v', 'high', '-level:v', '3.1', '-refs', '4', '-bf', '3', '-crf', '24', '-g', '432',
+        '-movflags', '+faststart', str(output)]
+    with pytest.raises(RuntimeError, match='quality was preserved'):
+        media.encode_quality_fallback(source, output, 60, 864, replace(profile, video_budget_bytes=1))

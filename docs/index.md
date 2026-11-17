@@ -60,7 +60,8 @@ Datoviz provides direct control over scene objects and rendering rather than a h
   <a class="dvz-gallery-media-target" href="examples/showcases/textured-planet/" aria-label="Open the textured planets example"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.poster.webp" alt="Textured Earth with orbital debris in a star field" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true" poster="assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.poster.webp">
-    <source data-src="assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.mp4" type="video/mp4">
+    <source data-src="assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.av1.mp4" type='video/mp4; codecs="av01.0.05M.10"'>
+    <source data-src="assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.mp4" type='video/mp4; codecs="avc1.64001f"'>
   </video>
 </div>
 <h3><a href="examples/showcases/textured-planet/">Textured planets</a></h3>

@@ -132,8 +132,14 @@ def validate_profile_codecs(entry_id: str, preview: dict) -> None:
         raise ValueError(f"{entry_id}: av1 must specify exactly {sorted(keys)}")
     if av1["encoder_version"] != "4.3.0":
         raise ValueError(f"{entry_id}: AV1 requires SVT-AV1 4.3.0")
-    for key, low, high in (("preset", 0, 13), ("tune", 0, 4), ("crf", 0, 70), ("fps", 1, source_fps), ("video_budget_bytes", 1, 1_000_000_000), ("film_grain", 0, 0)):
+    for key, low, high in (("preset", 0, 13), ("tune", 0, 4), ("fps", 1, source_fps), ("video_budget_bytes", 1, 1_000_000_000), ("film_grain", 0, 0)):
         av1[key] = integer(av1[key], f"av1.{key}", low, high)
+    crf = av1["crf"]
+    if isinstance(crf, bool) or not isinstance(crf, (int, float)) or not math.isfinite(crf) or not 1 <= crf <= 70 or crf * 4 != int(crf * 4):
+        raise ValueError(f"{entry_id}: av1.crf must be between 1 and 70 in quarter steps")
+    av1["crf"] = int(crf) if int(crf) == crf else float(crf)
+    if not card.get("mp4_bitrate_kbps") and card["fps"] != av1["fps"]:
+        raise ValueError(f"{entry_id}: quality fallback fps must match AV1 fps")
     if source_fps % av1["fps"]:
         raise ValueError(f"{entry_id}: AV1 fps must divide capture fps")
     if av1["temporal_filtering"] is not False:

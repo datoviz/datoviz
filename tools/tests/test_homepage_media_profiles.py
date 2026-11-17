@@ -106,7 +106,9 @@ def test_encoding_profile_uses_resolved_card_without_changing_quality():
                               preferred_kind="animated-webp", step=2, webp_quality=40,
                               mp4_crf=32, webm_crf=38, fps=0, no_manifest_card=False)
     profile = compare.profile_for(preview, args)
-    assert (profile.fps, profile.step, profile.mp4_crf) == (60, 1, 26)
+    assert (profile.fps, profile.step, profile.mp4_crf) == (30, 2, 24)
+    assert profile.av1["crf"] == 46.5
+    assert profile.video_budget_bytes == 4_000_000
 
 
 @pytest.mark.parametrize("field", ["fps", "mp4_crf", "webm_crf", "webp_quality", "sample_step"])
