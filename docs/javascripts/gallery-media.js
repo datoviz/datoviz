@@ -9,8 +9,14 @@
   const mediaUrl = (value) => {
     if (!localPreview) return value;
     const url = new URL(value, window.location.href);
+    if (url.origin !== window.location.origin) return value;
     url.searchParams.set("dvz-local", localCacheKey);
     return url.href;
+  };
+  const sourceAvailable = (source) => {
+    if (!localPreview) return true;
+    const url = new URL(source.dataset.src, window.location.href);
+    return url.origin !== window.location.origin || localVideoUrls?.has(url.pathname);
   };
 
   if (localPreview) {
@@ -76,7 +82,7 @@
     if (!video) return;
 
     for (const source of video.querySelectorAll("source[data-src]")) {
-      const available = !localPreview || localVideoUrls?.has(new URL(source.dataset.src, window.location.href).pathname);
+      const available = sourceAvailable(source);
       const supported = !source.type || video.canPlayType(source.type) !== "";
       if (available && supported) source.src = mediaUrl(source.dataset.src);
     }
@@ -90,7 +96,7 @@
     const video = card.querySelector("video.dvz-gallery-video");
     if (!video) return;
     const sources = [...video.querySelectorAll("source[data-src]")];
-    if (localPreview && !sources.some(source => localVideoUrls?.has(new URL(source.dataset.src, window.location.href).pathname))) return;
+    if (!sources.some(sourceAvailable)) return;
     if (!card.querySelector(".dvz-gallery-video-control")) addControl(card, video);
     if (active && !document.hidden) {
       loadCard(card);
@@ -117,7 +123,7 @@
         if (entry.isIntersecting) {
           const card = entry.target;
           const sources = [...card.querySelectorAll("source[data-src]")];
-          if (!localPreview || sources.some(source => localVideoUrls?.has(new URL(source.dataset.src, window.location.href).pathname))) loadCard(card);
+          if (sources.some(sourceAvailable)) loadCard(card);
         }
       }
     }, { rootMargin: "400px 0px" });

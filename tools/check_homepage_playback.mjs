@@ -81,13 +81,15 @@ const server = createServer(async (request, response) => {
   if (path === '/fixture.html') {
     const fixtureUrl = new URL(request.url, 'http://fixture');
     const realVideo = Boolean(videoPath && fixtureUrl.searchParams.get('real') === '1');
-    const html = `<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0}.card{width:min(90vw,640px);margin:32px auto}.dvz-gallery-media{position:relative;width:100%;aspect-ratio:16/9}.dvz-gallery-media img,.dvz-gallery-media video{position:absolute;width:100%;height:100%;object-fit:cover}.dvz-gallery-video-control{position:absolute;right:8px;bottom:8px}</style><div class="card" data-gallery-lazy="video"><div class="dvz-gallery-media"><img class="dvz-gallery-poster" src="/poster.svg" alt="Preview poster"><video class="dvz-gallery-video" muted loop playsinline preload="none" poster="/poster.svg" aria-label="preview"><source data-src="${realVideo ? '/video.mp4' : '/mock.mp4'}" type="video/mp4"></video></div></div><script>(${fixtureSetup.toString()})(${JSON.stringify({ reduce: fixtureUrl.searchParams.get('reduce') === '1', saveData: fixtureUrl.searchParams.get('saveData') === '1', rejectPlay: fixtureUrl.searchParams.get('reject') === '1', realVideo })})</script><script src="/gallery-media.js"></script>`;
+    const sourceUrl = fixtureUrl.searchParams.get('external') === '1' ? 'https://media.example.invalid/clip.mp4' : (realVideo ? '/video.mp4' : '/mock.mp4');
+    const html = `<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0}.card{width:min(90vw,640px);margin:32px auto}.dvz-gallery-media{position:relative;width:100%;aspect-ratio:16/9}.dvz-gallery-media img,.dvz-gallery-media video{position:absolute;width:100%;height:100%;object-fit:cover}.dvz-gallery-video-control{position:absolute;right:8px;bottom:8px}</style><div class="card" data-gallery-lazy="video"><div class="dvz-gallery-media"><img class="dvz-gallery-poster" src="/poster.svg" alt="Preview poster"><video class="dvz-gallery-video" muted loop playsinline preload="none" poster="/poster.svg" aria-label="preview"><source data-src="${sourceUrl}" type="video/mp4"></video></div></div><script>(${fixtureSetup.toString()})(${JSON.stringify({ reduce: fixtureUrl.searchParams.get('reduce') === '1', saveData: fixtureUrl.searchParams.get('saveData') === '1', rejectPlay: fixtureUrl.searchParams.get('reject') === '1', realVideo })})</script><script src="/gallery-media.js"></script>`;
     response.writeHead(200, { 'content-type': 'text/html' }); response.end(html); return;
   }
   if (path === '/nojs.html') {
     response.writeHead(200, { 'content-type': 'text/html' });
     response.end('<!doctype html><img src="/poster.svg" alt="Preview poster"><video poster="/poster.svg"><source data-src="/mock.mp4" type="video/mp4"></video>'); return;
   }
+  if (path === '/assets/gallery/v0.4/local-video-assets.json') { response.writeHead(200, { 'content-type': 'application/json' }); response.end(JSON.stringify({ available: [] })); return; }
   if (path === '/gallery-media.js') { response.writeHead(200, { 'content-type': 'text/javascript' }); response.end(script); return; }
   if (path === '/poster.svg') { response.writeHead(200, { 'content-type': 'image/svg+xml' }); response.end('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="9"/>'); return; }
   if (path === '/video.mp4' && videoPath) {
@@ -204,6 +206,16 @@ try {
   const noJs = await page.evaluate(`({poster:!!document.querySelector('img[src="/poster.svg"]'),source:document.querySelector('source').getAttribute('src')})`);
   check(noJs.poster && noJs.source === null, 'no-JS fallback does not show the poster without loading video');
   console.log('PASS no-JavaScript fallback displays poster without loading video');
+
+  for (const external of [false, true]) {
+    await page.navigate(`http://localhost:${serverPort}/fixture.html${external ? '?external=1' : ''}`);
+    check(await page.evaluate(`new Promise(resolve => { const started=Date.now(); const timer=setInterval(()=>{if(window.__observers?.length===2){clearInterval(timer);resolve(true);}else if(Date.now()-started>2000){clearInterval(timer);resolve(false);}},10); })`), 'local inventory did not initialize');
+    await page.evaluate(`window.__trigger(0,true); window.__trigger(1,true)`);
+    const actual = await page.evaluate(`({src:document.querySelector('source').getAttribute('src'),control:!!document.querySelector('button')})`);
+    if (external) check(actual.src === 'https://media.example.invalid/clip.mp4' && actual.control, 'external source was inventory-gated or its URL was changed');
+    else check(actual.src === null && !actual.control, 'missing local source was downloaded');
+  }
+  console.log('PASS localhost external URLs retain their identity; missing local files remain poster-only');
 
   if (videoPath) {
     await page.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false });
