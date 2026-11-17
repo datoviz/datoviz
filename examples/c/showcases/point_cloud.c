@@ -36,6 +36,7 @@
 /*************************************************************************************************/
 
 #include <stdbool.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -401,7 +402,7 @@ cleanup:
 
 
 /**
- * Orbit the camera eye on a horizontal circle for generated gallery media.
+ * Orbit the gallery camera, or approach the scan along a closed homepage camera path.
  *
  * @param ctx scenario context
  * @param user scenario state
@@ -425,6 +426,30 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
                             : TAU * phase;
 
     (void)dvz_fly_set_camera(state->fly, state->camera);
+    if (ctx->preview_presentation == DVZ_SCENARIO_PRESENTATION_SWAY)
+    {
+        const double elapsed = (double)logical_index / dvz_scenario_preview_fps(ctx);
+        const double cycle = 6.283185307179586 *
+                             fmod(elapsed / ctx->preview_presentation_period, 1.0);
+        const double approach = 0.5 * (1.0 - cos(cycle));
+        const double dx = state->base_view.eye[0] - state->base_view.target[0];
+        const double dy = state->base_view.eye[1] - state->base_view.target[1];
+        const double dz = state->base_view.eye[2] - state->base_view.target[2];
+        const double horizontal = hypot(dx, dz);
+        const double radius = hypot(horizontal, dy) * (1.0 - 0.14 * approach);
+        const double elevation = atan2(dy, horizontal) + (5.0 * TAU / 360.0) * approach;
+        const double azimuth = atan2(dz, dx) + theta;
+        vec3 eye = {
+            state->base_view.target[0] + (float)(radius * cos(elevation) * cos(azimuth)),
+            state->base_view.target[1] + (float)(radius * sin(elevation)),
+            state->base_view.target[2] + (float)(radius * cos(elevation) * sin(azimuth)),
+        };
+        /* Keep the authored target while increasing parallax and moving slightly closer/higher.
+           Setting the look-at directly also avoids displaying an interactive orbit-pivot marker. */
+        (void)dvz_fly_initial_lookat(state->fly, eye, state->base_view.target);
+        return;
+    }
+
     (void)dvz_fly_reset(state->fly);
     vec3 pivot = {
         state->base_view.target[0],

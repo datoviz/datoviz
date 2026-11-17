@@ -360,3 +360,18 @@ def test_selected_previews_limits_docs_assets_to_manifest_mp4_cards(monkeypatch)
 
     assert media.selected_previews(args) == [previews[1]]
     assert collected_ids == ["video"]
+
+
+def test_quality_ceiling_limits_fallback_and_preserves_default_policy():
+    attempts = media.mp4_attempt_plan(60, 1, 24, max_crf=28)
+    assert [(item.fps, item.crf) for item in attempts] == [(60, 24), (30, 24), (30, 28)]
+    assert media.mp4_attempt_plan(60, 1, 24)[-1].crf == 40
+    attempted = []
+    def too_large(attempt):
+        attempted.append(attempt.crf)
+        return 4_000_001
+    import pytest
+    with pytest.raises(RuntimeError, match='4000000-byte budget.*CRF 28'):
+        media.execute_mp4_attempts(attempts, too_large, budget=4_000_000)
+    assert max(attempted) == 28
+    assert media.execute_mp4_attempts(attempts, lambda unused: 2_000_000, budget=4_000_000) == attempts[0]

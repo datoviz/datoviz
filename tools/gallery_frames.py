@@ -95,6 +95,10 @@ def collect_previews(
         if preview.get("kind") != gallery_media.ANIMATED_WEBP_KIND:
             continue
 
+        for value in preview.get("required_inputs", []):
+            if not (ROOT / value).is_file():
+                raise FileNotFoundError(f"{id_}: required homepage input missing: {value}")
+
         frames = int(preview.get("frames", DEFAULT_FRAMES))
         fps = int(preview.get("fps", DEFAULT_FPS))
         sample_stride = int(preview.get("sample_stride", 1))
@@ -148,11 +152,15 @@ def capture_manifest_hash(entry: dict) -> str:
     """Hash only manifest fields that can affect one preview capture."""
     entry = gallery_media.resolve_media_entry(entry)
     motion = entry.get("motion") or {}
+    preview = dict(gallery_media.preview_metadata(entry))
+    if "presentation" in preview:
+        # Named-profile card encoding does not change rendered source frames.
+        preview.pop("card", None)
     payload = {
         "id": entry.get("id"),
         "source": entry.get("source"),
         "capture": entry.get("capture") or {},
-        "preview": gallery_media.preview_metadata(entry),
+        "preview": preview,
         "preview_motion": motion.get("preview") or [],
     }
     return hashlib.sha256(

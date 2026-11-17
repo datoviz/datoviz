@@ -3699,7 +3699,8 @@ examples:
           fps: 60
           sample_stride: 1
           presentation:
-            kind: static
+            kind: sway
+            amplitude_deg: 12
     data:
       kind: prepared
     webgpu:
@@ -3852,12 +3853,19 @@ examples:
           webm_crf: 50
       profiles:
         homepage:
-          frames: 864
+          frames: 576
           fps: 60
           sample_stride: 1
+          required_inputs:
+            - .cache/datoviz/examples/point_cloud/prepared/point_cloud.bin
+          card:
+            mp4_crf: 28
+            mp4_max_crf: 28
+            video_budget_bytes: 20000000
+            webp_quality: 85
           presentation:
             kind: sway
-            amplitude_deg: 7
+            amplitude_deg: 20
     data:
       kind: prepared
     webgpu:
@@ -3945,7 +3953,7 @@ examples:
           fps: 60
           sample_stride: 1
           presentation:
-            kind: static
+            kind: default
     data:
       kind: prepared
     webgpu:

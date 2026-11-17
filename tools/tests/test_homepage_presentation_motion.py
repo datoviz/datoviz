@@ -64,6 +64,8 @@ static const float TAU = 6.28318530718f;
 static mat4 transforms[16];
 static double orbital_time;
 static float camera_yaw;
+static vec3 camera_eye, camera_target;
+static uint32_t camera_lookat_count;
 typedef struct {
     DvzVisual* presentation_visuals[3];
     vec3 presentation_axis;
@@ -105,6 +107,13 @@ DvzResult dvz_fly_pivot(DvzFly* fly, vec3 pivot) {
 }
 DvzResult dvz_fly_orbit(DvzFly* fly, float yaw, float pitch) {
     (void)fly; (void)pitch; camera_yaw = yaw; return DVZ_OK;
+}
+DvzResult dvz_fly_initial_lookat(DvzFly* fly, vec3 eye, vec3 target) {
+    (void)fly;
+    glm_vec3_copy(eye, camera_eye);
+    glm_vec3_copy(target, camera_target);
+    camera_lookat_count++;
+    return DVZ_OK;
 }
 bool dvz_arcball_is_interacting(DvzArcball* arcball) { (void)arcball; return false; }
 static bool _set_activity_time(CorticalActivityState* state, float time_ms) {
@@ -172,8 +181,55 @@ int main(void) {
     PointCloudState cloud = {0};
     cloud.camera = (DvzCamera*)1;
     cloud.fly = (DvzFly*)1;
+    const DvzCameraView authored_view = {
+        .eye = {0.791911f, 0.472144f, -0.891266f},
+        .target = {0.207716f, 0.133955f, -0.153469f},
+    };
+    cloud.base_view = authored_view;
+    ctx.preview_frame_count = 576;
+    ctx.preview_presentation_period = 9.6;
+    ctx.preview_presentation_amplitude_deg = 20;
+    const double base_radius = glm_vec3_distance(cloud.base_view.eye, cloud.base_view.target);
+    const double base_azimuth = atan2(
+        cloud.base_view.eye[2] - cloud.base_view.target[2],
+        cloud.base_view.eye[0] - cloud.base_view.target[0]);
+    vec3 first_eye = {0}, next_eye = {0}, last_eye = {0};
+    for (uint64_t frame = 0; frame <= 576; frame++) {
+        ctx.preview_frame_index = frame;
+        point_cloud_frame(&ctx, &cloud);
+        assert(memcmp(camera_target, authored_view.target, sizeof(vec3)) == 0);
+        const double radius = glm_vec3_distance(camera_eye, camera_target);
+        assert(radius >= base_radius * 0.86 - 1e-6 && radius <= base_radius + 1e-6);
+        assert(camera_eye[1] >= authored_view.eye[1] - 1e-6);
+        if (frame == 0) glm_vec3_copy(camera_eye, first_eye);
+        if (frame == 1) glm_vec3_copy(camera_eye, next_eye);
+        if (frame == 575) glm_vec3_copy(camera_eye, last_eye);
+        if (frame == 144) {
+            const double azimuth = atan2(
+                camera_eye[2] - camera_target[2], camera_eye[0] - camera_target[0]);
+            near(azimuth - base_azimuth, 20 * (6.283185307179586 / 360));
+            near(radius / base_radius, 0.93);
+        }
+        if (frame == 288) near(radius / base_radius, 0.86);
+    }
+    for (uint32_t axis = 0; axis < 3; axis++) {
+        near(camera_eye[axis], first_eye[axis]);
+        assert(fabs((next_eye[axis] - first_eye[axis]) -
+                    (first_eye[axis] - last_eye[axis])) < 0.0001);
+    }
+    const uint32_t homepage_lookat_count = camera_lookat_count;
+    ctx.preview_frame_index = 144;
+    ctx.preview_presentation = DVZ_SCENARIO_PRESENTATION_DEFAULT;
     point_cloud_frame(&ctx, &cloud);
-    near(camera_yaw, amplitude);
+    near(camera_yaw, TAU * 0.25);
+    assert(camera_lookat_count == homepage_lookat_count);
+    ctx.preview_presentation = DVZ_SCENARIO_PRESENTATION_STATIC;
+    point_cloud_frame(&ctx, &cloud);
+    near(camera_yaw, 0);
+    assert(camera_lookat_count == homepage_lookat_count);
+    ctx.preview_frame_count = 864;
+    ctx.preview_presentation_period = 14.4;
+    ctx.preview_presentation_amplitude_deg = 12;
 
     float times[] = {0, 360};
     CorticalActivityState cortex = {0};

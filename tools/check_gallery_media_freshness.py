@@ -24,6 +24,7 @@ DEFAULT_SITE_DIR = compare_gallery_media.DEFAULT_SITE_OUTPUT_DIR
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--id", action="append", default=[], help="Validate selected example IDs; repeat or comma-separate")
     parser.add_argument("--profile", choices=["homepage"])
     parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument("--build-examples-dir", type=Path, default=gallery_frames.DEFAULT_BUILD_EXAMPLES_DIR)
@@ -219,7 +220,7 @@ def main() -> int:
         args.report = root / "reports/homepage/report.json"
     try:
         previews = gallery_frames.collect_previews(
-            args.manifest, args.build_examples_dir, set(), set(), **({"profile": args.profile} if args.profile else {})
+            args.manifest, args.build_examples_dir, gallery_media.split_values(args.id), set(), **({"profile": args.profile} if args.profile else {})
         )
         policy_errors = gallery_media.manifest_media_policy_errors(
             gallery_media.load_manifest(args.manifest)

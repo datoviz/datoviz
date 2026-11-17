@@ -68,6 +68,8 @@ class EncodingProfile:
     webm_crf: int
     fps: int = 0
     compare: bool = False
+    mp4_max_crf: int = gallery_media.MP4_MAX_CRF
+    video_budget_bytes: int = BUDGETS["video_card"]
 
 
 @dataclass(frozen=True)
@@ -100,6 +102,9 @@ class MediaComparison:
     source_duration: float = 0.0
     encoded_duration: float = 0.0
     notes: tuple[str, ...] = ()
+    mp4_base_crf: int | None = None
+    mp4_max_crf: int = gallery_media.MP4_MAX_CRF
+    video_budget_bytes: int = BUDGETS["video_card"]
 
 
 @dataclass(frozen=True)
@@ -239,6 +244,8 @@ def profile_for(
         "webm_crf": args.webm_crf,
         "fps": args.fps,
         "compare": False,
+        "mp4_max_crf": gallery_media.MP4_MAX_CRF,
+        "video_budget_bytes": BUDGETS["video_card"],
     }
     if not args.no_manifest_card:
         preview_key = (getattr(preview, "lane"), getattr(preview, "id"))
@@ -265,6 +272,9 @@ def profile_for(
                 "compare": bool(card.get("compare", fields["compare"])),
             }
         )
+    if not args.no_manifest_card and getattr(args, "profile", ""):
+        fields["mp4_max_crf"] = int(card.get("mp4_max_crf", fields["mp4_max_crf"]))
+        fields["video_budget_bytes"] = int(card.get("video_budget_bytes", fields["video_budget_bytes"]))
     preview_fps = int(getattr(preview, "fps"))
     if fields["preferred_kind"] == "video-mp4" and fields["fps"] > 0:
         expected_source_fps = fields["fps"] * fields["step"]
@@ -485,15 +495,17 @@ def encode_mp4(frame_pattern: str, output: Path, fps: int, crf: int) -> None:
     )
 
 
-def mp4_attempt_plan(source_fps: int, initial_step: int, base_crf: int) -> list[Mp4Attempt]:
+def mp4_attempt_plan(source_fps: int, initial_step: int, base_crf: int, max_crf: int = gallery_media.MP4_MAX_CRF) -> list[Mp4Attempt]:
     """Plan the deterministic FPS and CRF fallback ladder for one MP4 card."""
     if source_fps <= 0:
         raise ValueError("source fps must be positive")
     if initial_step <= 0 or source_fps % initial_step != 0:
         raise ValueError("source fps must be divisible by the initial sample step")
-    if not 0 <= base_crf <= gallery_media.MP4_MAX_CRF:
+    if isinstance(max_crf, bool) or not isinstance(max_crf, int) or not 0 <= max_crf <= gallery_media.MP4_MAX_CRF:
+        raise ValueError(f"maximum MP4 CRF must be between 0 and {gallery_media.MP4_MAX_CRF}")
+    if not 0 <= base_crf <= max_crf:
         raise ValueError(
-            f"base MP4 CRF must be between 0 and {gallery_media.MP4_MAX_CRF}"
+            f"base MP4 CRF must be between 0 and {max_crf}"
         )
 
     initial_fps = source_fps // initial_step
@@ -512,8 +524,8 @@ def mp4_attempt_plan(source_fps: int, initial_step: int, base_crf: int) -> list[
         attempts.append(Mp4Attempt(fallback_fps, fallback_step, base_crf))
 
     crf = base_crf
-    while crf < gallery_media.MP4_MAX_CRF:
-        crf = min(crf + 4, gallery_media.MP4_MAX_CRF)
+    while crf < max_crf:
+        crf = min(crf + 4, max_crf)
         attempt = Mp4Attempt(fallback_fps, fallback_step, crf)
         if attempt != attempts[-1]:
             attempts.append(attempt)
@@ -713,7 +725,8 @@ def compare_preview(
             f"frames={child_path(args.frame_dir / getattr(preview, 'lane') / getattr(preview, 'id'))} "
             f"size={gallery_media.CANONICAL_ANIMATION_SIZE} "
             f"step={profile.step} fps={out_fps} preferred={profile.preferred_kind} "
-            f"compare={profile.compare} variants={variants}"
+            f"compare={profile.compare} variants={variants} "
+            f"mp4_crf={profile.mp4_crf} mp4_max_crf={profile.mp4_max_crf} video_budget_bytes={profile.video_budget_bytes}"
         )
         return None
 
@@ -736,7 +749,7 @@ def compare_preview(
             encode_webp(selected, animated_webp, profile.webp_quality)
         if "mp4-card" in generated_kinds:
             attempts = mp4_attempt_plan(
-                int(getattr(preview, "fps")), profile.step, profile.mp4_crf
+                int(getattr(preview, "fps")), profile.step, profile.mp4_crf, profile.mp4_max_crf
             )
 
             def encode_attempt(attempt: Mp4Attempt) -> int:
@@ -747,7 +760,7 @@ def compare_preview(
                 encode_mp4(selected_pattern, mp4, attempt.fps, attempt.crf)
                 return mp4.stat().st_size
 
-            selected_attempt = execute_mp4_attempts(attempts, encode_attempt)
+            selected_attempt = execute_mp4_attempts(attempts, encode_attempt, profile.video_budget_bytes)
             out_fps = selected_attempt.fps
             selected_step = selected_attempt.sample_step
             selected_crf = selected_attempt.crf
@@ -766,9 +779,9 @@ def compare_preview(
     if "animated-webp-card" in generated_kinds:
         variants.append(variant("animated-webp-card", animated_webp, BUDGETS["animated_webp_card"]))
     if "mp4-card" in generated_kinds:
-        variants.append(variant("mp4-card", mp4, BUDGETS["video_card"]))
+        variants.append(variant("mp4-card", mp4, profile.video_budget_bytes))
     if "webm-card" in generated_kinds:
-        variants.append(variant("webm-card", webm, BUDGETS["video_card"]))
+        variants.append(variant("webm-card", webm, profile.video_budget_bytes))
     return MediaComparison(
         id=getattr(preview, "id"),
         lane=getattr(preview, "lane"),
@@ -786,6 +799,9 @@ def compare_preview(
         video_html_snippet=video_html_snippet(preview),
         sample_step=selected_step,
         encoded_crf=selected_crf,
+        mp4_base_crf=profile.mp4_crf,
+        mp4_max_crf=profile.mp4_max_crf,
+        video_budget_bytes=profile.video_budget_bytes,
         source_duration=getattr(preview, "frames") / getattr(preview, "fps"),
         encoded_duration=encoded_frames / out_fps,
         notes=tuple(notes),

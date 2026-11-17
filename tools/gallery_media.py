@@ -56,7 +56,7 @@ def resolve_media_entry(entry: dict, profile: str = "") -> dict:
     if not isinstance(profiles, dict) or not isinstance(profiles.get(profile), dict):
         raise ValueError(f"{entry_id}: missing media.profiles.{profile} mapping")
     overrides = profiles[profile]
-    allowed = {"frames", "fps", "sample_stride", "time_scale", "presentation"}
+    allowed = {"frames", "fps", "sample_stride", "time_scale", "presentation", "card", "required_inputs"}
     unknown = set(overrides) - allowed
     if unknown:
         raise ValueError(f"{entry_id}: unknown homepage profile fields: {sorted(unknown)}")
@@ -67,7 +67,7 @@ def resolve_media_entry(entry: dict, profile: str = "") -> dict:
     if not isinstance(card, dict):
         raise ValueError(f"{entry_id}: media.preview.card must be a mapping")
     for key, value in overrides.items():
-        if key == "presentation":
+        if key in {"presentation", "card", "required_inputs"}:
             continue
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
             raise ValueError(f"{entry_id}: profile {key} must be positive and finite")
@@ -79,13 +79,25 @@ def resolve_media_entry(entry: dict, profile: str = "") -> dict:
         raise ValueError(f"{entry_id}: invalid profile presentation fields")
     kind = presentation.get("kind", "static")
     amplitude = presentation.get("amplitude_deg", 0)
-    if kind not in {"static", "sway"}:
-        raise ValueError(f"{entry_id}: presentation kind must be static or sway")
+    if kind not in {"static", "sway", "default"}:
+        raise ValueError(f"{entry_id}: presentation kind must be default, static or sway")
     if isinstance(amplitude, bool) or not isinstance(amplitude, (int, float)) or not math.isfinite(amplitude) or amplitude < 0:
         raise ValueError(f"{entry_id}: presentation amplitude must be nonnegative and finite")
     preview["presentation"] = {"kind": kind, "amplitude_deg": amplitude}
-    # Homepage cards retain the existing encoding quality and duration policy.
-    preview.setdefault("card", {}).update({"fps": preview["fps"], "sample_step": 1})
+    required_inputs = overrides.get("required_inputs", [])
+    if not isinstance(required_inputs, list):
+        raise ValueError(f"{entry_id}: required_inputs must be a list of relative file paths")
+    for value in required_inputs:
+        if not isinstance(value, str) or not value or Path(value).is_absolute() or ".." in Path(value).parts:
+            raise ValueError(f"{entry_id}: required_inputs must contain relative file paths without '..'")
+    if required_inputs:
+        preview["required_inputs"] = list(required_inputs)
+    card_overrides = overrides.get("card", {})
+    if not isinstance(card_overrides, dict) or set(card_overrides) - {"mp4_crf", "mp4_max_crf", "video_budget_bytes", "webp_quality"}:
+        raise ValueError(f"{entry_id}: invalid homepage card override fields")
+    # Only explicit named-profile policy can raise the default gallery byte budget.
+    preview.setdefault("card", {}).update(card_overrides)
+    preview["card"].update({"fps": preview["fps"], "sample_step": 1})
     validate_animation_media_policy(result)
     return result
 
@@ -113,12 +125,13 @@ def prepared_dataset_paths(entry: dict) -> tuple[str, ...]:
         return ()
     paths: list[str] = []
     for key, value in dataset.items():
-        if not str(key).endswith("prepared_path"):
+        if not str(key).endswith("prepared_path") and key != "prepared_source":
             continue
         values = value if isinstance(value, list) else [value]
         for item in values:
             paths.extend(part.strip() for part in str(item).split(";") if part.strip())
-    return tuple(paths)
+    paths.extend(preview_metadata(entry).get("required_inputs", []))
+    return tuple(dict.fromkeys(paths))
 
 
 def _hash_path_content(digest: "hashlib._Hash", label: str, path: Path) -> None:
@@ -268,7 +281,7 @@ def animation_media_policy_errors(entry: dict) -> list[str]:
     # Reject malformed numeric fields before int() can truncate or raise OverflowError.
     for mapping, prefix, keys in (
         (preview, "media.preview", ("frames", "fps", "sample_stride", "webp_quality")),
-        (card, "media.preview.card", ("fps", "sample_step", "step", "mp4_crf", "webm_crf", "webp_quality")),
+        (card, "media.preview.card", ("fps", "sample_step", "step", "mp4_crf", "webm_crf", "webp_quality", "mp4_max_crf", "video_budget_bytes")),
     ):
         for key in keys:
             if key not in mapping:
@@ -295,6 +308,13 @@ def animation_media_policy_errors(entry: dict) -> list[str]:
             f"{entry_id}: preview fps {preview_fps} must equal card fps "
             f"{card_fps} * sample_step {sample_step}"
         )
+    max_crf = int(card.get("mp4_max_crf", MP4_MAX_CRF))
+    if not 0 <= max_crf <= MP4_MAX_CRF:
+        errors.append(f"{entry_id}: media.preview.card.mp4_max_crf must be between 0 and {MP4_MAX_CRF}")
+    if "video_budget_bytes" in card and card["video_budget_bytes"] <= 0:
+        errors.append(f"{entry_id}: media.preview.card.video_budget_bytes must be positive")
+    if base_crf > max_crf:
+        errors.append(f"{entry_id}: media.preview.card.mp4_crf must not exceed mp4_max_crf")
     if not 0 <= base_crf <= MP4_MAX_CRF:
         errors.append(
             f"{entry_id}: media.preview.card.mp4_crf must be between 0 and {MP4_MAX_CRF}"
