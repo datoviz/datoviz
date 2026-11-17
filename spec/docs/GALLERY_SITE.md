@@ -95,3 +95,11 @@ Output playback time, scientific data time and presentation motion are distinct.
 The homepage retains muted preview playback and explicit pause controls. Loading near the viewport does not authorize offscreen playback; previews pause when outside the viewport or the document is hidden, preserve a user's pause decision, and remain static for reduced motion or data-saving preferences. Video failure or absent JavaScript leaves a useful poster and example link.
 
 Candidate generation, source commits and local review are separate from binary publication. Review evidence records exact asset hashes, source and renderer identity, selected settings, scientific timing checks and loop limitations. Only the exact manually approved assets may be published to approved destinations.
+
+### Selected snapshot and codec delivery
+
+The example manifest declares `homepage_media.selection`, a repository-relative JSON snapshot containing the exact selected video/poster names, byte counts and full SHA-256 identities. Normal homepage hydration verifies and copies that snapshot; it must not silently regenerate accepted assets. Candidate production remains an explicit separate operation with recorded encoder identities and settings. Missing or changed snapshot files fail publication preparation; hermetic builds remain independent of those binary files.
+
+The selected point cloud uses AV1 first and an H.264 High/3.1 compatibility fallback. Browser loading considers supported and locally available sources while preserving pause, visibility and reduced-motion behavior. Both streams represent the same six-million-point scene and approved camera path at 1280×720, 30 FPS and 9.6 seconds. The other three selected animations remain byte-for-byte unchanged.
+
+Publication can set `DATOVIZ_HOMEPAGE_ASSET_BASE_URL` to the selected immutable HTTPS release origin. In that mode only the homepage media URLs are rewritten, and the homepage binary subtree is excluded from website Git output. Private/local builds retain local staged media. The selected snapshot is verified before deterministic package construction; source selection and package construction grant no network-publication authority. The explicit final user approval and publication guard remain required.

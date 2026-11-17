@@ -29,7 +29,8 @@ Datoviz provides direct control over scene objects and rendering rather than a h
   <a class="dvz-gallery-media-target" href="examples/showcases/point-cloud/" aria-label="Open the point cloud example"></a>
   <img class="dvz-gallery-poster" src="assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.poster.webp" alt="A dense colorized outdoor point cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none" aria-hidden="true" poster="assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.poster.webp">
-    <source data-src="assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.mp4" type="video/mp4">
+    <source data-src="assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.av1.mp4" type='video/mp4; codecs="av01.0.05M.10"'>
+    <source data-src="assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.mp4" type='video/mp4; codecs="avc1.64001f"'>
   </video>
 </div>
 <h3><a href="examples/showcases/point-cloud/">Point cloud</a></h3>

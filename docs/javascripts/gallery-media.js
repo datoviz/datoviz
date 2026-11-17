@@ -2,6 +2,7 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const saveData = navigator.connection && navigator.connection.saveData;
   const localPreview = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+  const localAssetRoot = new URL("../", document.currentScript.src);
   const localVideoManifest = new URL("../assets/gallery/v0.4/local-video-assets.json", document.currentScript.src).href;
   let localVideoUrls = null;
   const localCacheKey = Date.now().toString(36);
@@ -75,7 +76,9 @@
     if (!video) return;
 
     for (const source of video.querySelectorAll("source[data-src]")) {
-      source.src = mediaUrl(source.dataset.src);
+      const available = !localPreview || localVideoUrls?.has(new URL(source.dataset.src, window.location.href).pathname);
+      const supported = !source.type || video.canPlayType(source.type) !== "";
+      if (available && supported) source.src = mediaUrl(source.dataset.src);
     }
     video.addEventListener("canplay", () => ready(video), { once: true });
     video.load();
@@ -86,11 +89,8 @@
   const setActive = (card, active) => {
     const video = card.querySelector("video.dvz-gallery-video");
     if (!video) return;
-    const source = video.querySelector("source[data-src]");
-    if (localPreview) {
-      const sourceUrl = source ? new URL(source.dataset.src, window.location.href).pathname : "";
-      if (!localVideoUrls || !localVideoUrls.has(sourceUrl)) return;
-    }
+    const sources = [...video.querySelectorAll("source[data-src]")];
+    if (localPreview && !sources.some(source => localVideoUrls?.has(new URL(source.dataset.src, window.location.href).pathname))) return;
     if (!card.querySelector(".dvz-gallery-video-control")) addControl(card, video);
     if (active && !document.hidden) {
       loadCard(card);
@@ -116,9 +116,8 @@
       for (const entry of entries) {
         if (entry.isIntersecting) {
           const card = entry.target;
-          const source = card.querySelector("source[data-src]");
-          const url = source ? new URL(source.dataset.src, window.location.href).pathname : "";
-          if (!localPreview || (localVideoUrls && localVideoUrls.has(url))) loadCard(card);
+          const sources = [...card.querySelectorAll("source[data-src]")];
+          if (!localPreview || sources.some(source => localVideoUrls?.has(new URL(source.dataset.src, window.location.href).pathname))) loadCard(card);
         }
       }
     }, { rootMargin: "400px 0px" });
@@ -143,7 +142,7 @@
     fetch(mediaUrl(localVideoManifest))
       .then((response) => response.json())
       .then((payload) => {
-        localVideoUrls = new Set(payload.available || []);
+        localVideoUrls = new Set((payload.available || []).map(value => new URL(value.replace(/^\//, ""), localAssetRoot).pathname));
         observeCards();
       })
       .catch(() => {

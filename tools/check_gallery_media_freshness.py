@@ -219,6 +219,22 @@ def main() -> int:
         args.site_dir = root / "assets/profiles/homepage"
         args.report = root / "reports/homepage/report.json"
     try:
+        if args.profile:
+            import homepage_media
+            selection = homepage_media.selection_for(gallery_media.load_manifest(args.manifest))
+            if selection:
+                for asset in homepage_media.assets_for(selection):
+                    if args.id and asset['example'] not in gallery_media.split_values(args.id):
+                        continue
+                    homepage_media.verify_asset(homepage_media.SELECTED_PRODUCTS, asset)
+                    if asset['role'] != 'poster':
+                        probe = compare_gallery_media.probe_media(homepage_media.SELECTED_PRODUCTS / asset['path'])
+                        if canonical_dimension_errors(probe, asset['path']):
+                            raise ValueError('Selected homepage video dimensions changed')
+                        if not math.isclose(probe.fps, asset['fps'], abs_tol=0.01) or not math.isclose(probe.duration, asset['duration'], abs_tol=0.04):
+                            raise ValueError('Selected homepage video timing changed')
+                print('homepage media freshness: selected snapshot hashes, dimensions and timing verified')
+                return 0
         previews = gallery_frames.collect_previews(
             args.manifest, args.build_examples_dir, gallery_media.split_values(args.id), set(), **({"profile": args.profile} if args.profile else {})
         )

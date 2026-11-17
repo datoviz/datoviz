@@ -51,6 +51,20 @@ def available_video_urls(
 def namespace_video_assets(manifest: dict, output_dir: Path, profile: str = '') -> tuple[list[str], list[str], int]:
     """Discover declared, nonempty videos in one served gallery namespace."""
     if profile:
+        import homepage_media
+        selection = homepage_media.selection_for(manifest)
+        if selection:
+            available, missing = [], []
+            for asset in homepage_media.assets_for(selection):
+                if asset['role'] == 'poster':
+                    continue
+                try:
+                    homepage_media.verify_asset(output_dir / 'profiles/homepage', asset)
+                except ValueError:
+                    missing.append('profiles/homepage/' + asset['path'])
+                else:
+                    available.append('/assets/gallery/v0.4/profiles/homepage/' + asset['path'])
+            return available, missing, len(available) + len(missing)
         from docs_asset_stage import homepage_keys
         expected = homepage_keys(manifest)
         directory = output_dir / 'profiles/homepage'

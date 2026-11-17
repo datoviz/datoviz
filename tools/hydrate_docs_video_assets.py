@@ -405,12 +405,47 @@ def stage_product(item: comparison_media.MediaComparison, staging_root: Path, ca
     return url, changed
 
 
+
+def hydrate_selected(args: argparse.Namespace, lease: DirectoryLease, manifest: dict, selection: dict) -> HydrationResult:
+    """Materialize exact selected bytes; approved media is never automatically regenerated."""
+    import homepage_media
+
+    selected = homepage_media.assets_for(selection)
+    # Verify the whole source set before changing even one served file.
+    verified = [(asset, homepage_media.verify_asset(homepage_media.SELECTED_PRODUCTS, asset))
+                for asset in selected]
+    materialized = 0
+    available = []
+    for asset, source in verified:
+        materialized += atomic_copy_if_changed(source, args.staging_root / asset['path'])
+        if asset['role'] != 'poster':
+            available.append('/assets/gallery/v0.4/profiles/homepage/' + asset['path'])
+    lease.refresh()
+    served_root = args.staging_root
+    if served_root.parts[-2:] == ('profiles', 'homepage'):
+        served_root = served_root.parent.parent
+    availability_path = args.availability_manifest or served_root / 'local-video-assets.json'
+    combined, _, expected = check_docs_video_assets.combined_video_assets(manifest, served_root)
+    changed = atomic_json_if_changed(availability_path, {'available': combined, 'expected': expected})
+    changed = materialized > 0 or changed
+    if changed:
+        args.watched_sentinel.parent.mkdir(parents=True, exist_ok=True)
+        args.watched_sentinel.touch()
+    return HydrationResult(expected=len(available), available=tuple(sorted(available)), cache_hits=len(available),
+                           generated=0, materialized=materialized, failures=(), changed=changed)
+
+
 def hydrate(args: argparse.Namespace, lease: DirectoryLease) -> HydrationResult:
     """Run one failure-isolated, atomic local hydration batch."""
     media_args = comparison_args(args)
     jobs = gallery_workers.parse_jobs(args.jobs)
     capture_jobs = gallery_workers.parse_jobs(args.capture_jobs)
     manifest = gallery_media.load_manifest(args.manifest)
+    if getattr(args, 'capture_profile', ''):
+        import homepage_media
+        selection = homepage_media.selection_for(manifest)
+        if selection:
+            return hydrate_selected(args, lease, manifest, selection)
     if getattr(args, 'capture_profile', ''):
         from docs_asset_stage import homepage_keys
         expected_keys = homepage_keys(manifest)

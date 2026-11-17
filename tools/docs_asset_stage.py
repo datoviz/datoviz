@@ -127,7 +127,30 @@ def stage_homepage_products(
     """Stage only named homepage products, preserving isolation from gallery outputs."""
     import gallery_media
 
-    keys = homepage_keys(gallery_media.load_manifest(manifest_path))
+    manifest = gallery_media.load_manifest(manifest_path)
+    import homepage_media
+    selection = homepage_media.selection_for(manifest)
+    if selection:
+        selected_root = products or homepage_media.SELECTED_PRODUCTS
+        for asset in homepage_media.assets_for(selection):
+            destination = stage / 'profiles/homepage' / asset['path']
+            if hermetic:
+                if asset['role'] == 'poster':
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(_placeholder_payload())
+                continue
+            source = selected_root / asset['path']
+            if source.is_file():
+                source = homepage_media.verify_asset(selected_root, asset)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, destination)
+            elif require_video:
+                raise ValueError(f'missing selected homepage product: {asset["path"]}')
+            elif asset['role'] == 'poster':
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(_placeholder_payload())
+        return
+    keys = homepage_keys(manifest)
     if not keys:
         return
     payload = _placeholder_payload() if hermetic else None
@@ -223,6 +246,11 @@ def prepare_stage(
     stage = stage_root.resolve()
     products = gallery_products.resolve() if gallery_products is not None else None
     validate_separate_roots(stage, products)
+    if homepage_products is None:
+        import gallery_media
+        import homepage_media
+        if homepage_media.selection_for(gallery_media.load_manifest(manifest_path)):
+            homepage_products = homepage_media.SELECTED_PRODUCTS
     validate_separate_roots(stage, homepage_products)
     stage.parent.mkdir(parents=True, exist_ok=True)
     temporary = Path(tempfile.mkdtemp(prefix=f".{stage.name}-{profile}-", dir=stage.parent))
