@@ -5,7 +5,7 @@ Status: normative transparency semantics. A declared alpha mode does not establi
 This document defines how the scene layer handles transparent visuals, depth ordering, and order-independent transparency.
 
 
-The accepted [polygon paint contract](POLYGON_PAINT.md) specifies a separate ordered, depth-free source-over policy for semantic 2D polygons. Its implementation is locally validated; the linked plan retains remaining RC3 acceptance gates. It does not change the ordinary visual defaults below.
+The accepted [polygon paint contract](POLYGON_PAINT.md) specifies a separate ordered, depth-free source-over policy for semantic 2D polygons. RC3 ships the existing rendering correction with diagnosed unsupported paint queries; the linked contract separates RC3 evidence from RC4 composed picking. It does not change the ordinary visual defaults below.
 
 ## Alpha Modes
 

@@ -14,6 +14,7 @@ The scene layer should remain pure high-level logic:
 
 - Status: active specification with multiple implementation slices in `src/scene`.
 - Implementation priority: preserve the completed [RC3 lighting foundation](slices/RC3_LIGHTING_FOUNDATION_SLICE.md), integrated render-product, runtime, binding, WebGPU, and release-proof contracts while the remaining release gates close; keep full PBR and broader optional feature expansion behind the active release queue.
+- Release allocation: the [polygon paint contract](semantics/POLYGON_PAINT.md) ships existing rendering with diagnosed unsupported paint queries in RC3; composed GPU picking and WebGPU device ownership/loss replacement are tracked in the [RC4 slice](slices/RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md).
 - Primary constraint: do not let scene design leak backend details into its public API.
 
 Current source implementation is intentionally smaller than this spec. It includes scene, figure,

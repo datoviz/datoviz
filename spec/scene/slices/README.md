@@ -29,7 +29,7 @@ slice.
 4. [LEGEND_SLICE.md](LEGEND_SLICE.md): deferred categorical/discrete legend boundary.
 5. [RC3_LIGHTING_FOUNDATION_SLICE.md](RC3_LIGHTING_FOUNDATION_SLICE.md): completed RC3 scene-owned ambient/directional lighting, direct/indirect shader decomposition, and correct GTAO consumption.
 6. [MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md](MULTI_LIGHT_KLEIN_BOTTLE_SLICE.md): optional point-light, two-sided-lighting, and checkerboard Klein-bottle expansion after the required lighting foundation.
-
+7. [RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md](RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md): composed GPU paint picking and WebGPU device ownership/loss replacement, with exact issue drafts.
 
 ## Feature Readiness Matrix
 
@@ -64,7 +64,7 @@ Each implementation slice should answer these questions before code starts:
 
 ## Current Implementation Order
 
-The accepted [polygon paint contract and implementation sequence](../semantics/POLYGON_PAINT.md) is a blocking pre-RC3 correction and takes priority over optional extensions below. Implementation and local validation are complete; browser proof and canonical-media approval remain pending.
+The accepted [polygon paint contract](../semantics/POLYGON_PAINT.md) ships its existing rendering correction in RC3 with panel-wide unsupported rendered paint queries. Preserve local evidence and record browser proof or the exact approved narrowly scoped browser-validation exclusion separately from canonical-media approval. Composed GPU picking and WebGPU device-lifecycle architecture belong to the [RC4 slice](RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md).
 
 Use this order unless a concrete user task changes priority:
 

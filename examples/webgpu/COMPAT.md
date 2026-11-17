@@ -2,6 +2,26 @@
 
 This note records the current browser WebGPU proof-of-concept compatibility surface.
 
+RC3 ships the existing polygon paint rendering with rendered paint queries explicitly unsupported panel-wide while drawable paint is present; hidden/empty paint, disabled draw spans, and provably zero effective material alpha are exceptions. Composed GPU paint picking and WebGPU device ownership/loss replacement are [RC4 work](https://github.com/datoviz/datoviz/blob/main/spec/scene/slices/RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md). Current `recoverRuntime()` recreates the runtime on the same device and does not replace a lost `GPUDevice`.
+
+The bounded 2026-11-17 investigation isolates the previous instance-loss signature to default Chrome canvas presentation in this Linux environment: plain offscreen WebGPU/DRP2 readback passes, while default canvas presentation cannot allocate its swapchain backing image. An explicit Vulkan browser profile passes polygon and choropleth rendering in headless and headed/Xvfb modes on Chrome 156.0.8078.79 with non-fallback NVIDIA Blackwell WebGPU. This is configured-provider development evidence, not physical interaction or universal browser support. The deeper device-replacement work remains RC4 scope.
+
+## RC3 Browser Reproduction, 2026-11-17
+
+Run the following from the repository root after building WASM and staging required data. `--gpu-backend=vulkan` selects ANGLE/Vulkan explicitly; defaults stay unchanged. `--require-render` makes the known instance-loss signature fail the acceptance run instead of becoming an exploratory skip.
+
+```sh
+just webgpu-browser-smoke --route=composites_polygon --gpu-backend=vulkan --require-render
+just webgpu-browser-smoke --route=showcases_choropleth --gpu-backend=vulkan --require-render
+xvfb-run -a node tools/webgpu_browser_smoke.mjs --headed --route=composites_polygon --gpu-backend=vulkan --require-render
+xvfb-run -a node tools/webgpu_browser_smoke.mjs --headed --route=showcases_choropleth --gpu-backend=vulkan --require-render
+node tools/webgpu_browser_diagnose.mjs --gpu-backend=vulkan
+```
+
+The diagnostic compares plain clear/readback, queue completion, offscreen DRP2 replay, plain canvas presentation, DRP2 canvas replay, and both live routes. It records exact browser arguments/version, GPU information, adapter/device loss and error events, stderr, screenshots, and polygon palette/hole pixels under ignored `build/rc3-browser-diagnosis/`. The smoke harness also captures Chrome/GPU metadata and initializes the browser GPU process before requesting a page adapter. The successful choropleth load summary uses stdout so WASM does not present informational output as `console.error`; actual errors remain on stderr.
+
+These focused passes supersede the earlier skips only for the tested profile and routes. They do not establish device-loss recovery, physical interaction, other browsers, or full WebGPU parity. Any later provider-only exclusion must still identify the exact failing environment and unproven behavior; native/Python and exact-artifact requirements remain unchanged.
+
 The WebGPU runner is a strict subset check, not a full DRP2 backend. It tracks the active DRP2
 command surface and validates the currently portable fixture slice: `37` positive DRP2 fixtures,
 `2` WebGPU-only attachment streams, and `82` expected-failure semantic negative fixtures.

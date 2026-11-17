@@ -27,13 +27,13 @@ The scientific-profile correction at `d0e904705` updates native technique covera
 
 ## Current Gallery Reference Review, 2026-11-16
 
-[The complete review](GALLERY_REFERENCE_REVIEW.md) classifies all 69 changed screenshots against the protected references: 64 are consistent with intentional font, lighting, rendering, GUI or showcase changes; two polygon cases expose color/alpha semantics requiring a focused correction; three small raster residuals retain a matched-provider/explicit-disposition gate. Current generation produced 107 nonblank, repeatable PNGs, 38 changing motion previews and 29 budget-compliant MP4 cards/posters. No reference image or `data` gitlink was promoted by this review.
+[The complete review](GALLERY_REFERENCE_REVIEW.md) classifies all 69 changed screenshots against the protected references: 64 are consistent with intentional font, lighting, rendering, GUI or showcase changes; two polygon cases were corrected and revalidated in the [2026-11-17 implementation](GALLERY_REFERENCE_REVIEW.md#polygon-paint-implementation-2026-11-17); three small raster residuals retain a matched-provider/explicit-disposition gate. Current generation produced 107 nonblank, repeatable PNGs, 38 changing motion previews and 29 budget-compliant MP4 cards/posters. No reference image or `data` gitlink was promoted by this review.
 
 ## Remaining RC3 Documentation Work
 
 1. Obtain maintainer review of the four-page visual pilot before broad rollout.
 2. Finish the 2026-11-16 Claude course review fixes (see [RELEASE.md](RELEASE.md)); the complete course ships in RC3. Maintainer acceptance of voice, pacing, API profile, ownership explanations, package-first instructions and previews remains separate.
-3. Resolve the polygon-color/alpha concerns and small raster residuals in the gallery review, then approve exact screenshot and animation/card candidates if they should replace canonical assets.
+3. Review the corrected polygon/choropleth candidates, disposition the three small raster residuals, and approve exact screenshot and animation/card replacements. Keep RC3 unsupported paint queries and browser validation scope explicit; composed picking and device lifecycle are RC4 work.
 4. Review the local RC3 release-notes draft; finalize its exact identity, validation evidence, and release-specific known issues only when artifact scope is fixed.
 5. Review exact outreach drafts before any dataset-author or public GitHub communication.
 
@@ -44,6 +44,10 @@ The 2026-10-11 Qt/PyQt documentation draft corrects the completed upstream publi
 Per-image present semaphore, Kvazaar/PThreads4W, and `DVZ_LOG_LEVEL` work were integrated independently. The current vendored Vulkan-header fallback does not have a reproduced defect. The broad developer-preset overhaul remains deferred rather than entering RC3.
 
 The contributor reviewed PR #136 and requested namespaced shader-tool settings and accurate no-compiler behavior. PR #157 incorporated those follow-ups together with parent-owned GLFW reuse, the guarded Windows lean-header policy, opt-in macOS Vulkan-environment sanitization, removal of the obsolete Canvas swizzle-shader pipeline, deterministic compiler-discovery controls, FetchContent and no-compiler regressions, and Windows CI hardening. It merged on 2026-09-17 at `fccf83061b05b7373f5caa1ba40bdecfc3578306` after all hosted checks passed. PR #136 is merged and its final comment records #157 as the refreshed successor. PR #132 was closed as superseded on 2026-09-17 after the approved final comment was published.
+
+## RC3 Paint And Browser Scope
+
+RC3 ships the implemented unlit ordered polygon rendering. Public query guidance must retain the conservative panel-wide unsupported result while drawable paint is present, including its zero-coverage exceptions. The bounded browser investigation obtained strict headless and headed/Xvfb rendering proof for polygon and choropleth with the explicit Vulkan profile; any persistent provider-only failure must be an exact, narrowly scoped browser-validation exclusion, not a pass or a waiver of native/Python and exact-artifact validation. Keep release notes and compatibility wording aligned with [the evidence](GALLERY_REFERENCE_REVIEW.md) and the [RC4 allocation](../../spec/scene/slices/RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md).
 
 ## RC4 Documentation Gate
 

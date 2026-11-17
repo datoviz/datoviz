@@ -45,14 +45,14 @@ Exit criteria:
 4. the tutorial-enabling Canvas, vklite, shader-file, depth-attachment, OBJ-UV, and controller contracts are implemented from executable chapter spikes, documented, binding-validated where applicable, and proven through installed CMake consumers;
 5. native scene, test, and example shaders share one `glslc` build helper and named target-profile policy, Canvas has no built-in shader compiler dependency, normal builds no longer require `glslangValidator`, release products contain precompiled SPIR-V, and generated SPIR-V passes release/CI validation;
 6. runtime shaderc is a focused thread-safe capability outside DRP2 pipeline code with a typed public availability, diagnostic, file, profile, and ownership contract; official packages guarantee its provider while disabled source builds preserve precompiled-SPIR-V rendering;
-7. rewritten course chapters 1-3 are published with standalone installed-consumer, deterministic offscreen, bounded live GLFW, source-synchronization, and generated-preview proof;
+7. the complete implemented 16-chapter course and epilogue ship with synchronized programs/snippets and generated previews; retain installed-consumer, deterministic offscreen, and bounded live GLFW evidence at its recorded scope, with complete-course installed build/offscreen smoke and CMake/shaderc consumers required for RC3 at the recorded hosted-platform scope, while full cross-platform installed/interactive acceptance and tutorial API freeze are allocated to RC4;
 8. packaging, licenses, generated artifacts, release notes, and the non-tutorial documentation surface are final candidates;
 9. source archives and wheels build, install, compile external shaders, and pass installed smoke tests on supported platforms;
 10. static-analysis, memory/UB, Vulkan validation, long-running loop, docs link, gallery smoke, and example smoke results are either clean or recorded as known issues;
 11. checksums/signing policy and required third-party notices are decided;
 12. RC3 feedback explicitly asks whether setup, first-window latency, C guidance, ownership, frame-command explanation, runtime diagnostics, resize behavior, and the tutorial API profile are suitable before final acceptance of the implemented 16-chapter course and tutorial API profile.
 13. the pre-v0.4 native scientific 3D profile has scoped capability, validation, and documentation updates plus correctness fixes for supported paths, with gaps and evidence recorded in the [profile specification](../scene/slices/V04_SCIENTIFIC_3D_PROFILE.md) and [release handoff](../../agents/now/SCIENTIFIC_3D_PROFILE_HANDOFF.md).
-14. the accepted [polygon paint contract](../scene/semantics/POLYGON_PAINT.md) is implemented and validated before RC3 freeze/release: unlit colors, stable source-over, item/collection ordering, persistent ownership, correct semantic picking or explicit unsupported-route diagnostics, focused C/Python/WebGPU evidence, and regenerated polygon/choropleth media review. A plan or screenshot-only correction does not close this blocker.
+14. the implemented [polygon paint contract](../scene/semantics/POLYGON_PAINT.md) passes native/Python and WASM build/packet checks, preserves explicit unsupported paint-query diagnostics, and has reviewed regenerated polygon/choropleth media. Complete bounded browser/provider diagnosis and record actual rendering proof or the maintainer-approved narrow provider-only browser-validation exclusion; exclusions are not passes and do not waive native/Python, exact-artifact, or media-approval gates. Composed picking and device-loss replacement are [RC4 work](../scene/slices/RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md).
 
 
 ## RC4: Tutorial And Installed Developer Experience Candidate
@@ -69,6 +69,7 @@ Exit criteria:
 8. official managed Vulkan-enabled Qt, compatible PyQt, and `datoviz-qtbridge` provider artifacts are published and the exact split packages pass hosted Linux, macOS, and Windows validation without changing the base-package contract;
 9. only recorded release, tutorial, or scientific-profile blockers remain before final v0.4.0 or an RC5 decision.
 10. non-volume scientific 3D composition required by the native profile is integrated and passes its acceptance checks, while the existing bounded volume behavior remains intact; advanced volume work may be deferred.
+11. the focused [paint-query and WebGPU device-lifecycle slice](../scene/slices/RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md) delivers composed GPU semantic paint queries and generation-safe device replacement/recovery for claimed paths, with shared coverage/order, stale-result rejection, bounded failure, and backend-specific acceptance evidence. Broader WebGPU parity and optional bars/bands migration remain separately scoped.
 
 
 ## RC5: Conditional Scientific-Profile Gap Closure

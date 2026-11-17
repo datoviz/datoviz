@@ -2,6 +2,12 @@
 
 This directory contains an experimental browser WebGPU replayer for a narrow DRP2 fixture subset.
 
+RC3 ships the existing polygon paint rendering with rendered paint queries explicitly unsupported panel-wide while drawable paint is present; hidden/empty paint, disabled draw spans, and provably zero effective material alpha are exceptions. Composed GPU paint picking and WebGPU device ownership/loss replacement are [RC4 work](https://github.com/datoviz/datoviz/blob/main/spec/scene/slices/RC4_PAINT_QUERY_DEVICE_LIFECYCLE.md). Current `recoverRuntime()` recreates the runtime on the same device and does not replace a lost `GPUDevice`.
+
+The bounded 2026-11-17 investigation isolates the previous instance-loss signature to default Chrome canvas presentation in this Linux environment: plain offscreen WebGPU/DRP2 readback passes, while default canvas presentation cannot allocate its swapchain backing image. An explicit Vulkan browser profile passes polygon and choropleth rendering in headless and headed/Xvfb modes on Chrome 156.0.8078.79 with non-fallback NVIDIA Blackwell WebGPU. This is configured-provider development evidence, not physical interaction or universal browser support. The deeper device-replacement work remains RC4 scope.
+
+See [the configured browser reproduction commands](COMPAT.md#rc3-browser-reproduction-2026-11-17), including strict `--require-render` acceptance, before treating a provider skip as rendering proof.
+
 Run from the repository root:
 
 ```bash
