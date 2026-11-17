@@ -81,6 +81,8 @@
     video.load();
   };
 
+  const visibleCards = new Set();
+
   const setActive = (card, active) => {
     const video = card.querySelector("video.dvz-gallery-video");
     if (!video) return;
@@ -90,7 +92,7 @@
       if (!localVideoUrls || !localVideoUrls.has(sourceUrl)) return;
     }
     if (!card.querySelector(".dvz-gallery-video-control")) addControl(card, video);
-    if (active) {
+    if (active && !document.hidden) {
       loadCard(card);
       if (card.dataset.userPaused !== "1") {
         video.play().catch(() => updateControl(card, video));
@@ -102,18 +104,40 @@
 
   const observeCards = () => {
     if (!("IntersectionObserver" in window)) {
-      document.querySelectorAll("[data-gallery-lazy]").forEach((card) => setActive(card, true));
+      document.querySelectorAll("[data-gallery-lazy]").forEach((card) => {
+        visibleCards.add(card);
+        setActive(card, true);
+      });
       return;
     }
 
-    const observer = new IntersectionObserver((entries) => {
+    // Load near the viewport, but animate only while actually visible.
+    const preloadObserver = new IntersectionObserver((entries) => {
       for (const entry of entries) {
-        setActive(entry.target, entry.isIntersecting);
+        if (entry.isIntersecting) {
+          const card = entry.target;
+          const source = card.querySelector("source[data-src]");
+          const url = source ? new URL(source.dataset.src, window.location.href).pathname : "";
+          if (!localPreview || (localVideoUrls && localVideoUrls.has(url))) loadCard(card);
+        }
       }
     }, { rootMargin: "400px 0px" });
-
-    document.querySelectorAll("[data-gallery-lazy]").forEach((card) => observer.observe(card));
+    const playbackObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) visibleCards.add(entry.target);
+        else visibleCards.delete(entry.target);
+        setActive(entry.target, entry.isIntersecting);
+      }
+    });
+    document.querySelectorAll("[data-gallery-lazy]").forEach((card) => {
+      preloadObserver.observe(card);
+      playbackObserver.observe(card);
+    });
   };
+
+  document.addEventListener("visibilitychange", () => {
+    for (const card of visibleCards) setActive(card, true);
+  });
 
   if (localPreview) {
     fetch(mediaUrl(localVideoManifest))

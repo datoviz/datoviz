@@ -66,3 +66,7 @@ Publish final feature status, known issues, platform limitations, installation/b
 ## Validation
 
 Follow [documentation validation](../rules/DOCUMENTATION.md) for public documentation changes. The release and maintainer-review gates above apply when work affects release scope or readiness.
+
+## Homepage Motion Review
+
+An isolated homepage capture-profile implementation is awaiting manual media review. Protein and point-cloud candidates use bounded presentation sway; cortex holds its anatomical pose while retaining its established activity timing. Planetary debris retains its original demonstration clock and does not form a closed 14.4-second loop, so a still-poster alternative should be considered before publication. Default gallery profiles remain independent. Candidate generation and private review do not authorize external binary uploads, canonical promotion or public deployment.
