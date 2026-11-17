@@ -171,3 +171,40 @@ def test_local_stage_excludes_product_mp4_until_hydration(tmp_path):
     assert (staged_lane / "example.poster.webp").read_bytes() == b"poster"
     assert not (staged_lane / "example.mp4").exists()
     assert (stage / ".gallery-video-assets.ready").is_file()
+
+
+def test_homepage_stage_copies_only_declared_products(tmp_path):
+    manifest = tmp_path / 'manifest.yaml'
+    manifest.write_text('examples:\n  - id: example\n    lane: showcases\n    media:\n      profiles:\n        homepage: {}\n')
+    products = tmp_path / 'products'
+    (products / 'showcases').mkdir(parents=True)
+    for suffix in ['poster.webp', 'mp4']:
+        (products / 'showcases' / f'example.{suffix}').write_bytes(b'verified')
+    (products / 'unreviewed.mp4').write_bytes(b'not selected')
+    stage = tmp_path / 'stage'
+    docs_asset_stage.stage_homepage_products(stage, manifest, products, require_video=True)
+    assert sorted(path.name for path in stage.rglob('*') if path.is_file()) == ['example.mp4', 'example.poster.webp']
+
+
+def test_homepage_publish_missing_video_fails(tmp_path):
+    manifest = tmp_path / 'manifest.yaml'
+    manifest.write_text('examples:\n  - id: example\n    lane: showcases\n    media:\n      profiles:\n        homepage: {}\n')
+    with pytest.raises(ValueError, match='missing homepage'):
+        docs_asset_stage.stage_homepage_products(tmp_path / 'stage', manifest, None, require_video=True)
+
+
+def test_homepage_products_cannot_overlap_stage(tmp_path):
+    with pytest.raises(ValueError, match='must be separate'):
+        docs_asset_stage.prepare_stage('local', tmp_path / 'stage', homepage_products=tmp_path / 'stage/products')
+
+
+def test_homepage_local_poster_fallback_does_not_copy_default_video(tmp_path):
+    manifest = tmp_path / 'manifest.yaml'
+    manifest.write_text('examples:\n  - id: example\n    lane: showcases\n    media:\n      profiles:\n        homepage: {}\n')
+    stage = tmp_path / 'stage'
+    (stage / 'showcases').mkdir(parents=True)
+    (stage / 'showcases/example.poster.webp').write_bytes(b'poster')
+    (stage / 'showcases/example.mp4').write_bytes(b'default-video')
+    docs_asset_stage.stage_homepage_products(stage, manifest, None)
+    assert (stage / 'profiles/homepage/showcases/example.poster.webp').read_bytes() == b'poster'
+    assert not (stage / 'profiles/homepage/showcases/example.mp4').exists()

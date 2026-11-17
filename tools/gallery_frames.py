@@ -9,6 +9,7 @@ import math
 import os
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -323,18 +324,34 @@ def renderer_library_paths(executable: Path) -> tuple[Path, ...]:
     """Find only linked Datoviz renderer libraries, excluding system dependencies."""
     if not executable.exists():
         return ()
+    darwin = sys.platform == "darwin"
+    command = ["otool", "-L", str(executable)] if darwin else ["ldd", str(executable)]
     try:
-        result = subprocess.run(["ldd", str(executable)], capture_output=True, text=True, check=False)
+        result = subprocess.run(command, capture_output=True, text=True, check=False)
     except OSError:
-        return ()
+        result = None
     paths = set()
-    for line in result.stdout.splitlines():
-        if "libdatoviz" not in line or "=>" not in line:
+    for line in result.stdout.splitlines() if result is not None else ():
+        if "libdatoviz" not in line:
             continue
-        value = line.split("=>", 1)[1].strip().split(" ", 1)[0]
+        if darwin:
+            value = line.strip().split(" (", 1)[0]
+            if value.startswith("@loader_path/") or value.startswith("@executable_path/"):
+                value = str(executable.parent / value.split("/", 1)[1])
+            elif value.startswith("@rpath/"):
+                # The native gallery build links the renderer from this build tree.
+                value = str(ROOT / "build/src" / Path(value).name)
+        elif "=>" in line:
+            value = line.split("=>", 1)[1].strip().split(" ", 1)[0]
+        else:
+            continue
         path = Path(value)
         if path.is_absolute() and path.is_file() and path.name.startswith("libdatoviz"):
             paths.add(path.resolve())
+    if darwin and not paths:
+        fallback = ROOT / "build/src/libdatoviz.dylib"
+        if fallback.is_file():
+            paths.add(fallback.resolve())
     return tuple(sorted(paths))
 
 

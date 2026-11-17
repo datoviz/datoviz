@@ -104,3 +104,45 @@ def test_encoding_profile_uses_resolved_card_without_changing_quality():
                               mp4_crf=32, webm_crf=38, fps=0, no_manifest_card=False)
     profile = compare.profile_for(preview, args)
     assert (profile.fps, profile.step, profile.mp4_crf) == (60, 1, 26)
+
+
+@pytest.mark.parametrize("field", ["fps", "mp4_crf", "webm_crf", "webp_quality", "sample_step"])
+@pytest.mark.parametrize("value", [float("inf"), float("nan"), 1.5])
+def test_card_rejects_nonfinite_and_fractional_encoding_fields(field, value):
+    entry = homepage_entry()
+    entry["media"]["preview"]["card"][field] = value
+    with pytest.raises(ValueError, match="finite integer"):
+        gallery_media.validate_animation_media_policy(entry)
+
+
+@pytest.mark.parametrize("link", ["@rpath/libdatoviz.dylib", "@loader_path/libdatoviz.dylib", "@executable_path/libdatoviz.dylib"])
+def test_darwin_renderer_resolution_ignores_system_libraries(tmp_path, monkeypatch, link):
+    build_src = tmp_path / "build/src"
+    build_src.mkdir(parents=True)
+    executable = build_src / "example"
+    executable.touch()
+    renderer = build_src / "libdatoviz.dylib"
+    renderer.write_bytes(b"renderer")
+    calls = []
+    def run(command, **kwargs):
+        calls.append(command)
+        return type("Result", (), {"stdout": f"{executable}:\n\\t{link} (compatibility version 0)\n /usr/lib/libSystem.B.dylib (compatibility version 1)\n".replace("\\t", "\t")})()
+    monkeypatch.setattr(gallery_frames, "ROOT", tmp_path)
+    monkeypatch.setattr(gallery_frames.sys, "platform", "darwin")
+    monkeypatch.setattr(gallery_frames.subprocess, "run", run)
+    assert gallery_frames.renderer_library_paths(executable) == (renderer.resolve(),)
+    assert calls == [["otool", "-L", str(executable)]]
+
+
+def test_darwin_renderer_fallback_without_otool(tmp_path, monkeypatch):
+    renderer = tmp_path / "build/src/libdatoviz.dylib"
+    renderer.parent.mkdir(parents=True)
+    renderer.write_bytes(b"renderer")
+    executable = tmp_path / "example"
+    executable.touch()
+    monkeypatch.setattr(gallery_frames, "ROOT", tmp_path)
+    monkeypatch.setattr(gallery_frames.sys, "platform", "darwin")
+    def unavailable(*args, **kwargs):
+        raise FileNotFoundError("otool")
+    monkeypatch.setattr(gallery_frames.subprocess, "run", unavailable)
+    assert gallery_frames.renderer_library_paths(executable) == (renderer.resolve(),)

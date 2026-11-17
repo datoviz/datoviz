@@ -70,6 +70,11 @@ def main() -> int:
         )
         return 1
 
+    from docs_asset_stage import homepage_keys
+    for entry in manifest.get("examples", []):
+        if gallery_media.entry_key(entry) in homepage_keys(manifest):
+            gallery_media.resolve_media_entry(entry, "homepage")
+
     print(
         "gallery media pipeline: "
         f"static={len(static_examples)} animated={len(previews)}"

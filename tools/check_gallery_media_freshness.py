@@ -24,6 +24,7 @@ DEFAULT_SITE_DIR = compare_gallery_media.DEFAULT_SITE_OUTPUT_DIR
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=["homepage"])
     parser.add_argument("--manifest", type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument("--build-examples-dir", type=Path, default=gallery_frames.DEFAULT_BUILD_EXAMPLES_DIR)
     parser.add_argument("--frame-dir", type=Path, default=gallery_frames.DEFAULT_FRAME_DIR)
@@ -209,9 +210,16 @@ def validate_preview(
 
 def main() -> int:
     args = parse_args()
+    if args.profile:
+        root = gallery_media.HOMEPAGE_PRODUCTS_ROOT
+        args.frame_dir = root / "frames/homepage"
+        args.frame_cache_dir = root / "cache/frames/homepage"
+        args.card_dir = root / "cards/homepage"
+        args.site_dir = root / "assets/profiles/homepage"
+        args.report = root / "reports/homepage/report.json"
     try:
         previews = gallery_frames.collect_previews(
-            args.manifest, args.build_examples_dir, set(), set()
+            args.manifest, args.build_examples_dir, set(), set(), **({"profile": args.profile} if args.profile else {})
         )
         policy_errors = gallery_media.manifest_media_policy_errors(
             gallery_media.load_manifest(args.manifest)

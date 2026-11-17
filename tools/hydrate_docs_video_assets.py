@@ -194,6 +194,7 @@ class DirectoryLease:
 def parse_args() -> argparse.Namespace:
     """Parse local hydration options."""
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--capture-profile', choices=['homepage'])
     parser.add_argument('--manifest', type=Path, default=gallery_media.DEFAULT_MANIFEST)
     parser.add_argument('--product-dir', type=Path, default=DEFAULT_PRODUCT_DIR)
     parser.add_argument('--product-cache-dir', type=Path, default=DEFAULT_PRODUCT_CACHE_DIR)
@@ -220,12 +221,24 @@ def parse_args() -> argparse.Namespace:
         action='store_true',
         help='return failure when any optional video cannot be made current',
     )
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.capture_profile:
+        root = gallery_media.HOMEPAGE_PRODUCTS_ROOT
+        args.product_dir = root / 'cards/homepage'
+        args.product_cache_dir = root / 'cache/cards/homepage'
+        args.frame_dir = root / 'frames/homepage'
+        args.frame_cache_dir = root / 'cache/frames/homepage'
+        args.staging_root = root / 'assets/profiles/homepage'
+        args.availability_manifest = root / 'assets/local-video-assets.json'
+        args.watched_sentinel = root / '.homepage-video-assets.ready'
+        args.lock_dir = root / '.homepage-hydration.lock'
+    return args
 
 
 def comparison_args(args: argparse.Namespace) -> argparse.Namespace:
     """Build the argument contract consumed by the gallery comparison primitives."""
     return argparse.Namespace(
+        profile=getattr(args, "capture_profile", "") or "",
         manifest=args.manifest,
         input_dir=comparison_media.DEFAULT_INPUT_DIR,
         output_dir=args.product_dir,
@@ -367,7 +380,7 @@ def atomic_json_if_changed(path: Path, payload: dict[str, object]) -> bool:
     return True
 
 
-def stage_product(item: comparison_media.MediaComparison, staging_root: Path) -> tuple[str, int]:
+def stage_product(item: comparison_media.MediaComparison, staging_root: Path, capture_profile: str = "") -> tuple[str, int]:
     """Atomically stage one verified poster/MP4 product pair."""
     if item.preferred_kind != 'video-mp4':
         raise ValueError(f'{item.id}: expected video-mp4 product, got {item.preferred_kind}')
@@ -382,7 +395,8 @@ def stage_product(item: comparison_media.MediaComparison, staging_root: Path) ->
     ):
         source = ROOT / variant.path
         changed += atomic_copy_if_changed(source, target)
-    url = f'/assets/gallery/v0.4/{item.lane}/{item.id}.mp4'
+    namespace = 'profiles/homepage/' if capture_profile else ''
+    url = f'/assets/gallery/v0.4/{namespace}{item.lane}/{item.id}.mp4'
     return url, changed
 
 
@@ -392,7 +406,11 @@ def hydrate(args: argparse.Namespace, lease: DirectoryLease) -> HydrationResult:
     jobs = gallery_workers.parse_jobs(args.jobs)
     capture_jobs = gallery_workers.parse_jobs(args.capture_jobs)
     manifest = gallery_media.load_manifest(args.manifest)
-    expected_keys = sorted(gallery_media.video_preview_keys(manifest))
+    if getattr(args, 'capture_profile', ''):
+        from docs_asset_stage import homepage_keys
+        expected_keys = homepage_keys(manifest)
+    else:
+        expected_keys = sorted(gallery_media.video_preview_keys(manifest))
     previews = comparison_media.selected_previews(media_args)
     selected_keys = {(str(preview.lane), str(preview.id)) for preview in previews}
     manifest_entries = {
@@ -435,7 +453,7 @@ def hydrate(args: argparse.Namespace, lease: DirectoryLease) -> HydrationResult:
     materialized = 0
     for product in successful:
         try:
-            url, changed_files = stage_product(product.comparison, args.staging_root)
+            url, changed_files = stage_product(product.comparison, args.staging_root, **({'capture_profile': args.capture_profile} if getattr(args, 'capture_profile', '') else {}))
         except Exception as exc:
             failures.append(
                 FailedPreview(

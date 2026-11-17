@@ -28,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--profile", choices=sorted(DEFAULT_STAGE_ROOTS), required=True)
     parser.add_argument("--stage-root", type=Path, required=True)
     parser.add_argument("--gallery-products", type=Path)
+    parser.add_argument("--homepage-products", type=Path, help="Verified homepage profile subtree containing lane/product files")
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     return parser.parse_args()
 
@@ -111,6 +112,46 @@ def required_gallery_products(manifest: dict) -> list[Path]:
     return sorted(required)
 
 
+def homepage_keys(manifest: dict) -> list[tuple[str, str]]:
+    """Return only entries explicitly declaring the homepage capture profile."""
+    import gallery_media
+
+    return sorted(gallery_media.entry_key(entry) for entry in manifest.get("examples", [])
+                  if "homepage" in entry.get("media", {}).get("profiles", {}))
+
+
+def stage_homepage_products(
+    stage: Path, manifest_path: Path, products: Path | None, *, hermetic: bool = False,
+    require_video: bool = False,
+) -> None:
+    """Stage only named homepage products, preserving isolation from gallery outputs."""
+    import gallery_media
+
+    keys = homepage_keys(gallery_media.load_manifest(manifest_path))
+    if not keys:
+        return
+    payload = _placeholder_payload() if hermetic else None
+    for lane, example_id in keys:
+        for suffix in ("poster.webp", "mp4"):
+            destination = stage / "profiles/homepage" / lane / f"{example_id}.{suffix}"
+            if hermetic:
+                if suffix == "poster.webp":
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(payload)
+                continue
+            source = products / lane / destination.name if products else None
+            if suffix == "poster.webp" and not require_video and not (source and source.is_file()):
+                source = stage / lane / destination.name
+            if source is not None and source.is_file() and source.stat().st_size:
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, destination)
+            elif not destination.is_file() and suffix == "poster.webp" and not require_video:
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(_placeholder_payload())
+            elif not destination.is_file() and require_video:
+                raise ValueError(f"missing homepage profile product: {lane}/{destination.name}")
+
+
 def validate_publish_products(gallery_stage: Path, manifest_path: Path) -> None:
     """Reject a publish stage missing any manifest-required static or card product."""
     import gallery_media
@@ -131,10 +172,12 @@ def _populate_stage(
     stage_root: Path,
     gallery_products: Path | None,
     manifest_path: Path,
+    homepage_products: Path | None = None,
 ) -> None:
     gallery_stage = stage_root / GALLERY_STAGE_RELATIVE
     if profile == "hermetic":
         count = stage_hermetic_gallery_placeholders(gallery_stage, manifest_path)
+        stage_homepage_products(gallery_stage, manifest_path, None, hermetic=True)
         print(f"docs assets: staged {count} hermetic gallery placeholders")
         return
 
@@ -149,6 +192,8 @@ def _populate_stage(
         else ("local-video-assets.json",)
     )
     shutil.copytree(products, gallery_stage, ignore=shutil.ignore_patterns(*ignored_products))
+
+    stage_homepage_products(gallery_stage, manifest_path, homepage_products, require_video=profile == "publish")
 
     import build_webgpu_data_bundles
 
@@ -170,6 +215,7 @@ def prepare_stage(
     stage_root: Path,
     gallery_products: Path | None = None,
     manifest_path: Path = DEFAULT_MANIFEST,
+    homepage_products: Path | None = None,
 ) -> Path:
     """Prepare a complete profile stage, then replace the prior stage as one directory."""
     if profile not in DEFAULT_STAGE_ROOTS:
@@ -177,11 +223,12 @@ def prepare_stage(
     stage = stage_root.resolve()
     products = gallery_products.resolve() if gallery_products is not None else None
     validate_separate_roots(stage, products)
+    validate_separate_roots(stage, homepage_products)
     stage.parent.mkdir(parents=True, exist_ok=True)
     temporary = Path(tempfile.mkdtemp(prefix=f".{stage.name}-{profile}-", dir=stage.parent))
     backup = stage.with_name(f".{stage.name}-previous-{os.getpid()}")
     try:
-        _populate_stage(profile, temporary, products, manifest_path)
+        _populate_stage(profile, temporary, products, manifest_path, homepage_products)
         if backup.exists():
             shutil.rmtree(backup)
         if stage.exists():
@@ -207,6 +254,7 @@ def main() -> int:
             args.stage_root,
             args.gallery_products,
             args.manifest,
+            args.homepage_products,
         )
     except (FileNotFoundError, RuntimeError, ValueError) as exc:
         print(f"docs assets: {exc}")

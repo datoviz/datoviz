@@ -61,6 +61,11 @@ def resolve_media_entry(entry: dict, profile: str = "") -> dict:
     if unknown:
         raise ValueError(f"{entry_id}: unknown homepage profile fields: {sorted(unknown)}")
     preview = media.setdefault("preview", {})
+    if not isinstance(preview, dict):
+        raise ValueError(f"{entry_id}: media.preview must be a mapping")
+    card = preview.get("card", {})
+    if not isinstance(card, dict):
+        raise ValueError(f"{entry_id}: media.preview.card must be a mapping")
     for key, value in overrides.items():
         if key == "presentation":
             continue
@@ -259,6 +264,20 @@ def animation_media_policy_errors(entry: dict) -> list[str]:
         errors.append(
             f"{entry_id}: media.preview.card.fallback_fps is implicit and must be removed"
         )
+
+    # Reject malformed numeric fields before int() can truncate or raise OverflowError.
+    for mapping, prefix, keys in (
+        (preview, "media.preview", ("frames", "fps", "sample_stride", "webp_quality")),
+        (card, "media.preview.card", ("fps", "sample_step", "step", "mp4_crf", "webm_crf", "webp_quality")),
+    ):
+        for key in keys:
+            if key not in mapping:
+                continue
+            value = mapping[key]
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or int(value) != value:
+                errors.append(f"{entry_id}: {prefix}.{key} must be a finite integer")
+    if errors:
+        return errors
 
     if card.get("preferred") != "video-mp4":
         return errors

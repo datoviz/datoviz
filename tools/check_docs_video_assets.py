@@ -18,6 +18,7 @@ def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--manifest', type=Path, default=gallery_media.DEFAULT_MANIFEST)
+    parser.add_argument('--capture-profile', choices=['homepage'])
     parser.add_argument('--output-dir', type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
         '--availability-manifest',
@@ -57,8 +58,14 @@ def main() -> int:
     """Write availability metadata and report missing local MP4 previews."""
     args = parse_args()
     manifest = gallery_media.load_manifest(args.manifest)
-    expected = expected_video_assets(manifest)
-    available, missing = available_video_urls(expected, args.output_dir)
+    if getattr(args, "capture_profile", ""):
+        from docs_asset_stage import homepage_keys
+        expected = homepage_keys(manifest)
+        available, missing = available_video_urls(expected, args.output_dir / 'profiles/homepage')
+        available = [url.replace('/v0.4/', '/v0.4/profiles/homepage/') for url in available]
+    else:
+        expected = expected_video_assets(manifest)
+        available, missing = available_video_urls(expected, args.output_dir)
     write_availability_manifest(args.availability_manifest, available, len(expected))
     if missing:
         print(
