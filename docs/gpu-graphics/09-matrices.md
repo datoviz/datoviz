@@ -4,11 +4,56 @@
 
 ![A spinning cube with deliberately incorrect face order.](../assets/gpu-graphics/09-matrices.webp)
 
-Time for 3D. The square becomes a cube, seen through a perspective camera. Rotation and scaling move from the vertex shader to the CPU, which combines three matrices into one and pushes it each frame. The result looks wrong on purpose: faces overlap in the wrong order until chapter 10.
+So far everything has been flat. Chapters 6 and 7 drew a square from vertex and index buffers, and chapter 8 made it rotate and pulse with two floats pushed every frame. The shader still writes positions directly in the screen's −1 to 1 range, so the square shears as it turns: in a 4:3 window, one unit is wider than it is tall.
 
-## Eight corners and twelve triangles
+A 3D object needs more: a place in a scene, a camera looking at it, and perspective, so that distant parts look smaller. Renderers express each as a 4 × 4 matrix and multiply them into one.
 
-Include `<datoviz/math/types.h>` for `mat4`. Give positions three floats, and replace the two-float `Push` with a matrix:
+This chapter turns the square into a cube, builds those matrices on the CPU, and pushes the result as in chapter 8. The cube spins in perspective, but looks wrong on purpose: faces drawn later cover earlier ones, even when they are behind. Chapter 10 fixes that.
+
+In this chapter you will:
+
+1. describe a cube with eight corners and twelve triangles;
+2. follow one position through the coordinate spaces between the cube and the screen;
+3. build the model, view, and projection matrices and combine them on the CPU;
+4. push the combined matrix and apply it in the vertex shader.
+
+## From the cube to the screen
+
+Think of taking a photo: the object has a shape, it stands somewhere in a room, you stand somewhere with a camera, and the lens frames the picture. A renderer keeps these decisions separate, each with its own **coordinate space** and matrix:
+
+- **Object space**: the cube's stored coordinates, centered on its own origin. The vertex buffer holds these, and they never change.
+- **World space**: where the object stands, how it is turned, and how big it is. The **model matrix** takes object space to world space. Rotating the cube means changing this matrix, not the vertex buffer.
+- **View space**: the same scene seen from the camera, which sits at the origin and looks down negative z. The **view matrix** takes world space to view space. Moving the camera means changing this matrix.
+- **Clip space**: the output of the **projection matrix**, which plays the lens: field of view, aspect ratio, and the nearest and farthest distances drawn. This is the space `gl_Position` is written in, and Vulkan clips triangles against its bounds.
+- **Normalized device coordinates** (NDC): clip coordinates divided by their fourth component, `w`, which the GPU does itself. x and y run from −1 to 1 across the viewport, z from 0 at the near plane to 1 at the far plane. Chapters 4 to 8 wrote `w = 1`, so their clip coordinates were already NDC.
+- **Framebuffer coordinates**: pixels. The viewport, set since chapter 4, maps NDC to them.
+
+Vulkan only knows clip space and what follows. The earlier spaces and their matrices are this program's conventions, which is why the matrix code lives in C.
+
+```mermaid
+flowchart TD
+    A[Object space] -->|model| B[World space]
+    B -->|view| C[View space]
+    C -->|projection| D[Clip space]
+    D -->|divide by w| E[Normalized device coordinates]
+    E -->|viewport| F[Framebuffer coordinates]
+```
+
+## Why four components
+
+A 3 × 3 matrix can rotate and scale a point but not move it: multiplication always leaves the origin in place. With a fourth component, a position `(x, y, z, 1)` picks up the fourth column of a 4 × 4 matrix as a translation, while a direction, written with `w = 0`, ignores it. These are **homogeneous coordinates**.
+
+The fourth component also gives perspective. An object twice as far away looks half as big: its size on screen is divided by its distance. A matrix cannot divide, so the projection copies the distance in front of the camera into `w`, and the GPU's **perspective divide** by `w` does the rest: distant points shrink toward the center.
+
+## One matrix per draw
+
+The three matrices combine into one **model-view-projection (MVP) matrix**, `projection * view * model`. Read it from right to left: the matrix nearest the vector applies first, so the vertex is placed in the world, then seen from the camera, then projected. The order matters: turning then moving is not the same as moving then turning.
+
+We multiply them on the CPU once per frame, not in the shader once per vertex, since the product is the same for every vertex. Its 64 bytes fit within chapter 8's 128-byte push-constant guarantee. The rotation and pulse leave the shader, which now applies whatever matrix it receives.
+
+## Describe the cube
+
+Include `<datoviz/math/types.h>` for `mat4`, a 4 × 4 float matrix. Positions need a third float, and the two-float `Push` becomes one matrix:
 
 ```c
 typedef struct
@@ -23,7 +68,7 @@ typedef struct
 } Push;
 ```
 
-Replace both geometry arrays. Each face is two triangles, and each triangle lists its corners counter-clockwise when seen from outside the cube:
+A cube has eight corners, each shared by three faces: a job for chapter 7's index buffer. Replace both geometry arrays. Each face is two triangles, 36 indices in all, and each triangle lists its corners counter-clockwise when seen from outside; chapter 10 relies on that order:
 
 ```c
 static const Vertex VERTICES[8] = {
@@ -48,43 +93,22 @@ static const uint16_t INDICES[36] = {
 };
 ```
 
-The buffer sizes use `sizeof(VERTICES)` and `sizeof(INDICES)`, so they follow. Change the position attribute to three floats:
+The buffer sizes use `sizeof(VERTICES)` and `sizeof(INDICES)`, so they follow. The pipeline must now read three floats per position instead of two. Change the position attribute:
 
 ```c
     dvz_graphics_vertex_attr(
         renderer->pipeline, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position));
 ```
 
-Change the indexed draw count from 6 to 36:
+Read it as: from vertex binding 0, shader location 0 is three 32-bit floats at the offset of `position`. The draw must also cover all 36 indices instead of 6:
 
 ```c
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, 36, 0, 1);
 ```
 
-## Homogeneous coordinates
+## Multiply two matrices
 
-One position passes through several coordinate spaces, each suited to a different job:
-
-- **Object space**: the cube's stored coordinates.
-- **World space**: where the model matrix places the object.
-- **View space**: the world relative to the camera, after the view matrix.
-- **Clip space**: the projection matrix's output. Vulkan clips here.
-- **Normalized device coordinates** (NDC): clip coordinates divided by `w`. The viewport maps them to framebuffer pixels.
-
-```mermaid
-flowchart TD
-    A[Object space] -->|model| B[World space]
-    B -->|view| C[View space]
-    C -->|projection| D[Clip space]
-    D -->|divide by w| E[Normalized device coordinates]
-    E -->|viewport| F[Framebuffer coordinates]
-```
-
-A position is a four-component vector `(x, y, z, 1)`, so a 4 × 4 matrix can translate it as well as rotate and scale it. A direction uses `w = 0`, so translation leaves it alone. Perspective comes from the division by `w`: this projection gives distant points a larger `w`, so they shrink after division.
-
-The three matrices combine into one **model-view-projection (MVP) matrix**, `projection * view * model`. The matrix nearest the vector applies first: the model matrix moves the vertex into the world, then the view, then the projection.
-
-Add these two helpers before `create_pipeline()`. `mat4` stores columns, so an element is `[column][row]`. The temporary product makes it safe to pass the same matrix as input and output:
+The C side needs one piece of matrix math: a product. Add these two helpers before `create_pipeline()`, starting with the multiplication. `mat4` stores columns, as GLSL does, so an element is `[column][row]`:
 
 ```c
 static void multiply_mat4(mat4 left, mat4 right, mat4 out)
@@ -100,7 +124,17 @@ static void multiply_mat4(mat4 left, mat4 right, mat4 out)
 }
 ```
 
-In the initializers below, each inner brace of a `mat4` is one column, so the matrices read transposed on the page. The model matrix keeps chapter 8's pulse and rotates the cube about y, with a fixed tilt to show three faces. The view puts the camera three units along positive z, looking at the origin. The projection uses a 60-degree vertical field of view (`1.0471976` radians), the framebuffer aspect ratio, and near and far distances of 0.1 and 100:
+Each output element is a row of `left` times a column of `right`. The result goes to a temporary first, so the same matrix can be passed as an input and as the output, which the next helper does.
+
+## Build the model, view, and projection
+
+The second helper builds the three matrices for a given time and aspect ratio, then multiplies them:
+
+- The **model** matrix turns the cube about the vertical y axis and scales it by chapter 8's pulse. A fixed tilt about x then shows three faces instead of one; multiplying `tilt_matrix` on the left applies it after the spin.
+- The **view** matrix places the camera three units along positive z, looking at the origin. Moving the camera back is the same as moving the whole world forward, so the view is a plain translation by −3 along z.
+- The **projection** uses a 60-degree vertical field of view (`1.0471976` radians), the framebuffer aspect ratio, and near and far distances of 0.1 and 100. At distance 1, the visible region reaches `tan(fov_y / 2)` above the center; scaling by `focal_length`, its inverse, puts that edge at y = 1. Dividing x by the aspect ratio keeps units square.
+
+In the initializers below, each inner brace of a `mat4` is one column, so the matrices read transposed on the page; the view's translation, for example, is its last brace:
 
 ```c
 static void make_mvp(float aspect, float time, mat4 out)
@@ -141,11 +175,15 @@ static void make_mvp(float aspect, float time, mat4 out)
 }
 ```
 
-Points in front of this camera have negative view-space z, so the `-1` in `projection[2][3]` makes clip `w` positive. The depth terms map the near plane to NDC z = 0 and the far plane to z = 1, as Vulkan requires. Vulkan's NDC y points down, which is why chapter 4's triangle needed a negative y for its top vertex; the negative y scale here flips it, so world-space up appears up.
+The last two calls compute `view * model`, then `projection * (view * model)`. The projection holds three Vulkan-specific details:
+
+- Points in front of this camera have negative view-space z. The `-1` in `projection[2][3]` sets clip `w` to minus that z, a positive distance, which the perspective divide then uses.
+- The two depth terms map the near plane to NDC z = 0 and the far plane to z = 1, the range Vulkan requires.
+- Vulkan's NDC y points down, which is why chapter 4's triangle needed a negative y for its top vertex. The negative y scale flips it, so world-space up appears up.
 
 ## Send the matrix
 
-In `draw()`, keep the elapsed-time calculation but replace the old `Push` initializer:
+The matrix depends on the window's shape, so compute it each frame from the current framebuffer size. In `draw()`, keep the elapsed-time calculation but replace the old `Push` initializer:
 
 ```c
     Push push = {0};
@@ -153,7 +191,7 @@ In `draw()`, keep the elapsed-time calculation but replace the old `Push` initia
     make_mvp(aspect, time, push.mvp);
 ```
 
-Dividing by the current aspect ratio fixes chapter 8's shear and keeps the cube square after a resize. `sizeof(Push)` now declares and pushes 64 bytes. Replace `shader.vert`; `shader.frag` is unchanged:
+Dividing by the current aspect ratio fixes chapter 8's shear and keeps the cube square after a resize. The push-constant code itself is unchanged: `sizeof(Push)` now declares and pushes 64 bytes. On the GPU side, replace `shader.vert`; `shader.frag` is unchanged:
 
 ```glsl
 #version 450
@@ -170,9 +208,11 @@ void main()
 }
 ```
 
+The shader appends `w = 1` to make each stored position a homogeneous point, and one multiplication takes it all the way from object space to clip space.
+
 ## Why it looks wrong
 
-The cube has no depth attachment yet. A triangle drawn later overwrites an earlier one wherever they overlap, even if it is farther from the camera. Chapter 10 adds visibility testing.
+The GPU draws the twelve triangles in index order, and each overwrites the pixels it covers. Nothing records how far each pixel's surface is, so a back face drawn after a front face covers it. Sorting triangles by distance fails in general, for example when they intersect; chapter 10 adds a per-pixel depth test instead.
 
 ## Build and run
 
@@ -210,6 +250,12 @@ The cube spins with some back faces drawn over front ones. The terminal ends wit
 !!! warning "When it goes wrong"
 
     An invisible cube often means clip `w` has the wrong sign or the multiplication order is reversed. Wrong face overlap is expected here. If the cube stretches on resize, check the aspect ratio.
+
+## What carries over
+
+- Model, view, and projection matrices, then the divide by `w`, are how every real-time 3D API gets from stored vertices to the screen. Only conventions differ: Vulkan's NDC has y down and depth from 0 to 1, OpenGL's has y up and depth from −1 to 1.
+- Work that is the same for every vertex, such as combining matrices, belongs on the CPU once per draw, not in the shader once per vertex.
+- C and the shader must agree on how a matrix is laid out in memory. GLSL stores columns; C code that writes rows sends the transposed matrix.
 
 ## Checkpoint
 

@@ -4,19 +4,55 @@
 
 ![A solid cube with hidden faces correctly occluded.](../assets/gpu-graphics/10-depth-culling.webp)
 
-In chapter 9, draw order decided which face covered another, so the cube looked wrong. This chapter fixes that with a depth test, and skips faces that point away from the camera with back-face culling. A **depth attachment** stores a depth value per framebuffer sample, so Vulkan can reject a fragment that lies behind a closer one. It sits beside the color attachment: one records visibility, the other the color you see.
+Chapter 9 gave us a cube in perspective, but it does not look solid. The GPU draws its twelve triangles in index order, each overwriting the pixels it covers, so a back face drawn after a front face shows through it. As the cube turns, faces pop in front of each other.
+
+The GPU needs to remember, for every pixel, how far the surface already drawn there is, and keep only the nearest one: the **depth test**. A second, cheaper idea helps too: on a closed object, faces turned away from the camera are always hidden, so the GPU can skip them: **back-face culling**. By the end, the cube is solid from every angle.
+
+In this chapter you will:
+
+1. ask the canvas for a depth image and attach it to each frame's rendering, cleared to "far";
+2. turn on the depth test and depth writes in the pipeline;
+3. turn on back-face culling, using the winding order chapter 9 gave the cube.
+
+## Keep the nearest surface
+
+Chapter 9's projection already gives each vertex a depth: NDC z, from 0 at the near plane to 1 at the far plane. The rasterizer interpolates it across each triangle, so every fragment knows its own depth. What is missing is a place to remember the nearest depth drawn so far at each pixel.
+
+That place is a **depth attachment**: an image the size of the framebuffer, holding one depth value per sample. It sits beside the color attachment: one records what you see, the other how far it is.
+
+Each frame starts by clearing every depth value to 1.0, the far plane, so the first surface drawn anywhere is nearer than "nothing". Then, for each fragment:
+
+- The **depth test** compares the fragment's depth with the stored value. With `VK_COMPARE_OP_LESS`, the fragment passes only if it is strictly closer; otherwise it is discarded and changes nothing.
+- A **depth write** stores a passing fragment's depth, so later fragments compare against it. Testing and writing are separate settings: you can test without writing, as transparent objects often do.
+
+```mermaid
+flowchart TD
+    F[Fragment with depth z] --> T{z less than stored depth?}
+    T -->|yes| W[Write color and store z]
+    T -->|no| D[Discard]
+```
+
+The nearest surface now wins at every pixel, whatever order the triangles arrive in.
+
+## Skip faces that point away
+
+In chapter 9, every triangle of the cube lists its corners counter-clockwise when seen from outside. Seen from inside, or from behind, the same corners appear clockwise. So after projection, the on-screen order of a triangle's corners, its **winding**, tells the GPU whether we see its front or its back.
+
+Back-face culling drops triangles that show their back, before any fragment is produced. On a closed solid, those faces are always behind front faces, so dropping them leaves the image unchanged and saves rasterizing about half the triangles.
+
+Depth makes the image correct, fragment by fragment. Culling skips whole triangles and is mostly a saving; it never looks at distance, so you still need depth whenever front-facing triangles overlap.
 
 ## Request and attach depth
 
-In `main()`, before creating the canvas, request a 32-bit float depth image:
+Since chapter 3, the canvas owns the image each frame draws into. It can also own a depth image for each set of frame resources. In `main()`, before creating the canvas, request a 32-bit float depth format:
 
 ```c
     canvas_config.depth_format = VK_FORMAT_D32_SFLOAT;
 ```
 
-Vulkan guarantees depth-attachment support for `D16_UNORM` and for at least one of `X8_D24_UNORM_PACK32` and `D32_SFLOAT`. The canvas allocates exactly the format you request and does not substitute another, so on a device without `D32_SFLOAT` depth images, pick one of the others. The canvas also recreates the image when the window is resized.
+Vulkan guarantees depth-attachment support for `D16_UNORM` and for at least one of `X8_D24_UNORM_PACK32` and `D32_SFLOAT`. The canvas allocates exactly the format you request and does not substitute another, so on a device without `D32_SFLOAT` depth images, pick one of the others. The canvas also recreates the image on resize, since it must match the color image's size.
 
-In `draw()`, right after `dvz_cmd_rendering_default()` and before beginning rendering, attach this frame's borrowed depth view and clear it:
+Having a depth image is not enough: each frame's rendering must use it. In `draw()`, right after `dvz_cmd_rendering_default()` and before beginning rendering, attach this frame's borrowed depth view and clear it:
 
 ```c
     DvzAttachment* depth = dvz_rendering_depth(renderer->rendering);
@@ -25,11 +61,11 @@ In `draw()`, right after `dvz_cmd_rendering_default()` and before beginning rend
     dvz_attachment_clear(depth, (VkClearValue){.depthStencil = {1.0f, 0}});
 ```
 
-The canvas keeps the depth image in the right image layout and reports it in `frame->depth_layout`; chapter 13 explains layouts. Clearing to 1.0 starts every sample at the far end of the depth range.
+Read it as: the depth attachment is this frame's depth view, in the layout the canvas reports; clear it when rendering begins and keep the result when it ends; clear it to depth 1.0 and stencil 0, unused by this format. The canvas owns the image; `draw()` only borrows its view. The canvas also keeps it in the right image layout and reports it in `frame->depth_layout`; chapter 13 explains layouts.
 
-## Enable testing and writes
+## Turn on testing and writes
 
-In `create_pipeline()`, after the color attachment format and before the pipeline layout, add:
+The attachment gives the GPU somewhere to store depth, but the pipeline decides whether to use it. Depth state is fixed-function pipeline state, like chapter 4's topology. In `create_pipeline()`, after the color attachment format and before the pipeline layout, add:
 
 ```c
     dvz_graphics_attachment_depth(renderer->pipeline, VK_FORMAT_D32_SFLOAT);
@@ -37,13 +73,9 @@ In `create_pipeline()`, after the color attachment format and before the pipelin
         renderer->pipeline, false, true, VK_COMPARE_OP_LESS, DVZ_GRAPHICS_FLAGS_FIXED);
 ```
 
-The attachment format must match the canvas. The first Boolean turns off depth clamping, which would otherwise pin depths outside the near and far planes to the range instead of clipping them. The second turns on depth writes.
+The first call declares the depth format, which must match the canvas. Read the second as: no depth clamping, depth writes on, keep fragments with a lesser depth, as fixed pipeline state. Depth clamping would pin depths outside the near and far planes to the range instead of clipping them. The last argument makes the settings fixed rather than set from the command buffer; passing a nonzero flag here is also what turns the depth test on.
 
-A **depth test** compares an incoming fragment's depth with the stored value; `VK_COMPARE_OP_LESS` keeps it only if it is closer.
-
-A **depth write** then stores the new depth, so later fragments compare against it. You can test without writing, which is why the two settings are separate.
-
-## Winding and culling
+## Cull back faces
 
 Add these calls right after the depth state:
 
@@ -54,9 +86,7 @@ Add these calls right after the depth state:
         renderer->pipeline, VK_FRONT_FACE_COUNTER_CLOCKWISE, DVZ_GRAPHICS_FLAGS_FIXED);
 ```
 
-**Back-face culling** looks at the order of a projected triangle's vertices on screen and drops triangles whose winding marks them as facing away. The cube's indices wind counter-clockwise from outside, and chapter 9's y flip keeps that winding counter-clockwise on screen. Culling never looks at normals, and it cannot tell which of two front-facing triangles is closer.
-
-Depth and culling do different jobs. Depth resolves visibility fragment by fragment, so opaque results no longer depend on draw order. Culling skips whole triangles before rasterization. You still need depth whenever front-facing triangles overlap.
+Read them as: drop back faces, and count counter-clockwise on screen as front. The cube's indices wind counter-clockwise from outside, and chapter 9's y flip keeps that winding counter-clockwise on screen. Culling never looks at normals, only at the order of the projected corners.
 
 ## Build and run
 
@@ -107,6 +137,12 @@ The cube is solid from every angle. The terminal ends with `validation errors: 0
 !!! warning "When it goes wrong"
 
     An attachment-format validation error means the pipeline and canvas disagree. An inside-out cube points to the winding or front-face setting. Flickering where two surfaces meet means they are nearly at the same depth: depth has finite precision, so keep a sensible near/far range.
+
+## What carries over
+
+- The depth buffer, cleared to "far" and updated with a less-than test, is how every rasterizing GPU API hides surfaces, from OpenGL to WebGPU. Draw order then matters only for transparency.
+- Back-face culling depends on consistent winding. Any closed mesh you build or load must wind its triangles the same way as seen from outside.
+- Depth testing and writing are independent switches; renderers combine them differently for opaque objects, transparent objects, and overlays.
 
 ## Checkpoint
 
