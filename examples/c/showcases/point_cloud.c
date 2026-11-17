@@ -420,7 +420,9 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
     const uint64_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
     const uint64_t logical_index = ctx->preview_frame_index / stride;
     const float phase = (float)(logical_index % count) / (float)count;
-    const float theta = TAU * phase;
+    const float theta = scenario_preview_presentation_active(ctx)
+                            ? (float)scenario_preview_presentation_angle(ctx)
+                            : TAU * phase;
 
     (void)dvz_fly_set_camera(state->fly, state->camera);
     (void)dvz_fly_reset(state->fly);

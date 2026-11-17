@@ -16,6 +16,8 @@
 
 #include "datoviz/scene.h"
 
+#include <math.h>
+
 
 
 /*************************************************************************************************/
@@ -53,6 +55,43 @@ double dvz_scenario_preview_time(const DvzScenarioContext* ctx)
 double dvz_scenario_preview_dt(const DvzScenarioContext* ctx)
 {
     return dvz_scenario_preview_time_scale(ctx) / dvz_scenario_preview_fps(ctx);
+}
+
+
+
+/**
+ * Report whether an explicit scenario presentation override is active.
+ *
+ * @param ctx scenario context
+ * @return whether the preview requests static presentation or sway
+ */
+bool scenario_preview_presentation_active(const DvzScenarioContext* ctx)
+{
+    return ctx != NULL && ctx->preview_mode &&
+           ctx->preview_presentation != DVZ_SCENARIO_PRESENTATION_DEFAULT;
+}
+
+
+
+/**
+ * Evaluate bounded presentation sway using output time instead of scientific time.
+ *
+ * @param ctx scenario context
+ * @return presentation angle in radians
+ */
+double scenario_preview_presentation_angle(const DvzScenarioContext* ctx)
+{
+    if (!scenario_preview_presentation_active(ctx) ||
+        ctx->preview_presentation != DVZ_SCENARIO_PRESENTATION_SWAY ||
+        ctx->preview_presentation_period <= 0.0)
+        return 0.0;
+
+    const double tau = 6.283185307179586;
+    const uint64_t stride = ctx->preview_sample_stride > 0 ? ctx->preview_sample_stride : 1;
+    const uint64_t output_frame = ctx->preview_frame_index / stride;
+    const double elapsed = (double)output_frame / dvz_scenario_preview_fps(ctx);
+    const double phase = fmod(elapsed / ctx->preview_presentation_period, 1.0);
+    return ctx->preview_presentation_amplitude_deg * (tau / 360.0) * sin(tau * phase);
 }
 
 

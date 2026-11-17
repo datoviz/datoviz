@@ -647,6 +647,20 @@ static void _update_preview_timeline(DvzScenarioContext* ctx, const DvzRunnerCon
 
 
 
+/**
+ * Report whether the scenario frame callback runs in the selected mode.
+ *
+ * @param spec scenario specification
+ * @param preview_mode whether the runner is generating a deterministic preview
+ * @return whether to schedule and invoke the frame callback
+ */
+static bool _scenario_frame_active(const DvzScenarioSpec* spec, bool preview_mode)
+{
+    return spec != NULL && spec->frame != NULL && (!spec->frame_preview_only || preview_mode);
+}
+
+
+
 static void
 _timer_callback(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
 {
@@ -659,7 +673,7 @@ _timer_callback(DvzAnimation* animation, double t, double dt, uint64_t tick, voi
     state->ctx->time = t;
     state->ctx->dt = dt;
     _update_preview_timeline(state->ctx, state->config);
-    if (state->spec->frame != NULL)
+    if (_scenario_frame_active(state->spec, state->ctx->preview_mode))
         state->spec->frame(state->ctx, state->user);
     _apply_preview_motion(state->ctx, state->config);
     state->ctx->frame_index++;
@@ -884,6 +898,9 @@ static void _print_usage(const DvzScenarioSpec* spec)
     fprintf(stdout, "  --preview-fps FPS      preview frame rate for deterministic frame timing\n");
     fprintf(stdout, "  --preview-sample-stride N internal preview frames per captured frame\n");
     fprintf(stdout, "  --preview-time-scale S multiply preview time without changing playback FPS\n");
+    fprintf(stdout, "  --preview-presentation KIND scenario presentation: default, static, sway\n");
+    fprintf(stdout, "  --preview-presentation-amplitude-deg DEG bounded sway amplitude\n");
+    fprintf(stdout, "  --preview-presentation-period S sway period in output seconds\n");
     fprintf(stdout, "  --preview-timeline SPEC comma-separated preview segments id:kind:frames\n");
     fprintf(stdout, "  --preview-motion KIND  preview motion recipe: none, visual-spin\n");
     fprintf(stdout, "  --preview-motion-target NAME visual target name, default primary or sole target\n");
@@ -932,6 +949,9 @@ DvzRunnerConfig dvz_runner_config(const DvzScenarioSpec* spec)
         .preview_sample_stride = 0,
         .preview_fps = 0.0,
         .preview_time_scale = 0.0,
+        .preview_presentation = DVZ_SCENARIO_PRESENTATION_DEFAULT,
+        .preview_presentation_amplitude_deg = 0.0,
+        .preview_presentation_period = 14.4,
         .preview_motion = DVZ_SCENARIO_MOTION_NONE,
         .preview_motion_target = NULL,
         .preview_motion_axis = {0.0f, 1.0f, 0.0f},
@@ -1121,6 +1141,9 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     ctx.preview_sample_stride = resolved.preview_sample_stride;
     ctx.preview_fps = resolved.preview_fps;
     ctx.preview_time_scale = resolved.preview_time_scale;
+    ctx.preview_presentation = resolved.preview_presentation;
+    ctx.preview_presentation_amplitude_deg = resolved.preview_presentation_amplitude_deg;
+    ctx.preview_presentation_period = resolved.preview_presentation_period;
     _update_preview_timeline(&ctx, &resolved);
 
     scene = dvz_scene();
@@ -1148,7 +1171,8 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
         goto cleanup;
     }
 
-    if (spec->frame != NULL || spec->continuous_frames || _preview_motion_active(&resolved))
+    if (_scenario_frame_active(spec, resolved.preview_mode) || spec->continuous_frames ||
+        _preview_motion_active(&resolved))
     {
         frame_state.spec = spec;
         frame_state.config = &resolved;
@@ -1501,6 +1525,45 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
                 return -1;
             }
             config.preview_time_scale = (double)scale;
+        }
+        else if (strcmp(arg, "--preview-presentation") == 0 && i + 1 < argc)
+        {
+            const char* kind = argv[++i];
+            if (strcmp(kind, "default") == 0)
+                config.preview_presentation = DVZ_SCENARIO_PRESENTATION_DEFAULT;
+            else if (strcmp(kind, "static") == 0)
+                config.preview_presentation = DVZ_SCENARIO_PRESENTATION_STATIC;
+            else if (strcmp(kind, "sway") == 0)
+                config.preview_presentation = DVZ_SCENARIO_PRESENTATION_SWAY;
+            else
+            {
+                fprintf(stderr, "scenario_runner: invalid --preview-presentation value\n");
+                return 1;
+            }
+        }
+        else if (strcmp(arg, "--preview-presentation-amplitude-deg") == 0 && i + 1 < argc)
+        {
+            char* end = NULL;
+            const char* text = argv[++i];
+            const double amplitude = strtod(text, &end);
+            if (end == text || *end != '\0' || !isfinite(amplitude) || amplitude < 0.0)
+            {
+                fprintf(stderr, "scenario_runner: invalid presentation amplitude\n");
+                return 1;
+            }
+            config.preview_presentation_amplitude_deg = amplitude;
+        }
+        else if (strcmp(arg, "--preview-presentation-period") == 0 && i + 1 < argc)
+        {
+            char* end = NULL;
+            const char* text = argv[++i];
+            const double period = strtod(text, &end);
+            if (end == text || *end != '\0' || !isfinite(period) || period <= 0.0)
+            {
+                fprintf(stderr, "scenario_runner: invalid presentation period\n");
+                return 1;
+            }
+            config.preview_presentation_period = period;
         }
         else if (strcmp(arg, "--preview-timeline") == 0 && i + 1 < argc)
         {

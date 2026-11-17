@@ -129,6 +129,14 @@ typedef enum DvzScenarioMotionKind
 } DvzScenarioMotionKind;
 
 
+typedef enum DvzScenarioPresentationKind
+{
+    DVZ_SCENARIO_PRESENTATION_DEFAULT,
+    DVZ_SCENARIO_PRESENTATION_STATIC,
+    DVZ_SCENARIO_PRESENTATION_SWAY,
+} DvzScenarioPresentationKind;
+
+
 
 /*************************************************************************************************/
 /*  Constants                                                                                    */
@@ -251,6 +259,9 @@ struct DvzScenarioContext
     uint32_t preview_sample_stride;
     double preview_fps;
     double preview_time_scale;
+    DvzScenarioPresentationKind preview_presentation;
+    double preview_presentation_amplitude_deg;
+    double preview_presentation_period;
     const char* preview_segment_id;
     const char* preview_segment_kind;
     uint32_t preview_segment_index;
@@ -277,6 +288,8 @@ typedef struct DvzScenarioSpec
     double fps;
     uint64_t requirements;
     bool continuous_frames;
+    /* Keep presentation-only frame callbacks from scheduling an idle interactive scenario. */
+    bool frame_preview_only;
 
     DvzScenarioInitFn init;
     DvzScenarioFrameFn frame;
@@ -317,6 +330,9 @@ typedef struct DvzRunnerConfig
     uint32_t preview_sample_stride;
     double preview_fps;
     double preview_time_scale;
+    DvzScenarioPresentationKind preview_presentation;
+    double preview_presentation_amplitude_deg;
+    double preview_presentation_period;
     DvzScenarioPreviewTimeline preview_timeline;
     DvzScenarioMotionKind preview_motion;
     const char* preview_motion_target;
@@ -371,6 +387,25 @@ double dvz_scenario_preview_time(const DvzScenarioContext* ctx);
  * @return preview timestep in seconds
  */
 double dvz_scenario_preview_dt(const DvzScenarioContext* ctx);
+
+/**
+ * Report whether an explicit scenario presentation override is active.
+ *
+ * @param ctx scenario context
+ * @return whether a deterministic presentation override is active
+ */
+bool scenario_preview_presentation_active(const DvzScenarioContext* ctx);
+
+/**
+ * Return the presentation angle independently of scientific preview time.
+ *
+ * Sway uses output frame i at i / FPS, without duplicating the loop endpoint. The scenario
+ * applies this angle through its authored axis, pivot, camera, and registered visual layers.
+ *
+ * @param ctx scenario context
+ * @return presentation angle in radians, or zero for a static presentation
+ */
+double scenario_preview_presentation_angle(const DvzScenarioContext* ctx);
 
 /**
  * Return normalized progress through a deterministic preview capture.

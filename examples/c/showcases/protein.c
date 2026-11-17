@@ -54,6 +54,8 @@
 #include "example_tuner.h"
 #include "runner/scenario_runner.h"
 
+#include <cglm/affine.h>
+
 
 
 /*************************************************************************************************/
@@ -110,6 +112,8 @@ typedef struct ProteinState
     DvzAnimation* sphere_animation;
     DvzAnimation* selection_animation;
     DvzAnimation* crosshair_animation;
+    DvzVisual* presentation_visuals[3];
+    vec3 presentation_axis;
     DvzMaterialDesc sphere_material;
     DvzExampleGuiAoControls ao;
     ExampleTuner tuner;
@@ -802,6 +806,9 @@ static bool _attach_rotation_animation(
     ANN(out_track);
     ANN(out_animation);
 
+    if (scenario_preview_presentation_active(ctx))
+        return true;
+
     DvzTrackRotationDesc rotation_desc = dvz_track_rotation_desc();
     rotation_desc.axis[0] = axis[0];
     rotation_desc.axis[1] = axis[1];
@@ -941,6 +948,10 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     EXAMPLE_CHECK(
         _preview_spin_axis(&camera_desc, arcball_angles, preview_spin_axis),
         "preview spin axis setup failed");
+    state->presentation_visuals[0] = spheres;
+    state->presentation_visuals[1] = selection;
+    state->presentation_visuals[2] = crosshair;
+    glm_vec3_copy(preview_spin_axis, state->presentation_axis);
     EXAMPLE_CHECK(
         _attach_rotation_animation(
             ctx, spheres, arcball_controller, preview_spin_axis, rotation_speed,
@@ -964,6 +975,27 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
 cleanup:
     return ok;
 }
+
+
+/**
+ * Apply one presentation transform to the molecule and both registered selection layers.
+ *
+ * @param ctx scenario context
+ * @param user scenario state
+ */
+static void _scenario_frame(DvzScenarioContext* ctx, void* user)
+{
+    ProteinState* state = (ProteinState*)user;
+    if (state == NULL || !scenario_preview_presentation_active(ctx))
+        return;
+
+    mat4 transform = GLM_MAT4_IDENTITY_INIT;
+    glm_rotate_make(
+        transform, (float)scenario_preview_presentation_angle(ctx), state->presentation_axis);
+    for (uint32_t i = 0; i < 3; i++)
+        (void)dvz_visual_set_transform(state->presentation_visuals[i], transform);
+}
+
 
 
 static bool _scenario_native_view(DvzScenarioContext* ctx, DvzApp* app, DvzView* view, void* user)
@@ -1017,7 +1049,9 @@ DvzScenarioSpec dvz_showcase_protein_scenario(void)
         .width = WIDTH,
         .height = HEIGHT,
         .fps = SCENARIO_FPS,
+        .frame_preview_only = true,
         .init = _scenario_init,
+        .frame = _scenario_frame,
         .destroy = _scenario_destroy,
     };
 }

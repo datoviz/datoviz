@@ -55,6 +55,8 @@
 #include "textured_planet_orbits.h"
 #include "textured_planet_sky.h"
 
+#include <cglm/affine.h>
+
 
 
 /*************************************************************************************************/
@@ -1373,7 +1375,7 @@ static bool _scenario_init(DvzScenarioContext* ctx, void** out_user)
     state->debris_visual = _create_debris_points(ctx->scene, panel, state);
     EXAMPLE_CHECK(state->debris_visual != NULL, "failed to create orbital-debris points");
     _state_apply_debris_visibility(state);
-    ok = _create_globe_rotation(ctx->scene, state);
+    ok = scenario_preview_presentation_active(ctx) || _create_globe_rotation(ctx->scene, state);
     EXAMPLE_CHECK(ok, "failed to create shared globe rotation");
     dvz_panel_set_background_color(panel, dvz_color_from_unit(0.006f, 0.008f, 0.014f, 1.0f));
 
@@ -1422,6 +1424,17 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
     TexturedPlanetState* state = (TexturedPlanetState*)user;
     if (ctx == NULL || state == NULL || state->debris_visual == NULL)
         return;
+
+    if (scenario_preview_presentation_active(ctx))
+    {
+        vec3 axis = {0.0f, 1.0f, 0.0f};
+        mat4 transform = GLM_MAT4_IDENTITY_INIT;
+        glm_rotate_make(transform, (float)scenario_preview_presentation_angle(ctx), axis);
+        DvzVisual* visuals[GLOBE_VISUAL_COUNT] = {
+            state->visual, state->orbit_glow_visual, state->orbit_visual, state->debris_visual};
+        for (uint32_t i = 0; i < GLOBE_VISUAL_COUNT; i++)
+            (void)dvz_visual_set_transform(visuals[i], transform);
+    }
 
     if (ctx->preview_mode)
     {

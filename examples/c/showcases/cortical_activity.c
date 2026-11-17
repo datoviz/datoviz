@@ -992,12 +992,14 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         rotation_time = state->rotation_time;
     }
     const double rotation_phase = fmod(rotation_time / ROTATION_SECONDS, 1.0);
+    const float rotation_angle = scenario_preview_presentation_active(ctx)
+                                     ? (float)scenario_preview_presentation_angle(ctx)
+                                     : (float)(6.283185307179586 * rotation_phase);
 
     vec3 rotation_axis = {ROTATION_AXIS_X, ROTATION_AXIS_Y, ROTATION_AXIS_Z};
     vec3 rotation_pivot = {ROTATION_PIVOT_X, ROTATION_PIVOT_Y, ROTATION_PIVOT_Z};
     mat4 transform = GLM_MAT4_IDENTITY_INIT;
-    glm_rotate_atm(
-        transform, rotation_pivot, (float)(6.283185307179586 * rotation_phase), rotation_axis);
+    glm_rotate_atm(transform, rotation_pivot, rotation_angle, rotation_axis);
     (void)dvz_visual_set_transform(state->mesh, transform);
 
     if (ctx->preview_mode)
