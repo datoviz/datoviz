@@ -121,7 +121,7 @@ cleanup:
 }
 ```
 
-The helper runs in three phases. First it gets a `DvzGeometry`: from the OBJ loader, or from the sphere generator with a radius of 0.9 and a grid of 24 rings by 48 sectors. Then it checks that every array it needs exists. Last, it converts and uploads.
+The helper runs in three phases. First it gets a `DvzGeometry`: from the OBJ loader, or from the sphere generator with a radius of 0.9 and a grid of 24 rings by 48 sectors. Datoviz description structs start with a size and a flags field; `DVZ_STRUCT_INIT_FIELDS()` fills them, with the struct's size and zero flags, so the library can check that it received the struct layout it expects. Then it checks that every array it needs exists. Last, it converts and uploads.
 
 Both routes return an owned `DvzGeometry` whose attributes are doubles. The pipeline expects 32-bit floats, so the helper narrows each component into a `Vertex` array sized to this mesh, after checking that the byte counts cannot overflow. Indices stay `DvzIndex`, a 32-bit unsigned type, and upload as they are. Once both uploads have copied their bytes, the converted array and the geometry are freed; the GPU buffers stay with `Renderer`.
 
@@ -162,9 +162,11 @@ The full listing also accepts `--width`, `--height` and `--time`, used only to r
 
 ## Load your own OBJ
 
-Wavefront OBJ is a plain-text format that most 3D tools export. `dvz_geometry_obj()` reads `v`, `vt`, `vn`, and polygonal `f` records, triangulates polygons, and ignores materials and groups. It computes missing normals; missing UVs become `(0, 0)`, so the whole mesh samples one checker texel.
+Wavefront OBJ is a plain-text format that most 3D tools export. `dvz_geometry_obj()` reads `v`, `vt`, `vn`, and polygonal `f` records, triangulates polygons, and ignores materials and groups. It computes missing normals; missing UVs become `(0, 0)`, so the whole mesh samples one texel of chapter 13's white corner tile and shows no checkerboard.
 
 An OBJ face indexes positions, UVs, and normals separately, while a Vulkan index selects one whole vertex (chapter 7). The loader bridges the two by writing a separate vertex for each triangle corner.
+
+That choice decides how a file without normals looks. If any corner lacks a `vn` normal, the loader computes normals for the whole mesh, and because no vertex is shared, each triangle gets one flat normal: curved models look faceted. The generated sphere is different: its triangles share vertices, and the generator supplies smooth normals (see below). For smooth shading of your own model, export normals from your modelling tool.
 
 It returns `NULL` for an unreadable or unsupported file, and the program then exits cleanly with `mesh creation failed`. The camera expects a model near the origin, about one unit across. Anything far off-center or much larger will be clipped or invisible; check its bounds with `dvz_geometry_bounds()`.
 
@@ -215,7 +217,7 @@ You see a smooth sphere with a curved checkerboard and a specular highlight. The
 !!! tip "Try it"
 
     1. Lower `rings` to `8` and `sectors` to `16`, and rebuild. The silhouette turns visibly polygonal.
-    2. Recompute the normals: insert this after the geometry checks in `create_mesh()` and rebuild. The capture looks unchanged, because averaged triangle normals closely match the radial ones. Each side of the texture seam averages only its own triangles, which is why recomputed normals can differ from the generator's there.
+    2. Recompute the normals: insert this after the geometry checks in `create_mesh()` and rebuild. The capture looks very similar, because averaged triangle normals closely match the radial ones. Each side of the texture seam averages only its own triangles, which is why recomputed normals can differ from the generator's there.
 
         ```c
             DvzResult normal_result = dvz_geometry_compute_normals(geometry);

@@ -20,7 +20,7 @@ In this chapter you will:
 To read a texture, the GPU needs answers to three questions, and Vulkan gives each its own object:
 
 - **Which pixels?** The image from chapter 13: memory, a size, and a texel format.
-- **Which part of them, seen how?** An **image view** is a window onto an image: its type (2D here), which aspect (color, as opposed to depth), and which mip levels and array layers (mip levels are smaller precomputed copies of the image; array layers are stacked slices; ours has one of each). Shaders and descriptors refer to views, never to images directly. You have used one since chapter 3: the canvas hands you the frame's image view, not its image. Ours covers the whole texture.
+- **Which part of them, seen how?** An **image view** is a window onto an image: its type (2D here), which aspect (color, as opposed to depth), and which mip levels and array layers (mip levels are smaller precomputed copies of the image; array layers are stacked slices; ours has one of each). Shaders and descriptors refer to views, never to images directly. You have used one since chapter 2: the canvas hands you the frame's image view, not its image. Ours covers the whole texture.
 - **Read by which rules?** A **sampler** holds the lookup rules, with no pixels at all. **Filtering** says what to return when a fragment falls between texel centers. **Addressing** says what a UV outside `[0, 1]` means.
 
 Why three objects instead of one? They vary independently. One image can have several views, for example one per layer of an image array. One sampler can serve every texture that wants the same rules. Keeping data, window, and rules apart avoids duplicating any of them.
@@ -156,7 +156,7 @@ A reload candidate builds a new descriptor set, so it needs the view and sampler
 
 The candidate borrows them and owns its pipeline, slots, shaders, and descriptor set; the rest of the reload path is unchanged from chapter 12. Reload covers shader calculations within the existing interface; changing locations, descriptor bindings, or the push-constant block also needs C edits and a rebuild.
 
-Teardown runs in reverse order of reference: whatever points at an object goes before that object. The descriptor set must go before the view and sampler it names, and the view before its image. At `cleanup:`, after the material buffer and before `renderer.texture`, add:
+Teardown runs in reverse order of reference. The simplest safe order is to release whatever refers to an object before the object itself: the descriptor set before the view and sampler it names, and the view before its image. At `cleanup:`, after the material buffer and before `renderer.texture`, add:
 
 ```c
     if (renderer.sampler != NULL)

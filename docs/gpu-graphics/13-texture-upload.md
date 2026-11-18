@@ -137,7 +137,7 @@ Now the second half: getting an image onto the GPU. You already know how to put 
 
 A buffer is a linear range of bytes, and only the shader decides what they mean. An **image** is memory that the GPU itself understands as pixels: it has a width and height, a **texel format** (a texel is one pixel of a texture; here, four 8-bit channels per texel), and a **tiling**, the order in which texels sit in memory. That knowledge is what lets the texture hardware filter between neighboring texels and handle out-of-range coordinates, as chapter 14 will show.
 
-The tiling is the catch. Row by row is a poor order for a GPU, because a triangle reads texels that are close in 2D, not along one row. So GPUs use **optimal tiling**, a private order, chosen by the driver, that keeps 2D neighbors close in memory. Your texture uses it. Because the order is private, the CPU cannot write pixels into the image directly.
+The tiling is the catch. Row by row is a poor order for a GPU, because a triangle reads texels that are close in 2D, not along one row. So GPUs use **optimal tiling**, a private order, chosen by the driver, that keeps 2D neighbors close in memory. vklite images use it by default, so your texture does too (`dvz_images_tiling()` can change that). Because the order is private, the CPU cannot write pixels into the image directly.
 
 The answer is a **staging buffer**: a temporary buffer the CPU can write, filled with plain rows of pixels. A copy command, run by the GPU, reads those rows and stores them in the image's private order. Once the copy has finished, the staging buffer can go.
 
@@ -346,7 +346,7 @@ The checkerboard does not appear yet; chapter 14 connects it.
 
     1. Comment out the first `dvz_cmd_barriers(upload, &barriers);` call. Validation reports at submission that the copy expects the image in `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`, but its layout is still `VK_IMAGE_LAYOUT_UNDEFINED`.
     2. Change `TEXTURE_SIZE` to `32`. Nothing changes on screen and validation stays at zero: the image size and the copy region both use the constant.
-    3. Remove `VK_IMAGE_USAGE_TRANSFER_DST_BIT` from the image usage. Validation reports three errors, against both barriers and the copy: the image was not created to receive transfers.
+    3. Remove `VK_IMAGE_USAGE_TRANSFER_DST_BIT` from the image usage. Validation reports errors against both barriers and the copy: the image was not created to receive transfers.
 
 ??? info "Under the hood: an image upload"
 

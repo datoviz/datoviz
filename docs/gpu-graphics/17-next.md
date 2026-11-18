@@ -36,6 +36,8 @@ Before any of that, Datoviz loads the Vulkan loader (chapter 1), which routes ea
 
 The window and canvas create the surface and swapchain, acquire images, recover from resizes, and present. `dvz_canvas_frame()` and `dvz_canvas_submit()` wrap that contract.
 
+The canvas also allocates the render targets you drew into, including chapter 10's optional depth image, and recreates them when the window is resized. In live mode it copies each finished frame into the acquired swapchain image; with `--png` it reads the frame back instead.
+
 The canvas also owns each frame slot's command pool, command buffer, semaphores, and fence. Semaphores order GPU operations such as acquisition, rendering, and presentation. Fences (chapter 3) tell the CPU that submitted work has finished. Together they let the CPU record one frame while the GPU executes another, and say when a frame slot is safe to reuse.
 
 The rendering wrapper records dynamic rendering with color and depth attachments. Raw Vulkan can also use classic render passes and framebuffers; either way, attachments and image layout transitions must agree.
@@ -62,6 +64,8 @@ The final program sorts its state by how often it changes, a useful starting poi
 Write a compute shader that fills a storage image, then barrier and sample it in a graphics pass. Add a second pipeline for a wireframe or outline pass. Enable MSAA, then study blending and transparency. Add an ImGui overlay for camera and material controls.
 
 Each of these reuses something you already know in a new place. The barrier between a compute write and a fragment read is chapter 13's barrier with different stages and access masks. A wireframe pass is a second pipeline built like chapter 4's, with chapter 10's line polygon mode.
+
+Another route is WebGPU, the GPU API for browsers. It is a different API, so the program you wrote here does not run in a browser as it is, but most of what you learned carries over: graphics pipelines become render pipelines, descriptor set layouts and sets become bind group layouts and bind groups, and command buffers are recorded through command encoders. WebGPU inserts most barriers for you. Datoviz's own browser route works at a higher level: it runs selected Scene API examples, not vklite programs or custom shaders; the [WebGPU subset](../reference/webgpu-subset.md) lists what it covers.
 
 When the renderer itself is no longer the lesson, move up to the [Scene API](../how-to/create-a-scene.md). It runs on the same GPU foundations but manages resources, visuals, and cameras for you. The low-level path remains there whenever a custom pipeline earns the extra control.
 

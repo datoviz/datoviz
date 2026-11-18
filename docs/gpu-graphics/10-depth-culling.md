@@ -52,7 +52,7 @@ Since chapter 2, the canvas owns the image each frame draws into. It can also ow
 
 Vulkan guarantees depth-attachment support for `D16_UNORM` and for at least one of `X8_D24_UNORM_PACK32` and `D32_SFLOAT`. The canvas allocates exactly the format you request and does not substitute another, so on a device without `D32_SFLOAT` depth images, pick one of the others. The canvas also recreates the image on resize, since it must match the color image's size.
 
-Having a depth image is not enough: each frame's rendering must use it. In `draw()`, right after `dvz_cmd_rendering_default()` and before beginning rendering, attach this frame's borrowed depth view and clear it:
+Having a depth image is not enough: each frame's rendering must use it. In `draw()`, right after `dvz_cmd_rendering_default()` and before beginning rendering, attach this frame's borrowed depth view and clear it. The order matters: `dvz_cmd_rendering_default()` resets the whole rendering description every frame, so the depth attachment must be set after it:
 
 ```c
     DvzAttachment* depth = dvz_rendering_depth(renderer->rendering);

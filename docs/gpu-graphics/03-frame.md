@@ -95,7 +95,7 @@ On mobile and tiled GPUs, discarding contents you will overwrite can save memory
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
 ```
 
-This is the new line: add it right after `dvz_cmd_rendering_begin()`. The viewport maps clip-space x and y, from −1 to 1, to pixels (with w = 1 these are the normalized device coordinates chapter 9 explains), and the scissor limits drawing to a pixel rectangle. This helper sets both to the full frame. The clear does not need them, but chapter 4's triangle will. Its pipeline declares them *dynamic*, recorded every frame rather than fixed at pipeline creation, so a resized window only needs the new extent here.
+This is the new line: add it right after `dvz_cmd_rendering_begin()`. The viewport maps normalized device coordinates, where x and y run from −1 to 1 across the frame (chapter 9 explains where they come from), to pixels, and the scissor limits drawing to a pixel rectangle. This helper sets both to the full frame. The clear does not need them, but chapter 4's triangle will. Its pipeline declares them *dynamic*, recorded every frame rather than fixed at pipeline creation, so a resized window only needs the new extent here.
 
 ```c
     dvz_cmd_rendering_end(renderer->commands);
@@ -192,7 +192,7 @@ Update the initializer:
 
 ## Build and run
 
-Build and run as in chapter 2. The window now drifts slowly through blues, greens, and purples. Drag an edge while it runs: the animation continues because each callback reads the new `extent`.
+Build and run as in chapter 2. The window now drifts slowly through blues, greens, and purples. Drag an edge while it runs: the color keeps filling the window at its new size, because each callback reads the new `extent`.
 
 === "Linux and macOS"
 

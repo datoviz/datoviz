@@ -21,6 +21,8 @@ In this chapter you will:
 
 Push constants are *copied*: the bytes travel inside the command buffer, so you can change them for the next draw at no risk. A uniform buffer is *referenced*: the command buffer only says where the bytes are, and the GPU reads them when the draw executes. That makes it cheap for large or shared data, with one consequence: the buffer must stay alive and unchanged until every draw that reads it has finished.
 
+Another buffer descriptor type is the **storage buffer**. A uniform buffer is a read-only range of structured data, which suits a small, fixed-layout structure like this material. A storage buffer allows broader access: its range limit is usually far larger, it can end in an array whose length is known only at run time, and shaders can write to it, on devices that support writes from that shader stage. No single size rule decides between them: the choice depends on how shaders access the data, how much there is, how often it changes, who shares it, and the device's limits. This course needs only a uniform buffer.
+
 ## How a shader finds a buffer
 
 A shader cannot hold a pointer to your buffer. It declares a numbered slot instead, such as `layout(set = 0, binding = 0) uniform Material`, and Vulkan connects that slot to a resource. Three pieces make this work:
@@ -143,6 +145,8 @@ Now the arguments. A descriptor set is created from the layout, so this code goe
 
 `dvz_descriptors()` allocates descriptor sets that match the slots. `dvz_descriptors_buffer()` fills one entry: set 0, binding 0, array element 0 is this buffer, from offset 0, for `sizeof(Material)` bytes. Nothing is copied: the descriptor records where the bytes are, not the bytes.
 
+Descriptor sets are the other exception to chapter 4's lifecycle: `dvz_descriptors()` allocates them at once from a pool the device owns, and `dvz_descriptors_free()` returns them to that pool and frees the wrapper. There is no separate create or destroy step.
+
 ## Bind it and read it
 
 A filled descriptor set is not used until a command binds it. In `draw()`, after the viewport and before the push, add:
@@ -205,7 +209,7 @@ On success, after the device wait and `destroy_pipeline(&renderer)`, take the ca
                 renderer.descriptors = candidate.descriptors;
 ```
 
-At shutdown, order matters: a descriptor must not outlive the buffer it refers to. At `cleanup:`, move `destroy_pipeline(&renderer);` up to right after the device wait, then destroy the material buffer before the geometry buffers:
+At shutdown, order matters. The simplest safe order is to release whatever refers to an object before the object itself: here, the descriptor set before the material buffer it names. At `cleanup:`, move `destroy_pipeline(&renderer);` up to right after the device wait, then destroy the material buffer before the geometry buffers:
 
 ```c
     destroy_pipeline(&renderer);
@@ -239,7 +243,7 @@ The cube keeps its shape and controls, now tinted orange. The terminal ends with
 !!! tip "Try it"
 
     1. Change the tint to `{1.0f, 1.0f, 1.0f, 1.0f}` and rebuild. The cube shows chapter 11's colors again: multiplying by white changes nothing.
-    2. In `shader.frag`, change `binding = 0` to `binding = 1` and press **R**. Validation reports that the shader uses set 0 binding 1, which the layout does not declare, at pipeline creation and again at the draw. The pipeline is still created, and drawing with it is undefined behavior: some drivers crash. Restore the line, and restart the program if it exited.
+    2. In `shader.frag`, change `binding = 0` to `binding = 1` and press **R**. Validation reports that the shader uses set 0 binding 1, which the layout does not declare. Pipeline creation may still succeed; drawing with that pipeline is undefined behavior, and some drivers crash. Restore the line, and restart the program if it exited.
     3. Comment out `dvz_cmd_bind_descriptors()` and rebuild. Validation reports at the draw that the pipeline uses descriptor set 0 but none was bound.
 
 ??? info "Under the hood: what the descriptor names"

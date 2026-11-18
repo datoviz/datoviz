@@ -18,7 +18,7 @@ In this chapter you will:
 
 ## What a draw needs
 
-On the CPU, you would draw a triangle with a loop over pixels. The GPU works the other way around. You supply two small programs, and the GPU runs them many times in parallel: the **vertex shader** once per vertex, to say where it goes, and the **fragment shader** once per covered pixel, to say what color it gets. Between the two, fixed hardware does the part that never changes: it assembles vertices into triangles and finds which pixels each one covers.
+On the CPU, you would draw a triangle with a loop over pixels. The GPU works the other way around. You supply two small programs, and the GPU runs them many times in parallel: the **vertex shader** once per vertex, to say where it goes, and the **fragment shader** about once for each pixel a triangle covers, to say what color it gets. Between the two, fixed hardware does the part that never changes: it assembles vertices into triangles and finds which pixels each one covers.
 
 The pipeline ties these together. Vulkan wants everything that shapes a draw, such as the shaders, the kind of primitive, and the output format, known up front in one object. The driver can then compile it all into GPU code once, when the pipeline is created, rather than at each draw. Creating a pipeline is slow; binding one is cheap. The price is that a pipeline cannot change afterwards. Only the few settings you mark *dynamic*, such as chapter 3's viewport, are left to the command buffer. Chapter 5 meets this limit when it reloads shaders.
 
@@ -81,7 +81,7 @@ static const char* VERTEX_GLSL =
     "}\n";
 ```
 
-After the vertex stage, the GPU groups the three outputs into a triangle (**primitive assembly**) and finds which pixels it covers (**rasterization**). For each covered pixel it makes a **fragment**, a candidate color for that pixel that carries the vertex colors, interpolated across the triangle. The fragment shader runs once per fragment and writes a color to location 0. A fragment is not yet a pixel: later tests, such as chapter 10's depth test, can discard it, and multisampling can make several fragments per pixel.
+After the vertex stage, the GPU groups the three outputs into a triangle (**primitive assembly**) and finds which pixels it covers (**rasterization**). For each covered pixel it makes a **fragment**, a candidate color for that pixel that carries the vertex colors, interpolated across the triangle. The fragment shader runs once per fragment and writes a color to location 0. A fragment is not yet a pixel: later tests, such as chapter 10's depth test, can discard it, and where triangles overlap, several fragments compete for the same pixel.
 
 ```c
 static const char* FRAGMENT_GLSL =
@@ -111,7 +111,7 @@ The programmable stages run code you supply. The fixed-function stages follow st
 
 The pipeline is compiled to write one exact pixel format, so it must know the format of the image it draws into. That image is the canvas's frame target, and it uses the swapchain's format so the canvas can copy it into the swapchain image (chapter 2). The window system chooses that format, and the canvas learns it at the first acquire. A window may use BGRA where an offscreen canvas uses RGBA, so you cannot guess.
 
-After creating the canvas, set `renderer.device` and run one frame before creating the pipeline. No draw callback is installed yet, so the canvas records its default clear. Then read the resolved format:
+After creating the canvas, set `renderer.device` and run one frame before creating the pipeline. No draw callback is installed yet, so this frame records nothing of yours; the new target holds only the canvas's one-time black clear (chapter 2). Then read the resolved format:
 
 ```c
     renderer.device = dvz_gpu_ctx_device(gpu);
@@ -145,7 +145,7 @@ static int create_pipeline(Renderer* renderer)
 {
 ```
 
-Add `<stdint.h>` and `<datoviz/shader.h>`. `dvz_compile_glsl()` translates each into **SPIR-V**, Vulkan's binary intermediate representation. SPIR-V is not machine code; the driver translates it further for your GPU.
+Add `<stdint.h>` and `<datoviz/shader.h>`. `dvz_compile_glsl()` translates each shader string into **SPIR-V**, Vulkan's binary intermediate representation. SPIR-V is not machine code; the driver translates it further for your GPU.
 
 ```c
     uint64_t vertex_size = 0;
@@ -160,7 +160,7 @@ Add `<stdint.h>` and `<datoviz/shader.h>`. `dvz_compile_glsl()` translates each 
     }
 ```
 
-Every vklite object you own follows the same lifecycle:
+The shader modules, the pipeline layout, and the pipeline you build here all follow the same lifecycle:
 
 !!! note "vklite object lifecycle"
 
@@ -173,6 +173,8 @@ Every vklite object you own follows the same lifecycle:
     | 5 | `dvz_*_free()` | free the wrapper |
 
     `dvz_shader()` is the one shortcut: it does steps 2 and 3 in a single call.
+
+Not every wrapper fits this table. The command and rendering wrappers from chapter 2 have no create or destroy step in this program: `renderer->commands` only borrows the canvas's command buffer during each callback, and `renderer->rendering` only describes a pass, so neither owns a Vulkan object and both go straight from `create_wrapper` to `free`. Chapter 13 gives a commands wrapper a command buffer of its own, and then it needs `dvz_commands_destroy()` too. Descriptor sets, in chapter 12, are another exception.
 
 Allocate the four wrappers:
 
