@@ -1,6 +1,6 @@
 # Modern GPU Graphics In Vulkan Course Execution
 
-Status: the complete 16-chapter implementation, epilogue, canonical programs, synchronized excerpts and generated previews are present. The 2026-11-16 in-tree smoke passes all 16 steps; exact post-RC2 package proof and a fresh isolated-reader audit of the revised course remain release gates. The independent reader pass of the earlier 15-chapter baseline remains historical evidence. Updated: 2026-11-16.
+Status: the complete 16-chapter implementation, epilogue, canonical programs and generated previews are present. The fuller explanatory revision landed on 2026-11-17; the 2026-11-18 Claude Opus 5.5 medium review and independent source check completed bounded documentation corrections. All 16 canonical programs pass the 2026-11-18 validation-enabled in-tree smoke with reproducible captures. Maintainer proofreading, revised-course reader acceptance and exact post-RC2 package/platform proof remain separate gates. Updated: 2026-11-18.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
@@ -25,7 +25,7 @@ Official-package shaderc proof on supported platforms, package installation proo
 
 ## Completed Revision And Remaining Review
 
-The maintainer reports on 2026-11-16 that Claude is currently checking the course. Treat that review as in progress and collect its findings before scheduling another course audit. Its isolation, chapter coverage, execution evidence and recovery/interaction coverage are not yet recorded, so it does not automatically close the independent-reader or maintainer-review gates.
+The 2026-11-16 review and 2026-11-17 explanatory/learner passes are complete at the revisions below. The maintainer requested a continuation on 2026-11-18 using Claude Opus 5.5 at medium effort. That continuation reviews the current overview, all 16 substantive chapters and epilogue against the canonical programs, shaders and implementation. It is a static factual/editorial review, independently checked against source; it does not claim a new isolated-reader, physical-interaction or installed-package pass.
 
 `30ee8ea3a` implements the uniform-buffer/descriptor chapter and the 16-chapter sequence; `078bcb809` repairs the cumulative code path and mesh progression, and `fd65af119` makes the documented source setup independent of CUDA. On 2026-11-16, `just vulkan-course-check` verifies 16 chapters and 173 excerpts; `just vulkan-course-smoke` passes all 16 canonical steps with valid, reproducible captures. The strict documentation build generates all 18 media outputs.
 
@@ -35,6 +35,26 @@ The maintainer reports on 2026-11-16 that Claude is currently checking the cours
 3. Validate exact installed artifacts and hosted/live behavior under the RC4 freeze below; retain the first official post-RC2 package gate for RC3.
 
 Use generated geometry and a procedural asymmetric checkerboard. No committed Suzanne OBJ, PNG, `data` update, Blender recipe, or binary-asset approval is required for the course. Optional external-mesh polish is not a release blocker.
+
+## 2026-11-18 Review And Maintainer Checklist
+
+Claude Opus 5.5 at medium effort reviewed the overview, all 16 substantive chapters and the epilogue, then applied bounded corrections. An independent source check and parent review refined ownership, descriptor, OBJ and browser-support claims. The fuller teaching style remains; no canonical program, shader, public API or fenced C/GLSL excerpt changed. The corrections cover source/package setup, fragment semantics, the warm-up target, wrapper lifecycles, push-constant troubleshooting, depth configuration order, storage buffers, descriptor teardown, image views, OBJ normals and the WebGPU onward route. No blocking runtime defect was found in this review. Setup corrections landed in `36d29e8ac`; the remaining course corrections landed in `819a4d74a`.
+
+The Windows source setup now includes the missing configure command with CUDA disabled and the Release vcpkg dependency DLL directory on `PATH`; the install rules do not install those dependency DLLs into the prefix. This correction is source-verified, not Windows execution proof. The package-only compiler shortcut and macOS loader diagnostics are also corrected.
+
+Validation on Linux: `just vulkan-course-check` verifies 16 chapters and 178 excerpts; `just docs-status-check` passes. With the repository SDK environment loaded, `just vulkan-course-smoke` passes all 16 programs with zero validation errors and reproducible captures. The initial unconfigured-shell attempt could not find the validation layer; it is not counted as a passing run. `just docs-build-check` passes its 12 generator tests, strict build and all 18 generated course media outputs. The homepage selection's 24 focused tests pass and its technical snapshot is unchanged. Whitespace and local link checks pass. These are development-source checks, not exact-candidate, installed-package or physical-platform acceptance.
+
+Two scratch exercise checks close the earlier uncertain observations: reversing chapter 9's final matrix multiplication produces a flat capture on the tested Linux provider, and recomputing chapter 16's sphere normals changes 9,622 of 480,000 pixels with maximum channel delta 8 and zero validation errors. The latter exercise now says “looks very similar” instead of promising no visible change. Validation-error exercises describe the error rather than promise an exact count or timing. Full review findings, implementation notes, logs and scratch artifacts remain ignored under `build/course-review/20261118T125214Z/`.
+
+| Remaining work | Who or prerequisite | Recommended next action |
+| --- | --- | --- |
+| Changed prose and teaching voice | Maintainer | Start with [setup](../../docs/gpu-graphics/01-setup.md), [triangle and lifecycle](../../docs/gpu-graphics/04-triangle.md), [descriptors](../../docs/gpu-graphics/12-uniform-buffers.md), [mesh normals](../../docs/gpu-graphics/16-mesh.md) and [epilogue](../../docs/gpu-graphics/17-next.md), then review the remaining course voice, pacing, exercises and previews in the private WIP documentation. |
+| Revised-course reader acceptance | Agent execution plus maintainer assessment | The static review and in-tree smoke do not replace a fresh reader following the final rendered instructions in an isolated project; retain package and platform scope explicitly. |
+| Windows source/DLL instructions and platform behavior | Available Windows/macOS hardware or hosted candidate builders | Run the documented setup and relevant interaction/resize checks; preserve unavailable physical checks as exclusions. |
+| First official package newer than RC2 | RC3 freeze and exact artifact preparation | Verify the installed CMake/shaderc/course route against the actual candidate; do not change the current development version early. |
+| RC3 freeze and publication | Maintainer | Resolve remaining course/gallery/platform dispositions, then freeze. Release publication and website deployment need separate exact final approvals. |
+
+Optional listing-format normalization and OBJ smoothing architecture are outside this correction pass. Previously deferred course reordering remains deferred; no new API work is required by these findings.
 
 ## RC4 Freeze
 
