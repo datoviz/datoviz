@@ -1,6 +1,6 @@
 # Distribution Release Checklist
 
-Status: active RC3/final release gate. Updated: 2026-08-30.
+Status: active RC3/final release gate; exact candidate proof remains pending. Provider allocation reconciled: 2026-11-20; earlier validation evidence retains its recorded identities.
 
 Use this checklist against the exact candidate commit before live workflows or publication. Current blocker state belongs in [STATUS.md](STATUS.md); distribution decisions belong in [C_DISTRIBUTION.md](C_DISTRIBUTION.md).
 
@@ -50,11 +50,11 @@ The exact RC3 candidate must prove:
 1. The base `libdatoviz` and `datoviz` outputs use correct dependency names, install paths, run exports, and Windows DLL layout.
 2. Headless base-package tests import `datoviz` and `datoviz.raw` and create/destroy a raw scene without a Vulkan device.
 3. A clean macOS base-package prefix without Qt or a system Vulkan SDK resolves the conda-managed loader and MoltenVK ICD, creates a Vulkan instance, and completes an offscreen render.
-4. Supported hosted base-package tests are green before publication. Official `datoviz-qtbridge` artifacts are deferred to RC4 and are not claimed by RC3.
+4. Supported hosted base-package tests are green before publication. Official `datoviz-qtbridge` artifacts default to RC4; any RC3 promotion requires an explicit maintainer scope decision and the exact provider proof below. Optional provider promotion must not block the base RC3 artifact campaign.
 
 ## RC4 Qt provider matrix
 
-After compatible PyQt publication, the exact provider artifacts must prove:
+Compatible Vulkan-enabled Qt/PyQt are published upstream. RC4 remains the default allocation; if the maintainer explicitly promotes the provider into RC3, apply this same matrix to each claimed RC3 platform. The exact provider artifacts must prove:
 
 1. Published Qt exposes the Vulkan-enabled QtGui surface on every claimed target and published PyQt exposes `QVulkanInstance` against that same Qt ABI/runtime.
 2. The macOS Qt-provider prefix resolves one conda-managed Vulkan loader and MoltenVK implementation rather than a standalone-wheel runtime payload.
@@ -85,7 +85,7 @@ Live GitHub workflows, source-asset uploads, package-manager submissions, TestPy
 After approval:
 
 1. build and checksum the exact source bundle;
-2. run and inspect the exact wheel/provider matrices;
+2. run and inspect the exact wheel/base-package matrices and any explicitly included provider matrix;
 3. validate clean installs and external consumers from downloaded artifacts;
 4. attach immutable evidence and checksums;
 5. publish only the reviewed artifact set;

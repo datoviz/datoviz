@@ -21,7 +21,7 @@ The Datoviz category on the private gateway index is the front door for three di
 - The canonical histogram is published through `data` commit `6a9091c10e08e477af5b07496cac602aefc7c999` and parent commit `9b0884f507f76f5a982db85cd2f6e59f094512e1`; all 107 reviewed stills pass full-pixel validation, and the example has C, Python, and live WebGPU routes.
 - The four-page visual-system pilot passes strict build and software-rendered desktop/mobile inspection.
 - PR #157 merged the refreshed embedding and platform-portability work at `fccf83061b05b7373f5caa1ba40bdecfc3578306` with green Linux, macOS, Windows, agent-instruction, and submodule-reachability checks. PR #136 is merged and superseded by #157; original PR #132 is closed as superseded.
-- All 16 substantive course chapters and epilogue 17 are implemented, including uniform buffers/descriptors and the generated textured, lit mesh. Current source synchronization verifies 173 excerpts, in-tree smoke passes all 16 steps with reproducible captures, and the documentation build generates 18 media outputs. Earlier installed-source and independent-reader evidence retains its original revision/chapter scope.
+- All 16 substantive course chapters and epilogue 17 are implemented, including uniform buffers/descriptors and the generated textured, lit mesh. Current source synchronization verifies 178 excerpts, in-tree smoke passes all 16 steps with reproducible captures, and the documentation build generates 18 media outputs. Earlier installed-source and independent-reader evidence retains its original revision/chapter scope.
 - Rewritten course previews are generated from the canonical programs with real stdout, exact flat-color validation, deterministic fixed-time animation, and no `data` dependency.
 - The 2026-09-08 automated course prose review covers the overview and chapters 1-3. Setup now gives corrected Windows Developer PowerShell, Release-configuration source-install, package DLL `PATH`, and configuration-specific executable guidance; maintainer review of voice and pacing remains required.
 
@@ -35,13 +35,13 @@ The scientific-profile correction at `d0e904705` updates native technique covera
 
 ## Remaining RC3 Documentation Work
 
-1. Obtain maintainer review of the four-page visual pilot before broad rollout.
+1. Confirm the four-page visual pilot scope before any broad rollout; this is distinct from the accepted homepage videos and completed gallery comparison. Do not repeat accepted reviews merely because their historical handoff still says pending.
 2. Proofread the 2026-11-18 corrected course after the completed Claude Opus 5.5 medium review, independent source check and automated validation (see [the course queue](VKLITE_GRAPHICS_TUTORIAL.md)); the complete course ships in RC3. Maintainer acceptance of voice, pacing, API profile, ownership explanations, package-first instructions and previews remains separate.
-3. Review the corrected polygon/choropleth candidates, disposition the three small raster residuals, and approve exact screenshot and animation/card replacements. Keep RC3 unsupported paint queries and browser validation scope explicit; composed picking and device lifecycle are RC4 work.
+3. Preserve the accepted polygon rendering direction and completed comparison; canonical polygon/choropleth images have not been promoted. Prepare the exact destination/hash and publication action for any remaining canonical replacements. For the three small raster residuals, tie any existing maintainer acceptance to the exact candidate provenance or obtain a scoped disposition; do not reopen the accepted benign general review. Keep RC3 unsupported paint queries and browser validation scope explicit; composed picking and device lifecycle are RC4 work.
 4. Review the local RC3 release-notes draft; finalize its exact identity, validation evidence, and release-specific known issues only when artifact scope is fixed.
 5. Review exact outreach drafts before any dataset-author or public GitHub communication.
 
-The 2026-10-11 Qt/PyQt documentation draft corrects the completed upstream publication state, documents the indexed local-channel install and managed Vulkan ownership, and records the Windows trust limitation. [Provider promotion gates](QT_MACOS_VULKAN_HANDOFF.md#proposed-rc3-provider-scope-2026-10-11) keep RC3 inclusion conditional and RC4 as the fallback; review final channel, version, platform claims, and release-note wording after candidate proof.
+The 2026-10-11 Qt/PyQt documentation draft corrects the completed upstream publication state, documents the indexed local-channel install and managed Vulkan ownership, and records the Windows trust limitation. [Provider promotion gates](QT_MACOS_VULKAN_HANDOFF.md#proposed-rc3-provider-scope-2026-10-11) keep RC4 as the default allocation and require an explicit decision plus exact-platform proof for any RC3 promotion; provider promotion must not block base RC3. If promoted, review final channel, version, platform claims, and release-note wording after candidate proof.
 
 ## PR #132 Disposition
 
@@ -55,7 +55,7 @@ RC3 ships the implemented unlit ordered polygon rendering. Public query guidance
 
 ## RC4 Documentation Gate
 
-Resolve RC3 course feedback and repeat the isolated-reader audit after the RC3 revision pass, regenerate previews from exact candidate code, freeze the tutorial-facing API and advanced/unstable compatibility profile, validate every chapter against exact installed artifacts on supported hosted platforms, and resolve or record reader feedback. Development implementation and preview generation do not close these acceptance gates.
+Resolve RC3 course feedback and repeat the isolated-reader audit after the RC3 revision pass, regenerate previews from exact candidate code, freeze the tutorial-facing API and the compatibility profile for advanced low-level interfaces that may evolve during the release candidates, validate every chapter against exact installed artifacts on supported hosted platforms, and resolve or record reader feedback. Development implementation and preview generation do not close these acceptance gates.
 
 The required course uses generated geometry and a procedural texture. Suzanne and committed binary course assets are optional polish and must not become release blockers.
 
