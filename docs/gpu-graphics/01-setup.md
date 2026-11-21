@@ -8,7 +8,7 @@ Before we draw anything, we need a build we can trust. A Datoviz program is ordi
 
 The program you write here prints the Datoviz version and draws nothing. That is deliberate. If your compiler, your Datoviz installation, or the library path is wrong, you find out now, in a nine-line program, rather than in chapter 12 among hundreds of lines of graphics code.
 
-This page is a numbered path from an empty directory to a program that runs. Follow the steps in order: each one ends with something you can check before you move on, so a problem shows up at the step that caused it.
+Follow these steps to build and run your first Datoviz program. Check the result at the end of each step before continuing.
 
 In this chapter you will:
 

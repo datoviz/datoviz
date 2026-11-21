@@ -26,7 +26,24 @@ The CPU decides *what* to draw and writes down instructions: use this pipeline, 
 
 Why a list rather than direct calls? The GPU is a separate processor. If the CPU sent each instruction on its own and waited for it, each processor would spend most of its time waiting for the other. A whole frame's list, handed over at once, lets both run at full speed.
 
-Submission puts recorded command buffers on a device **queue**, the line of work waiting for the GPU. The GPU runs them later; by then your callback has returned. To keep both processors busy, the canvas keeps a few sets of per-frame resources, called **frame slots** (or frames in flight), so the CPU can record the next frame while the GPU executes an earlier one. Before reusing a slot, the CPU waits on a **fence**, a signal the GPU raises when it has finished that slot's work. If the GPU is still busy, that wait makes the CPU pause. Managing this overlap safely is what Vulkan's synchronization is for, and why the canvas earns its keep.
+Submission puts recorded command buffers on a device **queue**, the line of work waiting for the GPU. The GPU runs them later; by then your callback has returned. The canvas manages **frame slots** (also called frames in flight): sets of per-frame resources used to record and track one frame. When several slots are available, the CPU can record the next frame while the GPU executes an earlier one. In every case, before reusing a slot, the CPU waits on a **fence**, a signal the GPU raises when it has finished that slot's work. If the GPU is still busy, that wait makes the CPU pause. Managing this safely is what Vulkan's synchronization is for, and why the canvas earns its keep.
+
+### The time scale of a frame
+
+"Later" describes order, not a fixed delay: the GPU can begin queued work once earlier work and its dependencies allow. How long that takes depends on the GPU, the workload and what is already queued. As a rough scale, a small GPU task may finish in microseconds or a fraction of a millisecond, while heavier work, such as a complete frame of a large scene, takes milliseconds or longer.
+
+A useful yardstick is the **frame budget**: the average time per frame needed to sustain a frame rate, 1000 ms divided by the number of frames per second.
+
+| Frame rate | Budget per frame |
+| --- | --- |
+| 60 FPS | about 16.7 ms |
+| 120 FPS | about 8.3 ms |
+
+Aim to finish comfortably within the budget, leaving room for other work and occasional slower frames. A budget is a target for steady throughput. It is not a guaranteed GPU duration, a queue wait, or a measurement of any frame. With several frames in flight, CPU and GPU work can overlap, so their times do not necessarily add up. **Latency**, the end-to-end time from recording a frame to seeing it on screen, is separate: it also includes queued work and the wait for presentation, so it can exceed one budget. One-time startup work, such as creating shaders and pipelines in chapter 4, is also separate from this steady per-frame cost.
+
+These figures are rough scales, and timing the CPU side of a frame does not tell you how long the GPU spent on it. The Vulkan Guide's [profiling chapter](https://docs.vulkan.org/guide/latest/profiling.html) explains how to measure GPU execution.
+
+### Follow one frame through time
 
 <figure class="dvz-course-figure" id="fig-cpu-gpu-timeline" markdown="1">
 
@@ -49,7 +66,7 @@ sequenceDiagram
 
 </figure>
 
-Read the figure from top to bottom as time passing. Between the submission and the fence, the CPU is free to do other work, but everything the recorded commands refer to is still in use.
+Read the figure from top to bottom as time passing. It shows order, not a time scale: the spacing between arrows says nothing about how long each step takes. Between the submission and the fence, the CPU is free to do other work, but everything the recorded commands refer to is still in use.
 
 This separation has two consequences that often confuse new Vulkan programmers:
 

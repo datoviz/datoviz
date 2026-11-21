@@ -2,7 +2,7 @@
 
 Applies to `docs/gpu-graphics/`. The durable course contract is [spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md); current status is in [the execution queue](../now/VKLITE_GRAPHICS_TUTORIAL.md).
 
-The readability presentation below is being piloted on chapters 1-4 and the shared course presentation. Until the maintainer reviews the pilot, leave chapters 5-16 and the epilogue in their current shape; [12-uniform-buffers.md](../../docs/gpu-graphics/12-uniform-buffers.md) remains the model for explanatory depth.
+The maintainer accepted the readability pilot on chapters 1-4; those chapters are the model for presentation, and the rules below now apply to chapters 5-16 and the epilogue as well. [12-uniform-buffers.md](../../docs/gpu-graphics/12-uniform-buffers.md) remains the model for explanatory depth.
 
 ## Voice
 
@@ -30,6 +30,7 @@ Simple, plain and friendly; never terse. The reader knows C but not graphics. Ex
 - After a block whose arguments are bare numbers, flags or NULLs, read the call out in words once ("in set 0, binding 0, there is 1 descriptor, visible to the fragment shader").
 - Recall earlier concepts by chapter when they return ("chapter 6's vertex buffer with a different usage flag").
 - Say what is copied and what is referenced, who owns each object, and how long it must live, where it matters.
+- When asynchronous work, queues or latency come up, give a rough scale with units rather than an unqualified "later". Chapter 3 holds the timing lesson: "later" means ordering, not a built-in pause; light GPU operations can take microseconds or a fraction of a millisecond and a complete frame is discussed in milliseconds; 60 FPS is about 16.7 ms and 120 FPS about 8.3 ms per frame (1000 / FPS). Present these as illustrative budgets, not measured or guaranteed submission, start or completion times. CPU and GPU stages overlap, so their times do not simply add; waiting, execution and presentation latency differ; shader and pipeline creation at startup is separate from steady-state frame work. Later chapters refer back to chapter 3 instead of repeating it, and never state fixed GPU timings or claim that CPU-side timing measures GPU execution.
 - Code is application code using existing public entrypoints: `<datoviz.h>` and `<datoviz/advanced.h>` (or narrower public headers they already cover). Do not add a course header, helper library, tutorial runtime or wrapper. `COURSE_CHECK` is an application-local macro defined and explained once in chapter 2; later chapters carry it forward without asking the reader to redefine or relearn it. Complete standalone step files retain the definition.
 
 ## Code formatting and excerpts
@@ -52,6 +53,7 @@ flowchart TD
 ```
 
 <figcaption>Figure 1. Plain caption that says what the figure shows.</figcaption>
+
 </figure>
 ````
 
