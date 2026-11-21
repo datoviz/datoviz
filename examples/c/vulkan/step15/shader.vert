@@ -10,9 +10,14 @@ layout(location = 2) out vec3 view_position;
 
 void main()
 {
+    // View space: the camera sits at the origin, and the lighting happens here.
     vec4 position = push_data.model_view * vec4(in_position, 1.0);
     view_position = position.xyz;
+
+    // Rotate the normal by the upper-left 3 x 3 part; no translation for a direction.
     normal = mat3(push_data.model_view) * in_normal;
     uv = in_uv;
+
+    // Clip space, for the rasterizer.
     gl_Position = push_data.projection * position;
 }

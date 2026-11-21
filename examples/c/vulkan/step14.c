@@ -7,41 +7,37 @@
 #include <string.h>
 
 #include <datoviz.h>
-#include <datoviz/canvas.h>
-#include <datoviz/controller.h>
-#include <datoviz/fileio.h>
-#include <datoviz/math/types.h>
-#include <datoviz/shader.h>
-#include <datoviz/stream/frame_stream.h>
-#include <datoviz/vk/gpu_ctx.h>
-#include <datoviz/vklite.h>
-#include <datoviz/window.h>
+#include <datoviz/advanced.h>
 
 #define WIDTH        800
 #define HEIGHT       600
 #define TEXTURE_SIZE 64
 
-#define COURSE_CHECK(condition, message)                                                          \
-    do                                                                                            \
-    {                                                                                             \
-        if (!(condition))                                                                         \
-        {                                                                                         \
-            fprintf(stderr, "%s\n", message);                                                     \
-            goto cleanup;                                                                         \
-        }                                                                                         \
+// On failure, print the message and jump to the cleanup block at the end of main().
+#define COURSE_CHECK(condition, message)      \
+    do                                        \
+    {                                         \
+        if (!(condition))                     \
+        {                                     \
+            fprintf(stderr, "%s\n", message); \
+            goto cleanup;                     \
+        }                                     \
     } while (0)
 
+// One vertex record: a position and the UV coordinates that pin it to a point of the image.
 typedef struct
 {
     float position[3];
     float uv[2];
 } Vertex;
 
+// Push-constant block: the combined matrix, copied into each recorded draw.
 typedef struct
 {
     mat4 mvp;
 } Push;
 
+// Uniform block read through set 0, binding 0. Its C layout must match the GLSL block.
 typedef struct
 {
     float tint[4];
@@ -49,6 +45,7 @@ typedef struct
 
 _Static_assert(sizeof(Material) == 16, "the material block must match four shader floats");
 
+// Four vertices per face, each with its own UVs: 24 vertices for the cube's 8 corners.
 static const Vertex VERTICES[24] = {
     // Back face.
     {{0.65f, -0.65f, -0.65f}, {0.0f, 0.0f}},
@@ -91,6 +88,7 @@ static const uint16_t INDICES[36] = {
 #define VERTEX_PATH   "shader.vert"
 #define FRAGMENT_PATH "shader.frag"
 
+// Renderer state: the borrowed device and allocator, and every object the program creates.
 typedef struct
 {
     DvzDevice* device;
@@ -210,6 +208,7 @@ static bool compile_file(const char* path, DvzShaderStage stage, DvzShaderCompil
  */
 static int create_pipeline(Renderer* renderer)
 {
+    // Compile both shader files to SPIR-V. We own the results and destroy them on every path.
     DvzShaderCompileResult vertex = {0};
     DvzShaderCompileResult fragment = {0};
     if (!compile_file(VERTEX_PATH, DVZ_SHADER_STAGE_VERTEX, &vertex) ||
@@ -220,8 +219,7 @@ static int create_pipeline(Renderer* renderer)
         return -1;
     }
 
-
-
+    // Allocate four empty wrappers. The renderer owns them, even if a later step fails.
     renderer->vertex_shader = dvz_shader_create_wrapper();
     renderer->fragment_shader = dvz_shader_create_wrapper();
     renderer->slots = dvz_slots_create_wrapper();
@@ -234,8 +232,7 @@ static int create_pipeline(Renderer* renderer)
         return -1;
     }
 
-
-
+    // Copy the SPIR-V into two shader modules, then destroy the compile results.
     int vertex_result =
         dvz_shader(renderer->device, vertex.spirv_size, vertex.spirv, renderer->vertex_shader);
     int fragment_result = dvz_shader(
@@ -245,6 +242,7 @@ static int create_pipeline(Renderer* renderer)
     if (vertex_result != 0 || fragment_result != 0)
         return -1;
 
+    // Pipeline layout: descriptor set 0 for the fragment shader, and the vertex push range.
     dvz_slots(renderer->device, renderer->slots);
     dvz_slots_binding(
         renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -255,6 +253,7 @@ static int create_pipeline(Renderer* renderer)
     if (dvz_slots_create(renderer->slots) != 0)
         return -1;
 
+    // Attach the two programmable stages to the pipeline.
     dvz_graphics(renderer->device, renderer->pipeline);
     dvz_graphics_shader(
         renderer->pipeline, VK_SHADER_STAGE_VERTEX_BIT,
@@ -262,12 +261,16 @@ static int create_pipeline(Renderer* renderer)
     dvz_graphics_shader(
         renderer->pipeline, VK_SHADER_STAGE_FRAGMENT_BIT,
         dvz_shader_handle(renderer->fragment_shader));
+
+    // Vertex input: one interleaved buffer binding, one attribute per Vertex field.
     dvz_graphics_vertex_binding(
         renderer->pipeline, 0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
     dvz_graphics_vertex_attr(
         renderer->pipeline, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position));
     dvz_graphics_vertex_attr(
         renderer->pipeline, 0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv));
+
+    // Fixed state: triangle list, color and depth attachments, depth test, back-face culling.
     dvz_graphics_primitive(
         renderer->pipeline, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_attachment_color(renderer->pipeline, 0, renderer->color_format);
@@ -278,10 +281,14 @@ static int create_pipeline(Renderer* renderer)
     dvz_graphics_front_face(
         renderer->pipeline, VK_FRONT_FACE_COUNTER_CLOCKWISE, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_layout(renderer->pipeline, dvz_slots_handle(renderer->slots));
+
+    // Dynamic state: the zeros are placeholders; each frame records the real values.
     dvz_graphics_viewport(renderer->pipeline, 0, 0, 0, 0, 0, 1, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     dvz_graphics_scissor(renderer->pipeline, 0, 0, 0, 0, DVZ_GRAPHICS_FLAGS_DYNAMIC);
     if (dvz_graphics_create(renderer->pipeline) != 0)
         return -1;
+
+    // A descriptor set for this layout. It refers to the view, sampler, and buffer; no copies.
     renderer->descriptors = dvz_descriptors_create_wrapper();
     if (renderer->descriptors == NULL)
         return -1;
@@ -295,6 +302,8 @@ static int create_pipeline(Renderer* renderer)
     return dvz_descriptors_handle(renderer->descriptors, 0) != VK_NULL_HANDLE ? 0 : -1;
 }
 
+
+
 /**
  * Create the persistent material uniform buffer.
  * @param renderer Renderer that owns the buffer.
@@ -302,6 +311,7 @@ static int create_pipeline(Renderer* renderer)
  */
 static int create_material(Renderer* renderer)
 {
+    // Written once at startup, so no submitted frame can read it while it changes.
     Material material = {.tint = {1.0f, 1.0f, 1.0f, 1.0f}};
     renderer->material_buffer = dvz_buffer_create_wrapper();
     if (renderer->material_buffer == NULL)
@@ -342,6 +352,7 @@ static void keyboard(DvzInputRouter* router, const DvzKeyboardEvent* event, void
  */
 static int create_texture(Renderer* renderer)
 {
+    // CPU pixels: a checkerboard of 8-texel tiles, four bytes (RGBA) per texel.
     uint8_t pixels[TEXTURE_SIZE * TEXTURE_SIZE * 4];
     for (uint32_t y = 0; y < TEXTURE_SIZE; y++)
     {
@@ -358,12 +369,14 @@ static int create_texture(Renderer* renderer)
         }
     }
 
+    // The staging buffer and upload commands are local; the renderer owns the image.
     DvzBuffer* staging = dvz_buffer_create_wrapper();
     DvzCommands* upload = dvz_commands_create_wrapper();
     renderer->texture = dvz_images_create_wrapper();
     if (staging == NULL || upload == NULL || renderer->texture == NULL)
         goto error;
 
+    // Staging buffer: a mapped copy source. The upload copies the CPU pixels into it now.
     dvz_buffer(renderer->device, renderer->allocator, staging);
     dvz_buffer_size(staging, sizeof(pixels));
     dvz_buffer_usage(staging, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
@@ -372,6 +385,7 @@ static int create_texture(Renderer* renderer)
         goto error;
     dvz_buffer_upload(staging, 0, sizeof(pixels), pixels);
 
+    // The image: one 2D sRGB image that can receive a copy and be sampled by shaders.
     dvz_images(renderer->device, renderer->allocator, VK_IMAGE_TYPE_2D, 1, renderer->texture);
     dvz_images_format(renderer->texture, VK_FORMAT_R8G8B8A8_SRGB);
     dvz_images_size(renderer->texture, TEXTURE_SIZE, TEXTURE_SIZE, 1);
@@ -380,9 +394,12 @@ static int create_texture(Renderer* renderer)
     if (dvz_images_create(renderer->texture) != 0)
         goto error;
 
+    // Our own command buffer on the main queue: we may begin, end, and submit it.
     dvz_commands(renderer->device, dvz_device_queue(renderer->device, DVZ_QUEUE_MAIN), 1, upload);
     if (dvz_cmd_begin_result(upload) != 0)
         goto error;
+
+    // First barrier: nothing before, copy writes after; UNDEFINED to TRANSFER_DST_OPTIMAL.
     DvzBarriers barriers = {0};
     dvz_barriers(&barriers);
     DvzBarrierImage* image_barrier =
@@ -395,12 +412,16 @@ static int create_texture(Renderer* renderer)
         image_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     dvz_barrier_image_aspect(image_barrier, VK_IMAGE_ASPECT_COLOR_BIT);
     dvz_cmd_barriers(upload, &barriers);
+
+    // Copy the staging rows into the whole image, which is now in TRANSFER_DST_OPTIMAL.
     DvzImageRegion region = {0};
     dvz_image_region(&region);
     dvz_image_region_extent(&region, TEXTURE_SIZE, TEXTURE_SIZE, 1);
     dvz_cmd_copy_buffer_to_image(
         upload, dvz_buffer_handle(staging), 0, dvz_image_handle(renderer->texture, 0),
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &region);
+
+    // Second barrier, same entry: copy writes before, fragment-shader reads after.
     dvz_barrier_image_stage(
         image_barrier, VK_PIPELINE_STAGE_2_COPY_BIT, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
     dvz_barrier_image_access(
@@ -409,15 +430,23 @@ static int create_texture(Renderer* renderer)
         image_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     dvz_cmd_barriers(upload, &barriers);
+
+    // Nothing has run yet. Submitting blocks until the queue is idle, so the copy is done.
     if (dvz_cmd_end_result(upload) != 0 || dvz_cmd_submit_result(upload) != 0)
         goto error;
+
+    // The renderer owns the view and sampler; main() releases them, even after a failure here.
     renderer->texture_view = dvz_image_views_create_wrapper();
     renderer->sampler = dvz_sampler_create_wrapper();
     if (renderer->texture_view == NULL || renderer->sampler == NULL)
         goto error;
+
+    // A view of the whole image: 2D, color aspect, its one mip level and layer.
     dvz_image_views(renderer->texture, renderer->texture_view);
     if (dvz_image_views_create(renderer->texture_view) != 0)
         goto error;
+
+    // Lookup rules: nearest texel when magnified or minified, repeat outside [0, 1].
     dvz_sampler(renderer->device, renderer->sampler);
     dvz_sampler_min_filter(renderer->sampler, VK_FILTER_NEAREST);
     dvz_sampler_mag_filter(renderer->sampler, VK_FILTER_NEAREST);
@@ -427,6 +456,8 @@ static int create_texture(Renderer* renderer)
         renderer->sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     if (dvz_sampler_create(renderer->sampler) != 0)
         goto error;
+
+    // The GPU no longer needs the staging buffer or the upload command buffer.
     dvz_commands_destroy(upload);
     dvz_commands_free(upload);
     dvz_buffer_destroy(staging);
@@ -434,6 +465,7 @@ static int create_texture(Renderer* renderer)
     return 0;
 
 error:
+    // Release the local objects; main() releases the renderer's image, view, and sampler.
     if (upload != NULL)
     {
         dvz_commands_destroy(upload);
@@ -460,6 +492,8 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
     Renderer* renderer = (Renderer*)user_data;
     Push push = {0};
     DvzMVP mvp = {0};
+
+    // Keep the camera aspect ratio and the arcball pointer area in step with the window.
     DvzResult camera_resize = dvz_camera_resize(
         renderer->camera, (float)frame->extent.width, (float)frame->extent.height);
     // Pointer positions use window coordinates, which may differ from framebuffer pixels.
@@ -476,6 +510,8 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
         dvz_arcball_resize(renderer->arcball, pointer_width, pointer_height);
     if (camera_resize != DVZ_OK || arcball_resize != DVZ_OK)
         renderer->draw_failed = true;
+
+    // Combine the camera and arcball matrices into the matrix the vertex shader receives.
     dvz_camera_mvp(renderer->camera, &mvp);
     dvz_arcball_mvp(renderer->arcball, &mvp);
     // Camera matrices use OpenGL clip coordinates; convert y and z for this Vulkan viewport.
@@ -485,10 +521,15 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
     multiply_mat4(mvp.view, mvp.model, view_model);
     multiply_mat4(mvp.proj, view_model, projection_view_model);
     multiply_mat4(clip_correction, projection_view_model, push.mvp);
+
+    // A fixed dark background behind the cube.
     VkClearValue clear = {.color.float32 = {0.04f, 0.05f, 0.08f, 1.0f}};
 
+    // Attach our wrapper to the command buffer the canvas lends us for this frame.
     dvz_commands_wrap_borrowed_recording(
         renderer->device, frame->command_buffer, renderer->commands);
+
+    // Render into this frame's color image and the canvas-owned depth image, both cleared.
     dvz_cmd_rendering_default(
         renderer->commands, frame->image_view, frame->extent.width, frame->extent.height, clear,
         renderer->rendering);
@@ -497,6 +538,8 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
     dvz_attachment_ops(depth, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(depth, (VkClearValue){.depthStencil = {1.0f, 0}});
     dvz_cmd_rendering_begin(renderer->commands, renderer->rendering);
+
+    // Bind the pipeline and its dynamic state, descriptor set 0, and the push constants.
     dvz_cmd_bind_graphics(renderer->commands, renderer->pipeline);
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
     dvz_cmd_bind_descriptors(
@@ -505,10 +548,14 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
         renderer->commands, renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(push), &push);
     if (push_result != DVZ_OK)
         renderer->draw_failed = true;
+
+    // Bind the vertex and index buffers, then draw the indexed triangles.
     DvzSize vertex_offset = 0;
     dvz_cmd_bind_vertex_buffers(renderer->commands, 0, 1, renderer->vertex_buffer, &vertex_offset);
     dvz_cmd_bind_index_buffer(renderer->commands, renderer->index_buffer, 0, VK_INDEX_TYPE_UINT16);
     dvz_cmd_draw_indexed(renderer->commands, 0, 0, 36, 0, 1);
+
+    // End the pass, then detach from the borrowed command buffer; the canvas submits it.
     dvz_cmd_rendering_end(renderer->commands);
     dvz_commands_unwrap(renderer->commands);
 }
@@ -523,6 +570,7 @@ static void draw(DvzCanvas* canvas, const DvzStreamFrame* frame, void* user_data
  */
 int main(int argc, char** argv)
 {
+    // Everything the cleanup block releases starts as NULL, meaning "not created yet".
     int exit_code = 1;
     DvzWindowHost* host = NULL;
     DvzGpuCtx* gpu = NULL;
@@ -530,6 +578,7 @@ int main(int argc, char** argv)
     DvzCanvas* canvas = NULL;
     Renderer renderer = {0};
 
+    // With --png PATH, render offscreen and save an image instead of opening a window.
     const char* png_path = NULL;
     for (int argument_index = 1; argument_index + 1 < argc; argument_index++)
     {
@@ -541,6 +590,7 @@ int main(int argc, char** argv)
     DvzCanvasRenderMode mode =
         live ? DVZ_CANVAS_RENDER_MODE_PRESENT : DVZ_CANVAS_RENDER_MODE_OFFSCREEN;
 
+    // Window host, then a validated GPU context configured for the canvas.
     host = dvz_window_host();
     COURSE_CHECK(host != NULL, "window host creation failed");
     DvzGpuCtxConfig gpu_config = dvz_gpu_ctx_config();
@@ -550,6 +600,7 @@ int main(int argc, char** argv)
     gpu = dvz_gpu_ctx(&gpu_config);
     COURSE_CHECK(gpu != NULL, "no usable GPU found");
 
+    // The window, or a windowless target of the same size with --png.
     DvzWindowConfig window_config = dvz_window_config();
     window_config.width = WIDTH;
     window_config.height = HEIGHT;
@@ -557,6 +608,7 @@ int main(int argc, char** argv)
     window = dvz_window_create(host, backend, &window_config);
     COURSE_CHECK(window != NULL, "window creation failed");
 
+    // The canvas borrows the window and device, and owns the frame images and depth image.
     DvzCanvasConfig canvas_config = dvz_canvas_config();
     canvas_config.window = window;
     canvas_config.device = dvz_gpu_ctx_device(gpu);
@@ -565,8 +617,10 @@ int main(int argc, char** argv)
     canvas = dvz_canvas_create(&canvas_config);
     COURSE_CHECK(canvas != NULL, "canvas creation failed");
 
+    // The renderer borrows the device and allocator from the GPU context.
     renderer.device = dvz_gpu_ctx_device(gpu);
     renderer.allocator = dvz_gpu_ctx_alloc(gpu);
+
     // Acquire and submit one default clear before creating a format-dependent pipeline.
     int initial_status = DVZ_CANVAS_FRAME_WAIT_SURFACE;
     while (initial_status == DVZ_CANVAS_FRAME_WAIT_SURFACE)
@@ -582,16 +636,21 @@ int main(int argc, char** argv)
     COURSE_CHECK(initial_status == DVZ_CANVAS_FRAME_READY, "initial frame preparation failed");
     int initial_submit_result = dvz_canvas_submit(canvas);
     COURSE_CHECK(initial_submit_result == 0, "initial frame submission failed");
+
+    // The pipeline must be built for exactly this color format.
     renderer.color_format = dvz_canvas_frame_format(canvas);
     COURSE_CHECK(
         renderer.color_format != VK_FORMAT_UNDEFINED, "canvas color format is unresolved");
 
+    // Recording wrappers, then the material buffer the pipeline's descriptor set refers to.
     renderer.commands = dvz_commands_create_wrapper();
     renderer.rendering = dvz_rendering_create_wrapper();
     COURSE_CHECK(
         renderer.commands != NULL && renderer.rendering != NULL, "renderer allocation failed");
     int material_result = create_material(&renderer);
     COURSE_CHECK(material_result == 0, "material buffer creation failed");
+
+    // Vertex and index buffers, written once from the static arrays.
     renderer.vertex_buffer = dvz_buffer_create_wrapper();
     renderer.index_buffer = dvz_buffer_create_wrapper();
     COURSE_CHECK(
@@ -615,10 +674,14 @@ int main(int argc, char** argv)
     int index_buffer_result = dvz_buffer_create(renderer.index_buffer);
     COURSE_CHECK(index_buffer_result == 0, "index buffer creation failed");
     dvz_buffer_upload(renderer.index_buffer, 0, sizeof(INDICES), INDICES);
+
+    // The texture first: the pipeline's descriptor set refers to its view and sampler.
     int texture_result = create_texture(&renderer);
     COURSE_CHECK(texture_result == 0, "texture upload failed");
     int pipeline_result = create_pipeline(&renderer);
     COURSE_CHECK(pipeline_result == 0, "graphics pipeline creation failed");
+
+    // The camera and arcball controller, connected to the canvas input.
     DvzCameraDesc camera_desc = dvz_camera_desc();
     camera_desc.projection.fov_y = 1.0471976f;
     renderer.camera = dvz_camera_create(&camera_desc);
@@ -629,18 +692,25 @@ int main(int argc, char** argv)
     COURSE_CHECK(initial_result == DVZ_OK, "initial rotation failed");
     DvzResult connect_result = dvz_arcball_connect(renderer.arcball, dvz_canvas_input(canvas));
     COURSE_CHECK(connect_result == DVZ_OK, "arcball connection failed");
+
+    // Only now may the canvas call draw(): everything it uses exists.
     dvz_canvas_set_draw_callback(canvas, draw, &renderer);
 
+    // R requests a shader reload; the loop below performs it between frames.
     DvzCallbackId keyboard_id =
         dvz_input_subscribe_keyboard(dvz_window_router(window), keyboard, &renderer);
     COURSE_CHECK(keyboard_id != DVZ_CALLBACK_ID_NONE, "keyboard subscription failed");
 
+    // A live run loops until the window closes; a --png run renders one frame.
     uint64_t frame_index = 0;
     while (live ? !dvz_window_should_close(window) : frame_index < 1)
     {
         dvz_window_host_poll(host);
+
+        // Build a complete candidate first; swap it in only once the GPU is idle.
         if (renderer.reload_requested)
         {
+            // Borrowed: material buffer, view, and sampler. Owned: everything it creates.
             Renderer candidate = {
                 .device = renderer.device,
                 .color_format = renderer.color_format,
@@ -667,25 +737,35 @@ int main(int argc, char** argv)
             }
             renderer.reload_requested = false;
         }
+
+        // Acquire the next image and call draw(). WAIT_SURFACE means "try again later".
         int status = dvz_canvas_frame(canvas);
         if (status == DVZ_CANVAS_FRAME_WAIT_SURFACE)
             continue;
         COURSE_CHECK(status == DVZ_CANVAS_FRAME_READY, "frame preparation failed");
         COURSE_CHECK(!renderer.draw_failed, "matrix or push-constant update failed");
+
+        // Queue the recorded commands on the GPU and, in live mode, present the result.
         int submit_result = dvz_canvas_submit(canvas);
         COURSE_CHECK(submit_result == 0, "frame submission failed");
         frame_index++;
     }
+
+    // With --png, wait for the GPU, read the image back, and save it.
     if (png_path != NULL)
     {
         int capture_result = dvz_canvas_capture_png(canvas, png_path);
         COURSE_CHECK(capture_result == 0, "PNG capture failed");
     }
+
     exit_code = 0;
 
 cleanup:
+    // Submitted frames may still use these resources: wait until the GPU is idle.
     if (renderer.device != NULL)
         dvz_device_wait(renderer.device);
+
+    // Release what refers to a resource before the resource itself.
     destroy_pipeline(&renderer);
     if (renderer.material_buffer != NULL)
         dvz_buffer_destroy(renderer.material_buffer);
@@ -705,16 +785,24 @@ cleanup:
     if (renderer.vertex_buffer != NULL)
         dvz_buffer_destroy(renderer.vertex_buffer);
     dvz_buffer_free(renderer.vertex_buffer);
+
+    // Disconnect the arcball from canvas input before destroying either one.
     if (renderer.arcball != NULL && canvas != NULL)
         dvz_arcball_disconnect(renderer.arcball, dvz_canvas_input(canvas));
     if (renderer.arcball != NULL)
         dvz_arcball_destroy(renderer.arcball);
     dvz_camera_destroy(renderer.camera);
+
+    // These two wrappers own no Vulkan object, so they are only freed.
     dvz_rendering_free(renderer.rendering);
     dvz_commands_free(renderer.commands);
+
+    // Then the rest in chapter 2's order: canvas, window, window host.
     dvz_canvas_destroy(canvas);
     dvz_window_destroy(window);
     dvz_window_host_destroy(host);
+
+    // Read the validation error count before destroying the GPU context that records it.
     uint32_t validation_errors = gpu != NULL ? dvz_gpu_ctx_error_count(gpu) : 0;
     if (gpu != NULL)
         printf("validation errors: %u\n", validation_errors);

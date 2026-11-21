@@ -1,14 +1,16 @@
 # 17. Where to go next
 
-Look back at what you built. You started from an empty program and a window (chapters 1 to 3) and learned the frame loop that every later chapter filled in: the canvas hands you a command buffer, you record into it, the canvas submits and presents. You drew a triangle with a pipeline and shaders (chapters 4 and 5), then fed it from vertex and index buffers (chapters 6 and 7).
+You started from an empty program and a window (chapters 1 to 3) and learned the frame loop that every later chapter filled in: the canvas hands you a command buffer, you record into it, and the canvas submits and presents. You drew a triangle with a pipeline and shaders (chapters 4 and 5), then fed it from vertex and index buffers (chapters 6 and 7).
 
-Then came motion and depth. Push constants animated the square from the CPU every frame (chapter 8), matrices and perspective turned it into a cube (chapter 9), the depth buffer and culling made it solid (chapter 10), and the mouse made it turn (chapter 11). Descriptors gave shaders access to GPU memory (chapter 12), which brought in a texture: uploaded through a staging buffer and barriers (chapter 13), then sampled through a view and a sampler (chapter 14). Normals and a light gave the surface shape (chapter 15), and a generated or loaded mesh replaced the hand-typed cube without touching the pipeline (chapter 16).
+Then came motion and depth. Push constants animated the square from the CPU every frame (chapter 8), matrices and perspective turned it into a cube (chapter 9), the depth buffer and culling made it solid (chapter 10), and the mouse made it turn (chapter 11). Descriptors gave shaders access to GPU memory (chapter 12). That made a texture possible: uploaded through a staging buffer and barriers (chapter 13), then sampled through a view and a sampler (chapter 14). Normals and a light showed the surface's shape (chapter 15), and a generated or loaded mesh replaced the hand-typed cube without changing the pipeline (chapter 16).
 
-The result is the core loop of a small Vulkan renderer: the CPU prepares resources and records commands, and the GPU turns them into pixels. This chapter steps back to see it whole: the path data takes, what Datoviz did for you, and how the state sorts by how often it changes.
+The result is the core loop of a small Vulkan renderer: the CPU prepares resources and records commands, and the GPU turns them into pixels. This chapter looks at the whole program: the paths data takes, what Datoviz did for you, and how often each piece of state changes. It ends with routes for going further, grouped by what you want to do next.
 
 ## The complete path
 
-Every input to the final image takes one of a few routes from the CPU to a shader:
+Every input to the final image takes one of a few routes from the CPU to a shader, as Figure 1 shows.
+
+<figure class="dvz-course-figure" id="fig-complete-data-path" markdown="1">
 
 ```text
 CPU mesh arrays  -> vertex/index buffers --+
@@ -26,29 +28,50 @@ sampler rules    -> sampler ---------------+         |
                                             present or capture
 ```
 
-The arrows mean different things. Uploads copy CPU bytes. Descriptors store references. Bind commands select resources for later draws. Submission queues recorded work, and a completion signal says when referenced resources may be changed or destroyed.
+<figcaption>Figure 1. Each input reaches the vertex or fragment shader through its own route: buffers, push constants, a uniform buffer, or an image with a sampler.</figcaption>
+
+</figure>
+
+The arrows mean different things:
+
+- Uploads copy CPU bytes.
+- Descriptors store references.
+- Bind commands select resources for later draws.
+- Submission queues recorded work, and a completion signal says when referenced resources may be changed or destroyed.
 
 ## The Vulkan pieces you did not write
 
-The GPU context creates the Vulkan instance, chooses a physical device, enables features, selects queue families, and creates the logical device that owns every resource you made.
+Datoviz handled the Vulkan work below for you, grouped by responsibility. Where it matters, each group also says what was still left to you.
 
-Before any of that, Datoviz loads the Vulkan loader (chapter 1), which routes each call to the driver and can insert layers. The validation layer you enabled in chapter 2 checked every call and fed `dvz_gpu_ctx_error_count()`. Validation slows every call, so release builds usually turn it off.
+### The device and validation
 
-The window and canvas create the surface and swapchain, acquire images, recover from resizes, and present. `dvz_canvas_frame()` and `dvz_canvas_submit()` wrap that contract.
+Datoviz first loads the Vulkan loader (chapter 1), which routes each call to the driver and can insert layers. The GPU context then creates the Vulkan instance, chooses a physical device, enables features, selects queue families, and creates the logical device that owns every resource you made.
+
+The validation layer you enabled in chapter 2 checked every call and fed `dvz_gpu_ctx_error_count()`. Validation slows every call, so release builds usually turn it off.
+
+### The window and presentation
+
+The window and canvas create the surface and swapchain, acquire images, recover from resizes, and present. `dvz_canvas_frame()` and `dvz_canvas_submit()` wrap that work.
 
 The canvas also allocates the render targets you drew into, including chapter 10's optional depth image, and recreates them when the window is resized. In live mode it copies each finished frame into the acquired swapchain image; with `--png` it reads the frame back instead.
 
-The canvas also owns each frame slot's command pool, command buffer, semaphores, and fence. Semaphores order GPU operations such as acquisition, rendering, and presentation. Fences (chapter 3) tell the CPU that submitted work has finished. Together they let the CPU record one frame while the GPU executes another, and say when a frame slot is safe to reuse.
+### Frame slots and synchronization
+
+The canvas owns each frame slot's command pool, command buffer, semaphores and fence. Semaphores order GPU operations such as acquisition, rendering and presentation. Fences (chapter 3) tell the CPU that submitted work has finished. Together they say when a frame slot is safe to reuse and, when several slots are available, let the CPU record one frame while the GPU executes another. When that work overlaps, CPU and GPU times do not simply add up; chapter 3 explains how to compare them with a frame budget such as 16.7 ms at 60 FPS.
+
+### Recording and descriptors
 
 The rendering wrapper records dynamic rendering with color and depth attachments. Raw Vulkan can also use classic render passes and framebuffers; either way, attachments and image layout transitions must agree.
 
-`DvzSlots` and `DvzDescriptors` stand in for descriptor set layouts, pipeline layouts, descriptor pools, and `vkUpdateDescriptorSets`. You still choose every set and descriptor binding; the device manages the pool.
+`DvzSlots` and `DvzDescriptors` stand in for descriptor set layouts, pipeline layouts, descriptor pools and `vkUpdateDescriptorSets`. You still choose every set and descriptor binding; the device manages the pool.
+
+### Memory
 
 The VMA-backed allocator chooses memory types and binds memory. You still decide which resources are host-visible or device-local, how bytes reach them, and when they are safe to change or destroy.
 
 ## What changes when
 
-The final program sorts its state by how often it changes, a useful starting point for larger renderers.
+The final program sorts its state by how often it changes. That grouping is a useful starting point for larger renderers.
 
 | Frequency | State in this course | Delivery |
 | --- | --- | --- |
@@ -59,15 +82,30 @@ The final program sorts its state by how often it changes, a useful starting poi
 | When geometry changes | vertex records, indices, and draw count | vertex and index buffer uploads |
 | Rarely | shader stages, vertex layout, topology, depth, culling, attachment formats, descriptor layouts | graphics pipeline and pipeline layout creation |
 
-## Good next experiments
+## Where to go next
 
-Write a compute shader that fills a storage image, then barrier and sample it in a graphics pass. Add a second pipeline for a wireframe or outline pass. Enable MSAA, then study blending and transparency. Add an ImGui overlay for camera and material controls.
+The next step depends on what you want to do.
 
-Each of these reuses something you already know in a new place. The barrier between a compute write and a fragment read is chapter 13's barrier with different stages and access masks. A wireframe pass is a second pipeline built like chapter 4's, with chapter 10's line polygon mode.
+### Go deeper into Vulkan
 
-Another route is WebGPU, the GPU API for browsers. It is a different API, so the program you wrote here does not run in a browser as it is, but most of what you learned carries over: graphics pipelines become render pipelines, descriptor set layouts and sets become bind group layouts and bind groups, and command buffers are recorded through command encoders. WebGPU inserts most barriers for you. Datoviz's own browser route works at a higher level: it runs selected Scene API examples, not vklite programs or custom shaders; the [WebGPU subset](../reference/webgpu-subset.md) lists what it covers.
+These experiments extend the program you wrote:
 
-When the renderer itself is no longer the lesson, move up to the [Scene API](../how-to/create-a-scene.md). It runs on the same GPU foundations but manages resources, visuals, and cameras for you. The low-level path remains there whenever a custom pipeline earns the extra control.
+- Write a compute shader that fills a storage image, then add a barrier and sample the image in a graphics pass.
+- Add a second pipeline for a wireframe or outline pass.
+- Enable MSAA, then study blending and transparency.
+- Add an ImGui overlay for camera and material controls.
+
+Each one reuses something you already know. The barrier between a compute write and a fragment read is chapter 13's barrier with different stages and access masks. A wireframe pass is a second pipeline built like chapter 4's, with chapter 10's line polygon mode.
+
+### Draw in a browser
+
+The program you wrote in this course is low-level C on Vulkan, and it does not run in a browser. Browsers use WebGPU, a different GPU API. Most of what you learned carries over to it: graphics pipelines become render pipelines, descriptor set layouts and sets become bind group layouts and bind groups, and command buffers are recorded through command encoders. WebGPU inserts most barriers for you.
+
+Datoviz's own browser route works at a higher level. It runs selected Scene API examples, not vklite programs or custom shaders. The [WebGPU subset](../reference/webgpu-subset.md) lists what it covers.
+
+### Build applications with less code
+
+When the renderer itself is no longer what you are working on, move up to the [Scene API](../how-to/create-a-scene.md). It runs on the same GPU foundations but manages resources, visuals and cameras for you. You can still use the low-level path when a custom pipeline is worth the extra control.
 
 ## Checkpoint
 

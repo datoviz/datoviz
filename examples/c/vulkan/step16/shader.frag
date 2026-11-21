@@ -9,13 +9,21 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
+    // Unit vectors in view space: normal, toward the light, toward the eye, and halfway.
     vec3 n = normalize(normal);
     vec3 l = normalize(vec3(2.0, 2.0, 0.0) - view_position);
     vec3 v = normalize(-view_position);
     vec3 h = normalize(l + v);
+
+    // Lighting terms: diffuse from the light angle, specular only where the light reaches.
     float diffuse = max(dot(n, l), 0.0);
     float specular = diffuse > 0.0 ? pow(max(dot(n, h), 0.0), material.lighting.w) : 0.0;
+
+    // Surface color from the sRGB texture, decoded to linear values by the sampler.
     vec3 albedo = texture(tex, uv).rgb;
-    vec3 color = albedo * material.tint.rgb * (material.lighting.x + material.lighting.y * diffuse) + vec3(specular * material.lighting.z);
+
+    // Ambient and diffuse scale the tinted albedo; white specular is added on top.
+    vec3 color = albedo * material.tint.rgb * (material.lighting.x + material.lighting.y * diffuse)
+        + vec3(specular * material.lighting.z);
     out_color = vec4(color, 1.0);
 }

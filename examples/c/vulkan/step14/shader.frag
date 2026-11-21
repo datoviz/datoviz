@@ -7,5 +7,6 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
+    // Read the texture at this fragment's UV with the sampler's rules, then apply the tint.
     out_color = texture(tex, uv) * material.tint;
 }

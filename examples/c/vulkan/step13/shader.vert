@@ -8,5 +8,7 @@ layout(location = 0) out vec2 uv;
 void main()
 {
     gl_Position = push_data.mvp * vec4(in_position, 1.0);
+
+    // Pass the UV through unchanged; the rasterizer interpolates it for each fragment.
     uv = in_uv;
 }
