@@ -1,13 +1,13 @@
 # 3. How a frame works
 
-*About 175 lines of C; raw Vulkan would need about 1000.*
+*About 205 lines of C; raw Vulkan would need about 1000.*
 
 <picture>
   <source media="(prefers-reduced-motion: no-preference)" srcset="../../assets/gpu-graphics/03-frame.webp">
   <img src="../../assets/gpu-graphics/03-frame-still.webp" alt="The chapter 3 clear color pulsing through blues, greens, and purples.">
 </picture>
 
-Chapter 2 opened a window and cleared it to a color, and asked you to accept the five lines of the draw callback on faith. Those lines matter more than their size suggests: they set the shape of every frame in the course. The triangle in chapter 4 and the final lit, textured mesh both fit between two of them.
+Chapter 2 opened a window and cleared it to a color, and asked you to accept the five calls of the draw callback on faith. Those calls matter more than their size suggests: they set the shape of every frame in the course. The triangle in chapter 4 and the final lit, textured mesh both fit between two of them.
 
 To read them, you need one idea first: the CPU and the GPU work at different times. Your callback does not draw anything. It writes down instructions that the GPU carries out later. Once that is clear, each call explains itself, and so do Vulkan's rules about how long objects must live.
 
@@ -28,8 +28,12 @@ Why a list rather than direct calls? The GPU is a separate processor. If the CPU
 
 Submission puts recorded command buffers on a device **queue**, the line of work waiting for the GPU. The GPU runs them later; by then your callback has returned. To keep both processors busy, the canvas keeps a few sets of per-frame resources, called **frame slots** (or frames in flight), so the CPU can record the next frame while the GPU executes an earlier one. Before reusing a slot, the CPU waits on a **fence**, a signal the GPU raises when it has finished that slot's work. If the GPU is still busy, that wait makes the CPU pause. Managing this overlap safely is what Vulkan's synchronization is for, and why the canvas earns its keep.
 
+<figure class="dvz-course-figure" id="fig-cpu-gpu-timeline" markdown="1">
+
 ```mermaid
 sequenceDiagram
+    accTitle: CPU recording and later GPU execution
+    accDescr: The CPU records commands in the callback and submits the command buffer to a queue. The GPU executes it later and signals a fence, after which the CPU may reuse the frame slot and its resources.
     participant CPU
     participant Queue
     participant GPU
@@ -40,6 +44,12 @@ sequenceDiagram
     GPU-->>CPU: Signal completion fence
     Note over CPU: Frame slot and resources may now be reused
 ```
+
+<figcaption>Figure 1. The CPU records and submits; the GPU executes later and signals when the frame slot may be reused.</figcaption>
+
+</figure>
+
+Read the figure from top to bottom as time passing. Between the submission and the fence, the CPU is free to do other work, but everything the recorded commands refer to is still in use.
 
 This separation has two consequences that often confuse new Vulkan programmers:
 
@@ -62,21 +72,41 @@ Read `frame->extent` from each frame before recording size-dependent commands.
 
 ## The frame calls, one at a time
 
-Here are the six calls in the order they run. Only three of them, `begin`, the viewport and scissor, and `end`, record anything into the command buffer. The others connect your wrapper to the canvas's buffer or describe the pass.
+Here are the six calls in the order they run, with the role of each:
+
+1. **Attach** your command wrapper to the canvas's command buffer.
+2. **Describe** the rendering pass: which image to draw into, and how to start and finish.
+3. **Begin** the pass.
+4. Set the **viewport and scissor**.
+5. **End** the pass.
+6. **Detach** your wrapper again.
+
+Only three of them, begin, the viewport and scissor, and end, record anything into the command buffer. The others connect your wrapper to the canvas's buffer or describe the pass. In the code, each call now has its own short comment and a blank line around it, so you can find these six steps at a glance.
+
+### 1. Attach the wrapper
 
 ```c
-    dvz_commands_wrap_borrowed_recording(renderer->device, frame->command_buffer, renderer->commands);
+    // Attach: point our wrapper at the command buffer the canvas lends us for this frame.
+    dvz_commands_wrap_borrowed_recording(
+        renderer->device, frame->command_buffer, renderer->commands);
 ```
 
 vklite records through a typed `DvzCommands` object, while the canvas hands you a raw Vulkan handle. This function points the `DvzCommands` wrapper you allocated at startup at that handle. It creates and owns nothing. Think of it as pointing your recording tool at the canvas's buffer. The name says both facts: the handle is *borrowed* and already *recording*.
 
+### 2. Describe the pass
+
 ```c
+    // Describe: render into this frame's image, cleared to this frame's color.
     dvz_cmd_rendering_default(
         renderer->commands, frame->image_view, frame->extent.width, frame->extent.height,
         clear, renderer->rendering);
 ```
 
 This describes *where* the next commands will draw. Despite the `dvz_cmd_` prefix, it records nothing. An **attachment** is an image view used as an output of a rendering pass. Here `frame->image_view` becomes the one color attachment, with a render area, a load op of "clear", a store op of "store", and the clear value.
+
+The `clear` argument is a local color that you compute later in this chapter, in [Make it move](#make-it-move). Until you get there, keep chapter 2's `renderer->clear`.
+
+#### Load and store operations
 
 The load and store ops say what happens at the edges of the pass:
 
@@ -85,31 +115,50 @@ The load and store ops say what happens at the edges of the pass:
 
 On mobile and tiled GPUs, discarding contents you will overwrite can save memory traffic.
 
+### 3. Begin the pass
+
 ```c
+    // Begin the pass; the clear happens here.
     dvz_cmd_rendering_begin(renderer->commands, renderer->rendering);
 ```
 
 *Now* something is recorded. This opens the rendering pass described above, and later draw commands target its attachments. Description and recording are separate so you can finish configuring attachments first; in chapter 10 you add a depth attachment here.
 
+### 4. Set the viewport and scissor
+
 ```c
+    // Cover the whole frame. The clear ignores this, but chapter 4's draw needs it.
     dvz_cmd_set_viewport_scissor(renderer->commands, frame->extent);
 ```
 
-This is the new line: add it right after `dvz_cmd_rendering_begin()`. The viewport maps normalized device coordinates, where x and y run from −1 to 1 across the frame (chapter 9 explains where they come from), to pixels, and the scissor limits drawing to a pixel rectangle. This helper sets both to the full frame. The clear does not need them, but chapter 4's triangle will. Its pipeline declares them *dynamic*, recorded every frame rather than fixed at pipeline creation, so a resized window only needs the new extent here.
+This is the new line: add it right after `dvz_cmd_rendering_begin()`. It sets two rectangles:
+
+- The **viewport** maps normalized device coordinates, where x and y run from −1 to 1 across the frame (chapter 9 explains where they come from), to pixels.
+- The **scissor** limits drawing to a pixel rectangle.
+
+This helper sets both to the full frame. The clear does not need them, but chapter 4's triangle will. Its pipeline declares them *dynamic*, recorded every frame rather than fixed at pipeline creation, so a resized window only needs the new extent here.
+
+### 5. End the pass
 
 ```c
+    // End the pass. Every draw call goes before this line.
     dvz_cmd_rendering_end(renderer->commands);
 ```
 
 This closes the pass. Every draw call in the course goes between `dvz_cmd_rendering_begin()` and `dvz_cmd_rendering_end()`. There are no draws yet, so the frame contains only the clear.
 
+### 6. Detach the wrapper
+
 ```c
+    // Detach: let go of the borrowed command buffer; the canvas submits it.
     dvz_commands_unwrap(renderer->commands);
 ```
 
 This detaches your wrapper from the borrowed buffer. It does not end, reset, submit, or destroy the command buffer; the canvas owns that. Skip it and your `DvzCommands` points at a dead handle after the callback returns.
 
-Who owns what, for this chapter:
+## Who owns what
+
+Every value your callback touches has an owner and a lifetime. For this chapter:
 
 | Value | Owner | Valid until |
 | --- | --- | --- |
@@ -123,10 +172,26 @@ Who owns what, for this chapter:
 
 Now put the loop to work. A static color cannot tell you whether the loop runs at 60 frames per second or froze after the first frame. Drive the color from a clock.
 
-Add `<math.h>` to the top of the file:
+The timing follows two rules you will use throughout the course:
+
+- *Animate from a clock, not a frame counter*, so motion runs at the same speed on any display.
+- *Offscreen renders use a fixed time*, so every `--png` capture of the same instant is identical.
+
+This takes three small steps: store the timing state, compute the color from elapsed time, and fix the time for offscreen captures.
+
+### Store the timing state
+
+Add `<math.h>` for `sinf()` and `<stdlib.h>` for `strtof()`, which you use below. The include block becomes:
 
 ```c
 #include <math.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <datoviz.h>
+#include <datoviz/advanced.h>
 ```
 
 `Renderer` no longer stores a clear color. It needs a start time, a fixed capture time, and an animation flag:
@@ -143,6 +208,10 @@ typedef struct
 } Renderer;
 ```
 
+`start_ns` is the moment the program started, `capture_time` is the instant an offscreen capture shows, and `animate` chooses between the two.
+
+### Compute the color from elapsed time
+
 In the callback, compute the color before recording:
 
 ```c
@@ -152,6 +221,7 @@ In the callback, compute the color before recording:
     if (renderer->animate)
         t = (float)(dvz_time_monotonic_ns() - renderer->start_ns) * 1e-9f;
 
+    // Each channel swings around its chapter 2 value at its own frequency.
     VkClearValue clear = {.color.float32 = {
                               0.10f + 0.10f * sinf(t * 1.7f),
                               0.12f + 0.12f * sinf(t * 2.3f),
@@ -160,24 +230,36 @@ In the callback, compute the color before recording:
                           }};
 ```
 
-Pass this local `clear` to `dvz_cmd_rendering_default()` in place of `renderer->clear`.
+Pass this local `clear` to `dvz_cmd_rendering_default()` in place of `renderer->clear`, as step 2 above already shows.
 
-The timing follows two rules you will use throughout the course.
+`dvz_time_monotonic_ns()` is a monotonic nanosecond timer: it only moves forward, even if the system clock is adjusted. Motion derived from elapsed time runs at the same speed on any display; `frame_index * 0.01f` would run nearly five times faster at 144 Hz than at 30 Hz.
 
-*Animate from a clock, not a frame counter.* `dvz_time_monotonic_ns()` is a monotonic nanosecond timer. Motion derived from elapsed time runs at the same speed on any display; `frame_index * 0.01f` would run nearly five times faster at 144 Hz than at 30 Hz.
+### Fix the time for offscreen captures
 
-*Offscreen renders use a fixed time.* Reading the clock would make every `--png` capture different. Add `float capture_time = 0.5f;` beside `png_path`, accept an optional `--time` in the argument loop, and store the value in `Renderer`:
+Reading the clock would make every `--png` capture different. Instead, an offscreen run uses a fixed `capture_time`, which an optional `--time` argument can change. Extend the argument parsing:
 
 ```c
+    // With --png PATH, render offscreen and save an image instead of opening a window.
+    // With --time SECONDS, choose the instant of the animation that --png captures.
+    const char* png_path = NULL;
+    float capture_time = 0.5f;
+    for (int i = 1; i < argc - 1; i++)
+    {
+        if (strcmp(argv[i], "--png") == 0)
+            png_path = argv[i + 1];
         else if (strcmp(argv[i], "--time") == 0)
             capture_time = strtof(argv[i + 1], NULL);
+    }
+    bool live = png_path == NULL;
 ```
 
-`strtof` needs `#include <stdlib.h>`. Offscreen runs freeze `t` at `0.5` unless `--time` picks another instant; that is also how the animated preview is made.
+Offscreen runs freeze `t` at `0.5` unless `--time` picks another instant; that is also how the animated preview at the top of this page is made.
 
-Update the initializer:
+Then store the timing state in the renderer:
 
 ```c
+    // Allocate the two recording wrappers and gather what the draw callback needs.
+    // Live runs animate from the clock; --png runs freeze time at capture_time.
     commands = dvz_commands_create_wrapper();
     rendering = dvz_rendering_create_wrapper();
     Renderer renderer = {
@@ -194,7 +276,7 @@ Update the initializer:
 
 Build and run as in chapter 2. The window now drifts slowly through blues, greens, and purples. Drag an edge while it runs: the color keeps filling the window at its new size, because each callback reads the new `extent`.
 
-=== "Linux and macOS"
+=== "Linux"
 
     ```sh
     cmake --build build
@@ -204,7 +286,19 @@ Build and run as in chapter 2. The window now drifts slowly through blues, green
     ./build/vkcourse --png later.png --time 1.5
     ```
 
-=== "Windows (Visual Studio)"
+=== "macOS"
+
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ./build/vkcourse --png chapter03.png
+    ./build/vkcourse --png chapter03-again.png
+    ./build/vkcourse --png later.png --time 1.5
+    ```
+
+=== "Windows"
+
+    In a Developer PowerShell for Visual Studio, with the `PATH` setup from chapter 1:
 
     ```powershell
     cmake --build build --config Release
@@ -216,7 +310,7 @@ Build and run as in chapter 2. The window now drifts slowly through blues, green
 
 The first two PNG files are identical; the third captures another point of the same animation. Each run ends with `validation errors: 0`.
 
-!!! tip "Try it"
+??? tip "Try it"
 
     1. Keep the previous contents. Override the load op just before beginning the pass:
 
@@ -245,7 +339,7 @@ The first two PNG files are identical; the third captures another point of the s
 
     `dvz_canvas_frame()` and `dvz_canvas_submit()` do this around your callback. A wrong transition or wait stage may still produce an image, or it may cause flicker, stale contents, or validation errors that are hard to decode.
 
-!!! warning "When it goes wrong"
+??? warning "When it goes wrong"
 
     | Symptom | Cause and fix |
     | --- | --- |

@@ -34,7 +34,7 @@ Simple, plain and friendly; never terse. The reader knows C but not graphics. Ex
 
 ## Code formatting and excerpts
 
-- Canonical step programs may use blank lines between logical groups and modest comments that name a group's purpose. Comments go on their own line above the code they describe and must not restate the prose.
+- Canonical step programs may use blank lines between logical groups and modest comments that name a group's purpose. Comments go on their own line above the code they describe. Prefer purpose, ownership or a dependency over narrating every function name; a brief purpose comment can summarize nearby prose so the standalone program remains readable.
 - Formatting changes to a canonical program are allowed only when behavior is unchanged: same calls, arguments, resource ownership, validation, error paths, cleanup order and rendered output. Update every excerpt of that program in the same change.
 - An excerpt may be split at a logical group or regrouped with neighboring code when that reads better. Excerpts appear in the program's semantic order (the order the reader edits), and each one stays verbatim in its canonical source.
 - `just vulkan-course-check` must pass. Its allowed divergences are only for experiments the reader is invited to try; do not extend them to cover presentation changes.
@@ -62,7 +62,8 @@ flowchart TD
 
 ## Platform tabs and optional boxes
 
-- Platform-specific commands and prose use content tabs labeled exactly `=== "Linux"`, `=== "macOS"` and `=== "Windows"`, in that order. Repeat identical commands under each label rather than merging labels, so the existing `content.tabs.link` setting keeps one OS selected across the site. Add no custom JavaScript or cookies; without JavaScript each tab block still works on its own.
+- Platform-specific commands and prose use content tabs labeled exactly `=== "Linux"`, `=== "macOS"` and `=== "Windows"`, in that order. Repeat identical commands under each label rather than merging labels, so the existing `content.tabs.link` setting keeps one OS selected across the site. Reuse native synchronization and browser storage rather than adding a separate platform state or cookies. The course-scoped helper may reapply the primary choice when a collapsed box opens, because native linking misses hidden labels. Without JavaScript each tab block still works on its own.
+- If optional boxes contain OS tabs, wrap the first visible OS tab set in `<div id="course-platform" markdown="1">` so the scoped helper can read the primary choice when a box opens. The helper leaves route tabs and unrelated pages alone.
 - Try it, Under the hood and When it goes wrong are collapsed boxes (`??? tip`, `??? info`, `??? warning`) because they are optional on a first read.
 - Facts the reader needs to proceed stay in visible prose: required versions, ownership and lifetime rules, and how to enable and read validation. A collapsed box may expand on them but never be their only home.
 - Keep the content of these boxes, Checkpoint and listings unless it is factually wrong or presentation requires splitting it.

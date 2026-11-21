@@ -576,3 +576,46 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* Course figures: a Mermaid diagram with a numbered caption. Only the Mermaid host element is
+   styled; the rendered SVG lives in a closed shadow root and keeps its own layout. */
+
+.md-typeset .dvz-course-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    box-sizing: border-box;
+    width: auto;
+    max-width: 100%;
+    margin: 1.2rem 0 1.6rem;
+    padding: 1rem 1.1rem 0.8rem;
+    border: 1px solid var(--md-default-fg-color--lightest);
+    border-radius: 6px;
+    background: var(--md-code-bg-color);
+}
+
+.md-typeset .dvz-course-figure > .mermaid {
+    display: flex;
+    justify-content: center;
+    justify-content: safe center;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    overflow-x: auto;
+}
+
+.md-typeset .dvz-course-figure > figcaption {
+    max-width: 40rem;
+    margin: 0.8rem auto 0;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.72rem;
+    font-style: normal;
+    line-height: 1.5;
+    text-align: center;
+}
+
+@media screen and (max-width: 700px) {
+    .md-typeset .dvz-course-figure {
+        padding: 0.75rem 0.6rem 0.6rem;
+    }
+}
