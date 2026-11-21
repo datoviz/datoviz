@@ -2,6 +2,18 @@
 
 These rules apply to public documentation, gallery, attribution, and release communication changes. Instruction-only edits follow [build and validation](BUILD_TEST.md#validation-strategy).
 
+## Prose Review
+
+All new or revised documentation prose must go through the `humanizer` skill before it is considered finished. This covers the entire course, guides, reference explanations, contributor documentation, specifications, README files, release notes and agent documentation. Read and apply the skill's `SKILL.md`; a generic readability review or asking for a natural tone does not count as using the skill.
+
+Write simple, clear, direct prose, with no more words than the explanation needs. Remove filler, slogans, stock transitions, repeated caveats and forced contrasts. Keep the reasoning, examples and technical qualifications readers need; brevity must not make a lesson cryptic. Preserve facts, uncertainty, API names, code, commands, numbers and link targets.
+
+When delegating writing, explicitly require the writer to read and apply the humanizer skill. Review the result for both technical accuracy and natural wording. If the skill is unavailable, report the missing pass and leave prose review pending. Record the files or sections actually reviewed in the task handoff; do not imply that untouched prose or the whole course passed because one section did.
+
+Existing prose is not certified by this rule. Apply the pass as pages are revised, and track any requested broader review separately. Edit authored sources rather than generated output.
+
+## Validation
+
 Documentation-only changes require `git diff --check`, `just docs-build-check`, `just docs-status-check`, and inspection of `git status --short`. Run the recipes with their declared build dependencies. Generated references, examples, screenshots, animations, or inventories additionally require their focused generator and checker.
 
 Use [adding examples](../../docs/contributors/adding-examples.md) for public example contributions and [gallery media](../../docs/contributors/gallery-media.md) for capture, encoding, and media-cache changes. Follow [repository hygiene](REPO_HYGIENE.md#documentation-images) for image size, attribution, and protected assets.

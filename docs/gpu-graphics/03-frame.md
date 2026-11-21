@@ -30,18 +30,26 @@ Submission puts recorded command buffers on a device **queue**, the line of work
 
 ### The time scale of a frame
 
-"Later" describes order, not a fixed delay: the GPU can begin queued work once earlier work and its dependencies allow. How long that takes depends on the GPU, the workload and what is already queued. As a rough scale, a small GPU task may finish in microseconds or a fraction of a millisecond, while heavier work, such as a complete frame of a large scene, takes milliseconds or longer.
+The GPU runs submitted work later, but how much later varies. A command buffer in the queue starts when the work ahead of it, and any work it depends on, allows it to. The wait depends on the GPU, the workload, and what is already queued.
 
-A useful yardstick is the **frame budget**: the average time per frame needed to sustain a frame rate, 1000 ms divided by the number of frames per second.
+The work itself also varies in length. As a rough guide rather than a benchmark, a small GPU task may finish in microseconds or a fraction of a millisecond, while heavier work, such as a complete frame of a large scene, takes milliseconds or longer.
+
+To judge whether a time is short or long, compare it with the **frame budget**: the average time each frame can take if the program is to keep up a given frame rate. It equals 1000 ms divided by the number of frames per second.
 
 | Frame rate | Budget per frame |
 | --- | --- |
 | 60 FPS | about 16.7 ms |
 | 120 FPS | about 8.3 ms |
 
-Aim to finish comfortably within the budget, leaving room for other work and occasional slower frames. A budget is a target for steady throughput. It is not a guaranteed GPU duration, a queue wait, or a measurement of any frame. With several frames in flight, CPU and GPU work can overlap, so their times do not necessarily add up. **Latency**, the end-to-end time from recording a frame to seeing it on screen, is separate: it also includes queued work and the wait for presentation, so it can exceed one budget. One-time startup work, such as creating shaders and pipelines in chapter 4, is also separate from this steady per-frame cost.
+Try to finish well within the budget, so there is room for other work and for the occasional slower frame. The budget describes the steady throughput you are aiming for. It does not guarantee how long the GPU takes, how long work waits in the queue, or how long any particular frame actually took.
 
-These figures are rough scales, and timing the CPU side of a frame does not tell you how long the GPU spent on it. The Vulkan Guide's [profiling chapter](https://docs.vulkan.org/guide/latest/profiling.html) explains how to measure GPU execution.
+When several frames are in flight, the CPU records one frame while the GPU executes an earlier one. Their work overlaps, so the CPU time and the GPU time for a frame do not necessarily add up.
+
+**Latency** is a different measure: the time from recording a frame to seeing it on screen. It includes the time the frame spends queued behind other work and waiting to be presented, so it can be longer than one frame budget.
+
+One-time startup work, such as creating shaders and pipelines in chapter 4, is counted separately from this per-frame cost.
+
+A timer around your callback measures only the CPU side of a frame. It does not tell you how long the GPU spent executing it. The Vulkan Guide's [profiling chapter](https://docs.vulkan.org/guide/latest/profiling.html) explains how to measure GPU execution.
 
 ### Follow one frame through time
 

@@ -79,4 +79,6 @@ Use the narrowest relevant checks. Instruction-only edits need link/content chec
 
 Use `spec/` for durable design, semantics, and architecture; `agents/now/` for current execution status and handoffs; `agents/rules/` for shared agent rules; and `docs/` for public user and contributor documentation. Do not put private implementation plans in `docs/`.
 
+All new or revised course and documentation prose must go through the `humanizer` skill and a final check for simple, clear, direct wording without unnecessary length. This applies to delegated writing too; follow the [prose review requirements](agents/rules/DOCUMENTATION.md#prose-review) and do not claim a pass that was not performed.
+
 In documentation code examples, put explanatory comments on their own line above the code they describe.
