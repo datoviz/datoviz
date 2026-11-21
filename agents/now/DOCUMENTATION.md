@@ -1,6 +1,6 @@
 # Datoviz v0.4 Documentation Status
 
-Status: complete 16-chapter course implementation, the 2026-11-17 explanatory pass and approved homepage media publication reconciled on 2026-11-18; maintainer course acceptance, revised-course validation, exact release artifacts and website publication decisions remain. Earlier automated reviews retain their recorded scope. Scientific technique scope updated: 2026-10-13; earlier prose, PR, and gallery evidence retains its recorded identities.
+Status: complete 16-chapter course implementation, the 2026-11-17 explanatory pass and approved homepage media publication reconciled on 2026-11-18; the Linux isolated-reader continuation passes; maintainer course acceptance, exact release artifacts, other-platform proof and website publication decisions remain. Earlier automated reviews retain their recorded scope. Scientific technique scope updated: 2026-10-13; earlier prose, PR, and gallery evidence retains its recorded identities.
 
 Use [RELEASE.md](RELEASE.md) for sequencing, [STATUS.md](STATUS.md) for repo-wide blockers, and `spec/docs/` plus `spec/release/` for durable policy. This file is the sole active RC3 documentation inventory.
 

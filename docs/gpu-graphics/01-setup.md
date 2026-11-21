@@ -54,7 +54,7 @@ Each kind of failure points at one of these. A missing header is a compile error
 
     On Windows, the source installation still needs the native dependency DLLs in the vcpkg build tree. The path above matches the preset's default `x64-windows` triplet; if you changed the triplet or `VCPKG_INSTALLED_DIR`, use its Release `bin` directory instead. Keep that build tree and repeat the `PATH` setup in each new terminal, resolving the vcpkg path from the repository root before moving into your course project.
 
-    That prefix contains the public headers, library, and CMake package. A source install uses the Vulkan loader and driver from your system or SDK environment, so keep the environment you built Datoviz in.
+    That prefix contains the public headers, library, and CMake package. A source install uses the Vulkan loader and driver from your system or SDK environment. Keep the environment you built Datoviz in active when configuring and running the course project: CMake must find Vulkan, and chapter 4 onward also needs the shaderc runtime library to compile GLSL.
 
 === "From a package (once published)"
 
@@ -178,6 +178,7 @@ A package prints its own version. The important check is that the program prints
     | --- | --- |
     | `fatal error: 'datoviz.h' file not found` | The compiler has no include path. With CMake, `find_package` failed to locate the package; check your `CMAKE_PREFIX_PATH` or `datoviz_DIR`. |
     | `Could not find a package configuration file provided by "datoviz"` | Same cause, seen at configure time. CMake wants the directory containing `DatovizConfig.cmake`; `datoviz-config --cmake-dir` prints it for a package install. |
+    | `Could NOT find Vulkan` at configure time with a source install | CMake cannot find the Vulkan headers or loader library. Activate the SDK environment you built Datoviz in, or set `VULKAN_SDK` to your installed SDK directory, then configure again. |
     | `call to undeclared function 'dvz_canvas_configure_gpu_ctx'` in chapter 2 | Your Datoviz is older than the course; see the version warning at the top of this chapter. |
     | Links fine, then `error while loading shared libraries` or `image not found` at startup | The dynamic loader cannot find the library at run time. Keep the environment activated; on Windows, ensure the package's DLL directory is on `PATH`. |
     | `Datoviz 0.4.0rc2 (DEBUG)` or an unexpected version | Another Datoviz build is on the library path. On Linux, run `ldd ./build/vkcourse`, find the `libdatoviz` line, and fix `LD_LIBRARY_PATH`. On macOS, run `otool -L ./build/vkcourse` to see which `libdatoviz` the program was linked against, often as an `@rpath/` name; check that no inherited `DYLD_LIBRARY_PATH` points at another build, and reconfigure with the intended prefix rather than adding `DYLD_*` overrides. |

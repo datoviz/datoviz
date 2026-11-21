@@ -313,6 +313,8 @@ Build and run from your `vkcourse` directory, close the window, then capture the
 
 !!! warning "When it goes wrong"
 
+    `provider-missing` before `graphics pipeline creation failed` means Datoviz could not load the runtime shader compiler. With a source install, keep the system or SDK environment you built Datoviz in active when running the program (chapter 1).
+
     A shader compile error stops startup: the compiler message is followed by `graphics pipeline creation failed`. A blank frame with zero validation errors usually means the triangle is off-screen or the draw call is missing. A draw outside the rendering pass, or a pipeline format that does not match the canvas, produces validation errors; read them first. An upside-down triangle comes from assuming OpenGL's y-up convention.
 
 ## What carries over

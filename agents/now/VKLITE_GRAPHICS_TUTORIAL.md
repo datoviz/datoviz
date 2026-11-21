@@ -1,6 +1,6 @@
 # Modern GPU Graphics In Vulkan Course Execution
 
-Status: the complete 16-chapter implementation, epilogue, canonical programs and generated previews are present. The fuller explanatory revision landed on 2026-11-17; the 2026-11-18 Claude Opus 5.5 medium review and independent source check completed bounded documentation corrections. All 16 canonical programs pass the 2026-11-18 validation-enabled in-tree smoke with reproducible captures. Maintainer proofreading, revised-course reader acceptance and exact post-RC2 package/platform proof remain separate gates. Updated: 2026-11-18.
+Status: the complete 16-chapter implementation, epilogue, canonical programs and generated previews are present. The fuller explanatory revision landed on 2026-11-17; the 2026-11-18 Claude Opus 5.5 medium review and independent source check completed bounded documentation corrections. All 16 canonical programs pass the 2026-11-18 validation-enabled in-tree smoke with reproducible captures. The 2026-11-20 isolated-reader run passes the Linux source-install path for all 16 chapters. Maintainer proofreading and exact post-RC2 package/platform proof remain separate gates. Updated: 2026-11-21.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
@@ -49,12 +49,22 @@ Two scratch exercise checks close the earlier uncertain observations: reversing 
 | Remaining work | Who or prerequisite | Recommended next action |
 | --- | --- | --- |
 | Changed prose and teaching voice | Maintainer | Start with [setup](../../docs/gpu-graphics/01-setup.md), [triangle and lifecycle](../../docs/gpu-graphics/04-triangle.md), [descriptors](../../docs/gpu-graphics/12-uniform-buffers.md), [mesh normals](../../docs/gpu-graphics/16-mesh.md) and [epilogue](../../docs/gpu-graphics/17-next.md), then review the remaining course voice, pacing, exercises and previews in the private WIP documentation. |
-| Revised-course reader acceptance | Agent execution plus maintainer assessment | The static review and in-tree smoke do not replace a fresh reader following the final rendered instructions in an isolated project; retain package and platform scope explicitly. |
+| Revised-course reader acceptance | Linux development-source reader run complete; maintainer assessment remains | The 2026-11-20 run follows frozen rendered instructions in an isolated installed-prefix project for all 16 chapters. Official packages, other platforms and physical input retain their separate gates. |
 | Windows source/DLL instructions and platform behavior | Available Windows/macOS hardware or hosted candidate builders | Run the documented setup and relevant interaction/resize checks; preserve unavailable physical checks as exclusions. |
 | First official package newer than RC2 | RC3 freeze and exact artifact preparation | Verify the installed CMake/shaderc/course route against the actual candidate; do not change the current development version early. |
 | RC3 freeze and publication | Maintainer | Resolve remaining course/gallery/platform dispositions, then freeze. Release publication and website deployment need separate exact final approvals. |
 
 Optional listing-format normalization and OBJ smoothing architecture are outside this correction pass. Previously deferred course reordering remains deferred; no new API work is required by these findings.
+
+## Isolated Reader Follow-up, 2026-11-21
+
+Claude Opus 5.5 at medium effort completed the 2026-11-20 reader run against frozen rendered course pages at `c2744ab2c`. It built a separate Release library and installed prefix, then incrementally authored, built and ran all 16 student programs using `find_package(datoviz CONFIG REQUIRED)`. No canonical step C file was opened and no full-listing recovery was needed; listings were used after successful authored runs to synchronize cosmetic differences. All primary programs pass, Vulkan steps report zero validation errors with an active layer, and repeated captures match. This is Linux development-source evidence, not fresh-clone dependency proof or an official candidate package.
+
+Representative exercises and synthetic XTEST input under Xvfb cover malformed-shader filename/line diagnostics, failure-preserving **R** reload, repaired shader recovery, resize, chapter 11 drag/scroll and window close. Programmatic resize without a window manager and synthetic input are not physical interaction or HiDPI acceptance. Deliberately invalid descriptor/image GPU draws were checked statically; Windows, macOS and the official package route were not executed. No runtime defect requiring a code change was found.
+
+Three verified troubleshooting corrections follow the run: chapter 8 now explains the actual `push-constant update failed` message; chapter 1 clarifies Vulkan configure-time discovery and the source environment's runtime shaderc dependency; chapter 4 names `provider-missing` and its remedy. No C/GLSL listing, canonical program, shader or API changed. Maintainer rereading is limited to chapter 1's source-install paragraph/troubleshooting table and the troubleshooting boxes in chapters 4 and 8; earlier prose remains unchanged. Cosmetic preferences from the reader are deferred.
+
+The complete report, per-chapter results and command/provenance records are ignored under `build/course-reader/20261120T193632Z/`; the student snapshots, captures, exercises and live-session evidence remain in the isolated reader workspace. Maintainer course acceptance, exact post-RC2 artifacts, other platforms and final publication gates remain open. Apply focused validation to these factual prose corrections; do not repeat the entire reader run solely for the unchanged programs.
 
 ## RC4 Freeze
 

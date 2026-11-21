@@ -176,7 +176,9 @@ The live square rotates and breathes; the capture is the still above. The termin
 
 !!! warning "When it goes wrong"
 
-    A validation message about a push-constant range usually means the offset or size is not a multiple of four, or the pipeline layout does not declare the range. A square that stays still was rendered with `--png`, where time is fixed. One that barely turns but keeps growing has its members in a different order in the shader than in the C struct.
+    If the program stops with `push-constant update failed`, `dvz_cmd_push_constants()` rejected the update. Check that the offset and size are multiples of four, and that the pipeline layout declares the range for the shader stage using it. The validation layer may also report that the shader uses push constants that were never set, because the rejected update recorded no push command.
+
+    A square that stays still was rendered with `--png`, where time is fixed. One that barely turns but keeps growing has its members in a different order in the shader than in the C struct.
 
 ## What carries over
 
