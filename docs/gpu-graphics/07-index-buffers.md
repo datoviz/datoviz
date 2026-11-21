@@ -8,7 +8,7 @@ Chapter 6 moved the geometry into a vertex buffer: the square is six vertex reco
 
 For a square, that is two extra records. For a real mesh it is most of the data, because each corner is shared by several triangles. Chapter 9's cube has 8 corners but 12 triangles, which would be 36 records without sharing. We want to store each corner once and describe the triangles separately.
 
-This chapter adds an **index buffer** to do exactly that. The image stays identical to chapter 6; what changes is how the geometry is stored, the form every later mesh in the course takes.
+This chapter adds an **index buffer** for that. The image is identical to chapter 6, but the geometry is now stored the way every later mesh in the course is stored.
 
 In this chapter you will:
 
@@ -22,7 +22,7 @@ In this chapter you will:
 
 An index buffer is an array of integers. Without one, a draw takes vertex records in order, three at a time. With one, it reads the indices in order, three at a time, and each index says which vertex record to fetch. The vertex records stay unique; the indices describe the triangles.
 
-The split pays twice. Memory: an index here is 2 bytes, while a `Vertex` is 20. Work: when the same index comes back soon, the GPU can often reuse the vertex shader's result instead of running it again.
+This saves both memory and work. An index here is 2 bytes, while a `Vertex` is 20. When the same index comes back soon, the GPU can often reuse the vertex shader's result instead of running it again.
 
 ## Four vertices, six references
 
@@ -164,7 +164,7 @@ Build and run as before; the capture goes to `chapter07.png`.
 
 - An indexed mesh, unique vertices plus triangles that refer to them, is the standard form in every GPU API and in mesh formats such as glTF. OBJ indexes each attribute separately, so loaders convert it (chapter 16).
 - An index selects a whole vertex, not a position. Share a vertex only when every attribute agrees; duplicate it where they differ.
-- Index width is a range-for-size trade-off: 16 bits suit meshes with at most 65536 vertices, 32 bits the rest.
+- Index width trades range against size: 16 bits suit meshes with at most 65536 vertices, 32 bits the rest.
 
 ## Checkpoint
 

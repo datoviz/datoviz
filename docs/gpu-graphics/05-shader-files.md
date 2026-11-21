@@ -6,7 +6,7 @@
 
 Chapter 4 drew a triangle with two shaders written as C strings. That works, but it is awkward: every shader edit means editing quoted lines, rebuilding the C program, and restarting it, and a GLSL error points into a string rather than a file. The shaders grow in almost every chapter from here on, so it is worth fixing how you work with them now.
 
-This chapter moves the shaders into ordinary `.vert` and `.frag` files, reports compiler errors with file names and line numbers, and rebuilds the pipeline when you press **R**, without restarting the program. The image is identical to chapter 4; what changes is how fast you can experiment.
+This chapter moves the shaders into ordinary `.vert` and `.frag` files, reports compiler errors with file names and line numbers, and rebuilds the pipeline when you press **R**, without restarting the program. The image is identical to chapter 4, but you can now try a shader edit without rebuilding the C program.
 
 In this chapter you will:
 

@@ -133,7 +133,7 @@ The description is part of the pipeline, so it is fixed when the pipeline is cre
 
 ## Put the vertices in a GPU buffer
 
-Now the bytes. A **buffer** is a block of GPU-accessible memory with no type of its own; its usage flags say what it may be used for. Add `DvzBuffer* vertex_buffer;` to the end of `Renderer`. The renderer owns the buffer, like the pipeline: `draw()` binds it every frame, and `cleanup:` releases it.
+A **buffer** is a block of GPU-accessible memory with no type of its own; its usage flags say what it may be used for. Add `DvzBuffer* vertex_buffer;` to the end of `Renderer`. The renderer owns the buffer, like the pipeline: `draw()` binds it every frame, and `cleanup:` releases it.
 
 In `main()`, the buffer goes after the pipeline and before the draw callback is registered, so that, as in chapter 4, `draw()` never runs before everything it uses exists. Creating it follows chapter 4's object lifecycle in four steps:
 

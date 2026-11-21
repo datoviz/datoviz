@@ -26,7 +26,7 @@ The CPU decides *what* to draw and writes down instructions: use this pipeline, 
 
 Why a list rather than direct calls? The GPU is a separate processor. If the CPU sent each instruction on its own and waited for it, each processor would spend most of its time waiting for the other. A whole frame's list, handed over at once, lets both run at full speed.
 
-Submission puts recorded command buffers on a device **queue**, the line of work waiting for the GPU. The GPU runs them later; by then your callback has returned. The canvas manages **frame slots** (also called frames in flight): sets of per-frame resources used to record and track one frame. When several slots are available, the CPU can record the next frame while the GPU executes an earlier one. In every case, before reusing a slot, the CPU waits on a **fence**, a signal the GPU raises when it has finished that slot's work. If the GPU is still busy, that wait makes the CPU pause. Managing this safely is what Vulkan's synchronization is for, and why the canvas earns its keep.
+Submission puts recorded command buffers on a device **queue**, the line of work waiting for the GPU. The GPU runs them later; by then your callback has returned. The canvas manages **frame slots** (also called frames in flight): sets of per-frame resources used to record and track one frame. When several slots are available, the CPU can record the next frame while the GPU executes an earlier one. In every case, before reusing a slot, the CPU waits on a **fence**, a signal the GPU raises when it has finished that slot's work. If the GPU is still busy, that wait makes the CPU pause. Vulkan's synchronization exists to manage this safely, and the canvas does that work for you.
 
 ### The time scale of a frame
 
@@ -116,7 +116,7 @@ Only three of them, begin, the viewport and scissor, and end, record anything in
         renderer->device, frame->command_buffer, renderer->commands);
 ```
 
-vklite records through a typed `DvzCommands` object, while the canvas hands you a raw Vulkan handle. This function points the `DvzCommands` wrapper you allocated at startup at that handle. It creates and owns nothing. Think of it as pointing your recording tool at the canvas's buffer. The name says both facts: the handle is *borrowed* and already *recording*.
+vklite records through a typed `DvzCommands` object, while the canvas hands you a raw Vulkan handle. This function points the `DvzCommands` wrapper you allocated at startup at that handle. It creates and owns nothing. The name says both facts: the handle is *borrowed* and already *recording*.
 
 ### 2. Describe the pass
 
@@ -195,7 +195,7 @@ Every value your callback touches has an owner and a lifetime. For this chapter:
 
 ## Make it move
 
-Now put the loop to work. A static color cannot tell you whether the loop runs at 60 frames per second or froze after the first frame. Drive the color from a clock.
+A static color cannot tell you whether the loop runs at 60 frames per second or froze after the first frame. Drive the color from a clock.
 
 The timing follows two rules you will use throughout the course:
 

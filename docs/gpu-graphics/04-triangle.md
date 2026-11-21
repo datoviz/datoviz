@@ -24,7 +24,7 @@ The pipeline ties these together. Vulkan wants everything that shapes a draw, su
 
 ## Start from chapter 3
 
-Start from your chapter 3 `main.c`. The pulsing clear has done its job, so remove `<math.h>`, the three animation fields in `Renderer`, the `--time` option, and the time calculation in `draw()`. Remove the GPU-name and frame-count prints too; validation errors remain the one diagnostic on every run. Keep `--png`, and use this fixed dark clear color:
+Start from your chapter 3 `main.c`. The pulsing clear is no longer needed, so remove `<math.h>`, the three animation fields in `Renderer`, the `--time` option, and the time calculation in `draw()`. Remove the GPU-name and frame-count prints too; validation errors remain the one diagnostic on every run. Keep `--png`, and use this fixed dark clear color:
 
 ```c
     // A fixed dark background behind the triangle.
@@ -178,7 +178,7 @@ If the surface is temporarily unavailable, keep polling until a frame is acquire
 
 ## Compile and build the pipeline
 
-Now the pipeline itself. Building it takes four steps:
+Building the pipeline takes four steps:
 
 1. **Compile** the GLSL to SPIR-V.
 2. Wrap each result in a **shader module**.

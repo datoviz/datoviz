@@ -105,7 +105,7 @@ Many steps in this chapter can fail: there may be no GPU, no display, or no Vulk
 
 `COURSE_CHECK(condition, message)` does nothing when the condition holds. Otherwise it prints the message and jumps to the `cleanup:` label you will write at the end of `main`. The `do { ... } while (0)` wrapper only makes the macro behave like one statement, so it is safe after an `if`.
 
-This macro is not part of Datoviz. It is a policy of *your* program, written in your file, and it works only because of three things you set up in `main`:
+This macro is not part of Datoviz. It is *your* program's error policy, and it works only because of three things you set up in `main`:
 
 - every object starts as `NULL`, meaning "not created yet";
 - the function has a `cleanup:` label that releases every object;
@@ -172,7 +172,7 @@ The window host owns the connection to the platform's windowing system and the e
 
 ## Get a GPU
 
-This is where your program gets a GPU. It takes three steps: start from a default configuration and turn on validation, let the canvas add what it needs, then create the context.
+Getting a GPU takes three steps: start from a default configuration and turn on validation, let the canvas add what it needs, then create the context.
 
 First, the configuration:
 
@@ -320,7 +320,7 @@ Then hand the renderer to the canvas. The canvas keeps the `&renderer` pointer, 
 
 ## Run the render loop
 
-The loop is where the program spends its life:
+The program spends most of its time in this loop:
 
 ```c
     // A live run loops until the window closes; a --png run renders one frame.
