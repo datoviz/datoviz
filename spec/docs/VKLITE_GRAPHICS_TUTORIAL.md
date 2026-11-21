@@ -1,8 +1,8 @@
 # Modern GPU Graphics In Vulkan Tutorial Contract
 
-Status: required final-v0.4 tutorial. All 16 substantive chapters plus an epilogue are implemented and pass in-tree synchronization, capture and media checks. The earlier 15-chapter baseline received independent reader proof; a fresh reader audit of the revised course and exact installed-artifact acceptance remain. Updated: 2026-11-16.
+Status: required final-v0.4 tutorial. All 16 substantive chapters plus an epilogue are implemented and pass in-tree synchronization, capture and media checks. The earlier 15-chapter baseline received independent reader proof, and a 2026-11-20 isolated-reader run passed the revised course on the Linux development-source path; maintainer acceptance and exact installed-artifact acceptance remain. Updated: 2026-11-21.
 
-Use [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline and [../../agents/now/VKLITE_GRAPHICS_TUTORIAL.md](../../agents/now/VKLITE_GRAPHICS_TUTORIAL.md) for current execution status. This document owns the durable educational, abstraction, delivery, versioning, and validation contract.
+Use [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, [../../agents/now/VKLITE_GRAPHICS_TUTORIAL.md](../../agents/now/VKLITE_GRAPHICS_TUTORIAL.md) for current execution status, and [../../agents/rules/VULKAN_COURSE_STYLE.md](../../agents/rules/VULKAN_COURSE_STYLE.md) for chapter writing and presentation. This document owns the durable educational, abstraction, delivery, versioning, and validation contract.
 
 ## Purpose
 
@@ -12,9 +12,9 @@ Datoviz Canvas and vklite remove platform bootstrap and presentation boilerplate
 
 ## Release Contract
 
-RC3 owns the reusable tutorial-enabling API, shader-toolchain implementation, and rewritten chapters 1-3: setup, first window, and frame command recording. These chapters must work as standalone installed CMake consumers and establish the course voice, code-growth model, ownership vocabulary, validation path, and deterministic capture infrastructure.
+RC3 was first scoped to the reusable tutorial-enabling API, the shader toolchain and chapters 1-3. The approved RC3 implementation instead delivers the complete course: that API and toolchain, all 16 substantive chapters, the epilogue, the course voice, code-growth model, ownership vocabulary, validation path and deterministic capture infrastructure, proven on development sources. RC3 still requires maintainer course acceptance and the first official post-RC2 package gate.
 
-RC4 owns acceptance of the complete 16-chapter course, exact-candidate preview media, exact installed-package validation, the frozen tutorial-facing API profile, and reader feedback. Development implementation is already complete; this allocation does not imply that chapters 4-16 remain to be written. Final v0.4.0 owns feedback-driven fixes, regenerated final media, release-pinned compatibility wording, and publication; it is not a new API-design phase.
+RC4 owns exact acceptance of the full course: every chapter against exact candidate artifacts, exact-candidate preview media, installed-package validation, reader feedback and the frozen tutorial-facing API profile. Final v0.4.0 owns feedback-driven fixes, regenerated final media, release-pinned compatibility wording and publication; it is not a new API-design phase.
 
 ## Audience And Promise
 
@@ -37,9 +37,11 @@ Hidden machinery must be named accurately in focused “under the hood” explan
 5. Every chapter has a distinct generated preview derived from its canonical program. Generated previews live under `build/`, not in the `data` submodule.
 6. Validation layers are introduced as a reader tool, and each chapter includes a focused failure-diagnosis section.
 7. Public explanations distinguish owned, borrowed, callback-duration, frame-duration, and resource-generation lifetimes where they matter.
-8. The course labels vklite as advanced/unstable and pins compatibility to the exact Datoviz release rather than promising general low-level stability.
+8. The course presents vklite and Canvas as evolving advanced interfaces reached through the existing public entrypoints `<datoviz.h>` and `<datoviz/advanced.h>`, and pins compatibility to the exact Datoviz release without promising low-level stability.
 9. Every major concept is defined at first introduction, placed in the CPU-to-GPU flow, connected to its concrete representation in the running program, given an explicit copy and lifetime rule, and reinforced with an experiment whose result the reader can predict.
 10. The course uses stable terms for shader stages and invocations, vertex records and attributes, primitive assembly, rasterization, fragments, resources, attachments, pipeline layouts, descriptor set layouts, descriptor sets, sets, bindings, push constants, uniform buffers, and storage buffers. `DvzSlots` is identified as the Datoviz layout-declaration wrapper rather than used as a substitute for those Vulkan concepts.
+11. Displayed excerpts may be split, regrouped or reformatted for reading, but they follow the program's semantic order and stay verbatim in the canonical source; presentation never changes behavior, ownership, validation, error paths or rendered output. `COURSE_CHECK` is application-local error handling defined once in chapter 2, not a course runtime.
+12. Prerequisites the reader needs to proceed, including versions, ownership and lifetime rules, and validation setup, stay in visible prose. Experiments, under-the-hood detail and troubleshooting may be collapsed. Platform-specific instructions use the labels Linux, macOS and Windows with the site's existing linked-tab behavior and no course-specific scripting.
 
 ## Abstraction Boundary
 
@@ -80,7 +82,7 @@ The epilogue explains the instance/device, swapchain, acquisition/presentation, 
 
 ## Conceptual Progression
 
-The course uses five focused diagrams: the CPU-recording and asynchronous-GPU-execution timeline in chapter 3; the programmable and fixed-function graphics pipeline in chapter 4; the object-to-world-to-view-to-clip-to-normalized-device-to-framebuffer coordinate chain in chapter 9; the C-structure-to-uniform-buffer-to-descriptor-set-to-GLSL-binding relationship in chapter 12; and the CPU-pixels-to-staging-buffer-to-optimal-image transfer in chapter 13.
+Diagrams are captioned figures, numbered within each chapter, with stable semantic anchors and nearby prose that explains them. The course must show at least these relationships: the CPU-recording and asynchronous-GPU-execution timeline in chapter 3; the programmable and fixed-function graphics pipeline in chapter 4; the object-to-world-to-view-to-clip-to-normalized-device-to-framebuffer coordinate chain in chapter 9; the C-structure-to-uniform-buffer-to-descriptor-set-to-GLSL-binding relationship in chapter 12; and the CPU-pixels-to-staging-buffer-to-optimal-image transfer in chapter 13. Other figures are added where a flow is clearer seen than read; the contract sets no total.
 
 Chapter 4 defines a shader as a GPU program and distinguishes shader source, SPIR-V intermediate representation, shader module, pipeline, shader invocation, primitive assembly, rasterization, fragment generation, and attachment writes. SPIR-V must not be called GPU-native machine code, and fragment invocations must not be described as a one-to-one synonym for pixels.
 
@@ -121,7 +123,7 @@ The repository must provide:
 9. public-header, generated binding, strict documentation, link, navigation, and compatibility checks at release checkpoints.
 10. a fresh isolated-reader pass using only the rendered public course, a fresh source clone or exact supported package, and stated platform prerequisites; the student project must live outside the source tree, every graphical chapter must produce inspected capture evidence, every documented interaction and recovery path must be exercised, and the complete pass must report no course-caused failure or ambiguity.
 
-RC3 must prove chapters 1-3 and the enabling API from installed development artifacts. The first official package newer than RC2 must pass the wheel course smoke before package-first instructions lose their version warning. RC4 repeats every chapter against exact candidate artifacts and freezes the API profile. Any course-caused failure or ambiguity in the isolated-reader pass requires a correction followed by another complete pass with a fresh independent reader. Final accepts only blocker or feedback-driven changes.
+RC3 must prove every chapter and the enabling API from installed development artifacts; the 2026-11-20 Linux isolated-reader run provides installed development-consumer evidence for the Linux source-install path, without establishing fresh-clone dependency or official-package proof. The first official package newer than RC2 must pass the wheel course smoke before package-first instructions lose their version warning. RC4 repeats every chapter against exact candidate artifacts and freezes the API profile. Any course-caused failure or ambiguity in the isolated-reader pass requires a correction followed by another complete pass with a fresh independent reader. Final accepts only blocker or feedback-driven changes.
 
 ## Non-Goals
 

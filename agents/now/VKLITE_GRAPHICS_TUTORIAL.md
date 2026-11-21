@@ -1,6 +1,6 @@
 # Modern GPU Graphics In Vulkan Course Execution
 
-Status: the complete 16-chapter implementation, epilogue, canonical programs and generated previews are present. The fuller explanatory revision landed on 2026-11-17; the 2026-11-18 Claude Opus 5.5 medium review and independent source check completed bounded documentation corrections. All 16 canonical programs pass the 2026-11-18 validation-enabled in-tree smoke with reproducible captures. The 2026-11-20 isolated-reader run passes the Linux source-install path for all 16 chapters. Maintainer proofreading and exact post-RC2 package/platform proof remain separate gates. Updated: 2026-11-21.
+Status: the complete 16-chapter implementation, epilogue, canonical programs and generated previews are present. The fuller explanatory revision landed on 2026-11-17; the 2026-11-18 Claude Opus 5.5 medium review and independent source check completed bounded documentation corrections. All 16 canonical programs pass the 2026-11-18 validation-enabled in-tree smoke with reproducible captures. The 2026-11-20 isolated-reader run passes the Linux source-install path for all 16 chapters. A maintainer-approved readability pilot on chapters 1-4 and the shared course presentation is in progress; full rollout awaits pilot review. Maintainer proofreading and exact post-RC2 package/platform proof remain separate gates. Updated: 2026-11-21.
 
 Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
@@ -52,6 +52,8 @@ Two scratch exercise checks close the earlier uncertain observations: reversing 
 | Revised-course reader acceptance | Linux development-source reader run complete; maintainer assessment remains | The 2026-11-20 run follows frozen rendered instructions in an isolated installed-prefix project for all 16 chapters. Official packages, other platforms and physical input retain their separate gates. |
 | Windows source/DLL instructions and platform behavior | Available Windows/macOS hardware or hosted candidate builders | Run the documented setup and relevant interaction/resize checks; preserve unavailable physical checks as exclusions. |
 | First official package newer than RC2 | RC3 freeze and exact artifact preparation | Verify the installed CMake/shaderc/course route against the actual candidate; do not change the current development version early. |
+| Readability pilot, chapters 1-4 | In progress; maintainer review | Finish the pilot under the [course style](../rules/VULKAN_COURSE_STYLE.md), then obtain maintainer review before changing chapters 5-16 or the epilogue. |
+| Readability rollout, remaining chapters | Pilot review | Apply the reviewed presentation to chapters 5-16 and the epilogue; adjust the style rules first if the review changes them. |
 | RC3 freeze and publication | Maintainer | Resolve remaining course/gallery/platform dispositions, then freeze. Release publication and website deployment need separate exact final approvals. |
 
 Optional listing-format normalization and OBJ smoothing architecture are outside this correction pass. Previously deferred course reordering remains deferred; no new API work is required by these findings.
@@ -65,6 +67,10 @@ Representative exercises and synthetic XTEST input under Xvfb cover malformed-sh
 Three verified troubleshooting corrections follow the run: chapter 8 now explains the actual `push-constant update failed` message; chapter 1 clarifies Vulkan configure-time discovery and the source environment's runtime shaderc dependency; chapter 4 names `provider-missing` and its remedy. No C/GLSL listing, canonical program, shader or API changed. Maintainer rereading is limited to chapter 1's source-install paragraph/troubleshooting table and the troubleshooting boxes in chapters 4 and 8; earlier prose remains unchanged. Cosmetic preferences from the reader are deferred.
 
 The complete report, per-chapter results and command/provenance records are ignored under `build/course-reader/20261120T193632Z/`; the student snapshots, captures, exercises and live-session evidence remain in the isolated reader workspace. Maintainer course acceptance, exact post-RC2 artifacts, other platforms and final publication gates remain open. Apply focused validation to these factual prose corrections; do not repeat the entire reader run solely for the unchanged programs.
+
+## Readability Pilot, 2026-11-21
+
+The maintainer approved a readability pilot limited to chapters 1-4 and reusable course presentation: captioned numbered figures, Linux/macOS/Windows linked tabs, collapsed optional boxes, purposeful roadmaps and lists, and logically grouped code excerpts. Presentation changes keep C/GLSL behavior, the API, ownership, validation, error paths and rendering unchanged, and keep every excerpt synchronized with its canonical source. The [course style](../rules/VULKAN_COURSE_STYLE.md) and [durable contract](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) record the rules. Chapters 5-16 and the epilogue stay unchanged until the pilot is reviewed. No pilot validation is recorded yet; required checks are `just vulkan-course-check`, `just vulkan-course-smoke` if a canonical program's formatting changes, `just docs-build-check`, `just docs-status-check` and `git diff --check`.
 
 ## RC4 Freeze
 

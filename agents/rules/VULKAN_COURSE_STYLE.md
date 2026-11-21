@@ -1,32 +1,75 @@
 # Vulkan Course Writing Style
 
-Applies to `docs/gpu-graphics/`. The model chapter is [12-uniform-buffers.md](../../docs/gpu-graphics/12-uniform-buffers.md). The durable course contract is [spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md).
+Applies to `docs/gpu-graphics/`. The durable course contract is [spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md); current status is in [the execution queue](../now/VKLITE_GRAPHICS_TUTORIAL.md).
+
+The readability presentation below is being piloted on chapters 1-4 and the shared course presentation. Until the maintainer reviews the pilot, leave chapters 5-16 and the epilogue in their current shape; [12-uniform-buffers.md](../../docs/gpu-graphics/12-uniform-buffers.md) remains the model for explanatory depth.
 
 ## Voice
 
-Simple, plain and friendly; never terse. The reader knows C but not graphics. Explain what we are doing, why, why this way, and where we are headed, one concept at a time, so the reader can generalize beyond Datoviz. Cut fluff, filler, hype, repetition and defensive caveats, never explanation. Prefer short sentences and concrete words. Use "we" for shared reasoning and "you" for instructions.
+Simple, plain and friendly; never terse. The reader knows C but not graphics. Explain what we are doing, why, why this way, and where we are headed, one concept at a time, so the reader can generalize beyond Datoviz. Cut fluff, filler, hype, repetition and defensive caveats, never explanation. Readability work restructures explanation; it does not shorten it wholesale. Prefer short sentences and concrete words. Use "we" for shared reasoning and "you" for instructions.
 
 ## Chapter shape
 
-1. Title, italic line count, preview image (unchanged).
-2. Opener, no heading, two or three short paragraphs: where we are (what the program does now, recalling the chapters that built it), what is missing and why it matters, and what this chapter adds and what the reader will see at the end. Then "In this chapter you will:" with three to five numbered steps.
-3. Concept sections before code: the one or two new ideas, intuition first, then the Vulkan term in bold at first definition, then how it maps to the program. One analogy at most per concept, only when it helps. Keep or add a Mermaid diagram (`flowchart TD`, short labels) when a flow is easier to see than read.
-4. Code sections in the order the reader edits, headings that name the goal ("Declare the slot in the pipeline layout"), not the API.
-5. Unchanged boxes and sections, keeping their order: `## Build and run`, `!!! tip "Try it"`, `??? info "Under the hood: ..."`, `!!! warning "When it goes wrong"`.
-6. `## What carries over`: two or three bullets on ideas that hold beyond Datoviz (raw Vulkan, WebGPU, other APIs, general GPU reasoning). Do not repeat another chapter's bullets.
-7. `## Checkpoint`, listings, `Next:` line (unchanged).
+1. Title, italic approximate line banner, preview image. Recount the C line figure when the canonical step changes; raw-Vulkan figures remain labeled estimates.
+2. Opener, no heading, two or three short paragraphs: where we are, what is missing and why it matters, what this chapter adds and what the reader will see at the end. Then "In this chapter you will:" with three to five numbered steps.
+3. Concept sections before code: the one or two new ideas, intuition first, then the Vulkan term in bold at first definition, then how it maps to the program. One analogy at most per concept, only when it helps.
+4. Code sections in the order the reader edits, with headings that name the goal ("Declare the slot in the pipeline layout"), not the API.
+5. `## Build and run`, then the optional boxes: `??? tip "Try it"`, `??? info "Under the hood: ..."`, `??? warning "When it goes wrong"`.
+6. `## What carries over`: two or three bullets on ideas that hold beyond Datoviz. Do not repeat another chapter's bullets.
+7. `## Checkpoint`, listings, `Next:` line.
+
+## Structure inside sections
+
+- A long section may open with a short roadmap sentence or list when it helps the reader see where the section goes; do not add one to a section that is already easy to follow.
+- Use a numbered list for an ordered progression (setup steps, a frame's sequence) and bullets for alternatives or parallel facts. Keep explanation in paragraphs; a list is not a substitute for saying why.
+- Use tables for genuine comparisons (symptom and cause, owned and borrowed), not for prose.
 
 ## Around code
 
-- Before each code block, say in plain words what the step does and why it is needed now. Say where it goes.
+- Before each code block, say in plain words what the step does, why it is needed now, and where it goes.
 - After a block whose arguments are bare numbers, flags or NULLs, read the call out in words once ("in set 0, binding 0, there is 1 descriptor, visible to the fragment shader").
 - Recall earlier concepts by chapter when they return ("chapter 6's vertex buffer with a different usage flag").
-- Say what is copied and what is referenced, and how long each object must live, where it matters.
+- Say what is copied and what is referenced, who owns each object, and how long it must live, where it matters.
+- Code is application code using existing public entrypoints: `<datoviz.h>` and `<datoviz/advanced.h>` (or narrower public headers they already cover). Do not add a course header, helper library, tutorial runtime or wrapper. `COURSE_CHECK` is an application-local macro defined and explained once in chapter 2; later chapters carry it forward without asking the reader to redefine or relearn it. Complete standalone step files retain the definition.
+
+## Code formatting and excerpts
+
+- Canonical step programs may use blank lines between logical groups and modest comments that name a group's purpose. Comments go on their own line above the code they describe and must not restate the prose.
+- Formatting changes to a canonical program are allowed only when behavior is unchanged: same calls, arguments, resource ownership, validation, error paths, cleanup order and rendered output. Update every excerpt of that program in the same change.
+- An excerpt may be split at a logical group or regrouped with neighboring code when that reads better. Excerpts appear in the program's semantic order (the order the reader edits), and each one stays verbatim in its canonical source.
+- `just vulkan-course-check` must pass. Its allowed divergences are only for experiments the reader is invited to try; do not extend them to cover presentation changes.
+
+## Figures
+
+Each diagram is a numbered figure:
+
+````markdown
+<figure class="dvz-course-figure" id="fig-frame-timeline" markdown="1">
+
+```mermaid
+flowchart TD
+    ...
+```
+
+<figcaption>Figure 1. Plain caption that says what the figure shows.</figcaption>
+</figure>
+````
+
+- Number figures within each chapter. Ids are semantic (`fig-` plus what is shown) and stay stable when figures are renumbered.
+- Prose next to the figure explains it and refers to it by number; the figure never carries an idea alone.
+- Use short node labels. Add Mermaid `accTitle` and `accDescr` only for diagram types that accept them.
+- Add a figure where a flow or relationship is easier to see than read; do not add one to reach a count.
+
+## Platform tabs and optional boxes
+
+- Platform-specific commands and prose use content tabs labeled exactly `=== "Linux"`, `=== "macOS"` and `=== "Windows"`, in that order. Repeat identical commands under each label rather than merging labels, so the existing `content.tabs.link` setting keeps one OS selected across the site. Add no custom JavaScript or cookies; without JavaScript each tab block still works on its own.
+- Try it, Under the hood and When it goes wrong are collapsed boxes (`??? tip`, `??? info`, `??? warning`) because they are optional on a first read.
+- Facts the reader needs to proceed stay in visible prose: required versions, ownership and lifetime rules, and how to enable and read validation. A collapsed box may expand on them but never be their only home.
+- Keep the content of these boxes, Checkpoint and listings unless it is factually wrong or presentation requires splitting it.
 
 ## Hard constraints
 
-- Every fenced `c` or `glsl` block must remain byte-identical to its step source; `just vulkan-course-check` verifies it. Do not change, split, merge or reorder code blocks unless the step order in the prose was wrong.
-- Do not change the Try it, Under the hood, When it goes wrong, Checkpoint and listing content unless it is factually wrong.
+- No functional change to C, GLSL or the API for presentation reasons.
 - Verify every claim against `examples/c/vulkan/stepNN.c`, its shaders and the vklite headers. Do not invent API behavior.
 - One source line per paragraph or list item; no hard wrapping.
-- Expect a chapter to grow by roughly a third. Growth must come from explanation, not from restating.
+- No chapter length target. Growth must come from explanation, not from restating.
