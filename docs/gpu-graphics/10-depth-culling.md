@@ -1,12 +1,12 @@
 # 10. Depth and culling
 
-*About 538 lines of C; raw Vulkan would need about 1650.*
+*About 655 lines of C; raw Vulkan would need about 1650.*
 
 ![A solid cube with hidden faces correctly occluded.](../assets/gpu-graphics/10-depth-culling.webp)
 
 Chapter 9 gave us a cube in perspective, but it does not look solid. The GPU draws its twelve triangles in index order, each overwriting the pixels it covers, so a back face drawn after a front face shows through it. As the cube turns, faces pop in front of each other.
 
-The GPU needs to remember, for every pixel, how far the surface already drawn there is, and keep only the nearest one: the depth test. A second, cheaper idea helps too: on a closed object, faces turned away from the camera are always hidden, so the GPU can skip them: **back-face culling**. By the end, the cube is solid from every angle.
+The GPU needs to remember, for every pixel, how far away the surface already drawn there is, and keep only the nearest one. That is the depth test. A second, cheaper idea helps too: on a closed object, faces turned away from the camera are always hidden, so the GPU can skip them. That is **back-face culling**. By the end of the chapter, the cube is solid from every angle.
 
 In this chapter you will:
 
@@ -18,21 +18,31 @@ In this chapter you will:
 
 Chapter 9's projection already gives each vertex a depth: NDC z, from 0 at the near plane to 1 at the far plane. The rasterizer interpolates it across each triangle, so every fragment knows its own depth. What is missing is a place to remember the nearest depth drawn so far at each pixel.
 
-That place is a **depth attachment**: an image the size of the framebuffer, holding one depth value per sample. It sits beside the color attachment: one records what you see, the other how far it is.
+That place is a **depth attachment**: an image the size of the framebuffer, holding one depth value per sample. It sits beside the color attachment. The color attachment records what you see, and the depth attachment records how far away it is.
 
-Each frame starts by clearing every depth value to 1.0, the far plane, so the first surface drawn anywhere is nearer than "nothing". Then, for each fragment:
+Each frame starts by clearing every depth value to 1.0, the far plane, so the first surface drawn at any pixel is nearer than the cleared value. Then, for each fragment:
 
 - The **depth test** compares the fragment's depth with the stored value. With `VK_COMPARE_OP_LESS`, the fragment passes only if it is strictly closer; otherwise it is discarded and changes nothing.
 - A **depth write** stores a passing fragment's depth, so later fragments compare against it. Testing and writing are separate settings: you can test without writing, as transparent objects often do.
 
+Figure 1 shows this decision for one fragment.
+
+<figure class="dvz-course-figure" id="fig-depth-test" markdown="1">
+
 ```mermaid
 flowchart TD
+    accTitle: Depth test for one fragment
+    accDescr: A fragment with depth z is compared with the stored depth. If z is less, the GPU writes its color and stores z; otherwise the fragment is discarded.
     F[Fragment with depth z] --> T{z less than stored depth?}
     T -->|yes| W[Write color and store z]
     T -->|no| D[Discard]
 ```
 
-The nearest surface now wins at every pixel, whatever order the triangles arrive in.
+<figcaption>Figure 1. The depth test keeps a fragment only if it is nearer than the depth already stored at its pixel.</figcaption>
+
+</figure>
+
+With this test, the nearest surface wins at every pixel, whatever order the triangles arrive in.
 
 ## Skip faces that point away
 
@@ -47,27 +57,30 @@ Culling never looks at distance, so you still need depth whenever front-facing t
 Since chapter 2, the canvas owns the image each frame draws into. It can also own a depth image for each frame slot (chapter 3). In `main()`, before creating the canvas, request a 32-bit float depth format:
 
 ```c
+    // The canvas also owns depth images in exactly this format, recreated on resize.
     canvas_config.depth_format = VK_FORMAT_D32_SFLOAT;
 ```
 
 Vulkan guarantees depth-attachment support for `D16_UNORM` and for at least one of `X8_D24_UNORM_PACK32` and `D32_SFLOAT`. The canvas allocates exactly the format you request and does not substitute another, so on a device without `D32_SFLOAT` depth images, pick one of the others. The canvas also recreates the image on resize, since it must match the color image's size.
 
-Having a depth image is not enough: each frame's rendering must use it. In `draw()`, right after `dvz_cmd_rendering_default()` and before beginning rendering, attach this frame's borrowed depth view and clear it. The order matters: `dvz_cmd_rendering_default()` resets the whole rendering description every frame, so the depth attachment must be set after it:
+Each frame's rendering must also use the depth image. In `draw()`, right after `dvz_cmd_rendering_default()` and before beginning rendering, attach this frame's borrowed depth view and clear it. The order matters: `dvz_cmd_rendering_default()` resets the whole rendering description every frame, so the depth attachment must be set after it:
 
 ```c
+    // Depth: this frame's borrowed depth view, cleared to 1.0, the far plane.
     DvzAttachment* depth = dvz_rendering_depth(renderer->rendering);
     dvz_attachment_image(depth, frame->depth_view, frame->depth_layout);
     dvz_attachment_ops(depth, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
     dvz_attachment_clear(depth, (VkClearValue){.depthStencil = {1.0f, 0}});
 ```
 
-Read it as: the depth attachment is this frame's depth view, in the layout the canvas reports; clear it when rendering begins and keep the result when it ends; clear it to depth 1.0 and stencil 0, unused by this format. The canvas owns the image; `draw()` only borrows its view. The canvas also keeps it in the right image layout and reports it in `frame->depth_layout`; chapter 13 explains layouts.
+Read it as: the depth attachment is this frame's depth view, in the layout the canvas reports; clear it when rendering begins and keep the result when it ends; clear it to depth 1.0 and stencil 0, unused by this format. The canvas owns the image; `draw()` only borrows its view for this frame. The canvas also keeps the image in the right layout and reports that layout in `frame->depth_layout`; chapter 13 explains layouts.
 
 ## Turn on testing and writes
 
 The attachment gives the GPU somewhere to store depth, but the pipeline decides whether to use it. Depth state is fixed-function pipeline state, like chapter 4's topology. In `create_pipeline()`, after the color attachment format and before the pipeline layout, add:
 
 ```c
+    // Depth: the canvas's depth format; test and write, keeping the nearer fragment.
     dvz_graphics_attachment_depth(renderer->pipeline, VK_FORMAT_D32_SFLOAT);
     dvz_graphics_depth(
         renderer->pipeline, false, true, VK_COMPARE_OP_LESS, DVZ_GRAPHICS_FLAGS_FIXED);
@@ -80,6 +93,7 @@ The first call declares the depth format, which must match the canvas. Read the 
 Add these calls right after the depth state:
 
 ```c
+    // Culling: drop back faces; counter-clockwise on screen is the front.
     dvz_graphics_cull_mode(
         renderer->pipeline, VK_CULL_MODE_BACK_BIT, DVZ_GRAPHICS_FLAGS_FIXED);
     dvz_graphics_front_face(
@@ -92,7 +106,7 @@ Read them as: drop back faces, and count counter-clockwise on screen as front. T
 
 Build and run as before; the capture goes to `chapter10.png`.
 
-=== "Linux and macOS"
+=== "Linux"
 
     ```sh
     cmake --build build
@@ -100,7 +114,17 @@ Build and run as before; the capture goes to `chapter10.png`.
     ./build/vkcourse --png chapter10.png
     ```
 
-=== "Windows (Visual Studio)"
+=== "macOS"
+
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ./build/vkcourse --png chapter10.png
+    ```
+
+=== "Windows"
+
+    In a Developer PowerShell for Visual Studio, with the `PATH` setup from chapter 1:
 
     ```powershell
     cmake --build build --config Release
@@ -110,7 +134,7 @@ Build and run as before; the capture goes to `chapter10.png`.
 
 The cube is solid from every angle. The terminal ends with `validation errors: 0`.
 
-!!! tip "Try it"
+??? tip "Try it"
 
     1. Set the depth-write Boolean to `false` and use `VK_CULL_MODE_NONE`. With no writes, the stored depth stays at 1.0, every fragment passes, and the chapter 9 overlap returns.
     2. Restore both, then flip the front face to `VK_FRONT_FACE_CLOCKWISE`. You see the cube's inner faces.
@@ -134,13 +158,13 @@ The cube is solid from every angle. The terminal ends with `validation errors: 0
 
     Raw Vulkan needs a depth image, its memory, a view, a layout transition, and recreation on resize. The pipeline also carries depth-stencil and rasterization state structures. The canvas manages the image; you choose the comparison, the clear, the winding, and the culling.
 
-!!! warning "When it goes wrong"
+??? warning "When it goes wrong"
 
-    An attachment-format validation error means the pipeline and canvas disagree. An inside-out cube points to the winding or front-face setting. Flickering where two surfaces meet means they are nearly at the same depth: depth has finite precision, so keep a sensible near/far range.
+    An attachment-format validation error means the pipeline and canvas disagree. An inside-out cube points to the winding or front-face setting. Flickering where two surfaces meet means they are nearly at the same depth. Depth has finite precision, so keep a sensible near/far range.
 
 ## What carries over
 
-- The depth buffer, cleared to "far" and updated with a less-than test, is how every rasterizing GPU API hides surfaces, from OpenGL to WebGPU. Draw order then matters only for transparency.
+- A depth buffer, cleared to "far" and updated with a less-than test, is how rasterizing GPU APIs such as OpenGL, Vulkan and WebGPU hide surfaces. With it, you can draw opaque surfaces without sorting them from back to front; transparent ones usually still depend on order.
 - Back-face culling depends on consistent winding. Any closed mesh you build or load must wind its triangles the same way as seen from outside.
 - Depth testing and writing are independent switches; renderers combine them differently for opaque objects, transparent objects, and overlays.
 

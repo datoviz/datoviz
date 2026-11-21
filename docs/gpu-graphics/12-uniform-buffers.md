@@ -1,14 +1,14 @@
 # 12. Uniform buffers and descriptors
 
-*About 576 lines of C; raw Vulkan would need about 1850.*
+*About 720 lines of C; raw Vulkan would need about 1850.*
 
 ![The mouse-controlled cube tinted orange by a material uniform buffer.](../assets/gpu-graphics/12-uniform-buffers.webp)
 
 The cube now turns under the mouse, and its shaders get data in two ways. Vertex attributes give one value per vertex (chapter 6). Push constants give a few bytes per draw, copied into the command buffer (chapter 8).
 
-Real renderers need a third way. A texture can be megabytes, and a material or light is shared by many draws, so copying them into every command buffer is not an option. The shader must instead *read them from GPU memory*. In Vulkan, a shader finds such a resource through a **descriptor**.
+Real renderers need a third way. A texture can be megabytes, and a material or light is shared by many draws, so copying them into every command buffer is impractical. The shader must instead *read them from GPU memory*. In Vulkan, a shader finds such a resource through a **descriptor**.
 
-This chapter takes the smallest possible example: one color, the material's tint, which the fragment shader multiplies with the vertex colors. A tint would fit in a push constant; the point is to learn the route, because textures (chapter 14) and lighting (chapter 15) take exactly the same one. By the end, the cube turns orange.
+This chapter takes the smallest possible example: one color, the material's tint, which the fragment shader multiplies with the vertex colors. A tint would fit in a push constant, but we use it to learn the route, because textures (chapter 14) and lighting (chapter 15) follow the same one. By the end, the cube turns orange.
 
 In this chapter you will:
 
@@ -19,9 +19,9 @@ In this chapter you will:
 
 ## Copied or referenced
 
-Push constants are *copied*: the bytes travel inside the command buffer, so you can change them for the next draw at no risk. A uniform buffer is *referenced*: the command buffer only says where the bytes are, and the GPU reads them when the draw executes. That makes it cheap for large or shared data, with one consequence: the buffer must stay alive and unchanged until every draw that reads it has finished.
+Push constants are *copied*: the bytes travel inside the command buffer, so you can change them for the next draw without affecting earlier ones. A uniform buffer is *referenced*: the command buffer only says where the bytes are, and the GPU reads them when the draw executes. That makes it cheap for large or shared data, with one consequence: the buffer must stay alive and unchanged until every draw that reads it has finished.
 
-Another buffer descriptor type is the **storage buffer**. A uniform buffer is a read-only range of structured data, which suits a small, fixed-layout structure like this material. A storage buffer allows broader access: its range limit is usually far larger, it can end in an array whose length is known only at run time, and shaders can write to it, on devices that support writes from that shader stage. No single size rule decides between them: the choice depends on how shaders access the data, how much there is, how often it changes, who shares it, and the device's limits. This course needs only a uniform buffer.
+Another buffer descriptor type is the **storage buffer**. A uniform buffer is a read-only range of structured data, which suits a small, fixed-layout structure like this material. A storage buffer allows broader access: its range limit is usually far larger, it can end in an array whose length is known only at run time, and shaders can write to it, on devices that support writes from that shader stage. No single size rule decides between them. The choice depends on how shaders access the data, how much there is, how often it changes, who shares it, and the device's limits. This course needs only a uniform buffer.
 
 ## How a shader finds a buffer
 
@@ -33,21 +33,34 @@ A shader cannot hold a pointer to your buffer. It declares a numbered slot inste
 
 A function call is a good analogy: the layout is the function signature, the descriptor set holds the arguments, and binding it before the draw is the call. You can create many sets from one layout, for example one per material, and switch between them with one command.
 
-The numbers are a contract between C and GLSL: both must agree on the set, the binding, and the descriptor type, and the C side must make the slot visible to the stage that reads it. This **descriptor binding** is unrelated to chapter 6's vertex binding; Vulkan reuses the word.
+The numbers are an agreement between C and GLSL. Both must use the same set, binding and descriptor type, and the C side must make the slot visible to the stage that reads it. This **descriptor binding** is unrelated to chapter 6's vertex binding; Vulkan reuses the word.
+
+Figure 1 puts the two routes side by side. The material bytes are copied once into the buffer, and the descriptor set refers to that buffer. The matrix still travels as a push constant, copied into each frame's commands.
+
+<figure class="dvz-course-figure" id="fig-material-route" markdown="1">
 
 ```mermaid
 flowchart TD
+    accTitle: How the material and the matrix reach the shaders
+    accDescr: The C material is copied into a uniform buffer by the upload. Descriptor set 0, binding 0 refers to that buffer and is bound before the draw, so the fragment shader reads it. The MVP matrix reaches the vertex shader as a push constant.
     M[C Material] -->|upload copies bytes| U[Uniform buffer]
     U -->|referenced by| S[Descriptor set 0, binding 0]
     S -->|bound before the draw| F[Fragment shader]
     P[MVP matrices] -->|push constants| V[Vertex shader]
 ```
 
+<figcaption>Figure 1. The fragment shader reads the material through a descriptor that refers to a buffer; the vertex shader still receives the matrix as a copied push constant.</figcaption>
+
+</figure>
+
+The rest of the chapter follows the order in which the program builds this route: define the material, create its buffer, declare the slot, fill and bind the descriptor set, read it in GLSL, then handle ownership during reload and shutdown.
+
 ## Define the material
 
 Start on the C side with a structure that matches what the shader will read. Add it after `Push`:
 
 ```c
+// The uniform block the fragment shader reads: one vec4 tint, laid out by std140.
 typedef struct
 {
     float tint[4];
@@ -56,38 +69,65 @@ typedef struct
 _Static_assert(sizeof(Material) == 16, "the material block must match four shader floats");
 ```
 
-The GPU reads the buffer's bytes with GLSL's layout rules, not C's. Uniform blocks follow the `std140` rules, which can place members further apart than a C compiler would. A `vec4` is the easy case: 16 bytes, exactly four C floats. Avoid a lone `vec3` in a uniform block: `std140` aligns it like a `vec4`, and C does not. The assertion stops the build if the structure ever stops matching.
+The GPU reads the buffer's bytes with GLSL's layout rules, which differ from C's. Uniform blocks follow the `std140` rules, which can place members further apart than a C compiler would. A `vec4` is the easy case: 16 bytes, exactly four C floats. Avoid a lone `vec3` in a uniform block, because `std140` aligns it like a `vec4` and C does not. The assertion stops the build if the structure ever stops matching.
 
-The renderer needs three new fields. Creating a buffer takes the GPU memory allocator, which the GPU context owns and you only borrow. Add it beside `device`:
+The renderer needs three new fields. Creating a buffer takes the GPU memory allocator, which the GPU context owns and you only borrow. Add it after `color_format`:
 
 ```c
     DvzVma* allocator;
 ```
 
-Then add the material buffer and its descriptors beside the existing buffers in `Renderer`:
+Then, in `Renderer`, add the material buffer after the existing buffers, and a descriptor field after it:
 
 ```c
+    // Buffers that live for the whole program.
+    DvzBuffer* vertex_buffer;
+    DvzBuffer* index_buffer;
     DvzBuffer* material_buffer;
+
+    // Built from the pipeline layout, so it belongs to the pipeline group.
     DvzDescriptors* descriptors;
 ```
 
-Save the allocator after assigning `renderer.device`:
+The two comments state the ownership rule this chapter relies on. The material buffer lives as long as the program; the descriptor set is rebuilt with each pipeline.
+
+In `main()`, save the allocator next to the device:
 
 ```c
+    // Both are borrowed from the GPU context, which owns them until teardown.
+    renderer.device = dvz_gpu_ctx_device(gpu);
     renderer.allocator = dvz_gpu_ctx_alloc(gpu);
 ```
 
 ## Create and upload the buffer
 
-This helper creates a 16-byte buffer, marks it as a uniform buffer, and copies the tint into it. Add it before `keyboard()`:
+The new helper, `create_material()`, creates a 16-byte uniform buffer and copies the tint into it. Add it before `keyboard()`. It has four steps:
+
+1. fill a local `Material`;
+2. allocate the buffer wrapper;
+3. configure and create the buffer;
+4. upload the tint.
+
+The function begins with the local value and the wrapper:
 
 ```c
 static int create_material(Renderer* renderer)
 {
+    // A local value: the upload copies its bytes, so it may go out of scope afterwards.
     Material material = {.tint = {1.0f, 0.55f, 0.25f, 1.0f}};
+
+    // Allocate the wrapper. The renderer owns it, even if a later step fails.
     renderer->material_buffer = dvz_buffer_create_wrapper();
     if (renderer->material_buffer == NULL)
         return -1;
+```
+
+The renderer owns the wrapper as soon as it is stored in `renderer->material_buffer`. If a later step fails, the function returns −1, `main()` jumps to cleanup, and cleanup releases whatever exists.
+
+Next, configure and create the buffer:
+
+```c
+    // A 16-byte uniform buffer in memory the CPU can write directly.
     dvz_buffer(renderer->device, renderer->allocator, renderer->material_buffer);
     dvz_buffer_size(renderer->material_buffer, sizeof(Material));
     dvz_buffer_usage(renderer->material_buffer, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
@@ -95,18 +135,25 @@ static int create_material(Renderer* renderer)
         renderer->material_buffer, DVZ_ALLOC_MAPPED | DVZ_ALLOC_HOST_ACCESS_SEQUENTIAL_WRITE);
     if (dvz_buffer_create(renderer->material_buffer) != 0)
         return -1;
+```
+
+The pattern is chapter 6's vertex buffer with a different usage flag. The same flags ask for memory the CPU can write directly, which suits small data.
+
+Finally, upload the tint:
+
+```c
+    // Copy the tint once, before any frame draws. Nothing rewrites it afterwards.
     dvz_buffer_upload(renderer->material_buffer, 0, sizeof(material), &material);
     return 0;
 }
 ```
 
-The pattern is chapter 6's vertex buffer with a different usage flag. The same flags ask for memory the CPU can write directly, which suits small data.
-
-Once `dvz_buffer_upload()` returns, the bytes are in the buffer and the local `material` can go. The upload happens once, before any draw, so one buffer is safe for every frame. Rewriting it every frame would not be: the CPU could change bytes that an earlier frame, still in flight, is reading. Renderers handle that with one buffer region per frame slot, or by waiting. Writing through a mapped pointer gives access, not synchronization.
+Once `dvz_buffer_upload()` returns, the bytes are in the buffer and the local `material` can go. The upload happens once, before any draw, so one buffer is safe for every frame. Rewriting it every frame would not be safe: the CPU could change bytes that an earlier frame, still in flight (chapter 3), is reading. Renderers handle that with one buffer region per frame slot, or by waiting. Writing through a mapped pointer gives the CPU access to the memory; it does not synchronize with the GPU.
 
 The descriptor will point at this buffer, so the buffer must exist before the pipeline. Call the helper just before pipeline creation:
 
 ```c
+    // The descriptor set names the material buffer, so create the buffer before the pipeline.
     int material_result = create_material(&renderer);
     COURSE_CHECK(material_result == 0, "material buffer creation failed");
     int pipeline_result = create_pipeline(&renderer);
@@ -115,24 +162,29 @@ The descriptor will point at this buffer, so the buffer must exist before the pi
 
 ## Declare the slot in the pipeline layout
 
-Now the signature. Since chapter 8, the pipeline layout, `DvzSlots`, has held one entry: the push-constant range. Add the uniform buffer slot beside it in `create_pipeline()`:
+The descriptor set layout plays the role of the function signature. Since chapter 8, the pipeline layout, `DvzSlots`, has held one entry: the push-constant range. In `create_pipeline()`, add the uniform buffer slot before it:
 
 ```c
+    // The pipeline layout: a fragment-stage uniform buffer slot and the vertex push range.
+    dvz_slots(renderer->device, renderer->slots);
     dvz_slots_binding(
         renderer->slots, 0, 0, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_slots_push(renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Push));
 ```
 
-Read the first call as: in set 0, binding 0, there is 1 descriptor, visible to the fragment shader, and it is a uniform buffer. The shader will declare the same numbers.
+Read the new call as: in set 0, binding 0, there is 1 descriptor, visible to the fragment shader, and it is a uniform buffer. The shader will declare the same numbers.
 
 ## Fill the descriptor set
 
-Now the arguments. A descriptor set is created from the layout, so this code goes at the end of `create_pipeline()`, once the pipeline exists:
+The descriptor set holds the arguments. It is allocated from the layout, so this code goes at the end of `create_pipeline()`, once the pipeline exists. The final `dvz_graphics_create()` call no longer returns directly; check it, then fill the set:
 
 ```c
+    // Create the Vulkan pipeline object from everything above.
     if (dvz_graphics_create(renderer->pipeline) != 0)
         return -1;
+
+    // Allocate a descriptor set from the layout and point set 0, binding 0 at the material.
     renderer->descriptors = dvz_descriptors_create_wrapper();
     if (renderer->descriptors == NULL)
         return -1;
@@ -143,22 +195,25 @@ Now the arguments. A descriptor set is created from the layout, so this code goe
     return dvz_descriptors_handle(renderer->descriptors, 0) != VK_NULL_HANDLE ? 0 : -1;
 ```
 
-`dvz_descriptors()` allocates descriptor sets that match the slots. `dvz_descriptors_buffer()` fills one entry: set 0, binding 0, array element 0 is this buffer, from offset 0, for `sizeof(Material)` bytes. Nothing is copied: the descriptor records where the bytes are, not the bytes.
+`dvz_descriptors()` allocates descriptor sets that match the slots. `dvz_descriptors_buffer()` fills one entry: set 0, binding 0, array element 0 is this buffer, from offset 0, for `sizeof(Material)` bytes. Nothing is copied. The descriptor records where the bytes are; the bytes stay in the buffer. The last line returns 0 only if set 0 was actually allocated.
 
-Descriptor sets are the other exception to chapter 4's lifecycle: `dvz_descriptors()` allocates them at once from a pool the device owns, and `dvz_descriptors_free()` returns them to that pool and frees the wrapper. There is no separate create or destroy step.
+As with the other pipeline objects, `renderer` owns the descriptor set as soon as its wrapper is stored, even if the final check fails. `create_pipeline()` reads `renderer->material_buffer` but never owns or destroys it.
+
+Descriptor sets are the other exception to chapter 4's lifecycle. `dvz_descriptors()` allocates them at once from a pool the device owns, and `dvz_descriptors_free()` returns them to that pool and frees the wrapper. There is no separate create or destroy step.
 
 ## Bind it and read it
 
 A filled descriptor set is not used until a command binds it. In `draw()`, after the viewport and before the push, add:
 
 ```c
+    // Following draws read set 0, which refers to the material buffer, not a copy of it.
     dvz_cmd_bind_descriptors(
         renderer->commands, VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->descriptors, 0, 1, 0, NULL);
 ```
 
-This binds 1 set, starting at set 0, for graphics draws. The last two arguments are dynamic offsets, which this course does not use.
+This binds 1 set, starting at set 0, for graphics draws. The last two arguments are dynamic offsets, which this course does not use. Like the push, the binding applies to the draws recorded after it.
 
-Last, the shader side of the contract. Replace `shader.frag` with:
+Last, the shader side of the agreement. Replace `shader.frag` with:
 
 ```glsl
 #version 450
@@ -175,9 +230,9 @@ void main()
 
 The `uniform` block names set 0, binding 0, with the same 16-byte layout as the C structure. Every fragment reads the same tint. Multiplying keeps the red and cuts green and blue, so the cube turns orange while its vertex colors still show. `shader.vert` is unchanged.
 
-## Keep ownership clear during reload
+## Keep ownership clear during reload and shutdown
 
-Since chapter 5, pressing **R** rebuilds the pipeline from the shader files. The descriptor set is built from the pipeline's layout, so it belongs to the pipeline and is rebuilt with it. The material buffer is not: it lives for the whole program.
+Since chapter 5, pressing **R** rebuilds the pipeline from the shader files. The descriptor set is built from the pipeline's layout, so it belongs to the pipeline and is rebuilt with it. The material buffer lives for the whole program and is never rebuilt. The table sums up who owns what:
 
 | Object | Owner | Lives until |
 | --- | --- | --- |
@@ -186,16 +241,26 @@ Since chapter 5, pressing **R** rebuilds the pipeline from the shader files. The
 | `descriptors` | the current pipeline group | that pipeline is destroyed or replaced |
 | pipeline, slots, shaders | the current pipeline group | reload or teardown |
 
-So `destroy_pipeline()` releases the descriptor set too. Add at its beginning:
+Four places in the program apply these rules, in this order: releasing a pipeline group, building a reload candidate, taking over a successful candidate, and shutting down.
+
+### Release the descriptor set with its pipeline
+
+Because the descriptor set belongs to the pipeline group, `destroy_pipeline()` releases it too. Add at the beginning of `destroy_pipeline()`:
 
 ```c
+    // Return the descriptor set to the device's pool and free its wrapper.
     dvz_descriptors_free(renderer->descriptors);
     renderer->descriptors = NULL;
 ```
 
-A reload candidate borrows the existing material buffer and builds its own descriptor set from its new layout:
+`dvz_descriptors_free()` accepts `NULL`, so this works for a candidate that failed before allocating its set.
+
+### Let the candidate borrow the material
+
+A reload candidate needs the material buffer to fill its own descriptor set, but it must not take ownership. Give it a borrowed pointer:
 
 ```c
+            // The candidate borrows the material buffer; it never owns or destroys it.
             Renderer candidate = {
                 .device = renderer.device,
                 .color_format = renderer.color_format,
@@ -203,15 +268,30 @@ A reload candidate borrows the existing material buffer and builds its own descr
             };
 ```
 
-On success, after the device wait and `destroy_pipeline(&renderer)`, take the candidate's descriptor set along with its other pipeline objects:
+`create_pipeline(&candidate)` then builds a new layout and a new descriptor set that points at the same buffer. If it fails, `destroy_pipeline(&candidate)` releases the candidate's descriptor set and pipeline objects. It never touches `material_buffer`, so the current pipeline keeps drawing with the same material.
+
+### Take over the new descriptor set
+
+On success, the renderer takes the candidate's descriptor set along with its other pipeline objects:
 
 ```c
+                // Wait until no submitted frame uses the old pipeline, then take the new one,
+                // including its descriptor set.
+                dvz_device_wait(renderer.device);
+                destroy_pipeline(&renderer);
                 renderer.descriptors = candidate.descriptors;
+                renderer.slots = candidate.slots;
 ```
+
+The device wait comes first because frames already submitted may still read the old descriptor set. Then `destroy_pipeline(&renderer)` frees the old set, and the renderer takes ownership of the new one. The material buffer stays where it was, owned by the renderer throughout.
+
+### Shut down in reference order
 
 At shutdown, order matters. The simplest safe order is to release whatever refers to an object before the object itself: here, the descriptor set before the material buffer it names. At `cleanup:`, move `destroy_pipeline(&renderer);` up to right after the device wait, then destroy the material buffer before the geometry buffers:
 
 ```c
+    // Release what refers to an object before the object: the pipeline group, including the
+    // descriptor set, before the material buffer it names.
     destroy_pipeline(&renderer);
     if (renderer.material_buffer != NULL)
         dvz_buffer_destroy(renderer.material_buffer);
@@ -222,7 +302,7 @@ At shutdown, order matters. The simplest safe order is to release whatever refer
 
 Build and run as before; the capture goes to `chapter12.png`.
 
-=== "Linux and macOS"
+=== "Linux"
 
     ```sh
     cmake --build build
@@ -230,7 +310,17 @@ Build and run as before; the capture goes to `chapter12.png`.
     ./build/vkcourse --png chapter12.png
     ```
 
-=== "Windows (Visual Studio)"
+=== "macOS"
+
+    ```sh
+    cmake --build build
+    ./build/vkcourse
+    ./build/vkcourse --png chapter12.png
+    ```
+
+=== "Windows"
+
+    In a Developer PowerShell for Visual Studio, with the `PATH` setup from chapter 1:
 
     ```powershell
     cmake --build build --config Release
@@ -240,7 +330,7 @@ Build and run as before; the capture goes to `chapter12.png`.
 
 The cube keeps its shape and controls, now tinted orange. The terminal ends with `validation errors: 0`.
 
-!!! tip "Try it"
+??? tip "Try it"
 
     1. Change the tint to `{1.0f, 1.0f, 1.0f, 1.0f}` and rebuild. The cube shows chapter 11's colors again: multiplying by white changes nothing.
     2. In `shader.frag`, change `binding = 0` to `binding = 1` and press **R**. Validation reports that the shader uses set 0 binding 1, which the layout does not declare. Pipeline creation may still succeed; drawing with that pipeline is undefined behavior, and some drivers crash. Restore the line, and restart the program if it exited.
@@ -250,7 +340,7 @@ The cube keeps its shape and controls, now tinted orange. The terminal ends with
 
     Raw Vulkan creates a descriptor set layout, includes it in the pipeline layout, allocates a descriptor set from a descriptor pool, and writes a `VkDescriptorBufferInfo` into it with `vkUpdateDescriptorSets`. The descriptor holds a buffer handle, an offset, and a range, never the material bytes.
 
-!!! warning "When it goes wrong"
+??? warning "When it goes wrong"
 
     A validation error about set 0 binding 0 means C and GLSL disagree on its number, type, or stage. An unchanged color means the fragment shader still ignores the tint. Garbled values after adding members point to a C/GLSL layout mismatch; keep members `vec4`-sized and check sizes with `_Static_assert`.
 
