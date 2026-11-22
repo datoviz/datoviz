@@ -14,7 +14,7 @@ In this chapter you will:
 
 1. follow one triangle through the graphics pipeline;
 2. read a vertex shader and a fragment shader written in GLSL;
-3. see why shaders are compiled at startup, and store them in C strings;
+3. see how GLSL becomes the SPIR-V that Vulkan receives, and store the shaders in C strings;
 4. prepare `main.c`: new `Renderer` fields and the canvas color format;
 5. build the graphics pipeline, then bind it and draw three vertices.
 
@@ -60,7 +60,9 @@ The GPU runs each shader many times, in parallel: the vertex shader for each ver
 
 ## GLSL in brief
 
-Shaders are written in **GLSL**, a C-like language for GPU programs. It is a separate language: your C compiler does not compile it, and the shaders run on the GPU, not inside your C program. This chapter needs only a little GLSL, and each piece is explained where it first appears.
+In this course, we write our shaders in **GLSL**, a C-like language for GPU programs. It is one shader language among several: WebGPU uses WGSL, for example, and HLSL is commonly used with Direct3D. We chose GLSL because its syntax is close to C and because Datoviz can compile it while your program runs. Vulkan does not receive the GLSL text itself; [Why shaders are compiled](#why-shaders-are-compiled) explains what it receives instead.
+
+GLSL is separate from C: your C compiler does not compile it, and the shaders run on the GPU, not inside your C program. This chapter needs only a little GLSL, and each piece is explained where it first appears.
 
 A **shader invocation** is one execution of a shader's `main()` function, for one vertex or one fragment. We do not write a C loop that calls the shader's `main()` for each vertex or fragment. The C code records a draw command, and when the GPU executes that command, it schedules the shader invocations itself.
 
@@ -148,14 +150,29 @@ A fragment is not yet a pixel. Later operations, such as chapter 10's depth test
 
 ## Why shaders are compiled
 
-A GPU cannot run GLSL text. In this program, each shader reaches the GPU in two compile steps:
+When this program gives a shader to Vulkan, it does not pass GLSL text. The Vulkan call it uses takes **SPIR-V**, the standard binary shader format for Vulkan. A compiler that targets Vulkan can produce SPIR-V from GLSL or from another language, such as HLSL; the Vulkan guide has a [shader language comparison](https://docs.vulkan.org/guide/latest/high_level_shader_language_comparison.html). The language you write in is therefore a separate choice from the format Vulkan receives.
 
-1. A shader compiler translates GLSL into **SPIR-V**, the standard binary format for shaders in Vulkan. SPIR-V is an intermediate representation, not machine code for a particular GPU.
+SPIR-V is a kind of **bytecode**: compiled instructions and their associated data, encoded in a binary program format rather than as source text. It is an intermediate form, not machine code for a particular GPU. The same SPIR-V can be used on different GPUs, as long as each one supports the Vulkan version and features the shader was compiled for. SPIR-V is stored as a sequence of 32-bit words, which is why the program holds it in `uint32_t` arrays.
+
+In this program, each shader reaches the GPU in two compile steps:
+
+1. A shader compiler translates GLSL into SPIR-V.
 2. The driver turns SPIR-V into instructions for your GPU. It usually does this work, or reuses a cached result, when the graphics pipeline is created, because the pipeline gives it all the stages and the settings around them.
 
-Your C compiler takes no part in this. To it, a shader is text stored as bytes in a string. When your program starts, `create_pipeline()` passes those strings to a separate shader compiler that Datoviz loads at run time, and gets SPIR-V back. Vulkan then receives each stage's SPIR-V in a **shader module**, an object that holds one stage's SPIR-V for pipeline creation.
+Your C compiler takes no part in either step: to it, a shader is just a string. Vulkan receives each stage's SPIR-V in a **shader module**, an object that holds one stage's SPIR-V for pipeline creation.
 
 Because the driver compiles the shaders together with the pipeline settings, Vulkan wants everything that shapes a draw, such as the shaders, the kind of primitive and the output format, known up front in one object. The program creates that object once at startup, and binding the pipeline in each frame reuses the result. The price is that a pipeline cannot change after creation. Only the settings you mark *dynamic*, such as chapter 3's viewport, are left to the command buffer. Chapter 5 meets this limit when it reloads shaders.
+
+### The compiler Datoviz uses
+
+Datoviz uses [Shaderc](https://github.com/google/shaderc), an existing open-source compiler library, to compile GLSL. `dvz_compile_glsl()` calls Shaderc's library functions inside your program; it does not start a command-line tool. The official v0.4 packages are configured to bundle this runtime library, but not Shaderc's command-line tools or the Vulkan SDK. A source build uses the Shaderc library from the system or SDK environment you set up in chapter 1, and Datoviz can also be built without runtime compilation.
+
+### Two ways to get SPIR-V
+
+You can produce SPIR-V at two different times:
+
+- **At startup, through Datoviz.** This is what the course does. `create_pipeline()` passes the GLSL strings to `dvz_compile_glsl()` and gets SPIR-V back. Compile errors appear as soon as the program starts. Once chapter 5 moves the shaders into their own files, you can edit one and run again without any shader build step, and even reload it while the program runs.
+- **Ahead of time, with an external tool.** A command-line compiler, such as `glslc` from the Shaderc project or `glslangValidator`, compiles the GLSL when you build your application. You either save the SPIR-V in `.spv` files and load their words into memory at run time, or embed the words in your C code. Either way, you pass the SPIR-V words and their size in bytes to `dvz_shader()`, the call that creates the shader modules in step 2 below. The application then needs no runtime compiler for those shaders. When the pipeline is created, the driver still produces code for your GPU or reuses a cached result.
 
 ## The shaders as C strings
 
@@ -504,7 +521,7 @@ No vertex buffer is bound, and none is needed: the GPU numbers the vertices 0, 1
 
 ## Build and run
 
-From this chapter on, the program also loads the runtime shader compiler when it starts. Run it from the same environment you built and configured with in chapter 1.
+From this chapter on, the program also uses the runtime shader compiler when it starts. Run it from the same environment you built and configured with in chapter 1.
 
 Build and run from your `vkcourse` directory, close the window, then capture the same result offscreen:
 
