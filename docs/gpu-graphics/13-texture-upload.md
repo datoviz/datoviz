@@ -146,6 +146,20 @@ void main()
 
 With `u` as red and `v` as green, each face runs from black at `(0, 0)` through red and yellow to green. The colors break at the cube's edges because each face has its own corners.
 
+Figure 1 lays out one face in UV coordinates, with u increasing rightward and v downward. It shows the UV arrangement, not the face's orientation on screen. Both triangles use the same coordinates along their shared diagonal.
+
+<figure class="dvz-course-figure" id="fig-face-uv-map" markdown="1">
+
+<div class="dvz-figure-panels" markdown="0">
+
+--8<-- "docs/images/gpu-graphics/face-uv-map.svg"
+
+</div>
+
+<figcaption>Figure 1. Each face has its own UV square. The rasterizer interpolates these coordinates across its two triangles.</figcaption>
+
+</figure>
+
 Chapter 12's orange tint would distort that gradient. Set the tint to white in `create_material()` so the gradient keeps its colors:
 
 ```c
@@ -162,7 +176,7 @@ You choose the tiling when you create the image, and it does not change afterwar
 
 The usual solution is a **staging buffer**: a temporary buffer the CPU can write, filled with plain rows of pixels. A copy command, run by the GPU, reads those rows and stores them in the image's own order. Once the copy has finished, the staging buffer can be destroyed.
 
-Figure 1 shows the route the pixels take. The first step is a CPU copy that finishes before `dvz_buffer_upload()` returns. The second step is a GPU command that runs only after submission. The barrier at the end makes the copied pixels readable by shaders, as the next section explains.
+Figure 2 shows the route the pixels take. The first step is a CPU copy that finishes before `dvz_buffer_upload()` returns. The second step is a GPU command that runs only after submission. The barrier at the end makes the copied pixels readable by shaders, as the next section explains.
 
 <figure class="dvz-course-figure" id="fig-texture-upload-route" markdown="1">
 
@@ -175,7 +189,7 @@ flowchart TD
     C -->|layout and visibility barrier| D[Shader-readable image]
 ```
 
-<figcaption>Figure 1. The pixels go from a CPU array to a staging buffer, then through a GPU copy and a barrier into a shader-readable image.</figcaption>
+<figcaption>Figure 2. The pixels go from a CPU array to a staging buffer, then through a GPU copy and a barrier into a shader-readable image.</figcaption>
 
 </figure>
 

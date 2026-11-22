@@ -35,6 +35,22 @@ With those vectors, each question becomes arithmetic:
 - Specular uses the **halfway vector**, midway between the light and eye directions. When the normal lines up with it, the surface reflects the light into the eye. Raising that dot product to a power, the **specular exponent**, makes the highlight tight (large exponent) or broad (small exponent). This is the **Blinn-Phong** model.
 - Ambient is a constant.
 
+Figure 1 places the directions at one illustrative surface point. The light and eye use this chapter's view-space positions. Here the surface normal happens to point toward the eye, so **n** and **v** overlap. The halfway vector bisects the angle between the light and eye directions; it does not point to the midpoint of their positions.
+
+<figure class="dvz-course-figure" id="fig-lighting-vectors" markdown="1">
+
+<div class="dvz-figure-panels" markdown="0">
+
+--8<-- "docs/images/gpu-graphics/light-positions.svg"
+
+--8<-- "docs/images/gpu-graphics/light-directions.svg"
+
+</div>
+
+<figcaption>Figure 1. Lighting compares unit directions at one surface point, all in view space. The halfway direction lies between the light and eye directions.</figcaption>
+
+</figure>
+
 The texture and tint give the surface color, its **albedo**. Ambient and diffuse light scale the albedo. Specular is added on top in white, because a highlight shows the light's color rather than the surface's, and our light is white.
 
 These are this example's choices, made to keep the shader short: the Blinn-Phong model, one white light, and a small constant for ambient light. Many renderers use other lighting models, colored or several lights, and better estimates of the light that bounces around a scene.
@@ -89,6 +105,10 @@ void main()
 
 `diffuse` is the clamped cosine from the model. `specular` raises the halfway term to the exponent in `material.lighting.w`, and is skipped on faces turned away from the light.
 
+<p class="dvz-course-equation" role="math" aria-label="Diffuse equals the maximum of zero and the dot product of unit normal n and unit light direction l.">diffuse = max(0, <b>n</b> · <b>l</b>)</p>
+
+For unit directions, a dot product of 1 means they point the same way, and 0 means they are perpendicular. Clamping removes negative contributions from light behind the surface.
+
 ### Read the surface color
 
 ```glsl
@@ -107,6 +127,26 @@ void main()
 ```
 
 `lighting.x` is the ambient strength and `lighting.y` the diffuse strength; together they scale the tinted albedo. `lighting.z` scales the white specular highlight added on top.
+
+Figure 2 separates the terms on an illustrative sphere, using the same shader formula, light position and lighting strengths as this program. The sphere has a constant linear surface color and a white tint so the terms are easier to compare; it is not a capture of the checkerboard cube. The shader adds the terms in linear light, then the display encoding is applied. Adding the displayed RGB values yourself would give a different result.
+
+<figure class="dvz-course-figure" id="fig-lighting-components" markdown="1">
+
+<div class="dvz-figure-panels dvz-figure-panels--pairs" markdown="0">
+
+--8<-- "docs/images/gpu-graphics/lighting-ambient.svg"
+
+--8<-- "docs/images/gpu-graphics/lighting-diffuse.svg"
+
+--8<-- "docs/images/gpu-graphics/lighting-specular.svg"
+
+--8<-- "docs/images/gpu-graphics/lighting-combined.svg"
+
+</div>
+
+<figcaption>Figure 2. Ambient and diffuse scale the surface color; white specular is added on top. All four panels use the same scale.</figcaption>
+
+</figure>
 
 ### Linear light and sRGB
 

@@ -24,6 +24,22 @@ An index buffer is an array of integers. Without one, a draw takes vertex record
 
 This saves both memory and work. An index here is 2 bytes, while a `Vertex` is 20. When the same index comes back soon, the GPU can often reuse the vertex shader's result instead of running it again.
 
+Figure 1 shows the square with its two index triples. The two triangles share corners 0 and 2; each index selects both the position and the color. The byte totals compare the uploaded data, excluding object and allocation overhead.
+
+<figure class="dvz-course-figure" id="fig-indexed-square" markdown="1">
+
+<div class="dvz-figure-panels" markdown="0">
+
+--8<-- "docs/images/gpu-graphics/indexed-square.svg"
+
+--8<-- "docs/images/gpu-graphics/index-stream.svg"
+
+</div>
+
+<figcaption>Figure 1. Two triples of indices form two triangles. Both triples refer to the same complete vertex records at corners 0 and 2.</figcaption>
+
+</figure>
+
 ## Four vertices, six references
 
 Start with the data. Replace the six-record `VERTICES` array with these four corners, which go around the square in order:

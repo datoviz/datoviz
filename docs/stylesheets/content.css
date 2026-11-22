@@ -577,8 +577,8 @@
     }
 }
 
-/* Course figures: a Mermaid diagram with a numbered caption. Only the Mermaid host element is
-   styled; the rendered SVG lives in a closed shadow root and keeps its own layout. */
+/* Course figures use numbered captions. Mermaid keeps its own shadow-root layout;
+   authored SVG panels inherit the theme and wrap independently on narrow screens. */
 
 .md-typeset .dvz-course-figure {
     display: flex;
@@ -617,5 +617,58 @@
 @media screen and (max-width: 700px) {
     .md-typeset .dvz-course-figure {
         padding: 0.75rem 0.6rem 0.6rem;
+    }
+}
+
+/* Include authored SVG panels inline so their labels follow the active theme. */
+.md-typeset .dvz-figure-panels {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.8rem;
+    min-width: 0;
+}
+
+.md-typeset .dvz-figure-panels > .dvz-schematic {
+    display: block;
+    flex: 1 1 15rem;
+    width: 100%;
+    min-width: 0;
+    max-width: 20rem;
+    height: auto;
+}
+
+.md-typeset .dvz-course-equation {
+    margin: 0.9rem 0;
+    padding: 0.65rem 0.8rem;
+    border-left: 3px solid var(--md-accent-fg-color);
+    background: var(--md-code-bg-color);
+    font-family: Georgia, serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+[data-md-color-scheme="slate"] .dvz-schematic {
+    --dvz-blue: #58a6ef;
+    --dvz-orange: #edac61;
+    --dvz-green: #62bc9b;
+    --dvz-red: #e7818b;
+    --dvz-purple: #b29ae8;
+}
+
+.md-typeset .dvz-figure-panels--pairs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-items: center;
+    width: 100%;
+    max-width: 40rem;
+    margin: 0 auto;
+}
+
+@media screen and (max-width: 600px) {
+    .md-typeset .dvz-figure-panels--pairs {
+        grid-template-columns: minmax(0, 1fr);
     }
 }

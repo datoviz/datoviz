@@ -127,6 +127,22 @@ A binding number picks a byte stream; a location names a shader input. Here ther
 
 Read the first call as: binding 0 advances by `sizeof(Vertex)`, 20 bytes, once per vertex. The attribute calls read: from binding 0, location 0 receives two floats at the offset of `position`, and location 1 receives three floats at the offset of `color`.
 
+Figure 2 shows those offsets in bytes. Every four small squares make one 32-bit float. The rows are consecutive records in one continuous buffer: vertex 1 starts at byte 20, so its color starts at byte 28, still offset 8 within that record.
+
+<figure class="dvz-course-figure" id="fig-vertex-byte-layout" markdown="1">
+
+<div class="dvz-figure-panels" markdown="0">
+
+--8<-- "docs/images/gpu-graphics/vertex-bytes.svg"
+
+--8<-- "docs/images/gpu-graphics/vertex-fetch.svg"
+
+</div>
+
+<figcaption>Figure 2. Each 20-byte vertex holds two position floats followed by three color floats. Offsets locate fields within a record; the stride reaches the next record.</figcaption>
+
+</figure>
+
 Locations 0 and 1 must match `in_position` and `in_color`. `VK_FORMAT_R32G32_SFLOAT` reads two 32-bit floats, `VK_FORMAT_R32G32B32_SFLOAT` three; Vulkan reuses its image-format names, so R, G and B just count components. Get the format wrong and the GPU reads the same bytes as something else.
 
 The description is part of the pipeline, so it is fixed when the pipeline is created. The buffer it reads is chosen later, at draw time. That split lets one pipeline draw many meshes that share a layout.

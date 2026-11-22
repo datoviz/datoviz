@@ -119,6 +119,22 @@ The view needs the uploaded image, so the new code goes in `create_texture()` af
 
 The sampler sets two filters. The **magnification** filter applies when one texel covers several screen pixels, as when you zoom in. The **minification** filter applies when several texels fall into one pixel. Nearest filtering, used for both, picks the single closest texel and keeps the checker edges crisp. Repeat addressing, on both axes, wraps coordinates outside `[0, 1]`, so a UV of 1.25 reads the same texel as 0.25.
 
+Figure 2 magnifies these two decisions. Filtering selects a texel; addressing brings an out-of-range coordinate back into the texture. The repeated samples use 0.30 and 1.30, away from the checker tile boundaries.
+
+<figure class="dvz-course-figure" id="fig-nearest-repeat" markdown="1">
+
+<div class="dvz-figure-panels" markdown="0">
+
+--8<-- "docs/images/gpu-graphics/nearest-texel.svg"
+
+--8<-- "docs/images/gpu-graphics/repeat-addressing.svg"
+
+</div>
+
+<figcaption>Figure 2. Nearest filtering selects one texel. Repeat addressing wraps UVs outside the unit square.</figcaption>
+
+</figure>
+
 Neither object copies pixels. The view refers to the image, so the image must outlive the view. The sampler refers to nothing.
 
 ## Declare and fill the descriptor

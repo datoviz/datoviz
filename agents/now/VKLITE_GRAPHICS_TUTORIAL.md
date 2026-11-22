@@ -120,6 +120,25 @@ Smaller clarifications in chapters 6, 8 and 13 distinguish course choices from r
 
 Validation passes: all 230 synchronized excerpts, exact preservation of every original fenced block and figure in the six pages, strict documentation generation with 18 media outputs, status and whitespace checks, and desktop/mobile layout and teaching-order checks for all six pages. Canonical C and GLSL, public headers, runtime and checker sources are unchanged. Evidence is ignored under `build/course-teaching/20261122T142342Z/`. Maintainer proofreading should start with chapters 9, 12 and 15, then chapter 13's layouts and barriers. Earlier package, platform, physical-interaction and release gates retain their scope.
 
+## Course Schematics, 2026-11-22
+
+Eight new figures support the course's memory, geometry and lighting explanations. GPT-6.1 Sol at high effort designed them against the canonical sources and independently reviewed the generated schematics. All new captions, labels, descriptions and surrounding prose received the humanizer pass. The original code blocks, their order, canonical programs, external shaders, headers and runtime are unchanged.
+
+Maintainer review is pending for each figure:
+
+1. [Chapter 6: vertex bytes and shader inputs](../../docs/gpu-graphics/06-vertex-buffers.md#fig-vertex-byte-layout).
+2. [Chapter 7: indexed square](../../docs/gpu-graphics/07-index-buffers.md#fig-indexed-square).
+3. [Chapter 9: model and view transformations](../../docs/gpu-graphics/09-matrices.md#fig-model-view-transform).
+4. [Chapter 9: perspective divide](../../docs/gpu-graphics/09-matrices.md#fig-perspective-divide).
+5. [Chapter 13: face UV coordinates](../../docs/gpu-graphics/13-texture-upload.md#fig-face-uv-map).
+6. [Chapter 14: nearest filtering and repeat](../../docs/gpu-graphics/14-texture-sampling.md#fig-nearest-repeat).
+7. [Chapter 15: view-space lighting vectors](../../docs/gpu-graphics/15-lighting.md#fig-lighting-vectors).
+8. [Chapter 15: ambient, diffuse, specular and their sum](../../docs/gpu-graphics/15-lighting.md#fig-lighting-components).
+
+The 18 SVG panels inherit the documentation theme and stack on narrow screens. `tools/generate_course_figures.py` regenerates them deterministically and provides `--check` and a review manifest. Short HTML equations explain matrix order, perspective division and the diffuse dot product without a new rendering dependency. The component comparison evaluates the chapter's lighting formula on an illustrative sphere, using a common display scale and linear-to-sRGB conversion. It is not a new Vulkan capture or platform result.
+
+Validation covers regeneration, all 230 synchronized course excerpts, strict documentation generation with 18 media outputs, status and whitespace checks, and all eight figures in actual desktop/mobile chapters in both themes. The private review has a frozen figure set and a numbered checklist; chapter links open the current WIP documentation. Evidence remains ignored under `build/course-figures/20261122/`. Figure acceptance, course proofreading, exact-package evidence and the existing release gates remain open.
+
 ## RC4 Freeze
 
 Build and run every chapter from exact candidate source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`. Require packaged runtime shaderc, deterministic previews, bounded GLFW resize/input/depth/repeated-frame/shutdown smoke, Vulkan validation, source synchronization, links, navigation, generated reference and binding checks, supported hosted-platform proof, and explicit physical exclusions.

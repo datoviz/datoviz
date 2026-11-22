@@ -62,6 +62,26 @@ The three matrices combine into one **model-view-projection (MVP) matrix**, `pro
 
 The product is the same for every vertex, so we compute it once per frame on the CPU instead of once per vertex in the shader. Its 64 bytes fit within chapter 8's 128-byte push-constant guarantee. The rotation and pulse move out of the shader, which now applies whatever matrix it receives.
 
+<p class="dvz-course-equation" role="math" aria-label="Clip position equals projection times view times model times object position."><i>p</i><sub>clip</sub> = <i>P V M p</i><sub>object</sub></p>
+
+Figure 2 separates the model and view transformations at time zero. The orange dot tracks one corner through the model; the side view then shows how subtracting 3 from world z puts the camera at the view origin. These are spatial schematics, not screenshots of the rendered cube.
+
+<figure class="dvz-course-figure" id="fig-model-view-transform" markdown="1">
+
+<div class="dvz-figure-panels" markdown="0">
+
+--8<-- "docs/images/gpu-graphics/cube-object.svg"
+
+--8<-- "docs/images/gpu-graphics/cube-world.svg"
+
+--8<-- "docs/images/gpu-graphics/camera-view.svg"
+
+</div>
+
+<figcaption>Figure 2. The model changes the cube’s pose. The view expresses that same scene relative to the camera.</figcaption>
+
+</figure>
+
 ## Apply the matrix in the vertex shader
 
 Start with where the matrix ends up. Replace `shader.vert` with this version and save it; `shader.frag` is unchanged. Don't run the program or press **R** in chapter 8's program yet: this shader expects a matrix and three-float positions, which the C side only provides after the edits below.
@@ -254,6 +274,24 @@ The projection also holds three Vulkan-specific details:
 - Points in front of this camera have negative view-space z. The `-1` in `projection[2][3]` sets clip `w` to minus that z, a positive distance, which the perspective divide then uses.
 - The two depth terms map the near plane to NDC z = 0 and the far plane to z = 1. Vulkan clips depth outside 0 to 1, and this projection uses that whole range.
 - Vulkan's NDC y points down, which is why chapter 4's triangle needed a negative y for its top vertex. The negative y scale flips it, so world-space up appears up.
+
+Figure 3 connects this projection to the camera rays. The virtual plane in the sketch helps compare apparent sizes; it is not a clipping plane. The numerical example uses aspect ratio 1 and two illustrative points at distances 2 and 4.
+
+<p class="dvz-course-equation" role="math" aria-label="NDC x equals clip x divided by clip w. Clip w equals minus view z."><i>x</i><sub>NDC</sub> = <i>x</i><sub>clip</sub> / <i>w</i><sub>clip</sub><br/><i>w</i><sub>clip</sub> = −<i>z</i><sub>view</sub></p>
+
+<figure class="dvz-course-figure" id="fig-perspective-divide" markdown="1">
+
+<div class="dvz-figure-panels" markdown="0">
+
+--8<-- "docs/images/gpu-graphics/perspective-rays.svg"
+
+--8<-- "docs/images/gpu-graphics/perspective-divide.svg"
+
+</div>
+
+<figcaption>Figure 3. Equal sizes appear different at different distances: doubling the distance doubles w and halves the size after division.</figcaption>
+
+</figure>
 
 ### Combine the three
 
