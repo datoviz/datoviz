@@ -68,21 +68,25 @@ The product is the same for every vertex, so we compute it once per frame on the
 
 </div>
 
-Figure 2 separates the model and view transformations at time zero. The orange dot tracks one corner through the model. The side view then keeps the cube and camera in place while changing the coordinate origin to the camera.
+Figure 2 first shows the model tilting the cube. Its lower panels explain **view space**: a 3D coordinate system attached to the camera. In this course, the camera is at its origin, x points right, y points up, and the camera looks along negative z. The view matrix expresses every world-space position in those camera coordinates.
+
+In the side view, the cube is at world z = 0 and the camera at world z = 3. Measure from the camera instead, and the camera is at zero while the cube is at z = −3: three units in front of it. The cube and camera stay in the same places; their coordinate labels change because we changed where zero is. These are still 3D positions. Projection comes next. A camera that turns also changes the direction of the view axes; this example only needs the translation.
 
 <figure class="dvz-course-figure" id="fig-model-view-transform" markdown="1">
 
-<div class="dvz-figure-panels" markdown="0">
+<div class="dvz-figure-panels dvz-figure-panels--pairs" markdown="0">
 
 --8<-- "docs/images/gpu-graphics/cube-object.svg"
 
 --8<-- "docs/images/gpu-graphics/cube-world.svg"
 
+--8<-- "docs/images/gpu-graphics/camera-world.svg"
+
 --8<-- "docs/images/gpu-graphics/camera-view.svg"
 
 </div>
 
-<figcaption>Figure 2. The model changes the cube’s pose. The view expresses that same scene relative to the camera.</figcaption>
+<figcaption>Figure 2. The model places the cube in the world. View coordinates put the camera at zero and measure the cube’s position from there.</figcaption>
 
 </figure>
 

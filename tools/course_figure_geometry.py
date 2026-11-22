@@ -179,30 +179,65 @@ def transformed_cube(which):
     return s.finish()
 
 
-def camera_view():
-    """Keep the camera and cube aligned while changing the coordinate origin."""
-    s = SVG(
-        'camera-view',
-        'World coordinates become view coordinates',
-        'The cube and camera keep the same separation. In world coordinates the cube '
-        'center is the origin. In view coordinates the camera is the origin and the '
-        'cube is in front of it.',
-        height=340,
+def camera_view(world=False):
+    """Compare two coordinate origins using identical camera and cube positions."""
+    name = 'camera-world' if world else 'camera-view'
+    title = '3a. Measure from the scene origin' if world else '3b. Measure from the camera'
+    description = (
+        'Side view of the same scene, with z increasing to the right. The camera looks left. '
+        'In world coordinates the cube center is z zero and the camera is z three. '
+        'In view coordinates the camera is z zero and the cube center is z minus three. '
+        'Only the reference origin changes; the camera and cube keep their positions.'
     )
-    s.text(20, 28, '3. View space', bold=True)
-    for y, title, left, right in [
-        (107, 'World coordinates', 'origin', 'camera position'),
-        (237, 'View coordinates', 'in front', 'origin'),
-    ]:
-        s.text(20, y - 45, title, 14, bold=True)
-        s.line(48, y, 278, y, 'line')
-        s.rect(77, y - 12, 24, 24, 'blue', 'blue')
-        s.circle(240, y, 7, 'orange')
-        s.arrow(228, y - 22, 103, y - 22, 'orange', 1.5)
-        s.text(89, y + 36, 'cube center', 14, anchor='middle')
-        s.text(240, y + 36, 'camera', 14, anchor='middle')
-        s.text(89, y + 58, left, 14, 'muted', anchor='middle')
-        s.text(240, y + 58, right, 14, 'muted', anchor='middle')
+    s = SVG(name, title, description, height=300)
+    s.text(16, 27, title, 14, bold=True)
+    s.text(16, 52, 'World coordinates' if world else 'View coordinates', 14, 'muted')
+    cube, camera, axis = 60, 240, 154
+    # Both panels draw the same side view. A camera icon distinguishes the eye from a vertex.
+    s.rect(cube - 12, 89, 24, 24, 'blue', 'blue')
+    s.rect(camera - 9, 91, 20, 20, 'green', 'green', 2)
+    s.polygon(
+        [(camera - 9, 94), (camera - 19, 87), (camera - 19, 115), (camera - 9, 108)], 'green'
+    )
+    s.text(cube, 134, 'cube', 14, anchor='middle')
+    s.text(camera, 134, 'camera', 14, anchor='middle')
+    s.arrow(camera - 27, 78, cube + 38, 78, 'green', 1.5)
+    s.text(162, 72, 'looks along −z', 14, 'green', anchor='middle')
+    s.line(cube, 113, cube, axis, 'line', 1, True)
+    s.line(camera, 113, camera, axis, 'line', 1, True)
+    s.arrow(30, axis, 285, axis, 'line', 1.5)
+    s.text(291, axis + 5, '+z', 14)
+    for i in range(4):
+        x = cube + i * 60
+        value = i if world else i - 3
+        is_origin = value == 0
+        if is_origin:
+            s.circle(x, axis, 9, 'paper', 'blue' if world else 'green')
+        else:
+            s.line(x, axis - 4, x, axis + 4, 'line')
+        s.text(
+            x,
+            axis + 30,
+            str(value).replace('-', '−'),
+            16,
+            'blue' if world and is_origin else 'green' if is_origin else 'ink',
+            anchor='middle',
+            bold=is_origin,
+        )
+    s.text(16, 219, 'Zero is at the cube’s center.' if world else 'Zero is now at the camera.', 14)
+    s.text(
+        16,
+        246,
+        'The camera is 3 units along +z.' if world else 'The cube is 3 units along −z.',
+        14,
+    )
+    s.text(
+        16,
+        273,
+        'The scene origin is our choice.' if world else 'Its view-space z is −3.',
+        14,
+        'muted',
+    )
     return s.finish()
 
 
@@ -286,6 +321,7 @@ def figures():
         'index-stream': index_stream(),
         'cube-object': transformed_cube('object'),
         'cube-world': transformed_cube('world'),
+        'camera-world': camera_view(world=True),
         'camera-view': camera_view(),
         'perspective-rays': perspective_rays(),
         'perspective-divide': perspective_numbers(),

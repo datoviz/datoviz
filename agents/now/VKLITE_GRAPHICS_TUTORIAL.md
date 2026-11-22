@@ -147,6 +147,12 @@ Equations now use actual LaTeX and `dvisvgm --no-fonts`, producing theme-aware S
 
 Figures 5, 6 and 7 are unchanged. All original code excerpts remain unchanged and in the same order. Regeneration, lint, synchronization, strict documentation generation, status, whitespace and desktop/mobile checks in both themes pass. Evidence is ignored under `build/course-figures/20261122-r2/`. The revised private review preserves the earlier snapshot and leaves manual figure acceptance open.
 
+## Figure Acceptance And View-Space Follow-up, 2026-11-22
+
+The maintainer approved review figures 1, 2, 4, 5, 6, 7 and 8. Figure 3, the object/world/view comparison, remains open. Its two side views now show the same cube and camera on labeled z axes: world positions 0 and 3 become view positions −3 and 0. A camera icon, viewing-direction arrow and marked zero connect the numbers to the reference point. The chapter explains the camera's 3D coordinate system, why points in front have negative z, and that projection follows afterwards. The four panels form two rows on desktop and stack on mobile.
+
+The humanizer pass covers the revised labels, descriptions, caption, chapter explanation and this record. Regeneration, lint, the 230-excerpt check, strict documentation generation, status, whitespace and desktop/mobile checks pass. All other figures and all original code excerpts remain unchanged. Evidence is ignored under `build/course-figures/20261122-r3/`. Only revised figure 3 needs another figure review; overall course proofreading and release gates retain their earlier scope.
+
 ## RC4 Freeze
 
 Build and run every chapter from exact candidate source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`. Require packaged runtime shaderc, deterministic previews, bounded GLFW resize/input/depth/repeated-frame/shutdown smoke, Vulkan validation, source synchronization, links, navigation, generated reference and binding checks, supported hosted-platform proof, and explicit physical exclusions.

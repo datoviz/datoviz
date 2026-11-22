@@ -51,13 +51,13 @@ FIGURES = [
         chapter='09-matrices',
         number=2,
         title='Object, world and view coordinates',
-        panels=['cube-object', 'cube-world', 'camera-view'],
-        caption='The model changes the cube’s pose. The view expresses that same '
-        'scene relative to the camera.',
+        panels=['cube-object', 'cube-world', 'camera-world', 'camera-view'],
+        caption='The model places the cube in the world. View coordinates put the camera '
+        'at zero and measure the cube’s position from there.',
         purpose='Distinguish changing an object’s pose from expressing the scene '
         'relative to a camera.',
-        limits='At time zero the model tilts the cube. The side view shows how the camera '
-        'becomes the coordinate origin while the cube stays in front of it.',
+        limits='The lower panels show the same scene from the side. Only the coordinate labels '
+        'change: the camera becomes zero, and the cube is three units in front of it.',
     ),
     dict(
         id='fig-perspective-divide',

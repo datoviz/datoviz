@@ -1,28 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 340" role="img" aria-labelledby="camera-view-title camera-view-desc">
-<title id="camera-view-title">World coordinates become view coordinates</title>
-<desc id="camera-view-desc">The cube and camera keep the same separation. In world coordinates the cube center is the origin. In view coordinates the camera is the origin and the cube is in front of it.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 300" role="img" aria-labelledby="camera-view-title camera-view-desc">
+<title id="camera-view-title">3b. Measure from the camera</title>
+<desc id="camera-view-desc">Side view of the same scene, with z increasing to the right. The camera looks left. In world coordinates the cube center is z zero and the camera is z three. In view coordinates the camera is z zero and the cube center is z minus three. Only the reference origin changes; the camera and cube keep their positions.</desc>
 <g font-family="system-ui, sans-serif" font-size="14">
-<rect x="0" y="0" width="320" height="340" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
-<text x="20" y="28" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">3. View space</text>
-<text x="20" y="62" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">World coordinates</text>
-<line x1="48" y1="107" x2="278" y2="107" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1.5"/>
-<rect x="77" y="95" width="24" height="24" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--dvz-blue, #1766a4)"/>
-<circle cx="240" cy="107" r="7" fill="var(--dvz-orange, #985511)" stroke="none"/>
-<line x1="228" y1="85" x2="103" y2="85" stroke="var(--dvz-orange, #985511)" stroke-width="1.5"/>
-<polygon points="103,85 110.204,81.5203 110.204,88.4797" fill="var(--dvz-orange, #985511)" stroke="none" fill-opacity="1"/>
-<text x="89" y="143" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">cube center</text>
-<text x="240" y="143" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">camera</text>
-<text x="89" y="165" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="middle">origin</text>
-<text x="240" y="165" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="middle">camera position</text>
-<text x="20" y="192" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">View coordinates</text>
-<line x1="48" y1="237" x2="278" y2="237" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1.5"/>
-<rect x="77" y="225" width="24" height="24" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--dvz-blue, #1766a4)"/>
-<circle cx="240" cy="237" r="7" fill="var(--dvz-orange, #985511)" stroke="none"/>
-<line x1="228" y1="215" x2="103" y2="215" stroke="var(--dvz-orange, #985511)" stroke-width="1.5"/>
-<polygon points="103,215 110.204,211.52 110.204,218.48" fill="var(--dvz-orange, #985511)" stroke="none" fill-opacity="1"/>
-<text x="89" y="273" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">cube center</text>
-<text x="240" y="273" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">camera</text>
-<text x="89" y="295" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="middle">in front</text>
-<text x="240" y="295" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="middle">origin</text>
+<rect x="0" y="0" width="320" height="300" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="16" y="27" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">3b. Measure from the camera</text>
+<text x="16" y="52" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">View coordinates</text>
+<rect x="48" y="89" width="24" height="24" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--dvz-blue, #1766a4)"/>
+<rect x="231" y="91" width="20" height="20" rx="2" fill="var(--dvz-green, #23745a)" stroke="var(--dvz-green, #23745a)"/>
+<polygon points="231,94 221,87 221,115 231,108" fill="var(--dvz-green, #23745a)" stroke="none" fill-opacity="1"/>
+<text x="60" y="134" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">cube</text>
+<text x="240" y="134" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">camera</text>
+<line x1="213" y1="78" x2="98" y2="78" stroke="var(--dvz-green, #23745a)" stroke-width="1.5"/>
+<polygon points="98,78 105.204,74.5203 105.204,81.4797" fill="var(--dvz-green, #23745a)" stroke="none" fill-opacity="1"/>
+<text x="162" y="72" font-size="14" fill="var(--dvz-green, #23745a)" text-anchor="middle">looks along −z</text>
+<line x1="60" y1="113" x2="60" y2="154" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1" stroke-dasharray="5 4"/>
+<line x1="240" y1="113" x2="240" y2="154" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1" stroke-dasharray="5 4"/>
+<line x1="30" y1="154" x2="285" y2="154" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1.5"/>
+<polygon points="285,154 277.796,157.48 277.796,150.52" fill="var(--md-default-fg-color--lighter, #8593a6)" stroke="none" fill-opacity="1"/>
+<text x="291" y="159" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">+z</text>
+<line x1="60" y1="150" x2="60" y2="158" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1.5"/>
+<text x="60" y="184" font-size="16" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">−3</text>
+<line x1="120" y1="150" x2="120" y2="158" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1.5"/>
+<text x="120" y="184" font-size="16" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">−2</text>
+<line x1="180" y1="150" x2="180" y2="158" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1.5"/>
+<text x="180" y="184" font-size="16" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">−1</text>
+<circle cx="240" cy="154" r="9" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-green, #23745a)"/>
+<text x="240" y="184" font-size="16" fill="var(--dvz-green, #23745a)" text-anchor="middle" font-weight="600">0</text>
+<text x="16" y="219" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Zero is now at the camera.</text>
+<text x="16" y="246" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">The cube is 3 units along −z.</text>
+<text x="16" y="273" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">Its view-space z is −3.</text>
 </g>
 </svg>
