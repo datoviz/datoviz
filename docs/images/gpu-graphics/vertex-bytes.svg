@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 315" role="img" aria-labelledby="vertex-bytes-title vertex-bytes-desc">
+<title id="vertex-bytes-title">Vertex records as bytes</title>
+<desc id="vertex-bytes-desc">Each row shows one 20-byte vertex: two four-byte position floats followed by three four-byte color floats. Rows are consecutive memory, not separate buffers.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="315" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">One square = one byte</text>
+<text x="116" y="51" font-size="14" fill="var(--dvz-blue, #1766a4)" text-anchor="middle">position: 8 bytes</text>
+<text x="226" y="51" font-size="14" fill="var(--dvz-orange, #985511)" text-anchor="middle">color: 12 bytes</text>
+<text x="94" y="73" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">x</text>
+<text x="138" y="73" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">y</text>
+<text x="182" y="73" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">r</text>
+<text x="226" y="73" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">g</text>
+<text x="270" y="73" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">b</text>
+<text x="8" y="102" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Vertex 0</text>
+<rect x="72" y="88" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="83" y="88" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="94" y="88" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="105" y="88" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="116" y="88" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="127" y="88" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="138" y="88" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="149" y="88" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="160" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="171" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="182" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="193" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="204" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="215" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="226" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="237" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="248" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="259" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="270" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="281" y="88" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<line x1="72" y1="88" x2="72" y2="108" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="116" y1="88" x2="116" y2="108" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="160" y1="88" x2="160" y2="108" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="204" y1="88" x2="204" y2="108" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="248" y1="88" x2="248" y2="108" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="292" y1="88" x2="292" y2="108" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<text x="72" y="120" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">buffer bytes 0–19</text>
+<text x="8" y="140" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Vertex 1</text>
+<rect x="72" y="126" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="83" y="126" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="94" y="126" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="105" y="126" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="116" y="126" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="127" y="126" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="138" y="126" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="149" y="126" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="160" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="171" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="182" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="193" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="204" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="215" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="226" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="237" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="248" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="259" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="270" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="281" y="126" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<line x1="72" y1="126" x2="72" y2="146" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="116" y1="126" x2="116" y2="146" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="160" y1="126" x2="160" y2="146" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="204" y1="126" x2="204" y2="146" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="248" y1="126" x2="248" y2="146" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="292" y1="126" x2="292" y2="146" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<text x="72" y="158" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">buffer bytes 20–39</text>
+<text x="8" y="178" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Vertex 2</text>
+<rect x="72" y="164" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="83" y="164" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="94" y="164" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="105" y="164" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="116" y="164" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="127" y="164" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="138" y="164" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="149" y="164" width="11" height="20" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="160" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="171" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="182" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="193" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="204" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="215" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="226" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="237" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="248" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="259" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="270" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<rect x="281" y="164" width="11" height="20" rx="0" fill="var(--dvz-orange, #985511)" stroke="var(--md-code-bg-color, #f5f7fa)"/>
+<line x1="72" y1="164" x2="72" y2="184" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="116" y1="164" x2="116" y2="184" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="160" y1="164" x2="160" y2="184" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="204" y1="164" x2="204" y2="184" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="248" y1="164" x2="248" y2="184" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<line x1="292" y1="164" x2="292" y2="184" stroke="var(--md-default-fg-color, #253247)" stroke-width="1"/>
+<text x="72" y="196" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">buffer bytes 40–59</text>
+<text x="72" y="217" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">… three more records …</text>
+<text x="12" y="246" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Position offset = 0; color offset = 8.</text>
+<text x="12" y="268" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Stride = 20 bytes between record starts.</text>
+<text x="12" y="294" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">Vertex 1 color starts at buffer byte 28.</text>
+</g>
+</svg>

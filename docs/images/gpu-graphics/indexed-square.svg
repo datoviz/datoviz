@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 300" role="img" aria-labelledby="indexed-square-title indexed-square-desc">
+<title id="indexed-square-title">Two triangles share four vertex records</title>
+<desc id="indexed-square-desc">The square has corner zero top left, one top right, two bottom right and three bottom left. Its diagonal joins zero to two. Triangles use indices zero one two and zero two three.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="300" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">Four complete vertex records</text>
+<polygon points="68,54 248,54 248,234" fill="var(--dvz-blue, #1766a4)" stroke="var(--dvz-blue, #1766a4)" fill-opacity="0.22"/>
+<polygon points="68,54 248,234 68,234" fill="var(--dvz-orange, #985511)" stroke="var(--dvz-orange, #985511)" fill-opacity="0.22"/>
+<circle cx="68" cy="54" r="5" fill="var(--dvz-blue, #1766a4)" stroke="none"/>
+<text x="51" y="44" font-size="16" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">0</text>
+<circle cx="248" cy="54" r="5" fill="var(--md-default-fg-color, #253247)" stroke="none"/>
+<text x="261" y="44" font-size="16" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">1</text>
+<circle cx="248" cy="234" r="5" fill="var(--dvz-blue, #1766a4)" stroke="none"/>
+<text x="261" y="254" font-size="16" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">2</text>
+<circle cx="68" cy="234" r="5" fill="var(--md-default-fg-color, #253247)" stroke="none"/>
+<text x="51" y="254" font-size="16" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">3</text>
+<text x="190" y="116" font-size="15" fill="var(--dvz-blue, #1766a4)" text-anchor="middle">0, 1, 2</text>
+<text x="123" y="191" font-size="15" fill="var(--dvz-orange, #985511)" text-anchor="middle">0, 2, 3</text>
+<text x="160" y="282" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">Corners 0 and 2 belong to both triangles.</text>
+</g>
+</svg>

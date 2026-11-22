@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 370" role="img" aria-labelledby="face-uv-map-title face-uv-map-desc">
+<title id="face-uv-map-title">UV coordinates on one cube face</title>
+<desc id="face-uv-map-desc">A UV square with u increasing right and v increasing down. Local corners 0, 1, 2, 3 have coordinates (0,0), (1,0), (1,1), (0,1). The diagonal from 0 to 2 splits it into triangles 0,1,2 and 0,2,3. This is a UV layout, not the orientation of the rendered face.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="370" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="16" y="26" font-size="17" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">One face, two triangles</text>
+<defs><linearGradient id="face-uv-red" color-interpolation="linearRGB"><stop stop-color="#000"/><stop offset="1" stop-color="#f00"/></linearGradient><linearGradient id="face-uv-green" x2="0" y2="1" color-interpolation="linearRGB"><stop stop-color="#000"/><stop offset="1" stop-color="#0f0"/></linearGradient></defs>
+<rect x="64" y="88" width="200" height="200" rx="0" fill="url(#face-uv-red)" stroke="none"/>
+<rect x="64" y="88" width="200" height="200" fill="url(#face-uv-green)" style="mix-blend-mode:screen"/>
+<rect x="64" y="88" width="200" height="200" rx="0" fill="none" stroke="var(--md-default-fg-color, #253247)"/>
+<line x1="64" y1="88" x2="264" y2="288" stroke="#fff" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="209" y="157" font-size="14" fill="#182333" text-anchor="middle" font-weight="600">0, 1, 2</text>
+<text x="122" y="243" font-size="14" fill="#182333" text-anchor="middle" font-weight="600">0, 2, 3</text>
+<text x="58" y="76" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">0: (0, 0)</text>
+<text x="263" y="76" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="end">1: (1, 0)</text>
+<text x="58" y="313" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">3: (0, 1)</text>
+<text x="263" y="313" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="end">2: (1, 1)</text>
+<line x1="64" y1="47" x2="264" y2="47" stroke="var(--dvz-blue, #1766a4)" stroke-width="2"/>
+<polygon points="264,47 256.796,50.4797 256.796,43.5203" fill="var(--dvz-blue, #1766a4)" stroke="none" fill-opacity="1"/>
+<text x="277" y="52" font-size="14" fill="var(--dvz-blue, #1766a4)" text-anchor="start" font-weight="600">u</text>
+<line x1="34" y1="88" x2="34" y2="288" stroke="var(--dvz-orange, #985511)" stroke-width="2"/>
+<polygon points="34,288 30.5203,280.796 37.4797,280.796" fill="var(--dvz-orange, #985511)" stroke="none" fill-opacity="1"/>
+<text x="24" y="192" font-size="14" fill="var(--dvz-orange, #985511)" text-anchor="end" font-weight="600">v</text>
+<text x="160" y="344" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">UV layout, not screen orientation</text>
+</g>
+</svg>

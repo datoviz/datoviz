@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 300" role="img" aria-labelledby="camera-view-title camera-view-desc">
+<title id="camera-view-title">World coordinates become view coordinates</title>
+<desc id="camera-view-desc">Side view at time zero. The world camera is at z equals three and the cube center at z zero. Subtracting three from every world z puts the camera at the view origin and the cube center at z minus three. The scene is re-expressed, not physically moved.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="300" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">3. View space</text>
+<text x="12" y="62" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">World</text>
+<line x1="45" y1="88" x2="280" y2="88" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1.5"/>
+<rect x="62" y="74" width="26" height="28" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--dvz-blue, #1766a4)"/>
+<circle cx="255" cy="88" r="7" fill="var(--dvz-orange, #985511)" stroke="none"/>
+<line x1="243" y1="64" x2="87" y2="64" stroke="var(--dvz-orange, #985511)" stroke-width="1.5"/>
+<polygon points="87,64 94.2036,60.5203 94.2036,67.4797" fill="var(--dvz-orange, #985511)" stroke="none" fill-opacity="1"/>
+<text x="75" y="110" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">cube center</text>
+<text x="255" y="110" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">camera</text>
+<text x="75" y="130" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">z = 0</text>
+<text x="255" y="130" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">z = +3</text>
+<text x="12" y="173" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">View</text>
+<line x1="45" y1="199" x2="280" y2="199" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1.5"/>
+<rect x="62" y="185" width="26" height="28" rx="0" fill="var(--dvz-blue, #1766a4)" stroke="var(--dvz-blue, #1766a4)"/>
+<circle cx="255" cy="199" r="7" fill="var(--dvz-orange, #985511)" stroke="none"/>
+<line x1="243" y1="175" x2="87" y2="175" stroke="var(--dvz-orange, #985511)" stroke-width="1.5"/>
+<polygon points="87,175 94.2036,171.52 94.2036,178.48" fill="var(--dvz-orange, #985511)" stroke="none" fill-opacity="1"/>
+<text x="75" y="241" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">z = −3</text>
+<text x="255" y="241" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">z = 0</text>
+<text x="160" y="147" font-size="15" fill="var(--md-default-fg-color, #253247)" text-anchor="middle" font-weight="600">view z = world z − 3</text>
+<text x="12" y="267" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">Same scene, camera-centered coordinates.</text>
+<text x="12" y="292" font-size="14" fill="var(--dvz-orange, #985511)" text-anchor="start">Corner z: 0.388 → −2.612</text>
+</g>
+</svg>

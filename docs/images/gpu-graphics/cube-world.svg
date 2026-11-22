@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 300" role="img" aria-labelledby="cube-world-title cube-world-desc">
+<title id="cube-world-title">2. World space</title>
+<desc id="cube-world-desc">At time zero the model tilts the cube by minus 0.35 radians about x; the spin is zero and scale is one. The cube stays centered at the world origin.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="300" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">2. World space</text>
+<line x1="160" y1="142" x2="224.68" y2="158.94" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1"/>
+<polygon points="224.68,158.94 216.83,160.481 218.593,153.749" fill="var(--md-default-fg-color--lighter, #8593a6)" stroke="none" fill-opacity="1"/>
+<text x="229.68" y="161.94" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">x</text>
+<line x1="160" y1="142" x2="160" y2="58" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1"/>
+<polygon points="160,58 163.48,65.2036 156.52,65.2036" fill="var(--md-default-fg-color--lighter, #8593a6)" stroke="none" fill-opacity="1"/>
+<text x="165" y="61" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">y</text>
+<line x1="160" y1="142" x2="201.58" y2="115.82" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1"/>
+<polygon points="201.58,115.82 197.338,122.603 193.63,116.714" fill="var(--md-default-fg-color--lighter, #8593a6)" stroke="none" fill-opacity="1"/>
+<text x="206.58" y="118.82" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">z</text>
+<line x1="107.125" y1="199.561" x2="183.565" y2="219.581" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="107.125" y1="199.561" x2="90.2746" y2="124.687" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="107.125" y1="199.561" x2="153.285" y2="139.293" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="183.565" y1="219.581" x2="166.715" y2="144.707" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="183.565" y1="219.581" x2="229.725" y2="159.313" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="90.2746" y1="124.687" x2="166.715" y2="144.707" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="90.2746" y1="124.687" x2="136.435" y2="64.4192" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="166.715" y1="144.707" x2="212.875" y2="84.4392" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="153.285" y1="139.293" x2="229.725" y2="159.313" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="153.285" y1="139.293" x2="136.435" y2="64.4192" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="229.725" y1="159.313" x2="212.875" y2="84.4392" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<line x1="136.435" y1="64.4192" x2="212.875" y2="84.4392" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
+<circle cx="212.875" cy="84.4392" r="4" fill="var(--dvz-orange, #985511)" stroke="none"/>
+<text x="12" y="253" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Corner: (0.650, 0.833, 0.388)</text>
+<text x="12" y="273" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">Spatial schematic, not the rendered image.</text>
+<text x="12" y="294" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">M at time = 0: fixed tilt, no spin</text>
+</g>
+</svg>

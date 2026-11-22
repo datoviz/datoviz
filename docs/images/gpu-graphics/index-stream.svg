@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 300" role="img" aria-labelledby="index-stream-title index-stream-desc">
+<title id="index-stream-title">Read six indices, reuse four records</title>
+<desc id="index-stream-desc">The six 16-bit indices are zero one two, then zero two three. The two index triples select complete vertices, including positions and colors. Four 20-byte records plus six 2-byte indices occupy 92 bytes, compared with 120 non-indexed bytes.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="300" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">Read indices in groups of three</text>
+<rect x="16" y="57" width="43" height="43" rx="3" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-blue, #1766a4)"/>
+<text x="37" y="85" font-size="20" fill="var(--md-default-fg-color, #253247)" text-anchor="middle" font-weight="600">0</text>
+<rect x="64" y="57" width="43" height="43" rx="3" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-blue, #1766a4)"/>
+<text x="85" y="85" font-size="20" fill="var(--md-default-fg-color, #253247)" text-anchor="middle" font-weight="600">1</text>
+<rect x="112" y="57" width="43" height="43" rx="3" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-blue, #1766a4)"/>
+<text x="133" y="85" font-size="20" fill="var(--md-default-fg-color, #253247)" text-anchor="middle" font-weight="600">2</text>
+<rect x="160" y="57" width="43" height="43" rx="3" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-orange, #985511)"/>
+<text x="181" y="85" font-size="20" fill="var(--md-default-fg-color, #253247)" text-anchor="middle" font-weight="600">0</text>
+<rect x="208" y="57" width="43" height="43" rx="3" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-orange, #985511)"/>
+<text x="229" y="85" font-size="20" fill="var(--md-default-fg-color, #253247)" text-anchor="middle" font-weight="600">2</text>
+<rect x="256" y="57" width="43" height="43" rx="3" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-orange, #985511)"/>
+<text x="277" y="85" font-size="20" fill="var(--md-default-fg-color, #253247)" text-anchor="middle" font-weight="600">3</text>
+<line x1="16" y1="112" x2="155" y2="112" stroke="var(--dvz-blue, #1766a4)" stroke-width="3"/>
+<line x1="160" y1="112" x2="299" y2="112" stroke="var(--dvz-orange, #985511)" stroke-width="3"/>
+<text x="85" y="136" font-size="14" fill="var(--dvz-blue, #1766a4)" text-anchor="middle">triangle 1</text>
+<text x="230" y="136" font-size="14" fill="var(--dvz-orange, #985511)" text-anchor="middle">triangle 2</text>
+<text x="12" y="178" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">An index selects the whole record:</text>
+<text x="12" y="202" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">position AND color travel together.</text>
+<text x="12" y="244" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Vertex bytes: 4 × 20 = 80</text>
+<text x="12" y="269" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Index bytes: 6 × 2 = 12; total = 92</text>
+</g>
+</svg>

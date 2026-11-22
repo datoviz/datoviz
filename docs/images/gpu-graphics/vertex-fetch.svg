@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 315" role="img" aria-labelledby="vertex-fetch-title vertex-fetch-desc">
+<title id="vertex-fetch-title">Decode one vertex record</title>
+<desc id="vertex-fetch-desc">Binding zero supplies the byte stream. At each record start, offset zero and format R32G32_SFLOAT provide two floats at shader location zero. Offset eight and R32G32B32_SFLOAT provide three floats at location one.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="315" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">Binding 0: one byte stream</text>
+<rect x="12" y="49" width="296" height="51" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-blue, #1766a4)"/>
+<text x="23" y="70" font-size="14" fill="var(--dvz-blue, #1766a4)" text-anchor="start" font-weight="600">Offset 0 · bytes 0–7</text>
+<text x="23" y="90" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Read 2 × 32-bit floats</text>
+<line x1="160" y1="104" x2="160" y2="121" stroke="var(--dvz-blue, #1766a4)" stroke-width="2"/>
+<polygon points="160,121 156.52,113.796 163.48,113.796" fill="var(--dvz-blue, #1766a4)" stroke="none" fill-opacity="1"/>
+<text x="160" y="145" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">location 0 → vec2 in_position</text>
+<rect x="12" y="173" width="296" height="51" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-orange, #985511)"/>
+<text x="23" y="194" font-size="14" fill="var(--dvz-orange, #985511)" text-anchor="start" font-weight="600">Offset 8 · bytes 8–19</text>
+<text x="23" y="214" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Read 3 × 32-bit floats</text>
+<line x1="160" y1="228" x2="160" y2="245" stroke="var(--dvz-orange, #985511)" stroke-width="2"/>
+<polygon points="160,245 156.52,237.796 163.48,237.796" fill="var(--dvz-orange, #985511)" stroke="none" fill-opacity="1"/>
+<text x="160" y="269" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">location 1 → vec3 in_color</text>
+</g>
+</svg>

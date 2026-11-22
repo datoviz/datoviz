@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 350" role="img" aria-labelledby="light-directions-title light-directions-desc">
+<title id="light-directions-title">Four unit directions at one surface point</title>
+<desc id="light-directions-desc">All unit vectors start at the same point P. Here n=v=(0,0,1), l=normalize(2,2,3), and h=normalize(l+v). The common normal and eye arrow points up; the light direction is 43.3 degrees to its right; the halfway direction is 21.7 degrees to its right. The dot product n dot l is about 0.728.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="350" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="16" y="26" font-size="17" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">Unit directions at P</text>
+<line x1="50" y1="235" x2="150" y2="235" stroke="var(--md-default-fg-color, #253247)" stroke-width="4"/>
+<line x1="100" y1="235" x2="100" y2="90" stroke="var(--dvz-green, #23745a)" stroke-width="3"/>
+<polygon points="100,90 103.48,97.2036 96.5203,97.2036" fill="var(--dvz-green, #23745a)" stroke="none" fill-opacity="1"/>
+<line x1="100" y1="235" x2="199.469" y2="129.497" stroke="var(--dvz-orange, #985511)" stroke-width="3"/>
+<polygon points="199.469,129.497 197.059,137.125 191.996,132.351" fill="var(--dvz-orange, #985511)" stroke="none" fill-opacity="1"/>
+<line x1="100" y1="235" x2="153.512" y2="100.236" stroke="var(--dvz-purple, #7952b0)" stroke-width="3"/>
+<polygon points="153.512,100.236 154.088,108.215 147.619,105.646" fill="var(--dvz-purple, #7952b0)" stroke="none" fill-opacity="1"/>
+<circle cx="100" cy="235" r="4" fill="var(--md-default-fg-color, #253247)" stroke="none"/>
+<text x="88" y="77" font-size="14" fill="var(--dvz-green, #23745a)" text-anchor="middle" font-weight="600">n = v</text>
+<text x="162" y="94" font-size="14" fill="var(--dvz-purple, #7952b0)" text-anchor="start" font-weight="600">h</text>
+<text x="210" y="132" font-size="14" fill="var(--dvz-orange, #985511)" text-anchor="start" font-weight="600">l</text>
+<text x="89" y="256" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">P</text>
+<path d="M100,182 A53,53 0 0 1 136.358,196.437" fill="none" stroke="#edac61" stroke-width="1.5"/>
+<text x="161" y="211" font-size="14" fill="var(--dvz-orange, #985511)" text-anchor="start">43.3°</text>
+<text x="16" y="286" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">n and v coincide at this point.</text>
+<text x="16" y="311" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">h lies halfway between l and v.</text>
+<text x="16" y="336" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">All arrows are unit length; n · l ≈ 0.728.</text>
+</g>
+</svg>

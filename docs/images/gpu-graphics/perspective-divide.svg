@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 320" role="img" aria-labelledby="perspective-divide-title perspective-divide-desc">
+<title id="perspective-divide-title">Projection and the divide by w</title>
+<desc id="perspective-divide-desc">For the course projection at aspect one, x clip is about 1.732 times view x and w is minus view z. For view x one at z minus two, NDC x is about 0.866. At z minus four, it is about 0.433. The second point is halfway from the center on screen.</desc>
+<g font-family="system-ui, sans-serif" font-size="14">
+<rect x="0" y="0" width="320" height="320" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">The divide makes distance matter</text>
+<text x="12" y="58" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">Course projection · aspect = 1</text>
+<text x="12" y="88" font-size="18" fill="var(--md-default-fg-color, #253247)" text-anchor="start">xclip = 1.732 × xview</text>
+<text x="12" y="115" font-size="18" fill="var(--md-default-fg-color, #253247)" text-anchor="start">wclip = −zview</text>
+<text x="12" y="147" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">For xview = 1:</text>
+<text x="12" y="183" font-size="15" fill="var(--dvz-blue, #1766a4)" text-anchor="start">z = −2   →   w = 2</text>
+<text x="187" y="183" font-size="15" fill="var(--dvz-blue, #1766a4)" text-anchor="start">xNDC ≈ 0.866</text>
+<text x="12" y="218" font-size="15" fill="var(--dvz-orange, #985511)" text-anchor="start">z = −4   →   w = 4</text>
+<text x="187" y="218" font-size="15" fill="var(--dvz-orange, #985511)" text-anchor="start">xNDC ≈ 0.433</text>
+<text x="12" y="258" font-size="18" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">xNDC = xclip / wclip</text>
+<text x="12" y="291" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">The GPU performs this division.</text>
+</g>
+</svg>
