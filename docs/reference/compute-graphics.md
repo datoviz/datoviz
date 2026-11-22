@@ -5,12 +5,29 @@ Status: experimental v0.4 slice.
 Datoviz v0.4 includes a narrow compute-to-render path for early testing. The goal is one practical
 GPU dataflow:
 
-```text
-scene buffer with STORAGE | VERTEX usage
-  -> scene compute pass writes the buffer
-  -> DRP2 ResourceBarrier declares compute-write to render-read ordering
-  -> normal render pass consumes the same buffer as vertex input
+<figure class="dvz-course-figure" id="fig-compute-graphics-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: A resource barrier orders compute writes before rendering reads the shared buffer.
+    accDescr: A resource barrier orders compute writes before rendering reads the shared buffer.
+    N0["scene buffer with STORAGE | VERTEX<br/>usage"]
+    N1["scene compute pass writes the<br/>buffer"]
+    N2["DRP2 ResourceBarrier declares<br/>compute-write to render-read<br/>ordering"]
+    N3["normal render pass consumes the<br/>same buffer as vertex input"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
 ```
+
+</div>
+
+<figcaption>Figure 1. A resource barrier orders compute writes before rendering reads the shared buffer.</figcaption>
+
+</figure>
 
 This is not a general custom render-shader API, a general compute framework, or the CUDA external-memory contract. CUDA/CuPy/PyTorch/Taichi sharing is a separate Linux/NVIDIA-only path documented in [GPU array interoperability](gpu-array-interop.md).
 

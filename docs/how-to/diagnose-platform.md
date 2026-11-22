@@ -18,15 +18,35 @@ layer is not proof that the others are broken.
 
 Use this order:
 
-```text
-identify install type
--> check build/import
--> run minimal native example
--> run offscreen capture
--> test visible window/input
--> test optional provider or WebGPU separately
--> collect platform report
+<figure class="dvz-course-figure" id="fig-diagnose-platform-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Check each platform layer separately before collecting a report.
+    accDescr: Check each platform layer separately before collecting a report.
+    N0["identify install type"]
+    N1["check build/import"]
+    N2["run minimal native example"]
+    N3["run offscreen capture"]
+    N4["test visible window/input"]
+    N5["test optional provider or WebGPU<br/>separately"]
+    N6["collect platform report"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
 ```
+
+</div>
+
+<figcaption>Figure 1. Check each platform layer separately before collecting a report.</figcaption>
+
+</figure>
 
 Always reduce to the smallest path that should work on the machine. Do not start with a complex
 showcase, real data bundle, video export, Qt embed, or browser iframe.

@@ -111,9 +111,37 @@ session and call `session.close()` when finished. In ordinary scripts it blocks 
 
 The usual order is:
 
-```text
-scene -> figure/panel/visuals -> app -> view -> controller/input -> run -> destroy app -> destroy scene
+<figure class="dvz-course-figure" id="fig-create-a-window-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Create scene content and its app view before running; destroy the app before the scene.
+    accDescr: Create scene content and its app view before running; destroy the app before the scene.
+    N0["scene"]
+    N1["figure/panel/visuals"]
+    N2["app"]
+    N3["view"]
+    N4["controller/input"]
+    N5["run"]
+    N6["destroy app"]
+    N7["destroy scene"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
 ```
+
+</div>
+
+<figcaption>Figure 1. Create scene content and its app view before running; destroy the app before the scene.</figcaption>
+
+</figure>
 
 ## Controllers and input
 

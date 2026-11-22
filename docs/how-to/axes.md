@@ -39,36 +39,36 @@ with grid lines and labels. These are setup fragments; see the complete
   </figcaption>
 </figure>
 
-### Python
+=== "Python"
 
-```python
-import datoviz as dvz
+    ```python
+    import datoviz as dvz
 
-dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_X, xmin, xmax)
-dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_Y, ymin, ymax)
-x_axis = dvz.dvz_panel_axis(panel, dvz.DVZ_DIM_X)
-y_axis = dvz.dvz_panel_axis(panel, dvz.DVZ_DIM_Y)
-if not x_axis or not y_axis:
-    raise RuntimeError("dvz_panel_axis() failed")
-dvz.dvz_axis_set_grid(x_axis, True)
-dvz.dvz_axis_set_grid(y_axis, True)
-dvz.dvz_axis_set_label(x_axis, b"x")
-dvz.dvz_axis_set_label(y_axis, b"y")
-```
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_X, xmin, xmax)
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_Y, ymin, ymax)
+    x_axis = dvz.dvz_panel_axis(panel, dvz.DVZ_DIM_X)
+    y_axis = dvz.dvz_panel_axis(panel, dvz.DVZ_DIM_Y)
+    if not x_axis or not y_axis:
+        raise RuntimeError("dvz_panel_axis() failed")
+    dvz.dvz_axis_set_grid(x_axis, True)
+    dvz.dvz_axis_set_grid(y_axis, True)
+    dvz.dvz_axis_set_label(x_axis, b"x")
+    dvz.dvz_axis_set_label(y_axis, b"y")
+    ```
 
-### C
+=== "C"
 
-```c
-dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
-dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+    ```c
+    dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
+    dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
 
-DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
-DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
-dvz_axis_set_grid(x_axis, true);
-dvz_axis_set_grid(y_axis, true);
-dvz_axis_set_label(x_axis, "x");
-dvz_axis_set_label(y_axis, "y");
-```
+    DvzAxis* x_axis = dvz_panel_axis(panel, DVZ_DIM_X);
+    DvzAxis* y_axis = dvz_panel_axis(panel, DVZ_DIM_Y);
+    dvz_axis_set_grid(x_axis, true);
+    dvz_axis_set_grid(y_axis, true);
+    dvz_axis_set_label(x_axis, "x");
+    dvz_axis_set_label(y_axis, "y");
+    ```
 
 Keep axes in the same panel as the data they describe. If the panel uses panzoom, bind the
 controller to the same X/Y dimensions so ticks, grid lines, and visible data move together.
@@ -111,26 +111,29 @@ Use the default tick policy for ordinary plots. Tune it when labels collide or t
   </figcaption>
 </figure>
 
-```c
-DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
-ticks.target_count = 5;
-ticks.min_pixel_spacing = 150.0f;
-ticks.minor_per_interval = 2;
-dvz_axis_set_tick_policy(x_axis, &ticks);
-dvz_axis_set_tick_policy(y_axis, &ticks);
-```
+=== "Python"
 
-In Python, descriptor setters keep their exact generated pointer shape:
+    ```python
+    import ctypes
 
-```python
-import ctypes
+    ticks = dvz.dvz_axis_tick_policy()
+    ticks.target_count = 5
+    ticks.min_pixel_spacing = 150.0
+    ticks.minor_per_interval = 2
+    dvz.dvz_axis_set_tick_policy(x_axis, ctypes.byref(ticks))
+    dvz.dvz_axis_set_tick_policy(y_axis, ctypes.byref(ticks))
+    ```
 
-ticks = dvz.dvz_axis_tick_policy()
-ticks.target_count = 5
-ticks.min_pixel_spacing = 150.0
-ticks.minor_per_interval = 2
-dvz.dvz_axis_set_tick_policy(x_axis, ctypes.byref(ticks))
-```
+=== "C"
+
+    ```c
+    DvzAxisTickPolicy ticks = dvz_axis_tick_policy();
+    ticks.target_count = 5;
+    ticks.min_pixel_spacing = 150.0f;
+    ticks.minor_per_interval = 2;
+    dvz_axis_set_tick_policy(x_axis, &ticks);
+    dvz_axis_set_tick_policy(y_axis, &ticks);
+    ```
 
 When another layer owns tick selection, use explicit ticks instead of the automatic policy:
 

@@ -26,15 +26,35 @@ Most applications should start with the [Scene API](scene.md) or
 
 A typical direct vklite integration follows this dependency order:
 
-```text
-Vulkan instance and device
-  -> surface and swapchain, or offscreen images
-  -> buffers, images, samplers, and shaders
-  -> graphics or compute pipelines and descriptors
-  -> command recording and dynamic rendering
-  -> barriers, submission, and presentation
-  -> reverse-order destruction of owned resources
+<figure class="dvz-course-figure" id="fig-runtime-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Create runtime resources, record and submit work, then release owned resources in reverse order.
+    accDescr: Create runtime resources, record and submit work, then release owned resources in reverse order.
+    N0["Vulkan instance and device"]
+    N1["surface and swapchain, or<br/>offscreen images"]
+    N2["buffers, images, samplers, and<br/>shaders"]
+    N3["graphics or compute pipelines and<br/>descriptors"]
+    N4["command recording and dynamic<br/>rendering"]
+    N5["barriers, submission, and<br/>presentation"]
+    N6["reverse-order destruction of owned<br/>resources"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
 ```
+
+</div>
+
+<figcaption>Figure 1. Create runtime resources, record and submit work, then release owned resources in reverse order.</figcaption>
+
+</figure>
 
 Within the [vklite reference](runtime-vklite.md), symbols are grouped around those workflows:
 device and presentation, resources, pipelines and bindings, commands and rendering, and

@@ -22,16 +22,37 @@ import, or native device failures, use
 
 Use this order:
 
-```text
-example browser status
--> standalone live route
--> HTTP/HTTPS serving
--> browser WebGPU availability
--> console diagnostics
--> adapter and required feature limits
--> native baseline
--> WebGPU smoke or fixture output
+<figure class="dvz-course-figure" id="fig-debug-webgpu-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Check browser availability, requirements and diagnostics against a native baseline.
+    accDescr: Check browser availability, requirements and diagnostics against a native baseline.
+    N0["example browser status"]
+    N1["standalone live route"]
+    N2["HTTP/HTTPS serving"]
+    N3["browser WebGPU availability"]
+    N4["console diagnostics"]
+    N5["adapter and required feature<br/>limits"]
+    N6["native baseline"]
+    N7["WebGPU smoke or fixture output"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
 ```
+
+</div>
+
+<figcaption>Figure 1. Check browser availability, requirements and diagnostics against a native baseline.</figcaption>
+
+</figure>
 
 Start with the standalone route. An iframe embedded in a gallery page adds page layout, permissions,
 loading, and caching variables that are not useful for the first diagnosis.

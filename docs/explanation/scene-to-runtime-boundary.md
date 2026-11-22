@@ -11,15 +11,35 @@ scene/app APIs rather than emit artifacts or DRP2 directly.
 
 ## The contract
 
-```text
-authored scene state
-  -> resolve dirtiness
-  -> semantic validation
-  -> explicit capability adaptation
-  -> one FramePlan
-  -> immutable frame artifact
-  -> DRP2 runtime execution
+<figure class="dvz-course-figure" id="fig-scene-to-runtime-boundary-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Scene state becomes an executable frame artifact.
+    accDescr: Scene state becomes an executable frame artifact.
+    N0["authored scene state"]
+    N1["resolve dirtiness"]
+    N2["semantic validation"]
+    N3["explicit capability adaptation"]
+    N4["one FramePlan"]
+    N5["immutable frame artifact"]
+    N6["DRP2 runtime execution"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
 ```
+
+</div>
+
+<figcaption>Figure 1. Scene state becomes an executable frame artifact.</figcaption>
+
+</figure>
 
 | Scene side | Artifact/DRP2 boundary | Runtime side |
 | --- | --- | --- |

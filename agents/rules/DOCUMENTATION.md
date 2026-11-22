@@ -22,6 +22,12 @@ Keep Markdown paragraphs and list items on one source line. In code examples, pu
 
 For release scope, readiness, or publication preparation, also read the [documentation inventory](../now/DOCUMENTATION.md). Existing publication and protected-path approval requirements in [AGENTS.md](../../AGENTS.md#required-boundaries) apply throughout.
 
+## Examples And Figures
+
+- Put paired Python and C examples in linked language tabs, with Python first. Keep the operations equivalent across the alternatives.
+- Use captioned Mermaid or SVG figures for conceptual diagrams. Keep literal terminal output and file paths in monospace. Preserve readable labels on phones; let wide diagrams scroll instead of shrinking their text.
+- Reuse the selected, approved video and its codec fallbacks wherever the same example appears. Avoid separate page-specific versions of the same demonstration.
+
 ## Ongoing Review Workflow
 
 Use the managed private gateway workspace for ongoing documentation review. Its WIP documentation, campaign dashboard, and temporary visual reviews are separate destinations; do not use the campaign dashboard as a documentation server or launch ad hoc HTTP/TLS review ports.

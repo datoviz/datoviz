@@ -23,16 +23,37 @@ with [Diagnose build and platform issues](diagnose-platform.md). If only a brows
 
 Use this order when a scene does not look right:
 
-```text
-canonical example
--> scene hierarchy
--> visual attachment
--> required attributes and counts
--> coordinate range and camera/domain
--> color, alpha, depth, and blending state
--> offscreen/native frame
--> DRP2/runtime diagnostics
+<figure class="dvz-course-figure" id="fig-debug-rendering-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Check a rendering problem from the scene down to the runtime.
+    accDescr: Check a rendering problem from the scene down to the runtime.
+    N0["canonical example"]
+    N1["scene hierarchy"]
+    N2["visual attachment"]
+    N3["required attributes and counts"]
+    N4["coordinate range and camera/domain"]
+    N5["color, alpha, depth, and blending<br/>state"]
+    N6["offscreen/native frame"]
+    N7["DRP2/runtime diagnostics"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
 ```
+
+</div>
+
+<figcaption>Figure 1. Check a rendering problem from the scene down to the runtime.</figcaption>
+
+</figure>
 
 Do not start with the backend unless the same minimal scene fails after the scene-level checks pass.
 Most blank frames are caused by a missing visual attachment, zero items, an attribute shape mismatch,
@@ -65,9 +86,37 @@ If the baseline works, reduce your scene until the smallest failing version rema
 
 A renderable scene needs this chain:
 
-```text
-scene -> figure -> panel -> visual -> visual attributes -> panel attachment -> view -> frame
+<figure class="dvz-course-figure" id="fig-debug-rendering-2" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Inspect the scene, its attachments and the frame that reaches the view.
+    accDescr: Inspect the scene, its attachments and the frame that reaches the view.
+    N0["scene"]
+    N1["figure"]
+    N2["panel"]
+    N3["visual"]
+    N4["visual attributes"]
+    N5["panel attachment"]
+    N6["view"]
+    N7["frame"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
 ```
+
+</div>
+
+<figcaption>Figure 2. Inspect the scene, its attachments and the frame that reaches the view.</figcaption>
+
+</figure>
 
 Check these facts before inspecting GPU logs:
 

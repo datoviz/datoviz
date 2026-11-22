@@ -7,18 +7,43 @@ The [Core concepts](../start/core-concepts.md) page introduces the objects used 
 
 ## Containment and attachment
 
-```text
-Scene                         top-level retained owner
-├── Figure                    one logical output image and panel layout
-│   ├── Panel                 viewport, transforms, controller binding
-│   │   └── visual attachment references a Visual
-│   └── Panel
-├── Visual                    family, style, and retained attribute data
-├── Controller                navigation state, bound to one or more panels
-└── shared semantic objects   scales, fields, annotations, fonts, selection, ...
+<figure class="dvz-course-figure" id="fig-figure-panel-visual-model-1" markdown="1">
 
-DvzApp -> DvzView -> target/runtime    executes a Figure; not owned by the Scene
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: The Scene owns retained objects. A panel attachment references a Visual; App presentation is managed separately.
+    accDescr: The Scene owns retained objects. A panel attachment references a Visual; App presentation is managed separately.
+    S["Scene"]
+    F["Figure: image and layout"]
+    P["Panel: viewport and transforms"]
+    A["Visual attachment"]
+    V["Visual: style and data"]
+    C["Controller: navigation"]
+    R["Shared objects"]
+    APP["DvzApp"]
+    VIEW["DvzView"]
+    RT["Target and runtime"]
+    S -->|owns| F
+    F -->|owns| P
+    P -->|owns| A
+    A -.->|references| V
+    S -->|owns| V
+    S -->|owns| C
+    C -.->|bound to one or more| P
+    S -->|owns| R
+    APP --> VIEW
+    VIEW --> RT
+    VIEW -.->|executes| F
 ```
+
+</div>
+
+<figcaption>Figure 1. The Scene owns retained objects. A panel attachment references a Visual; App presentation is managed separately.</figcaption>
+
+</figure>
 
 The scene owns each visual. A panel attachment determines where and how the visual participates in a figure. Uploading arrays does not display the visual; it becomes part of a view only after you attach it to a panel.
 

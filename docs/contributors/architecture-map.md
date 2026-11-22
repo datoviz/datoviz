@@ -45,10 +45,31 @@ Specs own durable behavior. Do not put active work queues or release handoff not
 
 The active runtime path is:
 
-```text
-scene frame plans -> drp2 command streams -> vklite runtime ->
-canvas/stream frame execution -> optional app presentation
+<figure class="dvz-course-figure" id="fig-architecture-map-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Frame plans reach presentation through the runtime foundation.
+    accDescr: Frame plans reach presentation through the runtime foundation.
+    N0["scene frame plans"]
+    N1["drp2 command streams"]
+    N2["vklite runtime"]
+    N3["canvas/stream frame execution"]
+    N4["optional app presentation"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
 ```
+
+</div>
+
+<figcaption>Figure 1. Frame plans reach presentation through the runtime foundation.</figcaption>
+
+</figure>
 
 
 ## Active Handoff Notes

@@ -15,13 +15,31 @@ scene-to-DRP2 emitter preserve the supported contracts.
 
 ## Protocol boundary
 
-```text
-validated/adapted FramePlan
-    -> scene-to-DRP2 conversion
-    -> immutable artifact-owned command stream
-    -> setup/update/frame packet projections
-    -> validation + native/WebGPU execution
+<figure class="dvz-course-figure" id="fig-drp2-command-streams-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Packet projections come from the artifact-owned command stream.
+    accDescr: Packet projections come from the artifact-owned command stream.
+    N0["validated/adapted FramePlan"]
+    N1["scene-to-DRP2 conversion"]
+    N2["immutable artifact-owned command<br/>stream"]
+    N3["setup/update/frame packet<br/>projections"]
+    N4["validation + native/WebGPU<br/>execution"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
 ```
+
+</div>
+
+<figcaption>Figure 1. Packet projections come from the artifact-owned command stream.</figcaption>
+
+</figure>
 
 | DRP2 owns | DRP2 does not own |
 | --- | --- |
@@ -37,17 +55,39 @@ validated/adapted FramePlan
 A stream creates logical objects, references them while live, and destroys them only when the
 protocol lifetime permits. Render/compute commands also have encoder and pass state:
 
-```text
-create resources, shaders, layouts, bindings, pipelines
-write retained resource content
-begin encoder
-    begin render or compute pass
-        bind compatible pipeline and resources
-        draw or dispatch
-    end pass
-finish encoder -> command buffer
-queue submit command buffer
+<figure class="dvz-course-figure" id="fig-drp2-command-streams-2" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Record a pass, finish its encoder, then submit the resulting command buffer.
+    accDescr: Record a pass, finish its encoder, then submit the resulting command buffer.
+    A["Create resources, shaders,<br/>layouts, bindings and pipelines"]
+    B["Write retained resource content"]
+    C["Begin encoder"]
+    D["Begin render or compute pass"]
+    E["Bind compatible pipeline and<br/>resources"]
+    F["Draw or dispatch"]
+    G["End pass"]
+    H["Finish encoder: command buffer"]
+    I["Submit command buffer to queue"]
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
 ```
+
+</div>
+
+<figcaption>Figure 2. Record a pass, finish its encoder, then submit the resulting command buffer.</figcaption>
+
+</figure>
 
 Validation checks object kind and liveness, declared usage, byte ranges, layout compatibility,
 pass-kind compatibility, required bindings, and begin/end order. A resource referenced by an open

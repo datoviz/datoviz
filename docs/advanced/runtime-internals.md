@@ -14,22 +14,65 @@ Application code should normally use scene, app, view, and documented integratio
 
 ## Active stack
 
-```text
-DvzView render step
-    -> scene validates, adapts, and builds one FramePlan
-    -> DvzSceneFrameArtifact freezes DRP2 stream + payloads
-    -> DvzDrp2Runtime validates and executes
-         -> vklite owns native Vulkan execution objects
-         -> canvas acquires native/offscreen frames
-         -> stream fans frames to presentation/capture/sinks
-    -> app presents, captures, records, replays, or polls results
+<figure class="dvz-course-figure" id="fig-runtime-internals-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: The frame artifact connects scene planning to runtime execution and app output.
+    accDescr: The frame artifact connects scene planning to runtime execution and app output.
+    V["DvzView render step"]
+    P["Scene validation, adaptation and<br/>FramePlan"]
+    A["DvzSceneFrameArtifact: DRP2 stream<br/>and payloads"]
+    R["DvzDrp2Runtime: validation and<br/>execution"]
+    VK["vklite: native Vulkan execution<br/>objects"]
+    C["canvas: native or offscreen frames"]
+    S["stream: presentation, capture and<br/>sinks"]
+    APP["App: present, capture, record,<br/>replay or poll results"]
+    V --> P
+    P --> A
+    A --> R
+    R --> VK
+    R --> C
+    R --> S
+    VK --> APP
+    C --> APP
+    S --> APP
 ```
+
+</div>
+
+<figcaption>Figure 1. The frame artifact connects scene planning to runtime execution and app output.</figcaption>
+
+</figure>
 
 The browser replaces the native executor and presentation pieces, not the scene:
 
-```text
-C/WASM scene artifact -> setup/update/frame packets -> JavaScript WebGPU runtime -> canvas
+<figure class="dvz-course-figure" id="fig-runtime-internals-2" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: The browser runtime executes packets produced by the scene artifact.
+    accDescr: The browser runtime executes packets produced by the scene artifact.
+    N0["C/WASM scene artifact"]
+    N1["setup/update/frame packets"]
+    N2["JavaScript WebGPU runtime"]
+    N3["canvas"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
 ```
+
+</div>
+
+<figcaption>Figure 2. The browser runtime executes packets produced by the scene artifact.</figcaption>
+
+</figure>
 
 
 ## Responsibilities and lifetime owners

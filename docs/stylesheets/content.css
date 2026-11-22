@@ -706,3 +706,11 @@
         display: block;
     }
 }
+
+/* Keep explanatory diagrams at their authored text size; scroll only when needed. */
+.md-typeset .dvz-diagram-native > .mermaid {
+    width: max-content;
+    min-width: 100%;
+    max-width: none;
+    overflow: visible;
+}

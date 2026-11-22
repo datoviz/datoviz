@@ -27,53 +27,53 @@ Choose the color path by what the data represents:
 
 The snippets assume an existing `scene`, `panel`, point `visual`, and C-contiguous position and scalar arrays. They map the scalar `"color"` attribute through Viridis over `[0, 1]`. For complete setup, see the [Scalar Color Scale example](../examples/features/colormap-scale.md).
 
-### Python
+=== "Python"
 
-```python
-import ctypes
-import numpy as np
-import datoviz as dvz
+    ```python
+    import ctypes
+    import numpy as np
+    import datoviz as dvz
 
-positions = np.asarray(positions, dtype=np.float32, order="C")
-values = np.asarray(values, dtype=np.float32, order="C")
-colormap = dvz.dvz_colormap_builtin(scene, dvz.DVZ_BUILTIN_COLORMAP_VIRIDIS)
+    positions = np.asarray(positions, dtype=np.float32, order="C")
+    values = np.asarray(values, dtype=np.float32, order="C")
+    colormap = dvz.dvz_colormap_builtin(scene, dvz.DVZ_BUILTIN_COLORMAP_VIRIDIS)
 
-desc = dvz.dvz_scale_desc()
-desc.kind = dvz.DVZ_SCALE_CONTINUOUS
-desc.label = b"scalar value"
-scale = dvz.dvz_scale(scene, ctypes.byref(desc))
-if not colormap or not scale:
-    raise RuntimeError("colormap or scale creation failed")
-dvz.dvz_scale_set_domain(scale, 0.0, 1.0)
-dvz.dvz_scale_set_colormap(scale, colormap)
+    desc = dvz.dvz_scale_desc()
+    desc.kind = dvz.DVZ_SCALE_CONTINUOUS
+    desc.label = b"scalar value"
+    scale = dvz.dvz_scale(scene, ctypes.byref(desc))
+    if not colormap or not scale:
+        raise RuntimeError("colormap or scale creation failed")
+    dvz.dvz_scale_set_domain(scale, 0.0, 1.0)
+    dvz.dvz_scale_set_colormap(scale, colormap)
 
-dvz.dvz_visual_set_attr_format(visual, b"color", dvz.DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
-dvz.dvz_visual_set_scale(visual, b"color", scale)
-dvz.dvz_visual_set_data(visual, "position", positions)
-dvz.dvz_visual_set_data(visual, "color", values)
-dvz.dvz_panel_add_visual(panel, visual, None)
-```
+    dvz.dvz_visual_set_attr_format(visual, b"color", dvz.DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)
+    dvz.dvz_visual_set_scale(visual, b"color", scale)
+    dvz.dvz_visual_set_data(visual, "position", positions)
+    dvz.dvz_visual_set_data(visual, "color", values)
+    dvz.dvz_panel_add_visual(panel, visual, None)
+    ```
 
-### C
+=== "C"
 
-```c
-float values[N] = {0};
+    ```c
+    float values[N] = {0};
 
-DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
-DvzScale* scale = dvz_scale(
-    scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
-               .kind = DVZ_SCALE_CONTINUOUS,
-               .label = "scalar value",
-           });
-dvz_scale_set_domain(scale, 0.0, 1.0);
-dvz_scale_set_colormap(scale, colormap);
+    DvzColormap* colormap = dvz_colormap_builtin(scene, DVZ_BUILTIN_COLORMAP_VIRIDIS);
+    DvzScale* scale = dvz_scale(
+        scene, &(DvzScaleDesc){DVZ_STRUCT_INIT_FIELDS(DvzScaleDesc),
+                   .kind = DVZ_SCALE_CONTINUOUS,
+                   .label = "scalar value",
+               });
+    dvz_scale_set_domain(scale, 0.0, 1.0);
+    dvz_scale_set_colormap(scale, colormap);
 
-dvz_visual_set_attr_format(visual, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
-dvz_visual_set_scale(visual, "color", scale);
-dvz_visual_set_data(visual, "position", pos, n);
-dvz_visual_set_data(visual, "color", values, n);
-dvz_panel_add_visual(panel, visual, NULL);
-```
+    dvz_visual_set_attr_format(visual, "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32);
+    dvz_visual_set_scale(visual, "color", scale);
+    dvz_visual_set_data(visual, "position", pos, n);
+    dvz_visual_set_data(visual, "color", values, n);
+    dvz_panel_add_visual(panel, visual, NULL);
+    ```
 
 If you already have RGBA colors, upload them directly to `"color"` and skip the scale and colormap. For sampled fields, use the image or volume path shown in the field examples instead of manually expanding every scalar to geometry.
 

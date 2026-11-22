@@ -12,15 +12,35 @@ browser runtime is an **experimental** subset.
 
 ## One path, several owners
 
-```text
-retained scene state
-    -> validation and capability adaptation
-    -> one scene-level FramePlan
-    -> immutable DvzSceneFrameArtifact
-    -> DRP2 stream snapshot and setup/update/frame packets
-    -> native vklite/canvas or browser WebGPU execution
-    -> presentation, capture, recording, or readback
+<figure class="dvz-course-figure" id="fig-architecture-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: The same frame plan feeds native and browser execution.
+    accDescr: The same frame plan feeds native and browser execution.
+    N0["retained scene state"]
+    N1["validation and capability<br/>adaptation"]
+    N2["one scene-level FramePlan"]
+    N3["immutable DvzSceneFrameArtifact"]
+    N4["DRP2 stream snapshot and<br/>setup/update/frame packets"]
+    N5["native vklite/canvas or browser<br/>WebGPU execution"]
+    N6["presentation, capture, recording,<br/>or readback"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
 ```
+
+</div>
+
+<figcaption>Figure 1. The same frame plan feeds native and browser execution.</figcaption>
+
+</figure>
 
 | Layer | Owns | Must not decide |
 | --- | --- | --- |

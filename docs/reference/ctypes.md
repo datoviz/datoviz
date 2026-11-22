@@ -253,11 +253,33 @@ finally:
 
 The binding is generated from the exported public C API:
 
-```text
-public C headers -> build/bindings/datoviz_api.json
-               -> datoviz/_ctypes.py -> datoviz.raw
-               -> datoviz/_array_facade.py -> datoviz
+<figure class="dvz-course-figure" id="fig-ctypes-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Public headers produce the raw bindings and the array facade.
+    accDescr: Public headers produce the raw bindings and the array facade.
+    H["Public C headers"]
+    J["build/bindings/datoviz_api.json"]
+    C["datoviz/_ctypes.py"]
+    R["datoviz.raw"]
+    A["datoviz/_array_facade.py"]
+    P["datoviz"]
+    H --> J
+    J --> C
+    C --> R
+    J --> A
+    A --> P
 ```
+
+</div>
+
+<figcaption>Figure 1. Public headers produce the raw bindings and the array facade.</figcaption>
+
+</figure>
 
 Do not edit generated modules by hand. Binding policy lives under `spec/bindings/`; extraction and
 generation tools live under `tools/bindings/`. Regenerate with:

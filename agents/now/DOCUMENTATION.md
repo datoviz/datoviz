@@ -34,6 +34,14 @@ The scientific-profile correction at `d0e904705` updates native technique covera
 
 [The complete review](GALLERY_REFERENCE_REVIEW.md) classifies all 69 changed screenshots against the protected references: 64 are consistent with intentional font, lighting, rendering, GUI or showcase changes; two polygon cases were corrected and revalidated in the [2026-11-17 implementation](GALLERY_REFERENCE_REVIEW.md#polygon-paint-implementation-2026-11-17); three small raster residuals retain a matched-provider/explicit-disposition gate. Current generation produced 107 nonblank, repeatable PNGs, 38 changing motion previews and 29 budget-compliant MP4 cards/posters. No reference image or `data` gitlink was promoted by this review.
 
+## How-To Presentation Follow-up, 2026-11-22
+
+Paired Python/C examples in axes and colormaps now use linked language tabs. The axis tick-policy alternatives both configure X and Y. Twenty-four conceptual ASCII diagrams across 21 public pages now use captioned Mermaid figures; an excluded architecture note keeps its original text. Diagram labels retain their native size, with keyboard-accessible scrolling when needed. Humanizer covers the revised labels, captions, media-workflow explanation and agent rules; untouched page prose retains its earlier review scope.
+
+Generated gallery cards and example pages now consume the same approved video selection as the homepage for all four selected examples, including AV1 and compatibility fallbacks. The release-candidate blog uses those assets too. No selected asset is re-encoded or uploaded. The three 3D-controller gallery previews are regenerated as eight-second, 240-frame, 30-FPS clips; controller behavior and canonical stills are unchanged.
+
+Validation passes: eight gallery regression tests, 31 selection/frame/media tests, snippet and generated-documentation checks, media ownership checks, strict documentation generation, status and agent-rule checks, and 49 desktop/mobile browser cases. Additional browser checks cover keyboard scrolling, the blog's shared videos and reduced-motion posters. All 24 diagram exports parse as SVG, and no tested label shrinks below 14 pixels. Temporary evidence stays ignored under `build/doc-feedback/`. The private diagram and controller review is separate from the accepted course figures and from release or website publication approval.
+
 ## Remaining RC3 Documentation Work
 
 The [immediate RC3 checklist](STATUS.md#immediate-checklist-2026-11-22) gives the order and ownership of the remaining gates. All eight added course figures are accepted; the four-page public-documentation pilot below is a separate scope decision.

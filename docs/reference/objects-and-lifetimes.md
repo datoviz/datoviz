@@ -2,10 +2,31 @@
 
 The v0.4 scene and runtime layers divide responsibility as follows:
 
-```text
-scene frame plans -> DRP2 command streams -> vklite runtime ->
-canvas/stream frame execution -> optional app presentation
+<figure class="dvz-course-figure" id="fig-objects-and-lifetimes-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Scene planning and runtime execution meet at the DRP2 command stream.
+    accDescr: Scene planning and runtime execution meet at the DRP2 command stream.
+    N0["scene frame plans"]
+    N1["DRP2 command streams"]
+    N2["vklite runtime"]
+    N3["canvas/stream frame execution"]
+    N4["optional app presentation"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
 ```
+
+</div>
+
+<figcaption>Figure 1. Scene planning and runtime execution meet at the DRP2 command stream.</figcaption>
+
+</figure>
 
 Scene objects describe visualization state. Runtime objects execute emitted frame work. Do not borrow Vulkan, WebGPU, swapchain, command-buffer, or synchronization ownership from a scene object.
 

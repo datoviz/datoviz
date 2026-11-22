@@ -6,15 +6,35 @@ Status: advanced and experimental. This guide documents the native Vulkan/CUDA e
 
 The implemented direction is a Datoviz/Vulkan-owned buffer exported to CUDA. It is currently limited to Linux, an NVIDIA CUDA device matched to the Vulkan physical device, opaque-FD external memory, and an opaque-FD timeline semaphore. Vulkan may consume the shared buffer directly as vertex input or copy a tightly packed RGBA8 pixel buffer into a normal Datoviz texture.
 
-```text
-Datoviz/Vulkan owns buffer and allocation
-  -> export opaque memory FD and timeline-semaphore FD
-  -> CUDA imports and maps the allocation
-  -> CUDA writes the mapped device pointer
-  -> CUDA signals the timeline semaphore
-  -> Vulkan waits and either reads vertex input or copies RGBA8 pixels into a texture
-  -> the normal Datoviz visual renders
+<figure class="dvz-course-figure" id="fig-cuda-external-memory-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: CUDA signals its writes before Vulkan reads the shared allocation.
+    accDescr: CUDA signals its writes before Vulkan reads the shared allocation.
+    N0["Datoviz/Vulkan owns buffer and<br/>allocation"]
+    N1["export opaque memory FD and<br/>timeline-semaphore FD"]
+    N2["CUDA imports and maps the<br/>allocation"]
+    N3["CUDA writes the mapped device<br/>pointer"]
+    N4["CUDA signals the timeline<br/>semaphore"]
+    N5["Vulkan waits and either reads<br/>vertex input or copies RGBA8<br/>pixels into a texture"]
+    N6["the normal Datoviz visual renders"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
 ```
+
+</div>
+
+<figcaption>Figure 1. CUDA signals its writes before Vulkan reads the shared allocation.</figcaption>
+
+</figure>
 
 This is buffer interop. The image route shares a linear pixel buffer and performs one GPU-only buffer-to-texture copy; it does not export or import a `VkImage` for direct CUDA surface access. Arbitrary GPU objects and CUDA-owned allocations are not supported by this public path, and importing a normal CUDA allocation into Vulkan is not the preferred direction.
 

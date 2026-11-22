@@ -7,17 +7,39 @@ Interaction changes a retained scene and requests another frame. Controllers han
 
 ## One interaction cycle
 
-```text
-platform input
-   -> host/UI filtering
-   -> normalized scene event
-   -> panel focus, hover, or capture routing
-   -> controller/callback mutates retained state
-   -> dirty scopes and redraw request
-   -> validation, planning, emission, execution
-   -> optional asynchronous query result
-   -> freshness check and retained result update
+<figure class="dvz-course-figure" id="fig-interaction-model-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Input changes retained state and requests a redraw; asynchronous results are checked before use.
+    accDescr: Input changes retained state and requests a redraw; asynchronous results are checked before use.
+    N0["platform input"]
+    N1["host/UI filtering"]
+    N2["normalized scene event"]
+    N3["panel focus, hover, or capture<br/>routing"]
+    N4["controller/callback mutates<br/>retained state"]
+    N5["dirty scopes and redraw request"]
+    N6["validation, planning, emission,<br/>execution"]
+    N7["optional asynchronous query result"]
+    N8["freshness check and retained<br/>result update"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
+    N5 --> N6
+    N6 --> N7
+    N7 --> N8
 ```
+
+</div>
+
+<figcaption>Figure 1. Input changes retained state and requests a redraw; asynchronous results are checked before use.</figcaption>
+
+</figure>
 
 The normalized event is authoritative above the runtime boundary. GLFW, Qt, and browser DOM events
 may differ, but scene controllers consume semantic pointer, wheel, keyboard, resize, timer, or

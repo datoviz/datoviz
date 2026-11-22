@@ -26,12 +26,31 @@ Datoviz commit, platform, GPU/backend, dimensions, and command used to create it
 Record/replay does not save a video or scene objects. It saves the DRP2 commands and payload bytes
 sent to the runtime for each frame, then feeds them back to a runtime later.
 
-```text
-scene -> DRP2 commands -> runtime -> pixels
-                   |
-                   v
-              DVZR recording
+<figure class="dvz-course-figure" id="fig-record-replay-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: DRP2 commands can be executed or recorded for replay.
+    accDescr: DRP2 commands can be executed or recorded for replay.
+    S["Scene"]
+    D["DRP2 commands"]
+    R["Runtime"]
+    P["Pixels"]
+    REC["DVZR recording"]
+    S --> D
+    D --> R
+    R --> P
+    D --> REC
 ```
+
+</div>
+
+<figcaption>Figure 1. DRP2 commands can be executed or recorded for replay.</figcaption>
+
+</figure>
 
 The app-level API hides the command stream. Call `dvz_view_record_start()`, render one or more
 frames, stop recording, then call `dvz_view_replay_start()` on another view.

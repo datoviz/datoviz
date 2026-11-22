@@ -19,9 +19,31 @@ Start with a working Datoviz scene on the native path. Keep it within the portab
 build it into the WASM scene host, serve the generated browser assets over HTTP or HTTPS, then open
 the live route for that scene.
 
-```text
-native Datoviz scene -> WASM scene host -> DRP2 packets -> browser WebGPU runtime -> canvas
+<figure class="dvz-course-figure" id="fig-deploy-to-web-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: The WASM scene host produces packets for the browser runtime.
+    accDescr: The WASM scene host produces packets for the browser runtime.
+    N0["native Datoviz scene"]
+    N1["WASM scene host"]
+    N2["DRP2 packets"]
+    N3["browser WebGPU runtime"]
+    N4["canvas"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
 ```
+
+</div>
+
+<figcaption>Figure 1. The WASM scene host produces packets for the browser runtime.</figcaption>
+
+</figure>
 
 For code already in the Datoviz repository, the public gallery routes are the deployed form of this
 workflow. For your own application code, treat the current path as an experimental integration

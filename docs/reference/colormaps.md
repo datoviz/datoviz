@@ -148,11 +148,31 @@ until the categories change or the scale is destroyed.
 
 The retained relationship should be:
 
-```text
-scalar/category data -> DvzScale -> visual
-                            |-----> colorbar or legend
-                            `-----> probe and label formatting
+<figure class="dvz-course-figure" id="fig-colormaps-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Use the same scale for the visual, its colorbar and formatted values.
+    accDescr: Use the same scale for the visual, its colorbar and formatted values.
+    D["Scalar or category data"]
+    S["DvzScale"]
+    V["Visual"]
+    C["Colorbar or legend"]
+    P["Probe and label formatting"]
+    D --> S
+    S --> V
+    S --> C
+    S --> P
 ```
+
+</div>
+
+<figcaption>Figure 1. Use the same scale for the visual, its colorbar and formatted values.</figcaption>
+
+</figure>
 
 Bind a color scale to the supported visual slot:
 

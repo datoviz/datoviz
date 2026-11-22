@@ -25,14 +25,33 @@ scene identities before application selection, linking, or annotation uses them.
 
 ## Request and result lifecycle
 
-```text
-request + panel/frame coordinates
-    -> frame plan adds query target/work/readback
-    -> DRP2 executes and schedules completion
-    -> scene polls and decodes result
-    -> request/frame/freshness check
-    -> application consumes scene-level result
+<figure class="dvz-course-figure" id="fig-query-pick-probe-model-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: A query result is decoded and checked against its request and frame before the application uses it.
+    accDescr: A query result is decoded and checked against its request and frame before the application uses it.
+    N0["request + panel/frame coordinates"]
+    N1["frame plan adds query<br/>target/work/readback"]
+    N2["DRP2 executes and schedules<br/>completion"]
+    N3["scene polls and decodes result"]
+    N4["request/frame/freshness check"]
+    N5["application consumes scene-level<br/>result"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
 ```
+
+</div>
+
+<figcaption>Figure 1. A query result is decoded and checked against its request and frame before the application uses it.</figcaption>
+
+</figure>
 
 Readback can complete after later input has arrived. Hover therefore follows latest-request-wins:
 a result must carry enough request/frame identity to discard stale work. Click or explicit probe

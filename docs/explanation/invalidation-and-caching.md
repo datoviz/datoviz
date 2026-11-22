@@ -23,14 +23,33 @@ updates panel transforms; it should not upload every point or rebuild stable ren
 
 ## Dependency layers
 
-```text
-authored source data
-    -> normalized/family-ready resources
-    -> panel-local transforms and axis layout
-    -> FramePlan topology and routing
-    -> artifact emission: setup/update/frame work
-    -> runtime object cache and execution
+<figure class="dvz-course-figure" id="fig-invalidation-and-caching-1" markdown="1">
+
+<div class="dvz-course-diagram-scroll dvz-diagram-native" role="region" aria-label="Scrollable diagram" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"useMaxWidth": false}}}%%
+flowchart TD
+    accTitle: Cached work follows the dependencies from source data to runtime execution.
+    accDescr: Cached work follows the dependencies from source data to runtime execution.
+    N0["authored source data"]
+    N1["normalized/family-ready resources"]
+    N2["panel-local transforms and axis<br/>layout"]
+    N3["FramePlan topology and routing"]
+    N4["artifact emission:<br/>setup/update/frame work"]
+    N5["runtime object cache and execution"]
+    N0 --> N1
+    N1 --> N2
+    N2 --> N3
+    N3 --> N4
+    N4 --> N5
 ```
+
+</div>
+
+<figcaption>Figure 1. Cached work follows the dependencies from source data to runtime execution.</figcaption>
+
+</figure>
 
 Invalidate from the changed layer downward, not from the root by default. Runtime caches may reuse
 buffers or pipelines, but they must not infer scene semantics that the plan omitted.
