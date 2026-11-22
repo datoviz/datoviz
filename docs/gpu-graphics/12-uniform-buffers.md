@@ -6,26 +6,52 @@
 
 The cube now turns under the mouse, and its shaders get data in two ways. Vertex attributes give one value per vertex (chapter 6). Push constants give a few bytes per draw, copied into the command buffer (chapter 8).
 
-Real renderers need a third way. A texture can be megabytes, and a material or light is shared by many draws, so copying them into every command buffer is impractical. The shader must instead *read them from GPU memory*. In Vulkan, a shader finds such a resource through a **descriptor**.
+Some data suits neither route. A texture can be megabytes, and a material or a light is often shared by many draws. Instead of copying such data into every command buffer, we can leave it in GPU memory and let the shader *read it there*. On the route this course uses, a shader finds that kind of resource through a **descriptor**.
 
-This chapter takes the smallest possible example: one color, the material's tint, which the fragment shader multiplies with the vertex colors. A tint would fit in a push constant, but we use it to learn the route, because textures (chapter 14) and lighting (chapter 15) follow the same one. By the end, the cube turns orange.
+This chapter takes the smallest possible example: one color, the material's tint. The fragment shader reads it and multiplies the vertex color by it. A tint would fit in a push constant, but we use it to learn the route, because textures (chapter 14) and lighting (chapter 15) follow the same one. By the end, the cube turns orange.
 
 In this chapter you will:
 
-1. put the tint in a **uniform buffer**, a GPU buffer that shaders read;
-2. declare, in the pipeline layout, that the fragment shader reads one uniform buffer;
-3. create a **descriptor set** that points that declaration at your buffer;
-4. bind the descriptor set before the draw, and read the tint in GLSL.
+1. write a fragment shader that reads the tint from a **uniform block**;
+2. define a C structure with the same bytes and put it in a **uniform buffer**, a GPU buffer that shaders read;
+3. declare, in the pipeline layout, that the fragment shader reads one uniform buffer;
+4. create a **descriptor set** that points that declaration at your buffer;
+5. bind the descriptor set before the draw.
+
+## Read a tint in the fragment shader
+
+Start with what the shader needs to do. Chapter 11's fragment shader writes the interpolated vertex color. The new one multiplies that color by a tint, and every fragment reads the same tint. Replace `shader.frag` with:
+
+```glsl
+#version 450
+
+layout(set = 0, binding = 0) uniform Material { vec4 tint; } material;
+layout(location = 0) in vec3 color;
+layout(location = 0) out vec4 out_color;
+
+void main()
+{
+    out_color = vec4(color, 1.0) * material.tint;
+}
+```
+
+Three declarations matter here:
+
+- `uniform Material { vec4 tint; } material` is a uniform block: read-only data with the same value for every fragment of a draw. The shader reads its member as `material.tint`.
+- `layout(set = 0, binding = 0)` names the slot the block comes from. The C side will connect the material buffer to that slot.
+- The `location = 0` numbers on `color` and `out_color` are not descriptor slots. As in earlier chapters, they match the vertex shader's output and the color attachment.
+
+The multiplication works per channel. With the orange tint we define in C below, red is kept while green and blue are scaled down, so the cube turns orange and its vertex colors still show. `shader.vert` is unchanged.
+
+Save the file, but don't run the program or press **R** in chapter 11's program yet. This shader reads set 0, binding 0, which the C side only declares and fills later in this chapter. Run it once those changes are done, in [Build and run](#build-and-run).
 
 ## Copied or referenced
 
-Push constants are *copied*: the bytes travel inside the command buffer, so you can change them for the next draw without affecting earlier ones. A uniform buffer is *referenced*: the command buffer only says where the bytes are, and the GPU reads them when the draw executes. That makes it cheap for large or shared data, with one consequence: the buffer must stay alive and unchanged until every draw that reads it has finished.
-
-Another buffer descriptor type is the **storage buffer**. A uniform buffer is a read-only range of structured data, which suits a small, fixed-layout structure like this material. A storage buffer allows broader access: its range limit is usually far larger, it can end in an array whose length is known only at run time, and shaders can write to it, on devices that support writes from that shader stage. No single size rule decides between them. The choice depends on how shaders access the data, how much there is, how often it changes, who shares it, and the device's limits. This course needs only a uniform buffer.
+The shader now reads a tint, so the next question is how the bytes reach it. Push constants are *copied*: the bytes travel inside the command buffer, so you can change them for the next draw without affecting earlier ones. A uniform buffer is *referenced*: the command buffer only says where the bytes are, and the GPU reads them when the draw executes. That makes it cheap for large or shared data, with one consequence: the buffer must stay alive and unchanged until every draw that reads it has finished.
 
 ## How a shader finds a buffer
 
-A shader cannot hold a pointer to your buffer. It declares a numbered slot instead, such as `layout(set = 0, binding = 0) uniform Material`, and Vulkan connects that slot to a resource. Three pieces make this work:
+On this route, the shader does not hold a pointer to your buffer. It declares a numbered slot instead, `layout(set = 0, binding = 0)` in `shader.frag`, and Vulkan connects that slot to a resource. Three pieces make this work:
 
 - A **descriptor set layout** describes the slots: binding 0 is one uniform buffer, read by the fragment stage. It becomes part of the pipeline layout, so it is fixed when the pipeline is created.
 - A **descriptor set** fills those slots with real resources: binding 0 is this buffer, from this offset, for this many bytes.
@@ -53,11 +79,11 @@ flowchart TD
 
 </figure>
 
-The rest of the chapter follows the order in which the program builds this route: define the material, create its buffer, declare the slot, fill and bind the descriptor set, read it in GLSL, then handle ownership during reload and shutdown.
+The rest of the chapter builds this route in `main.c`, in program order: define the material, create its buffer, declare the slot, fill and bind the descriptor set, then handle ownership during reload and shutdown.
 
 ## Define the material
 
-Start on the C side with a structure that matches what the shader will read. Add it after `Push`:
+The shader reads one `vec4`, 16 bytes. On the C side, define a structure with the same bytes. Add it after `Push`:
 
 ```c
 // The uniform block the fragment shader reads: one vec4 tint, laid out by std140.
@@ -69,7 +95,9 @@ typedef struct
 _Static_assert(sizeof(Material) == 16, "the material block must match four shader floats");
 ```
 
-The GPU reads the buffer's bytes with GLSL's layout rules, which differ from C's. Uniform blocks follow the `std140` rules, which can place members further apart than a C compiler would. A `vec4` is the easy case: 16 bytes, exactly four C floats. Avoid a lone `vec3` in a uniform block, because `std140` aligns it like a `vec4` and C does not. The assertion stops the build if the structure ever stops matching.
+The GPU reads the buffer's bytes with the shader's layout rules, not C's. `shader.frag` gives its block no explicit layout, so it gets `std140`, the default for uniform blocks in Vulkan GLSL. Devices with the right features accept other uniform layouts, but this chapter uses `std140`. Its rules can place members further apart than a C compiler would. For example, `std140` aligns a `vec3` to 16 bytes, while a C compiler typically aligns `float[3]` to 4. A block that mixes `vec3` with other members can therefore need explicit padding, or a deliberate member order on the C side, to match.
+
+We use a `vec4` tint because it is the easy case. It holds red, green, blue and alpha, and in `std140` it is 16 bytes with no padding: exactly four C floats. The assertion stops the build if the structure's size ever stops matching.
 
 The renderer needs three new fields. Creating a buffer takes the GPU memory allocator, which the GPU context owns and you only borrow. Add it after `color_format`:
 
@@ -173,7 +201,7 @@ The descriptor set layout plays the role of the function signature. Since chapte
     dvz_slots_push(renderer->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Push));
 ```
 
-Read the new call as: in set 0, binding 0, there is 1 descriptor, visible to the fragment shader, and it is a uniform buffer. The shader will declare the same numbers.
+Read the new call as: in set 0, binding 0, there is 1 descriptor, visible to the fragment shader, and it is a uniform buffer. These are the numbers `shader.frag` declares.
 
 ## Fill the descriptor set
 
@@ -213,22 +241,7 @@ A filled descriptor set is not used until a command binds it. In `draw()`, after
 
 This binds 1 set, starting at set 0, for graphics draws. The last two arguments are dynamic offsets, which this course does not use. Like the push, the binding applies to the draws recorded after it.
 
-Last, the shader side of the agreement. Replace `shader.frag` with:
-
-```glsl
-#version 450
-
-layout(set = 0, binding = 0) uniform Material { vec4 tint; } material;
-layout(location = 0) in vec3 color;
-layout(location = 0) out vec4 out_color;
-
-void main()
-{
-    out_color = vec4(color, 1.0) * material.tint;
-}
-```
-
-The `uniform` block names set 0, binding 0, with the same 16-byte layout as the C structure. Every fragment reads the same tint. Multiplying keeps the red and cuts green and blue, so the cube turns orange while its vertex colors still show. `shader.vert` is unchanged.
+This completes the route. When those draws run, the fragment shader you wrote at the start reads `material.tint` through set 0, binding 0, which now refers to the 16 bytes in the material buffer.
 
 ## Keep ownership clear during reload and shutdown
 
@@ -339,6 +352,8 @@ The cube keeps its shape and controls, now tinted orange. The terminal ends with
 ??? info "Under the hood: what the descriptor names"
 
     Raw Vulkan creates a descriptor set layout, includes it in the pipeline layout, allocates a descriptor set from a descriptor pool, and writes a `VkDescriptorBufferInfo` into it with `vkUpdateDescriptorSets`. The descriptor holds a buffer handle, an offset, and a range, never the material bytes.
+
+    **Uniform or storage buffer.** Vulkan has another buffer descriptor type, the **storage buffer**. A uniform buffer is a read-only range of structured data, which suits a small, fixed-layout structure like this material. A storage buffer allows broader access: its range limit is usually far larger, it can end in an array whose length is known only at run time, and shaders can write to it, on devices that support writes from that shader stage. No single size rule decides between them. The choice depends on how shaders access the data, how much there is, how often it changes, who shares it, and the device's limits. This course needs only a uniform buffer.
 
 ??? warning "When it goes wrong"
 

@@ -12,10 +12,11 @@ This chapter turns the square into a cube, builds those matrices on the CPU, and
 
 In this chapter you will:
 
-1. describe a cube with eight corners and twelve triangles;
-2. follow one position through the coordinate spaces between the cube and the screen;
-3. build the model, view and projection matrices and combine them on the CPU;
-4. push the combined matrix and apply it in the vertex shader.
+1. follow one position through the coordinate spaces between the cube and the screen;
+2. apply one combined matrix in the vertex shader;
+3. describe a cube with eight corners and twelve triangles;
+4. build the model, view and projection matrices and combine them on the CPU;
+5. push the matrix each frame.
 
 ## From the cube to the screen
 
@@ -23,9 +24,9 @@ Think of taking a photo: the object has a shape, it stands somewhere in a room, 
 
 1. **Object space**: the cube's stored coordinates, centered on its own origin. The vertex buffer holds these, and they never change.
 2. **World space**: where the object stands, how it is turned and how big it is. The **model matrix** takes object space to world space. To rotate the cube, we change this matrix and leave the vertex buffer alone.
-3. **View space**: the same scene seen from the camera, which sits at the origin and looks down negative z. The **view matrix** takes world space to view space. To move the camera, we change this matrix.
+3. **View space**: the same scene seen from the camera. In this program, the camera sits at the origin and looks down negative z. The **view matrix** takes world space to view space. To move the camera, we change this matrix.
 4. **Clip space**: the output of the **projection matrix**, which plays the role of the lens: field of view, aspect ratio, and the nearest and farthest distances drawn. The vertex shader writes `gl_Position` in this space, and Vulkan clips triangles against its bounds.
-5. **Normalized device coordinates** (NDC): clip coordinates divided by their fourth component, `w`. The GPU does this division itself. x and y run from −1 to 1 across the viewport, and z from 0 at the near plane to 1 at the far plane. Chapters 4 to 8 wrote `w = 1`, so their clip coordinates were already NDC.
+5. **Normalized device coordinates** (NDC): clip coordinates divided by their fourth component, `w`. The GPU does this division itself. x and y run from −1 to 1 across the viewport, and z from 0 to 1. Our projection puts the near plane at z = 0 and the far plane at z = 1. Chapters 4 to 8 wrote `w = 1`, so their clip coordinates were already NDC.
 6. **Framebuffer coordinates**: pixels. The viewport, set since chapter 3, maps NDC to them.
 
 Figure 1 shows the same chain. Our program builds the first three arrows as matrices; the last two are fixed steps the GPU performs after the vertex shader.
@@ -61,9 +62,40 @@ The three matrices combine into one **model-view-projection (MVP) matrix**, `pro
 
 The product is the same for every vertex, so we compute it once per frame on the CPU instead of once per vertex in the shader. Its 64 bytes fit within chapter 8's 128-byte push-constant guarantee. The rotation and pulse move out of the shader, which now applies whatever matrix it receives.
 
+## Apply the matrix in the vertex shader
+
+Start with where the matrix ends up. Replace `shader.vert` with this version and save it; `shader.frag` is unchanged. Don't run the program or press **R** in chapter 8's program yet: this shader expects a matrix and three-float positions, which the C side only provides after the edits below.
+
+```glsl
+#version 450
+
+layout(push_constant) uniform Push { mat4 mvp; } push_data;
+layout(location = 0) in vec3 in_position;
+layout(location = 1) in vec3 in_color;
+layout(location = 0) out vec3 color;
+
+void main()
+{
+    gl_Position = push_data.mvp * vec4(in_position, 1.0);
+    color = in_color;
+}
+```
+
+The push-constant block now holds one `mat4` named `mvp`, and the position input is a `vec3`. The shader appends `w = 1` to make each stored position a homogeneous point, and one multiplication takes it all the way from object space to clip space.
+
+To see what that multiplication does, follow the cube corner `(0.65, 0.65, 0.65)` from the vertex array below:
+
+1. The shader turns it into `(0.65, 0.65, 0.65, 1)`.
+2. The model part spins, scales and tilts it about the cube's center. It stays near the origin, now in world space.
+3. The view part moves it 3 units along −z, so it sits in front of the camera, at negative view-space z.
+4. The projection part scales x and y for the field of view and the aspect ratio, computes depth, and copies the corner's distance in front of the camera into `w`. The result is `gl_Position`.
+5. After the shader, the GPU divides by `w`, so x and y shrink with distance, and the viewport turns them into pixels.
+
+The shader only ever sees the combined matrix. The rest of the chapter changes the C side to match: three-float positions, a 64-byte `Push`, and a function that builds the three parts and combines them each frame. Run the program once all of them are done.
+
 ## Describe the cube
 
-Positions need a third float, and the two-float `Push` becomes one matrix. `mat4`, a 4 × 4 float matrix type, already comes from `<datoviz.h>`:
+Positions need a third float to match the shader's `vec3` input, and the two-float `Push` becomes the shader's single matrix. `mat4`, a 4 × 4 float matrix type, already comes from `<datoviz.h>`:
 
 ```c
 // One vertex record: an object-space position and a color.
@@ -220,7 +252,7 @@ The **projection** uses a 60-degree vertical field of view (`1.0471976` radians)
 The projection also holds three Vulkan-specific details:
 
 - Points in front of this camera have negative view-space z. The `-1` in `projection[2][3]` sets clip `w` to minus that z, a positive distance, which the perspective divide then uses.
-- The two depth terms map the near plane to NDC z = 0 and the far plane to z = 1, the range Vulkan requires.
+- The two depth terms map the near plane to NDC z = 0 and the far plane to z = 1. Vulkan clips depth outside 0 to 1, and this projection uses that whole range.
 - Vulkan's NDC y points down, which is why chapter 4's triangle needed a negative y for its top vertex. The negative y scale flips it, so world-space up appears up.
 
 ### Combine the three
@@ -248,24 +280,7 @@ The matrix depends on the window's shape, so compute it each frame from the curr
     make_mvp(aspect, time, push.mvp);
 ```
 
-Dividing by the current aspect ratio removes chapter 8's stretch and keeps the cube's proportions after a resize. The push-constant code itself is unchanged: `sizeof(Push)` now declares and pushes 64 bytes. On the GPU side, replace `shader.vert`; `shader.frag` is unchanged:
-
-```glsl
-#version 450
-
-layout(push_constant) uniform Push { mat4 mvp; } push_data;
-layout(location = 0) in vec3 in_position;
-layout(location = 1) in vec3 in_color;
-layout(location = 0) out vec3 color;
-
-void main()
-{
-    gl_Position = push_data.mvp * vec4(in_position, 1.0);
-    color = in_color;
-}
-```
-
-The shader appends `w = 1` to make each stored position a homogeneous point, and one multiplication takes it all the way from object space to clip space.
+Dividing by the current aspect ratio removes chapter 8's stretch and keeps the cube's proportions after a resize. The push-constant code itself is unchanged: `sizeof(Push)` now declares and pushes 64 bytes, which the shader you installed earlier reads as `mvp`.
 
 ## Why it looks wrong
 

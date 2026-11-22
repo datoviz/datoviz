@@ -10,10 +10,10 @@ In the real world, light shows the shape of things. A face turned toward a lamp 
 
 In this chapter you will:
 
-1. give each vertex a **normal**, the direction its surface faces;
-2. add the lighting strengths to the material uniform;
-3. send the model-view matrix on its own, so the shaders can work before projection;
-4. compute ambient, diffuse and specular light for each fragment.
+1. compute ambient, diffuse and specular light for each fragment;
+2. move positions and normals into view space, before projection, in the vertex shader;
+3. give each vertex a **normal**, the direction its surface faces;
+4. add the lighting strengths to the material uniform, and send the model-view matrix on its own.
 
 ## How light shows a shape
 
@@ -35,17 +35,122 @@ With those vectors, each question becomes arithmetic:
 - Specular uses the **halfway vector**, midway between the light and eye directions. When the normal lines up with it, the surface reflects the light into the eye. Raising that dot product to a power, the **specular exponent**, makes the highlight tight (large exponent) or broad (small exponent). This is the **Blinn-Phong** model.
 - Ambient is a constant.
 
-The texture and tint give the surface color, its **albedo**. Ambient and diffuse light scale the albedo. Specular is added on top in white, because a highlight shows the light's color rather than the surface's.
+The texture and tint give the surface color, its **albedo**. Ambient and diffuse light scale the albedo. Specular is added on top in white, because a highlight shows the light's color rather than the surface's, and our light is white.
+
+These are this example's choices, made to keep the shader short: the Blinn-Phong model, one white light, and a small constant for ambient light. Many renderers use other lighting models, colored or several lights, and better estimates of the light that bounces around a scene.
 
 ### One coordinate space for every vector
 
-The arithmetic only works if every vector is in the same coordinate space. We use view space (chapter 9), where the camera sits at the origin. View space comes after the model and view matrices but before projection, which would distort angles.
+The arithmetic only works if every vector is in the same coordinate space. World space or view space both work, as long as all vectors share it. We use view space (chapter 9), where the camera sits at the origin, so the direction toward the eye is easy to compute. View space comes after the model and view matrices but before projection. The spaces after projection distort angles, so lighting does not happen there.
+
+## Light each fragment
+
+The fragment shader turns the model above into code, in four groups: the vectors, the lighting terms, the surface color, and the final composition. Replace `shader.frag` now, block by block. It reads values that the rest of the chapter provides:
+
+- `normal` and `view_position` come from the vertex shader, which you update in the next section;
+- `material.lighting` holds the four lighting numbers, which you add to the C material uniform later in the chapter.
+
+You can save each shader as you go, but don't run the program or press **R** in chapter 14's program until [Build and run](#build-and-run): both shaders need the C changes later in the chapter. The file starts with its inputs:
+
+```glsl
+#version 450
+
+layout(set = 0, binding = 0) uniform Material { vec4 tint; vec4 lighting; } material;
+layout(set = 0, binding = 1) uniform sampler2D tex;
+layout(location = 0) in vec3 normal;
+layout(location = 1) in vec2 uv;
+layout(location = 2) in vec3 view_position;
+layout(location = 0) out vec4 out_color;
+```
+
+The material block gains a second `vec4`, `lighting`, after chapter 12's `tint`. The three inputs must use the same locations as the vertex shader's outputs.
+
+### Compute the four vectors
+
+```glsl
+void main()
+{
+    // Unit vectors in view space: normal, toward the light, toward the eye, and halfway.
+    vec3 n = normalize(normal);
+    vec3 l = normalize(vec3(2.0, 2.0, 0.0) - view_position);
+    vec3 v = normalize(-view_position);
+    vec3 h = normalize(l + v);
+```
+
+`n`, `l`, `v` and `h` are the normal, light, eye and halfway vectors. Every vector here is in view space, where the eye sits at the origin, so the direction toward the eye is `-view_position`. The light at `(2, 2, 0)` is in view space too, so it moves with the camera, like a headlight. Interpolating between normals that differ can make them shorter than unit length, so the shader normalizes `normal` again.
+
+### Compute the lighting terms
+
+```glsl
+    // Lighting terms: diffuse from the light angle, specular only where the light reaches.
+    float diffuse = max(dot(n, l), 0.0);
+    float specular = diffuse > 0.0 ? pow(max(dot(n, h), 0.0), material.lighting.w) : 0.0;
+```
+
+`diffuse` is the clamped cosine from the model. `specular` raises the halfway term to the exponent in `material.lighting.w`, and is skipped on faces turned away from the light.
+
+### Read the surface color
+
+```glsl
+    // Surface color from the sRGB texture, decoded to linear values by the sampler.
+    vec3 albedo = texture(tex, uv).rgb;
+```
+
+### Combine the terms
+
+```glsl
+    // Ambient and diffuse scale the tinted albedo; white specular is added on top.
+    vec3 color = albedo * material.tint.rgb * (material.lighting.x + material.lighting.y * diffuse)
+        + vec3(specular * material.lighting.z);
+    out_color = vec4(color, 1.0);
+}
+```
+
+`lighting.x` is the ambient strength and `lighting.y` the diffuse strength; together they scale the tinted albedo. `lighting.z` scales the white specular highlight added on top.
+
+### Linear light and sRGB
+
+Lighting math assumes linear values, where doubling a number doubles the light. The texture is `VK_FORMAT_R8G8B8A8_SRGB`, so sampling decodes its RGB to linear values before this arithmetic. On output, an sRGB attachment encodes the result for display, as you saw in chapter 2. A non-sRGB surface format stores the linear value as is, so the image looks darker. A production renderer requires an sRGB format or converts explicitly.
+
+## Move to view space in the vertex shader
+
+The fragment shader needs a position and a normal in view space. Until now, the vertex shader received one combined model-view-projection matrix and only produced the final clip-space position (chapter 9). Now it receives the model-view matrix on its own and does the last two multiplications itself: model-view first, for the view-space position, then projection, for `gl_Position`. It passes the view-space position, normal and UV on to the fragment shader. Replace `shader.vert` with:
+
+```glsl
+#version 450
+
+layout(push_constant) uniform Push { mat4 projection; mat4 model_view; } push_data;
+layout(location = 0) in vec3 in_position;
+layout(location = 1) in vec3 in_normal;
+layout(location = 2) in vec2 in_uv;
+layout(location = 0) out vec3 normal;
+layout(location = 1) out vec2 uv;
+layout(location = 2) out vec3 view_position;
+
+void main()
+{
+    // View space: the camera sits at the origin, and the lighting happens here.
+    vec4 position = push_data.model_view * vec4(in_position, 1.0);
+    view_position = position.xyz;
+
+    // Rotate the normal by the upper-left 3 x 3 part; no translation for a direction.
+    normal = mat3(push_data.model_view) * in_normal;
+    uv = in_uv;
+
+    // Clip space, for the rasterizer.
+    gl_Position = push_data.projection * position;
+}
+```
+
+`model_view` moves positions into view space. Its upper-left 3 × 3 part rotates normals, which works because this program only rotates and translates. Under nonuniform scale, that matrix would tilt normals away from the perpendicular, and the correct **normal matrix** would be the inverse transpose of that 3 × 3 part. Normals never take translation, because a direction has no position.
+
+The shaders are now complete. The C program still has to supply three of their new inputs: the normal at location 1, the lighting values in the material uniform, and the two-matrix push block. The next sections add them in that order.
 
 ## Add face normals
 
 ### Extend the vertex record
 
-Normals are one more vertex attribute, between position and UV. Replace `Vertex` with:
+The vertex shader reads the normal as one more vertex attribute, between position and UV. Replace `Vertex` with:
 
 ```c
 // One vertex record: a position, the outward surface normal, and the UV coordinates.
@@ -110,11 +215,11 @@ In `create_pipeline()`, replace the UV attribute with these two. The normal take
         renderer->pipeline, 0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv));
 ```
 
-Read them as: from vertex binding 0, location 1 is three floats at the `normal` offset, and location 2 is two floats at the `uv` offset. The vertex shader will use the same locations.
+Read them as: from vertex binding 0, location 1 is three floats at the `normal` offset, and location 2 is two floats at the `uv` offset. These match the input locations in `shader.vert`.
 
 ## Extend the material uniform
 
-The model needs four numbers: the strengths of ambient, diffuse and specular light, and the specular exponent. They describe the surface and are shared by every draw, so they belong in the material uniform from chapter 12. Add a second `vec4`-sized member:
+The fragment shader reads four numbers from `material.lighting`: the strengths of ambient, diffuse and specular light, and the specular exponent. They describe the surface and are shared by every draw, so they belong in the material uniform from chapter 12. Add a second `vec4`-sized member:
 
 ```c
 // Uniform block read through set 0, binding 0: tint, then ambient, diffuse, specular, exponent.
@@ -139,7 +244,7 @@ The four `lighting` values are the ambient, diffuse and specular strengths, then
 
 ## Fit the matrices into 128 bytes
 
-So far the vertex shader received one combined matrix, model-view-projection, and only needed the final clip-space position (chapter 9). Lighting needs positions and normals in view space, before projection, so the vertex shader needs the model-view matrix on its own. We send projection and model-view as two matrices: two `mat4` values take exactly the 128 bytes of push-constant space that every device guarantees. Replace `Push`:
+The vertex shader's push block now holds two matrices, `projection` and `model_view`, and the C struct must match it. Two `mat4` values take exactly 128 bytes, the push-constant size every Vulkan device supports (chapter 8). Many devices allow more, but staying within this minimum means the program never needs a larger push-constant range. Replace `Push`:
 
 ```c
 // Push-constant block: two matrices, copied into each recorded draw.
@@ -169,102 +274,6 @@ The C side now computes two products instead of one chain. The model-view matrix
 ```
 
 The push range in `create_pipeline()` and the push call in `draw()` both take their size from the struct, which now covers 128 bytes. Only the vertex shader reads the push-constant block, so keep `VK_SHADER_STAGE_VERTEX_BIT`.
-
-## Move to view space in the vertex shader
-
-The vertex shader now does the last two multiplications itself: model-view first, to get the view-space position the lighting needs, then projection, for `gl_Position`. It passes the view-space position, normal and UV on to the fragment shader. Replace `shader.vert` with:
-
-```glsl
-#version 450
-
-layout(push_constant) uniform Push { mat4 projection; mat4 model_view; } push_data;
-layout(location = 0) in vec3 in_position;
-layout(location = 1) in vec3 in_normal;
-layout(location = 2) in vec2 in_uv;
-layout(location = 0) out vec3 normal;
-layout(location = 1) out vec2 uv;
-layout(location = 2) out vec3 view_position;
-
-void main()
-{
-    // View space: the camera sits at the origin, and the lighting happens here.
-    vec4 position = push_data.model_view * vec4(in_position, 1.0);
-    view_position = position.xyz;
-
-    // Rotate the normal by the upper-left 3 x 3 part; no translation for a direction.
-    normal = mat3(push_data.model_view) * in_normal;
-    uv = in_uv;
-
-    // Clip space, for the rasterizer.
-    gl_Position = push_data.projection * position;
-}
-```
-
-`model_view` moves positions into view space. Its upper-left 3 × 3 part rotates normals, which works because this program only rotates and translates. Under nonuniform scale, that matrix would tilt normals away from the perpendicular, and the correct **normal matrix** would be the inverse transpose of that 3 × 3 part. Normals never take translation, because a direction has no position.
-
-## Light each fragment
-
-The fragment shader turns the model from the start of the chapter into code, in four groups: the vectors, the lighting terms, the surface color, and the final composition. Replace `shader.frag`, starting with its inputs:
-
-```glsl
-#version 450
-
-layout(set = 0, binding = 0) uniform Material { vec4 tint; vec4 lighting; } material;
-layout(set = 0, binding = 1) uniform sampler2D tex;
-layout(location = 0) in vec3 normal;
-layout(location = 1) in vec2 uv;
-layout(location = 2) in vec3 view_position;
-layout(location = 0) out vec4 out_color;
-```
-
-The material block now has the second `vec4`, matching the C struct. The three inputs use the locations the vertex shader writes.
-
-### Compute the four vectors
-
-```glsl
-void main()
-{
-    // Unit vectors in view space: normal, toward the light, toward the eye, and halfway.
-    vec3 n = normalize(normal);
-    vec3 l = normalize(vec3(2.0, 2.0, 0.0) - view_position);
-    vec3 v = normalize(-view_position);
-    vec3 h = normalize(l + v);
-```
-
-`n`, `l`, `v` and `h` are the normal, light, eye and halfway vectors. Every vector here is in view space, where the eye sits at the origin, so the direction toward the eye is `-view_position`. The light at `(2, 2, 0)` is in view space too, so it moves with the camera, like a headlight. Interpolation shortens normals, so the shader normalizes them again.
-
-### Compute the lighting terms
-
-```glsl
-    // Lighting terms: diffuse from the light angle, specular only where the light reaches.
-    float diffuse = max(dot(n, l), 0.0);
-    float specular = diffuse > 0.0 ? pow(max(dot(n, h), 0.0), material.lighting.w) : 0.0;
-```
-
-`diffuse` is the clamped cosine from the model. `specular` raises the halfway term to the exponent in `material.lighting.w`, and is skipped on faces turned away from the light.
-
-### Read the surface color
-
-```glsl
-    // Surface color from the sRGB texture, decoded to linear values by the sampler.
-    vec3 albedo = texture(tex, uv).rgb;
-```
-
-### Combine the terms
-
-```glsl
-    // Ambient and diffuse scale the tinted albedo; white specular is added on top.
-    vec3 color = albedo * material.tint.rgb * (material.lighting.x + material.lighting.y * diffuse)
-        + vec3(specular * material.lighting.z);
-    out_color = vec4(color, 1.0);
-}
-```
-
-`lighting.x` is the ambient strength and `lighting.y` the diffuse strength; together they scale the tinted albedo. `lighting.z` scales the white specular highlight added on top.
-
-### Linear light and sRGB
-
-Lighting math assumes linear values, where doubling a number doubles the light. The texture is `VK_FORMAT_R8G8B8A8_SRGB`, so sampling decodes its RGB to linear values before this arithmetic. On output, an sRGB attachment encodes the result for display, as you saw in chapter 2. A non-sRGB surface format stores the linear value as is, so the image looks darker. A production renderer requires an sRGB format or converts explicitly.
 
 ## Build and run
 
