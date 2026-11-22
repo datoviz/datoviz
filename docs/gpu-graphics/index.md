@@ -1,49 +1,67 @@
 # Modern GPU Graphics in Vulkan
 
-This course teaches modern GPU graphics in C, with Vulkan running underneath.
+Datoviz is a GPU visualization engine for scientific data. In normal use, you work with the Scene API from Python or C: you create figures and panels, add visuals such as points, lines, images or meshes, and give them your arrays. Datoviz then renders the result on the GPU. The [Quickstart](../start/quickstart.md) and the [first C program](../start/first-c-program.md) show this route.
 
-You start with an empty file and end with an interactive 3D mesh viewer: a perspective camera you control with the mouse, depth-tested geometry, a texture you upload yourself, and per-fragment lighting. You write the program line by line in a small project of your own.
+This course explores the rendering foundation underneath. It teaches modern GPU graphics in C, using the native Vulkan layers that Datoviz renders with.
+
+## Under the Scene API
+
+Rendering splits work between two processors. The CPU runs your program, which prepares data and records a list of commands. The GPU executes those commands on many vertices or pixels at once and produces the image. The native path that this course teaches reaches the GPU through **Vulkan**, an explicit C API implemented by the GPU driver, in which you state formats, memory, ordering and lifetimes yourself. [Chapter 3](03-frame.md) explains how the CPU and GPU share the work of a frame.
+
+Datoviz builds a shared foundation on top of Vulkan. Its vklite layer wraps Vulkan objects, such as buffers, textures and pipelines, in small C types, and its canvas prepares, presents and synchronizes each frame. The Scene API turns your scene into frame plans and rendering commands that run on this foundation, as the [runtime overview](../advanced/runtime-internals.md) describes. The course program uses the foundation directly: it is a C program that calls vklite and the canvas. Figure 1 shows both routes.
+
+<figure class="dvz-course-figure" id="fig-course-layers" markdown="1">
+
+<div class="dvz-course-diagram-scroll" role="region" aria-label="Two native rendering routes" tabindex="0" markdown="1">
+
+```mermaid
+flowchart TD
+    accTitle: Two routes to the same native foundation
+    accDescr: A Python or C application uses the Scene API, which turns scenes into rendering commands for vklite and the canvas. The course's C program calls vklite and the canvas directly. vklite and the canvas call the Vulkan API, which the GPU driver implements for the GPU.
+    A["Python or C app"] --> S[Scene API]
+    S -->|rendering commands| F
+    C["Course C program"] --> F["vklite and canvas"]
+    F --> V[Vulkan API]
+    V --> D[GPU driver and GPU]
+```
+
+</div>
+
+<p class="dvz-course-diagram-hint">Scroll sideways for the full diagram.</p>
+
+<figcaption>Figure 1. Ordinary Datoviz programs reach vklite and the canvas through the Scene API. The course program calls them directly. Both routes then go through Vulkan and the driver to the GPU.</figcaption>
+
+</figure>
+
+## Who this course is for
+
+Ordinary Scene API use, including large arrays and interactive 3D views, does not require this course or any Vulkan code. The course is for C programmers who want to understand the level below:
+
+- You want to learn how GPUs and Vulkan work by writing a program yourself.
+- You need specialized rendering that the supplied visuals do not provide, and you want to know what a custom renderer involves.
+- You want to reason about shaders, resource lifetimes and rendering performance.
+- You want to contribute to Datoviz's rendering internals.
+
+The examples focus on a standalone native renderer.
+
+You need to read and write C. You do not need any Vulkan or graphics experience beyond knowing what a pixel is.
+
+What you learn also applies outside Vulkan. WebGPU, Metal and Direct3D 12 use the same kinds of objects: devices, command buffers, pipelines, buffers, textures and descriptors. Each chapter points out what carries over to them.
+
+## What you build
+
+You build a small interactive 3D mesh viewer in C, one step at a time, in a project of your own. The first chapters open a window and draw a triangle. The middle chapters add a 3D camera that you control with the mouse, and depth testing so that near surfaces hide far ones. The last chapters upload a texture, add per-fragment lighting, and replace the hand-typed cube with generated or loaded geometry.
 
 <picture>
   <source media="(prefers-reduced-motion: no-preference)" srcset="../assets/gpu-graphics/16-mesh-animated.webp">
   <img src="../assets/gpu-graphics/16-mesh.webp" alt="The textured, lit mesh built in chapter 16 rotating in the final viewer.">
 </picture>
 
-## Why this course exists
-
-Vulkan gives you direct control over a GPU, which makes it hard to start with. Before a raw Vulkan program can draw its first triangle, it needs an instance, a physical device, a queue family, a logical device, a window surface, a swapchain and its image views, a command pool, and synchronization for every frame in flight. By then you may have written around 1000 lines, and none of them describes the triangle.
-
-The course explains those concepts without asking you to implement the platform code. Datoviz's low-level layers (vklite and its canvas) own that code, so from chapter 2 onward you can work on shaders, pipelines, buffers, textures, matrices and lighting. These advanced low-level APIs are still evolving and may change between releases. Use the Datoviz version given in the setup chapter; the course does not promise compatibility with other releases.
-
-## How the pieces fit
-
-A computer that draws has two processors. The CPU runs your C program, one step after another. The GPU is a separate processor with its own memory, built for one kind of work: running the same small program on many items at once, such as every vertex of a shape or every pixel of an image. It does not run your C code. Your program prepares data and a list of commands and hands them over, and the GPU produces the image.
-
-**Vulkan** is the interface between the two. It is a C API, specified by the Khronos Group and implemented by each GPU vendor's driver, through which a program creates GPU objects, records commands and submits them. Vulkan is explicit: the driver makes few decisions for you, so you state formats, memory, ordering and lifetimes yourself. That makes Vulkan's behavior predictable, but its setup long.
-
-Datoviz sits between your program and Vulkan. Its vklite layer wraps Vulkan objects in small C types, and its canvas handles the swapchain, presentation and per-frame synchronization. You call Datoviz functions, but Vulkan's own types and flags, such as `VkFormat`, appear directly in your code, so what you learn is Vulkan. Figure 1 shows the layers from your code down to the GPU.
-
-<figure class="dvz-course-figure" id="fig-course-layers" markdown="1">
-
-```mermaid
-flowchart TD
-    accTitle: Layers between your code and the GPU
-    accDescr: Your C program calls Datoviz's vklite and canvas, which call the Vulkan API, which the GPU driver implements for the GPU.
-    A[Your C program] --> B[Datoviz: vklite and canvas]
-    B --> C[Vulkan API]
-    C --> D[GPU driver]
-    D --> E[GPU]
-```
-
-<figcaption>Figure 1. Your code calls Datoviz, Datoviz calls Vulkan, and the driver runs the work on the GPU.</figcaption>
-
-</figure>
-
-Datoviz also has a higher-level App API, whose `dvz_app_run()` runs the event and frame loop for you. This course works with the canvas directly instead, and you write the outer loop yourself: a short `while` loop that processes input, prepares a frame, records commands and submits them. Seeing each step shows where later additions go, such as animation and live shader reloading. Inside those steps, Datoviz still does the window-system work and Vulkan's frame synchronization. `dvz_app_run()` drives App views, not the canvas you create here, so it cannot simply replace your loop. Chapter 2 explains the loop, and the closing chapter compares the two approaches.
-
-The ideas are not specific to Vulkan either. WebGPU, Metal and Direct3D 12 are built on the same objects: devices, command buffers, pipelines, buffers, textures and descriptors. Each chapter points out what carries over to them.
+*The final course project: the textured, lit mesh viewer from chapter 16, built on Datoviz's low-level Vulkan layers.*
 
 ## What you write, and what is handled for you
+
+Before a raw Vulkan program can draw its first triangle, it needs an instance, a physical device, a queue family, a logical device, a window surface, a swapchain and its image views, a command pool, and synchronization for every frame in flight. That can take around 1000 lines, and none of them describes the triangle. In this course, vklite and the canvas own that setup, so from chapter 2 onward you work on shaders, pipelines, buffers, textures, matrices and lighting. The table shows the split.
 
 | Handled for you | Yours to write |
 | --- | --- |
@@ -57,18 +75,23 @@ The ideas are not specific to Vulkan either. WebGPU, Metal and Direct3D 12 are b
 
 Nothing in the left column is hidden from you. From chapter 2 on, each coding chapter has an *Under the hood* box that explains what raw Vulkan would need at that point. The raw-Vulkan line counts at the top of each chapter are rough estimates, not measurements. By the end, you will know what a swapchain and a fence are for without having written either one by hand.
 
+The code in the right column is still Vulkan programming. You call Datoviz functions, but Vulkan's own types and flags, such as `VkFormat`, appear directly in your code. The course writes shaders in GLSL; Vulkan itself receives compiled SPIR-V, and [chapter 4](04-triangle.md) explains the step between them.
+
+You also write the outer loop yourself: a short `while` loop that processes input, prepares a frame, records commands and submits them. Seeing each stage shows where later additions go, such as animation and live shader reloading. Inside those calls, Datoviz still does the window-system work and Vulkan's frame synchronization. Datoviz's higher-level App API has `dvz_app_run()`, which runs the loop for you, but it drives App views, not the canvas you create here. [Chapter 2](02-window.md) explains the loop, and [chapter 17](17-next.md) compares the two approaches.
+
+vklite and the canvas are advanced, low-level interfaces, and they can change between Datoviz releases. Use the Datoviz version that [chapter 1](01-setup.md) sets up.
+
 ## What you need
 
 - A C11 compiler and CMake 3.21 or newer.
 - A Vulkan-capable GPU with a working driver.
-- Datoviz v0.4 installed: chapter 1 walks through it.
-- No Vulkan experience. No graphics experience beyond knowing what a pixel is.
+- A Datoviz v0.4 build that is compatible with the course. Chapter 1 says which one and walks through the installation.
 
 Some linear algebra helps from chapter 9 onward, but the course explains the matrices it uses.
 
 ## How the chapters work
 
-You keep one file, `main.c`, open in your editor for the whole course. Each chapter adds to it. From chapter 5 onward, you also have `shader.vert` and `shader.frag`, which you can edit while the program runs.
+You keep one file, `main.c`, open in your editor for the whole course, and each chapter adds to it. From chapter 5 onward, you also have `shader.vert` and `shader.frag`, which you can edit while the program runs.
 
 From chapter 2 on, every coding chapter ends with a complete listing of each file as it should look at that point. If something breaks, you can paste the listing to get back in sync.
 
@@ -76,10 +99,7 @@ From chapter 2 on, every coding chapter ends with a complete listing of each fil
 
 - Commands that differ between systems appear in Linux, macOS and Windows tabs. Choose your system once and the site keeps that choice on the other pages.
 - Diagrams are numbered figures with a caption, and the text next to each one explains it.
-- From chapter 2 on, each coding chapter ends with three optional boxes, closed by default. Open them when you want more:
-    - **Try it**: small experiments with a predicted result. They are a good way to check your understanding.
-    - **Under the hood**: the raw Vulkan you avoided.
-    - **When it goes wrong**: the symptoms you are most likely to hit in that chapter, and their causes.
+- From chapter 2 on, each coding chapter ends with three optional boxes, closed by default. **Try it** has small experiments with a predicted result, which help you check your understanding. **Under the hood** shows the raw Vulkan you avoided. **When it goes wrong** lists the symptoms you are most likely to hit in that chapter, and their causes.
 
 Anything you need in order to continue, such as ownership rules or how to read validation errors, is in the main text, never only in a closed box.
 
