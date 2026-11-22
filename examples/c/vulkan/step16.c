@@ -10,10 +10,11 @@
 #include <datoviz.h>
 #include <datoviz/advanced.h>
 
-#define WIDTH         800
-#define HEIGHT        600
-#define MAX_DIMENSION 8192
-#define TEXTURE_SIZE  64
+#define WIDTH                  800
+#define HEIGHT                 600
+#define MAX_DIMENSION          8192
+#define TEXTURE_SIZE           64
+#define PREVIEW_PERIOD_SECONDS 16.0f
 
 // On failure, print the message and jump to the cleanup block at the end of main().
 #define COURSE_CHECK(condition, message)      \
@@ -628,7 +629,8 @@ int main(int argc, char** argv)
     Renderer renderer = {0};
 
     // --png PATH renders offscreen; --obj PATH loads a model instead of the sphere.
-    // --time, --width, and --height only serve the documentation preview.
+    // --time is preview time in seconds; one turn takes 16 seconds.
+    // --width and --height only serve the documentation preview.
     const char* png_path = NULL;
     const char* obj_path = NULL;
     float capture_time = 0.0f;
@@ -746,8 +748,15 @@ int main(int argc, char** argv)
     renderer.arcball = dvz_arcball_create(NULL);
     COURSE_CHECK(
         renderer.camera != NULL && renderer.arcball != NULL, "controller creation failed");
-    DvzResult initial_result = dvz_arcball_initial(
-        renderer.arcball, (vec3){-0.35f, 0.65f + (float)DVZ_PI * capture_time, 0.0f});
+    // Put the sphere's local Z pole axis nearly upright, tilted slightly toward the eye.
+    // Euler XYZ applies the local Z spin before this fixed presentation orientation.
+    vec3 initial_angles = {-(float)DVZ_PI / 2.0f + 0.2f, 0.1f, 0.65f};
+    if (!live)
+    {
+        float phase = fmodf(capture_time, PREVIEW_PERIOD_SECONDS) / PREVIEW_PERIOD_SECONDS;
+        initial_angles[2] += 2.0f * (float)DVZ_PI * phase;
+    }
+    DvzResult initial_result = dvz_arcball_initial(renderer.arcball, initial_angles);
     COURSE_CHECK(initial_result == DVZ_OK, "initial rotation failed");
     DvzResult connect_result = dvz_arcball_connect(renderer.arcball, dvz_canvas_input(canvas));
     COURSE_CHECK(connect_result == DVZ_OK, "arcball connection failed");

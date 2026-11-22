@@ -1,6 +1,6 @@
 # 16. A real mesh
 
-*About 870 lines of C; raw Vulkan would need about 2200.*
+*About 880 lines of C; raw Vulkan would need about 2200.*
 
 ![The final generated sphere viewer, textured and lit.](../assets/gpu-graphics/16-mesh.webp)
 
@@ -216,7 +216,21 @@ The draw must match the new buffers in two ways: the index type and the index co
 
 Read the draw as in chapter 7: from index 0, with vertex offset 0, draw `index_count` indices, as 1 instance starting at instance 0. `VK_INDEX_TYPE_UINT32` tells Vulkan to read each index as 4 bytes.
 
-The full listing also accepts `--width`, `--height` and `--time`, which are used only to render the documentation preview. You don't need them, so your file will be shorter.
+The sphere's texture poles lie on its local z axis. Give it a starting tilt that brings that axis nearly upright. In `main()`, replace the initial arcball rotation carried over from chapter 11. First define the angles:
+
+```c
+    vec3 initial_angles = {-(float)DVZ_PI / 2.0f + 0.2f, 0.1f, 0.65f};
+```
+
+Then pass them to the initialization call:
+
+```c
+    DvzResult initial_result = dvz_arcball_initial(renderer.arcball, initial_angles);
+```
+
+Keep the following `COURSE_CHECK` and input connection. The first angle brings the sphere's pole axis toward vertical; the small remaining tilt lets you see its top. Dragging still rotates the mesh normally.
+
+The full listing also accepts `--width`, `--height` and `--time` for documentation previews. In offscreen mode, `--time` adds a slow turn around the sphere's local z axis before the fixed viewing tilt, so the poles stay in place. You don't need these preview options in your own file.
 
 ## Load your own OBJ
 
