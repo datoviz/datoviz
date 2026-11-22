@@ -62,9 +62,13 @@ The three matrices combine into one **model-view-projection (MVP) matrix**, `pro
 
 The product is the same for every vertex, so we compute it once per frame on the CPU instead of once per vertex in the shader. Its 64 bytes fit within chapter 8's 128-byte push-constant guarantee. The rotation and pulse move out of the shader, which now applies whatever matrix it receives.
 
-<p class="dvz-course-equation" role="math" aria-label="Clip position equals projection times view times model times object position."><i>p</i><sub>clip</sub> = <i>P V M p</i><sub>object</sub></p>
+<div class="dvz-course-equation" markdown="0">
 
-Figure 2 separates the model and view transformations at time zero. The orange dot tracks one corner through the model; the side view then shows how subtracting 3 from world z puts the camera at the view origin. These are spatial schematics, not screenshots of the rendered cube.
+--8<-- "docs/images/gpu-graphics/equation-mvp.svg"
+
+</div>
+
+Figure 2 separates the model and view transformations at time zero. The orange dot tracks one corner through the model. The side view then keeps the cube and camera in place while changing the coordinate origin to the camera.
 
 <figure class="dvz-course-figure" id="fig-model-view-transform" markdown="1">
 
@@ -275,9 +279,9 @@ The projection also holds three Vulkan-specific details:
 - The two depth terms map the near plane to NDC z = 0 and the far plane to z = 1. Vulkan clips depth outside 0 to 1, and this projection uses that whole range.
 - Vulkan's NDC y points down, which is why chapter 4's triangle needed a negative y for its top vertex. The negative y scale flips it, so world-space up appears up.
 
-Figure 3 connects this projection to the camera rays. The virtual plane in the sketch helps compare apparent sizes; it is not a clipping plane. The numerical example uses aspect ratio 1 and two illustrative points at distances 2 and 4.
+Figure 3 connects this projection to the camera rays. Two equally sized objects appear different because their distances differ. The GPU divides by that distance through `w`: farther points move closer to the center of the image. The virtual plane in the sketch helps compare apparent sizes; it is not a clipping plane.
 
-<p class="dvz-course-equation" role="math" aria-label="NDC x equals clip x divided by clip w. Clip w equals minus view z."><i>x</i><sub>NDC</sub> = <i>x</i><sub>clip</sub> / <i>w</i><sub>clip</sub><br/><i>w</i><sub>clip</sub> = −<i>z</i><sub>view</sub></p>
+
 
 <figure class="dvz-course-figure" id="fig-perspective-divide" markdown="1">
 

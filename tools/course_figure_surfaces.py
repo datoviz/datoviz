@@ -219,8 +219,8 @@ def _dot(a, b):
     return sum(x * y for x, y in zip(a, b, strict=True))
 
 
-def _sphere_samples(resolution=64):
-    """Evaluate chapter 15's terms on the same perspective-view sphere samples."""
+def _sphere_samples(resolution=384, *, cover_boundary=False):
+    """Evaluate the lighting model on a perspective sphere, including optional edge cells."""
     albedo = (0.55, 0.28, 0.12)  # Linear values; constant to isolate the lighting terms.
     samples = []
     for row in range(resolution):
@@ -231,7 +231,18 @@ def _sphere_samples(resolution=64):
             b = 3 * direction[2]
             disc = b * b - (9 - 0.9 * 0.9)
             if disc < 0:
-                continue
+                # A boundary cell can intersect the exact silhouette even if its
+                # center misses. Use the tangent color there, then clip the cell
+                # to the smooth circle. Interior samples keep their original rays.
+                radial = sqrt(qx * qx + qy * qy)
+                projected_radius = 0.9 / sqrt(9 - 0.9 * 0.9)
+                half_diagonal = sqrt(2) * 0.34 / resolution
+                if not cover_boundary or radial > projected_radius + half_diagonal:
+                    continue
+                factor = projected_radius * (1 - 1e-12) / radial
+                direction = _normalize((qx * factor, qy * factor, -1))
+                b = 3 * direction[2]
+                disc = max(0, b * b - (9 - 0.9 * 0.9))
             t = -b - sqrt(disc)
             p = tuple(t * c for c in direction)
             n = _normalize((p[0], p[1], p[2] + 3))
@@ -256,13 +267,46 @@ def _srgb_byte(linear):
     return round(encoded * 255)
 
 
+def _color_runs(samples, index):
+    """Group equal-color horizontal sample runs without changing their RGB values."""
+    paths = defaultdict(list)
+    run_row, run_start, run_end, run_rgb = -1, 0, 0, None
+    for row, col, terms in samples:
+        rgb = '#' + ''.join(f'{_srgb_byte(c):02x}' for c in terms[index])
+        if row == run_row and col == run_end and rgb == run_rgb:
+            run_end += 1
+            continue
+        if run_rgb is not None:
+            length = run_end - run_start
+            paths[run_rgb].append(f'M{run_start},{run_row}h{length}v1h-{length}z')
+        run_row, run_start, run_end, run_rgb = row, col, col + 1, rgb
+    if run_rgb is not None:
+        length = run_end - run_start
+        paths[run_rgb].append(f'M{run_start},{run_row}h{length}v1h-{length}z')
+    return paths
+
+
 def _lighting_terms():
-    samples = _sphere_samples()
+    resolution = 384
+    samples = _sphere_samples(resolution, cover_boundary=True)
     names = ('ambient', 'diffuse', 'specular', 'combined')
     titles = ('Ambient only', 'Diffuse only', 'Specular only', 'All three terms')
-    formulas = ('0.16 × albedo', '0.84 × albedo × d', '0.35 × s', 'ambient + diffuse + specular')
+    labels = (
+        'Constant surface contribution',
+        'Depends on the light angle',
+        'Highlight toward the eye',
+        'Sum in linear light',
+    )
+    descriptions = (
+        'the constant ambient contribution',
+        'the diffuse contribution',
+        'the white specular highlight',
+        'the sum of the three contributions in linear light',
+    )
     output = {}
-    for index, (name, title, formula) in enumerate(zip(names, titles, formulas, strict=True)):
+    for index, (name, title, label, description) in enumerate(
+        zip(names, titles, labels, descriptions, strict=True)
+    ):
         svg = SVG(
             'lighting-' + name,
             title + ' on an illustrative sphere',
@@ -270,21 +314,30 @@ def _lighting_terms():
             'The sphere has radius 0.9, center (0,0,-3), constant linear albedo '
             '(0.55,0.28,0.12), and white tint. Eye (0,0,0), light (2,2,0), '
             'and the chapter’s coefficients 0.16, 0.84, 0.35 and exponent 32 '
-            'are shared by all four panels. This panel shows ' + formula + '. '
+            'are shared by all four panels. This panel shows ' + description + '. '
             'All panels use the same exposure, clamping and linear-to-sRGB conversion.',
             height=350,
         )
         svg.text(16, 26, title, size=17, bold=True)
         svg.rect(32, 50, 256, 256, '#111820', 'none')
-        # Group all cells with the same output color into one path. This keeps the
-        # authored SVG compact and avoids thousands of repeated element attributes.
-        paths = defaultdict(list)
-        for row, col, terms in samples:
-            rgb = '#' + ''.join(f'{_srgb_byte(c):02x}' for c in terms[index])
-            paths[rgb].append(f'M{32 + col * 4},{50 + row * 4}h4v4h-4z')
-        for rgb, cells in sorted(paths.items()):
+        # The projected silhouette of this centered perspective sphere is a circle.
+        # Clip boundary cells to that circle so its outline stays smooth when scaled.
+        radius = 0.9 / sqrt(9 - 0.9 * 0.9) * resolution / 0.68
+        clip_id = 'lighting-' + name + '-silhouette'
+        svg.raw(
+            f'<defs><clipPath id="{clip_id}"><circle cx="{resolution / 2:g}" '
+            f'cy="{resolution / 2:g}" r="{radius:.12g}"/></clipPath></defs>'
+        )
+        svg.raw(
+            f'<g transform="translate(32 50) scale({256 / resolution:.16g})" '
+            f'clip-path="url(#{clip_id})">'
+        )
+        # Paths use integer sample coordinates, with adjacent equal-color samples
+        # merged into runs. No raster data, interpolation or per-panel rescaling.
+        for rgb, cells in sorted(_color_runs(samples, index).items()):
             svg.raw(f'<path fill="{rgb}" shape-rendering="crispEdges" d="{"".join(cells)}"/>')
-        svg.text(160, 333, formula, anchor='middle')
+        svg.raw('</g>')
+        svg.text(160, 333, label, anchor='middle')
         output['lighting-' + name] = svg.finish()
     return output
 

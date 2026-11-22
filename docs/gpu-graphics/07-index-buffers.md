@@ -26,6 +26,8 @@ This saves both memory and work. An index here is 2 bytes, while a `Vertex` is 2
 
 Figure 1 shows the square with its two index triples. The two triangles share corners 0 and 2; each index selects both the position and the color. The byte totals compare the uploaded data, excluding object and allocation overhead.
 
+Both triples run clockwise on screen; this order around a triangle is its **winding**. Keep neighboring triangles consistent so a front-face rule can distinguish the two sides of the surface. Culling is off here, so reversing one triple leaves this picture unchanged; chapter 10 chooses the front-face rule for its projected cube.
+
 <figure class="dvz-course-figure" id="fig-indexed-square" markdown="1">
 
 <div class="dvz-figure-panels" markdown="0">

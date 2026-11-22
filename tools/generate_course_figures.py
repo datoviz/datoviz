@@ -14,6 +14,8 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 from course_figure_geometry import figures as geometry_figures
+from course_figure_math import EQUATIONS
+from course_figure_math import figures as equation_figures
 from course_figure_surfaces import figures as surface_figures
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -54,8 +56,8 @@ FIGURES = [
         'scene relative to the camera.',
         purpose='Distinguish changing an object’s pose from expressing the scene '
         'relative to a camera.',
-        limits='Spatial schematics at time zero, not screenshots. The live model '
-        'also spins and pulses. The side view isolates the view translation.',
+        limits='At time zero the model tilts the cube. The side view shows how the camera '
+        'becomes the coordinate origin while the cube stays in front of it.',
     ),
     dict(
         id='fig-perspective-divide',
@@ -66,9 +68,8 @@ FIGURES = [
         caption='Equal sizes appear different at different distances: doubling the '
         'distance doubles w and halves the size after division.',
         purpose='Connect the camera rays, the projection matrix and the GPU’s perspective divide.',
-        limits='Illustrative positions and a virtual plane, not the near/far '
-        'clipping planes. The numerical panel uses the course projection '
-        'with aspect ratio one.',
+        limits='The rays compare apparent size. The equations show why division by distance '
+        'makes a farther object smaller; the virtual plane is not a clipping plane.',
     ),
     dict(
         id='fig-face-uv-map',
@@ -139,8 +140,8 @@ def main():
         help='write a review inventory outside the published documentation',
     )
     args = parser.parse_args()
-    assets = {**geometry_figures(), **surface_figures()}
-    expected = [panel for f in FIGURES for panel in f['panels']]
+    assets = {**geometry_figures(), **surface_figures(), **equation_figures()}
+    expected = [panel for f in FIGURES for panel in f['panels']] + list(EQUATIONS)
     if len(expected) != len(set(expected)) or set(expected) != set(assets):
         raise ValueError('Figure inventory and generated panels disagree')
     ids = set()
@@ -170,13 +171,19 @@ def main():
         args.manifest.parent.mkdir(parents=True, exist_ok=True)
         args.manifest.write_text(
             json.dumps(
-                {'figures': FIGURES, 'panel_count': len(assets)}, indent=2, ensure_ascii=False
+                {
+                    'figures': FIGURES,
+                    'panel_count': len(assets) - len(EQUATIONS),
+                    'equation_count': len(EQUATIONS),
+                },
+                indent=2,
+                ensure_ascii=False,
             )
             + '\n'
         )
     print(
-        f'Course figures: {len(FIGURES)} figures, {len(assets)} SVG panels '
-        + ('verified' if args.check else 'generated')
+        f'Course figures: {len(FIGURES)} figures, {len(assets) - len(EQUATIONS)} SVG panels, '
+        f'{len(EQUATIONS)} equations ' + ('verified' if args.check else 'generated')
     )
 
 

@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 315" role="img" aria-labelledby="vertex-fetch-title vertex-fetch-desc">
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 340" role="img" aria-labelledby="vertex-fetch-title vertex-fetch-desc">
 <title id="vertex-fetch-title">Decode one vertex record</title>
 <desc id="vertex-fetch-desc">Binding zero supplies the byte stream. At each record start, offset zero and format R32G32_SFLOAT provide two floats at shader location zero. Offset eight and R32G32B32_SFLOAT provide three floats at location one.</desc>
 <g font-family="system-ui, sans-serif" font-size="14">
-<rect x="0" y="0" width="320" height="315" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
-<text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">Binding 0: one byte stream</text>
+<rect x="0" y="0" width="320" height="340" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<text x="20" y="28" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">Binding 0: one byte stream</text>
 <rect x="12" y="49" width="296" height="51" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="var(--dvz-blue, #1766a4)"/>
 <text x="23" y="70" font-size="14" fill="var(--dvz-blue, #1766a4)" text-anchor="start" font-weight="600">Offset 0 · bytes 0–7</text>
 <text x="23" y="90" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Read 2 × 32-bit floats</text>

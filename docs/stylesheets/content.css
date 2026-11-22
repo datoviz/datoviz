@@ -672,3 +672,11 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+.md-typeset .dvz-course-equation > .dvz-course-math {
+    display: block;
+    width: 100%;
+    max-width: 22rem;
+    height: auto;
+    margin: 0 auto;
+}

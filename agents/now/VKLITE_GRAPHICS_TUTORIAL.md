@@ -139,6 +139,14 @@ The 18 SVG panels inherit the documentation theme and stack on narrow screens. `
 
 Validation covers regeneration, all 230 synchronized course excerpts, strict documentation generation with 18 media outputs, status and whitespace checks, and all eight figures in actual desktop/mobile chapters in both themes. The private review has a frozen figure set and a numbered checklist; chapter links open the current WIP documentation. Evidence remains ignored under `build/course-figures/20261122/`. Figure acceptance, course proofreading, exact-package evidence and the existing release gates remain open.
 
+## Figure Review Revisions, 2026-11-22
+
+Maintainer feedback revised figures 1, 2, 3, 4 and 8 in the private review. The byte cells are square with more space around their labels. The indexed square has matching clockwise arrows and explains winding consistency without treating clockwise as a universal front-face rule; culling is still disabled in that chapter. Model/view diagrams use simpler labels and a roomier view-space layout. The perspective figure keeps symbolic equations and removes its worked decimal example.
+
+Equations now use actual LaTeX and `dvisvgm --no-fonts`, producing theme-aware SVG paths with unique glyph IDs and accessible descriptions. The two chapter equations use the same route. LaTeX and dvisvgm are generation tools, not requirements for building or viewing the documentation from the committed SVGs. Lighting samples increase from 64 to 384 per dimension and use a smooth circular silhouette, preserving the formula, linear-light addition and common display scale. The four vector panels total about 2.2 MB; no raster or binary asset is added.
+
+Figures 5, 6 and 7 are unchanged. All original code excerpts remain unchanged and in the same order. Regeneration, lint, synchronization, strict documentation generation, status, whitespace and desktop/mobile checks in both themes pass. Evidence is ignored under `build/course-figures/20261122-r2/`. The revised private review preserves the earlier snapshot and leaves manual figure acceptance open.
+
 ## RC4 Freeze
 
 Build and run every chapter from exact candidate source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`. Require packaged runtime shaderc, deterministic previews, bounded GLFW resize/input/depth/repeated-frame/shutdown smoke, Vulkan validation, source synchronization, links, navigation, generated reference and binding checks, supported hosted-platform proof, and explicit physical exclusions.

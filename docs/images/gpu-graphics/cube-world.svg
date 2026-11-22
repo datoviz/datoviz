@@ -26,8 +26,7 @@
 <line x1="229.725" y1="159.313" x2="212.875" y2="84.4392" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
 <line x1="136.435" y1="64.4192" x2="212.875" y2="84.4392" stroke="var(--dvz-blue, #1766a4)" stroke-width="1.8"/>
 <circle cx="212.875" cy="84.4392" r="4" fill="var(--dvz-orange, #985511)" stroke="none"/>
-<text x="12" y="253" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Corner: (0.650, 0.833, 0.388)</text>
-<text x="12" y="273" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">Spatial schematic, not the rendered image.</text>
-<text x="12" y="294" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">M at time = 0: fixed tilt, no spin</text>
+<text x="20" y="263" font-size="14" fill="var(--dvz-orange, #985511)" text-anchor="start">Same corner</text>
+<text x="20" y="287" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">Tilt about the center</text>
 </g>
 </svg>

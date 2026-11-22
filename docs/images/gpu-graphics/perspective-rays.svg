@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 320" role="img" aria-labelledby="perspective-rays-title perspective-rays-desc">
+<svg xmlns="http://www.w3.org/2000/svg" class="dvz-schematic" viewBox="0 0 320 340" role="img" aria-labelledby="perspective-rays-title perspective-rays-desc">
 <title id="perspective-rays-title">Equal sizes at different distances</title>
 <desc id="perspective-rays-desc">Schematic x-z side view, with positive x upward. A camera at distance zero sees equal-length segments at view z minus two and minus four. Rays through a virtual image plane at distance one produce heights in the ratio two to one. Distances and image-plane position are illustrative.</desc>
 <g font-family="system-ui, sans-serif" font-size="14">
-<rect x="0" y="0" width="320" height="320" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
+<rect x="0" y="0" width="320" height="340" rx="4" fill="var(--md-code-bg-color, #f5f7fa)" stroke="none"/>
 <text x="12" y="24" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start" font-weight="600">Same size, twice the distance</text>
 <line x1="20" y1="172" x2="300" y2="172" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1" stroke-dasharray="5 4"/>
 <line x1="88" y1="75" x2="88" y2="268" stroke="var(--md-default-fg-color--lighter, #8593a6)" stroke-width="1" stroke-dasharray="5 4"/>
@@ -20,9 +20,8 @@
 <polygon points="28,102 31.4797,109.204 24.5203,109.204" fill="var(--md-default-fg-color--lighter, #8593a6)" stroke="none" fill-opacity="1"/>
 <text x="28" y="92" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">+x</text>
 <text x="88" y="61" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">virtual plane</text>
-<text x="148" y="254" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">z = −2</text>
-<text x="268" y="254" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">z = −4</text>
+<text x="148" y="254" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">nearer</text>
+<text x="268" y="254" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="middle">farther</text>
 <text x="12" y="290" font-size="14" fill="var(--md-default-fg-color, #253247)" text-anchor="start">Half the apparent size at twice the distance.</text>
-<text x="12" y="311" font-size="14" fill="var(--md-default-fg-color--light, #586579)" text-anchor="start">Illustrative distances; not near/far clip planes.</text>
 </g>
 </svg>

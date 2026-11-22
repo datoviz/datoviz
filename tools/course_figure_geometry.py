@@ -2,38 +2,36 @@
 
 from math import cos, sin
 
-from course_figure_svg import SVG
+from course_figure_math import equation_fragment
+from course_figure_svg import SVG, color
 
 
 def vertex_bytes():
-    """Show three consecutive records and the offsets within each record."""
+    """Show square byte cells with space between the records and their labels."""
     s = SVG(
         'vertex-bytes',
         'Vertex records as bytes',
-        'Each row shows one 20-byte vertex: two four-byte position floats '
-        'followed by three four-byte color floats. Rows are consecutive '
-        'memory, not separate buffers.',
-        height=315,
+        'Three consecutive 20-byte records, v0 to v2. Each square is one byte. '
+        'Position uses eight bytes and color twelve; each group of four bytes is one float.',
+        height=340,
     )
-    s.text(12, 24, 'One square = one byte', bold=True)
-    x0 = 72
-    cell = 11
-    s.text(x0 + 44, 51, 'position: 8 bytes', 14, 'blue', anchor='middle')
-    s.text(x0 + 154, 51, 'color: 12 bytes', 14, 'orange', anchor='middle')
+    s.text(20, 28, 'Each square is one byte', bold=True)
+    x0, cell = 40, 12
+    s.text(88, 66, 'position: 8 bytes', 14, 'blue', anchor='middle')
+    s.text(208, 66, 'color: 12 bytes', 14, 'orange', anchor='middle')
     for j, label in enumerate(['x', 'y', 'r', 'g', 'b']):
-        s.text(x0 + j * 44 + 22, 73, label, 14, anchor='middle')
+        s.text(x0 + j * 48 + 24, 91, label, anchor='middle')
     for row in range(3):
-        y = 88 + row * 38
-        s.text(8, y + 14, f'Vertex {row}', 14)
+        y = 105 + row * 48
+        s.text(12, y + 11, f'v{row}', 14)
         for j in range(20):
-            s.rect(x0 + j * cell, y, cell, 20, 'blue' if j < 8 else 'orange', 'paper')
-        for j in range(6):
-            s.line(x0 + j * 44, y, x0 + j * 44, y + 20, 'ink', 1)
-        s.text(x0, y + 32, f'buffer bytes {row * 20}–{row * 20 + 19}', 14, 'muted')
-    s.text(72, 217, '… three more records …', 14, 'muted')
-    s.text(12, 246, 'Position offset = 0; color offset = 8.', 14)
-    s.text(12, 268, 'Stride = 20 bytes between record starts.', 14)
-    s.text(12, 294, 'Vertex 1 color starts at buffer byte 28.', 14, bold=True)
+            s.rect(x0 + j * cell, y, cell, cell, 'blue' if j < 8 else 'orange', 'paper')
+        for j in range(5):
+            s.rect(x0 + j * 48, y, 48, cell, 'none', 'ink')
+        s.text(x0, y + 34, f'buffer bytes {row * 20}–{row * 20 + 19}', 14, 'muted')
+    s.text(20, 266, 'Position offset: 0; color offset: 8.', 14)
+    s.text(20, 291, 'Stride: 20 bytes to the next record.', 14)
+    s.text(20, 316, 'v1 color starts at buffer byte 28.', 14, bold=True)
     return s.finish()
 
 
@@ -46,9 +44,9 @@ def vertex_fetch():
         'zero and format R32G32_SFLOAT provide two floats at shader location '
         'zero. Offset eight and R32G32B32_SFLOAT provide three floats at '
         'location one.',
-        height=315,
+        height=340,
     )
-    s.text(12, 24, 'Binding 0: one byte stream', bold=True)
+    s.text(20, 28, 'Binding 0: one byte stream', bold=True)
     for y, title, sub, shader, c in [
         (
             49,
@@ -92,7 +90,14 @@ def indexed_square():
         s.text(x + (-17 if i in [0, 3] else 13), y + (-10 if i < 2 else 20), str(i), 16, bold=True)
     s.text(190, 116, '0, 1, 2', 15, 'blue', anchor='middle')
     s.text(123, 191, '0, 2, 3', 15, 'orange', anchor='middle')
-    s.text(160, 282, 'Corners 0 and 2 belong to both triangles.', 14, anchor='middle')
+    for cx, cy, c in [(190, 111, 'blue'), (123, 186, 'orange')]:
+        r = 29
+        s.raw(
+            f'<path d="M{cx},{cy - r} A{r},{r} 0 1 1 {cx - r},{cy}" '
+            f'fill="none" stroke="{color(c)}" stroke-width="1.8"/>'
+        )
+        s.arrow(cx - r, cy + 8, cx - r, cy, c, 1.8)
+    s.text(160, 279, 'Both triangles wind clockwise here.', 14, anchor='middle')
     return s.finish()
 
 
@@ -167,52 +172,37 @@ def transformed_cube(which):
     corner = vertices[7]
     q = project_iso(corner)
     s.circle(*q, 4, 'orange')
+    s.text(20, 263, 'Same corner', 14, 'orange')
     s.text(
-        12,
-        253,
-        'Corner: ' + ('(0.650, 0.650, 0.650)' if which == 'object' else '(0.650, 0.833, 0.388)'),
-        14,
-    )
-    s.text(12, 273, 'Spatial schematic, not the rendered image.', 14, 'muted')
-    s.text(
-        12,
-        294,
-        'Stored coordinates' if which == 'object' else 'M at time = 0: fixed tilt, no spin',
-        14,
-        'muted',
+        20, 287, 'Stored positions' if which == 'object' else 'Tilt about the center', 14, 'muted'
     )
     return s.finish()
 
 
 def camera_view():
-    """Compare world and view coordinates for the same camera and cube."""
+    """Keep the camera and cube aligned while changing the coordinate origin."""
     s = SVG(
         'camera-view',
         'World coordinates become view coordinates',
-        'Side view at time zero. The world camera is at z equals three and '
-        'the cube center at z zero. Subtracting three from every world z '
-        'puts the camera at the view origin and the cube center at z minus '
-        'three. The scene is re-expressed, not physically moved.',
-        height=300,
+        'The cube and camera keep the same separation. In world coordinates the cube '
+        'center is the origin. In view coordinates the camera is the origin and the '
+        'cube is in front of it.',
+        height=340,
     )
-    s.text(12, 24, '3. View space', bold=True)
-    for y, label, cube, eye, ticks in [
-        (88, 'World', 75, 255, ['z = 0', 'z = +3']),
-        (199, 'View', 75, 255, ['z = −3', 'z = 0']),
+    s.text(20, 28, '3. View space', bold=True)
+    for y, title, left, right in [
+        (107, 'World coordinates', 'origin', 'camera position'),
+        (237, 'View coordinates', 'in front', 'origin'),
     ]:
-        s.text(12, y - 26, label, 14, bold=True)
-        s.line(45, y, 280, y, 'line')
-        s.rect(cube - 13, y - 14, 26, 28, 'blue', 'blue')
-        s.circle(eye, y, 7, 'orange')
-        s.arrow(eye - 12, y - 24, cube + 12, y - 24, 'orange', 1.5)
-        if label == 'World':
-            s.text(cube, y + 22, 'cube center', 14, anchor='middle')
-            s.text(eye, y + 22, 'camera', 14, anchor='middle')
-        for x, t in [(cube, ticks[0]), (eye, ticks[1])]:
-            s.text(x, y + 42, t, 14, anchor='middle')
-    s.text(160, 147, 'view z = world z − 3', 15, anchor='middle', bold=True)
-    s.text(12, 267, 'Same scene, camera-centered coordinates.', 14, 'muted')
-    s.text(12, 292, 'Corner z: 0.388 → −2.612', 14, 'orange')
+        s.text(20, y - 45, title, 14, bold=True)
+        s.line(48, y, 278, y, 'line')
+        s.rect(77, y - 12, 24, 24, 'blue', 'blue')
+        s.circle(240, y, 7, 'orange')
+        s.arrow(228, y - 22, 103, y - 22, 'orange', 1.5)
+        s.text(89, y + 36, 'cube center', 14, anchor='middle')
+        s.text(240, y + 36, 'camera', 14, anchor='middle')
+        s.text(89, y + 58, left, 14, 'muted', anchor='middle')
+        s.text(240, y + 58, right, 14, 'muted', anchor='middle')
     return s.finish()
 
 
@@ -226,7 +216,7 @@ def perspective_rays():
         'minus four. Rays through a virtual image plane at distance one '
         'produce heights in the ratio two to one. Distances and image-plane '
         'position are illustrative.',
-        height=320,
+        height=340,
     )
     s.text(12, 24, 'Same size, twice the distance', bold=True)
     eye = (28, 172)
@@ -247,37 +237,43 @@ def perspective_rays():
     s.arrow(28, 151, 28, 102, 'line', 1)
     s.text(28, 92, '+x', 14, anchor='middle')
     s.text(plane, 61, 'virtual plane', 14, anchor='middle')
-    s.text(near, 254, 'z = −2', 14, anchor='middle')
-    s.text(far, 254, 'z = −4', 14, anchor='middle')
+    s.text(near, 254, 'nearer', 14, anchor='middle')
+    s.text(far, 254, 'farther', 14, anchor='middle')
     s.text(12, 290, 'Half the apparent size at twice the distance.', 14)
-    s.text(12, 311, 'Illustrative distances; not near/far clip planes.', 14, 'muted')
+
     return s.finish()
 
 
 def perspective_numbers():
-    """Evaluate the perspective divide for two illustrative view-space points."""
+    """Explain the perspective divide symbolically, without a worked calculation."""
     s = SVG(
         'perspective-divide',
-        'Projection and the divide by w',
-        'For the course projection at aspect one, x clip is about 1.732 '
-        'times view x and w is minus view z. For view x one at z minus two, '
-        'NDC x is about 0.866. At z minus four, it is about 0.433. The '
-        'second point is halfway from the center on screen.',
-        height=320,
+        'Why distance changes apparent size',
+        'NDC x is clip x divided by clip w. In this projection w is positive distance '
+        'in front of the camera. A greater distance makes the denominator larger '
+        'and moves the point closer to the screen center.',
+        height=340,
     )
-    s.text(12, 24, 'The divide makes distance matter', bold=True)
-    s.text(12, 58, 'Course projection · aspect = 1', 14, 'muted')
-    s.text(12, 88, 'xclip = 1.732 × xview', 18)
-    s.text(12, 115, 'wclip = −zview', 18)
-    s.text(12, 147, 'For xview = 1:', 14, bold=True)
-    for y, z, w, ndc, c in [
-        (183, '−2', '2', '0.866', 'blue'),
-        (218, '−4', '4', '0.433', 'orange'),
-    ]:
-        s.text(12, y, f'z = {z}   →   w = {w}', 15, c)
-        s.text(187, y, f'xNDC ≈ {ndc}', 15, c)
-    s.text(12, 258, 'xNDC = xclip / wclip', 18, bold=True)
-    s.text(12, 291, 'The GPU performs this division.', 14)
+    s.text(20, 28, 'Divide by distance', bold=True)
+    s.raw(
+        equation_fragment(
+            'perspective-x',
+            r'x_{\mathrm{NDC}}=\frac{x_{\mathrm{clip}}}{w_{\mathrm{clip}}}',
+            20,
+            62,
+            280,
+            66,
+        )
+    )
+    s.raw(
+        equation_fragment(
+            'perspective-w', r'w_{\mathrm{clip}}=-z_{\mathrm{view}}', 20, 144, 280, 40
+        )
+    )
+    s.text(20, 221, 'Here, w is the distance in front', 14)
+    s.text(20, 244, 'of the camera.', 14)
+    s.text(20, 282, 'Farther away → larger denominator', 14)
+    s.text(20, 307, '                    → smaller image', 14)
     return s.finish()
 
 

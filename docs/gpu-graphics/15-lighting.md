@@ -105,9 +105,13 @@ void main()
 
 `diffuse` is the clamped cosine from the model. `specular` raises the halfway term to the exponent in `material.lighting.w`, and is skipped on faces turned away from the light.
 
-<p class="dvz-course-equation" role="math" aria-label="Diffuse equals the maximum of zero and the dot product of unit normal n and unit light direction l.">diffuse = max(0, <b>n</b> · <b>l</b>)</p>
+<div class="dvz-course-equation" markdown="0">
 
-For unit directions, a dot product of 1 means they point the same way, and 0 means they are perpendicular. Clamping removes negative contributions from light behind the surface.
+--8<-- "docs/images/gpu-graphics/equation-diffuse.svg"
+
+</div>
+
+Here, *d* is the diffuse term. For unit directions, a dot product of 1 means they point the same way, and 0 means they are perpendicular. Clamping removes negative contributions from light behind the surface.
 
 ### Read the surface color
 
