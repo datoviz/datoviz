@@ -1,8 +1,8 @@
 # Modern GPU Graphics In Vulkan Course Execution
 
-Status: the complete 16-chapter implementation, epilogue, canonical programs and generated previews are present. The fuller explanatory revision landed on 2026-11-17; the 2026-11-18 Claude Opus 5.5 medium review and independent source check completed bounded documentation corrections. All 16 canonical programs pass the 2026-11-18 validation-enabled in-tree smoke with reproducible captures. The 2026-11-20 isolated-reader run passes the Linux source-install path for all 16 chapters. The maintainer accepted the readability pilot on chapters 1-4 on 2026-11-21 with two minor refinements; the readability rollout and explicit whole-course humanizer/consistency pass are complete and validated. Maintainer proofreading and exact post-RC2 package/platform proof remain separate gates. Updated: 2026-11-21.
+Status: the overview, 16 substantive chapters, epilogue, canonical programs and generated previews are complete. The readability rollout and whole-course humanizer review are complete, and all eight added figures are accepted. The final consistency pass on 2026-11-22 checks navigation, figure references, terminology and rendered presentation. The completed Linux isolated-reader and native/installed-source runs retain their recorded revisions; no new package or platform run is claimed. Remaining gates are maintainer prose proofreading and exact post-RC2 artifact/platform proof. Updated: 2026-11-22.
 
-Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [../../docs/architecture/vulkan_course_plan.md](../../docs/architecture/vulkan_course_plan.md) for the working chapter outline, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
+Use [../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md](../../spec/docs/VKLITE_GRAPHICS_TUTORIAL.md) for the durable contract, [the course overview](../../docs/gpu-graphics/index.md) for the current chapter sequence, and [../../spec/architecture/SHADER_TOOLCHAIN.md](../../spec/architecture/SHADER_TOOLCHAIN.md) for shader policy.
 
 ## Implemented Baseline
 
@@ -124,7 +124,7 @@ Validation passes: all 230 synchronized excerpts, exact preservation of every or
 
 Eight new figures support the course's memory, geometry and lighting explanations. GPT-6.1 Sol at high effort designed them against the canonical sources and independently reviewed the generated schematics. All new captions, labels, descriptions and surrounding prose received the humanizer pass. The original code blocks, their order, canonical programs, external shaders, headers and runtime are unchanged.
 
-Maintainer review is pending for each figure:
+Original figure-review inventory; all eight were accepted on 2026-11-22:
 
 1. [Chapter 6: vertex bytes and shader inputs](../../docs/gpu-graphics/06-vertex-buffers.md#fig-vertex-byte-layout).
 2. [Chapter 7: indexed square](../../docs/gpu-graphics/07-index-buffers.md#fig-indexed-square).
@@ -151,11 +151,19 @@ Figures 5, 6 and 7 are unchanged. All original code excerpts remain unchanged an
 
 The maintainer approved review figures 1, 2, 4, 5, 6, 7 and 8. Figure 3, the object/world/view comparison, remains open. Its two side views now show the same cube and camera on labeled z axes: world positions 0 and 3 become view positions −3 and 0. A camera icon, viewing-direction arrow and marked zero connect the numbers to the reference point. The chapter explains the camera's 3D coordinate system, why points in front have negative z, and that projection follows afterwards. The four panels form two rows on desktop and stack on mobile.
 
-The humanizer pass covers the revised labels, descriptions, caption, chapter explanation and this record. Regeneration, lint, the 230-excerpt check, strict documentation generation, status, whitespace and desktop/mobile checks pass. All other figures and all original code excerpts remain unchanged. Evidence is ignored under `build/course-figures/20261122-r3/`. Only revised figure 3 needs another figure review; overall course proofreading and release gates retain their earlier scope.
+The humanizer pass covers the revised labels, descriptions, caption, chapter explanation and this record. Regeneration, lint, the 230-excerpt check, strict documentation generation, status, whitespace and desktop/mobile checks pass. All other figures and all original code excerpts remain unchanged. Evidence is ignored under `build/course-figures/20261122-r3/`. At that checkpoint, only revised figure 3 needed another figure review. Its later acceptance below closes the figure queue; overall course proofreading and release gates retain their earlier scope.
 
 ## All Figures Accepted, 2026-11-22
 
 The maintainer approved the revised view-space comparison at `13d92b94f`. All eight course figures are now accepted, including their current captions and supporting explanations. This closes the figure-review queue. It does not establish acceptance of every remaining course passage or close exact-package, platform, gallery-promotion or release-publication gates. The next course step is the remaining maintainer proofreading, followed by an RC3 scope and candidate-readiness review.
+
+## Final Consistency Pass, 2026-11-22
+
+The pass covers all 18 course pages for chapter sequence, links and anchors, figure numbering and references, optional-section defaults, OS-tab behavior and navigation. Terminology checks revisit event-loop ownership, vertex input, copied versus referenced resources, shader compilation, coordinate spaces and the final pipeline summary. This is a consistency pass; the earlier whole-course prose and source reviews retain their scope.
+
+Two public presentation corrections follow: the overview diagram names the C program as the caller of vklite, and the epilogue replaces its remaining ASCII schematic with the same captioned Mermaid style used elsewhere. The epilogue now identifies vertex input and the two descriptor bindings explicitly. All original C/GLSL excerpts and canonical programs are unchanged. Humanizer covers these revised labels and explanations plus the updated agent records, rather than certifying untouched prose again.
+
+Source structure, all 230 synchronized excerpts, 19 SVG panels and two LaTeX equations, strict documentation generation, rendered links/navigation and desktop/mobile checks pass. Evidence remains ignored under `build/course-final/20261122/`. The [immediate RC3 checklist](STATUS.md#immediate-checklist-2026-11-22) separates remaining maintainer proofreading, media/pilot scope, candidate freeze, exact packages, platform evidence and publication. The accepted eight-figure review remains closed; the epilogue diagram is part of the current prose/presentation review.
 
 ## RC4 Freeze
 

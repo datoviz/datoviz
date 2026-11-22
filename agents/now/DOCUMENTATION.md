@@ -36,6 +36,8 @@ The scientific-profile correction at `d0e904705` updates native technique covera
 
 ## Remaining RC3 Documentation Work
 
+The [immediate RC3 checklist](STATUS.md#immediate-checklist-2026-11-22) gives the order and ownership of the remaining gates. All eight added course figures are accepted; the four-page public-documentation pilot below is a separate scope decision.
+
 1. Confirm the four-page visual pilot scope before any broad rollout; this is distinct from the accepted homepage videos and completed gallery comparison. Do not repeat accepted reviews merely because their historical handoff still says pending.
 2. The maintainer accepted the 2026-11-21 readability pilot in chapters 1-4. The full readability rollout and explicit humanizer/consistency review of chapters 1-17 and the overview are complete and validated (see [the course queue](VKLITE_GRAPHICS_TUTORIAL.md)); the complete course ships in RC3. Maintainer acceptance of voice, pacing, API profile, ownership explanations, package-first instructions and previews remains separate.
 3. Preserve the accepted polygon rendering direction and completed comparison; canonical polygon/choropleth images have not been promoted. Prepare the exact destination/hash and publication action for any remaining canonical replacements. For the three small raster residuals, tie any existing maintainer acceptance to the exact candidate provenance or obtain a scoped disposition; do not reopen the accepted benign general review. Keep RC3 unsupported paint queries and browser validation scope explicit; composed picking and device lifecycle are RC4 work.
