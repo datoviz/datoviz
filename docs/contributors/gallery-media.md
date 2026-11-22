@@ -52,6 +52,8 @@ The normal documentation workflow consumes the hash-locked snapshot declared by 
 
 `tools/docs_asset_stage.py --homepage-products build/homepage-review/selected-homepage-media` stages both AV1 primaries and their H.264 compatibility streams. Publish stages require the complete verified snapshot; hermetic builds use generated placeholders without requiring media or encoder binaries. `python3 tools/check_gallery_media_freshness.py --profile homepage` validates selected hashes and video timing. Use the explicit comparison tools for candidate freshness and encoding experiments.
 
+Generated gallery pages and cards use the same approved videos, fallback streams and posters as the homepage for examples in the selected snapshot. Keep the normal capture profiles for development comparisons; change the shared selection when replacing a reviewed video, rather than overriding individual pages.
+
 ## Homepage Release Delivery
 
 The selected homepage media are prepared as GitHub Release attachments in the existing website repository. They are served through versioned release URLs rather than committed as website Git blobs. This delivery change does not deploy the website, create a repository, migrate datasets or remove the data submodule.

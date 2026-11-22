@@ -16,10 +16,11 @@ This example combines a textured Earth with real catalogued orbital debris.
 === "Screenshot"
 
     <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-      <img class="dvz-gallery-poster" src="../../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets and Orbital Debris" loading="lazy">
+      <img class="dvz-gallery-poster" src="../../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets and Orbital Debris" loading="lazy">
       <video class="dvz-gallery-video" muted loop playsinline preload="none"
-             poster="../../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets and Orbital Debris preview">
-        <source data-src="../../../assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
+             poster="../../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets and Orbital Debris preview">
+        <source data-src="../../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.av1.mp4" type="video/mp4; codecs=&quot;av01.0.05M.10&quot;">
+        <source data-src="../../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.mp4" type="video/mp4">
       </video>
     </div>
 

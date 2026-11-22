@@ -87,10 +87,10 @@ This example renders an animated density-wave spiral galaxy.
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <a class="dvz-gallery-media-target" href="showcases/cortical-activity/" aria-label="Human Auditory Cortical Activity"></a>
-  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" alt="Human Auditory Cortical Activity" loading="lazy">
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_cortical_activity.poster.webp" alt="Human Auditory Cortical Activity" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../assets/gallery/v0.4/showcases/showcases_cortical_activity.poster.webp" aria-label="Human Auditory Cortical Activity preview">
-    <source data-src="../assets/gallery/v0.4/showcases/showcases_cortical_activity.mp4" type="video/mp4">
+         poster="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_cortical_activity.poster.webp" aria-label="Human Auditory Cortical Activity preview">
+    <source data-src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_cortical_activity.mp4" type="video/mp4">
   </video>
 </div>
 
@@ -106,10 +106,10 @@ This example animates a human auditory dSPM estimate on cortex.
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <a class="dvz-gallery-media-target" href="showcases/protein/" aria-label="Protein"></a>
-  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_protein.poster.webp" alt="Protein" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../assets/gallery/v0.4/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
-    <source data-src="../assets/gallery/v0.4/showcases/showcases_protein.mp4" type="video/mp4">
+         poster="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_protein.poster.webp" aria-label="Protein preview">
+    <source data-src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_protein.mp4" type="video/mp4">
   </video>
 </div>
 
@@ -125,10 +125,11 @@ This example renders a prepared PDB structure as colored sphere impostors.
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <a class="dvz-gallery-media-target" href="showcases/textured-planet/" aria-label="Textured Planets and Orbital Debris"></a>
-  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets and Orbital Debris" loading="lazy">
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.poster.webp" alt="Textured Planets and Orbital Debris" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets and Orbital Debris preview">
-    <source data-src="../assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
+         poster="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.poster.webp" aria-label="Textured Planets and Orbital Debris preview">
+    <source data-src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.av1.mp4" type="video/mp4; codecs=&quot;av01.0.05M.10&quot;">
+    <source data-src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.mp4" type="video/mp4">
   </video>
 </div>
 
@@ -144,10 +145,11 @@ This example combines a textured Earth with real catalogued orbital debris.
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
   <a class="dvz-gallery-media-target" href="showcases/point-cloud/" aria-label="Point Cloud"></a>
-  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
+  <img class="dvz-gallery-poster" src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.poster.webp" alt="Point Cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
-    <source data-src="../assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
+         poster="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.poster.webp" aria-label="Point Cloud preview">
+    <source data-src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.av1.mp4" type="video/mp4; codecs=&quot;av01.0.05M.10&quot;">
+    <source data-src="../assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.mp4" type="video/mp4">
   </video>
 </div>
 

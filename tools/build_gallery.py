@@ -13,6 +13,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import gallery_media
+import homepage_media
 from example_navigation import load_navigation, navigation_anchor, validate_navigation
 
 
@@ -164,6 +165,7 @@ class Example:
     build_command: str | None
     smoke_command: str | None
     docs_page: str | None
+    selected_assets: tuple[dict, ...] = ()
 
     @property
     def source_path(self) -> Path:
@@ -461,6 +463,8 @@ def extract_c_summary(path: Path) -> str:
 def collect_examples(manifest: dict) -> list[Example]:
     examples: list[Example] = []
     reviewed_ids = reviewed_example_ids(manifest)
+    selection = homepage_media.selection_for(manifest)
+    selected = {entry["id"]: entry["assets"] for entry in selection["examples"]} if selection else {}
     for entry in manifest["examples"]:
         id_ = str(entry["id"])
         if reviewed_ids and id_ not in reviewed_ids:
@@ -495,6 +499,7 @@ def collect_examples(manifest: dict) -> list[Example]:
                 f"public example summary must start with 'This example ': {source}: {summary!r}"
             )
         example = Example(
+            selected_assets=tuple(selected.get(id_, [])),
             id=str(entry["id"]),
             title=str(entry.get("title", entry["id"])),
             category=category,
@@ -651,6 +656,19 @@ def video_media_block(
     title = html.escape(example.title, quote=True)
     poster = html.escape(asset_url(page_path, example, image_url_base, ".poster.webp"), quote=True)
     mp4 = html.escape(asset_url(page_path, example, image_url_base, ".mp4"), quote=True)
+    sources = [(mp4, "video/mp4")]
+    if example.selected_assets:
+        def selected_url(asset: dict) -> str:
+            target = f"{image_url_base.rstrip('/')}/profiles/homepage/{asset['path']}"
+            return html.escape(site_html_relative_url(page_path, target), quote=True)
+
+        poster = selected_url(next(asset for asset in example.selected_assets if asset["role"] == "poster"))
+        sources = []
+        for role in ("primary", "fallback"):
+            for asset in example.selected_assets:
+                if asset["role"] == role:
+                    mime = 'video/mp4; codecs="av01.0.05M.10"' if asset["codec"] == "av1" else "video/mp4"
+                    sources.append((selected_url(asset), mime))
     link = ""
     if href:
         link = (
@@ -667,7 +685,7 @@ def video_media_block(
             f'  <img class="dvz-gallery-poster" src="{poster}" alt="{title}" loading="lazy">',
             "  <video class=\"dvz-gallery-video\" muted loop playsinline preload=\"none\"",
             f'         poster="{poster}" aria-label="{title} preview">',
-            f'    <source data-src="{mp4}" type="video/mp4">',
+            *[f'    <source data-src="{url}" type="{html.escape(mime, quote=True)}">' for url, mime in sources],
             "  </video>",
             "</div>",
         ]

@@ -598,12 +598,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 120
-        fps: 60
+        frames: 240
+        fps: 30
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 60
+          fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -739,12 +739,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 120
-        fps: 60
+        frames: 240
+        fps: 30
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 60
+          fps: 30
     data:
       kind: synthetic
     webgpu:
@@ -770,12 +770,12 @@ examples:
     media:
       preview:
         kind: animated-webp
-        frames: 120
-        fps: 60
+        frames: 240
+        fps: 30
         card:
           preferred: video-mp4
           sample_step: 1
-          fps: 60
+          fps: 30
     data:
       kind: synthetic
     webgpu:

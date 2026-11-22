@@ -40,10 +40,11 @@ Datoviz.
 ### [Rotating Earth](../../examples/showcases/textured-planet.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" alt="Rotating textured Earth rendered in 3D" loading="lazy">
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.poster.webp" alt="Rotating textured Earth rendered in 3D" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../assets/gallery/v0.4/showcases/showcases_textured_planet.poster.webp" aria-label="Rotating textured Earth preview">
-    <source data-src="../../assets/gallery/v0.4/showcases/showcases_textured_planet.mp4" type="video/mp4">
+         poster="../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.poster.webp" aria-label="Rotating textured Earth preview">
+    <source data-src="../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.av1.mp4" type='video/mp4; codecs="av01.0.05M.10"'>
+    <source data-src="../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_textured_planet.mp4" type="video/mp4">
   </video>
 </div>
 
@@ -82,10 +83,11 @@ Datoviz.
 ### [Large point cloud](../../examples/showcases/point-cloud.md)
 
 <div class="dvz-gallery-media dvz-gallery-media--video" data-gallery-lazy="video">
-  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" alt="Large colored 3D point cloud" loading="lazy">
+  <img class="dvz-gallery-poster" src="../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.poster.webp" alt="Large colored 3D point cloud" loading="lazy">
   <video class="dvz-gallery-video" muted loop playsinline preload="none"
-         poster="../../assets/gallery/v0.4/showcases/showcases_point_cloud.poster.webp" aria-label="Large 3D point cloud preview">
-    <source data-src="../../assets/gallery/v0.4/showcases/showcases_point_cloud.mp4" type="video/mp4">
+         poster="../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.poster.webp" aria-label="Large 3D point cloud preview">
+    <source data-src="../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.av1.mp4" type='video/mp4; codecs="av01.0.05M.10"'>
+    <source data-src="../../assets/gallery/v0.4/profiles/homepage/showcases/showcases_point_cloud.mp4" type="video/mp4">
   </video>
 </div>
 
