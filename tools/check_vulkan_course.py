@@ -3,7 +3,8 @@
 
 Each chapter page teaches by showing excerpts of a single growing program. This tool enforces that
 every C excerpt in a chapter appears verbatim in that chapter's step source, so prose and code can
-never drift. Whitespace at line ends is normalized; nothing else is.
+never drift. Annotated GLSL may differ from its explicitly named embedded shader only in comments
+and formatting; other excerpts retain their verbatim check.
 """
 
 from __future__ import annotations
@@ -39,6 +40,22 @@ CHAPTERS = {
 }
 
 FENCE = re.compile(r"^(?P<indent> *)```(?P<lang>[a-z]*)\s*$", re.MULTILINE)
+EMBEDDED_SHADERS = {"04-triangle.md": ("VERTEX_GLSL", "FRAGMENT_GLSL")}
+EMBEDDED_MARKER = re.compile(r"\s*<!--\s*embedded-shader:\s*([A-Za-z_][A-Za-z_0-9]*)\s*-->\s*")
+C_STRING = r'"(?:\\.|[^"\\])*"'
+COMMENTS = re.compile(
+    r'''(?P<literal>"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')'''
+    r'|(?P<comment>//[^\r\n]*|/\*[\s\S]*?\*/)',
+    re.DOTALL,
+)
+GLSL_TOKEN = re.compile(
+    r'''"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*' '''
+    r'|[A-Za-z_][A-Za-z_0-9]*'
+    r'|(?:0[xX][0-9a-fA-F]+|(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?)[fFuUlL]*'
+    r'|<<=|>>=|\+\+|--|<<|>>|<=|>=|==|!=|&&|\|\||\^\^|\+=|-=|\*=|/=|%=|&=|\|=|\^='
+    r'|[^\s]',
+    re.VERBOSE,
+)
 
 # Excerpts that deliberately differ from the step program: experiments the reader is invited to try,
 # which by definition are not in the finished chapter. Matched as a substring of the block.
@@ -54,10 +71,71 @@ class Block:
     lang: str
     line: int
     code: str
+    embedded_shader: str | None = None
+
+
+def _without_comments(text: str) -> str:
+    """Remove comments without joining tokens, deleting newlines, or touching quoted literals."""
+    return COMMENTS.sub(
+        lambda match: " " + "\n" * match.group().count("\n")
+        if match.lastgroup == "comment"
+        else match.group(),
+        text,
+    )
+
+
+def _embedded_shader(source: str, name: str) -> str:
+    """Decode an ordinary, adjacent-C-string initializer with standard single-character escapes."""
+    # C removes escaped physical newlines before recognizing comments and string literals.
+    source = re.sub(r"\\(?:\r\n|\r|\n)", "", source)
+    declaration = re.search(
+        rf'\bstatic\s+const\s+char\s*\*\s*{re.escape(name)}\s*=\s*'
+        rf'(?P<strings>(?:{C_STRING}\s*)+);',
+        _without_comments(source),
+        re.DOTALL,
+    )
+    if declaration is None:
+        raise ValueError(f"missing ordinary C string initializer for {name}")
+    literals = re.findall(C_STRING, declaration.group("strings"), re.DOTALL)
+    escapes = {
+        "a": "\a", "b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t", "v": "\v",
+        "\\": "\\", '"': '"', "'": "'", "?": "?", "\n": "",
+    }
+
+    def decode(match: re.Match[str]) -> str:
+        escape = match.group(1)
+        if escape not in escapes:
+            raise ValueError(f"unsupported C string escape in {name}: {match.group()!r}")
+        return escapes[escape]
+
+    return "".join(
+        re.sub(r"\\(.)", decode, literal[1:-1], flags=re.DOTALL) for literal in literals
+    )
+
+
+def _shader_tokens(text: str) -> list[str]:
+    """Compare GLSL tokens while keeping preprocessor directive line boundaries significant."""
+    # Line splicing precedes comment removal in GLSL. The displayed shaders need no continuations;
+    # reject them rather than accidentally hiding code after a continued // comment.
+    if re.search(r"\\[ \t\v\f]*(?:\r\n|\r|\n)", text):
+        raise ValueError("GLSL line continuations are unsupported in annotated shaders")
+    text = _without_comments(text.replace("\r\n", "\n").replace("\r", "\n"))
+    if any(char.isspace() and char not in " \t\n\v\f" for char in text):
+        raise ValueError("non-ASCII whitespace is unsupported in annotated GLSL code")
+    tokens: list[str] = []
+    # Vertical tabs and form feeds are whitespace, but do not end a GLSL directive.
+    for line in text.split("\n"):
+        current = GLSL_TOKEN.findall(line)
+        if line.lstrip().startswith("#"):
+            tokens.extend(["<directive>", *current, "<end-directive>"])
+        else:
+            tokens.extend(current)
+    return tokens
 
 
 def _normalize(text: str) -> str:
-    return "\n".join(line.rstrip() for line in text.splitlines())
+    lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    return "\n".join(line.rstrip(" \t") for line in lines)
 
 
 def _dedent(text: str, indent: int) -> str:
@@ -72,7 +150,8 @@ def _dedent(text: str, indent: int) -> str:
 def _blocks(markdown: str) -> list[Block]:
     """Extract fenced code blocks, keeping their language and starting line."""
     blocks: list[Block] = []
-    lines = markdown.splitlines()
+    # Keep vertical tabs and Unicode separators inside code, rather than turning them into newlines.
+    lines = markdown.replace("\r\n", "\n").replace("\r", "\n").split("\n")
     index = 0
     while index < len(lines):
         opening = FENCE.match(lines[index] + "\n")
@@ -86,7 +165,18 @@ def _blocks(markdown: str) -> list[Block]:
         while end < len(lines) and lines[end].rstrip() != closing:
             end += 1
         body = "\n".join(lines[index + 1 : end])
-        blocks.append(Block(lang=lang, line=index + 1, code=_dedent(body, indent)))
+        previous = index - 1
+        while previous >= 0 and not lines[previous].strip():
+            previous -= 1
+        marker = EMBEDDED_MARKER.fullmatch(lines[previous]) if previous >= 0 else None
+        blocks.append(
+            Block(
+                lang=lang,
+                line=index + 1,
+                code=_dedent(body, indent),
+                embedded_shader=marker.group(1) if marker else None,
+            )
+        )
         index = end + 1
     return blocks
 
@@ -103,8 +193,28 @@ def _check_chapter(page: Path, source: Path, errors: list[str]) -> int:
     allowed = ALLOWED_DIVERGENCE.get(page.name, ())
     checked = 0
     included_shaders: list[Path] = []
+    expected_embedded = EMBEDDED_SHADERS.get(page.name, ())
+    annotated_shaders: list[str] = []
 
     for block in _blocks(markdown):
+        if block.embedded_shader is not None:
+            checked += 1
+            label = f"{page.relative_to(ROOT)}:{block.line}"
+            if block.lang != "glsl" or block.embedded_shader not in expected_embedded:
+                errors.append(f"{label}: unexpected embedded shader annotation")
+                continue
+            annotated_shaders.append(block.embedded_shader)
+            try:
+                embedded = _embedded_shader(source.read_text(), block.embedded_shader)
+                same = _shader_tokens(block.code) == _shader_tokens(embedded)
+            except ValueError as error:
+                errors.append(f"{label}: {error}")
+                continue
+            if not same:
+                errors.append(
+                    f"{label}: annotated GLSL differs from embedded {block.embedded_shader}"
+                )
+            continue
         if block.lang not in {"c", "glsl"}:
             continue
         if block.code.lstrip().startswith("--8<--"):
@@ -140,6 +250,10 @@ def _check_chapter(page: Path, source: Path, errors: list[str]) -> int:
                 f"{page.relative_to(ROOT)}:{block.line}: {block.lang} excerpt is not present "
                 f"verbatim in {source.relative_to(ROOT)}"
             )
+    if expected_embedded and sorted(annotated_shaders) != sorted(expected_embedded):
+        errors.append(
+            f"{page.relative_to(ROOT)}: annotated GLSL must cover each embedded shader exactly once"
+        )
     if shader_haystacks:
         expected_shaders = {
             Path("examples/c/vulkan") / source.stem / "shader.vert",

@@ -8,23 +8,193 @@ Chapter 3 gave every frame its shape: a rendering pass that clears the image, wi
 
 The triangle is the GPU's basic shape: every surface in this course, up to the final mesh, is made of triangles. Drawing one takes three new things: **shaders**, small programs that run on the GPU; a **graphics pipeline**, which combines the shaders with the settings for how to draw; and a draw command, recorded in the callback. To keep the chapter to those three, the vertex positions are written inside the shader itself. Chapter 6 moves them into a buffer.
 
+We first follow one triangle through the GPU and read the two shaders that draw it. Then we edit `main.c`. At the end, the window shows the triangle above, with a red, a green and a blue corner and the colors mixing smoothly across its surface.
+
 In this chapter you will:
 
-1. remove chapter 3's animation and give `Renderer` fields for the pipeline;
-2. write a vertex shader and a fragment shader in GLSL;
-3. wait until the canvas knows its color format;
-4. compile the shaders and build the graphics pipeline;
-5. bind the pipeline and draw three vertices.
+1. follow one triangle through the graphics pipeline;
+2. read a vertex shader and a fragment shader written in GLSL;
+3. see why shaders are compiled at startup, and store them in C strings;
+4. prepare `main.c`: new `Renderer` fields and the canvas color format;
+5. build the graphics pipeline, then bind it and draw three vertices.
 
-## What a draw needs
+## How the GPU draws a triangle
 
-On the CPU, you would draw a triangle with a loop over pixels. The GPU works the other way around. You supply two small programs, and the GPU runs them many times in parallel: the **vertex shader** once per vertex, to say where it goes, and the **fragment shader** about once for each pixel a triangle covers, to say what color it gets. Between the two, fixed hardware does the part that never changes: it assembles vertices into triangles and finds which pixels each one covers.
+On the CPU, you might draw a triangle with a loop over pixels: for each pixel, check whether it is inside the triangle, then set its color. The GPU splits this work into stages. You give it the triangle's three corners and two small programs, and it passes the triangle through the stages in Figure 1.
 
-The pipeline ties these together. Vulkan wants everything that shapes a draw, such as the shaders, the kind of primitive, and the output format, known up front in one object. The driver can then compile it all into GPU code once, when the pipeline is created, rather than at each draw. Creating a pipeline is slow; binding one is cheap. The price is that a pipeline cannot change afterwards. Only the few settings you mark *dynamic*, such as chapter 3's viewport, are left to the command buffer. Chapter 5 meets this limit when it reloads shaders.
+<figure class="dvz-course-figure" id="fig-graphics-pipeline" markdown="1">
+
+```mermaid
+flowchart TD
+    accTitle: The graphics pipeline for one draw
+    accDescr: The vertex index feeds your vertex shader, then primitive assembly, rasterization and interpolation, your fragment shader, color and depth operations, and finally the color attachment.
+    A[gl_VertexIndex] --> B[Vertex shader: your code]
+    B --> C[Primitive assembly]
+    C --> D[Rasterization and interpolation]
+    D --> E[Fragment shader: your code]
+    E --> F[Color and depth operations]
+    F --> G[Color attachment]
+```
+
+<figcaption>Figure 1. One draw flows through two programmable stages, your shaders, and fixed-function stages configured by the pipeline.</figcaption>
+
+</figure>
+
+Here is what each stage receives and produces for our triangle:
+
+1. **Vertex shader.** It receives a vertex index, 0, 1 or 2, and produces that corner's position and color.
+2. **Primitive assembly.** It receives the three positions and groups them into one triangle, because the pipeline says that every three vertices form a separate triangle.
+3. **Rasterization and interpolation.** It receives the triangle and finds the pixels it covers. For each one, it makes a **fragment**: a candidate for that pixel, carrying a mix of the three corner colors.
+4. **Fragment shader.** It receives one fragment with its interpolated color and produces the color to write.
+5. **Color and depth operations.** They receive that color and decide whether and how it is written to the image. Chapter 10 adds a depth test here; this chapter has none.
+6. **Color attachment.** This is the image the draw writes into: the frame image the canvas lends to the draw callback (chapter 3).
+
+This mixing in stage 3 is called **interpolation**. Each fragment gets a mix of the three corner colors: the closer it is to a corner, the more of that corner's color it gets. A fragment next to the red corner comes out almost red. At the center of the triangle, the three corners weigh the same, so the fragment gets one third of each. That is how three corner colors become the smooth gradient in the picture.
+
+Figure 1 has two kinds of stage:
+
+- The **programmable** stages, the vertex and fragment shaders, run code you write.
+- The **fixed-function** stages run logic built into the GPU and driver. You do not program them; you configure them with pipeline settings such as the topology, the viewport, depth testing and blending.
+
+The GPU runs each shader many times, in parallel: the vertex shader for each vertex, and the fragment shader for each fragment that rasterization produces.
+
+## GLSL in brief
+
+Shaders are written in **GLSL**, a C-like language for GPU programs. It is a separate language: your C compiler does not compile it, and the shaders run on the GPU, not inside your C program. This chapter needs only a little GLSL, and each piece is explained where it first appears.
+
+A **shader invocation** is one execution of a shader's `main()` function, for one vertex or one fragment. We do not write a C loop that calls the shader's `main()` for each vertex or fragment. The C code records a draw command, and when the GPU executes that command, it schedules the shader invocations itself.
+
+### The vertex shader
+
+The vertex shader runs for each of the three vertices. GLSL provides a built-in input, `gl_VertexIndex`, that holds the index of the current vertex: 0, 1 or 2 in this draw. The shader uses it to pick one position and one color from two arrays. In this example, the arrays hold fixed data written in the shader source, so their values are compiled into the shader. Chapter 6 moves the positions into a buffer that the C program fills.
+
+<!-- embedded-shader: VERTEX_GLSL -->
+```glsl
+#version 450
+
+// Output to the next stage: this vertex's color, at location 0.
+layout(location = 0) out vec3 color;
+
+// Corner positions (x, y), compiled into the shader.
+vec2 positions[3] = vec2[](
+    // Vertex 0: top
+    vec2( 0.0, -0.65),
+    // Vertex 1: bottom right
+    vec2( 0.65, 0.65),
+    // Vertex 2: bottom left
+    vec2(-0.65, 0.65));
+
+// Corner colors (red, green, blue), in the same order.
+vec3 colors[3] = vec3[](
+    // Red
+    vec3(1.0, 0.2, 0.2),
+    // Green
+    vec3(0.2, 1.0, 0.2),
+    // Blue
+    vec3(0.2, 0.3, 1.0));
+
+// Runs once for each vertex.
+void main() {
+    // Place the vertex: x and y from the array, then z = 0 and w = 1.
+    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+    // Pass this corner's color to the next stage.
+    color = colors[gl_VertexIndex];
+}
+```
+
+Reading it from the top:
+
+- `#version 450` says which version of GLSL the shader uses. It comes before any code.
+- `vec2`, `vec3` and `vec4` are vectors of 2, 3 and 4 floats. Their components are named `x`, `y`, `z` and `w`. `vec2(0.65, 0.65)` builds a vector from its components, and `vec2[](...)` builds an array of vectors.
+- `out` marks a value the shader passes to the next stage. `layout(location = 0)` gives that value a number, which the fragment shader uses to find it.
+- Names that start with `gl_` are built-in. The GPU fills in the input `gl_VertexIndex`, and the shader must write the output `gl_Position`.
+- `vec4(positions[gl_VertexIndex], 0.0, 1.0)` builds a 4-component vector from a 2-component one and two more numbers: x and y from the array, then z = 0 and w = 1.
+
+`gl_Position` is a position in **clip space**, the coordinates the GPU uses before it maps vertices onto the viewport. The GPU divides x, y and z by w, so w = 1 leaves them unchanged. In this example, with w = 1, x and y from −1 to 1 span chapter 3's viewport from edge to edge, and y points down. That is why vertex 0, at y = −0.65, is the top corner. Here z = 0 is the depth, which matters from chapter 10 on. Chapter 9 explains clip space in full, including the role of w.
+
+### Between the shaders
+
+The vertex shader's `color` output exists only at the three corners. Rasterization fills in the rest: as described after Figure 1, each fragment receives a `color` interpolated from the three corner values. The fragment shader reads that interpolated value as its input.
+
+### The fragment shader
+
+The fragment shader runs for each fragment. It reads the interpolated color and writes one color with four components: red, green, blue and alpha.
+
+<!-- embedded-shader: FRAGMENT_GLSL -->
+```glsl
+#version 450
+
+// Input from the vertex shader's location 0, interpolated for this fragment.
+layout(location = 0) in vec3 color;
+
+// Output to color attachment 0.
+layout(location = 0) out vec4 out_color;
+
+// Runs once for each fragment.
+void main() {
+    // Add alpha 1.0 (fully opaque) to the RGB color.
+    out_color = vec4(color, 1.0);
+}
+```
+
+`in` marks a value received from the previous stage. `vec4(color, 1.0)` appends a fourth component, alpha, to the 3-component color; an alpha of 1.0 means fully opaque.
+
+The shader has two interfaces. Both use location 0, but they connect different things:
+
+- Its input at location 0 receives the vertex shader's output at location 0. The location numbers and the types (`vec3`) must match; the names do not need to.
+- Its output at location 0 goes to the pipeline's color attachment 0, which you set up below.
+
+A fragment is not yet a pixel. Later operations, such as chapter 10's depth test, can reject it, and where triangles overlap, several fragments compete for the same pixel.
+
+## Why shaders are compiled
+
+A GPU cannot run GLSL text. In this program, each shader reaches the GPU in two compile steps:
+
+1. A shader compiler translates GLSL into **SPIR-V**, the standard binary format for shaders in Vulkan. SPIR-V is an intermediate representation, not machine code for a particular GPU.
+2. The driver turns SPIR-V into instructions for your GPU. It usually does this work, or reuses a cached result, when the graphics pipeline is created, because the pipeline gives it all the stages and the settings around them.
+
+Your C compiler takes no part in this. To it, a shader is text stored as bytes in a string. When your program starts, `create_pipeline()` passes those strings to a separate shader compiler that Datoviz loads at run time, and gets SPIR-V back. Vulkan then receives each stage's SPIR-V in a **shader module**, an object that holds one stage's SPIR-V for pipeline creation.
+
+Because the driver compiles the shaders together with the pipeline settings, Vulkan wants everything that shapes a draw, such as the shaders, the kind of primitive and the output format, known up front in one object. The program creates that object once at startup, and binding the pipeline in each frame reuses the result. The price is that a pipeline cannot change after creation. Only the settings you mark *dynamic*, such as chapter 3's viewport, are left to the command buffer. Chapter 5 meets this limit when it reloads shaders.
+
+## The shaders as C strings
+
+For now, the two shaders are stored as C strings in `main.c`, which keeps the whole program in one file with no shader files to find at run time. Chapter 5 moves them into ordinary `.vert` and `.frag` files, which are easier to edit.
+
+The vertex shader:
+
+```c
+static const char* VERTEX_GLSL =
+    "#version 450\n"
+    "layout(location = 0) out vec3 color;\n"
+    "vec2 positions[3] = vec2[](\n"
+    "    vec2( 0.0, -0.65), vec2( 0.65, 0.65), vec2(-0.65, 0.65));\n"
+    "vec3 colors[3] = vec3[](\n"
+    "    vec3(1.0, 0.2, 0.2), vec3(0.2, 1.0, 0.2), vec3(0.2, 0.3, 1.0));\n"
+    "void main() {\n"
+    "    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);\n"
+    "    color = colors[gl_VertexIndex];\n"
+    "}\n";
+```
+
+The fragment shader:
+
+```c
+static const char* FRAGMENT_GLSL =
+    "#version 450\n"
+    "layout(location = 0) in vec3 color;\n"
+    "layout(location = 0) out vec4 out_color;\n"
+    "void main() { out_color = vec4(color, 1.0); }\n";
+```
+
+The text inside the quotes is the GLSL you read above, without the comments. Only two pieces of C syntax are added around it:
+
+- Each GLSL line is a C string literal in double quotes. The C compiler joins adjacent literals into one string, so `VERTEX_GLSL` is a single string.
+- `\n` ends each line. It keeps `#version 450` on a line of its own, as GLSL requires, and gives shader compiler errors meaningful line numbers.
 
 ## Start from chapter 3
 
-Start from your chapter 3 `main.c`. The pulsing clear is no longer needed, so remove `<math.h>`, the three animation fields in `Renderer`, the `--time` option, and the time calculation in `draw()`. Remove the GPU-name and frame-count prints too; validation errors remain the one diagnostic on every run. Keep `--png`, and use this fixed dark clear color:
+Now start editing. Open your chapter 3 `main.c` and add the two shader strings above after the `COURSE_CHECK` macro. The pulsing clear is no longer needed, so remove `<math.h>`, the three animation fields in `Renderer`, the `--time` option, and the time calculation in `draw()`. Remove the GPU-name and frame-count prints too; validation errors remain the one diagnostic on every run. Keep `--png`, and use this fixed dark clear color:
 
 ```c
     // A fixed dark background behind the triangle.
@@ -68,78 +238,6 @@ The argument loop now looks only for `--png`:
         if (strcmp(argv[argument_index], "--png") == 0)
             png_path = argv[argument_index + 1];
 ```
-
-## Write the two shaders
-
-Shaders are written in **GLSL**, a C-like language for GPU programs. For now they live in C strings near the top of `main.c`; chapter 5 moves them into files. A **shader invocation** is one execution of a shader for one item of work. This draw has two shaders, one for each programmable stage.
-
-### The vertex shader
-
-The vertex shader runs once per vertex. `gl_VertexIndex` is 0, 1, then 2, so each invocation picks one position and one color from constant arrays compiled into the shader.
-
-These positions are in clip space, the −1 to 1 space of chapter 3's viewport: x and y run from −1 to 1, and y points down. Chapter 9 explains why.
-
-```c
-// Vertex shader: runs once per vertex and picks a built-in position and color by index.
-static const char* VERTEX_GLSL =
-    "#version 450\n"
-    "layout(location = 0) out vec3 color;\n"
-    "vec2 positions[3] = vec2[](\n"
-    "    vec2( 0.0, -0.65), vec2( 0.65, 0.65), vec2(-0.65, 0.65));\n"
-    "vec3 colors[3] = vec3[](\n"
-    "    vec3(1.0, 0.2, 0.2), vec3(0.2, 1.0, 0.2), vec3(0.2, 0.3, 1.0));\n"
-    "void main() {\n"
-    "    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);\n"
-    "    color = colors[gl_VertexIndex];\n"
-    "}\n";
-```
-
-Each invocation writes two outputs: `gl_Position`, the built-in output that places the vertex, and `color`, which it passes on to the next stage.
-
-### The fragment shader
-
-After the vertex stage, the GPU groups the three outputs into a triangle (**primitive assembly**) and finds which pixels it covers (**rasterization**). For each covered pixel it makes a **fragment**, a candidate color for that pixel that carries the vertex colors, interpolated across the triangle. The fragment shader runs once per fragment and writes a color to location 0. A fragment is not yet a pixel: later tests, such as chapter 10's depth test, can discard it, and where triangles overlap, several fragments compete for the same pixel.
-
-```c
-// Fragment shader: runs once per fragment and writes the interpolated color.
-static const char* FRAGMENT_GLSL =
-    "#version 450\n"
-    "layout(location = 0) in vec3 color;\n"
-    "layout(location = 0) out vec4 out_color;\n"
-    "void main() { out_color = vec4(color, 1.0); }\n";
-```
-
-The two shaders connect through numbered locations:
-
-- The vertex shader's `out vec3 color` at location 0 becomes the fragment shader's `in vec3 color` at location 0. The numbers, not the names, link them.
-- The fragment shader's own output at location 0 goes to the pipeline's color attachment 0, which you set up below.
-
-### From vertices to pixels
-
-The full path for this draw is:
-
-<figure class="dvz-course-figure" id="fig-graphics-pipeline" markdown="1">
-
-```mermaid
-flowchart TD
-    accTitle: The graphics pipeline for one draw
-    accDescr: The vertex index feeds your vertex shader, then primitive assembly, rasterization and interpolation, your fragment shader, color and depth operations, and finally the color attachment.
-    A[gl_VertexIndex] --> B[Vertex shader: your code]
-    B --> C[Primitive assembly]
-    C --> D[Rasterization and interpolation]
-    D --> E[Fragment shader: your code]
-    E --> F[Color and depth operations]
-    F --> G[Color attachment]
-```
-
-<figcaption>Figure 1. One draw flows through two programmable stages, your shaders, and fixed-function stages configured by the pipeline.</figcaption>
-
-</figure>
-
-The stages fall into two kinds:
-
-- The **programmable** stages, the vertex and fragment shaders, run code you supply.
-- The **fixed-function** stages follow state you configure, such as topology, viewport, depth testing, and blending.
 
 ## Wait for the canvas color format
 
@@ -212,7 +310,7 @@ Not every wrapper fits this table. The command and rendering wrappers from chapt
 
 ### 1. Compile GLSL to SPIR-V
 
-Add `<stdint.h>` for the fixed-size integer types. `dvz_compile_glsl()` comes from `<datoviz/shader.h>`, which `<datoviz/advanced.h>` already includes. It translates each shader string into **SPIR-V**, Vulkan's binary intermediate representation. SPIR-V is not machine code; the driver translates it further for your GPU.
+Add `<stdint.h>` for the fixed-size integer types. `dvz_compile_glsl()` comes from `<datoviz/shader.h>`, which `<datoviz/advanced.h>` already includes. It runs the shader compiler on each string and returns SPIR-V: the first of the two compile steps described earlier.
 
 ```c
     // Compile both GLSL strings to SPIR-V. We own the returned arrays.
@@ -249,7 +347,7 @@ First allocate the four wrappers this helper fills, the lifecycle's step 1. The 
     }
 ```
 
-`dvz_shader()` copies each SPIR-V array into a **shader module**, the Vulkan object that hands one compiled stage to pipeline creation. The CPU arrays can then be freed.
+`dvz_shader()` copies each SPIR-V array into its shader module, so the CPU arrays can then be freed.
 
 ```c
     // Copy the SPIR-V into two shader modules, then free the CPU arrays.
@@ -326,7 +424,7 @@ Last, the dynamic state, and the call that creates the pipeline:
 }
 ```
 
-The zeros in the viewport and scissor calls are placeholders: the dynamic flag means the real values come from `dvz_cmd_set_viewport_scissor()`, which you added in chapter 3. `dvz_graphics_create()` is the slow step, where the driver compiles everything into GPU code, and its result is the helper's result.
+The zeros in the viewport and scissor calls are placeholders: the dynamic flag means the real values come from `dvz_cmd_set_viewport_scissor()`, which you added in chapter 3. `dvz_graphics_create()` is where the driver usually does the second compile step, from SPIR-V to code for your GPU. Its result is the helper's result.
 
 ## Call the helper from main
 
