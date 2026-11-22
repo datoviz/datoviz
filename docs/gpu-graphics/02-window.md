@@ -6,7 +6,7 @@
 
 Chapter 1 gave you a build that links Datoviz, but the program never touched the GPU. Now it does. By the end of this chapter, your program opens a resizable window, fills it with a color you choose, and keeps drawing until you close it. With one command-line flag, the same program renders to a PNG file instead. Keep that option throughout the course: it lets you check each chapter without a window.
 
-A colored window is little to show for 170 lines, but almost all of them are setup that every later chapter keeps unchanged. Putting a picture on screen takes several objects: a connection to the window system, a GPU, a window, and something that runs the frame loop. This chapter creates each one in turn. Chapter 3 explains what happens inside a frame; for now, the goal is a running program.
+A colored window is little to show for 170 lines, but almost all of them are setup that every later chapter keeps unchanged. Putting a picture on screen takes several objects: a connection to the window system, a GPU, a window, and a canvas that manages frames. It also takes a loop that keeps the program running, and you write that loop yourself. This chapter creates each piece in turn. Chapter 3 explains what happens inside a frame; for now, the goal is a running program.
 
 In this chapter you will:
 
@@ -23,7 +23,7 @@ Your program does not talk to the display or the GPU directly. It goes through a
 - The **window host** is the connection to the operating system's window system. It delivers keyboard, mouse, and resize events.
 - The **GPU context** chooses a GPU and opens a Vulkan connection to it. Everything you create on the GPU later belongs to it.
 - The **window** is the operating-system window itself.
-- The **canvas** joins a window and a GPU. It owns the images you draw into and runs the frame machinery, and once per frame it calls a function you wrote.
+- The **canvas** joins a window and a GPU. It owns the images you draw into and the per-frame machinery. Each time your loop asks it for a frame, it calls a function you wrote.
 
 <figure class="dvz-course-figure" id="fig-window-objects" markdown="1">
 
@@ -72,7 +72,7 @@ These low-level APIs follow Vulkan closely and may evolve between Datoviz releas
     | --- | --- |
     | `<datoviz/window.h>` | the window host and windows |
     | `<datoviz/vk.h>` | the GPU context, the device, and the Vulkan headers |
-    | `<datoviz/canvas.h>` | the canvas and its frame loop |
+    | `<datoviz/canvas.h>` | the canvas and its per-frame calls |
     | `<datoviz/stream.h>` | `DvzStreamFrame`, the frame your draw callback receives |
     | `<datoviz/vklite.h>` | typed Vulkan wrappers: commands, rendering passes, shaders, pipelines, buffers, images |
     | `<datoviz/shader.h>` | GLSL compilation, from chapter 4 |
@@ -248,9 +248,27 @@ The canvas borrows the window and the device: it does not destroy them. It owns 
 
 Vulkan cannot draw to a window directly. It needs a **surface**, its connection to an operating-system window, and a **swapchain**, a rotating set of images the display can show. The canvas renders into its own frame target, copies the result into an acquired swapchain image, and rebuilds the swapchain when the window is resized. In return, your callback runs whenever a frame is ready for recording.
 
+## Who runs the loop
+
+A windowed program does two kinds of work, over and over. It processes **events**: messages from the operating system about key presses, mouse moves, resizes and close requests. And it renders **frames**: complete images sent to the window. The two are separate. Handling a mouse event does not draw anything by itself, and an animation needs new frames even when no input arrives.
+
+In this course, you write the loop that does this work, as a plain `while` loop in `main`. Datoviz supplies the pieces it calls: the window host processes events, and the canvas renders frames. The loop takes the simplest approach: on every pass, it processes the pending events, then tries to render a frame. One pass goes like this:
+
+1. The operating system collects events for your window as they happen.
+2. Your loop calls `dvz_window_host_poll()`, which processes the pending events and returns. Input callbacks you registered, such as chapter 5's keyboard handler, run during this call.
+3. Your loop calls `dvz_canvas_frame()`, which prepares the next frame: an image to draw into and a command buffer to record into. When the frame is ready, it calls your draw callback, and it returns after the callback does.
+4. Your loop calls `dvz_canvas_submit()`, which sends the recorded commands to the GPU and arranges for the result to be shown.
+5. The loop starts again, until the window closes. With `--png`, it stops after one frame.
+
+Step 3 does not always reach your callback. While the window is minimized or being resized, there may be no image to draw into, so `dvz_canvas_frame()` returns `DVZ_CANVAS_FRAME_WAIT_SURFACE` without calling `draw`, and the loop moves on to the next pass.
+
+Your program keeps this loop from chapter 2 to chapter 16, and later chapters add to it. Chapter 5, for example, reloads shaders between polling and preparing the frame.
+
+Datoviz also provides `dvz_app_run()`, which runs a loop for you. It belongs to the higher-level App API and drives App views, not the canvas you create here. The course writes the loop by hand so you can see where input processing, frame preparation, command recording and submission happen. Datoviz still does the window-system work and the Vulkan frame synchronization inside those calls. [Where to go next](17-next.md) compares the two.
+
 ## Write the draw callback
 
-The canvas runs the frame loop machinery, so it calls you when it needs your part. You give it a function pointer and a `user_data` pointer, and it passes that pointer back on every call. That is how the callback reaches your state without global variables. The callback needs somewhere to keep that state. Add this struct above `main`:
+During `dvz_canvas_frame()`, the canvas calls your code to record the frame's commands. You give it a function pointer and a `user_data` pointer, and it passes that pointer back on every call. That is how the callback reaches your state without global variables. The callback needs somewhere to keep that state. Add this struct above `main`:
 
 ```c
 // Everything our program owns. It will grow in every chapter.
@@ -318,6 +336,8 @@ Then hand the renderer to the canvas. The canvas keeps the `&renderer` pointer, 
     dvz_canvas_set_draw_callback(canvas, draw, &renderer);
 ```
 
+This call only stores the function and the pointer. It starts no thread and no loop, and nothing is drawn yet. `draw` is an ordinary C function: `dvz_canvas_frame()` calls it on the same thread, and it finishes before `dvz_canvas_frame()` returns.
+
 ## Run the render loop
 
 The program spends most of its time in this loop:
@@ -344,11 +364,13 @@ The program spends most of its time in this loop:
     printf("rendered %llu frames\n", (unsigned long long)frame_index);
 ```
 
-A live run loops until the window closes; a `--png` run needs one frame. Each iteration does three things:
+This is the pass from [Who runs the loop](#who-runs-the-loop), written as code. A few details:
 
-1. `dvz_window_host_poll()` processes keyboard, mouse, resize, and close events. Skip it and the window stops responding.
-2. `dvz_canvas_frame()` acquires the next image, opens a command buffer, and calls your `draw` callback. `DVZ_CANVAS_FRAME_WAIT_SURFACE` means the window is minimized or mid-resize, so there is nothing to draw and the loop tries again.
-3. `dvz_canvas_submit()` sends the recorded commands to the GPU and, in live mode, presents the result.
+- The `while` condition covers both modes: a live run checks `dvz_window_should_close()`, and a `--png` run stops after one frame.
+- Without `dvz_window_host_poll()`, the window stops responding.
+- On `DVZ_CANVAS_FRAME_WAIT_SURFACE`, `continue` starts the next pass without submitting. Any status other than that or `DVZ_CANVAS_FRAME_READY` is an error.
+- In live mode, `dvz_canvas_submit()` presents the result; with `--png`, the frame stays in memory for the capture below.
+- `frame_index` counts submitted frames, and the program prints the total at the end.
 
 Your callback records *what* to draw; `dvz_canvas_submit()` queues that work. Queued does not mean finished, or even started.
 

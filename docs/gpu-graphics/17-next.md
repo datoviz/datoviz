@@ -1,6 +1,6 @@
 # 17. Where to go next
 
-You started from an empty program and a window (chapters 1 to 3) and learned the frame loop that every later chapter filled in: the canvas hands you a command buffer, you record into it, and the canvas submits and presents. You drew a triangle with a pipeline and shaders (chapters 4 and 5), then fed it from vertex and index buffers (chapters 6 and 7).
+You started from an empty program and a window (chapters 1 to 3) and wrote the render loop that every later chapter built on: your loop processes events and asks the canvas for a frame, the canvas hands your callback a command buffer to record into, and your loop submits the frame for presentation. You drew a triangle with a pipeline and shaders (chapters 4 and 5), then fed it from vertex and index buffers (chapters 6 and 7).
 
 Then came motion and depth. Push constants animated the square from the CPU every frame (chapter 8), matrices and perspective turned it into a cube (chapter 9), the depth buffer and culling made it solid (chapter 10), and the mouse made it turn (chapter 11). Descriptors gave shaders access to GPU memory (chapter 12). That made a texture possible: uploaded through a staging buffer and barriers (chapter 13), then sampled through a view and a sampler (chapter 14). Normals and a light showed the surface's shape (chapter 15), and a generated or loaded mesh replaced the hand-typed cube without changing the pipeline (chapter 16).
 
@@ -51,7 +51,7 @@ The validation layer you enabled in chapter 2 checked every call and fed `dvz_gp
 
 ### The window and presentation
 
-The window and canvas create the surface and swapchain, acquire images, recover from resizes, and present. `dvz_canvas_frame()` and `dvz_canvas_submit()` wrap that work.
+The window host processes the operating system's events each time your loop calls `dvz_window_host_poll()`. The window and canvas create the surface and swapchain, acquire images, recover from resizes, and present. `dvz_canvas_frame()` and `dvz_canvas_submit()` wrap that work.
 
 The canvas also allocates the render targets you drew into, including chapter 10's optional depth image, and recreates them when the window is resized. In live mode it copies each finished frame into the acquired swapchain image; with `--png` it reads the frame back instead.
 
@@ -68,6 +68,16 @@ The rendering wrapper records dynamic rendering with color and depth attachments
 ### Memory
 
 The VMA-backed allocator chooses memory types and binds memory. You still decide which resources are host-visible or device-local, how bytes reach them, and when they are safe to change or destroy.
+
+## The loop you wrote
+
+The outer loop was yours from chapter 2 on: a `while` loop that polls events, asks the canvas for a frame, and submits it. Writing it out kept each stage in view, so later additions had an obvious place. Chapter 3's animation reads the clock in the callback, chapter 5's shader reload runs between polling and frame preparation, and chapter 11's arcball receives mouse events during polling.
+
+Writing that loop did not mean writing an event system or Vulkan synchronization. The window host still talked to the operating system, and the canvas still handled image acquisition, fences, semaphores and presentation. Your loop only decided when to call them.
+
+Datoviz's higher-level App API can run the loop for you. There you create a `DvzApp` and its views rather than a canvas, and `dvz_app_run(app, 0)` runs the interactive loop. It follows the app's scheduling settings: in on-demand mode it waits for input, a resize or a frame request before rendering, and in continuous mode it keeps rendering. It returns when the app's exit policy is met, such as when its windows close, or when `dvz_app_stop()` is called. When a GUI toolkit such as Qt or SDL already owns the event loop, the toolkit decides when to render and calls `dvz_view_render_once()` or `dvz_app_render_once()` to draw one frame.
+
+These are different API levels and host arrangements, and App views render through a canvas internally. An explicit loop like yours suits learning and low-level programs that manage their own frames. `dvz_app_run()` suits applications built with the App API, and the render-once calls suit programs where another toolkit runs the loop.
 
 ## What changes when
 

@@ -88,6 +88,12 @@ Validation passes: 228 synchronized excerpts; all 16 native and existing Release
 
 Maintainer voice and pacing acceptance remain open. This is Linux development-source and generated-site evidence; the installed run reuses the verified Release prefix. It does not establish a new official package, Windows/macOS runtime or physical-input result. Push, asset promotion, website deployment and release freeze remain separate gates.
 
+## Loop Ownership Explanation, 2026-11-22
+
+Claude Opus 5.5 at medium effort revised the overview and chapters 2, 3 and 17 to explain who controls the loop. Chapter 2 introduces events, frames and the application's loop before callbacks, then explains that registering a callback starts no thread or loop. The overview explains why the course uses Canvas calls explicitly; chapter 3 connects CPU calls to GPU execution; the epilogue compares `dvz_app_run()` and toolkit-hosted render-once calls. The humanizer skill was read and applied to the new and revised passages in those four pages.
+
+Parent review checked the explanation against the window host, Canvas callback invocation, App scheduler and render-once contracts. All code fences, canonical programs, headers and runtime sources are unchanged. The 228-excerpt check, strict documentation build with 18 generated media outputs, status, relative-link and whitespace checks pass. All four pages render at desktop and mobile widths, with the new chapter 2 lesson preceding callback setup. Evidence is ignored under `build/course-loop/20261122T124521Z/`. Maintainer proofreading should start at [Who runs the loop](../../docs/gpu-graphics/02-window.md#who-runs-the-loop); the earlier whole-course review and release gates retain their scope.
+
 ## RC4 Freeze
 
 Build and run every chapter from exact candidate source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`. Require packaged runtime shaderc, deterministic previews, bounded GLFW resize/input/depth/repeated-frame/shutdown smoke, Vulkan validation, source synchronization, links, navigation, generated reference and binding checks, supported hosted-platform proof, and explicit physical exclusions.

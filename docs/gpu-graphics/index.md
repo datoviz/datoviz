@@ -21,7 +21,7 @@ A computer that draws has two processors. The CPU runs your C program, one step 
 
 **Vulkan** is the interface between the two. It is a C API, specified by the Khronos Group and implemented by each GPU vendor's driver, through which a program creates GPU objects, records commands and submits them. Vulkan is explicit: the driver makes few decisions for you, so you state formats, memory, ordering and lifetimes yourself. That makes Vulkan's behavior predictable, but its setup long.
 
-Datoviz sits between your program and Vulkan. Its vklite layer wraps Vulkan objects in small C types, and its canvas runs the window and the frame loop. You call Datoviz functions, but Vulkan's own types and flags, such as `VkFormat`, appear directly in your code, so what you learn is Vulkan. Figure 1 shows the layers from your code down to the GPU.
+Datoviz sits between your program and Vulkan. Its vklite layer wraps Vulkan objects in small C types, and its canvas handles the swapchain, presentation and per-frame synchronization. You call Datoviz functions, but Vulkan's own types and flags, such as `VkFormat`, appear directly in your code, so what you learn is Vulkan. Figure 1 shows the layers from your code down to the GPU.
 
 <figure class="dvz-course-figure" id="fig-course-layers" markdown="1">
 
@@ -39,6 +39,8 @@ flowchart TD
 
 </figure>
 
+Datoviz also has a higher-level App API, whose `dvz_app_run()` runs the event and frame loop for you. This course works with the canvas directly instead, and you write the outer loop yourself: a short `while` loop that processes input, prepares a frame, records commands and submits them. Seeing each step shows where later additions go, such as animation and live shader reloading. Inside those steps, Datoviz still does the window-system work and Vulkan's frame synchronization. `dvz_app_run()` drives App views, not the canvas you create here, so it cannot simply replace your loop. Chapter 2 explains the loop, and the closing chapter compares the two approaches.
+
 The ideas are not specific to Vulkan either. WebGPU, Metal and Direct3D 12 are built on the same objects: devices, command buffers, pipelines, buffers, textures and descriptors. Each chapter points out what carries over to them.
 
 ## What you write, and what is handled for you
@@ -47,7 +49,8 @@ The ideas are not specific to Vulkan either. WebGPU, Metal and Direct3D 12 are b
 | --- | --- |
 | Instance, physical-device selection, logical device, queues | Both shader stages, in GLSL |
 | Window, surface, swapchain, image acquisition, presentation | Pipeline state: topology, vertex layout, depth, and culling |
-| Per-frame semaphores and fences, frame pacing, resize recovery | Vertex and index data, and the GPU buffers holding it |
+| Per-frame semaphores and fences, resize recovery | Vertex and index data, and the GPU buffers holding it |
+| Window-system event processing | The render loop: when to process events and render a frame |
 | Command-pool and command-buffer allocation | Command recording: passes, binds, draws |
 | Depth-image allocation, screenshot and video capture | Textures: staging, image layout transitions, samplers, descriptors |
 | GPU memory allocation | Matrices, camera, and lighting math |

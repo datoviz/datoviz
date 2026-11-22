@@ -22,6 +22,8 @@ In this chapter you will:
 
 ## Two processors, one to-do list
 
+Chapter 2's loop runs on the CPU, one call at a time: `dvz_window_host_poll()` returns, then `dvz_canvas_frame()` calls your callback and returns, then `dvz_canvas_submit()` returns, and the next pass begins. The GPU does not follow that sequence step by step. It executes submitted work on its own while the CPU moves on.
+
 The CPU decides *what* to draw and writes down instructions: use this pipeline, draw these three vertices, clear to this color. It does not draw the image itself. That recorded list is a **command buffer**.
 
 Why a list rather than direct calls? The GPU is a separate processor. If the CPU sent each instruction on its own and waited for it, each processor would spend most of its time waiting for the other. A whole frame's list, handed over at once, lets both run at full speed.
