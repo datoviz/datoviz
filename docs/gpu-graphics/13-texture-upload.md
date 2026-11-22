@@ -158,9 +158,9 @@ The second half of the chapter puts an image on the GPU. You already know one wa
 
 A buffer is a linear range of bytes, and only the shader decides what they mean. An **image** is memory that the GPU itself understands as pixels. It has a width and height, a **texel format** (a texel is one pixel of a texture; here, four 8-bit channels per texel), and a **tiling**, the order in which texels sit in memory. Because the GPU knows this, its texture hardware can filter between neighboring texels and handle coordinates outside the image, as chapter 14 shows.
 
-The tiling causes a problem. Row by row is a poor order for a GPU, because a triangle reads texels that are close in 2D, not along one row. GPUs therefore use **optimal tiling**, a private order chosen by the driver that keeps 2D neighbors close in memory. vklite images use it by default, so your texture does too (`dvz_images_tiling()` can change that). Because the order is private, the CPU cannot write pixels into the image directly.
+You choose the tiling when you create the image, and it does not change afterwards. **Linear tiling** stores texels row by row, possibly with padding at the end of each row. Row by row is a poor order for a GPU, though, because a triangle reads texels that are close in 2D, not along one row. **Optimal tiling** lets the driver pick its own order, usually one that keeps 2D neighbors close in memory. vklite images use optimal tiling by default, so your texture does too (`dvz_images_tiling()` can change that). Because that order depends on the driver and the GPU, the program cannot simply write rows of pixels into the image's memory.
 
-The solution is a **staging buffer**: a temporary buffer the CPU can write, filled with plain rows of pixels. A copy command, run by the GPU, reads those rows and stores them in the image's private order. Once the copy has finished, the staging buffer can be destroyed.
+The usual solution is a **staging buffer**: a temporary buffer the CPU can write, filled with plain rows of pixels. A copy command, run by the GPU, reads those rows and stores them in the image's own order. Once the copy has finished, the staging buffer can be destroyed.
 
 Figure 1 shows the route the pixels take. The first step is a CPU copy that finishes before `dvz_buffer_upload()` returns. The second step is a GPU command that runs only after submission. The barrier at the end makes the copied pixels readable by shaders, as the next section explains.
 
@@ -181,19 +181,36 @@ flowchart TD
 
 ## Layouts and barriers
 
-Two more ideas complete the upload. Both exist because Vulkan makes you state how the GPU will use an image next.
+Tiling is settled once the image exists. Three other ideas complete the upload, and it helps to keep them apart:
+
+- the **image layout**: which kind of access the image is prepared for right now;
+- **ordering and visibility** on the GPU: the shader reads must wait for the copy and see what it wrote;
+- **waiting on the CPU**: the program must not destroy the staging buffer while the GPU still reads it.
+
+Barriers handle the first two. The CPU wait comes from the submission, in step 8 below.
 
 ### Image layouts
 
-An image's memory can be arranged differently for different jobs. An **image layout** names one arrangement: `TRANSFER_DST_OPTIMAL` suits receiving a copy, and `SHADER_READ_ONLY_OPTIMAL` suits sampling. A new image starts in `UNDEFINED`, which means its contents are meaningless. Each kind of use expects a particular layout, so before you use the image in a new way, you change its layout.
+An **image layout** describes which kinds of access an image, or part of it, is prepared for. Unlike tiling, it changes during the image's life. Our image uses two: `TRANSFER_DST_OPTIMAL` while it receives the copy, then `SHADER_READ_ONLY_OPTIMAL` while shaders sample it. Moving from one layout to another is a **layout transition**, and the driver may do real work there, such as reorganizing the data. Vulkan also has a `GENERAL` layout that accepts many kinds of access, but this chapter uses the layout made for each step.
+
+Our image starts in `UNDEFINED`. A transition from `UNDEFINED` does not keep the old contents, which is fine here because the copy overwrites every texel.
 
 ### Barriers
 
-The GPU does not wait for one command to finish before starting the next. It overlaps work, so without an ordering rule, a later fragment shader could read the image while the copy is still writing it. A **barrier** is that rule. The steps of GPU work, such as the copy, the vertex shader and the fragment shader, are called **pipeline stages**. A barrier names stages and the memory accesses they make. It sits between two commands, names the work before it and the work after it, and does three things:
+The GPU does not wait for one command to finish before starting the next. It overlaps work, so without an ordering rule, a later fragment shader could read the image while the copy is still writing it. A **barrier** is that rule. You record it between two commands, like any other command, and it takes effect on the GPU after submission. Recording it does not make the CPU wait for anything.
 
-1. waits for the listed earlier stages to finish;
-2. makes their memory writes visible to the later accesses;
-3. changes the image layout.
+A barrier describes the work on each side of it with two kinds of masks:
+
+- **Pipeline stages** name kinds of GPU work. The copy runs in its own copy stage: it is GPU work too, even though no shader runs. The fragment shader is another stage.
+- **Access masks** name the memory operations of those stages: here, the copy's transfer writes and the fragment shader's sampled reads.
+
+An image barrier, like the two in this chapter, can do three things:
+
+1. make the listed later stages wait for the listed earlier stages;
+2. make the earlier writes to the image visible to the later reads;
+3. change the image layout.
+
+The visibility part applies to this image only. The stage ordering is not limited to it: other work in the same stages may wait too. Not every barrier changes a layout either; ours do because each step needs a different one.
 
 The upload needs two barriers:
 
@@ -202,7 +219,7 @@ The upload needs two barriers:
 | before the copy | nothing | copy writes | `UNDEFINED` to `TRANSFER_DST_OPTIMAL` |
 | after the copy | copy writes | fragment shader reads | `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL` |
 
-The first starts from `UNDEFINED` because the image has no old pixels worth keeping. The second makes every fragment shader that samples the image wait for the copy. The `VK_PIPELINE_STAGE_2_*` and `VK_ACCESS_2_*` names come from the synchronization2 feature the canvas enabled in chapter 2.
+The first barrier only prepares the layout for the copy. No earlier work needs to finish, so its "before" side has no stage and no access. It starts from `UNDEFINED` because the image has no old pixels worth keeping. The second barrier does all three things: fragment-shader sampled reads wait for the copy's writes, those writes become visible to them, and the layout changes to `SHADER_READ_ONLY_OPTIMAL`. The `VK_PIPELINE_STAGE_2_*` and `VK_ACCESS_2_*` names come from the synchronization2 feature the canvas enabled in chapter 2.
 
 ## Upload the checkerboard
 
@@ -372,11 +389,11 @@ The second barrier hands the image to the fragment shader. It reuses the same ba
     dvz_cmd_barriers(upload, &barriers);
 ```
 
-Read it as: before the barrier, the copy stage's transfer writes; after it, sampled reads in the fragment shader stage; the layout moves from `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL`. Any fragment shader that samples this image waits for the copy and sees its writes.
+Read it as: before the barrier, the copy stage's transfer writes; after it, sampled reads in the fragment shader stage; the layout moves from `TRANSFER_DST_OPTIMAL` to `SHADER_READ_ONLY_OPTIMAL`. Fragment-shader reads that sample this image after the barrier wait for the copy and see its writes.
 
 ### 8. Submit and wait
 
-So far nothing has run: the helper has only recorded commands. `dvz_cmd_submit_result()` submits the command buffer and blocks until the queue is idle. When it returns, the copy and both barriers have finished.
+So far nothing has run: the helper has only recorded commands. `dvz_cmd_submit_result()` submits the command buffer and blocks the CPU until the queue is idle. When it returns, the copy and both barriers have finished. This is the CPU wait from the list above: the barriers only order work on the GPU, and this wait is what makes it safe to destroy the staging buffer in step 9.
 
 ```c
     // Nothing has run yet. Submitting blocks until the queue is idle, so the copy is done.
@@ -489,7 +506,7 @@ Every face shows its UV gradient, and the terminal ends with `validation errors:
 ## What carries over
 
 - A UV is an address into an image that does not depend on the image's size, so the same mesh works with a 64-texel or a 4096-texel texture.
-- GPUs keep images in a private memory order, so pixels usually travel through a linear staging buffer and a GPU copy. WebGPU's `writeTexture` and OpenGL's `glTexImage2D` do the same staging for you.
+- GPUs usually keep images in a memory order chosen by the driver, so pixels often travel through a linear staging buffer and a GPU copy. WebGPU's `writeTexture` and OpenGL's `glTexImage2D` do the same staging for you.
 - The GPU overlaps work. Whenever one operation writes what a later one reads, something must order them. In Vulkan you write the barrier yourself; WebGPU and Metal track resource use and insert it for you.
 
 ## Checkpoint
@@ -497,7 +514,7 @@ Every face shows its UV gradient, and the terminal ends with `validation errors:
 1. Why do eight positions become 24 vertices when each face needs its own UVs?
 2. Why does this image need a staging buffer while the vertex buffer could be written directly?
 3. Which image layout must the image be in during `dvz_cmd_copy_buffer_to_image()`?
-4. What three things does each barrier do?
+4. What does each of the two barriers do, and which call makes the CPU wait?
 
 ??? example "Your `main.c` after chapter 13"
 

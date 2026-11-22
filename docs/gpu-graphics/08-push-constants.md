@@ -22,7 +22,7 @@ In this chapter you will:
 
 **Push constants** are a small block of values copied into the command buffer and visible to the shader stages you choose. Since chapter 3, `draw()` records the frame's commands every frame, so each frame can push new values. A push applies to the draws recorded after it, until the next push, so two draws in one frame can also receive different values. You do not create or bind a buffer for them.
 
-Because the values are copied into every command buffer, the block must stay small. Every Vulkan device supports at least 128 bytes. This chapter uses 8 bytes for two floats, and chapter 9 uses 64 bytes for one matrix.
+The space for push constants is limited. Vulkan guarantees at least 128 bytes on every device, and some devices allow more. This course treats 128 bytes as its portable baseline, so it never needs a larger push-constant range. Data that is larger or shared by many draws usually lives in a buffer instead; chapter 12 introduces that route. This chapter uses 8 bytes for two floats, and chapter 9 uses 64 bytes for one matrix.
 
 The copy also explains why push constants suit animation. Each frame's command buffer carries its own copy of the values, so recording frame N+1 with a new angle does not disturb frame N, which the GPU may still be executing. The program can push the next value without waiting. Chapter 12 introduces data that the GPU reads by reference instead, which needs more care.
 
@@ -60,7 +60,9 @@ Reload keeps working without other changes. Each candidate pipeline from chapter
 
 ## Read the values in the vertex shader
 
-The shader side of the agreement is a `layout(push_constant)` block with the same two floats in the same order. Replace `shader.vert` with this version; `shader.frag` is unchanged. `pulse` scales the positions, then `time` rotates them:
+The shader side of the agreement is a `layout(push_constant)` block with the same two floats in the same order. In GLSL, `uniform` means the values are the same for every vertex of a draw, unlike the `in` variables, which change from vertex to vertex. `layout(push_constant)` says where those values come from: the copy pushed into the command buffer, not a buffer read through a descriptor, which chapter 12 introduces.
+
+Replace `shader.vert` with this version; `shader.frag` is unchanged. `pulse` scales the positions, then `time` rotates them:
 
 ```glsl
 #version 450

@@ -6,7 +6,7 @@
 
 Since chapter 4, the program draws a triangle, and since chapter 5 its shaders live in their own files and reload with **R**. But the triangle's three positions and colors are constants inside the vertex shader, which picks one with `gl_VertexIndex`. To change the shape, you have to change the shader.
 
-Real applications don't work that way. A plot, a mesh or a map is data: the program generates, loads or updates it on the CPU. So the geometry must travel from a C array into GPU memory, and the shader must receive it as ordinary inputs. That route, the **vertex buffer**, is how every later chapter feeds geometry to the GPU.
+Constants in a shader are a valid choice for fixed shapes, and a shader can also compute positions itself. But we want the C program to supply the geometry, so it can load or change a plot, a mesh or a map without touching the shader. For that, the vertices travel from a C array into GPU memory, and the shader receives them as ordinary inputs. That route, the **vertex buffer**, is how the later chapters of this course feed geometry to the GPU.
 
 This chapter moves the geometry out of the shader and draws a square as two triangles: six vertices read from a buffer.
 
