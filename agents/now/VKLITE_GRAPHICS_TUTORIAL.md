@@ -179,6 +179,12 @@ A probe using the actual camera and arcball functions found no projected pole di
 
 Validation passes: the build; 32 focused arcball tests; 14 media-generator tests and three subtests; all 232 synchronized excerpts; all 18 generated media outputs; strict documentation generation; status, lint and whitespace checks; and 16 desktop/mobile layout, navigation and motion-preference cases. The configured slate theme passes; forced light diagnostics do not establish light-theme support. The animation is 4,697,114 bytes, contains 320 frames with 50 ms delays, and keeps the poles fixed through the loop. Only the chapter 16 still and animation changed among the 18 media hashes. Native captures were reused for the final encoder comparisons after verifying unchanged C and executable hashes. Evidence is ignored under `build/course-intro/20261122/`. Maintainer review of the revised overview and motion remains open; earlier package and platform gates retain their scope.
 
+### Two Audiences And Earlier Preview
+
+Following maintainer feedback, the overview now addresses Vulkan learners without prior Datoviz experience and Datoviz users curious about its rendering internals. The sphere follows the two opening paragraphs; the architecture explanation is closed by default. The long setup inventory and responsibility table are replaced by two short bullets. Claude Opus 5.5 at medium effort read and applied humanizer to the revised overview; parent review refined the audience bullets, project description and optional-section label with the same skill.
+
+The chapter roadmap, acknowledgment and picture markup are unchanged. Strict documentation generation, status and whitespace checks pass. Four desktop/mobile browser cases check normal and reduced motion, with the sphere visible in the first viewport and the expanded diagram retaining 16-pixel labels. No media, canonical program or release identity changes are involved. Evidence remains ignored under `build/course-intro/20261122/`.
+
 ## RC4 Freeze
 
 Build and run every chapter from exact candidate source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`. Require packaged runtime shaderc, deterministic previews, bounded GLFW resize/input/depth/repeated-frame/shutdown smoke, Vulkan validation, source synchronization, links, navigation, generated reference and binding checks, supported hosted-platform proof, and explicit physical exclusions.
