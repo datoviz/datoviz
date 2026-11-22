@@ -153,6 +153,10 @@ The maintainer approved review figures 1, 2, 4, 5, 6, 7 and 8. Figure 3, the obj
 
 The humanizer pass covers the revised labels, descriptions, caption, chapter explanation and this record. Regeneration, lint, the 230-excerpt check, strict documentation generation, status, whitespace and desktop/mobile checks pass. All other figures and all original code excerpts remain unchanged. Evidence is ignored under `build/course-figures/20261122-r3/`. Only revised figure 3 needs another figure review; overall course proofreading and release gates retain their earlier scope.
 
+## All Figures Accepted, 2026-11-22
+
+The maintainer approved the revised view-space comparison at `13d92b94f`. All eight course figures are now accepted, including their current captions and supporting explanations. This closes the figure-review queue. It does not establish acceptance of every remaining course passage or close exact-package, platform, gallery-promotion or release-publication gates. The next course step is the remaining maintainer proofreading, followed by an RC3 scope and candidate-readiness review.
+
 ## RC4 Freeze
 
 Build and run every chapter from exact candidate source archives and wheels through `find_package(datoviz CONFIG REQUIRED)`. Require packaged runtime shaderc, deterministic previews, bounded GLFW resize/input/depth/repeated-frame/shutdown smoke, Vulkan validation, source synchronization, links, navigation, generated reference and binding checks, supported hosted-platform proof, and explicit physical exclusions.
