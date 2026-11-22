@@ -28,8 +28,8 @@ Datoviz sits between your program and Vulkan. Its vklite layer wraps Vulkan obje
 ```mermaid
 flowchart TD
     accTitle: Layers between your code and the GPU
-    accDescr: Your C code and shaders call Datoviz's vklite and canvas, which call the Vulkan API, which the GPU driver implements for the GPU.
-    A[Your C code and shaders] --> B[Datoviz: vklite and canvas]
+    accDescr: Your C program calls Datoviz's vklite and canvas, which call the Vulkan API, which the GPU driver implements for the GPU.
+    A[Your C program] --> B[Datoviz: vklite and canvas]
     B --> C[Vulkan API]
     C --> D[GPU driver]
     D --> E[GPU]

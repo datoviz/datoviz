@@ -680,3 +680,29 @@
     height: auto;
     margin: 0 auto;
 }
+
+/* Dense flowcharts keep their label size and scroll within the figure on small screens. */
+.md-typeset .dvz-course-diagram-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.md-typeset .dvz-course-diagram-scroll > .mermaid {
+    min-width: 32rem;
+    display: flex;
+    justify-content: center;
+}
+
+.md-typeset .dvz-course-diagram-hint {
+    display: none;
+    margin: 0.5rem 0 0;
+    color: var(--md-default-fg-color--light);
+    font-size: 0.7rem;
+}
+
+@media screen and (max-width: 700px) {
+    .md-typeset .dvz-course-diagram-hint {
+        display: block;
+    }
+}

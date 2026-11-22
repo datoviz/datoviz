@@ -8,29 +8,36 @@ The result is the core loop of a small Vulkan renderer: the CPU prepares resourc
 
 ## The complete path
 
-Every input to the final image takes one of a few routes from the CPU to a shader, as Figure 1 shows.
+Figure 1 shows how the resources from earlier chapters feed the final draw, from vertex input through the shader stages to the finished frame.
 
 <figure class="dvz-course-figure" id="fig-complete-data-path" markdown="1">
 
-```text
-CPU mesh arrays  -> vertex/index buffers --+
-CPU matrices     -> push constants --------+-> vertex shader
-                                                     |
-                                      rasterization and interpolation
-                                                     |
-CPU material     -> uniform buffer --------+         v
-CPU pixels       -> staging -> image/view -+-> fragment shader
-sampler rules    -> sampler ---------------+         |
-                                                     v
-                                      depth test and color attachment
-                                                     |
-                                                     v
-                                            present or capture
+<div class="dvz-course-diagram-scroll" role="region" aria-label="Complete draw pipeline" tabindex="0" markdown="1">
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 12, "rankSpacing": 28, "padding": 8}}}%%
+flowchart TD
+    accTitle: Resources and shader stages in the final draw
+    accDescr: Vertex input fetches attributes from mesh buffers, and push constants provide matrices to the vertex shader. Rasterization carries its outputs to the fragment shader. That shader also reads the material uniform buffer and a texture through an image view and sampler. Depth testing and color writes produce the frame for presentation or capture.
+    B["Geometry<br/>vertex/index buffers"] -->|vertex input| V[Vertex shader]
+    C["Matrices<br/>push constants"] --> V
+    V --> R[Rasterization<br/>interpolation]
+    R --> F[Fragment shader]
+    UB["Material<br/>uniform buffer"] -->|set 0, binding 0| F
+    T["Texture<br/>view and sampler"] -->|set 0, binding 1| F
+    F --> D[Depth test and color write]
+    D --> O[Present or capture]
 ```
+
+</div>
+
+<p class="dvz-course-diagram-hint">Scroll sideways for the full diagram.</p>
 
 <figcaption>Figure 1. Each input reaches the vertex or fragment shader through its own route: buffers, push constants, a uniform buffer, or an image with a sampler.</figcaption>
 
 </figure>
+
+Vertex input uses the indices to select complete vertex records, then decodes their attributes as in chapters 6 and 7. Push constants carry copies of the matrices. The fragment shader reads the material and texture through the descriptor bindings introduced in chapters 12 and 14.
 
 The arrows mean different things:
 
