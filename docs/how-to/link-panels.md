@@ -51,29 +51,56 @@ with the matching visible extent.
 
 Use a narrower dimension mask to link only one axis.
 
-```c
-DvzController* shared_x = dvz_panzoom(scene, NULL);
-DvzController* y_a = dvz_panzoom(scene, NULL);
-DvzController* y_b = dvz_panzoom(scene, NULL);
+=== "Python"
 
-dvz_panel_bind_controller(panel_a, shared_x, DVZ_DIM_MASK_X);
-dvz_panel_bind_controller(panel_a, y_a, DVZ_DIM_MASK_Y);
-dvz_panel_bind_controller(panel_b, shared_x, DVZ_DIM_MASK_X);
-dvz_panel_bind_controller(panel_b, y_b, DVZ_DIM_MASK_Y);
-```
+    ```python
+    shared_x = dvz.dvz_panzoom(scene, None)
+    y_a = dvz.dvz_panzoom(scene, None)
+    y_b = dvz.dvz_panzoom(scene, None)
+
+    dvz.dvz_panel_bind_controller(panel_a, shared_x, dvz.DVZ_DIM_MASK_X)
+    dvz.dvz_panel_bind_controller(panel_a, y_a, dvz.DVZ_DIM_MASK_Y)
+    dvz.dvz_panel_bind_controller(panel_b, shared_x, dvz.DVZ_DIM_MASK_X)
+    dvz.dvz_panel_bind_controller(panel_b, y_b, dvz.DVZ_DIM_MASK_Y)
+    ```
+
+=== "C"
+
+    ```c
+    DvzController* shared_x = dvz_panzoom(scene, NULL);
+    DvzController* y_a = dvz_panzoom(scene, NULL);
+    DvzController* y_b = dvz_panzoom(scene, NULL);
+
+    dvz_panel_bind_controller(panel_a, shared_x, DVZ_DIM_MASK_X);
+    dvz_panel_bind_controller(panel_a, y_a, DVZ_DIM_MASK_Y);
+    dvz_panel_bind_controller(panel_b, shared_x, DVZ_DIM_MASK_X);
+    dvz_panel_bind_controller(panel_b, y_b, DVZ_DIM_MASK_Y);
+    ```
 
 For linked but distinct controllers, use a two-way controller link when either panel should drive
 the shared state:
 
-```c
-DvzController* x_a = dvz_panzoom(scene, NULL);
-DvzController* x_b = dvz_panzoom(scene, NULL);
+=== "Python"
 
-dvz_controller_link(scene, x_a, x_b, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_TWO_WAY);
-```
+    ```python
+    x_a = dvz.dvz_panzoom(scene, None)
+    x_b = dvz.dvz_panzoom(scene, None)
 
-Retain the returned `DvzControllerLink*` if the relationship may be removed later; destroy the link
-with `dvz_controller_link_destroy()`. The scene owns any link that remains active.
+    link = dvz.dvz_controller_link(
+        scene, x_a, x_b, dvz.DVZ_CONTROLLER_LINK_EXTENT_X, dvz.DVZ_CONTROLLER_LINK_TWO_WAY
+    )
+    ```
+
+=== "C"
+
+    ```c
+    DvzController* x_a = dvz_panzoom(scene, NULL);
+    DvzController* x_b = dvz_panzoom(scene, NULL);
+
+    dvz_controller_link(scene, x_a, x_b, DVZ_CONTROLLER_LINK_EXTENT_X, DVZ_CONTROLLER_LINK_TWO_WAY);
+    ```
+
+Keep the returned link handle if the relationship may be removed later; destroy the link with `dvz_controller_link_destroy()`. The scene owns any link that remains active.
 
 ## Important details
 
@@ -99,7 +126,7 @@ format.
 
 ## Common mistakes
 
-- Creating two identical controllers instead of sharing one controller pointer.
+- Creating two identical controllers instead of sharing one controller.
 - Sharing a full `DVZ_DIM_MASK_XY` controller when only X should be linked.
 - Expecting `dvz_controller_link()` to work between different controller families.
 - Linking panels with simultaneous active interactions and expecting both gestures to merge.

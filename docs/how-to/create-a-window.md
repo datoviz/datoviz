@@ -53,10 +53,11 @@ window view, while the view presents one existing figure and routes input back t
   </div>
 </div>
 
-The Python tab is the recommended managed path for scripts. The C tab is a function-body excerpt
-that exposes the exact app/view lifecycle.
+Both versions open an interactive view of the prepared figure and connect its panzoom controller.
 
 === "Python"
+
+    Use the managed run helper for ordinary scripts.
 
     ```python
     import datoviz as dvz
@@ -71,7 +72,11 @@ that exposes the exact app/view lifecycle.
     dvz.run(scene, figure, width=800, height=600, title="Datoviz")
     ```
 
+    In terminal IPython, `dvz.run()` is nonblocking by default and returns a live session. Retain that session and call `session.close()` when finished. In ordinary scripts it blocks by default.
+
 === "C"
+
+    This function-body excerpt manages the app and view explicitly.
 
     ```c
     DvzApp* app = dvz_app(scene);
@@ -94,11 +99,7 @@ that exposes the exact app/view lifecycle.
     dvz_app_destroy(app);
     ```
 
-Pass `0` to `dvz_app_run()` to run until the window closes. Pass a positive frame count for smoke
-tests or deterministic captures.
-
-In terminal IPython, `dvz.run()` is nonblocking by default and returns a live session. Retain that
-session and call `session.close()` when finished. In ordinary scripts it blocks by default.
+For an explicit app run, a frame limit of `0` means run until the window closes. A positive limit bounds the run for smoke tests or deterministic captures.
 
 ## Lifecycle
 
@@ -145,12 +146,23 @@ flowchart TD
 
 ## Controllers and input
 
-Bind controllers before entering the run loop. For the common panzoom case, create it from the
-view so the controller is connected to the live input path.
+For an existing app view, bind controllers before entering the run loop. The panzoom helper creates a controller connected to that view's live input path.
 
-```c
-dvz_view_panzoom(view, panel, NULL);
-```
+=== "Python"
+
+    Use this with an explicit `view`. The managed run path above already binds its scene controller.
+
+    ```python
+    import datoviz as dvz
+
+    dvz.dvz_view_panzoom(view, panel, None)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_view_panzoom(view, panel, NULL);
+    ```
 
 Use 3D controller helpers for 3D panels, such as arcball, turntable, or fly. Input callbacks and
 GUI overlays should also be registered before `dvz_app_run()`.

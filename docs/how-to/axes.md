@@ -82,19 +82,27 @@ Axes are derived from the panel data domain. Visual attributes may still need to
 coordinate space expected by the visual family. When your source samples are in panel data
 coordinates, upload those data positions and use the default data-space attachment:
 
-```c
-dvz_visual_set_data(visual, "position", data_positions, count);
-dvz_panel_add_visual(panel, visual, NULL);
-```
+=== "Python"
+
+    ```python
+    import numpy as np
+
+    positions = np.asarray(data_positions, dtype=np.float32)
+    dvz.dvz_visual_set_data(visual, "position", positions)
+    dvz.dvz_panel_add_visual(panel, visual, None)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_visual_set_data(visual, "position", data_positions, count);
+    dvz_panel_add_visual(panel, visual, NULL);
+    ```
 
 Update the panel domain when the data range changes. If multiple panels are linked, keep their
 domains and controllers linked intentionally rather than copying tick labels by hand.
 
-Domain endpoints are ordered, not sorted. Reversed finite domains are valid: for example,
-`dvz_panel_set_domain(panel, DVZ_DIM_X, 10.0, 0.0)` maps data value `10.0` to the left edge and
-`0.0` to the right edge. The same convention applies to Y: the first endpoint maps to the bottom
-visual edge and the second endpoint maps to the top visual edge. `dvz_panel_visible_domain()`
-preserves that endpoint order after View2D fitting and panzoom.
+Domain endpoints are ordered, not sorted. Reversed finite domains are valid: an X domain from `10.0` to `0.0` maps `10.0` to the left edge and `0.0` to the right edge. For Y, the first endpoint maps to the bottom edge and the second maps to the top. The visible-domain query preserves that order after View2D fitting and panzoom.
 
 ## Tick policy and labels
 
@@ -137,17 +145,27 @@ Use the default tick policy for ordinary plots. Tune it when labels collide or t
 
 When another layer owns tick selection, use explicit ticks instead of the automatic policy:
 
-```c
-double tick_values[] = {10.0, 5.0, 0.0};
-const char* tick_labels[] = {"ten", "five", "zero"};
-DvzAxisTicks explicit_ticks = {
-    DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks),
-    .count = 3,
-    .values = tick_values,
-    .labels = tick_labels,
-};
-dvz_axis_set_ticks(x_axis, &explicit_ticks);
-```
+=== "Python"
+
+    ```python
+    tick_values = [10.0, 5.0, 0.0]
+    tick_labels = ["ten", "five", "zero"]
+    dvz.dvz_axis_set_ticks(x_axis, tick_values, tick_labels)
+    ```
+
+=== "C"
+
+    ```c
+    double tick_values[] = {10.0, 5.0, 0.0};
+    const char* tick_labels[] = {"ten", "five", "zero"};
+    DvzAxisTicks explicit_ticks = {
+        DVZ_STRUCT_INIT_FIELDS(DvzAxisTicks),
+        .count = 3,
+        .values = tick_values,
+        .labels = tick_labels,
+    };
+    dvz_axis_set_ticks(x_axis, &explicit_ticks);
+    ```
 
 Explicit tick values are panel data coordinates and render in the order supplied. Datoviz copies
 labels before `dvz_axis_set_ticks()` returns. Passing an empty explicit tick record renders no
@@ -155,10 +173,19 @@ ticks, tick labels, or grid lines until `dvz_axis_clear_ticks()` restores automa
 
 Use labels for semantic names and units:
 
-```c
-dvz_axis_set_label(x_axis, "time (ms)");
-dvz_axis_set_label(y_axis, "normalized response");
-```
+=== "Python"
+
+    ```python
+    dvz.dvz_axis_set_label(x_axis, b"time (ms)")
+    dvz.dvz_axis_set_label(y_axis, b"normalized response")
+    ```
+
+=== "C"
+
+    ```c
+    dvz_axis_set_label(x_axis, "time (ms)");
+    dvz_axis_set_label(y_axis, "normalized response");
+    ```
 
 For formatted numeric units, attach a `DvzUnits` object with `dvz_axis_set_units()`. For compact
 data coordinates that should render as absolute UTC time, use `dvz_axis_set_datetime()` and
@@ -169,10 +196,19 @@ data coordinates that should render as absolute UTC time, use `dvz_axis_set_date
 Axis labels and tick labels need space. If labels crowd the plot edge, reserve plot-area margins
 or use a larger panel/grid margin.
 
-```c
-dvz_axis_set_plot_margins(x_axis, 0.0f, 0.0f, 0.08f, 0.0f);
-dvz_axis_set_plot_margins(y_axis, 0.08f, 0.0f, 0.0f, 0.0f);
-```
+=== "Python"
+
+    ```python
+    dvz.dvz_axis_set_plot_margins(x_axis, 0.0, 0.0, 0.08, 0.0)
+    dvz.dvz_axis_set_plot_margins(y_axis, 0.08, 0.0, 0.0, 0.0)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_axis_set_plot_margins(x_axis, 0.0f, 0.0f, 0.08f, 0.0f);
+    dvz_axis_set_plot_margins(y_axis, 0.08f, 0.0f, 0.0f, 0.0f);
+    ```
 
 Use `dvz_axis_set_style()` when the default tick, text, or grid styling does not match the figure.
 Avoid drawing custom axis lines unless the retained axis helper cannot express the intended

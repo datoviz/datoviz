@@ -68,15 +68,27 @@ wheel navigation over the declared domain. This is a setup fragment; see the com
 When you need one-axis or shared-controller binding in a live app, create the controller explicitly
 and bind it through the view so the panel is also connected to input:
 
-The following C blocks are setup excerpts. Check each returned pointer/result in application code.
+These are setup excerpts. Check that each constructor succeeds and each setter returns `DVZ_SUCCESS` in application code.
 
-```c
-dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
-dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+=== "Python"
 
-DvzController* controller = dvz_panzoom(scene, NULL);
-dvz_view_bind_controller(view, panel, controller, DVZ_DIM_MASK_XY);
-```
+    ```python
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_X, xmin, xmax)
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_Y, ymin, ymax)
+
+    controller = dvz.dvz_panzoom(scene, None)
+    dvz.dvz_view_bind_controller(view, panel, controller, dvz.DVZ_DIM_MASK_XY)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
+    dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+
+    DvzController* controller = dvz_panzoom(scene, NULL);
+    dvz_view_bind_controller(view, panel, controller, DVZ_DIM_MASK_XY);
+    ```
 
 Use `DVZ_DIM_MASK_X` or `DVZ_DIM_MASK_Y` for one-axis navigation.
 
@@ -87,14 +99,30 @@ Panel domains define the base data range. Panzoom state is applied on top of tha
 the current visible range. Query the resolved visible range when axes, labels, overlays, or host UI
 need to follow navigation:
 
-```c
-double visible_xmin = 0.0;
-double visible_xmax = 0.0;
-if (dvz_panel_visible_domain(panel, DVZ_DIM_X, &visible_xmin, &visible_xmax))
-{
-    /* Update external UI or diagnostics from the visible X range. */
-}
-```
+=== "Python"
+
+    ```python
+    import ctypes
+
+    visible_xmin = ctypes.c_double()
+    visible_xmax = ctypes.c_double()
+    if dvz.dvz_panel_visible_domain(
+        panel, dvz.DVZ_DIM_X, ctypes.byref(visible_xmin), ctypes.byref(visible_xmax)
+    ):
+        # Read these values when updating external UI or diagnostics.
+        visible_xrange = (visible_xmin.value, visible_xmax.value)
+    ```
+
+=== "C"
+
+    ```c
+    double visible_xmin = 0.0;
+    double visible_xmax = 0.0;
+    if (dvz_panel_visible_domain(panel, DVZ_DIM_X, &visible_xmin, &visible_xmax))
+    {
+        /* Update external UI or diagnostics from the visible X range. */
+    }
+    ```
 
 Set the domain before adding data-space visuals. If the domain changes later, retained visuals do
 not need rewritten positions; the scene remaps the same source data through the new visible range.
@@ -104,13 +132,27 @@ not need rewritten positions; the scene remaps the same source data through the 
 
 Pass a descriptor when the default 2D interaction policy is not enough:
 
-```c
-DvzPanzoomDesc desc = dvz_panzoom_desc();
-desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+=== "Python"
 
-DvzController* controller = dvz_panzoom(scene, &desc);
-dvz_view_bind_controller(view, panel, controller, DVZ_DIM_MASK_XY);
-```
+    ```python
+    import ctypes
+
+    desc = dvz.dvz_panzoom_desc()
+    desc.flags = dvz.DVZ_PANZOOM_FLAGS_KEEP_ASPECT
+
+    controller = dvz.dvz_panzoom(scene, ctypes.byref(desc))
+    dvz.dvz_view_bind_controller(view, panel, controller, dvz.DVZ_DIM_MASK_XY)
+    ```
+
+=== "C"
+
+    ```c
+    DvzPanzoomDesc desc = dvz_panzoom_desc();
+    desc.flags = DVZ_PANZOOM_FLAGS_KEEP_ASPECT;
+
+    DvzController* controller = dvz_panzoom(scene, &desc);
+    dvz_view_bind_controller(view, panel, controller, DVZ_DIM_MASK_XY);
+    ```
 
 Use `DVZ_PANZOOM_FLAGS_FIXED_X` or `DVZ_PANZOOM_FLAGS_FIXED_Y` for a controller that should ignore
 one axis. Prefer binding with `DVZ_DIM_MASK_X` or `DVZ_DIM_MASK_Y` when the axis restriction is part
@@ -121,12 +163,23 @@ of the panel relationship rather than the controller behavior itself.
 
 Sharing one controller handle links the bound state for every panel that uses it:
 
-```c
-DvzController* shared_x = dvz_panzoom(scene, NULL);
+=== "Python"
 
-dvz_view_bind_controller(view, top_panel, shared_x, DVZ_DIM_MASK_X);
-dvz_view_bind_controller(view, bottom_panel, shared_x, DVZ_DIM_MASK_X);
-```
+    ```python
+    shared_x = dvz.dvz_panzoom(scene, None)
+
+    dvz.dvz_view_bind_controller(view, top_panel, shared_x, dvz.DVZ_DIM_MASK_X)
+    dvz.dvz_view_bind_controller(view, bottom_panel, shared_x, dvz.DVZ_DIM_MASK_X)
+    ```
+
+=== "C"
+
+    ```c
+    DvzController* shared_x = dvz_panzoom(scene, NULL);
+
+    dvz_view_bind_controller(view, top_panel, shared_x, DVZ_DIM_MASK_X);
+    dvz_view_bind_controller(view, bottom_panel, shared_x, DVZ_DIM_MASK_X);
+    ```
 
 Use separate controllers when panels should navigate independently. For linked X with independent
 Y ranges, bind one X controller to both panels and bind separate Y controllers to each panel. The
@@ -143,8 +196,7 @@ Controllers live with the scene that created them.
 `dvz_view_bind_controller()` when you need one-axis binding, shared controllers, or custom link
 topology.
 
-The controller is scene-owned. The `DvzPanzoom*` returned by the view helper is a borrowed payload;
-do not destroy it separately.
+The controller is scene-owned. The panzoom payload returned by the view helper is borrowed; do not destroy it separately.
 
 ## Common mistakes
 

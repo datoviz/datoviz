@@ -68,6 +68,8 @@ Create one with:
 === "Python"
 
     ```python
+    import datoviz as dvz
+
     colormap = dvz.dvz_colormap_builtin(scene, dvz.DVZ_BUILTIN_COLORMAP_VIRIDIS)
     ```
 
@@ -91,15 +93,30 @@ There are two custom routes.
 `dvz_colormap_custom()` copies at least two RGBA8 colors and distributes them uniformly over
 `[0, 1]`. Sampling linearly interpolates neighboring RGBA8 entries.
 
-```c
-const DvzColor colors[] = {
-    {20, 24, 35, 255},
-    {32, 180, 170, 255},
-    {245, 225, 120, 255},
-};
-DvzColormap* colormap =
-    dvz_colormap_custom(scene, "graphite-cyan", colors, DVZ_ARRAY_COUNT(colors));
-```
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    colors = (dvz.DvzColor * 3)(
+        dvz.DvzColor(20, 24, 35, 255),
+        dvz.DvzColor(32, 180, 170, 255),
+        dvz.DvzColor(245, 225, 120, 255),
+    )
+    colormap = dvz.dvz_colormap_custom(scene, b"graphite-cyan", colors, len(colors))
+    ```
+
+=== "C"
+
+    ```c
+    const DvzColor colors[] = {
+        {20, 24, 35, 255},
+        {32, 180, 170, 255},
+        {245, 225, 120, 255},
+    };
+    DvzColormap* colormap =
+        dvz_colormap_custom(scene, "graphite-cyan", colors, DVZ_ARRAY_COUNT(colors));
+    ```
 
 ### Positioned Stops
 
@@ -107,15 +124,35 @@ DvzColormap* colormap =
 normalized coordinates. Supply them in increasing order and normally include endpoints at `0` and
 `1`; sampling interpolates between adjacent stops and clamps outside their interval.
 
-```c
-DvzColormap* colormap = dvz_colormap(scene, NULL);
-DvzColormapStop stops[] = {
-    {.position = 0.0, .rgba = {20, 24, 35, 255}},
-    {.position = 0.5, .rgba = {32, 180, 170, 255}},
-    {.position = 1.0, .rgba = {245, 225, 120, 255}},
-};
-dvz_colormap_set_stops(colormap, stops, DVZ_ARRAY_COUNT(stops));
-```
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    colormap = dvz.dvz_colormap(scene, None)
+    stop_values = (
+        (0.0, (20, 24, 35, 255)),
+        (0.5, (32, 180, 170, 255)),
+        (1.0, (245, 225, 120, 255)),
+    )
+    stops = (dvz.DvzColormapStop * len(stop_values))()
+    for stop, (position, rgba) in zip(stops, stop_values):
+        stop.position = position
+        stop.rgba[:] = rgba
+    dvz.dvz_colormap_set_stops(colormap, stops, len(stops))
+    ```
+
+=== "C"
+
+    ```c
+    DvzColormap* colormap = dvz_colormap(scene, NULL);
+    DvzColormapStop stops[] = {
+        {.position = 0.0, .rgba = {20, 24, 35, 255}},
+        {.position = 0.5, .rgba = {32, 180, 170, 255}},
+        {.position = 1.0, .rgba = {245, 225, 120, 255}},
+    };
+    dvz_colormap_set_stops(colormap, stops, DVZ_ARRAY_COUNT(stops));
+    ```
 
 Passing zero stops clears the custom stops and restores the object's built-in or grayscale policy.
 Calling `dvz_colormap_set_stops()` on a LUT colormap releases its copied LUT.
@@ -176,15 +213,21 @@ flowchart TD
 
 Bind a color scale to the supported visual slot:
 
-```c
-dvz_visual_set_scale(visual, "color", scale);
-```
+=== "Python"
 
-Point and pixel visuals accept scalar `float` color attributes after
-`dvz_visual_set_attr_format(..., "color", DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32)`. Scalar image and
-volume fields require a compatible field semantic plus a continuous scale with a colormap. Labels
-use categorical scales. Consult the individual [visual-family pages](visual-families/index.md)
-before assuming another family supports scalar or categorical color.
+    ```python
+    import datoviz as dvz
+
+    dvz.dvz_visual_set_scale(visual, b"color", scale)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_visual_set_scale(visual, "color", scale);
+    ```
+
+Point and pixel visuals accept scalar `float` color attributes when `dvz_visual_set_attr_format()` selects `DVZ_VISUAL_ATTR_FORMAT_SCALAR_F32` for the color attribute. Scalar image and volume fields require a compatible field semantic plus a continuous scale with a colormap. Labels use categorical scales. Consult the individual [visual-family pages](visual-families/index.md) before assuming another family supports scalar or categorical color.
 
 Scale and colormap changes invalidate their retained consumers. Update the shared object instead of
 rebuilding independent color arrays, colorbars, legends, and readout rules.

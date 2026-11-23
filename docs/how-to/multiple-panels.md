@@ -60,13 +60,27 @@ figure with one visual per panel. These are fragments; see the complete
 Use `dvz_grid_set_margins()` and `dvz_grid_set_gutter()` when the panels need reserved space or
 consistent spacing.
 
-```c
-dvz_grid_set_margins(
-    grid,
-    &(DvzPanelReserve){
-        .left_px = 48.0f, .right_px = 32.0f, .top_px = 32.0f, .bottom_px = 48.0f});
-dvz_grid_set_gutter(grid, 24.0f, 20.0f);
-```
+=== "Python"
+
+    ```python
+    import ctypes
+
+    margins = dvz.DvzPanelReserve(
+        left_px=48.0, right_px=32.0, top_px=32.0, bottom_px=48.0
+    )
+    dvz.dvz_grid_set_margins(grid, ctypes.byref(margins))
+    dvz.dvz_grid_set_gutter(grid, 24.0, 20.0)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_grid_set_margins(
+        grid,
+        &(DvzPanelReserve){
+            .left_px = 48.0f, .right_px = 32.0f, .top_px = 32.0f, .bottom_px = 48.0f});
+    dvz_grid_set_gutter(grid, 24.0f, 20.0f);
+    ```
 
 With the minimal 1 × 2 grid, the expected result is two equal-width panels. Margins shrink the
 outer grid area; the horizontal gutter separates the columns; neither setting reserves axis space
@@ -75,22 +89,43 @@ inside a panel.
 Rows and columns default to equal weight. Use fixed-pixel or weighted row/column sizes when one
 panel is a sidebar, overview, or shared control strip:
 
-```c
-dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 2.0f);
-dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.0f);
-dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 160.0f);
-```
+=== "Python"
+
+    ```python
+    dvz.dvz_grid_set_col_size(grid, 0, dvz.DVZ_GRID_SIZE_WEIGHT, 2.0)
+    dvz.dvz_grid_set_col_size(grid, 1, dvz.DVZ_GRID_SIZE_WEIGHT, 1.0)
+    dvz.dvz_grid_set_row_size(grid, 0, dvz.DVZ_GRID_SIZE_FIXED_PX, 160.0)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_grid_set_col_size(grid, 0, DVZ_GRID_SIZE_WEIGHT, 2.0f);
+    dvz_grid_set_col_size(grid, 1, DVZ_GRID_SIZE_WEIGHT, 1.0f);
+    dvz_grid_set_row_size(grid, 0, DVZ_GRID_SIZE_FIXED_PX, 160.0f);
+    ```
 
 ## Spanning panels
 
 Use a spanning panel when one plot should occupy several cells:
 
-```c
-DvzGrid* grid = dvz_figure_grid(figure, 2, 2);
-DvzPanel* top_left = dvz_grid_panel(grid, 0, 0);
-DvzPanel* top_right = dvz_grid_panel(grid, 0, 1);
-DvzPanel* bottom = dvz_grid_panel_span(grid, 1, 0, 1, 2);
-```
+=== "Python"
+
+    ```python
+    grid = dvz.dvz_figure_grid(figure, 2, 2)
+    top_left = dvz.dvz_grid_panel(grid, 0, 0)
+    top_right = dvz.dvz_grid_panel(grid, 0, 1)
+    bottom = dvz.dvz_grid_panel_span(grid, 1, 0, 1, 2)
+    ```
+
+=== "C"
+
+    ```c
+    DvzGrid* grid = dvz_figure_grid(figure, 2, 2);
+    DvzPanel* top_left = dvz_grid_panel(grid, 0, 0);
+    DvzPanel* top_right = dvz_grid_panel(grid, 0, 1);
+    DvzPanel* bottom = dvz_grid_panel_span(grid, 1, 0, 1, 2);
+    ```
 
 Spans must cover contiguous grid cells. Use manual panels when the layout is truly irregular.
 
@@ -99,12 +134,25 @@ Spans must cover contiguous grid cells. Use manual panels when the layout is tru
 For inset panels or layouts that do not fit a grid, create panels directly in normalized figure
 coordinates:
 
-```c
-DvzPanel* left = dvz_panel(
-    figure, &(DvzPanelDesc){.x = 0.08f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
-DvzPanel* right = dvz_panel(
-    figure, &(DvzPanelDesc){.x = 0.52f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
-```
+=== "Python"
+
+    ```python
+    import ctypes
+
+    left_desc = dvz.DvzPanelDesc(x=0.08, y=0.16, width=0.40, height=0.68)
+    right_desc = dvz.DvzPanelDesc(x=0.52, y=0.16, width=0.40, height=0.68)
+    left = dvz.dvz_panel(figure, ctypes.byref(left_desc))
+    right = dvz.dvz_panel(figure, ctypes.byref(right_desc))
+    ```
+
+=== "C"
+
+    ```c
+    DvzPanel* left = dvz_panel(
+        figure, &(DvzPanelDesc){.x = 0.08f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
+    DvzPanel* right = dvz_panel(
+        figure, &(DvzPanelDesc){.x = 0.52f, .y = 0.16f, .width = 0.40f, .height = 0.68f});
+    ```
 
 Use `dvz_panel_set_desc()` when a retained panel needs a new normalized rectangle after creation.
 
@@ -116,11 +164,24 @@ inside one panel.
 Use panel reserves for axes, labels, colorbars, scale bars, or readouts that need stable
 logical-pixel bands around the plot area:
 
-```c
-dvz_panel_set_reserve(
-    panel,
-    &(DvzPanelReserve){.left_px = 72.0f, .right_px = 20.0f, .top_px = 16.0f, .bottom_px = 56.0f});
-```
+=== "Python"
+
+    ```python
+    import ctypes
+
+    reserve = dvz.DvzPanelReserve(
+        left_px=72.0, right_px=20.0, top_px=16.0, bottom_px=56.0
+    )
+    dvz.dvz_panel_set_reserve(panel, ctypes.byref(reserve))
+    ```
+
+=== "C"
+
+    ```c
+    dvz_panel_set_reserve(
+        panel,
+        &(DvzPanelReserve){.left_px = 72.0f, .right_px = 20.0f, .top_px = 16.0f, .bottom_px = 56.0f});
+    ```
 
 Use panel padding to inset the whole panel content before reserves are resolved. `dvz_panel_full()`
 is still a good choice for single-panel scenes; add reserve or padding only when adornments need it.
@@ -129,20 +190,41 @@ is still a good choice for single-panel scenes; add reserve or padding only when
 
 Bind controllers per panel. Separate controllers make panels move independently:
 
-```c
-DvzController* left_panzoom = dvz_panzoom(scene, NULL);
-DvzController* right_panzoom = dvz_panzoom(scene, NULL);
-dvz_panel_bind_controller(left, left_panzoom, DVZ_DIM_MASK_XY);
-dvz_panel_bind_controller(right, right_panzoom, DVZ_DIM_MASK_XY);
-```
+=== "Python"
+
+    ```python
+    left_panzoom = dvz.dvz_panzoom(scene, None)
+    right_panzoom = dvz.dvz_panzoom(scene, None)
+    dvz.dvz_panel_bind_controller(left, left_panzoom, dvz.DVZ_DIM_MASK_XY)
+    dvz.dvz_panel_bind_controller(right, right_panzoom, dvz.DVZ_DIM_MASK_XY)
+    ```
+
+=== "C"
+
+    ```c
+    DvzController* left_panzoom = dvz_panzoom(scene, NULL);
+    DvzController* right_panzoom = dvz_panzoom(scene, NULL);
+    dvz_panel_bind_controller(left, left_panzoom, DVZ_DIM_MASK_XY);
+    dvz_panel_bind_controller(right, right_panzoom, DVZ_DIM_MASK_XY);
+    ```
 
 Share one controller pointer when views should move together:
 
-```c
-DvzController* shared = dvz_panzoom(scene, NULL);
-dvz_panel_bind_controller(left, shared, DVZ_DIM_MASK_XY);
-dvz_panel_bind_controller(right, shared, DVZ_DIM_MASK_XY);
-```
+=== "Python"
+
+    ```python
+    shared = dvz.dvz_panzoom(scene, None)
+    dvz.dvz_panel_bind_controller(left, shared, dvz.DVZ_DIM_MASK_XY)
+    dvz.dvz_panel_bind_controller(right, shared, dvz.DVZ_DIM_MASK_XY)
+    ```
+
+=== "C"
+
+    ```c
+    DvzController* shared = dvz_panzoom(scene, NULL);
+    dvz_panel_bind_controller(left, shared, DVZ_DIM_MASK_XY);
+    dvz_panel_bind_controller(right, shared, DVZ_DIM_MASK_XY);
+    ```
 
 Use a narrower dimension mask, such as `DVZ_DIM_MASK_X`, when only one axis should be linked. See
 [Link panels and controllers](link-panels.md) for linked-controller patterns.

@@ -42,6 +42,8 @@ This fragment assumes the scene, figure, panel, and visuals already exist. It sh
         dvz.dvz_app_destroy(app)
     ```
 
+    The returned NumPy array contains top-row-first RGBA8 pixels.
+
 === "C"
 
     ```c
@@ -69,9 +71,9 @@ This fragment assumes the scene, figure, panel, and visuals already exist. It sh
     return rc;
     ```
 
-Create the scene, figure, panel, and visuals before `dvz_view_offscreen()`. Render at least one frame before reading pixels or saving a screenshot from the view.
+    This excerpt only checks rendering. Use `dvz_view_capture_png()` or the canvas capture functions to consume the last frame.
 
-The Python array returned above is top-row-first RGBA8 data. The C excerpt only proves rendering; use `dvz_view_capture_png()` or the canvas capture functions to consume its last frame.
+Create the scene, figure, panel, and visuals before `dvz_view_offscreen()`. Render at least one frame before reading pixels or saving a screenshot from the view.
 
 ## Static offscreen frames
 
@@ -88,24 +90,43 @@ The example writes `offscreen_capture.png` next to the executable and reports th
 
 ## Multi-frame rendering
 
-For animated or incremental output, update retained scene data before each render. Save screenshots or video only after each successful frame. This function-body excerpt assumes that the translation unit includes `<stdio.h>` for standard `snprintf()`.
+For animated or incremental output, update retained scene data before each render. Save screenshots or video only after each successful frame. Put this loop inside the app lifetime shown above, before cleanup. The snippets assume that `update_scene_for_frame()` is your update function and that the `frames` directory exists.
 
-```c
-for (uint32_t frame = 0; frame < frame_count; frame++)
-{
-    update_scene_for_frame(scene, frame);
+=== "Python"
 
-    if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
-        break;
+    ```python
+    import datoviz as dvz
 
-    char path[256] = {0};
-    int written = snprintf(path, sizeof(path), "frames/frame_%04u.png", frame);
-    if (written < 0 || (size_t)written >= sizeof(path))
-        break;
-    if (dvz_view_capture_png(view, path) != 0)
-        break;
-}
-```
+    for frame in range(frame_count):
+        update_scene_for_frame(scene, frame)
+        if dvz.dvz_view_render_once(view) != dvz.DVZ_CANVAS_FRAME_READY:
+            break
+
+        path = f"frames/frame_{frame:04d}.png".encode("utf-8")
+        if dvz.dvz_view_capture_png(view, path) != 0:
+            break
+    ```
+
+=== "C"
+
+    Include `<stdio.h>` for `snprintf()` in the translation unit containing this function-body excerpt.
+
+    ```c
+    for (uint32_t frame = 0; frame < frame_count; frame++)
+    {
+        update_scene_for_frame(scene, frame);
+
+        if (dvz_view_render_once(view) != DVZ_CANVAS_FRAME_READY)
+            break;
+
+        char path[256] = {0};
+        int written = snprintf(path, sizeof(path), "frames/frame_%04u.png", frame);
+        if (written < 0 || (size_t)written >= sizeof(path))
+            break;
+        if (dvz_view_capture_png(view, path) != 0)
+            break;
+    }
+    ```
 
 For long sequences, prefer the video export path instead of writing and assembling many PNGs by hand.
 
@@ -114,7 +135,7 @@ For long sequences, prefer the video export path instead of writing and assembli
 
 Offscreen rendering is a supported native feature. In the generated WebGPU example matrix, its examples are classified as `native-only` because this view API is not a browser route. That label describes browser portability, not the native API's release status. Offscreen rendering is the preferred path for CI, image comparison tests, batch rendering, and documentation screenshots.
 
-`dvz_view_offscreen(app, figure, width, height)` uses framebuffer pixels. Python `dvz_view_capture_rgba(view)` returns an array shaped `(height, width, 4)` with top-row-first RGBA8 screenshot pixels. If the output becomes a test artifact, keep dimensions, data, camera/controller state, random seeds, and color-scale ranges deterministic.
+Offscreen view dimensions use framebuffer pixels. Captured RGBA8 arrays have shape `(height, width, 4)` and store the top row first. If the output becomes a test artifact, keep dimensions, data, camera/controller state, random seeds, and color-scale ranges deterministic.
 
 PNG capture is an sRGB RGBA8 screenshot/export path. It is not a scientific linear-float readback; use explicit data/readback paths when the output is numeric evidence rather than a visual snapshot.
 

@@ -30,9 +30,9 @@ annotations](add-annotations.md), [Map scalar values with colormaps](use-colorma
 
 ## Minimal call-sequence excerpts
 
-These excerpts assume a live panel and the required continuous or categorical scale. Constructors
-may return `NULL`, and the setters return `DvzResult`; complete examples should check both. The
-canonical sources are linked under Related examples below.
+These excerpts assume a live panel and the required continuous or categorical scale. Check that constructors succeed and setters return `DVZ_SUCCESS`. The canonical sources are linked under Related examples below.
+
+### Colorbar
 
 === "Python"
 
@@ -52,22 +52,53 @@ canonical sources are linked under Related examples below.
     dvz_colorbar_set_title(colorbar, "Intensity");
     ```
 
-```c
-DvzScaleBar* scalebar = dvz_scale_bar(panel, NULL);
-dvz_scale_bar_set_dimension(scalebar, DVZ_DIM_X);
-dvz_scale_bar_set_anchor(scalebar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT);
-```
+### Scale bar
 
-```c
-DvzLegend* legend = dvz_legend(panel, categorical_scale, NULL);
-dvz_legend_set_title(legend, "Category");
-```
+=== "Python"
+
+    ```python
+    scalebar = dvz.dvz_scale_bar(panel, None)
+    dvz.dvz_scale_bar_set_dimension(scalebar, dvz.DVZ_DIM_X)
+    dvz.dvz_scale_bar_set_anchor(scalebar, dvz.DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT)
+    ```
+
+=== "C"
+
+    ```c
+    DvzScaleBar* scalebar = dvz_scale_bar(panel, NULL);
+    dvz_scale_bar_set_dimension(scalebar, DVZ_DIM_X);
+    dvz_scale_bar_set_anchor(scalebar, DVZ_SCENE_ANCHOR_PANEL_BOTTOM_RIGHT);
+    ```
+
+### Legend
+
+=== "Python"
+
+    ```python
+    legend = dvz.dvz_legend(panel, categorical_scale, None)
+    dvz.dvz_legend_set_title(legend, b"Category")
+    ```
+
+=== "C"
+
+    ```c
+    DvzLegend* legend = dvz_legend(panel, categorical_scale, NULL);
+    dvz_legend_set_title(legend, "Category");
+    ```
 
 Create the data visual first, then attach the adornment to the same panel:
 
-```c
-dvz_panel_add_visual(panel, visual, NULL);
-```
+=== "Python"
+
+    ```python
+    dvz.dvz_panel_add_visual(panel, visual, None)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_panel_add_visual(panel, visual, NULL);
+    ```
 
 Colorbars require a continuous scale. Legends require a categorical scale. Scale bars describe one
 panel dimension and should match the panel's domain and units.
@@ -97,8 +128,22 @@ explains.
 In multi-panel figures, prefer one adornment per independently encoded panel. Share an adornment
 only when the panels truly share the same scale, category table, units, and visible-domain policy.
 
-Colorbars and legends have dedicated destroy functions. A `DvzScaleBar` is a typed annotation
-alias; cast it to `DvzAnnotation*` when calling `dvz_annotation_destroy()`.
+Colorbars and legends have dedicated destroy functions. A scale bar is an annotation; destroy it through the annotation API:
+
+=== "Python"
+
+    ```python
+    import ctypes
+
+    annotation = ctypes.cast(scalebar, ctypes.POINTER(dvz.DvzAnnotation))
+    dvz.dvz_annotation_destroy(annotation)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_annotation_destroy((DvzAnnotation*)scalebar);
+    ```
 
 Probe readouts are a common source of subtle errors. If a cursor readout describes a color-mapped
 field, it should sample the same field and use the same normalization and display format as the

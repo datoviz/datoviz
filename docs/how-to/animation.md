@@ -5,7 +5,7 @@ Update retained scene state over time without rebuilding the scene.
 !!! info "At a glance"
 
     **Status:** Supported timer and track workflows; compute animation is experimental
-    **Languages:** Python exact binding for tracks, C for timers and tracks
+    **Languages:** Python and C for timers and tracks
     **Prerequisites:** A prepared retained scene; a deterministic time source for reproducible output
     **Result:** Later frames update visual attributes, object transforms, or camera state
 
@@ -55,9 +55,7 @@ scene state, and the renderer uses the updated state for the next frame.
 
 ## Minimal retained update
 
-For direct app code, a scene timer can update retained visual attributes from the scene clock. The
-default timer mode runs on every scene frame. This function-body excerpt assumes valid `scene`,
-`visual`, `positions`, and `n` state; its setup path returns `false` on failure.
+For direct app code, a scene timer can update retained visual attributes from the scene clock. The default timer mode runs on every scene frame. The snippets assume an existing `scene`, point `visual`, position array, and an `update_positions(t, positions, n)` function that changes that array.
 
 <figure class="dvz-output-example">
   <a href="../../examples/features/timer-animation/">
@@ -73,38 +71,86 @@ default timer mode runs on every scene frame. This function-body excerpt assumes
   </figcaption>
 </figure>
 
-```c
-static void
-on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
-{
-    (void)animation;
-    (void)dt;
-    (void)tick;
+=== "Python"
 
-    DvzVisual* visual = user_data;
-    update_positions(t, positions, n);
-    if (dvz_visual_set_data(visual, "position", positions, n) != 0)
-        return;
-}
+    ```python
+    import ctypes
+    import numpy as np
+    import datoviz as dvz
 
-DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
-timer_desc.callback = on_timer;
-timer_desc.user_data = visual;
-DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
-if (timer == NULL || dvz_anim_start(timer, 0.0) != 0)
-    return false;
-```
+    positions = np.asarray(positions, dtype=np.float32, order="C")
+    n = len(positions)
+
+    @dvz.DvzAnimTimerCallback
+    def on_timer(_animation, t, _dt, _tick, _user_data):
+        update_positions(t, positions, n)
+        if dvz.dvz_visual_set_data(visual, "position", positions) != 0:
+            return
+
+    timer_desc = dvz.dvz_anim_timer_desc()
+    timer_desc.callback = on_timer
+    timer = dvz.dvz_anim_timer(scene, ctypes.byref(timer_desc))
+    if not timer or dvz.dvz_anim_start(timer, 0.0) != 0:
+        raise RuntimeError("timer creation or start failed")
+    ```
+
+    The callback uses `visual` and `positions` from the surrounding scope instead of a raw user-data pointer. Keep `on_timer` alive until the timer is destroyed, and keep its visual and array valid for that lifetime. Stopping a timer does not destroy it.
+
+=== "C"
+
+    Define the callback at file scope, where it can access `positions` and `n`:
+
+    ```c
+    static void
+    on_timer(DvzAnimation* animation, double t, double dt, uint64_t tick, void* user_data)
+    {
+        (void)animation;
+        (void)dt;
+        (void)tick;
+
+        DvzVisual* visual = user_data;
+        update_positions(t, positions, n);
+        if (dvz_visual_set_data(visual, "position", positions, n) != 0)
+            return;
+    }
+    ```
+
+    Create and start the timer in your setup function, returning `false` on failure:
+
+    ```c
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.callback = on_timer;
+    timer_desc.user_data = visual;
+    DvzAnimation* timer = dvz_anim_timer(scene, &timer_desc);
+    if (timer == NULL || dvz_anim_start(timer, 0.0) != 0)
+        return false;
+    ```
 
 Use `DVZ_TIMER_INTERVAL` for discrete events on a fixed cadence. The callback receives a stable
 integer `tick`, so examples can avoid deriving boolean or stepped state from floating-point time.
 
-```c
-DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
-timer_desc.mode = DVZ_TIMER_INTERVAL;
-timer_desc.period_s = 0.5;
-timer_desc.callback = on_timer;
-timer_desc.user_data = state;
-```
+Reuse the callback above and configure this descriptor before creating the timer:
+
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    timer_desc = dvz.dvz_anim_timer_desc()
+    timer_desc.mode = dvz.DVZ_TIMER_INTERVAL
+    timer_desc.period_s = 0.5
+    timer_desc.callback = on_timer
+    ```
+
+=== "C"
+
+    ```c
+    DvzAnimTimerDesc timer_desc = dvz_anim_timer_desc();
+    timer_desc.mode = DVZ_TIMER_INTERVAL;
+    timer_desc.period_s = 0.5;
+    timer_desc.callback = on_timer;
+    timer_desc.user_data = visual;
+    ```
 
 Use `DVZ_TIMER_CATCH_UP` when missed interval ticks must be emitted after a long frame. Set
 `max_catch_up` to bound the number of callbacks emitted on one rendered frame.
@@ -192,16 +238,36 @@ be stopped, restarted, or destroyed without rebuilding the scene.
 
 Interactive animations normally run until the window closes:
 
-```c
-dvz_app_run(app, 0);
-```
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    dvz.dvz_app_run(app, 0)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_app_run(app, 0);
+    ```
 
 For tests, screenshots, and videos, drive a bounded number of frames and derive animation state
 from frame time or frame index. Avoid wall-clock-only state when the output must be reproducible.
 
-```c
-dvz_app_run(app, frame_count);
-```
+=== "Python"
+
+    ```python
+    import datoviz as dvz
+
+    dvz.dvz_app_run(app, frame_count)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_app_run(app, frame_count);
+    ```
 
 ## Browser support
 

@@ -25,7 +25,7 @@ domain.
 
 | Space | Use when | API hook |
 | --- | --- | --- |
-| `DVZ_VISUAL_COORD_DATA` | Positions are scientific or application data values. | This is the default when `dvz_panel_add_visual()` receives `NULL`; set panel domains when data has non-default ranges. |
+| `DVZ_VISUAL_COORD_DATA` | Positions are scientific or application data values. | This is the default when no attachment descriptor is supplied; set panel domains when data has non-default ranges. |
 | `DVZ_VISUAL_COORD_VIEW` | Positions are already in panel view coordinates, usually `[-1, +1]`. | Attach explicitly with `coord_space = DVZ_VISUAL_COORD_VIEW`. |
 | `DVZ_VISUAL_COORD_PANEL` | Positions are normalized to the panel itself for fixed overlays. | Attach with `coord_space = DVZ_VISUAL_COORD_PANEL`. |
 | `DVZ_VISUAL_COORD_PANEL_PIXEL` | Positions are panel-local logical pixels with a top-left origin. | Attach with `coord_space = DVZ_VISUAL_COORD_PANEL_PIXEL`; normally combine it with `controller_mode = DVZ_CONTROLLER_FIXED`. |
@@ -84,13 +84,29 @@ and zooming changes the visible interval while the retained position arrays rema
 
 ## View-space call sequence
 
-```c
-// Positions already use the view coordinate range.
-dvz_visual_set_data(visual, "position", positions, count);
-DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-attach.coord_space = DVZ_VISUAL_COORD_VIEW;
-dvz_panel_add_visual(panel, visual, &attach);
-```
+=== "Python"
+
+    ```python
+    import ctypes
+    import numpy as np
+
+    # Positions already use the view coordinate range.
+    positions = np.ascontiguousarray(positions, dtype=np.float32)
+    dvz.dvz_visual_set_data(visual, "position", positions)
+    attach = dvz.dvz_visual_attach_desc()
+    attach.coord_space = dvz.DVZ_VISUAL_COORD_VIEW
+    dvz.dvz_panel_add_visual(panel, visual, ctypes.byref(attach))
+    ```
+
+=== "C"
+
+    ```c
+    // Positions already use the view coordinate range.
+    dvz_visual_set_data(visual, "position", positions, count);
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_VISUAL_COORD_VIEW;
+    dvz_panel_add_visual(panel, visual, &attach);
+    ```
 
 Use this for examples or low-level visuals that intentionally work in normalized panel view space.
 If the data has real units, avoid silently rescaling it into `[-1, +1]` unless that rescaling is part
@@ -101,14 +117,29 @@ of the example contract.
 For 3D scenes, keep object positions in the model/world coordinate system chosen by the example,
 then use a camera and a 3D controller:
 
-```c
-DvzCameraDesc camera = dvz_camera_desc();
-camera.view.eye[2] = 3.0f;
-dvz_panel_set_camera_desc(panel, &camera);
+=== "Python"
 
-DvzController* controller = dvz_arcball(scene, NULL);
-dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
-```
+    ```python
+    import ctypes
+
+    camera = dvz.dvz_camera_desc()
+    camera.view.eye[2] = 3.0
+    dvz.dvz_panel_set_camera_desc(panel, ctypes.byref(camera))
+
+    controller = dvz.dvz_arcball(scene, None)
+    dvz.dvz_panel_bind_controller(panel, controller, dvz.DVZ_DIM_MASK_XYZ)
+    ```
+
+=== "C"
+
+    ```c
+    DvzCameraDesc camera = dvz_camera_desc();
+    camera.view.eye[2] = 3.0f;
+    dvz_panel_set_camera_desc(panel, &camera);
+
+    DvzController* controller = dvz_arcball(scene, NULL);
+    dvz_panel_bind_controller(panel, controller, DVZ_DIM_MASK_XYZ);
+    ```
 
 Use arcball, turntable, or fly controllers for 3D panels. Turntable provides world-up-constrained
 orbiting; there is no separate orbit controller. Use panzoom for 2D panels. Mixing a 2D controller

@@ -62,47 +62,64 @@ The snippets assume `visual` already has its initial point attributes. They repl
     dvz_visual_set_data(visual, "color", color, n);
     ```
 
-Here `n` is the number of items in the visual. For a point visual, that means the number of points. For a segment visual, it means the number of segments. The attribute name, such as `"position"` or `"color"`, must be supported by that visual family.
+The item count is the number of points for a point visual or the number of segments for a segment visual. The attribute name, such as `"position"` or `"color"`, must be supported by that visual family.
 
-Datoviz copies the array when you call the function. If you later modify `pos` or `color` in your own program, the visual does not change automatically. Call the update function again when you want the new values to appear.
+Datoviz copies the array when you call the function. If you later modify the original array in your own program, the visual does not change automatically. Call the update function again when you want the new values to appear.
 
 ## Replace several attributes together
 
 When the number of items changes, update all per-item arrays that share that item count. For a point visual, positions, colors, and diameters usually all have one value per point. If you grow from 1,000 points to 1,200 points, those arrays need to agree on the new count.
 
-```c
-DvzVisualDataUpdate updates[] = {
-    {.attr_name = "position", .data = pos, .item_count = n},
-    {.attr_name = "color", .data = color, .item_count = n},
-    {.attr_name = "diameter_px", .data = diameter_px, .item_count = n},
-};
-dvz_visual_set_data_many(visual, updates, 3);
-```
+=== "Python"
+
+    The NumPy facade accepts a mapping and infers each item count.
+
+    ```python
+    import numpy as np
+    import datoviz as dvz
+
+    positions = np.asarray(positions, dtype=np.float32, order="C")
+    colors = np.asarray(colors, dtype=np.uint8, order="C")
+    diameters = np.asarray(diameters, dtype=np.float32, order="C")
+    dvz.dvz_visual_set_data_many(
+        visual, {"position": positions, "color": colors, "diameter_px": diameters}
+    )
+    ```
+
+=== "C"
+
+    ```c
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = pos, .item_count = n},
+        {.attr_name = "color", .data = color, .item_count = n},
+        {.attr_name = "diameter_px", .data = diameter_px, .item_count = n},
+    };
+    dvz_visual_set_data_many(visual, updates, 3);
+    ```
 
 This form is also useful when several attributes change together even if the item count stays the same. It keeps related updates in one place and avoids temporary mismatches between arrays.
-
-In Python, the NumPy facade accepts a mapping and infers each item count:
-
-```python
-dvz.dvz_visual_set_data_many(
-    visual, {"position": positions, "color": colors, "diameter_px": diameters}
-)
-```
 
 ## Update part of one attribute
 
 If only a contiguous slice of one existing attribute changed, update just that range:
 
-```c
-dvz_visual_set_data_range(visual, "color", first, color + first, count);
-```
+=== "Python"
 
-The equivalent NumPy range upload infers `count` from the contiguous slice:
+    The NumPy range upload infers the count from the contiguous slice.
 
-```python
-changed = np.asarray(colors[first:first + count], dtype=np.uint8, order="C")
-dvz.dvz_visual_set_data_range(visual, "color", first, changed)
-```
+    ```python
+    import numpy as np
+    import datoviz as dvz
+
+    changed = np.asarray(colors[first:first + count], dtype=np.uint8, order="C")
+    dvz.dvz_visual_set_data_range(visual, "color", first, changed)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_visual_set_data_range(visual, "color", first, color + first, count);
+    ```
 
 Use this after the attribute has already been fully allocated with `dvz_visual_set_data()` or `dvz_visual_set_data_many()`. A range update edits existing data; it does not create a new attribute, and it does not change the number of items.
 

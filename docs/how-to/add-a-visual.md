@@ -137,23 +137,42 @@ Related per-item arrays should describe the same items in the same order. In the
 
 For point visuals, these arrays should normally have the same item count:
 
-```c
-dvz_visual_set_data(visual, "position", positions, count);
-dvz_visual_set_data(visual, "color", colors, count);
-dvz_visual_set_data(visual, "diameter_px", diameters, count);
-```
+=== "Python"
 
-Use `dvz_visual_set_data_many()` in C when several attributes should be checked and uploaded
-together:
+    ```python
+    dvz.dvz_visual_set_data(visual, "position", positions)
+    dvz.dvz_visual_set_data(visual, "color", colors)
+    dvz.dvz_visual_set_data(visual, "diameter_px", diameters)
+    ```
 
-```c
-DvzVisualDataUpdate updates[] = {
-    {.attr_name = "position", .data = positions, .item_count = count},
-    {.attr_name = "color", .data = colors, .item_count = count},
-    {.attr_name = "diameter_px", .data = diameters, .item_count = count},
-};
-dvz_visual_set_data_many(visual, updates, 3);
-```
+=== "C"
+
+    ```c
+    dvz_visual_set_data(visual, "position", positions, count);
+    dvz_visual_set_data(visual, "color", colors, count);
+    dvz_visual_set_data(visual, "diameter_px", diameters, count);
+    ```
+
+Use `dvz_visual_set_data_many()` when several attributes should be checked and uploaded together:
+
+=== "Python"
+
+    ```python
+    dvz.dvz_visual_set_data_many(
+        visual, {"position": positions, "color": colors, "diameter_px": diameters}
+    )
+    ```
+
+=== "C"
+
+    ```c
+    DvzVisualDataUpdate updates[] = {
+        {.attr_name = "position", .data = positions, .item_count = count},
+        {.attr_name = "color", .data = colors, .item_count = count},
+        {.attr_name = "diameter_px", .data = diameters, .item_count = count},
+    };
+    dvz_visual_set_data_many(visual, updates, 3);
+    ```
 
 
 ## Group items into visuals
@@ -179,9 +198,17 @@ within one visual.
 
 Most visuals can use the default attachment:
 
-```c
-dvz_panel_add_visual(panel, visual, NULL);
-```
+=== "Python"
+
+    ```python
+    dvz.dvz_panel_add_visual(panel, visual, None)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_panel_add_visual(panel, visual, NULL);
+    ```
 
 The default means: draw in the panel's data coordinate space, let the panel controller affect the
 visual, and use draw layer `0`.
@@ -189,12 +216,25 @@ visual, and use draw layer `0`.
 Use an explicit `DvzVisualAttachDesc` only when the visual needs a non-default placement. For
 example, this attaches a visual in view coordinates and draws it above layer `0` visuals:
 
-```c
-DvzVisualAttachDesc attach = dvz_visual_attach_desc();
-attach.coord_space = DVZ_VISUAL_COORD_VIEW;
-attach.z_layer = 1;
-dvz_panel_add_visual(panel, visual, &attach);
-```
+=== "Python"
+
+    ```python
+    import ctypes
+
+    attach = dvz.dvz_visual_attach_desc()
+    attach.coord_space = dvz.DVZ_VISUAL_COORD_VIEW
+    attach.z_layer = 1
+    dvz.dvz_panel_add_visual(panel, visual, ctypes.byref(attach))
+    ```
+
+=== "C"
+
+    ```c
+    DvzVisualAttachDesc attach = dvz_visual_attach_desc();
+    attach.coord_space = DVZ_VISUAL_COORD_VIEW;
+    attach.z_layer = 1;
+    dvz_panel_add_visual(panel, visual, &attach);
+    ```
 
 The common attachment choices are:
 
@@ -206,11 +246,21 @@ The common attachment choices are:
 
 Set panel domains before attaching data-coordinate visuals when you want explicit data limits:
 
-```c
-dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
-dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
-dvz_panel_add_visual(panel, visual, NULL);
-```
+=== "Python"
+
+    ```python
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_X, xmin, xmax)
+    dvz.dvz_panel_set_domain(panel, dvz.DVZ_DIM_Y, ymin, ymax)
+    dvz.dvz_panel_add_visual(panel, visual, None)
+    ```
+
+=== "C"
+
+    ```c
+    dvz_panel_set_domain(panel, DVZ_DIM_X, xmin, xmax);
+    dvz_panel_set_domain(panel, DVZ_DIM_Y, ymin, ymax);
+    dvz_panel_add_visual(panel, visual, NULL);
+    ```
 
 See [Use coordinate systems](coordinate-systems.md) before mixing data, view, and panel coordinate
 spaces.
@@ -225,12 +275,27 @@ copies of the same imported mesh.
 Create one mesh visual, set the shared geometry once, then upload one `"instance_transform"` matrix
 per copy:
 
-```c
-DvzVisual* mesh = dvz_mesh(scene, 0);
-dvz_mesh_set_geometry(mesh, cube_geometry);
-dvz_visual_set_data(mesh, "instance_transform", transforms, instance_count);
-dvz_panel_add_visual(panel, mesh, NULL);
-```
+=== "Python"
+
+    ```python
+    import numpy as np
+
+    # Store each matrix as four columns, matching the C mat4 layout.
+    transforms = np.ascontiguousarray(transforms, dtype=np.float32)
+    mesh = dvz.dvz_mesh(scene, 0)
+    dvz.dvz_mesh_set_geometry(mesh, cube_geometry)
+    dvz.dvz_visual_set_data(mesh, "instance_transform", transforms)
+    dvz.dvz_panel_add_visual(panel, mesh, None)
+    ```
+
+=== "C"
+
+    ```c
+    DvzVisual* mesh = dvz_mesh(scene, 0);
+    dvz_mesh_set_geometry(mesh, cube_geometry);
+    dvz_visual_set_data(mesh, "instance_transform", transforms, instance_count);
+    dvz_panel_add_visual(panel, mesh, NULL);
+    ```
 
 Use separate mesh visuals only when copies need different materials, techniques, panel attachments,
 or update schedules.

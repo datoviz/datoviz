@@ -14,13 +14,23 @@ Create the basic structure used by most Datoviz visualizations.
 
 Create the scene structure first: one scene, one figure, one panel, and at least one visual. Attach data arrays to the visual attributes, add the visual to the panel, create a window or offscreen target, and run or capture the result. This page uses a small point example to show the main pieces without extra plotting features.
 
-Use the same object model in C and Python. In Python, import the main `datoviz` package:
+Use the same object model in Python and C. Start with the package import or public header:
 
-```python
-import datoviz as dvz
-```
+=== "Python"
 
-The Python calls use the same `dvz_*` function names as the C examples and accept NumPy arrays for common visual-data uploads. Use `datoviz.raw` only when you need the exact C-shaped pointer/count call form of the generated binding.
+    ```python
+    import datoviz as dvz
+    ```
+
+    The main package accepts NumPy arrays for common visual-data uploads. Use `datoviz.raw` when you need exact C-shaped pointer/count calls.
+
+=== "C"
+
+    ```c
+    #include <datoviz/datoviz.h>
+    ```
+
+Both languages use the same `dvz_*` function names.
 
 | Object | Role | Created by |
 | --- | --- | --- |
@@ -44,9 +54,11 @@ Basic checklist:
 
 ## Minimal call sequence
 
-The Python tab is a complete success-path script. The C tab is a function-body excerpt: add `#include <datoviz/datoviz.h>` and a `main()` function, and check pointer and result values in production code. Both tabs show explicit app ownership. The shorter managed Python path is `dvz.run(scene, figure)`.
+Both versions create the same three-point scene with explicit app ownership. Check pointer and result values in production code.
 
 === "Python"
+
+    This is a complete success-path script. The shorter managed run-loop path is `dvz.run(scene, figure)`.
 
     ```python
     import numpy as np
@@ -91,7 +103,11 @@ The Python tab is a complete success-path script. The C tab is a function-body e
     dvz.dvz_scene_destroy(scene)
     ```
 
+    Use C-contiguous NumPy arrays with the dtype and shape required by each visual attribute. The main package infers the item count for supported data uploads.
+
 === "C"
+
+    This is a function-body excerpt. Add the public header shown above and a `main()` function.
 
     ```c
     const uint32_t width = 800;
@@ -138,7 +154,7 @@ Create the initial scene structure before `dvz_app_run()`. You can update data l
 
 Destroy the app before destroying the scene. The app uses the scene while it renders, so the scene must remain valid until rendering has stopped.
 
-In C, keep CPU arrays alive until the corresponding `dvz_visual_set_data()` call returns. Datoviz copies the data it needs before the call returns. In Python, pass C-contiguous NumPy arrays with the dtype and shape required by the visual attribute. The main `datoviz` package infers the item count for supported visual-data uploads.
+Keep input arrays alive until the data-upload call returns. Datoviz copies the data before returning, and later changes to the original arrays require another upload.
 
 Uploading data does not make it visible. A visual appears only after `dvz_panel_add_visual()` attaches it to a panel.
 
