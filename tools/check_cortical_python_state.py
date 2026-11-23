@@ -32,6 +32,8 @@ def main() -> None:
         view = dvz.DvzCameraView()
         dvz.dvz_camera_get_view(dvz.dvz_panel_camera(panel), ctypes.byref(view))
         camera = [*view.eye, *view.up]
+        assert len(canonical[3:9]) == len(camera) == 6
+        assert len(material_values) == len(canonical[58:62]) == 4
         assert all(math.isclose(a, b, abs_tol=2e-6, rel_tol=2e-6)
                    for a, b in zip(camera, canonical[3:9]))
         assert all(math.isclose(a, b, abs_tol=2e-6, rel_tol=2e-6)

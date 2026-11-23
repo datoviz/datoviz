@@ -425,6 +425,12 @@ export class DatovizWasmScene {
         typeof Module._dvz_wasm_api_scenario_wheel === "function",
       "WASM module is stale or missing scenario exports; rebuild and redeploy the WebGPU assets",
     );
+    if (options.presentationVersion) {
+      const versionPtr = Module._dvz_wasm_api_scenario_profile_version?.();
+      const version = versionPtr ? Module.UTF8ToString(versionPtr) : null;
+      requireOk(version === options.presentationVersion,
+        "WASM presentation profiles are stale; rebuild and redeploy the matching runtime and browser assets");
+    }
 
     const gpu = options.gpu ?? await initWebGPU(canvas);
     resizeWebGpuCanvas(canvas, gpu.device, gpu.context, gpu.format);
@@ -462,12 +468,6 @@ export class DatovizWasmScene {
       }
     }
     requireOk(index >= 0, `unknown WASM scenario ${scenarioId}`);
-    if (options.presentationVersion) {
-      const versionPtr = Module._dvz_wasm_api_scenario_profile_version?.();
-      const version = versionPtr ? Module.UTF8ToString(versionPtr) : null;
-      requireOk(version === options.presentationVersion,
-        "WASM presentation profiles are stale; rebuild and redeploy the matching runtime and browser assets");
-    }
     const status = Module._dvz_wasm_api_scenario_create(scene, index);
     if (status !== 0) {
       throw new Error(diagnosticMessage(Module, scene, `dvz_wasm_api_scenario_create failed with ${status}`));

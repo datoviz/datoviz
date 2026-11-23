@@ -823,6 +823,19 @@ async function smokeWasmPage(
   }
   await page.dragCanvas(48, 24);
   await page.wheelCanvas(-180);
+  if (path.includes('showcases_cortical_activity')) {
+    const staleProfile = await page.evaluate(`(async () => {
+      try {
+        await window.__datovizWasmScene.constructor.createScenario(null,
+          "showcases_cortical_activity", { presentationVersion: "smoke-stale-profile" });
+        return "unexpected success";
+      } catch (error) {
+        return String(error.message);
+      }
+    })()`);
+    requireOk(String(staleProfile).startsWith("WASM presentation profiles are stale;"),
+      `${path}: profile mismatch must fail before GPU or scene creation: ${staleProfile}`);
+  }
   const interactiveStatus = await page.waitFor(`(() => {
     const status = document.querySelector("#status");
     const text = status?.textContent ?? "";
