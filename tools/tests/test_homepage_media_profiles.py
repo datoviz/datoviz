@@ -19,7 +19,7 @@ def homepage_entry():
                 if entry["id"] == "showcases_textured_planet")
 
 
-def test_resolution_preserves_default_and_scientific_cadence():
+def test_resolution_preserves_default_and_scientific_cadence(tmp_path, monkeypatch):
     original = homepage_entry()
     unchanged = copy.deepcopy(original)
     default = gallery_media.resolve_media_entry(original)
@@ -29,6 +29,11 @@ def test_resolution_preserves_default_and_scientific_cadence():
     assert "profiles" not in effective["media"]
     assert effective["media"]["preview"]["frames"] == 864
     assert effective["media"]["preview"]["time_scale"] == 8.0
+    # Profile semantics need an isolated presence fixture, not the full scientific dataset.
+    required = tmp_path / ".cache/datoviz/examples/point_cloud/prepared/point_cloud.bin"
+    required.parent.mkdir(parents=True)
+    required.write_bytes(b"profile-presence-fixture")
+    monkeypatch.setattr(gallery_frames, "ROOT", tmp_path)
     previews = gallery_frames.collect_previews(gallery_media.DEFAULT_MANIFEST, Path("build/examples/c"), set(), set(), "homepage")
     assert {p.id for p in previews} == gallery_media.HOMEPAGE_IDS
     assert all((p.fps, p.sample_stride) == (60, 1) for p in previews)

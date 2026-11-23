@@ -29,6 +29,19 @@ webgpu-input-check:
     @node tools/webgpu_input_smoke.mjs
 #
 
+example-profiles:
+    @python3 tools/example_profiles.py
+#
+
+example-profiles-check:
+    @python3 tools/example_profiles.py --check
+#
+
+# Requires existing native and WASM libraries and the prepared cortical dataset.
+example-state-parity-check:
+    @python3 tools/check_example_state_parity.py
+#
+
 webgpu-browser-smoke *args='': wasm-scene-build
     @python3 tools/build_webgpu_data_bundles.py --include-local
     @node tools/webgpu_browser_smoke.mjs {{args}}
@@ -52,6 +65,7 @@ _wasm-scene-build-mode build_dir build_type flag_config c_flags='' cxx_flags='' 
 #
 
 wasm-scene-build:
+    @python3 tools/example_profiles.py --check
     @just _wasm-scene-build-mode build-wasm-scene Release RELEASE
     @python3 tools/write_wasm_asset_manifest.py
 #
@@ -95,6 +109,7 @@ wasm-scene-stack-usage:
 #
 
 wasm-scene-smoke: wasm-scene-build webgpu-data-check webgpu-input-check
+    @python3 tools/example_profiles.py --check
     @node tools/wasm_scene_smoke.mjs
     @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_path_primitive_image_mesh_panzoom.json
     @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_api_scene_sphere_textured_mesh3d_arcball.json

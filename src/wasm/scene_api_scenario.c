@@ -555,6 +555,9 @@ int dvz_wasm_api_scenario_create(uint32_t scene_handle, uint32_t index)
         .height = scene->height,
     };
 
+    if (scenario_presentation_configure(&scene->scenario_ctx, spec.id, -1, 0, 0) != 0)
+        return _fail(scene, "invalid shared scenario presentation");
+
     if (!spec.init(&scene->scenario_ctx, &scene->scenario_user) ||
         scene->scenario_ctx.figure == NULL)
     {
@@ -590,6 +593,18 @@ int dvz_wasm_api_scenario_create(uint32_t scene_handle, uint32_t index)
     scene->scenario_figure = figure;
     scene->scenario_active = true;
     return 0;
+}
+
+
+
+/**
+ * Return the compiled presentation profile identity.
+ * @return Pointer to the immutable shared profile identity.
+ */
+EMSCRIPTEN_KEEPALIVE
+const char* dvz_wasm_api_scenario_profile_version(void)
+{
+    return scenario_presentation_version();
 }
 
 

@@ -1,6 +1,7 @@
 import { WasmSceneSession } from "../../web/wasm/session.js";
 import { liveExampleById } from "./live_examples.js";
 import { NetworkLoadingOverlay } from "./loading.js";
+import { LIVE_PRESENTATION_PROFILES, PRESENTATION_VERSION } from "./live_profiles.js";
 
 const canvas = document.querySelector("#viewport");
 const statusEl = document.querySelector("#status");
@@ -66,6 +67,8 @@ async function loadLiveExample(id) {
     scenarioId: example.scenarioId,
     animate: example.animate === true,
     dataBundles: example.dataBundles ?? [],
+    presentationProfile: LIVE_PRESENTATION_PROFILES[example.id] ?? null,
+    presentationVersion: PRESENTATION_VERSION,
   };
   document.title = `${example.label} - Datoviz WebGPU`;
   showEffectLimitations(example.effectLimitations ?? []);

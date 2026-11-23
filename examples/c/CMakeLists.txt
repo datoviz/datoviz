@@ -19,6 +19,7 @@ add_library(datoviz_example_support STATIC
     runner/scenario_helpers.c
     runner/scenario_runner.c
 )
+add_dependencies(datoviz_example_support datoviz_example_profiles_check)
 
 if(TARGET datoviz_gui)
     target_sources(datoviz_example_support PRIVATE example_gui_controls.c)

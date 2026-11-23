@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import gallery_media
+import example_profiles
 
 
 ROOT = gallery_media.ROOT
@@ -116,6 +117,7 @@ def collect_previews(
 
         timeline_spec = _timeline_spec(id_, preview)
         motion = _preview_motion(id_, entry)
+        presentation = example_profiles.presentation(entry)
 
         previews.append(
             AnimatedPreview(
@@ -139,9 +141,9 @@ def collect_previews(
                 manifest_input_hash=capture_manifest_hash(entry),
                 dataset_input_hash=gallery_media.prepared_dataset_fingerprint(entry),
                 profile=profile,
-                presentation=preview.get("presentation", {}).get("kind", ""),
-                presentation_amplitude_deg=float(preview.get("presentation", {}).get("amplitude_deg", 0)),
-                presentation_period=frames / fps if profile else 0.0,
+                presentation=presentation["kind"] if profile or preview.get("presentation") else "default",
+                presentation_amplitude_deg=presentation["amplitudeDeg"],
+                presentation_period=presentation["periodSeconds"],
             )
         )
     previews.sort(key=lambda item: (item.lane, item.id))
@@ -321,6 +323,7 @@ def input_hash_for(
         preview.executable,
         ROOT / "tools/gallery_frames.py",
         ROOT / "tools/gallery_media.py",
+        ROOT / "tools/example_profiles.py",
     ):
         _hash_file(digest, path)
     for path in renderer_library_paths(preview.executable):

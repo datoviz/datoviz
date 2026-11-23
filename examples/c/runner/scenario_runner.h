@@ -334,6 +334,7 @@ typedef struct DvzRunnerConfig
     double preview_presentation_amplitude_deg;
     double preview_presentation_period;
     DvzScenarioPreviewTimeline preview_timeline;
+    bool presentation_override;
     DvzScenarioMotionKind preview_motion;
     const char* preview_motion_target;
     float preview_motion_axis[3];
@@ -395,6 +396,12 @@ double dvz_scenario_preview_dt(const DvzScenarioContext* ctx);
  * @return whether a deterministic presentation override is active
  */
 bool scenario_preview_presentation_active(const DvzScenarioContext* ctx);
+
+/** Apply shared defaults or an explicit presentation override before scenario initialization. */
+int scenario_presentation_configure(
+    DvzScenarioContext* ctx, const char* id, int kind, double amplitude_deg, double period);
+
+const char* scenario_presentation_version(void);
 
 /**
  * Return the presentation angle independently of scientific preview time.

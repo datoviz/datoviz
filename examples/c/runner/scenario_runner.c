@@ -1144,6 +1144,10 @@ int dvz_scenario_run_native(const DvzScenarioSpec* spec, const DvzRunnerConfig* 
     ctx.preview_presentation = resolved.preview_presentation;
     ctx.preview_presentation_amplitude_deg = resolved.preview_presentation_amplitude_deg;
     ctx.preview_presentation_period = resolved.preview_presentation_period;
+    if (scenario_presentation_configure(
+            &ctx, spec->id, resolved.presentation_override ? resolved.preview_presentation : -1,
+            resolved.preview_presentation_amplitude_deg, resolved.preview_presentation_period) != 0)
+        goto cleanup;
     _update_preview_timeline(&ctx, &resolved);
 
     scene = dvz_scene();
@@ -1528,6 +1532,7 @@ int dvz_scenario_run_native_cli(const DvzScenarioSpec* spec, int argc, char** ar
         }
         else if (strcmp(arg, "--preview-presentation") == 0 && i + 1 < argc)
         {
+            config.presentation_override = true;
             const char* kind = argv[++i];
             if (strcmp(kind, "default") == 0)
                 config.preview_presentation = DVZ_SCENARIO_PRESENTATION_DEFAULT;

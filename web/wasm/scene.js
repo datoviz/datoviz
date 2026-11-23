@@ -462,6 +462,12 @@ export class DatovizWasmScene {
       }
     }
     requireOk(index >= 0, `unknown WASM scenario ${scenarioId}`);
+    if (options.presentationVersion) {
+      const versionPtr = Module._dvz_wasm_api_scenario_profile_version?.();
+      const version = versionPtr ? Module.UTF8ToString(versionPtr) : null;
+      requireOk(version === options.presentationVersion,
+        "WASM presentation profiles are stale; rebuild and redeploy the matching runtime and browser assets");
+    }
     const status = Module._dvz_wasm_api_scenario_create(scene, index);
     if (status !== 0) {
       throw new Error(diagnosticMessage(Module, scene, `dvz_wasm_api_scenario_create failed with ${status}`));
@@ -475,6 +481,7 @@ export class DatovizWasmScene {
       id: scenarioId,
       index,
       fps: Module._dvz_wasm_api_scenario_fps?.(index) ?? 60,
+      presentationProfile: options.presentationProfile ?? null,
     };
     wrapper.resize();
     return wrapper;

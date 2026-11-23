@@ -70,6 +70,8 @@ export class WasmSceneSession {
       logicalHeight: this.logicalHeight,
       dataBundles: this.demo.dataBundles ?? [],
       networkProgress: this.networkProgress,
+      presentationProfile: this.demo.presentationProfile,
+      presentationVersion: this.demo.presentationVersion,
     };
     if (typeof this.demo.scenarioId === "string") {
       this.scene = await DatovizWasmScene.createScenario(this.canvas, this.demo.scenarioId, createOptions);

@@ -604,6 +604,17 @@ if(DVZ_BUILD_SCENE OR DVZ_BUILD_GUI)
 endif()
 
 # Add subdirectories
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+execute_process(
+    COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/example_profiles.py" --check
+    RESULT_VARIABLE DVZ_PROFILE_CHECK_STATUS)
+if(NOT DVZ_PROFILE_CHECK_STATUS EQUAL 0)
+    message(FATAL_ERROR "Shared profile check failed. Use a Python3_EXECUTABLE with PyYAML and run tools/example_profiles.py to refresh generated profiles.")
+endif()
+add_custom_target(datoviz_example_profiles_check
+    COMMAND "${Python3_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tools/example_profiles.py" --check
+    COMMENT "Checking shared native/WebGPU presentation profiles")
+
 add_subdirectory(src)
 
 if(DVZ_BUILD_TESTING)

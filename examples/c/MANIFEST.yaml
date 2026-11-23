@@ -3683,6 +3683,8 @@ examples:
     category: showcase
     lane: showcases
     source: examples/c/showcases/cortical_activity.c
+    scenario:
+      presentation_profile: homepage
     python:
       source: examples/python/gallery/showcases/cortical_activity.py
     validation: smoke+interaction+screenshot+video+performance

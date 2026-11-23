@@ -992,8 +992,11 @@ static void _scenario_frame(DvzScenarioContext* ctx, void* user)
         rotation_time = state->rotation_time;
     }
     const double rotation_phase = fmod(rotation_time / ROTATION_SECONDS, 1.0);
+    DvzScenarioContext presentation_ctx = *ctx;
+    if (!ctx->preview_mode)
+        presentation_ctx.time = rotation_time;
     const float rotation_angle = scenario_preview_presentation_active(ctx)
-                                     ? (float)scenario_preview_presentation_angle(ctx)
+                                     ? (float)scenario_preview_presentation_angle(&presentation_ctx)
                                      : (float)(6.283185307179586 * rotation_phase);
 
     vec3 rotation_axis = {ROTATION_AXIS_X, ROTATION_AXIS_Y, ROTATION_AXIS_Z};

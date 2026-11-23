@@ -66,6 +66,7 @@ build_mode()
         -B "$build_dir"
         -DCMAKE_BUILD_TYPE="$build_type"
         -DCMAKE_SKIP_INSTALL_RULES=ON
+        "-DPython3_EXECUTABLE=$(command -v python3)"
         -DDVZ_BUILD_VK=OFF
         -DDVZ_BUILD_CANVAS=OFF
         -DDVZ_BUILD_APP=OFF
