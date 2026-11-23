@@ -48,6 +48,7 @@ extra_css:
 extra_javascript:
   - javascripts/gallery-media.js
   - javascripts/course-platforms.js
+  - javascripts/doc-languages.js
 markdown_extensions:
   - toc:
       permalink: true
@@ -59,7 +60,8 @@ markdown_extensions:
   - pymdownx.blocks.caption
   - pymdownx.details
   - pymdownx.tilde
-  - pymdownx.highlight
+  - pymdownx.highlight:
+      pygments_lang_class: true
   - pymdownx.snippets:
       check_paths: true
   - pymdownx.superfences:

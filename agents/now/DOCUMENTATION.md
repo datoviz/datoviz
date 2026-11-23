@@ -42,6 +42,20 @@ Generated gallery cards and example pages now consume the same approved video se
 
 Validation passes: eight gallery regression tests, 31 selection/frame/media tests, snippet and generated-documentation checks, media ownership checks, strict documentation generation, status and agent-rule checks, and 49 desktop/mobile browser cases. Additional browser checks cover keyboard scrolling, the blog's shared videos and reduced-motion posters. All 24 diagram exports parse as SVG, and no tested label shrinks below 14 pixels. Temporary evidence stays ignored under `build/doc-feedback/`. The private diagram and controller review is separate from the accepted course figures and from release or website publication approval.
 
+The maintainer approved the diagram and video changes on 2026-11-23. The separate page-wide Python/C follow-up below is implemented and ready for review. This approval does not authorize release or website publication.
+
+## Page-Wide Python/C Choice, 2026-11-23
+
+Thirteen authored pages now provide working counterparts for every host-language example, including all six axes snippets. Language-specific explanations stay with their matching examples. The native tab choice applies to the whole page, including closed sections, and persists across navigation, reloads, history and browser tabs. Single-language pages keep their own language; shared shell commands, shaders and data formats remain available. Humanizer covers the revised prose in these 13 pages and the new agent rules and records.
+
+The switcher owns visible label activation and saves genuine user choices. A failed diagram-library load no longer disables language labels, and Material's stale fragment restoration cannot overwrite the current preference. Native radio focus, keyboard navigation and auxiliary source inspection are preserved. Browser storage provides cross-page persistence; blocked-storage tests verify synchronization within the current page.
+
+`just doc-languages-check` checks all 408 published Markdown sources. `just docs-build-check` also checks all 414 hermetic HTML outputs. The gates reject bare or mismatched host snippets, malformed or merged tab sets, missing or empty alternatives, and incorrect source includes. Nineteen focused tests pass, and both source and rendered gates identify the same 118 mixed pages with zero problems.
+
+The permanent `just doc-languages-browser-check` command passes end to end across all 118 mixed pages on desktop and 19 mobile layouts, observing all 105 generated Python source inclusions. It exercises real pointer clicks, hidden sections, keyboard input, storage, navigation and stale-fragment history; all 12 auxiliary source panes pass too. Five additional browser scenarios pass, including storage-blocked fallback and preservation of OS choices and C-only pages. Focused Chrome and Firefox activation tests also pass. The Linux PR workflow installs Playwright Chromium and runs the browser command after the documentation build; that CI change has not yet run remotely.
+
+Authored Python AST/public-symbol and C identifier/arity checks pass. Native checks execute and render all six Python axes fragments, and exercise the new timer callbacks, LUT/stops and NumPy uploads. Evidence stays ignored under `build/doc-languages/`. No public API, binding, runtime or media changes are involved. The language fixes await maintainer checking; the accepted diagrams and videos do not need another review.
+
 ## Remaining RC3 Documentation Work
 
 The [immediate RC3 checklist](STATUS.md#immediate-checklist-2026-11-22) gives the order and ownership of the remaining gates. All eight added course figures are accepted; the four-page public-documentation pilot below is a separate scope decision.

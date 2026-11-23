@@ -24,9 +24,12 @@ For release scope, readiness, or publication preparation, also read the [documen
 
 ## Examples And Figures
 
-- Put paired Python and C examples in linked language tabs, with Python first. Keep the operations equivalent across the alternatives.
+- On pages offering Python and C, put every Python/C code example in a complete pair of language tabs, with Python first and equivalent operations. Do not leave later snippets outside the tabs or provide an empty alternative. Shared shell commands, shaders and data formats may remain outside the host-language choice.
+- A language choice applies across the whole page, including closed sections, and persists between pages, reloads and back/forward navigation. Explicitly single-language pages keep their own language.
 - Use captioned Mermaid or SVG figures for conceptual diagrams. Keep literal terminal output and file paths in monospace. Preserve readable labels on phones; let wide diagrams scroll instead of shrinking their text.
 - Reuse the selected, approved video and its codec fallbacks wherever the same example appears. Avoid separate page-specific versions of the same demonstration.
+
+Run `just doc-languages-check` for source structure and `just docs-build-check` for the rendered HTML gate. After changing the language switcher or adding mixed-language examples, also run `just doc-languages-browser-check`; it checks every mixed page in the built site, persistence, hidden sections and browser-storage fallback. The Linux documentation CI runs these checks. Install Playwright Chromium first, or pass an available browser with `--browser-executable`.
 
 ## Ongoing Review Workflow
 

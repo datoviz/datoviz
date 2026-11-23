@@ -56,6 +56,10 @@ jobs:
         run: |
           just docs-check-generated
           just docs-build-check
+      - name: Check documentation language selection
+        run: |
+          uv run --no-project --with playwright python -m playwright install --with-deps chromium
+          just doc-languages-browser-check --site-dir build/docs-site-check
       - name: Build
         run: just build
       - name: Check present paths

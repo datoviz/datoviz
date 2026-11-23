@@ -38,6 +38,11 @@ check-howto-snippets:
     python3 -m unittest tools/tests/test_check_howto_snippets.py
     python3 tools/check_howto_snippets.py
 
+# Check page-wide Python/C alternatives, including nested and included snippets.
+doc-languages-check:
+    python3 -m unittest tools.tests.test_check_doc_languages
+    python3 tools/check_doc_languages.py
+
 # Check that every code excerpt in the Vulkan course chapters matches its step program.
 vulkan-course-check:
     python3 tools/check_vulkan_course.py
@@ -68,7 +73,7 @@ docs-status-check:
 check-docs-status: docs-status-check
 
 # Also compile/run Quickstart fixtures and validate generated API/status facts.
-check-doc-snippets: check-howto-snippets vulkan-course-check quickstart-check docs-api-check docs-status-check
+check-doc-snippets: check-howto-snippets vulkan-course-check quickstart-check docs-api-check docs-status-check doc-languages-check
 
 # Build the developer-only deterministic MSDF atlas generator.
 text-atlas-generator-build:

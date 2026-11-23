@@ -287,15 +287,21 @@ docs-generate:
     @python3 tools/build_examples_manifest.py
     @python3 tools/build_capabilities.py
 
+# Check language selection across every mixed page in an existing documentation build.
+[positional-arguments]
+doc-languages-browser-check *args:
+    @uv run --no-project --with playwright python tools/check_doc_languages_browser.py "$@"
+
 docs-check-generated:
     @python3 tools/check_generated_docs.py
 
-docs-build-check: build
+docs-build-check: build doc-languages-check
     @mkdir -p build/vulkan-course-media build-wasm-scene/wasm
     @python3 -m unittest tools/tests/test_build_gallery_webp.py
     @python3 -m unittest tools/tests/test_build_tutorial_media.py
     @python3 tools/docs_asset_stage.py --profile hermetic --stage-root build/docs-assets/hermetic
     @DATOVIZ_DOCS_ASSET_STAGE=build/docs-assets/hermetic uv run --with mkdocs-material --with 'mkdocstrings[python]' --with pillow mkdocs build --strict --site-dir build/docs-site-check
+    @python3 tools/check_doc_languages.py --site-dir build/docs-site-check
 
 check-example-manifests:
     @python3 tools/check_example_ids.py
