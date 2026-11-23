@@ -430,16 +430,16 @@ set_property(GLOBAL PROPERTY DVZ_ALL_TARGETS "")
 
 set(GLSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/shaders/glsl")
 if(EXISTS "${GLSL_SOURCE_DIR}")
-    file(GLOB GLSL_STAGE_SOURCES
+    file(GLOB GLSL_STAGE_SOURCES CONFIGURE_DEPENDS
         "${GLSL_SOURCE_DIR}/*.vert"
         "${GLSL_SOURCE_DIR}/*.frag"
         "${GLSL_SOURCE_DIR}/*.comp")
-    file(GLOB GLSL_TEXT_SOURCES
+    file(GLOB GLSL_TEXT_SOURCES CONFIGURE_DEPENDS
         "${GLSL_SOURCE_DIR}/*.vert"
         "${GLSL_SOURCE_DIR}/*.frag"
         "${GLSL_SOURCE_DIR}/*.comp"
         "${GLSL_SOURCE_DIR}/*.glsl")
-    file(GLOB GLSL_INCLUDES "${GLSL_SOURCE_DIR}/*.glsl")
+    file(GLOB GLSL_INCLUDES CONFIGURE_DEPENDS "${GLSL_SOURCE_DIR}/*.glsl")
 else()
     set(GLSL_STAGE_SOURCES "")
     set(GLSL_TEXT_SOURCES "")
@@ -545,7 +545,7 @@ endif()
 
 set(WGSL_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/scene/shaders/wgsl")
 if(EXISTS "${WGSL_SOURCE_DIR}")
-    file(GLOB WGSL_SOURCES "${WGSL_SOURCE_DIR}/*.wgsl")
+    file(GLOB WGSL_SOURCES CONFIGURE_DEPENDS "${WGSL_SOURCE_DIR}/*.wgsl")
 else()
     set(WGSL_SOURCES "")
 endif()

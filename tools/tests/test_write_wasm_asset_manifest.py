@@ -24,6 +24,20 @@ class WasmAssetManifestTests(unittest.TestCase):
             changed = build_manifest(wasm_dir)
             self.assertNotEqual(first["version"], changed["version"])
 
+    def test_provenance_is_included_only_for_matching_runtime_outputs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            wasm_dir = Path(tmp)
+            for name in ARTIFACT_NAMES:
+                (wasm_dir / name).write_bytes(b"runtime")
+            outputs = build_manifest(wasm_dir)["artifacts"]
+            receipt = wasm_dir / "datoviz_wasm_scene.provenance.json"
+            receipt.write_text(json.dumps({"input_hash": "fixture", "outputs": outputs}))
+            self.assertEqual(build_manifest(wasm_dir)["provenance"], {"input_hash": "fixture"})
+            (wasm_dir / ARTIFACT_NAMES[1]).write_bytes(b"different runtime")
+            self.assertNotIn("provenance", build_manifest(wasm_dir))
+            receipt.write_text("malformed")
+            self.assertNotIn("provenance", build_manifest(wasm_dir))
+
 
 if __name__ == "__main__":
     unittest.main()

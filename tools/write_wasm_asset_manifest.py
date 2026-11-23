@@ -41,11 +41,20 @@ def build_manifest(wasm_dir: Path) -> dict:
         version_digest.update(b"\0")
         version_digest.update(artifact_hash.encode("ascii"))
         version_digest.update(b"\0")
-    return {
+    manifest = {
         "schema": "datoviz.wasm-assets.v1",
         "version": f"sha256-{version_digest.hexdigest()}",
         "artifacts": artifacts,
     }
+    provenance_path = wasm_dir / "datoviz_wasm_scene.provenance.json"
+    if provenance_path.exists():
+        try:
+            provenance = json.loads(provenance_path.read_text())
+        except (OSError, ValueError):
+            provenance = {}
+        if provenance.get("outputs") == artifacts:
+            manifest["provenance"] = {key: value for key, value in provenance.items() if key != "outputs"}
+    return manifest
 
 
 def encoded_manifest(manifest: dict) -> str:

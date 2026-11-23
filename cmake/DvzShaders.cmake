@@ -183,7 +183,7 @@ function(dvz_compile_glsl)
             -o "${DVZ_SHADER_OUTPUT}"
             "${DVZ_SHADER_SOURCE}"
         ${_validate_command}
-        DEPENDS "${DVZ_SHADER_SOURCE}" ${DVZ_SHADER_DEPENDS}
+        DEPENDS "${DVZ_SHADER_SOURCE}" "${DVZ_GLSLC_EXECUTABLE}" ${DVZ_SHADER_DEPENDS}
         COMMENT
             "Compiling ${_shader_name} with the Datoviz ${DVZ_SHADER_PROFILE} shader profile"
         VERBATIM)

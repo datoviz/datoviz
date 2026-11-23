@@ -66,11 +66,13 @@ build_mode()
         -B "$build_dir"
         -DCMAKE_BUILD_TYPE="$build_type"
         -DCMAKE_SKIP_INSTALL_RULES=ON
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
         "-DPython3_EXECUTABLE=$(command -v python3)"
         -DDVZ_BUILD_VK=OFF
         -DDVZ_BUILD_CANVAS=OFF
         -DDVZ_BUILD_APP=OFF
         -DDVZ_BUILD_GUI=OFF
+        -DDVZ_BUILD_TESTING=OFF
         -DDVZ_WITH_FREETYPE=OFF
         -DDVZ_WITH_MSDF_ATLAS=OFF
         -DDVZ_ENABLE_KVAZAAR=OFF

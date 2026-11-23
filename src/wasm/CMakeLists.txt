@@ -154,6 +154,11 @@ target_link_options(datoviz_wasm_scene PRIVATE
 target_link_options(datoviz_wasm_scene PRIVATE
     "SHELL:-sEXPORTED_FUNCTIONS+=['_dvz_wasm_api_scenario_profile_version']")
 
+# Record resolved resources and make preloaded bytes actual linker dependencies.
+# Paths stay in the ignored build tree; public provenance contains hashes only.
+set(DVZ_WASM_RESOLVED_INPUTS ${WGSL_SOURCES} ${GLSL_TEXT_SOURCES} ${FONT_SOURCES})
+include("${PROJECT_SOURCE_DIR}/cmake/DvzWasmAssets.cmake")
+
 set(DVZ_WASM_CHOROPLETH_BUNDLE "")
 if(EXISTS "${PROJECT_SOURCE_DIR}/data/examples/us_state_choropleth/prepared/metadata.tsv")
     set(DVZ_WASM_CHOROPLETH_BUNDLE
@@ -164,15 +169,11 @@ elseif(EXISTS "${PROJECT_SOURCE_DIR}/.cache/datoviz/examples/us_state_choropleth
 endif()
 
 if(NOT DVZ_WASM_CHOROPLETH_BUNDLE STREQUAL "")
-    target_link_options(datoviz_wasm_scene PRIVATE
-        "SHELL:--preload-file ${DVZ_WASM_CHOROPLETH_BUNDLE}@data/examples/us_state_choropleth/prepared"
-    )
+    dvz_wasm_preload("${DVZ_WASM_CHOROPLETH_BUNDLE}" "data/examples/us_state_choropleth/prepared")
 endif()
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/data/assets/textures")
-    target_link_options(datoviz_wasm_scene PRIVATE
-        "SHELL:--preload-file ${PROJECT_SOURCE_DIR}/data/assets/textures@data/assets/textures"
-    )
+    dvz_wasm_preload("${PROJECT_SOURCE_DIR}/data/assets/textures" "data/assets/textures")
 endif()
 
 set(DVZ_WASM_PROTEIN_SOURCE_DIR "")
@@ -203,8 +204,12 @@ if(NOT DVZ_WASM_PROTEIN_SOURCE_DIR STREQUAL "")
             atom_position.f32
             atom_radius_vdw.f32
             atom_color_element.rgba8)
-        target_link_options(datoviz_wasm_scene PRIVATE
-            "SHELL:--preload-file ${DVZ_WASM_PROTEIN_SOURCE_DIR}/${DVZ_WASM_PROTEIN_ARRAY}@${DVZ_WASM_PROTEIN_TARGET_DIR}/${DVZ_WASM_PROTEIN_ARRAY}"
-        )
+        dvz_wasm_preload("${DVZ_WASM_PROTEIN_SOURCE_DIR}/${DVZ_WASM_PROTEIN_ARRAY}"
+            "${DVZ_WASM_PROTEIN_TARGET_DIR}/${DVZ_WASM_PROTEIN_ARRAY}")
     endforeach()
 endif()
+
+list(REMOVE_DUPLICATES DVZ_WASM_RESOLVED_INPUTS)
+list(JOIN DVZ_WASM_RESOLVED_INPUTS "\n" DVZ_WASM_RESOLVED_INPUT_TEXT)
+file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/wasm/resolved-inputs.txt"
+    CONTENT "${DVZ_WASM_RESOLVED_INPUT_TEXT}\n")
