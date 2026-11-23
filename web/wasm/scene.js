@@ -82,6 +82,17 @@ function positiveInteger(value, fallback) {
   return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
 }
 
+function wheelDirectionY(event, canvas) {
+  // Browser deltas have pixel, line, or page units; controllers consume wheel steps.
+  // Calibrate one step to 100 CSS pixels or 3 lines. These are input policy,
+  // not hardware notch detection: preserve fractional trackpad motion unchanged.
+  const mode = event.deltaMode;
+  const delta = event.deltaY;
+  if (mode === 1) return -delta / 3;
+  if (mode === 2) return -delta * canvas.getBoundingClientRect().height / 100;
+  return -delta / 100;
+}
+
 function canvasLogicalSize(canvas) {
   const metrics = canvasMetrics(canvas);
   return {
@@ -726,7 +737,7 @@ export class DatovizWasmScene {
         point.x,
         point.y,
         0,
-        -event.deltaY / 100,
+        wheelDirectionY(event, this.canvas),
         this._modifierMask(event),
         point.scale,
         performance.now(),
@@ -745,7 +756,7 @@ export class DatovizWasmScene {
         point.x,
         point.y,
         0,
-        -event.deltaY / 100,
+        wheelDirectionY(event, this.canvas),
         this._modifierMask(event),
         point.scale,
         performance.now(),

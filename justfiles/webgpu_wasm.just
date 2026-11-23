@@ -25,6 +25,10 @@ webgpu-data-check:
     @python3 tools/build_webgpu_data_bundles.py --check
 #
 
+webgpu-input-check:
+    @node tools/webgpu_input_smoke.mjs
+#
+
 webgpu-browser-smoke *args='': wasm-scene-build
     @python3 tools/build_webgpu_data_bundles.py --include-local
     @node tools/webgpu_browser_smoke.mjs {{args}}
@@ -90,7 +94,7 @@ wasm-scene-stack-usage:
         xargs -0 awk '{print $2 "\t" $1}' | sort -nr | head -n 30
 #
 
-wasm-scene-smoke: wasm-scene-build webgpu-data-check
+wasm-scene-smoke: wasm-scene-build webgpu-data-check webgpu-input-check
     @node tools/wasm_scene_smoke.mjs
     @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_api_scene_point_pixel_marker_segment_path_primitive_image_mesh_panzoom.json
     @python3 tools/webgpu_fixture_preflight.py build-wasm-scene/wasm/wasm_api_scene_sphere_textured_mesh3d_arcball.json
