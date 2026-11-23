@@ -67,7 +67,7 @@ def test_resolved_asset_and_compiler_header_changes_invalidate_provenance(tmp_pa
     header = tmp_path / "external.h"
     for path in (asset, font, header):
         path.write_bytes(b"original")
-    (build_dir / "wasm/resolved-inputs.txt").write_text(f"{asset}\n{font}\n")
+    (build_dir / "datoviz-wasm-resolved-inputs.txt").write_text(f"{asset}\n{font}\n")
     (build_dir / "example.o.d").write_text(f"example.o: {header}\n")
     (build_dir / "compile_commands.json").write_text("[]")
     first = wasm_build.provenance(build_dir)["input_hash"]

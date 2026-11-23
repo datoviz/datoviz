@@ -117,7 +117,7 @@ def load_stamp() -> dict:
 def resolved_inputs(build_dir: Path) -> list[Path]:
     """Read actual resource selection and compiler header dependencies from the build tree."""
     paths = set()
-    resources = build_dir / "wasm/resolved-inputs.txt"
+    resources = build_dir / "datoviz-wasm-resolved-inputs.txt"
     if resources.exists():
         paths.update(Path(line) for line in resources.read_text().splitlines() if line)
     for depfile in build_dir.rglob("*.o.d"):
