@@ -4,7 +4,7 @@ The active branch is `main`. RC2 is closed; RC3 is the next release milestone, f
 
 Start the next agent with the [2026-11-23 RC3 readiness handoff](STATUS.md#next-agent-handoff-2026-11-23): verify delivery of the validated documentation batch, then prepare one pre-freeze blocker table before requesting candidate freeze.
 
-Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For current Linux hardware evidence and the macOS/Windows return sequence, use [the current development queue](STATUS.md#next-development-checks); RC3 freeze waits for maintainer course proofreading. Read [STATUS.md](STATUS.md) when work affects release scope or readiness and [RELEASE.md](RELEASE.md) for release planning or packaging. Read only the matching lanes below.
+Use [../../AGENTS.md](../../AGENTS.md) for ordinary implementation routing. For current Linux hardware evidence and the macOS/Windows return sequence, use [the current development queue](STATUS.md#next-development-checks). For the 2026-11-24 Windows stack and build investigation, use [the Windows handoff](HANDOFF_WINDOWS_VALIDATION.md#linux-led-windows-investigation-2026-11-24). RC3 freeze waits for maintainer course proofreading. Read [STATUS.md](STATUS.md) when work affects release scope or readiness and [RELEASE.md](RELEASE.md) for release planning or packaging. Read only the matching lanes below.
 
 ## Task Routes
 

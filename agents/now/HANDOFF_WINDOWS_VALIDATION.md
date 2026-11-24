@@ -1,10 +1,34 @@
 # Windows Native Validation Handoff
 
-Status: source-checkout AMD/NVIDIA matrices, FIFO frame-slot comparison, and checkout-backed vcpkg consumer proof are complete; visible DRP2 live-canvas asymmetry, a Vulkan-enabled PyQt provider, and exact-candidate proof remain. Platform availability updated: 2026-10-10; the completed native matrix below retains its 2026-08-03 evidence.
+Status: Windows development access returned on 2026-11-24. A fresh source build exposed stack and build-system problems requiring investigation; the earlier AMD/NVIDIA matrix, visible DRP2 asymmetry, provider, and exact-candidate gates retain their original scope.
 
 ## Current Availability
 
-The physical Windows validation machine is unavailable as of 2026-10-10. Leave native runtime, visible AMD/NVIDIA, and exact-candidate physical gates pending; continue independent checks on available platforms. The latest conda provider compiled, but application control rejected its GLFW dependency before Python import and provider rendering; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and PyPI-provider results below do not describe a newly validated RC3 artifact. When the machine returns, follow [the current development queue](STATUS.md#next-development-checks) and [provider-specific platform checks](QT_MACOS_VULKAN_HANDOFF.md#next-available-platform-checks) before the later exact-candidate campaign. RC3 remains unfrozen during course proofreading.
+The Windows machine was available for the 2026-11-24 source checks below. Availability for future remote or attended sessions must be confirmed when needed. The earlier conda provider run was blocked before Python import; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and provider results do not validate an RC3 artifact. RC3 remains unfrozen during course proofreading.
+
+## Linux-Led Windows Investigation, 2026-11-24
+
+Linux owns the investigation and fixes. Use the Windows validation host for native MSVC builds and tests when available; remote execution does not establish visible rendering or interaction. Keep access details in ignored local notes. Use high-effort Sol 6.1 subagents for independent read-only audits of stack use and Windows build paths, then integrate and validate their findings on Linux.
+
+### Evidence
+
+- At source head `82ef4b0a3`, a fresh Visual Studio 2022 x64 Release configuration with CUDA disabled needed PyYAML for the selected Python interpreter. The build failed because `scene.c` uses C11 atomics without `/experimental:c11atomics`: Visual Studio evaluates target-level `COMPILE_LANGUAGE:C` options as C++ in the mixed C/C++ scene target. A local source-specific option allowed the full build to complete; this partial change was not committed.
+- Windows application control initially blocked vcpkg `freetype.dll` and `zlib1.dll`. The maintainer disabled Smart App Control on this host; afterward the Release scatter scenario completed 120 live frames and exited normally. No visual or interaction observation was recorded. This does not resolve the separate conda GLFW provider gate.
+- The normal Release scene runner has a 1 MiB stack and crashed with stack overflow. A diagnostic copy with an 8 MiB stack passed 778/778 scene tests on AMD, with no failures or skips. Moving one 128 KiB test JSON buffer to heap made that individual case pass on the normal stack, but other scene cases still overflowed. This partial test change was not committed.
+- MSVC Release object disassembly showed stack frames of 361,320 bytes in `_scene_emit_panel_render_caps`, 360,248 bytes in its callee `_scene_panel_render_plan_build`, and 200,056 bytes in nested `_scene_panel_composition_resolve`. Their combined frame sizes are 921,624 bytes before other frames. `DvzPanelRenderPlan` is 360,192 bytes and `DvzPanelCompositionSnapshot` is 199,912 bytes in that build. These measurements establish production stack pressure, not the exact crash call stack.
+- On Windows, `just build` selects the MinGW recipe and requires GCC; this MSVC-only environment lacks GCC. `just docs-build-check` depends on that recipe and failed before its documentation checks. The separate `msvc` preset uses a multi-configuration `build-msvc` tree, while tests, Python loading, examples, and documentation recipes also assume other build layouts. A partial public-guide update was not committed.
+
+### Work plan
+
+1. Audit large stack objects and nested call paths across production and tests on Linux using compiler stack-usage reports and targeted call-chain analysis. Reproduce measurements with MSVC where possible. Prioritize render-plan and composition drafts; also check worker-thread and embedding paths. Capture exact crash stacks where practical.
+2. Design and implement owned heap or suitably scoped workspace storage for large working objects. Preserve transactional output behavior, concurrency, cleanup on every failure path, and allocation-failure handling. Do not use shared static scratch space. Reduce large test fixtures separately. A larger test executable stack alone is not a library fix.
+3. Add focused regression coverage for the affected planning and failure paths, including a deliberately bounded worker thread. Run Linux builds, focused tests, and suitable allocation or sanitizer checks. On Windows, run Debug and Release focused tests and the full scene suite with the normal 1 MiB stack; distinguish platform skips and validation messages. Repeat relevant GPU checks on both devices when available.
+4. Fix compiler-option handling for C and C++ across mixed Visual Studio targets, with a configure-time capability diagnostic if needed. Evaluate per-source options or separate object targets without losing generated shaders, exports, or dependency propagation. Verify generated commands for both Visual Studio and Ninja generators.
+5. Design a consistent Windows build workflow. Evaluate MSVC plus Ninja in `build` as the default, with an initialized developer environment and explicit diagnostics; retain MinGW as an explicit separate route only if validated. Audit all consumers of build directories, configuration-specific paths, Python native-library discovery, runtime DLL staging, tests, examples, and documentation. Do not silently reconfigure an incompatible existing build tree. Make Windows CI exercise the documented path.
+6. Update the public source-build guide after the chosen workflow works from a clean environment. Include PyYAML and interpreter selection, toolchain prerequisites, runtime paths, and appropriate test commands. Apply humanizer to revised prose and run the required documentation checks with their declared dependencies on a supported host.
+7. Record source revision, configurations, commands, GPU identity, test totals, skips, warnings, and any remaining limitation. Perform attended rendering, resize, interaction, close, and reopen checks separately. Source-checkout evidence does not replace exact-candidate artifact validation.
+
+The plan and new evidence above received the humanizer pass. Earlier prose in this handoff was not reviewed in this pass.
 
 ## Scope
 
