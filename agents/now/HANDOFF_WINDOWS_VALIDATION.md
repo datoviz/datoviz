@@ -1,16 +1,29 @@
 # Windows Native Validation Handoff
 
-Status: Windows stack/build fixes, the automated source matrix, and the six-example Windows desktop review are complete on the local `fix/windows-stack-build` branch. The batch is not merged or pushed. The video-fallback finding below, provider trust, and exact-candidate proof remain open.
+Status: Windows stack/build fixes, the automated source matrix, and the six-example Windows desktop review are complete. The [next-session handoff](#next-session-handoff-2026-11-25) defines the remaining work. Video fallback, provider trust, and exact-candidate proof remain open.
 
 ## Current Availability
 
 The Windows machine was available for the source checks below on 2026-11-25. Availability for future remote or attended sessions must be confirmed when needed. The earlier conda provider run was blocked before Python import; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and provider results do not validate an RC3 artifact. RC3 remains unfrozen during course proofreading.
 
+## Next-Session Handoff, 2026-11-25
+
+Continue on `main` with the video-fallback slice below. The stack/build batch and source review are complete. Source validation applies to `4a8a0c59c`, including the runtime fix at `b106bba7b`; later commits record evidence and maintainer review. The completed scope is Linux scene 782/782 and canvas-filter 50/50, Windows scene 781/781 in all four Debug/Release and AMD/NVIDIA runs, and Windows desktop canvas 107 passed plus three skipped per run. All six Windows source examples received positive maintainer review, including picking after reopening. See the detailed evidence below. These results do not cover every repository test, optional configuration, per-GPU manual interaction, or final release artifact.
+
+1. **Fix the video fallback next.** Reproduce the two NVENC-specific cases listed under [video fallback](#video-fallback-finding) with NVENC disabled. Inspect `src/video/encoder_backend.c`, `src/video/encoder_backend_kvazaar.c`, `src/video/video_sink.c`, and their canvas integration tests. An unavailable backend must return an unsupported/error result or select a compatible CPU RGBA/readback path before attempting to map imported memory. Preserve borrowed-handle ownership and supported encoder paths; do not hide the invalid map by suppressing validation messages or changing the cases to unconditional skips.
+2. **Validate the correction within its scope.** Add focused regression coverage for backend unavailability and incompatible memory. Run the affected video/canvas cases on Linux and both Windows GPUs in the logged-in desktop, with Debug validation layers enabled, then check Release behavior. Acceptance requires no `VUID-vkMapMemory-memory-00682`, correct failure cleanup, and preserved supported CPU encoding. Keep unavailable backend skips distinct from passes. Refresh bindings first if public headers or binding policy change. Stop this implementation slice after focused checks and the evidence update; broaden testing only for changed behavior or unresolved failures.
+3. **Resume RC3 readiness after that slice.** Prepare the pre-freeze blocker table described in [STATUS.md](STATUS.md#next-agent-handoff-2026-11-23), carrying forward this completed source matrix and manual review. Course proofreading and candidate scope/freeze decisions remain with the maintainer. The Windows Qt/PyQt dependency-trust blocker remains a separate lane; do not change security policy merely to obtain a pass.
+4. **Validate exact artifacts after freeze.** Repeat the required installed-source/wheel/package and physical-platform checks against the selected artifact identities and checksums. Current checkout evidence does not replace those gates. Follow current publication authorization rather than treating this delivery request as approval for future releases or posts.
+
+For Windows presentation, use the logged-in desktop. The SSH session's AMD swapchain failures are recorded environment limitations, not passing tests; GPU index order differs between sessions. Discover indices in the session running each check and record device identity. Temporary launchers have been removed. Raw evidence remains ignored under `build/windows-validation/`; regenerate it on another machine when unavailable.
+
+This handoff and the revised status/dispatch prose received the humanizer pass and a final check for clear wording. Older historical sections were not re-reviewed.
+
 ## Linux-Led Windows Fixes, 2026-11-25
 
 The code batch at `a2be5baf6` moves large scene planning, composition, graph-lowering, emitter, draw, legend, axis-label, text-layout, and recording-loader workspaces off the stack. Composition dependency validation uses a bitset. Failure paths retain transactional output and graph counts; legend allocation failures remain eligible for retry. Large composition test fixtures and the recording JSON buffer use heap storage. Repeatability compares serialized composition fields rather than unspecified C structure padding.
 
-The default Windows build now uses MSVC x64 and Ninja in `build`. The helper selects its own Python interpreter for CMake, checks PyYAML, initializes the developer environment, rejects incompatible caches, and stages runtime DLLs beside libraries and executables. Visual Studio mixed-language targets receive C and C++ options through source properties, with a configure-time C11 atomics probe. CI uses the documented Windows route and checks Linux stack reports; hosted CI has not run for this local branch.
+The default Windows build now uses MSVC x64 and Ninja in `build`. The helper selects its own Python interpreter for CMake, checks PyYAML, initializes the developer environment, rejects incompatible caches, and stages runtime DLLs beside libraries and executables. Visual Studio mixed-language targets receive C and C++ options through source properties, with a configure-time C11 atomics probe. CI uses the documented Windows route and checks Linux stack reports; hosted execution of that full test workflow remains unverified.
 
 ### Completed Linux evidence
 
@@ -35,7 +48,7 @@ Native runs use a verified source hash manifest for `a2be5baf6`. Archive extract
 | MSVC Debug analysis | Full configured build and the excluded atlas-generator target succeed. No C6262 warnings in owned production sources; five warnings remain in unchanged vendored `fpng`, with a maximum reported frame of 17,176 bytes. Other compiler/analyzer warnings remain outside the changed production files; this is not a clean general static-analysis claim. |
 | Source consumers | Clean `just build Release`, default `just test planning`, Python source import, raw ctypes and array-facade smokes, and Windows manifest example discovery pass. `scatter --live 120` completes all 120 frames and exits zero; rendering and interaction were not observed. |
 
-Both full Debug runs reported that the validation layer was unavailable. Those results establish execution and assertions; they are not validation-layer passes. Raw reports, compiler logs, source manifests, and stack inventories remain in ignored build evidence. No binaries, submodule changes, machine-access details, or reports were committed. The branch remains local.
+Both full Debug runs reported that the validation layer was unavailable. Those results establish execution and assertions; they are not validation-layer passes. Raw reports, compiler logs, source manifests, and stack inventories remain in ignored build evidence. No binaries, submodule changes, machine-access details, or reports are part of this batch.
 
 ### Resize follow-up and validation layers
 
