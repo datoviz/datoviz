@@ -125,7 +125,6 @@ struct DvzCanvas
     DvzImageViews* retired_offscreen_depth_views;
     VkImage retired_offscreen_depth_image;
     VkImageView retired_offscreen_depth_view;
-    VkCommandBuffer retired_offscreen_command_buffer;
     DvzExternalHandle retired_offscreen_memory_fd;
     VkQueue offscreen_queue;
     uint32_t offscreen_queue_family;

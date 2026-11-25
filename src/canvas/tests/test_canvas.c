@@ -1099,6 +1099,7 @@ static int test_canvas_offscreen_depth_attachment(TstContext* suite, const TstCa
     AT(frame->extent.width == 320);
     AT(frame->extent.height == 240);
     uint64_t first_generation = frame->resource_generation;
+    VkCommandBuffer first_command_buffer = frame->command_buffer;
     VkImage first_depth_image = frame->depth_image;
     VkImageView first_depth_view = frame->depth_view;
     AT(dvz_canvas_submit(canvas) == 0);
@@ -1117,6 +1118,7 @@ static int test_canvas_offscreen_depth_attachment(TstContext* suite, const TstCa
     AT(frame->extent.width == 400);
     AT(frame->extent.height == 300);
     AT(frame->resource_generation > first_generation);
+    AT(frame->command_buffer == first_command_buffer);
     AT(frame->depth_image != first_depth_image);
     AT(frame->depth_view != first_depth_view);
     AT(dvz_canvas_submit(canvas) == 0);

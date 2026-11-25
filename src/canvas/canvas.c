@@ -556,13 +556,6 @@ static void canvas_offscreen_destroy_retired_resources(DvzCanvas* canvas)
     }
     canvas->retired_offscreen_image = VK_NULL_HANDLE;
     canvas->retired_offscreen_view = VK_NULL_HANDLE;
-    if (canvas->retired_offscreen_command_buffer != VK_NULL_HANDLE)
-    {
-        dvz_command_buffer_free(
-            canvas->device, canvas->offscreen_queue_family,
-            canvas->retired_offscreen_command_buffer);
-        canvas->retired_offscreen_command_buffer = VK_NULL_HANDLE;
-    }
     if (canvas->retired_offscreen_memory_fd != DVZ_EXTERNAL_HANDLE_INVALID)
     {
         dvz_external_handle_close(canvas->retired_offscreen_memory_fd);
@@ -595,7 +588,6 @@ static void canvas_offscreen_retire_resources(DvzCanvas* canvas)
     canvas->retired_offscreen_depth_views = canvas->offscreen_depth_views;
     canvas->retired_offscreen_depth_image = canvas->offscreen_depth_image;
     canvas->retired_offscreen_depth_view = canvas->offscreen_depth_view;
-    canvas->retired_offscreen_command_buffer = canvas->offscreen_command_buffer;
     canvas->retired_offscreen_memory_fd = canvas->offscreen_memory_fd;
 
     canvas->offscreen_image = VK_NULL_HANDLE;
@@ -607,7 +599,6 @@ static void canvas_offscreen_retire_resources(DvzCanvas* canvas)
     canvas->offscreen_depth_views = NULL;
     canvas->offscreen_depth_image = VK_NULL_HANDLE;
     canvas->offscreen_depth_view = VK_NULL_HANDLE;
-    canvas->offscreen_command_buffer = VK_NULL_HANDLE;
     canvas->offscreen_memory_fd = -1;
     canvas->offscreen_layout = VK_IMAGE_LAYOUT_UNDEFINED;
     canvas->offscreen_depth_layout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -632,8 +623,10 @@ static int canvas_offscreen_create_resources(DvzCanvas* canvas, VkExtent2D exten
     ANN(queue_ref);
     canvas->offscreen_queue_family = dvz_queue_family(queue_ref);
     canvas->offscreen_queue = dvz_queue_handle(queue_ref);
-    canvas->offscreen_command_buffer =
-        dvz_command_buffer_alloc(canvas->device, canvas->offscreen_queue_family);
+    /* Keep the command buffer across image generations so frame-local runtime IDs stay stable. */
+    if (canvas->offscreen_command_buffer == VK_NULL_HANDLE)
+        canvas->offscreen_command_buffer =
+            dvz_command_buffer_alloc(canvas->device, canvas->offscreen_queue_family);
     if (canvas->offscreen_command_buffer == VK_NULL_HANDLE)
     {
         log_error("failed to allocate offscreen canvas command buffer");
@@ -741,6 +734,10 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
     bool resource_recreated =
         !canvas->offscreen_ready || canvas->offscreen_extent.width != extent.width ||
         canvas->offscreen_extent.height != extent.height || canvas->offscreen_format != format;
+    if (canvas->timeline_ready && canvas->timeline_value > 0)
+    {
+        dvz_semaphore_wait(canvas->timeline_semaphore, canvas->timeline_value);
+    }
     if (resource_recreated)
     {
         canvas_offscreen_retire_resources(canvas);
@@ -748,10 +745,6 @@ static int canvas_offscreen_prepare_frame(DvzCanvas* canvas, DvzStreamFrame* fra
         {
             return -1;
         }
-    }
-    if (canvas->timeline_ready && canvas->timeline_value > 0)
-    {
-        dvz_semaphore_wait(canvas->timeline_semaphore, canvas->timeline_value);
     }
 
     DvzCommands* cmds = dvz_commands_create_wrapper();
