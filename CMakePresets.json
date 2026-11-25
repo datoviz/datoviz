@@ -2,13 +2,30 @@
     "version": 2,
     "configurePresets": [
         {
+            "name": "msvc-ninja",
+            "displayName": "MSVC x64 / Ninja",
+            "description": "Native Windows development in build, with an initialized MSVC environment.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-windows",
+                "DVZ_ENABLE_CUDA": "OFF"
+            }
+        },
+        {
             "name": "mingw",
             "displayName": "MinGW Makefiles",
             "description": "Generate build files with MinGW Makefiles",
             "generator": "MinGW Makefiles",
-            "binaryDir": "${sourceDir}/build",
+            "binaryDir": "${sourceDir}/build-mingw",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-mingw-dynamic"
             }
         },
         {
@@ -76,6 +93,10 @@
     ],
     "buildPresets": [
         {
+            "name": "msvc-ninja",
+            "configurePreset": "msvc-ninja"
+        },
+        {
             "name": "mingw",
             "configurePreset": "mingw"
         },
@@ -136,6 +157,10 @@
         }
     ],
     "testPresets": [
+        {
+            "name": "msvc-ninja",
+            "configurePreset": "msvc-ninja"
+        },
         {
             "name": "mingw",
             "configurePreset": "mingw"

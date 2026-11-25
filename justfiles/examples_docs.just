@@ -44,7 +44,7 @@ example-watch name *args:
 
 [positional-arguments]
 examples *args: build
-    @python3 tools/run_c_examples.py "$@"
+    @{{bindings_python}} tools/run_c_examples.py "$@"
 
 [positional-arguments]
 examples-run *args: build
@@ -70,9 +70,9 @@ review *args:
         just build
     fi
     if [[ -n "${batch}" ]]; then
-        python3 tools/run_c_examples.py --batch "${batch}" "${tool_args[@]}"
+        {{bindings_python}} tools/run_c_examples.py --batch "${batch}" "${tool_args[@]}"
     else
-        python3 tools/run_c_examples.py --review-order "${tool_args[@]}"
+        {{bindings_python}} tools/run_c_examples.py --review-order "${tool_args[@]}"
     fi
 
 review-batches:

@@ -144,6 +144,11 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
+def native_executable(path: Path) -> Path:
+    """Resolve a manifest executable to the native platform filename."""
+    return path.with_name(path.name + ".exe") if platform.system() == "Windows" else path
+
+
 def is_executable(path: Path) -> bool:
     return path.is_file() and os.access(path, os.X_OK)
 
@@ -333,7 +338,7 @@ def manifest_id_examples(
             ignored.append(rel)
             continue
 
-        exe = examples_root / rel
+        exe = native_executable(examples_root / rel)
         if args.code or is_executable(exe):
             examples.append((rel, exe))
         else:
@@ -394,7 +399,7 @@ def manifest_examples(
             continue
         seen.add(rel)
 
-        exe = examples_root / rel
+        exe = native_executable(examples_root / rel)
         if args.code or is_executable(exe):
             examples.append((rel, exe))
         else:
@@ -415,6 +420,8 @@ def built_examples(
         if not is_executable(exe):
             continue
         rel = exe.relative_to(examples_root).as_posix()
+        if platform.system() == "Windows" and rel.endswith(".exe"):
+            rel = rel[:-4]
         if args.filter and not matches_filter(rel, args.filter):
             continue
         if any(matches_filter(rel, pattern) for pattern in ignore_patterns):

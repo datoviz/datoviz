@@ -1,5 +1,5 @@
 test test_name="" *args:
-    @python3 tasks/test_driver.py run "{{test_name}}" -- {{args}}
+    @{{bindings_python}} tasks/test_driver.py run "{{test_name}}" -- {{args}}
 #
 
 [linux]
@@ -48,11 +48,11 @@ ttest test_name="": tsan
 #
 
 test-inventory lane="":
-    @python3 tasks/test_driver.py inventory "{{lane}}"
+    @{{bindings_python}} tasks/test_driver.py inventory "{{lane}}"
 #
 
 test-lane lane *args:
-    @python3 tasks/test_driver.py lane "{{lane}}" -- {{args}}
+    @{{bindings_python}} tasks/test_driver.py lane "{{lane}}" -- {{args}}
 #
 
 test-fast *args:

@@ -284,12 +284,21 @@ release: symbols && bundledeps
 
 [windows]
 build release="Debug":
+    @python tasks/build_windows.py "{{release}}"
+
+[windows]
+configure release="Debug":
+    @python tasks/build_windows.py "{{release}}" --configure-only
+
+# MinGW is a separate, optional toolchain; the default native route uses MSVC.
+[windows]
+mingw release="Debug":
     #!/usr/bin/env sh
     set -e
     unset CC
     unset CXX
     cmake_args="${DVZ_CMAKE_ARGS:-}"
-    BUILD_DIR="build"
+    BUILD_DIR="build-mingw"
     mkdir -p "$BUILD_DIR"
 
     # Copy MinGW runtime libraries next to the built artifacts.
@@ -313,10 +322,10 @@ build release="Debug":
     cmake --build --preset mingw ${build_args}
 
     # Copy vcpkg_installed dll's to datoviz.exe location.
-    if [ "{{release}}" == "Debug" ]; then
-        cp "$BUILD_DIR/vcpkg_installed/x64-windows/debug/bin/"*.dll "$BUILD_DIR"/
+    if [ "{{release}}" = "Debug" ]; then
+        cp "$BUILD_DIR/vcpkg_installed/x64-mingw-dynamic/debug/bin/"*.dll "$BUILD_DIR"/
     else
-        cp "$BUILD_DIR/vcpkg_installed/x64-windows/bin/"*.dll "$BUILD_DIR"/
+        cp "$BUILD_DIR/vcpkg_installed/x64-mingw-dynamic/bin/"*.dll "$BUILD_DIR"/
     fi
 #
 
@@ -345,7 +354,7 @@ msvc release="Debug":
     cmake --build --preset msvc --config {{release}} ${build_args}
 
     # Copy vcpkg_installed dll's next to datoviz.exe.
-    if [ "{{release}}" == "Debug" ]; then
+    if [ "{{release}}" = "Debug" ]; then
         cp "$BUILD_DIR/vcpkg_installed/x64-windows/debug/bin/"*.dll "$BUILD_DIR"/
     else
         cp "$BUILD_DIR/vcpkg_installed/x64-windows/bin/"*.dll "$BUILD_DIR"/
