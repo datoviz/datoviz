@@ -1,10 +1,58 @@
 # Windows Native Validation Handoff
 
-Status: Windows development access returned on 2026-11-24. A fresh source build exposed stack and build-system problems requiring investigation; the earlier AMD/NVIDIA matrix, visible DRP2 asymmetry, provider, and exact-candidate gates retain their original scope.
+Status: Windows stack and build fixes are implemented on the local `fix/windows-stack-build` branch. The batch is not merged or pushed. The earlier visible DRP2 asymmetry, provider, and exact-candidate gates retain their original scope.
 
 ## Current Availability
 
 The Windows machine was available for the 2026-11-24 source checks below. Availability for future remote or attended sessions must be confirmed when needed. The earlier conda provider run was blocked before Python import; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and provider results do not validate an RC3 artifact. RC3 remains unfrozen during course proofreading.
+
+## Linux-Led Windows Fixes, 2026-11-25
+
+The code batch at `a2be5baf6` moves large scene planning, composition, graph-lowering, emitter, draw, legend, axis-label, text-layout, and recording-loader workspaces off the stack. Composition dependency validation uses a bitset. Failure paths retain transactional output and graph counts; legend allocation failures remain eligible for retry. Large composition test fixtures and the recording JSON buffer use heap storage. Repeatability compares serialized composition fields rather than unspecified C structure padding.
+
+The default Windows build now uses MSVC x64 and Ninja in `build`. The helper selects its own Python interpreter for CMake, checks PyYAML, initializes the developer environment, rejects incompatible caches, and stages runtime DLLs beside libraries and executables. Visual Studio mixed-language targets receive C and C++ options through source properties, with a configure-time C11 atomics probe. CI uses the documented Windows route and checks Linux stack reports; hosted CI has not run for this local branch.
+
+### Completed Linux evidence
+
+- GCC 13.3 Debug: 373/373 configured Datoviz-owned production compilation units accounted for, including eight empty reports; 7,844 frame records and no frames above 16 KiB. Seven browser-only C sources are outside this native configuration. CUDA/NVENC and the optional Qt bridge were enabled.
+- GCC 13.3 Release, CUDA disabled: 372/372 configured owned units accounted for, including seven empty reports; 3,863 frame records and no frames above 16 KiB. The browser sources and NVENC backend were excluded. The largest owned frame was 14,960 bytes in recording loading; Debug's largest was 12,352 bytes in axis text preparation.
+- `direnv exec . just test scene`: 782/782 pass, no failures or skips. `just test recording`: 9/9 pass. The selected 58 CPU-only planning, composition, annotation, text, and recording cases pass under ASan with leak detection enabled.
+- A broader sanitizer run reached external D-Bus/graphics-runtime leaks; it is not a clean sanitizer pass. The CPU-only run above has no reported sanitizer errors or leaks.
+- `just ctypes` and `just ctypes-check` pass, including ABI validation for 207 records. The 30 Python tooling tests pass, and `just --dump` parses the recipes.
+- The changed prerequisite row, Windows instructions, scatter note, and stack-analysis section in the source-build guide, plus the new build-option row, received the humanizer pass. `just docs-build-check` and `just docs-status-check` pass, including the rendered language-tab check for 408 Markdown pages and 414 HTML pages. This handoff's new section also received the humanizer pass; older sections were not re-reviewed.
+
+### Windows evidence and limits
+
+Native runs use a verified source hash manifest for `a2be5baf6`. Archive extraction can preserve timestamps older than existing objects, so transferred source hashes were verified and timestamps refreshed before compilation. Earlier incremental runs are diagnostic evidence only. The native compile-command audit accounts for 371 configured owned production units, with no missing or source-stale objects. The scene executable's PE header confirms a 1,048,576-byte stack reserve.
+
+| Check | Configuration and result |
+| --- | --- |
+| Toolchain | Windows 11 x64, Visual Studio 2022 / MSVC 14.44.35207, Vulkan SDK 1.4.350.0, Python 3.12. CUDA and Qt bridge disabled. |
+| NVIDIA Release | 781/781 scene tests pass, no failures or skips; requested and resolved GPU index 0, GeForce RTX 5060 Laptop GPU, vendor/device `0x10de/0x2d59`, API version raw `4211017`, driver version raw `2497167360`. |
+| AMD Release | 781/781 scene tests pass, no failures or skips; requested and resolved GPU index 1, Radeon 780M Graphics, vendor/device `0x1002/0x1900`, API version raw `4211003`, driver version raw `8388961`. |
+| NVIDIA Debug | 781/781 scene tests pass, no failures or skips; requested and resolved index 0, same device identity as Release. |
+| AMD Debug | 781/781 scene tests pass, no failures or skips; requested and resolved index 1, same device identity as Release. |
+| MSVC Debug analysis | Full configured build and the excluded atlas-generator target succeed. No C6262 warnings in owned production sources; five warnings remain in unchanged vendored `fpng`, with a maximum reported frame of 17,176 bytes. Other compiler/analyzer warnings remain outside the changed production files; this is not a clean general static-analysis claim. |
+| Source consumers | Clean `just build Release`, default `just test planning`, Python source import, raw ctypes and array-facade smokes, and Windows manifest example discovery pass. `scatter --live 120` completes all 120 frames and exits zero; rendering and interaction were not observed. |
+
+Both full Debug runs reported that the validation layer was unavailable. Those results establish execution and assertions; they are not validation-layer passes. Raw reports, compiler logs, source manifests, and stack inventories remain in ignored build evidence. No binaries, submodule changes, machine-access details, or reports were committed. The branch remains local.
+
+### Resize follow-up and validation layers
+
+A later four-case Debug run exposed an order-dependent failure in `test_app_offscreen_resize_reuses_runtime_with_mesh_and_image` on AMD. Repeating that subset reproduced the failure once in three rounds. Each offscreen resize replaced the borrowed command-buffer handle used to scope runtime resources; fresh handles could add depth targets beyond the test's expected count. The earlier full-suite passes did not expose this allocation-dependent behavior.
+
+Commit `b106bba7b` retains the canvas-owned offscreen command buffer across image resizes and waits for the prior submission before retiring images. The canvas regression now requires the same command buffer after resize, and the scene regression requires unchanged semantic and backend object counts from the first frame onward. Image generations still advance, and retired images remain available to live-image consumers.
+
+The elevated Windows SSH session causes the Vulkan loader to ignore layer-path environment variables. The SDK validation layer was installed but absent from the machine's explicit-layer registry. A temporary registration enabled the focused runs below; its value was removed afterward. Loader logs confirm Khronos validation-layer insertion in all four runs, with no VUID messages, validation errors, or validation warnings. Loader registry-discovery diagnostics remain; these are not warning-free loader logs.
+
+- Linux: `just build`, the full scene suite (782/782), the canvas filter (50/50), and the isolated resize case pass. The refreshed GCC Debug inventory accounts for 373/373 configured production units, with no frame violations above 16 KiB.
+- Windows Debug: `just build` passes using the existing virtual environment. On each of NVIDIA and AMD, three rounds of the four-case dynamic-emission, point-emission, retained-frame, and resize subset pass (12/12); three rounds of the canvas depth/resize case also pass (3/3). Transferred source hashes match the local manifest for the tested source.
+
+This follow-up has focused Windows Debug evidence. The full Windows Debug/Release matrix above applies to `a2be5baf6`, before the resize correction. The revised public build instructions, option row, dispatch paragraph, and this new handoff section received the humanizer pass and a final check for direct wording; older prose was not re-reviewed.
+
+Compiler frame reports cover the recorded compiler, configuration, and enabled sources. They do not bound total call-stack depth or validate disabled platform code. The 256 KiB worker regression exercises empty and populated planning, composition, graph lowering, and stream emission. Allocation regressions cover unchanged outputs, graph rollback after product-map allocation failure, and legend retry; dependency chains and cycles cross indices 63/64 and 127/128.
+
+The read-only audit also identified extent-reference and load-source recursion for a separate cycle-rejection investigation; those paths were not proven defective or changed in this batch. Attended rendering and interaction, the earlier visible DRP2 asymmetry, provider trust, and exact-candidate artifact proof remain separate gates. MinGW remains an unvalidated optional route.
 
 ## Linux-Led Windows Investigation, 2026-11-24
 
