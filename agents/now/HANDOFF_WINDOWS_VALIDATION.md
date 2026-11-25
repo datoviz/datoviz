@@ -1,6 +1,6 @@
 # Windows Native Validation Handoff
 
-Status: Windows stack/build fixes and the automated source matrix are complete on the local `fix/windows-stack-build` branch. The batch is not merged or pushed. Maintainer live review, the video-fallback finding below, provider trust, and exact-candidate proof remain open.
+Status: Windows stack/build fixes, the automated source matrix, and the six-example Windows desktop review are complete on the local `fix/windows-stack-build` branch. The batch is not merged or pushed. The video-fallback finding below, provider trust, and exact-candidate proof remain open.
 
 ## Current Availability
 
@@ -67,7 +67,7 @@ Both Debug scene logs confirm 56 Khronos validation-layer insertions, with no va
 
 The SSH session cannot serve as AMD presentation proof on this machine: both configurations fail 22 canvas presentation cases with `VK_ERROR_FORMAT_NOT_SUPPORTED` at swapchain creation. The same destroy/recreate probe passes in the logged-in desktop, and the full desktop canvas matrix above has no assertion failures. GPU indices also differ by session: SSH enumerates NVIDIA as 0 and AMD as 1; the desktop enumerates AMD as 0 and NVIDIA as 1. Discover devices in the session running the tests and verify the recorded vendor/device identity rather than copying indices between sessions.
 
-### Automated visual checks and remaining maintainer review
+### Automated visual checks and maintainer review
 
 Release GLFW captures from the logged-in desktop show the requested 100,000-point scene on both GPUs, before and after resize. Orange points cover about 82% of each image; at this density the overlapping points form a filled rectangle. The initial captures are 1000×750 pixels and the resized captures are 1182×853. AMD/NVIDIA comparisons have a mean absolute RGBA channel difference below 0.008 on the 0–255 scale, with maximum channel differences of 20 and 21. All four captures were inspected; neither a blank frame nor a single isolated point appears. The historical asymmetry does not reproduce on this source in the desktop session.
 
@@ -75,9 +75,9 @@ The capture helper observed both processes exit after posting a close request, b
 
 Release binaries are ready in the default Windows `build` tree. Temporary desktop runners, windows, power requests, and validation-layer registration were removed. Reports, manifests, logs, captures, and image-comparison metrics remain under ignored `build/windows-validation/` evidence on the integration host. These new handoff sections and the revised dispatch paragraph received the humanizer pass and a final wording check; older prose was not re-reviewed.
 
-The next step is maintainer review in the Windows desktop. Run one example at a time from the repository root, then close it before starting another:
+On 2026-11-25, the maintainer reviewed all six Release examples in the logged-in Windows desktop and reported each as good or working after the requested actions below. Picking was closed, reopened, and confirmed working again. Replies were brief confirmations rather than an itemized account of every action. All review windows were closed and temporary launchers removed afterward.
 
-| Example executable under `build/examples/c/` | Review action |
+| Example executable under `build/examples/c/` | Requested action |
 | --- | --- |
 | `start/scatter.exe --live` | Resize, pan, wheel-zoom, close, reopen, and check responsiveness. |
 | `features/controller_arcball.exe --live` | Rotate and zoom; check depth and motion. |
@@ -86,7 +86,7 @@ The next step is maintainer review in the Windows desktop. Run one example at a 
 | `features/mesh_texture.exe --live` | Rotate; check texture and depth. |
 | `features/picking.exe --live` | Pick items, resize, close, reopen, and pick again. |
 
-For the historical GPU comparison, use the live-canvas commands in the next section after discovering the desktop's current GPU indices. Record human observations as pass, fail, or skip; unattended captures do not establish smoothness or physical interaction quality. This review is source-development evidence and does not replace the later exact-wheel physical profile.
+These are maintainer-reported source-development results with the examples' default device selection. They do not establish per-GPU manual proof or replace the later exact-wheel physical profile. The recorded observations are retained with the ignored native desktop evidence. The updated review status and result paragraphs received the humanizer pass and a final wording check.
 
 ### Video fallback finding
 
@@ -139,7 +139,7 @@ Source-checkout results are development evidence only. They must not be reported
 
 ## 1. Resolve And Repeat The Visible AMD/NVIDIA Checks
 
-The earlier scripted check produced one orange point on NVIDIA and a blank frame on AMD. The [current desktop captures](#automated-visual-checks-and-remaining-maintainer-review) show the dense scene on both GPUs, before and after resize. The source matrix also isolates AMD swapchain-creation failures to the SSH session. Maintainer confirmation of visible rendering and interaction remains open; use the logged-in desktop for that review.
+The earlier scripted check produced one orange point on NVIDIA and a blank frame on AMD. The [current desktop captures](#automated-visual-checks-and-maintainer-review) show the dense scene on both GPUs, before and after resize. The source matrix also isolates AMD swapchain-creation failures to the SSH session. The six-example source review above is complete. A separate human comparison of this grid on both GPU indices was not performed; use the logged-in desktop for that comparison when required.
 
 1. Discover the GPUs in the desktop session; do not reuse SSH indices without checking device identity.
 2. Run the Release GLFW live canvas on each GPU using the verified index.
