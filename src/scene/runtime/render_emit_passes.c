@@ -651,13 +651,16 @@ bool _emitter_emit_render_multi(
     if (!pass_has_depth_attachment && needs_depth && graph_depth_id == 0)
         pass_has_depth_attachment = true;
 
-    SceneDrawPacket draws[DVZ_SCENE_MAX_RENDER_VISUALS] = {0};
     uint32_t draw_count = 0;
     uint32_t pass_sample_count = _graph_render_pass_sample_count(emitter, plan, graph_pass);
     uint32_t color_target_formats[DVZ_DRP2_MAX_COLOR_ATTACHMENTS] = {0};
     uint32_t color_target_count =
         _render_pass_color_target_formats(plan, graph_pass, cfg, color_target_formats);
     if (color_target_count == 0)
+        return false;
+    SceneDrawPacket* draws =
+        (SceneDrawPacket*)dvz_calloc(DVZ_SCENE_MAX_RENDER_VISUALS, sizeof(*draws));
+    if (draws == NULL)
         return false;
     const DvzSceneResolvedPass* resolved = _graph_composition_pass(plan, graph_pass);
     DvzSceneWorkProviderKey provider =
@@ -668,7 +671,10 @@ bool _emitter_emit_render_multi(
         pass_sample_count, graph_pass != NULL && graph_pass->alpha_to_coverage, report, draws,
         &draw_count);
     if (!ok)
+    {
+        dvz_free(draws);
         return false;
+    }
 
     ok = dvz_drp2_stream_begin_command_encoder(stream, encoder_id) &&
          dvz_drp2_stream_begin_render_pass_region_clear(
@@ -693,6 +699,7 @@ bool _emitter_emit_render_multi(
     ok = ok && _render_pass_copy_finish_submit(
                    stream, encoder_id, command_buffer_id, submission_id, final_color_id, rb_id,
                    readback);
+    dvz_free(draws);
     return ok;
 }
 

@@ -135,6 +135,10 @@ int test_scene_graph(TstSuite* suite)
     TST_CASE(test_scene_pixel_depth_cue_toggle_switches_pipeline);
     TST_CASE(test_scene_visual_pass_capabilities);
     TST_CASE(test_scene_visual_family_registry_coverage);
+    TST_CASE(test_scene_legend_workspace_allocation_retry);
+    TST_CASE(test_scene_legend_strings_allocation_retry);
+    TST_CASE(test_scene_planning_bounded_stack);
+    TST_CASE(test_scene_planning_workspace_failure);
     TST_CASE(test_scene_panel_composition_snapshot);
     TST_CASE(test_scene_panel_composition_hidpi_geometry);
     TST_CASE(test_scene_panel_local_intermediate_realization);

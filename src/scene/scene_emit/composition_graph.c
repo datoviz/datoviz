@@ -1273,14 +1273,23 @@ static bool _composition_graph_product_use_once(
 
 
 
-static bool _composition_graph_materialize_products(
+/**
+ * Materialize products using the caller's zero-initialized identity map.
+ *
+ * @param plan destination plan
+ * @param snapshot immutable composition
+ * @param draft graph realization workspace
+ * @param report optional diagnostic report
+ * @param map borrowed product identity map
+ * @return whether materialization succeeded
+ */
+static bool _composition_graph_materialize_products_with_map(
     DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot,
-    const CompositionGraphDraft* draft, DvzDiagnosticReport* report)
+    const CompositionGraphDraft* draft, DvzDiagnosticReport* report, CompositionProductMap* map)
 {
     ANN(plan);
     ANN(snapshot);
     ANN(draft);
-    CompositionProductMap map[COMPOSITION_GRAPH_MAX_PRODUCT_REALIZATIONS] = {0};
     uint32_t map_count = 0;
     for (uint32_t i = 0; i < snapshot->technique_count; i++)
     {
@@ -1499,6 +1508,30 @@ static bool _composition_graph_materialize_products(
 
 
 
+/**
+ * Materialize composition products with an owned identity map.
+ *
+ * @param plan destination plan
+ * @param snapshot immutable composition
+ * @param draft graph realization workspace
+ * @param report optional diagnostic report
+ * @return whether products were materialized
+ */
+static bool _composition_graph_materialize_products(
+    DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot,
+    const CompositionGraphDraft* draft, DvzDiagnosticReport* report)
+{
+    CompositionProductMap* map = (CompositionProductMap*)dvz_calloc(
+        COMPOSITION_GRAPH_MAX_PRODUCT_REALIZATIONS, sizeof(*map));
+    if (map == NULL)
+        return false;
+    bool ok = _composition_graph_materialize_products_with_map(plan, snapshot, draft, report, map);
+    dvz_free(map);
+    return ok;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -1509,26 +1542,26 @@ static bool _composition_graph_materialize_products(
  * @param plan destination frame plan
  * @param snapshot immutable panel composition
  * @param report optional diagnostic report
+ * @param draft zero-initialized realization workspace
  * @return whether the complete composition graph was appended transactionally
  */
-bool _scene_panel_composition_lower_graph(
-    DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot, DvzDiagnosticReport* report)
+static bool _composition_lower_graph_draft(
+    DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot, DvzDiagnosticReport* report,
+    CompositionGraphDraft* draft)
 {
     ANN(plan);
     ANN(snapshot);
     if (!_frame_plan_composition_validate(snapshot, report))
         return false;
-    CompositionGraphDraft draft = {
-        .resource_count = plan->graph_resource_count,
-        .pass_count = plan->graph_pass_count,
-        .product_count = plan->product_count,
-        .product_use_count = plan->product_use_count,
-        .persisted_realization_count = plan->realization_count,
-    };
+    draft->resource_count = plan->graph_resource_count;
+    draft->pass_count = plan->graph_pass_count;
+    draft->product_count = plan->product_count;
+    draft->product_use_count = plan->product_use_count;
+    draft->persisted_realization_count = plan->realization_count;
     bool ok = true;
     for (uint32_t i = 0; ok && i < snapshot->scratch_resource_count; i++)
         ok = _composition_graph_realize_scratch(
-            plan, snapshot, &draft, &snapshot->scratch_resources[i], report);
+            plan, snapshot, draft, &snapshot->scratch_resources[i], report);
     for (uint32_t i = 0; ok && i < snapshot->pass_count; i++)
     {
         const DvzSceneResolvedPass* pass = &snapshot->passes[i];
@@ -1537,21 +1570,21 @@ bool _scene_panel_composition_lower_graph(
             const DvzSceneWorkBinding* binding = &pass->bindings[j];
             if (binding->ref_kind == DVZ_SCENE_RESOURCE_REF_PRODUCT)
                 ok = _composition_graph_realize_product(
-                    plan, snapshot, &draft, binding->product_id, report);
+                    plan, snapshot, draft, binding->product_id, report);
             if (ok && binding->load_source_ref_kind == DVZ_SCENE_RESOURCE_REF_PRODUCT)
                 ok = _composition_graph_realize_product(
-                    plan, snapshot, &draft, binding->load_source_product_id, report);
+                    plan, snapshot, draft, binding->load_source_product_id, report);
         }
     }
     for (uint32_t i = 0; ok && i < snapshot->pass_count; i++)
-        ok = _composition_graph_lower_pass(plan, snapshot, &draft, &snapshot->passes[i], report);
+        ok = _composition_graph_lower_pass(plan, snapshot, draft, &snapshot->passes[i], report);
     if (ok)
-        ok = _composition_graph_materialize_products(plan, snapshot, &draft, report);
+        ok = _composition_graph_materialize_products(plan, snapshot, draft, report);
     if (ok)
         ok = dvz_frame_plan_graph_validate(plan, report);
-    for (uint32_t i = 0; ok && i < draft.realization_count; i++)
+    for (uint32_t i = 0; ok && i < draft->realization_count; i++)
     {
-        const CompositionGraphRealization* realization = &draft.realizations[i];
+        const CompositionGraphRealization* realization = &draft->realizations[i];
         DvzSceneGraphRealization persisted = {
             .ref_kind = realization->ref_kind,
             .product_id = realization->product_id,
@@ -1563,11 +1596,32 @@ bool _scene_panel_composition_lower_graph(
     }
     if (!ok)
     {
-        plan->graph_resource_count = draft.resource_count;
-        plan->graph_pass_count = draft.pass_count;
-        plan->product_count = draft.product_count;
-        plan->product_use_count = draft.product_use_count;
-        plan->realization_count = draft.persisted_realization_count;
+        plan->graph_resource_count = draft->resource_count;
+        plan->graph_pass_count = draft->pass_count;
+        plan->product_count = draft->product_count;
+        plan->product_use_count = draft->product_use_count;
+        plan->realization_count = draft->persisted_realization_count;
     }
+    return ok;
+}
+
+
+
+/**
+ * Lower composition using an owned realization workspace.
+ *
+ * @param plan destination plan
+ * @param snapshot immutable composition
+ * @param report optional diagnostic report
+ * @return whether graph lowering succeeded
+ */
+bool _scene_panel_composition_lower_graph(
+    DvzFramePlan* plan, const DvzPanelCompositionSnapshot* snapshot, DvzDiagnosticReport* report)
+{
+    CompositionGraphDraft* draft = (CompositionGraphDraft*)dvz_calloc(1, sizeof(*draft));
+    if (draft == NULL)
+        return false;
+    bool ok = _composition_lower_graph_draft(plan, snapshot, report, draft);
+    dvz_free(draft);
     return ok;
 }

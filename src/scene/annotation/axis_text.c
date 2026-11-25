@@ -354,7 +354,12 @@ void _axis_update_text(
     }
 
     uint32_t count = 0;
-    char labels[DVZ_SCENE_MAX_AXIS_TEXTS][DVZ_SCENE_LABEL_SIZE] = {{0}};
+    char(*labels)[DVZ_SCENE_LABEL_SIZE] = dvz_calloc(DVZ_SCENE_MAX_AXIS_TEXTS, sizeof(*labels));
+    if (labels == NULL)
+    {
+        _axis_hide_text(axis);
+        return;
+    }
     const char* strings[DVZ_SCENE_MAX_AXIS_TEXTS] = {0};
     float positions[DVZ_SCENE_MAX_AXIS_TEXTS][3] = {{0}};
     float anchors[DVZ_SCENE_MAX_AXIS_TEXTS][2] = {{0}};
@@ -394,7 +399,7 @@ void _axis_update_text(
             if (tick_index >= axis->explicit_tick_count)
             {
                 _axis_hide_text(axis);
-                return;
+                goto cleanup;
             }
             dvz_strlcpy(
                 label_plan.tick_labels[i], axis->explicit_tick_labels[tick_index],
@@ -406,7 +411,7 @@ void _axis_update_text(
                           &label_plan))
     {
         _axis_hide_text(axis);
-        return;
+        goto cleanup;
     }
 
     for (uint32_t i = 0; i < visible_tick_count; i++)
@@ -489,17 +494,17 @@ void _axis_update_text(
     if (count == 0)
     {
         _axis_hide_text(axis);
-        return;
+        goto cleanup;
     }
     if (!_axis_ensure_text_visual(axis))
-        return;
+        goto cleanup;
     if (!_axis_apply_text_renderer(axis))
-        return;
+        goto cleanup;
     if (_axis_text_cache_matches(axis, count, labels, positions, anchors, sizes, colors, angles))
     {
         if (!axis->text_visual->visible)
             dvz_visual_set_visible(axis->text_visual, true);
-        return;
+        goto cleanup;
     }
 
     DvzVisualDataUpdate updates[5] = {
@@ -520,4 +525,7 @@ void _axis_update_text(
     {
         _axis_hide_text(axis);
     }
+
+cleanup:
+    dvz_free(labels);
 }

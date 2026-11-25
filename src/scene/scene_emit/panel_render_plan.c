@@ -16,6 +16,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "_alloc.h"
 #include "_assertions.h"
 #include "_compat.h"
 #include "_log.h"
@@ -556,11 +557,13 @@ bool _scene_panel_render_plan_build(
     ANN(figure_id);
     ANN(out);
 
-    DvzPanelRenderPlan draft = {0};
-    if (!_scene_panel_render_plan_build_mutable(figure, panel_index, figure_id, &draft))
+    DvzPanelRenderPlan* draft = (DvzPanelRenderPlan*)dvz_calloc(1, sizeof(*draft));
+    if (draft == NULL)
         return false;
-    if (!_scene_panel_composition_resolve(&draft, caps, &draft.composition, report))
-        return false;
-    *out = draft;
-    return true;
+    bool ok = _scene_panel_render_plan_build_mutable(figure, panel_index, figure_id, draft) &&
+              _scene_panel_composition_resolve(draft, caps, &draft->composition, report);
+    if (ok)
+        *out = *draft;
+    dvz_free(draft);
+    return ok;
 }

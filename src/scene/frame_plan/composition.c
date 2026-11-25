@@ -414,8 +414,11 @@ bool _frame_plan_composition_validate(
 
     uint32_t present_phase_mask = 0;
     uint64_t product_mask = 0;
-    bool dependencies[DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES][DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES] =
-        {{false}};
+    enum
+    {
+        dependency_words = (DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES + 63) / 64
+    };
+    uint64_t dependencies[DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES][dependency_words] = {{0}};
     for (uint32_t i = 0; i < snapshot->technique_count; i++)
     {
         const DvzSceneResolvedTechnique* technique = &snapshot->techniques[i];
@@ -507,7 +510,7 @@ bool _frame_plan_composition_validate(
                 return _composition_report(
                     report, "panel %s product %u producer has an incompatible kind", panel_id,
                     id.value);
-            dependencies[producer][i] = true;
+            dependencies[producer][i / 64] |= UINT64_C(1) << (i % 64);
         }
         if (input_mask != technique->input_product_mask)
             return _composition_report(
@@ -536,19 +539,21 @@ bool _frame_plan_composition_validate(
     {
         for (uint32_t i = 0; i < snapshot->technique_count; i++)
         {
-            for (uint32_t j = 0; j < snapshot->technique_count; j++)
-                dependencies[i][j] =
-                    dependencies[i][j] || (dependencies[i][k] && dependencies[k][j]);
+            if ((dependencies[i][k / 64] & (UINT64_C(1) << (k % 64))) != 0)
+            {
+                for (uint32_t word = 0; word < dependency_words; word++)
+                    dependencies[i][word] |= dependencies[k][word];
+            }
         }
     }
     for (uint32_t i = 0; i < snapshot->technique_count; i++)
     {
-        if (dependencies[i][i])
+        if ((dependencies[i][i / 64] & (UINT64_C(1) << (i % 64))) != 0)
             return _composition_report(
                 report, "panel %s composition has a product dependency cycle", panel_id);
         for (uint32_t j = 0; j <= i; j++)
         {
-            if (i != j && dependencies[i][j])
+            if (i != j && (dependencies[i][j / 64] & (UINT64_C(1) << (j % 64))) != 0)
                 return _composition_report(
                     report, "panel %s product dependencies are not topologically ordered",
                     panel_id);

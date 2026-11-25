@@ -1410,8 +1410,10 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
     AT(path_rc >= 0 && path_rc < (int)sizeof(stream_path));
     FILE* stream_file = fopen(stream_path, "rb");
     ANN(stream_file);
-    char jsonl[131072] = {0};
-    size_t size = fread(jsonl, 1, sizeof(jsonl) - 1, stream_file);
+    const size_t jsonl_capacity = 131072;
+    char* jsonl = (char*)dvz_calloc(jsonl_capacity, 1);
+    ANN(jsonl);
+    size_t size = fread(jsonl, 1, jsonl_capacity - 1, stream_file);
     fclose(stream_file);
     AT(size > 0);
     AT(strstr(jsonl, ".cmd") == NULL);
@@ -1420,6 +1422,7 @@ static int _scene_visual_records_portable_dvzr(SceneDvzrVisualKind kind, const c
     AT(strstr(jsonl, "\"op\":\"CreateBindGroup\"") != NULL);
     AT(strstr(jsonl, "\"op\":\"CreateRenderPipeline\"") != NULL);
     AT(strstr(jsonl, "\"op\":\"QueueSubmit\"") != NULL);
+    dvz_free(jsonl);
 
     DvzDrp2Recording* recording = dvz_drp2_recording_open(path);
     ANN(recording);

@@ -995,7 +995,13 @@ static bool _text_block_measure_freetype(DvzTextBlock* block, DvzColor text_colo
     }
 
     block->missing_style_flags = 0;
-    DvzTextBlockLayoutItem items[DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE] = {0};
+    DvzTextBlockLayoutItem* items =
+        (DvzTextBlockLayoutItem*)dvz_calloc(DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE, sizeof(*items));
+    if (items == NULL)
+    {
+        _text_block_ft_close(&ctx);
+        return false;
+    }
     uint32_t item_count = 0;
     uint32_t byte_index = 0;
     uint32_t start = 0;
@@ -1008,6 +1014,7 @@ static bool _text_block_measure_freetype(DvzTextBlock* block, DvzColor text_colo
         if (item_count >= DVZ_SCENE_TEXT_BLOCK_TEXT_SIZE)
         {
             _text_block_diag(block, "text block layout capacity exceeded", start);
+            dvz_free(items);
             _text_block_ft_close(&ctx);
             return false;
         }
@@ -1135,6 +1142,7 @@ static bool _text_block_measure_freetype(DvzTextBlock* block, DvzColor text_colo
             float baseline_y = pad_y + ascender + (float)line * line_height;
             if (!_text_block_append_layout_item(block, item, pad_x + cursor_x, baseline_y))
             {
+                dvz_free(items);
                 _text_block_ft_close(&ctx);
                 return false;
             }
@@ -1170,6 +1178,7 @@ static bool _text_block_measure_freetype(DvzTextBlock* block, DvzColor text_colo
     block->metrics.descender = ctx.descender;
     block->metrics.line_height = line_height;
 
+    dvz_free(items);
     _text_block_ft_close(&ctx);
     return true;
 }

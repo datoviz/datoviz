@@ -14,6 +14,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <pthread.h>
+#endif
+
 #include "frame_plan/internal.h"
 #include "render_contract/internal.h"
 #include "runtime/_frame_plan_runtime_internal.h"
@@ -134,6 +140,226 @@ _test_r4_surface_panel(DvzScene* scene, DvzFigure* figure, const DvzPanelDesc* d
 
 
 /**
+ * Exercise empty and populated panel planning and stream emission on a worker stack.
+ *
+ * @param data pointer to the worker result
+ * @return zero for the native thread API
+ */
+#if defined(_WIN32)
+static DWORD WINAPI _scene_stack_worker(void* data)
+#else
+static void* _scene_stack_worker(void* data)
+#endif
+{
+    bool* result = (bool*)data;
+    *result = false;
+    DvzScene* scene = dvz_scene();
+    DvzFigure* figure = scene != NULL ? dvz_figure(scene, 128, 96, 0) : NULL;
+    DvzPanel* panel = figure != NULL ? dvz_panel(figure, NULL) : NULL;
+    DvzFramePlan* empty = dvz_frame_plan("stack.empty", 0);
+    bool ok =
+        panel != NULL && empty != NULL && _scene_emit_panel_render(figure, 0, empty, "figure_0");
+    dvz_frame_plan_destroy(empty);
+    if (ok)
+        panel = _test_r4_surface_panel(scene, figure, &(DvzPanelDesc){0, 0, 1, 1}, true);
+    if (ok && panel != NULL)
+    {
+        DvzCapabilitySnapshot caps = dvz_capability_snapshot();
+        caps.max_color_attachments = 3;
+        caps.supports_render_target_sampling = true;
+        caps.render_target_format_rgba16float = true;
+        caps.render_target_format_r16float = true;
+        DvzDiagnosticReport report = {0};
+        dvz_diagnostic_report_init(&report);
+        DvzFramePlanEmitConfig cfg = dvz_frame_plan_emit_config();
+        cfg.shader_format = DVZ_SCENE_SHADER_FORMAT_GLSL;
+        cfg.target_width = 128;
+        cfg.target_height = 96;
+        DvzDrp2CommandStream* stream = _test_scene_emit_stream_ex(figure, &caps, &report, &cfg);
+        *result = stream != NULL && dvz_diagnostic_report_error_count(&report) == 0;
+        _test_scene_stream_destroy(stream);
+    }
+    dvz_scene_destroy(scene);
+#if defined(_WIN32)
+    return 0;
+#else
+    return NULL;
+#endif
+}
+
+
+
+/**
+ * Verify the production planning and emission chain fits a 256 KiB worker stack.
+ *
+ * @param suite active test context
+ * @param item active test case
+ * @return zero on success
+ */
+int test_scene_planning_bounded_stack(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    bool result = false;
+#if defined(_WIN32)
+    HANDLE worker = CreateThread(
+        NULL, 256 * 1024, _scene_stack_worker, &result, STACK_SIZE_PARAM_IS_A_RESERVATION, NULL);
+    AT(worker != NULL);
+    DWORD status = WaitForSingleObject(worker, INFINITE);
+    BOOL closed = CloseHandle(worker);
+    AT(status == WAIT_OBJECT_0);
+    AT(closed);
+#else
+    pthread_attr_t attributes;
+    int status = pthread_attr_init(&attributes);
+    AT(status == 0);
+    status = pthread_attr_setstacksize(&attributes, 256 * 1024);
+    if (status != 0)
+    {
+        pthread_attr_destroy(&attributes);
+        AT(status == 0);
+    }
+    pthread_t worker;
+    status = pthread_create(&worker, &attributes, _scene_stack_worker, &result);
+    pthread_attr_destroy(&attributes);
+    AT(status == 0);
+    status = pthread_join(worker, NULL);
+    AT(status == 0);
+#endif
+    AT(result);
+    return 0;
+}
+
+
+
+/**
+ * Reject a workspace allocation without mutating allocator state.
+ *
+ * @param count allocation count
+ * @param size element size
+ * @return NULL
+ */
+static void* _scene_reject_workspace_calloc(DvzSize count, DvzSize size)
+{
+    (void)count;
+    (void)size;
+    return NULL;
+}
+
+
+
+/**
+ * Reject nested composition allocation while allowing its owning plan draft.
+ *
+ * @param count allocation count
+ * @param size element size
+ * @return allocated memory, or NULL for composition drafts
+ */
+static void* _scene_reject_composition_calloc(DvzSize count, DvzSize size)
+{
+    if (count == 1 && size == sizeof(DvzPanelCompositionSnapshot))
+        return NULL;
+    return dvz_system_allocator()->calloc_fn(count, size);
+}
+
+
+
+/**
+ * Reject the product identity map after graph resources and passes have been appended.
+ *
+ * @param count allocation count
+ * @param size element size
+ * @return allocated memory, or NULL for product maps
+ */
+static void* _scene_reject_product_map_calloc(DvzSize count, DvzSize size)
+{
+    if (count == DVZ_PANEL_COMPOSITION_MAX_TECHNIQUES *
+                     DVZ_PANEL_COMPOSITION_MAX_PRODUCTS_PER_TECHNIQUE &&
+        size == 2 * sizeof(DvzRenderProductId))
+        return NULL;
+    return dvz_system_allocator()->calloc_fn(count, size);
+}
+
+
+
+/**
+ * Verify failed workspace allocation leaves output and emitter state unchanged.
+ *
+ * @param suite active test context
+ * @param item active test case
+ * @return zero on success
+ */
+int test_scene_planning_workspace_failure(TstContext* suite, const TstCase* item)
+{
+    (void)suite;
+    (void)item;
+    DvzScene* scene = dvz_scene();
+    ANN(scene);
+    DvzFigure* figure = dvz_figure(scene, 128, 96, 0);
+    ANN(figure);
+    DvzPanel* panel = dvz_panel(figure, NULL);
+    ANN(panel);
+    DvzPanelRenderPlan* output = (DvzPanelRenderPlan*)dvz_calloc(1, sizeof(*output));
+    DvzPanelRenderPlan* saved = (DvzPanelRenderPlan*)dvz_calloc(1, sizeof(*saved));
+    DvzPanelCompositionSnapshot* composition =
+        (DvzPanelCompositionSnapshot*)dvz_calloc(1, sizeof(*composition));
+    ANN(output);
+    ANN(saved);
+    ANN(composition);
+    output->width = 197;
+    *saved = *output;
+    composition->width = 173;
+    DvzFramePlan* plan = dvz_frame_plan("stack.failure", 0);
+    DvzFramePlanEmitter* emitter = dvz_frame_plan_emitter();
+    ANN(plan);
+    ANN(emitter);
+    const DvzAllocator* previous = dvz_get_allocator();
+    DvzAllocator rejecting = *dvz_system_allocator();
+    rejecting.calloc_fn = _scene_reject_workspace_calloc;
+    dvz_set_allocator(&rejecting);
+    bool planned = _scene_panel_render_plan_build(figure, 0, "figure_0", NULL, NULL, output);
+    bool composed = _scene_panel_composition_resolve(output, NULL, composition, NULL);
+    bool emitted = _scene_emit_panel_render(figure, 0, plan, "figure_0");
+    DvzDrp2CommandStream* stream =
+        dvz_frame_plan_emitter_emit_drp2(emitter, plan, NULL, NULL, NULL);
+    dvz_set_allocator(previous);
+    AT(!planned && !composed && !emitted && stream == NULL);
+    AT(memcmp(output, saved, sizeof(*output)) == 0);
+    AT(composition->width == 173);
+    AT(plan->count == 0 && plan->composition_count == 0);
+    AT(!emitter->handshake_sent);
+
+    rejecting.calloc_fn = _scene_reject_composition_calloc;
+    dvz_set_allocator(&rejecting);
+    planned = _scene_panel_render_plan_build(figure, 0, "figure_0", NULL, NULL, output);
+    dvz_set_allocator(previous);
+    AT(!planned);
+    AT(memcmp(output, saved, sizeof(*output)) == 0);
+    AT(_scene_panel_render_plan_build(figure, 0, "figure_0", NULL, NULL, output));
+    panel = _test_r4_surface_panel(scene, figure, &(DvzPanelDesc){0, 0, 1, 1}, false);
+    ANN(panel);
+    AT(_scene_panel_render_plan_build(figure, 1, "figure_0", NULL, NULL, output));
+    rejecting.calloc_fn = _scene_reject_product_map_calloc;
+    dvz_set_allocator(&rejecting);
+    bool lowered = _scene_panel_composition_lower_graph(plan, &output->composition, NULL);
+    dvz_set_allocator(previous);
+    AT(!lowered);
+    AT(plan->graph_resource_count == 0 && plan->graph_pass_count == 0);
+    AT(plan->product_count == 0 && plan->product_use_count == 0 && plan->realization_count == 0);
+    AT(_scene_panel_composition_lower_graph(plan, &output->composition, NULL));
+    AT(plan->graph_resource_count > 0 && plan->graph_pass_count > 0);
+    dvz_free(composition);
+    dvz_free(saved);
+    dvz_free(output);
+    dvz_frame_plan_emitter_destroy(emitter);
+    dvz_frame_plan_destroy(plan);
+    dvz_scene_destroy(scene);
+    return 0;
+}
+
+
+
+/**
  * Verify asymmetric fractional HiDPI panel geometry uses one outward-rounded physical rectangle.
  *
  * @param suite the active test suite
@@ -144,6 +370,16 @@ int test_scene_panel_composition_hidpi_geometry(TstContext* suite, const TstCase
 {
     ANN(suite);
     (void)item;
+
+    typedef struct CompositionFixture
+    {
+        DvzPanelRenderPlan render_plan;
+        DvzPanelCompositionSnapshot composition;
+        DvzPanelRenderPlan dormant;
+        DvzPanelCompositionSnapshot dormant_composition;
+    } CompositionFixture;
+    CompositionFixture* workspace = (CompositionFixture*)dvz_calloc(1, sizeof(*workspace));
+    ANN(workspace);
 
     DvzScene* scene = dvz_scene();
     ANN(scene);
@@ -163,45 +399,56 @@ int test_scene_panel_composition_hidpi_geometry(TstContext* suite, const TstCase
     caps.render_target_format_r16float = true;
     DvzDiagnosticReport report = {0};
     dvz_diagnostic_report_init(&report);
-    DvzPanelRenderPlan render_plan = {0};
-    AT(_scene_panel_render_plan_build(figure, 0, "figure_0", &caps, &report, &render_plan));
+    dvz_memset(
+        &workspace->render_plan, sizeof(workspace->render_plan), 0,
+        sizeof(workspace->render_plan));
+    AT(_scene_panel_render_plan_build(
+        figure, 0, "figure_0", &caps, &report, &workspace->render_plan));
     AT(dvz_diagnostic_report_count(&report) == 0);
-    AT(render_plan.origin_x == 13);
-    AT(render_plan.origin_y == 13);
-    AT(render_plan.width == 38);
-    AT(render_plan.height == 34);
-    AC(render_plan.render_scale, 0.80f, 1e-6f);
-    AC(render_plan.local_to_target[0], 1.0f, 1e-6f);
-    AC(render_plan.local_to_target[1], 1.0f, 1e-6f);
-    AC(render_plan.local_to_target[2], 13.0f, 1e-6f);
-    AC(render_plan.local_to_target[3], 13.0f, 1e-6f);
+    AT(workspace->render_plan.origin_x == 13);
+    AT(workspace->render_plan.origin_y == 13);
+    AT(workspace->render_plan.width == 38);
+    AT(workspace->render_plan.height == 34);
+    AC(workspace->render_plan.render_scale, 0.80f, 1e-6f);
+    AC(workspace->render_plan.local_to_target[0], 1.0f, 1e-6f);
+    AC(workspace->render_plan.local_to_target[1], 1.0f, 1e-6f);
+    AC(workspace->render_plan.local_to_target[2], 13.0f, 1e-6f);
+    AC(workspace->render_plan.local_to_target[3], 13.0f, 1e-6f);
 
-    DvzPanelCompositionSnapshot composition = {0};
-    AT(_scene_panel_composition_resolve(&render_plan, &caps, &composition, &report));
-    AT(composition.origin_x == render_plan.origin_x);
-    AT(composition.origin_y == render_plan.origin_y);
-    AT(composition.width == render_plan.width);
-    AT(composition.height == render_plan.height);
+    dvz_memset(
+        &workspace->composition, sizeof(workspace->composition), 0,
+        sizeof(workspace->composition));
+    AT(_scene_panel_composition_resolve(
+        &workspace->render_plan, &caps, &workspace->composition, &report));
+    AT(workspace->composition.origin_x == workspace->render_plan.origin_x);
+    AT(workspace->composition.origin_y == workspace->render_plan.origin_y);
+    AT(workspace->composition.width == workspace->render_plan.width);
+    AT(workspace->composition.height == workspace->render_plan.height);
     AT(memcmp(
-           composition.local_to_target, render_plan.local_to_target,
-           sizeof(composition.local_to_target)) == 0);
+           workspace->composition.local_to_target, workspace->render_plan.local_to_target,
+           sizeof(workspace->composition.local_to_target)) == 0);
 
-    DvzPanelRenderPlan dormant = render_plan;
-    dormant.width = 0;
-    dormant.height = 0;
-    DvzPanelCompositionSnapshot dormant_composition = {0};
-    AT(_scene_panel_composition_resolve(&dormant, &caps, &dormant_composition, &report));
-    AT(dormant_composition.pass_count == 0);
-    AT(dormant_composition.scratch_resource_count == 0);
+    workspace->dormant = workspace->render_plan;
+    workspace->dormant.width = 0;
+    workspace->dormant.height = 0;
+    dvz_memset(
+        &workspace->dormant_composition, sizeof(workspace->dormant_composition), 0,
+        sizeof(workspace->dormant_composition));
+    AT(_scene_panel_composition_resolve(
+        &workspace->dormant, &caps, &workspace->dormant_composition, &report));
+    AT(workspace->dormant_composition.pass_count == 0);
+    AT(workspace->dormant_composition.scratch_resource_count == 0);
     DvzFramePlan* dormant_graph = dvz_frame_plan("r4.dormant", 0);
     ANN(dormant_graph);
-    AT(_scene_panel_composition_lower_graph(dormant_graph, &dormant_composition, &report));
+    AT(_scene_panel_composition_lower_graph(
+        dormant_graph, &workspace->dormant_composition, &report));
     AT(dormant_graph->graph_pass_count == 0);
     for (uint32_t i = 0; i < dormant_graph->graph_resource_count; i++)
         AT(dormant_graph->graph_resources[i].kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET);
     dvz_frame_plan_destroy(dormant_graph);
 
     dvz_scene_destroy(scene);
+    dvz_free(workspace);
     return 0;
 }
 
@@ -594,13 +841,46 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     ANN(suite);
     (void)item;
 
-    DvzPanelRenderPlan plan = {0};
-    dvz_strlcpy(plan.panel_id, "figure_0_p0", sizeof(plan.panel_id));
-    plan.width = 64;
-    plan.height = 64;
-    plan.drawable_count = 2;
-    plan.visual_count = 2;
-    plan.visuals[0] = (DvzPanelRenderVisualPlan){
+    typedef struct CompositionFixture
+    {
+        DvzPanelRenderPlan plan;
+        DvzPanelCompositionSnapshot first;
+        DvzPanelCompositionSnapshot second;
+        DvzPanelRenderPlan multisample_plan;
+        DvzPanelCompositionSnapshot multisample;
+        DvzPanelCompositionSnapshot invalid_graph_work;
+        DvzPanelCompositionSnapshot work_drift;
+        DvzPanelRenderPlan chain_plan;
+        DvzPanelCompositionSnapshot chain;
+        DvzPanelRenderPlan occluded_chain;
+        DvzPanelCompositionSnapshot occluded;
+        DvzPanelRenderPlan wboit_plan;
+        DvzPanelCompositionSnapshot rejected;
+        DvzPanelRenderPlan peel_plan;
+        DvzPanelRenderPlan occluded_peel;
+        DvzPanelCompositionSnapshot occluded_peel_composed;
+        DvzPanelCompositionSnapshot rejected_blend;
+        DvzPanelCompositionSnapshot invalid_snapshot;
+        DvzPanelRenderPlan effects;
+        DvzPanelCompositionSnapshot composed;
+        DvzPanelCompositionSnapshot adjacent_composed;
+        DvzPanelCompositionSnapshot surface_fallback;
+        DvzPanelCompositionSnapshot ambient_fallback;
+        DvzPanelCompositionSnapshot legacy;
+        DvzPanelCompositionSnapshot unchanged;
+        DvzPanelCompositionSnapshot sentinel;
+        DvzPanelRenderPlan invalid;
+    } CompositionFixture;
+    CompositionFixture* workspace = (CompositionFixture*)dvz_calloc(1, sizeof(*workspace));
+    ANN(workspace);
+
+    dvz_memset(&workspace->plan, sizeof(workspace->plan), 0, sizeof(workspace->plan));
+    dvz_strlcpy(workspace->plan.panel_id, "figure_0_p0", sizeof(workspace->plan.panel_id));
+    workspace->plan.width = 64;
+    workspace->plan.height = 64;
+    workspace->plan.drawable_count = 2;
+    workspace->plan.visual_count = 2;
+    workspace->plan.visuals[0] = (DvzPanelRenderVisualPlan){
         .visual_index = 3,
         .authored_order = 0,
         .layer = DVZ_SCENE_VISUAL_LAYER_SURFACE_OPAQUE,
@@ -610,7 +890,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
                 .phase_participation = DVZ_SCENE_VISUAL_PHASE_OPAQUE_SHADING,
             },
     };
-    plan.visuals[1] = (DvzPanelRenderVisualPlan){
+    workspace->plan.visuals[1] = (DvzPanelRenderVisualPlan){
         .visual_index = 7,
         .authored_order = 1,
         .layer = DVZ_SCENE_VISUAL_LAYER_TRANSPARENT,
@@ -620,18 +900,18 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
                 .phase_participation = DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING,
             },
     };
-    plan.opaque_visuals[0] = plan.visuals[0];
-    plan.opaque_visual_count = 1;
-    plan.has_transparent = true;
-    plan.blended_visuals[0] = plan.visuals[1];
-    plan.blended_visuals[0].blend_group = 0;
-    plan.blended_visual_count = 1;
-    plan.blended_group_count = 1;
-    plan.transparent_passes[0] = (DvzPanelRenderTransparentPassPlan){
+    workspace->plan.opaque_visuals[0] = workspace->plan.visuals[0];
+    workspace->plan.opaque_visual_count = 1;
+    workspace->plan.has_transparent = true;
+    workspace->plan.blended_visuals[0] = workspace->plan.visuals[1];
+    workspace->plan.blended_visuals[0].blend_group = 0;
+    workspace->plan.blended_visual_count = 1;
+    workspace->plan.blended_group_count = 1;
+    workspace->plan.transparent_passes[0] = (DvzPanelRenderTransparentPassPlan){
         .kind = DVZ_PANEL_RENDER_TRANSPARENT_BLENDED,
         .index = 0,
     };
-    plan.transparent_pass_count = 1;
+    workspace->plan.transparent_pass_count = 1;
 
     DvzCapabilitySnapshot caps = {DVZ_STRUCT_INIT_FIELDS(DvzCapabilitySnapshot)};
     caps.max_color_sample_count = 4;
@@ -640,57 +920,73 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     caps.render_target_format_r16float = true;
     caps.supports_render_target_sampling = true;
     caps.supports_color_blending = true;
-    DvzPanelCompositionSnapshot first = {0};
-    DvzPanelCompositionSnapshot second = {0};
-    AT(_scene_panel_composition_resolve(&plan, &caps, &first, NULL));
-    AT(_scene_panel_composition_resolve(&plan, &caps, &second, NULL));
-    AT(first.valid);
-    AT(memcmp(&first, &second, sizeof(first)) == 0);
-    AT(first.pass_count == 2);
-    AT(first.passes[0].role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
-    AT(first.passes[0].phase == DVZ_SCENE_PHASE_OPAQUE_SHADING);
-    AT(first.passes[0].authored_order_begin == 0);
-    AT(first.passes[1].role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
-    AT(first.passes[1].phase == DVZ_SCENE_PHASE_TRANSPARENT_SHADING);
-    AT(first.passes[1].authored_order_begin == 1);
-    AT(first.passes[0].id.value != first.passes[1].id.value);
-    AT((first.required_product_mask & (UINT64_C(1) << DVZ_RENDER_PRODUCT_SCENE_COLOR)) != 0);
-    AT((first.required_product_mask & (UINT64_C(1) << DVZ_RENDER_PRODUCT_PRESENTATION_COLOR)) !=
-       0);
-    AT(first.work_declaration_fingerprint != 0);
-    AT(first.passes[0].provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
-    AT(first.passes[0].coordinate_space == DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL);
-    AT(first.passes[0].viewport_panel_local);
-    AT(first.passes[0].scissor_panel_local);
-    AT(first.passes[0].binding_count == 1);
-    AT(first.passes[0].bindings[0].clear_value_kind == DVZ_SCENE_CLEAR_VALUE_FRAME);
-    AT(first.passes[1].provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
-    AT(first.passes[1].binding_count == 1);
-    AT(first.passes[1].bindings[0].load == DVZ_SCENE_ATTACHMENT_LOAD_LOAD);
-    AT(first.passes[1].bindings[0].access == DVZ_SCENE_WORK_ACCESS_READ_WRITE);
-    AT(first.passes[1].bindings[0].load_source_product_id.value ==
-       first.techniques[1].input_ids[0].value);
+    dvz_memset(&workspace->first, sizeof(workspace->first), 0, sizeof(workspace->first));
+    dvz_memset(&workspace->second, sizeof(workspace->second), 0, sizeof(workspace->second));
+    AT(_scene_panel_composition_resolve(&workspace->plan, &caps, &workspace->first, NULL));
+    AT(_scene_panel_composition_resolve(&workspace->plan, &caps, &workspace->second, NULL));
+    AT(workspace->first.valid);
+    /* Compare serialized fields: C structure padding is unspecified, including on MSVC. */
+    DvzFramePlan* repeat_first = dvz_frame_plan("composition.repeat", 0);
+    DvzFramePlan* repeat_second = dvz_frame_plan("composition.repeat", 0);
+    ANN(repeat_first);
+    ANN(repeat_second);
+    AT(_frame_plan_composition_append(repeat_first, &workspace->first, NULL));
+    AT(_frame_plan_composition_append(repeat_second, &workspace->second, NULL));
+    char* first_json = dvz_frame_plan_json(repeat_first);
+    char* second_json = dvz_frame_plan_json(repeat_second);
+    ANN(first_json);
+    ANN(second_json);
+    AT(strcmp(first_json, second_json) == 0);
+    dvz_frame_plan_json_destroy(first_json);
+    dvz_frame_plan_json_destroy(second_json);
+    dvz_frame_plan_destroy(repeat_first);
+    dvz_frame_plan_destroy(repeat_second);
+    AT(workspace->first.pass_count == 2);
+    AT(workspace->first.passes[0].role == DVZ_FRAME_PLAN_RENDER_PASS_OPAQUE);
+    AT(workspace->first.passes[0].phase == DVZ_SCENE_PHASE_OPAQUE_SHADING);
+    AT(workspace->first.passes[0].authored_order_begin == 0);
+    AT(workspace->first.passes[1].role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND);
+    AT(workspace->first.passes[1].phase == DVZ_SCENE_PHASE_TRANSPARENT_SHADING);
+    AT(workspace->first.passes[1].authored_order_begin == 1);
+    AT(workspace->first.passes[0].id.value != workspace->first.passes[1].id.value);
+    AT((workspace->first.required_product_mask &
+        (UINT64_C(1) << DVZ_RENDER_PRODUCT_SCENE_COLOR)) != 0);
+    AT((workspace->first.required_product_mask &
+        (UINT64_C(1) << DVZ_RENDER_PRODUCT_PRESENTATION_COLOR)) != 0);
+    AT(workspace->first.work_declaration_fingerprint != 0);
+    AT(workspace->first.passes[0].provider == DVZ_SCENE_WORK_PROVIDER_OPAQUE);
+    AT(workspace->first.passes[0].coordinate_space == DVZ_RENDER_PRODUCT_COORDINATES_PANEL_LOCAL);
+    AT(workspace->first.passes[0].viewport_panel_local);
+    AT(workspace->first.passes[0].scissor_panel_local);
+    AT(workspace->first.passes[0].binding_count == 1);
+    AT(workspace->first.passes[0].bindings[0].clear_value_kind == DVZ_SCENE_CLEAR_VALUE_FRAME);
+    AT(workspace->first.passes[1].provider == DVZ_SCENE_WORK_PROVIDER_TRANSPARENT_BLEND);
+    AT(workspace->first.passes[1].binding_count == 1);
+    AT(workspace->first.passes[1].bindings[0].load == DVZ_SCENE_ATTACHMENT_LOAD_LOAD);
+    AT(workspace->first.passes[1].bindings[0].access == DVZ_SCENE_WORK_ACCESS_READ_WRITE);
+    AT(workspace->first.passes[1].bindings[0].load_source_product_id.value ==
+       workspace->first.techniques[1].input_ids[0].value);
 
     DvzFramePlan* generic_graph = dvz_frame_plan("composition.generic-graph", 0);
     ANN(generic_graph);
-    AT(_scene_panel_composition_lower_graph(generic_graph, &first, NULL));
+    AT(_scene_panel_composition_lower_graph(generic_graph, &workspace->first, NULL));
     AT(generic_graph->graph_resource_count == 1);
-    AT(generic_graph->graph_pass_count == first.pass_count);
+    AT(generic_graph->graph_pass_count == workspace->first.pass_count);
     AT(strcmp(generic_graph->graph_resources[0].id, "rt") == 0);
     AT(generic_graph->graph_resources[0].kind == DVZ_FRAME_GRAPH_RESOURCE_EXTERNAL_TARGET);
     AT(generic_graph->realization_count > 0);
-    for (uint32_t i = 0; i < first.pass_count; i++)
+    for (uint32_t i = 0; i < workspace->first.pass_count; i++)
     {
         const DvzFrameGraphPass* graph_pass = &generic_graph->graph_passes[i];
         AT(graph_pass->has_composition_pass);
-        AT(graph_pass->composition_pass_id.value == first.passes[i].id.value);
+        AT(graph_pass->composition_pass_id.value == workspace->first.passes[i].id.value);
         AT(graph_pass->color_attachment_count == 1);
         AT(strcmp(graph_pass->color_attachments[0].resource_id, "rt") == 0);
-        for (uint32_t j = 0; j < first.passes[i].binding_count; j++)
+        for (uint32_t j = 0; j < workspace->first.passes[i].binding_count; j++)
         {
-            const DvzSceneWorkBinding* binding = &first.passes[i].bindings[j];
+            const DvzSceneWorkBinding* binding = &workspace->first.passes[i].bindings[j];
             ANN(_frame_plan_realization_get(
-                generic_graph, first.panel_id, binding->ref_kind, binding->product_id,
+                generic_graph, workspace->first.panel_id, binding->ref_kind, binding->product_id,
                 binding->scratch_id));
         }
     }
@@ -705,19 +1001,22 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         .sample_count = 4,
         .alpha_to_coverage = true,
     };
-    DvzPanelRenderPlan multisample_plan = plan;
-    multisample_plan.msaa_state = &msaa;
-    DvzPanelCompositionSnapshot multisample = {0};
-    AT(_scene_panel_composition_resolve(&multisample_plan, &caps, &multisample, NULL));
+    workspace->multisample_plan = workspace->plan;
+    workspace->multisample_plan.msaa_state = &msaa;
+    dvz_memset(
+        &workspace->multisample, sizeof(workspace->multisample), 0,
+        sizeof(workspace->multisample));
+    AT(_scene_panel_composition_resolve(
+        &workspace->multisample_plan, &caps, &workspace->multisample, NULL));
     generic_graph = dvz_frame_plan("composition.generic-graph-msaa", 0);
     ANN(generic_graph);
-    AT(_scene_panel_composition_lower_graph(generic_graph, &multisample, NULL));
+    AT(_scene_panel_composition_lower_graph(generic_graph, &workspace->multisample, NULL));
     AT(generic_graph->graph_resource_count == 3);
     AT(generic_graph->graph_resources[2].sample_count == 4);
     AT(generic_graph->graph_passes[0].alpha_to_coverage);
-    const DvzSceneWorkBinding* multisample_color = &multisample.passes[0].bindings[0];
+    const DvzSceneWorkBinding* multisample_color = &workspace->multisample.passes[0].bindings[0];
     const DvzSceneGraphRealization* multisample_color_realization = _frame_plan_realization_get(
-        generic_graph, multisample.panel_id, DVZ_SCENE_RESOURCE_REF_PRODUCT,
+        generic_graph, workspace->multisample.panel_id, DVZ_SCENE_RESOURCE_REF_PRODUCT,
         multisample_color->product_id, (DvzSceneScratchResourceId){0});
     ANN(multisample_color_realization);
     AT(multisample_color_realization->graph_resource_index < generic_graph->graph_resource_count);
@@ -725,7 +1024,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
            generic_graph->graph_passes[0].color_attachments[0].resolve_resource_id,
            generic_graph->graph_resources[multisample_color_realization->graph_resource_index]
                .id) == 0);
-    AT(multisample.passes[2].role == DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION);
+    AT(workspace->multisample.passes[2].role == DVZ_FRAME_PLAN_RENDER_PASS_PRESENTATION);
     AT(strcmp(generic_graph->graph_passes[2].color_attachments[0].resource_id, "rt") == 0);
     dvz_frame_plan_destroy(generic_graph);
 
@@ -739,168 +1038,181 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         DVZ_FRAME_GRAPH_RESOURCE_USAGE_COLOR_ATTACHMENT | DVZ_FRAME_GRAPH_RESOURCE_USAGE_COPY_SRC;
     incompatible_rt.lifetime = DVZ_FRAME_GRAPH_RESOURCE_LIFETIME_PER_FRAME;
     AT(dvz_frame_plan_graph_resource(generic_graph, &incompatible_rt));
-    AT(!_scene_panel_composition_lower_graph(generic_graph, &first, NULL));
+    AT(!_scene_panel_composition_lower_graph(generic_graph, &workspace->first, NULL));
     AT(generic_graph->graph_resource_count == 1);
     AT(generic_graph->graph_pass_count == 0);
     dvz_frame_plan_destroy(generic_graph);
 
-    DvzPanelCompositionSnapshot invalid_graph_work = first;
-    invalid_graph_work.passes[0].bindings[0].slot = DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS;
-    invalid_graph_work.work_declaration_fingerprint =
-        _frame_plan_composition_work_fingerprint(&invalid_graph_work);
+    workspace->invalid_graph_work = workspace->first;
+    workspace->invalid_graph_work.passes[0].bindings[0].slot =
+        DVZ_FRAME_PLAN_MAX_GRAPH_COLOR_ATTACHMENTS;
+    workspace->invalid_graph_work.work_declaration_fingerprint =
+        _frame_plan_composition_work_fingerprint(&workspace->invalid_graph_work);
     generic_graph = dvz_frame_plan("composition.generic-graph-slot", 0);
     ANN(generic_graph);
     AT_EXPECTED_ERROR_STRICT(
-        suite, !_scene_panel_composition_lower_graph(generic_graph, &invalid_graph_work, NULL));
+        suite, !_scene_panel_composition_lower_graph(
+                   generic_graph, &workspace->invalid_graph_work, NULL));
     AT(generic_graph->graph_resource_count == 0);
     AT(generic_graph->graph_pass_count == 0);
     dvz_frame_plan_destroy(generic_graph);
 
-    invalid_graph_work = multisample;
-    DvzSceneWorkBinding* invalid_multisample_load = &invalid_graph_work.passes[0].bindings[0];
+    workspace->invalid_graph_work = workspace->multisample;
+    DvzSceneWorkBinding* invalid_multisample_load =
+        &workspace->invalid_graph_work.passes[0].bindings[0];
     invalid_multisample_load->access = DVZ_SCENE_WORK_ACCESS_READ_WRITE;
     invalid_multisample_load->load = DVZ_SCENE_ATTACHMENT_LOAD_LOAD;
     invalid_multisample_load->clear = false;
     invalid_multisample_load->clear_value_kind = DVZ_SCENE_CLEAR_VALUE_NONE;
     invalid_multisample_load->load_source_ref_kind = DVZ_SCENE_RESOURCE_REF_PRODUCT;
     invalid_multisample_load->load_source_product_id = invalid_multisample_load->product_id;
-    invalid_graph_work.work_declaration_fingerprint =
-        _frame_plan_composition_work_fingerprint(&invalid_graph_work);
+    workspace->invalid_graph_work.work_declaration_fingerprint =
+        _frame_plan_composition_work_fingerprint(&workspace->invalid_graph_work);
     generic_graph = dvz_frame_plan("composition.generic-graph-msaa-load", 0);
     ANN(generic_graph);
     AT_EXPECTED_ERROR_STRICT(
-        suite, !_scene_panel_composition_lower_graph(generic_graph, &invalid_graph_work, NULL));
+        suite, !_scene_panel_composition_lower_graph(
+                   generic_graph, &workspace->invalid_graph_work, NULL));
     AT(generic_graph->graph_resource_count == 0);
     AT(generic_graph->graph_pass_count == 0);
     dvz_frame_plan_destroy(generic_graph);
 
-    DvzPanelCompositionSnapshot work_drift = first;
-    work_drift.passes[0].provider = DVZ_SCENE_WORK_PROVIDER_EDL;
+    workspace->work_drift = workspace->first;
+    workspace->work_drift.passes[0].provider = DVZ_SCENE_WORK_PROVIDER_EDL;
     DvzDiagnosticReport work_drift_report;
     dvz_diagnostic_report_init(&work_drift_report);
-    AT(!_frame_plan_composition_validate(&work_drift, &work_drift_report));
+    AT(!_frame_plan_composition_validate(&workspace->work_drift, &work_drift_report));
     AT(strstr(dvz_diagnostic_report_get(&work_drift_report, 0), "declarative work drifts") !=
        NULL);
 
-    work_drift = first;
-    work_drift.passes[0].provider = (DvzSceneWorkProviderKey)UINT32_MAX;
+    workspace->work_drift = workspace->first;
+    workspace->work_drift.passes[0].provider = (DvzSceneWorkProviderKey)UINT32_MAX;
     dvz_diagnostic_report_init(&work_drift_report);
-    AT(!_frame_plan_composition_validate(&work_drift, &work_drift_report));
+    AT(!_frame_plan_composition_validate(&workspace->work_drift, &work_drift_report));
     AT(strstr(dvz_diagnostic_report_get(&work_drift_report, 0), "unknown work provider") != NULL);
 
-    work_drift = first;
-    work_drift.passes[1].bindings[0].load_source_product_id.value++;
+    workspace->work_drift = workspace->first;
+    workspace->work_drift.passes[1].bindings[0].load_source_product_id.value++;
     dvz_diagnostic_report_init(&work_drift_report);
-    AT(!_frame_plan_composition_validate(&work_drift, &work_drift_report));
+    AT(!_frame_plan_composition_validate(&workspace->work_drift, &work_drift_report));
     AT(strstr(dvz_diagnostic_report_get(&work_drift_report, 0), "declarative work drifts") !=
        NULL);
 
-    multisample_plan = plan;
-    multisample_plan.visuals[1].layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
-    multisample_plan.visuals[1].caps.layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
-    multisample_plan.visuals[1].caps.phase_participation = DVZ_SCENE_VISUAL_PHASE_VOLUME_SHADING;
-    multisample_plan.blended_visuals[0] = multisample_plan.visuals[1];
-    multisample_plan.blended_visuals[0].blend_group = 0;
+    workspace->multisample_plan = workspace->plan;
+    workspace->multisample_plan.visuals[1].layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
+    workspace->multisample_plan.visuals[1].caps.layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
+    workspace->multisample_plan.visuals[1].caps.phase_participation =
+        DVZ_SCENE_VISUAL_PHASE_VOLUME_SHADING;
+    workspace->multisample_plan.blended_visuals[0] = workspace->multisample_plan.visuals[1];
+    workspace->multisample_plan.blended_visuals[0].blend_group = 0;
     DvzDiagnosticReport participation_report;
     dvz_diagnostic_report_init(&participation_report);
-    memset(&second, 0, sizeof(second));
-    AT(_scene_panel_composition_resolve(&multisample_plan, &caps, &second, NULL));
-    AT(second.techniques[1].id == DVZ_SCENE_TECHNIQUE_VOLUME_SHADING);
-    AT(second.techniques[1].phase == DVZ_SCENE_PHASE_VOLUME_SHADING);
+    memset(&workspace->second, 0, sizeof(workspace->second));
+    AT(_scene_panel_composition_resolve(
+        &workspace->multisample_plan, &caps, &workspace->second, NULL));
+    AT(workspace->second.techniques[1].id == DVZ_SCENE_TECHNIQUE_VOLUME_SHADING);
+    AT(workspace->second.techniques[1].phase == DVZ_SCENE_PHASE_VOLUME_SHADING);
 
-    multisample_plan.visuals[1].caps.phase_participation |=
+    workspace->multisample_plan.visuals[1].caps.phase_participation |=
         DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING;
-    multisample_plan.blended_visuals[1] = plan.visuals[1];
-    multisample_plan.blended_visuals[1].authored_order = 2;
-    multisample_plan.blended_visuals[1].blend_group = 0;
-    multisample_plan.blended_visual_count = 2;
+    workspace->multisample_plan.blended_visuals[1] = workspace->plan.visuals[1];
+    workspace->multisample_plan.blended_visuals[1].authored_order = 2;
+    workspace->multisample_plan.blended_visuals[1].blend_group = 0;
+    workspace->multisample_plan.blended_visual_count = 2;
     dvz_diagnostic_report_init(&participation_report);
     AT(!_scene_panel_composition_resolve(
-        &multisample_plan, &caps, &second, &participation_report));
+        &workspace->multisample_plan, &caps, &workspace->second, &participation_report));
     AT(strstr(
            dvz_diagnostic_report_get(&participation_report, 0),
            "incompatible visual-layer participation") != NULL);
 
-    multisample_plan = plan;
-    multisample_plan.visuals[1].layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
-    multisample_plan.visuals[1].caps.layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
-    multisample_plan.visuals[1].caps.phase_participation =
+    workspace->multisample_plan = workspace->plan;
+    workspace->multisample_plan.visuals[1].layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
+    workspace->multisample_plan.visuals[1].caps.layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
+    workspace->multisample_plan.visuals[1].caps.phase_participation =
         DVZ_SCENE_VISUAL_PHASE_TRANSPARENT_SHADING;
-    multisample_plan.blended_visuals[0] = multisample_plan.visuals[1];
-    multisample_plan.blended_visuals[0].blend_group = 0;
+    workspace->multisample_plan.blended_visuals[0] = workspace->multisample_plan.visuals[1];
+    workspace->multisample_plan.blended_visuals[0].blend_group = 0;
     dvz_diagnostic_report_init(&participation_report);
     AT(!_scene_panel_composition_resolve(
-        &multisample_plan, &caps, &second, &participation_report));
+        &workspace->multisample_plan, &caps, &workspace->second, &participation_report));
     AT(strstr(dvz_diagnostic_report_get(&participation_report, 0), "overlay visual") != NULL);
 
-    DvzPanelRenderPlan chain_plan = {0};
-    dvz_snprintf(chain_plan.panel_id, sizeof(chain_plan.panel_id), "chain_p0");
-    chain_plan.width = 64;
-    chain_plan.height = 64;
-    chain_plan.drawable_count = 5;
-    chain_plan.visual_count = 5;
-    chain_plan.visuals[0] = plan.visuals[0];
-    chain_plan.visuals[0].authored_order = 0;
+    dvz_memset(
+        &workspace->chain_plan, sizeof(workspace->chain_plan), 0, sizeof(workspace->chain_plan));
+    dvz_snprintf(
+        workspace->chain_plan.panel_id, sizeof(workspace->chain_plan.panel_id), "chain_p0");
+    workspace->chain_plan.width = 64;
+    workspace->chain_plan.height = 64;
+    workspace->chain_plan.drawable_count = 5;
+    workspace->chain_plan.visual_count = 5;
+    workspace->chain_plan.visuals[0] = workspace->plan.visuals[0];
+    workspace->chain_plan.visuals[0].authored_order = 0;
     for (uint32_t i = 1; i < 4; i++)
     {
-        chain_plan.visuals[i] = plan.visuals[1];
-        chain_plan.visuals[i].authored_order = i;
-        chain_plan.visuals[i].visual_index = 10 + i;
+        workspace->chain_plan.visuals[i] = workspace->plan.visuals[1];
+        workspace->chain_plan.visuals[i].authored_order = i;
+        workspace->chain_plan.visuals[i].visual_index = 10 + i;
     }
-    chain_plan.visuals[4] = chain_plan.visuals[3];
-    chain_plan.visuals[4].authored_order = 4;
-    chain_plan.visuals[4].visual_index = 14;
-    chain_plan.visuals[4].layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
-    chain_plan.visuals[4].caps.layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
-    chain_plan.visuals[4].caps.phase_participation = DVZ_SCENE_VISUAL_PHASE_OVERLAY;
-    chain_plan.visuals[3].layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
-    chain_plan.visuals[3].caps.layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
-    chain_plan.visuals[3].caps.phase_participation = DVZ_SCENE_VISUAL_PHASE_VOLUME_SHADING;
-    chain_plan.opaque_visuals[0] = chain_plan.visuals[0];
-    chain_plan.opaque_visual_count = 1;
-    chain_plan.has_transparent = true;
-    chain_plan.blended_visuals[0] = chain_plan.visuals[1];
-    chain_plan.blended_visuals[0].blend_group = 0;
-    chain_plan.blended_visuals[1] = chain_plan.visuals[3];
-    chain_plan.blended_visuals[1].blend_group = 1;
-    chain_plan.blended_visuals[2] = chain_plan.visuals[4];
-    chain_plan.blended_visuals[2].blend_group = 2;
-    chain_plan.blended_visual_count = 3;
-    chain_plan.blended_group_count = 3;
-    chain_plan.wboit_visuals[0] = chain_plan.visuals[2];
-    chain_plan.wboit_visual_count = 1;
-    chain_plan.wboit_group_count = 1;
-    chain_plan.transparent_passes[0] = (DvzPanelRenderTransparentPassPlan){
+    workspace->chain_plan.visuals[4] = workspace->chain_plan.visuals[3];
+    workspace->chain_plan.visuals[4].authored_order = 4;
+    workspace->chain_plan.visuals[4].visual_index = 14;
+    workspace->chain_plan.visuals[4].layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
+    workspace->chain_plan.visuals[4].caps.layer = DVZ_SCENE_VISUAL_LAYER_OVERLAY;
+    workspace->chain_plan.visuals[4].caps.phase_participation = DVZ_SCENE_VISUAL_PHASE_OVERLAY;
+    workspace->chain_plan.visuals[3].layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
+    workspace->chain_plan.visuals[3].caps.layer = DVZ_SCENE_VISUAL_LAYER_VOLUME;
+    workspace->chain_plan.visuals[3].caps.phase_participation =
+        DVZ_SCENE_VISUAL_PHASE_VOLUME_SHADING;
+    workspace->chain_plan.opaque_visuals[0] = workspace->chain_plan.visuals[0];
+    workspace->chain_plan.opaque_visual_count = 1;
+    workspace->chain_plan.has_transparent = true;
+    workspace->chain_plan.blended_visuals[0] = workspace->chain_plan.visuals[1];
+    workspace->chain_plan.blended_visuals[0].blend_group = 0;
+    workspace->chain_plan.blended_visuals[1] = workspace->chain_plan.visuals[3];
+    workspace->chain_plan.blended_visuals[1].blend_group = 1;
+    workspace->chain_plan.blended_visuals[2] = workspace->chain_plan.visuals[4];
+    workspace->chain_plan.blended_visuals[2].blend_group = 2;
+    workspace->chain_plan.blended_visual_count = 3;
+    workspace->chain_plan.blended_group_count = 3;
+    workspace->chain_plan.wboit_visuals[0] = workspace->chain_plan.visuals[2];
+    workspace->chain_plan.wboit_visual_count = 1;
+    workspace->chain_plan.wboit_group_count = 1;
+    workspace->chain_plan.transparent_passes[0] = (DvzPanelRenderTransparentPassPlan){
         .kind = DVZ_PANEL_RENDER_TRANSPARENT_BLENDED, .index = 0};
-    chain_plan.transparent_passes[1] = (DvzPanelRenderTransparentPassPlan){
+    workspace->chain_plan.transparent_passes[1] = (DvzPanelRenderTransparentPassPlan){
         .kind = DVZ_PANEL_RENDER_TRANSPARENT_WBOIT, .index = 0};
-    chain_plan.transparent_passes[2] = (DvzPanelRenderTransparentPassPlan){
+    workspace->chain_plan.transparent_passes[2] = (DvzPanelRenderTransparentPassPlan){
         .kind = DVZ_PANEL_RENDER_TRANSPARENT_BLENDED, .index = 1};
-    chain_plan.transparent_passes[3] = (DvzPanelRenderTransparentPassPlan){
+    workspace->chain_plan.transparent_passes[3] = (DvzPanelRenderTransparentPassPlan){
         .kind = DVZ_PANEL_RENDER_TRANSPARENT_BLENDED, .index = 2};
-    chain_plan.transparent_pass_count = 4;
+    workspace->chain_plan.transparent_pass_count = 4;
     caps.max_color_attachments = 2;
-    DvzPanelCompositionSnapshot chain = {0};
-    AT(_scene_panel_composition_resolve(&chain_plan, &caps, &chain, NULL));
-    AT(chain.technique_count == 6);
-    AT(chain.techniques[1].id == DVZ_SCENE_TECHNIQUE_TRANSPARENT_BLEND);
-    AT(chain.techniques[2].id == DVZ_SCENE_TECHNIQUE_WBOIT);
-    AT(chain.techniques[3].id == DVZ_SCENE_TECHNIQUE_VOLUME_SHADING);
-    AT(chain.techniques[3].phase == DVZ_SCENE_PHASE_VOLUME_SHADING);
-    AT(chain.techniques[1].output_ids[0].value == chain.techniques[2].input_ids[0].value);
-    AT(chain.techniques[2].output_ids[0].value == chain.techniques[3].input_ids[0].value);
-    AT(chain.techniques[1].instance_id.value != chain.techniques[3].instance_id.value);
-    AT(chain.techniques[4].id == DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE);
-    AT(chain.techniques[4].phase == DVZ_SCENE_PHASE_OVERLAY);
-    AT(chain.techniques[4].input_ids[0].value == chain.techniques[3].output_ids[0].value);
+    dvz_memset(&workspace->chain, sizeof(workspace->chain), 0, sizeof(workspace->chain));
+    AT(_scene_panel_composition_resolve(&workspace->chain_plan, &caps, &workspace->chain, NULL));
+    AT(workspace->chain.technique_count == 6);
+    AT(workspace->chain.techniques[1].id == DVZ_SCENE_TECHNIQUE_TRANSPARENT_BLEND);
+    AT(workspace->chain.techniques[2].id == DVZ_SCENE_TECHNIQUE_WBOIT);
+    AT(workspace->chain.techniques[3].id == DVZ_SCENE_TECHNIQUE_VOLUME_SHADING);
+    AT(workspace->chain.techniques[3].phase == DVZ_SCENE_PHASE_VOLUME_SHADING);
+    AT(workspace->chain.techniques[1].output_ids[0].value ==
+       workspace->chain.techniques[2].input_ids[0].value);
+    AT(workspace->chain.techniques[2].output_ids[0].value ==
+       workspace->chain.techniques[3].input_ids[0].value);
+    AT(workspace->chain.techniques[1].instance_id.value !=
+       workspace->chain.techniques[3].instance_id.value);
+    AT(workspace->chain.techniques[4].id == DVZ_SCENE_TECHNIQUE_OVERLAY_COMPOSITE);
+    AT(workspace->chain.techniques[4].phase == DVZ_SCENE_PHASE_OVERLAY);
+    AT(workspace->chain.techniques[4].input_ids[0].value ==
+       workspace->chain.techniques[3].output_ids[0].value);
     for (uint32_t i = 1; i <= 4; i++)
     {
-        const DvzSceneResolvedTechnique* technique = &chain.techniques[i];
+        const DvzSceneResolvedTechnique* technique = &workspace->chain.techniques[i];
         const DvzSceneResolvedPass* scene_color_pass = NULL;
         const DvzSceneWorkBinding* scene_color_binding = NULL;
-        for (uint32_t j = 0; j < chain.pass_count; j++)
+        for (uint32_t j = 0; j < workspace->chain.pass_count; j++)
         {
-            const DvzSceneResolvedPass* pass = &chain.passes[j];
+            const DvzSceneResolvedPass* pass = &workspace->chain.passes[j];
             if (pass->technique_instance_id.value != technique->instance_id.value)
                 continue;
             for (uint32_t k = 0; k < pass->binding_count; k++)
@@ -919,21 +1231,22 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
         AT(scene_color_binding->load_source_product_id.value == technique->input_ids[0].value);
     }
 
-    DvzPanelRenderPlan occluded_chain = chain_plan;
-    occluded_chain.scene_occlusion_enabled = true;
-    occluded_chain.scene_occlusion[0] = occluded_chain.visuals[0];
-    occluded_chain.scene_occlusion_count = 1;
-    DvzPanelCompositionSnapshot occluded = {0};
-    AT(_scene_panel_composition_resolve(&occluded_chain, &caps, &occluded, NULL));
+    workspace->occluded_chain = workspace->chain_plan;
+    workspace->occluded_chain.scene_occlusion_enabled = true;
+    workspace->occluded_chain.scene_occlusion[0] = workspace->occluded_chain.visuals[0];
+    workspace->occluded_chain.scene_occlusion_count = 1;
+    dvz_memset(&workspace->occluded, sizeof(workspace->occluded), 0, sizeof(workspace->occluded));
+    AT(_scene_panel_composition_resolve(
+        &workspace->occluded_chain, &caps, &workspace->occluded, NULL));
     const uint64_t scene_occlusion_bit = UINT64_C(1) << DVZ_RENDER_PRODUCT_SCENE_OCCLUSION_DEPTH;
     uint32_t occluded_transparent_count = 0;
-    for (uint32_t i = 0; i < occluded.technique_count; i++)
+    for (uint32_t i = 0; i < workspace->occluded.technique_count; i++)
     {
-        if (occluded.techniques[i].id == DVZ_SCENE_TECHNIQUE_TRANSPARENT_BLEND ||
-            occluded.techniques[i].id == DVZ_SCENE_TECHNIQUE_WBOIT ||
-            occluded.techniques[i].id == DVZ_SCENE_TECHNIQUE_VOLUME_SHADING)
+        if (workspace->occluded.techniques[i].id == DVZ_SCENE_TECHNIQUE_TRANSPARENT_BLEND ||
+            workspace->occluded.techniques[i].id == DVZ_SCENE_TECHNIQUE_WBOIT ||
+            workspace->occluded.techniques[i].id == DVZ_SCENE_TECHNIQUE_VOLUME_SHADING)
         {
-            AT((occluded.techniques[i].input_product_mask & scene_occlusion_bit) != 0);
+            AT((workspace->occluded.techniques[i].input_product_mask & scene_occlusion_bit) != 0);
             occluded_transparent_count++;
         }
     }
@@ -942,16 +1255,16 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     const char* wboit_requirements[] = {
         "two color attachments", "rgba16float", "r16float", "sampling intermediate",
         "color blending"};
-    DvzPanelRenderPlan wboit_plan = chain_plan;
-    wboit_plan.drawable_count = 2;
-    wboit_plan.visual_count = 2;
-    wboit_plan.visuals[1] = chain_plan.visuals[2];
-    wboit_plan.visuals[1].authored_order = 1;
-    wboit_plan.blended_visual_count = 0;
-    wboit_plan.blended_group_count = 0;
-    wboit_plan.transparent_passes[0] = (DvzPanelRenderTransparentPassPlan){
+    workspace->wboit_plan = workspace->chain_plan;
+    workspace->wboit_plan.drawable_count = 2;
+    workspace->wboit_plan.visual_count = 2;
+    workspace->wboit_plan.visuals[1] = workspace->chain_plan.visuals[2];
+    workspace->wboit_plan.visuals[1].authored_order = 1;
+    workspace->wboit_plan.blended_visual_count = 0;
+    workspace->wboit_plan.blended_group_count = 0;
+    workspace->wboit_plan.transparent_passes[0] = (DvzPanelRenderTransparentPassPlan){
         .kind = DVZ_PANEL_RENDER_TRANSPARENT_WBOIT, .index = 0};
-    wboit_plan.transparent_pass_count = 1;
+    workspace->wboit_plan.transparent_pass_count = 1;
     for (uint32_t i = 0; i < 5; i++)
     {
         DvzCapabilitySnapshot missing = caps;
@@ -967,22 +1280,23 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
             missing.supports_color_blending = false;
         DvzDiagnosticReport capability_report;
         dvz_diagnostic_report_init(&capability_report);
-        DvzPanelCompositionSnapshot rejected = {0};
+        dvz_memset(
+            &workspace->rejected, sizeof(workspace->rejected), 0, sizeof(workspace->rejected));
         AT(!_scene_panel_composition_resolve(
-            &wboit_plan, &missing, &rejected, &capability_report));
+            &workspace->wboit_plan, &missing, &workspace->rejected, &capability_report));
         AT(dvz_diagnostic_report_count(&capability_report) == 1);
         AT(strstr(dvz_diagnostic_report_get(&capability_report, 0), "WBOIT requires") != NULL);
         AT(strstr(dvz_diagnostic_report_get(&capability_report, 0), wboit_requirements[i]) !=
            NULL);
     }
 
-    DvzPanelRenderPlan peel_plan = wboit_plan;
-    peel_plan.transparent_passes[0].kind = DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL;
-    peel_plan.depth_peel_visuals[0] = peel_plan.wboit_visuals[0];
-    peel_plan.depth_peel_visual_count = 1;
-    peel_plan.depth_peel_group_count = 1;
-    peel_plan.wboit_visual_count = 0;
-    peel_plan.wboit_group_count = 0;
+    workspace->peel_plan = workspace->wboit_plan;
+    workspace->peel_plan.transparent_passes[0].kind = DVZ_PANEL_RENDER_TRANSPARENT_DEPTH_PEEL;
+    workspace->peel_plan.depth_peel_visuals[0] = workspace->peel_plan.wboit_visuals[0];
+    workspace->peel_plan.depth_peel_visual_count = 1;
+    workspace->peel_plan.depth_peel_group_count = 1;
+    workspace->peel_plan.wboit_visual_count = 0;
+    workspace->peel_plan.wboit_group_count = 0;
     caps.max_color_attachments = 3;
     const char* peel_requirements[] = {
         "three color attachments", "rgba16float", "sampling intermediate", "color blending"};
@@ -999,23 +1313,29 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
             missing.supports_color_blending = false;
         DvzDiagnosticReport capability_report;
         dvz_diagnostic_report_init(&capability_report);
-        DvzPanelCompositionSnapshot rejected = {0};
-        AT(!_scene_panel_composition_resolve(&peel_plan, &missing, &rejected, &capability_report));
+        dvz_memset(
+            &workspace->rejected, sizeof(workspace->rejected), 0, sizeof(workspace->rejected));
+        AT(!_scene_panel_composition_resolve(
+            &workspace->peel_plan, &missing, &workspace->rejected, &capability_report));
         AT(strstr(dvz_diagnostic_report_get(&capability_report, 0), "depth peeling requires") !=
            NULL);
         AT(strstr(dvz_diagnostic_report_get(&capability_report, 0), peel_requirements[i]) != NULL);
     }
 
-    DvzPanelRenderPlan occluded_peel = peel_plan;
-    occluded_peel.scene_occlusion_enabled = true;
-    occluded_peel.scene_occlusion[0] = occluded_peel.visuals[0];
-    occluded_peel.scene_occlusion_count = 1;
-    DvzPanelCompositionSnapshot occluded_peel_composed = {0};
-    AT(_scene_panel_composition_resolve(&occluded_peel, &caps, &occluded_peel_composed, NULL));
+    workspace->occluded_peel = workspace->peel_plan;
+    workspace->occluded_peel.scene_occlusion_enabled = true;
+    workspace->occluded_peel.scene_occlusion[0] = workspace->occluded_peel.visuals[0];
+    workspace->occluded_peel.scene_occlusion_count = 1;
+    dvz_memset(
+        &workspace->occluded_peel_composed, sizeof(workspace->occluded_peel_composed), 0,
+        sizeof(workspace->occluded_peel_composed));
+    AT(_scene_panel_composition_resolve(
+        &workspace->occluded_peel, &caps, &workspace->occluded_peel_composed, NULL));
     bool found_occluded_peel = false;
-    for (uint32_t i = 0; i < occluded_peel_composed.technique_count; i++)
+    for (uint32_t i = 0; i < workspace->occluded_peel_composed.technique_count; i++)
     {
-        const DvzSceneResolvedTechnique* technique = &occluded_peel_composed.techniques[i];
+        const DvzSceneResolvedTechnique* technique =
+            &workspace->occluded_peel_composed.techniques[i];
         if (technique->id == DVZ_SCENE_TECHNIQUE_DEPTH_PEEL)
         {
             AT((technique->input_product_mask & scene_occlusion_bit) != 0);
@@ -1026,150 +1346,157 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
 
     generic_graph = dvz_frame_plan("composition.generic-chain", 0);
     ANN(generic_graph);
-    AT(_scene_panel_composition_lower_graph(generic_graph, &chain, NULL));
-    AT(generic_graph->graph_pass_count == chain.pass_count);
+    AT(_scene_panel_composition_lower_graph(generic_graph, &workspace->chain, NULL));
+    AT(generic_graph->graph_pass_count == workspace->chain.pass_count);
     dvz_frame_plan_destroy(generic_graph);
 
     generic_graph = dvz_frame_plan("composition.generic-peel", 0);
     ANN(generic_graph);
-    AT(_scene_panel_composition_lower_graph(generic_graph, &occluded_peel_composed, NULL));
-    AT(generic_graph->graph_pass_count == occluded_peel_composed.pass_count);
+    AT(_scene_panel_composition_lower_graph(
+        generic_graph, &workspace->occluded_peel_composed, NULL));
+    AT(generic_graph->graph_pass_count == workspace->occluded_peel_composed.pass_count);
     dvz_frame_plan_destroy(generic_graph);
 
     DvzCapabilitySnapshot no_blend = caps;
     no_blend.supports_color_blending = false;
     DvzDiagnosticReport blend_report;
     dvz_diagnostic_report_init(&blend_report);
-    DvzPanelCompositionSnapshot rejected_blend = {0};
-    AT(!_scene_panel_composition_resolve(&plan, &no_blend, &rejected_blend, &blend_report));
+    dvz_memset(
+        &workspace->rejected_blend, sizeof(workspace->rejected_blend), 0,
+        sizeof(workspace->rejected_blend));
+    AT(!_scene_panel_composition_resolve(
+        &workspace->plan, &no_blend, &workspace->rejected_blend, &blend_report));
     AT(strstr(dvz_diagnostic_report_get(&blend_report, 0), "alpha blending requires") != NULL);
 
     DvzFramePlan* persisted = dvz_frame_plan("composition.persistence", 0);
     ANN(persisted);
-    AT(_frame_plan_composition_append(persisted, &first, NULL));
+    AT(_frame_plan_composition_append(persisted, &workspace->first, NULL));
     AT(persisted->composition_count == 1);
     const DvzPanelCompositionSnapshot* stored =
         _frame_plan_composition_get(persisted, "figure_0_p0");
     ANN(stored);
-    AT(stored != &first);
-    AT(memcmp(stored, &first, sizeof(first)) == 0);
+    AT(stored != &workspace->first);
+    AT(memcmp(stored, &workspace->first, sizeof(workspace->first)) == 0);
     DvzDiagnosticReport persistence_report;
     dvz_diagnostic_report_init(&persistence_report);
-    AT(!_frame_plan_composition_append(persisted, &first, &persistence_report));
+    AT(!_frame_plan_composition_append(persisted, &workspace->first, &persistence_report));
     AT(persisted->composition_count == 1);
     AT(strstr(dvz_diagnostic_report_get(&persistence_report, 0), "duplicate") != NULL);
     dvz_frame_plan_destroy(persisted);
 
-    DvzPanelCompositionSnapshot invalid_snapshot = first;
-    invalid_snapshot.techniques[1].output_ids[0] = invalid_snapshot.techniques[0].output_ids[0];
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[1].output_ids[0] =
+        workspace->invalid_snapshot.techniques[0].output_ids[0];
     DvzDiagnosticReport validation_report;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "ambiguous producers") != NULL);
 
-    invalid_snapshot = first;
-    invalid_snapshot.passes[1].id = invalid_snapshot.passes[0].id;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.passes[1].id = workspace->invalid_snapshot.passes[0].id;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "duplicate pass identity") !=
        NULL);
 
-    invalid_snapshot = first;
-    invalid_snapshot.techniques[1].instance_id = invalid_snapshot.techniques[0].instance_id;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[1].instance_id =
+        workspace->invalid_snapshot.techniques[0].instance_id;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "duplicate technique instance") !=
        NULL);
 
-    invalid_snapshot = first;
-    invalid_snapshot.techniques[0].must_follow_phase_mask =
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[0].must_follow_phase_mask =
         1u << (uint32_t)DVZ_SCENE_PHASE_TRANSPARENT_SHADING;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "must_follow") != NULL);
 
     DvzFramePlan* contract_rejections = dvz_frame_plan("composition.contract-rejections", 0);
     ANN(contract_rejections);
 
-    invalid_snapshot = first;
-    invalid_snapshot.techniques[0].version++;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[0].version++;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "immutable contract") != NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
-    invalid_snapshot = first;
-    invalid_snapshot.techniques[0].phase = DVZ_SCENE_PHASE_SURFACE_POSTPROCESS;
-    invalid_snapshot.passes[0].phase = DVZ_SCENE_PHASE_SURFACE_POSTPROCESS;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[0].phase = DVZ_SCENE_PHASE_SURFACE_POSTPROCESS;
+    workspace->invalid_snapshot.passes[0].phase = DVZ_SCENE_PHASE_SURFACE_POSTPROCESS;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "immutable contract") != NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
-    invalid_snapshot = first;
-    invalid_snapshot.techniques[0].participating_layer_mask ^=
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[0].participating_layer_mask ^=
         1u << (uint32_t)DVZ_SCENE_VISUAL_LAYER_OVERLAY;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "immutable contract") != NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
-    invalid_snapshot = first;
-    invalid_snapshot.techniques[1].required_capability_mask = 0;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[1].required_capability_mask = 0;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "immutable contract") != NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
-    invalid_snapshot = first;
-    invalid_snapshot.techniques[1].fallback = DVZ_SCENE_TECHNIQUE_FALLBACK_DISABLE_OPTIONAL;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[1].fallback =
+        DVZ_SCENE_TECHNIQUE_FALLBACK_DISABLE_OPTIONAL;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "fallback semantics") != NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
-    invalid_snapshot = first;
-    invalid_snapshot.techniques[1].expansion_flags = 1;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.techniques[1].expansion_flags = 1;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "undeclared expansion") != NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
-    invalid_snapshot = first;
-    invalid_snapshot.pass_count--;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.pass_count--;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "missing a declared pass") !=
        NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
-    invalid_snapshot = first;
-    invalid_snapshot.passes[invalid_snapshot.pass_count] =
-        invalid_snapshot.passes[invalid_snapshot.pass_count - 1];
-    invalid_snapshot.passes[invalid_snapshot.pass_count].id.value =
-        invalid_snapshot.pass_count + 1;
-    invalid_snapshot.passes[invalid_snapshot.pass_count].ordinal++;
-    invalid_snapshot.pass_count++;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.passes[workspace->invalid_snapshot.pass_count] =
+        workspace->invalid_snapshot.passes[workspace->invalid_snapshot.pass_count - 1];
+    workspace->invalid_snapshot.passes[workspace->invalid_snapshot.pass_count].id.value =
+        workspace->invalid_snapshot.pass_count + 1;
+    workspace->invalid_snapshot.passes[workspace->invalid_snapshot.pass_count].ordinal++;
+    workspace->invalid_snapshot.pass_count++;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "undeclared extra passes") !=
        NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
-    invalid_snapshot = first;
-    invalid_snapshot.passes[0].ordinal++;
+    workspace->invalid_snapshot = workspace->first;
+    workspace->invalid_snapshot.passes[0].ordinal++;
     dvz_diagnostic_report_init(&validation_report);
-    AT(!_frame_plan_composition_validate(&invalid_snapshot, &validation_report));
+    AT(!_frame_plan_composition_validate(&workspace->invalid_snapshot, &validation_report));
     AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "pass-template drift") != NULL);
-    AT(!_frame_plan_composition_append(contract_rejections, &invalid_snapshot, NULL));
+    AT(!_frame_plan_composition_append(contract_rejections, &workspace->invalid_snapshot, NULL));
     AT(contract_rejections->composition_count == 0);
 
     dvz_frame_plan_destroy(contract_rejections);
@@ -1224,7 +1551,7 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     DvzPanelCompositionSnapshot* repeated = (DvzPanelCompositionSnapshot*)dvz_malloc(
         sizeof(DvzPanelCompositionSnapshot));
     ANN(repeated);
-    *repeated = first;
+    *repeated = workspace->first;
     repeated->techniques[3] = repeated->techniques[2];
     repeated->techniques[3].instance_id.value = 4;
     repeated->techniques[2] = repeated->techniques[1];
@@ -1243,6 +1570,41 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     repeated->work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(repeated);
     AT(repeated->techniques[1].id == repeated->techniques[2].id);
     AT(_frame_plan_composition_validate(repeated, NULL));
+
+    /* Exercise dependency words on both sides of indices 64 and 128. */
+    for (uint32_t i = 1; i < 129; i++)
+    {
+        repeated->techniques[i] = workspace->first.techniques[1];
+        repeated->techniques[i].instance_id.value = i + 1;
+        repeated->techniques[i].input_ids[0].value = i;
+        repeated->techniques[i].output_ids[0].value = i + 1;
+        repeated->passes[i] = workspace->first.passes[1];
+        repeated->passes[i].id.value = i + 1;
+        repeated->passes[i].technique_instance_id = repeated->techniques[i].instance_id;
+        repeated->passes[i].ordinal = i - 1;
+        repeated->passes[i].bindings[0].product_id = repeated->techniques[i].output_ids[0];
+        repeated->passes[i].bindings[0].load_source_product_id =
+            repeated->techniques[i].input_ids[0];
+    }
+    repeated->techniques[129] = workspace->first.techniques[2];
+    repeated->techniques[129].instance_id.value = 130;
+    repeated->techniques[129].input_ids[0] = repeated->techniques[128].output_ids[0];
+    repeated->techniques[129].output_ids[0].value = 130;
+    repeated->technique_count = 130;
+    repeated->pass_count = 129;
+    repeated->work_declaration_fingerprint = _frame_plan_composition_work_fingerprint(repeated);
+    AT(_frame_plan_composition_validate(repeated, NULL));
+    const uint32_t boundaries[] = {63, 127};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        uint32_t lower = boundaries[i];
+        DvzRenderProductId original = repeated->techniques[lower].input_ids[0];
+        repeated->techniques[lower].input_ids[0] = repeated->techniques[lower + 1].output_ids[0];
+        dvz_diagnostic_report_init(&validation_report);
+        AT(!_frame_plan_composition_validate(repeated, &validation_report));
+        AT(strstr(dvz_diagnostic_report_get(&validation_report, 0), "dependency cycle") != NULL);
+        repeated->techniques[lower].input_ids[0] = original;
+    }
     dvz_free(repeated);
 
     DvzScene* empty_scene = dvz_scene();
@@ -1264,24 +1626,24 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     dvz_scene_destroy(empty_scene);
 
     caps.max_color_attachments = 4;
-    DvzPanelRenderPlan effects = plan;
+    workspace->effects = workspace->plan;
     DvzSceneAoTechniqueState gtao = {
         .enabled = true, .denoise_enabled = true, .debug_mode = DVZ_AO_DEBUG_VISIBILITY};
     DvzSceneEdlTechniqueState edl = {.enabled = true};
-    effects.ao_enabled = true;
-    effects.ao_state = &gtao;
-    effects.edl_enabled = true;
-    effects.edl_state = &edl;
-    effects.edl_has_depth_producer = true;
-    effects.gbuffer_visuals[0] = effects.visuals[0];
-    effects.gbuffer_visual_count = 1;
-    DvzPanelCompositionSnapshot composed = {0};
-    AT(_scene_panel_composition_resolve(&effects, &caps, &composed, NULL));
+    workspace->effects.ao_enabled = true;
+    workspace->effects.ao_state = &gtao;
+    workspace->effects.edl_enabled = true;
+    workspace->effects.edl_state = &edl;
+    workspace->effects.edl_has_depth_producer = true;
+    workspace->effects.gbuffer_visuals[0] = workspace->effects.visuals[0];
+    workspace->effects.gbuffer_visual_count = 1;
+    dvz_memset(&workspace->composed, sizeof(workspace->composed), 0, sizeof(workspace->composed));
+    AT(_scene_panel_composition_resolve(&workspace->effects, &caps, &workspace->composed, NULL));
     bool found_surface_capture_caps = false;
     bool found_gtao_visibility_presentation_caps = false;
-    for (uint32_t i = 0; i < composed.technique_count; i++)
+    for (uint32_t i = 0; i < workspace->composed.technique_count; i++)
     {
-        const DvzSceneResolvedTechnique* technique = &composed.techniques[i];
+        const DvzSceneResolvedTechnique* technique = &workspace->composed.techniques[i];
         if (technique->id == DVZ_SCENE_TECHNIQUE_SURFACE_CAPTURE)
         {
             AT(technique->required_capability_mask != 0);
@@ -1301,9 +1663,9 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     bool found_gtao_denoise_work = false;
     bool found_gtao_visibility_presentation_work = false;
     bool found_edl_work = false;
-    for (uint32_t i = 0; i < composed.pass_count; i++)
+    for (uint32_t i = 0; i < workspace->composed.pass_count; i++)
     {
-        const DvzSceneResolvedPass* pass = &composed.passes[i];
+        const DvzSceneResolvedPass* pass = &workspace->composed.passes[i];
         if (pass->role == DVZ_FRAME_PLAN_RENDER_PASS_GBUFFER)
         {
             AT(pass->binding_count == 4);
@@ -1341,9 +1703,9 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     AT(found_edl_work);
     bool found_surface_device_depth = false;
     bool found_edl_color_scratch = false;
-    for (uint32_t i = 0; i < composed.scratch_resource_count; i++)
+    for (uint32_t i = 0; i < workspace->composed.scratch_resource_count; i++)
     {
-        const DvzSceneScratchResource* scratch = &composed.scratch_resources[i];
+        const DvzSceneScratchResource* scratch = &workspace->composed.scratch_resources[i];
         AT(scratch->extent_policy == DVZ_RENDER_PRODUCT_EXTENT_PANEL_RELATIVE);
         if (scratch->kind == DVZ_SCENE_SCRATCH_Z_ONLY_DEPTH)
         {
@@ -1362,70 +1724,83 @@ int test_scene_panel_composition_snapshot(TstContext* suite, const TstCase* item
     generic_graph = dvz_frame_plan("composition.generic-effects", 0);
     ANN(generic_graph);
     dvz_diagnostic_report_init(&validation_report);
-    AT(_scene_panel_composition_lower_graph(generic_graph, &composed, &validation_report));
+    AT(_scene_panel_composition_lower_graph(
+        generic_graph, &workspace->composed, &validation_report));
     AT(dvz_diagnostic_report_count(&validation_report) == 0);
-    AT(generic_graph->graph_pass_count == composed.pass_count);
-    AT(generic_graph->graph_resource_count > composed.scratch_resource_count);
-    for (uint32_t i = 0; i < composed.pass_count; i++)
+    AT(generic_graph->graph_pass_count == workspace->composed.pass_count);
+    AT(generic_graph->graph_resource_count > workspace->composed.scratch_resource_count);
+    for (uint32_t i = 0; i < workspace->composed.pass_count; i++)
         AT(generic_graph->graph_passes[i].composition_pass_id.value ==
-           composed.passes[i].id.value);
+           workspace->composed.passes[i].id.value);
     const uint32_t first_panel_resource_count = generic_graph->graph_resource_count;
-    DvzPanelCompositionSnapshot adjacent_composed = composed;
-    dvz_strlcpy(adjacent_composed.panel_id, "figure_0_p1", sizeof(adjacent_composed.panel_id));
-    AT(_scene_panel_composition_lower_graph(generic_graph, &adjacent_composed, NULL));
-    AT(generic_graph->graph_pass_count == 2 * composed.pass_count);
+    workspace->adjacent_composed = workspace->composed;
+    dvz_strlcpy(
+        workspace->adjacent_composed.panel_id, "figure_0_p1",
+        sizeof(workspace->adjacent_composed.panel_id));
+    AT(_scene_panel_composition_lower_graph(generic_graph, &workspace->adjacent_composed, NULL));
+    AT(generic_graph->graph_pass_count == 2 * workspace->composed.pass_count);
     AT(generic_graph->graph_resource_count == 2 * first_panel_resource_count - 1);
     AT(generic_graph->realization_count > DVZ_FRAME_PLAN_INITIAL_GRAPH_RESOURCE_CAPACITY);
     dvz_frame_plan_destroy(generic_graph);
 
     DvzCapabilitySnapshot no_surface_rgba = caps;
     no_surface_rgba.render_target_format_rgba16float = false;
-    DvzPanelCompositionSnapshot surface_fallback = {0};
-    AT(!_scene_panel_composition_resolve(&effects, &no_surface_rgba, &surface_fallback, NULL));
+    dvz_memset(
+        &workspace->surface_fallback, sizeof(workspace->surface_fallback), 0,
+        sizeof(workspace->surface_fallback));
+    AT(!_scene_panel_composition_resolve(
+        &workspace->effects, &no_surface_rgba, &workspace->surface_fallback, NULL));
 
     DvzCapabilitySnapshot no_ambient_sampling = caps;
     no_ambient_sampling.supports_render_target_sampling = false;
-    DvzPanelCompositionSnapshot ambient_fallback = {0};
-    AT(!_scene_panel_composition_resolve(&effects, &no_ambient_sampling, &ambient_fallback, NULL));
+    dvz_memset(
+        &workspace->ambient_fallback, sizeof(workspace->ambient_fallback), 0,
+        sizeof(workspace->ambient_fallback));
+    AT(!_scene_panel_composition_resolve(
+        &workspace->effects, &no_ambient_sampling, &workspace->ambient_fallback, NULL));
     uint32_t edl_pass = UINT32_MAX;
     uint32_t transparent_pass = UINT32_MAX;
-    for (uint32_t i = 0; i < composed.pass_count; i++)
+    for (uint32_t i = 0; i < workspace->composed.pass_count; i++)
     {
-        if (composed.passes[i].role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE)
+        if (workspace->composed.passes[i].role == DVZ_FRAME_PLAN_RENDER_PASS_EDL_RESOLVE)
             edl_pass = i;
-        if (composed.passes[i].role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
+        if (workspace->composed.passes[i].role == DVZ_FRAME_PLAN_RENDER_PASS_TRANSPARENT_BLEND)
             transparent_pass = i;
     }
     AT(edl_pass != UINT32_MAX);
     AT(transparent_pass != UINT32_MAX);
     AT(edl_pass < transparent_pass);
-    AT(composed.passes[edl_pass].phase == DVZ_SCENE_PHASE_SURFACE_POSTPROCESS);
-    AT(composed.passes[transparent_pass].phase == DVZ_SCENE_PHASE_TRANSPARENT_SHADING);
+    AT(workspace->composed.passes[edl_pass].phase == DVZ_SCENE_PHASE_SURFACE_POSTPROCESS);
+    AT(workspace->composed.passes[transparent_pass].phase == DVZ_SCENE_PHASE_TRANSPARENT_SHADING);
 
     DvzCapabilitySnapshot legacy_caps = dvz_capability_snapshot();
     legacy_caps.supports_color_blending = true;
     legacy_caps.render_target_format_rgba16float = true;
-    DvzPanelCompositionSnapshot legacy = {0};
-    AT(!_scene_panel_composition_resolve(&effects, &legacy_caps, &legacy, NULL));
+    dvz_memset(&workspace->legacy, sizeof(workspace->legacy), 0, sizeof(workspace->legacy));
+    AT(!_scene_panel_composition_resolve(
+        &workspace->effects, &legacy_caps, &workspace->legacy, NULL));
 
-    DvzPanelCompositionSnapshot unchanged;
-    memset(&unchanged, 0xA5, sizeof(unchanged));
-    DvzPanelCompositionSnapshot sentinel = unchanged;
-    DvzPanelRenderPlan invalid = plan;
-    invalid.visuals[1].authored_order = 0;
+
+    memset(&workspace->unchanged, 0xA5, sizeof(workspace->unchanged));
+    workspace->sentinel = workspace->unchanged;
+    workspace->invalid = workspace->plan;
+    workspace->invalid.visuals[1].authored_order = 0;
     DvzDiagnosticReport report;
     dvz_diagnostic_report_init(&report);
-    AT(!_scene_panel_composition_resolve(&invalid, &caps, &unchanged, &report));
-    AT(memcmp(&unchanged, &sentinel, sizeof(unchanged)) == 0);
+    AT(!_scene_panel_composition_resolve(
+        &workspace->invalid, &caps, &workspace->unchanged, &report));
+    AT(memcmp(&workspace->unchanged, &workspace->sentinel, sizeof(workspace->unchanged)) == 0);
     AT(dvz_diagnostic_report_count(&report) == 1);
     AT(strstr(dvz_diagnostic_report_get(&report, 0), "authored order") != NULL);
 
-    invalid = plan;
-    invalid.scene_occlusion_enabled = true;
+    workspace->invalid = workspace->plan;
+    workspace->invalid.scene_occlusion_enabled = true;
     dvz_diagnostic_report_init(&report);
-    AT(!_scene_panel_composition_resolve(&invalid, &caps, &unchanged, &report));
+    AT(!_scene_panel_composition_resolve(
+        &workspace->invalid, &caps, &workspace->unchanged, &report));
     AT(dvz_diagnostic_report_count(&report) == 1);
     AT(strstr(dvz_diagnostic_report_get(&report, 0), "no product producer") != NULL);
+    dvz_free(workspace);
     return 0;
 }
 
