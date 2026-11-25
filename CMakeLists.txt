@@ -48,6 +48,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allocator & sanitizer options
 option(DVZ_ENABLE_ASAN_IN_DEBUG "Enable sanitizer instrumentation in Debug builds" OFF)
+option(DVZ_STACK_USAGE "Analyze production stack frames with GCC or MSVC" OFF)
 option(DVZ_ENABLE_COVERAGE "Enable code coverage instrumentation for supported compilers" OFF)
 option(DVZ_ENABLE_GPROF "Enable gprof instrumentation (-pg) on supported compilers" OFF)
 set(DVZ_SANITIZER "" CACHE STRING "Optional sanitizer override for Debug builds (asan, msan, tsan, or a comma-separated list)")
@@ -638,6 +639,26 @@ get_property(_dvz_compile_definitions GLOBAL PROPERTY DVZ_COMPILE_DEFINITIONS)
 foreach(_dvz_target ${_dvz_targets})
     if(TARGET ${_dvz_target})
         get_target_property(_dvz_target_type ${_dvz_target} TYPE)
+
+        if(DVZ_STACK_USAGE)
+            if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+                target_compile_options(${_dvz_target} PRIVATE
+                    $<$<COMPILE_LANGUAGE:C,CXX>:-fstack-usage>)
+                get_target_property(_dvz_source_dir ${_dvz_target} SOURCE_DIR)
+                if(_dvz_source_dir MATCHES "^${PROJECT_SOURCE_DIR}/src($|/)")
+                    target_compile_options(${_dvz_target} PRIVATE
+                        $<$<COMPILE_LANGUAGE:C,CXX>:-Wstack-usage=16384;-Wframe-larger-than=16384>)
+                endif()
+            elseif(MSVC)
+                get_target_property(_dvz_source_dir ${_dvz_target} SOURCE_DIR)
+                if(_dvz_source_dir MATCHES "^${PROJECT_SOURCE_DIR}/src($|/)")
+                    target_compile_options(${_dvz_target} PRIVATE
+                        /analyze "SHELL:/analyze:stacksize 16384")
+                endif()
+            else()
+                message(FATAL_ERROR "DVZ_STACK_USAGE requires GCC or MSVC; unsupported compiler")
+            endif()
+        endif()
 
         if(DVZ_COMMON_COMPILE_OPTIONS)
             target_compile_options(${_dvz_target} PRIVATE
