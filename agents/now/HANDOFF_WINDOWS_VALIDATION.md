@@ -1,10 +1,10 @@
 # Windows Native Validation Handoff
 
-Status: Windows stack and build fixes are implemented on the local `fix/windows-stack-build` branch. The batch is not merged or pushed. The earlier visible DRP2 asymmetry, provider, and exact-candidate gates retain their original scope.
+Status: Windows stack/build fixes and the automated source matrix are complete on the local `fix/windows-stack-build` branch. The batch is not merged or pushed. Maintainer live review, the video-fallback finding below, provider trust, and exact-candidate proof remain open.
 
 ## Current Availability
 
-The Windows machine was available for the 2026-11-24 source checks below. Availability for future remote or attended sessions must be confirmed when needed. The earlier conda provider run was blocked before Python import; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and provider results do not validate an RC3 artifact. RC3 remains unfrozen during course proofreading.
+The Windows machine was available for the source checks below on 2026-11-25. Availability for future remote or attended sessions must be confirmed when needed. The earlier conda provider run was blocked before Python import; see [the published-runtime intake](QT_MACOS_VULKAN_HANDOFF.md#published-runtime-intake-2026-10-10). Historical source and provider results do not validate an RC3 artifact. RC3 remains unfrozen during course proofreading.
 
 ## Linux-Led Windows Fixes, 2026-11-25
 
@@ -48,11 +48,51 @@ The elevated Windows SSH session causes the Vulkan loader to ignore layer-path e
 - Linux: `just build`, the full scene suite (782/782), the canvas filter (50/50), and the isolated resize case pass. The refreshed GCC Debug inventory accounts for 373/373 configured production units, with no frame violations above 16 KiB.
 - Windows Debug: `just build` passes using the existing virtual environment. On each of NVIDIA and AMD, three rounds of the four-case dynamic-emission, point-emission, retained-frame, and resize subset pass (12/12); three rounds of the canvas depth/resize case also pass (3/3). Transferred source hashes match the local manifest for the tested source.
 
-This follow-up has focused Windows Debug evidence. The full Windows Debug/Release matrix above applies to `a2be5baf6`, before the resize correction. The revised public build instructions, option row, dispatch paragraph, and this new handoff section received the humanizer pass and a final check for direct wording; older prose was not re-reviewed.
+At this checkpoint, the resize correction had focused Windows Debug evidence; the [final source matrix](#final-source-matrix-2026-11-25) below adds the full scene and desktop canvas runs. The earlier Windows Debug/Release matrix above applies to `a2be5baf6`, before the resize correction. The revised public build instructions, option row, dispatch paragraph, and this new handoff section received the humanizer pass and a final check for direct wording; older prose was not re-reviewed.
 
 Compiler frame reports cover the recorded compiler, configuration, and enabled sources. They do not bound total call-stack depth or validate disabled platform code. The 256 KiB worker regression exercises empty and populated planning, composition, graph lowering, and stream emission. Allocation regressions cover unchanged outputs, graph rollback after product-map allocation failure, and legend retry; dependency chains and cycles cross indices 63/64 and 127/128.
 
 The read-only audit also identified extent-reference and load-source recursion for a separate cycle-rejection investigation; those paths were not proven defective or changed in this batch. Attended rendering and interaction, the earlier visible DRP2 asymmetry, provider trust, and exact-candidate artifact proof remain separate gates. MinGW remains an unvalidated optional route.
+
+## Final Source Matrix, 2026-11-25
+
+The follow-up tests source commit `4a8a0c59c`, including the offscreen command-buffer fix at `b106bba7b`. A Windows audit matched 1,283 tracked source, header, build, and tooling files; 694 differed only by Git's CRLF conversion. Debug and Release were rebuilt with MSVC/Ninja, CUDA and the Qt bridge disabled. This is checkout evidence, not accepted-candidate artifact proof.
+
+| Suite and environment | NVIDIA Debug | AMD Debug | NVIDIA Release | AMD Release |
+| --- | --- | --- | --- | --- |
+| Full scene executable over SSH | 781/781 pass | 781/781 pass | 781/781 pass | 781/781 pass |
+| Full canvas executable in the logged-in desktop | 107 pass, 3 skip | 107 pass, 3 skip | 107 pass, 3 skip | 107 pass, 3 skip |
+
+Both Debug scene logs confirm 56 Khronos validation-layer insertions, with no validation callbacks or unavailable-layer warnings. The Release scene runs do not request the layer; their passes establish assertions and execution, not validation-layer coverage. The canvas executable includes companion subsystem cases, hence its 110-case total. Skips and video diagnostics remain separate from assertion passes.
+
+The SSH session cannot serve as AMD presentation proof on this machine: both configurations fail 22 canvas presentation cases with `VK_ERROR_FORMAT_NOT_SUPPORTED` at swapchain creation. The same destroy/recreate probe passes in the logged-in desktop, and the full desktop canvas matrix above has no assertion failures. GPU indices also differ by session: SSH enumerates NVIDIA as 0 and AMD as 1; the desktop enumerates AMD as 0 and NVIDIA as 1. Discover devices in the session running the tests and verify the recorded vendor/device identity rather than copying indices between sessions.
+
+### Automated visual checks and remaining maintainer review
+
+Release GLFW captures from the logged-in desktop show the requested 100,000-point scene on both GPUs, before and after resize. Orange points cover about 82% of each image; at this density the overlapping points form a filled rectangle. The initial captures are 1000×750 pixels and the resized captures are 1182×853. AMD/NVIDIA comparisons have a mean absolute RGBA channel difference below 0.008 on the 0–255 scale, with maximum channel differences of 20 and 21. All four captures were inspected; neither a blank frame nor a single isolated point appears. The historical asymmetry does not reproduce on this source in the desktop session.
+
+The capture helper observed both processes exit after posting a close request, but its PowerShell process objects did not retain native exit codes. This is capture/resize evidence, not a manual close/reopen pass. The full desktop canvas tests supply separate automated lifecycle evidence. Static Linux captures of scatter, arcball, text, and textured mesh were also inspected at 800×600; they show no obvious blank output or clipping.
+
+Release binaries are ready in the default Windows `build` tree. Temporary desktop runners, windows, power requests, and validation-layer registration were removed. Reports, manifests, logs, captures, and image-comparison metrics remain under ignored `build/windows-validation/` evidence on the integration host. These new handoff sections and the revised dispatch paragraph received the humanizer pass and a final wording check; older prose was not re-reviewed.
+
+The next step is maintainer review in the Windows desktop. Run one example at a time from the repository root, then close it before starting another:
+
+| Example executable under `build/examples/c/` | Review action |
+| --- | --- |
+| `start/scatter.exe --live` | Resize, pan, wheel-zoom, close, reopen, and check responsiveness. |
+| `features/controller_arcball.exe --live` | Rotate and zoom; check depth and motion. |
+| `features/text_block.exe --live` | Resize; check text placement and legibility. |
+| `features/image_probe.exe --live` | Move the probe; check that its readout changes coherently. |
+| `features/mesh_texture.exe --live` | Rotate; check texture and depth. |
+| `features/picking.exe --live` | Pick items, resize, close, reopen, and pick again. |
+
+For the historical GPU comparison, use the live-canvas commands in the next section after discovering the desktop's current GPU indices. Record human observations as pass, fail, or skip; unattended captures do not establish smoothness or physical interaction quality. This review is source-development evidence and does not replace the later exact-wheel physical profile.
+
+### Video fallback finding
+
+Two NVENC-specific canvas cases request the unavailable NVENC backend, fall back to Kvazaar, and skip after startup fails. In the NVIDIA SSH runs, that fallback calls `vkMapMemory` on device-local memory without `VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT`, producing `VUID-vkMapMemory-memory-00682`. The cases are `test_canvas_video_sink_start_submit_integration` and `test_canvas_video_sink_disable_rebuild`; `test_video_nvenc` also skips because NVENC was disabled at build time. The same two map-memory VUIDs occur on both GPUs in the desktop Debug canvas runs. The aggregate pass count does not make this a clean video validation run.
+
+The fallback crosses backend selection and imported-memory requirements. It was diagnosed but not changed in this stack/build batch. Before claiming external-video fallback support with NVENC disabled, make backend selection reject incompatible imported memory or use the existing CPU RGBA/readback route, then repeat the affected video cases with validation layers.
 
 ## Linux-Led Windows Investigation, 2026-11-24
 
@@ -99,19 +139,17 @@ Source-checkout results are development evidence only. They must not be reported
 
 ## 1. Resolve And Repeat The Visible AMD/NVIDIA Checks
 
-The automated symmetric source campaign is complete, but the earlier scripted Release GLFW screenshot check rendered one orange point on NVIDIA and a blank black frame on AMD; `--scene-points 100000` was parsed and reported but the NVIDIA screenshot still contained one point. Both processes closed normally and reported no Vulkan validation error. This visible gate remains open.
+The earlier scripted check produced one orange point on NVIDIA and a blank frame on AMD. The [current desktop captures](#automated-visual-checks-and-remaining-maintainer-review) show the dense scene on both GPUs, before and after resize. The source matrix also isolates AMD swapchain-creation failures to the SSH session. Maintainer confirmation of visible rendering and interaction remains open; use the logged-in desktop for that review.
 
-1. Determine why the DRP2 live canvas is blank on AMD and why the requested 100,000-point grid appears as a single point on NVIDIA.
-2. Repeat the Release GLFW live canvas on GPU 0 and GPU 1 after affected runtime changes land.
+1. Discover the GPUs in the desktop session; do not reuse SSH indices without checking device identity.
+2. Run the Release GLFW live canvas on each GPU using the verified index.
 3. Confirm visible rendering, resize, normal close, and reopen on each window; record pass, fail, or skip with a reason.
-4. Keep expected capability skips separate from the unexplained asymmetry: AMD has no NVENC and lacks the tested external-memory path, while the NVIDIA GLFW lifecycle case has an expected platform skip.
+4. Record each capability skip with its current reason, and keep the video-fallback diagnostics in their own scope.
 
 ```powershell
-& .\build-msvc\testing\Release\dvztest.exe --list-gpus
-& .\build-msvc\testing\Release\dvztest.exe --module <module> --gpu 0 --json <amd-report.json>
-& .\build-msvc\testing\Release\dvztest.exe --module <module> --gpu 1 --json <nvidia-report.json>
-& .\build-msvc\testing\Release\dvz_live_canvas.exe --backend glfw --gpu 0 --frames 300
-& .\build-msvc\testing\Release\dvz_live_canvas.exe --backend glfw --gpu 1 --frames 300
+& .\build\testing\dvz_live_canvas.exe --list-gpus
+& .\build\testing\dvz_live_canvas.exe --backend glfw --draw scene-drp2 --scene-points 100000 --gpu 0
+& .\build\testing\dvz_live_canvas.exe --backend glfw --draw scene-drp2 --scene-points 100000 --gpu 1
 ```
 
 Do not treat `VK_LOADER_DRIVERS_SELECT` as the selector contract; it is only an optional cross-check.
