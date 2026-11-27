@@ -270,6 +270,13 @@ int main(void) {
     }
     ctx.preview_presentation = DVZ_SCENARIO_PRESENTATION_SWAY;
     ctx.preview_mode = false;
+    assert(scenario_preview_presentation_active(&ctx));
+    ctx.time = ctx.preview_presentation_period / 4.0;
+    near(scenario_preview_presentation_angle(&ctx), amplitude);
+    ctx.preview_presentation = DVZ_SCENARIO_PRESENTATION_STATIC;
+    assert(scenario_preview_presentation_active(&ctx));
+    near(scenario_preview_presentation_angle(&ctx), 0);
+    ctx.preview_presentation = DVZ_SCENARIO_PRESENTATION_DEFAULT;
     assert(!scenario_preview_presentation_active(&ctx));
     return 0;
 }
