@@ -38,6 +38,7 @@ class CtypesEnum(IntEnum):
 
 _PLATFORM_LIB_NAMES = {
     'Linux': ('libdatoviz.so',),
+    'Android': ('libdatoviz.so',),
     'Darwin': ('libdatoviz.dylib',),
     'Windows': ('datoviz.dll', 'libdatoviz.dll'),
 }
